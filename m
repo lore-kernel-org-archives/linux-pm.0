@@ -1,110 +1,227 @@
-From: Sebastian Reichel <sre@collabora.com>
-Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
-Date: Wed, 5 Dec 2018 16:47:28 +0100
-Message-ID: <20181205154728.3yhxhov5iltb3ncl@earth.universe>
-References: <20181122101119.29194-1-enric.balletbo@collabora.com>
- <20181123232203.GA3852@amd>
- <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
- <20181201150934.GA7052@amd>
- <20181203195845.GA120704@google.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v10 1/7] interconnect: Add generic on-chip interconnect
+ API
+Date: Wed, 5 Dec 2018 17:57:19 +0200
+Message-ID: <c2dc1f5c-46ab-b5aa-0069-b5b50e7e2182@linaro.org>
+References: <20181127180349.29997-1-georgi.djakov@linaro.org>
+ <20181127180349.29997-2-georgi.djakov@linaro.org>
+ <CAE=gft5jWZgzRTNB4m0ES+g=rpjACYWVissmEQ+pgPGKEffgog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ba4s4b6eedhcf5xy"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181203195845.GA120704@google.com>
+In-Reply-To: <CAE=gft5jWZgzRTNB4m0ES+g=rpjACYWVissmEQ+pgPGKEffgog@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benson Leung <bleung@google.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+To: Evan Green <evgreen@chromium.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Alexandre Bailon <abailon@baylibre.com>, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Evan,
 
---ba4s4b6eedhcf5xy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 12/1/18 02:38, Evan Green wrote:
+> On Tue, Nov 27, 2018 at 10:03 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>>
+>> This patch introduces a new API to get requirements and configure the
+>> interconnect buses across the entire chipset to fit with the current
+>> demand.
+>>
+>> The API is using a consumer/provider-based model, where the providers are
+>> the interconnect buses and the consumers could be various drivers.
+>> The consumers request interconnect resources (path) between endpoints and
+>> set the desired constraints on this data flow path. The providers receive
+>> requests from consumers and aggregate these requests for all master-slave
+>> pairs on that path. Then the providers configure each participating in the
+>> topology node according to the requested data flow path, physical links and
+> 
+> Strange word ordering. Consider something like: "Then the providers
+> configure each node participating in the topology"
+> 
+> ...Or a slightly different flavor: "Then the providers configure each
+> node along the path to support a bandwidth that satisfies all
+> bandwidth requests that cross through that node".
+> 
 
-Hi,
+This sounds better!
 
-On Mon, Dec 03, 2018 at 11:58:45AM -0800, Benson Leung wrote:
-> On Sat, Dec 01, 2018 at 04:09:34PM +0100, Pavel Machek wrote:
-> > > I think that handle this via dt / ACPI is not possible for our use ca=
-se. It can
-> > > be a hardware bug or a hardware/user constrain, let me try to explain=
- better
-> > > with an example.
-> > >=20
-> > > On Pixel C's devices, userspace uses this to set a USB input limit of=
- 5V when
-> > > the screen is on for thermal reasons, but those go away when the scre=
-en is
-> > > off/system is sleeping, so we allow 9V and 12V levels when sleeping.
-> >=20
-> > So, on pixel C, what happens if userland ignores the constraint, keeps
-> > display on and sets charger to 12V?
->=20
-> I was the software tech lead for the Google Pixel C and was involved in t=
-his
-> particular code change in 2015 before the release of the product.
->=20
-> So there's nothing fundamentally broken about the hardware that would cau=
-se
-> the Pixel C to malfunction if we were charging at 9V or 12V instead of 5V
-> when the screen is on, ie if userspace doesn't change this.
->=20
-> This is part of the Pixel C's thermal management strategy to effectively
-> limit the input power to 5V 3A when the screen is on. When the screen is =
-on,
-> the display, the CPU, and the GPU all contribute more heat to the system
-> than while the screen is off, and we made a tradeoff to throttle the char=
-ger
-> in order to give more of the thermal budget to those other components.
->=20
-> What would happen is that you wouldn't meet Google's skin temperature tar=
-gets
-> on the system if the charger was allowed to run at 9V or 12V with the scr=
-een
-> on.
->=20
-> For folks hacking on Pixel Cs (which is now outside of Google's official =
-support
-> window for Android) and customizing their own kernel and userspace
-> this would be acceptable, but we wanted to expose this feature in the pow=
-er
-> supply properties because the feature does exist in the Emedded Controller
-> firmware of the Pixel C and all of Google's Chromebooks with USB-C made s=
-ince
-> 2015 in case someone running an up to date kernel wanted to limit the cha=
-rging
-> power for thermal or other reasons.
+>> constraints. The topology could be complicated and multi-tiered and is SoC
+>> specific.
+>>
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> Reviewed-by: Evan Green <evgreen@chromium.org>
+> 
+> This already has my reviewed by, and I still stand by it, but I
+> couldn't help finding some nits anyway. Sorry :)
 
-I'm fine with merging this with the above description. I hope
-vendors never decide to move safety relevant decisions to userspace.
-Enric, can you please integrate the great description from Benson
-into the patch description?
+Thanks for finding them!
 
-Thanks,
+>> ---
+>>  Documentation/interconnect/interconnect.rst |  94 ++++
+>>  drivers/Kconfig                             |   2 +
+>>  drivers/Makefile                            |   1 +
+>>  drivers/interconnect/Kconfig                |  10 +
+>>  drivers/interconnect/Makefile               |   5 +
+>>  drivers/interconnect/core.c                 | 569 ++++++++++++++++++++
+>>  include/linux/interconnect-provider.h       | 125 +++++
+>>  include/linux/interconnect.h                |  51 ++
+>>  8 files changed, 857 insertions(+)
+>>  create mode 100644 Documentation/interconnect/interconnect.rst
+>>  create mode 100644 drivers/interconnect/Kconfig
+>>  create mode 100644 drivers/interconnect/Makefile
+>>  create mode 100644 drivers/interconnect/core.c
+>>  create mode 100644 include/linux/interconnect-provider.h
+>>  create mode 100644 include/linux/interconnect.h
+>>
+[..]
+>> +/*
+>> + * We want the path to honor all bandwidth requests, so the average and peak
+>> + * bandwidth requirements from each consumer are aggregated at each node.
+>> + * The aggregation is platform specific, so each platform can customize it by
+>> + * implementing it's own aggregate() function.
+> 
+> Grammar police: remove the apostrophe in its.
+> 
 
--- Sebastian
+Oops.
 
---ba4s4b6eedhcf5xy
-Content-Type: application/pgp-signature; name="signature.asc"
+>> + */
+>> +
+>> +static int aggregate_requests(struct icc_node *node)
+>> +{
+>> +       struct icc_provider *p = node->provider;
+>> +       struct icc_req *r;
+>> +
+>> +       node->avg_bw = 0;
+>> +       node->peak_bw = 0;
+>> +
+>> +       hlist_for_each_entry(r, &node->req_list, req_node)
+>> +               p->aggregate(node, r->avg_bw, r->peak_bw,
+>> +                            &node->avg_bw, &node->peak_bw);
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int apply_constraints(struct icc_path *path)
+>> +{
+>> +       struct icc_node *next, *prev = NULL;
+>> +       int ret = -EINVAL;
+>> +       int i;
+>> +
+>> +       for (i = 0; i < path->num_nodes; i++, prev = next) {
+>> +               struct icc_provider *p;
+>> +
+>> +               next = path->reqs[i].node;
+>> +               /*
+>> +                * Both endpoints should be valid master-slave pairs of the
+>> +                * same interconnect provider that will be configured.
+>> +                */
+>> +               if (!prev || next->provider != prev->provider)
+>> +                       continue;
+> 
+> I wonder if we should explicitly ban paths where we bounce through an
+> odd number of nodes within one provider. Otherwise, set() won't be
+> called on all nodes in the path. Or, if we wanted to support those
+> kinds of topologies, you could call set with one of the nodes set to
+> NULL to represent either the ingress or egress bandwidth to this NoC.
+> This doesn't necessarily need to be addressed in this series, but is
+> something that other providers might bump into when implementing their
+> topologies.
+> 
 
------BEGIN PGP SIGNATURE-----
+Yes, we can do something like this. But i prefer that we first add
+support for more platforms and then according to the requirements we can
+work out something.
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwH8xAACgkQ2O7X88g7
-+pojMhAAk7jbNNu6VQwLLFqMCVKFpwlmIvbK1h6T0nhkcTZelrxfroZNDBCOxn7j
-QVfeN0URhtBXXtWtzC1GyYw8is/TypE4SJurz0p5q67pUZ+AYvvzTFNiR2Uwadj/
-OxJcMSF6+IdANyKG8BIbEhw+P2MYP9J8PyMGMHCa8Qdzaor3leT17qHMhDiVYISF
-2gchnoTxUQWoHSMpcsBx/h/RxsSwLWANTFbPiuhv8pq6gUu+IPpBTx+oRV2XXbyR
-6L3TWg0w7mY3vyn1Cc7IeQfk/WBP8XQl8HnoVT557rf5r955NXOVwr8ePKQCJCkb
-+Zg3UTMIk+N+9EdzMREjdMc41y4M8LhlS6IgcLvG1wiOygkgBECSiuEO7s7xPROM
-YlRuIDUxUQFvj40k06fQPiCepkCOokH1mlnPpxSmG2BzYMaqfT9Z+tfn2DOKed4I
-bTWGDUmwf95ovV59f6Fa3dXAaf5yWV8X85a2O2o5poXYFjI3BIYenW7pkHcoQ2Pe
-jX8oB4KxayMiGPFGLwM7u8OOFwbJ8KBVB1saHOA43Z+/4mHdJv+H0uCDUXuewo3+
-pekSTcpsWno0pzfmJNgh9oFswjjv3un+3XIS53WbDCVEOKuyJPCcPNkoCeFCMYSy
-u6C091g0U0LR06glW1Vz5naal2H9b7sL6SMvLsZ8X69l4ANfrx8=
-=izEY
------END PGP SIGNATURE-----
+[..]
 
---ba4s4b6eedhcf5xy--
+>> +       new = krealloc(src->links,
+>> +                      (src->num_links) * sizeof(*src->links),
+> 
+> These parentheses aren't needed.
+
+Sure!
+
+>> +                      GFP_KERNEL);
+>> +       if (new)
+>> +               src->links = new;
+>> +
+
+[..]
+
+>> +
+>> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org");
+> 
+> This is missing the closing >
+
+Thanks!
+
+>> +MODULE_DESCRIPTION("Interconnect Driver Core");
+>> +MODULE_LICENSE("GPL v2");
+> ...
+>> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+>> new file mode 100644
+>> index 000000000000..04b2966ded9f
+>> --- /dev/null
+>> +++ b/include/linux/interconnect.h
+>> @@ -0,0 +1,51 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Copyright (c) 2018, Linaro Ltd.
+>> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+>> + */
+>> +
+>> +#ifndef __LINUX_INTERCONNECT_H
+>> +#define __LINUX_INTERCONNECT_H
+>> +
+>> +#include <linux/mutex.h>
+>> +#include <linux/types.h>
+>> +
+>> +/* macros for converting to icc units */
+>> +#define bps_to_icc(x)  (1)
+>> +#define kBps_to_icc(x) (x)
+>> +#define MBps_to_icc(x) (x * 1000)
+>> +#define GBps_to_icc(x) (x * 1000 * 1000)
+>> +#define kbps_to_icc(x) (x / 8 + ((x) % 8 ? 1 : 0))
+>> +#define Mbps_to_icc(x) (x * 1000 / 8 )
+> 
+> Remove extra space before )
+
+Done.
+
+>> +#define Gbps_to_icc(x) (x * 1000 * 1000 / 8)
+>> +
+>> +struct icc_path;
+>> +struct device;
+>> +
+>> +#if IS_ENABLED(CONFIG_INTERCONNECT)
+>> +
+>> +struct icc_path *icc_get(struct device *dev, const int src_id,
+>> +                        const int dst_id);
+>> +void icc_put(struct icc_path *path);
+>> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
+>> +
+>> +#else
+>> +
+>> +static inline struct icc_path *icc_get(struct device *dev, const int src_id,
+>> +                                      const int dst_id)
+>> +{
+>> +       return NULL;
+>> +}
+>> +
+>> +static inline void icc_put(struct icc_path *path)
+>> +{
+>> +}
+>> +
+>> +static inline int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+>> +{
+>> +       return 0;
+> 
+> Should this really succeed?
+
+Yes, it should succeed if the framework is not enabled. The drivers
+should handle the case of whether the framework is enabled or not when
+icc_get() or of_icc_get() returns NULL. Based on that they should decide
+if can continue without interconnect support or not.
+
+BR,
+Georgi
