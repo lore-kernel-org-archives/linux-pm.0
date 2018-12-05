@@ -1,45 +1,65 @@
-From: Mauro Carvalho Chehab <mchehab@kernel.org>
-Subject: Re: [PATCH 7/8] media: sti/bdisp: don't pass GFP_DMA32 to
- dma_alloc_attrs
-Date: Wed, 5 Dec 2018 08:31:29 -0200
-Message-ID: <20181205083129.20b6b0be@coco.lan>
-References: <20181013151707.32210-1-hch@lst.de>
- <20181013151707.32210-8-hch@lst.de>
- <CA+M3ks5KO-Yr_PEczaENhTfirthFz2gW1uv4bwZe5mjy3-jZyg@mail.gmail.com>
- <20181017072020.GD23407@lst.de>
- <CA+M3ks5ebGDgFtMS5mSYz38AnyrTMQr8C_JkbFEzp=k+izJjUQ@mail.gmail.com>
-Mime-Version: 1.0
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v3 0/5] devfreq: handle suspend/resume
+Date: Wed,  5 Dec 2018 12:05:51 +0100
+Message-ID: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20181205110616eucas1p1e0e17b0c6a96c3b6d77516d4b02de8b1@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+M3ks5ebGDgFtMS5mSYz38AnyrTMQr8C_JkbFEzp=k+izJjUQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-spi@vger.kernel.org, Hans Verkuil <hans.verkuil@cisco.com>, linux-tegra@vger.kernel.org, Christoph Hellwig <hch@lst.de>, linux-media@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-RW0gVGh1LCAxOCBPY3QgMjAxOCAxNDowMDo0MCArMDIwMApCZW5qYW1pbiBHYWlnbmFyZCA8YmVu
-amFtaW4uZ2FpZ25hcmRAbGluYXJvLm9yZz4gZXNjcmV2ZXU6Cgo+IExlIG1lci4gMTcgb2N0LiAy
-MDE4IMOgIDA5OjIwLCBDaHJpc3RvcGggSGVsbHdpZyA8aGNoQGxzdC5kZT4gYSDDqWNyaXQgOgo+
-ID4KPiA+IE9uIE1vbiwgT2N0IDE1LCAyMDE4IGF0IDExOjEyOjU1QU0gKzAyMDAsIEJlbmphbWlu
-IEdhaWduYXJkIHdyb3RlOiAgCj4gPiA+IExlIHNhbS4gMTMgb2N0LiAyMDE4IMOgIDE3OjE4LCBD
-aHJpc3RvcGggSGVsbHdpZyA8aGNoQGxzdC5kZT4gYSDDqWNyaXQgOiAgCj4gPiA+ID4KPiA+ID4g
-PiBUaGUgRE1BIEFQSSBkb2VzIGl0cyBvd24gem9uZSBkZWNpc2lvbnMgYmFzZWQgb24gdGhlIGNv
-aGVyZW50X2RtYV9tYXNrLgo+ID4gPiA+Cj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogQ2hyaXN0b3Bo
-IEhlbGx3aWcgPGhjaEBsc3QuZGU+ICAKPiA+ID4KPiA+ID4gUmV2aWV3ZWQtYnk6IEJlbmphbWlu
-IEdhaWduYXJkIDxiZW5qYW1pbi5nYWlnbmFyZEBsaW5hcm8ub3JnPiAgCj4gPgo+ID4gQ2FuIHlv
-dSBwaWNrIGl0IHVwIHRocm91Z2ggdGhlIG1lZGlhIHRyZWU/ICAKPiAKPiBObyBidXQgTWF1cm9z
-IG9yIEhhbnMgKGluIENDKSBjYW4gYWRkIGl0LgoKSSdtIGFkZGluZyBpdC4gU29ycnkgZm9yIHRo
-ZSBkZWxheS4gQWxsIHRob3NlIHRyaXBzIGZvciBNUy9LUyBtYWRlCmhhcmRlciB0byBoYW5kbGUg
-aXQgZWFybGllci4KClRoYW5rcywKTWF1cm8KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
-dGluZm8vZHJpLWRldmVsCg==
+Hi all,
+
+This v3 patch set aims to address the issue with devfreq devices' frequency
+during suspend/resume. It extends suspend/resume by calls to Devfreq
+framework. In the devfreq framework there is a small refactoring to avoid
+code duplication in changging frequency (patch 1) and there are extensions
+for suspending devices. The suspending device has now chance to set proper
+state when the system is going for suspend. This phase is the right place
+to set needed frequences for the next resume process.
+
+It has been tested on Odroid u3 with Exynos 4412.
+
+The patch set draws on Tobias Jakobi's work posted ~2 years ago, who tried
+to solve issue with devfreq device's frequency during suspend/resume.
+During the discussion on LKML some corner cases and comments appeared
+related to the design. This patch set address them keeping in mind
+suggestions from Chanwoo Choi.
+Tobias's paches:
+https://www.spinics.net/lists/linux-samsung-soc/msg56602.html 
+
+Changes:
+v3:
+- cleaned commit messages according to Chanwoo's comments
+- moved atomic operation to beggining of function in
+  devfreq_{suspend|resume}_device()
+- changed dev_warn() to dev_err() with also new error message,
+  when devfreq_{suspend|resume}() failed
+v2:
+- refactored patchset and merget patch 1 and 3 as suggested by Chanwoo Choi,
+- changed devfreq_{susped|resume}_device functions,
+- added doxygen information for new entres in 'struct devfreq',
+- devfreq_set_target skipped one argument, now resume_freq is set inside,
+- minor changes addresing comments from maintainers regarding the style,
+
+Regards,
+Lukasz Luba
+
+Lukasz Luba (5):
+  devfreq: refactor set_target frequency function
+  devfreq: add support for suspend/resume of a devfreq device
+  devfreq: add devfreq_suspend/resume() functions
+  drivers: power: suspend: call devfreq suspend/resume
+  arm: dts: exynos4: opp-suspend in DMC and leftbus
+
+ arch/arm/boot/dts/exynos4210.dtsi |   2 +
+ arch/arm/boot/dts/exynos4412.dtsi |   2 +
+ drivers/base/power/main.c         |   3 +
+ drivers/devfreq/devfreq.c         | 153 ++++++++++++++++++++++++++++++--------
+ include/linux/devfreq.h           |  13 ++++
+ 5 files changed, 141 insertions(+), 32 deletions(-)
+
+-- 
+2.7.4
