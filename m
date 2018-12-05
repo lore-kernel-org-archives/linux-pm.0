@@ -1,121 +1,57 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 00/11] thermal: add new flag irq-mode for trip point
-Date: Wed, 5 Dec 2018 16:33:37 +0100
-Message-ID: <ffca9e30-7a7c-7f61-24a1-016c9ea1e611@partner.samsung.com>
-References: <CGME20181107171019eucas1p1fcb1f44e00265434548d901479f2ea94@eucas1p1.samsung.com>
-        <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-        <1544022486.2841.42.camel@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH v2] cpufreq: ia64: Remove unused header files
+Date: Wed,  5 Dec 2018 10:44:49 -0500
+Message-ID: <20181205154449.15725-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544022486.2841.42.camel@intel.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rui,
+seq_file.h does not need to be included, so remove it. Moreover deleted
+a line of meaningless return and some useless blank lines. In a function
+whose return type is void, returning on the last line is not required.
 
-On 12/5/18 4:08 PM, Zhang Rui wrote:
-> On 三, 2018-11-07 at 18:09 +0100, Lukasz Luba wrote:
->> Hi all,
->>
->> This patch set adds a new flag and mechanism in thermal trip points
->> in
->> DT.  The old implementation in thermal zone in DT sets the same
->> configuration for all internal trip points. It does not work for all
->> HW.  There are SoCs which support IRQs for some trip points (i.e.
->> Exynos 4 has 4 trip points with IRQs). For additional one defined
->> inside the thermal zone there is a need of 'polling'. When developer
->> adds polling mode settings inside the thermal zone, all the trip
->> points will be registered for polling, even those supporting IRQs,
->> which does not make sense.
-> 
-> we have two timers, one for polling, and one for passive cooling.
-> I think we are talking about passive cooling timer only, right?
-> And the real problem is that we have multiple passive trip points and
-> only part of them support irq_mode, and we don't want to start the
-> passive polling timer for all of the passive trip points.
-Yes exactly, we don't want to poll all of them by starting 'passive 
-polling timer'.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+changes in v2:
+-revert modify of MODULE_
+-delete some blank lines
+---
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-Regards,
-Lukasz
-> 
-> thanks,
-> rui
-> 
->>   Thus, developers create workarounds, which
->> are confusing for some other developers.  To workaround,
->> people declare some trip points as 'active' (those with IRQ support).
->> It allows to bypass polling mode in thermal framework applied for
->> all thermal zone's trip points.
->>
->> Thermal framework defines 4 types of trip points. The 'passive' means
->> passive cooling using DVFS, 'active' is designed for fan and other
->> devices actively changing the outside conditions. Therefore, a
->> workaround
->> mentioned earlier is confusing when someone does not know about the
->> framework limitations.
->>
->> This patch set tries to solve the issue by adding one flag inside the
->> trip point: 'irq-mode;'.  The trip point 'passive' declared in DT
->> with
->> explicit flag 'irq-mode;' will not register itself as polling mode.
->> Thermal framework will skip it during scheduling next read out work.
->> The old global-polling-mode-configuration-inside-thermal-zone is
->> still
->> valid.  Patch set does not break existing design for trip points
->> which
->> do not have 'irq-mode' flag - they will use polling.
->>
->> As an example please check patch #10 for Exynos4 SoC family, where
->> there
->> is 4 HW supported trip points and there is a need of 6. The rest 2
->> are
->> declared as 'passive' without 'irq-mode;' flag, which means polling
->> mode needed for them.
->>
->> Patch #1 is a small cleanup in thermal framework.
->>
->> Change log:
->> v2
->> - changed description in cover letter
->> - change commit messages according to Krzysztof comments
->> - rebase on top of current mainline (v4.20-rc1)
->>
->> Regards,
->> Lukasz Luba
->>
->> Lukasz Luba (11):
->>    thermal: remove unused function parameter
->>    thermal: add irq-mode configuration for trip point
->>    thermal: add new sysfs file for irq-mode
->>    Doc: thermal: new irq-mode for trip point
->>    Doc: DT: thermal: new irq-mode for trip point
->>    arm64: dts: exynos5433: add support for thermal trip irq-mode
->>    arm64: dts: exynos7: add support for thermal trip irq-mode
->>    arm: dts: exynos4: add support for thermal trip irq-mode
->>    arm: dts: exynos5420: add support for thermal trip irq-mode
->>    arm: dts: exynos5422: add support for thermal trip irq-mode
->>    arm: dts: exynos5410: add support for thermal trip irq-mode
->>
->>   .../devicetree/bindings/thermal/thermal.txt        |   7 ++
->>   Documentation/thermal/sysfs-api.txt                |   9 ++
->>   arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  10 +-
->>   arch/arm/boot/dts/exynos5410-odroidxu.dts          |  10 +-
->>   arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  10 +-
->>   arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  40 +++++---
->>   arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi     | 105
->> ++++++++++++++-------
->>   .../arm64/boot/dts/exynos/exynos7-trip-points.dtsi |   8 ++
->>   drivers/thermal/of-thermal.c                       |  17 ++++
->>   drivers/thermal/thermal_core.c                     |  16 ++--
->>   drivers/thermal/thermal_sysfs.c                    |  53 ++++++++++-
->>   include/linux/thermal.h                            |   5 +
->>   12 files changed, 226 insertions(+), 64 deletions(-)
->>
-> 
-> 
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index dd5440d3372d..80c5bf590acb 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -16,7 +16,6 @@
+ #include <linux/init.h>
+ #include <linux/cpufreq.h>
+ #include <linux/proc_fs.h>
+-#include <linux/seq_file.h>
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+ #include <asm/pal.h>
+@@ -28,7 +27,6 @@ MODULE_AUTHOR("Venkatesh Pallipadi");
+ MODULE_DESCRIPTION("ACPI Processor P-States Driver");
+ MODULE_LICENSE("GPL");
+ 
+-
+ struct cpufreq_acpi_io {
+ 	struct acpi_processor_performance	acpi_data;
+ 	unsigned int				resume;
+@@ -348,10 +346,7 @@ acpi_cpufreq_exit (void)
+ 	pr_debug("acpi_cpufreq_exit\n");
+ 
+ 	cpufreq_unregister_driver(&acpi_cpufreq_driver);
+-	return;
+ }
+ 
+-
+ late_initcall(acpi_cpufreq_init);
+ module_exit(acpi_cpufreq_exit);
+-
+-- 
+2.17.0
