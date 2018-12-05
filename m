@@ -1,61 +1,80 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH] devfreq: Use of_node_name_eq for node name comparisons
-Date: Wed,  5 Dec 2018 13:50:22 -0600
-Message-ID: <20181205195050.4759-6-robh@kernel.org>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH] power: supply: cpcap-charger: clean an indentation
+ issue, remove tab
+Date: Wed, 5 Dec 2018 21:00:59 +0100
+Message-ID: <20181205200059.mk2canwpe3koeuhy@earth.universe>
+References: <20181031184841.5673-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="roq5qfpepfms3zai"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181031184841.5673-1-colin.king@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Convert string compares of DT node names to use of_node_name_eq helper
-instead. This removes direct access to the node name pointer.
 
-For instances using of_node_cmp, this has the side effect of now using
-case sensitive comparisons. This should not matter for any FDT based
-system which all of these are.
+--roq5qfpepfms3zai
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-samsung-soc@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/devfreq/devfreq-event.c     | 2 +-
- drivers/devfreq/event/exynos-ppmu.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Hi,
 
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index d67242d87744..87e93406d7cd 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -240,7 +240,7 @@ struct devfreq_event_dev *devfreq_event_get_edev_by_phandle(struct device *dev,
- 	}
- 
- 	list_for_each_entry(edev, &devfreq_event_list, node) {
--		if (!strcmp(edev->desc->name, node->name))
-+		if (of_node_name_eq(node, edev->desc->name))
- 			goto out;
- 	}
- 	edev = NULL;
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index c61de0bdf053..c2ea94957501 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -529,7 +529,7 @@ static int of_get_devfreq_events(struct device_node *np,
- 			if (!ppmu_events[i].name)
- 				continue;
- 
--			if (!of_node_cmp(node->name, ppmu_events[i].name))
-+			if (of_node_name_eq(node, ppmu_events[i].name))
- 				break;
- 		}
- 
--- 
-2.19.1
+On Wed, Oct 31, 2018 at 06:48:41PM +0000, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>=20
+> Trivial fix to clean up indentation issue, remove an extraneous tab
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+
+Thanks, queued.
+
+-- Sebastian
+
+>  drivers/power/supply/cpcap-charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/=
+cpcap-charger.c
+> index e4905bef2663..c843eaff8ad0 100644
+> --- a/drivers/power/supply/cpcap-charger.c
+> +++ b/drivers/power/supply/cpcap-charger.c
+> @@ -544,7 +544,7 @@ static void cpcap_charger_init_optional_gpios(struct =
+cpcap_charger_ddata *ddata)
+>  		if (IS_ERR(ddata->gpio[i])) {
+>  			dev_info(ddata->dev, "no mode change GPIO%i: %li\n",
+>  				 i, PTR_ERR(ddata->gpio[i]));
+> -				 ddata->gpio[i] =3D NULL;
+> +			ddata->gpio[i] =3D NULL;
+>  		}
+>  	}
+>  }
+> --=20
+> 2.19.1
+>=20
+
+--roq5qfpepfms3zai
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwILncACgkQ2O7X88g7
++pq+IBAAmmyk/9B4GoMD3xObZOc/MUp7vs2QFfpxyC47SDuKUQvLyPjOnS4tinwx
+el/xSPB1WNzDhfbIB+OUluFdXIJ5E5mt+fQ1BpXQHiEbN9dAOtg/SUD4MmEENT8I
+58y9ueFC8fS3G9gcjsBN8fDbmgY4Je2XtSfL0uuhAuNHoMFsxLCfecdHpRog5PF7
+mcQUZp5QI7nzIn/x5W2R0eUakGFV2sNxqHAz7m63v0PXsVQ5huXz1PPgFvyghtbn
++xNi/HmBr65bJI2TPXiprw6yWjg2Se575AgAl5WOzkWUR+DLFq87UhyUn+TZ7AIN
+qJePO4peAqxgHbJICUJmlx5E3G5LrFK3w/YWq25LpP3Fgqg4+L0bYJCWe2ywo/vw
+ULCBckfXYmJI6fwiVdl0lxeZOSINcMD+T2oJx5it8SoZZVRF+AYYKQM4xEWPbNHD
+YAHG2Cia86OCBn4waJUbDdbMv2rE5Yc56vhAPJBtLZX8cza+utDcKsYm7lhbcFYB
+HfpQY1tzA/OYjHQ3yJXuJJbdy3i7012hRnDk+APoVnWcLRAUR242Jq6WXMM6Gac6
+HYfHz0hb7AqEp+BpJ98VrvW34chgS+Qwceb4Wr75llp9OvdgTgtd1UKjgUCazbBB
+02iW9zFr3VnBZnwVLTkD3fNI+qKFMpuMzOgK6Bl7zQ1TgZY7tjc=
+=5edf
+-----END PGP SIGNATURE-----
+
+--roq5qfpepfms3zai--
