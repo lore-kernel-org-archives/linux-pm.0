@@ -1,121 +1,117 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: Add cpuidle.governor= command line parameter
-Date: Wed, 05 Dec 2018 23:45:34 +0100
-Message-ID: <1752296.bicKxrytZO@aspire.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
+Date: Wed, 5 Dec 2018 15:06:05 -0800
+Message-ID: <006801d48cef$1d476e80$57d64b80$@net>
+References: <001901d48881$29ea59d0$7dbf0d70$@net> <CAJZ5v0j6AEjztoFfpQAc3NgQ5JtsWgRqscoE_u1eespVM-Cnmw@mail.gmail.com> TxwEg6mkVwifMTxwJgBHov
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: TxwEg6mkVwifMTxwJgBHov
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2018.12.03 03:48 Rafael J. Wysocki wrote:
 
-Add cpuidle.governor= command line parameter to allow the default
-cpuidle governor to be replaced.
+>>> There is an additional issue where if idle state 0 is disabled (with the above suggested code patch),
+>>> idle state usage seems to fall to deeper states than idle state 1.
+>>> This is not the expected behaviour.
+>> 
+>> No, it isn't.
+>> 
+>>> Kernel 4.20-rc3 works as expected.
+>>> I have not figured this issue out yet, in the code.
+>>>
+>>> Example (1 minute per sample. Number of entries/exits per state):
+>>>     State 0     State 1     State 2     State 3     State 4    Watts
+>>>    28235143,         83,         26,         17,        837,  64.900
+>>>     5583238,     657079,    5884941,    8498552,   30986831,  62.433 << Transition sample, after idle state 0 disabled
+>>>           0,     793517,    7186099,   10559878,   38485721,  61.900 << ?? should have all gone into Idle state 1
+>>>           0,     795414,    7340703,   10553117,   38513456,  62.050
+>>>           0,     807028,    7288195,   10574113,   38523524,  62.167
+>>>           0,     814983,    7403534,   10575108,   38571228,  62.167
+>>>           0,     838302,    7747127,   10552289,   38556054,  62.183
+>>>     9664999,     544473,    4914512,    6942037,   25295361,  63.633 << Transition sample, after idle state 0 enabled
+>>>    27893504,         96,         40,          9,        912,  66.500
+>>>    26556343,         83,         29,          7,        814,  66.683
+>>>    27929227,         64,         20,         10,        931,  66.683
+>> 
+>> I see.
+>> 
+>> OK, I'll look into this too, thanks!
+>
+> This probably is the artifact of the fix for the teo_find_shallower_state()
+> issue.
+>
+> Anyway, I'm not able to reproduce this with the teo_find_shallower_state() issue
+> fixed differently.
 
-That is useful, for example, if someone running a tickful kernel
-wants to use the menu governor on it.
+I am not able to reproduce with your teo_find_shallower_state(), or teo V 7,
+either. Everything is graceful now, as states are disabled:
+(10 seconds per sample. Number of entries/exits per state):
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+    State 0     State 1     State 2     State 3     State 4    Watts
+          0,          6,          4,          1,        414,   3.700
+          2,          4,         30,          3,        578,   3.700  << No load
+     168619,         37,         39,          4,        480,   5.600  << Transition sample
+    4643618,         45,          8,          1,        137,  61.200  << All idle states enabled
+    4736227,         40,          3,          5,        111,  61.800
+    1888417,    4369314,         25,          2,         89,  62.000  << Transition sample
+          0,    7266864,          9,          0,          0,  62.200  << state 0 disabled
+          0,    7193372,          9,          0,          0,  62.700
+          0,    5539898,    1744007,          0,          0,  63.500  << Transition sample
+          0,          0,    8152956,          0,          0,  63.700  << states 0,1 disabled
+          0,          0,    8015151,          0,          0,  63.900
+          0,          0,    4146806,    6349619,          0,  63.000  << Transition sample
+          0,          0,          0,   13252144,          0,  61.600  << states 0,1,2 disabled
+          0,          0,          0,   13258313,          0,  61.800
+          0,          0,          0,   10417428,    1984451,  61.200  << Transition sample
+          0,          0,          0,          0,    9247172,  58.500  << states 0,1,2,3 disabled
+          0,          0,          0,          0,    9242657,  58.500
+          0,          0,          0,          0,    9233749,  58.600
+          0,          0,          0,          0,    9238444,  58.700
+          0,          0,          0,          0,    9236345,  58.600
 
-On top of https://patchwork.kernel.org/patch/10714995/ and
-https://patchwork.kernel.org/patch/10705317/
+For reference, this is kernel 4.20-rc5 (with your other proposed patches):
 
----
- Documentation/admin-guide/kernel-parameters.txt |    3 +++
- Documentation/admin-guide/pm/cpuidle.rst        |    7 +++++++
- drivers/cpuidle/cpuidle.c                       |    1 +
- drivers/cpuidle/cpuidle.h                       |    1 +
- drivers/cpuidle/governor.c                      |    9 +++++++--
- 5 files changed, 19 insertions(+), 2 deletions(-)
+    State 0     State 1     State 2     State 3     State 4    Watts
+          0,          4,          8,          6,        426,   3.700
+    1592870,        279,        149,         96,        831,  21.800
+    5071279,        154,         25,          6,        105,  61.200
+    5095090,         78,         21,          1,         86,  61.800
+    5001493,         94,         30,          4,        101,  62.200
+     616019,    5446924,          5,          3,         38,  62.500
+          0,    6249752,          0,          0,          0,  63.300
+          0,    6293671,          0,          0,          0,  63.800
+          0,    3751035,    2529964,          0,          0,  64.100
+          0,          0,    6101167,          0,          0,  64.500
+          0,          0,    6172526,          0,          0,  64.700
+          0,          0,    6163797,          0,          0,  64.900
+          0,          0,    1724841,    9567528,          0,  63.300
+          0,          0,          0,   13349668,          0,  62.700
+          0,          0,          0,   13360471,          0,  62.700
+          0,          0,          0,   13355424,          0,  62.700
+          0,          0,          0,    8854491,    3132640,  61.600
+          0,          0,          0,          0,    9302824,  59.000
+          0,          0,          0,          0,    9303561,  58.900
+          0,          0,          0,          0,    9313397,  59.000
+          0,          0,          0,          0,    9333944,  59.000
 
-Index: linux-pm/drivers/cpuidle/governor.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governor.c
-+++ linux-pm/drivers/cpuidle/governor.c
-@@ -11,10 +11,13 @@
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/mutex.h>
-+#include <linux/module.h>
- #include <linux/pm_qos.h>
- 
- #include "cpuidle.h"
- 
-+char param_governor[CPUIDLE_NAME_LEN];
-+
- LIST_HEAD(cpuidle_governors);
- struct cpuidle_governor *cpuidle_curr_governor;
- 
-@@ -86,9 +89,11 @@ int cpuidle_register_governor(struct cpu
- 	mutex_lock(&cpuidle_lock);
- 	if (__cpuidle_find_governor(gov->name) == NULL) {
- 		ret = 0;
--		list_add_tail(&gov->governor_list, &cpuidle_governors);
- 		if (!cpuidle_curr_governor ||
--		    cpuidle_curr_governor->rating < gov->rating)
-+		    !strncasecmp(param_governor, gov->name, CPUIDLE_NAME_LEN) ||
-+		    (cpuidle_curr_governor->rating < gov->rating &&
-+		     strncasecmp(param_governor, cpuidle_curr_governor->name,
-+				 CPUIDLE_NAME_LEN)))
- 			cpuidle_switch_governor(gov);
- 	}
- 	mutex_unlock(&cpuidle_lock);
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -731,4 +731,5 @@ static int __init cpuidle_init(void)
- }
- 
- module_param(off, int, 0444);
-+module_param_string(governor, param_governor, CPUIDLE_NAME_LEN, 0444);
- core_initcall(cpuidle_init);
-Index: linux-pm/drivers/cpuidle/cpuidle.h
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.h
-+++ linux-pm/drivers/cpuidle/cpuidle.h
-@@ -7,6 +7,7 @@
- #define __DRIVER_CPUIDLE_H
- 
- /* For internal use only */
-+extern char param_governor[];
- extern struct cpuidle_governor *cpuidle_curr_governor;
- extern struct list_head cpuidle_governors;
- extern struct list_head cpuidle_detected_devices;
-Index: linux-pm/Documentation/admin-guide/pm/cpuidle.rst
-===================================================================
---- linux-pm.orig/Documentation/admin-guide/pm/cpuidle.rst
-+++ linux-pm/Documentation/admin-guide/pm/cpuidle.rst
-@@ -576,6 +576,13 @@ processors implementing the architecture
- however, so it is rather crude and not very energy-efficient.  For this reason,
- it is not recommended for production use.
- 
-+The ``cpuidle.governor=`` kernel command line switch allows the ``CPUIdle``
-+governor to use to be specified.  It has to be appended with a string matching
-+the name of an available governor (e.g. ``cpuidle.governor=menu``) and that
-+governor will be used instead of the default one.  It is possible to force
-+the ``menu`` governor to be used on the systems that use the ``ladder`` governor
-+by default this way, for example.
-+
- The other kernel command line parameters controlling CPU idle time management
- described below are only relevant for the *x86* architecture and some of
- them affect Intel processors only.
-Index: linux-pm/Documentation/admin-guide/kernel-parameters.txt
-===================================================================
---- linux-pm.orig/Documentation/admin-guide/kernel-parameters.txt
-+++ linux-pm/Documentation/admin-guide/kernel-parameters.txt
-@@ -674,6 +674,9 @@
- 	cpuidle.off=1	[CPU_IDLE]
- 			disable the cpuidle sub-system
- 
-+	cpuidle.governor=
-+			[CPU_IDLE] Name of the cpuidle governor to use.
-+
- 	cpufreq.off=1	[CPU_FREQ]
- 			disable the cpufreq sub-system
- 
+Test kernel:
+94a976a cpuidle: New timer events oriented governor for tickless systems  <<< V7
+935be4e cpuidle: poll_state: Disregard disable idle states
+e3670df cpuidle: Add 'high' and 'low' idle state metrics
+dfa672c Documentation: admin-guide: PM: Add cpuidle document
+2595646 Linux 4.20-rc5
+
+Reference kernel:
+f418681 cpuidle: poll_state: Disregard disable idle states
+1be0e87 cpuidle: Add 'high' and 'low' idle state metrics
+279ec1d Documentation: admin-guide: PM: Add cpuidle document
+2595646 Linux 4.20-rc5
+
+... Doug
