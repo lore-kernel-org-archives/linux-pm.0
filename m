@@ -1,110 +1,121 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
- to one structure
-Date: Wed, 5 Dec 2018 23:40:52 +0100
-Message-ID: <20181205224052.34o3cmh3y3htchcj@earth.universe>
-References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
- <20181106210933.GU24212@piout.net>
- <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
- <20181107172340.GF21694@piout.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpuidle: Add cpuidle.governor= command line parameter
+Date: Wed, 05 Dec 2018 23:45:34 +0100
+Message-ID: <1752296.bicKxrytZO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="7jup4dhfa2jvl5qs"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181107172340.GF21694@piout.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Claudiu.Beznea@microchip.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---7jup4dhfa2jvl5qs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Add cpuidle.governor= command line parameter to allow the default
+cpuidle governor to be replaced.
 
-Hi,
+That is useful, for example, if someone running a tickful kernel
+wants to use the menu governor on it.
 
-On Wed, Nov 07, 2018 at 06:23:40PM +0100, Alexandre Belloni wrote:
-> On 07/11/2018 14:54:17+0000, Claudiu.Beznea@microchip.com wrote:
-> > Hi Alexandre,
-> >=20
-> > On 06.11.2018 23:09, Alexandre Belloni wrote:
-> > > Hi Claudiu,
-> > >=20
-> > > On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
-> > >>  static int __init at91_poweroff_probe(struct platform_device *pdev)
-> > >> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct p=
-latform_device *pdev)
-> > >>  	u32 ddr_type;
-> > >>  	int ret;
-> > >> =20
-> > >> +	at91_shdwc =3D devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_K=
-ERNEL);
-> > >> +	if (!at91_shdwc)
-> > >> +		return -ENOMEM;
-> > >> +
-> > >=20
-> > > Is there any real benefit that will offset the time lost for that
-> > > allocation at boot time?
-> >=20
-> > No, I haven't run benchmarks on this. I only wanted to have them groupe=
-d in
-> > one structure. Please let me know if you have some tests in mind.
-> >=20
->=20
-> Well, it is probably not much but small things adds up. Having it as a
-> global structure is probably good enough.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-I suppose I will get a new patch with this change?
+On top of https://patchwork.kernel.org/patch/10714995/ and
+https://patchwork.kernel.org/patch/10705317/
 
--- Sebastian
+---
+ Documentation/admin-guide/kernel-parameters.txt |    3 +++
+ Documentation/admin-guide/pm/cpuidle.rst        |    7 +++++++
+ drivers/cpuidle/cpuidle.c                       |    1 +
+ drivers/cpuidle/cpuidle.h                       |    1 +
+ drivers/cpuidle/governor.c                      |    9 +++++++--
+ 5 files changed, 19 insertions(+), 2 deletions(-)
 
->=20
-> > >=20
-> > > I understand you are then testing at91_shdwc to know whether the driv=
-er
-> > > already probed once. But, the driver will never probe twice as there =
-is
-> > > only one shutdown controller on the SoC and anyway, If it was to probe
-> > > twice, it will still work as expected.
-> >=20
-> > I had in mind the scenario where the driver would be compiled as module=
-=2E I
-> > know insmod already does this checking. I'm ok to remove this checking.=
- I
-> > will do it in next version. With this I will also remove devm_kzalloc()=
- of
-> > at91_shdwc.
-> >=20
->=20
-> Thanks,
->=20
-> --=20
-> Alexandre Belloni, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
-
---7jup4dhfa2jvl5qs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIU/QACgkQ2O7X88g7
-+prpcBAApVtD/m59e95DIdgGh2IqxIfqkmorBI4Yy/SQD7QokwmVns/8AUPhwxDO
-SdulNqMPGCkm7QvUODDMJ91VSUwv6nnBY7ABu0R6eBi188c0V1g0qukrX4j0fbQh
-7q+HxhcmWJddtkSE3QSYzsVb9+hrtwaYy47zehqzDNiloxJj0P6iFQbZmXJwIr2/
-rVRLnMk99Aj+fUGcpu1Far2ojzftVFvsUGm80kYS8iMi6kS3zhxzXweo9QZr0wNb
-O9trFVRGI7Y/jxdQGNevc8zJGMmfLXRpN7JZ4Mwyidckc2OWwMNXe+3TBmOZy/Wi
-Fckz5OKKymitxe3d41XLwnsxNglAmDwz7HLTLdpszabYH89FnkgXFvh5csHZq9E4
-NMapiMD8uhZevVF2b5Gkk0PQGnijV+OZNsM0AzyJIWj41rq2+OfJgaJ3vMNDeMGn
-mbzUYjCxw0FfKlwvigTRYq/4c/NdS5vdmfnNsyshg70/ctCcXyHBPPR6GAWTX4tG
-XEdIoGfexgIFT8lvspSEucRtsS2e25bvBCDB8gvstvXBllrt8FJqhZ78dnxFzr1Z
-Bn+KlwCoatA7Y4w7A0zPrHIY93m9zyuBXhkAsSkKmXh0YN4nPtGyAmRcT78f985s
-2TiN3zGNwG6o5g0dHF8k6NlzhoNnI6mvgZYMlNwCtUUTBt0SC0c=
-=YuLw
------END PGP SIGNATURE-----
-
---7jup4dhfa2jvl5qs--
+Index: linux-pm/drivers/cpuidle/governor.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governor.c
++++ linux-pm/drivers/cpuidle/governor.c
+@@ -11,10 +11,13 @@
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/mutex.h>
++#include <linux/module.h>
+ #include <linux/pm_qos.h>
+ 
+ #include "cpuidle.h"
+ 
++char param_governor[CPUIDLE_NAME_LEN];
++
+ LIST_HEAD(cpuidle_governors);
+ struct cpuidle_governor *cpuidle_curr_governor;
+ 
+@@ -86,9 +89,11 @@ int cpuidle_register_governor(struct cpu
+ 	mutex_lock(&cpuidle_lock);
+ 	if (__cpuidle_find_governor(gov->name) == NULL) {
+ 		ret = 0;
+-		list_add_tail(&gov->governor_list, &cpuidle_governors);
+ 		if (!cpuidle_curr_governor ||
+-		    cpuidle_curr_governor->rating < gov->rating)
++		    !strncasecmp(param_governor, gov->name, CPUIDLE_NAME_LEN) ||
++		    (cpuidle_curr_governor->rating < gov->rating &&
++		     strncasecmp(param_governor, cpuidle_curr_governor->name,
++				 CPUIDLE_NAME_LEN)))
+ 			cpuidle_switch_governor(gov);
+ 	}
+ 	mutex_unlock(&cpuidle_lock);
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -731,4 +731,5 @@ static int __init cpuidle_init(void)
+ }
+ 
+ module_param(off, int, 0444);
++module_param_string(governor, param_governor, CPUIDLE_NAME_LEN, 0444);
+ core_initcall(cpuidle_init);
+Index: linux-pm/drivers/cpuidle/cpuidle.h
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.h
++++ linux-pm/drivers/cpuidle/cpuidle.h
+@@ -7,6 +7,7 @@
+ #define __DRIVER_CPUIDLE_H
+ 
+ /* For internal use only */
++extern char param_governor[];
+ extern struct cpuidle_governor *cpuidle_curr_governor;
+ extern struct list_head cpuidle_governors;
+ extern struct list_head cpuidle_detected_devices;
+Index: linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/cpuidle.rst
++++ linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+@@ -576,6 +576,13 @@ processors implementing the architecture
+ however, so it is rather crude and not very energy-efficient.  For this reason,
+ it is not recommended for production use.
+ 
++The ``cpuidle.governor=`` kernel command line switch allows the ``CPUIdle``
++governor to use to be specified.  It has to be appended with a string matching
++the name of an available governor (e.g. ``cpuidle.governor=menu``) and that
++governor will be used instead of the default one.  It is possible to force
++the ``menu`` governor to be used on the systems that use the ``ladder`` governor
++by default this way, for example.
++
+ The other kernel command line parameters controlling CPU idle time management
+ described below are only relevant for the *x86* architecture and some of
+ them affect Intel processors only.
+Index: linux-pm/Documentation/admin-guide/kernel-parameters.txt
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/kernel-parameters.txt
++++ linux-pm/Documentation/admin-guide/kernel-parameters.txt
+@@ -674,6 +674,9 @@
+ 	cpuidle.off=1	[CPU_IDLE]
+ 			disable the cpuidle sub-system
+ 
++	cpuidle.governor=
++			[CPU_IDLE] Name of the cpuidle governor to use.
++
+ 	cpufreq.off=1	[CPU_FREQ]
+ 			disable the cpufreq sub-system
+ 
