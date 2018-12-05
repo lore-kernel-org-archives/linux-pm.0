@@ -1,91 +1,105 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH] power/reset: axxia: Convert to using %pOFn instead of
- device_node.name
-Date: Wed, 5 Dec 2018 22:49:20 +0100
-Message-ID: <20181205214920.cudnhomld6ejzsx6@earth.universe>
-References: <20181124143138.28999-1-tiny.windzz@gmail.com>
- <CAL_JsqJ8XkowAJQjZoiuucAWqZuJh1ep2jCFor6NCq4pL3m-Cg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/7] dt-bindings: power: supply: bq24190_charger: add
+ bq24192 and usb-otg-vbus
+Date: Wed, 5 Dec 2018 22:55:43 +0100
+Message-ID: <20181205215543.voo7lvdngyhbcpwz@earth.universe>
+References: <20181101001149.13453-1-masneyb@onstation.org>
+ <20181101001149.13453-2-masneyb@onstation.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="e6xi732btapmst62"
+        protocol="application/pgp-signature"; boundary="upvwbs3og7fcr6a7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqJ8XkowAJQjZoiuucAWqZuJh1ep2jCFor6NCq4pL3m-Cg@mail.gmail.com>
+In-Reply-To: <20181101001149.13453-2-masneyb@onstation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: tiny.windzz@gmail.com, "open list:THERMAL" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Brian Masney <masneyb@onstation.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, andy.gross@linaro.org, david.brown@linaro.org, bjorn.andersson@linaro.org, linus.walleij@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-gpio@vger.kernel.org, jonathan@marek.ca
 List-Id: linux-pm@vger.kernel.org
 
 
---e6xi732btapmst62
+--upvwbs3og7fcr6a7
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Nov 27, 2018 at 10:51:09AM -0600, Rob Herring wrote:
-> On Sat, Nov 24, 2018 at 8:31 AM Yangtao Li <tiny.windzz@gmail.com> wrote:
-> >
-> > In preparation to remove the node name pointer from struct device_node,
-> > convert printf users to use the %pOFn format specifier.
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  drivers/power/reset/axxia-reset.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Oct 31, 2018 at 08:11:43PM -0400, Brian Masney wrote:
+> Add support for the ti,bq24192 variant and a child node for the
+> usb-otg-vbus regulator.
 >=20
-> Thanks, but I already sent out the same patch and have queued it since
-> no one picked it up.
+> Signed-off-by: Brian Masney <masneyb@onstation.org>
+> ---
 
-Yeah, I did not find enough time to review patches in the last few
-weeks. OTOH I don't see a previous patch with axxia in the Subject
-in my mailbox anyways. FWIW I will skip this one.
+Thanks, queued.
 
 -- Sebastian
 
+>  .../devicetree/bindings/power/supply/bq24190.txt         | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 >=20
-> Rob
-> >
-> > diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/ax=
-xia-reset.c
-> > index 4e4cd1c8fe50..b16013265142 100644
-> > --- a/drivers/power/reset/axxia-reset.c
-> > +++ b/drivers/power/reset/axxia-reset.c
-> > @@ -65,7 +65,7 @@ static int axxia_reset_probe(struct platform_device *=
-pdev)
-> >
-> >         syscon =3D syscon_regmap_lookup_by_phandle(dev->of_node, "sysco=
-n");
-> >         if (IS_ERR(syscon)) {
-> > -               pr_err("%s: syscon lookup failed\n", dev->of_node->name=
-);
-> > +               pr_err("%pOFn: syscon lookup failed\n", dev->of_node);
-> >                 return PTR_ERR(syscon);
-> >         }
-> >
-> > --
-> > 2.17.0
-> >
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b=
+/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> index 9e517d307070..c8ac028bd3c7 100644
+> --- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> @@ -3,6 +3,7 @@ TI BQ24190 Li-Ion Battery Charger
+>  Required properties:
+>  - compatible: contains one of the following:
+>      * "ti,bq24190"
+> +    * "ti,bq24192"
+>      * "ti,bq24192i"
+>  - reg: integer, I2C address of the charger.
+>  - interrupts[-extended]: configuration for charger INT pin.
+> @@ -19,6 +20,12 @@ Optional properties:
+>  - ti,system-minimum-microvolt: when power is connected and the battery i=
+s below
+>    minimum system voltage, the system will be regulated above this settin=
+g.
+> =20
+> +child nodes:
+> +- usb-otg-vbus:
+> +  Usage: optional
+> +  Description: Regulator that is used to control the VBUS voltage direct=
+ion for
+> +               either USB host mode or for charging on the OTG port.
+> +
+>  Notes:
+>  - Some circuit boards wire the chip's "OTG" pin high (enabling 500mA def=
+ault
+>    charge current on USB SDP ports, among other features). To simulate th=
+is on
+> @@ -39,6 +46,8 @@ Example:
+>  		interrupts-extended =3D <&gpiochip 10 IRQ_TYPE_EDGE_FALLING>;
+>  		monitored-battery =3D <&bat>;
+>  		ti,system-minimum-microvolt =3D <3200000>;
+> +
+> +		usb_otg_vbus: usb-otg-vbus { };
+>  	};
+> =20
+>  	&twl_gpio {
+> --=20
+> 2.17.2
+>=20
 
---e6xi732btapmst62
+--upvwbs3og7fcr6a7
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIR+AACgkQ2O7X88g7
-+ppofA/9G+OsVfrqJYe0I+HptisNYd6w3O4J53mTyTFqneE51pXObCHfUNikbRdl
-jCn1ByD+amv4GtmSyUCgDdpU588SkuK9eMDVrcZmMJ3WvtraaZFlsAU6hfFQy7OD
-QHrH8PSJNoi2a8pL31MV5ZbIsbtzgg136HyNLJiHX/24v0RTZigc/95Da8o8OWZV
-FyqnZrDiyqojBmPOlG0/1NlwHyb5ilNZkNQR7xzP2rmIQAXiBI8km4N7gqL0vjSz
-U96JtN+Rlhci0V37Fm7ouOLrSN3OPxEkOn2hLOdbLfxnOyClFULnEtLTxQgWcrTP
-e7lj4L1cvOtFnuZtdvvol/Cz+qXDePXIdaV0Qzj+P0JPShhiVsoLDJoBz+be8q0p
-vMuiNxcvOMLvkv6ufJr2VYloYfinPJ9v46N4Od0HSxT/T/MMc/VzJoiIUmKXN5/M
-AreKP/XuInNQ9e8wJJVfhg8K2MD8sGmGZ4z6rkstJ6jqli2bPYnI2XhDfVVG1iJo
-CeWgJxSxnpe4Ot2mUA+zVjol3BXSNHW21gQc4tlqMaC/L9M0vADilNHEaUY3ZF2t
-Dk59gGiKg6V9iEcc3papIF0lRoFCy3bonpoEX+WUu/dkCa/JuwRRGSEIq6UBf9yV
-SY9dykIbiNRWxRm6ClXPMnSs3+/Om6bRicaVEUlG8k62bM7V2GU=
-=A2K/
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwISV8ACgkQ2O7X88g7
++poG9A/+NZpnXe0j0oS+VthaxBzcOEdztGXAO5n++Rmi6G7dYZU4v+K+ww0Hg1LD
+Vr2FkEW3b3ujiMB6QsxY5iWIyjs96bm6P+ej8EA7Uf5eFW8LgGcWHd5GW7mEP6+J
+uRV+n2YERnF07rNEBXd41agRC7f1uZDzR/xa4HfD/CJ523oFU32KaKLulaqPPjK7
++6lagKYBcN+a1ojgiPoJrA0QzO6mi8wAfbU3oo49X+YV9PYJA/fNEZYrnz8ql/6Q
+8H+ZEsa90fUquq4DjNLqZ1DGqA1gr7E6Ktt5+n+pAhWx4I3sgd5JUQS3jpocwO9z
+Ux0Q9UF/tfddpY3edIaGNzpDkAr93o7uTdCoeFx5h8LP0kyzFHK437lz1pwcId20
+UuZ1Hk17wruvp9+SGf+2P0bm6mFbQbYXjCYhUbez6kW3xtLtO5yCd+BU3j/15Lxz
+dEXZjrfhnc9tQyNtAzHHrEfLv3YyUSbTEcWkd1PvpSjiGbgOBhU/3cpOMKXAGdgW
+TEeNDG9fNG5il8P10+ahcwF5zve9l4rfhHYYLHLMcVRSe0A+0ZVRduzWeRRY+klo
+dhz/aJytsRZpdzF1BI17PcBDoTcygugLbkWgtgy8Q3YX1RgPX6XQBJ0TCbLAkp7p
+s8ZIW2t1i7U5aLqtN5SK6Wk/noBbnOi+sSPXULpb5dS2z1BvDAg=
+=f0o3
 -----END PGP SIGNATURE-----
 
---e6xi732btapmst62--
+--upvwbs3og7fcr6a7--
