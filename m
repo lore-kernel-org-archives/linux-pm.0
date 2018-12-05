@@ -1,251 +1,49 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 2/5] devfreq: add support for suspend/resume of a
- devfreq device
-Date: Wed, 05 Dec 2018 09:09:36 +0900
-Message-ID: <5C071740.7090000@samsung.com>
-References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181203143131eucas1p217f22ac6d19682a54a57658a06980914@eucas1p2.samsung.com>
-        <1543847475-7600-3-git-send-email-l.luba@partner.samsung.com>
-        <5C06124B.5030409@samsung.com> <5C06140E.7010603@samsung.com>
-        <5C061A57.7040002@samsung.com>
-        <7662d626-5c3e-aec5-05e4-c6cd2e56ef49@partner.samsung.com>
+From: Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
+Date: Tue, 4 Dec 2018 17:11:18 -0700
+Message-ID: <35c5cdcf-0d89-9236-7937-0c750a781d13@kernel.dk>
+References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <7662d626-5c3e-aec5-05e4-c6cd2e56ef49@partner.samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181204192831.12440-1-miquel.raynal@bootlin.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Hans de Goede <hdegoede@redhat.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
-
-On 2018년 12월 04일 18:53, Lukasz Luba wrote:
-> Hi Chanwoo,
+On 12/4/18 12:28 PM, Miquel Raynal wrote:
+> Hello,
 > 
-> On 12/4/18 7:10 AM, Chanwoo Choi wrote:
->> Hi Lukasz,
->>
->> I add the comment about 'suspend_count'.
->>
->> On 2018년 12월 04일 14:43, Chanwoo Choi wrote:
->>> Hi,
->>>
->>> On 2018년 12월 04일 14:36, Chanwoo Choi wrote:
->>>> Hi Lukasz,
->>>>
->>>> Looks good to me. But, I add the some comments.
->>>> If you will fix it, feel free to add my tag:
->>>> Reviewed-by: Chanwoo choi <cw00.choi@samsung.com>
->>>
->>> Sorry. Fix typo 'choi' to 'Choi' as following.
->>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>
->>>>
->>>> On 2018년 12월 03일 23:31, Lukasz Luba wrote:
->>>>> The patch prepares devfreq device for handling suspend/resume
->>>>> functionality.  The new fields will store needed information during this
->>>>
->>>> nitpick. Remove unneeded space. There are two spaces between '.' and 'The new'.
->>>>
->>>>> process.  Devfreq framework handles opp-suspend DT entry and there is no
->>>>
->>>> ditto.
->>>>
->>>>> need of modyfications in the drivers code.  It uses atomic variables to
->>>>
->>>> ditto.
->>>>
->>>>> make sure no race condition affects the process.
->>>>>
->>>>> The patch is based on earlier work by Tobias Jakobi.
->>>>
->>>> Please remove it from each patch description.
->>>>
->>>>>
->>>>> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
->>>>> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>>>> ---
->>>>>   drivers/devfreq/devfreq.c | 51 +++++++++++++++++++++++++++++++++++++++--------
->>>>>   include/linux/devfreq.h   |  7 +++++++
->>>>>   2 files changed, 50 insertions(+), 8 deletions(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>> index a9fd61b..36bed24 100644
->>>>> --- a/drivers/devfreq/devfreq.c
->>>>> +++ b/drivers/devfreq/devfreq.c
->>>>> @@ -316,6 +316,10 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
->>>>>   			"Couldn't update frequency transition information.\n");
->>>>>   
->>>>>   	devfreq->previous_freq = new_freq;
->>>>> +
->>>>> +	if (devfreq->suspend_freq)
->>>>> +		devfreq->resume_freq = cur_freq;
->>>>> +
->>>>>   	return err;
->>>>>   }
->>>>>   
->>>>> @@ -667,6 +671,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>>>   	}
->>>>>   	devfreq->max_freq = devfreq->scaling_max_freq;
->>>>>   
->>>>> +	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
->>>>> +	atomic_set(&devfreq->suspend_count, 0);
->>>>> +
->>>>>   	dev_set_name(&devfreq->dev, "devfreq%d",
->>>>>   				atomic_inc_return(&devfreq_no));
->>>>>   	err = device_register(&devfreq->dev);
->>>>> @@ -867,14 +874,28 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
->>>>>    */
->>>>>   int devfreq_suspend_device(struct devfreq *devfreq)
->>>>>   {
->>>>> +	int ret;
->>>>> +
->>>>>   	if (!devfreq)
->>>>>   		return -EINVAL;
->>>>>   
->>>>> -	if (!devfreq->governor)
->>>>> -		return 0;
->>>>> +	if (devfreq->governor) {
->>>>> +		ret = devfreq->governor->event_handler(devfreq,
->>>>> +					DEVFREQ_GOV_SUSPEND, NULL);
->>>>> +		if (ret)
->>>>> +			return ret;
->>>>> +	}
->>>>> +
->>>>> +	if (devfreq->suspend_freq) {
->>>>> +		if (atomic_inc_return(&devfreq->suspend_count) > 1)
->>>>> +			return 0;
->>>>> +
->>>>> +		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
->>>>> +		if (ret)
->>>>> +			return ret;
->>>>> +	}
->>
->> In this patch, if some users call 'devfreq_suspend_device' twice,
->> 'devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_SUSPEND, NULL)'
->> is called twice but devfreq_set_target() is called only one.
->> I knew that it is no problem for operation.
->>
->> But,
->> I think that you better to use 'suspend_count' as the reference count
->> of devfreq_suspend/resume_device(). But, if you use 'suspend_count'
->> in order to check whether this devfreq is suspended or not,
->> we can reduce the unneeded redundant call when calling it twice.
->>
->> clock and regulator used the 'reference count' method in order to
->> remove the redundant call.
+> As part of an effort to bring suspend to RAM support to Armada 3700
+> SoCs (main target: ESPRESSObin), this series handles the work around
+> the SATA IP.
 > 
-> I think I've got the point. I will move the atomic check just
-> after the !devfreq check. Something like the code bellow is what you
-> would like to see?
-> ---8<-----
-> if (!devfreq)
-> 	return -EINVAL;
-> if (atomic_inc_return(&devfreq->suspend_count) > 1)
-> 	return0;
-
-Looks good to me. I agree.
-
+> First, a change in the libahci platform adds support for the new PHY
+> framework by following the phy_set_mode()/phy_power_on()
+> sequence. Then, the AHCI MVEBU driver is a bit updated (patch 2 & 3)
+> and a missing initialization is added for the A3700 in patch 4 (only
+> done by the Bootloader before). Missing clock support is implemented
+> in patch 5 to be sure the clock will be resumed before this driver
+> (see [1] for the series adding device links to the clock core).
 > 
-> ---->8-------
->>
->>
->>>>>   
->>>>> -	return devfreq->governor->event_handler(devfreq,
->>>>> -				DEVFREQ_GOV_SUSPEND, NULL);
->>>>> +	return 0;
->>>>>   }
->>>>>   EXPORT_SYMBOL(devfreq_suspend_device);
->>>>>   
->>>>> @@ -888,14 +909,28 @@ EXPORT_SYMBOL(devfreq_suspend_device);
->>>>>    */
->>>>>   int devfreq_resume_device(struct devfreq *devfreq)
->>>>>   {
->>>>> +	int ret;
->>>>> +
->>>>>   	if (!devfreq)
->>>>>   		return -EINVAL;
->>>>>   
->>>>> -	if (!devfreq->governor)
->>>>> -		return 0;
->>>>> +	if (devfreq->resume_freq) {
->>>>> +		if (atomic_dec_return(&devfreq->suspend_count) >= 1)
->>>>> +			return 0;
->>
->> ditto.
-> Same approach here:
-> ---8<-----
-> if (!devfreq)
-> 	return -EINVAL;
-> if (atomic_dec_return(&devfreq->suspend_count) >= 1)
-> 	return 0;
+> Finally, device trees are updated to reflect the hardware: the missing
+> PHY is added to the ESPRESSObin DT, and the clock is added to the SoC
+> DT (patch 6 & 7). Bindings already document the clock and the PHY so
+> no update is needed on this regard.
 
-Looks good to me.
-
-> ---->8-------
-> 
-> Regards,
-> Lukasz
->>
->>>>>   
->>>>> -	return devfreq->governor->event_handler(devfreq,
->>>>> -				DEVFREQ_GOV_RESUME, NULL);
->>>>> +		ret = devfreq_set_target(devfreq, devfreq->resume_freq, 0);
->>>>> +		if (ret)
->>>>> +			return ret;
->>>>> +	}
->>>>> +
->>>>> +	if (devfreq->governor) {
->>>>> +		ret = devfreq->governor->event_handler(devfreq,
->>>>> +					DEVFREQ_GOV_RESUME, NULL);
->>>>> +		if (ret)
->>>>> +			return ret;
->>>>> +	}
->>>>> +
->>>>> +	return 0;
->>>>>   }
->>>>>   EXPORT_SYMBOL(devfreq_resume_device);
->>>>>   
->>>>> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
->>>>> index e4963b0..d985199 100644
->>>>> --- a/include/linux/devfreq.h
->>>>> +++ b/include/linux/devfreq.h
->>>>> @@ -131,6 +131,9 @@ struct devfreq_dev_profile {
->>>>>    * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
->>>>>    * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
->>>>>    * @stop_polling:	 devfreq polling status of a device.
->>>>> + * @suspend_freq:	 frequency of a device set during suspend phase.
->>>>> + * @resume_freq:	 frequency of a device set in resume phase.
->>>>> + * @suspend_count:	 suspend requests counter for a device.
->>>>>    * @total_trans:	Number of devfreq transitions
->>>>>    * @trans_table:	Statistics of devfreq transitions
->>>>>    * @time_in_state:	Statistics of devfreq states
->>>>> @@ -167,6 +170,10 @@ struct devfreq {
->>>>>   	unsigned long scaling_max_freq;
->>>>>   	bool stop_polling;
->>>>>   
->>>>> +	unsigned long suspend_freq;
->>>>> +	unsigned long resume_freq;
->>>>> +	atomic_t suspend_count;
->>>>> +
->>>>>   	/* information for device frequency transition */
->>>>>   	unsigned int total_trans;
->>>>>   	unsigned int *trans_table;
->>>>>
->>>>
->>>>
->>>
->>>
->>
->>
-> 
-> 
-
+Probably the best/easiest to queue this through the libata tree for
+4.21. Agree?
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Jens Axboe
