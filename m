@@ -1,73 +1,285 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: armada: fix broken temperature sensor in 4.19
-Date: Tue, 4 Dec 2018 21:38:43 -0800
-Message-ID: <20181205053842.GB29413@localhost.localdomain>
-References: <alpine.LRH.2.02.1811241838180.7275@file01.intranet.prod.int.rdu2.redhat.com>
- <20181125005453.GV30658@n2100.armlinux.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
+ HW driver
+Date: Wed, 5 Dec 2018 11:46:00 +0530
+Message-ID: <20181205061600.7zglbpkgbktn27am@vireshk-i7>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
+ <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
+ <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
+ <154396472692.88331.13742924031474269133@swboyd.mtv.corp.google.com>
+ <49139ae4-4373-9e70-02ad-80f7bbc4494c@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181125005453.GV30658@n2100.armlinux.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>, linux-arm-kernel@lists.infradead.org, Miquel Raynal <miquel.raynal@bootlin.com>
+In-Reply-To: <49139ae4-4373-9e70-02ad-80f7bbc4494c@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Nov 25, 2018 at 12:54:53AM +0000, Russell King - ARM Linux wrote:
-> On Sat, Nov 24, 2018 at 06:45:00PM -0500, Mikulas Patocka wrote:
-> > The patch 8c0e64ac4075b7ca870098ed2ad6089868f5fa7b ("thermal: armada: get
-> > rid of the ->is_valid() pointer") breaks temperature readings on the
-> > MacchiatoBIN board. Reading the temperature with
-> > 	cat /sys/devices/virtual/thermal/thermal_zone*/temp
-> > results in errors:
-> > 
-> > armada_thermal f06f808c.thermal: Temperature sensor reading not valid
-> > armada_thermal f2400078.thermal: Temperature sensor reading not valid
-> > armada_thermal f4400078.thermal: Temperature sensor reading not valid
-> > 
-> > The patch was meant as simple refactoring, but unfortunatelly, it reverses
-> > the condition in armada_get_temp_legacy, so that the error is reported if
-> > armada_is_valid returns true.
+On 05-12-18, 09:07, Taniya Das wrote:
+> Hello Stephen, Viresh
 > 
-> I sent a patch for exactly this issue on 9th November... it doesn't
-> seem to have made it into mainline yet.
+> Thanks for the code and suggestions.
+> 
+> Having a NR_DOMAINS '2' makes the driver not scalable for re-use.
 
-I applied Russell's patch.
+Sure, I didn't like it either and that wasn't really what I was suggesting in
+the first place. I didn't wanted to write the code myself and pass it on, but I
+have it now anyway :)
 
-> 
-> > 
-> > Fixes: 8c0e64ac4075 ("thermal: armada: get rid of the ->is_valid() pointer")
-> > Cc: stable@vger.kernel.org	# 4.19
-> > 
-> > ---
-> >  drivers/thermal/armada_thermal.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-4.19.4/drivers/thermal/armada_thermal.c
-> > ===================================================================
-> > --- linux-4.19.4.orig/drivers/thermal/armada_thermal.c	2018-11-25 00:19:20.000000000 +0100
-> > +++ linux-4.19.4/drivers/thermal/armada_thermal.c	2018-11-25 00:39:49.000000000 +0100
-> > @@ -357,7 +357,7 @@ static int armada_get_temp_legacy(struct
-> >  	int ret;
-> >  
-> >  	/* Valid check */
-> > -	if (armada_is_valid(priv)) {
-> > +	if (!armada_is_valid(priv)) {
-> >  		dev_err(priv->dev,
-> >  			"Temperature sensor reading not valid\n");
-> >  		return -EIO;
-> 
-> -- 
-> RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-> FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-> According to speedtest.net: 11.9Mbps down 500kbps up
+It may have a bug or two in there, but compiles just fine and is rebased over
+your patch Taniya.
+
+-- 
+viresh
+
+-------------------------8<-------------------------
+
+ drivers/cpufreq/qcom-cpufreq-hw.c | 156 +++++++++++-------------------
+ 1 file changed, 57 insertions(+), 99 deletions(-)
+
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 8dc6b73c2f22..bcf9bb37298a 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -23,13 +23,8 @@
+ #define REG_LUT_TABLE			0x110
+ #define REG_PERF_STATE			0x920
+ 
+-struct cpufreq_qcom {
+-	struct cpufreq_frequency_table *table;
+-	void __iomem *perf_state_reg;
+-	cpumask_t related_cpus;
+-};
+-
+-static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
++static unsigned long cpu_hw_rate, xo_rate;
++static struct platform_device *global_pdev;
+ 
+ static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
+ 					unsigned int index)
+@@ -74,53 +69,17 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+ 	return policy->freq_table[index].frequency;
+ }
+ 
+-static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+-{
+-	struct cpufreq_qcom *c;
+-
+-	c = qcom_freq_domain_map[policy->cpu];
+-	if (!c) {
+-		pr_err("No scaling support for CPU%d\n", policy->cpu);
+-		return -ENODEV;
+-	}
+-
+-	cpumask_copy(policy->cpus, &c->related_cpus);
+-
+-	policy->fast_switch_possible = true;
+-	policy->freq_table = c->table;
+-	policy->driver_data = c->perf_state_reg;
+-
+-	return 0;
+-}
+-
+-static struct freq_attr *qcom_cpufreq_hw_attr[] = {
+-	&cpufreq_freq_attr_scaling_available_freqs,
+-	&cpufreq_freq_attr_scaling_boost_freqs,
+-	NULL
+-};
+-
+-static struct cpufreq_driver cpufreq_qcom_hw_driver = {
+-	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+-			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+-	.verify		= cpufreq_generic_frequency_table_verify,
+-	.target_index	= qcom_cpufreq_hw_target_index,
+-	.get		= qcom_cpufreq_hw_get,
+-	.init		= qcom_cpufreq_hw_cpu_init,
+-	.fast_switch    = qcom_cpufreq_hw_fast_switch,
+-	.name		= "qcom-cpufreq-hw",
+-	.attr		= qcom_cpufreq_hw_attr,
+-};
+-
+-static int qcom_cpufreq_hw_read_lut(struct device *dev, struct cpufreq_qcom *c,
+-				    void __iomem *base, unsigned long xo_rate,
+-				    unsigned long cpu_hw_rate)
++static int qcom_cpufreq_hw_read_lut(struct device *dev,
++				    struct cpufreq_policy *policy,
++				    void __iomem *base)
+ {
+ 	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
+-	unsigned int max_cores = cpumask_weight(&c->related_cpus);
++	unsigned int max_cores = cpumask_weight(policy->cpus);
++	struct cpufreq_frequency_table	*table;
+ 
+-	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+-				sizeof(*c->table), GFP_KERNEL);
+-	if (!c->table)
++	table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
++				sizeof(*table), GFP_KERNEL);
++	if (!table)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+@@ -136,9 +95,9 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev, struct cpufreq_qcom *c,
+ 
+ 		/* Ignore boosts in the middle of the table */
+ 		if (core_count != max_cores) {
+-			c->table[i].frequency = CPUFREQ_ENTRY_INVALID;
++			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+ 		} else {
+-			c->table[i].frequency = freq;
++			table[i].frequency = freq;
+ 			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
+ 				freq, core_count);
+ 		}
+@@ -148,7 +107,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev, struct cpufreq_qcom *c,
+ 		 * end of table
+ 		 */
+ 		if (i > 0 && prev_freq == freq && prev_cc == core_count) {
+-			struct cpufreq_frequency_table *prev = &c->table[i - 1];
++			struct cpufreq_frequency_table *prev = &table[i - 1];
+ 
+ 			/*
+ 			 * Only treat the last frequency that might be a boost
+@@ -166,7 +125,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev, struct cpufreq_qcom *c,
+ 		prev_freq = freq;
+ 	}
+ 
+-	c->table[i].frequency = CPUFREQ_TABLE_END;
++	table[i].frequency = CPUFREQ_TABLE_END;
++	policy->freq_table = table;
+ 
+ 	return 0;
+ }
+@@ -194,22 +154,29 @@ static void qcom_get_related_cpus(int index, struct cpumask *m)
+ 	}
+ }
+ 
+-static int qcom_cpu_resources_init(struct platform_device *pdev,
+-				   unsigned int cpu, int index,
+-				   unsigned long xo_rate,
+-				   unsigned long cpu_hw_rate)
++static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ {
+-	struct cpufreq_qcom *c;
++	struct device *dev = &global_pdev->dev;
++	struct of_phandle_args args;
++	struct device_node *cpu_np;
+ 	struct resource *res;
+-	struct device *dev = &pdev->dev;
+ 	void __iomem *base;
+-	int ret, cpu_r;
++	int ret, index;
+ 
+-	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+-	if (!c)
+-		return -ENOMEM;
++	cpu_np = of_cpu_device_node_get(policy->cpu);
++	if (!cpu_np)
++		return -EINVAL;
++
++	ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
++			"#freq-domain-cells", 0, &args);
++	of_node_put(cpu_np);
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
++	if (ret)
++		return ret;
++
++	index = args.args[0];
++
++	res = platform_get_resource(global_pdev, IORESOURCE_MEM, index);
+ 	base = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+@@ -220,33 +187,46 @@ static int qcom_cpu_resources_init(struct platform_device *pdev,
+ 		return -ENODEV;
+ 	}
+ 
+-	qcom_get_related_cpus(index, &c->related_cpus);
+-	if (!cpumask_weight(&c->related_cpus)) {
++	qcom_get_related_cpus(index, policy->cpus);
++	if (!cpumask_weight(policy->cpus)) {
+ 		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
+ 		return -ENOENT;
+ 	}
+ 
+-	c->perf_state_reg = base + REG_PERF_STATE;
++	policy->driver_data = base + REG_PERF_STATE;
+ 
+-	ret = qcom_cpufreq_hw_read_lut(dev, c, base, xo_rate, cpu_hw_rate);
++	ret = qcom_cpufreq_hw_read_lut(dev, policy, base);
+ 	if (ret) {
+ 		dev_err(dev, "Domain-%d failed to read LUT\n", index);
+ 		return ret;
+ 	}
+ 
+-	for_each_cpu(cpu_r, &c->related_cpus)
+-		qcom_freq_domain_map[cpu_r] = c;
++	policy->fast_switch_possible = true;
+ 
+ 	return 0;
+ }
+ 
++static struct freq_attr *qcom_cpufreq_hw_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	&cpufreq_freq_attr_scaling_boost_freqs,
++	NULL
++};
++
++static struct cpufreq_driver cpufreq_qcom_hw_driver = {
++	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
++			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= qcom_cpufreq_hw_target_index,
++	.get		= qcom_cpufreq_hw_get,
++	.init		= qcom_cpufreq_hw_cpu_init,
++	.fast_switch    = qcom_cpufreq_hw_fast_switch,
++	.name		= "qcom-cpufreq-hw",
++	.attr		= qcom_cpufreq_hw_attr,
++};
++
+ static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
+ {
+-	struct device_node *cpu_np;
+-	struct of_phandle_args args;
+ 	struct clk *clk;
+-	unsigned int cpu;
+-	unsigned long xo_rate, cpu_hw_rate;
+ 	int ret;
+ 
+ 	clk = clk_get(&pdev->dev, "xo");
+@@ -263,29 +243,7 @@ static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
+ 	cpu_hw_rate = clk_get_rate(clk) / CLK_HW_DIV;
+ 	clk_put(clk);
+ 
+-	for_each_possible_cpu(cpu) {
+-		cpu_np = of_cpu_device_node_get(cpu);
+-		if (!cpu_np) {
+-			dev_dbg(&pdev->dev, "Failed to get cpu %d device\n",
+-				cpu);
+-			continue;
+-		}
+-
+-		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
+-						 "#freq-domain-cells", 0,
+-						  &args);
+-		of_node_put(cpu_np);
+-		if (ret)
+-			return ret;
+-
+-		if (qcom_freq_domain_map[cpu])
+-			continue;
+-
+-		ret = qcom_cpu_resources_init(pdev, cpu, args.args[0],
+-					      xo_rate, cpu_hw_rate);
+-		if (ret)
+-			return ret;
+-	}
++	global_pdev = pdev;
+ 
+ 	ret = cpufreq_register_driver(&cpufreq_qcom_hw_driver);
+ 	if (ret) {
