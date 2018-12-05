@@ -1,65 +1,116 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 0/5] devfreq: handle suspend/resume
-Date: Wed,  5 Dec 2018 12:05:51 +0100
-Message-ID: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
-References: <CGME20181205110616eucas1p1e0e17b0c6a96c3b6d77516d4b02de8b1@eucas1p1.samsung.com>
+Subject: [PATCH v3 1/5] devfreq: refactor set_target frequency function
+Date: Wed,  5 Dec 2018 12:05:52 +0100
+Message-ID: <1544007956-28889-2-git-send-email-l.luba@partner.samsung.com>
+References: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181205110619eucas1p2eb8553c60b4e23b07c76f02b3867827c@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+The refactoring is needed for the new client in devfreq: suspend.
+To avoid code duplication, move it to the new local function
+devfreq_set_target.
 
-This v3 patch set aims to address the issue with devfreq devices' frequency
-during suspend/resume. It extends suspend/resume by calls to Devfreq
-framework. In the devfreq framework there is a small refactoring to avoid
-code duplication in changging frequency (patch 1) and there are extensions
-for suspending devices. The suspending device has now chance to set proper
-state when the system is going for suspend. This phase is the right place
-to set needed frequences for the next resume process.
+Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ drivers/devfreq/devfreq.c | 62 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 36 insertions(+), 26 deletions(-)
 
-It has been tested on Odroid u3 with Exynos 4412.
-
-The patch set draws on Tobias Jakobi's work posted ~2 years ago, who tried
-to solve issue with devfreq device's frequency during suspend/resume.
-During the discussion on LKML some corner cases and comments appeared
-related to the design. This patch set address them keeping in mind
-suggestions from Chanwoo Choi.
-Tobias's paches:
-https://www.spinics.net/lists/linux-samsung-soc/msg56602.html 
-
-Changes:
-v3:
-- cleaned commit messages according to Chanwoo's comments
-- moved atomic operation to beggining of function in
-  devfreq_{suspend|resume}_device()
-- changed dev_warn() to dev_err() with also new error message,
-  when devfreq_{suspend|resume}() failed
-v2:
-- refactored patchset and merget patch 1 and 3 as suggested by Chanwoo Choi,
-- changed devfreq_{susped|resume}_device functions,
-- added doxygen information for new entres in 'struct devfreq',
-- devfreq_set_target skipped one argument, now resume_freq is set inside,
-- minor changes addresing comments from maintainers regarding the style,
-
-Regards,
-Lukasz Luba
-
-Lukasz Luba (5):
-  devfreq: refactor set_target frequency function
-  devfreq: add support for suspend/resume of a devfreq device
-  devfreq: add devfreq_suspend/resume() functions
-  drivers: power: suspend: call devfreq suspend/resume
-  arm: dts: exynos4: opp-suspend in DMC and leftbus
-
- arch/arm/boot/dts/exynos4210.dtsi |   2 +
- arch/arm/boot/dts/exynos4412.dtsi |   2 +
- drivers/base/power/main.c         |   3 +
- drivers/devfreq/devfreq.c         | 153 ++++++++++++++++++++++++++++++--------
- include/linux/devfreq.h           |  13 ++++
- 5 files changed, 141 insertions(+), 32 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 1414130..a9fd61b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -285,6 +285,40 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+ 	return 0;
+ }
+ 
++static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
++			      u32 flags)
++{
++	struct devfreq_freqs freqs;
++	unsigned long cur_freq;
++	int err = 0;
++
++	if (devfreq->profile->get_cur_freq)
++		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
++	else
++		cur_freq = devfreq->previous_freq;
++
++	freqs.old = cur_freq;
++	freqs.new = new_freq;
++	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
++
++	err = devfreq->profile->target(devfreq->dev.parent, &new_freq, flags);
++	if (err) {
++		freqs.new = cur_freq;
++		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
++		return err;
++	}
++
++	freqs.new = new_freq;
++	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
++
++	if (devfreq_update_status(devfreq, new_freq))
++		dev_err(&devfreq->dev,
++			"Couldn't update frequency transition information.\n");
++
++	devfreq->previous_freq = new_freq;
++	return err;
++}
++
+ /* Load monitoring helper functions for governors use */
+ 
+ /**
+@@ -296,8 +330,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+  */
+ int update_devfreq(struct devfreq *devfreq)
+ {
+-	struct devfreq_freqs freqs;
+-	unsigned long freq, cur_freq, min_freq, max_freq;
++	unsigned long freq, min_freq, max_freq;
+ 	int err = 0;
+ 	u32 flags = 0;
+ 
+@@ -333,31 +366,8 @@ int update_devfreq(struct devfreq *devfreq)
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
+ 
+-	if (devfreq->profile->get_cur_freq)
+-		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+-	else
+-		cur_freq = devfreq->previous_freq;
+-
+-	freqs.old = cur_freq;
+-	freqs.new = freq;
+-	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
++	return devfreq_set_target(devfreq, freq, flags);
+ 
+-	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+-	if (err) {
+-		freqs.new = cur_freq;
+-		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+-		return err;
+-	}
+-
+-	freqs.new = freq;
+-	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+-
+-	if (devfreq_update_status(devfreq, freq))
+-		dev_err(&devfreq->dev,
+-			"Couldn't update frequency transition information.\n");
+-
+-	devfreq->previous_freq = freq;
+-	return err;
+ }
+ EXPORT_SYMBOL(update_devfreq);
+ 
 -- 
 2.7.4
