@@ -1,9 +1,9 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 5/5] arm: dts: exynos4: opp-suspend in DMC and leftbus
-Date: Wed,  5 Dec 2018 12:05:56 +0100
-Message-ID: <1544007956-28889-6-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v3 3/5] devfreq: add devfreq_suspend/resume() functions
+Date: Wed,  5 Dec 2018 12:05:54 +0100
+Message-ID: <1544007956-28889-4-git-send-email-l.luba@partner.samsung.com>
 References: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181205110625eucas1p10c7b3137fb77ae51a211c4f040c4eb6f@eucas1p1.samsung.com>
+        <CGME20181205110622eucas1p23d788afd54ad34c0a2663efac8734648@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
@@ -12,56 +12,95 @@ To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, lin
 Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Mark the state for devfreq device while entring suspend/resume process.
+This patch adds implementation for global suspend/resume for
+devfreq framework. System suspend will next use these functions.
 
 Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- arch/arm/boot/dts/exynos4210.dtsi | 2 ++
- arch/arm/boot/dts/exynos4412.dtsi | 2 ++
- 2 files changed, 4 insertions(+)
+ drivers/devfreq/devfreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/devfreq.h   |  6 ++++++
+ 2 files changed, 50 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index b6091c2..4429b72 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -298,6 +298,7 @@
- 			opp-400000000 {
- 				opp-hz = /bits/ 64 <400000000>;
- 				opp-microvolt = <1150000>;
-+				opp-suspend;
- 			};
- 		};
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 46517b6..0ae3de7 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -935,6 +935,50 @@ int devfreq_resume_device(struct devfreq *devfreq)
+ EXPORT_SYMBOL(devfreq_resume_device);
  
-@@ -367,6 +368,7 @@
- 			};
- 			opp-200000000 {
- 				opp-hz = /bits/ 64 <200000000>;
-+				opp-suspend;
- 			};
- 		};
- 	};
-diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-index 51f72f0..908c0c4 100644
---- a/arch/arm/boot/dts/exynos4412.dtsi
-+++ b/arch/arm/boot/dts/exynos4412.dtsi
-@@ -432,6 +432,7 @@
- 			opp-400000000 {
- 				opp-hz = /bits/ 64 <400000000>;
- 				opp-microvolt = <1050000>;
-+				opp-suspend;
- 			};
- 		};
+ /**
++ * devfreq_suspend() - Suspend devfreq governors and devices
++ *
++ * Called during system wide Suspend/Hibernate cycles for suspending governors
++ * and devices preserving the state for resume. On some platforms the devfreq
++ * device must have precise state (frequency) after resume in order to provide
++ * fully operating setup.
++ */
++void devfreq_suspend(void)
++{
++	struct devfreq *devfreq;
++	int ret;
++
++	mutex_lock(&devfreq_list_lock);
++	list_for_each_entry(devfreq, &devfreq_list, node) {
++		ret = devfreq_suspend_device(devfreq);
++		if (ret)
++			dev_err(&devfreq->dev,
++				"failed to suspend devfreq device\n");
++	}
++	mutex_unlock(&devfreq_list_lock);
++}
++
++/**
++ * devfreq_resume() - Resume devfreq governors and devices
++ *
++ * Called during system wide Suspend/Hibernate cycle for resuming governors and
++ * devices that are suspended with devfreq_suspend().
++ */
++void devfreq_resume(void)
++{
++	struct devfreq *devfreq;
++	int ret;
++
++	mutex_lock(&devfreq_list_lock);
++	list_for_each_entry(devfreq, &devfreq_list, node) {
++		ret = devfreq_resume_device(devfreq);
++		if (ret)
++			dev_warn(&devfreq->dev,
++				 "failed to resume devfreq device\n");
++	}
++	mutex_unlock(&devfreq_list_lock);
++}
++
++/**
+  * devfreq_add_governor() - Add devfreq governor
+  * @governor:	the devfreq governor to be added
+  */
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index d985199..fbffa74 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -205,6 +205,9 @@ extern void devm_devfreq_remove_device(struct device *dev,
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
  
-@@ -520,6 +521,7 @@
- 			opp-200000000 {
- 				opp-hz = /bits/ 64 <200000000>;
- 				opp-microvolt = <1000000>;
-+				opp-suspend;
- 			};
- 		};
++extern void devfreq_suspend(void);
++extern void devfreq_resume(void);
++
+ /**
+  * update_devfreq() - Reevaluate the device and configure frequency
+  * @devfreq:	the devfreq device
+@@ -331,6 +334,9 @@ static inline int devfreq_resume_device(struct devfreq *devfreq)
+ 	return 0;
+ }
  
++static inline void devfreq_suspend(void) {}
++static inline void devfreq_resume(void) {}
++
+ static inline struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+ 					   unsigned long *freq, u32 flags)
+ {
 -- 
 2.7.4
