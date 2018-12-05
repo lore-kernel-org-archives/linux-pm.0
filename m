@@ -1,33 +1,44 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] cpupower : Auto-completion for cpupower tool
-Date: Wed, 05 Dec 2018 12:48:53 +0100
-Message-ID: <2133486.u21R1XiQqC@house>
-References: <20181205113104.71319-1-huntbag@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.20-rc6
+Date: Wed, 5 Dec 2018 12:53:50 +0100
+Message-ID: <CAJZ5v0jCSFiK1mij3ChgxCs04kpFxPjr+u=WKNCFYeY5mUWv4w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181205113104.71319-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, shuah@kernel.org, linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, Bharath Thodla <bharath.thodla@in.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 5, 2018 12:31:04 PM CET Abhishek Goel wrote:
-> This script adds support for auto-completion for cpupower tool.
-> Added support for auto-completion of all the eight commands for
-> cpupower tool and their all subsequent sub-commands, wherever
-> possible.
+Hi Linus,
 
->From what I see all changes I proposed in a previous review round
-with a "not that broad audience" have been addressed.
+Please pull from the tag
 
-I already integrated the patch (slightly different, without functional 
-changes) into the latest cpupower sources of our build service and
-things work out nice.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.20-rc6
 
-Shuah: Can you pick this up for next cpupower submission round, please.
+with top-most commit a72173ecfc6774cf2d55de9fb29421ce69e3428c
 
-Thanks,
+ Revert "exec: make de_thread() freezable"
 
-       Thomas
+on top of commit 2595646791c319cadfdbf271563aac97d0843dc7
+
+ Linux 4.20-rc5
+
+to receive a power management fix for 4.20-rc6.
+
+This reverts a problematic recent commit that attempted to
+fix a system-wide suspend issue related to the freezer.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      Revert "exec: make de_thread() freezable"
+
+---------------
+
+ fs/exec.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
