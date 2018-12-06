@@ -1,70 +1,63 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: stm32: read factory settings inside
- stm_thermal_prepare
-Date: Thu, 6 Dec 2018 14:32:20 +0100
-Message-ID: <7999967d-6f6e-635c-4d43-c0e1cd58ec4b@linaro.org>
-References: <1544102603-14899-1-git-send-email-david.hernandezsanchez@st.com>
- <1544102603-14899-2-git-send-email-david.hernandezsanchez@st.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v10 0/8] Introduce on-chip interconnect API
+Date: Thu, 6 Dec 2018 15:55:47 +0100
+Message-ID: <20181206145547.GA7884@kroah.com>
+References: <20181127180349.29997-1-georgi.djakov@linaro.org>
+ <CAE=gft4jUjr3oDAZrM=-orLM-YoVAwa+e=crDDC_p9ArGE1dig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544102603-14899-2-git-send-email-david.hernandezsanchez@st.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAE=gft4jUjr3oDAZrM=-orLM-YoVAwa+e=crDDC_p9ArGE1dig@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
+To: Evan Green <evgreen@chromium.org>
+Cc: georgi.djakov@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Alexandre Bailon <abailon@baylibre.com>, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.orgDoug Anderson <di>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/12/2018 14:23, David HERNANDEZ SANCHEZ wrote:
-> Calling stm_thermal_read_factory_settings before clocking
-> internal peripheral causes bad register values and makes
-> temperature computation wrong.
+On Wed, Dec 05, 2018 at 12:41:35PM -0800, Evan Green wrote:
+> On Tue, Nov 27, 2018 at 10:03 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+> >
+> > Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+> > graphics, modem). These cores are talking to each other and can generate a
+> > lot of data flowing through the on-chip interconnects. These interconnect
+> > buses could form different topologies such as crossbar, point to point buses,
+> > hierarchical buses or use the network-on-chip concept.
+> >
+> > These buses have been sized usually to handle use cases with high data
+> > throughput but it is not necessary all the time and consume a lot of power.
+> > Furthermore, the priority between masters can vary depending on the running
+> > use case like video playback or CPU intensive tasks.
+> >
+> > Having an API to control the requirement of the system in terms of bandwidth
+> > and QoS, so we can adapt the interconnect configuration to match those by
+> > scaling the frequencies, setting link priority and tuning QoS parameters.
+> > This configuration can be a static, one-time operation done at boot for some
+> > platforms or a dynamic set of operations that happen at run-time.
+> >
+> > This patchset introduce a new API to get the requirement and configure the
+> > interconnect buses across the entire chipset to fit with the current demand.
+> > The API is NOT for changing the performance of the endpoint devices, but only
+> > the interconnect path in between them.
 > 
-> Calling stm_thermal_read_factory_settings inside
-> stm_thermal_prepare fixes this problem as internal
-> peripheral is well clocked at this stage.
+> For what it's worth, we are ready to land this in Chrome OS. I think
+> this series has been very well discussed and reviewed, hasn't changed
+> much in the last few spins, and is in good enough shape to use as a
+> base for future patches. Georgi's also done a great job reaching out
+> to other SoC vendors, and there appears to be enough consensus that
+> this framework will be usable by more than just Qualcomm. There are
+> also several drivers out on the list trying to add patches to use this
+> framework, with more to come, so it made sense (to us) to get this
+> base framework nailed down. In my experiments this is an important
+> piece of the overall power management story, especially on systems
+> that are mostly idle.
 > 
-> Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
-> Fixes: 1d693155 ("thermal: add stm32 thermal driver")
+> I'll continue to track changes to this series and we will ultimately
+> reconcile with whatever happens upstream, but I thought it was worth
+> sending this note to express our "thumbs up" towards this framework.
 
-Same comment as the first patch.
+Looks like a v11 will be forthcoming, so I'll wait for that one to apply
+it to the tree if all looks good.
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+thanks,
 
-
-> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-> index 47623da..daa1257 100644
-> --- a/drivers/thermal/st/stm_thermal.c
-> +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -532,6 +532,10 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
->  	if (ret)
->  		return ret;
->  
-> +	ret = stm_thermal_read_factory_settings(sensor);
-> +	if (ret)
-> +		goto thermal_unprepare;
-> +
->  	ret = stm_thermal_calibration(sensor);
->  	if (ret)
->  		goto thermal_unprepare;
-> @@ -636,10 +640,6 @@ static int stm_thermal_probe(struct platform_device *pdev)
->  	/* Populate sensor */
->  	sensor->base = base;
->  
-> -	ret = stm_thermal_read_factory_settings(sensor);
-> -	if (ret)
-> -		return ret;
-> -
->  	sensor->clk = devm_clk_get(&pdev->dev, "pclk");
->  	if (IS_ERR(sensor->clk)) {
->  		dev_err(&pdev->dev, "%s: failed to fetch PCLK clock\n",
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+greg k-h
