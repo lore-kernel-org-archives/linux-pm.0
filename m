@@ -1,75 +1,95 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: [PATCH v2] thermal: tsens: qcom: do not create duplicate regmap debugfs entries
-Date: Thu,  6 Dec 2018 09:39:17 +0000
-Message-ID: <20181206093917.26610-1-srinivas.kandagatla@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: stm32: read factory settings properly
+Date: Thu, 6 Dec 2018 10:43:30 +0100
+Message-ID: <b6e93540-120d-9358-86df-d8b78f37b67a@linaro.org>
+References: <1544087575-22242-1-git-send-email-david.hernandezsanchez@st.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544087575-22242-1-git-send-email-david.hernandezsanchez@st.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: amit.kucheria@linaro.org, edubezval@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
 List-Id: linux-pm@vger.kernel.org
 
-Regmap would use device name to create debugfs entries. If the device
-has multiple regmaps it is recommended to use name field in regmap_config.
-Fix this by providing name to the regmap configs correctly.
 
-Without this patch we would see below error on DB820c.
+Hi David,
 
-qcom-tsens 4a9000.thermal-sensor: Failed to create 4a9000.thermal-sensor
-debugfs directory
+On 06/12/2018 10:12, David HERNANDEZ SANCHEZ wrote:
+> Call stm_thermal_read_factory_settings once
+> internal peripheral is properly clocked.
+> 
+> To avoid wrong initialization of fmt0
+> (stm_thermal_sensor struct) member add
+> brackets properly.
+> 
+> Change-Id: I150d00fd50e382df04bfad12f0653b1ed6a1db1b
 
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
-Tested-by: Amit Kucheria <amit.kucheria@linaro.org>
----
-Changes since v1:
- -rename tsens_config to tsens_tm_config as suggested by Amit.
+Please do a cleanup of the log:
+  - line wrap at 72 characters
+  - No Change-Id
 
- drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+State the problem and then tell what you do to fix it.
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 3be4be2e0465..ddfdf88ffb4e 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -113,7 +113,15 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
- 	return 0;
- }
- 
--static const struct regmap_config tsens_config = {
-+static const struct regmap_config tsens_tm_config = {
-+	.name		= "tm",
-+	.reg_bits	= 32,
-+	.val_bits	= 32,
-+	.reg_stride	= 4,
-+};
-+
-+static const struct regmap_config tsens_srot_config = {
-+	.name		= "srot",
- 	.reg_bits	= 32,
- 	.val_bits	= 32,
- 	.reg_stride	= 4,
-@@ -139,8 +147,8 @@ int __init init_common(struct tsens_device *tmdev)
- 		if (IS_ERR(srot_base))
- 			return PTR_ERR(srot_base);
- 
--		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
--							srot_base, &tsens_config);
-+		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev, srot_base,
-+							&tsens_srot_config);
- 		if (IS_ERR(tmdev->srot_map))
- 			return PTR_ERR(tmdev->srot_map);
- 
-@@ -154,7 +162,8 @@ int __init init_common(struct tsens_device *tmdev)
- 	if (IS_ERR(tm_base))
- 		return PTR_ERR(tm_base);
- 
--	tmdev->tm_map = devm_regmap_init_mmio(tmdev->dev, tm_base, &tsens_config);
-+	tmdev->tm_map = devm_regmap_init_mmio(tmdev->dev, tm_base,
-+						 &tsens_tm_config);
- 	if (IS_ERR(tmdev->tm_map))
- 		return PTR_ERR(tmdev->tm_map);
- 
+For example, it is unclear what happens if the factory settings are read
+before the clock is set.
+
+The bracket change is not directly related to the clock ordering and it
+should go in another patch.
+
+In addition each patch is fixing something, in this case it is the
+initial import, so each fixes should contain the tag:
+
+Fixes: 1d693155 (thermal: add stm32 thermal driver)
+
+
+> Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
+> 
+> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
+> index 47623da..bbd73c5 100644
+> --- a/drivers/thermal/st/stm_thermal.c
+> +++ b/drivers/thermal/st/stm_thermal.c
+> @@ -241,8 +241,8 @@ static int stm_thermal_read_factory_settings(struct stm_thermal_sensor *sensor)
+>  		sensor->t0 = TS1_T0_VAL1;
+>  
+>  	/* Retrieve fmt0 and put it on Hz */
+> -	sensor->fmt0 = ADJUST * readl_relaxed(sensor->base + DTS_T0VALR1_OFFSET)
+> -					      & TS1_FMT0_MASK;
+> +	sensor->fmt0 = ADJUST * (readl_relaxed(sensor->base +
+> +				 DTS_T0VALR1_OFFSET) & TS1_FMT0_MASK);
+>  
+>  	/* Retrieve ramp coefficient */
+>  	sensor->ramp_coeff = readl_relaxed(sensor->base + DTS_RAMPVALR_OFFSET) &
+> @@ -532,6 +532,10 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
+>  	if (ret)
+>  		return ret;
+>  
+> +	ret = stm_thermal_read_factory_settings(sensor);
+> +	if (ret)
+> +		goto thermal_unprepare;
+> +
+>  	ret = stm_thermal_calibration(sensor);
+>  	if (ret)
+>  		goto thermal_unprepare;
+> @@ -636,10 +640,6 @@ static int stm_thermal_probe(struct platform_device *pdev)
+>  	/* Populate sensor */
+>  	sensor->base = base;
+>  
+> -	ret = stm_thermal_read_factory_settings(sensor);
+> -	if (ret)
+> -		return ret;
+> -
+>  	sensor->clk = devm_clk_get(&pdev->dev, "pclk");
+>  	if (IS_ERR(sensor->clk)) {
+>  		dev_err(&pdev->dev, "%s: failed to fetch PCLK clock\n",
+> 
+
+
 -- 
-2.19.2
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
