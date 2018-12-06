@@ -1,95 +1,93 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: stm32: read factory settings properly
-Date: Thu, 6 Dec 2018 10:43:30 +0100
-Message-ID: <b6e93540-120d-9358-86df-d8b78f37b67a@linaro.org>
-References: <1544087575-22242-1-git-send-email-david.hernandezsanchez@st.com>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
+ to one structure
+Date: Thu, 6 Dec 2018 09:48:10 +0000
+Message-ID: <a0db3b8a-3c2b-02fd-64cc-b490a75b8b7c@microchip.com>
+References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
+ <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
+ <20181106210933.GU24212@piout.net>
+ <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
+ <20181107172340.GF21694@piout.net>
+ <20181205224052.34o3cmh3y3htchcj@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544087575-22242-1-git-send-email-david.hernandezsanchez@st.com>
+In-Reply-To: <20181205224052.34o3cmh3y3htchcj@earth.universe>
 Content-Language: en-US
+Content-ID: <D84CF29545773F4AB1BEAA5C00B72BA2@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
+To: sebastian.reichel@collabora.com, alexandre.belloni@bootlin.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Sebastian,
 
-Hi David,
+On 06.12.2018 00:40, Sebastian Reichel wrote:
+> Hi,
+>=20
+> On Wed, Nov 07, 2018 at 06:23:40PM +0100, Alexandre Belloni wrote:
+>> On 07/11/2018 14:54:17+0000, Claudiu.Beznea@microchip.com wrote:
+>>> Hi Alexandre,
+>>>
+>>> On 06.11.2018 23:09, Alexandre Belloni wrote:
+>>>> Hi Claudiu,
+>>>>
+>>>> On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
+>>>>>  static int __init at91_poweroff_probe(struct platform_device *pdev)
+>>>>> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct pl=
+atform_device *pdev)
+>>>>>  	u32 ddr_type;
+>>>>>  	int ret;
+>>>>> =20
+>>>>> +	at91_shdwc =3D devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KE=
+RNEL);
+>>>>> +	if (!at91_shdwc)
+>>>>> +		return -ENOMEM;
+>>>>> +
+>>>>
+>>>> Is there any real benefit that will offset the time lost for that
+>>>> allocation at boot time?
+>>>
+>>> No, I haven't run benchmarks on this. I only wanted to have them groupe=
+d in
+>>> one structure. Please let me know if you have some tests in mind.
+>>>
+>>
+>> Well, it is probably not much but small things adds up. Having it as a
+>> global structure is probably good enough.
+>=20
+> I suppose I will get a new patch with this change?
 
-On 06/12/2018 10:12, David HERNANDEZ SANCHEZ wrote:
-> Call stm_thermal_read_factory_settings once
-> internal peripheral is properly clocked.
-> 
-> To avoid wrong initialization of fmt0
-> (stm_thermal_sensor struct) member add
-> brackets properly.
-> 
-> Change-Id: I150d00fd50e382df04bfad12f0653b1ed6a1db1b
+Yes, I will send a new version for this one.
 
-Please do a cleanup of the log:
-  - line wrap at 72 characters
-  - No Change-Id
+Thank you,
+Claudiu Beznea
 
-State the problem and then tell what you do to fix it.
-
-For example, it is unclear what happens if the factory settings are read
-before the clock is set.
-
-The bracket change is not directly related to the clock ordering and it
-should go in another patch.
-
-In addition each patch is fixing something, in this case it is the
-initial import, so each fixes should contain the tag:
-
-Fixes: 1d693155 (thermal: add stm32 thermal driver)
-
-
-> Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
-> 
-> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-> index 47623da..bbd73c5 100644
-> --- a/drivers/thermal/st/stm_thermal.c
-> +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -241,8 +241,8 @@ static int stm_thermal_read_factory_settings(struct stm_thermal_sensor *sensor)
->  		sensor->t0 = TS1_T0_VAL1;
->  
->  	/* Retrieve fmt0 and put it on Hz */
-> -	sensor->fmt0 = ADJUST * readl_relaxed(sensor->base + DTS_T0VALR1_OFFSET)
-> -					      & TS1_FMT0_MASK;
-> +	sensor->fmt0 = ADJUST * (readl_relaxed(sensor->base +
-> +				 DTS_T0VALR1_OFFSET) & TS1_FMT0_MASK);
->  
->  	/* Retrieve ramp coefficient */
->  	sensor->ramp_coeff = readl_relaxed(sensor->base + DTS_RAMPVALR_OFFSET) &
-> @@ -532,6 +532,10 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
->  	if (ret)
->  		return ret;
->  
-> +	ret = stm_thermal_read_factory_settings(sensor);
-> +	if (ret)
-> +		goto thermal_unprepare;
-> +
->  	ret = stm_thermal_calibration(sensor);
->  	if (ret)
->  		goto thermal_unprepare;
-> @@ -636,10 +640,6 @@ static int stm_thermal_probe(struct platform_device *pdev)
->  	/* Populate sensor */
->  	sensor->base = base;
->  
-> -	ret = stm_thermal_read_factory_settings(sensor);
-> -	if (ret)
-> -		return ret;
-> -
->  	sensor->clk = devm_clk_get(&pdev->dev, "pclk");
->  	if (IS_ERR(sensor->clk)) {
->  		dev_err(&pdev->dev, "%s: failed to fetch PCLK clock\n",
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>=20
+> -- Sebastian
+>=20
+>>
+>>>>
+>>>> I understand you are then testing at91_shdwc to know whether the drive=
+r
+>>>> already probed once. But, the driver will never probe twice as there i=
+s
+>>>> only one shutdown controller on the SoC and anyway, If it was to probe
+>>>> twice, it will still work as expected.
+>>>
+>>> I had in mind the scenario where the driver would be compiled as module=
+. I
+>>> know insmod already does this checking. I'm ok to remove this checking.=
+ I
+>>> will do it in next version. With this I will also remove devm_kzalloc()=
+ of
+>>> at91_shdwc.
+>>>
+>>
+>> Thanks,
+>>
+>> --=20
+>> Alexandre Belloni, Bootlin
+>> Embedded Linux and Kernel engineering
+>> https://bootlin.com
