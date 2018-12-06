@@ -1,73 +1,159 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 0/5] Add new features for SC27XX fuel gauge driver
-Date: Thu, 6 Dec 2018 01:10:48 +0100
-Message-ID: <20181206001048.awfhmigouztqs6td@earth.universe>
-References: <cover.1542185618.git.baolin.wang@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 2/5] devfreq: add support for suspend/resume of a
+ devfreq device
+Date: Thu, 06 Dec 2018 10:17:52 +0900
+Message-ID: <5C0878C0.4060500@samsung.com>
+References: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181205110620eucas1p14de70dc092580b684a0304b5ce771605@eucas1p1.samsung.com>
+        <1544007956-28889-3-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6fkbibezpeowkax5"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1542185618.git.baolin.wang@linaro.org>
+In-reply-to: <1544007956-28889-3-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Lukasz,
 
---6fkbibezpeowkax5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2018년 12월 05일 20:05, Lukasz Luba wrote:
+> The patch prepares devfreq device for handling suspend/resume
+> functionality. The new fields will store needed information during this
+> process. Devfreq framework handles opp-suspend DT entry and there is no
+> need of modyfications in the drivers code. It uses atomic variables to
+> make sure no race condition affects the process.
+> 
+> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  drivers/devfreq/devfreq.c | 47 +++++++++++++++++++++++++++++++++++++++++------
+>  include/linux/devfreq.h   |  7 +++++++
+>  2 files changed, 48 insertions(+), 6 deletions(-)
 
-Hi,
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-On Wed, Nov 14, 2018 at 05:07:03PM +0800, Baolin Wang wrote:
-> This patch set adds some new features for SC27XX fuel gauge driver.
->=20
-> 1. Read calibration data from eFuse device to calibrate fuel gauge.
-> 2. Add low voltage alarm to adjust the battery capacity in lower
-> voltage stage.
-> 3. Add power management interfaces
-> 4. Save last optimized battery capacity to be used as the initial
-> battery capacity if system is not first power-on.
->=20
-> Baolin Wang (2):
->   dt-bindings: power: supply: Add nvmem properties to calibrate FGU
->   power: supply: sc27xx: Add fuel gauge calibration
->=20
-> Yuanjiang Yu (3):
->   power: supply: sc27xx: Add fuel gauge low voltage alarm
->   power: supply: sc27xx: Add suspend/resume interfaces
->   power: supply: sc27xx: Save last battery capacity
->=20
->  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    4 +
->  drivers/power/supply/sc27xx_fuel_gauge.c           |  453 ++++++++++++++=
-+++++-
->  2 files changed, 444 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index a9fd61b..46517b6 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -316,6 +316,10 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+>  			"Couldn't update frequency transition information.\n");
+>  
+>  	devfreq->previous_freq = new_freq;
+> +
+> +	if (devfreq->suspend_freq)
+> +		devfreq->resume_freq = cur_freq;
+> +
+>  	return err;
+>  }
+>  
+> @@ -667,6 +671,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  	}
+>  	devfreq->max_freq = devfreq->scaling_max_freq;
+>  
+> +	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
+> +	atomic_set(&devfreq->suspend_count, 0);
+> +
+>  	dev_set_name(&devfreq->dev, "devfreq%d",
+>  				atomic_inc_return(&devfreq_no));
+>  	err = device_register(&devfreq->dev);
+> @@ -867,14 +874,28 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
+>   */
+>  int devfreq_suspend_device(struct devfreq *devfreq)
+>  {
+> +	int ret;
+> +
+>  	if (!devfreq)
+>  		return -EINVAL;
+>  
+> -	if (!devfreq->governor)
+> +	if (atomic_inc_return(&devfreq->suspend_count) > 1)
+>  		return 0;
+>  
+> -	return devfreq->governor->event_handler(devfreq,
+> -				DEVFREQ_GOV_SUSPEND, NULL);
+> +	if (devfreq->governor) {
+> +		ret = devfreq->governor->event_handler(devfreq,
+> +					DEVFREQ_GOV_SUSPEND, NULL);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (devfreq->suspend_freq) {
+> +		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+>  EXPORT_SYMBOL(devfreq_suspend_device);
+>  
+> @@ -888,14 +909,28 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+>   */
+>  int devfreq_resume_device(struct devfreq *devfreq)
+>  {
+> +	int ret;
+> +
+>  	if (!devfreq)
+>  		return -EINVAL;
+>  
+> -	if (!devfreq->governor)
+> +	if (atomic_dec_return(&devfreq->suspend_count) >= 1)
+>  		return 0;
+>  
+> -	return devfreq->governor->event_handler(devfreq,
+> -				DEVFREQ_GOV_RESUME, NULL);
+> +	if (devfreq->resume_freq) {
+> +		ret = devfreq_set_target(devfreq, devfreq->resume_freq, 0);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (devfreq->governor) {
+> +		ret = devfreq->governor->event_handler(devfreq,
+> +					DEVFREQ_GOV_RESUME, NULL);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+>  EXPORT_SYMBOL(devfreq_resume_device);
+>  
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index e4963b0..d985199 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -131,6 +131,9 @@ struct devfreq_dev_profile {
+>   * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
+>   * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
+>   * @stop_polling:	 devfreq polling status of a device.
+> + * @suspend_freq:	 frequency of a device set during suspend phase.
+> + * @resume_freq:	 frequency of a device set in resume phase.
+> + * @suspend_count:	 suspend requests counter for a device.
+>   * @total_trans:	Number of devfreq transitions
+>   * @trans_table:	Statistics of devfreq transitions
+>   * @time_in_state:	Statistics of devfreq states
+> @@ -167,6 +170,10 @@ struct devfreq {
+>  	unsigned long scaling_max_freq;
+>  	bool stop_polling;
+>  
+> +	unsigned long suspend_freq;
+> +	unsigned long resume_freq;
+> +	atomic_t suspend_count;
+> +
+>  	/* information for device frequency transition */
+>  	unsigned int total_trans;
+>  	unsigned int *trans_table;
+> 
 
-I applied patches 1-4 and skipped patch 5 due to pending changes.
 
--- Sebastian
-
---6fkbibezpeowkax5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIaQUACgkQ2O7X88g7
-+pqLKw/+IlpcbeCdt+0onz8HK1cf8vvuwgBApnTWGQftNy46FEcy+pmQQSUCs05N
-CEG6FAyhp/d2BmHhpeGvAXgDGtKWzW2kRl4J8anQH/tiiE0lep8Mmjtjr2iuYzgr
-5nEYPQgj/hGDlJPt4T6KDq+dpvtbrSYsxW9+r2USzfpH3xfvus+Ka9E/psX84oAV
-xb8iB4qPTqGKbsGeJZs1Mmuo+Ml1QacQ6KFE8MnfiOLMaE1ynpjOhvYgzdLTqvwW
-MaUbsLz4zk3mQIgqi7MCcNRngOBsDmtmKAOlOMuwQL0G5X65u9jbVPDi9PgyrSKf
-OSwFfcWI42qXv6eL94xkfjiWdXjl5hTkfdlbtuRmLGZbvKNICREtd4R0cVNne9lv
-IgouR2D8W2gdkSgx/euisA5xRpLlSaU8tt3WFMnvZ4+SCatDVKGiUbtXvZIDKI7G
-ABrGcduf9tO8UUPNEAyypBuC+DX6DeAUt3VmvudRwNnS3iWRbapMNW3D3f/l8c3a
-QsNx+bsGf5HCN2kKdhh804mWFgDC9nBUWntANwUiLbexyluSH9LrBYBDiIlFNbkW
-6Mk/wqwNw7Hxcy5U5RR1aesN4WCpupglAWeuB3MQPFwgRFBBP6oK8AG2Pudwkefx
-i/Q2SjpD6GUKK5g6Foo548qv3SnhtLbq/jImgViQdDesdrqNkq8=
-=/pqc
------END PGP SIGNATURE-----
-
---6fkbibezpeowkax5--
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
