@@ -1,145 +1,73 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 1/4] power: supply: sc2731_charger: Add one work to
- charge/discharge
-Date: Thu, 6 Dec 2018 00:08:47 +0100
-Message-ID: <20181205230847.lczprnbn3c4lsqvb@earth.universe>
-References: <5d096dec07f6808a70edcfaad6e8f77039f21a9b.1542019800.git.baolin.wang@linaro.org>
+Subject: Re: [PATCH 0/5] Add new features for SC27XX fuel gauge driver
+Date: Thu, 6 Dec 2018 01:10:48 +0100
+Message-ID: <20181206001048.awfhmigouztqs6td@earth.universe>
+References: <cover.1542185618.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="e633v6t3dufbfteu"
+        protocol="application/pgp-signature"; boundary="6fkbibezpeowkax5"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5d096dec07f6808a70edcfaad6e8f77039f21a9b.1542019800.git.baolin.wang@linaro.org>
+In-Reply-To: <cover.1542185618.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Baolin Wang <baolin.wang@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---e633v6t3dufbfteu
+--6fkbibezpeowkax5
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Nov 12, 2018 at 06:52:35PM +0800, Baolin Wang wrote:
-> Since the USB notifier context is atomic, we can not start or stop chargi=
-ng
-> in atomic context. Thus this patch adds one work to help to charge or
-> discharge.
+On Wed, Nov 14, 2018 at 05:07:03PM +0800, Baolin Wang wrote:
+> This patch set adds some new features for SC27XX fuel gauge driver.
 >=20
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
+> 1. Read calibration data from eFuse device to calibrate fuel gauge.
+> 2. Add low voltage alarm to adjust the battery capacity in lower
+> voltage stage.
+> 3. Add power management interfaces
+> 4. Save last optimized battery capacity to be used as the initial
+> battery capacity if system is not first power-on.
+>=20
+> Baolin Wang (2):
+>   dt-bindings: power: supply: Add nvmem properties to calibrate FGU
+>   power: supply: sc27xx: Add fuel gauge calibration
+>=20
+> Yuanjiang Yu (3):
+>   power: supply: sc27xx: Add fuel gauge low voltage alarm
+>   power: supply: sc27xx: Add suspend/resume interfaces
+>   power: supply: sc27xx: Save last battery capacity
+>=20
+>  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    4 +
+>  drivers/power/supply/sc27xx_fuel_gauge.c           |  453 ++++++++++++++=
++++++-
+>  2 files changed, 444 insertions(+), 13 deletions(-)
 
-Thanks, patchset queued.
+I applied patches 1-4 and skipped patch 5 due to pending changes.
 
 -- Sebastian
 
->  drivers/power/supply/sc2731_charger.c |   30 ++++++++++++++++++++++-----=
----
->  1 file changed, 22 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/power/supply/sc2731_charger.c b/drivers/power/supply=
-/sc2731_charger.c
-> index 525a820..393ba98 100644
-> --- a/drivers/power/supply/sc2731_charger.c
-> +++ b/drivers/power/supply/sc2731_charger.c
-> @@ -57,9 +57,11 @@ struct sc2731_charger_info {
->  	struct usb_phy *usb_phy;
->  	struct notifier_block usb_notify;
->  	struct power_supply *psy_usb;
-> +	struct work_struct work;
->  	struct mutex lock;
->  	bool charging;
->  	u32 base;
-> +	u32 limit;
->  };
-> =20
->  static void sc2731_charger_stop_charge(struct sc2731_charger_info *info)
-> @@ -318,22 +320,21 @@ static int sc2731_charger_property_is_writeable(str=
-uct power_supply *psy,
->  	.property_is_writeable	=3D sc2731_charger_property_is_writeable,
->  };
-> =20
-> -static int sc2731_charger_usb_change(struct notifier_block *nb,
-> -				     unsigned long limit, void *data)
-> +static void sc2731_charger_work(struct work_struct *data)
->  {
->  	struct sc2731_charger_info *info =3D
-> -		container_of(nb, struct sc2731_charger_info, usb_notify);
-> -	int ret =3D 0;
-> +		container_of(data, struct sc2731_charger_info, work);
-> +	int ret;
-> =20
->  	mutex_lock(&info->lock);
-> =20
-> -	if (limit > 0) {
-> +	if (info->limit > 0) {
->  		/* set current limitation and start to charge */
-> -		ret =3D sc2731_charger_set_current_limit(info, limit);
-> +		ret =3D sc2731_charger_set_current_limit(info, info->limit);
->  		if (ret)
->  			goto out;
-> =20
-> -		ret =3D sc2731_charger_set_current(info, limit);
-> +		ret =3D sc2731_charger_set_current(info, info->limit);
->  		if (ret)
->  			goto out;
-> =20
-> @@ -350,7 +351,19 @@ static int sc2731_charger_usb_change(struct notifier=
-_block *nb,
-> =20
->  out:
->  	mutex_unlock(&info->lock);
-> -	return ret;
-> +}
-> +
-> +static int sc2731_charger_usb_change(struct notifier_block *nb,
-> +				     unsigned long limit, void *data)
-> +{
-> +	struct sc2731_charger_info *info =3D
-> +		container_of(nb, struct sc2731_charger_info, usb_notify);
-> +
-> +	info->limit =3D limit;
-> +
-> +	schedule_work(&info->work);
-> +
-> +	return NOTIFY_OK;
->  }
-> =20
->  static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
-> @@ -432,6 +445,7 @@ static int sc2731_charger_probe(struct platform_devic=
-e *pdev)
-> =20
->  	mutex_init(&info->lock);
->  	info->dev =3D &pdev->dev;
-> +	INIT_WORK(&info->work, sc2731_charger_work);
-> =20
->  	info->regmap =3D dev_get_regmap(pdev->dev.parent, NULL);
->  	if (!info->regmap) {
-> --=20
-> 1.7.9.5
->=20
-
---e633v6t3dufbfteu
+--6fkbibezpeowkax5
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIWn8ACgkQ2O7X88g7
-+prIDg//WcTO+jleuAT/tUwIb9FljSOiFsRfLFJjF6cNThXPpcz2rwEj1C0upbSg
-38PKdhB12Ypn3zsQlxIA7jG38ueGvLKZMUbVW5b9Ch1MpuP/JuEKQbfqTr5rUf4m
-26jkgQXAzVNqczjdrXoWVCdhRxVPqPGsUA+QKFpnGC+vTsYBVqXlmFDKPua2uWDd
-AFbhjHhASs3/1XTasq7eUBqs1ZjgdyLAMArnRW2RGMxWGgSj5DQ5r6wgZeHEJUOZ
-bT0eA6BCysVMViEleuZiwLkF3Sj+FGzJd5YcNpRcyW+zC5zGCnTLknQX+58STvyq
-iCQLcl7fcdq8uui7qTtNrq5L4p7iRzg6DsENk3Pum/e1jvdX0cSgYCUc6zIXy9s0
-9eMEPywWuSPx5e9Kr7GDEAkiNmJqtp5PQRq9njMXHt7f/9DN7y99ZLbZnj8caDa3
-nFj7r/p9tLbj1HobYrX+9m4rdehKT4I0IX8Heb88CDGU7XRcx1vTBwpvqOQ6BoY3
-7rCoMCDeOTBXDnrd7ohsX7KVnaWY1/FcMW4rn74UD+HjHRp4xDrEwIumJF1xF16Q
-4AfoUy95EFSMelY+1OVfsnNec0kEoBWCcvzHDetLpvAlnE+ckMivFPmjoznbFTKh
-64cTenkj5kEWUxUV07aBqWS7WgsnUUEe8ccr32bWrsY4VMhR2A4=
-=0skI
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIaQUACgkQ2O7X88g7
++pqLKw/+IlpcbeCdt+0onz8HK1cf8vvuwgBApnTWGQftNy46FEcy+pmQQSUCs05N
+CEG6FAyhp/d2BmHhpeGvAXgDGtKWzW2kRl4J8anQH/tiiE0lep8Mmjtjr2iuYzgr
+5nEYPQgj/hGDlJPt4T6KDq+dpvtbrSYsxW9+r2USzfpH3xfvus+Ka9E/psX84oAV
+xb8iB4qPTqGKbsGeJZs1Mmuo+Ml1QacQ6KFE8MnfiOLMaE1ynpjOhvYgzdLTqvwW
+MaUbsLz4zk3mQIgqi7MCcNRngOBsDmtmKAOlOMuwQL0G5X65u9jbVPDi9PgyrSKf
+OSwFfcWI42qXv6eL94xkfjiWdXjl5hTkfdlbtuRmLGZbvKNICREtd4R0cVNne9lv
+IgouR2D8W2gdkSgx/euisA5xRpLlSaU8tt3WFMnvZ4+SCatDVKGiUbtXvZIDKI7G
+ABrGcduf9tO8UUPNEAyypBuC+DX6DeAUt3VmvudRwNnS3iWRbapMNW3D3f/l8c3a
+QsNx+bsGf5HCN2kKdhh804mWFgDC9nBUWntANwUiLbexyluSH9LrBYBDiIlFNbkW
+6Mk/wqwNw7Hxcy5U5RR1aesN4WCpupglAWeuB3MQPFwgRFBBP6oK8AG2Pudwkefx
+i/Q2SjpD6GUKK5g6Foo548qv3SnhtLbq/jImgViQdDesdrqNkq8=
+=/pqc
 -----END PGP SIGNATURE-----
 
---e633v6t3dufbfteu--
+--6fkbibezpeowkax5--
