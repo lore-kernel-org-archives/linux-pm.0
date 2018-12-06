@@ -1,227 +1,199 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 02/11] thermal: add irq-mode configuration for trip
- point
-Date: Thu, 6 Dec 2018 20:55:05 +0100
-Message-ID: <3314da31-1b8b-ec19-4aee-38d98aa8adbf@partner.samsung.com>
-References: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181107171036eucas1p13253d56b463c8f888ab8f8e418635297@eucas1p1.samsung.com>
-        <1541610593-28542-3-git-send-email-l.luba@partner.samsung.com>
-        <1544022595.2841.45.camel@intel.com>
-        <2ac425fc-7c32-6e2f-7086-c14f85b0bbfd@partner.samsung.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v2] power: reset: at91-poweroff: move shdwc related data
+ to one structure
+Date: Thu, 6 Dec 2018 21:59:36 +0100
+Message-ID: <20181206205936.jqcirosf2s34gcje@earth.universe>
+References: <1544117357-24177-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="75fgkhawihvwaveb"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2ac425fc-7c32-6e2f-7086-c14f85b0bbfd@partner.samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1544117357-24177-1-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org
+To: Claudiu.Beznea@microchip.com
+Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
+--75fgkhawihvwaveb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/6/18 8:18 PM, Lukasz Luba wrote:
-> Hi Rui,
-> 
-> On 12/5/18 4:09 PM, Zhang Rui wrote:
->> On 三, 2018-11-07 at 18:09 +0100, Lukasz Luba wrote:
->>> This patch adds support irq mode in trip point.
->>> When that flag is set in DT, there is no need for polling
->>> in thermal framework. Crossing the trip point will rise an IRQ.
->>> The naming convention for tip point 'type' can be confussing
->>> and 'passive' (whic is passive cooling) might be interpretted
->>> wrongly.
->>>
->>> This mechanism prevents from missue and adds explicit setting
->>> for hardware which support interrupts for pre-configured temperature
->>> threshold.
->>>
->>> Cc: Zhang Rui <rui.zhang@intel.com>
->>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>> ---
->>>   drivers/thermal/of-thermal.c   | 17 +++++++++++++++++
->>>   drivers/thermal/thermal_core.c | 10 ++++++++--
->>>   include/linux/thermal.h        |  5 +++++
->>>   3 files changed, 30 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
->>> thermal.c
->>> index 4bfdb4a..1a75946a 100644
->>> --- a/drivers/thermal/of-thermal.c
->>> +++ b/drivers/thermal/of-thermal.c
->>> @@ -312,6 +312,20 @@ static int of_thermal_get_trip_type(struct
->>> thermal_zone_device *tz, int trip,
->>>       return 0;
->>>   }
->>> +static int
->>> +of_thermal_get_trip_irq_mode(struct thermal_zone_device *tz, int
->>> trip,
->>> +                 bool *mode)
->>> +{
->>> +    struct __thermal_zone *data = tz->devdata;
->>> +
->>> +    if (trip >= data->ntrips || trip < 0)
->>> +        return -EDOM;
->>> +
->>> +    *mode = data->trips[trip].irq_mode;
->>> +
->>> +    return 0;
->>> +}
->>> +
->>>   static int of_thermal_get_trip_temp(struct thermal_zone_device *tz,
->>> int trip,
->>>                       int *temp)
->>>   {
->>> @@ -394,6 +408,7 @@ static struct thermal_zone_device_ops
->>> of_thermal_ops = {
->>>       .set_mode = of_thermal_set_mode,
->>>       .get_trip_type = of_thermal_get_trip_type,
->>> +    .get_trip_irq_mode = of_thermal_get_trip_irq_mode,
->>>       .get_trip_temp = of_thermal_get_trip_temp,
->>>       .set_trip_temp = of_thermal_set_trip_temp,
->>>       .get_trip_hyst = of_thermal_get_trip_hyst,
->>> @@ -827,6 +842,8 @@ static int thermal_of_populate_trip(struct
->>> device_node *np,
->>>           return ret;
->>>       }
->>> +    trip->irq_mode = of_property_read_bool(np, "irq-mode");
->>> +
->>>       /* Required for cooling map matching */
->>>       trip->np = np;
->>>       of_node_get(np);
->>> diff --git a/drivers/thermal/thermal_core.c
->>> b/drivers/thermal/thermal_core.c
->>> index 39fc812..6d41e08 100644
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -406,6 +406,7 @@ static void handle_critical_trips(struct
->>> thermal_zone_device *tz,
->>>   static void handle_thermal_trip(struct thermal_zone_device *tz, int
->>> trip)
->>>   {
->>>       enum thermal_trip_type type;
->>> +    bool irq_mode = false;
->>>       /* Ignore disabled trip points */
->>>       if (test_bit(trip, &tz->trips_disabled))
->>> @@ -419,9 +420,14 @@ static void handle_thermal_trip(struct
->>> thermal_zone_device *tz, int trip)
->>>           handle_non_critical_trips(tz, trip);
->>>       /*
->>>        * Alright, we handled this trip successfully.
->>> -     * So, start monitoring again.
->>> +     * So, start monitoring in polling mode if
->>> +     * trip is not using irq HW support.
->>>        */
->>> -    monitor_thermal_zone(tz);
->>> +    if (tz->ops->get_trip_irq_mode)
->>> +        tz->ops->get_trip_irq_mode(tz, trip, &irq_mode);
->>> +
->>> +    if (!irq_mode)
->>> +        monitor_thermal_zone(tz);
->>>   }
->> handle_thermal_trip() is called from thermal_zone_device_update(), and
->> it is invoked for every trip points.
->> say, you have a passive trip point 1 that supports irq_mode, and
->> another passive trip point 2 that does not support irq_mode,
->> monitor_thermal_zone() is still called in handle_thermal_trip(tz, 2),
->> and the passive timer will be activated anyway, do I miss something?
-> Yes, the passive timer will be activated in your example. It is correct
-> behavior and does not break anything.
-> case 1: there is 'k' passive trip points which have irq_mode and 1
-> additional which does not have 'irq_mode', the framework will start
-> polling but skip check for those 'k' trip points.
-> case 2: all of the passive trip points have irq_mode set, the framework
-> will not register 'scheduled_work' because it will not call 
-> 'monitor_thermal_zone()'.
-> This is the case of most Exynos platforms, but there is one exception 
-> which has 'case 1' with 2 trip points not supporting irq_mode.
-Do you suggest to cover the 'case 1'?
-It would be possible after adding a new enum THERMAL_FRAMEWORK_POLL, 
-then function:
-thermal_zone_device_check() will call
-thermal_zone_device_update(tz, THERMAL_FRAMEWORK_POLL)
-and in handle_thermal_trip() implement something like:
---------------8<----------------
-static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
-{
-	enum thermal_trip_type type;
-	bool irq_mode = false;
+Hi,
 
-	/* Ignore disabled trip points */
-	if (test_bit(trip, &tz->trips_disabled))
-		return;
+On Thu, Dec 06, 2018 at 05:29:46PM +0000, Claudiu.Beznea@microchip.com wrot=
+e:
+> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+>=20
+> Move SHDWC realted data to only one structure to have them grouped.
+> Inspired from commit 9be74f0d39c1 ("power: reset: at91-poweroff: make
+> mpddrc_base part of struct shdwc").
+>=20
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+> ---
 
-	if (tz->ops->get_trip_irq_mode)
-		tz->ops->get_trip_irq_mode(tz, trip, &irq_mode)
+Thanks, queued.
 
-	if (tz->notify_event == THERMAL_FRAMEWORK_POLL && irq_mode)
-		return;
-...
+-- Sebastian
 
-	if (!irq_mode)
-		monitor_thermal_zone(tz);
-}
+>=20
+> Changes in v2:
+> - avoid allocate at91_shdwc and keep it static instead
+> - avoid registering at91_shdwc as platform data and use static variable
+>   instead
+>=20
+>  drivers/power/reset/at91-poweroff.c | 48 +++++++++++++++++++------------=
+------
+>  1 file changed, 25 insertions(+), 23 deletions(-)
+>=20
+> diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at=
+91-poweroff.c
+> index d3d87af24e55..9e74e131c675 100644
+> --- a/drivers/power/reset/at91-poweroff.c
+> +++ b/drivers/power/reset/at91-poweroff.c
+> @@ -51,14 +51,16 @@ static const char *shdwc_wakeup_modes[] =3D {
+>  	[AT91_SHDW_WKMODE0_ANYLEVEL]	=3D "any",
+>  };
+> =20
+> -static void __iomem *at91_shdwc_base;
+> -static struct clk *sclk;
+> -static void __iomem *mpddrc_base;
+> +static struct shdwc {
+> +	struct clk *sclk;
+> +	void __iomem *shdwc_base;
+> +	void __iomem *mpddrc_base;
+> +} at91_shdwc;
+> =20
+>  static void __init at91_wakeup_status(struct platform_device *pdev)
+>  {
+>  	const char *reason;
+> -	u32 reg =3D readl(at91_shdwc_base + AT91_SHDW_SR);
+> +	u32 reg =3D readl(at91_shdwc.shdwc_base + AT91_SHDW_SR);
+> =20
+>  	/* Simple power-on, just bail out */
+>  	if (!reg)
+> @@ -92,9 +94,9 @@ static void at91_poweroff(void)
+> =20
+>  		"	b	.\n\t"
+>  		:
+> -		: "r" (mpddrc_base),
+> +		: "r" (at91_shdwc.mpddrc_base),
+>  		  "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
+> -		  "r" (at91_shdwc_base),
+> +		  "r" (at91_shdwc.shdwc_base),
+>  		  "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
+>  		: "r6");
+>  }
+> @@ -144,7 +146,7 @@ static void at91_poweroff_dt_set_wakeup_mode(struct p=
+latform_device *pdev)
+>  	if (of_property_read_bool(np, "atmel,wakeup-rtt-timer"))
+>  			mode |=3D AT91_SHDW_RTTWKEN;
+> =20
+> -	writel(wakeup_mode | mode, at91_shdwc_base + AT91_SHDW_MR);
+> +	writel(wakeup_mode | mode, at91_shdwc.shdwc_base + AT91_SHDW_MR);
+>  }
+> =20
+>  static int __init at91_poweroff_probe(struct platform_device *pdev)
+> @@ -155,15 +157,15 @@ static int __init at91_poweroff_probe(struct platfo=
+rm_device *pdev)
+>  	int ret;
+> =20
+>  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	at91_shdwc_base =3D devm_ioremap_resource(&pdev->dev, res);
+> -	if (IS_ERR(at91_shdwc_base))
+> -		return PTR_ERR(at91_shdwc_base);
+> +	at91_shdwc.shdwc_base =3D devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(at91_shdwc.shdwc_base))
+> +		return PTR_ERR(at91_shdwc.shdwc_base);
+> =20
+> -	sclk =3D devm_clk_get(&pdev->dev, NULL);
+> -	if (IS_ERR(sclk))
+> -		return PTR_ERR(sclk);
+> +	at91_shdwc.sclk =3D devm_clk_get(&pdev->dev, NULL);
+> +	if (IS_ERR(at91_shdwc.sclk))
+> +		return PTR_ERR(at91_shdwc.sclk);
+> =20
+> -	ret =3D clk_prepare_enable(sclk);
+> +	ret =3D clk_prepare_enable(at91_shdwc.sclk);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "Could not enable slow clock\n");
+>  		return ret;
+> @@ -176,20 +178,20 @@ static int __init at91_poweroff_probe(struct platfo=
+rm_device *pdev)
+> =20
+>  	np =3D of_find_compatible_node(NULL, NULL, "atmel,sama5d3-ddramc");
+>  	if (np) {
+> -		mpddrc_base =3D of_iomap(np, 0);
+> +		at91_shdwc.mpddrc_base =3D of_iomap(np, 0);
+>  		of_node_put(np);
+> =20
+> -		if (!mpddrc_base) {
+> +		if (!at91_shdwc.mpddrc_base) {
+>  			ret =3D -ENOMEM;
+>  			goto clk_disable;
+>  		}
+> =20
+> -		ddr_type =3D readl(mpddrc_base + AT91_DDRSDRC_MDR) &
+> +		ddr_type =3D readl(at91_shdwc.mpddrc_base + AT91_DDRSDRC_MDR) &
+>  				 AT91_DDRSDRC_MD;
+>  		if (ddr_type !=3D AT91_DDRSDRC_MD_LPDDR2 &&
+>  		    ddr_type !=3D AT91_DDRSDRC_MD_LPDDR3) {
+> -			iounmap(mpddrc_base);
+> -			mpddrc_base =3D NULL;
+> +			iounmap(at91_shdwc.mpddrc_base);
+> +			at91_shdwc.mpddrc_base =3D NULL;
+>  		}
+>  	}
+> =20
+> @@ -198,7 +200,7 @@ static int __init at91_poweroff_probe(struct platform=
+_device *pdev)
+>  	return 0;
+> =20
+>  clk_disable:
+> -	clk_disable_unprepare(sclk);
+> +	clk_disable_unprepare(at91_shdwc.sclk);
+>  	return ret;
+>  }
+> =20
+> @@ -207,10 +209,10 @@ static int __exit at91_poweroff_remove(struct platf=
+orm_device *pdev)
+>  	if (pm_power_off =3D=3D at91_poweroff)
+>  		pm_power_off =3D NULL;
+> =20
+> -	if (mpddrc_base)
+> -		iounmap(mpddrc_base);
+> +	if (at91_shdwc.mpddrc_base)
+> +		iounmap(at91_shdwc.mpddrc_base);
+> =20
+> -	clk_disable_unprepare(sclk);
+> +	clk_disable_unprepare(at91_shdwc.sclk);
+> =20
+>  	return 0;
+>  }
+> --=20
+> 2.7.4
+>=20
 
----------->8-----------------------
+--75fgkhawihvwaveb
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I could implement it in v3 if you don't see that it add too much of mess 
-and agree for this approach.
+-----BEGIN PGP SIGNATURE-----
 
-Regards,
-Lukasz
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwJjbgACgkQ2O7X88g7
++poYkxAAhnjIBKgbhI5/qt1oyGBlJqjq9vYY9ZN0boo3Xy+Hmyve/vFUIsCFVa8K
+pP7FpFXkLF9599Nobjte8i2ioGe51I1wKhby/K7dYd+0l4dPfLYnoO0JvZwl4HLZ
+BVVjKl+wcnyw54/54NzF+WST1PzI11pv/OuI3Y/q7G2fj+SPS6c2s8Lz1zNfyVrY
+p8Evmela9PI0mApoB2jjNw3ZoEGjFoRs9eo85aBK/p/QNs0hj9ZBdHRLX1Z1idQ9
+g5G0L9t6xmncPp6OK0W9tsjVy1ZyjBLmdhDlDuQgDdLTittLdVUGN4a0L/e4xBhq
+rWQhtQv2LDW1XNuueC8r8w8Y0tJIfN7Hc0PMsvWRgCQ6WgibOuIWd5QO03NmV+VL
+o0IBFwFzEOPcFbe0OBECAZDTX8l9w4i3LkFwcLGh0VPV2AxUzruAkaENkqVGqkum
+Y864FYyMuU9vA5fzB4zmPDhxzVEiOcitBnpWThZX9XqnY4nC5oIqXakS3n5rLcgB
+F1C9RymDqZLDku+sO13O0YO0OOPCitHA25OaD7ZlIIjiS+Gb8sIWw3MEdhsQR9pl
+UOX/+Tkp3iFkN4+x/3ROE5cxr/ZtbMDm8PcoIue8WopasedpERoYE5oqAUK2xJhY
+teWJOKZO+J1RY6wYBSeEdlt9ctThNHS2YpJxhn2MyvbrN/cnNfY=
+=DTwq
+-----END PGP SIGNATURE-----
 
-> 
-> Regards,
-> Lukasz
-> 
->>
->> thanks,
->> rui
->>
->>>   static void update_temperature(struct thermal_zone_device *tz)
->>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->>> index 5f4705f..b064565 100644
->>> --- a/include/linux/thermal.h
->>> +++ b/include/linux/thermal.h
->>> @@ -103,6 +103,7 @@ struct thermal_zone_device_ops {
->>>           enum thermal_device_mode);
->>>       int (*get_trip_type) (struct thermal_zone_device *, int,
->>>           enum thermal_trip_type *);
->>> +    int (*get_trip_irq_mode) (struct thermal_zone_device *, int,
->>> bool *);
->>>       int (*get_trip_temp) (struct thermal_zone_device *, int, int
->>> *);
->>>       int (*set_trip_temp) (struct thermal_zone_device *, int,
->>> int);
->>>       int (*get_trip_hyst) (struct thermal_zone_device *, int, int
->>> *);
->>> @@ -196,6 +197,7 @@ struct thermal_zone_device {
->>>       struct thermal_attr *trip_temp_attrs;
->>>       struct thermal_attr *trip_type_attrs;
->>>       struct thermal_attr *trip_hyst_attrs;
->>> +    struct thermal_attr *trip_irq_mode_attrs;
->>>       void *devdata;
->>>       int trips;
->>>       unsigned long trips_disabled;    /* bitmap for disabled
->>> trips */
->>> @@ -364,6 +366,8 @@ struct thermal_zone_of_device_ops {
->>>    * @temperature: temperature value in miliCelsius
->>>    * @hysteresis: relative hysteresis in miliCelsius
->>>    * @type: trip point type
->>> + * @irq_mode: to not use polling in framework set support of HW irq
->>> (which will
->>> + *          be triggered when temperature reaches this level).
->>>    */
->>>   struct thermal_trip {
->>> @@ -371,6 +375,7 @@ struct thermal_trip {
->>>       int temperature;
->>>       int hysteresis;
->>>       enum thermal_trip_type type;
->>> +    bool irq_mode;
->>>   };
->>>   /* Function declarations */
->>
->>
+--75fgkhawihvwaveb--
