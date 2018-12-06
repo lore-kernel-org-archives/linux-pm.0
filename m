@@ -1,120 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 3/5] devfreq: add devfreq_suspend/resume() functions
-Date: Thu, 06 Dec 2018 10:30:43 +0900
-Message-ID: <5C087BC3.1050405@samsung.com>
-References: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181205110622eucas1p23d788afd54ad34c0a2663efac8734648@eucas1p2.samsung.com>
-        <1544007956-28889-4-git-send-email-l.luba@partner.samsung.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 0/5] Add new features for SC27XX fuel gauge driver
+Date: Thu, 6 Dec 2018 10:57:31 +0800
+Message-ID: <CAMz4kuJ1ghPs1Vg9tE9hMrC1GpuwruwfUV02szQ8_L=3ocsG-Q@mail.gmail.com>
+References: <cover.1542185618.git.baolin.wang@linaro.org> <20181206001048.awfhmigouztqs6td@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1544007956-28889-4-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <20181206001048.awfhmigouztqs6td@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+Hi Sebastian,
 
-On 2018년 12월 05일 20:05, Lukasz Luba wrote:
-> This patch adds implementation for global suspend/resume for
-> devfreq framework. System suspend will next use these functions.
-> 
-> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/devfreq.h   |  6 ++++++
->  2 files changed, 50 insertions(+)
+On Thu, 6 Dec 2018 at 08:10, Sebastian Reichel
+<sebastian.reichel@collabora.com> wrote:
+>
+> Hi,
+>
+> On Wed, Nov 14, 2018 at 05:07:03PM +0800, Baolin Wang wrote:
+> > This patch set adds some new features for SC27XX fuel gauge driver.
+> >
+> > 1. Read calibration data from eFuse device to calibrate fuel gauge.
+> > 2. Add low voltage alarm to adjust the battery capacity in lower
+> > voltage stage.
+> > 3. Add power management interfaces
+> > 4. Save last optimized battery capacity to be used as the initial
+> > battery capacity if system is not first power-on.
+> >
+> > Baolin Wang (2):
+> >   dt-bindings: power: supply: Add nvmem properties to calibrate FGU
+> >   power: supply: sc27xx: Add fuel gauge calibration
+> >
+> > Yuanjiang Yu (3):
+> >   power: supply: sc27xx: Add fuel gauge low voltage alarm
+> >   power: supply: sc27xx: Add suspend/resume interfaces
+> >   power: supply: sc27xx: Save last battery capacity
+> >
+> >  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    4 +
+> >  drivers/power/supply/sc27xx_fuel_gauge.c           |  453 +++++++++++++++++++-
+> >  2 files changed, 444 insertions(+), 13 deletions(-)
+>
+> I applied patches 1-4 and skipped patch 5 due to pending changes.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 46517b6..0ae3de7 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -935,6 +935,50 @@ int devfreq_resume_device(struct devfreq *devfreq)
->  EXPORT_SYMBOL(devfreq_resume_device);
->  
->  /**
-> + * devfreq_suspend() - Suspend devfreq governors and devices
-> + *
-> + * Called during system wide Suspend/Hibernate cycles for suspending governors
-> + * and devices preserving the state for resume. On some platforms the devfreq
-> + * device must have precise state (frequency) after resume in order to provide
-> + * fully operating setup.
-> + */
-> +void devfreq_suspend(void)
-> +{
-> +	struct devfreq *devfreq;
-> +	int ret;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	list_for_each_entry(devfreq, &devfreq_list, node) {
-> +		ret = devfreq_suspend_device(devfreq);
-> +		if (ret)
-> +			dev_err(&devfreq->dev,
-> +				"failed to suspend devfreq device\n");
-> +	}
-> +	mutex_unlock(&devfreq_list_lock);
-> +}
-> +
-> +/**
-> + * devfreq_resume() - Resume devfreq governors and devices
-> + *
-> + * Called during system wide Suspend/Hibernate cycle for resuming governors and
-> + * devices that are suspended with devfreq_suspend().
-> + */
-> +void devfreq_resume(void)
-> +{
-> +	struct devfreq *devfreq;
-> +	int ret;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	list_for_each_entry(devfreq, &devfreq_list, node) {
-> +		ret = devfreq_resume_device(devfreq);
-> +		if (ret)
-> +			dev_warn(&devfreq->dev,
-> +				 "failed to resume devfreq device\n");
-> +	}
-> +	mutex_unlock(&devfreq_list_lock);
-> +}
-> +
-> +/**
->   * devfreq_add_governor() - Add devfreq governor
->   * @governor:	the devfreq governor to be added
->   */
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index d985199..fbffa74 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -205,6 +205,9 @@ extern void devm_devfreq_remove_device(struct device *dev,
->  extern int devfreq_suspend_device(struct devfreq *devfreq);
->  extern int devfreq_resume_device(struct devfreq *devfreq);
->  
-> +extern void devfreq_suspend(void);
-> +extern void devfreq_resume(void);
-> +
->  /**
->   * update_devfreq() - Reevaluate the device and configure frequency
->   * @devfreq:	the devfreq device
-> @@ -331,6 +334,9 @@ static inline int devfreq_resume_device(struct devfreq *devfreq)
->  	return 0;
->  }
->  
-> +static inline void devfreq_suspend(void) {}
-> +static inline void devfreq_resume(void) {}
-> +
->  static inline struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
->  					   unsigned long *freq, u32 flags)
->  {
-> 
-
+I will send new version with addressing comments in patch 5. Thanks.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Baolin Wang
+Best Regards
