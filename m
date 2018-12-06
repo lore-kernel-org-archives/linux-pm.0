@@ -1,45 +1,96 @@
-From: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>
-Subject: [PATCH] thermal: stm32: read factory settings properly
-Date: Thu, 6 Dec 2018 09:12:56 +0000
-Message-ID: <1544087575-22242-1-git-send-email-david.hernandezsanchez@st.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 21/27] drivers: firmware: psci: Add a helper to attach
+ a CPU to its PM domain
+Date: Thu, 6 Dec 2018 10:15:23 +0100
+Message-ID: <CAPDyKFqv+1R-hbSmgfrn8jtBXEB3S1-=bg+ArBkR4m-cxd2oQQ@mail.gmail.com>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-22-ulf.hansson@linaro.org> <20181204184553.GO18262@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
-Content-ID: <1CBBC0193CA97B4DAA00046551B7631A@st.com>
+In-Reply-To: <20181204184553.GO18262@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Q2FsbCBzdG1fdGhlcm1hbF9yZWFkX2ZhY3Rvcnlfc2V0dGluZ3Mgb25jZQ0KaW50ZXJuYWwgcGVy
-aXBoZXJhbCBpcyBwcm9wZXJseSBjbG9ja2VkLg0KDQpUbyBhdm9pZCB3cm9uZyBpbml0aWFsaXph
-dGlvbiBvZiBmbXQwDQooc3RtX3RoZXJtYWxfc2Vuc29yIHN0cnVjdCkgbWVtYmVyIGFkZA0KYnJh
-Y2tldHMgcHJvcGVybHkuDQoNCkNoYW5nZS1JZDogSTE1MGQwMGZkNTBlMzgyZGYwNGJmYWQxMmYw
-NjUzYjFlZDZhMWRiMWINClNpZ25lZC1vZmYtYnk6IERhdmlkIEhlcm5hbmRleiBTYW5jaGV6IDxk
-YXZpZC5oZXJuYW5kZXpzYW5jaGV6QHN0LmNvbT4NCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhl
-cm1hbC9zdC9zdG1fdGhlcm1hbC5jIGIvZHJpdmVycy90aGVybWFsL3N0L3N0bV90aGVybWFsLmMN
-CmluZGV4IDQ3NjIzZGEuLmJiZDczYzUgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3RoZXJtYWwvc3Qv
-c3RtX3RoZXJtYWwuYw0KKysrIGIvZHJpdmVycy90aGVybWFsL3N0L3N0bV90aGVybWFsLmMNCkBA
-IC0yNDEsOCArMjQxLDggQEAgc3RhdGljIGludCBzdG1fdGhlcm1hbF9yZWFkX2ZhY3Rvcnlfc2V0
-dGluZ3Moc3RydWN0IHN0bV90aGVybWFsX3NlbnNvciAqc2Vuc29yKQ0KIAkJc2Vuc29yLT50MCA9
-IFRTMV9UMF9WQUwxOw0KIA0KIAkvKiBSZXRyaWV2ZSBmbXQwIGFuZCBwdXQgaXQgb24gSHogKi8N
-Ci0Jc2Vuc29yLT5mbXQwID0gQURKVVNUICogcmVhZGxfcmVsYXhlZChzZW5zb3ItPmJhc2UgKyBE
-VFNfVDBWQUxSMV9PRkZTRVQpDQotCQkJCQkgICAgICAmIFRTMV9GTVQwX01BU0s7DQorCXNlbnNv
-ci0+Zm10MCA9IEFESlVTVCAqIChyZWFkbF9yZWxheGVkKHNlbnNvci0+YmFzZSArDQorCQkJCSBE
-VFNfVDBWQUxSMV9PRkZTRVQpICYgVFMxX0ZNVDBfTUFTSyk7DQogDQogCS8qIFJldHJpZXZlIHJh
-bXAgY29lZmZpY2llbnQgKi8NCiAJc2Vuc29yLT5yYW1wX2NvZWZmID0gcmVhZGxfcmVsYXhlZChz
-ZW5zb3ItPmJhc2UgKyBEVFNfUkFNUFZBTFJfT0ZGU0VUKSAmDQpAQCAtNTMyLDYgKzUzMiwxMCBA
-QCBzdGF0aWMgaW50IHN0bV90aGVybWFsX3ByZXBhcmUoc3RydWN0IHN0bV90aGVybWFsX3NlbnNv
-ciAqc2Vuc29yKQ0KIAlpZiAocmV0KQ0KIAkJcmV0dXJuIHJldDsNCiANCisJcmV0ID0gc3RtX3Ro
-ZXJtYWxfcmVhZF9mYWN0b3J5X3NldHRpbmdzKHNlbnNvcik7DQorCWlmIChyZXQpDQorCQlnb3Rv
-IHRoZXJtYWxfdW5wcmVwYXJlOw0KKw0KIAlyZXQgPSBzdG1fdGhlcm1hbF9jYWxpYnJhdGlvbihz
-ZW5zb3IpOw0KIAlpZiAocmV0KQ0KIAkJZ290byB0aGVybWFsX3VucHJlcGFyZTsNCkBAIC02MzYs
-MTAgKzY0MCw2IEBAIHN0YXRpYyBpbnQgc3RtX3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3Jt
-X2RldmljZSAqcGRldikNCiAJLyogUG9wdWxhdGUgc2Vuc29yICovDQogCXNlbnNvci0+YmFzZSA9
-IGJhc2U7DQogDQotCXJldCA9IHN0bV90aGVybWFsX3JlYWRfZmFjdG9yeV9zZXR0aW5ncyhzZW5z
-b3IpOw0KLQlpZiAocmV0KQ0KLQkJcmV0dXJuIHJldDsNCi0NCiAJc2Vuc29yLT5jbGsgPSBkZXZt
-X2Nsa19nZXQoJnBkZXYtPmRldiwgInBjbGsiKTsNCiAJaWYgKElTX0VSUihzZW5zb3ItPmNsaykp
-IHsNCiAJCWRldl9lcnIoJnBkZXYtPmRldiwgIiVzOiBmYWlsZWQgdG8gZmV0Y2ggUENMSyBjbG9j
-a1xuIiwNCi0tIA0KMi43LjQNCg==
+On Tue, 4 Dec 2018 at 19:45, Lina Iyer <ilina@codeaurora.org> wrote:
+>
+> On Thu, Nov 29 2018 at 10:50 -0700, Ulf Hansson wrote:
+> >Introduce a new PSCI DT helper function, psci_dt_attach_cpu(), which takes
+> >a CPU number as an in-parameter and attaches the CPU's struct device to its
+> >corresponding PM domain. Additionally, the helper prepares the CPU to be
+> >power managed via runtime PM, which is the last step needed to enable the
+> >interaction with the PM domain through the runtime PM callbacks.
+> >
+> >Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >---
+> >
+> >Changes in v10:
+> >       - New patch: Replaces "PM / Domains: Add helper functions to
+> >         attach/detach CPUs to/from genpd".
+> >
+> >---
+> > drivers/firmware/psci/psci.h           |  1 +
+> > drivers/firmware/psci/psci_pm_domain.c | 19 +++++++++++++++++++
+> > 2 files changed, 20 insertions(+)
+> >
+> >diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+> >index 05af462cc96e..fbc9980dee69 100644
+> >--- a/drivers/firmware/psci/psci.h
+> >+++ b/drivers/firmware/psci/psci.h
+> >@@ -15,6 +15,7 @@ int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+> > int psci_dt_init_pm_domains(struct device_node *np);
+> > int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
+> >                       struct device_node *cpu_node, u32 *psci_states);
+> >+int psci_dt_attach_cpu(int cpu);
+> > #else
+> > static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
+> > #endif
+> >diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
+> >index 6c9d6a644c7f..b0fa7da8a0ce 100644
+> >--- a/drivers/firmware/psci/psci_pm_domain.c
+> >+++ b/drivers/firmware/psci/psci_pm_domain.c
+> >@@ -12,8 +12,10 @@
+> > #include <linux/device.h>
+> > #include <linux/kernel.h>
+> > #include <linux/pm_domain.h>
+> >+#include <linux/pm_runtime.h>
+> > #include <linux/slab.h>
+> > #include <linux/string.h>
+> >+#include <linux/cpu.h>
+> > #include <linux/cpuidle.h>
+> > #include <linux/cpu_pm.h>
+> >
+> >@@ -367,4 +369,21 @@ int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
+> >
+> >       return 0;
+> > }
+> >+
+> >+int psci_dt_attach_cpu(int cpu)
+> >+{
+> >+      struct device *dev = get_cpu_device(cpu);
+> >+      int ret;
+> >+
+> >+      ret = dev_pm_domain_attach(dev, true);
+> >+      if (ret)
+> >+              return ret;
+> >+
+> >+      pm_runtime_irq_safe(dev);
+> >+      pm_runtime_get_noresume(dev);
+> >+      pm_runtime_set_active(dev);
+> You would want to set this only if the CPU is online. Otherwise we will
+> not power down the domain, if the CPU was never brought online.
+
+Nice catch!
+
+The platforms I tested this series on brings all their CPUs online
+during boot, hence I haven't observed the problem.
+
+I will post a new version soon to address the problem. Again, thanks
+for your review!
+
+[...]
+
+Kind regards
+Uffe
