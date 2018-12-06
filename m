@@ -1,13 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: stm32: Fix stm_thermal_read_factory_settings
-Date: Thu, 6 Dec 2018 14:30:04 +0100
-Message-ID: <ecfc241e-7453-36dd-70ba-34b0f2e69dc8@linaro.org>
+Subject: Re: [PATCH] thermal: stm32: read factory settings inside
+ stm_thermal_prepare
+Date: Thu, 6 Dec 2018 14:32:20 +0100
+Message-ID: <7999967d-6f6e-635c-4d43-c0e1cd58ec4b@linaro.org>
 References: <1544102603-14899-1-git-send-email-david.hernandezsanchez@st.com>
+ <1544102603-14899-2-git-send-email-david.hernandezsanchez@st.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544102603-14899-1-git-send-email-david.hernandezsanchez@st.com>
+In-Reply-To: <1544102603-14899-2-git-send-email-david.hernandezsanchez@st.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
@@ -15,35 +17,48 @@ Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kern
 List-Id: linux-pm@vger.kernel.org
 
 On 06/12/2018 14:23, David HERNANDEZ SANCHEZ wrote:
-> Adding brackets allows to multiply the register value,
-> masked by TS1_RAMP_COEFF_MASK, by an ADJUST value
-> properly and not to multiply ADJUST by register value and
-> then mask the whole.
+> Calling stm_thermal_read_factory_settings before clocking
+> internal peripheral causes bad register values and makes
+> temperature computation wrong.
+> 
+> Calling stm_thermal_read_factory_settings inside
+> stm_thermal_prepare fixes this problem as internal
+> peripheral is well clocked at this stage.
 > 
 > Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
 > Fixes: 1d693155 ("thermal: add stm32 thermal driver")
 
-Usually 'Fixes' comes first in the list.
-
-Other than that:
+Same comment as the first patch.
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
+
 > diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-> index daa1257..bbd73c5 100644
+> index 47623da..daa1257 100644
 > --- a/drivers/thermal/st/stm_thermal.c
 > +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -241,8 +241,8 @@ static int stm_thermal_read_factory_settings(struct stm_thermal_sensor *sensor)
->  		sensor->t0 = TS1_T0_VAL1;
+> @@ -532,6 +532,10 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
+>  	if (ret)
+>  		return ret;
 >  
->  	/* Retrieve fmt0 and put it on Hz */
-> -	sensor->fmt0 = ADJUST * readl_relaxed(sensor->base + DTS_T0VALR1_OFFSET)
-> -					      & TS1_FMT0_MASK;
-> +	sensor->fmt0 = ADJUST * (readl_relaxed(sensor->base +
-> +				 DTS_T0VALR1_OFFSET) & TS1_FMT0_MASK);
+> +	ret = stm_thermal_read_factory_settings(sensor);
+> +	if (ret)
+> +		goto thermal_unprepare;
+> +
+>  	ret = stm_thermal_calibration(sensor);
+>  	if (ret)
+>  		goto thermal_unprepare;
+> @@ -636,10 +640,6 @@ static int stm_thermal_probe(struct platform_device *pdev)
+>  	/* Populate sensor */
+>  	sensor->base = base;
 >  
->  	/* Retrieve ramp coefficient */
->  	sensor->ramp_coeff = readl_relaxed(sensor->base + DTS_RAMPVALR_OFFSET) &
+> -	ret = stm_thermal_read_factory_settings(sensor);
+> -	if (ret)
+> -		return ret;
+> -
+>  	sensor->clk = devm_clk_get(&pdev->dev, "pclk");
+>  	if (IS_ERR(sensor->clk)) {
+>  		dev_err(&pdev->dev, "%s: failed to fetch PCLK clock\n",
 > 
 
 
