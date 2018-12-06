@@ -1,151 +1,282 @@
-From: David Dai <daidavid1@codeaurora.org>
-Subject: Re: [PATCH v10 5/7] interconnect: qcom: Add sdm845 interconnect
- provider driver
-Date: Thu, 6 Dec 2018 13:53:21 -0800
-Message-ID: <266c7bf9-18c1-8255-eca2-814aab3850c6@codeaurora.org>
-References: <20181127180349.29997-1-georgi.djakov@linaro.org>
- <20181127180349.29997-6-georgi.djakov@linaro.org>
- <CAE=gft4tO96n0vAubo1_vvcTO4yarDcTNOTuL6cLpmLDDNxrfA@mail.gmail.com>
- <cfcb39ba-860c-5a3f-911f-ab52b5250390@linaro.org>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v2] power: supply: sc27xx: Save last battery capacity
+Date: Thu, 6 Dec 2018 22:58:29 +0100
+Message-ID: <20181206215829.kmykasyp2nurwpkt@earth.universe>
+References: <271ebbae85bc544cbcb6925a10de30267f8eb3ee.1544066225.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bdvnz5ydqusftk5f"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cfcb39ba-860c-5a3f-911f-ab52b5250390@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <271ebbae85bc544cbcb6925a10de30267f8eb3ee.1544066225.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, Evan Green <evgreen@chromium.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Alexandre Bailon <abailon@baylibre.com>, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
 
+--bdvnz5ydqusftk5f
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/5/2018 8:00 AM, Georgi Djakov wrote:
-> Hi Evan,
->
-> On 12/1/18 02:39, Evan Green wrote:
->> On Tue, Nov 27, 2018 at 10:04 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->>> From: David Dai <daidavid1@codeaurora.org>
->>>
->>> Introduce Qualcomm SDM845 specific provider driver using the
->>> interconnect framework.
->>>
->>> Signed-off-by: David Dai <daidavid1@codeaurora.org>
->>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->>> ---
->>>   .../bindings/interconnect/qcom,sdm845.txt     |  24 +
->>>   drivers/interconnect/Kconfig                  |   5 +
->>>   drivers/interconnect/Makefile                 |   1 +
->>>   drivers/interconnect/qcom/Kconfig             |  13 +
->>>   drivers/interconnect/qcom/Makefile            |   5 +
->>>   drivers/interconnect/qcom/sdm845.c            | 836 ++++++++++++++++++
->>>   .../dt-bindings/interconnect/qcom,sdm845.h    | 143 +++
->>>   7 files changed, 1027 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
->>>   create mode 100644 drivers/interconnect/qcom/Kconfig
->>>   create mode 100644 drivers/interconnect/qcom/Makefile
->>>   create mode 100644 drivers/interconnect/qcom/sdm845.c
->>>   create mode 100644 include/dt-bindings/interconnect/qcom,sdm845.h
->>>
->>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
->>> new file mode 100644
->>> index 000000000000..d45150e99665
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
->>> @@ -0,0 +1,24 @@
->>> +Qualcomm SDM845 Network-On-Chip interconnect driver binding
->>> +-----------------------------------------------------------
->>> +
->>> +SDM845 interconnect providers support system bandwidth requirements through
->>> +RPMh hardware accelerators known as Bus Clock Manager(BCM). The provider is able
->>> +to communicate with the BCM through the Resource State Coordinator(RSC)
->>> +associated with each execution environment. Provider nodes must reside within
->>> +an RPMh device node pertaining to their RSC and each provider maps to
->>> +a single RPMh resource.
->>> +
->>> +Required properties :
->>> +- compatible : shall contain only one of the following:
->>> +                       "qcom,sdm845-rsc-hlos"
->> I wonder if maybe hlos isn't necessary. Unless you somehow imagine
->> secure mode would have a device tree entry in here as well? Probably
->> not.
-> Ok, will remove it. David, please chime in if you have any concerns with
-> this.
+Hi,
 
-No strong preferences in terms of naming, but need to make the 
-distinction between this and potential other rsc types if we're to add 
-additional provider drivers.
+On Thu, Dec 06, 2018 at 11:20:39AM +0800, Baolin Wang wrote:
+> From: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+>=20
+> Our charger manager can optimize the battery capacity periodically, so
+> we can save last battery capacity into registers. Then next system
+> power-on, we can read the last saved battery capacity as the initial
+> battery capacity, which can make the battery capacity more accurate.
+>=20
+> Signed-off-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> ---
 
->>> +- #interconnect-cells : should contain 1
->>> +
->>> +Examples:
->>> +
->>> +apps_rsc: rsc {
->>> +               qnoc: qnoc-rsc-hlos {
->>> +                       compatible = "qcom,sdm845-rsc-hlos";
->>> +                       #interconnect-cells = <1>;
->>> +               };
->>> +};
->>> +
->> ...
->>> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
->>> new file mode 100644
->>> index 000000000000..1678de91ca52
->>> --- /dev/null
->>> +++ b/drivers/interconnect/qcom/sdm845.c
->>> @@ -0,0 +1,836 @@
->> ...
->>> +
->>> +static void tcs_list_gen(struct list_head *bcm_list,
->>> +                        struct tcs_cmd *tcs_list, int *n)
->> We could make the prototype of this function be:
->>
->> static void tcs_list_gen(struct list_head *bcm_list,
->>          struct tcs_cmd tcs_list[SDM845_MAX_VCD], int n[SDM845_MAX_VCD])
->>
->> which would catch errors if somebody later passed in an array that
->> wasn't the right size, since we blindly memset below.
-> Yes, sounds good. I will try to optimize it.
->
-> Thanks,
-> Georgi
->
->>> +{
->>> +       struct qcom_icc_bcm *bcm;
->>> +       bool commit;
->>> +       size_t idx = 0, batch = 0, cur_vcd_size = 0;
->>> +
->>> +       memset(n, 0, sizeof(int) * SDM845_MAX_VCD);
->>> +
->>> +       list_for_each_entry(bcm, bcm_list, list) {
->>> +               commit = false;
->>> +               cur_vcd_size++;
->>> +               if ((list_is_last(&bcm->list, bcm_list)) ||
->>> +                   bcm->aux_data.vcd != list_next_entry(bcm, list)->aux_data.vcd) {
->>> +                       commit = true;
->>> +                       cur_vcd_size = 0;
->>> +               }
->>> +               tcs_cmd_gen(&tcs_list[idx], bcm->vote_x, bcm->vote_y,
->>> +                           bcm->addr, commit);
->>> +               idx++;
->>> +               n[batch]++;
->>> +               /*
->>> +                * Batch the BCMs in such a way that we do not split them in
->>> +                * multiple payloads when they are under the same VCD. This is
->>> +                * to ensure that every BCM is committed since we only set the
->>> +                * commit bit on the last BCM request of every VCD.
->>> +                */
->>> +               if (n[batch] >= MAX_RPMH_PAYLOAD) {
->>> +                       if (!commit) {
->>> +                               n[batch] -= cur_vcd_size;
->>> +                               n[batch + 1] = cur_vcd_size;
->>> +                       }
->>> +                       batch++;
->>> +               }
->>> +       }
->>> +}
->>> +
+Thanks, queued.
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+-- Sebastian
+
+> Changes from v1:
+>  - Simplify the logics for sc27xx_fgu_set_property() and
+>    sc27xx_fgu_property_is_writeable().
+> ---
+>  drivers/power/supply/sc27xx_fuel_gauge.c |  135 ++++++++++++++++++++++++=
++++++-
+>  1 file changed, 134 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/sup=
+ply/sc27xx_fuel_gauge.c
+> index 8c52e29..76da189 100644
+> --- a/drivers/power/supply/sc27xx_fuel_gauge.c
+> +++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+> @@ -39,6 +39,9 @@
+>  #define SC27XX_FGU_CLBCNT_VALH		0x68
+>  #define SC27XX_FGU_CLBCNT_VALL		0x6c
+>  #define SC27XX_FGU_CLBCNT_QMAXL		0x74
+> +#define SC27XX_FGU_USER_AREA_SET	0xa0
+> +#define SC27XX_FGU_USER_AREA_CLEAR	0xa4
+> +#define SC27XX_FGU_USER_AREA_STATUS	0xa8
+> =20
+>  #define SC27XX_WRITE_SELCLB_EN		BIT(0)
+>  #define SC27XX_FGU_CLBCNT_MASK		GENMASK(15, 0)
+> @@ -49,6 +52,14 @@
+>  #define SC27XX_FGU_LOW_OVERLOAD_INT	BIT(0)
+>  #define SC27XX_FGU_CLBCNT_DELTA_INT	BIT(2)
+> =20
+> +#define SC27XX_FGU_MODE_AREA_MASK	GENMASK(15, 12)
+> +#define SC27XX_FGU_CAP_AREA_MASK	GENMASK(11, 0)
+> +#define SC27XX_FGU_MODE_AREA_SHIFT	12
+> +
+> +#define SC27XX_FGU_FIRST_POWERTON	GENMASK(3, 0)
+> +#define SC27XX_FGU_DEFAULT_CAP		GENMASK(11, 0)
+> +#define SC27XX_FGU_NORMAIL_POWERTON	0x5
+> +
+>  #define SC27XX_FGU_CUR_BASIC_ADC	8192
+>  #define SC27XX_FGU_SAMPLE_HZ		2
+> =20
+> @@ -119,6 +130,80 @@ static int sc27xx_fgu_voltage_to_adc(struct sc27xx_f=
+gu_data *data, int vol)
+>  	return DIV_ROUND_CLOSEST(vol * data->vol_1000mv_adc, 1000);
+>  }
+> =20
+> +static bool sc27xx_fgu_is_first_poweron(struct sc27xx_fgu_data *data)
+> +{
+> +	int ret, status, cap, mode;
+> +
+> +	ret =3D regmap_read(data->regmap,
+> +			  data->base + SC27XX_FGU_USER_AREA_STATUS, &status);
+> +	if (ret)
+> +		return false;
+> +
+> +	/*
+> +	 * We use low 4 bits to save the last battery capacity and high 12 bits
+> +	 * to save the system boot mode.
+> +	 */
+> +	mode =3D (status & SC27XX_FGU_MODE_AREA_MASK) >> SC27XX_FGU_MODE_AREA_S=
+HIFT;
+> +	cap =3D status & SC27XX_FGU_CAP_AREA_MASK;
+> +
+> +	/*
+> +	 * When FGU has been powered down, the user area registers became
+> +	 * default value (0xffff), which can be used to valid if the system is
+> +	 * first power on or not.
+> +	 */
+> +	if (mode =3D=3D SC27XX_FGU_FIRST_POWERTON || cap =3D=3D SC27XX_FGU_DEFA=
+ULT_CAP)
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+> +static int sc27xx_fgu_save_boot_mode(struct sc27xx_fgu_data *data,
+> +				     int boot_mode)
+> +{
+> +	int ret;
+> +
+> +	ret =3D regmap_update_bits(data->regmap,
+> +				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
+> +				 SC27XX_FGU_MODE_AREA_MASK,
+> +				 SC27XX_FGU_MODE_AREA_MASK);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return regmap_update_bits(data->regmap,
+> +				  data->base + SC27XX_FGU_USER_AREA_SET,
+> +				  SC27XX_FGU_MODE_AREA_MASK,
+> +				  boot_mode << SC27XX_FGU_MODE_AREA_SHIFT);
+> +}
+> +
+> +static int sc27xx_fgu_save_last_cap(struct sc27xx_fgu_data *data, int ca=
+p)
+> +{
+> +	int ret;
+> +
+> +	ret =3D regmap_update_bits(data->regmap,
+> +				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
+> +				 SC27XX_FGU_CAP_AREA_MASK,
+> +				 SC27XX_FGU_CAP_AREA_MASK);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return regmap_update_bits(data->regmap,
+> +				  data->base + SC27XX_FGU_USER_AREA_SET,
+> +				  SC27XX_FGU_CAP_AREA_MASK, cap);
+> +}
+> +
+> +static int sc27xx_fgu_read_last_cap(struct sc27xx_fgu_data *data, int *c=
+ap)
+> +{
+> +	int ret, value;
+> +
+> +	ret =3D regmap_read(data->regmap,
+> +			  data->base + SC27XX_FGU_USER_AREA_STATUS, &value);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*cap =3D value & SC27XX_FGU_CAP_AREA_MASK;
+> +	return 0;
+> +}
+> +
+>  /*
+>   * When system boots on, we can not read battery capacity from coulomb
+>   * registers, since now the coulomb registers are invalid. So we should
+> @@ -128,6 +213,20 @@ static int sc27xx_fgu_voltage_to_adc(struct sc27xx_f=
+gu_data *data, int vol)
+>  static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, in=
+t *cap)
+>  {
+>  	int volt, cur, oci, ocv, ret;
+> +	bool is_first_poweron =3D sc27xx_fgu_is_first_poweron(data);
+> +
+> +	/*
+> +	 * If system is not the first power on, we should use the last saved
+> +	 * battery capacity as the initial battery capacity. Otherwise we should
+> +	 * re-calculate the initial battery capacity.
+> +	 */
+> +	if (!is_first_poweron) {
+> +		ret =3D sc27xx_fgu_read_last_cap(data, cap);
+> +		if (ret)
+> +			return ret;
+> +
+> +		return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
+> +	}
+> =20
+>  	/*
+>  	 * After system booting on, the SC27XX_FGU_CLBCNT_QMAXL register saved
+> @@ -160,7 +259,11 @@ static int sc27xx_fgu_get_boot_capacity(struct sc27x=
+x_fgu_data *data, int *cap)
+>  	*cap =3D power_supply_ocv2cap_simple(data->cap_table, data->table_len,
+>  					   ocv);
+> =20
+> -	return 0;
+> +	ret =3D sc27xx_fgu_save_last_cap(data, *cap);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
+>  }
+> =20
+>  static int sc27xx_fgu_set_clbcnt(struct sc27xx_fgu_data *data, int clbcn=
+t)
+> @@ -418,6 +521,28 @@ static int sc27xx_fgu_get_property(struct power_supp=
+ly *psy,
+>  	return ret;
+>  }
+> =20
+> +static int sc27xx_fgu_set_property(struct power_supply *psy,
+> +				   enum power_supply_property psp,
+> +				   const union power_supply_propval *val)
+> +{
+> +	struct sc27xx_fgu_data *data =3D power_supply_get_drvdata(psy);
+> +	int ret;
+> +
+> +	if (psp !=3D POWER_SUPPLY_PROP_CAPACITY)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&data->lock);
+> +
+> +	ret =3D sc27xx_fgu_save_last_cap(data, val->intval);
+> +
+> +	mutex_unlock(&data->lock);
+> +
+> +	if (ret < 0)
+> +		dev_err(data->dev, "failed to save battery capacity\n");
+> +
+> +	return ret;
+> +}
+> +
+>  static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
+>  {
+>  	struct sc27xx_fgu_data *data =3D power_supply_get_drvdata(psy);
+> @@ -425,6 +550,12 @@ static void sc27xx_fgu_external_power_changed(struct=
+ power_supply *psy)
+>  	power_supply_changed(data->battery);
+>  }
+> =20
+> +static int sc27xx_fgu_property_is_writeable(struct power_supply *psy,
+> +					    enum power_supply_property psp)
+> +{
+> +	return psp =3D=3D POWER_SUPPLY_PROP_CAPACITY;
+> +}
+> +
+>  static enum power_supply_property sc27xx_fgu_props[] =3D {
+>  	POWER_SUPPLY_PROP_STATUS,
+>  	POWER_SUPPLY_PROP_HEALTH,
+> @@ -444,7 +575,9 @@ static void sc27xx_fgu_external_power_changed(struct =
+power_supply *psy)
+>  	.properties		=3D sc27xx_fgu_props,
+>  	.num_properties		=3D ARRAY_SIZE(sc27xx_fgu_props),
+>  	.get_property		=3D sc27xx_fgu_get_property,
+> +	.set_property		=3D sc27xx_fgu_set_property,
+>  	.external_power_changed	=3D sc27xx_fgu_external_power_changed,
+> +	.property_is_writeable	=3D sc27xx_fgu_property_is_writeable,
+>  };
+> =20
+>  static void sc27xx_fgu_adjust_cap(struct sc27xx_fgu_data *data, int cap)
+> --=20
+> 1.7.9.5
+>=20
+
+--bdvnz5ydqusftk5f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwJm4EACgkQ2O7X88g7
++pqsTg//XzERU0vsmHPaaLAxmwNTJp1eqW/ZCnKLDwARY6I8W1+X5Ujz3w88RcNA
+BWgKjXJSsQKFWkPch/QlI+iYS8NwDRfx1puB/MNEV5LHl8zISOxx01gnAGFo3jio
+EknFjvsphZcKtGCO63EpERJD0GsPsTxM5nFwrO5yg5hAeg7m8wPH+38pKZMmTbRv
+9PZx3lmDuIxc3awTIDVahN1zrsDxak+BEs7mDTxpnwaoAWoyHL8xLgHRioHozU6D
+w4+92KJtwuESvm0W3x1IKjmrH7nYuoIuvt5DNy3CfnZD5+FERcsY6ZMBZpzaPevS
+VFNHuwR5axUa/eBjuhvJndPAvG26kzxqLHLPs3hVLPsaMb+A9cwMTbOz4G9udAb6
+yvNOjaMdzla0q7DcAnaiavkMyt8W3IzqNTeWDUzX+PaiWMzil5uRrpTytG8DfF8I
+1GgKwdFgROeEIcuNhwp9X04nTP41xin7788u/j6243Z3LGomfY8noY+rHM2bsUjp
+5QFqhm50hG0zfOodPTPu1wVPGjQizxXEiF50MlL8w5MBBH2c2wT49bRnOK2/2np3
+ZjpBVdQIIczhtWpfmh7f6hmBi+P6xxV4cKPi2jMSrN2cTSAkYFRKTdTYrL/h+EgN
+qc9YVCXWPQKoV+xk6/O7p9IlOyzjljxRrypD9WGv+SrcYONfaso=
+=4h6q
+-----END PGP SIGNATURE-----
+
+--bdvnz5ydqusftk5f--
