@@ -1,58 +1,72 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC/RFT,v7] cpuidle: New timer events oriented governor for
- tickless systems
-Date: Fri, 7 Dec 2018 09:37:53 +0000
-Message-ID: <20181207093751.io5hhmg53camwpzh@queper01-lin>
-References: <2047881.s5VBHReNGT@aspire.rjw.lan>
- <20181207075840.5881-1-hu1.chen@intel.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v10 0/8] Introduce on-chip interconnect API
+Date: Fri, 7 Dec 2018 12:06:21 +0200
+Message-ID: <bdc4bad1-d613-4144-2e5b-2657e170affa@linaro.org>
+References: <20181127180349.29997-1-georgi.djakov@linaro.org>
+ <CAE=gft4jUjr3oDAZrM=-orLM-YoVAwa+e=crDDC_p9ArGE1dig@mail.gmail.com>
+ <20181206145547.GA7884@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181207075840.5881-1-hu1.chen@intel.com>
+In-Reply-To: <20181206145547.GA7884@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Chen, Hu" <hu1.chen@intel.com>
-Cc: rjw@rjwysocki.net, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>, Evan Green <evgreen@chromium.org>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Alexandre Bailon <abailon@baylibre.com>, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, Doug Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chen,
+Hi Greg and Evan,
 
-On Friday 07 Dec 2018 at 15:58:35 (+0800), Chen, Hu wrote:
-> From: Chen Hu <hu1.chen@intel.com>
+On 12/6/18 16:55, Greg KH wrote:
+> On Wed, Dec 05, 2018 at 12:41:35PM -0800, Evan Green wrote:
+>> On Tue, Nov 27, 2018 at 10:03 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>>>
+>>> Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+>>> graphics, modem). These cores are talking to each other and can generate a
+>>> lot of data flowing through the on-chip interconnects. These interconnect
+>>> buses could form different topologies such as crossbar, point to point buses,
+>>> hierarchical buses or use the network-on-chip concept.
+>>>
+>>> These buses have been sized usually to handle use cases with high data
+>>> throughput but it is not necessary all the time and consume a lot of power.
+>>> Furthermore, the priority between masters can vary depending on the running
+>>> use case like video playback or CPU intensive tasks.
+>>>
+>>> Having an API to control the requirement of the system in terms of bandwidth
+>>> and QoS, so we can adapt the interconnect configuration to match those by
+>>> scaling the frequencies, setting link priority and tuning QoS parameters.
+>>> This configuration can be a static, one-time operation done at boot for some
+>>> platforms or a dynamic set of operations that happen at run-time.
+>>>
+>>> This patchset introduce a new API to get the requirement and configure the
+>>> interconnect buses across the entire chipset to fit with the current demand.
+>>> The API is NOT for changing the performance of the endpoint devices, but only
+>>> the interconnect path in between them.
+>>
+>> For what it's worth, we are ready to land this in Chrome OS. I think
+>> this series has been very well discussed and reviewed, hasn't changed
+>> much in the last few spins, and is in good enough shape to use as a
+>> base for future patches. Georgi's also done a great job reaching out
+>> to other SoC vendors, and there appears to be enough consensus that
+>> this framework will be usable by more than just Qualcomm. There are
+>> also several drivers out on the list trying to add patches to use this
+>> framework, with more to come, so it made sense (to us) to get this
+>> base framework nailed down. In my experiments this is an important
+>> piece of the overall power management story, especially on systems
+>> that are mostly idle.
+>>
+>> I'll continue to track changes to this series and we will ultimately
+>> reconcile with whatever happens upstream, but I thought it was worth
+>> sending this note to express our "thumbs up" towards this framework.
 > 
-> Hi Rafael,
+> Looks like a v11 will be forthcoming, so I'll wait for that one to apply
+> it to the tree if all looks good.
 > 
-> I run several popular Android performance benchmarks on teov7, using kernel
-> 4.19.0 as my baseline because I happen to work on it. To backport teov7 to
-> kernel 4.19.0, I also backport patch 5f26bdc: "cpuidle: menu: Fix wakeup
-> statistics updates for polling state". The teov7 doesn't show regressions on
-> such perf KPIs.
-> 
-> Compare "4.19 + 5f26bdc" and "4.19 + 5f26bdc + teov7" on Android with Intel
-> Apollo Lake SoC:
-> 
-> Test Case                               Diff after appling teov7
-> Antutu_6                                0.51%
-> GFX5_openGL_Car_Chase                   0.43%
-> GFX5_openGL_Car_Chase_offscreen	        0.25%
-> GFX5_openGL_Manhattan31	                0.75%
-> GFX5_openGL_Manhattan31_1080_offscreen  -0.10%
-> Geekbench3.3                            -0.13%
-> H264_1080P_60FPS                        0.00%
-> H264_2160P_60FPS                        0.00%
-> H265_2K_10bit                           0.00%
-> H265_2K_8bit                            0.00%
-> Resume_time                             1.31%
-> full_boot                               -0.39%
 
-That's really nice that you guys are able to get good test results on
-Android 4.19 that early after the release :-)
-
-Do you happen to run interactive use-cases as well ? I think Jankbench
-is one of the workload most folk care about for example. Also, did you
-manage to measure energy numbers for the above tests ?
-
-FWIW, I'd like to give a go to TEO on an Arm-based setup when I can.
+Yes, it's coming. I will also include an additional fixup patch, as the
+sdm845 provider driver will fail to build in linux-next, due to a recent
+change in the cmd_db API.
 
 Thanks,
-Quentin
+Georgi
