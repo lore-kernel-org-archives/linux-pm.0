@@ -1,47 +1,73 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH] thermal: uniphier: Convert to SPDX identifier
-Date: Fri,  7 Dec 2018 10:06:04 +0900
-Message-ID: <1544144764-17964-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH V5 2/2] thermal: imx: save one condition block for normal
+ case of nvmem initialization
+Date: Fri, 7 Dec 2018 03:11:31 +0000
+Message-ID: <DB3PR0402MB391626344F9D278D797B91CBF5AA0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
+ <1542779052-29536-2-git-send-email-Anson.Huang@nxp.com>
+ <b28efba1-e04a-7e33-126b-b92c7aa5e9a9@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <b28efba1-e04a-7e33-126b-b92c7aa5e9a9@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-This converts license boilerplate to SPDX identifier, and removes
-unnecessary lines.
-
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
----
- drivers/thermal/uniphier_thermal.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
-
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-index 55477d7..bba2284 100644
---- a/drivers/thermal/uniphier_thermal.c
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -1,21 +1,10 @@
-+// SPDX-License-Identifier: GPL-2.0
- /**
-  * uniphier_thermal.c - Socionext UniPhier thermal driver
-- *
-  * Copyright 2014      Panasonic Corporation
-  * Copyright 2016-2017 Socionext Inc.
-- * All rights reserved.
-- *
-  * Author:
-  *	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-- *
-- * This program is free software: you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2  of
-- * the License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-  */
- 
- #include <linux/bitops.h>
--- 
-2.7.4
+R2VudGxlIHBpbmcuLg0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3Jp
+Z2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVs
+LmxlemNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDogMjAxOOW5tDEx5pyIMjHml6UgMTY6MzENCj4g
+VG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgcnVpLnpoYW5nQGludGVsLmNv
+bTsNCj4gZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBs
+aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyB2aXJlc2gua3VtYXJAbGluYXJvLm9yZzsNCj4g
+bC5zdGFjaEBwZW5ndXRyb25peC5kZQ0KPiBDYzogZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhw
+LmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWNSAyLzJdIHRoZXJtYWw6IGlteDogc2F2ZSBv
+bmUgY29uZGl0aW9uIGJsb2NrIGZvciBub3JtYWwNCj4gY2FzZSBvZiBudm1lbSBpbml0aWFsaXph
+dGlvbg0KPiANCj4gT24gMjEvMTEvMjAxOCAwNjo0OSwgQW5zb24gSHVhbmcgd3JvdGU6DQo+ID4g
+UHV0IHJldHVybiB2YWx1ZSBjaGVja3Mgb2YgY2FsbGluZyBpbXhfaW5pdF9mcm9tX252bWVtX2Nl
+bGxzKCkgaW50bw0KPiA+IG9uZSBibG9jayB0byBzYXZlIG9uZSBjb25kaXRpb24gYmxvY2sgZm9y
+IG5vcm1hbCBjYXNlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29u
+Lkh1YW5nQG54cC5jb20+DQo+IA0KPiBSZXZpZXdlZC1ieTogRGFuaWVsIExlemNhbm8gPGRhbmll
+bC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IA0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RoZXJtYWwv
+aW14X3RoZXJtYWwuYyB8IDUgKysrLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9u
+cygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJt
+YWwvaW14X3RoZXJtYWwuYw0KPiA+IGIvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMgaW5k
+ZXggYzkyNDM5Ni4uYmI2NzU0YSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvaW14
+X3RoZXJtYWwuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4g
+QEAgLTc0Miw5ICs3NDIsMTAgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QN
+Cj4gPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4NCj4gPiAgCWlmIChvZl9maW5kX3Byb3Bl
+cnR5KHBkZXYtPmRldi5vZl9ub2RlLCAibnZtZW0tY2VsbHMiLCBOVUxMKSkgew0KPiA+ICAJCXJl
+dCA9IGlteF9pbml0X2Zyb21fbnZtZW1fY2VsbHMocGRldik7DQo+ID4gLQkJaWYgKHJldCA9PSAt
+RVBST0JFX0RFRkVSKQ0KPiA+IC0JCQlyZXR1cm4gcmV0Ow0KPiA+ICAJCWlmIChyZXQpIHsNCj4g
+PiArCQkJaWYgKHJldCA9PSAtRVBST0JFX0RFRkVSKQ0KPiA+ICsJCQkJcmV0dXJuIHJldDsNCj4g
+PiArDQo+ID4gIAkJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBpbml0IGZyb20gbnZt
+ZW06ICVkXG4iLA0KPiA+ICAJCQkJcmV0KTsNCj4gPiAgCQkJcmV0dXJuIHJldDsNCj4gPg0KPiAN
+Cj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0
+bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGJmFtcDtkYXRh
+PTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jb20lN0NmZDYwNDMNCj4gN2VlMzY0NGJlZjg1
+OTMwOGQ2NGY4YmFiZmMlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3Qw0KPiAw
+JTdDMCU3QzYzNjc4Mzg1ODY1NDk3Mzg2NSZhbXA7c2RhdGE9QmdzY0dBc0tZZW1Kc1B4T2VXbmhL
+OW83DQo+IDJEbnlWJTJCNXAlMkIlMkYyRnVraGNwcU0lM0QmYW1wO3Jlc2VydmVkPTA+IExpbmFy
+by5vcmcg4pSCIE9wZW4NCj4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9s
+bG93IExpbmFybzoNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxv
+b2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dw0KPiAuZmFjZWJvb2suY29tJTJGcGFnZXMlMkZM
+aW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwDQo+IG54cC5jb20lN0NmZDYw
+NDM3ZWUzNjQ0YmVmODU5MzA4ZDY0ZjhiYWJmYyU3QzY4NmVhMWQzYmMyYjRjNmZhOTINCj4gY2Q5
+OWM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzODU4NjU0OTczODY1JmFtcDtzZGF0YT02ekExMGxX
+DQo+IHduV29BVUs3anFxdnNERE1NMlExM0FlZG1lU1BBQk1lUiUyQnhjJTNEJmFtcDtyZXNlcnZl
+ZD0wPg0KPiBGYWNlYm9vayB8DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlv
+bi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ0d2l0dA0KPiBlci5jb20lMkYlMjMhJTJG
+bGluYXJvb3JnJmFtcDtkYXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jDQo+IG9tJTdD
+ZmQ2MDQzN2VlMzY0NGJlZjg1OTMwOGQ2NGY4YmFiZmMlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5
+OQ0KPiBjNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4Mzg1ODY1NDk3Mzg2NSZhbXA7c2RhdGE9a3Vx
+dUtFVXV2WFcNCj4gODhWMlFnUFFnWFlCZ3YySHR2MzdHS0RxYWgwVmVJSjglM0QmYW1wO3Jlc2Vy
+dmVkPTA+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24u
+b3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGbGluYXJv
+LWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwbnhwLmMNCj4gb20lN0Nm
+ZDYwNDM3ZWUzNjQ0YmVmODU5MzA4ZDY0ZjhiYWJmYyU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5
+DQo+IGM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzODU4NjU0OTczODY1JmFtcDtzZGF0YT0wQWlZ
+Y2oxSDF2YTFuDQo+IG1lZTJ0SFdXWW5tR2U1d3pGb2FvNEtaYmt4c0t6byUzRCZhbXA7cmVzZXJ2
+ZWQ9MD4gQmxvZw0KDQo=
