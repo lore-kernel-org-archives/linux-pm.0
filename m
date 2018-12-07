@@ -1,73 +1,93 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V5 2/2] thermal: imx: save one condition block for normal
- case of nvmem initialization
-Date: Fri, 7 Dec 2018 03:11:31 +0000
-Message-ID: <DB3PR0402MB391626344F9D278D797B91CBF5AA0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
- <1542779052-29536-2-git-send-email-Anson.Huang@nxp.com>
- <b28efba1-e04a-7e33-126b-b92c7aa5e9a9@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v4 0/2] driver: thermal: Move some drivers into subdirs
+Date: Fri,  7 Dec 2018 12:25:25 +0530
+Message-ID: <cover.1544165234.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b28efba1-e04a-7e33-126b-b92c7aa5e9a9@linaro.org>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, sfr@canb.auug.org.au, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-R2VudGxlIHBpbmcuLg0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVs
-LmxlemNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDogMjAxOOW5tDEx5pyIMjHml6UgMTY6MzENCj4g
-VG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgcnVpLnpoYW5nQGludGVsLmNv
-bTsNCj4gZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBs
-aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyB2aXJlc2gua3VtYXJAbGluYXJvLm9yZzsNCj4g
-bC5zdGFjaEBwZW5ndXRyb25peC5kZQ0KPiBDYzogZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhw
-LmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWNSAyLzJdIHRoZXJtYWw6IGlteDogc2F2ZSBv
-bmUgY29uZGl0aW9uIGJsb2NrIGZvciBub3JtYWwNCj4gY2FzZSBvZiBudm1lbSBpbml0aWFsaXph
-dGlvbg0KPiANCj4gT24gMjEvMTEvMjAxOCAwNjo0OSwgQW5zb24gSHVhbmcgd3JvdGU6DQo+ID4g
-UHV0IHJldHVybiB2YWx1ZSBjaGVja3Mgb2YgY2FsbGluZyBpbXhfaW5pdF9mcm9tX252bWVtX2Nl
-bGxzKCkgaW50bw0KPiA+IG9uZSBibG9jayB0byBzYXZlIG9uZSBjb25kaXRpb24gYmxvY2sgZm9y
-IG5vcm1hbCBjYXNlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29u
-Lkh1YW5nQG54cC5jb20+DQo+IA0KPiBSZXZpZXdlZC1ieTogRGFuaWVsIExlemNhbm8gPGRhbmll
-bC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IA0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RoZXJtYWwv
-aW14X3RoZXJtYWwuYyB8IDUgKysrLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9u
-cygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJt
-YWwvaW14X3RoZXJtYWwuYw0KPiA+IGIvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMgaW5k
-ZXggYzkyNDM5Ni4uYmI2NzU0YSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvaW14
-X3RoZXJtYWwuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4g
-QEAgLTc0Miw5ICs3NDIsMTAgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QN
-Cj4gPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4NCj4gPiAgCWlmIChvZl9maW5kX3Byb3Bl
-cnR5KHBkZXYtPmRldi5vZl9ub2RlLCAibnZtZW0tY2VsbHMiLCBOVUxMKSkgew0KPiA+ICAJCXJl
-dCA9IGlteF9pbml0X2Zyb21fbnZtZW1fY2VsbHMocGRldik7DQo+ID4gLQkJaWYgKHJldCA9PSAt
-RVBST0JFX0RFRkVSKQ0KPiA+IC0JCQlyZXR1cm4gcmV0Ow0KPiA+ICAJCWlmIChyZXQpIHsNCj4g
-PiArCQkJaWYgKHJldCA9PSAtRVBST0JFX0RFRkVSKQ0KPiA+ICsJCQkJcmV0dXJuIHJldDsNCj4g
-PiArDQo+ID4gIAkJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBpbml0IGZyb20gbnZt
-ZW06ICVkXG4iLA0KPiA+ICAJCQkJcmV0KTsNCj4gPiAgCQkJcmV0dXJuIHJldDsNCj4gPg0KPiAN
-Cj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0
-bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGJmFtcDtkYXRh
-PTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jb20lN0NmZDYwNDMNCj4gN2VlMzY0NGJlZjg1
-OTMwOGQ2NGY4YmFiZmMlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3Qw0KPiAw
-JTdDMCU3QzYzNjc4Mzg1ODY1NDk3Mzg2NSZhbXA7c2RhdGE9QmdzY0dBc0tZZW1Kc1B4T2VXbmhL
-OW83DQo+IDJEbnlWJTJCNXAlMkIlMkYyRnVraGNwcU0lM0QmYW1wO3Jlc2VydmVkPTA+IExpbmFy
-by5vcmcg4pSCIE9wZW4NCj4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9s
-bG93IExpbmFybzoNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxv
-b2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dw0KPiAuZmFjZWJvb2suY29tJTJGcGFnZXMlMkZM
-aW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwDQo+IG54cC5jb20lN0NmZDYw
-NDM3ZWUzNjQ0YmVmODU5MzA4ZDY0ZjhiYWJmYyU3QzY4NmVhMWQzYmMyYjRjNmZhOTINCj4gY2Q5
-OWM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzODU4NjU0OTczODY1JmFtcDtzZGF0YT02ekExMGxX
-DQo+IHduV29BVUs3anFxdnNERE1NMlExM0FlZG1lU1BBQk1lUiUyQnhjJTNEJmFtcDtyZXNlcnZl
-ZD0wPg0KPiBGYWNlYm9vayB8DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlv
-bi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ0d2l0dA0KPiBlci5jb20lMkYlMjMhJTJG
-bGluYXJvb3JnJmFtcDtkYXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jDQo+IG9tJTdD
-ZmQ2MDQzN2VlMzY0NGJlZjg1OTMwOGQ2NGY4YmFiZmMlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5
-OQ0KPiBjNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4Mzg1ODY1NDk3Mzg2NSZhbXA7c2RhdGE9a3Vx
-dUtFVXV2WFcNCj4gODhWMlFnUFFnWFlCZ3YySHR2MzdHS0RxYWgwVmVJSjglM0QmYW1wO3Jlc2Vy
-dmVkPTA+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24u
-b3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGbGluYXJv
-LWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwbnhwLmMNCj4gb20lN0Nm
-ZDYwNDM3ZWUzNjQ0YmVmODU5MzA4ZDY0ZjhiYWJmYyU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5
-DQo+IGM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzODU4NjU0OTczODY1JmFtcDtzZGF0YT0wQWlZ
-Y2oxSDF2YTFuDQo+IG1lZTJ0SFdXWW5tR2U1d3pGb2FvNEtaYmt4c0t6byUzRCZhbXA7cmVzZXJ2
-ZWQ9MD4gQmxvZw0KDQo=
+(Apologies for the build failure. My scripts to enable these configs and
+build-test them failed. They've been fixed now)
+
+Move the various drivers for Intel platforms into their own subdir. Also
+consolidate Qualcomm drivers into the qcom subdir.
+
+This cleans up the directory making it easier to find things.
+
+There is no great time to send patches that move files around. So here's an
+attempt to sneak it into 4.21 before everything else.
+
+This was generated and compile-tested against 4.20-rc4. If you would like
+me to try again a bit later, I'm happy to do so.
+
+Changes since v3:
+- Fix build failure on QCOM_SPMI_TEMP_ALARM
+
+Changes since v2:
+- Rebased on top of 4.20-rc4
+
+Changes since v1:
+- Removed a stray character that snuck into the Makefile
+- Added Acks
+- Rebased to v4.19-rc6
+
+
+Amit Kucheria (2):
+  drivers: thermal: Move various drivers for intel platforms into a
+    subdir
+  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
+
+ drivers/thermal/Kconfig                       | 94 +------------------
+ drivers/thermal/Makefile                      | 10 +-
+ drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
+ drivers/thermal/intel/Makefile                | 12 +++
+ .../{ => intel}/int340x_thermal/Kconfig       |  0
+ .../{ => intel}/int340x_thermal/Makefile      |  0
+ .../int340x_thermal/acpi_thermal_rel.c        |  0
+ .../int340x_thermal/acpi_thermal_rel.h        |  0
+ .../int340x_thermal/int3400_thermal.c         |  0
+ .../int340x_thermal/int3402_thermal.c         |  0
+ .../int340x_thermal/int3403_thermal.c         |  0
+ .../int340x_thermal/int3406_thermal.c         |  0
+ .../int340x_thermal/int340x_thermal_zone.c    |  0
+ .../int340x_thermal/int340x_thermal_zone.h    |  0
+ .../processor_thermal_device.c                |  0
+ .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
+ .../thermal/{ => intel}/intel_pch_thermal.c   |  0
+ .../thermal/{ => intel}/intel_powerclamp.c    |  0
+ .../{ => intel}/intel_quark_dts_thermal.c     |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
+ .../{ => intel}/intel_soc_dts_thermal.c       |  0
+ .../{ => intel}/x86_pkg_temp_thermal.c        |  0
+ drivers/thermal/qcom/Kconfig                  | 11 +++
+ drivers/thermal/qcom/Makefile                 |  1 +
+ .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  2 +-
+ 26 files changed, 108 insertions(+), 99 deletions(-)
+ create mode 100644 drivers/thermal/intel/Kconfig
+ create mode 100644 drivers/thermal/intel/Makefile
+ rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
+ rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
+ rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
+ rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (99%)
+
+-- 
+2.17.1
