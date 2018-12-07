@@ -1,93 +1,64 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v4 0/2] driver: thermal: Move some drivers into subdirs
-Date: Fri,  7 Dec 2018 12:25:25 +0530
-Message-ID: <cover.1544165234.git.amit.kucheria@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: uniphier: Convert to SPDX identifier
+Date: Fri, 7 Dec 2018 08:09:11 +0100
+Message-ID: <e8a64b24-b107-98ed-0e67-a61531e0ca0e@linaro.org>
+References: <1544144764-17964-1-git-send-email-hayashi.kunihiko@socionext.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544144764-17964-1-git-send-email-hayashi.kunihiko@socionext.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, sfr@canb.auug.org.au, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-(Apologies for the build failure. My scripts to enable these configs and
-build-test them failed. They've been fixed now)
+On 07/12/2018 02:06, Kunihiko Hayashi wrote:
+> This converts license boilerplate to SPDX identifier, and removes
+> unnecessary lines.
+> 
+> Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> ---
 
-Move the various drivers for Intel platforms into their own subdir. Also
-consolidate Qualcomm drivers into the qcom subdir.
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-This cleans up the directory making it easier to find things.
+>  drivers/thermal/uniphier_thermal.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
+> 
+> diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
+> index 55477d7..bba2284 100644
+> --- a/drivers/thermal/uniphier_thermal.c
+> +++ b/drivers/thermal/uniphier_thermal.c
+> @@ -1,21 +1,10 @@
+> +// SPDX-License-Identifier: GPL-2.0
+>  /**
+>   * uniphier_thermal.c - Socionext UniPhier thermal driver
+> - *
+>   * Copyright 2014      Panasonic Corporation
+>   * Copyright 2016-2017 Socionext Inc.
+> - * All rights reserved.
+> - *
+>   * Author:
+>   *	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> - *
+> - * This program is free software: you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2  of
+> - * the License as published by the Free Software Foundation.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+>   */
+>  
+>  #include <linux/bitops.h>
+> 
 
-There is no great time to send patches that move files around. So here's an
-attempt to sneak it into 4.21 before everything else.
-
-This was generated and compile-tested against 4.20-rc4. If you would like
-me to try again a bit later, I'm happy to do so.
-
-Changes since v3:
-- Fix build failure on QCOM_SPMI_TEMP_ALARM
-
-Changes since v2:
-- Rebased on top of 4.20-rc4
-
-Changes since v1:
-- Removed a stray character that snuck into the Makefile
-- Added Acks
-- Rebased to v4.19-rc6
-
-
-Amit Kucheria (2):
-  drivers: thermal: Move various drivers for intel platforms into a
-    subdir
-  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
-
- drivers/thermal/Kconfig                       | 94 +------------------
- drivers/thermal/Makefile                      | 10 +-
- drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
- drivers/thermal/intel/Makefile                | 12 +++
- .../{ => intel}/int340x_thermal/Kconfig       |  0
- .../{ => intel}/int340x_thermal/Makefile      |  0
- .../int340x_thermal/acpi_thermal_rel.c        |  0
- .../int340x_thermal/acpi_thermal_rel.h        |  0
- .../int340x_thermal/int3400_thermal.c         |  0
- .../int340x_thermal/int3402_thermal.c         |  0
- .../int340x_thermal/int3403_thermal.c         |  0
- .../int340x_thermal/int3406_thermal.c         |  0
- .../int340x_thermal/int340x_thermal_zone.c    |  0
- .../int340x_thermal/int340x_thermal_zone.h    |  0
- .../processor_thermal_device.c                |  0
- .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
- .../thermal/{ => intel}/intel_pch_thermal.c   |  0
- .../thermal/{ => intel}/intel_powerclamp.c    |  0
- .../{ => intel}/intel_quark_dts_thermal.c     |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
- .../{ => intel}/intel_soc_dts_thermal.c       |  0
- .../{ => intel}/x86_pkg_temp_thermal.c        |  0
- drivers/thermal/qcom/Kconfig                  | 11 +++
- drivers/thermal/qcom/Makefile                 |  1 +
- .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  2 +-
- 26 files changed, 108 insertions(+), 99 deletions(-)
- create mode 100644 drivers/thermal/intel/Kconfig
- create mode 100644 drivers/thermal/intel/Makefile
- rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
- rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
- rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
- rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (99%)
 
 -- 
-2.17.1
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
