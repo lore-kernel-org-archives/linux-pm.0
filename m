@@ -1,36 +1,81 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V4 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Fri, 7 Dec 2018 17:13:23 -0600
-Message-ID: <20181207231323.GA10231@bogus>
-References: <1543458696-4741-1-git-send-email-Anson.Huang@nxp.com>
- <1543458696-4741-2-git-send-email-Anson.Huang@nxp.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v11 5/8] interconnect: qcom: Add sdm845 interconnect
+ provider driver
+Date: Fri, 7 Dec 2018 15:30:10 -0800
+Message-ID: <20181207233010.GE14307@google.com>
+References: <20181207152917.4862-1-georgi.djakov@linaro.org>
+ <20181207152917.4862-6-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1543458696-4741-2-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <20181207152917.4862-6-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Aisheng DONG <aisheng.dong@nxp.com>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "arnd@arndb.de" <arnd@arndb.de>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "olof@lixom.net" <olof@lixom.net>, bjorn.andersson@linaro.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Nov 2018 02:37:24 +0000, Anson Huang wrote:
-> NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
-> system controller, the system controller is in charge of system
-> power, clock and thermal sensors etc. management, Linux kernel
-> has to communicate with system controller via MU (message unit)
-> IPC to get temperature from thermal sensors, this patch adds
-> binding doc for i.MX system controller thermal driver.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> ---
-> ChangeLog:
-> V3->V4:
->   *move binding doc to SCU since it is belonging to SCU;
->   *change compatile string to start with "fsl" instead of "nxp" to align with other nodes in dtb.
-> ---
->  .../devicetree/bindings/arm/freescale/fsl,scu.txt        | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
-> 
+Hi Georgi,
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+not a full review, only one thing I just stumbled across:
+
+On Fri, Dec 07, 2018 at 05:29:14PM +0200, Georgi Djakov wrote:
+> From: David Dai <daidavid1@codeaurora.org>
+> 
+> Introduce Qualcomm SDM845 specific provider driver using the
+> interconnect framework.
+> 
+> Signed-off-by: David Dai <daidavid1@codeaurora.org>
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  .../bindings/interconnect/qcom,sdm845.txt     |  24 +
+>  drivers/interconnect/Kconfig                  |   5 +
+>  drivers/interconnect/Makefile                 |   1 +
+>  drivers/interconnect/qcom/Kconfig             |  13 +
+>  drivers/interconnect/qcom/Makefile            |   5 +
+>  drivers/interconnect/qcom/sdm845.c            | 836 ++++++++++++++++++
+>  .../dt-bindings/interconnect/qcom,sdm845.h    | 143 +++
+>  7 files changed, 1027 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>  create mode 100644 drivers/interconnect/qcom/Makefile
+>  create mode 100644 drivers/interconnect/qcom/sdm845.c
+>  create mode 100644 include/dt-bindings/interconnect/qcom,sdm845.h
+>
+> ...
+> 
+> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+> new file mode 100644
+> index 000000000000..f594dd6f500f
+> --- /dev/null
+> +++ b/drivers/interconnect/qcom/sdm845.c
+> 
+> ...
+> 
+> +static int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev)
+> +{
+> +	struct qcom_icc_node *qn;
+> +	int ret, i;
+> +
+> +	bcm->addr = cmd_db_read_addr(bcm->name);
+> +	if (!bcm->addr) {
+> +		dev_err(dev, "%s could not find RPMh address\n",
+> +			bcm->name);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (cmd_db_read_aux_data_len(bcm->name) < sizeof(struct bcm_db)) {
+> +		dev_err(dev, "%s command db missing or partial aux data\n",
+> +			bcm->name);
+> +		return -EINVAL;
+> +	}
+
+cmd_db_read_aux_data_len() is in the process of being removed, see
+ed3cafa79ea7 ("soc: qcom: cmd-db: Stop memcpy()ing in
+cmd_db_read_aux_data()") in arm-soc/for-next
+
+https://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git/commit/?h=for-next&id=ed3cafa79ea756be653d22087c017af95ea78a49
+
+Cheers
+
+Matthias
