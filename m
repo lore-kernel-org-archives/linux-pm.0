@@ -1,58 +1,44 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v11 8/8] interconnect: sdm845: Fix build failure after
- cmd_db API change
-Date: Fri, 7 Dec 2018 17:14:40 +0000
-Message-ID: <20181207171437.qmtacurmqg53zzkl@queper01-lin>
-References: <20181207152917.4862-1-georgi.djakov@linaro.org>
- <20181207152917.4862-9-georgi.djakov@linaro.org>
- <20181207162733.pdd62qvqzd6xk4nr@queper01-lin>
- <fb5d11cd-6729-5521-c828-9bfeedba9ce0@linaro.org>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Subject: Re: [PATCH v6 8/8] mfd: axp20x: Add supported cells for AXP803
+Date: Fri, 7 Dec 2018 10:58:22 -0800
+Message-ID: <CA+E=qVe5gau_9A6WsdqDaEJwdJ7EyQ=UcNu0JJV3v=hKAFU7GQ@mail.gmail.com>
+References: <20181120175211.3913-1-oskari@lemmela.net> <20181120175211.3913-9-oskari@lemmela.net>
+ <20181207164011.GI26661@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <fb5d11cd-6729-5521-c828-9bfeedba9ce0@linaro.org>
+In-Reply-To: <20181207164011.GI26661@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Oskari Lemmela <oskari@lemmela.net>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, quentin.schulz@bootlin.com, linux-pm@vger.kernel.org, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, arm-linux <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 07 Dec 2018 at 18:47:22 (+0200), Georgi Djakov wrote:
-> Hi Quentin,
-> 
-> On 12/7/18 18:27, Quentin Perret wrote:
-> > Hi Georgi,
-> > 
-> > On Friday 07 Dec 2018 at 17:29:17 (+0200), Georgi Djakov wrote:
-> >> Recently the cmd_db_read_aux_data() function was changed to avoid using
-> >> memcpy and return a pointer instead. Update the code to the new API and
-> >> fix the build failure.
-> >>
-> >> Fixes: ed3cafa79ea7 ("soc: qcom: cmd-db: Stop memcpy()ing in cmd_db_read_aux_data()")
-> >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> >> ---
-> >>  drivers/interconnect/qcom/sdm845.c | 26 ++++++++++++++------------
-> > 
-> > IIUC this file is introduced by patch 5. Should the fix be squashed
-> > into patch 5 directly ? Just to keep things bisectable.
-> 
-> The reason why i have split it as a separate change is because as a
-> separate change it would be easier to review & test for the people who
-> are already familiar with the rest of the series.
-> 
-> Another minor reason is that a separate patch will also make the life a
-> bit easier for some people who are back-porting this to kernels using
-> the older version of the cmd_db API.
-> 
-> The commit that changed the cmd_db API is not yet in mainline, but in
-> linux-next. I am not sure what is preferred in this case?
+On Fri, Dec 7, 2018 at 8:40 AM Lee Jones <lee.jones@linaro.org> wrote:
 
-Not sure either but I guess that will depend who gets merged first ...
-If that's the cmd_db change, then you'll need to squash your fix in
-patch 5. If your series goes first, then the fix needs to be applied to
-the cmb_db change.
+> My OCD-dar is going crazy.
+>
+> Why haven't you used the same alignment as is already there?
+>
+> If it starts to run over 80-chars then bring the others back.
+>
+> Also why is there a single liner shoved in the middle of the
+> multi-line entries?  Please move the singles to the top or the
+> bottom.
 
-I personally don't mind either way as long as we don't break bisection :-)
+Hi Lee,
+
+Could you please reformat it in the way that makes your OCD-dar happy?
+It would be really nice to get
+AC and battery support for APX8x3 merged -- it'll make Pinebook and
+Teres-I pretty well supported by mainline kernel.
 
 Thanks,
-Quentin
+Vasily
+
+>
+> --
+> Lee Jones [=E6=9D=8E=E7=90=BC=E6=96=AF]
+> Linaro Services Technical Lead
+> Linaro.org =E2=94=82 Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
