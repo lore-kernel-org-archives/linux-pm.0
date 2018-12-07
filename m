@@ -1,79 +1,156 @@
-From: Eric Curtin <ericcurtin17@gmail.com>
-Subject: Re: [PATCH RFC 00/15] Zero ****s, hugload of hugs <3
-Date: Fri, 7 Dec 2018 13:39:54 +0000
-Message-ID: <CANpvso4ZjJkUA7+saYRR4qssvreZcm-74EPo3nrGSohFZF9akA@mail.gmail.com>
-References: <20181130192737.15053-1-jarkko.sakkinen@linux.intel.com>
- <CAGXu5j+jBNBsD3pvUSfEh6Lc5T1YMpbM0HeG1c6BHiJe+cKVOQ@mail.gmail.com>
- <20181130195652.7syqys76646kpaph@linux-r8p5> <20181130205521.GA21006@linux.intel.com>
- <1543611662.3031.20.camel@HansenPartnership.com> <20181130214405.GG23772@linux.intel.com>
- <1543615069.3031.27.camel@HansenPartnership.com> <20181130221219.GA25537@linux.intel.com>
- <20181130151459.3ca2f5c8@lwn.net> <CAMuHMdUkpLWm5NZmYj=uMgVncw6ZOb7j9KxFoDGhrnr7vzpx_w@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 11/19] cpufreq: tegra124: do not handle the CPU rail
+Date: Fri, 7 Dec 2018 14:49:39 +0000
+Message-ID: <71da59ef-fbac-fdce-7348-6a6e23f077e3@nvidia.com>
+References: <20181204092548.3038-1-josephl@nvidia.com>
+ <20181204092548.3038-12-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUkpLWm5NZmYj=uMgVncw6ZOb7j9KxFoDGhrnr7vzpx_w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: geert@linux-m68k.org
-Cc: corbet@lwn.net, jarkko.sakkinen@linux.intel.com, James.Bottomley@hansenpartnership.com, dave@stgolabs.net, keescook@chromium.org, Kernel development list <linux-kernel@vger.kernel.org>, amir73il@gmail.com, akpm@linux-foundation.org, andriy.shevchenko@linux.intel.com, dja@axtens.net, davem@davemloft.net, linux@dominikbrodowski.net, dri-devel@lists.freedesktop.org, edumazet@google.com, federico.vaga@vaga.pv.it, geert+renesas@glider.be, deller@gmx.de, kumba@gentoo.org, linux-doc@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-ide@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-media@vger.kernel.org, linux-mips@linux-mips.org, linux-mtd@lists.infradead.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, matthias.bgg@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181204092548.3038-12-josephl@nvidia.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Joseph Lo <josephl@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Guys,
 
-I initially thought these patches were a joke. But I guess they are
-not. I suppose 2018 is the year everything became offensive.
+On 04/12/2018 09:25, Joseph Lo wrote:
+> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
+> rail. So the driver shouldn't handle for the CPU clock switching from
+> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
+> which handle the frequency/voltage scaling in the background. This
+> patch removes the driver dependency of the CPU rail.
+> 
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+> ---
+>  drivers/cpufreq/Kconfig.arm        |  2 +-
+>  drivers/cpufreq/tegra124-cpufreq.c | 26 ++------------------------
+>  2 files changed, 3 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 4e1131ef85ae..a609f8820c47 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -262,7 +262,7 @@ config ARM_TEGRA20_CPUFREQ
+>  
+>  config ARM_TEGRA124_CPUFREQ
+>  	tristate "Tegra124 CPUFreq support"
+> -	depends on ARCH_TEGRA && CPUFREQ_DT && REGULATOR
+> +	depends on ARCH_TEGRA && CPUFREQ_DT
+>  	default y
+>  	help
+>  	  This adds the CPUFreq driver support for Tegra124 SOCs.
+> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+> index 43530254201a..448d00763d00 100644
+> --- a/drivers/cpufreq/tegra124-cpufreq.c
+> +++ b/drivers/cpufreq/tegra124-cpufreq.c
+> @@ -22,11 +22,9 @@
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_opp.h>
+> -#include <linux/regulator/consumer.h>
+>  #include <linux/types.h>
+>  
+>  struct tegra124_cpufreq_priv {
+> -	struct regulator *vdd_cpu_reg;
+>  	struct clk *cpu_clk;
+>  	struct clk *pllp_clk;
+>  	struct clk *pllx_clk;
+> @@ -60,14 +58,6 @@ static int tegra124_cpu_switch_to_dfll(struct tegra124_cpufreq_priv *priv)
+>  	return ret;
+>  }
+>  
+> -static void tegra124_cpu_switch_to_pllx(struct tegra124_cpufreq_priv *priv)
+> -{
+> -	clk_set_parent(priv->cpu_clk, priv->pllp_clk);
+> -	clk_disable_unprepare(priv->dfll_clk);
+> -	regulator_sync_voltage(priv->vdd_cpu_reg);
+> -	clk_set_parent(priv->cpu_clk, priv->pllx_clk);
+> -}
+> -
+>  static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  {
+>  	struct tegra124_cpufreq_priv *priv;
+> @@ -88,16 +78,10 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  	if (!np)
+>  		return -ENODEV;
+>  
+> -	priv->vdd_cpu_reg = regulator_get(cpu_dev, "vdd-cpu");
+> -	if (IS_ERR(priv->vdd_cpu_reg)) {
+> -		ret = PTR_ERR(priv->vdd_cpu_reg);
+> -		goto out_put_np;
+> -	}
+> -
+>  	priv->cpu_clk = of_clk_get_by_name(np, "cpu_g");
+>  	if (IS_ERR(priv->cpu_clk)) {
+>  		ret = PTR_ERR(priv->cpu_clk);
+> -		goto out_put_vdd_cpu_reg;
+> +		goto out_put_np;
+>  	}
+>  
+>  	priv->dfll_clk = of_clk_get_by_name(np, "dfll");
+> @@ -129,15 +113,13 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  		platform_device_register_full(&cpufreq_dt_devinfo);
+>  	if (IS_ERR(priv->cpufreq_dt_pdev)) {
+>  		ret = PTR_ERR(priv->cpufreq_dt_pdev);
+> -		goto out_switch_to_pllx;
+> +		goto out_put_pllp_clk;
+>  	}
+>  
+>  	platform_set_drvdata(pdev, priv);
+>  
+>  	return 0;
+>  
+> -out_switch_to_pllx:
+> -	tegra124_cpu_switch_to_pllx(priv);
+>  out_put_pllp_clk:
+>  	clk_put(priv->pllp_clk);
+>  out_put_pllx_clk:
+> @@ -146,8 +128,6 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  	clk_put(priv->dfll_clk);
+>  out_put_cpu_clk:
+>  	clk_put(priv->cpu_clk);
+> -out_put_vdd_cpu_reg:
+> -	regulator_put(priv->vdd_cpu_reg);
+>  out_put_np:
+>  	of_node_put(np);
+>  
+> @@ -159,13 +139,11 @@ static int tegra124_cpufreq_remove(struct platform_device *pdev)
+>  	struct tegra124_cpufreq_priv *priv = platform_get_drvdata(pdev);
+>  
+>  	platform_device_unregister(priv->cpufreq_dt_pdev);
+> -	tegra124_cpu_switch_to_pllx(priv);
+>  
+>  	clk_put(priv->pllp_clk);
+>  	clk_put(priv->pllx_clk);
+>  	clk_put(priv->dfll_clk);
+>  	clk_put(priv->cpu_clk);
+> -	regulator_put(priv->vdd_cpu_reg);
 
-Could we avoid the s/fuck/hug/g though? I have nothing against
-re-wording this stuff to remove the curse word, but it should at least
-make sense.
+I see what you are saying and while this does appear to be broken, it
+also does not seem right that if we load and unload this driver the CPU
+clock parent will remain as the DFLL clock. Can't we query the voltage
+of the vdd-cpu regulator before we switch and then restore it before we
+switch back?
 
-What's going to happen is someone is a newbie is going to see a comment
-like "We found an mark in the idr at the right wd, but it's not the
-mark we were told to remove. eparis seriously hugged up somewhere",
-probably google the term as they are unfamiliar with it, find out it's
-an alias for "fucked" and if they are sensitive get offended anyway.
+I am just trying to understand if there is no way to switch back? If not
+then maybe we should not allow this driver to be built as a module and
+remove the removal function altogether.
 
-On Sat, 1 Dec 2018 at 08:20, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> Hi Jon,
->
-> On Fri, Nov 30, 2018 at 11:15 PM Jonathan Corbet <corbet@lwn.net> wrote:
-> > On Fri, 30 Nov 2018 14:12:19 -0800
-> > Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> wrote:
-> >
-> > > As a maintainer myself (and based on somewhat disturbed feedback from
-> > > other maintainers) I can only make the conclusion that nobody knows what
-> > > the responsibility part here means.
-> > >
-> > > I would interpret, if I read it like at lawyer at least, that even for
-> > > existing code you would need to do the changes postmorterm.
-> > >
-> > > Is this wrong interpretation?  Should I conclude that I made a mistake
-> > > by reading the CoC and trying to understand what it *actually* says?
-> > > After this discussion, I can say that I understand it less than before.
-> >
-> > Have you read Documentation/process/code-of-conduct-interpretation.rst?
-> > As has been pointed out, it contains a clear answer to how things should
-> > be interpreted here.
->
-> Indeed:
->
-> | Contributions submitted for the kernel should use appropriate language.
-> | Content that already exists predating the Code of Conduct will not be
-> | addressed now as a violation.
->
-> However:
->
-> | Inappropriate language can be seen as a
-> | bug, though; such bugs will be fixed more quickly if any interested
-> | parties submit patches to that effect.
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+Cheers
+Jon
+
+-- 
+nvpublic
