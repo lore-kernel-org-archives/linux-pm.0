@@ -1,57 +1,37 @@
 From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
-Date: Sat, 8 Dec 2018 08:24:20 -0800
-Message-ID: <000d01d48f12$7e2e16c0$7a8a4440$@net>
-References: <42865872.dmYH3PmblP@aspire.rjw.lan>         T62Cgz3BqpqCWT62HgcJvj <001a01d48b24$9aa38c00$cfeaa400$@net> VZhHgXUsnXrKKVZhNgPvLt
+Subject: RE: [PATCH] cpuidle: Add 'high' and 'low' idle state metrics
+Date: Sat, 8 Dec 2018 08:36:07 -0800
+Message-ID: <000e01d48f14$21ca7020$655f5060$@net>
+References: <006901d48cef$5bb88a00$13299e00$@net> UpeTgvCH1QLjuUpeUg0j37
 Mime-Version: 1.0
 Content-Type: text/plain;
         charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: VZhHgXUsnXrKKVZhNgPvLt
+In-Reply-To: UpeTgvCH1QLjuUpeUg0j37
 Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Giovanni Gherdovich' <ggherdovich@suse.cz>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, "'open list:DOCUMENTATION'" <linux-doc@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.12.08 02:23 Giovanni Gherdovich wrote:
-
-> sorry for the late reply, this week I was traveling.
-
-No Problem. Thanks very much for your very detailed reply,
-which obviously took considerable time to write. While
-I was making progress, your instructions really fill in
-some gaps and mistakes I was making.
-
-Eventually (probably several days) I'll report back my test
-results.
-
-
-> Some specific remarks you raise:
+On 2018.12.06 01:09 Rafael J. Wysocki wrote:
+> On Thu, Dec 6, 2018 at 12:08 AM Doug Smythies <dsmythies@telus.net> wrote:
+>> On 2018.12.03 04:32 Rafael J. Wysocki wrote:
+>>
+>>> Add two new metrics for CPU idle states, "high" and "low", to count
+>>> the number of times the given state had been asked for (or entered
+>>> from the kernel's perspective), but the observed idle duration turned
+>>> out to be too high or too low for it (respectively).
+>>
+>> I wonder about the "high" "low" terminology here.
 >
-> On Mon, 2018-12-03 at 08:23 -0800, Doug Smythies wrote:
->> ...
->> My issue is that I do not understand the output or how it
->> might correlate with your tables.
->> 
->> I get, for example:
->> 
->>    3    1   1     0.13s     0.68s     0.80s  1003894.302 1003779.613
->>    3    1   1     0.16s     0.64s     0.80s  1008900.053 1008215.336
->>    3    1   1     0.14s     0.66s     0.80s  1009630.439 1008990.265
->> ...
->> 
->> But I don't know what that means, nor have I been able to find
->> a description anywhere.
->
-> I don't recognize this output. I hope the illustration above can clarify how
-> MMTests is used.
+> I took these names, because they are concise and simple.  I could use
+> "below" and "above" respectively I guess.  What about these?
 
-Due to incompetence on my part, the config file being run for my tests was
-always just the default config file from my original
-git clone https://github.com/gormanm/mmtests.git
-command. So regardless of what I thought I was doing, I was running "pft"
-(Page Fault Test).
+I see you already sent a new patch with these names. Yes, myself I like
+them better.
+
+I am going to try to add these counts to my next sets of graphs.
 
 ... Doug
