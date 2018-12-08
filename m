@@ -1,271 +1,105 @@
-From: Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: Re: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor
- for tickless systems
-Date: Sat, 08 Dec 2018 11:23:07 +0100
-Message-ID: <1544264587.3930.2.camel@suse.cz>
-References: <42865872.dmYH3PmblP@aspire.rjw.lan>
-         T62Cgz3BqpqCWT62HgcJvj <001a01d48b24$9aa38c00$cfeaa400$@net>
+From: Quentin Schulz <quentin.schulz@bootlin.com>
+Subject: Re: [PATCH v6 8/8] mfd: axp20x: Add supported cells for AXP803
+Date: Sat, 8 Dec 2018 16:05:26 +0100
+Message-ID: <20181208150526.uceviwfwqskfwovm@qschulz>
+References: <20181120175211.3913-1-oskari@lemmela.net>
+ <20181120175211.3913-9-oskari@lemmela.net>
+ <20181207164011.GI26661@dell>
+ <CA+E=qVe5gau_9A6WsdqDaEJwdJ7EyQ=UcNu0JJV3v=hKAFU7GQ@mail.gmail.com>
+ <20181207192237.GK26661@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="umq566xyw5pxyboh"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001a01d48b24$9aa38c00$cfeaa400$@net>
+Content-Disposition: inline
+In-Reply-To: <20181207192237.GK26661@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Oskari Lemmela <oskari@lemmela.net>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-pm@vger.kernel.org, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, arm-linux <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Doug,
 
-sorry for the late reply, this week I was traveling.
+--umq566xyw5pxyboh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-First off, thank you for trying out MMTests; I admit the documentation is
-somewhat incomplete. I'm going to give you an overview of how I run benchmarks
-with MMTests and how do I print comparisons, hoping this can address your
-questions.
+Hi Lee,
 
-In the last report I posted the following two tables, for instance; I'll now
-show the commands I used to produce them.
+On Fri, Dec 07, 2018 at 07:22:37PM +0000, Lee Jones wrote:
+> On Fri, 07 Dec 2018, Vasily Khoruzhick wrote:
+>=20
+> > On Fri, Dec 7, 2018 at 8:40 AM Lee Jones <lee.jones@linaro.org> wrote:
+> >=20
+> > > My OCD-dar is going crazy.
+> > >
+> > > Why haven't you used the same alignment as is already there?
+> > >
+> > > If it starts to run over 80-chars then bring the others back.
+> > >
+> > > Also why is there a single liner shoved in the middle of the
+> > > multi-line entries?  Please move the singles to the top or the
+> > > bottom.
+> >=20
+> > Hi Lee,
+> >=20
+> > Could you please reformat it in the way that makes your OCD-dar happy?
+> > It would be really nice to get
+>=20
+> I'm afraid not, for a multitude of reasons.
+>=20
+> The most important of which surround testing.
+>=20
+> > AC and battery support for APX8x3 merged -- it'll make Pinebook and
+> > Teres-I pretty well supported by mainline kernel.
+>=20
+> That's great.  A worthy cause indeed.  So I'm sure you guys will want
+> to turn the patch around in short order so that it's applied in time
+> for the next merge window.
+>=20
 
->  * sockperf on loopback over UDP, mode "throughput"
->     * global-dhp__network-sockperf-unbound
->     48x-HASWELL-NUMA fixed since v2, the others greatly improved in v6.
-> 
->                         teo-v1      teo-v2      teo-v3      teo-v5      teo-v6
->   -------------------------------------------------------------------------------
->   8x-SKYLAKE-UMA        1% worse    1% worse    1% worse    1% worse    10% better
->   80x-BROADWELL-NUMA    3% better   2% better   5% better   3% worse    8% better
->   48x-HASWELL-NUMA      4% better   12% worse   no change   no change   no change
-> 
->   SOCKPERF-UDP-THROUGHPUT
->   =======================
->   NOTES: Test run in mode "throughput" over UDP. The varying parameter is the
->       message size.
->   MEASURES: Throughput, in MBits/second
->   HIGHER is better
-> 
->   machine: 8x-SKYLAKE-UMA
-> 
-> 				4.18.0                 4.18.0                 4.18.0                 4.18.0                 4.18.0                 4.18.0
-> 			       vanilla                    teo        teo-v2+backport        teo-v3+backport        teo-v5+backport        teo-v6+backport
->   -------------------------------------------------------------------------------------------------------------------------------------------------------
->   Hmean     14        70.34 (   0.00%)       69.80 *  -0.76%*       69.11 *  -1.75%*       69.49 *  -1.20%*       69.71 *  -0.90%*       77.51 *  10.20%*
->   Hmean     100      499.24 (   0.00%)      494.26 *  -1.00%*      492.74 *  -1.30%*      494.90 *  -0.87%*      497.43 *  -0.36%*      549.93 *  10.15%*
->   Hmean     300     1489.13 (   0.00%)     1472.39 *  -1.12%*     1468.45 *  -1.39%*     1477.74 *  -0.76%*     1478.61 *  -0.71%*     1632.63 *   9.64%*
->   Hmean     500     2469.62 (   0.00%)     2444.41 *  -1.02%*     2434.61 *  -1.42%*     2454.15 *  -0.63%*     2454.76 *  -0.60%*     2698.70 *   9.28%*
->   Hmean     850     4165.12 (   0.00%)     4123.82 *  -0.99%*     4100.37 *  -1.55%*     4111.82 *  -1.28%*     4120.04 *  -1.08%*     4521.11 *   8.55%*
+Aren't the MFD cells probed in order?
 
-The first table is a panoramic view of all machines, the second is a zoom into
-the 8x-SKYLAKE-UMA machine where the overall benchmark score is broken down
-into the various message sizes.
+In that case, it makes little sense to short order them for this
+particular device (X-Powers PMICs in general). It will just make the
+system boot slower because of probe deferring.
 
-The first thing to do is, obviously, to gather data for each kernel. Once the
-kernel is installed on the box, as you already figured out, you have to run:
+Why? As explained by Chen-Yu in v3[1], axp-gpios can be muxed as
+regulators, thus should be probed before axp-regulators. axp-adc is
+often used by axp-battery, axp-usb-power, axp-ac-power, thus should be
+probed beforehand as well.
 
-  ./run-mmtests.sh --config configs/config-global-dhp__network-sockperf-unbound SOME-MNEMONIC-NAME
+For the alignment that also triggered your OCD, I can send you a patch
+the day you merge this one if it can help. I sent a few patches for this
+driver that didn't respect the alignment so I'm fine fixing the mfd
+cells (and eventually re-order them as I saw a few axp-gpio cells being
+declared after axp-regulators).
 
-In my case, what I did is to run:
-
-  # build, install and boot 4.18.0-vanilla kernel
-  ./run-mmtests.sh --config configs/config-global-dhp__network-sockperf-unbound  4.18.0-vanilla
-
-  # build, install and boot 4.18.0-teo kernel
-  ./run-mmtests.sh --config configs/config-global-dhp__network-sockperf-unbound  4.18.0-teo
-
-  # build, install and boot 4.18.0-teo-v2+backport kernel
-  ./run-mmtests.sh --config configs/config-global-dhp__network-sockperf-unbound  4.18.0-teo-v2+backport
-
-  ...
-
-  # build, install and boot 4.18.0-teo-v6+backport kernel
-  ./run-mmtests.sh --config configs/config-global-dhp__network-sockperf-unbound  4.18.0-teo-v6+backport
-
-At this point in the work/log directory I've accumulated all the data I need
-for a report. What's important to note here is that a single configuration
-file (such as config-global-dhp__network-sockperf-unbound) often runs more than
-a single  benchmark, according to the value of the MMTESTS variable in that
-config. The config we're using has:
-
-  export MMTESTS="sockperf-tcp-throughput sockperf-tcp-under-load sockperf-udp-throughput sockperf-udp-under-load"
-
-which means it's running 4 different flavors of sockperf. The two tables above
-are from the "sockperf-udp-throughput" variant.
-
-Now that we've run the benchmarks for each kernel (every run takes around 75
-minutes on my machines) we're ready to extract some comparison tables.
-Exploring the work/log directory shows what we've got:
-
-  $ find . -type d -name sockperf\* | sort 
-  ./sockperf-tcp-throughput-4.18.0-teo
-  ./sockperf-tcp-throughput-4.18.0-teo-v2+backport
-  ./sockperf-tcp-throughput-4.18.0-teo-v3+backport
-  ./sockperf-tcp-throughput-4.18.0-teo-v5+backport
-  ./sockperf-tcp-throughput-4.18.0-teo-v6+backport
-  ./sockperf-tcp-throughput-4.18.0-vanilla
-  ./sockperf-tcp-under-load-4.18.0-teo
-  ./sockperf-tcp-under-load-4.18.0-teo-v2+backport
-  ./sockperf-tcp-under-load-4.18.0-teo-v3+backport
-  ./sockperf-tcp-under-load-4.18.0-teo-v5+backport
-  ./sockperf-tcp-under-load-4.18.0-teo-v6+backport
-  ./sockperf-tcp-under-load-4.18.0-vanilla
-  ./sockperf-udp-throughput-4.18.0-teo
-  ./sockperf-udp-throughput-4.18.0-teo-v2+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v3+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v5+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v6+backport
-  ./sockperf-udp-throughput-4.18.0-vanilla
-  ./sockperf-udp-under-load-4.18.0-teo
-  ./sockperf-udp-under-load-4.18.0-teo-v2+backport
-  ./sockperf-udp-under-load-4.18.0-teo-v3+backport
-  ./sockperf-udp-under-load-4.18.0-teo-v5+backport
-  ./sockperf-udp-under-load-4.18.0-teo-v6+backport
-  ./sockperf-udp-under-load-4.18.0-vanilla
-
-Above you see a directory for each of the benchmarks in the MMTESTS variable
-from before and for each kernel patch. The command to get the detailed table
-at the top of this message is:
-
-  $ ../../bin/compare-mmtests.pl --directory . \
-                                 --benchmark sockperf-udp-throughput \
-                                 --names 4.18.0-vanilla,4.18.0-teo,4.18.0-teo-v2+backport,4.18.0-teo-v3+backport,4.18.0-teo-v5+backport,4.18.0-teo-v6+backport \
-   | grep '^.mean'
-
-  Hmean     14        70.34 (   0.00%)       69.80 *  -0.76%*       69.11 *  -1.75%*       69.49 *  -1.20%*       69.71 *  -0.90%*       77.51 *  10.20%*
-  Hmean     100      499.24 (   0.00%)      494.26 *  -1.00%*      492.74 *  -1.30%*      494.90 *  -0.87%*      497.43 *  -0.36%*      549.93 *  10.15%*
-  Hmean     300     1489.13 (   0.00%)     1472.39 *  -1.12%*     1468.45 *  -1.39%*     1477.74 *  -0.76%*     1478.61 *  -0.71%*     1632.63 *   9.64%*
-  Hmean     500     2469.62 (   0.00%)     2444.41 *  -1.02%*     2434.61 *  -1.42%*     2454.15 *  -0.63%*     2454.76 *  -0.60%*     2698.70 *   9.28%*
-  Hmean     850     4165.12 (   0.00%)     4123.82 *  -0.99%*     4100.37 *  -1.55%*     4111.82 *  -1.28%*     4120.04 *  -1.08%*     4521.11 *   8.55%*
-
-As you can see I'm grepping for a specific field in the table, i.e. the mean
-values; some benchmarks use the harmonic mean (Hmean) and some use the
-arithmetic mean (Amean). I also use to get a peek at the beginning of the table
-without grepping to get nice headers to stick on top. See how the table above
-only uses 1/4 of the data we collected, i.e. it only reads from the data
-directories
-
-  ./sockperf-udp-throughput-4.18.0-teo
-  ./sockperf-udp-throughput-4.18.0-teo-v2+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v3+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v5+backport
-  ./sockperf-udp-throughput-4.18.0-teo-v6+backport
-  ./sockperf-udp-throughput-4.18.0-vanilla
-
-note that the "--benchmark sockperf-udp-throughput" option flag gives the
-first part of the directories name (the specific benchmark) while the option
-flag "--names 4.18.0-vanilla,4.18.0-teo,4.18.0-teo-v2+backport,..." completes
-the directory names (the kernel patches). One can use the script
-compare-kernels.sh too, but I like bin/compare-mmtests.pl the most.
-
-Now, the overview table. To get the overall score for, say, teo-v3, what the
-script does is to compute ratios between v3 and the baseline for all message
-sizes, and then taking the geometric mean of the results. The geometric mean is
-chosen because it has the nice property that the geometric mean of ratios is
-equal to the ratios of geometric means, which is:
-
-  gmean(ratio(v3, baseline))
-
-is the same as
-
-  gmean(v3) / gmean(baseline)
-
-where v3 and baseline are list of values (results for each message length) and
-ratio() is a function that takes component-wise ratios of lists. It would be
-awkward is our mean function didn't have that property, you would get
-different results depending on the order of your operations (first ratio then
-mean, or vice-versa).
-
-I get overview tables running the same compare-mmtests.pl command above, but
-adding the --print-ratio option flag.
-
-  $ ../../bin/compare-mmtests.pl --print-ratio \
-                                 --directory . \
-                                 --benchmark sockperf-udp-throughput \
-                                 --names 4.18.0-vanilla,4.18.0-teo,4.18.0-teo-v2+backport,4.18.0-teo-v3+backport,4.18.0-teo-v5+backport,4.18.0-teo-v6+backport
-
-I then look at the very last line of the output, which in this case is
-
-  Gmean Higher    1.00    0.99    0.99    0.99    0.99    1.10
-
-"Gmean" in there reminds me that I'm looking at geometric means; "Higher" is
-to say that "higher ratio is better" (remember that sockperf-udp-throughput
-measures throughput), then the first ratio is always 1.00 because that's the
-reference baseline. Then I have v1, v2, v3, v5 and v6 (I omitted the
-headers). All versions have a 1% regression except v6 which is a 10% gain. If
-it was a lower-is-better type of test, the interpretation of those number
-would be reversed.
-
-
-Some specific remarks you raise:
-
-On Mon, 2018-12-03 at 08:23 -0800, Doug Smythies wrote:
-> ...
-> My issue is that I do not understand the output or how it
-> might correlate with your tables.
-> 
-> I get, for example:
-> 
->    3    1   1     0.13s     0.68s     0.80s  1003894.302 1003779.613
->    3    1   1     0.16s     0.64s     0.80s  1008900.053 1008215.336
->    3    1   1     0.14s     0.66s     0.80s  1009630.439 1008990.265
-> ...
-> 
-> But I don't know what that means, nor have I been able to find
-> a description anywhere.
-> 
-> In the README file, I did see that for reporting I am 
-> somehow supposed to use compare-kernels.sh, but
-> I couldn't figure that out.
-
-I don't recognize this output. I hope the illustration above can clarify how
-MMTests is used.
-
-> By the way, I am running these tests as a regular user, but
-> they seem to want to modify:
-> 
-> /sys/kernel/mm/transparent_hugepage/enabled
-> 
-> which requires root privilege. I don't really want to mess
-> with that stuff for these tests.
-
-As Mel said, in this case the warning is harmless but I understand that
-requesting root permissions is annoying. At times the framework has to modify
-some settings and that may require root; on one side we are careful to undo
-all modifications applied to a machine for the purpose of testing after the
-benchmark is completed, but is also true that MMTests has evolved over time to
-be used on lab machines that can be redeployed to a clean known state at the
-push of a button. The convenience of assuming root far outweighs the
-limitations of this approach.
-
-Another less then ideal characteristic of MMTests is that it downloads the
-sources of benchmarks from external URLs which you, as a user, may or may not
-trust. We have vetted all those URLs and determined that they represent the
-canonical source for a given benchmark, but are not ultimately responsible for
-their content. Inside our organization we have a mirror for the content of all
-of them (the external URL is accessed only as a fallback), but when people
-outside of SUSE use MMTests that's what they get.
-
-> I had the thought that I should be able to get similar
-> results as your "8x-SKYLAKE-UMA" on my test computer,
-> i7-2600K. Or that at least it was worth trying, just
-> to see.
-
-Uhm. That may or may not happen. It's true that your i7-2600K and
-8x-SKYLAKE-UMA have the same number of cores and threads, and that the size of
-the L3 cache is the same, but the https://ark.intel.com website tells me that
-they are from different microarchitecture generations: i7-2600K is a Sandy
-Bridge and 8x-SKYLAKE-UMA is a Skylake. Given that the timeline of Intel
-microarchitectures is Sandy Bridge (2011), Haswell (2013), Broadwell (2015)
-and Skylake (2016), i7-2600K might have more in common with my 48x-HASWELL-NUMA
-than it has 8x-SKYLAKE-UMA.
-
-It might seems odd to compare a 48 threads machine with an 8 threads one, but
-if you look at MMTests configurations you'll notice that we try to "normalize"
-over available resources such as amount of memory or number of cores. We
-generally try to explore the space of parameters from "light workload" to
-machine saturation; then we average the results, as you see in the
-illustration above. This might offer you an alternate viewpoint if what you
-get if i7-2600K doesn't match your expectation.
-
+Does that make this patch OK for you, Lee?
 
 Thanks,
-Giovanni
+Quentin
+
+[1] https://lkml.org/lkml/2018/10/11/338
+
+--umq566xyw5pxyboh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlwL3bYACgkQhLiadT7g
+8aMzDQ//SP/WNuKOA5RABdv9owyD0gfaSWiEML1W6ovmeEBPfxP6euZcHgnRsgEw
+errjVUNOrlUy1Dn7cDLMhhCYlZuXBjfqlakVRAZpzhI1n0C4jHcERSB5e7Qck9uf
+UwUSmi5rRZF0s2Tk034O/ycv/BkbRbXwPKN9K5j9zsyGYXBjWlw7Vr695E4O9pSc
+69dTwRq1eYUFXlOk6Z8jBwAbMfPq38MgT7TbOq6OhxfW7efsPF4GinGyFfmhYmd/
+C8uJtc+NxXn3XOySpObEAIbl5XL+ugpwT/zVhGz+IdNBX+aJNLWrzpyfK/9U9DEd
+TQye0ezWR8n4navDsuYfYMaPXToXRZRWc/m1yvM+mSkDOAiXBhNZ1+oUPRTiKtnS
+fxx+THTvpUwmNACctbUNRoU5u4QHfyL5A4I3uuiPyU9x3c9WYnB/ycHBxgMVx/0A
+QrH7czW0VeqI598UV7hfNmDwV74ZxcJvCdROQLr5i9KWqknjTYAizvJdK/76MxSh
+fAkA+SHO55y22ivHeJsCha6cIOtbbOVzVjFLeDRm+1MiHNFkacNHglNtC030hE1Z
+LYjKE2hdG8zlL1Ak78Fpam9mZrOtHpwbS+AJpNsdZFA455iqZQfsLI6CY7o/N6E5
+t739gtE19+hwYyaK2cNG9F4eZkVrtnOyNkOMxX1yIUkeMoRHUAE=
+=BKmW
+-----END PGP SIGNATURE-----
+
+--umq566xyw5pxyboh--
