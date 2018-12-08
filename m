@@ -1,64 +1,57 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH] PM / AVS: SmartReflex: Switch to SPDX Licence ID
-Date: Sat, 8 Dec 2018 10:00:42 -0600
-Message-ID: <20181208160042.32587-1-nm@ti.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
+Date: Sat, 8 Dec 2018 08:24:20 -0800
+Message-ID: <000d01d48f12$7e2e16c0$7a8a4440$@net>
+References: <42865872.dmYH3PmblP@aspire.rjw.lan>         T62Cgz3BqpqCWT62HgcJvj <001a01d48b24$9aa38c00$cfeaa400$@net> VZhHgXUsnXrKKVZhNgPvLt
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: VZhHgXUsnXrKKVZhNgPvLt
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nishanth Menon <nm@ti.com>
+To: 'Giovanni Gherdovich' <ggherdovich@suse.cz>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-Fix up licensing to be inline with Linux conventions.
+On 2018.12.08 02:23 Giovanni Gherdovich wrote:
 
-Reported-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- drivers/power/avs/smartreflex.c   | 5 +----
- include/linux/power/smartreflex.h | 5 +----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+> sorry for the late reply, this week I was traveling.
 
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index 536d99dc0008..82fda4d050ce 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -1,3 +1,4 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-  * OMAP SmartReflex Voltage Control
-  *
-@@ -11,10 +12,6 @@
-  *
-  * Copyright (C) 2007 Texas Instruments, Inc.
-  * Lesly A M <x0080970@ti.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-  */
- 
- #include <linux/module.h>
-diff --git a/include/linux/power/smartreflex.h b/include/linux/power/smartreflex.h
-index a586976f4784..d0b37e937037 100644
---- a/include/linux/power/smartreflex.h
-+++ b/include/linux/power/smartreflex.h
-@@ -1,3 +1,4 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
- /*
-  * OMAP Smartreflex Defines and Routines
-  *
-@@ -11,10 +12,6 @@
-  *
-  * Copyright (C) 2007 Texas Instruments, Inc.
-  * Lesly A M <x0080970@ti.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-  */
- 
- #ifndef __POWER_SMARTREFLEX_H
--- 
-2.19.0.271.gfe8321ec057f
+No Problem. Thanks very much for your very detailed reply,
+which obviously took considerable time to write. While
+I was making progress, your instructions really fill in
+some gaps and mistakes I was making.
+
+Eventually (probably several days) I'll report back my test
+results.
+
+
+> Some specific remarks you raise:
+>
+> On Mon, 2018-12-03 at 08:23 -0800, Doug Smythies wrote:
+>> ...
+>> My issue is that I do not understand the output or how it
+>> might correlate with your tables.
+>> 
+>> I get, for example:
+>> 
+>>    3    1   1     0.13s     0.68s     0.80s  1003894.302 1003779.613
+>>    3    1   1     0.16s     0.64s     0.80s  1008900.053 1008215.336
+>>    3    1   1     0.14s     0.66s     0.80s  1009630.439 1008990.265
+>> ...
+>> 
+>> But I don't know what that means, nor have I been able to find
+>> a description anywhere.
+>
+> I don't recognize this output. I hope the illustration above can clarify how
+> MMTests is used.
+
+Due to incompetence on my part, the config file being run for my tests was
+always just the default config file from my original
+git clone https://github.com/gormanm/mmtests.git
+command. So regardless of what I thought I was doing, I was running "pft"
+(Page Fault Test).
+
+... Doug
