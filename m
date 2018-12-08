@@ -1,89 +1,74 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v11 5/8] interconnect: qcom: Add sdm845 interconnect
- provider driver
-Date: Sat, 8 Dec 2018 02:24:03 +0200
-Message-ID: <ee392578-2dbc-7e60-be37-483729e922d1@linaro.org>
-References: <20181207152917.4862-1-georgi.djakov@linaro.org>
- <20181207152917.4862-6-georgi.djakov@linaro.org>
- <20181207233010.GE14307@google.com>
+From: Ken Moffat <zarniwhoop73@googlemail.com>
+Subject: Re: Recommended driver for current AMD processors
+Date: Sat, 8 Dec 2018 00:47:12 +0000
+Message-ID: <CANVEwpZjEeXB7wq5Jzj=Z9A6SYpuQrK4WUetDLEX3e5OCfDLLA@mail.gmail.com>
+References: <674a80a7-e956-ef2d-3095-41473851a402@molgen.mpg.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181207233010.GE14307@google.com>
-Content-Language: en-US
+In-Reply-To: <674a80a7-e956-ef2d-3095-41473851a402@molgen.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: pmenzel@molgen.mpg.de
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, zarniwhoop@ntlworld.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Hi Paul,
 
-Thanks for looking into this.
+On Fri, 7 Dec 2018 at 15:32, Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+>
+> Dear Linux folks,
+>
+>
+> What driver is recommended for current AMD Ryzen based processors
+> like *AMD Ryzen 5 PRO 1500 Quad-Core Processor* or *AMD EPYC 7601
+> 32-Core Processor*?
+>
+> Only from the acpi-cpufreq Kconfig description, I assume, that that
+> driver should be used.
+>
+> > config X86_ACPI_CPUFREQ
+> >         tristate "ACPI Processor P-States driver"
+> >         depends on ACPI_PROCESSOR
+> >         help
+> >           This driver adds a CPUFreq driver which utilizes the ACPI
+> >           Processor Performance States.
+> >           This driver also supports Intel Enhanced Speedstep and newer
+> >           AMD CPUs.
+> >
+> >           To compile this driver as a module, choose M here: the
+> >           module will be called acpi-cpufreq.
+> >
+> >           For details, take a look at <file:Documentation/cpu-freq/>.
+> >
+> >           If in doubt, say N.
+>
+> Would a =E2=80=9Cnative=E2=80=9D driver like Intel=E2=80=99s P state driv=
+er also give better
+> results? Do you know if AMD is working on something like that?
+>
+>
+>
+> Kind regards,
+>
+> Paul
+>
 
-On 8.12.18 1:30, Matthias Kaehlcke wrote:
-> Hi Georgi,
-> 
-> not a full review, only one thing I just stumbled across:
-> 
-> On Fri, Dec 07, 2018 at 05:29:14PM +0200, Georgi Djakov wrote:
->> From: David Dai <daidavid1@codeaurora.org>
->>
->> Introduce Qualcomm SDM845 specific provider driver using the
->> interconnect framework.
->>
->> Signed-off-by: David Dai <daidavid1@codeaurora.org>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  .../bindings/interconnect/qcom,sdm845.txt     |  24 +
->>  drivers/interconnect/Kconfig                  |   5 +
->>  drivers/interconnect/Makefile                 |   1 +
->>  drivers/interconnect/qcom/Kconfig             |  13 +
->>  drivers/interconnect/qcom/Makefile            |   5 +
->>  drivers/interconnect/qcom/sdm845.c            | 836 ++++++++++++++++++
->>  .../dt-bindings/interconnect/qcom,sdm845.h    | 143 +++
->>  7 files changed, 1027 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
->>  create mode 100644 drivers/interconnect/qcom/Kconfig
->>  create mode 100644 drivers/interconnect/qcom/Makefile
->>  create mode 100644 drivers/interconnect/qcom/sdm845.c
->>  create mode 100644 include/dt-bindings/interconnect/qcom,sdm845.h
->>
->> ...
->>
->> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
->> new file mode 100644
->> index 000000000000..f594dd6f500f
->> --- /dev/null
->> +++ b/drivers/interconnect/qcom/sdm845.c
->>
->> ...
->>
->> +static int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev)
->> +{
->> +	struct qcom_icc_node *qn;
->> +	int ret, i;
->> +
->> +	bcm->addr = cmd_db_read_addr(bcm->name);
->> +	if (!bcm->addr) {
->> +		dev_err(dev, "%s could not find RPMh address\n",
->> +			bcm->name);
->> +		return -EINVAL;
->> +	}
->> +
->> +	if (cmd_db_read_aux_data_len(bcm->name) < sizeof(struct bcm_db)) {
->> +		dev_err(dev, "%s command db missing or partial aux data\n",
->> +			bcm->name);
->> +		return -EINVAL;
->> +	}
-> 
-> cmd_db_read_aux_data_len() is in the process of being removed, see
-> ed3cafa79ea7 ("soc: qcom: cmd-db: Stop memcpy()ing in
-> cmd_db_read_aux_data()") in arm-soc/for-next
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git/commit/?h=for-next&id=ed3cafa79ea756be653d22087c017af95ea78a49
+As a mere user, I bought a ryzen 3 1300X earlier this year, and was
+annoyed about how the frequencies changed when a single-threaded
+compile moved to a different core (unlike e.g. a haswell where
+frequencies barely vary).
 
-Yes, exactly. I have a fix that lives as a separate patch [8/8] and will squash it here.
+I have a meter which can report the current power consumption
+for the system (computer, monitor, network switch, kvm switch), and
+using that to keep an eye on the range of reported wattages when idle,
+compiling with -j1 and compiling with -j4, I eventually formed the
+impression that the ondemand governor was marginally better than
+the performance governor, and that omitting cpufreq did not appear to
+increase the poer consumption.
 
-BR,
-Georgi
+But that is just one set of observations.  I agree that using less
+power and getting faster compiles would be nice, so if something is
+available I'll be keen to try it.
+
+=C4=B8en
