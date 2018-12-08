@@ -1,92 +1,40 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v12 2/7] dt-bindings: Introduce interconnect binding
-Date: Sat,  8 Dec 2018 19:02:11 +0200
-Message-ID: <20181208170216.32555-3-georgi.djakov@linaro.org>
-References: <20181208170216.32555-1-georgi.djakov@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Oskari Lemmela <oskari@lemmela.net>
+Subject: [PATCH v7 2/9] ARM: dts: axp81x: add AC power supply subnode
+Date: Sat,  8 Dec 2018 19:36:11 +0200
+Message-ID: <20181208173618.31395-3-oskari@lemmela.net>
+References: <20181208173618.31395-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181208170216.32555-1-georgi.djakov@linaro.org>
+In-Reply-To: <20181208173618.31395-1-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, andy.gross@linaro.org, olof@lixom.net, arnd@arndb.de, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, georgi.djakov@linaro.org
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Quentin Schulz <quentin.schulz@bootlin.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Oskari Lemmela <oskari@lemmela.net>
 List-Id: linux-pm@vger.kernel.org
 
-This binding is intended to represent the relations between interconnect
-controllers (providers) and consumer device nodes. It will allow creating
-links between consumers and interconnect paths (exposed by interconnect
-providers).
+Add AC power supply subnode for AXP81X PMIC.
 
-Reviewed-by: Evan Green <evgreen@chromium.org>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
+Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+Tested-by: Vasily Khoruzhick <anarsoul@gmail.com>
 ---
- .../bindings/interconnect/interconnect.txt    | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+ arch/arm/boot/dts/axp81x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-new file mode 100644
-index 000000000000..5a3c575b387a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-@@ -0,0 +1,60 @@
-+Interconnect Provider Device Tree Bindings
-+=========================================
-+
-+The purpose of this document is to define a common set of generic interconnect
-+providers/consumers properties.
-+
-+
-+= interconnect providers =
-+
-+The interconnect provider binding is intended to represent the interconnect
-+controllers in the system. Each provider registers a set of interconnect
-+nodes, which expose the interconnect related capabilities of the interconnect
-+to consumer drivers. These capabilities can be throughput, latency, priority
-+etc. The consumer drivers set constraints on interconnect path (or endpoints)
-+depending on the use case. Interconnect providers can also be interconnect
-+consumers, such as in the case where two network-on-chip fabrics interface
-+directly.
-+
-+Required properties:
-+- compatible : contains the interconnect provider compatible string
-+- #interconnect-cells : number of cells in a interconnect specifier needed to
-+			encode the interconnect node id
-+
-+Example:
-+
-+		snoc: interconnect@580000 {
-+			compatible = "qcom,msm8916-snoc";
-+			#interconnect-cells = <1>;
-+			reg = <0x580000 0x14000>;
-+			clock-names = "bus_clk", "bus_a_clk";
-+			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-+				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
-+		};
-+
-+
-+= interconnect consumers =
-+
-+The interconnect consumers are device nodes which dynamically express their
-+bandwidth requirements along interconnect paths they are connected to. There
-+can be multiple interconnect providers on a SoC and the consumer may consume
-+multiple paths from different providers depending on use case and the
-+components it has to interact with.
-+
-+Required properties:
-+interconnects : Pairs of phandles and interconnect provider specifier to denote
-+	        the edge source and destination ports of the interconnect path.
-+
-+Optional properties:
-+interconnect-names : List of interconnect path name strings sorted in the same
-+		     order as the interconnects property. Consumers drivers will use
-+		     interconnect-names to match interconnect paths with interconnect
-+		     specifier pairs.
-+
-+Example:
-+
-+	sdhci@7864000 {
-+		...
-+		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
-+		interconnect-names = "sdhc-mem";
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index 043c717dcef1..bd83962d3627 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -48,6 +48,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
+ 
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp813-ac-power-supply";
++		status = "disabled";
 +	};
++
+ 	axp_adc: adc {
+ 		compatible = "x-powers,axp813-adc";
+ 		#io-channel-cells = <1>;
+-- 
+2.17.1
