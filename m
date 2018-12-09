@@ -1,66 +1,93 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 2/5] devfreq: add support for suspend/resume of a
- devfreq device
-Date: Sun, 9 Dec 2018 10:00:07 +0100
-Message-ID: <20181209090007.GD7561@amd>
-References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20181203143131eucas1p217f22ac6d19682a54a57658a06980914@eucas1p2.samsung.com>
- <1543847475-7600-3-git-send-email-l.luba@partner.samsung.com>
- <5C06124B.5030409@samsung.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH v3 1/5] dt-bindings: soc: Add a new binding for the
+ BCM2835 PM node.
+Date: Sun, 9 Dec 2018 13:14:01 +0100 (CET)
+Message-ID: <53380420.68255.1544357641824@email.ionos.de>
+References: <20181130202743.20585-1-eric@anholt.net>
+ <20181130202743.20585-2-eric@anholt.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="0/kgSOzhNoDC5T3a"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5C06124B.5030409@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181130202743.20585-2-eric@anholt.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eric Anholt <eric@anholt.net>, Florian Fainelli <f.fainelli@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, linux-watchdog@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Eric,
 
---0/kgSOzhNoDC5T3a
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[add Sebastian]
 
-On Tue 2018-12-04 14:36:11, Chanwoo Choi wrote:
-> Hi Lukasz,
->=20
-> Looks good to me. But, I add the some comments.
-> If you will fix it, feel free to add my tag:
-> Reviewed-by: Chanwoo choi <cw00.choi@samsung.com>
->=20
-> On 2018=EB=85=84 12=EC=9B=94 03=EC=9D=BC 23:31, Lukasz Luba wrote:
-> > The patch prepares devfreq device for handling suspend/resume
-> > functionality.  The new fields will store needed information during this
->=20
-> nitpick. Remove unneeded space. There are two spaces between '.' and 'The=
- new'.=20
+> Eric Anholt <eric@anholt.net> hat am 30. November 2018 um 21:27 geschrieben:
+> 
+> 
+> This binding supersedes the bcm2835-pm-wdt binding which only covered
+> enough to provide a watchdog, but the HW block is actually mostly
+> about power domains.
+> 
+> Signed-off-by: Eric Anholt <eric@anholt.net>
+> ---
+>  .../bindings/soc/bcm/brcm,bcm2835-pm.txt      | 42 +++++++++++++++++++
+>  1 file changed, 42 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.txt b/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.txt
+> new file mode 100644
+> index 000000000000..7818d33a158f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/bcm/brcm,bcm2835-pm.txt
+> @@ -0,0 +1,42 @@
+> +BCM2835 PM (Power domains, watchdog)
+> +
+> +The PM block controls power domains and some reset lines, and includes
+> +a watchdog timer.  This binding supersedes the brcm,bcm2835-pm-wdt
+> +binding which covered some of PM's register range and functionality.
+> +
+> +Required properties:
+> +
+> +- compatible:		Should be "brcm,bcm2835-pm"
+> +- reg:			Specifies base physical address and size of the two
+> +			  register ranges ("PM" and "ASYNC_BRIDGE" in that
+> +			  order)
+> +- clocks:		a) v3d: The V3D clock from CPRMAN
+> +			b) peri_image: The PERI_IMAGE clock from CPRMAN
+> +			c) h264: The H264 clock from CPRMAN
+> +			d) isp: The ISP clock from CPRMAN
+> +- #reset-cells: 	Should be 1.  This property follows the reset controller
+> +			  bindings[1].
+> +- #power-domain-cells:	Should be 1.  This property follows the power domain
+> +			  bindings[2].
+> +
+> +Optional properties:
+> +
+> +- timeout-sec:	Contains the watchdog timeout in seconds
+> +
+> +[1] Documentation/devicetree/bindings/reset/reset.txt
+> +[2] Documentation/devicetree/bindings/power/power_domain.txt
+> +
 
-Yes. And that's because two spaces are okay at that place.
+sorry for my late reply. I hope we can take the opportunity of a new binding to fix an old issue of the bcm2835-wdt driver. The watchdog driver sets the pm_power_off callback without checking for "system-power-controller" property [3]. As a result we can't use another poweroff controller like e.g. gpio-poweroff. In downstream this has been workarounded by an additional devicetree property for the gpio-poweroff driver [4]. But this isn't the right way because the issue is in the bcm2835 watchdog driver not in all the other reset controller.
 
-https://www.writersdigest.com/online-editor/how-many-spaces-after-a-period
+Suggested pseudo code:
 
-Please don't cause unneeded noise on the list with trivial
-comments. If the patch is okay, apply the patch, no need to find
-trivial nit everywhere.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+if (!pm_power_off) {
+    /* Preserve the old behavior of watchdog driver in case of old DTB */
+    if (!of_device_is_compatible(dev->of.node, "brcm,bcm2835-pm") ||
+        of_device_is_system_power_controller(dev->of.node))
+        pm_power_off = bcm2835_power_off;
+}
 
---0/kgSOzhNoDC5T3a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Best regards
+Stefan
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlwM2ZcACgkQMOfwapXb+vKjzQCcCsUqmaYo8aPuD0m/JrfCBl2z
-ZaUAnjMt+1X+vuWarQhgVM/LXGeYdeLw
-=2woN
------END PGP SIGNATURE-----
-
---0/kgSOzhNoDC5T3a--
+[3] - https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bindings/power/power-controller.txt
+[4] - https://github.com/raspberrypi/linux/commit/f86dcfac0a4e478fee40b5a3729ff1b159ae91ee
