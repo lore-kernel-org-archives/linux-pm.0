@@ -1,105 +1,183 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v10 0/8] Introduce on-chip interconnect API
-Date: Mon, 10 Dec 2018 12:00:11 +0100
-Message-ID: <CAJZ5v0jZMqFwYgnfRz04ELLRk=0U8Uv=acw0t9Azxk_HYL0gSQ@mail.gmail.com>
-References: <20181127180349.29997-1-georgi.djakov@linaro.org>
- <CAE=gft4jUjr3oDAZrM=-orLM-YoVAwa+e=crDDC_p9ArGE1dig@mail.gmail.com>
- <20181206145547.GA7884@kroah.com> <CAJZ5v0gP50tmq4ZzB7LLSaWGWjGjK31y=qFg5PS9B7c2XQ+DyQ@mail.gmail.com>
- <6923d6ed-e357-b083-1830-8396d788efe5@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Mon, 10 Dec 2018 12:30:23 +0100
+Message-ID: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6923d6ed-e357-b083-1830-8396d788efe5@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, evgreen@chromium.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, bjorn.andersson@linaro.org, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, abailon@baylibre.com, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 10, 2018 at 11:18 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> Hi Rafael,
->
-> On 12/10/18 11:04, Rafael J. Wysocki wrote:
-> > On Thu, Dec 6, 2018 at 3:55 PM Greg KH <gregkh@linuxfoundation.org> wrote:
-> >>
-> >> On Wed, Dec 05, 2018 at 12:41:35PM -0800, Evan Green wrote:
-> >>> On Tue, Nov 27, 2018 at 10:03 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
-> >>>>
-> >>>> Modern SoCs have multiple processors and various dedicated cores (video, gpu,
-> >>>> graphics, modem). These cores are talking to each other and can generate a
-> >>>> lot of data flowing through the on-chip interconnects. These interconnect
-> >>>> buses could form different topologies such as crossbar, point to point buses,
-> >>>> hierarchical buses or use the network-on-chip concept.
-> >>>>
-> >>>> These buses have been sized usually to handle use cases with high data
-> >>>> throughput but it is not necessary all the time and consume a lot of power.
-> >>>> Furthermore, the priority between masters can vary depending on the running
-> >>>> use case like video playback or CPU intensive tasks.
-> >>>>
-> >>>> Having an API to control the requirement of the system in terms of bandwidth
-> >>>> and QoS, so we can adapt the interconnect configuration to match those by
-> >>>> scaling the frequencies, setting link priority and tuning QoS parameters.
-> >>>> This configuration can be a static, one-time operation done at boot for some
-> >>>> platforms or a dynamic set of operations that happen at run-time.
-> >>>>
-> >>>> This patchset introduce a new API to get the requirement and configure the
-> >>>> interconnect buses across the entire chipset to fit with the current demand.
-> >>>> The API is NOT for changing the performance of the endpoint devices, but only
-> >>>> the interconnect path in between them.
-> >>>
-> >>> For what it's worth, we are ready to land this in Chrome OS. I think
-> >>> this series has been very well discussed and reviewed, hasn't changed
-> >>> much in the last few spins, and is in good enough shape to use as a
-> >>> base for future patches. Georgi's also done a great job reaching out
-> >>> to other SoC vendors, and there appears to be enough consensus that
-> >>> this framework will be usable by more than just Qualcomm. There are
-> >>> also several drivers out on the list trying to add patches to use this
-> >>> framework, with more to come, so it made sense (to us) to get this
-> >>> base framework nailed down. In my experiments this is an important
-> >>> piece of the overall power management story, especially on systems
-> >>> that are mostly idle.
-> >>>
-> >>> I'll continue to track changes to this series and we will ultimately
-> >>> reconcile with whatever happens upstream, but I thought it was worth
-> >>> sending this note to express our "thumbs up" towards this framework.
-> >>
-> >> Looks like a v11 will be forthcoming, so I'll wait for that one to apply
-> >> it to the tree if all looks good.
-> >
-> > I'm honestly not sure if it is ready yet.
-> >
-> > New versions are coming on and on, which may make such an impression,
-> > but we had some discussion on it at the LPC and some serious questions
-> > were asked during it, for instance regarding the DT binding introduced
-> > here.  I'm not sure how this particular issue has been addressed here,
-> > for example.
->
-> There have been no changes in bindings since v4 (other than squashing
-> consumer and provider bindings into a single patch and fixing typos).
->
-> The last DT comment was on v9 [1] where Rob wanted confirmation from
-> other SoC vendors that this works for them too. And now we have that
-> confirmation and there are patches posted on the list [2].
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK
+Add two new metrics for CPU idle states, "above" and "below", to count
+the number of times the given state had been asked for (or entered
+from the kernel's perspective), but the observed idle duration turned
+out to be too short or too long for it (respectively).
 
-> The second thing (also discussed at LPC) was about possible cases where
-> some consumer drivers can't calculate how much bandwidth they actually
-> need and how to address that. The proposal was to extend the OPP
-> bindings with one more property, but this is not part of this patchset.
-> It is a future step that needs more discussion on the mailing list. If a
-> driver really needs some bandwidth data now, it should be put into the
-> driver and not in DT. After we have enough consumers, we can discuss
-> again if it makes sense to extract something into DT or not.
+These metrics help to estimate the quality of the CPU idle governor
+in use.
 
-That's fine by me.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Admittedly, I have some reservations regarding the extent to which
-this approach will turn out to be useful in practice, but I guess as
-long as there is enough traction, the best way to find out it to try
-and see. :-)
+-> v2: Fix a leftover in the documentation from the previous versions
+       of the patch and a typo in the changelog.
 
->From now on I will assume that this series is going to be applied by Greg.
+---
+ Documentation/ABI/testing/sysfs-devices-system-cpu |    7 ++++
+ Documentation/admin-guide/pm/cpuidle.rst           |   10 ++++++
+ drivers/cpuidle/cpuidle.c                          |   31 ++++++++++++++++++++-
+ drivers/cpuidle/sysfs.c                            |    6 ++++
+ include/linux/cpuidle.h                            |    2 +
+ 5 files changed, 55 insertions(+), 1 deletion(-)
 
-Thanks,
-Rafael
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -202,7 +202,6 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+ 	ktime_t time_start, time_end;
+-	s64 diff;
+ 
+ 	/*
+ 	 * Tell the time framework to switch to a broadcast timer because our
+@@ -248,6 +247,9 @@ int cpuidle_enter_state(struct cpuidle_d
+ 		local_irq_enable();
+ 
+ 	if (entered_state >= 0) {
++		s64 diff, delay = drv->states[entered_state].exit_latency;
++		int i;
++
+ 		/*
+ 		 * Update cpuidle counters
+ 		 * This can be moved to within driver enter routine,
+@@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
+ 		dev->last_residency = (int)diff;
+ 		dev->states_usage[entered_state].time += dev->last_residency;
+ 		dev->states_usage[entered_state].usage++;
++
++		if (diff < drv->states[entered_state].target_residency) {
++			for (i = entered_state - 1; i >= 0; i--) {
++				if (drv->states[i].disabled ||
++				    dev->states_usage[i].disable)
++					continue;
++
++				/* Shallower states are enabled, so update. */
++				dev->states_usage[entered_state].above++;
++				break;
++			}
++		} else if (diff > delay) {
++			for (i = entered_state + 1; i < drv->state_count; i++) {
++				if (drv->states[i].disabled ||
++				    dev->states_usage[i].disable)
++					continue;
++
++				/*
++				 * Update if a deeper state would have been a
++				 * better match for the observed idle duration.
++				 */
++				if (diff - delay >= drv->states[i].target_residency)
++					dev->states_usage[entered_state].below++;
++
++				break;
++			}
++		}
+ 	} else {
+ 		dev->last_residency = 0;
+ 	}
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -33,6 +33,8 @@ struct cpuidle_state_usage {
+ 	unsigned long long	disable;
+ 	unsigned long long	usage;
+ 	unsigned long long	time; /* in US */
++	unsigned long long	above; /* Number of times it's been too deep */
++	unsigned long long	below; /* Number of times it's been too shallow */
+ #ifdef CONFIG_SUSPEND
+ 	unsigned long long	s2idle_usage;
+ 	unsigned long long	s2idle_time; /* in US */
+Index: linux-pm/drivers/cpuidle/sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/sysfs.c
++++ linux-pm/drivers/cpuidle/sysfs.c
+@@ -301,6 +301,8 @@ define_show_state_str_function(name)
+ define_show_state_str_function(desc)
+ define_show_state_ull_function(disable)
+ define_store_state_ull_function(disable)
++define_show_state_ull_function(above)
++define_show_state_ull_function(below)
+ 
+ define_one_state_ro(name, show_state_name);
+ define_one_state_ro(desc, show_state_desc);
+@@ -310,6 +312,8 @@ define_one_state_ro(power, show_state_po
+ define_one_state_ro(usage, show_state_usage);
+ define_one_state_ro(time, show_state_time);
+ define_one_state_rw(disable, show_state_disable, store_state_disable);
++define_one_state_ro(above, show_state_above);
++define_one_state_ro(below, show_state_below);
+ 
+ static struct attribute *cpuidle_state_default_attrs[] = {
+ 	&attr_name.attr,
+@@ -320,6 +324,8 @@ static struct attribute *cpuidle_state_d
+ 	&attr_usage.attr,
+ 	&attr_time.attr,
+ 	&attr_disable.attr,
++	&attr_above.attr,
++	&attr_below.attr,
+ 	NULL
+ };
+ 
+Index: linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/cpuidle.rst
++++ linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+@@ -398,6 +398,16 @@ deeper the (effective) idle state repres
+ a number of files (attributes) representing the properties of the idle state
+ object corresponding to it, as follows:
+ 
++``above``
++	Total number of times this idle state had been asked for, but the
++	observed idle duration was certainly too short to match its target
++	residency.
++
++``below``
++	Total number of times this idle state had been asked for, but cerainly
++	a deeper idle state would have been a better match for the observed idle
++	duration.
++
+ ``desc``
+ 	Description of the idle state.
+ 
+Index: linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+===================================================================
+--- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -145,6 +145,8 @@ What:		/sys/devices/system/cpu/cpuX/cpui
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/above
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/below
+ Date:		September 2007
+ KernelVersion:	v2.6.24
+ Contact:	Linux power management list <linux-pm@vger.kernel.org>
+@@ -166,6 +168,11 @@ Description:
+ 
+ 		usage: (RO) Number of times this state was entered (a count).
+ 
++		above: (RO) Number of times this state was entered, but the
++		       observed CPU idle duration was too short for it (a count).
++
++		below: (RO) Number of times this state was entered, but the
++		       observed CPU idle duration was too long for it (a count).
+ 
+ What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
+ Date:		February 2008
