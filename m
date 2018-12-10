@@ -1,36 +1,58 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 4/6] dt-bindings: cp110: document the thermal
- interrupt capabilities
-Date: Mon, 10 Dec 2018 17:05:18 -0600
-Message-ID: <20181210230518.GA10816@bogus>
-References: <20181204190332.10351-1-miquel.raynal@bootlin.com>
- <20181204190332.10351-5-miquel.raynal@bootlin.com>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: Re: [driver-core PATCH v8 0/9] Add NUMA aware async_schedule calls
+Date: Mon, 10 Dec 2018 15:25:04 -0800
+Message-ID: <dd0b44d5dd9d19ac6735f80ae66bb437ec55b2cf.camel@linux.intel.com>
+References: <154403054034.11544.3978949383914046587.stgit@ahduyck-desk1.jf.intel.com>
+         <20181210192216.GJ28501@garbanzo.do-not-panic.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20181204190332.10351-5-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181210192216.GJ28501@garbanzo.do-not-panic.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Luis Chamberlain <mcgrof@kernel.org>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue,  4 Dec 2018 20:03:30 +0100, Miquel Raynal wrote:
-> The thermal IP can produce interrupts on overheat situation.
-> Describe them.
+On Mon, 2018-12-10 at 11:22 -0800, Luis Chamberlain wrote:
+> On Wed, Dec 05, 2018 at 09:25:13AM -0800, Alexander Duyck wrote:
+> > This patch set provides functionality that will help to improve the
+> > locality of the async_schedule calls used to provide deferred
+> > initialization.
+> > 
+> > This patch set originally started out focused on just the one call to
+> > async_schedule_domain in the nvdimm tree that was being used to defer the
+> > device_add call however after doing some digging I realized the scope of
+> > this was much broader than I had originally planned. As such I went
+> > through and reworked the underlying infrastructure down to replacing the
+> > queue_work call itself with a function of my own and opted to try and
+> > provide a NUMA aware solution that would work for a broader audience.
+> > 
+> > In addition I have added several tweaks and/or clean-ups to the front of the
+> > patch set. Patches 1 through 4 address a number of issues that actually were
+> > causing the existing async_schedule calls to not show the performance that
+> > they could due to either not scaling on a per device basis, or due to issues
+> > that could result in a potential deadlock. For example, patch 4 addresses the
+> > fact that we were calling async_schedule once per driver instead of once
+> > per device, and as a result we would have still ended up with devices
+> > being probed on a non-local node without addressing this first.
 > 
-> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-> ---
->  .../bindings/arm/marvell/cp110-system-controller.txt     | 9 +++++++++
->  1 file changed, 9 insertions(+)
+> No tests were added. Again, I think it would be good to add test
+> cases to showcase the old mechanisms, illustrate the new, and ensure
+> we don't regress both now and also help us ensure we don't regress
+> moving forward.
 > 
+> This is all too critical of a path for the kernel, and these changes
+> are rather instrusive. I'd readlly like to see test code for it now
+> rather than later.
+> 
+>   Luis
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Sorry about that. I was more focused on the rewrite of patch 2 and
+overlooked the comment about lib/test_kmod.c.
+
+I'll look into it and see if I can squeeze it in for v9.
+
+Thanks.
+
+- Alex
