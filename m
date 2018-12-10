@@ -1,72 +1,57 @@
-From: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [driver-core PATCH v8 2/9] driver core: Establish order of
- operations for device_add and device_del via bitflag
-Date: Mon, 10 Dec 2018 14:41:07 -0800
-Message-ID: <CAPcyv4h0hk3VCCDSMNR72S9BWVMP514byGf3TWwp1Z7bQ2wi5g@mail.gmail.com>
-References: <154403054034.11544.3978949383914046587.stgit@ahduyck-desk1.jf.intel.com>
- <154403072403.11544.10419282512791659652.stgit@ahduyck-desk1.jf.intel.com>
- <CAPcyv4jH_Op-xHTd2FwQizPaWFx_2FE-pVsOLLmZAEK8EVPrYg@mail.gmail.com>
- <15b6817fd945a1622afe673b46b028bacefad72b.camel@linux.intel.com>
- <CAPcyv4i1RTrKYX0YpyCRE=pqt3pHBRiCGQq1wYUriLjKKTVA7A@mail.gmail.com>
- <bd92d0a3ff60097bf4424ff4c556a5369e66da6d.camel@linux.intel.com>
- <CAPcyv4jDG_2VwFr4oDGCURFrA=B0Bs2HGN9exLE47vDj0P3_8A@mail.gmail.com>
- <CAPcyv4hrML3SKnFP9UANC-hdTrpnOx4nWX=b-yhLsLuujL5oAA@mail.gmail.com>
- <00810f93b199c524378b5c963d49bd798c5d9843.camel@linux.intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Mon, 10 Dec 2018 23:51:34 +0100
+Message-ID: <20181210225134.GB24811@worktop.programming.kicks-ass.net>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
+ <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+ <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <00810f93b199c524378b5c963d49bd798c5d9843.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
-Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 10, 2018 at 2:24 PM Alexander Duyck
-<alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
->
-> On Mon, 2018-12-10 at 13:23 -0800, Dan Williams wrote:
-> > On Mon, Dec 10, 2018 at 1:15 PM Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
-> > >
-> > > On Mon, Dec 10, 2018 at 12:58 PM Alexander Duyck
-> > > <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
-> >
-> > [..]
-> > > > Also the context for the two functions seems to be a bit different. In
-> > > > the case of __device_attach_driver the device_lock is already held. In
-> > > > __driver_attach the lock on the device isn't taken until after a match
-> > > > has been found.
-> > >
-> > > Yes, I was only pattern matching when looking at the context of where
-> > > dev->dead is checked in __driver_attach() and wondering why it was
-> > > checked outside of __device_attach_driver()
-> >
-> > ...and now I realize the bigger point of your concern, we need to
-> > check dev->dead after acquiring the device_lock otherwise the race is
-> > back. We can defer that consolidation, but the larger concern of
-> > making it internal to __device_attach_driver() still stands.
->
-> I'm still not a fan of moving it into __device_attach_driver. I would
-> much rather pull out the dev->driver check and instead place that in
-> __device_attach_async_helper.
->
-> The __device_attach function as I said took the device_lock and had
-> already checked dev->driver. So in the non-async path it shouldn't be
-> possible for dev->driver to ever be set anyway.
+On Mon, Dec 10, 2018 at 10:36:40PM +0100, Rafael J. Wysocki wrote:
+> On Mon, Dec 10, 2018 at 1:21 PM Peter Zijlstra <peterz@infradead.org> wrote:
 
-True.
+> > One question on this; why is this tracked unconditionally?
+> 
+> Because I didn't quite see how to make that conditional in a sensible way.
 
-> In addition
-> __device_attach_driver is called once for each driver on a given bus,
-> so dropping the test should reduce driver load time since it is one
-> less test that has to be performed per driver.
+Something like:
 
-Ok. You can add my Reviewed-by.
+	if (static_branch_unlikely(__tracepoint_idle_above) ||
+	    static_branch_unlikely(__tracepoint_idle_below)) {
+
+		// do stuff that calls trace_idle_above() /
+		// trace_idle_below().
+
+	}
+
+> These things are counters and counting with the help of tracepoints
+> isn't particularly convenient (and one needs debugfs to be there to
+> use tracepoints and they require root access etc).
+
+Root only should not be a problem for a developer; and aren't these
+numbers only really interesting if you're prodding at the idle governor?
+
+> > Would not a tracepoint be better?; then there is no overhead in the
+> > normal case where nobody gives a crap about these here numbers.
+> 
+> There is an existing tracepoint that in principle could be used to
+> produce this information, but it is such a major PITA in practice that
+> nobody does that.  Guess why. :-)
+
+Sounds like you need to ship a convenient script or something :-)
+
+> Also, the "usage" and "time" counters are there in sysfs, so why not these two?
+> 
+> And is the overhead really that horrible?
+
+Dunno; it could be cold cachelines, at which point it can be fairly
+expensive. Also, being stuck with API is fairly horrible if you want to
+'fix' it.
