@@ -1,79 +1,48 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
-Date: Mon, 10 Dec 2018 22:36:40 +0100
-Message-ID: <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com>
-References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [RFC/RFT 10/10] i2c: rcar: add suspend/resume support
+Date: Mon, 10 Dec 2018 21:52:07 +0000
+Message-ID: <944a2523-aa40-eaf2-2c4a-d27254e7cbca@axentia.se>
+References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
+ <20181210210310.12677-11-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+In-Reply-To: <20181210210310.12677-11-wsa+renesas@sang-engineering.com>
+Content-Language: en-US
+Content-ID: <982E3174F51E754C9161B38295326863@eurprd02.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Cc: "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hiromitsu Yamasaki <hiromitsu.yamasaki.ym@renesas.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 10, 2018 at 1:21 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Mon, Dec 10, 2018 at 12:30:23PM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Add two new metrics for CPU idle states, "above" and "below", to count
-> > the number of times the given state had been asked for (or entered
-> > from the kernel's perspective), but the observed idle duration turned
-> > out to be too short or too long for it (respectively).
-> >
-> > These metrics help to estimate the quality of the CPU idle governor
-> > in use.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> > @@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
-> >               dev->last_residency = (int)diff;
-> >               dev->states_usage[entered_state].time += dev->last_residency;
-> >               dev->states_usage[entered_state].usage++;
-> > +
-> > +             if (diff < drv->states[entered_state].target_residency) {
-> > +                     for (i = entered_state - 1; i >= 0; i--) {
-> > +                             if (drv->states[i].disabled ||
-> > +                                 dev->states_usage[i].disable)
-> > +                                     continue;
-> > +
-> > +                             /* Shallower states are enabled, so update. */
-> > +                             dev->states_usage[entered_state].above++;
-> > +                             break;
-> > +                     }
-> > +             } else if (diff > delay) {
-> > +                     for (i = entered_state + 1; i < drv->state_count; i++) {
-> > +                             if (drv->states[i].disabled ||
-> > +                                 dev->states_usage[i].disable)
-> > +                                     continue;
-> > +
-> > +                             /*
-> > +                              * Update if a deeper state would have been a
-> > +                              * better match for the observed idle duration.
-> > +                              */
-> > +                             if (diff - delay >= drv->states[i].target_residency)
-> > +                                     dev->states_usage[entered_state].below++;
-> > +
-> > +                             break;
-> > +                     }
-> > +             }
->
-> One question on this; why is this tracked unconditionally?
-
-Because I didn't quite see how to make that conditional in a sensible way.
-
-These things are counters and counting with the help of tracepoints
-isn't particularly convenient (and one needs debugfs to be there to
-use tracepoints and they require root access etc).
-
-> Would not a tracepoint be better?; then there is no overhead in the
-> normal case where nobody gives a crap about these here numbers.
-
-There is an existing tracepoint that in principle could be used to
-produce this information, but it is such a major PITA in practice that
-nobody does that.  Guess why. :-)
-
-Also, the "usage" and "time" counters are there in sysfs, so why not these two?
-
-And is the overhead really that horrible?
+T24gMjAxOC0xMi0xMCAyMjowMywgV29sZnJhbSBTYW5nIHdyb3RlOg0KPiBCZWNhdXNlIHRoZSBh
+ZGFwdGVyIHdpbGwgYmUgc2V0IHVwIGJlZm9yZSBldmVyeSB0cmFuc2FjdGlvbiBhbnlob3csIHdl
+DQo+IGp1c3QgbmVlZCB0byBtYXJrIGl0IGFzIGFkYXB0ZWQgdG8gdGhlIEkyQyBjb3JlLg0KDQpt
+YXJrIGl0IGFzICJzdXNwZW5kZWQiLCBub3QgImFkYXB0ZWQiPw0KDQpDaGVlcnMsDQpQZXRlcg0K
+DQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBIaXJvbWl0c3UgWWFtYXNha2kgPGhpcm9taXRzdS55YW1h
+c2FraS55bUByZW5lc2FzLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogV29sZnJhbSBTYW5nIDx3c2Er
+cmVuZXNhc0BzYW5nLWVuZ2luZWVyaW5nLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2kyYy9idXNz
+ZXMvaTJjLXJjYXIuYyB8IDI1ICsrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIDEgZmlsZSBj
+aGFuZ2VkLCAyNSBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pMmMv
+YnVzc2VzL2kyYy1yY2FyLmMgYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLXJjYXIuYw0KPiBpbmRl
+eCAyNTRlNjIxOWU1MzguLjMwY2ZmMDY2ZTBkYSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9pMmMv
+YnVzc2VzL2kyYy1yY2FyLmMNCj4gKysrIGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1yY2FyLmMN
+Cj4gQEAgLTEwMTcsMTAgKzEwMTcsMzUgQEAgc3RhdGljIGludCByY2FyX2kyY19yZW1vdmUoc3Ry
+dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gIAlyZXR1cm4gMDsNCj4gIH0NCj4gIA0KPiAr
+I2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiArc3RhdGljIGludCByY2FyX2kyY19zdXNwZW5kKHN0
+cnVjdCBkZXZpY2UgKmRldikNCj4gK3sNCj4gKwlzdHJ1Y3QgcmNhcl9pMmNfcHJpdiAqcHJpdiA9
+IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiArDQo+ICsJaTJjX21hcmtfYWRhcHRlcl9zdXNwZW5k
+ZWQoJnByaXYtPmFkYXAsIHRydWUpOw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0
+aWMgaW50IHJjYXJfaTJjX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ICt7DQo+ICsJc3Ry
+dWN0IHJjYXJfaTJjX3ByaXYgKnByaXYgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4gKw0KPiAr
+CWkyY19tYXJrX2FkYXB0ZXJfc3VzcGVuZGVkKCZwcml2LT5hZGFwLCBmYWxzZSk7DQo+ICsJcmV0
+dXJuIDA7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBTSU1QTEVfREVWX1BNX09QUyhyY2FyX2kyY19w
+bV9vcHMsIHJjYXJfaTJjX3N1c3BlbmQsIHJjYXJfaTJjX3Jlc3VtZSk7DQo+ICsNCj4gKyNkZWZp
+bmUgREVWX1BNX09QUyAoJnJjYXJfaTJjX3BtX29wcykNCj4gKyNlbHNlDQo+ICsjZGVmaW5lIERF
+Vl9QTV9PUFMgTlVMTA0KPiArI2VuZGlmIC8qIENPTkZJR19QTV9TTEVFUCAqLw0KPiArDQo+ICBz
+dGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciByY2FyX2kyY19kcml2ZXIgPSB7DQo+ICAJLmRy
+aXZlcgk9IHsNCj4gIAkJLm5hbWUJPSAiaTJjLXJjYXIiLA0KPiAgCQkub2ZfbWF0Y2hfdGFibGUg
+PSByY2FyX2kyY19kdF9pZHMsDQo+ICsJCS5wbQk9IERFVl9QTV9PUFMsDQo+ICAJfSwNCj4gIAku
+cHJvYmUJCT0gcmNhcl9pMmNfcHJvYmUsDQo+ICAJLnJlbW92ZQkJPSByY2FyX2kyY19yZW1vdmUs
+DQo+IA0KDQo=
