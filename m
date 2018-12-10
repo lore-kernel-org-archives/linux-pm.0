@@ -1,48 +1,40 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: Re: [RFC/RFT 10/10] i2c: rcar: add suspend/resume support
-Date: Mon, 10 Dec 2018 21:52:07 +0000
-Message-ID: <944a2523-aa40-eaf2-2c4a-d27254e7cbca@axentia.se>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
- <20181210210310.12677-11-wsa+renesas@sang-engineering.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: st: fix Makefile typo
+Date: Mon, 10 Dec 2018 22:57:27 +0100
+Message-ID: <20181210215738.2189126-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181210210310.12677-11-wsa+renesas@sang-engineering.com>
-Content-Language: en-US
-Content-ID: <982E3174F51E754C9161B38295326863@eurprd02.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
-Cc: "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hiromitsu Yamasaki <hiromitsu.yamasaki.ym@renesas.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjAxOC0xMi0xMCAyMjowMywgV29sZnJhbSBTYW5nIHdyb3RlOg0KPiBCZWNhdXNlIHRoZSBh
-ZGFwdGVyIHdpbGwgYmUgc2V0IHVwIGJlZm9yZSBldmVyeSB0cmFuc2FjdGlvbiBhbnlob3csIHdl
-DQo+IGp1c3QgbmVlZCB0byBtYXJrIGl0IGFzIGFkYXB0ZWQgdG8gdGhlIEkyQyBjb3JlLg0KDQpt
-YXJrIGl0IGFzICJzdXNwZW5kZWQiLCBub3QgImFkYXB0ZWQiPw0KDQpDaGVlcnMsDQpQZXRlcg0K
-DQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBIaXJvbWl0c3UgWWFtYXNha2kgPGhpcm9taXRzdS55YW1h
-c2FraS55bUByZW5lc2FzLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogV29sZnJhbSBTYW5nIDx3c2Er
-cmVuZXNhc0BzYW5nLWVuZ2luZWVyaW5nLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL2kyYy9idXNz
-ZXMvaTJjLXJjYXIuYyB8IDI1ICsrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIDEgZmlsZSBj
-aGFuZ2VkLCAyNSBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pMmMv
-YnVzc2VzL2kyYy1yY2FyLmMgYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLXJjYXIuYw0KPiBpbmRl
-eCAyNTRlNjIxOWU1MzguLjMwY2ZmMDY2ZTBkYSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9pMmMv
-YnVzc2VzL2kyYy1yY2FyLmMNCj4gKysrIGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1yY2FyLmMN
-Cj4gQEAgLTEwMTcsMTAgKzEwMTcsMzUgQEAgc3RhdGljIGludCByY2FyX2kyY19yZW1vdmUoc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gIAlyZXR1cm4gMDsNCj4gIH0NCj4gIA0KPiAr
-I2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiArc3RhdGljIGludCByY2FyX2kyY19zdXNwZW5kKHN0
-cnVjdCBkZXZpY2UgKmRldikNCj4gK3sNCj4gKwlzdHJ1Y3QgcmNhcl9pMmNfcHJpdiAqcHJpdiA9
-IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiArDQo+ICsJaTJjX21hcmtfYWRhcHRlcl9zdXNwZW5k
-ZWQoJnByaXYtPmFkYXAsIHRydWUpOw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0
-aWMgaW50IHJjYXJfaTJjX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ICt7DQo+ICsJc3Ry
-dWN0IHJjYXJfaTJjX3ByaXYgKnByaXYgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsNCj4gKw0KPiAr
-CWkyY19tYXJrX2FkYXB0ZXJfc3VzcGVuZGVkKCZwcml2LT5hZGFwLCBmYWxzZSk7DQo+ICsJcmV0
-dXJuIDA7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBTSU1QTEVfREVWX1BNX09QUyhyY2FyX2kyY19w
-bV9vcHMsIHJjYXJfaTJjX3N1c3BlbmQsIHJjYXJfaTJjX3Jlc3VtZSk7DQo+ICsNCj4gKyNkZWZp
-bmUgREVWX1BNX09QUyAoJnJjYXJfaTJjX3BtX29wcykNCj4gKyNlbHNlDQo+ICsjZGVmaW5lIERF
-Vl9QTV9PUFMgTlVMTA0KPiArI2VuZGlmIC8qIENPTkZJR19QTV9TTEVFUCAqLw0KPiArDQo+ICBz
-dGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciByY2FyX2kyY19kcml2ZXIgPSB7DQo+ICAJLmRy
-aXZlcgk9IHsNCj4gIAkJLm5hbWUJPSAiaTJjLXJjYXIiLA0KPiAgCQkub2ZfbWF0Y2hfdGFibGUg
-PSByY2FyX2kyY19kdF9pZHMsDQo+ICsJCS5wbQk9IERFVl9QTV9PUFMsDQo+ICAJfSwNCj4gIAku
-cHJvYmUJCT0gcmNhcl9pMmNfcHJvYmUsDQo+ICAJLnJlbW92ZQkJPSByY2FyX2kyY19yZW1vdmUs
-DQo+IA0KDQo=
+When STM32_THERMAL is enabled, this overrides all previously
+enabled files in the same directory, as seen from this link failure:
+
+ERROR: "st_thermal_pm_ops" [drivers/thermal/st/st_thermal_syscfg.ko] undefined!
+ERROR: "st_thermal_register" [drivers/thermal/st/st_thermal_syscfg.ko] undefined!
+ERROR: "st_thermal_unregister" [drivers/thermal/st/st_thermal_syscfg.ko] undefined!
+
+The correct syntax in Makefile requires using += instead of :=.
+
+Fixes: 1d6931556073 ("thermal: add stm32 thermal driver")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/thermal/st/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/st/Makefile b/drivers/thermal/st/Makefile
+index b2b9e9b96296..243ca7881b12 100644
+--- a/drivers/thermal/st/Makefile
++++ b/drivers/thermal/st/Makefile
+@@ -1,4 +1,4 @@
+ obj-$(CONFIG_ST_THERMAL)		:= st_thermal.o
+ obj-$(CONFIG_ST_THERMAL_SYSCFG)		+= st_thermal_syscfg.o
+ obj-$(CONFIG_ST_THERMAL_MEMMAP)		+= st_thermal_memmap.o
+-obj-$(CONFIG_STM32_THERMAL)		:= stm_thermal.o
+\ No newline at end of file
++obj-$(CONFIG_STM32_THERMAL)		+= stm_thermal.o
+-- 
+2.20.0
