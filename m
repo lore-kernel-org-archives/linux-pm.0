@@ -1,62 +1,65 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [RFC/RFT 05/10] i2c: zx2967: use core helper to mark adapter suspended
-Date: Mon, 10 Dec 2018 22:03:03 +0100
-Message-ID: <20181210210310.12677-6-wsa+renesas@sang-engineering.com>
+Subject: [RFC/RFT 04/10] i2c: brcmstb: use core helper to mark adapter suspended
+Date: Mon, 10 Dec 2018 22:03:02 +0100
+Message-ID: <20181210210310.12677-5-wsa+renesas@sang-engineering.com>
 References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Jun Nie <jun.nie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Kamal Dasu <kdasu.kdev@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rejecting transfers should be handled by the core. Also, this will
-ensure proper locking which was forgotten in this open coded version
-and make sure resume mark is set after enabling clocks (not before).
+Rejecting transfers should be handled by the core.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/i2c/busses/i2c-zx2967.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/i2c/busses/i2c-brcmstb.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-zx2967.c b/drivers/i2c/busses/i2c-zx2967.c
-index b8f9e020d80e..9fa48bbe0719 100644
---- a/drivers/i2c/busses/i2c-zx2967.c
-+++ b/drivers/i2c/busses/i2c-zx2967.c
-@@ -66,7 +66,6 @@ struct zx2967_i2c {
- 	int			msg_rd;
- 	u8			*cur_trans;
- 	u8			access_cnt;
--	bool			is_suspended;
- 	int			error;
+diff --git a/drivers/i2c/busses/i2c-brcmstb.c b/drivers/i2c/busses/i2c-brcmstb.c
+index 826d32049996..05c822e5a3f6 100644
+--- a/drivers/i2c/busses/i2c-brcmstb.c
++++ b/drivers/i2c/busses/i2c-brcmstb.c
+@@ -170,7 +170,6 @@ struct brcmstb_i2c_dev {
+ 	struct bsc_regs *bsc_regmap;
+ 	struct i2c_adapter adapter;
+ 	struct completion done;
+-	bool is_suspended;
+ 	u32 clk_freq_hz;
+ 	int data_regsz;
  };
+@@ -467,9 +466,6 @@ static int brcmstb_i2c_xfer(struct i2c_adapter *adapter,
+ 	int xfersz = brcmstb_i2c_get_xfersz(dev);
+ 	u32 cond, cond_per_msg;
  
-@@ -313,9 +312,6 @@ static int zx2967_i2c_xfer(struct i2c_adapter *adap,
- 	int ret;
- 	int i;
- 
--	if (i2c->is_suspended)
+-	if (dev->is_suspended)
 -		return -EBUSY;
 -
- 	zx2967_set_addr(i2c, msgs->addr);
- 
+ 	/* Loop through all messages */
  	for (i = 0; i < num; i++) {
-@@ -470,7 +466,7 @@ static int __maybe_unused zx2967_i2c_suspend(struct device *dev)
+ 		pmsg = &msgs[i];
+@@ -689,10 +685,7 @@ static int brcmstb_i2c_suspend(struct device *dev)
  {
- 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
+ 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
  
--	i2c->is_suspended = true;
-+	i2c_mark_adapter_suspended(&i2c->adap, true);
- 	clk_disable_unprepare(i2c->clk);
- 
+-	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
+-	i2c_dev->is_suspended = true;
+-	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
+-
++	i2c_mark_adapter_suspended(&i2c_dev->adapter, true);
  	return 0;
-@@ -480,8 +476,8 @@ static int __maybe_unused zx2967_i2c_resume(struct device *dev)
- {
- 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
+ }
  
--	i2c->is_suspended = false;
- 	clk_prepare_enable(i2c->clk);
-+	i2c_mark_adapter_suspended(&i2c->adap, false);
+@@ -700,10 +693,8 @@ static int brcmstb_i2c_resume(struct device *dev)
+ {
+ 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
+ 
+-	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
+ 	brcmstb_i2c_set_bsc_reg_defaults(i2c_dev);
+-	i2c_dev->is_suspended = false;
+-	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
++	i2c_mark_adapter_suspended(&i2c_dev->adapter, false);
  
  	return 0;
  }
