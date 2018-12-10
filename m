@@ -1,77 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3] cpuidle: big.LITTLE: add of_node_put()
-Date: Mon, 10 Dec 2018 12:59:24 +0100
-Message-ID: <ed0c146f-0a47-ef56-f919-4887d6a69001@linaro.org>
-References: <20181120161451.21149-1-tiny.windzz@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Mon, 10 Dec 2018 13:21:04 +0100
+Message-ID: <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181120161451.21149-1-tiny.windzz@gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-Hi Yangtao,
-
-
-On 20/11/2018 17:14, Yangtao Li wrote:
-> of_find_node_by_path() acquires a reference to the node
-> returned by it and that reference needs to be dropped by its caller.
-> bl_idle_init() doesn't do that, so fix it.
+On Mon, Dec 10, 2018 at 12:30:23PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
-> Changes in v3:
-> -update changelog
-> ---
->  drivers/cpuidle/cpuidle-big_little.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+> Add two new metrics for CPU idle states, "above" and "below", to count
+> the number of times the given state had been asked for (or entered
+> from the kernel's perspective), but the observed idle duration turned
+> out to be too short or too long for it (respectively).
 > 
-> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-> index db2ede565f1a..650f063ef809 100644
-> --- a/drivers/cpuidle/cpuidle-big_little.c
-> +++ b/drivers/cpuidle/cpuidle-big_little.c
-> @@ -174,8 +174,12 @@ static int __init bl_idle_init(void)
->  	/*
->  	 * Initialize the driver just for a compliant set of machines
->  	 */
-> -	if (!of_match_node(compatible_machine_match, root))
-> +	if (!of_match_node(compatible_machine_match, root)){
-> +		of_node_put(root);
->  		return -ENODEV;
-> +	}
+> These metrics help to estimate the quality of the CPU idle governor
+> in use.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> @@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
+>  		dev->last_residency = (int)diff;
+>  		dev->states_usage[entered_state].time += dev->last_residency;
+>  		dev->states_usage[entered_state].usage++;
 > +
-> +	of_node_put(root);
+> +		if (diff < drv->states[entered_state].target_residency) {
+> +			for (i = entered_state - 1; i >= 0; i--) {
+> +				if (drv->states[i].disabled ||
+> +				    dev->states_usage[i].disable)
+> +					continue;
+> +
+> +				/* Shallower states are enabled, so update. */
+> +				dev->states_usage[entered_state].above++;
+> +				break;
+> +			}
+> +		} else if (diff > delay) {
+> +			for (i = entered_state + 1; i < drv->state_count; i++) {
+> +				if (drv->states[i].disabled ||
+> +				    dev->states_usage[i].disable)
+> +					continue;
+> +
+> +				/*
+> +				 * Update if a deeper state would have been a
+> +				 * better match for the observed idle duration.
+> +				 */
+> +				if (diff - delay >= drv->states[i].target_residency)
+> +					dev->states_usage[entered_state].below++;
+> +
+> +				break;
+> +			}
+> +		}
 
-Don't duplicate the of_node_put.
+One question on this; why is this tracked unconditionally?
 
-I suggest:
-
-const struct of_device_id *match_id;
-
-[ ... ]
-
-
-match_id = of_match_node(compatible_machine_match, root);
-
-of_node_put(root);
-
-if (!match_id)
-	return -ENODEV;
-
-
->  	if (!mcpm_is_available())
->  		return -EUNATCH;
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Would not a tracepoint be better?; then there is no overhead in the
+normal case where nobody gives a crap about these here numbers.
