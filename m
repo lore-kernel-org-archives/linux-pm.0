@@ -1,78 +1,47 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [driver-core PATCH v8 2/9] driver core: Establish order of
- operations for device_add and device_del via bitflag
-Date: Mon, 10 Dec 2018 10:58:44 -0800
-Message-ID: <CAPcyv4jH_Op-xHTd2FwQizPaWFx_2FE-pVsOLLmZAEK8EVPrYg@mail.gmail.com>
+From: Luis Chamberlain <mcgrof@kernel.org>
+Subject: Re: [driver-core PATCH v8 0/9] Add NUMA aware async_schedule calls
+Date: Mon, 10 Dec 2018 11:22:16 -0800
+Message-ID: <20181210192216.GJ28501@garbanzo.do-not-panic.com>
 References: <154403054034.11544.3978949383914046587.stgit@ahduyck-desk1.jf.intel.com>
- <154403072403.11544.10419282512791659652.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154403072403.11544.10419282512791659652.stgit@ahduyck-desk1.jf.intel.com>
+Content-Disposition: inline
+In-Reply-To: <154403054034.11544.3978949383914046587.stgit@ahduyck-desk1.jf.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: alexander.h.duyck@linux.intel.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-nvdimm <linux-nvdimm@lists.01.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, jiangshanlai@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Dave Jiang <dave.jiang@intel.com>, bvanassche@acm.org
+To: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 5, 2018 at 9:25 AM Alexander Duyck
-<alexander.h.duyck@linux.intel.com> wrote:
->
-> Add an additional bit flag to the device struct named "dead".
->
-> This additional flag provides a guarantee that when a device_del is
-> executed on a given interface an async worker will not attempt to attach
-> the driver following the earlier device_del call. Previously this
-> guarantee was not present and could result in the device_del call
-> attempting to remove a driver from an interface only to have the async
-> worker attempt to probe the driver later when it finally completes the
-> asynchronous probe call.
->
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> ---
->  drivers/base/core.c    |   11 +++++++++++
->  drivers/base/dd.c      |    8 ++++++--
->  include/linux/device.h |    5 +++++
->  3 files changed, 22 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index f3e6ca4170b4..70358327303b 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -2075,6 +2075,17 @@ void device_del(struct device *dev)
->         struct kobject *glue_dir = NULL;
->         struct class_interface *class_intf;
->
-> +       /*
-> +        * Hold the device lock and set the "dead" flag to guarantee that
-> +        * the update behavior is consistent with the other bitfields near
-> +        * it and that we cannot have an asynchronous probe routine trying
-> +        * to run while we are tearing out the bus/class/sysfs from
-> +        * underneath the device.
-> +        */
-> +       device_lock(dev);
-> +       dev->dead = true;
-> +       device_unlock(dev);
-> +
->         /* Notify clients of device removal.  This call must come
->          * before dpm_sysfs_remove().
->          */
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 88713f182086..3bb8c3e0f3da 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -774,6 +774,10 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
->
->         device_lock(dev);
->
-> +       /* device is or has been removed from the bus, just bail out */
-> +       if (dev->dead)
-> +               goto out_unlock;
-> +
+On Wed, Dec 05, 2018 at 09:25:13AM -0800, Alexander Duyck wrote:
+> This patch set provides functionality that will help to improve the
+> locality of the async_schedule calls used to provide deferred
+> initialization.
+> 
+> This patch set originally started out focused on just the one call to
+> async_schedule_domain in the nvdimm tree that was being used to defer the
+> device_add call however after doing some digging I realized the scope of
+> this was much broader than I had originally planned. As such I went
+> through and reworked the underlying infrastructure down to replacing the
+> queue_work call itself with a function of my own and opted to try and
+> provide a NUMA aware solution that would work for a broader audience.
+> 
+> In addition I have added several tweaks and/or clean-ups to the front of the
+> patch set. Patches 1 through 4 address a number of issues that actually were
+> causing the existing async_schedule calls to not show the performance that
+> they could due to either not scaling on a per device basis, or due to issues
+> that could result in a potential deadlock. For example, patch 4 addresses the
+> fact that we were calling async_schedule once per driver instead of once
+> per device, and as a result we would have still ended up with devices
+> being probed on a non-local node without addressing this first.
 
-What do you think about moving this check into
-__device_attach_driver() alongside all the other checks? That way we
-also get ->dead checking through the __device_attach() path.
+No tests were added. Again, I think it would be good to add test
+cases to showcase the old mechanisms, illustrate the new, and ensure
+we don't regress both now and also help us ensure we don't regress
+moving forward.
 
-...and after that maybe it could be made a common helper
-(dev_driver_checks()?) shared between __device_attach_driver() and
-__driver_attach() to reduce some duplication.
+This is all too critical of a path for the kernel, and these changes
+are rather instrusive. I'd readlly like to see test code for it now
+rather than later.
+
+  Luis
