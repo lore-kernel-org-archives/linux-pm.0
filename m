@@ -1,121 +1,71 @@
-From: Quentin Schulz <quentin.schulz@bootlin.com>
-Subject: Re: [PATCH v6 8/8] mfd: axp20x: Add supported cells for AXP803
-Date: Mon, 10 Dec 2018 09:29:52 +0100
-Message-ID: <20181210082952.llwrrm5gxpxghtvi@qschulz>
-References: <20181120175211.3913-1-oskari@lemmela.net>
- <20181120175211.3913-9-oskari@lemmela.net>
- <20181207164011.GI26661@dell>
- <CA+E=qVe5gau_9A6WsdqDaEJwdJ7EyQ=UcNu0JJV3v=hKAFU7GQ@mail.gmail.com>
- <20181207192237.GK26661@dell>
- <20181208150526.uceviwfwqskfwovm@qschulz>
- <20181210062718.GO26661@dell>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v10 0/8] Introduce on-chip interconnect API
+Date: Mon, 10 Dec 2018 10:04:14 +0100
+Message-ID: <CAJZ5v0gP50tmq4ZzB7LLSaWGWjGjK31y=qFg5PS9B7c2XQ+DyQ@mail.gmail.com>
+References: <20181127180349.29997-1-georgi.djakov@linaro.org>
+ <CAE=gft4jUjr3oDAZrM=-orLM-YoVAwa+e=crDDC_p9ArGE1dig@mail.gmail.com> <20181206145547.GA7884@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="x2vjrlgfvleyxcdo"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181210062718.GO26661@dell>
+In-Reply-To: <20181206145547.GA7884@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Vasily Khoruzhick <anarsoul@gmail.com>, Oskari Lemmela <oskari@lemmela.net>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-pm@vger.kernel.org, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, arm-linux <linux-arm-kernel@lists.infradead.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: evgreen@chromium.org, Georgi Djakov <georgi.djakov@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, bjorn.andersson@linaro.org, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, abailon@baylibre.com, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.com, "devicetree@vger.kernel.org" <devicetree@vg>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Dec 6, 2018 at 3:55 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+>
+> On Wed, Dec 05, 2018 at 12:41:35PM -0800, Evan Green wrote:
+> > On Tue, Nov 27, 2018 at 10:03 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+> > >
+> > > Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+> > > graphics, modem). These cores are talking to each other and can generate a
+> > > lot of data flowing through the on-chip interconnects. These interconnect
+> > > buses could form different topologies such as crossbar, point to point buses,
+> > > hierarchical buses or use the network-on-chip concept.
+> > >
+> > > These buses have been sized usually to handle use cases with high data
+> > > throughput but it is not necessary all the time and consume a lot of power.
+> > > Furthermore, the priority between masters can vary depending on the running
+> > > use case like video playback or CPU intensive tasks.
+> > >
+> > > Having an API to control the requirement of the system in terms of bandwidth
+> > > and QoS, so we can adapt the interconnect configuration to match those by
+> > > scaling the frequencies, setting link priority and tuning QoS parameters.
+> > > This configuration can be a static, one-time operation done at boot for some
+> > > platforms or a dynamic set of operations that happen at run-time.
+> > >
+> > > This patchset introduce a new API to get the requirement and configure the
+> > > interconnect buses across the entire chipset to fit with the current demand.
+> > > The API is NOT for changing the performance of the endpoint devices, but only
+> > > the interconnect path in between them.
+> >
+> > For what it's worth, we are ready to land this in Chrome OS. I think
+> > this series has been very well discussed and reviewed, hasn't changed
+> > much in the last few spins, and is in good enough shape to use as a
+> > base for future patches. Georgi's also done a great job reaching out
+> > to other SoC vendors, and there appears to be enough consensus that
+> > this framework will be usable by more than just Qualcomm. There are
+> > also several drivers out on the list trying to add patches to use this
+> > framework, with more to come, so it made sense (to us) to get this
+> > base framework nailed down. In my experiments this is an important
+> > piece of the overall power management story, especially on systems
+> > that are mostly idle.
+> >
+> > I'll continue to track changes to this series and we will ultimately
+> > reconcile with whatever happens upstream, but I thought it was worth
+> > sending this note to express our "thumbs up" towards this framework.
+>
+> Looks like a v11 will be forthcoming, so I'll wait for that one to apply
+> it to the tree if all looks good.
 
---x2vjrlgfvleyxcdo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm honestly not sure if it is ready yet.
 
-Hi Lee,
+New versions are coming on and on, which may make such an impression,
+but we had some discussion on it at the LPC and some serious questions
+were asked during it, for instance regarding the DT binding introduced
+here.  I'm not sure how this particular issue has been addressed here,
+for example.
 
-On Mon, Dec 10, 2018 at 06:27:18AM +0000, Lee Jones wrote:
-> On Sat, 08 Dec 2018, Quentin Schulz wrote:
->=20
-> > Hi Lee,
-> >=20
-> > On Fri, Dec 07, 2018 at 07:22:37PM +0000, Lee Jones wrote:
-> > > On Fri, 07 Dec 2018, Vasily Khoruzhick wrote:
-> > >=20
-> > > > On Fri, Dec 7, 2018 at 8:40 AM Lee Jones <lee.jones@linaro.org> wro=
-te:
-> > > >=20
-> > > > > My OCD-dar is going crazy.
-> > > > >
-> > > > > Why haven't you used the same alignment as is already there?
-> > > > >
-> > > > > If it starts to run over 80-chars then bring the others back.
-> > > > >
-> > > > > Also why is there a single liner shoved in the middle of the
-> > > > > multi-line entries?  Please move the singles to the top or the
-> > > > > bottom.
-> > > >=20
-> > > > Hi Lee,
-> > > >=20
-> > > > Could you please reformat it in the way that makes your OCD-dar hap=
-py?
-> > > > It would be really nice to get
-> > >=20
-> > > I'm afraid not, for a multitude of reasons.
-> > >=20
-> > > The most important of which surround testing.
-> > >=20
-> > > > AC and battery support for APX8x3 merged -- it'll make Pinebook and
-> > > > Teres-I pretty well supported by mainline kernel.
-> > >=20
-> > > That's great.  A worthy cause indeed.  So I'm sure you guys will want
-> > > to turn the patch around in short order so that it's applied in time
-> > > for the next merge window.
-> > >=20
-> >=20
-> > Aren't the MFD cells probed in order?
-> >=20
-> > In that case, it makes little sense to short order them for this
-> > particular device (X-Powers PMICs in general). It will just make the
-> > system boot slower because of probe deferring.
-> >=20
-> > Why? As explained by Chen-Yu in v3[1], axp-gpios can be muxed as
-> > regulators, thus should be probed before axp-regulators. axp-adc is
-> > often used by axp-battery, axp-usb-power, axp-ac-power, thus should be
-> > probed beforehand as well.
->=20
-> If there are inter-dependencies between the devices, it makes sense to
-> keep them in the most efficient order.
->=20
-> > For the alignment that also triggered your OCD, I can send you a patch
-> > the day you merge this one if it can help. I sent a few patches for this
-> > driver that didn't respect the alignment so I'm fine fixing the mfd
-> > cells (and eventually re-order them as I saw a few axp-gpio cells being
-> > declared after axp-regulators).
->=20
-> That's fine.  Please send the patch (based on this set) right away.
->=20
-
-Since Oskari sent a new version with an alignment fix patch and you
-merged that version, I assume I do not have any work to do anymore on
-this matter.
-
-Thank you all for the patches,
-
-Quentin
-
---x2vjrlgfvleyxcdo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlwOJAAACgkQhLiadT7g
-8aO/9g//XbaEfLywwIVvqMBV+QwKVC63R6Q3c7r15PIUDU7l76N7J/ifmFhHuSF7
-RAYFpvf07y3REQrB91krRRfXyJ08CmyLkYAlqDqiU03b7weuMrN3fnbnzQdKaFl8
-CgWbAJ629B6HG2mVyIvMXLq1Yunf30cjFKmZg8P1oMQL2H6Ibaxvct92U1yBl9eS
-NE5Wsq+YCYHNCOnN6slIvpOG+lYmja5vHA4Ln7PFeh324AOsyT1ezw9R9ZHuO+Mi
-PJ6i4z2PCZvE0kd+0aD0ke7UN4PqAJ8CflCAjrxw8dCOYjxFHmXsodt3buJAueIN
-ZicpPoAxlmMxd32TAPSngqON5FCgnfha3W4GRwUb8SiACSluS8nG8Z8cf+hQnHYx
-Iu0LsF9DjIjxfpbnjueCeR775jWWKF7Y/ynVp9/5JPcGxbstwabJYUlax9HTSRdT
-8a8a/DxIPMjB7WBXQmvF1ONMT/Y9d0Tjv0Pts6IEMic+g84s1P+hnhzZwCwj5rtS
-lqggCQC8OiZ1wJBqhi9pxeC7UEgr2wlqe7GefuvP9CeruptZAs5PqMXPb5ArTEGk
-KIG/jLaveLpQo1preLiTXfPDYvn1XeXscv0uZ1sXG4Xkp6kEVkrxp80d8gc4xSFE
-1nTnNYyLMOYhkoBl+0zw7t0KmqAl1tCccBabFo245ptjDwo5ZXc=
-=3euG
------END PGP SIGNATURE-----
-
---x2vjrlgfvleyxcdo--
+Thanks,
+Rafael
