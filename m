@@ -1,86 +1,77 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH] PM / OPP: Always expose one supply in debugfs
-Date: Mon, 10 Dec 2018 11:54:13 +0000
-Message-ID: <20181210115410.clyrxhp5plptrf5n@queper01-lin>
-References: <20181210113247.11412-1-quentin.perret@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3] cpuidle: big.LITTLE: add of_node_put()
+Date: Mon, 10 Dec 2018 12:59:24 +0100
+Message-ID: <ed0c146f-0a47-ef56-f919-4887d6a69001@linaro.org>
+References: <20181120161451.21149-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181210113247.11412-1-quentin.perret@arm.com>
+In-Reply-To: <20181120161451.21149-1-tiny.windzz@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>, rjw@rjwysocki.net, lorenzo.pieralisi@arm.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 10 Dec 2018 at 11:32:47 (+0000), Quentin Perret wrote:
-> On some platforms, the opp_table->regulator_count field is kept at zero
-> even though opp->supplies is always allocated. However, the loop used to
-> display the supplies in the debugfs doesn't deal correctly with this,
-> which results in the supplies not being displayed in debugfs on those
-> platforms.
+
+Hi Yangtao,
+
+
+On 20/11/2018 17:14, Yangtao Li wrote:
+> of_find_node_by_path() acquires a reference to the node
+> returned by it and that reference needs to be dropped by its caller.
+> bl_idle_init() doesn't do that, so fix it.
 > 
-> Fix this by making sure to always display at least once supply in
-> debugfs.
-> 
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
-> 
-> This has been observed on Juno r2 which uses SCPI and Hikey960 which
-> uses DT. I am not particularly familiar with that part of the code, so
-> I'm not sure if this is even remotely correct (hence the RFC tag).
-> 
-> I first thought setting opp_table->regulator_count to 1 would be the
-> right fix but that causes other issues. This fix seems to work OK on
-> Juno and Hikey960, at least.
-> 
-> Feedback is welcome :-)
-
-Hmm, so I just figured what I'm doing here is basically reverting:
-
-    1fae788ed640 ("PM / OPP: Don't create debugfs "supply-0" directory unnecessarily")
-
-Should I send a proper revert instead of this patch ? It _is_ handy to
-read voltage numbers when available.
-
-Thanks,
-Quentin
-
-> 
-> Thanks,
-> Quentin
+> Changes in v3:
+> -update changelog
 > ---
->  drivers/opp/debugfs.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+>  drivers/cpuidle/cpuidle-big_little.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/opp/debugfs.c b/drivers/opp/debugfs.c
-> index e6828e5f81b0..2c14564575cb 100644
-> --- a/drivers/opp/debugfs.c
-> +++ b/drivers/opp/debugfs.c
-> @@ -40,9 +40,9 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
->  				      struct dentry *pdentry)
->  {
->  	struct dentry *d;
-> -	int i;
-> +	int i = 0;
->  
-> -	for (i = 0; i < opp_table->regulator_count; i++) {
-> +	do {
->  		char name[15];
->  
->  		snprintf(name, sizeof(name), "supply-%d", i);
-> @@ -68,7 +68,9 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
->  		if (!debugfs_create_ulong("u_amp", S_IRUGO, d,
->  					  &opp->supplies[i].u_amp))
->  			return false;
-> -	}
+> diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+> index db2ede565f1a..650f063ef809 100644
+> --- a/drivers/cpuidle/cpuidle-big_little.c
+> +++ b/drivers/cpuidle/cpuidle-big_little.c
+> @@ -174,8 +174,12 @@ static int __init bl_idle_init(void)
+>  	/*
+>  	 * Initialize the driver just for a compliant set of machines
+>  	 */
+> -	if (!of_match_node(compatible_machine_match, root))
+> +	if (!of_match_node(compatible_machine_match, root)){
+> +		of_node_put(root);
+>  		return -ENODEV;
+> +	}
 > +
-> +		i++;
-> +	} while (i < opp_table->regulator_count);
->  
->  	return true;
->  }
-> -- 
-> 2.19.2
+> +	of_node_put(root);
+
+Don't duplicate the of_node_put.
+
+I suggest:
+
+const struct of_device_id *match_id;
+
+[ ... ]
+
+
+match_id = of_match_node(compatible_machine_match, root);
+
+of_node_put(root);
+
+if (!match_id)
+	return -ENODEV;
+
+
+>  	if (!mcpm_is_available())
+>  		return -EUNATCH;
 > 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
