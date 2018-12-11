@@ -1,69 +1,46 @@
-From: Luis Chamberlain <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [driver-core PATCH v8 0/9] Add NUMA aware async_schedule calls
-Date: Mon, 10 Dec 2018 15:35:07 -0800
-Message-ID: <20181210233507.GK28501@garbanzo.do-not-panic.com>
-References: <154403054034.11544.3978949383914046587.stgit@ahduyck-desk1.jf.intel.com>
- <20181210192216.GJ28501@garbanzo.do-not-panic.com>
- <dd0b44d5dd9d19ac6735f80ae66bb437ec55b2cf.camel@linux.intel.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH v3 2/5] devfreq: add support for suspend/resume of a
+ devfreq device
+Date: Tue, 11 Dec 2018 10:43:15 +0900
+Message-ID: <20181211014315epcms1p153a54217e587fd76a8198db77762699a@epcms1p1>
+References: <5C0878C0.4060500@samsung.com>
+        <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
+        <1544007956-28889-3-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181205110620eucas1p14de70dc092580b684a0304b5ce771605@epcms1p1>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <dd0b44d5dd9d19ac6735f80ae66bb437ec55b2cf.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5C0878C0.4060500@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Lukasz Luba <l.luba@partner.samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "keescook@chromium.org" <keescook@chromium.org>, "anton@enomsg.org" <anton@enomsg.org>, "ccross@android.com" <ccross@android.com>, "tony.luck@intel.com" <tony.luck@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "kgene@kernel.org" <kgene@kernel.org>, "krzk@kernel.org" <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 10, 2018 at 03:25:04PM -0800, Alexander Duyck wrote:
-> On Mon, 2018-12-10 at 11:22 -0800, Luis Chamberlain wrote:
-> > On Wed, Dec 05, 2018 at 09:25:13AM -0800, Alexander Duyck wrote:
-> > > This patch set provides functionality that will help to improve the
-> > > locality of the async_schedule calls used to provide deferred
-> > > initialization.
-> > > 
-> > > This patch set originally started out focused on just the one call to
-> > > async_schedule_domain in the nvdimm tree that was being used to defer the
-> > > device_add call however after doing some digging I realized the scope of
-> > > this was much broader than I had originally planned. As such I went
-> > > through and reworked the underlying infrastructure down to replacing the
-> > > queue_work call itself with a function of my own and opted to try and
-> > > provide a NUMA aware solution that would work for a broader audience.
-> > > 
-> > > In addition I have added several tweaks and/or clean-ups to the front of the
-> > > patch set. Patches 1 through 4 address a number of issues that actually were
-> > > causing the existing async_schedule calls to not show the performance that
-> > > they could due to either not scaling on a per device basis, or due to issues
-> > > that could result in a potential deadlock. For example, patch 4 addresses the
-> > > fact that we were calling async_schedule once per driver instead of once
-> > > per device, and as a result we would have still ended up with devices
-> > > being probed on a non-local node without addressing this first.
-> > 
-> > No tests were added. Again, I think it would be good to add test
-> > cases to showcase the old mechanisms, illustrate the new, and ensure
-> > we don't regress both now and also help us ensure we don't regress
-> > moving forward.
-> > 
-> > This is all too critical of a path for the kernel, and these changes
-> > are rather instrusive. I'd readlly like to see test code for it now
-> > rather than later.
-> > 
-> >   Luis
-> 
-> Sorry about that. I was more focused on the rewrite of patch 2 and
-> overlooked the comment about lib/test_kmod.c.
-> 
-> I'll look into it and see if I can squeeze it in for v9.
-
-Superb!
-
-  Luis
+> Hi Lukasz,
+>=20
+> On 2018=EB=85=84=2012=EC=9B=94=2005=EC=9D=BC=2020:05,=20Lukasz=20Luba=20w=
+rote:=0D=0A>=20>=20The=20patch=20prepares=20devfreq=20device=20for=20handli=
+ng=20suspend/resume=0D=0A>=20>=20functionality.=20The=20new=20fields=20will=
+=20store=20needed=20information=20during=20this=0D=0A>=20>=20process.=20Dev=
+freq=20framework=20handles=20opp-suspend=20DT=20entry=20and=20there=20is=20=
+no=0D=0A>=20>=20need=20of=20modyfications=20in=20the=20drivers=20code.=20It=
+=20uses=20atomic=20variables=20to=0D=0A>=20>=20make=20sure=20no=20race=20co=
+ndition=20affects=20the=20process.=0D=0A>=20>=20=0D=0A>=20>=20Suggested-by:=
+=20Tobias=20Jakobi=20<tjakobi=40math.uni-bielefeld.de>=0D=0A>=20>=20Suggest=
+ed-by:=20Chanwoo=20Choi=20<cw00.choi=40samsung.com>=0D=0A>=20>=20Signed-off=
+-by:=20Lukasz=20Luba=20<l.luba=40partner.samsung.com>=0D=0A>=20>=20---=0D=
+=0A>=20>=20=20drivers/devfreq/devfreq.c=20=7C=2047=20++++++++++++++++++++++=
++++++++++++++++++++------=0D=0A>=20>=20=20include/linux/devfreq.h=20=20=20=
+=7C=20=207=20+++++++=0D=0A>=20>=20=202=20files=20changed,=2048=20insertions=
+(+),=206=20deletions(-)=0D=0A>=20=0D=0A>=20Reviewed-by:=20Chanwoo=20Choi=20=
+<cw00.choi=40samsung.com>=0D=0A>=20=0D=0A=0D=0ALooks=20goot=20do=20me=20as=
+=20well.=0D=0A=0D=0AAcked-by:=20MyungJoo=20Ham=20<myungjoo.ham=40samsung.co=
+m>=0D=0A=0D=0A=0D=0AAnyway,=20for=20the=20sake=20of=20curiosity...=0D=0A=0D=
+=0AHaving=20suspend-frequency=20is=20usually=20required=20when=0D=0Athe=20f=
+requency=20configuration=20is=20reset=20with=20suspend-resume=0D=0Aas=20old=
+er=20Exynos's=20CPU=20did=20(I=20don't=20know=20whether=20it=20still=20does=
+).=0D=0A=0D=0ADoes=20GPU=20do=20this=20as=20well?=0D=0A(memory-bus=20won't=
+=20do=20this=20because=20they=20are=20kept=20turned=20on=20during=20suspend=
+)=0D=0A=0D=0A=0D=0ACheers,=0D=0AMyungJoo=0D=0A
