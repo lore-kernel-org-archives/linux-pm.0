@@ -1,50 +1,51 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: [PATCH v3] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Tue, 11 Dec 2018 16:18:18 +0900
-Message-ID: <20181211071818epcms1p30d107ed61043d39b38960ef1616282a0@epcms1p3>
-References: <5C0F4C9A.8030607@samsung.com>
-        <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
-        <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
-        <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
-        <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com>
-        <58228B9E.2090108@samsung.com> <58228C10.3070502@samsung.com>
-        <58238840.90802@codeaurora.org> <5823BB01.3090502@samsung.com>
-        <5164dea6-ad0c-d817-eb0d-36d9f4a718d4@codeaurora.org>
-        <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcms1p3>
-Reply-To: myungjoo.ham@samsung.com
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Mon, 10 Dec 2018 23:28:07 -0800
+Message-ID: <003401d49123$13627710$3a276530$@net>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <20181210122104.GL5289@hirez.programming.kicks-ass.net> <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com> WUOsgxly2wifMWUOxgv0We
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5C0F4C9A.8030607@samsung.com>
+In-Reply-To: WUOsgxly2wifMWUOxgv0We
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: 'Peter Zijlstra' <peterz@infradead.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, "'open list:DOCUMENTATION'" <linux-doc@vger.kernel.org>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-> Hi Saravana,
->=20
-> The devfreq git repo is maintained by Myungjoo Ham.
-> you can check it on MAINTAINERS file.
->=20
-> I think that you better to resend mail to mainline
-> with my reviewed tag because the devfreq core could be modified
-> and then merge conflict might be happen when apply this patch.
->=20
-> Regards,
-> Chanwoo Choi
->=20
-> On 2018=EB=85=84=2012=EC=9B=94=2008=EC=9D=BC=2005:29,=20Saravana=20Kannan=
-=20wrote:=0D=0A>=20>=20=0D=0A>=20>=20On=2011/9/16=204:10=20PM,=20Chanwoo=20=
-Choi=20wrote:=0D=0A>=20>>=20After=20fixing=20the=20bug=20of=20devfreq_add_d=
-evice(),=0D=0A>=20>>=20I'll=20remove=20the=20unneeded=20'if=20statement'=20=
-of=20prev_governor=20in=20governor_store.=0D=0A>=20>=20=0D=0A>=20>=20It's=
-=20been=202=20years=20and=20this=20patch=20still=20hasn't=20been=20picked=
-=20up.=20Can=20we=20please=20pick=20this=20up=20and=20get=20this=20into=20t=
-he=20next=20kernel=20release?=0D=0A>=20>=20=0D=0A>=20>=20Thanks,=0D=0A>=20>=
-=20=0D=0A>=20>=20Saravana=0D=0A>=20>=20=0D=0A=0D=0AIf=20that's=20already=20=
-2=20years=20old,=20please=20rebase,=20test=20to=20see=20if=20that's=0D=0Ast=
-ill=20valid=20with=20today's=20kernel,=20and=20resubmit.=0D=0A=0D=0ASorry=
-=20for=20missing=20it,=20right=20now,=20after=202=20years,=0D=0AI=20just=20=
-can't=20remember=20this=20one.=0D=0A=0D=0ACheers,=0D=0AMyungJoo=0D=0A=0D=0A
+On 2018.12.10 02:52 Peter Zijlstra wrote:
+>On Mon, Dec 10, 2018 at 10:36:40PM +0100, Rafael J. Wysocki wrote:
+>> On Mon, Dec 10, 2018 at 1:21 PM Peter Zijlstra <peterz@infradead.org> wrote:
+
+>>> Would not a tracepoint be better?; then there is no overhead in the
+>>> normal case where nobody gives a crap about these here numbers.
+>> 
+>> There is an existing tracepoint that in principle could be used to
+>> produce this information, but it is such a major PITA in practice that
+>> nobody does that.  Guess why. :-)
+>
+> Sounds like you need to ship a convenient script or something :-)
+
+For the histogram plots of idle durations that I sometimes provide, trace
+is used. It is more work to do it the trace way. Very often, when the rate
+of idle state entries/ exits is high, turning on trace influences the system
+under test significantly. Also, even if I allocate the majority of my memory
+to the trace buffer (i.e. 15 of my 16 gigabytes), I can only acquire a few 
+minutes of trace data before filling the buffer.
+
+Some of my tests run for hours, and these new counters provide a way to acquire
+potentially useful (I don't have enough experience with them yet to know how useful)
+information, while having no influence on the system under test because
+I only take samples once per minute, or sometimes 4 times per minute.
+
+>> Also, the "usage" and "time" counters are there in sysfs, so why not these two?
+
+I agree, how are these two counters any different?
+
+In about a week or so, I'll have some test data comparing 4.20-rc5 with teov6
+teov7 along with the idle data (graphs) that I usually provide and also these
+new counters.
+
+... Doug
