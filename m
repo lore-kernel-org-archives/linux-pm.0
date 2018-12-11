@@ -1,59 +1,41 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Tue, 11 Dec 2018 19:05:43 +0530
-Message-ID: <82b168d1-79bc-f454-8e19-4f7630a34069@codeaurora.org>
-References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
- <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
- <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
- <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
- <154396472692.88331.13742924031474269133@swboyd.mtv.corp.google.com>
- <49139ae4-4373-9e70-02ad-80f7bbc4494c@codeaurora.org>
- <20181205061600.7zglbpkgbktn27am@vireshk-i7>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH 2/2] OPP: Fix missing debugfs supply directory for OPPs
+Date: Tue, 11 Dec 2018 13:48:32 +0000
+Message-ID: <20181211134829.nct4uqvofn332yxp@queper01-lin>
+References: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
+ <46f48aca2e5aef3f430e95d1a5fb68227ec8ec85.1544527580.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181205061600.7zglbpkgbktn27am@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <46f48aca2e5aef3f430e95d1a5fb68227ec8ec85.1544527580.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-Sorry for the delayed response. Thanks for the patch.
-
-On 12/5/2018 11:46 AM, Viresh Kumar wrote:
-> On 05-12-18, 09:07, Taniya Das wrote:
->> Hello Stephen, Viresh
->>
->> Thanks for the code and suggestions.
->>
->> Having a NR_DOMAINS '2' makes the driver not scalable for re-use.
+On Tuesday 11 Dec 2018 at 16:56:29 (+0530), Viresh Kumar wrote:
+> There is one case where we may end up with no "supply" directory for the
+> OPPs in debugfs. That happens when the OPP core isn't managing the
+> regulators for the device and the device's OPP do have microvolt
+> property. It happens because the opp_table->regulator_count remains set
+> to 0 and the debugfs routines don't add any supply directory in such a
+> case.
 > 
-> Sure, I didn't like it either and that wasn't really what I was suggesting in
-> the first place. I didn't wanted to write the code myself and pass it on, but I
-> have it now anyway :)
+> This commit fixes that by setting opp_table->regulator_count to 1 in
+> that particular case. But to make everything work nicely and not break
+> other parts of the core, regulator_count is defined as "int" now instead
+> of "unsigned int" and it can have different special values now. It is
+> set to -1 initially to mark it "uninitialized" and later only we set it
+> to 0 or positive values after checking how many supplies are there.
 > 
-> It may have a bug or two in there, but compiles just fine and is rebased over
-> your patch Taniya.
-> 
+> This also helps in finding the bugs where only few of the OPPs have the
+> "opp-microvolt" property set and not all.
 
-The design here assumes that there would not be any per-cpu/per-cluster 
-based SW requirement for the HW during frequency transitions, which 
-again makes me think that we would require to re-introduce these 
-structures again in case we have such requirements in near future.
+Tested on Juno r0 and Hikey960 successfully. The 'supply' directory is
+now correctly exposed.
 
-Also I think leaving the structures also helps us debug any boot up 
-issues looking at the ram contents of the per-(cpu/cluster) structures 
-with the contents from the firmware.
+Feel free to add Tested-by: Quentin Perret <quentin.perret@arm.com>
 
-Hope these above helps us to go ahead with the current SW design.
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Thanks,
+Quentin
