@@ -1,99 +1,70 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH] PM / OPP: Always expose one supply in debugfs
-Date: Tue, 11 Dec 2018 09:49:10 +0000
-Message-ID: <20181211094908.2dzmmzu6aq6cs4yn@queper01-lin>
-References: <20181210113247.11412-1-quentin.perret@arm.com>
- <20181210115410.clyrxhp5plptrf5n@queper01-lin>
- <20181211092549.2ydogec7bnlfokwy@vireshk-i7>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Tue, 11 Dec 2018 10:51:48 +0100
+Message-ID: <CAJZ5v0jvbDCCgy=nUfb-yZCYGOxe4-XexbvnmeBm8ZPDPBaK4w@mail.gmail.com>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+ <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com> <20181210225134.GB24811@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181211092549.2ydogec7bnlfokwy@vireshk-i7>
+In-Reply-To: <20181210225134.GB24811@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 11 Dec 2018 at 14:55:49 (+0530), Viresh Kumar wrote:
-> On 10-12-18, 11:54, Quentin Perret wrote:
-> > On Monday 10 Dec 2018 at 11:32:47 (+0000), Quentin Perret wrote:
-> > > On some platforms, the opp_table->regulator_count field is kept at zero
-> > > even though opp->supplies is always allocated. However, the loop used to
-> > > display the supplies in the debugfs doesn't deal correctly with this,
-> > > which results in the supplies not being displayed in debugfs on those
-> > > platforms.
-> > > 
-> > > Fix this by making sure to always display at least once supply in
-> > > debugfs.
-> > > 
-> > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > > 
-> > > ---
-> > > 
-> > > This has been observed on Juno r2 which uses SCPI and Hikey960 which
-> > > uses DT. I am not particularly familiar with that part of the code, so
-> > > I'm not sure if this is even remotely correct (hence the RFC tag).
-> > > 
-> > > I first thought setting opp_table->regulator_count to 1 would be the
-> > > right fix but that causes other issues. This fix seems to work OK on
-> > > Juno and Hikey960, at least.
-> > > 
-> > > Feedback is welcome :-)
-> > 
-> > Hmm, so I just figured what I'm doing here is basically reverting:
-> > 
-> >     1fae788ed640 ("PM / OPP: Don't create debugfs "supply-0" directory unnecessarily")
-> > 
-> > Should I send a proper revert instead of this patch ? It _is_ handy to
-> > read voltage numbers when available.
-> 
-> First of all I am really happy that someone apart from me is using this debug
-> interface :)
+On Mon, Dec 10, 2018 at 11:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Mon, Dec 10, 2018 at 10:36:40PM +0100, Rafael J. Wysocki wrote:
+> > On Mon, Dec 10, 2018 at 1:21 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> > > One question on this; why is this tracked unconditionally?
+> >
+> > Because I didn't quite see how to make that conditional in a sensible way.
+>
+> Something like:
+>
+>         if (static_branch_unlikely(__tracepoint_idle_above) ||
+>             static_branch_unlikely(__tracepoint_idle_below)) {
+>
+>                 // do stuff that calls trace_idle_above() /
+>                 // trace_idle_below().
+>
+>         }
+>
+> > These things are counters and counting with the help of tracepoints
+> > isn't particularly convenient (and one needs debugfs to be there to
+> > use tracepoints and they require root access etc).
+>
+> Root only should not be a problem for a developer; and aren't these
+> numbers only really interesting if you're prodding at the idle governor?
 
-:-)
+What about regression testing?
 
-My current use case is to compute the 'dynamic-power-coefficient' thing
-for IPA. With P=CV^2f, I can measure P and get f easily, but V is a bit
-trickier (as of now at least). PM_OPP has the information I need, so it'd
-be handy to expose it somewhere.
+> > > Would not a tracepoint be better?; then there is no overhead in the
+> > > normal case where nobody gives a crap about these here numbers.
+> >
+> > There is an existing tracepoint that in principle could be used to
+> > produce this information, but it is such a major PITA in practice that
+> > nobody does that.  Guess why. :-)
+>
+> Sounds like you need to ship a convenient script or something :-)
 
-> At least that patch was correct and if we have to fix something, it should be
-> fixed somewhere else.
+That would be a very ugly script.  Also I'd need to expose
+drv->states[i].disabled somehow (that's not accessible from user space
+now).
 
-Understood.
+> > Also, the "usage" and "time" counters are there in sysfs, so why not these two?
+> >
+> > And is the overhead really that horrible?
+>
+> Dunno; it could be cold cachelines, at which point it can be fairly
+> expensive. Also, being stuck with API is fairly horrible if you want to
+> 'fix' it.
 
-> I tried to reproduce the issue on hikey and straight away understood why it is
-> behaving that way. There is no "cpu-supply" property defined for the CPUs.
+All of the cache lines involved should've been touched earlier in this
+code path by the governor.  At least menu and the new one both touch
+them.
 
-Ah, right. The opp-microvolt binding is specified however, so I guess we
-could expose that too ...
-
-> I looked at juno driver and couldn't see any references to voltage there. Are
-> you trying to add that support ?
-
-So, on Juno we do get voltage numbers from firmware, and those get
-registered properly in PM_OPP, exactly like for Hikey960. So it's
-probably the same problem in both cases.
-
-FWIW, this is what I get on juno with my 'fix' applied:
-
-  $ cat /sys/kernel/debug/opp/cpu0/*/supply-0/u_volt_target
-  820000
-  850000
-  900000
-  950000
-  1000000
-
-> Anyway, this should still be fixed irrespective of the "cpu-supply" property.
-> The other fix you mentioned about setting opp_table->regulator_count to 1 is
-> actually the right thing to do but the fix may require changes at multiple
-> places. I can help writing a patch for that if you want, else I am open to you
-> giving it a shot :)
-
-You'll definitely know the code better than me so if you have a patch in
-mind, please don't hesitate. I'll be happy to test it on my two boards
-here :-)
-
-Thanks,
-Quentin
+The API part I'm not too worried about.  I know it is useful and two
+other people have told that to me already. :-)
