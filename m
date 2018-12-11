@@ -1,22 +1,36 @@
 From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] PM / AVS: SmartReflex: Switch to SPDX Licence ID
-Date: Tue, 11 Dec 2018 10:10:54 -0800
-Message-ID: <7h4lbkue6p.fsf@baylibre.com>
-References: <20181208160042.32587-1-nm@ti.com>
+Subject: Re: [PATCH] PM / AVS: SmartReflex: NULL check before some freeing functions is not needed.
+Date: Tue, 11 Dec 2018 10:53:05 -0800
+Message-ID: <7hy38vuc8e.fsf@baylibre.com>
+References: <1543760930050-1499171309-0-diffsplit-thomas@m3y3r.de> <1543760930051-514988180-4-diffsplit-thomas@m3y3r.de>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181208160042.32587-1-nm@ti.com>
+In-Reply-To: <1543760930051-514988180-4-diffsplit-thomas@m3y3r.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nishanth Menon <nm@ti.com>
+To: Thomas Meyer <thomas@m3y3r.de>, khilman@kernel.org, nm@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Nishanth Menon <nm@ti.com> writes:
+Thomas Meyer <thomas@m3y3r.de> writes:
 
-> Fix up licensing to be inline with Linux conventions.
+> NULL check before some freeing functions is not needed.
 >
-> Reported-by: Rafael J. Wysocki <rafael@kernel.org>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+
+> ---
+>
+> diff -u -p a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+> --- a/drivers/power/avs/smartreflex.c
+> +++ b/drivers/power/avs/smartreflex.c
+> @@ -1010,8 +1010,7 @@ static int omap_sr_remove(struct platfor
+>  
+>  	if (sr_info->autocomp_active)
+>  		sr_stop_vddautocomp(sr_info);
+> -	if (sr_info->dbg_dir)
+> -		debugfs_remove_recursive(sr_info->dbg_dir);
+> +	debugfs_remove_recursive(sr_info->dbg_dir);
+>  
+>  	pm_runtime_disable(&pdev->dev);
+>  	list_del(&sr_info->node);
