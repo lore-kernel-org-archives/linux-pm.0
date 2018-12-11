@@ -1,30 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / QoS: Change to use DEFINE_SHOW_ATTRIBUTE macro
-Date: Tue, 11 Dec 2018 11:44:25 +0100
-Message-ID: <4536360.xs1Gq46u5u@aspire.rjw.lan>
-References: <20181106143806.8551-1-tiny.windzz@gmail.com> <20181111112955.GC27666@amd>
+Subject: Re: [PATCH] cpufreq: s3c24xx: Change to use DEFINE_SHOW_ATTRIBUTE macro
+Date: Tue, 11 Dec 2018 11:45:05 +0100
+Message-ID: <1989663.EJsIJGg71O@aspire.rjw.lan>
+References: <20181107161346.9887-1-tiny.windzz@gmail.com> <20181108044503.7zqgi3cjsxnsziuo@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181111112955.GC27666@amd>
+In-Reply-To: <20181108044503.7zqgi3cjsxnsziuo@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Yangtao Li <tiny.windzz@gmail.com>
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Yangtao Li <tiny.windzz@gmail.com>
+Cc: kgene@kernel.org, krzk@kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, November 11, 2018 12:29:55 PM CET Pavel Machek wrote:
-> 
-> --V88s5gaDVPzZ0KCq
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
-> 
-> On Tue 2018-11-06 09:38:06, Yangtao Li wrote:
+On Thursday, November 8, 2018 5:45:03 AM CET Viresh Kumar wrote:
+> On 07-11-18, 11:13, Yangtao Li wrote:
 > > Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
-> >=20
+> > 
 > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> >  drivers/cpufreq/s3c24xx-cpufreq-debugfs.c | 46 +++--------------------
+> >  1 file changed, 6 insertions(+), 40 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> > index 4d976e8dbb2f..0df87b6480fe 100644
+> > --- a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> > +++ b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> > @@ -63,18 +63,7 @@ static int board_show(struct seq_file *seq, void *p)
+> >  	return 0;
+> >  }
+> >  
+> > -static int fops_board_open(struct inode *inode, struct file *file)
+> > -{
+> > -	return single_open(file, board_show, NULL);
+> > -}
+> > -
+> > -static const struct file_operations fops_board = {
+> > -	.open		= fops_board_open,
+> > -	.read		= seq_read,
+> > -	.llseek		= seq_lseek,
+> > -	.release	= single_release,
+> > -	.owner		= THIS_MODULE,
+> > -};
+> > +DEFINE_SHOW_ATTRIBUTE(board);
+> >  
+> >  static int info_show(struct seq_file *seq, void *p)
+> >  {
+> > @@ -105,18 +94,7 @@ static int info_show(struct seq_file *seq, void *p)
+> >  	return 0;
+> >  }
+> >  
+> > -static int fops_info_open(struct inode *inode, struct file *file)
+> > -{
+> > -	return single_open(file, info_show, NULL);
+> > -}
+> > -
+> > -static const struct file_operations fops_info = {
+> > -	.open		= fops_info_open,
+> > -	.read		= seq_read,
+> > -	.llseek		= seq_lseek,
+> > -	.release	= single_release,
+> > -	.owner		= THIS_MODULE,
+> > -};
+> > +DEFINE_SHOW_ATTRIBUTE(info);
+> >  
+> >  static int io_show(struct seq_file *seq, void *p)
+> >  {
+> > @@ -162,19 +140,7 @@ static int io_show(struct seq_file *seq, void *p)
+> >  	return 0;
+> >  }
+> >  
+> > -static int fops_io_open(struct inode *inode, struct file *file)
+> > -{
+> > -	return single_open(file, io_show, NULL);
+> > -}
+> > -
+> > -static const struct file_operations fops_io = {
+> > -	.open		= fops_io_open,
+> > -	.read		= seq_read,
+> > -	.llseek		= seq_lseek,
+> > -	.release	= single_release,
+> > -	.owner		= THIS_MODULE,
+> > -};
+> > -
+> > +DEFINE_SHOW_ATTRIBUTE(io);
+> >  
+> >  static int __init s3c_freq_debugfs_init(void)
+> >  {
+> > @@ -185,13 +151,13 @@ static int __init s3c_freq_debugfs_init(void)
+> >  	}
+> >  
+> >  	dbgfs_file_io = debugfs_create_file("io-timing", S_IRUGO, dbgfs_root,
+> > -					    NULL, &fops_io);
+> > +					    NULL, &io_fops);
+> >  
+> >  	dbgfs_file_info = debugfs_create_file("info", S_IRUGO, dbgfs_root,
+> > -					      NULL, &fops_info);
+> > +					      NULL, &info_fops);
+> >  
+> >  	dbgfs_file_board = debugfs_create_file("board", S_IRUGO, dbgfs_root,
+> > -					       NULL, &fops_board);
+> > +					       NULL, &board_fops);
+> >  
+> >  	return 0;
+> >  }
 > 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Patch applied, thanks!
