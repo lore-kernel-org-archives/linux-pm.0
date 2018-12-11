@@ -1,66 +1,57 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v10 02/15] sched/cpufreq: Prepare schedutil for Energy
- Aware Scheduling
-Date: Tue, 11 Dec 2018 12:24:24 +0000
-Message-ID: <20181211122422.x4xt3kde54wqncvw@queper01-lin>
-References: <20181203095628.11858-1-quentin.perret@arm.com>
- <20181203095628.11858-3-quentin.perret@arm.com>
- <CAJZ5v0iygh1Kh4FnOE=2GzcUHW+FBV+9ZrotAfmXtgdk==6tNg@mail.gmail.com>
- <20181211121742.d6ujfyccwn7t63b3@queper01-lin>
- <CAJZ5v0hP4iEQAFOA2AzcgVUzWS5FeQpCza4Ly-esw0qkYwqrLw@mail.gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v6 20/20] PM: Switch to use %ptR
+Date: Tue, 11 Dec 2018 14:29:20 +0200
+Message-ID: <CAHp75Vc_vQE60UQQWGHJ8BvZSCK-VoU6n76pE-=SDKpkz2MU5w@mail.gmail.com>
+References: <20181204212330.69515-1-andriy.shevchenko@linux.intel.com>
+ <20181204212330.69515-21-andriy.shevchenko@linux.intel.com> <8224399.K2TIF5fxr2@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hP4iEQAFOA2AzcgVUzWS5FeQpCza4Ly-esw0qkYwqrLw@mail.gmail.com>
+In-Reply-To: <8224399.K2TIF5fxr2@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" <linux-rtc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Joe Perches <joe@perches.com>, Mark Salyzyn <salyzyn@android.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 11 Dec 2018 at 13:22:41 (+0100), Rafael J. Wysocki wrote:
-> On Tue, Dec 11, 2018 at 1:17 PM Quentin Perret <quentin.perret@arm.com> wrote:
+On Tue, Dec 11, 2018 at 2:12 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Tuesday, December 4, 2018 10:23:30 PM CET Andy Shevchenko wrote:
+> > Use %ptR instead of open coded variant to print content of
+> > struct rtc_time in human readable format.
 > >
-> > Hi Rafael,
-> >
-> > On Tuesday 11 Dec 2018 at 13:01:24 (+0100), Rafael J. Wysocki wrote:
-> > > On Mon, Dec 3, 2018 at 10:56 AM Quentin Perret <quentin.perret@arm.com> wrote:
-> > >
-> > > [cut]
-> > >
-> > > >  #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-> > > > +/**
-> > > > + * enum schedutil_type - CPU utilization type
-> > > > + * @FREQUENCY_UTIL:    Utilization used to select frequency
-> > > > + * @ENERGY_UTIL:       Utilization used during energy calculation
-> > > > + *
-> > > > + * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
-> > > > + * need to be aggregated differently depending on the usage made of them. This
-> > > > + * enum is used within schedutil_freq_util() to differentiate the types of
-> > > > + * utilization expected by the callers, and adjust the aggregation accordingly.
-> > > > + */
-> > > > +enum schedutil_type {
-> > > > +       FREQUENCY_UTIL,
-> > > > +       ENERGY_UTIL,
-> > > > +};
-> > >
-> > > Why not to use bool instead of this?  Do you expect to have more than
-> > > just two values in the future?  If so, what would be the third one?
-> >
-> > Indeed, the only reason is that an enum is easier to extend, if need be.
-> > I think you mentioned some time ago that CPUIdle could be, in principle,
-> > interested in having access to aggregated utilization signals of CPUs:
-> >
-> > https://lore.kernel.org/lkml/CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com/
-> >
-> > So yeah, I kept Peter's original enum and went for documenting the type,
-> > as you suggested on v7 :-)
-> 
-> OK, so please feel free to add
-> 
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> to this patch.
+> > Cc: linux-pm@vger.kernel.org
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>
+> Do you want me to take this patch?
 
-Thanks !
-Quentin
+Alexandre took all of them, thanks!
+
+>
+> > ---
+> >  drivers/base/power/trace.c | 4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+> > index 1cda505d6a85..b11f47a1e819 100644
+> > --- a/drivers/base/power/trace.c
+> > +++ b/drivers/base/power/trace.c
+> > @@ -118,9 +118,7 @@ static unsigned int read_magic_time(void)
+> >       unsigned int val;
+> >
+> >       mc146818_get_time(&time);
+> > -     pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+> > -             time.tm_hour, time.tm_min, time.tm_sec,
+> > -             time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
+> > +     pr_info("RTC time: %ptRt, date: %ptRd\n", &time, &time);
+> >       val = time.tm_year;                             /* 100 years */
+> >       if (val > 100)
+> >               val -= 100;
+> >
+>
+>
+
+
+-- 
+With Best Regards,
+Andy Shevchenko
