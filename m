@@ -1,164 +1,70 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: Re: [PATCH 11/19] cpufreq: tegra124: do not handle the CPU rail
-Date: Tue, 11 Dec 2018 16:48:50 +0800
-Message-ID: <e531d398-247e-201a-b78d-18858c3846b8@nvidia.com>
-References: <20181204092548.3038-1-josephl@nvidia.com>
- <20181204092548.3038-12-josephl@nvidia.com>
- <71da59ef-fbac-fdce-7348-6a6e23f077e3@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] PM / OPP: Always expose one supply in debugfs
+Date: Tue, 11 Dec 2018 14:55:49 +0530
+Message-ID: <20181211092549.2ydogec7bnlfokwy@vireshk-i7>
+References: <20181210113247.11412-1-quentin.perret@arm.com>
+ <20181210115410.clyrxhp5plptrf5n@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <71da59ef-fbac-fdce-7348-6a6e23f077e3@nvidia.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181210115410.clyrxhp5plptrf5n@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/7/18 10:49 PM, Jon Hunter wrote:
+On 10-12-18, 11:54, Quentin Perret wrote:
+> On Monday 10 Dec 2018 at 11:32:47 (+0000), Quentin Perret wrote:
+> > On some platforms, the opp_table->regulator_count field is kept at zero
+> > even though opp->supplies is always allocated. However, the loop used to
+> > display the supplies in the debugfs doesn't deal correctly with this,
+> > which results in the supplies not being displayed in debugfs on those
+> > platforms.
+> > 
+> > Fix this by making sure to always display at least once supply in
+> > debugfs.
+> > 
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > 
+> > ---
+> > 
+> > This has been observed on Juno r2 which uses SCPI and Hikey960 which
+> > uses DT. I am not particularly familiar with that part of the code, so
+> > I'm not sure if this is even remotely correct (hence the RFC tag).
+> > 
+> > I first thought setting opp_table->regulator_count to 1 would be the
+> > right fix but that causes other issues. This fix seems to work OK on
+> > Juno and Hikey960, at least.
+> > 
+> > Feedback is welcome :-)
 > 
-> On 04/12/2018 09:25, Joseph Lo wrote:
->> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
->> rail. So the driver shouldn't handle for the CPU clock switching from
->> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
->> which handle the frequency/voltage scaling in the background. This
->> patch removes the driver dependency of the CPU rail.
->>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Joseph Lo <josephl@nvidia.com>
->> ---
->>   drivers/cpufreq/Kconfig.arm        |  2 +-
->>   drivers/cpufreq/tegra124-cpufreq.c | 26 ++------------------------
->>   2 files changed, 3 insertions(+), 25 deletions(-)
->>
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 4e1131ef85ae..a609f8820c47 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -262,7 +262,7 @@ config ARM_TEGRA20_CPUFREQ
->>   
->>   config ARM_TEGRA124_CPUFREQ
->>   	tristate "Tegra124 CPUFreq support"
->> -	depends on ARCH_TEGRA && CPUFREQ_DT && REGULATOR
->> +	depends on ARCH_TEGRA && CPUFREQ_DT
->>   	default y
->>   	help
->>   	  This adds the CPUFreq driver support for Tegra124 SOCs.
->> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
->> index 43530254201a..448d00763d00 100644
->> --- a/drivers/cpufreq/tegra124-cpufreq.c
->> +++ b/drivers/cpufreq/tegra124-cpufreq.c
->> @@ -22,11 +22,9 @@
->>   #include <linux/of.h>
->>   #include <linux/platform_device.h>
->>   #include <linux/pm_opp.h>
->> -#include <linux/regulator/consumer.h>
->>   #include <linux/types.h>
->>   
->>   struct tegra124_cpufreq_priv {
->> -	struct regulator *vdd_cpu_reg;
->>   	struct clk *cpu_clk;
->>   	struct clk *pllp_clk;
->>   	struct clk *pllx_clk;
->> @@ -60,14 +58,6 @@ static int tegra124_cpu_switch_to_dfll(struct tegra124_cpufreq_priv *priv)
->>   	return ret;
->>   }
->>   
->> -static void tegra124_cpu_switch_to_pllx(struct tegra124_cpufreq_priv *priv)
->> -{
->> -	clk_set_parent(priv->cpu_clk, priv->pllp_clk);
->> -	clk_disable_unprepare(priv->dfll_clk);
->> -	regulator_sync_voltage(priv->vdd_cpu_reg);
->> -	clk_set_parent(priv->cpu_clk, priv->pllx_clk);
->> -}
->> -
->>   static int tegra124_cpufreq_probe(struct platform_device *pdev)
->>   {
->>   	struct tegra124_cpufreq_priv *priv;
->> @@ -88,16 +78,10 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
->>   	if (!np)
->>   		return -ENODEV;
->>   
->> -	priv->vdd_cpu_reg = regulator_get(cpu_dev, "vdd-cpu");
->> -	if (IS_ERR(priv->vdd_cpu_reg)) {
->> -		ret = PTR_ERR(priv->vdd_cpu_reg);
->> -		goto out_put_np;
->> -	}
->> -
->>   	priv->cpu_clk = of_clk_get_by_name(np, "cpu_g");
->>   	if (IS_ERR(priv->cpu_clk)) {
->>   		ret = PTR_ERR(priv->cpu_clk);
->> -		goto out_put_vdd_cpu_reg;
->> +		goto out_put_np;
->>   	}
->>   
->>   	priv->dfll_clk = of_clk_get_by_name(np, "dfll");
->> @@ -129,15 +113,13 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
->>   		platform_device_register_full(&cpufreq_dt_devinfo);
->>   	if (IS_ERR(priv->cpufreq_dt_pdev)) {
->>   		ret = PTR_ERR(priv->cpufreq_dt_pdev);
->> -		goto out_switch_to_pllx;
->> +		goto out_put_pllp_clk;
->>   	}
->>   
->>   	platform_set_drvdata(pdev, priv);
->>   
->>   	return 0;
->>   
->> -out_switch_to_pllx:
->> -	tegra124_cpu_switch_to_pllx(priv);
->>   out_put_pllp_clk:
->>   	clk_put(priv->pllp_clk);
->>   out_put_pllx_clk:
->> @@ -146,8 +128,6 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
->>   	clk_put(priv->dfll_clk);
->>   out_put_cpu_clk:
->>   	clk_put(priv->cpu_clk);
->> -out_put_vdd_cpu_reg:
->> -	regulator_put(priv->vdd_cpu_reg);
->>   out_put_np:
->>   	of_node_put(np);
->>   
->> @@ -159,13 +139,11 @@ static int tegra124_cpufreq_remove(struct platform_device *pdev)
->>   	struct tegra124_cpufreq_priv *priv = platform_get_drvdata(pdev);
->>   
->>   	platform_device_unregister(priv->cpufreq_dt_pdev);
->> -	tegra124_cpu_switch_to_pllx(priv);
->>   
->>   	clk_put(priv->pllp_clk);
->>   	clk_put(priv->pllx_clk);
->>   	clk_put(priv->dfll_clk);
->>   	clk_put(priv->cpu_clk);
->> -	regulator_put(priv->vdd_cpu_reg);
+> Hmm, so I just figured what I'm doing here is basically reverting:
 > 
-> I see what you are saying and while this does appear to be broken, it
-> also does not seem right that if we load and unload this driver the CPU
-> clock parent will remain as the DFLL clock. Can't we query the voltage
-> of the vdd-cpu regulator before we switch and then restore it before we
-> switch back? >
-> I am just trying to understand if there is no way to switch back? If not
-> then maybe we should not allow this driver to be built as a module and
-> remove the removal function altogether.
+>     1fae788ed640 ("PM / OPP: Don't create debugfs "supply-0" directory unnecessarily")
+> 
+> Should I send a proper revert instead of this patch ? It _is_ handy to
+> read voltage numbers when available.
 
-No, we shouldn't switch back to PLL clock once we switched to DFLL 
-clock. The reason is that the PLL clock applies to different 
-voltage/freq table. That may not match the table, we are using for DFLL 
-clock. The cclkg is designed to work on DFLL only.The safest way here is 
-remaining the cclkg on DFLL closed-loop mode or switching to open-loop 
-mode. Make it always work on DFLL closed-loop mode is better.
+First of all I am really happy that someone apart from me is using this debug
+interface :)
 
-By default the configuration is built-in now. Sounds good to me to fix 
-the configuration option and remove the removal function.
+At least that patch was correct and if we have to fix something, it should be
+fixed somewhere else.
 
-Thanks,
-Joseph
+I tried to reproduce the issue on hikey and straight away understood why it is
+behaving that way. There is no "cpu-supply" property defined for the CPUs.
+
+I looked at juno driver and couldn't see any references to voltage there. Are
+you trying to add that support ?
+
+Anyway, this should still be fixed irrespective of the "cpu-supply" property.
+The other fix you mentioned about setting opp_table->regulator_count to 1 is
+actually the right thing to do but the fix may require changes at multiple
+places. I can help writing a patch for that if you want, else I am open to you
+giving it a shot :)
+
+Thanks.
+
+-- 
+viresh
