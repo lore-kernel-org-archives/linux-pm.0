@@ -1,266 +1,83 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH v3 2/2] cpufreq: ap806: add cpufreq driver for Armada 8K
-Date: Tue, 11 Dec 2018 17:42:49 +0100
-Message-ID: <20181211164249.26985-3-gregory.clement@bootlin.com>
-References: <20181211164249.26985-1-gregory.clement@bootlin.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / sleep: convert to DEFINE_SHOW_ATTRIBUTE
+Date: Tue, 11 Dec 2018 18:42:42 +0100
+Message-ID: <20181211174242.GA11538@amd>
+References: <20181211162048.21906-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181211164249.26985-1-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181211162048.21906-1-tiny.windzz@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add cpufreq driver for Marvell AP-806 found on Aramda 8K.
-The AP-806 has DFS (Dynamic Frequency Scaling) with coupled
-clock domain for two clusters, so this driver will directly
-use generic cpufreq-dt driver as backend.
 
-Based on the work of Omri Itach <omrii@marvell.com>.
+--Qxx1br4bt0+wmkIi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
- drivers/cpufreq/Kconfig.arm         |  11 ++
- drivers/cpufreq/Makefile            |   1 +
- drivers/cpufreq/armada-8k-cpufreq.c | 186 ++++++++++++++++++++++++++++
- 3 files changed, 198 insertions(+)
- create mode 100644 drivers/cpufreq/armada-8k-cpufreq.c
+On Tue 2018-12-11 11:20:48, Yangtao Li wrote:
+> Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
+>=20
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 4e1131ef85ae..7e32a241760d 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -25,6 +25,17 @@ config ARM_ARMADA_37XX_CPUFREQ
- 	  This adds the CPUFreq driver support for Marvell Armada 37xx SoCs.
- 	  The Armada 37xx PMU supports 4 frequency and VDD levels.
- 
-+config ARM_ARMADA_8K_CPUFREQ
-+	tristate "Armada 8K CPUFreq driver"
-+	depends on ARCH_MVEBU && CPUFREQ_DT
-+	help
-+	  This enables the CPUFreq driver support for Marvell
-+	  Armada8k SOCs.
-+	  Armada8K device has the AP806 which supports scaling
-+	  to any full integer divider.
-+
-+	  If in doubt, say N.
-+
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index d5ee4562ed06..db1564b610ac 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -50,6 +50,7 @@ obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
- obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
- 
- obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
-+obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
- obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
-diff --git a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
-new file mode 100644
-index 000000000000..1db1953fb43e
---- /dev/null
-+++ b/drivers/cpufreq/armada-8k-cpufreq.c
-@@ -0,0 +1,186 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * CPUFreq support for Armada 8K
-+ *
-+ * Copyright (C) 2018 Marvell
-+ *
-+ * Omri Itach <omrii@marvell.com>
-+ * Gregory Clement <gregory.clement@bootlin.com>
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/clk.h>
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Setup the opps list with the divider for the max frequency, that
-+ * will be filled at runtime.
-+ */
-+static const int opps_div[] __initconst = {1, 2, 3, 4};
-+
-+static struct platform_device *armada_8k_pdev;
-+static struct freq_table *freq_tables;
-+static int opps_index;
-+
-+struct freq_table {
-+	struct device *cpu_dev;
-+	struct clk *clk;
-+	unsigned int freq[ARRAY_SIZE(opps_div)];
-+};
-+
-+/* If the CPUs share the same clock, then they are in the same cluster. */
-+static void __init armada_8k_get_sharing_cpus(struct clk *cur_clk,
-+					      struct cpumask *cpumask)
-+{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev = get_cpu_device(cpu);
-+		struct clk *clk = clk_get(cpu_dev, 0);
-+
-+		if (IS_ERR(clk))
-+			dev_warn(cpu_dev, "Cannot get clock for CPU %d\n", cpu);
-+		else if (clk_is_match(clk, cur_clk))
-+			cpumask_set_cpu(cpu, cpumask);
-+
-+		clk_put(clk);
-+	}
-+}
-+
-+static int armada_8k_add_opp(struct clk *clk, struct device *cpu_dev,
-+			     struct freq_table *freq_tables, int opps_index)
-+{
-+	unsigned int cur_frequency;
-+	unsigned int freq;
-+	int i, ret;
-+
-+	/* Get nominal (current) CPU frequency. */
-+	cur_frequency = clk_get_rate(clk);
-+
-+	if (!cur_frequency) {
-+		dev_err(cpu_dev,
-+			"Failed to get clock rate for this CPU\n");
-+		return -EINVAL;
-+	}
-+
-+	freq_tables[opps_index].cpu_dev = cpu_dev;
-+	for (i = 0; i < ARRAY_SIZE(opps_div); i++) {
-+		freq = cur_frequency / opps_div[i];
-+
-+		ret = dev_pm_opp_add(cpu_dev, freq, 0);
-+		if (ret)
-+			return ret;
-+
-+		freq_tables[opps_index].freq[i] = freq;
-+	}
-+
-+	return 0;
-+}
-+
-+static void armada_8k_cpufreq_free_table(void)
-+{
-+	opps_index--;
-+	for (; opps_index >= 0; opps_index--) {
-+		int i;
-+
-+		for (i = 0; i < ARRAY_SIZE(opps_div); i++)
-+			dev_pm_opp_remove(freq_tables[opps_index].cpu_dev,
-+					  freq_tables[opps_index].freq[i]);
-+	}
-+
-+	kfree(freq_tables);
-+}
-+
-+static int __init armada_8k_cpufreq_init(void)
-+{
-+	int ret = 0, cpu, nb_cpus;
-+	struct device_node *node;
-+
-+	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
-+	if (!node || !of_device_is_available(node))
-+		return -ENODEV;
-+
-+	nb_cpus = num_possible_cpus();
-+	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
-+	/*
-+	 * For each CPU, this loop registers the operating points
-+	 * supported (which are the nominal CPU frequency and full integer
-+	 * divisions of it).
-+	 */
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev;
-+		struct cpumask cpus;
-+		struct clk *clk;
-+		int i, skip;
-+
-+		skip = 0;
-+		cpu_dev = get_cpu_device(cpu);
-+
-+		if (!cpu_dev) {
-+			dev_err(cpu_dev, "Cannot get CPU %d\n", cpu);
-+			continue;
-+		}
-+
-+		clk = devm_clk_get(cpu_dev, 0);
-+
-+		if (IS_ERR(clk)) {
-+			dev_err(cpu_dev, "Cannot get clock for CPU %d\n", cpu);
-+			ret = PTR_ERR(clk);
-+			goto remove_opp;
-+		}
-+
-+		for (i = 0; i < nb_cpus; i++) {
-+			if (clk_is_match(clk, freq_tables[i].clk)) {
-+				skip = 1;
-+				break;
-+			}
-+		}
-+		if (skip) {
-+			devm_clk_put(cpu_dev, clk);
-+			continue;
-+		}
-+
-+		freq_tables[opps_index].clk = clk;
-+
-+		ret = armada_8k_add_opp(clk, cpu_dev, freq_tables, opps_index);
-+		if (ret)
-+			goto remove_opp;
-+
-+		opps_index++;
-+		cpumask_clear(&cpus);
-+		armada_8k_get_sharing_cpus(clk, &cpus);
-+		dev_pm_opp_set_sharing_cpus(cpu_dev, &cpus);
-+	}
-+
-+	armada_8k_pdev = platform_device_register_simple("cpufreq-dt", -1,
-+							 NULL, 0);
-+	ret = PTR_ERR_OR_ZERO(armada_8k_pdev);
-+	if (ret)
-+		goto remove_opp;
-+	return 0;
-+
-+remove_opp:
-+	armada_8k_cpufreq_free_table();
-+	return ret;
-+}
-+module_init(armada_8k_cpufreq_init);
-+
-+static void __exit armada_8k_cpufreq_exit(void)
-+{
-+	armada_8k_cpufreq_free_table();
-+	platform_device_unregister(armada_8k_pdev);
-+}
-+module_exit(armada_8k_cpufreq_exit);
-+
-+MODULE_AUTHOR("Gregory Clement <gregory.clement@bootlin.com>");
-+MODULE_DESCRIPTION("Armada 8K cpufreq driver");
-+MODULE_LICENSE("GPL");
--- 
-2.19.2
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+> ---
+>  kernel/power/main.c | 15 ++-------------
+>  1 file changed, 2 insertions(+), 13 deletions(-)
+>=20
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 35b50823d83b..98e76cad128b 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -318,23 +318,12 @@ static int suspend_stats_show(struct seq_file *s, v=
+oid *unused)
+> =20
+>  	return 0;
+>  }
+> -
+> -static int suspend_stats_open(struct inode *inode, struct file *file)
+> -{
+> -	return single_open(file, suspend_stats_show, NULL);
+> -}
+> -
+> -static const struct file_operations suspend_stats_operations =3D {
+> -	.open           =3D suspend_stats_open,
+> -	.read           =3D seq_read,
+> -	.llseek         =3D seq_lseek,
+> -	.release        =3D single_release,
+> -};
+> +DEFINE_SHOW_ATTRIBUTE(suspend_stats);
+> =20
+>  static int __init pm_debugfs_init(void)
+>  {
+>  	debugfs_create_file("suspend_stats", S_IFREG | S_IRUGO,
+> -			NULL, NULL, &suspend_stats_operations);
+> +			NULL, NULL, &suspend_stats_fops);
+>  	return 0;
+>  }
+> =20
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--Qxx1br4bt0+wmkIi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlwP9xIACgkQMOfwapXb+vKOTACfQkC9w7fYmHq5sQtRwojm06t3
+AlIAoJLYeRpmPZXu2SVWl06YDMp3n2zx
+=m7Lp
+-----END PGP SIGNATURE-----
+
+--Qxx1br4bt0+wmkIi--
