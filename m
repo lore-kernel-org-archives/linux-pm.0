@@ -1,49 +1,46 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] PM / sleep: convert to DEFINE_SHOW_ATTRIBUTE
-Date: Tue, 11 Dec 2018 11:20:48 -0500
-Message-ID: <20181211162048.21906-1-tiny.windzz@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH v3 1/2] MAINTAINERS: add new entries for Armada 8K cpufreq
+ driver
+Date: Tue, 11 Dec 2018 17:42:48 +0100
+Message-ID: <20181211164249.26985-2-gregory.clement@bootlin.com>
+References: <20181211164249.26985-1-gregory.clement@bootlin.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181211164249.26985-1-gregory.clement@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
+This new driver belongs to the mvebu family, update the MAINTAINER file
+to document it.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
 ---
- kernel/power/main.c | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 35b50823d83b..98e76cad128b 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -318,23 +318,12 @@ static int suspend_stats_show(struct seq_file *s, void *unused)
- 
- 	return 0;
- }
--
--static int suspend_stats_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, suspend_stats_show, NULL);
--}
--
--static const struct file_operations suspend_stats_operations = {
--	.open           = suspend_stats_open,
--	.read           = seq_read,
--	.llseek         = seq_lseek,
--	.release        = single_release,
--};
-+DEFINE_SHOW_ATTRIBUTE(suspend_stats);
- 
- static int __init pm_debugfs_init(void)
- {
- 	debugfs_create_file("suspend_stats", S_IFREG | S_IRUGO,
--			NULL, NULL, &suspend_stats_operations);
-+			NULL, NULL, &suspend_stats_fops);
- 	return 0;
- }
- 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f4855974f325..c71e4f9c1173 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1717,6 +1717,7 @@ F:	arch/arm/configs/mvebu_*_defconfig
+ F:	arch/arm/mach-mvebu/
+ F:	arch/arm64/boot/dts/marvell/armada*
+ F:	drivers/cpufreq/armada-37xx-cpufreq.c
++F:	drivers/cpufreq/armada-8k-cpufreq.c
+ F:	drivers/cpufreq/mvebu-cpufreq.c
+ F:	drivers/irqchip/irq-armada-370-xp.c
+ F:	drivers/irqchip/irq-mvebu-*
 -- 
-2.17.0
+2.19.2
