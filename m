@@ -1,45 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 20/20] PM: Switch to use %ptR
-Date: Tue, 11 Dec 2018 12:53:59 +0100
-Message-ID: <8224399.K2TIF5fxr2@aspire.rjw.lan>
-References: <20181204212330.69515-1-andriy.shevchenko@linux.intel.com> <20181204212330.69515-21-andriy.shevchenko@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v10 02/15] sched/cpufreq: Prepare schedutil for Energy
+ Aware Scheduling
+Date: Tue, 11 Dec 2018 13:01:24 +0100
+Message-ID: <CAJZ5v0iygh1Kh4FnOE=2GzcUHW+FBV+9ZrotAfmXtgdk==6tNg@mail.gmail.com>
+References: <20181203095628.11858-1-quentin.perret@arm.com> <20181203095628.11858-3-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181204212330.69515-21-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20181203095628.11858-3-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-rtc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Joe Perches <joe@perches.com>, Mark Salyzyn <salyzyn@android.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 4, 2018 10:23:30 PM CET Andy Shevchenko wrote:
-> Use %ptR instead of open coded variant to print content of
-> struct rtc_time in human readable format.
-> 
-> Cc: linux-pm@vger.kernel.org
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+On Mon, Dec 3, 2018 at 10:56 AM Quentin Perret <quentin.perret@arm.com> wrote:
 
-Do you want me to take this patch?
+[cut]
 
-> ---
->  drivers/base/power/trace.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index 1cda505d6a85..b11f47a1e819 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -118,9 +118,7 @@ static unsigned int read_magic_time(void)
->  	unsigned int val;
->  
->  	mc146818_get_time(&time);
-> -	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
-> -		time.tm_hour, time.tm_min, time.tm_sec,
-> -		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
-> +	pr_info("RTC time: %ptRt, date: %ptRd\n", &time, &time);
->  	val = time.tm_year;				/* 100 years */
->  	if (val > 100)
->  		val -= 100;
-> 
+>  #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> +/**
+> + * enum schedutil_type - CPU utilization type
+> + * @FREQUENCY_UTIL:    Utilization used to select frequency
+> + * @ENERGY_UTIL:       Utilization used during energy calculation
+> + *
+> + * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
+> + * need to be aggregated differently depending on the usage made of them. This
+> + * enum is used within schedutil_freq_util() to differentiate the types of
+> + * utilization expected by the callers, and adjust the aggregation accordingly.
+> + */
+> +enum schedutil_type {
+> +       FREQUENCY_UTIL,
+> +       ENERGY_UTIL,
+> +};
+
+Why not to use bool instead of this?  Do you expect to have more than
+just two values in the future?  If so, what would be the third one?
