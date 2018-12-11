@@ -1,68 +1,165 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] OPP: Use opp_table->regulators to verify no regulator case
-Date: Tue, 11 Dec 2018 16:56:28 +0530
-Message-ID: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
+Subject: [PATCH 2/2] OPP: Fix missing debugfs supply directory for OPPs
+Date: Tue, 11 Dec 2018 16:56:29 +0530
+Message-ID: <46f48aca2e5aef3f430e95d1a5fb68227ec8ec85.1544527580.git.viresh.kumar@linaro.org>
+References: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Quentin Perret <quentin.perret@arm.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The value of opp_table->regulator_count is not very consistent right now
-and it may end up being 0 while we do have a "opp-microvolt" property in
-the OPP table. It was kept that way as we used to check if any
-regulators are set with the OPP core for a device or not using value of
-regulator_count.
+There is one case where we may end up with no "supply" directory for the
+OPPs in debugfs. That happens when the OPP core isn't managing the
+regulators for the device and the device's OPP do have microvolt
+property. It happens because the opp_table->regulator_count remains set
+to 0 and the debugfs routines don't add any supply directory in such a
+case.
 
-Lets use opp_table->regulators for that purpose as the meaning of
-regulator_count is going to change in the later patches.
+This commit fixes that by setting opp_table->regulator_count to 1 in
+that particular case. But to make everything work nicely and not break
+other parts of the core, regulator_count is defined as "int" now instead
+of "unsigned int" and it can have different special values now. It is
+set to -1 initially to mark it "uninitialized" and later only we set it
+to 0 or positive values after checking how many supplies are there.
 
+This also helps in finding the bugs where only few of the OPPs have the
+"opp-microvolt" property set and not all.
+
+Fixes: 1fae788ed640 ("PM / OPP: Don't create debugfs "supply-0" directory unnecessarily")
 Reported-by: Quentin Perret <quentin.perret@arm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/opp/core.c | 12 +++++++++---
+ drivers/opp/of.c   | 20 ++++++++++++++++----
+ drivers/opp/opp.h  |  6 ++++--
+ 3 files changed, 29 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 2c2df4e4fc14..2d3d0d1180ea 100644
+index 2d3d0d1180ea..23b086fcbf84 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -196,12 +196,12 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- 	if (IS_ERR(opp_table))
- 		return 0;
+@@ -812,6 +812,9 @@ static struct opp_table *_allocate_opp_table(struct device *dev, int index)
+ 	mutex_init(&opp_table->lock);
+ 	INIT_LIST_HEAD(&opp_table->dev_list);
  
--	count = opp_table->regulator_count;
++	/* Mark regulator count uninitialized */
++	opp_table->regulator_count = -1;
++
+ 	opp_dev = _add_opp_dev(dev, opp_table);
+ 	if (!opp_dev) {
+ 		kfree(opp_table);
+@@ -1028,7 +1031,7 @@ struct dev_pm_opp *_opp_allocate(struct opp_table *table)
+ 	int count, supply_size;
+ 
+ 	/* Allocate space for at least one supply */
+-	count = table->regulator_count ? table->regulator_count : 1;
++	count = table->regulator_count > 0 ? table->regulator_count : 1;
+ 	supply_size = sizeof(*opp->supplies) * count;
+ 
+ 	/* allocate new OPP node and supplies structures */
+@@ -1433,7 +1436,7 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+ 
+ 	kfree(opp_table->regulators);
+ 	opp_table->regulators = NULL;
+-	opp_table->regulator_count = 0;
++	opp_table->regulator_count = -1;
+ err:
+ 	dev_pm_opp_put_opp_table(opp_table);
+ 
+@@ -1462,7 +1465,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+ 
+ 	kfree(opp_table->regulators);
+ 	opp_table->regulators = NULL;
+-	opp_table->regulator_count = 0;
++	opp_table->regulator_count = -1;
+ 
+ put_opp_table:
+ 	dev_pm_opp_put_opp_table(opp_table);
+@@ -1615,6 +1618,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	if (!opp_table)
+ 		return -ENOMEM;
+ 
++	/* Fix regulator count for dynamic OPPs */
++	opp_table->regulator_count = 1;
++
+ 	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
+ 	if (ret)
+ 		dev_pm_opp_put_opp_table(opp_table);
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 38a08805a30c..6eb0198ab63d 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -150,12 +150,10 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 			      struct opp_table *opp_table)
+ {
+ 	u32 *microvolt, *microamp = NULL;
+-	int supplies, vcount, icount, ret, i, j;
++	int supplies = opp_table->regulator_count, vcount, icount, ret, i, j;
+ 	struct property *prop = NULL;
+ 	char name[NAME_MAX];
+ 
+-	supplies = opp_table->regulator_count ? opp_table->regulator_count : 1;
 -
- 	/* Regulator may not be required for the device */
--	if (!count)
-+	if (!opp_table->regulators)
- 		goto put_opp_table;
+ 	/* Search for "opp-microvolt-<name>" */
+ 	if (opp_table->prop_name) {
+ 		snprintf(name, sizeof(name), "opp-microvolt-%s",
+@@ -170,7 +168,13 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
  
-+	count = opp_table->regulator_count;
+ 		/* Missing property isn't a problem, but an invalid entry is */
+ 		if (!prop) {
+-			if (!opp_table->regulator_count)
++			if (unlikely(supplies == -1)) {
++				/* Initialize regulator_count */
++				opp_table->regulator_count = 0;
++				return 0;
++			}
 +
- 	uV = kmalloc_array(count, sizeof(*uV), GFP_KERNEL);
- 	if (!uV)
- 		goto put_opp_table;
-@@ -1049,6 +1049,9 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	struct regulator *reg;
- 	int i;
++			if (!supplies)
+ 				return 0;
  
-+	if (!opp_table->regulators)
-+		return true;
+ 			dev_err(dev, "%s: opp-microvolt missing although OPP managing regulators\n",
+@@ -179,6 +183,14 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 		}
+ 	}
+ 
++	if (unlikely(supplies == -1)) {
++		/* Initialize regulator_count */
++		supplies = opp_table->regulator_count = 1;
++	} else if (unlikely(!supplies)) {
++		dev_err(dev, "%s: opp-microvolt wasn't expected\n", __func__);
++		return -EINVAL;
++	}
 +
- 	for (i = 0; i < opp_table->regulator_count; i++) {
- 		reg = opp_table->regulators[i];
+ 	vcount = of_property_count_u32_elems(opp->np, name);
+ 	if (vcount < 0) {
+ 		dev_err(dev, "%s: Invalid %s property (%d)\n",
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 9c6544b4f4f9..14d732ccad08 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -138,7 +138,9 @@ enum opp_table_access {
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
+  * @clk: Device's clock handle
+  * @regulators: Supply regulators
+- * @regulator_count: Number of power supply regulators
++ * @regulator_count: Number of power supply regulators. Its value can be -1
++ * (uninitialized), 0 (no opp-microvolt property) or > 0 (has opp-microvolt
++ * property).
+  * @genpd_performance_state: Device's power domain support performance state.
+  * @set_opp: Platform specific set_opp callback
+  * @set_opp_data: Data to be passed to set_opp callback
+@@ -176,7 +178,7 @@ struct opp_table {
+ 	const char *prop_name;
+ 	struct clk *clk;
+ 	struct regulator **regulators;
+-	unsigned int regulator_count;
++	int regulator_count;
+ 	bool genpd_performance_state;
  
-@@ -1333,7 +1336,7 @@ static int _allocate_set_opp_data(struct opp_table *opp_table)
- 	struct dev_pm_set_opp_data *data;
- 	int len, count = opp_table->regulator_count;
- 
--	if (WARN_ON(!count))
-+	if (WARN_ON(!opp_table->regulators))
- 		return -EINVAL;
- 
- 	/* space for set_opp_data */
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
 -- 
 2.19.1.568.g152ad8e3369a
