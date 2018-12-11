@@ -1,46 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: pmac64: add of_node_put()
-Date: Tue, 11 Dec 2018 11:47:45 +0100
-Message-ID: <1962056.WEnsRsenr7@aspire.rjw.lan>
-References: <20181123133340.26849-1-tiny.windzz@gmail.com> <20181126060226.wsludir4g7bao4lk@vireshk-i7>
+Subject: Re: [PATCH 1/2] cpufreq: imx6q: remove unused code
+Date: Tue, 11 Dec 2018 11:49:13 +0100
+Message-ID: <3624116.FYVZqeVW1R@aspire.rjw.lan>
+References: <1543200853-10029-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181126060226.wsludir4g7bao4lk@vireshk-i7>
+In-Reply-To: <1543200853-10029-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Yangtao Li <tiny.windzz@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 26, 2018 7:02:26 AM CET Viresh Kumar wrote:
-> On 23-11-18, 08:33, Yangtao Li wrote:
-> > of_find_node_by_path() acquires a reference to the node
-> > returned by it and that reference needs to be dropped by its caller.
-> > g5_neo2_cpufreq_init() doesn't do that, so fix it.
-> > 
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > Changes in v2:
-> > -update changelog
-> > ---
-> >  drivers/cpufreq/pmac64-cpufreq.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> > index be623dd7b9f2..1d32a863332d 100644
-> > --- a/drivers/cpufreq/pmac64-cpufreq.c
-> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> > @@ -411,6 +411,7 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
-> >  		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
-> >  		pfunc_vdnap0_complete =
-> >  			pmf_find_function(root, "slewing-done");
-> > +		of_node_put(root);
-> >  		if (pfunc_set_vdnap0 == NULL ||
-> >  		    pfunc_vdnap0_complete == NULL) {
-> >  			pr_err("Can't find required platform function\n");
+On Monday, November 26, 2018 3:59:45 AM CET Anson Huang wrote:
+> In voltage scale down path, the return value is NOT
+> used at all, remove them to simplify the code.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 12 +++---------
+>  1 file changed, 3 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index d8c3595..8cb9683 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -177,22 +177,16 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	/* scaling down?  scale voltage after frequency */
+>  	if (new_freq < old_freq) {
+>  		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
+> -		if (ret) {
+> +		if (ret)
+>  			dev_warn(cpu_dev,
+>  				 "failed to scale vddarm down: %d\n", ret);
+> -			ret = 0;
+> -		}
+>  		ret = regulator_set_voltage_tol(soc_reg, imx6_soc_volt[index], 0);
+> -		if (ret) {
+> +		if (ret)
+>  			dev_warn(cpu_dev, "failed to scale vddsoc down: %d\n", ret);
+> -			ret = 0;
+> -		}
+>  		if (!IS_ERR(pu_reg)) {
+>  			ret = regulator_set_voltage_tol(pu_reg, imx6_soc_volt[index], 0);
+> -			if (ret) {
+> +			if (ret)
+>  				dev_warn(cpu_dev, "failed to scale vddpu down: %d\n", ret);
+> -				ret = 0;
+> -			}
+>  		}
+>  	}
+>  
+> 
 
-Patch applied, thanks!
+Both this one and the [2/2] applied with ACKs from Viresh.
+
+Thanks!
