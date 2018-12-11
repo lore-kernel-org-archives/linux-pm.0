@@ -1,57 +1,59 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v6 20/20] PM: Switch to use %ptR
-Date: Tue, 11 Dec 2018 14:29:20 +0200
-Message-ID: <CAHp75Vc_vQE60UQQWGHJ8BvZSCK-VoU6n76pE-=SDKpkz2MU5w@mail.gmail.com>
-References: <20181204212330.69515-1-andriy.shevchenko@linux.intel.com>
- <20181204212330.69515-21-andriy.shevchenko@linux.intel.com> <8224399.K2TIF5fxr2@aspire.rjw.lan>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Tue, 11 Dec 2018 19:05:43 +0530
+Message-ID: <82b168d1-79bc-f454-8e19-4f7630a34069@codeaurora.org>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
+ <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
+ <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
+ <154396472692.88331.13742924031474269133@swboyd.mtv.corp.google.com>
+ <49139ae4-4373-9e70-02ad-80f7bbc4494c@codeaurora.org>
+ <20181205061600.7zglbpkgbktn27am@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8224399.K2TIF5fxr2@aspire.rjw.lan>
+In-Reply-To: <20181205061600.7zglbpkgbktn27am@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, "open list:REAL TIME CLOCK (RTC) SUBSYSTEM" <linux-rtc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Joe Perches <joe@perches.com>, Mark Salyzyn <salyzyn@android.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 11, 2018 at 2:12 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, December 4, 2018 10:23:30 PM CET Andy Shevchenko wrote:
-> > Use %ptR instead of open coded variant to print content of
-> > struct rtc_time in human readable format.
-> >
-> > Cc: linux-pm@vger.kernel.org
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->
-> Do you want me to take this patch?
+Hi Viresh,
 
-Alexandre took all of them, thanks!
+Sorry for the delayed response. Thanks for the patch.
 
->
-> > ---
-> >  drivers/base/power/trace.c | 4 +---
-> >  1 file changed, 1 insertion(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> > index 1cda505d6a85..b11f47a1e819 100644
-> > --- a/drivers/base/power/trace.c
-> > +++ b/drivers/base/power/trace.c
-> > @@ -118,9 +118,7 @@ static unsigned int read_magic_time(void)
-> >       unsigned int val;
-> >
-> >       mc146818_get_time(&time);
-> > -     pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
-> > -             time.tm_hour, time.tm_min, time.tm_sec,
-> > -             time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
-> > +     pr_info("RTC time: %ptRt, date: %ptRd\n", &time, &time);
-> >       val = time.tm_year;                             /* 100 years */
-> >       if (val > 100)
-> >               val -= 100;
-> >
->
->
+On 12/5/2018 11:46 AM, Viresh Kumar wrote:
+> On 05-12-18, 09:07, Taniya Das wrote:
+>> Hello Stephen, Viresh
+>>
+>> Thanks for the code and suggestions.
+>>
+>> Having a NR_DOMAINS '2' makes the driver not scalable for re-use.
+> 
+> Sure, I didn't like it either and that wasn't really what I was suggesting in
+> the first place. I didn't wanted to write the code myself and pass it on, but I
+> have it now anyway :)
+> 
+> It may have a bug or two in there, but compiles just fine and is rebased over
+> your patch Taniya.
+> 
 
+The design here assumes that there would not be any per-cpu/per-cluster 
+based SW requirement for the HW during frequency transitions, which 
+again makes me think that we would require to re-introduce these 
+structures again in case we have such requirements in near future.
+
+Also I think leaving the structures also helps us debug any boot up 
+issues looking at the ram contents of the per-(cpu/cluster) structures 
+with the contents from the firmware.
+
+Hope these above helps us to go ahead with the current SW design.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
