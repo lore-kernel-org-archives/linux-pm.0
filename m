@@ -1,331 +1,104 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC/RFT 00/10] i2c: move handling of suspended adapters to the
- core
-Date: Tue, 11 Dec 2018 20:24:40 +0100
-Message-ID: <2094a0d4-733f-7f74-abd2-bdb28edd0f80@redhat.com>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
+ sub-drivers
+Date: Wed, 12 Dec 2018 00:09:07 +0100
+Message-ID: <20181211230907.2gfxkllqooovwsw2@earth.universe>
+References: <20181211190953.13626-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------5EB9D799064076BC26E44817"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="pjsrogytlfephcai"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181211190953.13626-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------5EB9D799064076BC26E44817
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi Wolfram,
+--pjsrogytlfephcai
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 10-12-18 22:02, Wolfram Sang wrote:
-> Finally, here is the implementation Hans and I agreed on. Plus, all potential
-> users I could spot already converted. Renesas R-Car driver was added on top.
-> This series was tested on a Renesas Lager board (R-Car H2). I had to hack some
-> error cases into the code to verify the workings. I couldn't create an error
-> case otherwise, this is why further testing with more complex setups is very
-> welcome.
-> 
-> For my taste, there is still too much boilerplate code for drivers left. Plus,
-> it is also too easy to put it too early or too late. But I haven't come up with
-> a better idea yet. And it is time to get this somehow forward.
-> 
-> Please comment, review, test... a branch can be found here:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/core-pm-helpers
+Hi,
 
-So I've been testing this patch-set on some Intel devices with
-an i2c-designware controller, combined with a patch to make the
-suspend/resume methods of the controller call i2c_mark_adapter_suspended()
+On Tue, Dec 11, 2018 at 08:09:52PM +0100, Enric Balletbo i Serra wrote:
+> There are multiple ChromeOS EC sub-drivers spread in different
+> subsystems, as all of them are related to the Chrome stuff add
+> Benson and myself as a maintainers for all these sub-drivers.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+>=20
+> Changes in v2:
+> - Fix typo in Benson email address.
+>=20
+>  MAINTAINERS | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>=20
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a24129b0b043..bbe7180e2851 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3625,6 +3625,30 @@ S:	Maintained
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platf=
+orm.git
+>  F:	drivers/platform/chrome/
+> =20
+> +CHROMEOS EC SUBDRIVERS
+> +M:	Benson Leung <bleung@chromium.org>
+> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
+> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
+> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
+> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
+> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
+> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
+> +F:	drivers/extcon/extcon-usbc-cros-ec.c
+> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
+> +F:	drivers/iio/accel/cros_ec*
+> +F:	drivers/iio/common/cros_ec_sensors/
+> +F:	drivers/iio/light/cros_ec*
+> +F:	drivers/iio/pressure/cros_ec*
+> +F:	drivers/input/keyboard/cros_ec*
+> +F:	drivers/mfd/cros_ec*
+> +F:	drivers/power/supply/cros_usbpd-charger.c
+> +F:	drivers/pwm/pwm-cros-ec.c
+> +F:	drivers/rtc/rtc-cros-ec.c
+> +F:	include/linux/iio/common/cros_ec_sensors_core.h
+> +F:	include/linux/mfd/cros_ec*
 
-The results were ... interesting:
+Maybe just use the following (+ extra F entry for cros_usbpd, which
+does not have the ec part)?
 
-Take 1:
-4.20-rc6 + your branch + i2c-designw-patch (+ some unrelated patches which are in my personal tree).
-*i2c transfers no longer work*, because the controller runtime suspends and the pm_runtime_get_sync
-to undo this is called from the driver's master_xfer function and the
-is_suspended check happens before this.
+N:	cros[-_]ec
 
-Take 2:
-Kernel from 1 with a patch added (attached) to make the core call
-pm_runtime_get_sync from __i2c_transfer() if a flag is set +
-i2c-designware changes to set this flag
-*i2c transfers still do not work*, because __i2c_transfer is
-called with the bus-lock held and the pm_runtime_get_sync calls
-the adapters resume callback which calls i2c_mark_adapter_suspended()
-which tries to take the bus-lock again -> deadlock
+-- Sebastian
 
-Take 3:
-Kernel from 2 with the i2c-designware suspend/callback patches
-modified to directly set adapter.is_suspended. To avoid the deadlock.
-Ok, this works.  Note I've not tested reverting one of my recent
-ACPI suspend ordering patches yet, which should actually trigger the
-WARN_ON, I've ran out of steam just getting things to work with
-the patches present.
+>  CIRRUS LOGIC AUDIO CODEC DRIVERS
+>  M:	Brian Austin <brian.austin@cirrus.com>
+>  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
 
-I'm attaching 2 patches as I'm using them in Take 3.
+--pjsrogytlfephcai
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Note that the i2c-sprd driver changes in your patchset also get close
-to triggering this problem, but they dodge the bullet because there
-are separate system-wide and runtime suspend handlers and only the
-system-wide handlers call the new i2c_mark_adapter_suspended() function.
+-----BEGIN PGP SIGNATURE-----
 
-As I explain in the commit message of the first attached patch
-simply always using split handlers is not really an option because
-of adapter drivers using DPM_FLAG_SMART_PREPARE or
-DPM_FLAG_SMART_SUSPEND.
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwQQ5AACgkQ2O7X88g7
++pqX+w//aYjXk2l425T0xSM4PppxkSaFMcAwEQxbrDUrtC5QsF8p/AOcRux2Aekn
+PN1Aw41fHu0slow5ECfwxImMvZiKKGR5HT495TQIpJfS9AD4NCjVcVx7Yc46Cdzl
+o5UHBuzIZurXK16EMAoZnhtc2JsoxMccIuVhtn/HaLZ2NrjkhMh8aSfuG/8/zzGC
+fDKQESeaz+Lgaat3F3vJVCnTEengARF9b2yqWix6D3sfh1y+chNJBaCjpvpzQU8C
+Q+gyzX7mSBpFab4V7QMhm3hV/bW+3gEW5NkyK/1xB1/DK2EC8UwYaROw6ZmElXJ9
+AtTbGiDSSTecbzTwn0Gy9SuiwlSa82rSHBWYujyeL5VGB5WJc0rvHCmHimmWvKyB
+fLcN/FyV2uEdIMBnwMDbnHmszx0VOt9NGleHGJt1GM1Vk0rZU6Wyenm0uHysl4Pp
++SqTB1CkmdtD0siup+pcmU/mzWSa0bxRWoOAqGNuouT2qY1Qfz1yZIxi1Ebbs6fx
+ug+q4+q/bi2FeHVwGmjxfHhQXulFEccCJM36FJ+15R2QZmCUilIinqixz61oy0FV
+3nUADRywH0DM+af+8sCNHGUEQqtRUMxkPDGk6lH+NOUaa0wNLWm92zDFFoCMhhbH
+p1vOYPw+CdjaLyrDiauaASd1h0i5tAowztxfHN9MuZxuGxRsCmo=
+=Z0j4
+-----END PGP SIGNATURE-----
 
-So I'm afraid that this is way messier then I would like it to be,
-we could go with my flag solution combined with not protecting
-the is_suspended flag under the bus lock. That would make the
-WARN_ON slightly racy, so we might fail to trigger the warning
-under some rare circumstances, reverting to the old behavior of
-continuing with the transfer on a suspended adapter, but I don't
-think that is all that bad.
-
-Regards,
-
-Hans
-
-
-
-> Wolfram Sang (10):
->    i2c: add 'is_suspended' flag for i2c adapters
->    i2c: reject new transfers when adapters are suspended
->    i2c: synquacer: remove unused is_suspended flag
->    i2c: brcmstb: use core helper to mark adapter suspended
->    i2c: zx2967: use core helper to mark adapter suspended
->    i2c: sprd: don't use pdev as variable name for struct device *
->    i2c: sprd: use core helper to mark adapter suspended
->    i2c: exynos5: use core helper to mark adapter suspended
->    i2c: s3c2410: use core helper to mark adapter suspended
->    i2c: rcar: add suspend/resume support
-> 
->   drivers/i2c/busses/i2c-brcmstb.c   | 13 ++-----------
->   drivers/i2c/busses/i2c-exynos5.c   | 11 ++---------
->   drivers/i2c/busses/i2c-rcar.c      | 25 +++++++++++++++++++++++++
->   drivers/i2c/busses/i2c-s3c2410.c   |  8 ++------
->   drivers/i2c/busses/i2c-sprd.c      | 34 ++++++++++++----------------------
->   drivers/i2c/busses/i2c-synquacer.c |  5 -----
->   drivers/i2c/busses/i2c-zx2967.c    |  8 ++------
->   drivers/i2c/i2c-core-base.c        |  3 +++
->   include/linux/i2c.h                |  9 +++++++++
->   9 files changed, 57 insertions(+), 59 deletions(-)
-> 
-
---------------5EB9D799064076BC26E44817
-Content-Type: text/x-patch;
- name="0001-i2c-add-I2C_AQ_RUNTIME_PM-adapter-quirk-flag.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="0001-i2c-add-I2C_AQ_RUNTIME_PM-adapter-quirk-flag.patch"
-
->From 7781ff0b5033436c1d2740570364b1739017e03d Mon Sep 17 00:00:00 2001
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 11 Dec 2018 19:19:17 +0100
-Subject: [PATCH 1/2] i2c: add I2C_AQ_RUNTIME_PM adapter quirk flag
-
-Add a new I2C_AQ_RUNTIME_PM adapter quirk flag, when this flag is set
-then the i2c-core will all pm_runtime_get_sync() before calling an
-adapter's master_xfer function and call pm_runtime_mark_last_busy() +
-pm_runtime_put_autosuspend() after the master_xfer function.
-
-Moving these runtime pm calls into the core for adapters which use them
-is necessary for the WARN_ON(adap->is_suspended) to not trigger when
-runtime-suspend is used. Another approach would be to only call
-i2c_mark_adapter_suspended() from the adapter's regular suspend/resume
-callbacks and not from the runtime-resume ones, but that would circumvent
-the check also on system suspend when using DPM_FLAG_SMART_PREPARE or
-DPM_FLAG_SMART_SUSPEND.
-
-Note that of the 20 adapter drivers which call pm_runtime_get_sync() from
-there master_xfer function, 16 call pm_runtime_put_autosuspend() when done.
-i2c-nomadik.c and i2c-sh_mobile.c use pm_runtime_put_sync() and
-i2c-tegra.c and i2c-rcar.c use pm_runtime_put(), so these will need to be
-modified to use these new flag, or they will need another flag for their
-special case.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/i2c/i2c-core-base.c | 16 ++++++++++++++--
- include/linux/i2c.h         |  2 ++
- 2 files changed, 16 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 5b2078a902f8..acff1e4c09d9 100644
---- a/drivers/i2c/i2c-core-base.c
-+++ b/drivers/i2c/i2c-core-base.c
-@@ -1866,12 +1866,18 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 
- 	if (WARN_ON(!msgs || num < 1))
- 		return -EINVAL;
--	if (WARN_ON(adap->is_suspended))
--		return -ESHUTDOWN;
- 
- 	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
- 		return -EOPNOTSUPP;
- 
-+	if (adap->quirks && (adap->quirks->flags & I2C_AQ_RUNTIME_PM))
-+		pm_runtime_get_sync(adap->dev.parent);
-+
-+	if (WARN_ON(adap->is_suspended)) {
-+		ret = -ESHUTDOWN;
-+		goto out;
-+	}
-+
- 	/*
- 	 * i2c_trace_msg_key gets enabled when tracepoint i2c_transfer gets
- 	 * enabled.  This is an efficient way of keeping the for-loop from
-@@ -1904,6 +1910,12 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 		trace_i2c_result(adap, num, ret);
- 	}
- 
-+out:
-+	if (adap->quirks && (adap->quirks->flags & I2C_AQ_RUNTIME_PM)) {
-+		pm_runtime_mark_last_busy(adap->dev.parent);
-+		pm_runtime_put_autosuspend(adap->dev.parent);
-+	}
-+
- 	return ret;
- }
- EXPORT_SYMBOL(__i2c_transfer);
-diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index 9852038ee3a7..96b9cac6c01e 100644
---- a/include/linux/i2c.h
-+++ b/include/linux/i2c.h
-@@ -661,6 +661,8 @@ struct i2c_adapter_quirks {
- #define I2C_AQ_NO_ZERO_LEN_READ		BIT(5)
- #define I2C_AQ_NO_ZERO_LEN_WRITE	BIT(6)
- #define I2C_AQ_NO_ZERO_LEN		(I2C_AQ_NO_ZERO_LEN_READ | I2C_AQ_NO_ZERO_LEN_WRITE)
-+/* core must call pm_runtime_get_sync / put_autosuspend around master_xfer */
-+#define I2C_AQ_RUNTIME_PM		BIT(7)
- 
- /*
-  * i2c_adapter is the structure used to identify a physical i2c bus along
--- 
-2.19.2
-
-
---------------5EB9D799064076BC26E44817
-Content-Type: text/x-patch;
- name="0002-i2c-designware-Set-is_suspended-flag-when-suspended.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0002-i2c-designware-Set-is_suspended-flag-when-suspended.pat";
- filename*1="ch"
-
->From ba156b9419629a24fd2a82cc34d6d588585f637f Mon Sep 17 00:00:00 2001
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 11 Dec 2018 15:29:44 +0100
-Subject: [PATCH 2/2] i2c: designware: Set is_suspended flag when suspended
-
-Set the is_suspended flag when suspended so that the i2c-core will warn
-if we get called while the controller is (system-wide) suspended. Note
-this also switches the runtime-pm handling in i2c-designware-master.c
-to the new I2C_AQ_RUNTIME_PM flag, as this is required for the
-is_suspended flag to work properly in combination with runtime-pm.
-
-On most Intel Bay- and Cherry-Trail systems the PMIC is connected over I2C
-and the PMIC is accessed through various means by the _PS0 and _PS3 ACPI
-methods (power on / off methods) of various devices.
-
-This leads to suspend/resume ordering problems where a device may be
-resumed and get its _PS0 method executed before the I2C controller is
-resumed. On Cherry Trail this leads to errors like these:
-
-     i2c_designware 808622C1:06: controller timed out
-     ACPI Error: AE_ERROR, Returned by Handler for [UserDefinedRegion]
-     ACPI Error: Method parse/execution failed \_SB.P18W._ON, AE_ERROR
-     video LNXVIDEO:00: Failed to change power state to D0
-
-But on Bay Trail this caused I2C reads to seem to succeed, but they end
-up returning wrong data, which ends up getting written back by the typical
-read-modify-write cycle done to turn on various power-resources.
-
-Debugging the problems caused by this silent data corruption is quite
-nasty.
-
-This commit properly marks the adapter as suspended until our resume
-callback has run, triggering the i2c-core's WARN_ON when i2c_transfer gets
-called on a suspended adapter.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/i2c/busses/i2c-designware-master.c  | 11 ++---------
- drivers/i2c/busses/i2c-designware-platdrv.c |  4 ++++
- 2 files changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-designware-master.c b/drivers/i2c/busses/i2c-designware-master.c
-index 8d1bc44d2530..ebb2b8368f6f 100644
---- a/drivers/i2c/busses/i2c-designware-master.c
-+++ b/drivers/i2c/busses/i2c-designware-master.c
-@@ -424,8 +424,6 @@ i2c_dw_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
- 
- 	dev_dbg(dev->dev, "%s: msgs: %d\n", __func__, num);
- 
--	pm_runtime_get_sync(dev->dev);
--
- 	reinit_completion(&dev->cmd_complete);
- 	dev->msgs = msgs;
- 	dev->msgs_num = num;
-@@ -439,7 +437,7 @@ i2c_dw_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
- 
- 	ret = i2c_dw_acquire_lock(dev);
- 	if (ret)
--		goto done_nolock;
-+		return ret;
- 
- 	ret = i2c_dw_wait_bus_not_busy(dev);
- 	if (ret < 0)
-@@ -493,11 +491,6 @@ i2c_dw_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
- 
- done:
- 	i2c_dw_release_lock(dev);
--
--done_nolock:
--	pm_runtime_mark_last_busy(dev->dev);
--	pm_runtime_put_autosuspend(dev->dev);
--
- 	return ret;
- }
- 
-@@ -507,7 +500,7 @@ static const struct i2c_algorithm i2c_dw_algo = {
- };
- 
- static const struct i2c_adapter_quirks i2c_dw_quirks = {
--	.flags = I2C_AQ_NO_ZERO_LEN,
-+	.flags = I2C_AQ_NO_ZERO_LEN | I2C_AQ_RUNTIME_PM,
- };
- 
- static u32 i2c_dw_read_clear_intrbits(struct dw_i2c_dev *dev)
-diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
-index 9eaac3be1f63..e220336f34ae 100644
---- a/drivers/i2c/busses/i2c-designware-platdrv.c
-+++ b/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -454,6 +454,8 @@ static int dw_i2c_plat_suspend(struct device *dev)
- {
- 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
- 
-+	i_dev->adapter.is_suspended = true;
-+
- 	if (i_dev->shared_with_punit)
- 		return 0;
- 
-@@ -472,6 +474,8 @@ static int dw_i2c_plat_resume(struct device *dev)
- 
- 	i_dev->init(i_dev);
- 
-+	i_dev->adapter.is_suspended = false;
-+
- 	return 0;
- }
- 
--- 
-2.19.2
-
-
---------------5EB9D799064076BC26E44817--
+--pjsrogytlfephcai--
