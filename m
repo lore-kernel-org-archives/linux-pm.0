@@ -1,59 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: imx6q: remove unused code
-Date: Tue, 11 Dec 2018 11:49:13 +0100
-Message-ID: <3624116.FYVZqeVW1R@aspire.rjw.lan>
-References: <1543200853-10029-1-git-send-email-Anson.Huang@nxp.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] OPP: Use opp_table->regulators to verify no regulator case
+Date: Tue, 11 Dec 2018 16:56:28 +0530
+Message-ID: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1543200853-10029-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Quentin Perret <quentin.perret@arm.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 26, 2018 3:59:45 AM CET Anson Huang wrote:
-> In voltage scale down path, the return value is NOT
-> used at all, remove them to simplify the code.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 12 +++---------
->  1 file changed, 3 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index d8c3595..8cb9683 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -177,22 +177,16 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	/* scaling down?  scale voltage after frequency */
->  	if (new_freq < old_freq) {
->  		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-> -		if (ret) {
-> +		if (ret)
->  			dev_warn(cpu_dev,
->  				 "failed to scale vddarm down: %d\n", ret);
-> -			ret = 0;
-> -		}
->  		ret = regulator_set_voltage_tol(soc_reg, imx6_soc_volt[index], 0);
-> -		if (ret) {
-> +		if (ret)
->  			dev_warn(cpu_dev, "failed to scale vddsoc down: %d\n", ret);
-> -			ret = 0;
-> -		}
->  		if (!IS_ERR(pu_reg)) {
->  			ret = regulator_set_voltage_tol(pu_reg, imx6_soc_volt[index], 0);
-> -			if (ret) {
-> +			if (ret)
->  				dev_warn(cpu_dev, "failed to scale vddpu down: %d\n", ret);
-> -				ret = 0;
-> -			}
->  		}
->  	}
->  
-> 
+The value of opp_table->regulator_count is not very consistent right now
+and it may end up being 0 while we do have a "opp-microvolt" property in
+the OPP table. It was kept that way as we used to check if any
+regulators are set with the OPP core for a device or not using value of
+regulator_count.
 
-Both this one and the [2/2] applied with ACKs from Viresh.
+Lets use opp_table->regulators for that purpose as the meaning of
+regulator_count is going to change in the later patches.
 
-Thanks!
+Reported-by: Quentin Perret <quentin.perret@arm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 2c2df4e4fc14..2d3d0d1180ea 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -196,12 +196,12 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
+ 	if (IS_ERR(opp_table))
+ 		return 0;
+ 
+-	count = opp_table->regulator_count;
+-
+ 	/* Regulator may not be required for the device */
+-	if (!count)
++	if (!opp_table->regulators)
+ 		goto put_opp_table;
+ 
++	count = opp_table->regulator_count;
++
+ 	uV = kmalloc_array(count, sizeof(*uV), GFP_KERNEL);
+ 	if (!uV)
+ 		goto put_opp_table;
+@@ -1049,6 +1049,9 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
+ 	struct regulator *reg;
+ 	int i;
+ 
++	if (!opp_table->regulators)
++		return true;
++
+ 	for (i = 0; i < opp_table->regulator_count; i++) {
+ 		reg = opp_table->regulators[i];
+ 
+@@ -1333,7 +1336,7 @@ static int _allocate_set_opp_data(struct opp_table *opp_table)
+ 	struct dev_pm_set_opp_data *data;
+ 	int len, count = opp_table->regulator_count;
+ 
+-	if (WARN_ON(!count))
++	if (WARN_ON(!opp_table->regulators))
+ 		return -EINVAL;
+ 
+ 	/* space for set_opp_data */
+-- 
+2.19.1.568.g152ad8e3369a
