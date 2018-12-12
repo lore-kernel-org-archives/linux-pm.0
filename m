@@ -1,45 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] OPP: Fix missing debugfs supply directory for OPPs
-Date: Wed, 12 Dec 2018 10:17:32 +0530
-Message-ID: <20181212044732.ile3icfr5g4tvezi@vireshk-i7>
-References: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
- <46f48aca2e5aef3f430e95d1a5fb68227ec8ec85.1544527580.git.viresh.kumar@linaro.org>
- <20181211134829.nct4uqvofn332yxp@queper01-lin>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH v3 3/6] dt-bindings: ap806: document the thermal
+ interrupt capabilities
+Date: Wed, 12 Dec 2018 10:32:39 +0100
+Message-ID: <20181212103239.57532f17@xps13>
+References: <20181204190332.10351-1-miquel.raynal@bootlin.com>
+ <20181204190332.10351-4-miquel.raynal@bootlin.com>
+ <20181210230354.GA1503@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181211134829.nct4uqvofn332yxp@queper01-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181210230354.GA1503@bogus>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11-12-18, 13:48, Quentin Perret wrote:
-> On Tuesday 11 Dec 2018 at 16:56:29 (+0530), Viresh Kumar wrote:
-> > There is one case where we may end up with no "supply" directory for the
-> > OPPs in debugfs. That happens when the OPP core isn't managing the
-> > regulators for the device and the device's OPP do have microvolt
-> > property. It happens because the opp_table->regulator_count remains set
-> > to 0 and the debugfs routines don't add any supply directory in such a
-> > case.
-> > 
-> > This commit fixes that by setting opp_table->regulator_count to 1 in
-> > that particular case. But to make everything work nicely and not break
-> > other parts of the core, regulator_count is defined as "int" now instead
-> > of "unsigned int" and it can have different special values now. It is
-> > set to -1 initially to mark it "uninitialized" and later only we set it
-> > to 0 or positive values after checking how many supplies are there.
-> > 
-> > This also helps in finding the bugs where only few of the OPPs have the
-> > "opp-microvolt" property set and not all.
-> 
-> Tested on Juno r0 and Hikey960 successfully. The 'supply' directory is
-> now correctly exposed.
-> 
-> Feel free to add Tested-by: Quentin Perret <quentin.perret@arm.com>
-
-Thanks.
-
--- 
-viresh
+SGkgUm9iLAoKUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4gd3JvdGUgb24gTW9uLCAxMCBE
+ZWMgMjAxOCAxNzowMzo1NCAtMDYwMDoKCj4gT24gVHVlLCBEZWMgMDQsIDIwMTggYXQgMDg6MDM6
+MjlQTSArMDEwMCwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiA+IFRoZSB0aGVybWFsIElQIGNhbiBw
+cm9kdWNlIGludGVycnVwdHMgb24gb3ZlcmhlYXQgc2l0dWF0aW9uLgo+ID4gRGVzY3JpYmUgdGhl
+bS4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTogTWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5hbEBi
+b290bGluLmNvbT4KPiA+IC0tLQo+ID4gIC4uLi9iaW5kaW5ncy9hcm0vbWFydmVsbC9hcDgwNi1z
+eXN0ZW0tY29udHJvbGxlci50eHQgICAgICB8IDggKysrKysrKysKPiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgOCBpbnNlcnRpb25zKCspCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0
+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2FwODA2LXN5
+c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gaW5kZXggM2ZkMjFiYjdjYjM3Li4zNWU4ZGQyZWRmZDIg
+MTAwNjQ0Cj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21h
+cnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIu
+dHh0Cj4gPiBAQCAtMTE0LDEyICsxMTQsMTggQEAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL3RoZXJtYWwvdGhlcm1hbC50eHQKPiA+ICBUaGUgdGhlcm1hbCBJUCBjYW4gcHJvYmUg
+dGhlIHRlbXBlcmF0dXJlIGFsbCBhcm91bmQgdGhlIHByb2Nlc3Nvci4gSXQKPiA+ICBtYXkgZmVh
+dHVyZSBzZXZlcmFsIGNoYW5uZWxzLCBlYWNoIG9mIHRoZW0gd2lyZWQgdG8gb25lIHNlbnNvci4K
+PiA+ICAKPiA+ICtJdCBpcyBwb3NzaWJsZSB0byBzZXR1cCBhbiBvdmVyaGVhdCBpbnRlcnJ1cHQg
+YnkgZ2l2aW5nIGF0IGxlYXN0IG9uZQo+ID4gK2NyaXRpY2FsIHBvaW50IHRvIGFueSBzdWJub2Rl
+IG9mIHRoZSB0aGVybWFsLXpvbmUgbm9kZS4KPiA+ICsKPiA+ICBSZXF1aXJlZCBwcm9wZXJ0aWVz
+Ogo+ID4gIC0gY29tcGF0aWJsZTogbXVzdCBiZSBvbmUgb2Y6Cj4gPiAgICAqIG1hcnZlbGwsYXJt
+YWRhLWFwODA2LXRoZXJtYWwKPiA+ICAtIHJlZzogcmVnaXN0ZXIgcmFuZ2UgYXNzb2NpYXRlZCB3
+aXRoIHRoZSB0aGVybWFsIGZ1bmN0aW9ucy4KPiA+ICAKPiA+ICBPcHRpb25hbCBwcm9wZXJ0aWVz
+Ogo+ID4gKy0gaW50ZXJydXB0LXBhcmVudC9pbnRlcnJ1cHRzOiBvdmVyaGVhdCBpbnRlcnJ1cHQg
+aGFuZGxlLiBTaG91bGQgcG9pbnQgdG8KPiA+ICsgIGxpbmUgMTggb2YgdGhlIFNFSSBpcnFjaGlw
+Lgo+ID4gKyAgU2VlIGludGVycnVwdC1jb250cm9sbGVyL2ludGVycnVwdHMudHh0ICAKPiAKPiBE
+b24ndCBkb2N1bWVudCBpbnRlcnJ1cHQtcGFyZW50IGFzIGl0IGlzIGltcGxpZWQgYW5kIG1heSBi
+ZSBpbiBhIHBhcmVudCAKPiBub2RlLgoKU3VyZSwgSSB3aWxsIHNlbmQgYSB2NC4KCj4gCj4gPiAg
+LSAjdGhlcm1hbC1zZW5zb3ItY2VsbHM6IHNoYWxsIGJlIDwxPiB3aGVuIHRoZXJtYWwtem9uZXMg
+c3Vibm9kZXMgcmVmZXIKPiA+ICAgIHRvIHRoaXMgSVAgYW5kIHJlcHJlc2VudHMgdGhlIGNoYW5u
+ZWwgSUQuIFRoZXJlIGlzIG9uZSBzZW5zb3IgcGVyCj4gPiAgICBjaGFubmVsLiBPIHJlZmVycyB0
+byB0aGUgdGhlcm1hbCBJUCBpbnRlcm5hbCBjaGFubmVsLCB3aGlsZSBwb3NpdGl2ZQo+ID4gQEAg
+LTEzMyw2ICsxMzksOCBAQCBhcF9zeXNjb24xOiBzeXN0ZW0tY29udHJvbGxlckA2ZjgwMDAgewo+
+ID4gIAlhcF90aGVybWFsOiB0aGVybWFsLXNlbnNvckA4MCB7Cj4gPiAgCQljb21wYXRpYmxlID0g
+Im1hcnZlbGwsYXJtYWRhLWFwODA2LXRoZXJtYWwiOwo+ID4gIAkJcmVnID0gPDB4ODAgMHgxMD47
+Cj4gPiArCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZzZWk+Owo+ID4gKwkJaW50ZXJydXB0cyA9IDwx
+OD47Cj4gPiAgCQkjdGhlcm1hbC1zZW5zb3ItY2VsbHMgPSA8MT47Cj4gPiAgCX07Cj4gPiAgfTsK
+PiA+IC0tIAo+ID4gMi4xOS4xCj4gPiAgIAoKClRoYW5rcywKTWlxdcOobAoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
