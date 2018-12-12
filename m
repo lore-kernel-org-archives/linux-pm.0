@@ -1,68 +1,62 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
- sub-drivers
-Date: Wed, 12 Dec 2018 17:06:35 +0000
-Message-ID: <20181212170635.09c3363d@archlinux>
-References: <20181211190953.13626-1-enric.balletbo@collabora.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
+Date: Wed, 12 Dec 2018 18:30:20 +0100
+Message-ID: <2706843.SaxTu5OeDs@aspire.rjw.lan>
+References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com> <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com> <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181211190953.13626-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
+Sender: stable-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Stable <stable@vger.kernel.org>Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 Dec 2018 20:09:52 +0100
-Enric Balletbo i Serra <enric.balletbo@collabora.com> wrote:
+On Wednesday, December 12, 2018 12:42:29 PM CET Jarkko Nikula wrote:
+> Hi
+> 
+> On 10/25/18 4:57 PM, Rafael J. Wysocki wrote:
+> > On Tue, Oct 23, 2018 at 1:46 PM Jarkko Nikula
+> > <jarkko.nikula@linux.intel.com> wrote:
+> >>
+> >> Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
+> >> runtime PM") nullified the runtime PM suspend/resume callback pointers
+> >> while keeping the runtime PM enabled.
+> >>
+> >> This causes that SMBus PCI device stays in D0 power state and sysfs
+> >> /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
+> >> when the runtime PM framework attempts to autosuspend the device. This
+> >> is due PCI bus runtime PM which checks for driver runtime PM callbacks
+> >> and returns with -ENOSYS if they are not set.
+> >>
+> >> Since i2c-i801.c don't need to do anything device specific beyond PCI
+> >> device power state management Jean Delvare proposed if this can be fixed
+> >> in the PCI subsystem core level rather than adding dummy runtime PM
+> >> callback functions in the PCI drivers.
+> >>
+> >> Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
+> >> that they allow change the PCI device power state during runtime PM
+> >> transitions even if no runtime PM callback functions are defined.
+> >>
+> >> This change fixes the runtime PM regression on i2c-i801.c.
+> >>
+> >> It is not obvious why the code had hard requirements for the runtime PM
+> >> callbacks. Test has been here since the code was introduced by the
+> >> commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
+> >>
+> >> On the other hand similar change than this was done to generic runtime
+> >> PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
+> >> generic runtime pm callbacks").
+> >>
+> >> Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
+> >> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> >> Cc: <stable@vger.kernel.org> # 4.18+
+> >> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> > 
+> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> I guess this patch with Reviewed-by tags from Rafael and Jean got buried 
+> under other list traffic as I don't find this from pci.git or linux-next?
 
-> There are multiple ChromeOS EC sub-drivers spread in different
-> subsystems, as all of them are related to the Chrome stuff add
-> Benson and myself as a maintainers for all these sub-drivers.
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> for iio parts.
-> ---
-> 
-> Changes in v2:
-> - Fix typo in Benson email address.
-> 
->  MAINTAINERS | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a24129b0b043..bbe7180e2851 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3625,6 +3625,30 @@ S:	Maintained
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
->  F:	drivers/platform/chrome/
->  
-> +CHROMEOS EC SUBDRIVERS
-> +M:	Benson Leung <bleung@chromium.org>
-> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
-> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
-> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
-> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
-> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
-> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
-> +F:	drivers/extcon/extcon-usbc-cros-ec.c
-> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
-> +F:	drivers/iio/accel/cros_ec*
-> +F:	drivers/iio/common/cros_ec_sensors/
-> +F:	drivers/iio/light/cros_ec*
-> +F:	drivers/iio/pressure/cros_ec*
-> +F:	drivers/input/keyboard/cros_ec*
-> +F:	drivers/mfd/cros_ec*
-> +F:	drivers/power/supply/cros_usbpd-charger.c
-> +F:	drivers/pwm/pwm-cros-ec.c
-> +F:	drivers/rtc/rtc-cros-ec.c
-> +F:	include/linux/iio/common/cros_ec_sensors_core.h
-> +F:	include/linux/mfd/cros_ec*
-> +
->  CIRRUS LOGIC AUDIO CODEC DRIVERS
->  M:	Brian Austin <brian.austin@cirrus.com>
->  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
+I guess it might not be entirely clear who was expected to pick it up.
