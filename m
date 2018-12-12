@@ -1,62 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
-Date: Wed, 12 Dec 2018 18:30:20 +0100
-Message-ID: <2706843.SaxTu5OeDs@aspire.rjw.lan>
-References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com> <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com> <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v5 0/2] arm64: dts: Add sdm845 GPU/GMU and SMMU
+Date: Wed, 12 Dec 2018 10:31:04 -0700
+Message-ID: <20181212173106.29618-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Stable <stable@vger.kernel.org>Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 12, 2018 12:42:29 PM CET Jarkko Nikula wrote:
-> Hi
-> 
-> On 10/25/18 4:57 PM, Rafael J. Wysocki wrote:
-> > On Tue, Oct 23, 2018 at 1:46 PM Jarkko Nikula
-> > <jarkko.nikula@linux.intel.com> wrote:
-> >>
-> >> Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
-> >> runtime PM") nullified the runtime PM suspend/resume callback pointers
-> >> while keeping the runtime PM enabled.
-> >>
-> >> This causes that SMBus PCI device stays in D0 power state and sysfs
-> >> /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
-> >> when the runtime PM framework attempts to autosuspend the device. This
-> >> is due PCI bus runtime PM which checks for driver runtime PM callbacks
-> >> and returns with -ENOSYS if they are not set.
-> >>
-> >> Since i2c-i801.c don't need to do anything device specific beyond PCI
-> >> device power state management Jean Delvare proposed if this can be fixed
-> >> in the PCI subsystem core level rather than adding dummy runtime PM
-> >> callback functions in the PCI drivers.
-> >>
-> >> Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
-> >> that they allow change the PCI device power state during runtime PM
-> >> transitions even if no runtime PM callback functions are defined.
-> >>
-> >> This change fixes the runtime PM regression on i2c-i801.c.
-> >>
-> >> It is not obvious why the code had hard requirements for the runtime PM
-> >> callbacks. Test has been here since the code was introduced by the
-> >> commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
-> >>
-> >> On the other hand similar change than this was done to generic runtime
-> >> PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
-> >> generic runtime pm callbacks").
-> >>
-> >> Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
-> >> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> >> Cc: <stable@vger.kernel.org> # 4.18+
-> >> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> > 
-> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> I guess this patch with Reviewed-by tags from Rafael and Jean got buried 
-> under other list traffic as I don't find this from pci.git or linux-next?
-
-I guess it might not be entirely clear who was expected to pick it up.
+Tm93IHRoYXQgbW9yZSBvZiB0aGUgZGVwZW5kZW50IGJpbmRpbmdzIGFyZSBoZWFkZWQgdXBzdHJl
+YW0gdGhpcyBhIHJlZnJlc2ggb2YgCm9mIGh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9y
+Zy9zZXJpZXMvMzkzMDgvIHRvIGFkZCBiaW5kaW5ncyBhbmQgbm9kZXMKZm9yIHRoZSBHUFUvR01V
+IGFuZCBHUFUgU01NVSBmb3Igc2RtODQ1LgoKVGhpcyBjaGFuZ2UgcmVxdWlyZXMgdGhlIGZvbGxv
+d2luZyBkZXBlbmRlbmNpZXM6CgpncHVjYzoKZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9s
+aW51eC9rZXJuZWwvZ2l0L2Nsay9saW51eC5naXQgZTQzMWM5MjE4OGE5CgppbmNsdWRlL2R0LWJp
+bmRpbmdzL3Bvd2VyL3Fjb20tcnBtcGQuaDoKaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9w
+YXRjaC8xMDcxMTExOS8KCnFjb20sc21tdS12MiBiaW5kaW5nOgpodHRwczovL3BhdGNod29yay5r
+ZXJuZWwub3JnL3BhdGNoLzEwNTgxOTExLwoKdjU6IFVzZSBzeW1ib2xpYyBuYW1lcyBmb3IgdGhl
+IFJQTUggcG93ZXIgbGV2ZWxzIGRlZmluZWQgaW4gT1BQIHRhYmxlLAogbW92ZSB0aGUgb3BwIHRh
+YmxlcyBhcyBjaGlsZHJlbiBvZiB0aGVpciByZXNwZWN0aXZlIG5vZGVzIGFuZCByZW5hbWUKIHRo
+ZSBpb21tdSBkZXZpY2UuCnY0OiBSZWJhc2UKdjM6IFNwbGl0IEdNVSBQREMgcmVnaW9uIGludG8g
+dHdvIEdQVSBzcGVjaWZpYyBzZWN0aW9ucywgZml4IGluZGVudGF0aW9uLAogIHJlYWxseSB1c2Ug
+cWNvbSxnbXUgZm9yIHRoZSBwaGFuZGxlIG5hbWUKdjI6IGNoYW5nZWQgcWNvbSxhcmMtbGV2ZWwg
+dG8gcWNvbSxsZXZlbCBmb2xsb3dpbmcgZGlzY3Vzc2lvbiB3aXRoIFZpcmVzaDsKICBjaGFuZ2Ug
+Z211IHBoYW5kbGUgdG8gcWNvbSxnbXUgcGVyIFJvYgoKSm9yZGFuIENyb3VzZSAoMik6CiAgZHQt
+YmluZGluZ3M6IERvY3VtZW50LHFjb20sYWRyZW5vLWdtdQogIGFybTY0OiBkdHM6IHNkbTg0NTog
+QWRkIGdwdSBhbmQgZ211IGRldmljZSBub2RlcwoKIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rp
+c3BsYXkvbXNtL2dtdS50eHQgICB8ICA1NCArKysrKysrKwogLi4uL2RldmljZXRyZWUvYmluZGlu
+Z3MvZGlzcGxheS9tc20vZ3B1LnR4dCAgIHwgICAyICsKIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNv
+bS9zZG04NDUuZHRzaSAgICAgICAgICB8IDEyMyArKysrKysrKysrKysrKysrKysKIDMgZmlsZXMg
+Y2hhbmdlZCwgMTc5IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAoKLS0gCjIuMTguMAoK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5v
+IG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
