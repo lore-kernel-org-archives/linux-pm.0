@@ -1,16 +1,14 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH v3 3/6] dt-bindings: ap806: document the thermal
- interrupt capabilities
-Date: Wed, 12 Dec 2018 10:32:39 +0100
-Message-ID: <20181212103239.57532f17@xps13>
-References: <20181204190332.10351-1-miquel.raynal@bootlin.com>
- <20181204190332.10351-4-miquel.raynal@bootlin.com>
- <20181210230354.GA1503@bogus>
+Subject: [PATCH v4 2/6] MAINTAINERS: thermal: add entry for Marvell MVEBU
+ thermal driver
+Date: Wed, 12 Dec 2018 10:36:41 +0100
+Message-ID: <20181212093645.14752-3-miquel.raynal@bootlin.com>
+References: <20181212093645.14752-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181210230354.GA1503@bogus>
+In-Reply-To: <20181212093645.14752-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,49 +18,32 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLAoKUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4gd3JvdGUgb24gTW9uLCAxMCBE
-ZWMgMjAxOCAxNzowMzo1NCAtMDYwMDoKCj4gT24gVHVlLCBEZWMgMDQsIDIwMTggYXQgMDg6MDM6
-MjlQTSArMDEwMCwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiA+IFRoZSB0aGVybWFsIElQIGNhbiBw
-cm9kdWNlIGludGVycnVwdHMgb24gb3ZlcmhlYXQgc2l0dWF0aW9uLgo+ID4gRGVzY3JpYmUgdGhl
-bS4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTogTWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5hbEBi
-b290bGluLmNvbT4KPiA+IC0tLQo+ID4gIC4uLi9iaW5kaW5ncy9hcm0vbWFydmVsbC9hcDgwNi1z
-eXN0ZW0tY29udHJvbGxlci50eHQgICAgICB8IDggKysrKysrKysKPiA+ICAxIGZpbGUgY2hhbmdl
-ZCwgOCBpbnNlcnRpb25zKCspCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0
-IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2FwODA2LXN5
-c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gaW5kZXggM2ZkMjFiYjdjYjM3Li4zNWU4ZGQyZWRmZDIg
-MTAwNjQ0Cj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21h
-cnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIu
-dHh0Cj4gPiBAQCAtMTE0LDEyICsxMTQsMTggQEAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3RoZXJtYWwvdGhlcm1hbC50eHQKPiA+ICBUaGUgdGhlcm1hbCBJUCBjYW4gcHJvYmUg
-dGhlIHRlbXBlcmF0dXJlIGFsbCBhcm91bmQgdGhlIHByb2Nlc3Nvci4gSXQKPiA+ICBtYXkgZmVh
-dHVyZSBzZXZlcmFsIGNoYW5uZWxzLCBlYWNoIG9mIHRoZW0gd2lyZWQgdG8gb25lIHNlbnNvci4K
-PiA+ICAKPiA+ICtJdCBpcyBwb3NzaWJsZSB0byBzZXR1cCBhbiBvdmVyaGVhdCBpbnRlcnJ1cHQg
-YnkgZ2l2aW5nIGF0IGxlYXN0IG9uZQo+ID4gK2NyaXRpY2FsIHBvaW50IHRvIGFueSBzdWJub2Rl
-IG9mIHRoZSB0aGVybWFsLXpvbmUgbm9kZS4KPiA+ICsKPiA+ICBSZXF1aXJlZCBwcm9wZXJ0aWVz
-Ogo+ID4gIC0gY29tcGF0aWJsZTogbXVzdCBiZSBvbmUgb2Y6Cj4gPiAgICAqIG1hcnZlbGwsYXJt
-YWRhLWFwODA2LXRoZXJtYWwKPiA+ICAtIHJlZzogcmVnaXN0ZXIgcmFuZ2UgYXNzb2NpYXRlZCB3
-aXRoIHRoZSB0aGVybWFsIGZ1bmN0aW9ucy4KPiA+ICAKPiA+ICBPcHRpb25hbCBwcm9wZXJ0aWVz
-Ogo+ID4gKy0gaW50ZXJydXB0LXBhcmVudC9pbnRlcnJ1cHRzOiBvdmVyaGVhdCBpbnRlcnJ1cHQg
-aGFuZGxlLiBTaG91bGQgcG9pbnQgdG8KPiA+ICsgIGxpbmUgMTggb2YgdGhlIFNFSSBpcnFjaGlw
-Lgo+ID4gKyAgU2VlIGludGVycnVwdC1jb250cm9sbGVyL2ludGVycnVwdHMudHh0ICAKPiAKPiBE
-b24ndCBkb2N1bWVudCBpbnRlcnJ1cHQtcGFyZW50IGFzIGl0IGlzIGltcGxpZWQgYW5kIG1heSBi
-ZSBpbiBhIHBhcmVudCAKPiBub2RlLgoKU3VyZSwgSSB3aWxsIHNlbmQgYSB2NC4KCj4gCj4gPiAg
-LSAjdGhlcm1hbC1zZW5zb3ItY2VsbHM6IHNoYWxsIGJlIDwxPiB3aGVuIHRoZXJtYWwtem9uZXMg
-c3Vibm9kZXMgcmVmZXIKPiA+ICAgIHRvIHRoaXMgSVAgYW5kIHJlcHJlc2VudHMgdGhlIGNoYW5u
-ZWwgSUQuIFRoZXJlIGlzIG9uZSBzZW5zb3IgcGVyCj4gPiAgICBjaGFubmVsLiBPIHJlZmVycyB0
-byB0aGUgdGhlcm1hbCBJUCBpbnRlcm5hbCBjaGFubmVsLCB3aGlsZSBwb3NpdGl2ZQo+ID4gQEAg
-LTEzMyw2ICsxMzksOCBAQCBhcF9zeXNjb24xOiBzeXN0ZW0tY29udHJvbGxlckA2ZjgwMDAgewo+
-ID4gIAlhcF90aGVybWFsOiB0aGVybWFsLXNlbnNvckA4MCB7Cj4gPiAgCQljb21wYXRpYmxlID0g
-Im1hcnZlbGwsYXJtYWRhLWFwODA2LXRoZXJtYWwiOwo+ID4gIAkJcmVnID0gPDB4ODAgMHgxMD47
-Cj4gPiArCQlpbnRlcnJ1cHQtcGFyZW50ID0gPCZzZWk+Owo+ID4gKwkJaW50ZXJydXB0cyA9IDwx
-OD47Cj4gPiAgCQkjdGhlcm1hbC1zZW5zb3ItY2VsbHMgPSA8MT47Cj4gPiAgCX07Cj4gPiAgfTsK
-PiA+IC0tIAo+ID4gMi4xOS4xCj4gPiAgIAoKClRoYW5rcywKTWlxdcOobAoKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
-aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
-cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+Add myself as Marvell MVEBU thermal driver maintainer.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ MAINTAINERS | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f4855974f325..42028c06e4e5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8902,6 +8902,11 @@ L:	netdev@vger.kernel.org
+ S:	Maintained
+ F:	drivers/net/phy/marvell10g.c
+ 
++MARVELL MVEBU THERMAL DRIVER
++M:	Miquel Raynal <miquel.raynal@bootlin.com>
++S:	Maintained
++F:	drivers/thermal/armada_thermal.c
++
+ MARVELL MVNETA ETHERNET DRIVER
+ M:	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+ L:	netdev@vger.kernel.org
+-- 
+2.19.1
