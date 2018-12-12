@@ -1,112 +1,166 @@
-From: Benson Leung <bleung@google.com>
-Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
- sub-drivers
-Date: Wed, 12 Dec 2018 10:21:26 -0800
-Message-ID: <20181212182126.GA32052@google.com>
-References: <20181211190953.13626-1-enric.balletbo@collabora.com>
+From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v5 2/2] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Wed, 12 Dec 2018 11:26:28 -0800
+Message-ID: <CAD=FV=UTG-jhLCQGw0Frp0WAU-ChAYDj_eNZp_+irPfxCyVexw@mail.gmail.com>
+References: <20181212173106.29618-1-jcrouse@codeaurora.org>
+ <20181212173106.29618-3-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tThc/1wpZn/ma/RB"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181211190953.13626-1-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181212173106.29618-3-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---tThc/1wpZn/ma/RB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Dec 11, 2018 at 08:09:52PM +0100, Enric Balletbo i Serra wrote:
-> There are multiple ChromeOS EC sub-drivers spread in different
-> subsystems, as all of them are related to the Chrome stuff add
-> Benson and myself as a maintainers for all these sub-drivers.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-
-Signed-off-by: Benson Leung <bleung@chromium.org>
-
-Thanks for sending this, Enric.
-
-> ---
->=20
-> Changes in v2:
-> - Fix typo in Benson email address.
->=20
->  MAINTAINERS | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a24129b0b043..bbe7180e2851 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3625,6 +3625,30 @@ S:	Maintained
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platf=
-orm.git
->  F:	drivers/platform/chrome/
-> =20
-> +CHROMEOS EC SUBDRIVERS
-> +M:	Benson Leung <bleung@chromium.org>
-> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
-> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
-> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
-> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
-> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
-> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
-> +F:	drivers/extcon/extcon-usbc-cros-ec.c
-> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
-> +F:	drivers/iio/accel/cros_ec*
-> +F:	drivers/iio/common/cros_ec_sensors/
-> +F:	drivers/iio/light/cros_ec*
-> +F:	drivers/iio/pressure/cros_ec*
-> +F:	drivers/input/keyboard/cros_ec*
-> +F:	drivers/mfd/cros_ec*
-> +F:	drivers/power/supply/cros_usbpd-charger.c
-> +F:	drivers/pwm/pwm-cros-ec.c
-> +F:	drivers/rtc/rtc-cros-ec.c
-> +F:	include/linux/iio/common/cros_ec_sensors_core.h
-> +F:	include/linux/mfd/cros_ec*
-> +
->  CIRRUS LOGIC AUDIO CODEC DRIVERS
->  M:	Brian Austin <brian.austin@cirrus.com>
->  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
-> --=20
-> 2.19.2
->=20
-
---=20
-Benson Leung
-Staff Software Engineer
-Chrome OS Kernel
-Google Inc.
-bleung@google.com
-Chromium OS Project
-bleung@chromium.org
-
---tThc/1wpZn/ma/RB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE6gYDF28Li+nEiKLaHwn1ewov5lgFAlwRUaYACgkQHwn1ewov
-5ljVzA/+LrEt1Rm2OOw/34K53k7jK/9/Y8LDf9Wp9RZ/BeOeZScECxRYkfKN9XL6
-LUzgBp+z/BgBOy4BYOjAeH5rknXpVieJkH/3I8AIi33oEpeWC0KxkyyNJIWjj7D1
-fq5Cz+DI9GKF4a/onTVsMYRoYftRLYTm+L/z3hJzLAYkqcwShs9ak15M/qDeFlZ8
-KF/Im4yeInCBHg6giScg72tMV7zh40pBOTopcMbzXAHch56OzXE4i0PueJJFhhCb
-BHesObxRHQEe+2TiijJRE1aoXKqKCwLwhz2uqo7qhnX+OItMUI2FQLkO0H8GrvZh
-+9ZrENqy1rpLjYRWF92nHfv1FSXRhYHbidXHh045nSMdOElQqSQXDYa1JX9MNAZ5
-IU1LXMkNRwOz717JgSe2SszlkOw9fQK2mHhxkbqhwzvxh50TX2QHIfcSDW3wiSQT
-BW4sxqv8+DWKsOO2yPnq2wsG/AmaKDBSCUTif1U7e12G33etvychk1eN+4Dv8Fni
-fGu416RC9xcUe8vqXi8fDfFEpgqu5NyIiVnZQ/MTnoyFjV7u1nut38FQQmfRbOUM
-NMKLgGirJrY+ar4P/uyZvuakHpXEb0rZ7QGlWDcdtuoqMLlvSM8m35y9XTzhsVC3
-B0NfMIoxmuw7FQiGK7tI8eCdF8/+aCPxmpcM49SQWF9SUu+tmPk=
-=WY6c
------END PGP SIGNATURE-----
-
---tThc/1wpZn/ma/RB--
+SGksCgpPbiBXZWQsIERlYyAxMiwgMjAxOCBhdCA5OjMxIEFNIEpvcmRhbiBDcm91c2UgPGpjcm91
+c2VAY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Cj4gQWRkIHRoZSBub2RlcyB0byBkZXNjcmliZSB0
+aGUgQWRyZW5vIEdQVSBhbmQgR01VIGRldmljZXMuCj4KPiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4g
+Q3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+IC0tLQo+ICBhcmNoL2FybTY0L2Jvb3Qv
+ZHRzL3Fjb20vc2RtODQ1LmR0c2kgfCAxMjMgKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4g
+IDEgZmlsZSBjaGFuZ2VkLCAxMjMgaW5zZXJ0aW9ucygrKQo+Cj4gZGlmZiAtLWdpdCBhL2FyY2gv
+YXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNv
+bS9zZG04NDUuZHRzaQo+IGluZGV4IGMyN2NiZDNiY2IwYS4uZGFhNDA0YjA1YTcwIDEwMDY0NAo+
+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+ICsrKyBiL2FyY2gv
+YXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+IEBAIC03LDkgKzcsMTEgQEAKPgo+ICAj
+aW5jbHVkZSA8ZHQtYmluZGluZ3MvY2xvY2svcWNvbSxkaXNwY2Mtc2RtODQ1Lmg+Cj4gICNpbmNs
+dWRlIDxkdC1iaW5kaW5ncy9jbG9jay9xY29tLGdjYy1zZG04NDUuaD4KPiArI2luY2x1ZGUgPGR0
+LWJpbmRpbmdzL2Nsb2NrL3Fjb20sZ3B1Y2Mtc2RtODQ1Lmg+CgpQcm9iYWJseSBkb24ndCBuZWVk
+IHRvIGFkZCB0aGlzIGluIHlvdXIgcGF0Y2ggc2luY2UgKHByZXN1bWFibHkpIHlvdXIKcGF0Y2gg
+bmVlZHMgdG8gYmUgYmFzZWQgYXRvcAo8aHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvcGF0Y2h3b3Jr
+L3BhdGNoLzEwMTgzNjUvPiBhbmQgdGhhdCBhbHJlYWR5CmFkZHMgdGhlICNpbmNsdWRlIChhbmQg
+YWxzbyB0aGUgbm9kZSB0aGF0IHlvdSBkZXBlbmQgb24pLgoKCj4gICNpbmNsdWRlIDxkdC1iaW5k
+aW5ncy9jbG9jay9xY29tLHJwbWguaD4KPiAgI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2ludGVycnVw
+dC1jb250cm9sbGVyL2FybS1naWMuaD4KPiAgI2luY2x1ZGUgPGR0LWJpbmRpbmdzL3BoeS9waHkt
+cWNvbS1xdXNiMi5oPgo+ICsjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcG93ZXIvcWNvbS1ycG1wZC5o
+Pgo+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcmVzZXQvcWNvbSxzZG04NDUtYW9zcy5oPgo+ICAj
+aW5jbHVkZSA8ZHQtYmluZGluZ3Mvc29jL3Fjb20scnBtaC1yc2MuaD4KPiAgI2luY2x1ZGUgPGR0
+LWJpbmRpbmdzL2Nsb2NrL3Fjb20sZ2NjLXNkbTg0NS5oPgo+IEBAIC0xMzQ4LDYgKzEzNTAsMTI3
+IEBACj4gICAgICAgICAgICAgICAgICAgICAgICAgfTsKPiAgICAgICAgICAgICAgICAgfTsKPgo+
+ICsgICAgICAgICAgICAgICBncHVANTAwMDAwMCB7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAg
+Y29tcGF0aWJsZSA9ICJxY29tLGFkcmVuby02MzAuMiIsICJxY29tLGFkcmVubyI7Cj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgI3N0cmVhbS1pZC1jZWxscyA9IDwxNj47Cj4gKwo+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIHJlZyA9IDwweDUwMDAwMDAgMHg0MDAwMD4sIDwweDUwOWUwMDAgMHgx
+MD47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmVnLW5hbWVzID0gImtnc2xfM2QwX3JlZ19t
+ZW1vcnkiLCAiY3hfbWVtIjsKClRoZSBzZWNvbmQgcmVnaXN0ZXIgcmFuZ2UgaXNuJ3QgaW4geW91
+ciBiaW5kaW5ncyBwYXRjaC4gIENhbiB5b3UgYWRkIGl0PwoKCj4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgLyoKPiArICAgICAgICAgICAgICAgICAgICAgICAgKiBMb29rIG1hLCBubyBjbG9ja3Mh
+IFRoZSBHUFUgY2xvY2tzIGFuZCBwb3dlciBhcmUKPiArICAgICAgICAgICAgICAgICAgICAgICAg
+KiBjb250cm9sbGVkIGVudGlyZWx5IGJ5IHRoZSBHTVUKPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgKi8KPiArCj4gKyAgICAgICAgICAgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDxHSUNfU1BJ
+IDMwMCBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKPiArICAgICAgICAgICAgICAgICAgICAgICBpbnRl
+cnJ1cHQtbmFtZXMgPSAia2dzbF8zZDBfaXJxIjsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgaW9tbXVzID0gPCZhZHJlbm9fc21tdSAwPjsKCkl0IGl0IHdvcnRoIG1lbnRpb25pbmcgdGhl
+IGlvbW11cyBhbmQgI3N0cmVhbS1pZC1jZWxscyBpbiB0aGUgYmluZGluZ3M/CgoKPiArICAgICAg
+ICAgICAgICAgICAgICAgICBvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVfb3BwX3RhYmxlPjsK
+CklzIGl0IHdvcnRoIG1lbnRpb25pbmcgdGhlIG9wZXJhdGluZy1wb2ludHMtdjIgaW4gdGhlIGJp
+bmRpbmdzIHBhdGNoPwoKCj4gKwo+ICsgICAgICAgICAgICAgICAgICAgICAgIHFjb20sZ211ID0g
+PCZnbXU+Owo+ICsKPiArICAgICAgICAgICAgICAgICAgICAgICBncHVfb3BwX3RhYmxlOiBhZHJl
+bm8tb3BwLXRhYmxlIHsKCm5pdDogc2luY2UgdGhpcyBpcyBubyBsb25nZXIgYXQgdGhlIHRvcCBs
+ZXZlbCB5b3UgY2FuIGp1c3QgY2FsbCBpdAoib3BwLXRhYmxlIiBub3cuICBUaGF0IG1hdGNoZXMg
+d2hhdCB0aGUgbGF0ZXN0IFJQTWggUEQgbm9kZSBsb29rcwpsaWtlLgoKCj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNv
+bS1sZXZlbCI7Cj4gKwo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb3BwLTcxMDAw
+MDAwMCB7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG9wcC1oeiA9
+IC9iaXRzLyA2NCA8NzEwMDAwMDAwPjsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9MRVZFTF9UVVJCT19MMT47Cj4g
+KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB9Owo+ICsKPiArICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIG9wcC02NzUwMDAwMDAgewo+ICsgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDY3NTAwMDAwMD47Cj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHFjb20sbGV2ZWwgPSA8UlBNSF9SRUdV
+TEFUT1JfTEVWRUxfVFVSQk8+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfTsK
+PiArCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvcHAtNTk2MDAwMDAwIHsKPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb3BwLWh6ID0gL2JpdHMvIDY0
+IDw1OTYwMDAwMDA+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBx
+Y29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX05PTV9MMT47Cj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICB9Owo+ICsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIG9wcC01MjAwMDAwMDAgewo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDUyMDAwMDAwMD47Cj4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIHFjb20sbGV2ZWwgPSA8UlBNSF9SRUdVTEFUT1JfTEVWRUxf
+Tk9NPjsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07Cj4gKwo+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgb3BwLTQxNDAwMDAwMCB7Cj4gKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIG9wcC1oeiA9IC9iaXRzLyA2NCA8NDE0MDAwMDAwPjsK
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcWNvbSxsZXZlbCA9IDxS
+UE1IX1JFR1VMQVRPUl9MRVZFTF9TVlNfTDE+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgfTsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvcHAtMzQyMDAw
+MDAwIHsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb3BwLWh6ID0g
+L2JpdHMvIDY0IDwzNDIwMDAwMDA+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX1NWUz47Cj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICB9Owo+ICsKPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIG9wcC0yNTcwMDAwMDAgewo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDI1NzAwMDAwMD47Cj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHFjb20sbGV2ZWwgPSA8UlBNSF9SRUdVTEFUT1Jf
+TEVWRUxfTE9XX1NWUz47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB9Owo+ICsg
+ICAgICAgICAgICAgICAgICAgICAgIH07Cj4gKyAgICAgICAgICAgICAgIH07Cj4gKwo+ICsgICAg
+ICAgICAgICAgICBhZHJlbm9fc21tdTogaW9tbXVANTA0MDAwMCB7Cj4gKyAgICAgICAgICAgICAg
+ICAgICAgICAgY29tcGF0aWJsZSA9ICJxY29tLHNkbTg0NS1zbW11LXYyIiwgInFjb20sc21tdS12
+MiI7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4NTA0MDAwMCAweDEwMDAwPjsK
+PiArICAgICAgICAgICAgICAgICAgICAgICAjaW9tbXUtY2VsbHMgPSA8MT47Cj4gKyAgICAgICAg
+ICAgICAgICAgICAgICAgI2dsb2JhbC1pbnRlcnJ1cHRzID0gPDI+Owo+ICsgICAgICAgICAgICAg
+ICAgICAgICAgIGludGVycnVwdHMgPSA8R0lDX1NQSSAyMjkgSVJRX1RZUEVfTEVWRUxfSElHSD4s
+Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxHSUNfU1BJIDIzMSBJ
+UlFfVFlQRV9MRVZFTF9ISUdIPiwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgPEdJQ19TUEkgMzY0IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiArICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJQ19TUEkgMzY1IElSUV9UWVBFX0VER0VfUklT
+SU5HPiwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJQ19TUEkg
+MzY2IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgPEdJQ19TUEkgMzY3IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiArICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJQ19TUEkgMzY4IElSUV9UWVBFX0VE
+R0VfUklTSU5HPiwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJ
+Q19TUEkgMzY5IElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgPEdJQ19TUEkgMzcwIElSUV9UWVBFX0VER0VfUklTSU5HPiwKPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJQ19TUEkgMzcxIElSUV9U
+WVBFX0VER0VfUklTSU5HPjsKPiArICAgICAgICAgICAgICAgICAgICAgICBjbG9ja3MgPSA8Jmdj
+YyBHQ0NfR1BVX01FTU5PQ19HRlhfQ0xLPiwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIDwmZ2NjIEdDQ19HUFVfQ0ZHX0FIQl9DTEs+Owo+ICsgICAgICAgICAgICAgICAgICAgICAg
+IGNsb2NrLW5hbWVzID0gImJ1cyIsICJpZmFjZSI7Cj4gKwo+ICsgICAgICAgICAgICAgICAgICAg
+ICAgIHBvd2VyLWRvbWFpbnMgPSA8JmdwdWNjIEdQVV9DWF9HRFNDPjsKPiArICAgICAgICAgICAg
+ICAgfTsKPiArCj4gKyAgICAgICAgICAgICAgIGdtdTogZ211QDUwNmEwMDAgewo+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIGNvbXBhdGlibGU9InFjb20sYWRyZW5vLWdtdSI7Cj4gKwo+ICsgICAg
+ICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDUwNmEwMDAgMHgzMDAwMD4sCj4gKyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICA8MHhiMjgwMDAwIDB4MTAwMDA+LAo+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgPDB4YjQ4MDAwMCAweDEwMDAwPjsKPiArICAgICAgICAgICAg
+ICAgICAgICAgICByZWctbmFtZXMgPSAiZ211IiwgImdtdV9wZGMiLCAiZ211X3BkY19zZXEiOwo+
+ICsKPiArICAgICAgICAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMzA0IElS
+UV9UWVBFX0xFVkVMX0hJR0g+LAo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdJQ19T
+UEkgMzA1IElSUV9UWVBFX0xFVkVMX0hJR0g+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgIGlu
+dGVycnVwdC1uYW1lcyA9ICJoZmkiLCAiZ211IjsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgY2xvY2tzID0gPCZncHVjYyBHUFVfQ0NfQ1hfR01VX0NMSz4sCj4gKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICA8JmdwdWNjIEdQVV9DQ19DWE9fQ0xLPiwKPiArICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIDwmZ2NjIEdDQ19ERFJTU19HUFVfQVhJX0NMSz4sCj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICA8JmdjYyBHQ0NfR1BVX01FTU5PQ19HRlhfQ0xLPjsK
+PiArICAgICAgICAgICAgICAgICAgICAgICBjbG9jay1uYW1lcyA9ICJnbXUiLCAiY3hvIiwgImF4
+aSIsICJtZW1ub2MiOwo+ICsKPiArICAgICAgICAgICAgICAgICAgICAgICBwb3dlci1kb21haW5z
+ID0gPCZncHVjYyBHUFVfQ1hfR0RTQz47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgaW9tbXVz
+ID0gPCZhZHJlbm9fc21tdSA1PjsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAgICAgb3BlcmF0
+aW5nLXBvaW50cy12MiA9IDwmZ211X29wcF90YWJsZT47Cj4gKwo+ICsgICAgICAgICAgICAgICAg
+ICAgICAgIGdtdV9vcHBfdGFibGU6IGFkcmVuby1nbXUtb3BwLXRhYmxlIHsKClNhbWUgaGVyZSB0
+aGF0IHRoaXMgY2FuIGp1c3QgYmUgY2FsbGVkICJvcHAtdGFibGUiLgoKCj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNv
+bS1sZXZlbCI7Cj4gKwo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgb3BwLTQwMDAw
+MDAwMCB7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG9wcC1oeiA9
+IC9iaXRzLyA2NCA8NDAwMDAwMDAwPjsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9MRVZFTF9TVlM+Owo+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgfTsKPiArCj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBvcHAtMjAwMDAwMDAwIHsKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgb3BwLWh6ID0gL2JpdHMvIDY0IDwyMDAwMDAwMDA+Owo+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9S
+X0xFVkVMX01JTl9TVlM+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfTsKPiAr
+ICAgICAgICAgICAgICAgICAgICAgICB9Owo+ICsgICAgICAgICAgICAgICB9Owo+ICsKPiAgICAg
+ICAgICAgICAgICAgdXNiXzFfaHNwaHk6IHBoeUA4OGUyMDAwIHsKClNpbmNlIHlvdSB3b24ndCBj
+b21waWxlIHdpdGhvdXQgdGhlIGdwdWNjIHBhdGNoIG1heWJlIHBpY2sgaXQgYmVmb3JlCnNlbmRp
+bmcgb3V0IHlvdXIgcGF0Y2g/ICBUaGVuIGNvbnRleHQgZGlmZiB3b3VsZCBzaG93IGdwdWNjIHJp
+Z2h0IGhlcmUKYW5kIGl0IHdpbGwgYXZvaWQgbWVyZ2UgY29uZmxpY3RzLgoKCi1Eb3VnCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWls
+aW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZy
+ZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
