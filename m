@@ -1,201 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 6/6] PM / Domains: Propagate performance state updates
-Date: Wed, 12 Dec 2018 16:27:29 +0530
-Message-ID: <d138bd45d0eacc11ff90e27f83d8b47d692877ef.1544611890.git.viresh.kumar@linaro.org>
-References: <cover.1544611890.git.viresh.kumar@linaro.org>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
+Date: Wed, 12 Dec 2018 13:42:29 +0200
+Message-ID: <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
+References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
+ <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1544611890.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This commit updates genpd core to start propagating performance state
-updates to master domains that have their set_performance_state()
-callback set.
+Hi
 
-Currently a genpd only handles the performance state requirements from
-the devices under its control. This commit extends that to also handle
-the performance state requirement(s) put on the master genpd by its
-sub-domains. There is a separate value required for each master that
-the genpd has and so a new field is added to the struct gpd_link
-(link->performance_state), which represents the link between a genpd and
-its master. The struct gpd_link also got another field
-prev_performance_state, which is used by genpd core as a temporary
-variable during transitions.
+On 10/25/18 4:57 PM, Rafael J. Wysocki wrote:
+> On Tue, Oct 23, 2018 at 1:46 PM Jarkko Nikula
+> <jarkko.nikula@linux.intel.com> wrote:
+>>
+>> Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
+>> runtime PM") nullified the runtime PM suspend/resume callback pointers
+>> while keeping the runtime PM enabled.
+>>
+>> This causes that SMBus PCI device stays in D0 power state and sysfs
+>> /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
+>> when the runtime PM framework attempts to autosuspend the device. This
+>> is due PCI bus runtime PM which checks for driver runtime PM callbacks
+>> and returns with -ENOSYS if they are not set.
+>>
+>> Since i2c-i801.c don't need to do anything device specific beyond PCI
+>> device power state management Jean Delvare proposed if this can be fixed
+>> in the PCI subsystem core level rather than adding dummy runtime PM
+>> callback functions in the PCI drivers.
+>>
+>> Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
+>> that they allow change the PCI device power state during runtime PM
+>> transitions even if no runtime PM callback functions are defined.
+>>
+>> This change fixes the runtime PM regression on i2c-i801.c.
+>>
+>> It is not obvious why the code had hard requirements for the runtime PM
+>> callbacks. Test has been here since the code was introduced by the
+>> commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
+>>
+>> On the other hand similar change than this was done to generic runtime
+>> PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
+>> generic runtime pm callbacks").
+>>
+>> Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
+>> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>> Cc: <stable@vger.kernel.org> # 4.18+
+>> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> 
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+I guess this patch with Reviewed-by tags from Rafael and Jean got buried 
+under other list traffic as I don't find this from pci.git or linux-next?
 
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/domain.c | 105 ++++++++++++++++++++++++++++++------
- include/linux/pm_domain.h   |   4 ++
- 2 files changed, 94 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 32ecbefbd191..5e0479b2e976 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -239,24 +239,90 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
- static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- #endif
- 
-+static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-+					   unsigned int state, int depth);
-+
- static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
--					unsigned int state)
-+					unsigned int state, int depth)
- {
-+	struct generic_pm_domain *master;
-+	struct gpd_link *link;
-+	unsigned int master_state;
- 	int ret;
- 
-+	/* Propagate to masters of genpd */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		master = link->master;
-+
-+		if (!master->set_performance_state)
-+			continue;
-+
-+		if (unlikely(!state)) {
-+			master_state = 0;
-+		} else {
-+			/* Find master's performance state */
-+			master_state = dev_pm_opp_xlate_performance_state(genpd->opp_table,
-+						master->opp_table, state);
-+			if (unlikely(!master_state)) {
-+				ret = -EINVAL;
-+				goto err;
-+			}
-+		}
-+
-+		genpd_lock_nested(master, depth + 1);
-+
-+		link->prev_performance_state = link->performance_state;
-+		link->performance_state = master_state;
-+		ret = _genpd_reeval_performance_state(master, master_state,
-+						      depth + 1);
-+		if (ret)
-+			link->performance_state = link->prev_performance_state;
-+
-+		genpd_unlock(master);
-+
-+		if (ret)
-+			goto err;
-+	}
-+
- 	ret = genpd->set_performance_state(genpd, state);
- 	if (ret)
--		return ret;
-+		goto err;
- 
- 	genpd->performance_state = state;
- 	return 0;
-+
-+err:
-+	/* Encountered an error, lets rollback */
-+	list_for_each_entry_continue_reverse(link, &genpd->slave_links,
-+					     slave_node) {
-+		master = link->master;
-+
-+		if (!master->set_performance_state)
-+			continue;
-+
-+		genpd_lock_nested(master, depth + 1);
-+
-+		master_state = link->prev_performance_state;
-+		link->performance_state = master_state;
-+
-+		if (_genpd_reeval_performance_state(master, master_state,
-+						    depth + 1)) {
-+			pr_err("%s: Failed to roll back to %d performance state\n",
-+			       master->name, master_state);
-+		}
-+
-+		genpd_unlock(master);
-+	}
-+
-+	return ret;
- }
- 
- static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
--					   unsigned int state)
-+					   unsigned int state, int depth)
- {
- 	struct generic_pm_domain_data *pd_data;
- 	struct pm_domain_data *pdd;
-+	struct gpd_link *link;
- 
- 	/* New requested state is same as Max requested state */
- 	if (state == genpd->performance_state)
-@@ -274,21 +340,30 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 			state = pd_data->performance_state;
- 	}
- 
--	if (state == genpd->performance_state)
--		return 0;
--
- 	/*
--	 * We aren't propagating performance state changes of a subdomain to its
--	 * masters as we don't have hardware that needs it. Over that, the
--	 * performance states of subdomain and its masters may not have
--	 * one-to-one mapping and would require additional information. We can
--	 * get back to this once we have hardware that needs it. For that
--	 * reason, we don't have to consider performance state of the subdomains
--	 * of genpd here.
-+	 * Traverse all sub-domains within the domain. This can be
-+	 * done without any additional locking as the link->performance_state
-+	 * field is protected by the master genpd->lock, which is already taken.
-+	 *
-+	 * Also note that link->performance_state (subdomain's performance state
-+	 * requirement to master domain) is different from
-+	 * link->slave->performance_state (current performance state requirement
-+	 * of the devices/sub-domains of the subdomain) and so can have a
-+	 * different value.
-+	 *
-+	 * Note that we also take vote from powered-off sub-domains into account
-+	 * as the same is done for devices right now.
- 	 */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		if (link->performance_state > state)
-+			state = link->performance_state;
-+	}
-+
-+	if (state == genpd->performance_state)
-+		return 0;
- 
- update_state:
--	return _genpd_set_performance_state(genpd, state);
-+	return _genpd_set_performance_state(genpd, state, depth);
- }
- 
- /**
-@@ -332,7 +407,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 	prev = gpd_data->performance_state;
- 	gpd_data->performance_state = state;
- 
--	ret = _genpd_reeval_performance_state(genpd, state);
-+	ret = _genpd_reeval_performance_state(genpd, state, 0);
- 	if (ret)
- 		gpd_data->performance_state = prev;
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 9ad101362aef..dd364abb649a 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -136,6 +136,10 @@ struct gpd_link {
- 	struct list_head master_node;
- 	struct generic_pm_domain *slave;
- 	struct list_head slave_node;
-+
-+	/* Sub-domain's per-master domain performance state */
-+	unsigned int performance_state;
-+	unsigned int prev_performance_state;
- };
- 
- struct gpd_timing_data {
 -- 
-2.19.1.568.g152ad8e3369a
+Jarkko
