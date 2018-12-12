@@ -1,100 +1,60 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Wed, 12 Dec 2018 14:18:48 -0700
-Message-ID: <20181212211848.26768-3-jcrouse@codeaurora.org>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Subject: Re: [solved] *powersave* governor shown despite disabled in
+ configuration
+Date: Wed, 12 Dec 2018 22:26:11 +0100
+Message-ID: <f6bbee19-d5fd-4deb-03a7-488f40be5103@molgen.mpg.de>
+References: <8786b234-eb4d-fb79-d6e0-e71f45ed3120@molgen.mpg.de>
+ <20181211065152.t2anuhy6t4n2zjrd@isilmar-4.linta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181212211848.26768-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181211065152.t2anuhy6t4n2zjrd@isilmar-4.linta.de>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIHRoZSBub2RlcyB0byBkZXNjcmliZSB0aGUgQWRyZW5vIEdQVSBhbmQgR01VIGRldmljZXMu
-CgpTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgot
-LS0KIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSB8IDEyMyArKysrKysrKysr
-KysrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxMjMgaW5zZXJ0aW9ucygrKQoKZGlm
-ZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJt
-NjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQppbmRleCAyMzNhNTg5OGViYzIuLmE2MDhhZmVk
-NTAyZSAxMDA2NDQKLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpCisr
-KyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQpAQCAtMTEsNiArMTEsNyBA
-QAogI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2Nsb2NrL3Fjb20scnBtaC5oPgogI2luY2x1ZGUgPGR0
-LWJpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL2FybS1naWMuaD4KICNpbmNsdWRlIDxkdC1i
-aW5kaW5ncy9waHkvcGh5LXFjb20tcXVzYjIuaD4KKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy9wb3dl
-ci9xY29tLXJwbXBkLmg+CiAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcmVzZXQvcWNvbSxzZG04NDUt
-YW9zcy5oPgogI2luY2x1ZGUgPGR0LWJpbmRpbmdzL3NvYy9xY29tLHJwbWgtcnNjLmg+CiAjaW5j
-bHVkZSA8ZHQtYmluZGluZ3MvY2xvY2svcWNvbSxnY2Mtc2RtODQ1Lmg+CkBAIC0xMzQ5LDYgKzEz
-NTAsMTI4IEBACiAJCQl9OwogCQl9OwogCisKKwkJZ3B1QDUwMDAwMDAgeworCQkJY29tcGF0aWJs
-ZSA9ICJxY29tLGFkcmVuby02MzAuMiIsICJxY29tLGFkcmVubyI7CisJCQkjc3RyZWFtLWlkLWNl
-bGxzID0gPDE2PjsKKworCQkJcmVnID0gPDB4NTAwMDAwMCAweDQwMDAwPiwgPDB4NTA5ZTAwMCAw
-eDEwPjsKKwkJCXJlZy1uYW1lcyA9ICJrZ3NsXzNkMF9yZWdfbWVtb3J5IiwgImN4X21lbSI7CisK
-KwkJCS8qCisJCQkgKiBMb29rIG1hLCBubyBjbG9ja3MhIFRoZSBHUFUgY2xvY2tzIGFuZCBwb3dl
-ciBhcmUKKwkJCSAqIGNvbnRyb2xsZWQgZW50aXJlbHkgYnkgdGhlIEdNVQorCQkJICovCisKKwkJ
-CWludGVycnVwdHMgPSA8R0lDX1NQSSAzMDAgSVJRX1RZUEVfTEVWRUxfSElHSD47CisJCQlpbnRl
-cnJ1cHQtbmFtZXMgPSAia2dzbF8zZDBfaXJxIjsKKworCQkJaW9tbXVzID0gPCZhZHJlbm9fc21t
-dSAwPjsKKworCQkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ3B1X29wcF90YWJsZT47CisKKwkJ
-CXFjb20sZ211ID0gPCZnbXU+OworCisJCQlncHVfb3BwX3RhYmxlOiBvcHAtdGFibGUgeworCQkJ
-CWNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIjsKKworCQkJCW9w
-cC03MTAwMDAwMDAgeworCQkJCQlvcHAtaHogPSAvYml0cy8gNjQgPDcxMDAwMDAwMD47CisJCQkJ
-CXFjb20sbGV2ZWwgPSA8UlBNSF9SRUdVTEFUT1JfTEVWRUxfVFVSQk9fTDE+OworCQkJCX07CisK
-KwkJCQlvcHAtNjc1MDAwMDAwIHsKKwkJCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw2NzUwMDAwMDA+
-OworCQkJCQlxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX1RVUkJPPjsKKwkJCQl9
-OworCisJCQkJb3BwLTU5NjAwMDAwMCB7CisJCQkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8NTk2MDAw
-MDAwPjsKKwkJCQkJcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9MRVZFTF9OT01fTDE+Owor
-CQkJCX07CisKKwkJCQlvcHAtNTIwMDAwMDAwIHsKKwkJCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw1
-MjAwMDAwMDA+OworCQkJCQlxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX05PTT47
-CisJCQkJfTsKKworCQkJCW9wcC00MTQwMDAwMDAgeworCQkJCQlvcHAtaHogPSAvYml0cy8gNjQg
-PDQxNDAwMDAwMD47CisJCQkJCXFjb20sbGV2ZWwgPSA8UlBNSF9SRUdVTEFUT1JfTEVWRUxfU1ZT
-X0wxPjsKKwkJCQl9OworCisJCQkJb3BwLTM0MjAwMDAwMCB7CisJCQkJCW9wcC1oeiA9IC9iaXRz
-LyA2NCA8MzQyMDAwMDAwPjsKKwkJCQkJcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9MRVZF
-TF9TVlM+OworCQkJCX07CisKKwkJCQlvcHAtMjU3MDAwMDAwIHsKKwkJCQkJb3BwLWh6ID0gL2Jp
-dHMvIDY0IDwyNTcwMDAwMDA+OworCQkJCQlxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xF
-VkVMX0xPV19TVlM+OworCQkJCX07CisJCQl9OworCQl9OworCisJCWFkcmVub19zbW11OiBpb21t
-dUA1MDQwMDAwIHsKKwkJCWNvbXBhdGlibGUgPSAicWNvbSxzZG04NDUtc21tdS12MiIsICJxY29t
-LHNtbXUtdjIiOworCQkJcmVnID0gPDB4NTA0MDAwMCAweDEwMDAwPjsKKwkJCSNpb21tdS1jZWxs
-cyA9IDwxPjsKKwkJCSNnbG9iYWwtaW50ZXJydXB0cyA9IDwyPjsKKwkJCWludGVycnVwdHMgPSA8
-R0lDX1NQSSAyMjkgSVJRX1RZUEVfTEVWRUxfSElHSD4sCisJCQkJCTxHSUNfU1BJIDIzMSBJUlFf
-VFlQRV9MRVZFTF9ISUdIPiwKKwkJCQkJPEdJQ19TUEkgMzY0IElSUV9UWVBFX0VER0VfUklTSU5H
-PiwKKwkJCQkJPEdJQ19TUEkgMzY1IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19T
-UEkgMzY2IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY3IElSUV9UWVBF
-X0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY4IElSUV9UWVBFX0VER0VfUklTSU5HPiwK
-KwkJCQkJPEdJQ19TUEkgMzY5IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkg
-MzcwIElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzcxIElSUV9UWVBFX0VE
-R0VfUklTSU5HPjsKKwkJCWNsb2NrcyA9IDwmZ2NjIEdDQ19HUFVfTUVNTk9DX0dGWF9DTEs+LAor
-CQkJCTwmZ2NjIEdDQ19HUFVfQ0ZHX0FIQl9DTEs+OworCQkJY2xvY2stbmFtZXMgPSAiYnVzIiwg
-ImlmYWNlIjsKKworCQkJcG93ZXItZG9tYWlucyA9IDwmZ3B1Y2MgR1BVX0NYX0dEU0M+OworCQl9
-OworCisJCWdtdTogZ211QDUwNmEwMDAgeworCQkJY29tcGF0aWJsZT0icWNvbSxhZHJlbm8tZ211
-IjsKKworCQkJcmVnID0gPDB4NTA2YTAwMCAweDMwMDAwPiwKKwkJCQk8MHhiMjgwMDAwIDB4MTAw
-MDA+LAorCQkJCTwweGI0ODAwMDAgMHgxMDAwMD47CisJCQlyZWctbmFtZXMgPSAiZ211IiwgImdt
-dV9wZGMiLCAiZ211X3BkY19zZXEiOworCisJCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMzA0IElS
-UV9UWVBFX0xFVkVMX0hJR0g+LAorCQkJICAgICA8R0lDX1NQSSAzMDUgSVJRX1RZUEVfTEVWRUxf
-SElHSD47CisJCQlpbnRlcnJ1cHQtbmFtZXMgPSAiaGZpIiwgImdtdSI7CisKKwkJCWNsb2NrcyA9
-IDwmZ3B1Y2MgR1BVX0NDX0NYX0dNVV9DTEs+LAorCQkJCTwmZ3B1Y2MgR1BVX0NDX0NYT19DTEs+
-LAorCQkJCTwmZ2NjIEdDQ19ERFJTU19HUFVfQVhJX0NMSz4sCisJCQkJPCZnY2MgR0NDX0dQVV9N
-RU1OT0NfR0ZYX0NMSz47CisJCQljbG9jay1uYW1lcyA9ICJnbXUiLCAiY3hvIiwgImF4aSIsICJt
-ZW1ub2MiOworCisJCQlwb3dlci1kb21haW5zID0gPCZncHVjYyBHUFVfQ1hfR0RTQz47CisJCQlp
-b21tdXMgPSA8JmFkcmVub19zbW11IDU+OworCisJCQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZn
-bXVfb3BwX3RhYmxlPjsKKworCQkJZ211X29wcF90YWJsZTogb3BwLXRhYmxlIHsKKwkJCQljb21w
-YXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7CisKKwkJCQlvcHAtNDAw
-MDAwMDAwIHsKKwkJCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw0MDAwMDAwMDA+OworCQkJCQlxY29t
-LGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX1NWUz47CisJCQkJfTsKKworCQkJCW9wcC0y
-MDAwMDAwMDAgeworCQkJCQlvcHAtaHogPSAvYml0cy8gNjQgPDIwMDAwMDAwMD47CisJCQkJCXFj
-b20sbGV2ZWwgPSA8UlBNSF9SRUdVTEFUT1JfTEVWRUxfTUlOX1NWUz47CisJCQkJfTsKKwkJCX07
-CisJCX07CisKIAkJZ3B1Y2M6IGNsb2NrLWNvbnRyb2xsZXJANTA5MDAwMCB7CiAJCQljb21wYXRp
-YmxlID0gInFjb20sc2RtODQ1LWdwdWNjIjsKIAkJCXJlZyA9IDwweDUwOTAwMDAgMHg5MDAwPjsK
-LS0gCjIuMTguMAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5v
-Cg==
+
+Dear Dominik,
+
+
+Thank you for your quick response.
+
+
+Am 11.12.18 um 07:51 schrieb Dominik Brodowski:
+> On Mon, Dec 10, 2018 at 04:30:05PM +0100, Paul Menzel wrote:
+
+>> With Linux 4.14.76, the scaling governor *powersave* is shown as
+>> being available despite being disabled in the configuration.
+> 
+> Which cpufreq driver do you use? Presumably intel_pstate?
+
+Yes, intel_pstate.
+
+> That driver exposes internal policies / "governors" named 
+> "performance" and "powersave", which are unrelated to
+> CONFIG_CPU_FREQ_GOV_POWERSAVE.
+Indeed, that confused me, and I didn’t read the documentation
+carefully enough.
+
+> They are not generic scaling governors, but their names are the same as the
+> names of some of those governors.  Moreover, confusingly enough, they generally
+> do not work in the same way as the generic governors they share the names with.
+> For example, the ``powersave`` P-state selection algorithm provided by
+> ``intel_pstate`` is not a counterpart of the generic ``powersave`` governor
+> (roughly, it corresponds to the ``schedutil`` and ``ondemand`` governors).
+> 
+> There are two P-state selection algorithms provided by ``intel_pstate`` in the
+> active mode: ``powersave`` and ``performance``.  The way they both operate
+> depends on whether or not the hardware-managed P-states (HWP) feature has been
+> enabled in the processor and possibly on the processor model.
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
