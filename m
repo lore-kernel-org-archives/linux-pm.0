@@ -1,88 +1,51 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC/RFT 00/10] i2c: move handling of suspended adapters to the
- core
-Date: Wed, 12 Dec 2018 11:09:41 +0100
-Message-ID: <e8c68ef5-5085-e304-4959-82c4959f4511@redhat.com>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
- <2094a0d4-733f-7f74-abd2-bdb28edd0f80@redhat.com>
- <20181211234102.GA6701@kunai>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Wed, 12 Dec 2018 11:17:03 +0100
+Message-ID: <CAJZ5v0gNqUO59_xQAdk-rVR6JJCZ4RfHbNJOUuBWSyy6yN6pjw@mail.gmail.com>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <20181210122104.GL5289@hirez.programming.kicks-ass.net>
+ <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com>
+ <20181210225134.GB24811@worktop.programming.kicks-ass.net>
+ <CAJZ5v0jvbDCCgy=nUfb-yZCYGOxe4-XexbvnmeBm8ZPDPBaK4w@mail.gmail.com>
+ <20181212094610.GW5289@hirez.programming.kicks-ass.net> <CAPDyKFpPGosZ69ZgMZMASGZxTn1kxu5GrJ7rZoXKn8MC05SMTQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181211234102.GA6701@kunai>
-Content-Language: en-US
+In-Reply-To: <CAPDyKFpPGosZ69ZgMZMASGZxTn1kxu5GrJ7rZoXKn8MC05SMTQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, Dec 12, 2018 at 10:57 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Wed, 12 Dec 2018 at 10:46, Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > On Tue, Dec 11, 2018 at 10:51:48AM +0100, Rafael J. Wysocki wrote:
+> > > On Mon, Dec 10, 2018 at 11:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > > > Dunno; it could be cold cachelines, at which point it can be fairly
+> > > > expensive. Also, being stuck with API is fairly horrible if you want to
+> > > > 'fix' it.
+> > >
+> > > All of the cache lines involved should've been touched earlier in this
+> > > code path by the governor.  At least menu and the new one both touch
+> > > them.
+> > >
+> > > The API part I'm not too worried about.  I know it is useful and two
+> > > other people have told that to me already. :-)
+> >
+> > Like said on IRC; I mostly wanted to raise the issue of overhead due to
+> > stats and ABI -- it's something I've been bitten by too many times :/
+> >
+> > If you're confident you're hitting the same lines with the already
+> > extant accouning (time and usage) and you cannot make the whole lot
+> > conditional because of ABI (bah) then I'll not stand in the way here.
+> >
+> > I agree the numbers are useful, I'm just weary of overhead.
+>
+> I tend to agree. So then why not move this to debugfs, it seems like
+> it's really there it belongs. No?
 
-On 12-12-18 00:41, Wolfram Sang wrote:
-> Hi Hans,
-> 
-> thanks for testing this series!
-> 
->> Note that the i2c-sprd driver changes in your patchset also get close
->> to triggering this problem, but they dodge the bullet because there
->> are separate system-wide and runtime suspend handlers and only the
->> system-wide handlers call the new i2c_mark_adapter_suspended() function.
-> 
-> Yes, this what I assumed to be all around - seperate handlers for RPM
-> and PM. And I also assumed that they could be seperated if they aren't
-> already. Until I read...
-> 
->> As I explain in the commit message of the first attached patch
->> simply always using split handlers is not really an option because
->> of adapter drivers using DPM_FLAG_SMART_PREPARE or
->> DPM_FLAG_SMART_SUSPEND.
-> 
-> ... this. I don't know what these flags do (and reading SMART in there
-> gives me more a 'uh-oh' feeling)
-
-On x86 the lines between runtime suspend and system-suspend are blurring
-with technologies like "connected standby" and in general devices moving
-to suspend2idle as system-suspend state, I guess this also applies to
-modern smartphone platforms but I'm not following those closely.
-
-What this means on x86 is that the firmware is not doing any suspend
-handling anymore and the OS / device-drivers get to do all the suspend.
-For many devices this means that if they are runtime-suspended, and there
-is no difference between the runtime and system suspend handling at the
-driver level, they can be left as is, so during a system suspend they are
-not touched at all (and left runtime suspended during system resume).
-
-The "SMART" bit is really not all that smart, SMART_PREPARE means that
-the drivers pm prepare callback will return positive non 0 (e.g. 1) to
-indicate that the device may not be kept in its runtime suspended
-state when transitioning to system-suspend, otoh when the prepare
-callback returns 0 and the SMART_PREPARE flag is set then *all* suspend/
-resume handling can be skipped during a system suspend.
-
-SMART_SUSPEND means that if the device is runtime-suspended it may be left
-as such, this only gets checked if the driver either does not have the
-SMART_PREPARE flag, or the prepare callback indicated that skipping the
-entire suspend/resume handling is not ok.
-
-So this is not that scary, but it does require driver authors to know
-what they are doing...
-
-> but if the handlers can't be split, the
-> issues you were seeing are a consequence, yes.
-> 
-> For me, this sadly spoils the whole concept. The patches you add make
-> things even more complicated. Not happy about that.
-
-Agreed, they don't fill me with happiness either.
-
-> Looking at the open coded version you did for the designware driver, I
-> wonder now if it is better to just leave it at driver level? Need to
-> sleep over it, though.
-
-I myself was thinking in the same direction (leave the entire suspended
-check at the driver level).
-
-Regards,
-
-Hans
+The "usage" and "time" counters are there in sysfs already and they
+are ABI, so putting the new ones into debugfs only makes them harder
+to use for no real gain.
