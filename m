@@ -1,94 +1,72 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: intel_pstate: Lowest frequency not reached with Intel i7-6700
-Date: Wed, 12 Dec 2018 22:40:22 +0100
-Message-ID: <ac4d2bed-be16-71ee-8c3b-dc4fa0cb87f9@molgen.mpg.de>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
+Date: Wed, 12 Dec 2018 15:49:37 -0600
+Message-ID: <20181212214937.GI99796@google.com>
+References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
+ <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com>
+ <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: de-DE
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
+Sender: stable-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Linux folks,
+On Wed, Dec 12, 2018 at 01:42:29PM +0200, Jarkko Nikula wrote:
+> Hi
+> 
+> On 10/25/18 4:57 PM, Rafael J. Wysocki wrote:
+> > On Tue, Oct 23, 2018 at 1:46 PM Jarkko Nikula
+> > <jarkko.nikula@linux.intel.com> wrote:
+> > > 
+> > > Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
+> > > runtime PM") nullified the runtime PM suspend/resume callback pointers
+> > > while keeping the runtime PM enabled.
+> > > 
+> > > This causes that SMBus PCI device stays in D0 power state and sysfs
+> > > /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
+> > > when the runtime PM framework attempts to autosuspend the device. This
+> > > is due PCI bus runtime PM which checks for driver runtime PM callbacks
+> > > and returns with -ENOSYS if they are not set.
+> > > 
+> > > Since i2c-i801.c don't need to do anything device specific beyond PCI
+> > > device power state management Jean Delvare proposed if this can be fixed
+> > > in the PCI subsystem core level rather than adding dummy runtime PM
+> > > callback functions in the PCI drivers.
+> > > 
+> > > Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
+> > > that they allow change the PCI device power state during runtime PM
+> > > transitions even if no runtime PM callback functions are defined.
+> > > 
+> > > This change fixes the runtime PM regression on i2c-i801.c.
+> > > 
+> > > It is not obvious why the code had hard requirements for the runtime PM
+> > > callbacks. Test has been here since the code was introduced by the
+> > > commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
+> > > 
+> > > On the other hand similar change than this was done to generic runtime
+> > > PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
+> > > generic runtime pm callbacks").
+> > > 
+> > > Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
+> > > Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > > Cc: <stable@vger.kernel.org> # 4.18+
+> > > Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> > 
+> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> I guess this patch with Reviewed-by tags from Rafael and Jean got buried
+> under other list traffic as I don't find this from pci.git or linux-next?
 
+Sorry, I totally dropped the ball on this.  I normally would interpret
+Rafael's reviewed-by as an indication that he intends me to pick it
+up.  My only excuse is some travel and unexpected sick time that has
+put me behind.
 
-Using *powersave* as P-state selection algorithm, on an idle system
-with an Intel i7-6700 (Sandy Bridge), the frequency only goes down to
-900 MHz instead of the minimum frequency of 800 MHz.
+I applied this to pci/pm for v4.21, with Reviewed-by tags from Jean
+and Rafael, thanks!
 
-> $ uname -a
-> Linux keineahnung.molgen.mpg.de 4.20.0-rc5.mx64.234 #1 SMP Mon Dec 3 16:58:29 CET 2018 x86_64 GNU/Linux
-> $ dmesg | grep state
-> [    0.000000] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
-> [    0.000000] x86/fpu: xstate_offset[3]:  832, xstate_sizes[3]:   64
-> [    0.000000] x86/fpu: xstate_offset[4]:  896, xstate_sizes[4]:   64
-> [    0.000000] x86/fpu: Enabled xstate features 0x1f, context size is 960 bytes, using 'compacted' format.
-> [    0.686027] acpi PNP0C0B:00: Failed to change power state to D0
-> [    0.694017] acpi PNP0C0B:00: Failed to set initial power state
-> [    0.703020] acpi PNP0C0B:01: Failed to change power state to D0
-> [    0.712012] acpi PNP0C0B:01: Failed to set initial power state
-> [    0.722010] acpi PNP0C0B:02: Failed to change power state to D0
-> [    0.730013] acpi PNP0C0B:02: Failed to set initial power state
-> [    0.739010] acpi PNP0C0B:03: Failed to change power state to D0
-> [    0.748012] acpi PNP0C0B:03: Failed to set initial power state
-> [    0.758009] acpi PNP0C0B:04: Failed to change power state to D0
-> [    0.766012] acpi PNP0C0B:04: Failed to set initial power state
-> [    0.767127] Monitor-Mwait will be used to enter C-1 state
-> [    0.767131] Monitor-Mwait will be used to enter C-2 state
-> [    0.767134] Monitor-Mwait will be used to enter C-3 state
-> [    2.092456] intel_pstate: Intel P-state driver initializing
-> [    2.094820] intel_pstate: HWP enabled
-> $ lscpu
-> Architecture:        x86_64
-> CPU op-mode(s):      32-bit, 64-bit
-> Byte Order:          Little Endian
-> CPU(s):              8
-> On-line CPU(s) list: 0-7
-> Thread(s) per core:  2
-> Core(s) per socket:  4
-> Socket(s):           1
-> NUMA node(s):        1
-> Vendor ID:           GenuineIntel
-> CPU family:          6
-> Model:               94
-> Model name:          Intel(R) Core(TM) i7-6700 CPU @ 3.40GHz
-> Stepping:            3
-> CPU MHz:             900.392
-> CPU max MHz:         4000.0000
-> CPU min MHz:         800.0000
-> BogoMIPS:            6816.00
-> Virtualization:      VT-x
-> L1d cache:           32K
-> L1i cache:           32K
-> L2 cache:            256K
-> L3 cache:            8192K
-> NUMA node0 CPU(s):   0-7
-> Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp
-> $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_governor
-> powersave
-> powersave
-> powersave
-> powersave
-> powersave
-> powersave
-> powersave
-> powersave
-> $ cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq
-> 900335
-> 900285
-> 900179
-> 900314
-> 900510
-> 900226
-> 900376
-> 900375
-
-Shouldn’t it go down until 800 MHz?
-
-
-Kind regards,
-
-Paul
+Bjorn
