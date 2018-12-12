@@ -1,73 +1,112 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v5 1/2] dt-bindings: Document,qcom,adreno-gmu
-Date: Wed, 12 Dec 2018 10:31:05 -0700
-Message-ID: <20181212173106.29618-2-jcrouse@codeaurora.org>
-References: <20181212173106.29618-1-jcrouse@codeaurora.org>
+From: Benson Leung <bleung@google.com>
+Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
+ sub-drivers
+Date: Wed, 12 Dec 2018 10:21:26 -0800
+Message-ID: <20181212182126.GA32052@google.com>
+References: <20181211190953.13626-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181212173106.29618-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="tThc/1wpZn/ma/RB"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181211190953.13626-1-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob
 List-Id: linux-pm@vger.kernel.org
 
-RG9jdW1lbnQgdGhlIGRldmljZSB0cmVlIGJpbmRpbmdzIGZvciB0aGUgQWRyZW5vIEdNVSBkZXZp
-Y2UKYXZhaWxhYmxlIG9uIEFkcmVubyBhNnh4IHRhcmdldHMuCgpSZXZpZXdlZC1ieTogUm9iIEhl
-cnJpbmcgPHJvYmhAa2VybmVsLm9yZz4KU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8amNy
-b3VzZUBjb2RlYXVyb3JhLm9yZz4KLS0tCiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5
-L21zbS9nbXUudHh0ICAgfCA1NCArKysrKysrKysrKysrKysrKysrCiAuLi4vZGV2aWNldHJlZS9i
-aW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0ICAgfCAgMiArCiAyIGZpbGVzIGNoYW5nZWQsIDU2
-IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9nbXUudHh0IGIvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQKbmV3IGZpbGUgbW9kZSAx
-MDA2NDQKaW5kZXggMDAwMDAwMDAwMDAwLi5mNjViYjQ5ZmZmMzYKLS0tIC9kZXYvbnVsbAorKysg
-Yi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dApA
-QCAtMCwwICsxLDU0IEBACitRdWFsY29tbSBhZHJlbm8vc25hcGRyYWdvbiBHTVUgKEdyYXBoaWNz
-IG1hbmFnZW1lbnQgdW5pdCkKKworVGhlIEdNVSBpcyBhIHByb2dyYW1tYWJsZSBwb3dlciBjb250
-cm9sbGVyIGZvciB0aGUgR1BVLiB0aGUgQ1BVIGNvbnRyb2xzIHRoZQorR01VIHdoaWNoIGluIHR1
-cm4gaGFuZGxlcyBwb3dlciBjb250cm9scyBmb3IgdGhlIEdQVS4KKworUmVxdWlyZWQgcHJvcGVy
-dGllczoKKy0gY29tcGF0aWJsZToKKyAgKiAicWNvbSxhZHJlbm8tZ211IgorLSByZWc6IFBoeXNp
-Y2FsIGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3RoIG9mIHRoZSBHTVUgcmVnaXN0ZXJzLgorLSByZWct
-bmFtZXM6IE1hdGNoaW5nIG5hbWVzIGZvciB0aGUgcmVnaXN0ZXIgcmVnaW9ucworICAqICJnbXUi
-CisgICogImdtdV9wZGMiCistIGludGVycnVwdHM6IFRoZSBpbnRlcnJ1cHQgc2lnbmFscyBmcm9t
-IHRoZSBHTVUuCistIGludGVycnVwdC1uYW1lczogTWF0Y2hpbmcgbmFtZXMgZm9yIHRoZSBpbnRl
-cnJ1cHRzCisgICogImhmaSIKKyAgKiAiZ211IgorLSBjbG9ja3M6IHBoYW5kbGVzIHRvIHRoZSBk
-ZXZpY2UgY2xvY2tzCistIGNsb2NrLW5hbWVzOiBNYXRjaGluZyBuYW1lcyBmb3IgdGhlIGNsb2Nr
-cworICAgKiAiZ211IgorICAgKiAiY3hvIgorICAgKiAiYXhpIgorICAgKiAibW5vYyIKKy0gcG93
-ZXItZG9tYWluczogc2hvdWxkIGJlIDwmY2xvY2tfZ3B1Y2MgR1BVX0NYX0dEU0M+CistIGlvbW11
-czogcGhhbmRsZSB0byB0aGUgYWRyZW5vIGlvbW11CistIG9wZXJhdGluZy1wb2ludHMtdjI6IHBo
-YW5kbGUgdG8gdGhlIE9QUCBvcGVyYXRpbmcgcG9pbnRzCisKK0V4YW1wbGU6CisKKy8geworCS4u
-LgorCisJZ211OiBnbXVANTA2YTAwMCB7CisJCWNvbXBhdGlibGU9InFjb20sYWRyZW5vLWdtdSI7
-CisKKwkJcmVnID0gPDB4NTA2YTAwMCAweDMwMDAwPiwKKwkJCTwweGIyMDAwMDAgMHgzMDAwMDA+
-OworCQlyZWctbmFtZXMgPSAiZ211IiwgImdtdV9wZGMiOworCisJCWludGVycnVwdHMgPSA8R0lD
-X1NQSSAzMDQgSVJRX1RZUEVfTEVWRUxfSElHSD4sCisJCQk8R0lDX1NQSSAzMDUgSVJRX1RZUEVf
-TEVWRUxfSElHSD47CisJCWludGVycnVwdC1uYW1lcyA9ICJoZmkiLCAiZ211IjsKKworCQljbG9j
-a3MgPSA8JmNsb2NrX2dwdWNjIEdQVV9DQ19DWF9HTVVfQ0xLPiwKKwkJCTwmY2xvY2tfZ3B1Y2Mg
-R1BVX0NDX0NYT19DTEs+LAorCQkJPCZjbG9ja19nY2MgR0NDX0REUlNTX0dQVV9BWElfQ0xLPiwK
-KwkJCTwmY2xvY2tfZ2NjIEdDQ19HUFVfTUVNTk9DX0dGWF9DTEs+OworCQljbG9jay1uYW1lcyA9
-ICJnbXUiLCAiY3hvIiwgImF4aSIsICJtZW1ub2MiOworCisJCXBvd2VyLWRvbWFpbnMgPSA8JmNs
-b2NrX2dwdWNjIEdQVV9DWF9HRFNDPjsKKwkJaW9tbXVzID0gPCZhZHJlbm9fc21tdSA1PjsKKwor
-CWkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ211X29wcF90YWJsZT47CisJfTsKK307CmRpZmYg
-LS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1
-LnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUu
-dHh0CmluZGV4IDQzZmFjMGZlMDliYi4uNzU0ZjZjNmYzNGU1IDEwMDY0NAotLS0gYS9Eb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dAorKysgYi9Eb2N1
-bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dApAQCAtMTQs
-NiArMTQsOCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgogICAqICJjb3JlIgogICAqICJpZmFjZSIK
-ICAgKiAibWVtX2lmYWNlIgorLSBxY29tLGdtdTogRm9yIGE2eHggYW5kIG5ld2VyIHRhcmdldHMg
-YSBwaGFuZGxlIHRvIHRoZSBHTVUgZGV2aWNlIHRoYXQgd2lsbAorICBjb250cm9sIHRoZSBwb3dl
-ciBmb3IgdGhlIEdQVQogCiBFeGFtcGxlOgogCi0tIAoyLjE4LjAKCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJl
-ZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+
+--tThc/1wpZn/ma/RB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Dec 11, 2018 at 08:09:52PM +0100, Enric Balletbo i Serra wrote:
+> There are multiple ChromeOS EC sub-drivers spread in different
+> subsystems, as all of them are related to the Chrome stuff add
+> Benson and myself as a maintainers for all these sub-drivers.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+
+Signed-off-by: Benson Leung <bleung@chromium.org>
+
+Thanks for sending this, Enric.
+
+> ---
+>=20
+> Changes in v2:
+> - Fix typo in Benson email address.
+>=20
+>  MAINTAINERS | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>=20
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a24129b0b043..bbe7180e2851 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3625,6 +3625,30 @@ S:	Maintained
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platf=
+orm.git
+>  F:	drivers/platform/chrome/
+> =20
+> +CHROMEOS EC SUBDRIVERS
+> +M:	Benson Leung <bleung@chromium.org>
+> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
+> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
+> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
+> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
+> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
+> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
+> +F:	drivers/extcon/extcon-usbc-cros-ec.c
+> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
+> +F:	drivers/iio/accel/cros_ec*
+> +F:	drivers/iio/common/cros_ec_sensors/
+> +F:	drivers/iio/light/cros_ec*
+> +F:	drivers/iio/pressure/cros_ec*
+> +F:	drivers/input/keyboard/cros_ec*
+> +F:	drivers/mfd/cros_ec*
+> +F:	drivers/power/supply/cros_usbpd-charger.c
+> +F:	drivers/pwm/pwm-cros-ec.c
+> +F:	drivers/rtc/rtc-cros-ec.c
+> +F:	include/linux/iio/common/cros_ec_sensors_core.h
+> +F:	include/linux/mfd/cros_ec*
+> +
+>  CIRRUS LOGIC AUDIO CODEC DRIVERS
+>  M:	Brian Austin <brian.austin@cirrus.com>
+>  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
+> --=20
+> 2.19.2
+>=20
+
+--=20
+Benson Leung
+Staff Software Engineer
+Chrome OS Kernel
+Google Inc.
+bleung@google.com
+Chromium OS Project
+bleung@chromium.org
+
+--tThc/1wpZn/ma/RB
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE6gYDF28Li+nEiKLaHwn1ewov5lgFAlwRUaYACgkQHwn1ewov
+5ljVzA/+LrEt1Rm2OOw/34K53k7jK/9/Y8LDf9Wp9RZ/BeOeZScECxRYkfKN9XL6
+LUzgBp+z/BgBOy4BYOjAeH5rknXpVieJkH/3I8AIi33oEpeWC0KxkyyNJIWjj7D1
+fq5Cz+DI9GKF4a/onTVsMYRoYftRLYTm+L/z3hJzLAYkqcwShs9ak15M/qDeFlZ8
+KF/Im4yeInCBHg6giScg72tMV7zh40pBOTopcMbzXAHch56OzXE4i0PueJJFhhCb
+BHesObxRHQEe+2TiijJRE1aoXKqKCwLwhz2uqo7qhnX+OItMUI2FQLkO0H8GrvZh
++9ZrENqy1rpLjYRWF92nHfv1FSXRhYHbidXHh045nSMdOElQqSQXDYa1JX9MNAZ5
+IU1LXMkNRwOz717JgSe2SszlkOw9fQK2mHhxkbqhwzvxh50TX2QHIfcSDW3wiSQT
+BW4sxqv8+DWKsOO2yPnq2wsG/AmaKDBSCUTif1U7e12G33etvychk1eN+4Dv8Fni
+fGu416RC9xcUe8vqXi8fDfFEpgqu5NyIiVnZQ/MTnoyFjV7u1nut38FQQmfRbOUM
+NMKLgGirJrY+ar4P/uyZvuakHpXEb0rZ7QGlWDcdtuoqMLlvSM8m35y9XTzhsVC3
+B0NfMIoxmuw7FQiGK7tI8eCdF8/+aCPxmpcM49SQWF9SUu+tmPk=
+=WY6c
+-----END PGP SIGNATURE-----
+
+--tThc/1wpZn/ma/RB--
