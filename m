@@ -1,48 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
- HW driver
-Date: Wed, 12 Dec 2018 10:17:02 +0530
-Message-ID: <20181212044702.jp2r3mviq4ffal42@vireshk-i7>
-References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
- <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
- <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
- <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
- <154396472692.88331.13742924031474269133@swboyd.mtv.corp.google.com>
- <49139ae4-4373-9e70-02ad-80f7bbc4494c@codeaurora.org>
- <20181205061600.7zglbpkgbktn27am@vireshk-i7>
- <82b168d1-79bc-f454-8e19-4f7630a34069@codeaurora.org>
+Subject: Re: [PATCH 2/2] OPP: Fix missing debugfs supply directory for OPPs
+Date: Wed, 12 Dec 2018 10:17:32 +0530
+Message-ID: <20181212044732.ile3icfr5g4tvezi@vireshk-i7>
+References: <90e3577b5feb42bac1269e16bb3d2bdd8f6df40f.1544527580.git.viresh.kumar@linaro.org>
+ <46f48aca2e5aef3f430e95d1a5fb68227ec8ec85.1544527580.git.viresh.kumar@linaro.org>
+ <20181211134829.nct4uqvofn332yxp@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <82b168d1-79bc-f454-8e19-4f7630a34069@codeaurora.org>
+In-Reply-To: <20181211134829.nct4uqvofn332yxp@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11-12-18, 19:05, Taniya Das wrote:
-> The design here assumes that there would not be any per-cpu/per-cluster
-> based SW requirement for the HW during frequency transitions, which again
-> makes me think that we would require to re-introduce these structures again
-> in case we have such requirements in near future.
+On 11-12-18, 13:48, Quentin Perret wrote:
+> On Tuesday 11 Dec 2018 at 16:56:29 (+0530), Viresh Kumar wrote:
+> > There is one case where we may end up with no "supply" directory for the
+> > OPPs in debugfs. That happens when the OPP core isn't managing the
+> > regulators for the device and the device's OPP do have microvolt
+> > property. It happens because the opp_table->regulator_count remains set
+> > to 0 and the debugfs routines don't add any supply directory in such a
+> > case.
+> > 
+> > This commit fixes that by setting opp_table->regulator_count to 1 in
+> > that particular case. But to make everything work nicely and not break
+> > other parts of the core, regulator_count is defined as "int" now instead
+> > of "unsigned int" and it can have different special values now. It is
+> > set to -1 initially to mark it "uninitialized" and later only we set it
+> > to 0 or positive values after checking how many supplies are there.
+> > 
+> > This also helps in finding the bugs where only few of the OPPs have the
+> > "opp-microvolt" property set and not all.
+> 
+> Tested on Juno r0 and Hikey960 successfully. The 'supply' directory is
+> now correctly exposed.
+> 
+> Feel free to add Tested-by: Quentin Perret <quentin.perret@arm.com>
 
-Firstly, even in such cases we can go ahead with the design we proposed. And I
-am not at all concerned about some hardware which we don't have right now. We
-will see what to do when such hardware comes, maybe reintroduce the structures,
-but that doesn't matter right now.
-
-> Also I think leaving the structures also helps us debug any boot up issues
-> looking at the ram contents of the per-(cpu/cluster) structures with the
-> contents from the firmware.
-
-I don't see how debugging would be hard without those structures in place.
-
-> Hope these above helps us to go ahead with the current SW design.
-
-Sorry, but I don't see any satisfactory reason on why you shouldn't make the
-suggested changes. We are trying to make your (and any other developer who will
-work on that driver) life simple by simplifying the code. Nothing beyond that :)
+Thanks.
 
 -- 
 viresh
