@@ -1,78 +1,59 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 1/6] PM / Domains: Make genpd performance states orthogonal to the idlestates
-Date: Wed, 12 Dec 2018 16:27:24 +0530
-Message-ID: <48a7fc66faec9ac5c157b0cadcdaeb07bfe78781.1544611890.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 2/6] OPP: Improve _find_table_of_opp_np()
+Date: Wed, 12 Dec 2018 16:27:25 +0530
+Message-ID: <184bbc28f982752cc040f0b9286516c3897e2808.1544611890.git.viresh.kumar@linaro.org>
 References: <cover.1544611890.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1544611890.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
-
-It's quite questionable whether genpd internally should care about if the
-corresponding PM domain for a device is powered on, as to allow setting a
-new performance state for it. The assumptions creates an unnecessary
-limitation at this point, for both consumers and providers, but more
-importantly it also makes the code more complicated.
-
-Therefore, let's simplify the code to allow setting a performance state, by
-invoking the ->set_performance_state() callback, no matter whether the PM
-domain is powered on or off.
-
-Do note, this change means genpd providers needs to restore the performance
-state themselves during power on, via the ->power_on() callback. Moreover,
-they may also need to check that the PM domain is powered on, from their
-->set_performance_state() callback, before deciding to update the state.
+Make _find_table_of_opp_np() more efficient by using of_get_parent() to
+find the parent OPP table node.
 
 Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 19 ++++---------------
- 1 file changed, 4 insertions(+), 15 deletions(-)
+ drivers/opp/of.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 8e554e6a82a2..4a4e39d12354 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -311,12 +311,10 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 	 */
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 3ef7f38c0986..8e57d257be77 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -114,19 +114,25 @@ static struct device_node *of_parse_required_opp(struct device_node *np,
+ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
+ {
+ 	struct opp_table *opp_table;
+-	struct dev_pm_opp *opp;
++	struct device_node *opp_table_np;
  
- update_state:
--	if (genpd_status_on(genpd)) {
--		ret = genpd->set_performance_state(genpd, state);
--		if (ret) {
--			gpd_data->performance_state = prev;
--			goto unlock;
--		}
-+	ret = genpd->set_performance_state(genpd, state);
-+	if (ret) {
-+		gpd_data->performance_state = prev;
-+		goto unlock;
+ 	lockdep_assert_held(&opp_table_lock);
+ 
++	opp_table_np = of_get_parent(opp_np);
++	if (!opp_table_np)
++		goto err;
++
++	/* It is safe to put the node now as all we need now is its address */
++	of_node_put(opp_table_np);
++
+ 	list_for_each_entry(opp_table, &opp_tables, node) {
+-		opp = _find_opp_of_np(opp_table, opp_np);
+-		if (opp) {
+-			dev_pm_opp_put(opp);
++		if (opp_table_np == opp_table->np) {
+ 			_get_opp_table_kref(opp_table);
+ 			return opp_table;
+ 		}
  	}
  
- 	genpd->performance_state = state;
-@@ -347,15 +345,6 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--
--	if (unlikely(genpd->set_performance_state)) {
--		ret = genpd->set_performance_state(genpd, genpd->performance_state);
--		if (ret) {
--			pr_warn("%s: Failed to set performance state %d (%d)\n",
--				genpd->name, genpd->performance_state, ret);
--		}
--	}
--
- 	if (elapsed_ns <= genpd->states[state_idx].power_on_latency_ns)
- 		return ret;
++err:
+ 	return ERR_PTR(-ENODEV);
+ }
  
 -- 
 2.19.1.568.g152ad8e3369a
