@@ -1,64 +1,73 @@
-From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
-Date: Wed, 12 Dec 2018 13:42:29 +0200
-Message-ID: <14190b11-f7f1-3a27-1476-8b043bd72555@linux.intel.com>
-References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
- <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: [PATCH v4] PM / devfreq: Restart previous governor if new governor fails to start
+Date: Wed, 12 Dec 2018 19:23:13 +0530
+Message-ID: <20181212135313.30268-1-sibis@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gna-KvmezNGmCJZTwMrSBHyxbXqPZi12aKjEkxkr=YPQ@mail.gmail.com>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Stable <stable@vger.kernel.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, skannan@codeaurora.org, Sibi Sankar <sibis@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi
+From: Saravana Kannan <skannan@codeaurora.org>
 
-On 10/25/18 4:57 PM, Rafael J. Wysocki wrote:
-> On Tue, Oct 23, 2018 at 1:46 PM Jarkko Nikula
-> <jarkko.nikula@linux.intel.com> wrote:
->>
->> Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
->> runtime PM") nullified the runtime PM suspend/resume callback pointers
->> while keeping the runtime PM enabled.
->>
->> This causes that SMBus PCI device stays in D0 power state and sysfs
->> /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
->> when the runtime PM framework attempts to autosuspend the device. This
->> is due PCI bus runtime PM which checks for driver runtime PM callbacks
->> and returns with -ENOSYS if they are not set.
->>
->> Since i2c-i801.c don't need to do anything device specific beyond PCI
->> device power state management Jean Delvare proposed if this can be fixed
->> in the PCI subsystem core level rather than adding dummy runtime PM
->> callback functions in the PCI drivers.
->>
->> Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
->> that they allow change the PCI device power state during runtime PM
->> transitions even if no runtime PM callback functions are defined.
->>
->> This change fixes the runtime PM regression on i2c-i801.c.
->>
->> It is not obvious why the code had hard requirements for the runtime PM
->> callbacks. Test has been here since the code was introduced by the
->> commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
->>
->> On the other hand similar change than this was done to generic runtime
->> PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
->> generic runtime pm callbacks").
->>
->> Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
->> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
->> Cc: <stable@vger.kernel.org> # 4.18+
->> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> 
-> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-I guess this patch with Reviewed-by tags from Rafael and Jean got buried 
-under other list traffic as I don't find this from pci.git or linux-next?
+If the new governor fails to start, switch back to old governor so that the
+devfreq state is not left in some weird limbo.
 
+Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+
+V4:
+* Removed prev_governor check.
+
+V3:
+* Fix NULL deref for real this time.
+* Addressed some style preferences.
+
+V2:
+* Fixed typo in commit text
+* Fixed potential NULL deref
+
+ drivers/devfreq/devfreq.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 141413067b5c..ba2875a0b90e 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1024,7 +1024,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 	struct devfreq *df = to_devfreq(dev);
+ 	int ret;
+ 	char str_governor[DEVFREQ_NAME_LEN + 1];
+-	struct devfreq_governor *governor;
++	const struct devfreq_governor *governor, *prev_governor;
+ 
+ 	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+ 	if (ret != 1)
+@@ -1053,12 +1053,19 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 			goto out;
+ 		}
+ 	}
++	prev_governor = df->governor;
+ 	df->governor = governor;
+ 	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+ 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+-	if (ret)
++	if (ret) {
+ 		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+ 			 __func__, df->governor->name, ret);
++		df->governor = prev_governor;
++		strncpy(df->governor_name, prev_governor->name,
++			DEVFREQ_NAME_LEN);
++		df->governor->event_handler(df, DEVFREQ_GOV_START,
++					    NULL);
++	}
+ out:
+ 	mutex_unlock(&devfreq_list_lock);
+ 
 -- 
-Jarkko
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
