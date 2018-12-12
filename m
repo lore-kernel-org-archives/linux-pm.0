@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v4 2/6] MAINTAINERS: thermal: add entry for Marvell MVEBU
- thermal driver
-Date: Wed, 12 Dec 2018 10:36:41 +0100
-Message-ID: <20181212093645.14752-3-miquel.raynal@bootlin.com>
+Subject: [PATCH v4 3/6] dt-bindings: ap806: document the thermal interrupt
+ capabilities
+Date: Wed, 12 Dec 2018 10:36:42 +0100
+Message-ID: <20181212093645.14752-4-miquel.raynal@bootlin.com>
 References: <20181212093645.14752-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,28 +22,44 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add myself as Marvell MVEBU thermal driver maintainer.
+The thermal IP can produce interrupts on overheat situation.
+Describe them.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- MAINTAINERS | 5 +++++
- 1 file changed, 5 insertions(+)
+ .../bindings/arm/marvell/ap806-system-controller.txt       | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f4855974f325..42028c06e4e5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8902,6 +8902,11 @@ L:	netdev@vger.kernel.org
- S:	Maintained
- F:	drivers/net/phy/marvell10g.c
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index 3fd21bb7cb37..7b8b8eb0191f 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -114,12 +114,17 @@ Documentation/devicetree/bindings/thermal/thermal.txt
+ The thermal IP can probe the temperature all around the processor. It
+ may feature several channels, each of them wired to one sensor.
  
-+MARVELL MVEBU THERMAL DRIVER
-+M:	Miquel Raynal <miquel.raynal@bootlin.com>
-+S:	Maintained
-+F:	drivers/thermal/armada_thermal.c
++It is possible to setup an overheat interrupt by giving at least one
++critical point to any subnode of the thermal-zone node.
 +
- MARVELL MVNETA ETHERNET DRIVER
- M:	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
- L:	netdev@vger.kernel.org
+ Required properties:
+ - compatible: must be one of:
+   * marvell,armada-ap806-thermal
+ - reg: register range associated with the thermal functions.
+ 
+ Optional properties:
++- interrupts: overheat interrupt handle. Should point to line 18 of the
++  SEI irqchip. See interrupt-controller/interrupts.txt
+ - #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
+   to this IP and represents the channel ID. There is one sensor per
+   channel. O refers to the thermal IP internal channel, while positive
+@@ -133,6 +138,8 @@ ap_syscon1: system-controller@6f8000 {
+ 	ap_thermal: thermal-sensor@80 {
+ 		compatible = "marvell,armada-ap806-thermal";
+ 		reg = <0x80 0x10>;
++		interrupt-parent = <&sei>;
++		interrupts = <18>;
+ 		#thermal-sensor-cells = <1>;
+ 	};
+ };
 -- 
 2.19.1
