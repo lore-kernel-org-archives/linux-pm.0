@@ -1,51 +1,71 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
-Date: Wed, 12 Dec 2018 11:17:03 +0100
-Message-ID: <CAJZ5v0gNqUO59_xQAdk-rVR6JJCZ4RfHbNJOUuBWSyy6yN6pjw@mail.gmail.com>
-References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <20181210122104.GL5289@hirez.programming.kicks-ass.net>
- <CAJZ5v0j-a6cHayRtcsUPbUTBT0iBSUvmcUy6pfSSvUVcTMBxbw@mail.gmail.com>
- <20181210225134.GB24811@worktop.programming.kicks-ass.net>
- <CAJZ5v0jvbDCCgy=nUfb-yZCYGOxe4-XexbvnmeBm8ZPDPBaK4w@mail.gmail.com>
- <20181212094610.GW5289@hirez.programming.kicks-ass.net> <CAPDyKFpPGosZ69ZgMZMASGZxTn1kxu5GrJ7rZoXKn8MC05SMTQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/6] PM / Domains: Allow performance state propagation
+Date: Wed, 12 Dec 2018 16:27:23 +0530
+Message-ID: <cover.1544611890.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpPGosZ69ZgMZMASGZxTn1kxu5GrJ7rZoXKn8MC05SMTQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 12, 2018 at 10:57 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Wed, 12 Dec 2018 at 10:46, Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Tue, Dec 11, 2018 at 10:51:48AM +0100, Rafael J. Wysocki wrote:
-> > > On Mon, Dec 10, 2018 at 11:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > > > Dunno; it could be cold cachelines, at which point it can be fairly
-> > > > expensive. Also, being stuck with API is fairly horrible if you want to
-> > > > 'fix' it.
-> > >
-> > > All of the cache lines involved should've been touched earlier in this
-> > > code path by the governor.  At least menu and the new one both touch
-> > > them.
-> > >
-> > > The API part I'm not too worried about.  I know it is useful and two
-> > > other people have told that to me already. :-)
-> >
-> > Like said on IRC; I mostly wanted to raise the issue of overhead due to
-> > stats and ABI -- it's something I've been bitten by too many times :/
-> >
-> > If you're confident you're hitting the same lines with the already
-> > extant accouning (time and usage) and you cannot make the whole lot
-> > conditional because of ABI (bah) then I'll not stand in the way here.
-> >
-> > I agree the numbers are useful, I'm just weary of overhead.
->
-> I tend to agree. So then why not move this to debugfs, it seems like
-> it's really there it belongs. No?
+Hi,
 
-The "usage" and "time" counters are there in sysfs already and they
-are ABI, so putting the new ones into debugfs only makes them harder
-to use for no real gain.
+This series adds performance state propagation support in genpd core.
+The propagation happens from the sub-domains to their masters. More
+details can be found in the individual commit logs.
+
+This is tested on hikey960 by faking power domains in such a way that
+the CPU devices have two power domains and both of them have the same
+master domain. The CPU device, as well as its power domains have
+"required-opps" property set and the performance requirement from the
+CPU eventually configures all the domains (2 sub-domains and 1 master).
+
+Based on opp/linux-next branch (which is 4.20-rc1 +
+multiple-power-domain-support-in-opp-core + some OPP fixes).
+
+Rajendra has already tested the previous version of this series and so I
+have included his Tested-by for all patches.
+
+V2->V3:
+- Include Ulf's patch (sent separately earlier) with this series.
+- The performance state update code doesn't rely anymore on the power
+  on/off state of the genpd, it sets and propagates rate in all cases.
+- That simplified a lot of code from V2 in _genpd_power_on().
+- commit logs improved for few commits.
+- s/mstate/master_state/
+- and few more minor changes.
+
+v1->V2:
+- First patch (1/5) is new and an improvement to earlier stuff.
+- Move genpd_status_on() check to _genpd_reeval_performance_state() from
+  _genpd_set_performance_state().
+- Improve dev_pm_opp_xlate_performance_state() to handle 1:1 pstate
+  mapping between genpd and its master and also to fix a problem while
+  finding the dst_table.
+- Handle pstate=0 case properly.
+
+--
+viresh
+
+Ulf Hansson (1):
+  PM / Domains: Make genpd performance states orthogonal to the
+    idlestates
+
+Viresh Kumar (5):
+  OPP: Improve _find_table_of_opp_np()
+  OPP: Add dev_pm_opp_xlate_performance_state() helper
+  PM / Domains: Save OPP table pointer in genpd
+  PM / Domains: Factorize dev_pm_genpd_set_performance_state()
+  PM / Domains: Propagate performance state updates
+
+ drivers/base/power/domain.c | 207 ++++++++++++++++++++++++++----------
+ drivers/opp/core.c          |  59 ++++++++++
+ drivers/opp/of.c            |  14 ++-
+ include/linux/pm_domain.h   |   6 ++
+ include/linux/pm_opp.h      |   7 ++
+ 5 files changed, 235 insertions(+), 58 deletions(-)
+
+-- 
+2.19.1.568.g152ad8e3369a
