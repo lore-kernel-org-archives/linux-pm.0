@@ -1,161 +1,35 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: intel_pstate: Lowest frequency not reached with Intel i7-6700
-Date: Thu, 13 Dec 2018 08:36:29 -0800
-Message-ID: <f65d387ffa66caf0ca6e124f7cd77f411e80ade7.camel@linux.intel.com>
-References: <000701d4926f$533eb270$f9bc1750$@net>
-         <a4321c48-e9df-1a2a-cfbd-bac07a9c65d8@molgen.mpg.de>
-         <CAJZ5v0gUDzy8vV=JajDHZJi2F0FyHUkFfYbbJhMioUa5XoKuqA@mail.gmail.com>
-         <efc5d72c-ca07-9a09-8e9e-2bb0732e0040@molgen.mpg.de>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH 0/2] arm64: dts: sdm845: Add sdm845 GPU
+ interconnect
+Date: Thu, 13 Dec 2018 10:31:47 -0700
+Message-ID: <20181213173149.6975-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <efc5d72c-ca07-9a09-8e9e-2bb0732e0040@molgen.mpg.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Menzel <pmenzel@molgen.mpg.de>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2018-12-13 at 13:41 +0100, Paul Menzel wrote:
-> Dear Rafael,
-> 
-> 
-> On 12/13/18 11:39, Rafael J. Wysocki wrote:
-> > On Thu, Dec 13, 2018 at 10:54 AM Paul Menzel <pmenzel@molgen.mpg.de
-> > > wrote:
-> > > On 12/13/18 00:06, Doug Smythies wrote:
-> > > > On 2018.12.12 13:40 Paul Menzel wrote:
-> > > > 
-> > > > > Using *powersave* as P-state selection algorithm, on an idle
-> > > > > system
-> > > > 
-> > > > Define "idle system".
-> > > > If your computer is running a GUI, or is even a server without
-> > > > a GUI
-> > > > but with many services running, then "idle" really isn't.
-> > > > Below is from my test server, with many services disabled, so
-> > > > "idle" really is quite "idle"
-> > > > 
-> > > > doug@s15:~/temp$ sudo turbostat --Summary --quiet --show
-> > > > Busy%,Bzy_MHz,PkgTmp,PkgWatt --interval 15
-> > > > Busy%   Bzy_MHz PkgTmp  PkgWatt
-> > > > 0.01    1608    27      3.71
-> > > > 0.01    1619    27      3.71
-> > > > 0.01    1600    28      3.71
-> > > > 0.01    1600    28      3.70
-> > > > 
-> > > > Note that p state 16 (1600 MHz) is the minimum for my older i7-
-> > > > 2600k
-> > > > processor.
-> > > 
-> > > The thing is, on an Intel Kaby Lake laptop with Ubuntu 18.10 and
-> > > GNOME
-> > > running, it goes down to the lowest listed frequency.
-> 
-> Checking the numbers again, I was mistaken. The lowest possible
-> frequency
-> of the Intel Kaby Lake i7-7500U in that laptop is 400 MHz, and it is
-> going down to 600 MHz. Busy% from turbostat is 0.3 to 0.4.
-> 
-> > Kaby Lake has hardware-managed P-states (HWP) which is a different
-> > mechanism.
-> 
-> Isn’t HWP also available for the 6th generation?
-> 
->     $ dmesg | grep intel_pstate
->     [    2.092456] intel_pstate: Intel P-state driver initializing
->     [    2.094820] intel_pstate: HWP enabled
-> 
-> > > > > Shouldn’t it go down until 800 MHz?
-> > > > 
-> > > > We would need some actual busy information, turbostat is the
-> > > > recommended tool, to know for sure.
-> > > 
-> > > Here you go.
-> > > 
-> > > ```
-> > > tools/power/x86/turbostat> sudo ./turbostat --Summary --quiet --
-> > > show Busy%,Bzy_MHz,PkgTmp,PkgWatt --interval 15
-> > > Busy%    Bzy_MHz    PkgTmp    PkgWatt
-> > > 3.59    1167    31    1.68
-> > > 3.21    903    31    1.34
-> > > 3.21    906    31    1.34
-> > > 3.27    901    31    1.35
-> > > 8.23    2715    30    2.32  ← stopping GDM (systemctl stop gdm)
-> > > 2.95    915    30    1.18
-> > > 2.91    906    30    1.18
-> > > 2.92    903    30    1.17
-> > > 2.90    900    29    1.17
-> > > 2.89    903    29    1.18
-> > > 2.91    903    30    1.18
-> > > 2.89    903    29    1.18
-> > > 2.89    900    29    1.18
-> > > 2.90    903    30    1.18
-> > > 2.90    903    29    1.17
-> > > 2.90    903    29    1.17
-> > > 2.90    900    29    1.16
-> > > 2.90    903    29    1.14
-> > > 2.90    903    28    1.11
-> > > 2.90    903    29    1.10
-> > > 2.91    900    29    1.16
-> > > 2.91    903    29    1.14
-> > > 2.90    903    29    1.12
-> > > 2.90    903    29    1.16
-> > > 2.90    900    28    1.17
-> > > 2.92    903    29    1.16
-> > > 2.90    903    29    1.16
-> > > 2.90    903    29    1.16
-> > > ```
-> > > 
-> > > 800 MHz should be enough to keep GDM running, shouldn’t it?
-> > 
-> > Well, depending.
-> > 
-> > > Otherwise only SSH was running.
-> > 
-> > There obviously is something that causes it to stay at 900 MHz.
-> 
-> It’s not obvious to me, but you have more experience. It’d expect
-> to at least one core(?) to go down to 800 MHz and not all to stay
-> at 900 MHz.
-Also HWP will pick up energy efficient P-state. If it sees that it is
-better to run at a higher P-state and complete the job at the same
-power level.
-There is a way to turn off that but better not do.
-
-Thanks,
-Srinivas
-
-> 
-> > Please check max_perf_pct, min_perf_pct and num_pstates under
-> > /sys/devices/system/cpu/intel_pstate/ .
-> 
->     /sys/devices/system/cpu/intel_pstate> cat max_perf_pct
-> min_perf_pct num_pstates
->     100
->     20
->     33
-> 
-> > Also cpuinfo_max_freq, cpuinfo_min_freq, scaling_max_freq,
-> > scaling_min_freq under /sys/devices/system/cpu/cpufreq/policy0/ .
-> 
-> /sys/devices/system/cpu/cpufreq/policy0> cat cpuinfo_{min,max}_freq
-> scaling_{min,max}_freq
->     800000
->     4000000
->     800000
->     4000000
-> 
-> > However, please note that Busy% of 3 isn't particularly low.
-> 
-> Indeed. On the laptop it is around 0.3 to 0.4 even with GNOME
-> running.
-> 
-> So, to check if everything is working, I boot into initramfs
-> and check the numbers there?
-> 
-> 
-> Kind regards,
-> 
-> Paul
-> 
+VHdvIHF1aWNrIHBhdGNoZXMgdG8gZG9jdW1lbnQgYW5kIGFkZCBhbiBpbnRlcmNvbm5lY3QgcG9y
+dCBkZWZpbml0aW9uCmZvciB0aGUgc2RtODQ1IEdQVS4KClRoaXMgaXMgYmFzZWQgb24gdGhlIGJh
+c2UgR1BVIERUIGNoYW5nZXM6Cmh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9yZy9zZXJp
+ZXMvMzkzMDgvCgpBcyB3ZWxsIGFzIHRoZSBEVCBub2RlcyBmcm9tIEdlb3JnaToKaHR0cHM6Ly9w
+YXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcxOTQ4My8KCkpvcmRhbiBDcm91c2UgKDIpOgog
+IGR0LWJpbmRpbmdzOiBkcm0vbXNtL2E2eHg6IERvY3VtZW50IGludGVyY29ubmVjdCBwcm9wZXJ0
+aWVzIGZvciBHUFUKICBhcm02NDogZHRzOiBzZG04NDU6IEFkZCBpbnRlcmNvbm5lY3QgZm9yIEdQ
+VQoKIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0
+IHwgNiArKysrKysKIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSAgICAgICAg
+ICAgICAgICAgIHwgMyArKysKIDIgZmlsZXMgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspCgotLSAK
+Mi4xOC4wCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpG
+cmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0
+cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
