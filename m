@@ -1,261 +1,173 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Subject: Re: intel_pstate: Lowest frequency not reached with Intel i7-6700
-Date: Thu, 13 Dec 2018 13:41:40 +0100
-Message-ID: <efc5d72c-ca07-9a09-8e9e-2bb0732e0040@molgen.mpg.de>
-References: <000701d4926f$533eb270$f9bc1750$@net>
- <a4321c48-e9df-1a2a-cfbd-bac07a9c65d8@molgen.mpg.de>
- <CAJZ5v0gUDzy8vV=JajDHZJi2F0FyHUkFfYbbJhMioUa5XoKuqA@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH V2 12/21] cpufreq: tegra124: do not handle the CPU rail
+Date: Thu, 13 Dec 2018 12:55:29 +0000
+Message-ID: <83b2b2cd-7db5-5a5d-1c9e-9fe70afd6b4a@nvidia.com>
+References: <20181213093438.29621-1-josephl@nvidia.com>
+ <20181213093438.29621-13-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="------------ms060400060302000004090807"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gUDzy8vV=JajDHZJi2F0FyHUkFfYbbJhMioUa5XoKuqA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181213093438.29621-13-josephl@nvidia.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Joseph Lo <josephl@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
 
---------------ms060400060302000004090807
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+On 13/12/2018 09:34, Joseph Lo wrote:
+> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
+> rail. So this driver shouldn't handle for the CPU clock switching from
+> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
+> which handle the frequency/voltage scaling in the background.
+> 
+> This patch removes the driver dependency of the CPU rail, as well as not
+> allow it to be built as a module and remove the removal function. So it
+> can keep working on DFLL clock.
+> 
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+> ---
+> *V2:
+>  - update the commit message since we change the driver not able to be
+>  built as a module and remove the removal function in V2
+> ---
+>  drivers/cpufreq/Kconfig.arm        |  4 +--
+>  drivers/cpufreq/tegra124-cpufreq.c | 41 ++----------------------------
+>  2 files changed, 4 insertions(+), 41 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 4e1131ef85ae..1d83b6e81222 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -261,8 +261,8 @@ config ARM_TEGRA20_CPUFREQ
+>  	  This adds the CPUFreq driver support for Tegra20 SOCs.
+>  
+>  config ARM_TEGRA124_CPUFREQ
+> -	tristate "Tegra124 CPUFreq support"
+> -	depends on ARCH_TEGRA && CPUFREQ_DT && REGULATOR
+> +	bool "Tegra124 CPUFreq support"
+> +	depends on ARCH_TEGRA && CPUFREQ_DT
+>  	default y
+>  	help
+>  	  This adds the CPUFreq driver support for Tegra124 SOCs.
+> diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+> index 43530254201a..a1bfde0a7950 100644
+> --- a/drivers/cpufreq/tegra124-cpufreq.c
+> +++ b/drivers/cpufreq/tegra124-cpufreq.c
+> @@ -22,11 +22,9 @@
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_opp.h>
+> -#include <linux/regulator/consumer.h>
+>  #include <linux/types.h>
+>  
+>  struct tegra124_cpufreq_priv {
+> -	struct regulator *vdd_cpu_reg;
+>  	struct clk *cpu_clk;
+>  	struct clk *pllp_clk;
+>  	struct clk *pllx_clk;
+> @@ -60,14 +58,6 @@ static int tegra124_cpu_switch_to_dfll(struct tegra124_cpufreq_priv *priv)
+>  	return ret;
+>  }
+>  
+> -static void tegra124_cpu_switch_to_pllx(struct tegra124_cpufreq_priv *priv)
+> -{
+> -	clk_set_parent(priv->cpu_clk, priv->pllp_clk);
+> -	clk_disable_unprepare(priv->dfll_clk);
+> -	regulator_sync_voltage(priv->vdd_cpu_reg);
+> -	clk_set_parent(priv->cpu_clk, priv->pllx_clk);
+> -}
+> -
+>  static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  {
+>  	struct tegra124_cpufreq_priv *priv;
+> @@ -88,16 +78,10 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  	if (!np)
+>  		return -ENODEV;
+>  
+> -	priv->vdd_cpu_reg = regulator_get(cpu_dev, "vdd-cpu");
+> -	if (IS_ERR(priv->vdd_cpu_reg)) {
+> -		ret = PTR_ERR(priv->vdd_cpu_reg);
+> -		goto out_put_np;
+> -	}
+> -
+>  	priv->cpu_clk = of_clk_get_by_name(np, "cpu_g");
+>  	if (IS_ERR(priv->cpu_clk)) {
+>  		ret = PTR_ERR(priv->cpu_clk);
+> -		goto out_put_vdd_cpu_reg;
+> +		goto out_put_np;
+>  	}
+>  
+>  	priv->dfll_clk = of_clk_get_by_name(np, "dfll");
+> @@ -129,15 +113,13 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  		platform_device_register_full(&cpufreq_dt_devinfo);
+>  	if (IS_ERR(priv->cpufreq_dt_pdev)) {
+>  		ret = PTR_ERR(priv->cpufreq_dt_pdev);
+> -		goto out_switch_to_pllx;
+> +		goto out_put_pllp_clk;
+>  	}
+>  
+>  	platform_set_drvdata(pdev, priv);
+>  
+>  	return 0;
+>  
+> -out_switch_to_pllx:
+> -	tegra124_cpu_switch_to_pllx(priv);
+>  out_put_pllp_clk:
+>  	clk_put(priv->pllp_clk);
+>  out_put_pllx_clk:
+> @@ -146,34 +128,15 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+>  	clk_put(priv->dfll_clk);
+>  out_put_cpu_clk:
+>  	clk_put(priv->cpu_clk);
+> -out_put_vdd_cpu_reg:
+> -	regulator_put(priv->vdd_cpu_reg);
+>  out_put_np:
+>  	of_node_put(np);
+>  
+>  	return ret;
+>  }
+>  
+> -static int tegra124_cpufreq_remove(struct platform_device *pdev)
+> -{
+> -	struct tegra124_cpufreq_priv *priv = platform_get_drvdata(pdev);
+> -
+> -	platform_device_unregister(priv->cpufreq_dt_pdev);
+> -	tegra124_cpu_switch_to_pllx(priv);
+> -
+> -	clk_put(priv->pllp_clk);
+> -	clk_put(priv->pllx_clk);
+> -	clk_put(priv->dfll_clk);
+> -	clk_put(priv->cpu_clk);
+> -	regulator_put(priv->vdd_cpu_reg);
+> -
+> -	return 0;
+> -}
+> -
+>  static struct platform_driver tegra124_cpufreq_platdrv = {
+>  	.driver.name	= "cpufreq-tegra124",
+>  	.probe		= tegra124_cpufreq_probe,
+> -	.remove		= tegra124_cpufreq_remove,
+>  };
+>  
+>  static int __init tegra_cpufreq_init(void)
+> 
 
-Dear Rafael,
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
 
+Cheers
+Jon
 
-On 12/13/18 11:39, Rafael J. Wysocki wrote:
-> On Thu, Dec 13, 2018 at 10:54 AM Paul Menzel <pmenzel@molgen.mpg.de> wr=
-ote:
-
->> On 12/13/18 00:06, Doug Smythies wrote:
->>> On 2018.12.12 13:40 Paul Menzel wrote:
->>>
->>>> Using *powersave* as P-state selection algorithm, on an idle system
->>>
->>> Define "idle system".
->>> If your computer is running a GUI, or is even a server without a GUI
->>> but with many services running, then "idle" really isn't.
->>> Below is from my test server, with many services disabled, so
->>> "idle" really is quite "idle"
->>>
->>> doug@s15:~/temp$ sudo turbostat --Summary --quiet --show Busy%,Bzy_MH=
-z,PkgTmp,PkgWatt --interval 15
->>> Busy%   Bzy_MHz PkgTmp  PkgWatt
->>> 0.01    1608    27      3.71
->>> 0.01    1619    27      3.71
->>> 0.01    1600    28      3.71
->>> 0.01    1600    28      3.70
->>>
->>> Note that p state 16 (1600 MHz) is the minimum for my older i7-2600k
->>> processor.
->>
->> The thing is, on an Intel Kaby Lake laptop with Ubuntu 18.10 and GNOME=
-
->> running, it goes down to the lowest listed frequency.
-
-Checking the numbers again, I was mistaken. The lowest possible frequency=
-
-of the Intel Kaby Lake i7-7500U in that laptop is 400 MHz, and it is
-going down to 600 MHz. Busy% from turbostat is 0.3 to 0.4.
-
-> Kaby Lake has hardware-managed P-states (HWP) which is a different mech=
-anism.
-
-Isn=E2=80=99t HWP also available for the 6th generation?
-
-    $ dmesg | grep intel_pstate
-    [    2.092456] intel_pstate: Intel P-state driver initializing
-    [    2.094820] intel_pstate: HWP enabled
-
->>>> Shouldn=E2=80=99t it go down until 800 MHz?
->>>
->>> We would need some actual busy information, turbostat is the
->>> recommended tool, to know for sure.
->>
->> Here you go.
->>
->> ```
->> tools/power/x86/turbostat> sudo ./turbostat --Summary --quiet --show B=
-usy%,Bzy_MHz,PkgTmp,PkgWatt --interval 15
->> Busy%    Bzy_MHz    PkgTmp    PkgWatt
->> 3.59    1167    31    1.68
->> 3.21    903    31    1.34
->> 3.21    906    31    1.34
->> 3.27    901    31    1.35
->> 8.23    2715    30    2.32  =E2=86=90 stopping GDM (systemctl stop gdm=
-)
->> 2.95    915    30    1.18
->> 2.91    906    30    1.18
->> 2.92    903    30    1.17
->> 2.90    900    29    1.17
->> 2.89    903    29    1.18
->> 2.91    903    30    1.18
->> 2.89    903    29    1.18
->> 2.89    900    29    1.18
->> 2.90    903    30    1.18
->> 2.90    903    29    1.17
->> 2.90    903    29    1.17
->> 2.90    900    29    1.16
->> 2.90    903    29    1.14
->> 2.90    903    28    1.11
->> 2.90    903    29    1.10
->> 2.91    900    29    1.16
->> 2.91    903    29    1.14
->> 2.90    903    29    1.12
->> 2.90    903    29    1.16
->> 2.90    900    28    1.17
->> 2.92    903    29    1.16
->> 2.90    903    29    1.16
->> 2.90    903    29    1.16
->> ```
->>
->> 800 MHz should be enough to keep GDM running, shouldn=E2=80=99t it?
->=20
-> Well, depending.
->=20
->> Otherwise only SSH was running.
->=20
-> There obviously is something that causes it to stay at 900 MHz.
-
-It=E2=80=99s not obvious to me, but you have more experience. It=E2=80=99=
-d expect
-to at least one core(?) to go down to 800 MHz and not all to stay
-at 900 MHz.
-
-> Please check max_perf_pct, min_perf_pct and num_pstates under
-> /sys/devices/system/cpu/intel_pstate/ .
-
-    /sys/devices/system/cpu/intel_pstate> cat max_perf_pct min_perf_pct n=
-um_pstates
-    100
-    20
-    33
-
-> Also cpuinfo_max_freq, cpuinfo_min_freq, scaling_max_freq,
-> scaling_min_freq under /sys/devices/system/cpu/cpufreq/policy0/ .
-
-/sys/devices/system/cpu/cpufreq/policy0> cat cpuinfo_{min,max}_freq scali=
-ng_{min,max}_freq
-    800000
-    4000000
-    800000
-    4000000
-
-> However, please note that Busy% of 3 isn't particularly low.
-
-Indeed. On the laptop it is around 0.3 to 0.4 even with GNOME
-running.
-
-So, to check if everything is working, I boot into initramfs
-and check the numbers there?
-
-
-Kind regards,
-
-Paul
-
-
---------------ms060400060302000004090807
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCC
-EFowggUSMIID+qADAgECAgkA4wvV+K8l2YEwDQYJKoZIhvcNAQELBQAwgYIxCzAJBgNVBAYT
-AkRFMSswKQYDVQQKDCJULVN5c3RlbXMgRW50ZXJwcmlzZSBTZXJ2aWNlcyBHbWJIMR8wHQYD
-VQQLDBZULVN5c3RlbXMgVHJ1c3QgQ2VudGVyMSUwIwYDVQQDDBxULVRlbGVTZWMgR2xvYmFs
-Um9vdCBDbGFzcyAyMB4XDTE2MDIyMjEzMzgyMloXDTMxMDIyMjIzNTk1OVowgZUxCzAJBgNV
-BAYTAkRFMUUwQwYDVQQKEzxWZXJlaW4genVyIEZvZXJkZXJ1bmcgZWluZXMgRGV1dHNjaGVu
-IEZvcnNjaHVuZ3NuZXR6ZXMgZS4gVi4xEDAOBgNVBAsTB0RGTi1QS0kxLTArBgNVBAMTJERG
-Ti1WZXJlaW4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgMjCCASIwDQYJKoZIhvcNAQEBBQAD
-ggEPADCCAQoCggEBAMtg1/9moUHN0vqHl4pzq5lN6mc5WqFggEcVToyVsuXPztNXS43O+FZs
-FVV2B+pG/cgDRWM+cNSrVICxI5y+NyipCf8FXRgPxJiZN7Mg9mZ4F4fCnQ7MSjLnFp2uDo0p
-eQcAIFTcFV9Kltd4tjTTwXS1nem/wHdN6r1ZB+BaL2w8pQDcNb1lDY9/Mm3yWmpLYgHurDg0
-WUU2SQXaeMpqbVvAgWsRzNI8qIv4cRrKO+KA3Ra0Z3qLNupOkSk9s1FcragMvp0049ENF4N1
-xDkesJQLEvHVaY4l9Lg9K7/AjsMeO6W/VRCrKq4Xl14zzsjz9AkH4wKGMUZrAcUQDBHHWekC
-AwEAAaOCAXQwggFwMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUk+PYMiba1fFKpZFK4OpL
-4qIMz+EwHwYDVR0jBBgwFoAUv1kgNgB5oKAia4zV8mHSuCzLgkowEgYDVR0TAQH/BAgwBgEB
-/wIBAjAzBgNVHSAELDAqMA8GDSsGAQQBga0hgiwBAQQwDQYLKwYBBAGBrSGCLB4wCAYGZ4EM
-AQICMEwGA1UdHwRFMEMwQaA/oD2GO2h0dHA6Ly9wa2kwMzM2LnRlbGVzZWMuZGUvcmwvVGVs
-ZVNlY19HbG9iYWxSb290X0NsYXNzXzIuY3JsMIGGBggrBgEFBQcBAQR6MHgwLAYIKwYBBQUH
-MAGGIGh0dHA6Ly9vY3NwMDMzNi50ZWxlc2VjLmRlL29jc3ByMEgGCCsGAQUFBzAChjxodHRw
-Oi8vcGtpMDMzNi50ZWxlc2VjLmRlL2NydC9UZWxlU2VjX0dsb2JhbFJvb3RfQ2xhc3NfMi5j
-ZXIwDQYJKoZIhvcNAQELBQADggEBAIcL/z4Cm2XIVi3WO5qYi3FP2ropqiH5Ri71sqQPrhE4
-eTizDnS6dl2e6BiClmLbTDPo3flq3zK9LExHYFV/53RrtCyD2HlrtrdNUAtmB7Xts5et6u5/
-MOaZ/SLick0+hFvu+c+Z6n/XUjkurJgARH5pO7917tALOxrN5fcPImxHhPalR6D90Bo0fa3S
-PXez7vTXTf/D6OWST1k+kEcQSrCFWMBvf/iu7QhCnh7U3xQuTY+8npTD5+32GPg8SecmqKc2
-2CzeIs2LgtjZeOJVEqM7h0S2EQvVDFKvaYwPBt/QolOLV5h7z/0HJPT8vcP9SpIClxvyt7bP
-ZYoaorVyGTkwggWNMIIEdaADAgECAgwcOtRQhH7u81j4jncwDQYJKoZIhvcNAQELBQAwgZUx
-CzAJBgNVBAYTAkRFMUUwQwYDVQQKEzxWZXJlaW4genVyIEZvZXJkZXJ1bmcgZWluZXMgRGV1
-dHNjaGVuIEZvcnNjaHVuZ3NuZXR6ZXMgZS4gVi4xEDAOBgNVBAsTB0RGTi1QS0kxLTArBgNV
-BAMTJERGTi1WZXJlaW4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgMjAeFw0xNjExMDMxNTI0
-NDhaFw0zMTAyMjIyMzU5NTlaMGoxCzAJBgNVBAYTAkRFMQ8wDQYDVQQIDAZCYXllcm4xETAP
-BgNVBAcMCE11ZW5jaGVuMSAwHgYDVQQKDBdNYXgtUGxhbmNrLUdlc2VsbHNjaGFmdDEVMBMG
-A1UEAwwMTVBHIENBIC0gRzAyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnhx4
-59Lh4WqgOs/Md04XxU2yFtfM15ZuJV0PZP7BmqSJKLLPyqmOrADfNdJ5PIGBto2JBhtRRBHd
-G0GROOvTRHjzOga95WOTeura79T21FWwwAwa29OFnD3ZplQs6HgdwQrZWNi1WHNJxn/4mA19
-rNEBUc5urSIpZPvZi5XmlF3v3JHOlx3KWV7mUteB4pwEEfGTg4npPAJbp2o7arxQdoIq+Pu2
-OsvqhD7Rk4QeaX+EM1QS4lqd1otW4hE70h/ODPy1xffgbZiuotWQLC6nIwa65Qv6byqlIX0q
-Zuu99Vsu+r3sWYsL5SBkgecNI7fMJ5tfHrjoxfrKl/ErTAt8GQIDAQABo4ICBTCCAgEwEgYD
-VR0TAQH/BAgwBgEB/wIBATAOBgNVHQ8BAf8EBAMCAQYwKQYDVR0gBCIwIDANBgsrBgEEAYGt
-IYIsHjAPBg0rBgEEAYGtIYIsAQEEMB0GA1UdDgQWBBTEiKUH7rh7qgwTv9opdGNSG0lwFjAf
-BgNVHSMEGDAWgBST49gyJtrV8UqlkUrg6kviogzP4TCBjwYDVR0fBIGHMIGEMECgPqA8hjpo
-dHRwOi8vY2RwMS5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1Yi9jcmwvY2Fjcmwu
-Y3JsMECgPqA8hjpodHRwOi8vY2RwMi5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1
-Yi9jcmwvY2FjcmwuY3JsMIHdBggrBgEFBQcBAQSB0DCBzTAzBggrBgEFBQcwAYYnaHR0cDov
-L29jc3AucGNhLmRmbi5kZS9PQ1NQLVNlcnZlci9PQ1NQMEoGCCsGAQUFBzAChj5odHRwOi8v
-Y2RwMS5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1Yi9jYWNlcnQvY2FjZXJ0LmNy
-dDBKBggrBgEFBQcwAoY+aHR0cDovL2NkcDIucGNhLmRmbi5kZS9nbG9iYWwtcm9vdC1nMi1j
-YS9wdWIvY2FjZXJ0L2NhY2VydC5jcnQwDQYJKoZIhvcNAQELBQADggEBABLpeD5FygzqOjj+
-/lAOy20UQOGWlx0RMuPcI4nuyFT8SGmK9lD7QCg/HoaJlfU/r78ex+SEide326evlFAoJXIF
-jVyzNltDhpMKrPIDuh2N12zyn1EtagqPL6hu4pVRzcBpl/F2HCvtmMx5K4WN1L1fmHWLcSap
-dhXLvAZ9RG/B3rqyULLSNN8xHXYXpmtvG0VGJAndZ+lj+BH7uvd3nHWnXEHC2q7iQlDUqg0a
-wIqWJgdLlx1Q8Dg/sodv0m+LN0kOzGvVDRCmowBdWGhhusD+duKV66pBl+qhC+4LipariWaM
-qK5ppMQROATjYeNRvwI+nDcEXr2vDaKmdbxgDVwwggWvMIIEl6ADAgECAgweKlJIhfynPMVG
-/KIwDQYJKoZIhvcNAQELBQAwajELMAkGA1UEBhMCREUxDzANBgNVBAgMBkJheWVybjERMA8G
-A1UEBwwITXVlbmNoZW4xIDAeBgNVBAoMF01heC1QbGFuY2stR2VzZWxsc2NoYWZ0MRUwEwYD
-VQQDDAxNUEcgQ0EgLSBHMDIwHhcNMTcxMTE0MTEzNDE2WhcNMjAxMTEzMTEzNDE2WjCBizEL
-MAkGA1UEBhMCREUxIDAeBgNVBAoMF01heC1QbGFuY2stR2VzZWxsc2NoYWZ0MTQwMgYDVQQL
-DCtNYXgtUGxhbmNrLUluc3RpdHV0IGZ1ZXIgbW9sZWt1bGFyZSBHZW5ldGlrMQ4wDAYDVQQL
-DAVNUElNRzEUMBIGA1UEAwwLUGF1bCBNZW56ZWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
-ggEKAoIBAQDIh/UR/AX/YQ48VWWDMLTYtXjYJyhRHMc81ZHMMoaoG66lWB9MtKRTnB5lovLZ
-enTIUyPsCrMhTqV9CWzDf6v9gOTWVxHEYqrUwK5H1gx4XoK81nfV8oGV4EKuVmmikTXiztGz
-peyDmOY8o/EFNWP7YuRkY/lPQJQBeBHYq9AYIgX4StuXu83nusq4MDydygVOeZC15ts0tv3/
-6WmibmZd1OZRqxDOkoBbY3Djx6lERohs3IKS6RKiI7e90rCSy9rtidJBOvaQS9wvtOSKPx0a
-+2pAgJEVzZFjOAfBcXydXtqXhcpOi2VCyl+7+LnnTz016JJLsCBuWEcB3kP9nJYNAgMBAAGj
-ggIxMIICLTAJBgNVHRMEAjAAMA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcD
-AgYIKwYBBQUHAwQwHQYDVR0OBBYEFHM0Mc3XjMLlhWpp4JufRELL4A/qMB8GA1UdIwQYMBaA
-FMSIpQfuuHuqDBO/2il0Y1IbSXAWMCAGA1UdEQQZMBeBFXBtZW56ZWxAbW9sZ2VuLm1wZy5k
-ZTB9BgNVHR8EdjB0MDigNqA0hjJodHRwOi8vY2RwMS5wY2EuZGZuLmRlL21wZy1nMi1jYS9w
-dWIvY3JsL2NhY3JsLmNybDA4oDagNIYyaHR0cDovL2NkcDIucGNhLmRmbi5kZS9tcGctZzIt
-Y2EvcHViL2NybC9jYWNybC5jcmwwgc0GCCsGAQUFBwEBBIHAMIG9MDMGCCsGAQUFBzABhido
-dHRwOi8vb2NzcC5wY2EuZGZuLmRlL09DU1AtU2VydmVyL09DU1AwQgYIKwYBBQUHMAKGNmh0
-dHA6Ly9jZHAxLnBjYS5kZm4uZGUvbXBnLWcyLWNhL3B1Yi9jYWNlcnQvY2FjZXJ0LmNydDBC
-BggrBgEFBQcwAoY2aHR0cDovL2NkcDIucGNhLmRmbi5kZS9tcGctZzItY2EvcHViL2NhY2Vy
-dC9jYWNlcnQuY3J0MEAGA1UdIAQ5MDcwDwYNKwYBBAGBrSGCLAEBBDARBg8rBgEEAYGtIYIs
-AQEEAwYwEQYPKwYBBAGBrSGCLAIBBAMGMA0GCSqGSIb3DQEBCwUAA4IBAQCQs6bUDROpFO2F
-Qz2FMgrdb39VEo8P3DhmpqkaIMC5ZurGbbAL/tAR6lpe4af682nEOJ7VW86ilsIJgm1j0ueY
-aOuL8jrN4X7IF/8KdZnnNnImW3QVni6TCcc+7+ggci9JHtt0IDCj5vPJBpP/dKXLCN4M+exl
-GXYpfHgxh8gclJPY1rquhQrihCzHfKB01w9h9tWZDVMtSoy9EUJFhCXw7mYUsvBeJwZesN2B
-fndPkrXx6XWDdU3S1LyKgHlLIFtarLFm2Hb5zAUR33h+26cN6ohcGqGEEzgIG8tXS8gztEaj
-1s2RyzmKd4SXTkKR3GhkZNVWy+gM68J7jP6zzN+cMYIDmjCCA5YCAQEwejBqMQswCQYDVQQG
-EwJERTEPMA0GA1UECAwGQmF5ZXJuMREwDwYDVQQHDAhNdWVuY2hlbjEgMB4GA1UECgwXTWF4
-LVBsYW5jay1HZXNlbGxzY2hhZnQxFTATBgNVBAMMDE1QRyBDQSAtIEcwMgIMHipSSIX8pzzF
-RvyiMA0GCWCGSAFlAwQCAQUAoIIB8TAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
-SIb3DQEJBTEPFw0xODEyMTMxMjQxNDBaMC8GCSqGSIb3DQEJBDEiBCDH09uAP+9CqT8sewwh
-OHC57BokSlsRQyf69JHIsEn66jBsBgkqhkiG9w0BCQ8xXzBdMAsGCWCGSAFlAwQBKjALBglg
-hkgBZQMEAQIwCgYIKoZIhvcNAwcwDgYIKoZIhvcNAwICAgCAMA0GCCqGSIb3DQMCAgFAMAcG
-BSsOAwIHMA0GCCqGSIb3DQMCAgEoMIGJBgkrBgEEAYI3EAQxfDB6MGoxCzAJBgNVBAYTAkRF
-MQ8wDQYDVQQIDAZCYXllcm4xETAPBgNVBAcMCE11ZW5jaGVuMSAwHgYDVQQKDBdNYXgtUGxh
-bmNrLUdlc2VsbHNjaGFmdDEVMBMGA1UEAwwMTVBHIENBIC0gRzAyAgweKlJIhfynPMVG/KIw
-gYsGCyqGSIb3DQEJEAILMXygejBqMQswCQYDVQQGEwJERTEPMA0GA1UECAwGQmF5ZXJuMREw
-DwYDVQQHDAhNdWVuY2hlbjEgMB4GA1UECgwXTWF4LVBsYW5jay1HZXNlbGxzY2hhZnQxFTAT
-BgNVBAMMDE1QRyBDQSAtIEcwMgIMHipSSIX8pzzFRvyiMA0GCSqGSIb3DQEBAQUABIIBAG/O
-q03Re9jKs6zhZ9Rk75QqaVgb9UtGLzzpNUsSlJ1HERUo9MW0jZdkm5VDR8/Bov4HoRqcxDrY
-HrJ/lSz27dTZHL8VYuL2HlBJ95REFXKMX0O+dCt3WwDynwZivBhyEx+ULwHyvhYQpujenzDl
-y733HK6fm85DCCxD5cyHYgd//SQp1U1y1nbHb9gkG6X/nkpeF5kU9hvcTzMbVbBciQ4wsNbl
-Mh0SgilakeSOf01kyezvhX3sXzRg72GhZhXnMV9VbhdnUvXSlf49Q0/8jpD0Pag0NtgTggzk
-TwtVPs035wpbViBYnT14waujp4xCCQsxxbhbW+pw+4NsjMxhoMAAAAAAAAA=
---------------ms060400060302000004090807--
+-- 
+nvpublic
