@@ -1,52 +1,35 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu device nodes
-Date: Thu, 13 Dec 2018 10:40:05 -0800
-Message-ID: <CAD=FV=XRjOsStnfgS_P8Oh-aZpcx8eN+qfh9viVXw5BMyXEZ=g@mail.gmail.com>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181212211848.26768-3-jcrouse@codeaurora.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] driver core: Add missing dev->bus->need_parent_lock
+ checks
+Date: Thu, 13 Dec 2018 19:53:04 +0100
+Message-ID: <20181213185304.GB18107@kroah.com>
+References: <7586985.G9YL5ver76@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20181212211848.26768-3-jcrouse@codeaurora.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: jcrouse@codeaurora.org
-Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, vireshk@kernel.org, freedreno <freedreno@lists.freedesktop.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <7586985.G9YL5ver76@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Martin Liu <liumartin@google.com>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBXZWQsIERlYyAxMiwgMjAxOCBhdCAxOjE4IFBNIEpvcmRhbiBDcm91c2UgPGpjcm91
-c2VAY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Cj4gQWRkIHRoZSBub2RlcyB0byBkZXNjcmliZSB0
-aGUgQWRyZW5vIEdQVSBhbmQgR01VIGRldmljZXMuCj4KPiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4g
-Q3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+IC0tLQo+ICBhcmNoL2FybTY0L2Jvb3Qv
-ZHRzL3Fjb20vc2RtODQ1LmR0c2kgfCAxMjMgKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4g
-IDEgZmlsZSBjaGFuZ2VkLCAxMjMgaW5zZXJ0aW9ucygrKQo+Cj4gZGlmZiAtLWdpdCBhL2FyY2gv
-YXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNv
-bS9zZG04NDUuZHRzaQo+IGluZGV4IDIzM2E1ODk4ZWJjMi4uYTYwOGFmZWQ1MDJlIDEwMDY0NAo+
-IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+ICsrKyBiL2FyY2gv
-YXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+IEBAIC0xMSw2ICsxMSw3IEBACj4gICNp
-bmNsdWRlIDxkdC1iaW5kaW5ncy9jbG9jay9xY29tLHJwbWguaD4KPiAgI2luY2x1ZGUgPGR0LWJp
-bmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL2FybS1naWMuaD4KPiAgI2luY2x1ZGUgPGR0LWJp
-bmRpbmdzL3BoeS9waHktcWNvbS1xdXNiMi5oPgo+ICsjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcG93
-ZXIvcWNvbS1ycG1wZC5oPgo+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcmVzZXQvcWNvbSxzZG04
-NDUtYW9zcy5oPgo+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3Mvc29jL3Fjb20scnBtaC1yc2MuaD4K
-PiAgI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2Nsb2NrL3Fjb20sZ2NjLXNkbTg0NS5oPgo+IEBAIC0x
-MzQ5LDYgKzEzNTAsMTI4IEBACj4gICAgICAgICAgICAgICAgICAgICAgICAgfTsKPiAgICAgICAg
-ICAgICAgICAgfTsKPgo+ICsKPiArICAgICAgICAgICAgICAgZ3B1QDUwMDAwMDAgewoKbml0IHRo
-YXQgeW91J3JlIGFkZGluZyBhbiBleHRyYSBibGFuayBsaW5lIGhlcmUgdGhhdCB5b3UgZG9uJ3Qg
-bmVlZC4KR2l2ZW4gdGhlIHF1YW50aXR5IG9mIG91dHN0YW5kaW5nIGR0cyBwYXRjaGVzIHRob3Vn
-aCwgaXQncyBhbG1vc3QKY2VydGFpbiB0aGF0IEFuZHkgd2lsbCBuZWVkIHRvIG1hbnVhbGx5IHJl
-c29sdmUgY29uZmxpY3RzIHdoZW4KYXBwbHlpbmcgdGhpcyBwYXRjaCBzbyBwcmVzdW1hYmx5IGhl
-IGNhbiBmaXggdXAgd2hlbiBoZSBsYW5kcy4KCkluIGFueSBjYXNlLCBmZWVsIGZyZWUgdG8gYWRk
-OgoKUmV2aWV3ZWQtYnk6IERvdWdsYXMgQW5kZXJzb24gPGRpYW5kZXJzQGNocm9taXVtLm9yZz4K
-VGVzdGVkLWJ5OiBEb3VnbGFzIEFuZGVyc29uIDxkaWFuZGVyc0BjaHJvbWl1bS5vcmc+CgotRG91
-ZwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2
-ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9s
-aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+On Thu, Dec 13, 2018 at 07:27:47PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> __device_release_driver() has to check dev->bus->need_parent_lock
+> before dropping the parent lock and acquiring it again as it may
+> attempt to drop a lock that hasn't been acquired or lock a device
+> that shouldn't be locked and create a lock imbalance.
+> 
+> Fixes: 8c97a46af04b (driver core: hold dev's parent lock when needed)
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> This should go into -stable for everything over 4.18 methinks.
+
+Does this fix Daniel's lockdep splat?
+
+thanks,
+
+greg k-h
