@@ -1,54 +1,90 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: [PATCH V2 13/21] cpufreq: tegra124: extend to support Tegra210
-Date: Thu, 13 Dec 2018 17:34:30 +0800
-Message-ID: <20181213093438.29621-14-josephl@nvidia.com>
-References: <20181213093438.29621-1-josephl@nvidia.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
+ sub-drivers
+Date: Thu, 13 Dec 2018 10:50:50 +0100
+Message-ID: <20181213095050.GM19816@piout.net>
+References: <20181211190953.13626-1-enric.balletbo@collabora.com>
+ <20181212222937.GL19816@piout.net>
+ <6f688bfe-2ebe-1934-0375-016ae859dcfb@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181213093438.29621-1-josephl@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Joseph Lo <josephl@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6f688bfe-2ebe-1934-0375-016ae859dcfb@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter Clausen <lars@>
 List-Id: linux-pm@vger.kernel.org
 
-Tegra210 uses the same methodology as Tegra124 for CPUFreq controlling
-that based on DFLL clock. So extending this driver to support Tegra210.
+On 13/12/2018 10:30:16+0100, Enric Balletbo i Serra wrote:
+> > However, you should probably indicate which tree do you expect that to
+> > go through ;)
+> > 
+> 
+> Well, these are sub-drivers for different subsystems but are related to the main
+> ChromeOS EC. I expect all go through their specific subsystem and their
+> maintainer. I.e the rtc driver go through your tree, the mfd go through Lee's
+> tree, iio drivers through Jonathan's tree, etc. This is the reason I did not add
+> the tree. Main purpose here as that Benson and I are aware when someone sends a
+> change on one of the sub-drivers and we can review these patches.
+> 
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Joseph Lo <josephl@nvidia.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Jon Hunter <jonathanh@nvidia.com>
----
-*V2:
- - add two ack tags
----
- drivers/cpufreq/tegra124-cpufreq.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Sure, sorry I was not clear but I was asking about this particular
+patch because as it is, you will get acks from all the maintainers but I
+think they all think someone else will apply it ;)
 
-diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-index a1bfde0a7950..ba3795e13ac6 100644
---- a/drivers/cpufreq/tegra124-cpufreq.c
-+++ b/drivers/cpufreq/tegra124-cpufreq.c
-@@ -144,7 +144,8 @@ static int __init tegra_cpufreq_init(void)
- 	int ret;
- 	struct platform_device *pdev;
- 
--	if (!of_machine_is_compatible("nvidia,tegra124"))
-+	if (!(of_machine_is_compatible("nvidia,tegra124") ||
-+		of_machine_is_compatible("nvidia,tegra210")))
- 		return -ENODEV;
- 
- 	/*
+> Thanks,
+>  Enric
+> 
+> >> ---
+> >>
+> >> Changes in v2:
+> >> - Fix typo in Benson email address.
+> >>
+> >>  MAINTAINERS | 24 ++++++++++++++++++++++++
+> >>  1 file changed, 24 insertions(+)
+> >>
+> >> diff --git a/MAINTAINERS b/MAINTAINERS
+> >> index a24129b0b043..bbe7180e2851 100644
+> >> --- a/MAINTAINERS
+> >> +++ b/MAINTAINERS
+> >> @@ -3625,6 +3625,30 @@ S:	Maintained
+> >>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
+> >>  F:	drivers/platform/chrome/
+> >>  
+> >> +CHROMEOS EC SUBDRIVERS
+> >> +M:	Benson Leung <bleung@chromium.org>
+> >> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> >> +S:	Maintained
+> >> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
+> >> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
+> >> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
+> >> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
+> >> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
+> >> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
+> >> +F:	drivers/extcon/extcon-usbc-cros-ec.c
+> >> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
+> >> +F:	drivers/iio/accel/cros_ec*
+> >> +F:	drivers/iio/common/cros_ec_sensors/
+> >> +F:	drivers/iio/light/cros_ec*
+> >> +F:	drivers/iio/pressure/cros_ec*
+> >> +F:	drivers/input/keyboard/cros_ec*
+> >> +F:	drivers/mfd/cros_ec*
+> >> +F:	drivers/power/supply/cros_usbpd-charger.c
+> >> +F:	drivers/pwm/pwm-cros-ec.c
+> >> +F:	drivers/rtc/rtc-cros-ec.c
+> >> +F:	include/linux/iio/common/cros_ec_sensors_core.h
+> >> +F:	include/linux/mfd/cros_ec*
+> >> +
+> >>  CIRRUS LOGIC AUDIO CODEC DRIVERS
+> >>  M:	Brian Austin <brian.austin@cirrus.com>
+> >>  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
+> >> -- 
+> >> 2.19.2
+> >>
+> > 
+
 -- 
-2.19.2
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
