@@ -1,99 +1,60 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
- sub-drivers
-Date: Thu, 13 Dec 2018 10:55:29 +0100
-Message-ID: <d603fcb9-c1f1-a622-5774-10fac45fc7a5@collabora.com>
-References: <20181211190953.13626-1-enric.balletbo@collabora.com>
- <20181212222937.GL19816@piout.net>
- <6f688bfe-2ebe-1934-0375-016ae859dcfb@collabora.com>
- <20181213095050.GM19816@piout.net>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v12 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Thu, 13 Dec 2018 01:58:27 -0800
+Message-ID: <154469510700.19322.7762676027024031719@swboyd.mtv.corp.google.com>
+References: <1544687394-331-1-git-send-email-tdas@codeaurora.org> <1544687394-331-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181213095050.GM19816@piout.net>
-Content-Language: en-GB
+In-Reply-To: <1544687394-331-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter Clausen <lars@>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>, Taniya Das <tdas@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
+Quoting Taniya Das (2018-12-12 23:49:54)
+> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+> for changing the frequency of CPUs. The driver implements the cpufreq
+> driver interface for this hardware engine.
+>=20
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
 
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
 
-On 13/12/18 10:50, Alexandre Belloni wrote:
-> On 13/12/2018 10:30:16+0100, Enric Balletbo i Serra wrote:
->>> However, you should probably indicate which tree do you expect that to
->>> go through ;)
->>>
->>
->> Well, these are sub-drivers for different subsystems but are related to the main
->> ChromeOS EC. I expect all go through their specific subsystem and their
->> maintainer. I.e the rtc driver go through your tree, the mfd go through Lee's
->> tree, iio drivers through Jonathan's tree, etc. This is the reason I did not add
->> the tree. Main purpose here as that Benson and I are aware when someone sends a
->> change on one of the sub-drivers and we can review these patches.
->>
-> 
-> Sure, sorry I was not clear but I was asking about this particular
-> patch because as it is, you will get acks from all the maintainers but I
-> think they all think someone else will apply it ;)
-> 
+But I noticed that we don't release the I/O region anymore so hotplug
+and replug of a whole clk domain fails. I guess devm_ioremap_resource()
+was just too much magic so how about we downgrade to devm_ioremap()
+instead?
 
-Ah, ok, I didn't got it :)
+BTW, Viresh, I see a lockdep splat when cpufreq_init returns an error
+upon bringing the policy online the second time. I guess cpufreq_stats
+aren't able to be freed from there because they take locks in different
+order vs. the normal path?
 
-If nobody complains and we have all the acks I think that this can go through
-the Benson's tree (chrome-platform). The reason is that he already has a couple
-of patches related to this (remove Olof as a chrome-platform maintainer and
-adding me)
-
->> Thanks,
->>  Enric
->>
->>>> ---
->>>>
->>>> Changes in v2:
->>>> - Fix typo in Benson email address.
->>>>
->>>>  MAINTAINERS | 24 ++++++++++++++++++++++++
->>>>  1 file changed, 24 insertions(+)
->>>>
->>>> diff --git a/MAINTAINERS b/MAINTAINERS
->>>> index a24129b0b043..bbe7180e2851 100644
->>>> --- a/MAINTAINERS
->>>> +++ b/MAINTAINERS
->>>> @@ -3625,6 +3625,30 @@ S:	Maintained
->>>>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
->>>>  F:	drivers/platform/chrome/
->>>>  
->>>> +CHROMEOS EC SUBDRIVERS
->>>> +M:	Benson Leung <bleung@chromium.org>
->>>> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>>> +S:	Maintained
->>>> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
->>>> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
->>>> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
->>>> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
->>>> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
->>>> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
->>>> +F:	drivers/extcon/extcon-usbc-cros-ec.c
->>>> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
->>>> +F:	drivers/iio/accel/cros_ec*
->>>> +F:	drivers/iio/common/cros_ec_sensors/
->>>> +F:	drivers/iio/light/cros_ec*
->>>> +F:	drivers/iio/pressure/cros_ec*
->>>> +F:	drivers/input/keyboard/cros_ec*
->>>> +F:	drivers/mfd/cros_ec*
->>>> +F:	drivers/power/supply/cros_usbpd-charger.c
->>>> +F:	drivers/pwm/pwm-cros-ec.c
->>>> +F:	drivers/rtc/rtc-cros-ec.c
->>>> +F:	include/linux/iio/common/cros_ec_sensors_core.h
->>>> +F:	include/linux/mfd/cros_ec*
->>>> +
->>>>  CIRRUS LOGIC AUDIO CODEC DRIVERS
->>>>  M:	Brian Austin <brian.austin@cirrus.com>
->>>>  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
->>>> -- 
->>>> 2.19.2
->>>>
->>>
-> 
+-----8<-------
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufr=
+eq-hw.c
+index fce7a1162e87..0e1105151478 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -182,9 +182,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_pol=
+icy *policy)
+ 	index =3D args.args[0];
+=20
+ 	res =3D platform_get_resource(global_pdev, IORESOURCE_MEM, index);
+-	base =3D devm_ioremap_resource(dev, res);
+-	if (IS_ERR(base))
+-		return PTR_ERR(base);
++	if (!res)
++		return -ENODEV;
++
++	base =3D devm_ioremap(dev, res->start, resource_size(res));
++	if (!base)
++		return -ENOMEM;
+=20
+ 	/* HW should be in enabled state to proceed */
+ 	if (!(readl_relaxed(base + REG_ENABLE) & 0x1)) {
