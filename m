@@ -1,451 +1,171 @@
-From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: [driver-core PATCH v9 9/9] driver core: Rewrite
- test_async_driver_probe to cover serialization and NUMA affinity
-Date: Wed, 12 Dec 2018 16:45:40 -0800
-Message-ID: <154466194015.9126.17353800566619470679.stgit@ahduyck-desk1.jf.intel.com>
-References: <154466182249.9126.3905559325944768059.stgit@ahduyck-desk1.jf.intel.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCH] power: supply: isp1704: switch to gpiod API
+Date: Thu, 13 Dec 2018 02:38:58 +0100
+Message-ID: <20181213013858.23996-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <154466182249.9126.3905559325944768059.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-The current async_probe test code is only testing one device allocated
-prior to driver load and only loading one device afterwards. Instead of
-doing things this way it makes much more sense to load one device per CPU
-in order to actually stress the async infrastructure. By doing this we
-should see delays significantly increase in the event of devices being
-serialized.
+This migrates isp1704 driver from old GPIO API to new descriptor
+based GPIO API and drops useless platform data as a side-effect.
 
-In addition I have updated the test to verify that we are trying to place
-the work on the correct NUMA node when we are running in async mode. By
-doing this we can verify the best possible outcome for device and driver
-load times.
+Migration is simple, since all mainline users are DT based and
+DT API does not change. Out of tree users of the platform data
+need to migrate to gpiod_lookup_table as described here:
 
-I have added a timeout value that is used to disable the sleep and instead
-cause the probe routine to report an error indicating it timed out. By
-doing this we limit the maximum runtime for the test to 20 seconds or less.
+Documentation/driver-api/gpio/board.rst
 
-The last major change in this set is that I have gone through and tuned it
-for handling the massive number of possible events that will be scheduled.
-Instead of reporting the sleep for each individual device it is moved to
-only being displayed if we enable debugging.
-
-With this patch applied below are what a failing test and a passing test
-should look like. I elided a few hundred lines in the failing test that
-were duplicated since the system I was testing on had a massive number of
-CPU cores:
-
--- Failing --
-[  243.524697] test_async_driver_probe: registering first set of asynchronous devices...
-[  243.535625] test_async_driver_probe: registering asynchronous driver...
-[  243.543038] test_async_driver_probe: registration took 0 msecs
-[  243.549559] test_async_driver_probe: registering second set of asynchronous devices...
-[  243.568350] platform test_async_driver.447: registration took 9 msecs
-[  243.575544] test_async_driver_probe: registering first synchronous device...
-[  243.583454] test_async_driver_probe: registering synchronous driver...
-[  248.825920] test_async_driver_probe: registration took 5235 msecs
-[  248.825922] test_async_driver_probe: registering second synchronous device...
-[  248.825928] test_async_driver test_async_driver.443: NUMA node mismatch 3 != 1
-[  248.825932] test_async_driver test_async_driver.445: NUMA node mismatch 3 != 1
-[  248.825935] test_async_driver test_async_driver.446: NUMA node mismatch 3 != 1
-[  248.825939] test_async_driver test_async_driver.440: NUMA node mismatch 3 != 1
-[  248.825943] test_async_driver test_async_driver.441: NUMA node mismatch 3 != 1
-...
-[  248.827150] test_async_driver test_async_driver.229: NUMA node mismatch 0 != 1
-[  248.827158] test_async_driver test_async_driver.228: NUMA node mismatch 0 != 1
-[  248.827220] test_async_driver test_async_driver.281: NUMA node mismatch 2 != 1
-[  248.827229] test_async_driver test_async_driver.282: NUMA node mismatch 2 != 1
-[  248.827240] test_async_driver test_async_driver.280: NUMA node mismatch 2 != 1
-[  253.945834] test_async_driver test_async_driver.1: NUMA node mismatch 0 != 1
-[  253.945878] test_sync_driver test_sync_driver.1: registration took 5119 msecs
-[  253.961693] test_async_driver_probe: async events still pending, forcing timeout and synchronize
-[  259.065839] test_async_driver test_async_driver.2: NUMA node mismatch 0 != 1
-[  259.073786] test_async_driver test_async_driver.3: async probe took too long
-[  259.081669] test_async_driver test_async_driver.3: NUMA node mismatch 0 != 1
-[  259.089569] test_async_driver test_async_driver.4: async probe took too long
-[  259.097451] test_async_driver test_async_driver.4: NUMA node mismatch 0 != 1
-[  259.105338] test_async_driver test_async_driver.5: async probe took too long
-[  259.113204] test_async_driver test_async_driver.5: NUMA node mismatch 0 != 1
-[  259.121089] test_async_driver test_async_driver.6: async probe took too long
-[  259.128961] test_async_driver test_async_driver.6: NUMA node mismatch 0 != 1
-[  259.136850] test_async_driver test_async_driver.7: async probe took too long
-...
-[  262.124062] test_async_driver test_async_driver.221: async probe took too long
-[  262.132130] test_async_driver test_async_driver.221: NUMA node mismatch 3 != 1
-[  262.140206] test_async_driver test_async_driver.222: async probe took too long
-[  262.148277] test_async_driver test_async_driver.222: NUMA node mismatch 3 != 1
-[  262.156351] test_async_driver test_async_driver.223: async probe took too long
-[  262.164419] test_async_driver test_async_driver.223: NUMA node mismatch 3 != 1
-[  262.172630] test_async_driver_probe: Test failed with 222 errors and 336 warnings
-
--- Passing --
-[  105.419247] test_async_driver_probe: registering first set of asynchronous devices...
-[  105.432040] test_async_driver_probe: registering asynchronous driver...
-[  105.439718] test_async_driver_probe: registration took 0 msecs
-[  105.446239] test_async_driver_probe: registering second set of asynchronous devices...
-[  105.477986] platform test_async_driver.447: registration took 22 msecs
-[  105.485276] test_async_driver_probe: registering first synchronous device...
-[  105.493169] test_async_driver_probe: registering synchronous driver...
-[  110.597981] test_async_driver_probe: registration took 5097 msecs
-[  110.604806] test_async_driver_probe: registering second synchronous device...
-[  115.707490] test_sync_driver test_sync_driver.1: registration took 5094 msecs
-[  115.715478] test_async_driver_probe: completed successfully
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/base/test/test_async_driver_probe.c |  261 +++++++++++++++++++++------
- 1 file changed, 201 insertions(+), 60 deletions(-)
+Patch has been tested on Nokia N900.
+---
+ drivers/power/supply/isp1704_charger.c | 60 ++++++--------------------
+ include/linux/power/isp1704_charger.h  | 30 -------------
+ 2 files changed, 12 insertions(+), 78 deletions(-)
+ delete mode 100644 include/linux/power/isp1704_charger.h
 
-diff --git a/drivers/base/test/test_async_driver_probe.c b/drivers/base/test/test_async_driver_probe.c
-index e7f145d662f0..f4b1d8e54daf 100644
---- a/drivers/base/test/test_async_driver_probe.c
-+++ b/drivers/base/test/test_async_driver_probe.c
-@@ -11,16 +11,47 @@
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/time.h>
-+#include <linux/numa.h>
-+#include <linux/nodemask.h>
-+#include <linux/topology.h>
+diff --git a/drivers/power/supply/isp1704_charger.c b/drivers/power/supply/isp1704_charger.c
+index 95af5f305838..a63cb5dcfa08 100644
+--- a/drivers/power/supply/isp1704_charger.c
++++ b/drivers/power/supply/isp1704_charger.c
+@@ -30,13 +30,12 @@
+ #include <linux/power_supply.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
  
- #define TEST_PROBE_DELAY	(5 * 1000)	/* 5 sec */
- #define TEST_PROBE_THRESHOLD	(TEST_PROBE_DELAY / 2)
++#include <linux/gpio/consumer.h>
+ #include <linux/usb/otg.h>
+ #include <linux/usb/ulpi.h>
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/gadget.h>
+-#include <linux/power/isp1704_charger.h>
  
-+static atomic_t warnings, errors, timeout, async_completed;
-+
- static int test_probe(struct platform_device *pdev)
- {
--	dev_info(&pdev->dev, "sleeping for %d msecs in probe\n",
--		 TEST_PROBE_DELAY);
--	msleep(TEST_PROBE_DELAY);
--	dev_info(&pdev->dev, "done sleeping\n");
-+	struct device *dev = &pdev->dev;
-+
-+	/*
-+	 * Determine if we have hit the "timeout" limit for the test if we
-+	 * have then report it as an error, otherwise we wil sleep for the
-+	 * required amount of time and then report completion.
-+	 */
-+	if (atomic_read(&timeout)) {
-+		dev_err(dev, "async probe took too long\n");
-+		atomic_inc(&errors);
-+	} else {
-+		dev_dbg(&pdev->dev, "sleeping for %d msecs in probe\n",
-+			 TEST_PROBE_DELAY);
-+		msleep(TEST_PROBE_DELAY);
-+		dev_dbg(&pdev->dev, "done sleeping\n");
-+	}
-+
-+	/*
-+	 * Report NUMA mismatch if device node is set and we are not
-+	 * performing an async init on that node.
-+	 */
-+	if (dev->driver->probe_type == PROBE_PREFER_ASYNCHRONOUS) {
-+		if (dev_to_node(dev) != numa_node_id()) {
-+			dev_warn(dev, "NUMA node mismatch %d != %d\n",
-+				 dev_to_node(dev), numa_node_id());
-+			atomic_inc(&warnings);
-+		}
-+
-+		atomic_inc(&async_completed);
-+	}
- 
- 	return 0;
+ /* Vendor specific Power Control register */
+ #define ISP1704_PWR_CTRL		0x3d
+@@ -60,6 +59,7 @@ struct isp1704_charger {
+ 	struct device			*dev;
+ 	struct power_supply		*psy;
+ 	struct power_supply_desc	psy_desc;
++	struct gpio_desc		*enable_gpio;
+ 	struct usb_phy			*phy;
+ 	struct notifier_block		nb;
+ 	struct work_struct		work;
+@@ -81,18 +81,9 @@ static inline int isp1704_write(struct isp1704_charger *isp, u32 reg, u32 val)
+ 	return usb_phy_io_write(isp->phy, val, reg);
  }
-@@ -41,31 +72,64 @@ static struct platform_driver sync_driver = {
- 	.probe = test_probe,
- };
  
--static struct platform_device *async_dev_1, *async_dev_2;
--static struct platform_device *sync_dev_1;
-+static struct platform_device *async_dev[NR_CPUS * 2];
-+static struct platform_device *sync_dev[2];
-+
-+static struct platform_device *
-+test_platform_device_register_node(char *name, int id, int nid)
-+{
-+	struct platform_device *pdev;
-+	int ret;
-+
-+	pdev = platform_device_alloc(name, id);
-+	if (!pdev)
-+		return NULL;
-+
-+	if (nid != NUMA_NO_NODE)
-+		set_dev_node(&pdev->dev, nid);
-+
-+	ret = platform_device_add(pdev);
-+	if (ret) {
-+		platform_device_put(pdev);
-+		return ERR_PTR(ret);
-+	}
-+
-+	return pdev;
-+
-+}
- 
- static int __init test_async_probe_init(void)
+-/*
+- * Disable/enable the power from the isp1704 if a function for it
+- * has been provided with platform data.
+- */
+ static void isp1704_charger_set_power(struct isp1704_charger *isp, bool on)
  {
--	ktime_t calltime, delta;
-+	struct platform_device **pdev = NULL;
-+	int async_id = 0, sync_id = 0;
- 	unsigned long long duration;
--	int error;
-+	ktime_t calltime, delta;
-+	int err, nid, cpu;
-+
-+	pr_info("registering first set of asynchronous devices...\n");
- 
--	pr_info("registering first asynchronous device...\n");
-+	for_each_online_cpu(cpu) {
-+		nid = cpu_to_node(cpu);
-+		pdev = &async_dev[async_id];
-+		*pdev =	test_platform_device_register_node("test_async_driver",
-+							   async_id,
-+							   nid);
-+		if (IS_ERR(*pdev)) {
-+			err = PTR_ERR(*pdev);
-+			*pdev = NULL;
-+			pr_err("failed to create async_dev: %d\n", err);
-+			goto err_unregister_async_devs;
-+		}
- 
--	async_dev_1 = platform_device_register_simple("test_async_driver", 1,
--						      NULL, 0);
--	if (IS_ERR(async_dev_1)) {
--		error = PTR_ERR(async_dev_1);
--		pr_err("failed to create async_dev_1: %d\n", error);
--		return error;
-+		async_id++;
- 	}
- 
- 	pr_info("registering asynchronous driver...\n");
- 	calltime = ktime_get();
--	error = platform_driver_register(&async_driver);
--	if (error) {
--		pr_err("Failed to register async_driver: %d\n", error);
--		goto err_unregister_async_dev_1;
-+	err = platform_driver_register(&async_driver);
-+	if (err) {
-+		pr_err("Failed to register async_driver: %d\n", err);
-+		goto err_unregister_async_devs;
- 	}
- 
- 	delta = ktime_sub(ktime_get(), calltime);
-@@ -73,86 +137,163 @@ static int __init test_async_probe_init(void)
- 	pr_info("registration took %lld msecs\n", duration);
- 	if (duration > TEST_PROBE_THRESHOLD) {
- 		pr_err("test failed: probe took too long\n");
--		error = -ETIMEDOUT;
-+		err = -ETIMEDOUT;
- 		goto err_unregister_async_driver;
- 	}
- 
--	pr_info("registering second asynchronous device...\n");
-+	pr_info("registering second set of asynchronous devices...\n");
- 	calltime = ktime_get();
--	async_dev_2 = platform_device_register_simple("test_async_driver", 2,
--						      NULL, 0);
--	if (IS_ERR(async_dev_2)) {
--		error = PTR_ERR(async_dev_2);
--		pr_err("failed to create async_dev_2: %d\n", error);
--		goto err_unregister_async_driver;
-+	for_each_online_cpu(cpu) {
-+		nid = cpu_to_node(cpu);
-+		pdev = &sync_dev[sync_id];
-+
-+		*pdev = test_platform_device_register_node("test_async_driver",
-+							   async_id,
-+							   nid);
-+		if (IS_ERR(*pdev)) {
-+			err = PTR_ERR(*pdev);
-+			*pdev = NULL;
-+			pr_err("failed to create async_dev: %d\n", err);
-+			goto err_unregister_async_driver;
-+		}
-+
-+		async_id++;
- 	}
- 
- 	delta = ktime_sub(ktime_get(), calltime);
- 	duration = (unsigned long long) ktime_to_ms(delta);
--	pr_info("registration took %lld msecs\n", duration);
-+	dev_info(&(*pdev)->dev,
-+		 "registration took %lld msecs\n", duration);
- 	if (duration > TEST_PROBE_THRESHOLD) {
--		pr_err("test failed: probe took too long\n");
--		error = -ETIMEDOUT;
--		goto err_unregister_async_dev_2;
-+		dev_err(&(*pdev)->dev,
-+			"test failed: probe took too long\n");
-+		err = -ETIMEDOUT;
-+		goto err_unregister_async_driver;
- 	}
- 
--	pr_info("registering synchronous driver...\n");
- 
--	error = platform_driver_register(&sync_driver);
--	if (error) {
--		pr_err("Failed to register async_driver: %d\n", error);
--		goto err_unregister_async_dev_2;
-+	pr_info("registering first synchronous device...\n");
-+	nid = cpu_to_node(cpu);
-+	pdev = &sync_dev[sync_id];
-+
-+	*pdev = test_platform_device_register_node("test_sync_driver",
-+						   sync_id,
-+						   NUMA_NO_NODE);
-+	if (IS_ERR(*pdev)) {
-+		err = PTR_ERR(*pdev);
-+		*pdev = NULL;
-+		pr_err("failed to create sync_dev: %d\n", err);
-+		goto err_unregister_async_driver;
- 	}
- 
--	pr_info("registering synchronous device...\n");
-+	sync_id++;
-+
-+	pr_info("registering synchronous driver...\n");
- 	calltime = ktime_get();
--	sync_dev_1 = platform_device_register_simple("test_sync_driver", 1,
--						     NULL, 0);
--	if (IS_ERR(sync_dev_1)) {
--		error = PTR_ERR(sync_dev_1);
--		pr_err("failed to create sync_dev_1: %d\n", error);
--		goto err_unregister_sync_driver;
-+	err = platform_driver_register(&sync_driver);
-+	if (err) {
-+		pr_err("Failed to register async_driver: %d\n", err);
-+		goto err_unregister_sync_devs;
- 	}
- 
- 	delta = ktime_sub(ktime_get(), calltime);
- 	duration = (unsigned long long) ktime_to_ms(delta);
- 	pr_info("registration took %lld msecs\n", duration);
- 	if (duration < TEST_PROBE_THRESHOLD) {
--		pr_err("test failed: probe was too quick\n");
--		error = -ETIMEDOUT;
--		goto err_unregister_sync_dev_1;
-+		dev_err(&(*pdev)->dev,
-+			"test failed: probe was too quick\n");
-+		err = -ETIMEDOUT;
-+		goto err_unregister_sync_driver;
- 	}
- 
--	pr_info("completed successfully");
-+	pr_info("registering second synchronous device...\n");
-+	pdev = &sync_dev[sync_id];
-+	calltime = ktime_get();
- 
--	return 0;
-+	*pdev = test_platform_device_register_node("test_sync_driver",
-+						   sync_id,
-+						   NUMA_NO_NODE);
-+	if (IS_ERR(*pdev)) {
-+		err = PTR_ERR(*pdev);
-+		*pdev = NULL;
-+		pr_err("failed to create sync_dev: %d\n", err);
-+		goto err_unregister_sync_driver;
-+	}
- 
--err_unregister_sync_dev_1:
--	platform_device_unregister(sync_dev_1);
-+	sync_id++;
- 
--err_unregister_sync_driver:
--	platform_driver_unregister(&sync_driver);
-+	delta = ktime_sub(ktime_get(), calltime);
-+	duration = (unsigned long long) ktime_to_ms(delta);
-+	dev_info(&(*pdev)->dev,
-+		 "registration took %lld msecs\n", duration);
-+	if (duration < TEST_PROBE_THRESHOLD) {
-+		dev_err(&(*pdev)->dev,
-+			"test failed: probe was too quick\n");
-+		err = -ETIMEDOUT;
-+		goto err_unregister_sync_driver;
-+	}
- 
--err_unregister_async_dev_2:
--	platform_device_unregister(async_dev_2);
-+	/*
-+	 * The async events should have completed while we were taking care
-+	 * of the synchronous events. We will now terminate any outstanding
-+	 * asynchronous probe calls remaining by forcing timeout and remove
-+	 * the driver before we return which should force the flush of the
-+	 * pending asynchronous probe calls.
-+	 *
-+	 * Otherwise if they completed without errors or warnings then
-+	 * report successful completion.
-+	 */
-+	if (atomic_read(&async_completed) != async_id) {
-+		pr_err("async events still pending, forcing timeout\n");
-+		atomic_inc(&timeout);
-+		err = -ETIMEDOUT;
-+	} else if (!atomic_read(&errors) && !atomic_read(&warnings)) {
-+		pr_info("completed successfully\n");
-+		return 0;
-+	}
- 
-+err_unregister_sync_driver:
-+	platform_driver_unregister(&sync_driver);
-+err_unregister_sync_devs:
-+	while (sync_id--)
-+		platform_device_unregister(sync_dev[sync_id]);
- err_unregister_async_driver:
- 	platform_driver_unregister(&async_driver);
-+err_unregister_async_devs:
-+	while (async_id--)
-+		platform_device_unregister(async_dev[async_id]);
-+
-+	/*
-+	 * If err is already set then count that as an additional error for
-+	 * the test. Otherwise we will report an invalid argument error and
-+	 * not count that as we should have reached here as a result of
-+	 * errors or warnings being reported by the probe routine.
-+	 */
-+	if (err)
-+		atomic_inc(&errors);
-+	else
-+		err = -EINVAL;
- 
--err_unregister_async_dev_1:
--	platform_device_unregister(async_dev_1);
-+	pr_err("Test failed with %d errors and %d warnings\n",
-+	       atomic_read(&errors), atomic_read(&warnings));
- 
--	return error;
-+	return err;
+-	struct isp1704_charger_data	*board = isp->dev->platform_data;
+-
+-	if (board && board->set_power)
+-		board->set_power(on);
+-	else if (board)
+-		gpio_set_value(board->enable_gpio, on);
++	gpiod_set_value(isp->enable_gpio, on);
  }
- module_init(test_async_probe_init);
  
- static void __exit test_async_probe_exit(void)
- {
-+	int id = 2;
+ /*
+@@ -405,46 +396,19 @@ static int isp1704_charger_probe(struct platform_device *pdev)
+ 	int			ret = -ENODEV;
+ 	struct power_supply_config psy_cfg = {};
+ 
+-	struct isp1704_charger_data *pdata = dev_get_platdata(&pdev->dev);
+-	struct device_node *np = pdev->dev.of_node;
+-
+-	if (np) {
+-		int gpio = of_get_named_gpio(np, "nxp,enable-gpio", 0);
+-
+-		if (gpio < 0) {
+-			dev_err(&pdev->dev, "missing DT GPIO nxp,enable-gpio\n");
+-			return gpio;
+-		}
+-
+-		pdata = devm_kzalloc(&pdev->dev,
+-			sizeof(struct isp1704_charger_data), GFP_KERNEL);
+-		if (!pdata) {
+-			ret = -ENOMEM;
+-			goto fail0;
+-		}
+-		pdata->enable_gpio = gpio;
+-
+-		dev_info(&pdev->dev, "init gpio %d\n", pdata->enable_gpio);
+-
+-		ret = devm_gpio_request_one(&pdev->dev, pdata->enable_gpio,
+-					GPIOF_OUT_INIT_HIGH, "isp1704_reset");
+-		if (ret) {
+-			dev_err(&pdev->dev, "gpio request failed\n");
+-			goto fail0;
+-		}
+-	}
+-
+-	if (!pdata) {
+-		dev_err(&pdev->dev, "missing platform data!\n");
+-		return -ENODEV;
+-	}
+-
+-
+ 	isp = devm_kzalloc(&pdev->dev, sizeof(*isp), GFP_KERNEL);
+ 	if (!isp)
+ 		return -ENOMEM;
+ 
+-	if (np)
++	isp->enable_gpio = devm_gpiod_get(&pdev->dev, "nxp,enable",
++					  GPIOD_OUT_HIGH);
++	if (IS_ERR(isp->enable_gpio)) {
++		ret = PTR_ERR(isp->enable_gpio);
++		dev_err(&pdev->dev, "Could not get reset gpio: %d\n", ret);
++		return ret;
++	}
 +
- 	platform_driver_unregister(&async_driver);
- 	platform_driver_unregister(&sync_driver);
--	platform_device_unregister(async_dev_1);
--	platform_device_unregister(async_dev_2);
--	platform_device_unregister(sync_dev_1);
-+
-+	while (id--)
-+		platform_device_unregister(sync_dev[id]);
-+
-+	id = NR_CPUS * 2;
-+	while (id--)
-+		platform_device_unregister(async_dev[id]);
- }
- module_exit(test_async_probe_exit);
++	if (pdev->dev.of_node)
+ 		isp->phy = devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
+ 	else
+ 		isp->phy = devm_usb_get_phy(&pdev->dev, USB_PHY_TYPE_USB2);
+diff --git a/include/linux/power/isp1704_charger.h b/include/linux/power/isp1704_charger.h
+deleted file mode 100644
+index 0105d9e7af85..000000000000
+--- a/include/linux/power/isp1704_charger.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * ISP1704 USB Charger Detection driver
+- *
+- * Copyright (C) 2011 Nokia Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+- */
+-
+-
+-#ifndef __ISP1704_CHARGER_H
+-#define __ISP1704_CHARGER_H
+-
+-struct isp1704_charger_data {
+-	void		(*set_power)(bool on);
+-	int		enable_gpio;
+-};
+-
+-#endif
+-- 
+2.19.2
