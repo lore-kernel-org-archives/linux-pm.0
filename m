@@ -1,207 +1,77 @@
 From: Guenter Roeck <groeck@google.com>
-Subject: Re: [PATCH v3 2/2] power: supply: cros: allow to set input voltage
- and current limit
-Date: Thu, 13 Dec 2018 06:39:28 -0800
-Message-ID: <CABXOdTfYWNfiyGwX80aEL1vPx4u2w3=yM1p9hz9_CacT8S5zkA@mail.gmail.com>
-References: <20181213120944.30967-1-enric.balletbo@collabora.com> <20181213120944.30967-2-enric.balletbo@collabora.com>
+Subject: Re: [PATCH] MAINTAINERS: add maintainers for ChromeOS EC sub-drivers
+Date: Thu, 13 Dec 2018 06:43:02 -0800
+Message-ID: <CABXOdTcN5d69w4vorq_5hGPiaq_nDcAGDNVbU6gyVjNWy9Yubw@mail.gmail.com>
+References: <20181211190053.9997-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181213120944.30967-2-enric.balletbo@collabora.com>
+In-Reply-To: <20181211190053.9997-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Sameer Nanda <snanda@chromium.org>, Benson Leung <bleung@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, a.zummo@towertech.it, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, alexandre.belloni@bootlin.com, linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE" <devicetree@vger.kernel.org>, thierry.reding@gmail.com, linux-pm@vger.kernel.org, bleung@chromiumg.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 13, 2018 at 4:09 AM Enric Balletbo i Serra
+Enric,
+
+On Tue, Dec 11, 2018 at 11:01 AM Enric Balletbo i Serra
 <enric.balletbo@collabora.com> wrote:
 >
-> This patch allows reading and writing the input voltage and current
-> limit through the POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT and
-> POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs properties. This allows
-> userspace to see current values and to re-configure these values at
-> runtime based on system-level knowledge or user input.
->
-> By default there is no limit, this is reported as a -1 when reading from
-> userspace. Writing a value will set the current or voltage limit in uA
-> or uV, and writing any negative value will remove that limit.
+> There are multiple ChromeOS EC sub-drivers spread in different
+> subsystems, as all of them are related to the Chrome stuff add
+> Benson and myself as a maintainers for all these sub-drivers.
 >
 > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-
-Reviewed-by: Guenter Roeck <groeck@chromium.org>
-
 > ---
 >
-> Changes in v3: None
-> Changes in v2:
-> - Fix the upper limit that can be set.
-> - Remove unnecessary else.
+>  MAINTAINERS | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
 >
->  drivers/power/supply/cros_usbpd-charger.c | 116 ++++++++++++++++++++++
->  1 file changed, 116 insertions(+)
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index a24129b0b043..2f24f5c977ca 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3625,6 +3625,30 @@ S:       Maintained
+>  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
+>  F:     drivers/platform/chrome/
 >
-> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-> index 7e9c3984ef6a..3a9ea94c3de3 100644
-> --- a/drivers/power/supply/cros_usbpd-charger.c
-> +++ b/drivers/power/supply/cros_usbpd-charger.c
-> @@ -53,6 +53,8 @@ struct charger_data {
->  };
->
->  static enum power_supply_property cros_usbpd_charger_props[] = {
-> +       POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-> +       POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
->         POWER_SUPPLY_PROP_ONLINE,
->         POWER_SUPPLY_PROP_STATUS,
->         POWER_SUPPLY_PROP_CURRENT_MAX,
-> @@ -80,6 +82,10 @@ static enum power_supply_usb_type cros_usbpd_charger_usb_types[] = {
->         POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID
->  };
->
-> +/* Input voltage/current limit in mV/mA. Default to none. */
-> +static u16 input_voltage_limit = EC_POWER_LIMIT_NONE;
-> +static u16 input_current_limit = EC_POWER_LIMIT_NONE;
+> +CHROMEOS EC SUBDRIVERS
+> +M:     Benson Leung <bleung@chromiumg.org>
+> +M:     Enric Balletbo i Serra <enric.balletbo@collabora.com>
+
+It might possibly make sense to add
+
+R: Guenter Roeck <groeck@chromium.org>
+
+since it looks like I am doing a lot of the actual reviewing anyway.
+
+Thanks,
+Guenter
+
+> +S:     Maintained
+> +F:     Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
+> +F:     Documentation/devicetree/bindings/input/cros-ec-keyb.txt
+> +F:     Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
+> +F:     Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
+> +F:     Documentation/devicetree/bindings/mfd/cros-ec.txt
+> +F:     Documentation/ABI/testing/sysfs-bus-iio-cros-ec
+> +F:     drivers/extcon/extcon-usbc-cros-ec.c
+> +F:     drivers/i2c/busses/i2c-cros-ec-tunnel.c
+> +F:     drivers/iio/accel/cros_ec*
+> +F:     drivers/iio/common/cros_ec_sensors/
+> +F:     drivers/iio/light/cros_ec*
+> +F:     drivers/iio/pressure/cros_ec*
+> +F:     drivers/input/keyboard/cros_ec*
+> +F:     drivers/mfd/cros_ec*
+> +F:     drivers/power/supply/cros_usbpd-charger.c
+> +F:     drivers/pwm/pwm-cros-ec.c
+> +F:     drivers/rtc/rtc-cros-ec.c
+> +F:     include/linux/iio/common/cros_ec_sensors_core.h
+> +F:     include/linux/mfd/cros_ec*
 > +
->  static bool cros_usbpd_charger_port_is_dedicated(struct port_data *port)
->  {
->         return port->port_number >= port->charger->num_usbpd_ports;
-> @@ -324,6 +330,26 @@ static int cros_usbpd_charger_get_port_status(struct port_data *port,
->         return ret;
->  }
->
-> +static int cros_usbpd_charger_set_ext_power_limit(struct charger_data *charger,
-> +                                                 u16 current_lim,
-> +                                                 u16 voltage_lim)
-> +{
-> +       struct ec_params_external_power_limit_v1 req;
-> +       int ret;
-> +
-> +       req.current_lim = current_lim;
-> +       req.voltage_lim = voltage_lim;
-> +
-> +       ret = cros_usbpd_charger_ec_command(charger, 0,
-> +                                           EC_CMD_EXTERNAL_POWER_LIMIT,
-> +                                           &req, sizeof(req), NULL, 0);
-> +       if (ret < 0)
-> +               dev_err(charger->dev,
-> +                       "Unable to set the 'External Power Limit': %d\n", ret);
-> +
-> +       return ret;
-> +}
-> +
->  static void cros_usbpd_charger_power_changed(struct power_supply *psy)
->  {
->         struct port_data *port = power_supply_get_drvdata(psy);
-> @@ -396,6 +422,18 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
->         case POWER_SUPPLY_PROP_USB_TYPE:
->                 val->intval = port->psy_usb_type;
->                 break;
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
-> +                       val->intval = -1;
-> +               else
-> +                       val->intval = input_current_limit * 1000;
-> +               break;
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-> +                       val->intval = -1;
-> +               else
-> +                       val->intval = input_voltage_limit * 1000;
-> +               break;
->         case POWER_SUPPLY_PROP_MODEL_NAME:
->                 val->strval = port->model_name;
->                 break;
-> @@ -409,6 +447,81 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
->         return 0;
->  }
->
-> +static int cros_usbpd_charger_set_prop(struct power_supply *psy,
-> +                                      enum power_supply_property psp,
-> +                                      const union power_supply_propval *val)
-> +{
-> +       struct port_data *port = power_supply_get_drvdata(psy);
-> +       struct charger_data *charger = port->charger;
-> +       struct device *dev = charger->dev;
-> +       u16 intval;
-> +       int ret;
-> +
-> +       /* U16_MAX in mV/mA is the maximum supported value */
-> +       if (val->intval >= U16_MAX * 1000)
-> +               return -EINVAL;
-> +       /* A negative number is used to clear the limit */
-> +       if (val->intval < 0)
-> +               intval = EC_POWER_LIMIT_NONE;
-> +       else    /* Convert from uA/uV to mA/mV */
-> +               intval = val->intval / 1000;
-> +
-> +       switch (psp) {
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +               ret = cros_usbpd_charger_set_ext_power_limit(charger, intval,
-> +                                                       input_voltage_limit);
-> +               if (ret < 0)
-> +                       break;
-> +
-> +               input_current_limit = intval;
-> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
-> +                       dev_info(dev,
-> +                         "External Current Limit cleared for all ports\n");
-> +               else
-> +                       dev_info(dev,
-> +                         "External Current Limit set to %dmA for all ports\n",
-> +                         input_current_limit);
-> +               break;
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               ret = cros_usbpd_charger_set_ext_power_limit(charger,
-> +                                                       input_current_limit,
-> +                                                       intval);
-> +               if (ret < 0)
-> +                       break;
-> +
-> +               input_voltage_limit = intval;
-> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-> +                       dev_info(dev,
-> +                         "External Voltage Limit cleared for all ports\n");
-> +               else
-> +                       dev_info(dev,
-> +                         "External Voltage Limit set to %dmV for all ports\n",
-> +                         input_voltage_limit);
-> +               break;
-> +       default:
-> +               ret = -EINVAL;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +static int cros_usbpd_charger_property_is_writeable(struct power_supply *psy,
-> +                                               enum power_supply_property psp)
-> +{
-> +       int ret;
-> +
-> +       switch (psp) {
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               ret = 1;
-> +               break;
-> +       default:
-> +               ret = 0;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
->  static int cros_usbpd_charger_ec_event(struct notifier_block *nb,
->                                        unsigned long queued_during_suspend,
->                                        void *_notify)
-> @@ -525,6 +638,9 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
->
->                 psy_desc = &port->psy_desc;
->                 psy_desc->get_property = cros_usbpd_charger_get_prop;
-> +               psy_desc->set_property = cros_usbpd_charger_set_prop;
-> +               psy_desc->property_is_writeable =
-> +                               cros_usbpd_charger_property_is_writeable;
->                 psy_desc->external_power_changed =
->                                         cros_usbpd_charger_power_changed;
->                 psy_cfg.drv_data = port;
+>  CIRRUS LOGIC AUDIO CODEC DRIVERS
+>  M:     Brian Austin <brian.austin@cirrus.com>
+>  M:     Paul Handrigan <Paul.Handrigan@cirrus.com>
 > --
 > 2.19.2
 >
