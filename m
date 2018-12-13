@@ -1,62 +1,46 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V2 14/21] cpufreq: dt-platdev: add Tegra210 to blacklist
-Date: Thu, 13 Dec 2018 13:09:34 +0000
-Message-ID: <1bfade8e-5d2b-d006-11e8-20ecb5c7daf9@nvidia.com>
-References: <20181213093438.29621-1-josephl@nvidia.com>
- <20181213093438.29621-15-josephl@nvidia.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v10 10/15] sched: Introduce a sysctl for Energy Aware
+ Scheduling
+Date: Thu, 13 Dec 2018 15:03:58 +0100
+Message-ID: <20181213140358.GJ5289@hirez.programming.kicks-ass.net>
+References: <20181203095628.11858-1-quentin.perret@arm.com>
+ <20181203095628.11858-11-quentin.perret@arm.com>
+ <20181211141509.GA32005@gmail.com>
+ <20181211144901.hio4b6aw3esw3cgw@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181213093438.29621-15-josephl@nvidia.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Joseph Lo <josephl@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181211144901.hio4b6aw3esw3cgw@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On 13/12/2018 09:34, Joseph Lo wrote:
-> Tegra210 uses "tegra124-cpufreq" platform driver to register device data
-> for "cpufreq-dt" driver. So add it in the blacklist for
-> "cpufreq-dt-platdev" driver to drop that.
+On Tue, Dec 11, 2018 at 02:49:01PM +0000, Quentin Perret wrote:
+> Hi Ingo,
 > 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Joseph Lo <josephl@nvidia.com>
-> ---
-> *V2:
->  - new added in V2
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
->  1 file changed, 1 insertion(+)
+> On Tuesday 11 Dec 2018 at 15:15:09 (+0100), Ingo Molnar wrote:
+> > 
+> > * Quentin Perret <quentin.perret@arm.com> wrote:
+> > 
+> > > In its current state, Energy Aware Scheduling (EAS) starts automatically
+> > > on asymmetric platforms having an Energy Model (EM). However, there are
+> > > users who want to have an EM (for thermal management for example), but
+> > > don't want EAS with it.
+> > 
+> > Well, then introduce a new Kconfig variant for EAS, if it's super 
+> > important to allow this to be disabled.
+> > 
+> > Why do we want to disable it - is it not reliable in some circumstances?
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index b1c5468dca16..47729a22c159 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -119,6 +119,7 @@ static const struct of_device_id blacklist[] __initconst = {
->  	{ .compatible = "mediatek,mt8176", },
->  
->  	{ .compatible = "nvidia,tegra124", },
-> +	{ .compatible = "nvidia,tegra210", },
->  
->  	{ .compatible = "qcom,apq8096", },
->  	{ .compatible = "qcom,msm8996", },
-> 
+> There are people out there using big.little systems who do not care
+> about energy. Not very many of them, that is true, but they exist. And
+> those people can be interested in having an Energy Model for
+> IPA/thermal but also want to spread tasks to minimize latency for
+> example. So those guys will appreciate a knob, I think. Otherwise EAS
+> gets enabled/disabled only by side effects (by enabling/disabling
+> schedutil for example).
 
-Acked-by: Jon Hunter <jonathanh@nvidia.com>
-
-Cheers
-Jon
-
--- 
-nvpublic
+Right, also we have a sysctl for numa-balancing, I figured having one
+for eas would not be weird.
