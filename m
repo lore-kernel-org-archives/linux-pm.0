@@ -1,50 +1,48 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH 1/2] dt-bindings: drm/msm/a6xx: Document
- interconnect properties for GPU
-Date: Thu, 13 Dec 2018 10:31:48 -0700
-Message-ID: <20181213173149.6975-2-jcrouse@codeaurora.org>
-References: <20181213173149.6975-1-jcrouse@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] driver core: Add missing dev->bus->need_parent_lock checks
+Date: Thu, 13 Dec 2018 19:27:47 +0100
+Message-ID: <7586985.G9YL5ver76@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181213173149.6975-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Martin Liu <liumartin@google.com>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIGRvY3VtZW50YXRpb24gZm9yIHRoZSBpbnRlcmNvbm5lY3QgYW5kIGludGVyY29ubmVjdC1u
-YW1lcyBiaW5kaW5ncwpmb3IgdGhlIEdQVSBub2RlIGFzIGRldGFpbGVkIGJ5IGJpbmRpbmdzL2lu
-dGVyY29ubmVjdC9pbnRlcmNvbm5lY3QudHh0LgoKU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3Vz
-ZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KLS0tCiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
-YmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dCB8IDYgKysrKysrCiAxIGZpbGUgY2hhbmdlZCwg
-NiBpbnNlcnRpb25zKCspCgpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dAppbmRleCA4ZDk0MTUxODBjMjIuLmJlNmI1NjI4ZTA1
-MiAxMDA2NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkv
-bXNtL2dwdS50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3Bs
-YXkvbXNtL2dwdS50eHQKQEAgLTE5LDYgKzE5LDkgQEAgUmVxdWlyZWQgcHJvcGVydGllczoKICAg
-KiAibWVtX2lmYWNlIgogLSBpb21tdXM6IG9wdGlvbmFsIHBoYW5kbGUgdG8gYW4gYWRyZW5vIGlv
-bW11IGluc3RhbmNlCiAtIG9wZXJhdGluZy1wb2ludHMtdjI6IG9wdGlvbmFsIHBoYW5kbGUgdG8g
-dGhlIE9QUCBvcGVyYXRpbmcgcG9pbnRzCistIGludGVyY29ubmVjdDogb3B0aW9uYWwgcGhhbmRs
-ZSB0byBhIGludGVyY29ubmVjdCBwcm92aWRlci4gIFNlZQorICAuLi9pbnRlcmNvbm5lY3QvaW50
-ZXJjb25uZWN0LnR4dCBmb3IgZGV0YWlscy4KKy0gaW50ZXJjb25uZWN0LW5hbWVzOiBOYW1lIHN0
-cmluZyBmb3IgdGhlIGludGVyY29ubmVjdHMuCiAtIHFjb20sZ211OiBGb3IgYTZ4eCBhbmQgbmV3
-ZXIgdGFyZ2V0cyBhIHBoYW5kbGUgdG8gdGhlIEdNVSBkZXZpY2UgdGhhdCB3aWxsCiAgIGNvbnRy
-b2wgdGhlIHBvd2VyIGZvciB0aGUgR1BVCiAKQEAgLTY4LDYgKzcxLDkgQEAgRXhhbXBsZSBhNnh4
-ICh3aXRoIEdNVSk6CiAKIAkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ3B1X29wcF90YWJsZT47
-CiAKKwkJaW50ZXJjb25uZWN0cyA9IDwmcW5vYyBNQVNURVJfR0ZYM0QgJnFub2MgU0xBVkVfRUJJ
-MT47CisJCWludGVyY29ubmVjdC1uYW1lcyA9ICJnZngtbWVtIjsKKwogCQlxY29tLGdtdSA9IDwm
-Z211PjsKIAl9OwogfTsKLS0gCjIuMTguMAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
-dGluZm8vZnJlZWRyZW5vCg==
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+__device_release_driver() has to check dev->bus->need_parent_lock
+before dropping the parent lock and acquiring it again as it may
+attempt to drop a lock that hasn't been acquired or lock a device
+that shouldn't be locked and create a lock imbalance.
+
+Fixes: 8c97a46af04b (driver core: hold dev's parent lock when needed)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This should go into -stable for everything over 4.18 methinks.
+
+---
+ drivers/base/dd.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -933,11 +933,11 @@ static void __device_release_driver(stru
+ 
+ 		while (device_links_busy(dev)) {
+ 			device_unlock(dev);
+-			if (parent)
++			if (parent && dev->bus->need_parent_lock)
+ 				device_unlock(parent);
+ 
+ 			device_links_unbind_consumers(dev);
+-			if (parent)
++			if (parent && dev->bus->need_parent_lock)
+ 				device_lock(parent);
+ 
+ 			device_lock(dev);
