@@ -1,34 +1,24 @@
-From: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Subject: [PATCH] thermal: rcar_thermal: add R8A774C0 support
-Date: Thu, 13 Dec 2018 20:23:10 +0000
-Message-ID: <1544732590-7230-1-git-send-email-fabrizio.castro@bp.renesas.com>
+From: pr-tracker-bot@kernel.org
+Subject: Re: [GIT PULL] Thermal-SoC management fixes for v4.20-rc7
+Date: Thu, 13 Dec 2018 21:15:03 +0000
+Message-ID: <20181213211503.3163.99421.pr-tracker-bot@pdx-korg-gitolite-1.ci.codeaurora.org>
+References: <20181213200146.GA15849@localhost.localdomain>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181213200146.GA15849@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, linux-renesas-soc@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add thermal support for the RZ/G2E SoC (a.k.a. R8A774C0).
+The pull request you sent on Thu, 13 Dec 2018 12:01:49 -0800:
 
-Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
----
- drivers/thermal/rcar_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 30a12b8..97462e9 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -113,6 +113,10 @@ static const struct of_device_id rcar_thermal_dt_ids[] = {
- 		 .data = &rcar_gen2_thermal,
- 	},
- 	{
-+		.compatible = "renesas,thermal-r8a774c0",
-+		.data = &rcar_gen3_thermal,
-+	},
-+	{
- 		.compatible = "renesas,thermal-r8a77970",
- 		.data = &rcar_gen3_thermal,
- 	},
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/76a5cfb8e7c98ae0ea238910f97c17cb1f638918
+
+Thank you!
+
 -- 
-2.7.4
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
