@@ -1,77 +1,149 @@
-From: Guenter Roeck <groeck@google.com>
-Subject: Re: [PATCH] MAINTAINERS: add maintainers for ChromeOS EC sub-drivers
-Date: Thu, 13 Dec 2018 06:43:02 -0800
-Message-ID: <CABXOdTcN5d69w4vorq_5hGPiaq_nDcAGDNVbU6gyVjNWy9Yubw@mail.gmail.com>
-References: <20181211190053.9997-1-enric.balletbo@collabora.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3 3/6] OPP: Add dev_pm_opp_xlate_performance_state() helper
+Date: Thu, 13 Dec 2018 15:53:22 +0100
+Message-ID: <CAPDyKFo1f+QxR_M1_A_edsr2oFCPRH905fPQ6WV6N=79P1x6_Q@mail.gmail.com>
+References: <cover.1544611890.git.viresh.kumar@linaro.org> <6ea171c4f791aae3281e49077893f76ad4c55677.1544611890.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181211190053.9997-1-enric.balletbo@collabora.com>
+In-Reply-To: <6ea171c4f791aae3281e49077893f76ad4c55677.1544611890.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, a.zummo@towertech.it, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, alexandre.belloni@bootlin.com, linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE" <devicetree@vger.kernel.org>, thierry.reding@gmail.com, linux-pm@vger.kernel.org, bleung@chromiumg.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Enric,
-
-On Tue, Dec 11, 2018 at 11:01 AM Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
+On Wed, 12 Dec 2018 at 11:57, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> There are multiple ChromeOS EC sub-drivers spread in different
-> subsystems, as all of them are related to the Chrome stuff add
-> Benson and myself as a maintainers for all these sub-drivers.
+> dev_pm_genpd_set_performance_state() needs to handle performance state
+> propagation going forward. Currently this routine only gets the required
+> performance state of the device's genpd as an argument, but it doesn't
+> know how to translate that to master genpd(s) of the device's genpd.
 >
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Introduce a new helper dev_pm_opp_xlate_performance_state() which will
+> be used to translate from performance state of a device (or genpd
+> sub-domain) to another device (or master genpd).
+>
+> Normally the src_table (of genpd sub-domain) will have the
+> "required_opps" property set to point to one of the OPPs in the
+> dst_table (of master genpd), but in some cases the genpd and its master
+> have one to one mapping of performance states and so none of them have
+> the "required-opps" property set. Return the performance state of the
+> src_table as it is in such cases.
+>
+> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
+>  drivers/opp/core.c     | 59 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  7 +++++
+>  2 files changed, 66 insertions(+)
 >
->  MAINTAINERS | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 98e60f0ed8b0..386095e2f4f7 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -1713,6 +1713,65 @@ void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
+>                 dev_err(virt_dev, "Failed to find required device entry\n");
+>  }
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a24129b0b043..2f24f5c977ca 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3625,6 +3625,30 @@ S:       Maintained
->  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
->  F:     drivers/platform/chrome/
->
-> +CHROMEOS EC SUBDRIVERS
-> +M:     Benson Leung <bleung@chromiumg.org>
-> +M:     Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> +/**
+> + * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
+> + * @src_table: OPP table which has dst_table as one of its required OPP table.
+> + * @dst_table: Required OPP table of the src_table.
+> + * @pstate: Current performance state of the src_table.
+> + *
+> + * This Returns pstate of the OPP (present in @dst_table) pointed out by the
+> + * "required-opps" property of the OPP (present in @src_table) which has
+> + * performance state set to @pstate.
+> + *
+> + * Return: Positive performance state on success, otherwise 0 on errors.
 
-It might possibly make sense to add
+To simplify for callers, I would rather not have the return code 0
+being treated as an error. Instead I would prefer 0 to mean that the
+state shall be set to zero (which means it should be perfectly fine to
+also give 0 as inparam for pstate)
 
-R: Guenter Roeck <groeck@chromium.org>
+For errors, I think it's better to return regular negative error
+codes, as it's standard and more flexible.
 
-since it looks like I am doing a lot of the actual reviewing anyway.
+Kind regards
+Uffe
 
-Thanks,
-Guenter
-
-> +S:     Maintained
-> +F:     Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
-> +F:     Documentation/devicetree/bindings/input/cros-ec-keyb.txt
-> +F:     Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
-> +F:     Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
-> +F:     Documentation/devicetree/bindings/mfd/cros-ec.txt
-> +F:     Documentation/ABI/testing/sysfs-bus-iio-cros-ec
-> +F:     drivers/extcon/extcon-usbc-cros-ec.c
-> +F:     drivers/i2c/busses/i2c-cros-ec-tunnel.c
-> +F:     drivers/iio/accel/cros_ec*
-> +F:     drivers/iio/common/cros_ec_sensors/
-> +F:     drivers/iio/light/cros_ec*
-> +F:     drivers/iio/pressure/cros_ec*
-> +F:     drivers/input/keyboard/cros_ec*
-> +F:     drivers/mfd/cros_ec*
-> +F:     drivers/power/supply/cros_usbpd-charger.c
-> +F:     drivers/pwm/pwm-cros-ec.c
-> +F:     drivers/rtc/rtc-cros-ec.c
-> +F:     include/linux/iio/common/cros_ec_sensors_core.h
-> +F:     include/linux/mfd/cros_ec*
+> + */
+> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
+> +                                               struct opp_table *dst_table,
+> +                                               unsigned int pstate)
+> +{
+> +       struct dev_pm_opp *opp;
+> +       unsigned int dest_pstate = 0;
+> +       int i;
 > +
->  CIRRUS LOGIC AUDIO CODEC DRIVERS
->  M:     Brian Austin <brian.austin@cirrus.com>
->  M:     Paul Handrigan <Paul.Handrigan@cirrus.com>
+> +       /*
+> +        * Normally the src_table will have the "required_opps" property set to
+> +        * point to one of the OPPs in the dst_table, but in some cases the
+> +        * genpd and its master have one to one mapping of performance states
+> +        * and so none of them have the "required-opps" property set. Return the
+> +        * pstate of the src_table as it is in such cases.
+> +        */
+> +       if (!src_table->required_opp_count)
+> +               return pstate;
+> +
+> +       for (i = 0; i < src_table->required_opp_count; i++) {
+> +               if (src_table->required_opp_tables[i]->np == dst_table->np)
+> +                       break;
+> +       }
+> +
+> +       if (unlikely(i == src_table->required_opp_count)) {
+> +               pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
+> +                      __func__, src_table, dst_table);
+> +               return 0;
+> +       }
+> +
+> +       mutex_lock(&src_table->lock);
+> +
+> +       list_for_each_entry(opp, &src_table->opp_list, node) {
+> +               if (opp->pstate == pstate) {
+> +                       dest_pstate = opp->required_opps[i]->pstate;
+> +                       goto unlock;
+> +               }
+> +       }
+> +
+> +       pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
+> +              dst_table);
+> +
+> +unlock:
+> +       mutex_unlock(&src_table->lock);
+> +
+> +       return dest_pstate;
+> +}
+> +
+>  /**
+>   * dev_pm_opp_add()  - Add an OPP table from a table definitions
+>   * @dev:       device for which we do this operation
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 2b2c3fd985ab..5a64a81a1789 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -128,6 +128,7 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*s
+>  void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+>  struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
+>  void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
+> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
+>  int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+>  int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+>  int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+> @@ -280,6 +281,12 @@ static inline struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev
+>  }
+>
+>  static inline void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev) {}
+> +
+> +static inline unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
+> +{
+> +       return 0;
+> +}
+> +
+>  static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+>  {
+>         return -ENOTSUPP;
 > --
-> 2.19.2
+> 2.19.1.568.g152ad8e3369a
 >
