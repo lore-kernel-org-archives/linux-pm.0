@@ -1,68 +1,207 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 4/5] drivers: power: suspend: call devfreq
- suspend/resume
-Date: Thu, 13 Dec 2018 15:35:25 +0100
-Message-ID: <ce1d415d-2a00-ef0e-6b58-23d16cffee4a@partner.samsung.com>
-References: <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181205110623eucas1p120f9d8b38822bf856a5b7d427d00e49f@eucas1p1.samsung.com>
-        <1544007956-28889-5-git-send-email-l.luba@partner.samsung.com>
+From: Guenter Roeck <groeck@google.com>
+Subject: Re: [PATCH v3 2/2] power: supply: cros: allow to set input voltage
+ and current limit
+Date: Thu, 13 Dec 2018 06:39:28 -0800
+Message-ID: <CABXOdTfYWNfiyGwX80aEL1vPx4u2w3=yM1p9hz9_CacT8S5zkA@mail.gmail.com>
+References: <20181213120944.30967-1-enric.balletbo@collabora.com> <20181213120944.30967-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544007956-28889-5-git-send-email-l.luba@partner.samsung.com>
-Content-Language: en-US
+In-Reply-To: <20181213120944.30967-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Sameer Nanda <snanda@chromium.org>, Benson Leung <bleung@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Thu, Dec 13, 2018 at 4:09 AM Enric Balletbo i Serra
+<enric.balletbo@collabora.com> wrote:
+>
+> This patch allows reading and writing the input voltage and current
+> limit through the POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT and
+> POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs properties. This allows
+> userspace to see current values and to re-configure these values at
+> runtime based on system-level knowledge or user input.
+>
+> By default there is no limit, this is reported as a -1 when reading from
+> userspace. Writing a value will set the current or voltage limit in uA
+> or uV, and writing any negative value will remove that limit.
+>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-I see that you have pulled 3 patches.
-Please take also this patch, which is actually enabling the feature.
+Reviewed-by: Guenter Roeck <groeck@chromium.org>
 
-Regards,
-Lukasz
-
-On 12/5/18 12:05 PM, Lukasz Luba wrote:
-> Devfreq framework supports suspend of its devices.
-> Call the the devfreq interface and allow devfreq devices preserve/restore
-> their states during suspend/resume.
-> 
-> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->   drivers/base/power/main.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index a690fd4..0992e67 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -32,6 +32,7 @@
->   #include <trace/events/power.h>
->   #include <linux/cpufreq.h>
->   #include <linux/cpuidle.h>
-> +#include <linux/devfreq.h>
->   #include <linux/timer.h>
->   
->   #include "../base.h"
-> @@ -1078,6 +1079,7 @@ void dpm_resume(pm_message_t state)
->   	dpm_show_time(starttime, state, 0, NULL);
->   
->   	cpufreq_resume();
-> +	devfreq_resume();
->   	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
->   }
->   
-> @@ -1852,6 +1854,7 @@ int dpm_suspend(pm_message_t state)
->   	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
->   	might_sleep();
->   
-> +	devfreq_suspend();
->   	cpufreq_suspend();
->   
->   	mutex_lock(&dpm_list_mtx);
-> 
+>
+> Changes in v3: None
+> Changes in v2:
+> - Fix the upper limit that can be set.
+> - Remove unnecessary else.
+>
+>  drivers/power/supply/cros_usbpd-charger.c | 116 ++++++++++++++++++++++
+>  1 file changed, 116 insertions(+)
+>
+> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
+> index 7e9c3984ef6a..3a9ea94c3de3 100644
+> --- a/drivers/power/supply/cros_usbpd-charger.c
+> +++ b/drivers/power/supply/cros_usbpd-charger.c
+> @@ -53,6 +53,8 @@ struct charger_data {
+>  };
+>
+>  static enum power_supply_property cros_usbpd_charger_props[] = {
+> +       POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+> +       POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
+>         POWER_SUPPLY_PROP_ONLINE,
+>         POWER_SUPPLY_PROP_STATUS,
+>         POWER_SUPPLY_PROP_CURRENT_MAX,
+> @@ -80,6 +82,10 @@ static enum power_supply_usb_type cros_usbpd_charger_usb_types[] = {
+>         POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID
+>  };
+>
+> +/* Input voltage/current limit in mV/mA. Default to none. */
+> +static u16 input_voltage_limit = EC_POWER_LIMIT_NONE;
+> +static u16 input_current_limit = EC_POWER_LIMIT_NONE;
+> +
+>  static bool cros_usbpd_charger_port_is_dedicated(struct port_data *port)
+>  {
+>         return port->port_number >= port->charger->num_usbpd_ports;
+> @@ -324,6 +330,26 @@ static int cros_usbpd_charger_get_port_status(struct port_data *port,
+>         return ret;
+>  }
+>
+> +static int cros_usbpd_charger_set_ext_power_limit(struct charger_data *charger,
+> +                                                 u16 current_lim,
+> +                                                 u16 voltage_lim)
+> +{
+> +       struct ec_params_external_power_limit_v1 req;
+> +       int ret;
+> +
+> +       req.current_lim = current_lim;
+> +       req.voltage_lim = voltage_lim;
+> +
+> +       ret = cros_usbpd_charger_ec_command(charger, 0,
+> +                                           EC_CMD_EXTERNAL_POWER_LIMIT,
+> +                                           &req, sizeof(req), NULL, 0);
+> +       if (ret < 0)
+> +               dev_err(charger->dev,
+> +                       "Unable to set the 'External Power Limit': %d\n", ret);
+> +
+> +       return ret;
+> +}
+> +
+>  static void cros_usbpd_charger_power_changed(struct power_supply *psy)
+>  {
+>         struct port_data *port = power_supply_get_drvdata(psy);
+> @@ -396,6 +422,18 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
+>         case POWER_SUPPLY_PROP_USB_TYPE:
+>                 val->intval = port->psy_usb_type;
+>                 break;
+> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
+> +                       val->intval = -1;
+> +               else
+> +                       val->intval = input_current_limit * 1000;
+> +               break;
+> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
+> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
+> +                       val->intval = -1;
+> +               else
+> +                       val->intval = input_voltage_limit * 1000;
+> +               break;
+>         case POWER_SUPPLY_PROP_MODEL_NAME:
+>                 val->strval = port->model_name;
+>                 break;
+> @@ -409,6 +447,81 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
+>         return 0;
+>  }
+>
+> +static int cros_usbpd_charger_set_prop(struct power_supply *psy,
+> +                                      enum power_supply_property psp,
+> +                                      const union power_supply_propval *val)
+> +{
+> +       struct port_data *port = power_supply_get_drvdata(psy);
+> +       struct charger_data *charger = port->charger;
+> +       struct device *dev = charger->dev;
+> +       u16 intval;
+> +       int ret;
+> +
+> +       /* U16_MAX in mV/mA is the maximum supported value */
+> +       if (val->intval >= U16_MAX * 1000)
+> +               return -EINVAL;
+> +       /* A negative number is used to clear the limit */
+> +       if (val->intval < 0)
+> +               intval = EC_POWER_LIMIT_NONE;
+> +       else    /* Convert from uA/uV to mA/mV */
+> +               intval = val->intval / 1000;
+> +
+> +       switch (psp) {
+> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +               ret = cros_usbpd_charger_set_ext_power_limit(charger, intval,
+> +                                                       input_voltage_limit);
+> +               if (ret < 0)
+> +                       break;
+> +
+> +               input_current_limit = intval;
+> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
+> +                       dev_info(dev,
+> +                         "External Current Limit cleared for all ports\n");
+> +               else
+> +                       dev_info(dev,
+> +                         "External Current Limit set to %dmA for all ports\n",
+> +                         input_current_limit);
+> +               break;
+> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
+> +               ret = cros_usbpd_charger_set_ext_power_limit(charger,
+> +                                                       input_current_limit,
+> +                                                       intval);
+> +               if (ret < 0)
+> +                       break;
+> +
+> +               input_voltage_limit = intval;
+> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
+> +                       dev_info(dev,
+> +                         "External Voltage Limit cleared for all ports\n");
+> +               else
+> +                       dev_info(dev,
+> +                         "External Voltage Limit set to %dmV for all ports\n",
+> +                         input_voltage_limit);
+> +               break;
+> +       default:
+> +               ret = -EINVAL;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +static int cros_usbpd_charger_property_is_writeable(struct power_supply *psy,
+> +                                               enum power_supply_property psp)
+> +{
+> +       int ret;
+> +
+> +       switch (psp) {
+> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
+> +               ret = 1;
+> +               break;
+> +       default:
+> +               ret = 0;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+>  static int cros_usbpd_charger_ec_event(struct notifier_block *nb,
+>                                        unsigned long queued_during_suspend,
+>                                        void *_notify)
+> @@ -525,6 +638,9 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
+>
+>                 psy_desc = &port->psy_desc;
+>                 psy_desc->get_property = cros_usbpd_charger_get_prop;
+> +               psy_desc->set_property = cros_usbpd_charger_set_prop;
+> +               psy_desc->property_is_writeable =
+> +                               cros_usbpd_charger_property_is_writeable;
+>                 psy_desc->external_power_changed =
+>                                         cros_usbpd_charger_power_changed;
+>                 psy_cfg.drv_data = port;
+> --
+> 2.19.2
+>
