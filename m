@@ -1,199 +1,261 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v3 2/2] power: supply: cros: allow to set input voltage and current limit
-Date: Thu, 13 Dec 2018 13:09:44 +0100
-Message-ID: <20181213120944.30967-2-enric.balletbo@collabora.com>
-References: <20181213120944.30967-1-enric.balletbo@collabora.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Subject: Re: intel_pstate: Lowest frequency not reached with Intel i7-6700
+Date: Thu, 13 Dec 2018 13:41:40 +0100
+Message-ID: <efc5d72c-ca07-9a09-8e9e-2bb0732e0040@molgen.mpg.de>
+References: <000701d4926f$533eb270$f9bc1750$@net>
+ <a4321c48-e9df-1a2a-cfbd-bac07a9c65d8@molgen.mpg.de>
+ <CAJZ5v0gUDzy8vV=JajDHZJi2F0FyHUkFfYbbJhMioUa5XoKuqA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="------------ms060400060302000004090807"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181213120944.30967-1-enric.balletbo@collabora.com>
+In-Reply-To: <CAJZ5v0gUDzy8vV=JajDHZJi2F0FyHUkFfYbbJhMioUa5XoKuqA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, sre@kernel.org
-Cc: Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch allows reading and writing the input voltage and current
-limit through the POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT and
-POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs properties. This allows
-userspace to see current values and to re-configure these values at
-runtime based on system-level knowledge or user input.
+This is a cryptographically signed message in MIME format.
 
-By default there is no limit, this is reported as a -1 when reading from
-userspace. Writing a value will set the current or voltage limit in uA
-or uV, and writing any negative value will remove that limit.
+--------------ms060400060302000004090807
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
+Dear Rafael,
 
-Changes in v3: None
-Changes in v2:
-- Fix the upper limit that can be set.
-- Remove unnecessary else.
 
- drivers/power/supply/cros_usbpd-charger.c | 116 ++++++++++++++++++++++
- 1 file changed, 116 insertions(+)
+On 12/13/18 11:39, Rafael J. Wysocki wrote:
+> On Thu, Dec 13, 2018 at 10:54 AM Paul Menzel <pmenzel@molgen.mpg.de> wr=
+ote:
 
-diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-index 7e9c3984ef6a..3a9ea94c3de3 100644
---- a/drivers/power/supply/cros_usbpd-charger.c
-+++ b/drivers/power/supply/cros_usbpd-charger.c
-@@ -53,6 +53,8 @@ struct charger_data {
- };
- 
- static enum power_supply_property cros_usbpd_charger_props[] = {
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_CURRENT_MAX,
-@@ -80,6 +82,10 @@ static enum power_supply_usb_type cros_usbpd_charger_usb_types[] = {
- 	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID
- };
- 
-+/* Input voltage/current limit in mV/mA. Default to none. */
-+static u16 input_voltage_limit = EC_POWER_LIMIT_NONE;
-+static u16 input_current_limit = EC_POWER_LIMIT_NONE;
-+
- static bool cros_usbpd_charger_port_is_dedicated(struct port_data *port)
- {
- 	return port->port_number >= port->charger->num_usbpd_ports;
-@@ -324,6 +330,26 @@ static int cros_usbpd_charger_get_port_status(struct port_data *port,
- 	return ret;
- }
- 
-+static int cros_usbpd_charger_set_ext_power_limit(struct charger_data *charger,
-+						  u16 current_lim,
-+						  u16 voltage_lim)
-+{
-+	struct ec_params_external_power_limit_v1 req;
-+	int ret;
-+
-+	req.current_lim = current_lim;
-+	req.voltage_lim = voltage_lim;
-+
-+	ret = cros_usbpd_charger_ec_command(charger, 0,
-+					    EC_CMD_EXTERNAL_POWER_LIMIT,
-+					    &req, sizeof(req), NULL, 0);
-+	if (ret < 0)
-+		dev_err(charger->dev,
-+			"Unable to set the 'External Power Limit': %d\n", ret);
-+
-+	return ret;
-+}
-+
- static void cros_usbpd_charger_power_changed(struct power_supply *psy)
- {
- 	struct port_data *port = power_supply_get_drvdata(psy);
-@@ -396,6 +422,18 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_USB_TYPE:
- 		val->intval = port->psy_usb_type;
- 		break;
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		if (input_current_limit == EC_POWER_LIMIT_NONE)
-+			val->intval = -1;
-+		else
-+			val->intval = input_current_limit * 1000;
-+		break;
-+	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-+		if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-+			val->intval = -1;
-+		else
-+			val->intval = input_voltage_limit * 1000;
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = port->model_name;
- 		break;
-@@ -409,6 +447,81 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
- 	return 0;
- }
- 
-+static int cros_usbpd_charger_set_prop(struct power_supply *psy,
-+				       enum power_supply_property psp,
-+				       const union power_supply_propval *val)
-+{
-+	struct port_data *port = power_supply_get_drvdata(psy);
-+	struct charger_data *charger = port->charger;
-+	struct device *dev = charger->dev;
-+	u16 intval;
-+	int ret;
-+
-+	/* U16_MAX in mV/mA is the maximum supported value */
-+	if (val->intval >= U16_MAX * 1000)
-+		return -EINVAL;
-+	/* A negative number is used to clear the limit */
-+	if (val->intval < 0)
-+		intval = EC_POWER_LIMIT_NONE;
-+	else	/* Convert from uA/uV to mA/mV */
-+		intval = val->intval / 1000;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		ret = cros_usbpd_charger_set_ext_power_limit(charger, intval,
-+							input_voltage_limit);
-+		if (ret < 0)
-+			break;
-+
-+		input_current_limit = intval;
-+		if (input_current_limit == EC_POWER_LIMIT_NONE)
-+			dev_info(dev,
-+			  "External Current Limit cleared for all ports\n");
-+		else
-+			dev_info(dev,
-+			  "External Current Limit set to %dmA for all ports\n",
-+			  input_current_limit);
-+		break;
-+	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-+		ret = cros_usbpd_charger_set_ext_power_limit(charger,
-+							input_current_limit,
-+							intval);
-+		if (ret < 0)
-+			break;
-+
-+		input_voltage_limit = intval;
-+		if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-+			dev_info(dev,
-+			  "External Voltage Limit cleared for all ports\n");
-+		else
-+			dev_info(dev,
-+			  "External Voltage Limit set to %dmV for all ports\n",
-+			  input_voltage_limit);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int cros_usbpd_charger_property_is_writeable(struct power_supply *psy,
-+						enum power_supply_property psp)
-+{
-+	int ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+	case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-+		ret = 1;
-+		break;
-+	default:
-+		ret = 0;
-+	}
-+
-+	return ret;
-+}
-+
- static int cros_usbpd_charger_ec_event(struct notifier_block *nb,
- 				       unsigned long queued_during_suspend,
- 				       void *_notify)
-@@ -525,6 +638,9 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
- 
- 		psy_desc = &port->psy_desc;
- 		psy_desc->get_property = cros_usbpd_charger_get_prop;
-+		psy_desc->set_property = cros_usbpd_charger_set_prop;
-+		psy_desc->property_is_writeable =
-+				cros_usbpd_charger_property_is_writeable;
- 		psy_desc->external_power_changed =
- 					cros_usbpd_charger_power_changed;
- 		psy_cfg.drv_data = port;
--- 
-2.19.2
+>> On 12/13/18 00:06, Doug Smythies wrote:
+>>> On 2018.12.12 13:40 Paul Menzel wrote:
+>>>
+>>>> Using *powersave* as P-state selection algorithm, on an idle system
+>>>
+>>> Define "idle system".
+>>> If your computer is running a GUI, or is even a server without a GUI
+>>> but with many services running, then "idle" really isn't.
+>>> Below is from my test server, with many services disabled, so
+>>> "idle" really is quite "idle"
+>>>
+>>> doug@s15:~/temp$ sudo turbostat --Summary --quiet --show Busy%,Bzy_MH=
+z,PkgTmp,PkgWatt --interval 15
+>>> Busy%   Bzy_MHz PkgTmp  PkgWatt
+>>> 0.01    1608    27      3.71
+>>> 0.01    1619    27      3.71
+>>> 0.01    1600    28      3.71
+>>> 0.01    1600    28      3.70
+>>>
+>>> Note that p state 16 (1600 MHz) is the minimum for my older i7-2600k
+>>> processor.
+>>
+>> The thing is, on an Intel Kaby Lake laptop with Ubuntu 18.10 and GNOME=
+
+>> running, it goes down to the lowest listed frequency.
+
+Checking the numbers again, I was mistaken. The lowest possible frequency=
+
+of the Intel Kaby Lake i7-7500U in that laptop is 400 MHz, and it is
+going down to 600 MHz. Busy% from turbostat is 0.3 to 0.4.
+
+> Kaby Lake has hardware-managed P-states (HWP) which is a different mech=
+anism.
+
+Isn=E2=80=99t HWP also available for the 6th generation?
+
+    $ dmesg | grep intel_pstate
+    [    2.092456] intel_pstate: Intel P-state driver initializing
+    [    2.094820] intel_pstate: HWP enabled
+
+>>>> Shouldn=E2=80=99t it go down until 800 MHz?
+>>>
+>>> We would need some actual busy information, turbostat is the
+>>> recommended tool, to know for sure.
+>>
+>> Here you go.
+>>
+>> ```
+>> tools/power/x86/turbostat> sudo ./turbostat --Summary --quiet --show B=
+usy%,Bzy_MHz,PkgTmp,PkgWatt --interval 15
+>> Busy%    Bzy_MHz    PkgTmp    PkgWatt
+>> 3.59    1167    31    1.68
+>> 3.21    903    31    1.34
+>> 3.21    906    31    1.34
+>> 3.27    901    31    1.35
+>> 8.23    2715    30    2.32  =E2=86=90 stopping GDM (systemctl stop gdm=
+)
+>> 2.95    915    30    1.18
+>> 2.91    906    30    1.18
+>> 2.92    903    30    1.17
+>> 2.90    900    29    1.17
+>> 2.89    903    29    1.18
+>> 2.91    903    30    1.18
+>> 2.89    903    29    1.18
+>> 2.89    900    29    1.18
+>> 2.90    903    30    1.18
+>> 2.90    903    29    1.17
+>> 2.90    903    29    1.17
+>> 2.90    900    29    1.16
+>> 2.90    903    29    1.14
+>> 2.90    903    28    1.11
+>> 2.90    903    29    1.10
+>> 2.91    900    29    1.16
+>> 2.91    903    29    1.14
+>> 2.90    903    29    1.12
+>> 2.90    903    29    1.16
+>> 2.90    900    28    1.17
+>> 2.92    903    29    1.16
+>> 2.90    903    29    1.16
+>> 2.90    903    29    1.16
+>> ```
+>>
+>> 800 MHz should be enough to keep GDM running, shouldn=E2=80=99t it?
+>=20
+> Well, depending.
+>=20
+>> Otherwise only SSH was running.
+>=20
+> There obviously is something that causes it to stay at 900 MHz.
+
+It=E2=80=99s not obvious to me, but you have more experience. It=E2=80=99=
+d expect
+to at least one core(?) to go down to 800 MHz and not all to stay
+at 900 MHz.
+
+> Please check max_perf_pct, min_perf_pct and num_pstates under
+> /sys/devices/system/cpu/intel_pstate/ .
+
+    /sys/devices/system/cpu/intel_pstate> cat max_perf_pct min_perf_pct n=
+um_pstates
+    100
+    20
+    33
+
+> Also cpuinfo_max_freq, cpuinfo_min_freq, scaling_max_freq,
+> scaling_min_freq under /sys/devices/system/cpu/cpufreq/policy0/ .
+
+/sys/devices/system/cpu/cpufreq/policy0> cat cpuinfo_{min,max}_freq scali=
+ng_{min,max}_freq
+    800000
+    4000000
+    800000
+    4000000
+
+> However, please note that Busy% of 3 isn't particularly low.
+
+Indeed. On the laptop it is around 0.3 to 0.4 even with GNOME
+running.
+
+So, to check if everything is working, I boot into initramfs
+and check the numbers there?
+
+
+Kind regards,
+
+Paul
+
+
+--------------ms060400060302000004090807
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCC
+EFowggUSMIID+qADAgECAgkA4wvV+K8l2YEwDQYJKoZIhvcNAQELBQAwgYIxCzAJBgNVBAYT
+AkRFMSswKQYDVQQKDCJULVN5c3RlbXMgRW50ZXJwcmlzZSBTZXJ2aWNlcyBHbWJIMR8wHQYD
+VQQLDBZULVN5c3RlbXMgVHJ1c3QgQ2VudGVyMSUwIwYDVQQDDBxULVRlbGVTZWMgR2xvYmFs
+Um9vdCBDbGFzcyAyMB4XDTE2MDIyMjEzMzgyMloXDTMxMDIyMjIzNTk1OVowgZUxCzAJBgNV
+BAYTAkRFMUUwQwYDVQQKEzxWZXJlaW4genVyIEZvZXJkZXJ1bmcgZWluZXMgRGV1dHNjaGVu
+IEZvcnNjaHVuZ3NuZXR6ZXMgZS4gVi4xEDAOBgNVBAsTB0RGTi1QS0kxLTArBgNVBAMTJERG
+Ti1WZXJlaW4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgMjCCASIwDQYJKoZIhvcNAQEBBQAD
+ggEPADCCAQoCggEBAMtg1/9moUHN0vqHl4pzq5lN6mc5WqFggEcVToyVsuXPztNXS43O+FZs
+FVV2B+pG/cgDRWM+cNSrVICxI5y+NyipCf8FXRgPxJiZN7Mg9mZ4F4fCnQ7MSjLnFp2uDo0p
+eQcAIFTcFV9Kltd4tjTTwXS1nem/wHdN6r1ZB+BaL2w8pQDcNb1lDY9/Mm3yWmpLYgHurDg0
+WUU2SQXaeMpqbVvAgWsRzNI8qIv4cRrKO+KA3Ra0Z3qLNupOkSk9s1FcragMvp0049ENF4N1
+xDkesJQLEvHVaY4l9Lg9K7/AjsMeO6W/VRCrKq4Xl14zzsjz9AkH4wKGMUZrAcUQDBHHWekC
+AwEAAaOCAXQwggFwMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUk+PYMiba1fFKpZFK4OpL
+4qIMz+EwHwYDVR0jBBgwFoAUv1kgNgB5oKAia4zV8mHSuCzLgkowEgYDVR0TAQH/BAgwBgEB
+/wIBAjAzBgNVHSAELDAqMA8GDSsGAQQBga0hgiwBAQQwDQYLKwYBBAGBrSGCLB4wCAYGZ4EM
+AQICMEwGA1UdHwRFMEMwQaA/oD2GO2h0dHA6Ly9wa2kwMzM2LnRlbGVzZWMuZGUvcmwvVGVs
+ZVNlY19HbG9iYWxSb290X0NsYXNzXzIuY3JsMIGGBggrBgEFBQcBAQR6MHgwLAYIKwYBBQUH
+MAGGIGh0dHA6Ly9vY3NwMDMzNi50ZWxlc2VjLmRlL29jc3ByMEgGCCsGAQUFBzAChjxodHRw
+Oi8vcGtpMDMzNi50ZWxlc2VjLmRlL2NydC9UZWxlU2VjX0dsb2JhbFJvb3RfQ2xhc3NfMi5j
+ZXIwDQYJKoZIhvcNAQELBQADggEBAIcL/z4Cm2XIVi3WO5qYi3FP2ropqiH5Ri71sqQPrhE4
+eTizDnS6dl2e6BiClmLbTDPo3flq3zK9LExHYFV/53RrtCyD2HlrtrdNUAtmB7Xts5et6u5/
+MOaZ/SLick0+hFvu+c+Z6n/XUjkurJgARH5pO7917tALOxrN5fcPImxHhPalR6D90Bo0fa3S
+PXez7vTXTf/D6OWST1k+kEcQSrCFWMBvf/iu7QhCnh7U3xQuTY+8npTD5+32GPg8SecmqKc2
+2CzeIs2LgtjZeOJVEqM7h0S2EQvVDFKvaYwPBt/QolOLV5h7z/0HJPT8vcP9SpIClxvyt7bP
+ZYoaorVyGTkwggWNMIIEdaADAgECAgwcOtRQhH7u81j4jncwDQYJKoZIhvcNAQELBQAwgZUx
+CzAJBgNVBAYTAkRFMUUwQwYDVQQKEzxWZXJlaW4genVyIEZvZXJkZXJ1bmcgZWluZXMgRGV1
+dHNjaGVuIEZvcnNjaHVuZ3NuZXR6ZXMgZS4gVi4xEDAOBgNVBAsTB0RGTi1QS0kxLTArBgNV
+BAMTJERGTi1WZXJlaW4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgMjAeFw0xNjExMDMxNTI0
+NDhaFw0zMTAyMjIyMzU5NTlaMGoxCzAJBgNVBAYTAkRFMQ8wDQYDVQQIDAZCYXllcm4xETAP
+BgNVBAcMCE11ZW5jaGVuMSAwHgYDVQQKDBdNYXgtUGxhbmNrLUdlc2VsbHNjaGFmdDEVMBMG
+A1UEAwwMTVBHIENBIC0gRzAyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnhx4
+59Lh4WqgOs/Md04XxU2yFtfM15ZuJV0PZP7BmqSJKLLPyqmOrADfNdJ5PIGBto2JBhtRRBHd
+G0GROOvTRHjzOga95WOTeura79T21FWwwAwa29OFnD3ZplQs6HgdwQrZWNi1WHNJxn/4mA19
+rNEBUc5urSIpZPvZi5XmlF3v3JHOlx3KWV7mUteB4pwEEfGTg4npPAJbp2o7arxQdoIq+Pu2
+OsvqhD7Rk4QeaX+EM1QS4lqd1otW4hE70h/ODPy1xffgbZiuotWQLC6nIwa65Qv6byqlIX0q
+Zuu99Vsu+r3sWYsL5SBkgecNI7fMJ5tfHrjoxfrKl/ErTAt8GQIDAQABo4ICBTCCAgEwEgYD
+VR0TAQH/BAgwBgEB/wIBATAOBgNVHQ8BAf8EBAMCAQYwKQYDVR0gBCIwIDANBgsrBgEEAYGt
+IYIsHjAPBg0rBgEEAYGtIYIsAQEEMB0GA1UdDgQWBBTEiKUH7rh7qgwTv9opdGNSG0lwFjAf
+BgNVHSMEGDAWgBST49gyJtrV8UqlkUrg6kviogzP4TCBjwYDVR0fBIGHMIGEMECgPqA8hjpo
+dHRwOi8vY2RwMS5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1Yi9jcmwvY2Fjcmwu
+Y3JsMECgPqA8hjpodHRwOi8vY2RwMi5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1
+Yi9jcmwvY2FjcmwuY3JsMIHdBggrBgEFBQcBAQSB0DCBzTAzBggrBgEFBQcwAYYnaHR0cDov
+L29jc3AucGNhLmRmbi5kZS9PQ1NQLVNlcnZlci9PQ1NQMEoGCCsGAQUFBzAChj5odHRwOi8v
+Y2RwMS5wY2EuZGZuLmRlL2dsb2JhbC1yb290LWcyLWNhL3B1Yi9jYWNlcnQvY2FjZXJ0LmNy
+dDBKBggrBgEFBQcwAoY+aHR0cDovL2NkcDIucGNhLmRmbi5kZS9nbG9iYWwtcm9vdC1nMi1j
+YS9wdWIvY2FjZXJ0L2NhY2VydC5jcnQwDQYJKoZIhvcNAQELBQADggEBABLpeD5FygzqOjj+
+/lAOy20UQOGWlx0RMuPcI4nuyFT8SGmK9lD7QCg/HoaJlfU/r78ex+SEide326evlFAoJXIF
+jVyzNltDhpMKrPIDuh2N12zyn1EtagqPL6hu4pVRzcBpl/F2HCvtmMx5K4WN1L1fmHWLcSap
+dhXLvAZ9RG/B3rqyULLSNN8xHXYXpmtvG0VGJAndZ+lj+BH7uvd3nHWnXEHC2q7iQlDUqg0a
+wIqWJgdLlx1Q8Dg/sodv0m+LN0kOzGvVDRCmowBdWGhhusD+duKV66pBl+qhC+4LipariWaM
+qK5ppMQROATjYeNRvwI+nDcEXr2vDaKmdbxgDVwwggWvMIIEl6ADAgECAgweKlJIhfynPMVG
+/KIwDQYJKoZIhvcNAQELBQAwajELMAkGA1UEBhMCREUxDzANBgNVBAgMBkJheWVybjERMA8G
+A1UEBwwITXVlbmNoZW4xIDAeBgNVBAoMF01heC1QbGFuY2stR2VzZWxsc2NoYWZ0MRUwEwYD
+VQQDDAxNUEcgQ0EgLSBHMDIwHhcNMTcxMTE0MTEzNDE2WhcNMjAxMTEzMTEzNDE2WjCBizEL
+MAkGA1UEBhMCREUxIDAeBgNVBAoMF01heC1QbGFuY2stR2VzZWxsc2NoYWZ0MTQwMgYDVQQL
+DCtNYXgtUGxhbmNrLUluc3RpdHV0IGZ1ZXIgbW9sZWt1bGFyZSBHZW5ldGlrMQ4wDAYDVQQL
+DAVNUElNRzEUMBIGA1UEAwwLUGF1bCBNZW56ZWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+ggEKAoIBAQDIh/UR/AX/YQ48VWWDMLTYtXjYJyhRHMc81ZHMMoaoG66lWB9MtKRTnB5lovLZ
+enTIUyPsCrMhTqV9CWzDf6v9gOTWVxHEYqrUwK5H1gx4XoK81nfV8oGV4EKuVmmikTXiztGz
+peyDmOY8o/EFNWP7YuRkY/lPQJQBeBHYq9AYIgX4StuXu83nusq4MDydygVOeZC15ts0tv3/
+6WmibmZd1OZRqxDOkoBbY3Djx6lERohs3IKS6RKiI7e90rCSy9rtidJBOvaQS9wvtOSKPx0a
++2pAgJEVzZFjOAfBcXydXtqXhcpOi2VCyl+7+LnnTz016JJLsCBuWEcB3kP9nJYNAgMBAAGj
+ggIxMIICLTAJBgNVHRMEAjAAMA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcD
+AgYIKwYBBQUHAwQwHQYDVR0OBBYEFHM0Mc3XjMLlhWpp4JufRELL4A/qMB8GA1UdIwQYMBaA
+FMSIpQfuuHuqDBO/2il0Y1IbSXAWMCAGA1UdEQQZMBeBFXBtZW56ZWxAbW9sZ2VuLm1wZy5k
+ZTB9BgNVHR8EdjB0MDigNqA0hjJodHRwOi8vY2RwMS5wY2EuZGZuLmRlL21wZy1nMi1jYS9w
+dWIvY3JsL2NhY3JsLmNybDA4oDagNIYyaHR0cDovL2NkcDIucGNhLmRmbi5kZS9tcGctZzIt
+Y2EvcHViL2NybC9jYWNybC5jcmwwgc0GCCsGAQUFBwEBBIHAMIG9MDMGCCsGAQUFBzABhido
+dHRwOi8vb2NzcC5wY2EuZGZuLmRlL09DU1AtU2VydmVyL09DU1AwQgYIKwYBBQUHMAKGNmh0
+dHA6Ly9jZHAxLnBjYS5kZm4uZGUvbXBnLWcyLWNhL3B1Yi9jYWNlcnQvY2FjZXJ0LmNydDBC
+BggrBgEFBQcwAoY2aHR0cDovL2NkcDIucGNhLmRmbi5kZS9tcGctZzItY2EvcHViL2NhY2Vy
+dC9jYWNlcnQuY3J0MEAGA1UdIAQ5MDcwDwYNKwYBBAGBrSGCLAEBBDARBg8rBgEEAYGtIYIs
+AQEEAwYwEQYPKwYBBAGBrSGCLAIBBAMGMA0GCSqGSIb3DQEBCwUAA4IBAQCQs6bUDROpFO2F
+Qz2FMgrdb39VEo8P3DhmpqkaIMC5ZurGbbAL/tAR6lpe4af682nEOJ7VW86ilsIJgm1j0ueY
+aOuL8jrN4X7IF/8KdZnnNnImW3QVni6TCcc+7+ggci9JHtt0IDCj5vPJBpP/dKXLCN4M+exl
+GXYpfHgxh8gclJPY1rquhQrihCzHfKB01w9h9tWZDVMtSoy9EUJFhCXw7mYUsvBeJwZesN2B
+fndPkrXx6XWDdU3S1LyKgHlLIFtarLFm2Hb5zAUR33h+26cN6ohcGqGEEzgIG8tXS8gztEaj
+1s2RyzmKd4SXTkKR3GhkZNVWy+gM68J7jP6zzN+cMYIDmjCCA5YCAQEwejBqMQswCQYDVQQG
+EwJERTEPMA0GA1UECAwGQmF5ZXJuMREwDwYDVQQHDAhNdWVuY2hlbjEgMB4GA1UECgwXTWF4
+LVBsYW5jay1HZXNlbGxzY2hhZnQxFTATBgNVBAMMDE1QRyBDQSAtIEcwMgIMHipSSIX8pzzF
+RvyiMA0GCWCGSAFlAwQCAQUAoIIB8TAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
+SIb3DQEJBTEPFw0xODEyMTMxMjQxNDBaMC8GCSqGSIb3DQEJBDEiBCDH09uAP+9CqT8sewwh
+OHC57BokSlsRQyf69JHIsEn66jBsBgkqhkiG9w0BCQ8xXzBdMAsGCWCGSAFlAwQBKjALBglg
+hkgBZQMEAQIwCgYIKoZIhvcNAwcwDgYIKoZIhvcNAwICAgCAMA0GCCqGSIb3DQMCAgFAMAcG
+BSsOAwIHMA0GCCqGSIb3DQMCAgEoMIGJBgkrBgEEAYI3EAQxfDB6MGoxCzAJBgNVBAYTAkRF
+MQ8wDQYDVQQIDAZCYXllcm4xETAPBgNVBAcMCE11ZW5jaGVuMSAwHgYDVQQKDBdNYXgtUGxh
+bmNrLUdlc2VsbHNjaGFmdDEVMBMGA1UEAwwMTVBHIENBIC0gRzAyAgweKlJIhfynPMVG/KIw
+gYsGCyqGSIb3DQEJEAILMXygejBqMQswCQYDVQQGEwJERTEPMA0GA1UECAwGQmF5ZXJuMREw
+DwYDVQQHDAhNdWVuY2hlbjEgMB4GA1UECgwXTWF4LVBsYW5jay1HZXNlbGxzY2hhZnQxFTAT
+BgNVBAMMDE1QRyBDQSAtIEcwMgIMHipSSIX8pzzFRvyiMA0GCSqGSIb3DQEBAQUABIIBAG/O
+q03Re9jKs6zhZ9Rk75QqaVgb9UtGLzzpNUsSlJ1HERUo9MW0jZdkm5VDR8/Bov4HoRqcxDrY
+HrJ/lSz27dTZHL8VYuL2HlBJ95REFXKMX0O+dCt3WwDynwZivBhyEx+ULwHyvhYQpujenzDl
+y733HK6fm85DCCxD5cyHYgd//SQp1U1y1nbHb9gkG6X/nkpeF5kU9hvcTzMbVbBciQ4wsNbl
+Mh0SgilakeSOf01kyezvhX3sXzRg72GhZhXnMV9VbhdnUvXSlf49Q0/8jpD0Pag0NtgTggzk
+TwtVPs035wpbViBYnT14waujp4xCCQsxxbhbW+pw+4NsjMxhoMAAAAAAAAA=
+--------------ms060400060302000004090807--
