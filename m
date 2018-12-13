@@ -1,95 +1,162 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v2] MAINTAINERS: add maintainers for ChromeOS EC
- sub-drivers
-Date: Thu, 13 Dec 2018 10:30:16 +0100
-Message-ID: <6f688bfe-2ebe-1934-0375-016ae859dcfb@collabora.com>
-References: <20181211190953.13626-1-enric.balletbo@collabora.com>
- <20181212222937.GL19816@piout.net>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: [PATCH V2 12/21] cpufreq: tegra124: do not handle the CPU rail
+Date: Thu, 13 Dec 2018 17:34:29 +0800
+Message-ID: <20181213093438.29621-13-josephl@nvidia.com>
+References: <20181213093438.29621-1-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181212222937.GL19816@piout.net>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter Clausen <lars@>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181213093438.29621-1-josephl@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Joseph Lo <josephl@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexandre,
+The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
+rail. So this driver shouldn't handle for the CPU clock switching from
+DFLL to other PLL clocks. It was designed to work on DFLL clock only,
+which handle the frequency/voltage scaling in the background.
 
-On 12/12/18 23:29, Alexandre Belloni wrote:
-> On 11/12/2018 20:09:52+0100, Enric Balletbo i Serra wrote:
->> There are multiple ChromeOS EC sub-drivers spread in different
->> subsystems, as all of them are related to the Chrome stuff add
->> Benson and myself as a maintainers for all these sub-drivers.
->>
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> 
-> You definitively don't need my ack to get that applied but anyway:
-> > Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> 
+This patch removes the driver dependency of the CPU rail, as well as not
+allow it to be built as a module and remove the removal function. So it
+can keep working on DFLL clock.
 
-Thanks for the ack.
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Joseph Lo <josephl@nvidia.com>
+---
+*V2:
+ - update the commit message since we change the driver not able to be
+ built as a module and remove the removal function in V2
+---
+ drivers/cpufreq/Kconfig.arm        |  4 +--
+ drivers/cpufreq/tegra124-cpufreq.c | 41 ++----------------------------
+ 2 files changed, 4 insertions(+), 41 deletions(-)
 
-> However, you should probably indicate which tree do you expect that to
-> go through ;)
-> 
-
-Well, these are sub-drivers for different subsystems but are related to the main
-ChromeOS EC. I expect all go through their specific subsystem and their
-maintainer. I.e the rtc driver go through your tree, the mfd go through Lee's
-tree, iio drivers through Jonathan's tree, etc. This is the reason I did not add
-the tree. Main purpose here as that Benson and I are aware when someone sends a
-change on one of the sub-drivers and we can review these patches.
-
-Thanks,
- Enric
-
->> ---
->>
->> Changes in v2:
->> - Fix typo in Benson email address.
->>
->>  MAINTAINERS | 24 ++++++++++++++++++++++++
->>  1 file changed, 24 insertions(+)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index a24129b0b043..bbe7180e2851 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -3625,6 +3625,30 @@ S:	Maintained
->>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
->>  F:	drivers/platform/chrome/
->>  
->> +CHROMEOS EC SUBDRIVERS
->> +M:	Benson Leung <bleung@chromium.org>
->> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> +S:	Maintained
->> +F:	Documentation/devicetree/bindings/extcon/extcon-usbc-cros-ec.txt
->> +F:	Documentation/devicetree/bindings/input/cros-ec-keyb.txt
->> +F:	Documentation/devicetree/bindings/pwm/google,cros-ec-pwm.txt
->> +F:	Documentation/devicetree/bindings/i2c/i2c-cros-ec-tunnel.txt
->> +F:	Documentation/devicetree/bindings/mfd/cros-ec.txt
->> +F:	Documentation/ABI/testing/sysfs-bus-iio-cros-ec
->> +F:	drivers/extcon/extcon-usbc-cros-ec.c
->> +F:	drivers/i2c/busses/i2c-cros-ec-tunnel.c
->> +F:	drivers/iio/accel/cros_ec*
->> +F:	drivers/iio/common/cros_ec_sensors/
->> +F:	drivers/iio/light/cros_ec*
->> +F:	drivers/iio/pressure/cros_ec*
->> +F:	drivers/input/keyboard/cros_ec*
->> +F:	drivers/mfd/cros_ec*
->> +F:	drivers/power/supply/cros_usbpd-charger.c
->> +F:	drivers/pwm/pwm-cros-ec.c
->> +F:	drivers/rtc/rtc-cros-ec.c
->> +F:	include/linux/iio/common/cros_ec_sensors_core.h
->> +F:	include/linux/mfd/cros_ec*
->> +
->>  CIRRUS LOGIC AUDIO CODEC DRIVERS
->>  M:	Brian Austin <brian.austin@cirrus.com>
->>  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
->> -- 
->> 2.19.2
->>
-> 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 4e1131ef85ae..1d83b6e81222 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -261,8 +261,8 @@ config ARM_TEGRA20_CPUFREQ
+ 	  This adds the CPUFreq driver support for Tegra20 SOCs.
+ 
+ config ARM_TEGRA124_CPUFREQ
+-	tristate "Tegra124 CPUFreq support"
+-	depends on ARCH_TEGRA && CPUFREQ_DT && REGULATOR
++	bool "Tegra124 CPUFreq support"
++	depends on ARCH_TEGRA && CPUFREQ_DT
+ 	default y
+ 	help
+ 	  This adds the CPUFreq driver support for Tegra124 SOCs.
+diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+index 43530254201a..a1bfde0a7950 100644
+--- a/drivers/cpufreq/tegra124-cpufreq.c
++++ b/drivers/cpufreq/tegra124-cpufreq.c
+@@ -22,11 +22,9 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+-#include <linux/regulator/consumer.h>
+ #include <linux/types.h>
+ 
+ struct tegra124_cpufreq_priv {
+-	struct regulator *vdd_cpu_reg;
+ 	struct clk *cpu_clk;
+ 	struct clk *pllp_clk;
+ 	struct clk *pllx_clk;
+@@ -60,14 +58,6 @@ static int tegra124_cpu_switch_to_dfll(struct tegra124_cpufreq_priv *priv)
+ 	return ret;
+ }
+ 
+-static void tegra124_cpu_switch_to_pllx(struct tegra124_cpufreq_priv *priv)
+-{
+-	clk_set_parent(priv->cpu_clk, priv->pllp_clk);
+-	clk_disable_unprepare(priv->dfll_clk);
+-	regulator_sync_voltage(priv->vdd_cpu_reg);
+-	clk_set_parent(priv->cpu_clk, priv->pllx_clk);
+-}
+-
+ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	struct tegra124_cpufreq_priv *priv;
+@@ -88,16 +78,10 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+ 	if (!np)
+ 		return -ENODEV;
+ 
+-	priv->vdd_cpu_reg = regulator_get(cpu_dev, "vdd-cpu");
+-	if (IS_ERR(priv->vdd_cpu_reg)) {
+-		ret = PTR_ERR(priv->vdd_cpu_reg);
+-		goto out_put_np;
+-	}
+-
+ 	priv->cpu_clk = of_clk_get_by_name(np, "cpu_g");
+ 	if (IS_ERR(priv->cpu_clk)) {
+ 		ret = PTR_ERR(priv->cpu_clk);
+-		goto out_put_vdd_cpu_reg;
++		goto out_put_np;
+ 	}
+ 
+ 	priv->dfll_clk = of_clk_get_by_name(np, "dfll");
+@@ -129,15 +113,13 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+ 		platform_device_register_full(&cpufreq_dt_devinfo);
+ 	if (IS_ERR(priv->cpufreq_dt_pdev)) {
+ 		ret = PTR_ERR(priv->cpufreq_dt_pdev);
+-		goto out_switch_to_pllx;
++		goto out_put_pllp_clk;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, priv);
+ 
+ 	return 0;
+ 
+-out_switch_to_pllx:
+-	tegra124_cpu_switch_to_pllx(priv);
+ out_put_pllp_clk:
+ 	clk_put(priv->pllp_clk);
+ out_put_pllx_clk:
+@@ -146,34 +128,15 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+ 	clk_put(priv->dfll_clk);
+ out_put_cpu_clk:
+ 	clk_put(priv->cpu_clk);
+-out_put_vdd_cpu_reg:
+-	regulator_put(priv->vdd_cpu_reg);
+ out_put_np:
+ 	of_node_put(np);
+ 
+ 	return ret;
+ }
+ 
+-static int tegra124_cpufreq_remove(struct platform_device *pdev)
+-{
+-	struct tegra124_cpufreq_priv *priv = platform_get_drvdata(pdev);
+-
+-	platform_device_unregister(priv->cpufreq_dt_pdev);
+-	tegra124_cpu_switch_to_pllx(priv);
+-
+-	clk_put(priv->pllp_clk);
+-	clk_put(priv->pllx_clk);
+-	clk_put(priv->dfll_clk);
+-	clk_put(priv->cpu_clk);
+-	regulator_put(priv->vdd_cpu_reg);
+-
+-	return 0;
+-}
+-
+ static struct platform_driver tegra124_cpufreq_platdrv = {
+ 	.driver.name	= "cpufreq-tegra124",
+ 	.probe		= tegra124_cpufreq_probe,
+-	.remove		= tegra124_cpufreq_remove,
+ };
+ 
+ static int __init tegra_cpufreq_init(void)
+-- 
+2.19.2
