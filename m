@@ -1,36 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v12 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
- HW driver
-Date: Thu, 13 Dec 2018 16:06:08 +0530
-Message-ID: <20181213103608.vs255cq46fu4w2cc@vireshk-i7>
-References: <1544687394-331-1-git-send-email-tdas@codeaurora.org>
- <1544687394-331-3-git-send-email-tdas@codeaurora.org>
- <154469510700.19322.7762676027024031719@swboyd.mtv.corp.google.com>
- <20181213100506.sy3haqjbxtmkthvt@vireshk-i7>
- <154469596755.19322.16319349046735344084@swboyd.mtv.corp.google.com>
- <20181213101417.dcz66dpbqzbbxkdz@vireshk-i7>
- <154469713309.19322.12951478077195078609@swboyd.mtv.corp.google.com>
+From: Nick Fan <nick.fan@mediatek.com>
+Subject: Re: [PATCH] opp: Add API for getting voltage from supplies
+Date: Thu, 13 Dec 2018 18:36:52 +0800
+Message-ID: <1544697412.6417.13.camel@mtksdaap41>
+References: <1543906760-15631-1-git-send-email-Nick.Fan@mediatek.com>
+         <20181204082158.rb7uzdiwmcotwoxh@vireshk-i7>
+         <1544445372.3502.42.camel@mtksdaap41>
+         <20181213063850.c5nu3bbe7gm647ca@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <154469713309.19322.12951478077195078609@swboyd.mtv.corp.google.com>
+In-Reply-To: <20181213063850.c5nu3bbe7gm647ca@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, tfiga@chromium.org, Chiawen.Lee@mediatek.com, erin.lo@mediatek.com
 List-Id: linux-pm@vger.kernel.org
 
-On 13-12-18, 02:32, Stephen Boyd wrote:
-> I have one policy for four CPUs. So take down all four of those CPUs by
-> writing a 0 to the online file for each CPU, and then bring them back
-> online. That should make cpufreq_driver->init() be called twice, once
-> during boot when the CPUs are bound to the cpufreq devices, and second
-> from the sysfs write when the user brings the first CPU in that policy
-> online again by writing a 1 to the online file. If that second time it
-> fails I suspect we hit the lockdep warning.
+On Thu, 2018-12-13 at 12:08 +0530, Viresh Kumar wrote:
+> On 10-12-18, 20:36, Nick Fan wrote:
+> > For the users who only use one supply, they can use
+> > dev_pm_opp_get_voltage to get the voltage data from an opp.
+> > But if the users who use more than one supply, they will need this API
+> > to get their voltage data from OPP.
+> > The users should know about the supply count while creating opp table by
+> > using dev_pm_opp_set_regulators function.
+> > By using this API, the users can get the voltages by using index to
+> > specify which supplies they want.
+> > 
+> > The following is a simple example to get multiple regulators by this
+> > API.
+> > for (i = 0; i < regulator_num; i++)
+> > 	target_volt[i] = dev_pm_opp_get_voltage_supply(opp, i);
+> 
+> Fair enough. I couldn't find anything wrong with the patch. Will it be
+> possible to send this patch as part of a series which uses the new API
+> ? So that we are sure of somebody using it eventually.
+> 
+This new API is suitable for the users that required to access for
+multiple regulators. And I am one of users who uses this API, but I am
+not able to upstream the GPU kernel driver which uses the new API.
 
-Okay, that is a special sequence. I will try to reproduce that
-locally. Thanks.
-
--- 
-viresh
+--
+Nick Fan
