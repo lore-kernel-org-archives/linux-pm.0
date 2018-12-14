@@ -1,103 +1,41 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3] MAINTAINERS: add maintainers for ChromeOS EC
- sub-drivers
-Date: Fri, 14 Dec 2018 14:17:52 +0100
-Message-ID: <20181214131752.3qfdbxk6z3hkp7cp@earth.universe>
-References: <20181214114858.21231-1-enric.balletbo@collabora.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="lgqwv4ykv6pafxpf"
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH v2 0/3] PM/pm_runtime: move on hrtimer and nsec
+Date: Fri, 14 Dec 2018 15:22:24 +0100
+Message-ID: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181214114858.21231-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars-Peter
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Cc: ulf.hansson@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+Move pm_runtime on hrtimer and raw ns time to get finer granularity
 
---lgqwv4ykv6pafxpf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Patch 1 moves runtime_pm autosuspend on hrtimer framework
 
-Hi,
+Patch 2 moves time accounting on raw ns. This patch initially used
+ktime instead of raw ns but it was easier to move i915 driver on raw ns
+than on ktime
 
-On Fri, Dec 14, 2018 at 12:48:58PM +0100, Enric Balletbo i Serra wrote:
-> There are multiple ChromeOS EC sub-drivers spread in different
-> subsystems, as all of them are related to the Chrome stuff add
-> Benson and myself as a maintainers for all these sub-drivers.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Signed-off-by: Benson Leung <bleung@chromium.org>
-> Acked-by: Wolfram Sang <wsa@the-dreams.de>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> for iio parts.
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> ---
+Patch 3 fixes drm/i915 driver that uses PM core fields
 
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Changes since v1:
+- updated commit message of patch 1
+- Added patches 2 & 3 to move runtime_pm accounting on raw ns
+  
+Thara Gopinath (1):
+  PM/runtime:Replace jiffies based accouting with ktime based accounting
 
--- Sebastian
+Vincent Guittot (2):
+  PM/pm_runtime: move autosuspend on hrtimer
+  drm/i915: Move to new PM core fields
 
->=20
-> Changes in v3:
-> - Add collected acks
-> - Use a cros[-_]ec pattern instead of list all the files.
-> - Add Guenter as a reviewer.
->=20
-> Changes in v2:
-> - Fix typo in Benson email address.
->=20
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e7260191301b..437e036435d5 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3629,6 +3629,14 @@ S:	Maintained
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platf=
-orm.git
->  F:	drivers/platform/chrome/
-> =20
-> +CHROMEOS EC SUBDRIVERS
-> +M:	Benson Leung <bleung@chromium.org>
-> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> +R:	Guenter Roeck <groeck@chromium.org>
-> +S:	Maintained
-> +N:	cros[-_]ec
-> +F:	drivers/power/supply/cros_usbpd-charger.c
-> +
->  CIRRUS LOGIC AUDIO CODEC DRIVERS
->  M:	Brian Austin <brian.austin@cirrus.com>
->  M:	Paul Handrigan <Paul.Handrigan@cirrus.com>
-> --=20
-> 2.19.2
->=20
->=20
-> --=20
-> To unsubscribe, send mail to kernel-unsubscribe@lists.collabora.co.uk.
+ drivers/base/power/runtime.c    | 73 ++++++++++++++++++++++-------------------
+ drivers/base/power/sysfs.c      | 11 +++++--
+ drivers/gpu/drm/i915/i915_pmu.c | 12 +++----
+ drivers/gpu/drm/i915/i915_pmu.h |  4 +--
+ include/linux/pm.h              | 11 ++++---
+ include/linux/pm_runtime.h      |  6 ++--
+ 6 files changed, 64 insertions(+), 53 deletions(-)
 
---lgqwv4ykv6pafxpf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwTrX0ACgkQ2O7X88g7
-+pp/yxAAgDkNnwL/12ET+OUIaYGlUvknCfQAjrIMeEQkOj/cNanVPk5rHbr+xsSt
-ssO7WNBlyl45qUtUsQtGew2iSCIrn5LwWUb9rxiGpdEpLwx0nna1ZRIcN+lY/VOp
-OtcoXftkfJq/b5b8Dc553TqbpHCRSTjJQmnbDaWwSLQwOGjezAa6Bu3BllnaRKEl
-3XYwTmIy2Xfic/ONL7dHJT0+RSBbjrkVqNLg+4/Dtg9Nq5wfsik/XwGeDjc8ilYC
-urGFnqAQF61nU53KCbekcAYhtGxBdMqGqZxnd63pFCgqzQwWpRHDtCkFj4aEVaJJ
-kM1c8nVshjs/1+/6Ptlbej/2iTWK5dc5exkHFjin9UDhdXT0ypx8HnBQpVb5qOzA
-kW5t+BJA+yQG4TEKOrCbJRkYF5Zxg2XIjkJf2nl0jo+TAmQRrG+RS8nh3/3S/x0F
-ahjSjdNFIRoqsTwS82tNJ+r/Y8RkVaPNcFG7v4zBuZ0xmXYWaqhFnVyHmbeOv9ot
-jFQNT0MhLYA56t76YWfJheElTKwi1BkJwPsduXfYsl144zsWTJkQzKTG+r/R0BSG
-UZ6M2axDAosv4XFG3Zc43yRkrxaBMVIo2q3P703B2cdAQIxkSdCpPAQZU1q1DZcF
-AuoH4VcsHpCcomhjpoa2RWLKNMokC5vMiCuLLdgDJhXafuZdbLk=
-=7DkH
------END PGP SIGNATURE-----
-
---lgqwv4ykv6pafxpf--
+-- 
+2.7.4
