@@ -1,32 +1,35 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] thermal: rcar_thermal: add R8A774C0 support
-Date: Fri, 14 Dec 2018 11:43:33 +0100
-Message-ID: <CAMuHMdWt3wBeg2khe5kcyG4V=ZW4ME-vktAHwK0fXgwDmREnxg@mail.gmail.com>
-References: <1544732590-7230-1-git-send-email-fabrizio.castro@bp.renesas.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 6/7] PM / Domains: Factorize
+ dev_pm_genpd_set_performance_state()
+Date: Fri, 14 Dec 2018 16:17:42 +0530
+Message-ID: <20181214104742.szicfipdffaegcoy@vireshk-i7>
+References: <cover.1544782279.git.viresh.kumar@linaro.org>
+ <f6153683d88cce25319945e4308bef46edaaaa54.1544782279.git.viresh.kumar@linaro.org>
+ <CAPDyKFr7_Cn0N=pctuTdqzcUy9fg-fmpd5OgEFS9eRz-SFh1Fw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544732590-7230-1-git-send-email-fabrizio.castro@bp.renesas.com>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFr7_Cn0N=pctuTdqzcUy9fg-fmpd5OgEFS9eRz-SFh1Fw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 13, 2018 at 9:23 PM Fabrizio Castro
-<fabrizio.castro@bp.renesas.com> wrote:
-> Add thermal support for the RZ/G2E SoC (a.k.a. R8A774C0).
->
-> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+On 14-12-18, 11:40, Ulf Hansson wrote:
+> Nitpick: Would be nice to remove the beginning "_" from both
+> _genpd_reeval_performance_state() and _genpd_set_performance_state(),
+> as to be consistent with existing function naming in genpd. However,
+> it's not a big deal and can be done on top.
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Actually it is used at some places and so I did the same for the
+internal routines:
 
-Gr{oetje,eeting}s,
-
-                        Geert
+_genpd_power_on
+_genpd_power_off
+__genpd_runtime_suspend
+__genpd_runtime_resume
+__genpd_dev_pm_attach
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+viresh
