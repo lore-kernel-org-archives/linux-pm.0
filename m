@@ -1,34 +1,50 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] power: supply: isp1704: switch to gpiod API
-Date: Fri, 14 Dec 2018 22:56:28 +0100
-Message-ID: <CACRpkdaEXJqpzmbnJpxkZewwCwLbekwwn1QnANOXP5pgnHfU8w@mail.gmail.com>
-References: <20181213013858.23996-1-sebastian.reichel@collabora.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v2 1/2] dt-bindings: drm/msm/a6xx: Document
+ interconnect properties for GPU
+Date: Fri, 14 Dec 2018 15:16:39 -0700
+Message-ID: <20181214221640.25354-2-jcrouse@codeaurora.org>
+References: <20181214221640.25354-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181213013858.23996-1-sebastian.reichel@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Sebastian Reichel <sre@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181214221640.25354-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 13, 2018 at 2:39 AM Sebastian Reichel
-<sebastian.reichel@collabora.com> wrote:
-
-> This migrates isp1704 driver from old GPIO API to new descriptor
-> based GPIO API and drops useless platform data as a side-effect.
->
-> Migration is simple, since all mainline users are DT based and
-> DT API does not change. Out of tree users of the platform data
-> need to migrate to gpiod_lookup_table as described here:
->
-> Documentation/driver-api/gpio/board.rst
->
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-
-Excellent work!
-
-Yours,
-Linus Walleij
+QWRkIGRvY3VtZW50YXRpb24gZm9yIHRoZSBpbnRlcmNvbm5lY3QgYW5kIGludGVyY29ubmVjdC1u
+YW1lcyBiaW5kaW5ncwpmb3IgdGhlIEdQVSBub2RlIGFzIGRldGFpbGVkIGJ5IGJpbmRpbmdzL2lu
+dGVyY29ubmVjdC9pbnRlcmNvbm5lY3QudHh0LgoKU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3Vz
+ZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KLS0tCiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dCB8IDYgKysrKysrCiAxIGZpbGUgY2hhbmdlZCwg
+NiBpbnNlcnRpb25zKCspCgpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dAppbmRleCA4ZDk0MTUxODBjMjIuLjE5YjVhZTQ1OWZk
+YiAxMDA2NDQKLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkv
+bXNtL2dwdS50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3Bs
+YXkvbXNtL2dwdS50eHQKQEAgLTE5LDYgKzE5LDkgQEAgUmVxdWlyZWQgcHJvcGVydGllczoKICAg
+KiAibWVtX2lmYWNlIgogLSBpb21tdXM6IG9wdGlvbmFsIHBoYW5kbGUgdG8gYW4gYWRyZW5vIGlv
+bW11IGluc3RhbmNlCiAtIG9wZXJhdGluZy1wb2ludHMtdjI6IG9wdGlvbmFsIHBoYW5kbGUgdG8g
+dGhlIE9QUCBvcGVyYXRpbmcgcG9pbnRzCistIGludGVyY29ubmVjdDogb3B0aW9uYWwgcGhhbmRs
+ZSB0byBhIGludGVyY29ubmVjdCBwcm92aWRlci4gIFNlZQorICAuLi9pbnRlcmNvbm5lY3QvaW50
+ZXJjb25uZWN0LnR4dCBmb3IgZGV0YWlscy4KKy0gaW50ZXJjb25uZWN0LW5hbWVzOiBOYW1lIHN0
+cmluZyBmb3IgdGhlIGludGVyY29ubmVjdHMuCiAtIHFjb20sZ211OiBGb3IgYTZ4eCBhbmQgbmV3
+ZXIgdGFyZ2V0cyBhIHBoYW5kbGUgdG8gdGhlIEdNVSBkZXZpY2UgdGhhdCB3aWxsCiAgIGNvbnRy
+b2wgdGhlIHBvd2VyIGZvciB0aGUgR1BVCiAKQEAgLTY4LDYgKzcxLDkgQEAgRXhhbXBsZSBhNnh4
+ICh3aXRoIEdNVSk6CiAKIAkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ3B1X29wcF90YWJsZT47
+CiAKKwkJaW50ZXJjb25uZWN0cyA9IDwmcnNjX2hsb3MgTUFTVEVSX0dGWDNEICZyc2NfaGxvcyBT
+TEFWRV9FQkkxPjsKKwkJaW50ZXJjb25uZWN0LW5hbWVzID0gImdmeC1tZW0iOworCiAJCXFjb20s
+Z211ID0gPCZnbXU+OwogCX07CiB9OwotLSAKMi4xOC4wCgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVu
+b0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
