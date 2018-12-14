@@ -1,50 +1,44 @@
-From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Fri, 14 Dec 2018 09:04:07 -0800
-Message-ID: <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181212211848.26768-3-jcrouse@codeaurora.org>
- <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v3] MAINTAINERS: add maintainers for ChromeOS EC
+ sub-drivers
+Date: Fri, 14 Dec 2018 09:24:12 -0800
+Message-ID: <461e2531e3979e89923b66966d4fb243a6113280.camel@perches.com>
+References: <20181214114858.21231-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181214114858.21231-1-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
+Cc: Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-i2c@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, devicetree@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Rob Herring <robh+dt@kernel.org>, Lars
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBUaHUsIERlYyAxMywgMjAxOCBhdCA4OjQxIFBNIFZpcmVzaCBLdW1hciA8dmlyZXNo
-Lmt1bWFyQGxpbmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gMTItMTItMTgsIDE0OjE4LCBKb3JkYW4g
-Q3JvdXNlIHdyb3RlOgo+ID4gKyAgICAgICAgICAgICAgICAgICAgIGdwdV9vcHBfdGFibGU6IG9w
-cC10YWJsZSB7Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0g
-Im9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7Cj4KPiBJIHRoaW5rIHlvdSBuZWVkIHRv
-IG1lbnRpb24gIm9wZXJhdGluZy1wb2ludHMtdjIiIGFzIHdlbGwgaGVyZS4KCkFyZSB5b3Ugc2F5
-aW5nIHRoZSBhYm92ZSBzaG91bGQgYmU6CiAgY29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRz
-LXYyLXFjb20tbGV2ZWwiLCAib3BlcmF0aW5nLXBvaW50cy12MiI7CgpJZiBzbyBJJ20gbm90IHN1
-cmUgSSBhZ3JlZS4gIEl0J3MgX25vdF8gcmVhbGx5IGNvbXBhdGlibGUgd2l0aCB0aGUKIm9wZXJh
-dGluZy1wb2ludHMtdjIiIGJpbmRpbmcuICBJZiB5b3UgaGFkIGEgZHJpdmVyIHRoYXQgaGFkIG5l
-dmVyCmhlYXJkIG9mICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiIGFuZCBoYWQgb25s
-eSBoZWFyZCBvZgoib3BlcmF0aW5nLXBvaW50cy12MiIgYW5kIGl0IHRvb2sgYSBsb29rIGF0IHRo
-aXMgbm9kZSBpdCB3b3VsZCBoYXZlIG5vCmlkZWEgd2hhdCB0byBkbyB3aXRoIGl0LgoKSSdsbCBh
-bHNvIG5vdGUgdGhhdCBvdGhlciBpbnN0YW5jZXMgcG9zdGVkIHRvIHRoZSBsaXN0IGRvbid0IGxp
-c3QgYm90aDoKCmh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA3MjU4MDEvIC0g
-UlBNIC8gUlBNSCBQRCBiaW5kaW5ncwpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNo
-LzEwNzI1NzkzLyAtIFJQTUggUEQgZGV2aWNlIHRyZWUgZm9yIHNkbTg0NQoKVGhlIGJpbmRpbmdz
-IHBhdGNoIGFsc28gbWFrZXMgbm8gbWVudGlvbiBvZiBuZWVkaW5nCiJvcGVyYXRpbmctcG9pbnRz
-LXYyIi4gIEkgdGhpbmsgdGhlIGNvbW1vbiBjYXNlIHdoZW4gYSBmYWxsYmFjayBpcwpyZXF1aXJl
-ZCBpdCBpcyBleHBsaWNpdGx5IGNhbGxlZCBvdXQgaW4gdGhlIGJpbmRpbmdzOgoKaHR0cHM6Ly9w
-YXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcyNTgwMy8gLSBxY29tLW9wcCBiaW5kaW5ncwoK
-Ci1Eb3VnCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZy
-ZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+On Fri, 2018-12-14 at 12:48 +0100, Enric Balletbo i Serra wrote:
+> There are multiple ChromeOS EC sub-drivers spread in different
+> subsystems, as all of them are related to the Chrome stuff add
+> Benson and myself as a maintainers for all these sub-drivers.
+
+[]
+> Changes in v3:
+> - Use a cros[-_]ec pattern instead of list all the files.
+[]
+> diff --git a/MAINTAINERS b/MAINTAINERS
+[]
+> @@ -3629,6 +3629,14 @@ S:	Maintained
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
+>  F:	drivers/platform/chrome/
+>  
+> +CHROMEOS EC SUBDRIVERS
+> +M:	Benson Leung <bleung@chromium.org>
+> +M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> +R:	Guenter Roeck <groeck@chromium.org>
+> +S:	Maintained
+> +N:	cros[-_]ec
+
+For linux scripts/, it is unconventional to use a hyphen first
+in a character class pattern so perhaps this is clearer using
+two N: patterns
+
+N:	cros_
+N:	cros-
