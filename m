@@ -1,66 +1,83 @@
-From: Guenter Roeck <groeck@google.com>
-Subject: Re: [PATCH v3] MAINTAINERS: add maintainers for ChromeOS EC sub-drivers
-Date: Fri, 14 Dec 2018 06:29:19 -0800
-Message-ID: <CABXOdTdDNaPgBK74dcTgRDy5mJKztZ9GTGRiXDv=ZXOwauO-2A@mail.gmail.com>
-References: <20181214114858.21231-1-enric.balletbo@collabora.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 3/3] drm/i915: Move to new PM core fields
+Date: Fri, 14 Dec 2018 15:36:07 +0100
+Message-ID: <CAPDyKFrvrN6+sVGc1sM+hmQo=JR=8FyAz_YRK9DzEQN2jOVX6w@mail.gmail.com>
+References: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org> <1544797347-20601-4-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181214114858.21231-1-enric.balletbo@collabora.com>
+In-Reply-To: <1544797347-20601-4-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, alexandre.belloni@bootlin.com, linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE" <devicetree@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linar>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 14, 2018 at 3:49 AM Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
+On Fri, 14 Dec 2018 at 15:22, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
 >
-> There are multiple ChromeOS EC sub-drivers spread in different
-> subsystems, as all of them are related to the Chrome stuff add
-> Benson and myself as a maintainers for all these sub-drivers.
+> With jiffies been replaced by raw ns in PM core accounting, 915 driver is
+> updated to use this new time infrastructure.
 >
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Signed-off-by: Benson Leung <bleung@chromium.org>
-> Acked-by: Wolfram Sang <wsa@the-dreams.de>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> for iio parts.
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-
-Acked-by: Guenter Roeck <groeck@chromium.org>
-
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 > ---
+>  drivers/gpu/drm/i915/i915_pmu.c | 12 ++++++------
+>  drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
+>  2 files changed, 8 insertions(+), 8 deletions(-)
 >
-> Changes in v3:
-> - Add collected acks
-> - Use a cros[-_]ec pattern instead of list all the files.
-> - Add Guenter as a reviewer.
+> diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
+> index d6c8f8f..cf6437d 100644
+> --- a/drivers/gpu/drm/i915/i915_pmu.c
+> +++ b/drivers/gpu/drm/i915/i915_pmu.c
+> @@ -493,14 +493,14 @@ static u64 get_rc6(struct drm_i915_private *i915)
+>                  */
+>                 if (kdev->power.runtime_status == RPM_SUSPENDED) {
+>                         if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
+> -                               i915->pmu.suspended_jiffies_last =
+> -                                                 kdev->power.suspended_jiffies;
+> +                               i915->pmu.suspended_time_last =
+> +                                       kdev->power.suspended_time;
 >
-> Changes in v2:
-> - Fix typo in Benson email address.
+
+Huh, so patch 2 introduces a complier error because of removing the
+old fields. We can't have that.
+
+Ideally the driver shouldn't touch these fields in the first place,
+but because the fields are defined in a public header, there is always
+a risk that they becomes abused. I would appreciate if we can change
+the driver move away from using these fields and make that a patch
+preceding patch 2.
+
+> -                       val = kdev->power.suspended_jiffies -
+> -                             i915->pmu.suspended_jiffies_last;
+> -                       val += jiffies - kdev->power.accounting_timestamp;
+> +                       val = kdev->power.suspended_time -
+> +                               i915->pmu.suspended_time_last;
+> +                       val += ktime_to_ns(ktime_get()) -
+> +                               kdev->power.accounting_timestamp;
 >
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
+> -                       val = jiffies_to_nsecs(val);
+>                         val += i915->pmu.sample[__I915_SAMPLE_RC6].cur;
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e7260191301b..437e036435d5 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3629,6 +3629,14 @@ S:       Maintained
->  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
->  F:     drivers/platform/chrome/
->
-> +CHROMEOS EC SUBDRIVERS
-> +M:     Benson Leung <bleung@chromium.org>
-> +M:     Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> +R:     Guenter Roeck <groeck@chromium.org>
-> +S:     Maintained
-> +N:     cros[-_]ec
-> +F:     drivers/power/supply/cros_usbpd-charger.c
-> +
->  CIRRUS LOGIC AUDIO CODEC DRIVERS
->  M:     Brian Austin <brian.austin@cirrus.com>
->  M:     Paul Handrigan <Paul.Handrigan@cirrus.com>
+>                         i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur = val;
+> diff --git a/drivers/gpu/drm/i915/i915_pmu.h b/drivers/gpu/drm/i915/i915_pmu.h
+> index 7f164ca..3dc2a30 100644
+> --- a/drivers/gpu/drm/i915/i915_pmu.h
+> +++ b/drivers/gpu/drm/i915/i915_pmu.h
+> @@ -95,9 +95,9 @@ struct i915_pmu {
+>          */
+>         struct i915_pmu_sample sample[__I915_NUM_PMU_SAMPLERS];
+>         /**
+> -        * @suspended_jiffies_last: Cached suspend time from PM core.
+> +        * @suspended_time_last: Cached suspend time from PM core.
+>          */
+> -       unsigned long suspended_jiffies_last;
+> +       u64 suspended_time_last;
+>         /**
+>          * @i915_attr: Memory block holding device attributes.
+>          */
 > --
-> 2.19.2
+> 2.7.4
 >
+
+Kind regards
+Uffe
