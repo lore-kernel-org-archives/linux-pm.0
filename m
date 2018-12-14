@@ -1,89 +1,66 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v2 2/3] PM/runtime:Replace jiffies based
- accouting with ktime based accounting
-Date: Fri, 14 Dec 2018 15:22:26 +0100
-Message-ID: <1544797347-20601-3-git-send-email-vincent.guittot@linaro.org>
-References: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org>
+From: Guenter Roeck <groeck@google.com>
+Subject: Re: [PATCH v3] MAINTAINERS: add maintainers for ChromeOS EC sub-drivers
+Date: Fri, 14 Dec 2018 06:29:19 -0800
+Message-ID: <CABXOdTdDNaPgBK74dcTgRDy5mJKztZ9GTGRiXDv=ZXOwauO-2A@mail.gmail.com>
+References: <20181214114858.21231-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: ulf.hansson@linaro.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181214114858.21231-1-enric.balletbo@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, alexandre.belloni@bootlin.com, linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, kernel@collabora.com, linux-rtc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Benson Leung <bleung@chromium.org>, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jonathan Cameron <jic23@kernel.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE" <devicetree@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Lee Jones <lee.jones@linar>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogVGhhcmEgR29waW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+CgpUaGlzIHBh
-dGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3V0bmluZyBmb3IgcnVudGltZV9hY3RpdmVf
-dGltZQphbmQgcnVudGltZV9zdXNwZW5kZWRfdGltZSB3aXRoIGt0aW1lIGJhc2UgYWNjb3VudGlu
-Zy4gVGhpcyBtYWtlcyB0aGUKcnVudGltZSBkZWJ1ZyBjb3VudGVycyBpbmxpbmUgd2l0aCBnZW5w
-ZCBhbmQgb3RoZXIgcG0gc3Vic3l0ZW1zIHdoaWNoCnVzZXMga3RpbWUgYmFzZWQgYWNjb3VudGlu
-Zy4KClNpZ25lZC1vZmYtYnk6IFRoYXJhIEdvcGluYXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8u
-b3JnPgpbbW92ZSBmcm9tIGt0aW1lIHRvIHJhdyBuc2VjXQpTaWduZWQtb2ZmLWJ5OiBWaW5jZW50
-IEd1aXR0b3QgPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvYmFzZS9w
-b3dlci9ydW50aW1lLmMgfCAxMCArKysrKy0tLS0tCiBkcml2ZXJzL2Jhc2UvcG93ZXIvc3lzZnMu
-YyAgIHwgMTEgKysrKysrKystLS0KIGluY2x1ZGUvbGludXgvcG0uaCAgICAgICAgICAgfCAgNiAr
-KystLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25zKC0p
-CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyBiL2RyaXZlcnMvYmFz
-ZS9wb3dlci9ydW50aW1lLmMKaW5kZXggNzA2MjQ2OS4uODk2NTVlMiAxMDA2NDQKLS0tIGEvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYworKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGlt
-ZS5jCkBAIC02Niw4ICs2Niw4IEBAIHN0YXRpYyBpbnQgcnBtX3N1c3BlbmQoc3RydWN0IGRldmlj
-ZSAqZGV2LCBpbnQgcnBtZmxhZ3MpOwogICovCiB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291
-bnRpbmcoc3RydWN0IGRldmljZSAqZGV2KQogewotCXVuc2lnbmVkIGxvbmcgbm93ID0gamlmZmll
-czsKLQl1bnNpZ25lZCBsb25nIGRlbHRhOworCXU2NCBub3cgPSBrdGltZV90b19ucyhrdGltZV9n
-ZXQoKSk7CisJdTY0IGRlbHRhOwogCiAJZGVsdGEgPSBub3cgLSBkZXYtPnBvd2VyLmFjY291bnRp
-bmdfdGltZXN0YW1wOwogCkBAIC03Nyw5ICs3Nyw5IEBAIHZvaWQgdXBkYXRlX3BtX3J1bnRpbWVf
-YWNjb3VudGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJCXJldHVybjsKIAogCWlmIChkZXYtPnBv
-d2VyLnJ1bnRpbWVfc3RhdHVzID09IFJQTV9TVVNQRU5ERUQpCi0JCWRldi0+cG93ZXIuc3VzcGVu
-ZGVkX2ppZmZpZXMgKz0gZGVsdGE7CisJCWRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWUgKz0gZGVs
-dGE7CiAJZWxzZQotCQlkZXYtPnBvd2VyLmFjdGl2ZV9qaWZmaWVzICs9IGRlbHRhOworCQlkZXYt
-PnBvd2VyLmFjdGl2ZV90aW1lICs9IGRlbHRhOwogfQogCiBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9y
-dW50aW1lX3N0YXR1cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMp
-CkBAIC0xNDkxLDcgKzE0OTEsNyBAQCB2b2lkIHBtX3J1bnRpbWVfaW5pdChzdHJ1Y3QgZGV2aWNl
-ICpkZXYpCiAJZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKIAlkZXYtPnBvd2Vy
-LnJlcXVlc3QgPSBSUE1fUkVRX05PTkU7CiAJZGV2LT5wb3dlci5kZWZlcnJlZF9yZXN1bWUgPSBm
-YWxzZTsKLQlkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0gamlmZmllczsKKwlkZXYt
-PnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0ga3RpbWVfdG9fbnMoa3RpbWVfZ2V0KCkpOwog
-CUlOSVRfV09SSygmZGV2LT5wb3dlci53b3JrLCBwbV9ydW50aW1lX3dvcmspOwogCiAJZGV2LT5w
-b3dlci50aW1lcl9leHBpcmVzID0gMDsKZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wb3dlci9z
-eXNmcy5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMKaW5kZXggZDcxMzczOC4uOTZjOGEy
-MiAxMDA2NDQKLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMKKysrIGIvZHJpdmVycy9i
-YXNlL3Bvd2VyL3N5c2ZzLmMKQEAgLTEyNSw5ICsxMjUsMTIgQEAgc3RhdGljIHNzaXplX3QgcnVu
-dGltZV9hY3RpdmVfdGltZV9zaG93KHN0cnVjdCBkZXZpY2UgKmRldiwKIAkJCQlzdHJ1Y3QgZGV2
-aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQogewogCWludCByZXQ7CisJdTY0IHRtcDsK
-IAlzcGluX2xvY2tfaXJxKCZkZXYtPnBvd2VyLmxvY2spOwogCXVwZGF0ZV9wbV9ydW50aW1lX2Fj
-Y291bnRpbmcoZGV2KTsKLQlyZXQgPSBzcHJpbnRmKGJ1ZiwgIiVpXG4iLCBqaWZmaWVzX3RvX21z
-ZWNzKGRldi0+cG93ZXIuYWN0aXZlX2ppZmZpZXMpKTsKKwl0bXAgPSBkZXYtPnBvd2VyLmFjdGl2
-ZV90aW1lOworCWRvX2Rpdih0bXAsIE5TRUNfUEVSX01TRUMpOworCXJldCA9IHNwcmludGYoYnVm
-LCAiJWxsdVxuIiwgdG1wKTsKIAlzcGluX3VubG9ja19pcnEoJmRldi0+cG93ZXIubG9jayk7CiAJ
-cmV0dXJuIHJldDsKIH0KQEAgLTEzOCwxMCArMTQxLDEyIEBAIHN0YXRpYyBzc2l6ZV90IHJ1bnRp
-bWVfc3VzcGVuZGVkX3RpbWVfc2hvdyhzdHJ1Y3QgZGV2aWNlICpkZXYsCiAJCQkJc3RydWN0IGRl
-dmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikKIHsKIAlpbnQgcmV0OworCXU2NCB0bXA7
-CiAJc3Bpbl9sb2NrX2lycSgmZGV2LT5wb3dlci5sb2NrKTsKIAl1cGRhdGVfcG1fcnVudGltZV9h
-Y2NvdW50aW5nKGRldik7Ci0JcmV0ID0gc3ByaW50ZihidWYsICIlaVxuIiwKLQkJamlmZmllc190
-b19tc2VjcyhkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzKSk7CisJdG1wID0gZGV2LT5wb3dl
-ci5zdXNwZW5kZWRfdGltZTsKKwlkb19kaXYodG1wLCBOU0VDX1BFUl9NU0VDKTsKKwlyZXQgPSBz
-cHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRtcCk7CiAJc3Bpbl91bmxvY2tfaXJxKCZkZXYtPnBvd2Vy
-LmxvY2spOwogCXJldHVybiByZXQ7CiB9CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BtLmgg
-Yi9pbmNsdWRlL2xpbnV4L3BtLmgKaW5kZXggMGJkOWRlMS4uM2QyY2JmOSAxMDA2NDQKLS0tIGEv
-aW5jbHVkZS9saW51eC9wbS5oCisrKyBiL2luY2x1ZGUvbGludXgvcG0uaApAQCAtNjMzLDkgKzYz
-Myw5IEBAIHN0cnVjdCBkZXZfcG1faW5mbyB7CiAJaW50CQkJcnVudGltZV9lcnJvcjsKIAlpbnQJ
-CQlhdXRvc3VzcGVuZF9kZWxheTsKIAl1NjQJCQlsYXN0X2J1c3k7Ci0JdW5zaWduZWQgbG9uZwkJ
-YWN0aXZlX2ppZmZpZXM7Ci0JdW5zaWduZWQgbG9uZwkJc3VzcGVuZGVkX2ppZmZpZXM7Ci0JdW5z
-aWduZWQgbG9uZwkJYWNjb3VudGluZ190aW1lc3RhbXA7CisJdTY0CQkJYWN0aXZlX3RpbWU7CisJ
-dTY0CQkJc3VzcGVuZGVkX3RpbWU7CisJdTY0CQkJYWNjb3VudGluZ190aW1lc3RhbXA7CiAjZW5k
-aWYKIAlzdHJ1Y3QgcG1fc3Vic3lzX2RhdGEJKnN1YnN5c19kYXRhOyAgLyogT3duZWQgYnkgdGhl
-IHN1YnN5c3RlbS4gKi8KIAl2b2lkICgqc2V0X2xhdGVuY3lfdG9sZXJhbmNlKShzdHJ1Y3QgZGV2
-aWNlICosIHMzMik7Ci0tIAoyLjcuNAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vaW50ZWwtZ2Z4Cg==
+On Fri, Dec 14, 2018 at 3:49 AM Enric Balletbo i Serra
+<enric.balletbo@collabora.com> wrote:
+>
+> There are multiple ChromeOS EC sub-drivers spread in different
+> subsystems, as all of them are related to the Chrome stuff add
+> Benson and myself as a maintainers for all these sub-drivers.
+>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Signed-off-by: Benson Leung <bleung@chromium.org>
+> Acked-by: Wolfram Sang <wsa@the-dreams.de>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> for iio parts.
+> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+
+Acked-by: Guenter Roeck <groeck@chromium.org>
+
+> ---
+>
+> Changes in v3:
+> - Add collected acks
+> - Use a cros[-_]ec pattern instead of list all the files.
+> - Add Guenter as a reviewer.
+>
+> Changes in v2:
+> - Fix typo in Benson email address.
+>
+>  MAINTAINERS | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index e7260191301b..437e036435d5 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3629,6 +3629,14 @@ S:       Maintained
+>  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/bleung/chrome-platform.git
+>  F:     drivers/platform/chrome/
+>
+> +CHROMEOS EC SUBDRIVERS
+> +M:     Benson Leung <bleung@chromium.org>
+> +M:     Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> +R:     Guenter Roeck <groeck@chromium.org>
+> +S:     Maintained
+> +N:     cros[-_]ec
+> +F:     drivers/power/supply/cros_usbpd-charger.c
+> +
+>  CIRRUS LOGIC AUDIO CODEC DRIVERS
+>  M:     Brian Austin <brian.austin@cirrus.com>
+>  M:     Paul Handrigan <Paul.Handrigan@cirrus.com>
+> --
+> 2.19.2
+>
