@@ -1,203 +1,32 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V4 7/7] PM / Domains: Propagate performance state updates
-Date: Fri, 14 Dec 2018 11:40:54 +0100
-Message-ID: <CAPDyKFrMzDa1PMEqf4ve=kNz8667c-oNvONBYRCUvh=vOW_2QQ@mail.gmail.com>
-References: <cover.1544782279.git.viresh.kumar@linaro.org> <0c7ef1300e212f0ae06ccf10398f8c9453c064a5.1544782279.git.viresh.kumar@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] thermal: rcar_thermal: add R8A774C0 support
+Date: Fri, 14 Dec 2018 11:43:33 +0100
+Message-ID: <CAMuHMdWt3wBeg2khe5kcyG4V=ZW4ME-vktAHwK0fXgwDmREnxg@mail.gmail.com>
+References: <1544732590-7230-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0c7ef1300e212f0ae06ccf10398f8c9453c064a5.1544782279.git.viresh.kumar@linaro.org>
+In-Reply-To: <1544732590-7230-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 Dec 2018 at 11:15, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Thu, Dec 13, 2018 at 9:23 PM Fabrizio Castro
+<fabrizio.castro@bp.renesas.com> wrote:
+> Add thermal support for the RZ/G2E SoC (a.k.a. R8A774C0).
 >
-> Currently a genpd only handles the performance state requirements from
-> the devices under its control. This commit extends that to also handle
-> the performance state requirement(s) put on the master genpd by its
-> sub-domains. There is a separate value required for each master that
-> the genpd has and so a new field is added to the struct gpd_link
-> (link->performance_state), which represents the link between a genpd and
-> its master. The struct gpd_link also got another field
-> prev_performance_state, which is used by genpd core as a temporary
-> variable during transitions.
->
-> On a call to dev_pm_genpd_set_performance_state(), the genpd core first
-> updates the performance state of the masters of the device's genpd and
-> then updates the performance state of the genpd. The masters do the same
-> and propagate performance state updates to their masters before updating
-> their own. The performance state transition from genpd to its master is
-> done with the help of dev_pm_opp_xlate_performance_state(), which looks
-> at the OPP tables of both the domains to translate the state.
->
+> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
 
-Perfect! Thanks for clarifying these things in the changelog!
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Gr{oetje,eeting}s,
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+                        Geert
 
-Kind regards
-Uffe
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-
-> ---
->  drivers/base/power/domain.c | 93 ++++++++++++++++++++++++++++++++-----
->  include/linux/pm_domain.h   |  4 ++
->  2 files changed, 86 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 808ba41b6580..611c0ccbad5f 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -244,6 +244,7 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
->  {
->         struct generic_pm_domain_data *pd_data;
->         struct pm_domain_data *pdd;
-> +       struct gpd_link *link;
->
->         /* New requested state is same as Max requested state */
->         if (state == genpd->performance_state)
-> @@ -262,31 +263,101 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
->         }
->
->         /*
-> -        * We aren't propagating performance state changes of a subdomain to its
-> -        * masters as we don't have hardware that needs it. Over that, the
-> -        * performance states of subdomain and its masters may not have
-> -        * one-to-one mapping and would require additional information. We can
-> -        * get back to this once we have hardware that needs it. For that
-> -        * reason, we don't have to consider performance state of the subdomains
-> -        * of genpd here.
-> +        * Traverse all sub-domains within the domain. This can be
-> +        * done without any additional locking as the link->performance_state
-> +        * field is protected by the master genpd->lock, which is already taken.
-> +        *
-> +        * Also note that link->performance_state (subdomain's performance state
-> +        * requirement to master domain) is different from
-> +        * link->slave->performance_state (current performance state requirement
-> +        * of the devices/sub-domains of the subdomain) and so can have a
-> +        * different value.
-> +        *
-> +        * Note that we also take vote from powered-off sub-domains into account
-> +        * as the same is done for devices right now.
->          */
-> +       list_for_each_entry(link, &genpd->master_links, master_node) {
-> +               if (link->performance_state > state)
-> +                       state = link->performance_state;
-> +       }
-> +
->         return state;
->  }
->
->  static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-> -                                       unsigned int state)
-> +                                       unsigned int state, int depth)
->  {
-> -       int ret;
-> +       struct generic_pm_domain *master;
-> +       struct gpd_link *link;
-> +       int master_state, ret;
->
->         if (state == genpd->performance_state)
->                 return 0;
->
-> +       /* Propagate to masters of genpd */
-> +       list_for_each_entry(link, &genpd->slave_links, slave_node) {
-> +               master = link->master;
-> +
-> +               if (!master->set_performance_state)
-> +                       continue;
-> +
-> +               /* Find master's performance state */
-> +               ret = dev_pm_opp_xlate_performance_state(genpd->opp_table,
-> +                                                        master->opp_table,
-> +                                                        state);
-> +               if (unlikely(ret < 0))
-> +                       goto err;
-> +
-> +               master_state = ret;
-> +
-> +               genpd_lock_nested(master, depth + 1);
-> +
-> +               link->prev_performance_state = link->performance_state;
-> +               link->performance_state = master_state;
-> +               master_state = _genpd_reeval_performance_state(master,
-> +                                               master_state);
-> +               ret = _genpd_set_performance_state(master, master_state, depth + 1);
-> +               if (ret)
-> +                       link->performance_state = link->prev_performance_state;
-> +
-> +               genpd_unlock(master);
-> +
-> +               if (ret)
-> +                       goto err;
-> +       }
-> +
->         ret = genpd->set_performance_state(genpd, state);
->         if (ret)
-> -               return ret;
-> +               goto err;
->
->         genpd->performance_state = state;
->         return 0;
-> +
-> +err:
-> +       /* Encountered an error, lets rollback */
-> +       list_for_each_entry_continue_reverse(link, &genpd->slave_links,
-> +                                            slave_node) {
-> +               master = link->master;
-> +
-> +               if (!master->set_performance_state)
-> +                       continue;
-> +
-> +               genpd_lock_nested(master, depth + 1);
-> +
-> +               master_state = link->prev_performance_state;
-> +               link->performance_state = master_state;
-> +
-> +               master_state = _genpd_reeval_performance_state(master,
-> +                                               master_state);
-> +               if (_genpd_set_performance_state(master, master_state, depth + 1)) {
-> +                       pr_err("%s: Failed to roll back to %d performance state\n",
-> +                              master->name, master_state);
-> +               }
-> +
-> +               genpd_unlock(master);
-> +       }
-> +
-> +       return ret;
->  }
->
->  /**
-> @@ -331,7 +402,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
->         gpd_data->performance_state = state;
->
->         state = _genpd_reeval_performance_state(genpd, state);
-> -       ret = _genpd_set_performance_state(genpd, state);
-> +       ret = _genpd_set_performance_state(genpd, state, 0);
->         if (ret)
->                 gpd_data->performance_state = prev;
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 9ad101362aef..dd364abb649a 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -136,6 +136,10 @@ struct gpd_link {
->         struct list_head master_node;
->         struct generic_pm_domain *slave;
->         struct list_head slave_node;
-> +
-> +       /* Sub-domain's per-master domain performance state */
-> +       unsigned int performance_state;
-> +       unsigned int prev_performance_state;
->  };
->
->  struct gpd_timing_data {
-> --
-> 2.19.1.568.g152ad8e3369a
->
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
