@@ -1,42 +1,57 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v4] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Fri, 14 Dec 2018 10:45:27 +0900
-Message-ID: <20181214014527epcms1p6c783b4cd1602bbcbcb6e725f840db479@epcms1p6>
-References: <20181212135313.30268-1-sibis@codeaurora.org>
-        <CGME20181212135338epcas5p12f7a8cd1c7aab5d5c936cbc5c33eee07@epcms1p6>
-Reply-To: myungjoo.ham@samsung.com
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v12 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Fri, 14 Dec 2018 09:39:39 +0530
+Message-ID: <822086a5-a3ca-f44c-33be-5a51894f39d5@codeaurora.org>
+References: <1544687394-331-1-git-send-email-tdas@codeaurora.org>
+ <1544687394-331-2-git-send-email-tdas@codeaurora.org>
+ <154468968610.19322.9386616050590076502@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181212135313.30268-1-sibis@codeaurora.org>
+In-Reply-To: <154468968610.19322.9386616050590076502@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm-owner@vger.kernel.org" <linux-arm-msm-owner@vger.kernel.org>, "skannan@codeaurora.org" <skannan@codeaurora.org>, Sibi Sankar <sibis@codeaurora.org>
+To: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Saravana Kannan <skannan@codeaurora.org>
+Hello Stephen,
+
+On 12/13/2018 1:58 PM, Stephen Boyd wrote:
+> Quoting Taniya Das (2018-12-12 23:49:53)
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> new file mode 100644
+>> index 0000000..2b82965
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> @@ -0,0 +1,172 @@
+> [...]
+>> +- reg-names
+>> +       Usage:          Optional
+>> +       Value type:     <string>
+>> +       Definition:     Frequency domain name i.e.
+>> +                       "freq-domain0", "freq-domain1".
+>> +
+>> +- freq-domain-cells:
 > 
-> If the new governor fails to start, switch back to old governor so that the
-> devfreq state is not left in some weird limbo.
+> Should be #freq-domain-cells? Or maybe #qcom,freq-domain-cells?
 > 
-> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Hello,
+Updated in the next series.
 
-In overall, the idea and the implementation looks good.
+>> +       Usage:          required.
+>> +       Definition:     Number of cells in a freqency domain specifier.
+>> +
+>> +* Property qcom,freq-domain
+>> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+>> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+>> +
+>> +
 
-However, I have a question:
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
 
-What if the following line fails?
-
-+		df->governor->event_handler(df, DEVFREQ_GOV_START,
-+					    NULL);
-
-Don't we still need something to handle for such events?
-
-Cheers,
-MyungJoo
+--
