@@ -1,79 +1,32 @@
-From: Nick Fan <Nick.Fan@mediatek.com>
-Subject: [RFC PATCH] [RESEND] opp: Add API for getting voltage from supplies
-Date: Fri, 14 Dec 2018 17:17:42 +0800
-Message-ID: <1544779062-8276-1-git-send-email-Nick.Fan@mediatek.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] dt-bindings: thermal: rcar-thermal: add R8A774C0 support
+Date: Fri, 14 Dec 2018 11:13:17 +0100
+Message-ID: <CAMuHMdWL6vm56XrKSvwW0HaTJke7JyoFrpp_6g24ci6NOWu2vg@mail.gmail.com>
+References: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, tfiga@chromium.org, Chiawen.Lee@mediatek.com, erin.lo@mediatek.com, Nick Fan <Nick.Fan@mediatek.com>
+To: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[Resending because the previous attempt did not reach the mailing lists.]
+On Thu, Dec 13, 2018 at 9:19 PM Fabrizio Castro
+<fabrizio.castro@bp.renesas.com> wrote:
+> Document RZ/G2E SoC (a.k.a. r8a774c0) bindings.
+>
+> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
 
-This new API is needed for a downstream GPU driver, but posting it as an RFC to make sure that we implement it in a potentially upstreamable way or in case someone needs it for an upstream user later.
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add API to get voltage for multiple supplies from opp table
+Gr{oetje,eeting}s,
 
-Signed-off-by: Nick Fan <Nick.Fan@mediatek.com>
----
- drivers/opp/core.c     | 28 ++++++++++++++++++++++++++++
- include/linux/pm_opp.h |  3 +++
- 2 files changed, 31 insertions(+)
+                        Geert
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 2c2df4e..ee73546 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -113,6 +113,34 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
- 
- /**
-+ * dev_pm_opp_get_voltage_supply() - Gets the voltage corresponding to an opp
-+ * with index
-+ * @opp:        opp for which voltage has to be returned for
-+ * @index:      index to specify the returned supplies
-+ *
-+ * Return: voltage in micro volt corresponding to the opp with index, else
-+ * return 0
-+ *
-+ * This is useful for devices with multiple power supplies.
-+ */
-+unsigned long dev_pm_opp_get_voltage_supply(struct dev_pm_opp *opp,
-+					    unsigned int index)
-+{
-+	if (IS_ERR_OR_NULL(opp)) {
-+		pr_err("%s: Invalid parameters\n", __func__);
-+		return 0;
-+	}
-+
-+	if (index >= opp->opp_table->regulator_count) {
-+		pr_err("%s: Invalid supply index: %u\n", __func__, index);
-+		return 0;
-+	}
-+
-+	return opp->supplies[index].u_volt;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage_supply);
-+
-+/**
-  * dev_pm_opp_get_freq() - Gets the frequency corresponding to an available opp
-  * @opp:	opp for which frequency has to be returned for
-  *
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 5d399eee..2f1c2a8 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -84,6 +84,9 @@ struct dev_pm_set_opp_data {
- 
- unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
- 
-+unsigned long dev_pm_opp_get_voltage_supply(struct dev_pm_opp *opp,
-+					    unsigned int index);
-+
- unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
- 
- bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
 -- 
-1.9.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
