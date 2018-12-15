@@ -1,136 +1,54 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 3/3] arm64: tegra: p2972: Enable the CPU, GPU and AUX
- thermal zones
-Date: Sat, 15 Dec 2018 09:28:54 -0800
-Message-ID: <20181215172853.GA10838@localhost.localdomain>
-References: <20181123121839.18573-1-thierry.reding@gmail.com>
- <20181123121839.18573-3-thierry.reding@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power: supply: isp1704: switch to gpiod API
+Date: Sat, 15 Dec 2018 20:42:02 +0100
+Message-ID: <20181215194201.GB31052@amd>
+References: <20181213013858.23996-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181123121839.18573-3-thierry.reding@gmail.com>
+In-Reply-To: <20181213013858.23996-1-sebastian.reichel@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jon Hunter <jonathanh@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, Rob Herring <robh+dt@kernel.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 23, 2018 at 01:18:39PM +0100, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
-> 
-> Enable these thermal zones to be able to monitor their temperatures and
-> control the fan to cool down the system if necessary.
-> 
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+--E39vaYmALEf/7YXx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-As mentioned, I already added patch 1.
+On Thu 2018-12-13 02:38:58, Sebastian Reichel wrote:
+> This migrates isp1704 driver from old GPIO API to new descriptor
+> based GPIO API and drops useless platform data as a side-effect.
+>=20
+> Migration is simple, since all mainline users are DT based and
+> DT API does not change. Out of tree users of the platform data
+> need to migrate to gpiod_lookup_table as described here:
+>=20
+> Documentation/driver-api/gpio/board.rst
+>=20
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-> ---
->  .../boot/dts/nvidia/tegra194-p2972-0000.dts   | 91 ++++++++++++++++++-
->  1 file changed, 90 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts b/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
-> index cbae8e8b1281..e29f8f6117c8 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
-> +++ b/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
-> @@ -43,8 +43,97 @@
->  		};
->  	};
->  
-> -	fan {
-> +	fan: fan {
->  		compatible = "pwm-fan";
->  		pwms = <&pwm4 0 45334>;
-> +
-> +		cooling-levels = <0 64 128 255>;
-> +		cooling-min-state = <0>;
-> +		cooling-max-state = <3>;
-> +		#cooling-cells = <2>;
-> +	};
-> +
-> +	thermal-zones {
-> +		cpu {
-> +			polling-delay = <0>;
-> +			polling-delay-passive = <500>;
-> +			status = "okay";
-> +
-> +			trips {
-> +				cpu_trip_critical: critical {
-> +					temperature = <96500>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +
-> +				cpu_trip_hot: hot {
-> +					temperature = <70000>;
-> +					hysteresis = <2000>;
-> +					type = "hot";
-> +				};
-> +
-> +				cpu_trip_active: active {
-> +					temperature = <50000>;
-> +					hysteresis = <2000>;
-> +					type = "active";
-> +				};
-> +
-> +				cpu_trip_passive: passive {
-> +					temperature = <30000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				cpu-critical {
-> +					cooling-device = <&fan 3 3>;
-> +					trip = <&cpu_trip_critical>;
-> +				};
-> +
-> +				cpu-hot {
-> +					cooling-device = <&fan 2 2>;
-> +					trip = <&cpu_trip_hot>;
-> +				};
-> +
-> +				cpu-active {
-> +					cooling-device = <&fan 1 1>;
-> +					trip = <&cpu_trip_active>;
-> +				};
-> +
-> +				cpu-passive {
-> +					cooling-device = <&fan 0 0>;
-> +					trip = <&cpu_trip_passive>;
-> +				};
-> +			};
-> +		};
-> +
-> +		gpu {
-> +			polling-delay = <0>;
-> +			polling-delay-passive = <500>;
-> +			status = "okay";
-> +
-> +			trips {
-> +				gpu_alert0: critical {
-> +					temperature = <99000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		aux {
-> +			polling-delay = <0>;
-> +			polling-delay-passive = <500>;
-> +			status = "okay";
-> +
-> +			trips {
-> +				aux_alert0: critical {
-> +					temperature = <90000>;
-> +					hysteresis = <0>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
->  	};
->  };
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--E39vaYmALEf/7YXx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlwVWQkACgkQMOfwapXb+vI2XwCfQ1Tx9Bx7hb1V9trNx0wWdtep
+l5AAniXQcMV7UwsqACdEXEdcZtGKj9EJ
+=YdWX
+-----END PGP SIGNATURE-----
+
+--E39vaYmALEf/7YXx--
