@@ -1,33 +1,21 @@
-From: Frank Lee <tiny.windzz@gmail.com>
-Subject: Re: [PATCH] driver core: remove define_genpd_open_function() and define_genpd_debugfs_fops()
-Date: Sat, 15 Dec 2018 16:46:18 +0800
-Message-ID: <CAEExFWvymtA_-6GWtO5=YpgsbKshQZWs2tgUUh5ZjOoibN-kJA@mail.gmail.com>
-References: <20181201015154.4718-1-tiny.windzz@gmail.com> <CAJZ5v0g6R40D-OrQeZ=wAj+epPaYacLTnCVLLHfzUrpNKUv2_w@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] dt-bindings: thermal: rcar-thermal: add R8A774C0 support
+Date: Sat, 15 Dec 2018 14:52:34 +0100
+Message-ID: <20181215135234.azq3f2e4zq77ne4b@verge.net.au>
+References: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g6R40D-OrQeZ=wAj+epPaYacLTnCVLLHfzUrpNKUv2_w@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Mark Brown <broonie@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 3, 2018 at 5:12 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Sat, Dec 1, 2018 at 2:51 AM Yangtao Li <tiny.windzz@gmail.com> wrote:
-> >
-> > We already have the DEFINE_SHOW_ATTRIBUTE,There is no need to define such
-> > a macro,so remove define_genpd_open_function and define_genpd_debugfs_fops.
-> > Also use DEFINE_SHOW_ATTRIBUTE to simplify somecode.
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
->
-> It would be good at least to split the genpd changes off into a separate patch.
->
-> The regmap and comonent changes appear to be independent of each other
-> too, so I would put them into separate patches either for easier
-> handling.
-OK.
+On Thu, Dec 13, 2018 at 08:19:48PM +0000, Fabrizio Castro wrote:
+> Document RZ/G2E SoC (a.k.a. r8a774c0) bindings.
+> 
+> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
 
-MBR,
-Yangtao
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
