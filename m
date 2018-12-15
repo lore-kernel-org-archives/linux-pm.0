@@ -1,91 +1,136 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 2/3] arm64: tegra: Add thermal zones on Tegra194
-Date: Sat, 15 Dec 2018 09:28:14 -0800
-Message-ID: <20181215172812.GA10700@localhost.localdomain>
+Subject: Re: [PATCH 3/3] arm64: tegra: p2972: Enable the CPU, GPU and AUX
+ thermal zones
+Date: Sat, 15 Dec 2018 09:28:54 -0800
+Message-ID: <20181215172853.GA10838@localhost.localdomain>
 References: <20181123121839.18573-1-thierry.reding@gmail.com>
- <20181123121839.18573-2-thierry.reding@gmail.com>
+ <20181123121839.18573-3-thierry.reding@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181123121839.18573-2-thierry.reding@gmail.com>
+In-Reply-To: <20181123121839.18573-3-thierry.reding@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thierry Reding <thierry.reding@gmail.com>
 Cc: Jon Hunter <jonathanh@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, Rob Herring <robh+dt@kernel.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 23, 2018 at 01:18:38PM +0100, Thierry Reding wrote:
+On Fri, Nov 23, 2018 at 01:18:39PM +0100, Thierry Reding wrote:
 > From: Thierry Reding <treding@nvidia.com>
->=20
-> The NVIDIA Tegra194 SoC defines six thermal zones. Define all of them in
-> device tree.
->=20
+> 
+> Enable these thermal zones to be able to monitor their temperatures and
+> control the fan to cool down the system if necessary.
+> 
 > Signed-off-by: Thierry Reding <treding@nvidia.com>
 
 Acked-by: Eduardo Valentin <edubezval@gmail.com>
 
-The patch 1 I added in my -linus branch.
+As mentioned, I already added patch 1.
 
 > ---
->  arch/arm64/boot/dts/nvidia/tegra194.dtsi | 39 ++++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
->=20
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra194.dtsi b/arch/arm64/boot/d=
-ts/nvidia/tegra194.dtsi
-> index cbba7395a286..39169f6b6166 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra194.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra194.dtsi
-> @@ -5,6 +5,7 @@
->  #include <dt-bindings/mailbox/tegra186-hsp.h>
->  #include <dt-bindings/reset/tegra194-reset.h>
->  #include <dt-bindings/power/tegra194-powergate.h>
-> +#include <dt-bindings/thermal/tegra194-bpmp-thermal.h>
-> =20
->  / {
->  	compatible =3D "nvidia,tegra194";
-> @@ -938,6 +939,44 @@
->  		mbox-names =3D "rx", "tx";
+>  .../boot/dts/nvidia/tegra194-p2972-0000.dts   | 91 ++++++++++++++++++-
+>  1 file changed, 90 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts b/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
+> index cbae8e8b1281..e29f8f6117c8 100644
+> --- a/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
+> +++ b/arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts
+> @@ -43,8 +43,97 @@
+>  		};
 >  	};
-> =20
+>  
+> -	fan {
+> +	fan: fan {
+>  		compatible = "pwm-fan";
+>  		pwms = <&pwm4 0 45334>;
+> +
+> +		cooling-levels = <0 64 128 255>;
+> +		cooling-min-state = <0>;
+> +		cooling-max-state = <3>;
+> +		#cooling-cells = <2>;
+> +	};
+> +
 > +	thermal-zones {
 > +		cpu {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_CPU>;
-> +			status =3D "disabled";
+> +			polling-delay = <0>;
+> +			polling-delay-passive = <500>;
+> +			status = "okay";
+> +
+> +			trips {
+> +				cpu_trip_critical: critical {
+> +					temperature = <96500>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +
+> +				cpu_trip_hot: hot {
+> +					temperature = <70000>;
+> +					hysteresis = <2000>;
+> +					type = "hot";
+> +				};
+> +
+> +				cpu_trip_active: active {
+> +					temperature = <50000>;
+> +					hysteresis = <2000>;
+> +					type = "active";
+> +				};
+> +
+> +				cpu_trip_passive: passive {
+> +					temperature = <30000>;
+> +					hysteresis = <2000>;
+> +					type = "passive";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +				cpu-critical {
+> +					cooling-device = <&fan 3 3>;
+> +					trip = <&cpu_trip_critical>;
+> +				};
+> +
+> +				cpu-hot {
+> +					cooling-device = <&fan 2 2>;
+> +					trip = <&cpu_trip_hot>;
+> +				};
+> +
+> +				cpu-active {
+> +					cooling-device = <&fan 1 1>;
+> +					trip = <&cpu_trip_active>;
+> +				};
+> +
+> +				cpu-passive {
+> +					cooling-device = <&fan 0 0>;
+> +					trip = <&cpu_trip_passive>;
+> +				};
+> +			};
 > +		};
 > +
 > +		gpu {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_GPU>;
-> +			status =3D "disabled";
+> +			polling-delay = <0>;
+> +			polling-delay-passive = <500>;
+> +			status = "okay";
+> +
+> +			trips {
+> +				gpu_alert0: critical {
+> +					temperature = <99000>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +			};
 > +		};
 > +
 > +		aux {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_AUX>;
-> +			status =3D "disabled";
-> +		};
+> +			polling-delay = <0>;
+> +			polling-delay-passive = <500>;
+> +			status = "okay";
 > +
-> +		pllx {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_PLLX>;
-> +			status =3D "disabled";
+> +			trips {
+> +				aux_alert0: critical {
+> +					temperature = <90000>;
+> +					hysteresis = <0>;
+> +					type = "critical";
+> +				};
+> +			};
 > +		};
-> +
-> +		ao {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_AO>;
-> +			status =3D "disabled";
-> +		};
-> +
-> +		tj {
-> +			thermal-sensors =3D <&{/bpmp/thermal}
-> +					   TEGRA194_BPMP_THERMAL_ZONE_TJ_MAX>;
-> +			status =3D "disabled";
-> +		};
-> +	};
-> +
->  	timer {
->  		compatible =3D "arm,armv8-timer";
->  		interrupts =3D <GIC_PPI 13
+>  	};
+>  };
