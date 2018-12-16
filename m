@@ -1,54 +1,40 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power: supply: isp1704: switch to gpiod API
-Date: Sat, 15 Dec 2018 20:42:02 +0100
-Message-ID: <20181215194201.GB31052@amd>
-References: <20181213013858.23996-1-sebastian.reichel@collabora.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] devfreq: Use of_node_name_eq for node name comparisons
+Date: Sun, 16 Dec 2018 18:12:11 +0900
+Message-ID: <CAJ0PZbQRNGoKsMZjpwaemzpK677v0T5n6h9OtZMdd5UTvq-drA@mail.gmail.com>
+References: <20181205195050.4759-6-robh@kernel.org>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181213013858.23996-1-sebastian.reichel@collabora.com>
+In-Reply-To: <20181205195050.4759-6-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Dec 6, 2018 at 4:54 AM Rob Herring <robh@kernel.org> wrote:
+>
+> Convert string compares of DT node names to use of_node_name_eq helper
+> instead. This removes direct access to the node name pointer.
+>
+> For instances using of_node_cmp, this has the side effect of now using
+> case sensitive comparisons. This should not matter for any FDT based
+> system which all of these are.
+>
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
---E39vaYmALEf/7YXx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On Thu 2018-12-13 02:38:58, Sebastian Reichel wrote:
-> This migrates isp1704 driver from old GPIO API to new descriptor
-> based GPIO API and drops useless platform data as a side-effect.
->=20
-> Migration is simple, since all mainline users are DT based and
-> DT API does not change. Out of tree users of the platform data
-> need to migrate to gpiod_lookup_table as described here:
->=20
-> Documentation/driver-api/gpio/board.rst
->=20
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---E39vaYmALEf/7YXx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlwVWQkACgkQMOfwapXb+vI2XwCfQ1Tx9Bx7hb1V9trNx0wWdtep
-l5AAniXQcMV7UwsqACdEXEdcZtGKj9EJ
-=YdWX
------END PGP SIGNATURE-----
-
---E39vaYmALEf/7YXx--
+> ---
+>  drivers/devfreq/devfreq-event.c     | 2 +-
+>  drivers/devfreq/event/exynos-ppmu.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
