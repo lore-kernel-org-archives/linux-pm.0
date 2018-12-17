@@ -1,27 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / AVS: SmartReflex: Switch to SPDX Licence ID
-Date: Mon, 17 Dec 2018 12:45:00 +0100
-Message-ID: <16983102.8iQ2gmYz8v@aspire.rjw.lan>
-References: <20181208160042.32587-1-nm@ti.com> <7h4lbkue6p.fsf@baylibre.com>
+Subject: Re: [PATCH] PM / AVS: SmartReflex: NULL check before some freeing functions is not needed.
+Date: Mon, 17 Dec 2018 12:45:53 +0100
+Message-ID: <1792812.5VpxBR0bW8@aspire.rjw.lan>
+References: <1543760930050-1499171309-0-diffsplit-thomas@m3y3r.de> <1543760930051-514988180-4-diffsplit-thomas@m3y3r.de> <7hy38vuc8e.fsf@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7h4lbkue6p.fsf@baylibre.com>
+In-Reply-To: <7hy38vuc8e.fsf@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@baylibre.com>, Thomas Meyer <thomas@m3y3r.de>
+Cc: khilman@kernel.org, nm@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 11, 2018 7:10:54 PM CET Kevin Hilman wrote:
-> Nishanth Menon <nm@ti.com> writes:
+On Tuesday, December 11, 2018 7:53:05 PM CET Kevin Hilman wrote:
+> Thomas Meyer <thomas@m3y3r.de> writes:
 > 
-> > Fix up licensing to be inline with Linux conventions.
+> > NULL check before some freeing functions is not needed.
 > >
-> > Reported-by: Rafael J. Wysocki <rafael@kernel.org>
-> > Signed-off-by: Nishanth Menon <nm@ti.com>
+> > Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
 > 
-> Acked-by: Kevin Hilman <khilman@baylibre.com>
+> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+> 
+> > ---
+> >
+> > diff -u -p a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+> > --- a/drivers/power/avs/smartreflex.c
+> > +++ b/drivers/power/avs/smartreflex.c
+> > @@ -1010,8 +1010,7 @@ static int omap_sr_remove(struct platfor
+> >  
+> >  	if (sr_info->autocomp_active)
+> >  		sr_stop_vddautocomp(sr_info);
+> > -	if (sr_info->dbg_dir)
+> > -		debugfs_remove_recursive(sr_info->dbg_dir);
+> > +	debugfs_remove_recursive(sr_info->dbg_dir);
+> >  
+> >  	pm_runtime_disable(&pdev->dev);
+> >  	list_del(&sr_info->node);
 > 
 
 Patch applied, thanks!
