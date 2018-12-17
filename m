@@ -1,112 +1,63 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v8] cpuidle: New timer events oriented governor for tickless systems
-Date: Sun, 16 Dec 2018 17:53:41 -0800
-Message-ID: <000001d495ab$5c16eea0$1444cbe0$@net>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Mon, 17 Dec 2018 12:36:47 +0530
+Message-ID: <20181217070647.xtvfgsixggua5yod@vireshk-i7>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <20181212211848.26768-3-jcrouse@codeaurora.org>
+ <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
+ <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-References: WgY3gAchapqCWWgY4gdfDg
-In-Reply-To: WgY3gAchapqCWWgY4gdfDg
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, "'Chen, Hu'" <hu1.chen@intel.com>, 'Quentin Perret' <quentin.perret@arm.com>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.12.11 03:50 Rafael J. Wysocki wrote:
-
-...[snip]...
-
-> With this version of the TEO governor I'm observing slight, but consistent
-> performance improvements in some different benchmarks on a few different
-> systems with respect to menu
-
-Same here.
-
-> and the corresponding power draw differences
-> appear to be in the noise.  The idle power doesn't seem to change either.
-
-Same here.
-
-> Also the "above" and "below" metrics (introduced by a separate patch under
-> discussion) indicate changes in the "good" direction.
-
-My graphs now include the "above" and "below" metrics.
-In particular see Idle State 1 "above" (was too deep) graphs in the links below.
-However, performance is up and power about the same, so O.K.
-  
-> Overall, I like this one, so I may consider dropping the RFC/RFT tag from the
-> next submission. :-)
->
-> v7 -> v8:
-> * Apply the selection rules to the idle deepest state as well as to
->   the shallower ones (the deepest idle state was treated differently
->   before by mistake).
-> * Subtract 1/2 of the exit latency from the measured idle duration
->   in teo_update() (instead of subtracting the entire exit latency).
->   This makes the idle state selection be slightly more performance-
->   oriented.
-
-I cherry picked a couple of the mmtests that Giovanni was doing:
-
-Test kernels:
-
-"stock" kernel 4.20-rc5 + a couple of rjw patches. Specifically:
-
-	    2a110ed cpuidle: poll_state: Disregard disable idle states
-	    8f09875 cpuidle: Add 'above' and 'below' idle state metrics
-	    d6851a5 Documentation: admin-guide: PM: Add cpuidle document
-	    2595646 Linux 4.20-rc5
-
-"teov6" above + teov6 patch
-"teov7" above + teov7 patch
-"teov8" above + teov8 patch
-
-1.) mmtests - netperf-unbound test (UDP):
-
-                                   4.20-rc5               4.20-rc5               4.20-rc5               4.20-rc5
-                                      stock                   teo6                   teo7                   teo8
-Hmean     send-64         129.64 (   0.00%)      132.45 *   2.17%*      130.55 *   0.71%*      132.87 *   2.49%*
-Hmean     send-128        259.53 (   0.00%)      264.90 *   2.07%*      261.61 *   0.80%*      264.94 *   2.09%*
-Hmean     send-256        515.24 (   0.00%)      525.41 *   1.97%*      517.41 *   0.42%*      524.88 *   1.87%*
-Hmean     send-1024      2041.01 (   0.00%)     2079.22 *   1.87%*     2045.03 *   0.20%*     2077.25 *   1.78%*
-Hmean     send-2048      3980.04 (   0.00%)     4071.09 *   2.29%*     4041.15 *   1.54%*     4057.09 *   1.94%*
-Hmean     send-3312      6321.90 (   0.00%)     6460.23 *   2.19%*     6395.71 *   1.17%*     6409.09 *   1.38%*
-Hmean     send-4096      7695.18 (   0.00%)     7882.81 *   2.44%*     7813.72 *   1.54%*     7832.77 *   1.79%*
-Hmean     send-8192     13920.53 (   0.00%)    14146.47 *   1.62%*    13986.72 *   0.48%*    14079.07 *   1.14%*
-Hmean     send-16384    24714.99 (   0.00%)    25225.95 *   2.07%*    24896.10 *   0.73%*    25131.52 *   1.69%*
-Hmean     recv-64         129.64 (   0.00%)      132.45 *   2.17%*      130.55 *   0.71%*      132.87 *   2.49%*
-Hmean     recv-128        259.53 (   0.00%)      264.90 *   2.07%*      261.61 *   0.80%*      264.94 *   2.09%*
-Hmean     recv-256        515.24 (   0.00%)      525.41 *   1.97%*      517.41 *   0.42%*      524.88 *   1.87%*
-Hmean     recv-1024      2041.01 (   0.00%)     2079.22 *   1.87%*     2045.03 *   0.20%*     2077.25 *   1.78%*
-Hmean     recv-2048      3980.04 (   0.00%)     4071.09 *   2.29%*     4041.15 *   1.54%*     4057.09 *   1.94%*
-Hmean     recv-3312      6321.88 (   0.00%)     6460.23 *   2.19%*     6395.71 *   1.17%*     6409.09 *   1.38%*
-Hmean     recv-4096      7695.15 (   0.00%)     7882.81 *   2.44%*     7813.72 *   1.54%*     7832.75 *   1.79%*
-Hmean     recv-8192     13920.52 (   0.00%)    14146.43 *   1.62%*    13986.72 *   0.48%*    14079.07 *   1.14%*
-Hmean     recv-16384    24714.99 (   0.00%)    25225.90 *   2.07%*    24896.07 *   0.73%*    25131.49 *   1.69%*
-
-Graphs: http://www.smythies.com/~doug/linux/idle/teo8/net-pref-udp-unbound/index.html
-(note: slow upload speed from my server)
-
-2.) mmtests - sockperf-udp-throughput test:
-
-                            4.20-rc5               4.20-rc5               4.20-rc5               4.20-rc5
-                               stock                   teo6                   teo7                   teo8
-Hmean     14        24.57 (   0.00%)       25.91 *   5.46%*       25.99 *   5.78%*       25.73 *   4.75%*
-Hmean     100      175.37 (   0.00%)      185.09 *   5.54%*      185.89 *   6.00%*      184.48 *   5.19%*
-Hmean     300      523.81 (   0.00%)      553.47 *   5.66%*      554.70 *   5.90%*      550.16 *   5.03%*
-Hmean     500      870.08 (   0.00%)      918.88 *   5.61%*      924.33 *   6.24%*      914.53 *   5.11%*
-Hmean     850     1449.44 (   0.00%)     1530.84 *   5.62%*     1535.40 *   5.93%*     1522.53 *   5.04%*
-
-Graphs: http://www.smythies.com/~doug/linux/idle/teo8/sockperf-udp-throughput/index.html
-(note: slow upload speed from my server)
-
-The above results tables are also here:
-http://www.smythies.com/~doug/linux/idle/teo8/index.html
-
-I wanted to also do the tbench on loopback test, but have not been able to get it working on my system yet.
-I'll supply more test results at a later date.
-
-... Doug
+K1JvYiArU3RlcGhlbiwKCk9uIDE0LTEyLTE4LCAwOTowNCwgRG91ZyBBbmRlcnNvbiB3cm90ZToK
+PiBIaSwKPiAKPiBPbiBUaHUsIERlYyAxMywgMjAxOCBhdCA4OjQxIFBNIFZpcmVzaCBLdW1hciA8
+dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+IHdyb3RlOgo+ID4KPiA+IE9uIDEyLTEyLTE4LCAxNDox
+OCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgIGdwdV9v
+cHBfdGFibGU6IG9wcC10YWJsZSB7Cj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIjsKPiA+Cj4gPiBJ
+IHRoaW5rIHlvdSBuZWVkIHRvIG1lbnRpb24gIm9wZXJhdGluZy1wb2ludHMtdjIiIGFzIHdlbGwg
+aGVyZS4KPiAKPiBBcmUgeW91IHNheWluZyB0aGUgYWJvdmUgc2hvdWxkIGJlOgo+ICAgY29tcGF0
+aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiLCAib3BlcmF0aW5nLXBvaW50
+cy12MiI7Cj4gCj4gSWYgc28gSSdtIG5vdCBzdXJlIEkgYWdyZWUuCgpXZWxsIEkgaGF2ZSBteSBk
+b3VidHMgYXMgd2VsbCBvbiB0aGlzLiBUaGlzIGlzIHdoZXJlIHRoZSBvcmRlcmluZyB3YXMgZGlz
+Y3Vzc2VkCmVhcmxpZXI6CgpodHRwczovL2xvcmUua2VybmVsLm9yZy9sa21sLzE1MjMyODk3OTg5
+Ny4xODAyNzYuMTU5NjM5MjU4Nzc0NDI2NTcxNThAc3dib3lkLm10di5jb3JwLmdvb2dsZS5jb20v
+CgpAUm9iL1N0ZXBoZW46IFNob3VsZCB0aGUgb3BwLXRhYmxlIG5vZGUgYWJvdmUgYWxzbyBoYXZl
+ICJvcGVyYXRpbmctcG9pbnRzLXYyIgpzdHJpbmcgaW4gdGhlIGNvbXBhdGlibGUgcHJvcGVydHkg
+PwoKPiBJdCdzIF9ub3RfIHJlYWxseSBjb21wYXRpYmxlIHdpdGggdGhlCj4gIm9wZXJhdGluZy1w
+b2ludHMtdjIiIGJpbmRpbmcuICBJZiB5b3UgaGFkIGEgZHJpdmVyIHRoYXQgaGFkIG5ldmVyCj4g
+aGVhcmQgb2YgIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCIgYW5kIGhhZCBvbmx5IGhl
+YXJkIG9mCj4gIm9wZXJhdGluZy1wb2ludHMtdjIiIGFuZCBpdCB0b29rIGEgbG9vayBhdCB0aGlz
+IG5vZGUgaXQgd291bGQgaGF2ZSBubwo+IGlkZWEgd2hhdCB0byBkbyB3aXRoIGl0LgoKV2VsbCBp
+dCB3aWxsIHBhcnNlIGV2ZXJ5dGhpbmcgYXBhcnQgZnJvbSB0aGUgcWNvbSxsZXZlbCB0aGluZywg
+c28gaXQgY2FuCmFjdHVhbGx5IHBhcnNlIHN0dWZmIGhlcmUuCgo+IEknbGwgYWxzbyBub3RlIHRo
+YXQgb3RoZXIgaW5zdGFuY2VzIHBvc3RlZCB0byB0aGUgbGlzdCBkb24ndCBsaXN0IGJvdGg6Cj4g
+Cj4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcyNTgwMS8gLSBSUE0gLyBS
+UE1IIFBEIGJpbmRpbmdzCj4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcy
+NTc5My8gLSBSUE1IIFBEIGRldmljZSB0cmVlIGZvciBzZG04NDUKPiAKPiBUaGUgYmluZGluZ3Mg
+cGF0Y2ggYWxzbyBtYWtlcyBubyBtZW50aW9uIG9mIG5lZWRpbmcKPiAib3BlcmF0aW5nLXBvaW50
+cy12MiIuICBJIHRoaW5rIHRoZSBjb21tb24gY2FzZSB3aGVuIGEgZmFsbGJhY2sgaXMKPiByZXF1
+aXJlZCBpdCBpcyBleHBsaWNpdGx5IGNhbGxlZCBvdXQgaW4gdGhlIGJpbmRpbmdzOgo+IAo+IGh0
+dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA3MjU4MDMvIC0gcWNvbS1vcHAgYmlu
+ZGluZ3MKClN1cmUsIG1heWJlIEkgYW0gd3JvbmcgYnV0IGl0cyBiZXR0ZXIgdG8gZ2V0IHNvbWUg
+Y2xhcml0eSBvbiBpdCBmcm9tIFJvYi9TdGVwaGVuLgoKLS0gCnZpcmVzaApfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0
+CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
+cC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
