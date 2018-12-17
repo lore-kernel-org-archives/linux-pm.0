@@ -1,29 +1,100 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v13 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
- Firmware bindings
-Date: Mon, 17 Dec 2018 14:50:12 -0600
-Message-ID: <20181217205012.GA22574@bogus>
-References: <1544760624-12874-1-git-send-email-tdas@codeaurora.org>
- <1544760624-12874-2-git-send-email-tdas@codeaurora.org>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v6 1/2] dt-bindings: drm/msm/a6xx: Document
+ GMU and update GPU bindings
+Date: Mon, 17 Dec 2018 15:20:10 -0600
+Message-ID: <20181217212010.GA22389@bogus>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <20181212211848.26768-2-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1544760624-12874-2-git-send-email-tdas@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>, Taniya Das <tdas@codeaurora.org>
+In-Reply-To: <20181212211848.26768-2-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 14 Dec 2018 09:40:23 +0530, Taniya Das wrote:
-> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-> SoCs. This is required for managing the cpu frequency transitions which are
-> controlled by the hardware engine.
-> 
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
->  1 file changed, 172 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> 
-
-Reviewed-by: Rob Herring <robh@kernel.org>
+T24gV2VkLCBEZWMgMTIsIDIwMTggYXQgMDI6MTg6NDdQTSAtMDcwMCwgSm9yZGFuIENyb3VzZSB3
+cm90ZToKPiBVcGRhdGUgdGhlIEdQVSBiaW5kaW5ncyBhbmQgZG9jdW1lbnQgdGhlIG5ldyBiaW5k
+aW5ncyBmb3IgdGhlIEdNVQo+IGRldmljZSBmb3VuZCB3aXRoIEFkcmVubyBhNnh4IHRhcmdldHMu
+Cj4gCj4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9y
+Zz4KPiAtLS0KPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dCAg
+IHwgNTYgKysrKysrKysrKysrKysrKysrKwo+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNw
+bGF5L21zbS9ncHUudHh0ICAgfCA0MSArKysrKysrKysrKysrLQo+ICAyIGZpbGVzIGNoYW5nZWQs
+IDk0IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAo+IAo+
+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9t
+c20vZ211LnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21z
+bS9nbXUudHh0Cj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPiBpbmRleCAwMDAwMDAwMDAwMDAuLjYx
+NTJjYjU1MWQyOQo+IC0tLSAvZGV2L251bGwKPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRy
+ZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAo+IEBAIC0wLDAgKzEsNTYgQEAKPiArUXVh
+bGNvbW0gYWRyZW5vL3NuYXBkcmFnb24gR01VIChHcmFwaGljcyBtYW5hZ2VtZW50IHVuaXQpCj4g
+Kwo+ICtUaGUgR01VIGlzIGEgcHJvZ3JhbW1hYmxlIHBvd2VyIGNvbnRyb2xsZXIgZm9yIHRoZSBH
+UFUuIHRoZSBDUFUgY29udHJvbHMgdGhlCj4gK0dNVSB3aGljaCBpbiB0dXJuIGhhbmRsZXMgcG93
+ZXIgY29udHJvbHMgZm9yIHRoZSBHUFUuCj4gKwo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ICst
+IGNvbXBhdGlibGU6Cj4gKyAgKiAicWNvbSxhZHJlbm8tZ211IgoKSSBwcm9iYWJseSBhc2tlZCBi
+ZWZvcmUsIGJ1dCB0aGlzIG5lZWRzIGEgc3BlY2lmaWMgY29tcGF0aWJsZSB1bmxlc3MgeW91IApo
+YXZlIHJlbGlhYmxlIHZlcnNpb24vY2FwYWJpbGl0eSByZWdpc3RlcnMuIElmIHlvdSBkbywgcGxl
+YXNlIHN0YXRlIHRoYXQgCmhlcmUuCgo+ICstIHJlZzogUGh5c2ljYWwgYmFzZSBhZGRyZXNzIGFu
+ZCBsZW5ndGggb2YgdGhlIEdNVSByZWdpc3RlcnMuCj4gKy0gcmVnLW5hbWVzOiBNYXRjaGluZyBu
+YW1lcyBmb3IgdGhlIHJlZ2lzdGVyIHJlZ2lvbnMKPiArICAqICJnbXUiCj4gKyAgKiAiZ211X3Bk
+YyIKPiArICAqICJnbXVfcGRjX3NlZyIKPiArLSBpbnRlcnJ1cHRzOiBUaGUgaW50ZXJydXB0IHNp
+Z25hbHMgZnJvbSB0aGUgR01VLgo+ICstIGludGVycnVwdC1uYW1lczogTWF0Y2hpbmcgbmFtZXMg
+Zm9yIHRoZSBpbnRlcnJ1cHRzCj4gKyAgKiAiaGZpIgo+ICsgICogImdtdSIKPiArLSBjbG9ja3M6
+IHBoYW5kbGVzIHRvIHRoZSBkZXZpY2UgY2xvY2tzCj4gKy0gY2xvY2stbmFtZXM6IE1hdGNoaW5n
+IG5hbWVzIGZvciB0aGUgY2xvY2tzCj4gKyAgICogImdtdSIKPiArICAgKiAiY3hvIgo+ICsgICAq
+ICJheGkiCj4gKyAgICogIm1ub2MiCj4gKy0gcG93ZXItZG9tYWluczogc2hvdWxkIGJlIDwmY2xv
+Y2tfZ3B1Y2MgR1BVX0NYX0dEU0M+Cj4gKy0gaW9tbXVzOiBwaGFuZGxlIHRvIHRoZSBhZHJlbm8g
+aW9tbXUKPiArLSBvcGVyYXRpbmctcG9pbnRzLXYyOiBwaGFuZGxlIHRvIHRoZSBPUFAgb3BlcmF0
+aW5nIHBvaW50cwo+ICsKPiArRXhhbXBsZToKPiArCj4gKy8gewo+ICsJLi4uCj4gKwo+ICsJZ211
+OiBnbXVANTA2YTAwMCB7Cj4gKwkJY29tcGF0aWJsZT0icWNvbSxhZHJlbm8tZ211IjsKPiArCj4g
+KwkJcmVnID0gPDB4NTA2YTAwMCAweDMwMDAwPiwKPiArCQkJPDB4YjI4MDAwMCAweDEwMDAwPiwK
+PiArCQkJPDB4YjQ4MDAwMCAweDEwMDAwPjsKPiArCQlyZWctbmFtZXMgPSAiZ211IiwgImdtdV9w
+ZGMiLCAiZ211X3BkY19zZXEiOwo+ICsKPiArCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMzA0IElS
+UV9UWVBFX0xFVkVMX0hJR0g+LAo+ICsJCSAgICAgPEdJQ19TUEkgMzA1IElSUV9UWVBFX0xFVkVM
+X0hJR0g+Owo+ICsJCWludGVycnVwdC1uYW1lcyA9ICJoZmkiLCAiZ211IjsKPiArCj4gKwkJY2xv
+Y2tzID0gPCZncHVjYyBHUFVfQ0NfQ1hfR01VX0NMSz4sCj4gKwkJCTwmZ3B1Y2MgR1BVX0NDX0NY
+T19DTEs+LAo+ICsJCQk8JmdjYyBHQ0NfRERSU1NfR1BVX0FYSV9DTEs+LAo+ICsJCQk8JmdjYyBH
+Q0NfR1BVX01FTU5PQ19HRlhfQ0xLPjsKPiArCQljbG9jay1uYW1lcyA9ICJnbXUiLCAiY3hvIiwg
+ImF4aSIsICJtZW1ub2MiOwo+ICsKPiArCQlwb3dlci1kb21haW5zID0gPCZncHVjYyBHUFVfQ1hf
+R0RTQz47Cj4gKwkJaW9tbXVzID0gPCZhZHJlbm9fc21tdSA1PjsKPiArCj4gKwkJb3BlcmF0aW5n
+LXBvaW50cy12MiA9IDwmZ211X29wcF90YWJsZT47Cj4gKwl9Owo+ICt9Owo+IGRpZmYgLS1naXQg
+YS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dCBi
+L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0Cj4g
+aW5kZXggNDNmYWMwZmUwOWJiLi44ZDk0MTUxODBjMjIgMTAwNjQ0Cj4gLS0tIGEvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQKPiArKysgYi9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dAo+IEBAIC04
+LDE0ICs4LDIxIEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6Cj4gICAgd2l0aCB0aGUgY2hpcC1pZC4K
+PiAgLSByZWc6IFBoeXNpY2FsIGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3RoIG9mIHRoZSBjb250cm9s
+bGVyJ3MgcmVnaXN0ZXJzLgo+ICAtIGludGVycnVwdHM6IFRoZSBpbnRlcnJ1cHQgc2lnbmFsIGZy
+b20gdGhlIGdwdS4KPiAtLSBjbG9ja3M6IGRldmljZSBjbG9ja3MKPiArLSBpbnRlcnJ1cHQtbmFt
+ZXM6IExpc3Qgb2YgbmFtZXMgZm9yIHRoZSBpbnRlcnJ1cHQgc2lnbmFscy4gVGhlIGZvbGxvd2lu
+ZyBjYW4gYmUKPiArICBwcm92aWRlZDoKPiArICAqICJrZ3NsXzNkMF9pcnEiCgpJJ20gcHJldHR5
+IHN1cmUgJ2tnc2wnIGlzIG5vdCBhIGhhcmR3YXJlIHRoaW5nLiBZb3UgZG9uJ3QgbmVlZCAqLW5h
+bWVzIAp3aGVuIHRoZXJlIGlzIG9ubHkgb25lIG9mIHNvbWV0aGluZy4KCj4gKy0gY2xvY2tzOiBk
+ZXZpY2UgY2xvY2tzIChpZiBhcHBsaWNhYmxlKQoKV2hhdCBkb2VzIHRoaXMgbWVhbj8gVGhleSBh
+cmUgbm93IG9wdGlvbmFsPyBJZiBzbywgbW92ZSB0byBhbiAiT3B0aW9uYWwiIApzZWN0aW9uLiBM
+aWtld2lzZSBmb3IgdGhlIG90aGVycy4KClJlYWxseSwgeW91IHNob3VsZCBhZGQgYSBuZXcgY29t
+cGF0aWJsZSBzbyB3ZSBjYW4gdmFsaWRhdGUgd2hlbiBjbG9ja3MgCm5vdCBiZWluZyBwcmVzZW50
+IGlzIHZhbGlkIHZzLiBhbiBlcnJvciBpbiB0aGUgRFQuCgo+ICAgIFNlZSAuLi9jbG9ja3MvY2xv
+Y2stYmluZGluZ3MudHh0IGZvciBkZXRhaWxzLgo+IC0tIGNsb2NrLW5hbWVzOiB0aGUgZm9sbG93
+aW5nIGNsb2NrcyBhcmUgcmVxdWlyZWQ6Cj4gKy0gY2xvY2stbmFtZXM6IHRoZSBmb2xsb3dpbmcg
+Y2xvY2tzIGNhbiBiZSBwcm92aWRlZDoKPiAgICAqICJjb3JlIgo+ICAgICogImlmYWNlIgo+ICAg
+ICogIm1lbV9pZmFjZSIKPiArLSBpb21tdXM6IG9wdGlvbmFsIHBoYW5kbGUgdG8gYW4gYWRyZW5v
+IGlvbW11IGluc3RhbmNlCj4gKy0gb3BlcmF0aW5nLXBvaW50cy12Mjogb3B0aW9uYWwgcGhhbmRs
+ZSB0byB0aGUgT1BQIG9wZXJhdGluZyBwb2ludHMKPiArLSBxY29tLGdtdTogRm9yIGE2eHggYW5k
+IG5ld2VyIHRhcmdldHMgYSBwaGFuZGxlIHRvIHRoZSBHTVUgZGV2aWNlIHRoYXQgd2lsbAo+ICsg
+IGNvbnRyb2wgdGhlIHBvd2VyIGZvciB0aGUgR1BVCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxp
+c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2ZyZWVkcmVubwo=
