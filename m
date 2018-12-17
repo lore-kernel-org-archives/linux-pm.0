@@ -1,53 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT][PATCH v8] cpuidle: New timer events oriented governor
- for tickless systems
-Date: Mon, 17 Dec 2018 12:59:48 +0100
-Message-ID: <CAJZ5v0hg3pGoptF4oC4+=1n5y8cGsqOSoJeSaRzC-6tmvqEnjA@mail.gmail.com>
-References: <000001d495ab$5c16eea0$1444cbe0$@net>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v2 3/3] drm/i915: Move to new PM core fields
+Date: Mon, 17 Dec 2018 15:21:56 +0100
+Message-ID: <CAKfTPtBbZgZtU-qZhh-nKoC=cNj=ZT_LTn=cTX4V10MCZhDFEg@mail.gmail.com>
+References: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org>
+ <1544797347-20601-4-git-send-email-vincent.guittot@linaro.org>
+ <CAPDyKFrvrN6+sVGc1sM+hmQo=JR=8FyAz_YRK9DzEQN2jOVX6w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000001d495ab$5c16eea0$1444cbe0$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Giovanni Gherdovich <ggherdovich@suse.cz>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, hu1.chen@intel.com, Quentin Perret <quentin.perret@arm.com>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAPDyKFrvrN6+sVGc1sM+hmQo=JR=8FyAz_YRK9DzEQN2jOVX6w@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: dri-devel@lists.freedesktop.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, airlied@linux.ie, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 17, 2018 at 2:53 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> On 2018.12.11 03:50 Rafael J. Wysocki wrote:
->
-> ...[snip]...
->
-> > With this version of the TEO governor I'm observing slight, but consistent
-> > performance improvements in some different benchmarks on a few different
-> > systems with respect to menu
->
-> Same here.
->
-> > and the corresponding power draw differences
-> > appear to be in the noise.  The idle power doesn't seem to change either.
->
-> Same here.
->
-> > Also the "above" and "below" metrics (introduced by a separate patch under
-> > discussion) indicate changes in the "good" direction.
->
-> My graphs now include the "above" and "below" metrics.
-> In particular see Idle State 1 "above" (was too deep) graphs in the links below.
-> However, performance is up and power about the same, so O.K.
-
-Thanks a lot for the comprehensive results, much appreciated as always!
-
-This basically confirms my own observations, so my overall conclusion
-is that what we have here is as good as it can get without changing
-the approach entirely or adding complications that would be difficult
-to justify in general.
-
-> > Overall, I like this one, so I may consider dropping the RFC/RFT tag from the
-> > next submission. :-)
-
-And so that's what I'm going to do.
-
-Cheers,
-Rafael
+T24gRnJpLCAxNCBEZWMgMjAxOCBhdCAxNTozNiwgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxp
+bmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gRnJpLCAxNCBEZWMgMjAxOCBhdCAxNToyMiwgVmluY2Vu
+dCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBX
+aXRoIGppZmZpZXMgYmVlbiByZXBsYWNlZCBieSByYXcgbnMgaW4gUE0gY29yZSBhY2NvdW50aW5n
+LCA5MTUgZHJpdmVyIGlzCj4gPiB1cGRhdGVkIHRvIHVzZSB0aGlzIG5ldyB0aW1lIGluZnJhc3Ry
+dWN0dXJlLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFZpbmNlbnQgR3VpdHRvdCA8dmluY2VudC5n
+dWl0dG90QGxpbmFyby5vcmc+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1
+X3BtdS5jIHwgMTIgKysrKysrLS0tLS0tCj4gPiAgZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9w
+bXUuaCB8ICA0ICsrLS0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDggaW5zZXJ0aW9ucygrKSwgOCBk
+ZWxldGlvbnMoLSkKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkx
+NV9wbXUuYyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmMKPiA+IGluZGV4IGQ2Yzhm
+OGYuLmNmNjQzN2QgMTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3Bt
+dS5jCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5jCj4gPiBAQCAtNDkz
+LDE0ICs0OTMsMTQgQEAgc3RhdGljIHU2NCBnZXRfcmM2KHN0cnVjdCBkcm1faTkxNV9wcml2YXRl
+ICppOTE1KQo+ID4gICAgICAgICAgICAgICAgICAqLwo+ID4gICAgICAgICAgICAgICAgIGlmIChr
+ZGV2LT5wb3dlci5ydW50aW1lX3N0YXR1cyA9PSBSUE1fU1VTUEVOREVEKSB7Cj4gPiAgICAgICAg
+ICAgICAgICAgICAgICAgICBpZiAoIWk5MTUtPnBtdS5zYW1wbGVbX19JOTE1X1NBTVBMRV9SQzZf
+RVNUSU1BVEVEXS5jdXIpCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGk5MTUt
+PnBtdS5zdXNwZW5kZWRfamlmZmllc19sYXN0ID0KPiA+IC0gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAga2Rldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXM7
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGk5MTUtPnBtdS5zdXNwZW5kZWRf
+dGltZV9sYXN0ID0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBr
+ZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZTsKPiA+Cj4KPiBIdWgsIHNvIHBhdGNoIDIgaW50cm9k
+dWNlcyBhIGNvbXBsaWVyIGVycm9yIGJlY2F1c2Ugb2YgcmVtb3ZpbmcgdGhlCj4gb2xkIGZpZWxk
+cy4gV2UgY2FuJ3QgaGF2ZSB0aGF0LgoKSSBhZ3JlZQpUaGUgcGF0Y2ggd2FzIG1haW5seSB0byBy
+YWlzZSBkaXNjdXNzaW9uCj4KPiBJZGVhbGx5IHRoZSBkcml2ZXIgc2hvdWxkbid0IHRvdWNoIHRo
+ZXNlIGZpZWxkcyBpbiB0aGUgZmlyc3QgcGxhY2UsCj4gYnV0IGJlY2F1c2UgdGhlIGZpZWxkcyBh
+cmUgZGVmaW5lZCBpbiBhIHB1YmxpYyBoZWFkZXIsIHRoZXJlIGlzIGFsd2F5cwo+IGEgcmlzayB0
+aGF0IHRoZXkgYmVjb21lcyBhYnVzZWQuIEkgd291bGQgYXBwcmVjaWF0ZSBpZiB3ZSBjYW4gY2hh
+bmdlCj4gdGhlIGRyaXZlciBtb3ZlIGF3YXkgZnJvbSB1c2luZyB0aGVzZSBmaWVsZHMgYW5kIG1h
+a2UgdGhhdCBhIHBhdGNoCj4gcHJlY2VkaW5nIHBhdGNoIDIuCgpJbiBmYWN0LCB0aGUgZHJpdmVy
+IGRvZXNuJ3Qgb25seSB1c2Ugc29tZSBpbnRlcm5hbCBmaWVsZHMgYnV0IGFsc28KdGFrZXMgdGhl
+IHBvd2VyLmxvY2sKSUlVQywgdGhlIGRyaXZlciB3YW50cyB0aGUgY3VycmVudCBwbSBydW50aW1l
+IHN1c3BlbmRlZCB0aW1lIHRvCmVzdGltYXRlIGEgbWV0cmljIHdoZW4gcGVyZiBldmVudHMgYXJl
+IG5vdCBhY2Nlc3NpYmxlCkknbSBnb2luZyB0byBzZW5kIGEgbmV3IHZlcnNpb24gd2l0aCBhIHJ1
+bnRpbWUgcG0gaW50ZXJmYWNlIHByb3Bvc2FsIHRvIGZpeCB0aGlzCgpWaW5jZW50Cgo+Cj4gPiAt
+ICAgICAgICAgICAgICAgICAgICAgICB2YWwgPSBrZGV2LT5wb3dlci5zdXNwZW5kZWRfamlmZmll
+cyAtCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpOTE1LT5wbXUuc3VzcGVuZGVk
+X2ppZmZpZXNfbGFzdDsKPiA+IC0gICAgICAgICAgICAgICAgICAgICAgIHZhbCArPSBqaWZmaWVz
+IC0ga2Rldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXA7Cj4gPiArICAgICAgICAgICAgICAg
+ICAgICAgICB2YWwgPSBrZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZSAtCj4gPiArICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIGk5MTUtPnBtdS5zdXNwZW5kZWRfdGltZV9sYXN0Owo+ID4g
+KyAgICAgICAgICAgICAgICAgICAgICAgdmFsICs9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKSAt
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGtkZXYtPnBvd2VyLmFjY291bnRp
+bmdfdGltZXN0YW1wOwo+ID4KPiA+IC0gICAgICAgICAgICAgICAgICAgICAgIHZhbCA9IGppZmZp
+ZXNfdG9fbnNlY3ModmFsKTsKPiA+ICAgICAgICAgICAgICAgICAgICAgICAgIHZhbCArPSBpOTE1
+LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1QTEVfUkM2XS5jdXI7Cj4gPgo+ID4gICAgICAgICAgICAg
+ICAgICAgICAgICAgaTkxNS0+cG11LnNhbXBsZVtfX0k5MTVfU0FNUExFX1JDNl9FU1RJTUFURURd
+LmN1ciA9IHZhbDsKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3Bt
+dS5oIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuaAo+ID4gaW5kZXggN2YxNjRjYS4u
+M2RjMmEzMCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmgK
+PiA+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmgKPiA+IEBAIC05NSw5ICs5
+NSw5IEBAIHN0cnVjdCBpOTE1X3BtdSB7Cj4gPiAgICAgICAgICAqLwo+ID4gICAgICAgICBzdHJ1
+Y3QgaTkxNV9wbXVfc2FtcGxlIHNhbXBsZVtfX0k5MTVfTlVNX1BNVV9TQU1QTEVSU107Cj4gPiAg
+ICAgICAgIC8qKgo+ID4gLSAgICAgICAgKiBAc3VzcGVuZGVkX2ppZmZpZXNfbGFzdDogQ2FjaGVk
+IHN1c3BlbmQgdGltZSBmcm9tIFBNIGNvcmUuCj4gPiArICAgICAgICAqIEBzdXNwZW5kZWRfdGlt
+ZV9sYXN0OiBDYWNoZWQgc3VzcGVuZCB0aW1lIGZyb20gUE0gY29yZS4KPiA+ICAgICAgICAgICov
+Cj4gPiAtICAgICAgIHVuc2lnbmVkIGxvbmcgc3VzcGVuZGVkX2ppZmZpZXNfbGFzdDsKPiA+ICsg
+ICAgICAgdTY0IHN1c3BlbmRlZF90aW1lX2xhc3Q7Cj4gPiAgICAgICAgIC8qKgo+ID4gICAgICAg
+ICAgKiBAaTkxNV9hdHRyOiBNZW1vcnkgYmxvY2sgaG9sZGluZyBkZXZpY2UgYXR0cmlidXRlcy4K
+PiA+ICAgICAgICAgICovCj4gPiAtLQo+ID4gMi43LjQKPiA+Cj4KPiBLaW5kIHJlZ2FyZHMKPiBV
+ZmZlCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1k
+ZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
+L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
