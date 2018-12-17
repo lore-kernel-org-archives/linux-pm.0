@@ -1,209 +1,236 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v10 00/27] PM / Domains: Support hierarchical CPU
- arrangement (PSCI/ARM)
-Date: Mon, 17 Dec 2018 17:12:54 +0100
-Message-ID: <CAPDyKFpV0uQhZnJhSg79RxmCq+0PFUeaXCgmBgRU5aNF8WNoDw@mail.gmail.com>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [driver-core PATCH v9 2/9] device core: Consolidate locking and
+ unlocking of parent and device
+Date: Mon, 17 Dec 2018 08:31:46 -0800
+Message-ID: <96fc96dc7c7856a1f415417bf287936071c32f4d.camel@linux.intel.com>
+References: <154466182249.9126.3905559325944768059.stgit@ahduyck-desk1.jf.intel.com>
+ <154466190393.9126.148371211828405339.stgit@ahduyck-desk1.jf.intel.com>
+ <CAJZ5v0it33gOgjR8KUqsGtykh7UovZ5MUbJeEavHDa2uQSXM0g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>
-Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <CAJZ5v0it33gOgjR8KUqsGtykh7UovZ5MUbJeEavHDa2uQSXM0g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org" <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Lai Jiangshan <jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R.
+ Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael, Sudeep, Lorenzo, Mark,
+On Fri, 2018-12-14 at 11:40 +0100, Rafael J. Wysocki wrote:
+>  somOn Thu, Dec 13, 2018 at 1:45 AM Alexander Duyck
+> <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+> > 
+> > Try to consolidate all of the locking and unlocking of both the parent and
+> > device when attaching or removing a driver from a given device.
+> > 
+> > To do that I first consolidated the lock pattern into two functions
+> > __device_driver_lock and __device_driver_unlock. After doing that I then
+> > created functions specific to attaching and detaching the driver while
+> > acquiring these locks. By doing this I was able to reduce the number of
+> > spots where we touch need_parent_lock from 12 down to 4.
+> > 
+> > This patch should produce no functional changes, it is meant to be a code
+> > clean-up/consolidation only.
+> > 
+> > Reviewed-by: Luis Chamberlain <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
+> > Reviewed-by: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> > Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> > ---
+> >  drivers/base/base.h |    2 +
+> >  drivers/base/bus.c  |   23 ++----------
+> >  drivers/base/dd.c   |   95 ++++++++++++++++++++++++++++++++++++++++-----------
+> >  3 files changed, 81 insertions(+), 39 deletions(-)
+> > 
+> > diff --git a/drivers/base/base.h b/drivers/base/base.h
+> > index 7a419a7a6235..3f22ebd6117a 100644
+> > --- a/drivers/base/base.h
+> > +++ b/drivers/base/base.h
+> > @@ -124,6 +124,8 @@ extern int driver_add_groups(struct device_driver *drv,
+> >                              const struct attribute_group **groups);
+> >  extern void driver_remove_groups(struct device_driver *drv,
+> >                                  const struct attribute_group **groups);
+> > +int device_driver_attach(struct device_driver *drv, struct device *dev);
+> > +void device_driver_detach(struct device *dev);
+> > 
+> >  extern char *make_class_name(const char *name, struct kobject *kobj);
+> > 
+> > diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+> > index b886b15cb53b..74054481007d 100644
+> > --- a/drivers/base/bus.c
+> > +++ b/drivers/base/bus.c
+> > @@ -184,11 +184,7 @@ static ssize_t unbind_store(struct device_driver *drv, const char *buf,
+> > 
+> >         dev = bus_find_device_by_name(bus, NULL, buf);
+> >         if (dev && dev->driver == drv) {
+> > -               if (dev->parent && dev->bus->need_parent_lock)
+> > -                       device_lock(dev->parent);
+> > -               device_release_driver(dev);
+> > -               if (dev->parent && dev->bus->need_parent_lock)
+> > -                       device_unlock(dev->parent);
+> > +               device_driver_detach(dev);
+> >                 err = count;
+> >         }
+> >         put_device(dev);
+> > @@ -211,13 +207,7 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
+> > 
+> >         dev = bus_find_device_by_name(bus, NULL, buf);
+> >         if (dev && dev->driver == NULL && driver_match_device(drv, dev)) {
+> > -               if (dev->parent && bus->need_parent_lock)
+> > -                       device_lock(dev->parent);
+> > -               device_lock(dev);
+> > -               err = driver_probe_device(drv, dev);
+> > -               device_unlock(dev);
+> > -               if (dev->parent && bus->need_parent_lock)
+> > -                       device_unlock(dev->parent);
+> > +               err = device_driver_attach(drv, dev);
+> > 
+> >                 if (err > 0) {
+> >                         /* success */
+> > @@ -771,13 +761,8 @@ EXPORT_SYMBOL_GPL(bus_rescan_devices);
+> >   */
+> >  int device_reprobe(struct device *dev)
+> >  {
+> > -       if (dev->driver) {
+> > -               if (dev->parent && dev->bus->need_parent_lock)
+> > -                       device_lock(dev->parent);
+> > -               device_release_driver(dev);
+> > -               if (dev->parent && dev->bus->need_parent_lock)
+> > -                       device_unlock(dev->parent);
+> > -       }
+> > +       if (dev->driver)
+> > +               device_driver_detach(dev);
+> >         return bus_rescan_devices_helper(dev, NULL);
+> >  }
+> >  EXPORT_SYMBOL_GPL(device_reprobe);
+> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > index 74c194ac99df..f07c16277ed9 100644
+> > --- a/drivers/base/dd.c
+> > +++ b/drivers/base/dd.c
+> > @@ -867,6 +867,64 @@ void device_initial_probe(struct device *dev)
+> >         __device_attach(dev, true);
+> >  }
+> > 
+> > +/*
+> > + * __device_driver_lock - acquire locks needed to manipulate dev->drv
+> > + * @dev: Device we will update driver info for
+> > + * @parent: Parent device. Needed if the bus requires parent lock
+> > + *
+> > + * This function will take the required locks for manipulating dev->drv.
+> > + * Normally this will just be the @dev lock, but when called for a USB
+> > + * interface, @parent lock will be held as well.
+> > + */
+> > +static void __device_driver_lock(struct device *dev, struct device *parent)
+> > +{
+> > +       if (parent && dev->bus->need_parent_lock)
+> > +               device_lock(parent);
+> > +       device_lock(dev);
+> > +}
+> > +
+> > +/*
+> > + * __device_driver_unlock - release locks needed to manipulate dev->drv
+> > + * @dev: Device we will update driver info for
+> > + * @parent: Parent device. Needed if the bus requires parent lock
+> > + *
+> > + * This function will release the required locks for manipulating dev->drv.
+> > + * Normally this will just be the the @dev lock, but when called for a
+> > + * USB interface, @parent lock will be released as well.
+> > + */
+> > +static void __device_driver_unlock(struct device *dev, struct device *parent)
+> > +{
+> > +       device_unlock(dev);
+> > +       if (parent && dev->bus->need_parent_lock)
+> > +               device_unlock(parent);
+> > +}
+> > +
+> > +/**
+> > + * device_driver_attach - attach a specific driver to a specific device
+> > + * @drv: Driver to attach
+> > + * @dev: Device to attach it to
+> > + *
+> > + * Manually attach driver to a device. Will acquire both @dev lock and
+> > + * @dev->parent lock if needed.
+> > + */
+> > +int device_driver_attach(struct device_driver *drv, struct device *dev)
+> > +{
+> > +       int ret = 0;
+> > +
+> > +       __device_driver_lock(dev, dev->parent);
+> > +
+> > +       /*
+> > +        * If device has been removed or someone has already successfully
+> > +        * bound a driver before us just skip the driver probe call.
+> > +        */
+> > +       if (!dev->dead && !dev->driver)
+> > +               ret = driver_probe_device(drv, dev);
+> > +
+> > +       __device_driver_unlock(dev, dev->parent);
+> > +
+> > +       return ret;
+> > +}
+> > +
+> >  static int __driver_attach(struct device *dev, void *data)
+> >  {
+> >         struct device_driver *drv = data;
+> > @@ -894,14 +952,7 @@ static int __driver_attach(struct device *dev, void *data)
+> >                 return ret;
+> >         } /* ret > 0 means positive match */
+> > 
+> > -       if (dev->parent && dev->bus->need_parent_lock)
+> > -               device_lock(dev->parent);
+> > -       device_lock(dev);
+> > -       if (!dev->dead && !dev->driver)
+> > -               driver_probe_device(drv, dev);
+> > -       device_unlock(dev);
+> > -       if (dev->parent && dev->bus->need_parent_lock)
+> > -               device_unlock(dev->parent);
+> > +       device_driver_attach(drv, dev);
+> > 
+> >         return 0;
+> >  }
+> > @@ -932,15 +983,11 @@ static void __device_release_driver(struct device *dev, struct device *parent)
+> >         drv = dev->driver;
+> >         if (drv) {
+> >                 while (device_links_busy(dev)) {
+> > -                       device_unlock(dev);
+> > -                       if (parent)
+> > -                               device_unlock(parent);
+> > +                       __device_driver_unlock(dev, parent);
+> > 
+> >                         device_links_unbind_consumers(dev);
+> > -                       if (parent)
+> > -                               device_lock(parent);
+> > 
+> > -                       device_lock(dev);
+> > +                       __device_driver_lock(dev, parent);
+> >                         /*
+> >                          * A concurrent invocation of the same function might
+> >                          * have released the driver successfully while this one
+> 
+> This change will clash with
+> https://patchwork.kernel.org/patch/10729571/ somewhat which really
+> should go it first as a stable-candidate fix.
+> 
+> I would suggest rebasing on top of that one, unless Greg has different
+> plans here.
 
-On Thu, 29 Nov 2018 at 18:47, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> Over the years this series have been iterated and discussed at various Linux
-> conferences and LKML. In this new v10, a quite significant amount of changes
-> have been made to address comments from v8 and v9. A summary is available
-> below, although let's start with a brand new clarification of the motivation
-> behind this series.
->
-> For ARM64/ARM based platforms CPUs are often arranged in a hierarchical manner.
-> From a CPU idle state perspective, this means some states may be shared among a
-> group of CPUs (aka CPU cluster).
->
-> To deal with idle management of a group of CPUs, sometimes the kernel needs to
-> be involved to manage the last-man standing algorithm, simply because it can't
-> rely solely on power management FWs to deal with this. Depending on the
-> platform, of course.
->
-> There are a couple of typical scenarios for when the kernel needs to be in
-> control, dealing with synchronization of when the last CPU in a cluster is about
-> to enter a deep idle state.
->
-> 1)
-> The kernel needs to carry out so called last-man activities before the
-> CPU cluster can enter a deep idle state. This may for example involve to
-> configure external logics for wakeups, as the GIC may no longer be functional
-> once a deep cluster idle state have been entered. Likewise, these operations
-> may need to be restored, when the first CPU wakes up.
->
-> 2)
-> Other more generic I/O devices, such as an MMC controller for example, may be a
-> part of the same power domain as the CPU cluster, due to a shared power-rail.
-> For these scenarios, when the MMC controller is in use dealing with an MMC
-> request, a deeper idle state of the CPU cluster may needs to be temporarily
-> disabled. This is needed to retain the MMC controller in a functional state,
-> else it may loose its register-context in the middle of serving a request.
->
-> In this series, we are extending the generic PM domain (aka genpd) to be used
-> for also CPU devices. Hence the goal is to re-use much of its current code to
-> help us manage the last-man standing synchronization. Moreover, as we already
-> use genpd to model power domains for generic I/O devices, both 1) and 2) can be
-> address with its help.
->
-> Moreover, to address these problems for ARM64 DT based platforms, we are
-> deploying support for genpd and runtime PM to the PSCI FW driver - and finally
-> we make some updates to two ARM64 DTBs, as to deploy the new PSCI CPU topology
-> layout.
->
-> The series has been tested on the QCOM 410c dragonboard and the Hisilicon Hikey
-> board. You may also find the code at:
->
-> git.linaro.org/people/ulf.hansson/linux-pm.git next
+Greg, any opinion here? From what I can tell the patch pointed out and
+this one both address the same issue. The only real difference is that
+the patch called out would be a better stable-candidate fix.
 
-It's soon been three weeks since I posted this and I would really
-appreciate some feedback.
+I'm just wondering if the patch set is good as is or if I need to be
+submitting a v10 w/ rebase on top of this patch.
 
-Rafael, I need your feedback on patch 1->4.
+Thanks.
 
-Mark, Sudeep, Lorenzo, please have a look at the PSCI related changes.
-
-When it comes to the the cpuidle related changes, I have pinged Daniel
-offlist - and he is preparing some responses.
-
-Kind regards
-Uffe
-
-
->
-> Kind regards
-> Ulf Hansson
->
->
-> Changes in v10:
->  - Quite significant changes have been to the PSCI driver deployment. According
->    to an agreement with Lorenzo, the hierarchical CPU layout for PSCI should be
->    orthogonal to whether the PSCI FW supports OSI or not. This has been taken
->    care of in this version.
->  - Drop the generic attach/detach helpers of CPUs to genpd, instead make that
->    related code internal to PSCI, for now.
->  - Fix "BUG: sleeping for invalid context" for hotplug, as reported by Raju.
->  - Addressed various comments from version 8 and 9.
->  - Clarified changelogs and re-wrote the cover-letter to better explain the
->    motivations behind these changes.
->
-> Changes in v9:
->  - Collect only a subset from the changes in v8.
->  - Patch 3 is new, documenting existing genpd flags. Future wise, this means
-> when a new genpd flag is invented, we must also properly document it.
->  - No changes have been made to the patches picked from v8.
->  - Dropped the text from v8 cover-letter[1], to avoid confusion. When posting v10
-> (or whatever the next version containing the rest becomes), I am going re-write
-> the cover-letter to clarify, more exactly, the problems this series intends to
-> solve. The earlier text was simply too vague.
->
-> [1]
-> https://lwn.net/Articles/758091/
->
-> Changes in v8:
->  - Added some tags for reviews and acks.
->  - Cleanup timer patch (patch6) according to comments from Rafael.
->  - Rebased series on top of v4.18rc1 - it applied cleanly, except for patch 5.
->  - While adopting patch 5 to new genpd changes, I took the opportunity to
->    improve the new function description a bit.
->  - Corrected malformed SPDX-License-Identifier in patch20.
->
-> Changes in v7:
->  - Addressed comments concerning the PSCI changes from Mark Rutland, which moves
->    the psci firmware driver to a new firmware subdir and change to force PSCI PC
->    mode during boot to cope with kexec'ed booted kernels.
->  - Added some maintainers in cc for the timer/nohz patches.
->  - Minor update to the new genpd governor, taking into account the state's
->    poweroff latency while validating the sleep duration time.
->  - Addressed a problem pointed out by Geert Uytterhoeven, around calling
->    pm_runtime_get|put() for CPUs that has not been attached to a CPU PM domain.
->  - Re-based on Linus' latest master.
->
->
-> Lina Iyer (5):
->   timer: Export next wakeup time of a CPU
->   dt: psci: Update DT bindings to support hierarchical PSCI states
->   cpuidle: dt: Support hierarchical CPU idle states
->   drivers: firmware: psci: Support hierarchical CPU idle states
->   arm64: dts: Convert to the hierarchical CPU topology layout for
->     MSM8916
->
-> Ulf Hansson (22):
->   PM / Domains: Add generic data pointer to genpd_power_state struct
->   PM / Domains: Add support for CPU devices to genpd
->   PM / Domains: Add genpd governor for CPUs
->   of: base: Add of_get_cpu_state_node() to get idle states for a CPU
->     node
->   ARM/ARM64: cpuidle: Let back-end init ops take the driver as input
->   drivers: firmware: psci: Move psci to separate directory
->   MAINTAINERS: Update files for PSCI
->   drivers: firmware: psci: Split psci_dt_cpu_init_idle()
->   drivers: firmware: psci: Simplify state node parsing
->   drivers: firmware: psci: Simplify error path of psci_dt_init()
->   drivers: firmware: psci: Announce support for OS initiated suspend
->     mode
->   drivers: firmware: psci: Prepare to use OS initiated suspend mode
->   drivers: firmware: psci: Prepare to support PM domains
->   drivers: firmware: psci: Add support for PM domains using genpd
->   drivers: firmware: psci: Add hierarchical domain idle states converter
->   drivers: firmware: psci: Introduce psci_dt_topology_init()
->   drivers: firmware: psci: Add a helper to attach a CPU to its PM domain
->   drivers: firmware: psci: Attach the CPU's device to its PM domain
->   drivers: firmware: psci: Manage runtime PM in the idle path for CPUs
->   drivers: firmware: psci: Support CPU hotplug for the hierarchical
->     model
->   arm64: kernel: Respect the hierarchical CPU topology in DT for PSCI
->   arm64: dts: hikey: Convert to the hierarchical CPU topology layout
->
->  .../devicetree/bindings/arm/psci.txt          | 166 ++++++++
->  MAINTAINERS                                   |   2 +-
->  arch/arm/include/asm/cpuidle.h                |   4 +-
->  arch/arm/kernel/cpuidle.c                     |   5 +-
->  arch/arm64/boot/dts/hisilicon/hi6220.dtsi     |  87 +++-
->  arch/arm64/boot/dts/qcom/msm8916.dtsi         |  57 ++-
->  arch/arm64/include/asm/cpu_ops.h              |   4 +-
->  arch/arm64/include/asm/cpuidle.h              |   6 +-
->  arch/arm64/kernel/cpuidle.c                   |   6 +-
->  arch/arm64/kernel/setup.c                     |   3 +
->  drivers/base/power/domain.c                   |  74 +++-
->  drivers/base/power/domain_governor.c          |  61 ++-
->  drivers/cpuidle/cpuidle-arm.c                 |   2 +-
->  drivers/cpuidle/dt_idle_states.c              |   5 +-
->  drivers/firmware/Kconfig                      |  15 +-
->  drivers/firmware/Makefile                     |   3 +-
->  drivers/firmware/psci/Kconfig                 |  13 +
->  drivers/firmware/psci/Makefile                |   4 +
->  drivers/firmware/{ => psci}/psci.c            | 240 ++++++++---
->  drivers/firmware/psci/psci.h                  |  23 ++
->  drivers/firmware/{ => psci}/psci_checker.c    |   0
->  drivers/firmware/psci/psci_pm_domain.c        | 389 ++++++++++++++++++
->  drivers/of/base.c                             |  35 ++
->  drivers/soc/qcom/spm.c                        |   3 +-
->  include/linux/of.h                            |   8 +
->  include/linux/pm_domain.h                     |  19 +-
->  include/linux/psci.h                          |   6 +-
->  include/linux/tick.h                          |   8 +
->  include/uapi/linux/psci.h                     |   5 +
->  kernel/time/tick-sched.c                      |  13 +
->  30 files changed, 1163 insertions(+), 103 deletions(-)
->  create mode 100644 drivers/firmware/psci/Kconfig
->  create mode 100644 drivers/firmware/psci/Makefile
->  rename drivers/firmware/{ => psci}/psci.c (76%)
->  create mode 100644 drivers/firmware/psci/psci.h
->  rename drivers/firmware/{ => psci}/psci_checker.c (100%)
->  create mode 100644 drivers/firmware/psci/psci_pm_domain.c
->
-> --
-> 2.17.1
->
+- Alex
