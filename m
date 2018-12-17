@@ -1,36 +1,110 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 3/6] dt-bindings: ap806: document the thermal
- interrupt capabilities
-Date: Mon, 17 Dec 2018 15:45:33 -0600
-Message-ID: <20181217214533.GA22171@bogus>
-References: <20181212093645.14752-1-miquel.raynal@bootlin.com>
- <20181212093645.14752-4-miquel.raynal@bootlin.com>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v6 1/2] dt-bindings: drm/msm/a6xx: Document
+ GMU and update GPU bindings
+Date: Mon, 17 Dec 2018 15:01:46 -0700
+Message-ID: <20181217220146.GA18380@jcrouse-lnx.qualcomm.com>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <20181212211848.26768-2-jcrouse@codeaurora.org>
+ <20181217212010.GA22389@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20181212093645.14752-4-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <20181217212010.GA22389@bogus>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 12 Dec 2018 10:36:42 +0100, Miquel Raynal wrote:
-> The thermal IP can produce interrupts on overheat situation.
-> Describe them.
-> 
-> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-> ---
->  .../bindings/arm/marvell/ap806-system-controller.txt       | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-
-Reviewed-by: Rob Herring <robh@kernel.org>
+T24gTW9uLCBEZWMgMTcsIDIwMTggYXQgMDM6MjA6MTBQTSAtMDYwMCwgUm9iIEhlcnJpbmcgd3Jv
+dGU6Cj4gT24gV2VkLCBEZWMgMTIsIDIwMTggYXQgMDI6MTg6NDdQTSAtMDcwMCwgSm9yZGFuIENy
+b3VzZSB3cm90ZToKPiA+IFVwZGF0ZSB0aGUgR1BVIGJpbmRpbmdzIGFuZCBkb2N1bWVudCB0aGUg
+bmV3IGJpbmRpbmdzIGZvciB0aGUgR01VCj4gPiBkZXZpY2UgZm91bmQgd2l0aCBBZHJlbm8gYTZ4
+eCB0YXJnZXRzLgo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNl
+QGNvZGVhdXJvcmEub3JnPgo+ID4gLS0tCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvZGlz
+cGxheS9tc20vZ211LnR4dCAgIHwgNTYgKysrKysrKysrKysrKysrKysrKwo+ID4gIC4uLi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQgICB8IDQxICsrKysrKysrKysrKyst
+Cj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA5NCBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQo+
+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+ZGlzcGxheS9tc20vZ211LnR4dAo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dtdS50eHQgYi9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211LnR4dAo+ID4gbmV3IGZpbGUgbW9kZSAx
+MDA2NDQKPiA+IGluZGV4IDAwMDAwMDAwMDAwMC4uNjE1MmNiNTUxZDI5Cj4gPiAtLS0gL2Rldi9u
+dWxsCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9t
+c20vZ211LnR4dAo+ID4gQEAgLTAsMCArMSw1NiBAQAo+ID4gK1F1YWxjb21tIGFkcmVuby9zbmFw
+ZHJhZ29uIEdNVSAoR3JhcGhpY3MgbWFuYWdlbWVudCB1bml0KQo+ID4gKwo+ID4gK1RoZSBHTVUg
+aXMgYSBwcm9ncmFtbWFibGUgcG93ZXIgY29udHJvbGxlciBmb3IgdGhlIEdQVS4gdGhlIENQVSBj
+b250cm9scyB0aGUKPiA+ICtHTVUgd2hpY2ggaW4gdHVybiBoYW5kbGVzIHBvd2VyIGNvbnRyb2xz
+IGZvciB0aGUgR1BVLgo+ID4gKwo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6Cj4gPiArLSBjb21w
+YXRpYmxlOgo+ID4gKyAgKiAicWNvbSxhZHJlbm8tZ211Igo+IAo+IEkgcHJvYmFibHkgYXNrZWQg
+YmVmb3JlLCBidXQgdGhpcyBuZWVkcyBhIHNwZWNpZmljIGNvbXBhdGlibGUgdW5sZXNzIHlvdSAK
+PiBoYXZlIHJlbGlhYmxlIHZlcnNpb24vY2FwYWJpbGl0eSByZWdpc3RlcnMuIElmIHlvdSBkbywg
+cGxlYXNlIHN0YXRlIHRoYXQgCj4gaGVyZS4KCk1vc3Qgb2Ygb3VyIGRlY2lzaW9ucyBhcmUgbWFk
+ZSBiYXNlZCBvbiB0aGUgdHlwZSBvZiBHUFUgYXR0YWNoZWQgYnV0IGl0IHdvdWxkbid0Cmh1cnQg
+dG8gbWFrZSB0aGlzIGZ1dHVyZSBwcm9vZi4gIEknbGwgZG8gaXQuCgo+ID4gKy0gcmVnOiBQaHlz
+aWNhbCBiYXNlIGFkZHJlc3MgYW5kIGxlbmd0aCBvZiB0aGUgR01VIHJlZ2lzdGVycy4KPiA+ICst
+IHJlZy1uYW1lczogTWF0Y2hpbmcgbmFtZXMgZm9yIHRoZSByZWdpc3RlciByZWdpb25zCj4gPiAr
+ICAqICJnbXUiCj4gPiArICAqICJnbXVfcGRjIgo+ID4gKyAgKiAiZ211X3BkY19zZWciCj4gPiAr
+LSBpbnRlcnJ1cHRzOiBUaGUgaW50ZXJydXB0IHNpZ25hbHMgZnJvbSB0aGUgR01VLgo+ID4gKy0g
+aW50ZXJydXB0LW5hbWVzOiBNYXRjaGluZyBuYW1lcyBmb3IgdGhlIGludGVycnVwdHMKPiA+ICsg
+ICogImhmaSIKPiA+ICsgICogImdtdSIKPiA+ICstIGNsb2NrczogcGhhbmRsZXMgdG8gdGhlIGRl
+dmljZSBjbG9ja3MKPiA+ICstIGNsb2NrLW5hbWVzOiBNYXRjaGluZyBuYW1lcyBmb3IgdGhlIGNs
+b2Nrcwo+ID4gKyAgICogImdtdSIKPiA+ICsgICAqICJjeG8iCj4gPiArICAgKiAiYXhpIgo+ID4g
+KyAgICogIm1ub2MiCj4gPiArLSBwb3dlci1kb21haW5zOiBzaG91bGQgYmUgPCZjbG9ja19ncHVj
+YyBHUFVfQ1hfR0RTQz4KPiA+ICstIGlvbW11czogcGhhbmRsZSB0byB0aGUgYWRyZW5vIGlvbW11
+Cj4gPiArLSBvcGVyYXRpbmctcG9pbnRzLXYyOiBwaGFuZGxlIHRvIHRoZSBPUFAgb3BlcmF0aW5n
+IHBvaW50cwo+ID4gKwo+ID4gK0V4YW1wbGU6Cj4gPiArCj4gPiArLyB7Cj4gPiArCS4uLgo+ID4g
+Kwo+ID4gKwlnbXU6IGdtdUA1MDZhMDAwIHsKPiA+ICsJCWNvbXBhdGlibGU9InFjb20sYWRyZW5v
+LWdtdSI7Cj4gPiArCj4gPiArCQlyZWcgPSA8MHg1MDZhMDAwIDB4MzAwMDA+LAo+ID4gKwkJCTww
+eGIyODAwMDAgMHgxMDAwMD4sCj4gPiArCQkJPDB4YjQ4MDAwMCAweDEwMDAwPjsKPiA+ICsJCXJl
+Zy1uYW1lcyA9ICJnbXUiLCAiZ211X3BkYyIsICJnbXVfcGRjX3NlcSI7Cj4gPiArCj4gPiArCQlp
+bnRlcnJ1cHRzID0gPEdJQ19TUEkgMzA0IElSUV9UWVBFX0xFVkVMX0hJR0g+LAo+ID4gKwkJICAg
+ICA8R0lDX1NQSSAzMDUgSVJRX1RZUEVfTEVWRUxfSElHSD47Cj4gPiArCQlpbnRlcnJ1cHQtbmFt
+ZXMgPSAiaGZpIiwgImdtdSI7Cj4gPiArCj4gPiArCQljbG9ja3MgPSA8JmdwdWNjIEdQVV9DQ19D
+WF9HTVVfQ0xLPiwKPiA+ICsJCQk8JmdwdWNjIEdQVV9DQ19DWE9fQ0xLPiwKPiA+ICsJCQk8Jmdj
+YyBHQ0NfRERSU1NfR1BVX0FYSV9DTEs+LAo+ID4gKwkJCTwmZ2NjIEdDQ19HUFVfTUVNTk9DX0dG
+WF9DTEs+Owo+ID4gKwkJY2xvY2stbmFtZXMgPSAiZ211IiwgImN4byIsICJheGkiLCAibWVtbm9j
+IjsKPiA+ICsKPiA+ICsJCXBvd2VyLWRvbWFpbnMgPSA8JmdwdWNjIEdQVV9DWF9HRFNDPjsKPiA+
+ICsJCWlvbW11cyA9IDwmYWRyZW5vX3NtbXUgNT47Cj4gPiArCj4gPiArCQlvcGVyYXRpbmctcG9p
+bnRzLXYyID0gPCZnbXVfb3BwX3RhYmxlPjsKPiA+ICsJfTsKPiA+ICt9Owo+ID4gZGlmZiAtLWdp
+dCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0
+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQK
+PiA+IGluZGV4IDQzZmFjMGZlMDliYi4uOGQ5NDE1MTgwYzIyIDEwMDY0NAo+ID4gLS0tIGEvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQKPiA+ICsr
+KyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0
+Cj4gPiBAQCAtOCwxNCArOCwyMSBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ID4gICAgd2l0aCB0
+aGUgY2hpcC1pZC4KPiA+ICAtIHJlZzogUGh5c2ljYWwgYmFzZSBhZGRyZXNzIGFuZCBsZW5ndGgg
+b2YgdGhlIGNvbnRyb2xsZXIncyByZWdpc3RlcnMuCj4gPiAgLSBpbnRlcnJ1cHRzOiBUaGUgaW50
+ZXJydXB0IHNpZ25hbCBmcm9tIHRoZSBncHUuCj4gPiAtLSBjbG9ja3M6IGRldmljZSBjbG9ja3MK
+PiA+ICstIGludGVycnVwdC1uYW1lczogTGlzdCBvZiBuYW1lcyBmb3IgdGhlIGludGVycnVwdCBz
+aWduYWxzLiBUaGUgZm9sbG93aW5nIGNhbiBiZQo+ID4gKyAgcHJvdmlkZWQ6Cj4gPiArICAqICJr
+Z3NsXzNkMF9pcnEiCj4gCj4gSSdtIHByZXR0eSBzdXJlICdrZ3NsJyBpcyBub3QgYSBoYXJkd2Fy
+ZSB0aGluZy4gWW91IGRvbid0IG5lZWQgKi1uYW1lcyAKPiB3aGVuIHRoZXJlIGlzIG9ubHkgb25l
+IG9mIHNvbWV0aGluZy4KClRoaXMgaGFzIG1haW5seSBleGlzdGVkIGp1c3QgZm9yIGNvbXBhdGli
+aWxpdHkgaXNzdWVzLiAgV2UgZG8gb25seSBoYXZlIHRoZSBvbmUKaW50ZXJydXB0IHNvIGxldHMg
+emFwIHRoZSBkb3duc3RyZWFtIG5hbWUgYW5kIG5ldmVyIGxvb2sgYmFjay4KCj4gPiArLSBjbG9j
+a3M6IGRldmljZSBjbG9ja3MgKGlmIGFwcGxpY2FibGUpCj4gCj4gV2hhdCBkb2VzIHRoaXMgbWVh
+bj8gVGhleSBhcmUgbm93IG9wdGlvbmFsPyBJZiBzbywgbW92ZSB0byBhbiAiT3B0aW9uYWwiIAo+
+IHNlY3Rpb24uIExpa2V3aXNlIGZvciB0aGUgb3RoZXJzLgoKVGhleSBhcmUgaW5kZWVkIG9wdGlv
+bmFsIG5vdy4KCj4gUmVhbGx5LCB5b3Ugc2hvdWxkIGFkZCBhIG5ldyBjb21wYXRpYmxlIHNvIHdl
+IGNhbiB2YWxpZGF0ZSB3aGVuIGNsb2NrcyAKPiBub3QgYmVpbmcgcHJlc2VudCBpcyB2YWxpZCB2
+cy4gYW4gZXJyb3IgaW4gdGhlIERULgoKV2UgY291bGQgdXNlIHRoZSBHUFUgcmV2aXNpb24gZm9y
+IHRoYXQsIGJ1dCBvdXIgYXBwcm9hY2ggaGFzIGJlZW4gdG8gbWFrZSBhbGwKY2xvY2tzIG9wdGlv
+bmFsIGZvciBhbGwgdGFyZ2V0cy4gIEV2ZW50dWFsbHkgd2hlbiB3ZSBnbyB0byBwb3dlciB1cCBp
+ZiB0aGUgR1BVCmNvcmUgZW5kcyB1cCBuZWVkaW5nIGEgY2xvY2sgYW5kIGl0IGlzbid0IGRlZmlu
+ZWQgd2UgZmFpbCBwcm9iZSBhdCB0aGF0IHBvaW50LgpJJ20gbm90IHN1cmUgaWYgdGhhdCBpcyBy
+ZXNpbGllbnQgZW5vdWdoIGZvciBEVCBwdXJwb3NlcyB0aG91Z2guCgpKb3JkYW4KCi0tIApUaGUg
+UXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJv
+cmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFByb2plY3QKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxp
+bmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
