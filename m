@@ -1,63 +1,212 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Mon, 17 Dec 2018 12:36:47 +0530
-Message-ID: <20181217070647.xtvfgsixggua5yod@vireshk-i7>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181212211848.26768-3-jcrouse@codeaurora.org>
- <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
- <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v13 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Mon, 17 Dec 2018 13:26:04 +0530
+Message-ID: <CAHLCerNZawU4Qexi5gdYLHDY90HNO5Tox0EVPWyy2L2QtUOX0g@mail.gmail.com>
+References: <1544760624-12874-1-git-send-email-tdas@codeaurora.org> <1544760624-12874-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544760624-12874-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-K1JvYiArU3RlcGhlbiwKCk9uIDE0LTEyLTE4LCAwOTowNCwgRG91ZyBBbmRlcnNvbiB3cm90ZToK
-PiBIaSwKPiAKPiBPbiBUaHUsIERlYyAxMywgMjAxOCBhdCA4OjQxIFBNIFZpcmVzaCBLdW1hciA8
-dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+IHdyb3RlOgo+ID4KPiA+IE9uIDEyLTEyLTE4LCAxNDox
-OCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgIGdwdV9v
-cHBfdGFibGU6IG9wcC10YWJsZSB7Cj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIjsKPiA+Cj4gPiBJ
-IHRoaW5rIHlvdSBuZWVkIHRvIG1lbnRpb24gIm9wZXJhdGluZy1wb2ludHMtdjIiIGFzIHdlbGwg
-aGVyZS4KPiAKPiBBcmUgeW91IHNheWluZyB0aGUgYWJvdmUgc2hvdWxkIGJlOgo+ICAgY29tcGF0
-aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiLCAib3BlcmF0aW5nLXBvaW50
-cy12MiI7Cj4gCj4gSWYgc28gSSdtIG5vdCBzdXJlIEkgYWdyZWUuCgpXZWxsIEkgaGF2ZSBteSBk
-b3VidHMgYXMgd2VsbCBvbiB0aGlzLiBUaGlzIGlzIHdoZXJlIHRoZSBvcmRlcmluZyB3YXMgZGlz
-Y3Vzc2VkCmVhcmxpZXI6CgpodHRwczovL2xvcmUua2VybmVsLm9yZy9sa21sLzE1MjMyODk3OTg5
-Ny4xODAyNzYuMTU5NjM5MjU4Nzc0NDI2NTcxNThAc3dib3lkLm10di5jb3JwLmdvb2dsZS5jb20v
-CgpAUm9iL1N0ZXBoZW46IFNob3VsZCB0aGUgb3BwLXRhYmxlIG5vZGUgYWJvdmUgYWxzbyBoYXZl
-ICJvcGVyYXRpbmctcG9pbnRzLXYyIgpzdHJpbmcgaW4gdGhlIGNvbXBhdGlibGUgcHJvcGVydHkg
-PwoKPiBJdCdzIF9ub3RfIHJlYWxseSBjb21wYXRpYmxlIHdpdGggdGhlCj4gIm9wZXJhdGluZy1w
-b2ludHMtdjIiIGJpbmRpbmcuICBJZiB5b3UgaGFkIGEgZHJpdmVyIHRoYXQgaGFkIG5ldmVyCj4g
-aGVhcmQgb2YgIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCIgYW5kIGhhZCBvbmx5IGhl
-YXJkIG9mCj4gIm9wZXJhdGluZy1wb2ludHMtdjIiIGFuZCBpdCB0b29rIGEgbG9vayBhdCB0aGlz
-IG5vZGUgaXQgd291bGQgaGF2ZSBubwo+IGlkZWEgd2hhdCB0byBkbyB3aXRoIGl0LgoKV2VsbCBp
-dCB3aWxsIHBhcnNlIGV2ZXJ5dGhpbmcgYXBhcnQgZnJvbSB0aGUgcWNvbSxsZXZlbCB0aGluZywg
-c28gaXQgY2FuCmFjdHVhbGx5IHBhcnNlIHN0dWZmIGhlcmUuCgo+IEknbGwgYWxzbyBub3RlIHRo
-YXQgb3RoZXIgaW5zdGFuY2VzIHBvc3RlZCB0byB0aGUgbGlzdCBkb24ndCBsaXN0IGJvdGg6Cj4g
-Cj4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcyNTgwMS8gLSBSUE0gLyBS
-UE1IIFBEIGJpbmRpbmdzCj4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDcy
-NTc5My8gLSBSUE1IIFBEIGRldmljZSB0cmVlIGZvciBzZG04NDUKPiAKPiBUaGUgYmluZGluZ3Mg
-cGF0Y2ggYWxzbyBtYWtlcyBubyBtZW50aW9uIG9mIG5lZWRpbmcKPiAib3BlcmF0aW5nLXBvaW50
-cy12MiIuICBJIHRoaW5rIHRoZSBjb21tb24gY2FzZSB3aGVuIGEgZmFsbGJhY2sgaXMKPiByZXF1
-aXJlZCBpdCBpcyBleHBsaWNpdGx5IGNhbGxlZCBvdXQgaW4gdGhlIGJpbmRpbmdzOgo+IAo+IGh0
-dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA3MjU4MDMvIC0gcWNvbS1vcHAgYmlu
-ZGluZ3MKClN1cmUsIG1heWJlIEkgYW0gd3JvbmcgYnV0IGl0cyBiZXR0ZXIgdG8gZ2V0IHNvbWUg
-Y2xhcml0eSBvbiBpdCBmcm9tIFJvYi9TdGVwaGVuLgoKLS0gCnZpcmVzaApfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0
-CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
-cC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+On Fri, Dec 14, 2018 at 9:40 AM Taniya Das <tdas@codeaurora.org> wrote:
+>
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
+>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+
+Tested-by: Amit Kucheria <amit.kucheria@linaro.org>
+
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
+>  1 file changed, 172 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..33856947
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,172 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +       Usage:          required
+> +       Value type:     <string>
+> +       Definition:     must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +       Usage:          required
+> +       Value type:     <phandle> From common clock binding.
+> +       Definition:     clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +       Usage:          required
+> +       Value type:     <string> From common clock binding.
+> +       Definition:     must be "xo", "alternate".
+> +
+> +- reg
+> +       Usage:          required
+> +       Value type:     <prop-encoded-array>
+> +       Definition:     Addresses and sizes for the memory of the HW bases in
+> +                       each frequency domain.
+> +- reg-names
+> +       Usage:          Optional
+> +       Value type:     <string>
+> +       Definition:     Frequency domain name i.e.
+> +                       "freq-domain0", "freq-domain1".
+> +
+> +- #freq-domain-cells:
+> +       Usage:          required.
+> +       Definition:     Number of cells in a freqency domain specifier.
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+> +
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +       cpus {
+> +               #address-cells = <2>;
+> +               #size-cells = <0>;
+> +
+> +               CPU0: cpu@0 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x0>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_0>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_0: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                               L3_0: l3-cache {
+> +                                     compatible = "cache";
+> +                               };
+> +                       };
+> +               };
+> +
+> +               CPU1: cpu@100 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x100>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_100>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_100: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU2: cpu@200 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x200>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_200>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_200: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU3: cpu@300 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x300>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_300>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_300: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU4: cpu@400 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x400>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_400>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_400: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU5: cpu@500 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x500>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_500>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_500: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU6: cpu@600 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x600>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_600>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_600: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU7: cpu@700 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x700>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_700>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_700: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +       };
+> +
+> + soc {
+> +       cpufreq_hw: cpufreq@17d43000 {
+> +               compatible = "qcom,cpufreq-hw";
+> +               reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+> +               reg-names = "freq-domain0", "freq-domain1";
+> +
+> +               clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+> +               clock-names = "xo", "alternate";
+> +
+> +               #freq-domain-cells = <1>;
+> +       };
+> +}
+> --
+> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+> of the Code Aurora Forum, hosted by the  Linux Foundation.
+>
