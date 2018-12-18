@@ -1,92 +1,56 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] Revert "arm64: dts: marvell: add CPU Idle power state
- support on Armada 7K/8K"
-Date: Tue, 18 Dec 2018 17:11:44 +0000
-Message-ID: <20181218171144.GA17290@e107155-lin>
-References: <87k1kowf7i.fsf@bootlin.com> <20181205101035.GA31059@e107155-lin>
- <877eg6hiv9.fsf@bootlin.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: drm/msm/a6xx: Document
+ interconnect properties for GPU
+Date: Tue, 18 Dec 2018 11:22:01 -0600
+Message-ID: <20181218172201.GA16590@bogus>
+References: <20181214221640.25354-1-jcrouse@codeaurora.org>
+ <20181214221640.25354-2-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <877eg6hiv9.fsf@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, Sergey Matyukevich <geomatsi@gmail.com>, linux-pm@vger.kernel.org, orenbh <orenbh@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <20181214221640.25354-2-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 18, 2018 at 05:58:34PM +0100, Gregory CLEMENT wrote:
-> Hi Sudeep,
->
->  On mer., d=E9c. 05 2018, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> > On Wed, Dec 05, 2018 at 09:27:45AM +0100, Gregory CLEMENT wrote:
-> >> Hi Baruch,
-> >>
-> >>  On mer., d=E9c. 05 2018, Baruch Siach <baruch@tkos.co.il> wrote:
-> >>
-> >> > Hi Gregory,
-> >> >
-> >> > On Tue, Dec 04, 2018 at 06:48:43PM +0200, Baruch Siach wrote:
-> >> >> On Tue, Dec 04, 2018 at 05:21:25PM +0100, Gregory CLEMENT wrote:
-> >> >> >  On mar., d=E9c. 04 2018, Baruch Siach <baruch@tkos.co.il> wrote:
-> >> >> > > This reverts commit 8ed46368776b3bc93d74c1f8f2bfb9fd8a9ad805.
-> >> >> > >
-> >> >> > > This commit breaks boot on Armada 8K based systems. Reverting i=
-t makes
-> >> >> > > affected systems boot again.
-> >> >> > >
-> >> >> > > Reported-by: Sergey Matyukevich <geomatsi@gmail.com>
-> >> >> > > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> >> >> >
-> >> >> > I would like to know more about it because on the McBin I use the=
-re is
-> >> >> > no issue with 4.20-rc1.
-> >> >> >
-> >> >> > Do you observe this issue with the arm64 defconfig or do you have=
- some
-> >> >> > specific configuration option?
-> >> >>
-> >> >> I tested the attached defconfig on Clearfog GT-8K and on another cu=
-stom Armada
-> >> >> 8K based board.
-> >> >>
-> >> >> Tomorrow I'll test Macchiatobin with this config and the arm64 defc=
-onfig.
-> >> >
-> >> > I reproduced same issue on a Macchiatobin board with both this confi=
-g and the
-> >> > arm64 defconfig. The latter produced this splat:
-> >>
-> >> OK thanks, for this, I also got the confirmation by my colleagues. The
-> >> only difference I can think of, is the firmware, but the surprising
-> >> thing, is that I have an old firmware: 17.06.2 and that with a recent
-> >> one, it doesn't work.
-> >>
-> >> So I will apply it in mvebu/fixes.
-> >>
-> >
-> > Sorry if it's too late. But I would rather disable the states that are
-> > broken on old firmware and see if it's possible for bootloader or boot
-> > firmware loading DT can modify the status to "enabled" if it can detect
-> > the firmware version.
->
-> you mean adding status =3D "disable" on each idle-state subnode?
->
-Yes indeed. Keep it disabled by default and can enable it in bootloader
-if you can detect it that it should work with particular version of
-firmware. Just a thought especially if certain set of platforms support
-it while another not.
-
---
-Regards,
-Sudeep
+T24gRnJpLCBEZWMgMTQsIDIwMTggYXQgMDM6MTY6MzlQTSAtMDcwMCwgSm9yZGFuIENyb3VzZSB3
+cm90ZToKPiBBZGQgZG9jdW1lbnRhdGlvbiBmb3IgdGhlIGludGVyY29ubmVjdCBhbmQgaW50ZXJj
+b25uZWN0LW5hbWVzIGJpbmRpbmdzCj4gZm9yIHRoZSBHUFUgbm9kZSBhcyBkZXRhaWxlZCBieSBi
+aW5kaW5ncy9pbnRlcmNvbm5lY3QvaW50ZXJjb25uZWN0LnR4dC4KPiAKPiBTaWduZWQtb2ZmLWJ5
+OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+IC0tLQo+ICBEb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dCB8IDYgKysrKysr
+Cj4gIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQgYi9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dAo+IGluZGV4
+IDhkOTQxNTE4MGMyMi4uMTliNWFlNDU5ZmRiIDEwMDY0NAo+IC0tLSBhL0RvY3VtZW50YXRpb24v
+ZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0Cj4gKysrIGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQKPiBAQCAtMTksNiAr
+MTksOSBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ICAgICogIm1lbV9pZmFjZSIKPiAgLSBpb21t
+dXM6IG9wdGlvbmFsIHBoYW5kbGUgdG8gYW4gYWRyZW5vIGlvbW11IGluc3RhbmNlCj4gIC0gb3Bl
+cmF0aW5nLXBvaW50cy12Mjogb3B0aW9uYWwgcGhhbmRsZSB0byB0aGUgT1BQIG9wZXJhdGluZyBw
+b2ludHMKPiArLSBpbnRlcmNvbm5lY3Q6IG9wdGlvbmFsIHBoYW5kbGUgdG8gYSBpbnRlcmNvbm5l
+Y3QgcHJvdmlkZXIuICBTZWUKPiArICAuLi9pbnRlcmNvbm5lY3QvaW50ZXJjb25uZWN0LnR4dCBm
+b3IgZGV0YWlscy4KPiArLSBpbnRlcmNvbm5lY3QtbmFtZXM6IE5hbWUgc3RyaW5nIGZvciB0aGUg
+aW50ZXJjb25uZWN0cy4KPiAgLSBxY29tLGdtdTogRm9yIGE2eHggYW5kIG5ld2VyIHRhcmdldHMg
+YSBwaGFuZGxlIHRvIHRoZSBHTVUgZGV2aWNlIHRoYXQgd2lsbAo+ICAgIGNvbnRyb2wgdGhlIHBv
+d2VyIGZvciB0aGUgR1BVCj4gIAo+IEBAIC02OCw2ICs3MSw5IEBAIEV4YW1wbGUgYTZ4eCAod2l0
+aCBHTVUpOgo+ICAKPiAgCQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVfb3BwX3RhYmxlPjsK
+PiAgCj4gKwkJaW50ZXJjb25uZWN0cyA9IDwmcnNjX2hsb3MgTUFTVEVSX0dGWDNEICZyc2NfaGxv
+cyBTTEFWRV9FQkkxPjsKPiArCQlpbnRlcmNvbm5lY3QtbmFtZXMgPSAiZ2Z4LW1lbSI7CgpUaGVy
+ZSdzIG5vdCByZWFsbHkgYW55IHBvaW50IHRvIGhhdmluZyAqLW5hbWVzIHdoZW4gdGhlcmUgaXMg
+b25seSAxIAp2YWx1ZS4KCj4gKwo+ICAJCXFjb20sZ211ID0gPCZnbXU+Owo+ICAJfTsKPiAgfTsK
+PiAtLSAKPiAyLjE4LjAKPiAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0
+b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJl
+ZWRyZW5vCg==
