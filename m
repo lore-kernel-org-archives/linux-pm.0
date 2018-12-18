@@ -1,95 +1,63 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RFC/RFT 00/10] i2c: move handling of suspended adapters to the
- core
-Date: Tue, 18 Dec 2018 21:17:25 +0100
-Message-ID: <20181218201725.2uqfmsethlkasdvc@ninjato>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
- <2094a0d4-733f-7f74-abd2-bdb28edd0f80@redhat.com>
- <20181211234102.GA6701@kunai>
- <e8c68ef5-5085-e304-4959-82c4959f4511@redhat.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: drm/msm/a6xx: Document
+ interconnect properties for GPU
+Date: Tue, 18 Dec 2018 15:01:05 -0600
+Message-ID: <CAL_JsqL+8g4uCH+YYNJnACc4mJkK+Ogn0pHLva+6XPynWTrqLw@mail.gmail.com>
+References: <20181214221640.25354-1-jcrouse@codeaurora.org>
+ <20181214221640.25354-2-jcrouse@codeaurora.org> <20181218172201.GA16590@bogus>
+ <20181218180747.GD18380@jcrouse-lnx.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="xjz6c4seersbpqak"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e8c68ef5-5085-e304-4959-82c4959f4511@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181218180747.GD18380-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---xjz6c4seersbpqak
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hans, all,
-
-> > ... this. I don't know what these flags do (and reading SMART in there
-> > gives me more a 'uh-oh' feeling)
->=20
-> On x86 the lines between runtime suspend and system-suspend are blurring
-> with technologies like "connected standby" and in general devices moving
-> to suspend2idle as system-suspend state, I guess this also applies to
-> modern smartphone platforms but I'm not following those closely.
-
-I'd guess so, too. I am not aware of any existing mechanism for that at
-the moment, though. If somebody does, please enlighten us.
-
-> The "SMART" bit is really not all that smart, SMART_PREPARE means that
-> the drivers pm prepare callback will return positive non 0 (e.g. 1) to
-> indicate that the device may not be kept in its runtime suspended
-> state when transitioning to system-suspend, otoh when the prepare
-> callback returns 0 and the SMART_PREPARE flag is set then *all* suspend/
-> resume handling can be skipped during a system suspend.
-
-Thanks for the detailed explanation! Much appreciated.
-
-> > Looking at the open coded version you did for the designware driver, I
-> > wonder now if it is better to just leave it at driver level? Need to
-> > sleep over it, though.
->=20
-> I myself was thinking in the same direction (leave the entire suspended
-> check at the driver level).
-
-So, I was giving it some more thoughts, and my feeling is to still apply
-this series with the review comments addressed. Plus, clearly mark the
-new 'is_suspended' flag and the helper function as *optional* to allow
-for driver specific solutions as well. The then-to-be-added
-documentation would state that it is mostly useful for seperated system
-suspend and runtime suspend. For more complex situations, custom
-solutions are accepted, too. Which means your patch for designware
-should be added to the series.
-
-My take is there are enough drivers out there already which can benefit
-=66rom this new helper. If it turns out to be useless somewhen in the
-future, we can still remove it.
-
-What do you (and all others, of course) think?
-
-Thanks,
-
-   Wolfram
-
---xjz6c4seersbpqak
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwZVdUACgkQFA3kzBSg
-KbZgCg/+Mi5R4bOlSvy+L7fIs79nM05v0QMNCbEAXOZ3EmZKkt9sHHiEeGzFdzKY
-Iiawm2BGLUW+sVrCoxsnav0k+hSl+5TNlKd1C72V3inzemIbkEQTOiVbDPmp7fTV
-0UE5WO6CUfZHirCk3XnA8xNSn8YxfHMKUOq2GuMUZEQcXyIk0mwlO84WPkWXjLTu
-pHNovX+74FM6iGL3IId6KQI6773u79o8d4OA5R3pCOzPD1O7OtWAJjcP2oyD/Ge7
-+45+F1eIH5GupW0zn+ByR4tU2XiDFw7uUX/6WYvPPmqPbpz/6l5Ujs1pGC9nYyPx
-S8TuIAiTU8CEDVBLF1IN2Kh6+TEo0iwXpKL821lCL4lwb0ahTq/NjcyqZR0yeyYK
-3bCaupT4sScf/LACYeHLPCSD3gNzK5WnaddFWnGB8YqAmQeqG1bDB+5wYxV5+FjB
-V8YiuuLm+kwF4jAMZITO+iDJIHeZ5HF62JeCE0lFCf21AqlWS2KoYfcJgjln3WHU
-Lk2CFEQidCTk2Vjb2U1AHBjGiAyzhle/fop8L/gMmXoCv9J+b5Jz4bIgJD+76d/A
-apkIbW9HRg90t+WdzecpdU+R9qJMqeyxeKCTRga7PPO+buBJszke+8ozXvtcN+Dw
-l3nKZh+uXk+nhF1T1mUW9QJ88NuCSX0SOxthrlS85oWRoiko0qk=
-=SIgX
------END PGP SIGNATURE-----
-
---xjz6c4seersbpqak--
+T24gVHVlLCBEZWMgMTgsIDIwMTggYXQgMTI6MDcgUE0gSm9yZGFuIENyb3VzZSA8amNyb3VzZUBj
+b2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4KPiBPbiBUdWUsIERlYyAxOCwgMjAxOCBhdCAxMToyMjow
+MUFNIC0wNjAwLCBSb2IgSGVycmluZyB3cm90ZToKPiA+IE9uIEZyaSwgRGVjIDE0LCAyMDE4IGF0
+IDAzOjE2OjM5UE0gLTA3MDAsIEpvcmRhbiBDcm91c2Ugd3JvdGU6Cj4gPiA+IEFkZCBkb2N1bWVu
+dGF0aW9uIGZvciB0aGUgaW50ZXJjb25uZWN0IGFuZCBpbnRlcmNvbm5lY3QtbmFtZXMgYmluZGlu
+Z3MKPiA+ID4gZm9yIHRoZSBHUFUgbm9kZSBhcyBkZXRhaWxlZCBieSBiaW5kaW5ncy9pbnRlcmNv
+bm5lY3QvaW50ZXJjb25uZWN0LnR4dC4KPiA+ID4KPiA+ID4gU2lnbmVkLW9mZi1ieTogSm9yZGFu
+IENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiA+ID4gLS0tCj4gPiA+ICBEb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4dCB8IDYgKysrKysr
+Cj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNiBpbnNlcnRpb25zKCspCj4gPiA+Cj4gPiA+IGRpZmYg
+LS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1
+LnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9ncHUu
+dHh0Cj4gPiA+IGluZGV4IDhkOTQxNTE4MGMyMi4uMTliNWFlNDU5ZmRiIDEwMDY0NAo+ID4gPiAt
+LS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ3B1LnR4
+dAo+ID4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9t
+c20vZ3B1LnR4dAo+ID4gPiBAQCAtMTksNiArMTksOSBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+
+ID4gPiAgICAqICJtZW1faWZhY2UiCj4gPiA+ICAtIGlvbW11czogb3B0aW9uYWwgcGhhbmRsZSB0
+byBhbiBhZHJlbm8gaW9tbXUgaW5zdGFuY2UKPiA+ID4gIC0gb3BlcmF0aW5nLXBvaW50cy12Mjog
+b3B0aW9uYWwgcGhhbmRsZSB0byB0aGUgT1BQIG9wZXJhdGluZyBwb2ludHMKPiA+ID4gKy0gaW50
+ZXJjb25uZWN0OiBvcHRpb25hbCBwaGFuZGxlIHRvIGEgaW50ZXJjb25uZWN0IHByb3ZpZGVyLiAg
+U2VlCj4gPiA+ICsgIC4uL2ludGVyY29ubmVjdC9pbnRlcmNvbm5lY3QudHh0IGZvciBkZXRhaWxz
+Lgo+ID4gPiArLSBpbnRlcmNvbm5lY3QtbmFtZXM6IE5hbWUgc3RyaW5nIGZvciB0aGUgaW50ZXJj
+b25uZWN0cy4KPiA+ID4gIC0gcWNvbSxnbXU6IEZvciBhNnh4IGFuZCBuZXdlciB0YXJnZXRzIGEg
+cGhhbmRsZSB0byB0aGUgR01VIGRldmljZSB0aGF0IHdpbGwKPiA+ID4gICAgY29udHJvbCB0aGUg
+cG93ZXIgZm9yIHRoZSBHUFUKPiA+ID4KPiA+ID4gQEAgLTY4LDYgKzcxLDkgQEAgRXhhbXBsZSBh
+Nnh4ICh3aXRoIEdNVSk6Cj4gPiA+Cj4gPiA+ICAgICAgICAgICAgIG9wZXJhdGluZy1wb2ludHMt
+djIgPSA8JmdwdV9vcHBfdGFibGU+Owo+ID4gPgo+ID4gPiArICAgICAgICAgICBpbnRlcmNvbm5l
+Y3RzID0gPCZyc2NfaGxvcyBNQVNURVJfR0ZYM0QgJnJzY19obG9zIFNMQVZFX0VCSTE+Owo+ID4g
+PiArICAgICAgICAgICBpbnRlcmNvbm5lY3QtbmFtZXMgPSAiZ2Z4LW1lbSI7Cj4gPgo+ID4gVGhl
+cmUncyBub3QgcmVhbGx5IGFueSBwb2ludCB0byBoYXZpbmcgKi1uYW1lcyB3aGVuIHRoZXJlIGlz
+IG9ubHkgMQo+ID4gdmFsdWUuCj4KPiBGb3IgdGhlIG1vbWVudCB3ZSBjYW4gb25seSBsb29rIHVw
+IHRoZSBwYXRoIGZyb20gdGhlIERUIGJ5IG5hbWUuIEkgZ3Vlc3Mgd2UKPiBjb3VsZCBhZGQgYW4g
+bG9va3VwIGJ5IGluZGV4IGJ1dCBJJ20gbm90IHN1cmUgaWYgdGhhdCBoYWQgYWxyZWFkeSBiZWVu
+Cj4gY29uc2lkZXJlZCBhbmQgcmVqZWN0ZWQuCgpZb3UgZG9uJ3QgaGF2ZSB0byBzdXBwb3J0IGxv
+b2t1cCBieSBpbmRleCwganVzdCBzdXBwb3J0IGEgTlVMTCBuYW1lLgoKUm9iCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxp
+c3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
+dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
