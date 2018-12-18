@@ -1,48 +1,37 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 11/20] cpufreq: tegra124: do not handle the CPU rail
-Date: Tue, 18 Dec 2018 10:37:27 +0100
-Message-ID: <CAJZ5v0h0n2AXERvXFX_dQWMUw_89ap_LgB6dUK0ThJgZ+unkkQ@mail.gmail.com>
-References: <20181218091232.23532-1-josephl@nvidia.com>
- <20181218091232.23532-12-josephl@nvidia.com>
+Subject: Re: [RFT][PATCH 0/2] ACPI / PM: Avoid spurious wakeups from
+ non-wakeup GPEs in suspend-to-idle
+Date: Tue, 18 Dec 2018 10:50:07 +0100
+Message-ID: <CAJZ5v0hCGoOB36sGDo1cfLN4tHbwmK+YGresjPAFPyXKUdbP=g@mail.gmail.com>
+References: <4307523.O7RPX2KSmk@aspire.rjw.lan> <20181217165025.GA2469@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181218091232.23532-12-josephl@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: josephl@nvidia.com
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, linux-clk <linux-clk@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181217165025.GA2469@lahna.fi.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 18, 2018 at 10:13 AM Joseph Lo <josephl@nvidia.com> wrote:
+On Mon, Dec 17, 2018 at 5:50 PM Mika Westerberg
+<mika.westerberg@linux.intel.com> wrote:
 >
-> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
-> rail. So this driver shouldn't handle for the CPU clock switching from
-> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
-> which handle the frequency/voltage scaling in the background.
+> On Mon, Dec 17, 2018 at 12:19:27PM +0100, Rafael J. Wysocki wrote:
+> > Hi All,
 >
-> This patch removes the driver dependency of the CPU rail, as well as not
-> allow it to be built as a module and remove the removal function. So it
-> can keep working on DFLL clock.
+> Hi Rafael,
 >
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Joseph Lo <josephl@nvidia.com>
-> Acked-by: Jon Hunter <jonathanh@nvidia.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > It turns out that on some systems non-wakeup GPEs cause trouble (see the
+> > changelog of patch [1/2]), so they better should be disabled during
+> > suspend-to-idle (at least before entering the main loop of it).  This
+> > is done in patch [1/2].
+> >
+> > Patch [2/2] is just a folllow-up.
+>
+> I tested both patches on Lenovo Carbon X1 6th generation and one new
+> Dell system. Both default to s2idle. I did not see any issues around
+> s2idle with the two patches applied.
+>
+> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-I'm assuming that this entire series will go in via arm-soc, so I
-won't be picking up the cpufreq patches from it.
-
-Please let me know if that is not what you want.
-
-Thanks,
-Rafael
+Thank you!
