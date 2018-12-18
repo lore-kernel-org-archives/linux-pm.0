@@ -1,89 +1,120 @@
-From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Tue, 18 Dec 2018 11:05:31 -0800
-Message-ID: <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181212211848.26768-3-jcrouse@codeaurora.org>
- <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
- <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
- <20181217070647.xtvfgsixggua5yod@vireshk-i7>
- <CAD=FV=WKfKyZe6sc4drfa9kLQVbG1b9nCe6qbPmUPQGNEKAh=Q@mail.gmail.com>
- <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v12 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Tue, 18 Dec 2018 11:13:01 -0800
+Message-ID: <154516038159.238328.2917665370794230521@swboyd.mtv.corp.google.com>
+References: <1544687394-331-1-git-send-email-tdas@codeaurora.org> <1544687394-331-3-git-send-email-tdas@codeaurora.org> <154469510700.19322.7762676027024031719@swboyd.mtv.corp.google.com> <20181213100506.sy3haqjbxtmkthvt@vireshk-i7> <154469596755.19322.16319349046735344084@swboyd.mtv.corp.google.com> <20181218054545.k77jh5lxvmj2zott@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <154515840025.238328.5075439774176447808-n1Xw8LXHxjTHt/MElyovVYaSKrA+ACpX0E9HWUfgJXw@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181218054545.k77jh5lxvmj2zott@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBUdWUsIERlYyAxOCwgMjAxOCBhdCAxMDo0MCBBTSBTdGVwaGVuIEJveWQgPHNib3lk
-QGtlcm5lbC5vcmc+IHdyb3RlOgo+Cj4gUXVvdGluZyBEb3VnIEFuZGVyc29uICgyMDE4LTEyLTE3
-IDE2OjM0OjMxKQo+ID4gSGksCj4gPgo+ID4gT24gU3VuLCBEZWMgMTYsIDIwMTggYXQgMTE6MDYg
-UE0gVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cj4gPiA+Cj4g
-PiA+ICtSb2IgK1N0ZXBoZW4sCj4gPiA+Cj4gPiA+IE9uIDE0LTEyLTE4LCAwOTowNCwgRG91ZyBB
-bmRlcnNvbiB3cm90ZToKPiA+ID4gPiBIaSwKPiA+ID4gPgo+ID4gPiA+IE9uIFRodSwgRGVjIDEz
-LCAyMDE4IGF0IDg6NDEgUE0gVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4g
-d3JvdGU6Cj4gPiA+ID4gPgo+ID4gPiA+ID4gT24gMTItMTItMTgsIDE0OjE4LCBKb3JkYW4gQ3Jv
-dXNlIHdyb3RlOgo+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAgICAgICAgZ3B1X29wcF90YWJs
-ZTogb3BwLXRhYmxlIHsKPiA+ID4gPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-Y29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiOwo+ID4gPiA+ID4K
-PiA+ID4gPiA+IEkgdGhpbmsgeW91IG5lZWQgdG8gbWVudGlvbiAib3BlcmF0aW5nLXBvaW50cy12
-MiIgYXMgd2VsbCBoZXJlLgo+ID4gPiA+Cj4gPiA+ID4gQXJlIHlvdSBzYXlpbmcgdGhlIGFib3Zl
-IHNob3VsZCBiZToKPiA+ID4gPiAgIGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1x
-Y29tLWxldmVsIiwgIm9wZXJhdGluZy1wb2ludHMtdjIiOwo+ID4gPiA+Cj4gPiA+ID4gSWYgc28g
-SSdtIG5vdCBzdXJlIEkgYWdyZWUuCj4gPiA+Cj4gPiA+IFdlbGwgSSBoYXZlIG15IGRvdWJ0cyBh
-cyB3ZWxsIG9uIHRoaXMuIFRoaXMgaXMgd2hlcmUgdGhlIG9yZGVyaW5nIHdhcyBkaXNjdXNzZWQK
-PiA+ID4gZWFybGllcjoKPiA+ID4KPiA+ID4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGttbC8x
-NTIzMjg5Nzk4OTcuMTgwMjc2LjE1OTYzOTI1ODc3NDQyNjU3MTU4QHN3Ym95ZC5tdHYuY29ycC5n
-b29nbGUuY29tLwo+ID4gPgo+ID4gPiBAUm9iL1N0ZXBoZW46IFNob3VsZCB0aGUgb3BwLXRhYmxl
-IG5vZGUgYWJvdmUgYWxzbyBoYXZlICJvcGVyYXRpbmctcG9pbnRzLXYyIgo+ID4gPiBzdHJpbmcg
-aW4gdGhlIGNvbXBhdGlibGUgcHJvcGVydHkgPwo+ID4gPgo+ID4gPiA+IEl0J3MgX25vdF8gcmVh
-bGx5IGNvbXBhdGlibGUgd2l0aCB0aGUKPiA+ID4gPiAib3BlcmF0aW5nLXBvaW50cy12MiIgYmlu
-ZGluZy4gIElmIHlvdSBoYWQgYSBkcml2ZXIgdGhhdCBoYWQgbmV2ZXIKPiA+ID4gPiBoZWFyZCBv
-ZiAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIiBhbmQgaGFkIG9ubHkgaGVhcmQgb2YK
-PiA+ID4gPiAib3BlcmF0aW5nLXBvaW50cy12MiIgYW5kIGl0IHRvb2sgYSBsb29rIGF0IHRoaXMg
-bm9kZSBpdCB3b3VsZCBoYXZlIG5vCj4gPiA+ID4gaWRlYSB3aGF0IHRvIGRvIHdpdGggaXQuCj4g
-PiA+Cj4gPiA+IFdlbGwgaXQgd2lsbCBwYXJzZSBldmVyeXRoaW5nIGFwYXJ0IGZyb20gdGhlIHFj
-b20sbGV2ZWwgdGhpbmcsIHNvIGl0IGNhbgo+ID4gPiBhY3R1YWxseSBwYXJzZSBzdHVmZiBoZXJl
-Lgo+ID4gPgo+ID4gPiA+IEknbGwgYWxzbyBub3RlIHRoYXQgb3RoZXIgaW5zdGFuY2VzIHBvc3Rl
-ZCB0byB0aGUgbGlzdCBkb24ndCBsaXN0IGJvdGg6Cj4gPiA+ID4KPiA+ID4gPiBodHRwczovL3Bh
-dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNzI1ODAxLyAtIFJQTSAvIFJQTUggUEQgYmluZGlu
-Z3MKPiA+ID4gPiBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNzI1NzkzLyAt
-IFJQTUggUEQgZGV2aWNlIHRyZWUgZm9yIHNkbTg0NQo+ID4gPiA+Cj4gPiA+ID4gVGhlIGJpbmRp
-bmdzIHBhdGNoIGFsc28gbWFrZXMgbm8gbWVudGlvbiBvZiBuZWVkaW5nCj4gPiA+ID4gIm9wZXJh
-dGluZy1wb2ludHMtdjIiLiAgSSB0aGluayB0aGUgY29tbW9uIGNhc2Ugd2hlbiBhIGZhbGxiYWNr
-IGlzCj4gPiA+ID4gcmVxdWlyZWQgaXQgaXMgZXhwbGljaXRseSBjYWxsZWQgb3V0IGluIHRoZSBi
-aW5kaW5nczoKPiA+ID4gPgo+ID4gPiA+IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0
-Y2gvMTA3MjU4MDMvIC0gcWNvbS1vcHAgYmluZGluZ3MKPiA+ID4KPiA+ID4gU3VyZSwgbWF5YmUg
-SSBhbSB3cm9uZyBidXQgaXRzIGJldHRlciB0byBnZXQgc29tZSBjbGFyaXR5IG9uIGl0IGZyb20g
-Um9iL1N0ZXBoZW4uCj4gPgo+ID4gSW4gY2FzZSBpdCBoZWxwczoKPiA+Cj4gPiBodHRwczovL2xr
-bWwua2VybmVsLm9yZy9yLzIwMTgxMjE3MjEwODQ5LkdBMTU0OTBAYm9ndXMKPiA+Cj4gPiAuLi5z
-aG93cyBSb2IgZ2l2aW5nIGEgUmV2aWV3ZWQtYnkgd2l0aCBqdXN0Cj4gPgo+ID4gICBjb21wYXRp
-YmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7Cj4gPgo+ID4gLi4uYW5kIG5v
-dDoKPiA+Cj4gPiAgIGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVs
-IiwgIm9wZXJhdGluZy1wb2ludHMtdjIiOwo+ID4KPgo+IEkgZG9uJ3Qgc2VlIGEgcHJvYmxlbSBp
-ZiBib3RoIGNvbXBhdGlibGUgc3RyaW5ncyBhcmUgdGhlcmUuIERvZXMgdGhhdAo+IGNoYW5nZSBh
-bnl0aGluZz8gSSBzdXBwb3NlIHRoZSBwbGF0Zm9ybSBidXMgcG9wdWxhdGUgY29kZSB3b24ndCBj
-cmVhdGUgYQo+IGRldmljZSBmb3IgdGhlIHN1Ym5vZGUgaWYgaXQgaGFzICdvcGVyYXRpbmctcG9p
-bnRzLXYyJywgc28gbWF5YmUgdGhlCj4gZmFsbGJhY2sgY29tcGF0aWJsZSBzdHJpbmcgc2hvdWxk
-IGJlIHRoZXJlPyBBbmQgdGhlbiB0aGUgZ2VuZXJpYyBPUFAKPiBjb2RlIGNhbiBwYXJzZSBvdXQg
-dGhlIGZyZXF1ZW5jeSBhdCBsZWFzdCB3aXRob3V0IGhhdmluZyB0byBrbm93IHRoYXQKPiBpdCdz
-IGEgcWNvbSBzcGVjaWZpYyBPUFAgdGFibGUuCgpPSywgaXQncyBmaW5lIHdpdGggbWUgdG8gaGF2
-ZSB0aGUgZmFsbGJhY2ssIGJ1dCBpZiB3ZSBkbyB3ZSBzaG91bGQgYmUKY29uc2lzdGVudCBhYm91
-dCBpdCBhbmQgbWFrZSBzdXJlIGl0J3MgaW4gYWxsIHRoZSBiaW5kaW5ncyBhbmQgZGV2aWNlCnRy
-ZWUgZmlsZXMuLi4KCi1Eb3VnCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
-ZWVkcmVubwo=
+Quoting Viresh Kumar (2018-12-17 21:45:45)
+> Hi Stephen,
+>=20
+> On 13-12-18, 02:12, Stephen Boyd wrote:
+> > Quoting Viresh Kumar (2018-12-13 02:05:06)
+> > > On 13-12-18, 01:58, Stephen Boyd wrote:
+> > > > BTW, Viresh, I see a lockdep splat when cpufreq_init returns an err=
+or
+> > > > upon bringing the policy online the second time. I guess cpufreq_st=
+ats
+> > > > aren't able to be freed from there because they take locks in diffe=
+rent
+> > > > order vs. the normal path?
+> > >=20
+> > > Please share the lockdep report and the steps to reproduce it. I will
+> > > see if I can simulate the failure forcefully..
+> > >=20
+> >=20
+> > It's on a v4.19 kernel with this cpufreq hw driver backported to it. I
+> > think all it takes is to return an error the second time the policy is
+> > initialized when cpufreq_online() calls into the cpufreq driver.
+> >=20
+> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
+> >  WARNING: possible circular locking dependency detected
+> >  4.19.8 #61 Tainted: G        W
+> >  ------------------------------------------------------
+> >  cpuhp/5/36 is trying to acquire lock:
+> >  000000003e901e8a (kn->count#326){++++}, at: kernfs_remove_by_name_ns+0=
+x44/0x80
+> >=20
+> >  but task is already holding lock:
+> >  00000000dd7f52c3 (&policy->rwsem){++++}, at: cpufreq_policy_free+0x17c=
+/0x1cc
+> >=20
+> >  which lock already depends on the new lock.
+> >=20
+> >=20
+> >  the existing dependency chain (in reverse order) is:
+> >=20
+> >  -> #1 (&policy->rwsem){++++}:
+> >         down_read+0x50/0xcc
+> >         show+0x30/0x78
+> >         sysfs_kf_seq_show+0x17c/0x25c
+> >         kernfs_seq_show+0xb4/0xf8
+> >         seq_read+0x4a8/0x8f0
+> >         kernfs_fop_read+0xe0/0x360
+> >         __vfs_read+0x80/0x328
+> >         vfs_read+0xd0/0x1d4
+> >         ksys_read+0x88/0x118
+> >         __arm64_sys_read+0x4c/0x5c
+> >         el0_svc_common+0x124/0x1c4
+> >         el0_svc_compat_handler+0x64/0x8c
+> >         el0_svc_compat+0x8/0x18
+>=20
+> I failed to reproduce it over linux/next.
+>=20
+> I had the following changes over linux/next:
+> https://pastebin.ubuntu.com/p/zkVm77PGdY/
+
+I don't see any failure returned from cpufreq_dt's cpufreq_init()
+function. Maybe put a static int counter =3D 0 and then fail
+cpufreq_init() the second time that it's called for the same policy
+pointer? I have a system with two policies, so I made it fail and return
+-EINVAL when the counter =3D=3D 2 and I see the lockdep splat.
+
+>=20
+> I also did savedefconfig to show what all I changed in it. I faked multip=
+le
+> clusters on my hikey960 board, which is not big little..
+>=20
+> And here is the command list from history that I ran after boot.
+>=20
+>   501  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   502  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   503  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   504  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   505  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   506  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   507  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   508  echo 0 > /sys/devices/system/cpu/cpu4/online=20
+>   509  echo 0 > /sys/devices/system/cpu/cpu5/online=20
+>   510  echo 0 > /sys/devices/system/cpu/cpu6/online=20
+>   511  echo 0 > /sys/devices/system/cpu/cpu7/online=20
+>   512  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   513  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   514  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   515  echo 1 > /sys/devices/system/cpu/cpu4/online=20
+>   516  grep . /sys/devices/system/cpu/cpufreq/*/*
+>   517  grep . /sys/devices/system/cpu/cpufreq/*/*/*
+>   518  dmesg=20
+>=20
+
+I did the following:
+
+  grep . /sys/devices/system/cpu/cpufreq/*/* >/dev/null
+  echo 0 > /sys/devices/system/cpu/cpu4/online=20
+  echo 0 > /sys/devices/system/cpu/cpu5/online=20
+  echo 0 > /sys/devices/system/cpu/cpu6/online=20
+  echo 0 > /sys/devices/system/cpu/cpu7/online=20
+  echo 1 > /sys/devices/system/cpu/cpu4/online=20
+  dmesg
+
+And boom, lockdep splat.
