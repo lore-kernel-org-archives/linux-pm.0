@@ -1,54 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
 Subject: Re: [PATCH v2 3/3] drm/i915: Move to new PM core fields
-Date: Tue, 18 Dec 2018 10:57:12 +0100
-Message-ID: <CAJZ5v0i0FMw90vBH9L9EirX-mfFzh4Fb0npE8Y7rHbFn0JpZyw@mail.gmail.com>
+Date: Tue, 18 Dec 2018 10:58:10 +0100
+Message-ID: <CAKfTPtCNYz6a5rqvpGGGNgsAw_=HdqtpEOfXjn309saNUBjbrw@mail.gmail.com>
 References: <1544797347-20601-1-git-send-email-vincent.guittot@linaro.org>
  <1544797347-20601-4-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFrvrN6+sVGc1sM+hmQo=JR=8FyAz_YRK9DzEQN2jOVX6w@mail.gmail.com> <CAKfTPtBbZgZtU-qZhh-nKoC=cNj=ZT_LTn=cTX4V10MCZhDFEg@mail.gmail.com>
+ <CAPDyKFrvrN6+sVGc1sM+hmQo=JR=8FyAz_YRK9DzEQN2jOVX6w@mail.gmail.com>
+ <CAKfTPtBbZgZtU-qZhh-nKoC=cNj=ZT_LTn=cTX4V10MCZhDFEg@mail.gmail.com>
+ <CAJZ5v0i0FMw90vBH9L9EirX-mfFzh4Fb0npE8Y7rHbFn0JpZyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtBbZgZtU-qZhh-nKoC=cNj=ZT_LTn=cTX4V10MCZhDFEg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAJZ5v0i0FMw90vBH9L9EirX-mfFzh4Fb0npE8Y7rHbFn0JpZyw@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel@lists.freedesktop.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, airlied@linux.ie, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 17, 2018 at 3:22 PM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
-> On Fri, 14 Dec 2018 at 15:36, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Fri, 14 Dec 2018 at 15:22, Vincent Guittot
-> > <vincent.guittot@linaro.org> wrote:
-> > >
-> > > With jiffies been replaced by raw ns in PM core accounting, 915 driver is
-> > > updated to use this new time infrastructure.
-> > >
-> > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > > ---
-> > >  drivers/gpu/drm/i915/i915_pmu.c | 12 ++++++------
-> > >  drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
-> > >  2 files changed, 8 insertions(+), 8 deletions(-)
-> > >
-> > > diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
-> > > index d6c8f8f..cf6437d 100644
-> > > --- a/drivers/gpu/drm/i915/i915_pmu.c
-> > > +++ b/drivers/gpu/drm/i915/i915_pmu.c
-> > > @@ -493,14 +493,14 @@ static u64 get_rc6(struct drm_i915_private *i915)
-> > >                  */
-> > >                 if (kdev->power.runtime_status == RPM_SUSPENDED) {
-> > >                         if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
-> > > -                               i915->pmu.suspended_jiffies_last =
-> > > -                                                 kdev->power.suspended_jiffies;
-> > > +                               i915->pmu.suspended_time_last =
-> > > +                                       kdev->power.suspended_time;
-> > >
-> >
-> > Huh, so patch 2 introduces a complier error because of removing the
-> > old fields. We can't have that.
->
-> I agree
-> The patch was mainly to raise discussion
-
-OK, so patch [1/3] from this series should be applicable regardless, right?
+T24gVHVlLCAxOCBEZWMgMjAxOCBhdCAxMDo1NywgUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBr
+ZXJuZWwub3JnPiB3cm90ZToKPgo+IE9uIE1vbiwgRGVjIDE3LCAyMDE4IGF0IDM6MjIgUE0gVmlu
+Y2VudCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4g
+PiBPbiBGcmksIDE0IERlYyAyMDE4IGF0IDE1OjM2LCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25A
+bGluYXJvLm9yZz4gd3JvdGU6Cj4gPiA+Cj4gPiA+IE9uIEZyaSwgMTQgRGVjIDIwMTggYXQgMTU6
+MjIsIFZpbmNlbnQgR3VpdHRvdAo+ID4gPiA8dmluY2VudC5ndWl0dG90QGxpbmFyby5vcmc+IHdy
+b3RlOgo+ID4gPiA+Cj4gPiA+ID4gV2l0aCBqaWZmaWVzIGJlZW4gcmVwbGFjZWQgYnkgcmF3IG5z
+IGluIFBNIGNvcmUgYWNjb3VudGluZywgOTE1IGRyaXZlciBpcwo+ID4gPiA+IHVwZGF0ZWQgdG8g
+dXNlIHRoaXMgbmV3IHRpbWUgaW5mcmFzdHJ1Y3R1cmUuCj4gPiA+ID4KPiA+ID4gPiBTaWduZWQt
+b2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPgo+ID4g
+PiA+IC0tLQo+ID4gPiA+ICBkcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5jIHwgMTIgKysr
+KysrLS0tLS0tCj4gPiA+ID4gIGRyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmggfCAgNCAr
+Ky0tCj4gPiA+ID4gIDIgZmlsZXMgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9u
+cygtKQo+ID4gPiA+Cj4gPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5
+MTVfcG11LmMgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5jCj4gPiA+ID4gaW5kZXgg
+ZDZjOGY4Zi4uY2Y2NDM3ZCAxMDA2NDQKPiA+ID4gPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vaTkx
+NS9pOTE1X3BtdS5jCj4gPiA+ID4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUu
+Ywo+ID4gPiA+IEBAIC00OTMsMTQgKzQ5MywxNCBAQCBzdGF0aWMgdTY0IGdldF9yYzYoc3RydWN0
+IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCj4gPiA+ID4gICAgICAgICAgICAgICAgICAqLwo+ID4g
+PiA+ICAgICAgICAgICAgICAgICBpZiAoa2Rldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBN
+X1NVU1BFTkRFRCkgewo+ID4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgIGlmICghaTkxNS0+
+cG11LnNhbXBsZVtfX0k5MTVfU0FNUExFX1JDNl9FU1RJTUFURURdLmN1cikKPiA+ID4gPiAtICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGk5MTUtPnBtdS5zdXNwZW5kZWRfamlmZmllc19s
+YXN0ID0KPiA+ID4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIGtkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzOwo+ID4gPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgaTkxNS0+cG11LnN1c3BlbmRlZF90aW1lX2xhc3QgPQo+ID4g
+PiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBrZGV2LT5wb3dlci5z
+dXNwZW5kZWRfdGltZTsKPiA+ID4gPgo+ID4gPgo+ID4gPiBIdWgsIHNvIHBhdGNoIDIgaW50cm9k
+dWNlcyBhIGNvbXBsaWVyIGVycm9yIGJlY2F1c2Ugb2YgcmVtb3ZpbmcgdGhlCj4gPiA+IG9sZCBm
+aWVsZHMuIFdlIGNhbid0IGhhdmUgdGhhdC4KPiA+Cj4gPiBJIGFncmVlCj4gPiBUaGUgcGF0Y2gg
+d2FzIG1haW5seSB0byByYWlzZSBkaXNjdXNzaW9uCj4KPiBPSywgc28gcGF0Y2ggWzEvM10gZnJv
+bSB0aGlzIHNlcmllcyBzaG91bGQgYmUgYXBwbGljYWJsZSByZWdhcmRsZXNzLCByaWdodD8KClll
+cwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2
+ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9s
+aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
