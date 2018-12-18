@@ -1,55 +1,61 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v7 3/6] ARM: dts: qcom: Removed unused
- interrupt-names from GPU node
-Date: Tue, 18 Dec 2018 16:06:28 -0700
-Message-ID: <20181218230628.GE18380@jcrouse-lnx.qualcomm.com>
-References: <20181218183241.12830-1-jcrouse@codeaurora.org>
- <20181218183241.12830-4-jcrouse@codeaurora.org>
- <CAD=FV=Vi2bNCQ-A+h=1w9P15-XwCq7weZJ7LP7HBfs+GMTv=rA@mail.gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [RFC/RFT 00/10] i2c: move handling of suspended adapters to the
+ core
+Date: Wed, 19 Dec 2018 00:32:59 +0100
+Message-ID: <20181218233259.2ufszlpw5hjlg2hm@ninjato>
+References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
+ <2094a0d4-733f-7f74-abd2-bdb28edd0f80@redhat.com>
+ <20181211234102.GA6701@kunai>
+ <e8c68ef5-5085-e304-4959-82c4959f4511@redhat.com>
+ <20181218201725.2uqfmsethlkasdvc@ninjato>
+ <0e6b0ea6-e472-19f2-bb2f-61a1d66e6091@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="2zqdnv7q2yfssawi"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAD=FV=Vi2bNCQ-A+h=1w9P15-XwCq7weZJ7LP7HBfs+GMTv=rA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <0e6b0ea6-e472-19f2-bb2f-61a1d66e6091@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBEZWMgMTgsIDIwMTggYXQgMDI6Mjk6MjVQTSAtMDgwMCwgRG91ZyBBbmRlcnNvbiB3
-cm90ZToKPiBIaSwKPiAKPiBPbiBUdWUsIERlYyAxOCwgMjAxOCBhdCAxMDozMiBBTSBKb3JkYW4g
-Q3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiA+Cj4gPiAnaW50ZXJydXB0
-LW5hbWVzJyBzaG91bGRuJ3QgYmUgdXNlZCBpbiBjYXNlcyB3aGVuIHRoZXJlIGlzIG9ubHkKPiA+
-IG9uZSBpbnRlcnJ1cHQgYW5kIGl0IGlzIG5vdCBvdGhlcndpc2UgdXNlZCBpbiB0aGUgZHJpdmVy
-Lgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9y
-YS5vcmc+Cj4gPiAtLS0KPiA+ICBhcmNoL2FybS9ib290L2R0cy9xY29tLWFwcTgwNjQuZHRzaSB8
-IDEgLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxIGRlbGV0aW9uKC0pCj4gCj4gTG9va3MgZ29vZCB0
-byBtZS4gIEl0IHNob3VsZCBiZSBub3RlZCB0aGF0IEFuZHkgc2hvdWxkbid0IGxhbmQgdGhpcwo+
-IHVudGlsIGhlIGhhcyBhIHRyZWUgdGhhdCBjb250YWlucyAoImRybS9tc20vZ3B1OiBSZW1vdmUg
-aGFyZGNvZGVkCj4gaW50ZXJydXB0IG5hbWUiKS4gIC4uLm9yIGhlIHNob3VsZCBBY2sgdGhpcyBh
-bmQgaXQgc2hvdWxkIGdvIHRocm91Z2gKPiB0aGUgc2FtZSB0cmVlIGFzIHRoYXQgcGF0Y2guCj4g
-Cj4gSSdtIGN1cmlvdXM6IGlzIHRoZXJlIGEgcmVhc29uIHlvdSBkaWRuJ3QgcmVtb3ZlIGl0IGZy
-b20gdGhlIG90aGVyIHR3byB1c2Vycz8KPiAKPiBsaW51eG5leHQvbWFzdGVyOmFyY2gvYXJtL2Jv
-b3QvZHRzL2lteDUxLmR0c2k6Cj4gaW50ZXJydXB0LW5hbWVzID0gImtnc2xfM2QwX2lycSI7Cj4g
-bGludXhuZXh0L21hc3RlcjphcmNoL2FybS9ib290L2R0cy9pbXg1My5kdHNpOgo+IGludGVycnVw
-dC1uYW1lcyA9ICJrZ3NsXzNkMF9pcnEiOwoKQmVjYXVzZSB0aG9zZSBhcmVuJ3QgaW4gQW5keSdz
-IHRyZWUuIEkgc3VzcGVjdCBhZnRlciBhbGwgdGhpcyBsYW5kcyB3ZSdsbCBuZWVkCmFub3RoZXIg
-c3dlZXAgdG8gY2xlYW4gdXAgdGhlIGV4dHJhcy4gVGhlcmUgaXMgYWxzbyBhIDg5OTYgZHQgZmxv
-YXRpbmcgYXJvdW5kCnNvbWV3aGVyZS4KCkpvcmRhbgoKPiAuLi5hbHNvOiBpZiB0aGlzIHJlYWxs
-eSBpcyBvbmx5IGZvciAiYXBxODA2NCIgYW5kIG5vdCBnbG9iYWxseSBmb3IgYWxsCj4gcWNvbSBk
-ZXZpY2VzIGl0J2QgYmUgbmljZSB0byBtZW50aW9uICJhcHE4MDY0IiBzb21ld2hlcmUgaW4gdGhl
-Cj4gc3ViamVjdC4KCj4gLURvdWcKCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIs
-IEluYy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlv
-biBDb2xsYWJvcmF0aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vZnJlZWRyZW5vCg==
+
+--2zqdnv7q2yfssawi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+> I've been thinking along the same lines: your series for the drivers
+> with separate runtime and system suspend handlers, "custom" driver
+> specific code for troublesome cases like i2c-designware.
+
+Cool, thanks!
+
+> Do you want me to send out a new version of my patch for the i2c-designware
+> code?
+
+Yes, please do.
+
+
+--2zqdnv7q2yfssawi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwZg6sACgkQFA3kzBSg
+Kbb76A//brac55lwWTzuGQxjrhsSLEQwELKmBFUMND3qoxvsksj7MPwfUes29I22
+/40oqppJtH5pvm9a9oLl1EHmvIPKCmECe1kgp9SqrxRtspuMIIvwVL2YVA23bEsk
+g29Fo9oIQ23Le7vsh3CT+9hcfrsyuBUnqbQWdpWQVIEgdzwySeDuRzgF5CbV4951
+WiPwMH9+dxt4JnQART5cjHIkjf88TMNLNZah2mv+Qc306U/qvxBNPjKRAfMuyMHt
+4axCZ6WwuRGB8uXeFu/fkctno7l7Qta/m1iFHIt3t3nGVAlWdOB/fOqS9H3IX0+L
+y4MbbS6WVr+mCjddy1T9UBC9U2GXP29aU6Zn4x9XlcBq7AY/LHAGyvWbXHhuB8IO
+j4ZFy0P/2DH4VYDEtJdFFR4abyBzpPQZIR4dNQIIDQ4qPN5aWgs6gcRTJ38j3fdd
+neCGpf37wKEBzryrRdC4vbMx4CwoeMIcStDz62ARsOV5fOomyg4w8cL6Xlu1Vt+3
+4fIimBvfSzeb+wmSvep+9PPaBzXT99Uft6z0WlpPo2oRIS/x2ryD2livFPQYcxkE
+a0zyiy+8pYgfhrRc4YYp1K2LEJi2dJWBl0dDMyQMT3Wp0qPL02MAVsUEcodWqP6e
+lNasaYCIBijQlWPK6UmIt7ajsXAyXO8TrUZPXFjBK50hFwWYgSk=
+=m5jJ
+-----END PGP SIGNATURE-----
+
+--2zqdnv7q2yfssawi--
