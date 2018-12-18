@@ -1,56 +1,158 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 3/3] firmware: imx: scu-pd: add fallback compatible string
- support
-Date: Tue, 18 Dec 2018 16:01:29 +0000
-Message-ID: <1545148524-658-4-git-send-email-aisheng.dong@nxp.com>
-References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v3 1/2] power: supply: add input voltage limit property
+Date: Tue, 18 Dec 2018 17:31:53 +0100
+Message-ID: <2fcfc863-3218-55e8-2a0f-75d7cb2d55db@collabora.com>
+References: <20181213120944.30967-1-enric.balletbo@collabora.com>
+ <20181213222000.GA12302@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181213222000.GA12302@amd>
+Content-Language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-SCU power domain can be used in the same way by IMX8QXP and IMX8QM SoCs.
-Make the driver support the fallback compatible string "fsl,scu-pd" to
-allow other SoCs to reuse the common part.
+Hi Pavel,
 
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- drivers/firmware/imx/scu-pd.c | 1 +
- 1 file changed, 1 insertion(+)
+On 13/12/18 23:20, Pavel Machek wrote:
+> Hi!
+> 
+>> This is part of the Pixel C's thermal management strategy to effectively
+>> limit the input power to 5V 3A when the screen is on. When the screen is
+>> on, the display, the CPU, and the GPU all contribute more heat to the
+>> system than while the screen is off, and we made a tradeoff to throttle
+>> the charger in order to give more of the thermal budget to those other
+>> components.
+>>
+>> So there's nothing fundamentally broken about the hardware that would
+>> cause the Pixel C to malfunction if we were charging at 9V or 12V instead
+>> of 5V when the screen is on, ie if userspace doesn't change this.
+>>
+>> What would happen is that you wouldn't meet Google's skin temperature
+>> targets on the system if the charger was allowed to run at 9V or 12V with
+>> the screen on.
+>>
+>> For folks hacking on Pixel Cs (which is now outside of Google's official
+>> support window for Android) and customizing their own kernel and userspace
+>> this would be acceptable, but we wanted to expose this feature in the
+>> power supply properties because the feature does exist in the Emedded
+>> Controller firmware of the Pixel C and all of Google's Chromebooks with
+>> USB-C made since 2015 in case someone running an up to date kernel wanted
+>> to limit the charging power for thermal or other reasons.
+>>
+>> This patch exposes a new property, similar to input current limit, to
+>> re-configure the maximum voltage from the external supply at runtime
+>> based on system-level knowledge or user input.
+> 
+> Could we get power input limit, instead?
+> 
 
-diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
-index 407245f..1aaae98 100644
---- a/drivers/firmware/imx/scu-pd.c
-+++ b/drivers/firmware/imx/scu-pd.c
-@@ -321,6 +321,7 @@ static int imx_sc_pd_probe(struct platform_device *pdev)
- }
- 
- static const struct of_device_id imx_sc_pd_match[] = {
-+	{ .compatible = "fsl,scu-pd", &imx8qxp_scu_pd},
- 	{ .compatible = "fsl,imx8qxp-scu-pd", &imx8qxp_scu_pd},
- 	{ /* sentinel */ }
- };
--- 
-2.7.4
+I'm open but I have some concerns, so lets discuss a bit about it :)
+
+According to the USB PD 2.0 specs if we limit the source at 15W we can get 5V/3A
+or 9V/1.67A, if I am not mistaken the higher voltage caused problem since the
+conversion to lower internal voltages generated more heat, so in this case
+9V/1.67A is not a valid value for us (maybe someone from ChromeOS can confirm
+this?).
+
+There is also the USB Power Delivery Specification revision 3.0, who defines a
+programmable power supply protocol that allows granular control over VBUS power
+in 20 mV steps to facilitate constant current or constant voltage charging. So,
+maybe we might be interested on set a specific constant current or a specific
+contant voltage. I think that in this case would be interesting have the
+possibility to set voltage or current. What do you think?
+
+Thanks,
+ Enric
+
+
+> That is what you really want, it is more generally useful, and it is
+> what current input limit should have been, in the first place...
+> 
+> Thanks,
+> 									Pavel
+> 
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>> Reviewed-by: Guenter Roeck <groeck@chromium.org>
+>> ---
+>>
+>> Changes in v3:
+>> - Improve commit log and documentation with Benson comments.
+>>
+>> Changes in v2:
+>> - Document the new property in ABI/testing/sysfs-class-power.
+>> - Add the Reviewed-by Guenter Roeck tag.
+>>
+>>  Documentation/ABI/testing/sysfs-class-power | 15 +++++++++++++++
+>>  Documentation/power/power_supply_class.txt  |  2 ++
+>>  drivers/power/supply/power_supply_sysfs.c   |  1 +
+>>  include/linux/power_supply.h                |  1 +
+>>  4 files changed, 19 insertions(+)
+>>
+>> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+>> index 5e23e22dce1b..6dee5c105a28 100644
+>> --- a/Documentation/ABI/testing/sysfs-class-power
+>> +++ b/Documentation/ABI/testing/sysfs-class-power
+>> @@ -335,6 +335,21 @@ Description:
+>>  		Access: Read, Write
+>>  		Valid values: Represented in microamps
+>>  
+>> +What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
+>> +Date:		Nov 2018
+>> +Contact:	linux-pm@vger.kernel.org
+>> +Description:
+>> +		This entry configures the incoming VBUS voltage limit currently
+>> +		set in the supply. Normally this is configured based on
+>> +		system-level knowledge or user input (e.g. This is part of the
+>> +		Pixel C's thermal management strategy to effectively limit the
+>> +		input power to 5V when the screen is on to meet Google's skin
+>> +		temperature targets). Note that this feature should not be
+>> +		used for safety critical things.
+>> +
+>> +		Access: Read, Write
+>> +		Valid values: Represented in microvolts
+>> +
+>>  What:		/sys/class/power_supply/<supply_name>/online,
+>>  Date:		May 2007
+>>  Contact:	linux-pm@vger.kernel.org
+>> diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
+>> index 300d37896e51..7b4be615b4f8 100644
+>> --- a/Documentation/power/power_supply_class.txt
+>> +++ b/Documentation/power/power_supply_class.txt
+>> @@ -137,6 +137,8 @@ power supply object.
+>>  
+>>  INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
+>>  the current drawn from a charging source.
+>> +INPUT_VOLTAGE_LIMIT - input voltage limit programmed by charger. Indicates
+>> +the voltage limit from a charging source.
+>>  
+>>  CHARGE_CONTROL_LIMIT - current charge control limit setting
+>>  CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
+>> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+>> index dce24f596160..5848742ebb59 100644
+>> --- a/drivers/power/supply/power_supply_sysfs.c
+>> +++ b/drivers/power/supply/power_supply_sysfs.c
+>> @@ -275,6 +275,7 @@ static struct device_attribute power_supply_attrs[] = {
+>>  	POWER_SUPPLY_ATTR(charge_control_limit),
+>>  	POWER_SUPPLY_ATTR(charge_control_limit_max),
+>>  	POWER_SUPPLY_ATTR(input_current_limit),
+>> +	POWER_SUPPLY_ATTR(input_voltage_limit),
+>>  	POWER_SUPPLY_ATTR(energy_full_design),
+>>  	POWER_SUPPLY_ATTR(energy_empty_design),
+>>  	POWER_SUPPLY_ATTR(energy_full),
+>> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+>> index f80769175c56..608ba88e32ee 100644
+>> --- a/include/linux/power_supply.h
+>> +++ b/include/linux/power_supply.h
+>> @@ -122,6 +122,7 @@ enum power_supply_property {
+>>  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+>>  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
+>>  	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+>> +	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
+>>  	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+>>  	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+>>  	POWER_SUPPLY_PROP_ENERGY_FULL,
+> 
