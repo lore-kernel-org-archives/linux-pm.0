@@ -1,158 +1,66 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v3 1/2] power: supply: add input voltage limit property
-Date: Tue, 18 Dec 2018 17:31:53 +0100
-Message-ID: <2fcfc863-3218-55e8-2a0f-75d7cb2d55db@collabora.com>
-References: <20181213120944.30967-1-enric.balletbo@collabora.com>
- <20181213222000.GA12302@amd>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [PATCH] Revert "arm64: dts: marvell: add CPU Idle power state
+ support on Armada 7K/8K"
+Date: Tue, 18 Dec 2018 17:58:34 +0100
+Message-ID: <877eg6hiv9.fsf@bootlin.com>
+References: <87k1kowf7i.fsf@bootlin.com> <20181205101035.GA31059@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181213222000.GA12302@amd>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181205101035.GA31059@e107155-lin> (Sudeep Holla's message of
+ "Wed, 5 Dec 2018 10:10:35 +0000")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, Sergey Matyukevich <geomatsi@gmail.com>, linux-pm@vger.kernel.org, orenbh <orenbh@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pavel,
-
-On 13/12/18 23:20, Pavel Machek wrote:
-> Hi!
-> 
->> This is part of the Pixel C's thermal management strategy to effectively
->> limit the input power to 5V 3A when the screen is on. When the screen is
->> on, the display, the CPU, and the GPU all contribute more heat to the
->> system than while the screen is off, and we made a tradeoff to throttle
->> the charger in order to give more of the thermal budget to those other
->> components.
->>
->> So there's nothing fundamentally broken about the hardware that would
->> cause the Pixel C to malfunction if we were charging at 9V or 12V instead
->> of 5V when the screen is on, ie if userspace doesn't change this.
->>
->> What would happen is that you wouldn't meet Google's skin temperature
->> targets on the system if the charger was allowed to run at 9V or 12V with
->> the screen on.
->>
->> For folks hacking on Pixel Cs (which is now outside of Google's official
->> support window for Android) and customizing their own kernel and userspace
->> this would be acceptable, but we wanted to expose this feature in the
->> power supply properties because the feature does exist in the Emedded
->> Controller firmware of the Pixel C and all of Google's Chromebooks with
->> USB-C made since 2015 in case someone running an up to date kernel wanted
->> to limit the charging power for thermal or other reasons.
->>
->> This patch exposes a new property, similar to input current limit, to
->> re-configure the maximum voltage from the external supply at runtime
->> based on system-level knowledge or user input.
-> 
-> Could we get power input limit, instead?
-> 
-
-I'm open but I have some concerns, so lets discuss a bit about it :)
-
-According to the USB PD 2.0 specs if we limit the source at 15W we can get 5V/3A
-or 9V/1.67A, if I am not mistaken the higher voltage caused problem since the
-conversion to lower internal voltages generated more heat, so in this case
-9V/1.67A is not a valid value for us (maybe someone from ChromeOS can confirm
-this?).
-
-There is also the USB Power Delivery Specification revision 3.0, who defines a
-programmable power supply protocol that allows granular control over VBUS power
-in 20 mV steps to facilitate constant current or constant voltage charging. So,
-maybe we might be interested on set a specific constant current or a specific
-contant voltage. I think that in this case would be interesting have the
-possibility to set voltage or current. What do you think?
-
-Thanks,
- Enric
-
-
-> That is what you really want, it is more generally useful, and it is
-> what current input limit should have been, in the first place...
-> 
-> Thanks,
-> 									Pavel
-> 
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> Reviewed-by: Guenter Roeck <groeck@chromium.org>
->> ---
->>
->> Changes in v3:
->> - Improve commit log and documentation with Benson comments.
->>
->> Changes in v2:
->> - Document the new property in ABI/testing/sysfs-class-power.
->> - Add the Reviewed-by Guenter Roeck tag.
->>
->>  Documentation/ABI/testing/sysfs-class-power | 15 +++++++++++++++
->>  Documentation/power/power_supply_class.txt  |  2 ++
->>  drivers/power/supply/power_supply_sysfs.c   |  1 +
->>  include/linux/power_supply.h                |  1 +
->>  4 files changed, 19 insertions(+)
->>
->> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
->> index 5e23e22dce1b..6dee5c105a28 100644
->> --- a/Documentation/ABI/testing/sysfs-class-power
->> +++ b/Documentation/ABI/testing/sysfs-class-power
->> @@ -335,6 +335,21 @@ Description:
->>  		Access: Read, Write
->>  		Valid values: Represented in microamps
->>  
->> +What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
->> +Date:		Nov 2018
->> +Contact:	linux-pm@vger.kernel.org
->> +Description:
->> +		This entry configures the incoming VBUS voltage limit currently
->> +		set in the supply. Normally this is configured based on
->> +		system-level knowledge or user input (e.g. This is part of the
->> +		Pixel C's thermal management strategy to effectively limit the
->> +		input power to 5V when the screen is on to meet Google's skin
->> +		temperature targets). Note that this feature should not be
->> +		used for safety critical things.
->> +
->> +		Access: Read, Write
->> +		Valid values: Represented in microvolts
->> +
->>  What:		/sys/class/power_supply/<supply_name>/online,
->>  Date:		May 2007
->>  Contact:	linux-pm@vger.kernel.org
->> diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
->> index 300d37896e51..7b4be615b4f8 100644
->> --- a/Documentation/power/power_supply_class.txt
->> +++ b/Documentation/power/power_supply_class.txt
->> @@ -137,6 +137,8 @@ power supply object.
->>  
->>  INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
->>  the current drawn from a charging source.
->> +INPUT_VOLTAGE_LIMIT - input voltage limit programmed by charger. Indicates
->> +the voltage limit from a charging source.
->>  
->>  CHARGE_CONTROL_LIMIT - current charge control limit setting
->>  CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
->> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
->> index dce24f596160..5848742ebb59 100644
->> --- a/drivers/power/supply/power_supply_sysfs.c
->> +++ b/drivers/power/supply/power_supply_sysfs.c
->> @@ -275,6 +275,7 @@ static struct device_attribute power_supply_attrs[] = {
->>  	POWER_SUPPLY_ATTR(charge_control_limit),
->>  	POWER_SUPPLY_ATTR(charge_control_limit_max),
->>  	POWER_SUPPLY_ATTR(input_current_limit),
->> +	POWER_SUPPLY_ATTR(input_voltage_limit),
->>  	POWER_SUPPLY_ATTR(energy_full_design),
->>  	POWER_SUPPLY_ATTR(energy_empty_design),
->>  	POWER_SUPPLY_ATTR(energy_full),
->> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
->> index f80769175c56..608ba88e32ee 100644
->> --- a/include/linux/power_supply.h
->> +++ b/include/linux/power_supply.h
->> @@ -122,6 +122,7 @@ enum power_supply_property {
->>  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
->>  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
->>  	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
->> +	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
->>  	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
->>  	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
->>  	POWER_SUPPLY_PROP_ENERGY_FULL,
-> 
+SGkgU3VkZWVwLAogCiBPbiBtZXIuLCBkw6ljLiAwNSAyMDE4LCBTdWRlZXAgSG9sbGEgPHN1ZGVl
+cC5ob2xsYUBhcm0uY29tPiB3cm90ZToKCj4gT24gV2VkLCBEZWMgMDUsIDIwMTggYXQgMDk6Mjc6
+NDVBTSArMDEwMCwgR3JlZ29yeSBDTEVNRU5UIHdyb3RlOgo+PiBIaSBCYXJ1Y2gsCj4+ICAKPj4g
+IE9uIG1lci4sIGTDqWMuIDA1IDIwMTgsIEJhcnVjaCBTaWFjaCA8YmFydWNoQHRrb3MuY28uaWw+
+IHdyb3RlOgo+PiAKPj4gPiBIaSBHcmVnb3J5LAo+PiA+Cj4+ID4gT24gVHVlLCBEZWMgMDQsIDIw
+MTggYXQgMDY6NDg6NDNQTSArMDIwMCwgQmFydWNoIFNpYWNoIHdyb3RlOgo+PiA+PiBPbiBUdWUs
+IERlYyAwNCwgMjAxOCBhdCAwNToyMToyNVBNICswMTAwLCBHcmVnb3J5IENMRU1FTlQgd3JvdGU6
+Cj4+ID4+ID4gIE9uIG1hci4sIGTDqWMuIDA0IDIwMTgsIEJhcnVjaCBTaWFjaCA8YmFydWNoQHRr
+b3MuY28uaWw+IHdyb3RlOgo+PiA+PiA+ID4gVGhpcyByZXZlcnRzIGNvbW1pdCA4ZWQ0NjM2ODc3
+NmIzYmM5M2Q3NGMxZjhmMmJmYjlmZDhhOWFkODA1Lgo+PiA+PiA+ID4KPj4gPj4gPiA+IFRoaXMg
+Y29tbWl0IGJyZWFrcyBib290IG9uIEFybWFkYSA4SyBiYXNlZCBzeXN0ZW1zLiBSZXZlcnRpbmcg
+aXQgbWFrZXMKPj4gPj4gPiA+IGFmZmVjdGVkIHN5c3RlbXMgYm9vdCBhZ2Fpbi4KPj4gPj4gPiA+
+Cj4+ID4+ID4gPiBSZXBvcnRlZC1ieTogU2VyZ2V5IE1hdHl1a2V2aWNoIDxnZW9tYXRzaUBnbWFp
+bC5jb20+Cj4+ID4+ID4gPiBTaWduZWQtb2ZmLWJ5OiBCYXJ1Y2ggU2lhY2ggPGJhcnVjaEB0a29z
+LmNvLmlsPgo+PiA+PiA+IAo+PiA+PiA+IEkgd291bGQgbGlrZSB0byBrbm93IG1vcmUgYWJvdXQg
+aXQgYmVjYXVzZSBvbiB0aGUgTWNCaW4gSSB1c2UgdGhlcmUgaXMKPj4gPj4gPiBubyBpc3N1ZSB3
+aXRoIDQuMjAtcmMxLgo+PiA+PiA+IAo+PiA+PiA+IERvIHlvdSBvYnNlcnZlIHRoaXMgaXNzdWUg
+d2l0aCB0aGUgYXJtNjQgZGVmY29uZmlnIG9yIGRvIHlvdSBoYXZlIHNvbWUKPj4gPj4gPiBzcGVj
+aWZpYyBjb25maWd1cmF0aW9uIG9wdGlvbj8KPj4gPj4gCj4+ID4+IEkgdGVzdGVkIHRoZSBhdHRh
+Y2hlZCBkZWZjb25maWcgb24gQ2xlYXJmb2cgR1QtOEsgYW5kIG9uIGFub3RoZXIgY3VzdG9tIEFy
+bWFkYSAKPj4gPj4gOEsgYmFzZWQgYm9hcmQuCj4+ID4+IAo+PiA+PiBUb21vcnJvdyBJJ2xsIHRl
+c3QgTWFjY2hpYXRvYmluIHdpdGggdGhpcyBjb25maWcgYW5kIHRoZSBhcm02NCBkZWZjb25maWcu
+Cj4+ID4KPj4gPiBJIHJlcHJvZHVjZWQgc2FtZSBpc3N1ZSBvbiBhIE1hY2NoaWF0b2JpbiBib2Fy
+ZCB3aXRoIGJvdGggdGhpcyBjb25maWcgYW5kIHRoZSAKPj4gPiBhcm02NCBkZWZjb25maWcuIFRo
+ZSBsYXR0ZXIgcHJvZHVjZWQgdGhpcyBzcGxhdDoKPj4gCj4+IE9LIHRoYW5rcywgZm9yIHRoaXMs
+IEkgYWxzbyBnb3QgdGhlIGNvbmZpcm1hdGlvbiBieSBteSBjb2xsZWFndWVzLiBUaGUKPj4gb25s
+eSBkaWZmZXJlbmNlIEkgY2FuIHRoaW5rIG9mLCBpcyB0aGUgZmlybXdhcmUsIGJ1dCB0aGUgc3Vy
+cHJpc2luZwo+PiB0aGluZywgaXMgdGhhdCBJIGhhdmUgYW4gb2xkIGZpcm13YXJlOiAxNy4wNi4y
+IGFuZCB0aGF0IHdpdGggYSByZWNlbnQKPj4gb25lLCBpdCBkb2Vzbid0IHdvcmsuCj4+IAo+PiBT
+byBJIHdpbGwgYXBwbHkgaXQgaW4gbXZlYnUvZml4ZXMuCj4+IAo+Cj4gU29ycnkgaWYgaXQncyB0
+b28gbGF0ZS4gQnV0IEkgd291bGQgcmF0aGVyIGRpc2FibGUgdGhlIHN0YXRlcyB0aGF0IGFyZQo+
+IGJyb2tlbiBvbiBvbGQgZmlybXdhcmUgYW5kIHNlZSBpZiBpdCdzIHBvc3NpYmxlIGZvciBib290
+bG9hZGVyIG9yIGJvb3QKPiBmaXJtd2FyZSBsb2FkaW5nIERUIGNhbiBtb2RpZnkgdGhlIHN0YXR1
+cyB0byAiZW5hYmxlZCIgaWYgaXQgY2FuIGRldGVjdAo+IHRoZSBmaXJtd2FyZSB2ZXJzaW9uLgoK
+eW91IG1lYW4gYWRkaW5nIHN0YXR1cyA9ICJkaXNhYmxlIiBvbiBlYWNoIGlkbGUtc3RhdGUgc3Vi
+bm9kZT8KCkdyZWdvcnkKCj4KPiAtLQo+IFJlZ2FyZHMsCj4gU3VkZWVwCgotLSAKR3JlZ29yeSBD
+bGVtZW50LCBCb290bGluCkVtYmVkZGVkIExpbnV4IGFuZCBLZXJuZWwgZW5naW5lZXJpbmcKaHR0
+cDovL2Jvb3RsaW4uY29tCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1hcm0ta2VybmVsCg==
