@@ -1,7 +1,7 @@
 From: Joseph Lo <josephl@nvidia.com>
-Subject: [PATCH V3 12/20] cpufreq: tegra124: extend to support Tegra210
-Date: Tue, 18 Dec 2018 17:12:24 +0800
-Message-ID: <20181218091232.23532-13-josephl@nvidia.com>
+Subject: [PATCH V3 13/20] cpufreq: dt-platdev: add Tegra210 to blacklist
+Date: Tue, 18 Dec 2018 17:12:25 +0800
+Message-ID: <20181218091232.23532-14-josephl@nvidia.com>
 References: <20181218091232.23532-1-josephl@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,36 +21,35 @@ To: Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@
 Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Joseph Lo <josephl@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Tegra210 uses the same methodology as Tegra124 for CPUFreq controlling
-that based on DFLL clock. So extending this driver to support Tegra210.
+Tegra210 uses "tegra124-cpufreq" platform driver to register device data
+for "cpufreq-dt" driver. So add it in the blacklist for
+"cpufreq-dt-platdev" driver to drop that.
 
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Joseph Lo <josephl@nvidia.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Acked-by: Jon Hunter <jonathanh@nvidia.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 *V3:
- - no change
+ - add ack tags
 *V2:
- - add two ack tags
+ - new added in V2
 ---
- drivers/cpufreq/tegra124-cpufreq.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-index a1bfde0a7950..ba3795e13ac6 100644
---- a/drivers/cpufreq/tegra124-cpufreq.c
-+++ b/drivers/cpufreq/tegra124-cpufreq.c
-@@ -144,7 +144,8 @@ static int __init tegra_cpufreq_init(void)
- 	int ret;
- 	struct platform_device *pdev;
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index b1c5468dca16..47729a22c159 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -119,6 +119,7 @@ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "mediatek,mt8176", },
  
--	if (!of_machine_is_compatible("nvidia,tegra124"))
-+	if (!(of_machine_is_compatible("nvidia,tegra124") ||
-+		of_machine_is_compatible("nvidia,tegra210")))
- 		return -ENODEV;
+ 	{ .compatible = "nvidia,tegra124", },
++	{ .compatible = "nvidia,tegra210", },
  
- 	/*
+ 	{ .compatible = "qcom,apq8096", },
+ 	{ .compatible = "qcom,msm8996", },
 -- 
 2.20.1
