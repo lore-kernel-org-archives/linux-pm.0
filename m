@@ -1,8 +1,8 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible string for
- power domain
-Date: Tue, 18 Dec 2018 16:01:20 +0000
-Message-ID: <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 3/3] firmware: imx: scu-pd: add fallback compatible string
+ support
+Date: Tue, 18 Dec 2018 16:01:29 +0000
+Message-ID: <1545148524-658-4-git-send-email-aisheng.dong@nxp.com>
 References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,49 +20,37 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 SCU power domain can be used in the same way by IMX8QXP and IMX8QM SoCs.
-Let's add a "fsl,scu-pd" fallback compatible string to allow other SoCs
-to reuse the common part.
+Make the driver support the fallback compatible string "fsl,scu-pd" to
+allow other SoCs to reuse the common part.
 
 Cc: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Rob Herring <robh+dt@kernel.org>
 Cc: Shawn Guo <shawnguo@kernel.org>
 Cc: Sascha Hauer <kernel@pengutronix.de>
 Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: devicetree@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: linux-pm@vger.kernel.org
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/firmware/imx/scu-pd.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-index c20f38e..849b671 100644
---- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-+++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-@@ -58,7 +58,10 @@ This binding for the SCU power domain providers uses the generic power
- domain binding[2].
+diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
+index 407245f..1aaae98 100644
+--- a/drivers/firmware/imx/scu-pd.c
++++ b/drivers/firmware/imx/scu-pd.c
+@@ -321,6 +321,7 @@ static int imx_sc_pd_probe(struct platform_device *pdev)
+ }
  
- Required properties:
--- compatible:		Should be "fsl,imx8qxp-scu-pd".
-+- compatible:		Should be one of:
-+			  "fsl,imx8qxp-scu-pd"
-+			followed by "fsl,scu-pd"
-+
- - #power-domain-cells:	Must be 1. Contains the Resource ID used by
- 			SCU commands.
- 			See detailed Resource ID list from:
-@@ -145,7 +148,7 @@ firmware {
- 		};
- 
- 		pd: imx8qx-pd {
--			compatible = "fsl,imx8qxp-scu-pd";
-+			compatible = "fsl,imx8qxp-scu-pd", "fsl,scu-pd";
- 			#power-domain-cells = <1>;
- 		};
- 	};
+ static const struct of_device_id imx_sc_pd_match[] = {
++	{ .compatible = "fsl,scu-pd", &imx8qxp_scu_pd},
+ 	{ .compatible = "fsl,imx8qxp-scu-pd", &imx8qxp_scu_pd},
+ 	{ /* sentinel */ }
+ };
 -- 
 2.7.4
