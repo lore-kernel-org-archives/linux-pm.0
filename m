@@ -1,41 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: New timer events oriented governor for tickless systems
-Date: Tue, 18 Dec 2018 16:38:11 +0100
-Message-ID: <CAJZ5v0jWzzVJ1ZsY588Z=y6r+-us7Jx3kYHUbRjTrZJRU=ywpA@mail.gmail.com>
-References: <000001d496e6$e968c8f0$bc3a5ad0$@net>
+From: Aisheng Dong <aisheng.dong@nxp.com>
+Subject: [PATCH 0/3] firmware: imx: scu-pd: add fallback compatible string
+ support
+Date: Tue, 18 Dec 2018 16:01:14 +0000
+Message-ID: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000001d496e6$e968c8f0$bc3a5ad0$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Giovanni Gherdovich <ggherdovich@suse.cz>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, hu1.chen@intel.com, Quentin Perret <quentin.perret@arm.com>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Doug,
+SCU power domain can be used in the same way by IMX8QXP and IMX8QM SoCs.
+Let's add a "fsl,scu-pd" fallback compatible string to allow other SoCs
+to reuse the common part.
 
-On Tue, Dec 18, 2018 at 4:32 PM Doug Smythies <dsmythies@telus.net> wrote:
->
-> Hi Rafael,
->
-> Just typos, not already pointed out by Quentin:
->
-> On 2018.12.18 03:09 Rafael J. Wysocki wrote:
->
-> > The venerable menu governor does some thigns that are quite
->
-> s/thigns/things
->
-> > time frame in which no timer wakeups are possible (becuase it knows
->
-> s/because/because
->
-> > +obtain the the *sleep length*, which is the time until the closest timer event
->
-> s/the the/the
->
-> > +increased when when the given idle state "matches" the sleep length only and the
->
-> s/when when/when
+Dong Aisheng (3):
+  dt-bindings: fsl: scu: add fallback compatible string for power domain
+  dt-bindings: fsl: scu: add imx8qm scu power domain support
+  firmware: imx: scu-pd: add fallback compatible string support
 
-Thank you!
+ Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt | 8 ++++++--
+ drivers/firmware/imx/scu-pd.c                               | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+-- 
+2.7.4
