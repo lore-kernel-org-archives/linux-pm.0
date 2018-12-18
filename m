@@ -1,79 +1,176 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [RFC/RFT 09/10] i2c: s3c2410: use core helper to mark adapter
- suspended
-Date: Tue, 18 Dec 2018 12:24:56 +0100
-Message-ID: <2b73c71b-2b73-7132-3629-cf700b251fdb@samsung.com>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
-        <CGME20181210210451epcas5p2f186c09d2e89f30cdb7106272e5e4709@epcas5p2.samsung.com>
-        <20181210210310.12677-10-wsa+renesas@sang-engineering.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH] cpuidle: New timer events oriented governor for tickless
+ systems
+Date: Tue, 18 Dec 2018 11:49:49 +0000
+Message-ID: <20181218114949.c6npu357fj65l5iv@queper01-ThinkPad-T460s>
+References: <128769314.7imKxugEn6@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181210210310.12677-10-wsa+renesas@sang-engineering.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <128769314.7imKxugEn6@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Chen, Hu" <hu1.chen@intel.com>, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Rafael,
 
-On 2018-12-10 22:03, Wolfram Sang wrote:
-> Rejecting transfers should be handled by the core. Also, this will
-> ensure proper locking which was forgotten in this open coded version.
->
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+I skimmed through the previous versions, but apologies if some of these
+things have been discussed already :-)
 
-Works fine on Odroid U3.
+On Tuesday 18 Dec 2018 at 12:09:05 (+0100), Rafael J. Wysocki wrote:
+<...>
+> + * - Find an idle state on the basis of the sleep length and state statistics
+> + *   collected over time:
+> + *
+> + *   o Find the deepest idle state whose target residency is less than or euqal
 
-> ---
->  drivers/i2c/busses/i2c-s3c2410.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
-> index 2f2e28d60ef5..7c76edb25514 100644
-> --- a/drivers/i2c/busses/i2c-s3c2410.c
-> +++ b/drivers/i2c/busses/i2c-s3c2410.c
-> @@ -104,7 +104,6 @@ enum s3c24xx_i2c_state {
->  struct s3c24xx_i2c {
->  	wait_queue_head_t	wait;
->  	kernel_ulong_t		quirks;
-> -	unsigned int		suspended:1;
->  
->  	struct i2c_msg		*msg;
->  	unsigned int		msg_num;
-> @@ -703,9 +702,6 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
->  	unsigned long timeout;
->  	int ret;
->  
-> -	if (i2c->suspended)
-> -		return -EIO;
-> -
->  	ret = s3c24xx_i2c_set_master(i2c);
->  	if (ret != 0) {
->  		dev_err(i2c->dev, "cannot get bus (error %d)\n", ret);
-> @@ -1246,7 +1242,7 @@ static int s3c24xx_i2c_suspend_noirq(struct device *dev)
->  {
->  	struct s3c24xx_i2c *i2c = dev_get_drvdata(dev);
->  
-> -	i2c->suspended = 1;
-> +	i2c_mark_adapter_suspended(&i2c->adap, true);
->  
->  	if (!IS_ERR(i2c->sysreg))
->  		regmap_read(i2c->sysreg, EXYNOS5_SYS_I2C_CFG, &i2c->sys_i2c_cfg);
-> @@ -1267,7 +1263,7 @@ static int s3c24xx_i2c_resume_noirq(struct device *dev)
->  		return ret;
->  	s3c24xx_i2c_init(i2c);
->  	clk_disable(i2c->clk);
-> -	i2c->suspended = 0;
-> +	i2c_mark_adapter_suspended(&i2c->adap, false);
->  
->  	return 0;
->  }
+s/euqal/equal
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+
+<...>
+> +/**
+> + * struct teo_idle_state - Idle state data used by the TEO cpuidle governor.
+> + * @early_hits: "Early" CPU wakeups "matching" this state.
+> + * @hits: "On time" CPU wakeups "matching" this state.
+> + * @misses: CPU wakeups "missing" this state.
+> + *
+> + * A CPU wakeup is "matched" by a given idle state if the idle duration measured
+> + * after the wakeup is between the target residency of that state and the target
+> + * residnecy of the next one (or if this is the deepest available idle state, it
+
+s/residnecy/residency
+
+> + * "matches" a CPU wakeup when the measured idle duration is at least equal to
+> + * its target residency).
+> + *
+> + * Also, from the TEO governor prespective, a CPU wakeup from idle is "early" if
+
+s/prespective/perspective
+
+> + * it occurs significantly earlier than the closest expected timer event (that
+> + * is, early enough to match an idle state shallower than the one matching the
+> + * time till the closest timer event).  Otherwise, the wakeup is "on time", or
+> + * it is a "hit".
+> + *
+> + * A "miss" occurs when the given state doesn't match the wakeup, but it matches
+> + * the time till the closest timer event used for idle state selection.
+> + */
+
+
+<...>
+> +static void teo_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> +{
+> +	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
+> +	unsigned int sleep_length_us = ktime_to_us(cpu_data->sleep_length_ns);
+> +	int i, idx_hit = -1, idx_timer = -1;
+> +	unsigned int measured_us;
+> +
+> +	if (cpu_data->time_span_ns >= cpu_data->sleep_length_ns) {
+> +		/*
+> +		 * One of the safety nets has triggered or this was a timer
+> +		 * wakeup (or equivalent).
+> +		 */
+> +		measured_us = sleep_length_us;
+> +	} else {
+> +		unsigned int lat = drv->states[cpu_data->last_state].exit_latency;
+> +
+> +		measured_us = ktime_to_us(cpu_data->time_span_ns);
+> +		/*
+> +		 * The delay between the wakeup and the first instruction
+> +		 * executed by the CPU is not likely to be worst-case every
+> +		 * time, so take 1/2 of the exit latency as a very rough
+> +		 * approximation of the average of it.
+> +		 */
+> +		if (measured_us >= lat)
+> +			measured_us -= lat / 2;
+> +		else
+> +			measured_us /= 2;
+
+I'm not sure to understand this; why not removing lat/2 in all cases and
+cap at 0 ?
+
+> +	}
+
+
+<...>
+> +	/*
+> +	 * Save idle duration values corresponding to non-timer wakeups for
+> +	 * pattern detection.
+> +	 *
+> +	 * If the total time span between idle state selection and the "reflect"
+> +	 * callback is greater than or equal to the sleep length determined at
+> +	 * the idle state selection time, the wakeup is likely to be due to a
+> +	 * timer event.
+
+Should this paragraph go above the first 'if' of this function ? It
+checks the same thing and it took me some time to understand what you
+were doing while the explanation I needed was down here all along :-)
+
+> +	 */
+> +	if (cpu_data->time_span_ns >= cpu_data->sleep_length_ns)
+> +		measured_us = UINT_MAX;
+> +
+> +	cpu_data->intervals[cpu_data->interval_idx++] = measured_us;
+> +	if (cpu_data->interval_idx > INTERVALS)
+> +		cpu_data->interval_idx = 0;
+> +}
+
+
+<...>
+> +		/*
+> +		 * Count and sum the most recent idle duration values less than
+> +		 * the target residency of the state selected so far, find the
+> +		 * max.
+> +		 */
+> +		for (i = 0; i < INTERVALS; i++) {
+> +			unsigned int val = cpu_data->intervals[i];
+> +
+> +			if (val >= drv->states[idx].target_residency)
+> +				continue;
+> +
+> +			count++;
+> +			sum += val;
+> +		}
+> +
+> +		/*
+> +		 * Give up unless the majority of the most recent idle duration
+> +		 * values are in the interesting range.
+> +		 */
+> +		if (count > INTERVALS / 2) {
+
+I understand this probably works well enough in practice, but how 'robust'
+is supposed to be this filtering here ? If you have, say, 2 tasks with
+prime periods, then the hyper-period (which is when the pattern repeats)
+can get high really quickly, and you'll never see the full extent of
+that pattern with this mechanism.
+
+Yes, it's hard to do much better without introducing tons of complexity
+in here, but how did you define INTERVALS=8 and so ? Is this something
+you'd like to make configurable at some point ? I guess this could
+always be done later if need be.
+
+> +			unsigned int avg_us = div64_u64(sum, count);
+> +
+> +			/*
+> +			 * Avoid spending too much time in an idle state that
+> +			 * would be too shallow.
+> +			 */
+> +			if (!(tick_nohz_tick_stopped() && avg_us < TICK_USEC)) {
+
+IIUC, this is saying we shouldn't trust the predicted sleep time if it
+is shorter than the tick and the tick is stopped. What is the use case
+you have in mind for this ?
+
+In other words, in which scenario do you expect to see a lot of high
+frequency non-timer-related wake-ups and have the tick disabled ?
+
+> +				idx = teo_find_shallower_state(drv, dev, idx, avg_us);
+> +				duration_us = avg_us;
+> +			}
+> +		}
+> +	}
+
+Thanks,
+Quentin
