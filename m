@@ -1,116 +1,73 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 3/3] PM/runtime:Replace jiffies based accounting with ktime based accounting
-Date: Tue, 18 Dec 2018 15:55:23 +0100
-Message-ID: <1545144923-31546-4-git-send-email-vincent.guittot@linaro.org>
+Subject: [RFC 2/3] drm/i915: Move on the new pm runtime interface
+Date: Tue, 18 Dec 2018 15:55:22 +0100
+Message-ID: <1545144923-31546-3-git-send-email-vincent.guittot@linaro.org>
 References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 In-Reply-To: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: ulf.hansson@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>
+Cc: ulf.hansson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Thara Gopinath <thara.gopinath@linaro.org>
-
-This patch replaces jiffies based accounting for runtime_active_time
-and runtime_suspended_time with ktime base accounting. This makes the
-runtime debug counters inline with genpd and other pm subsytems which
-uses ktime based accounting.
-
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-[move from ktime to raw nsec]
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/base/power/runtime.c | 10 +++++-----
- drivers/base/power/sysfs.c   | 11 ++++++++---
- include/linux/pm.h           |  6 +++---
- 3 files changed, 16 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 6461469..5c18e28 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -66,8 +66,8 @@ static int rpm_suspend(struct device *dev, int rpmflags);
-  */
- void update_pm_runtime_accounting(struct device *dev)
- {
--	unsigned long now = jiffies;
--	unsigned long delta;
-+	u64 now = ktime_to_ns(ktime_get());
-+	u64 delta;
- 
- 	delta = now - dev->power.accounting_timestamp;
- 
-@@ -77,9 +77,9 @@ void update_pm_runtime_accounting(struct device *dev)
- 		return;
- 
- 	if (dev->power.runtime_status == RPM_SUSPENDED)
--		dev->power.suspended_jiffies += delta;
-+		dev->power.suspended_time += delta;
- 	else
--		dev->power.active_jiffies += delta;
-+		dev->power.active_time += delta;
- }
- 
- static void __update_runtime_status(struct device *dev, enum rpm_status status)
-@@ -1517,7 +1517,7 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.request_pending = false;
- 	dev->power.request = RPM_REQ_NONE;
- 	dev->power.deferred_resume = false;
--	dev->power.accounting_timestamp = jiffies;
-+	dev->power.accounting_timestamp = ktime_to_ns(ktime_get());
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
- 	dev->power.timer_expires = 0;
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index d713738..96c8a22 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -125,9 +125,12 @@ static ssize_t runtime_active_time_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	int ret;
-+	u64 tmp;
- 	spin_lock_irq(&dev->power.lock);
- 	update_pm_runtime_accounting(dev);
--	ret = sprintf(buf, "%i\n", jiffies_to_msecs(dev->power.active_jiffies));
-+	tmp = dev->power.active_time;
-+	do_div(tmp, NSEC_PER_MSEC);
-+	ret = sprintf(buf, "%llu\n", tmp);
- 	spin_unlock_irq(&dev->power.lock);
- 	return ret;
- }
-@@ -138,10 +141,12 @@ static ssize_t runtime_suspended_time_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	int ret;
-+	u64 tmp;
- 	spin_lock_irq(&dev->power.lock);
- 	update_pm_runtime_accounting(dev);
--	ret = sprintf(buf, "%i\n",
--		jiffies_to_msecs(dev->power.suspended_jiffies));
-+	tmp = dev->power.suspended_time;
-+	do_div(tmp, NSEC_PER_MSEC);
-+	ret = sprintf(buf, "%llu\n", tmp);
- 	spin_unlock_irq(&dev->power.lock);
- 	return ret;
- }
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 0bd9de1..3d2cbf9 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -633,9 +633,9 @@ struct dev_pm_info {
- 	int			runtime_error;
- 	int			autosuspend_delay;
- 	u64			last_busy;
--	unsigned long		active_jiffies;
--	unsigned long		suspended_jiffies;
--	unsigned long		accounting_timestamp;
-+	u64			active_time;
-+	u64			suspended_time;
-+	u64			accounting_timestamp;
- #endif
- 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
- 	void (*set_latency_tolerance)(struct device *, s32);
--- 
-2.7.4
+VXNlIHRoZSBuZXcgcG0gcnVudGltZSBpbnRlcmZhY2UgdG8gZ2V0IHRoZSBhY2NvdW50ZWQgc3Vz
+cGVuZGVkIHRpbWU6CnBtX3J1bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0KCkKClNpZ25lZC1vZmYt
+Ynk6IFZpbmNlbnQgR3VpdHRvdCA8dmluY2VudC5ndWl0dG90QGxpbmFyby5vcmc+Ci0tLQogZHJp
+dmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuYyB8IDE4ICsrKysrKysrLS0tLS0tLS0tLQogZHJp
+dmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuaCB8ICA0ICsrLS0KIDIgZmlsZXMgY2hhbmdlZCwg
+MTAgaW5zZXJ0aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9n
+cHUvZHJtL2k5MTUvaTkxNV9wbXUuYyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmMK
+aW5kZXggZDZjOGY4Zi4uZWJjNDllYSAxMDA2NDQKLS0tIGEvZHJpdmVycy9ncHUvZHJtL2k5MTUv
+aTkxNV9wbXUuYworKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5jCkBAIC01LDYg
+KzUsNyBAQAogICovCiAKICNpbmNsdWRlIDxsaW51eC9pcnEuaD4KKyNpbmNsdWRlIDxsaW51eC9w
+bV9ydW50aW1lLmg+CiAjaW5jbHVkZSAiaTkxNV9wbXUuaCIKICNpbmNsdWRlICJpbnRlbF9yaW5n
+YnVmZmVyLmgiCiAjaW5jbHVkZSAiaTkxNV9kcnYuaCIKQEAgLTQ3OCw3ICs0NzksNiBAQCBzdGF0
+aWMgdTY0IGdldF9yYzYoc3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCiAJCSAqIGNvdW50
+ZXIgdmFsdWUuCiAJCSAqLwogCQlzcGluX2xvY2tfaXJxc2F2ZSgmaTkxNS0+cG11LmxvY2ssIGZs
+YWdzKTsKLQkJc3Bpbl9sb2NrKCZrZGV2LT5wb3dlci5sb2NrKTsKIAogCQkvKgogCQkgKiBBZnRl
+ciB0aGUgYWJvdmUgYnJhbmNoIGludGVsX3J1bnRpbWVfcG1fZ2V0X2lmX2luX3VzZSBmYWlsZWQK
+QEAgLTQ5MSwxNiArNDkxLDE1IEBAIHN0YXRpYyB1NjQgZ2V0X3JjNihzdHJ1Y3QgZHJtX2k5MTVf
+cHJpdmF0ZSAqaTkxNSkKIAkJICogc3VzcGVuZGVkIGFuZCBpZiBub3Qgd2UgY2Fubm90IGRvIGJl
+dHRlciB0aGFuIHJlcG9ydCB0aGUgbGFzdAogCQkgKiBrbm93biBSQzYgdmFsdWUuCiAJCSAqLwot
+CQlpZiAoa2Rldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRFRCkgeworCQl2
+YWwgPSBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldChrZGV2LCBSUE1fU1VTUEVOREVELCB0
+cnVlKTsKKwkJaWYgKHBtX3J1bnRpbWVfc3RhdHVzX3N1c3BlbmRlZChrZGV2KSkgewogCQkJaWYg
+KCFpOTE1LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1QTEVfUkM2X0VTVElNQVRFRF0uY3VyKQotCQkJ
+CWk5MTUtPnBtdS5zdXNwZW5kZWRfamlmZmllc19sYXN0ID0KLQkJCQkJCSAga2Rldi0+cG93ZXIu
+c3VzcGVuZGVkX2ppZmZpZXM7CisJCQkJaTkxNS0+cG11LnN1c3BlbmRlZF90aW1lX2xhc3QgPQor
+CQkJCQlwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldChrZGV2LAorCQkJCQkJCQkgICAgICBS
+UE1fU1VTUEVOREVELAorCQkJCQkJCQkgICAgICBmYWxzZSk7CiAKLQkJCXZhbCA9IGtkZXYtPnBv
+d2VyLnN1c3BlbmRlZF9qaWZmaWVzIC0KLQkJCSAgICAgIGk5MTUtPnBtdS5zdXNwZW5kZWRfamlm
+Zmllc19sYXN0OwotCQkJdmFsICs9IGppZmZpZXMgLSBrZGV2LT5wb3dlci5hY2NvdW50aW5nX3Rp
+bWVzdGFtcDsKLQotCQkJdmFsID0gamlmZmllc190b19uc2Vjcyh2YWwpOworCQkJdmFsIC09IGk5
+MTUtPnBtdS5zdXNwZW5kZWRfdGltZV9sYXN0OwogCQkJdmFsICs9IGk5MTUtPnBtdS5zYW1wbGVb
+X19JOTE1X1NBTVBMRV9SQzZdLmN1cjsKIAogCQkJaTkxNS0+cG11LnNhbXBsZVtfX0k5MTVfU0FN
+UExFX1JDNl9FU1RJTUFURURdLmN1ciA9IHZhbDsKQEAgLTUxMCw3ICs1MDksNiBAQCBzdGF0aWMg
+dTY0IGdldF9yYzYoc3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCiAJCQl2YWwgPSBpOTE1
+LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1QTEVfUkM2XS5jdXI7CiAJCX0KIAotCQlzcGluX3VubG9j
+aygma2Rldi0+cG93ZXIubG9jayk7CiAJCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmk5MTUtPnBt
+dS5sb2NrLCBmbGFncyk7CiAJfQogCmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9p
+OTE1X3BtdS5oIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuaAppbmRleCA3ZjE2NGNh
+Li4zZGMyYTMwIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5oCisr
+KyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmgKQEAgLTk1LDkgKzk1LDkgQEAgc3Ry
+dWN0IGk5MTVfcG11IHsKIAkgKi8KIAlzdHJ1Y3QgaTkxNV9wbXVfc2FtcGxlIHNhbXBsZVtfX0k5
+MTVfTlVNX1BNVV9TQU1QTEVSU107CiAJLyoqCi0JICogQHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q6
+IENhY2hlZCBzdXNwZW5kIHRpbWUgZnJvbSBQTSBjb3JlLgorCSAqIEBzdXNwZW5kZWRfdGltZV9s
+YXN0OiBDYWNoZWQgc3VzcGVuZCB0aW1lIGZyb20gUE0gY29yZS4KIAkgKi8KLQl1bnNpZ25lZCBs
+b25nIHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q7CisJdTY0IHN1c3BlbmRlZF90aW1lX2xhc3Q7CiAJ
+LyoqCiAJICogQGk5MTVfYXR0cjogTWVtb3J5IGJsb2NrIGhvbGRpbmcgZGV2aWNlIGF0dHJpYnV0
+ZXMuCiAJICovCi0tIAoyLjcuNAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
+aW50ZWwtZ2Z4Cg==
