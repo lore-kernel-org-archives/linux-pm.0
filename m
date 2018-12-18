@@ -1,15 +1,15 @@
 From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v7 1/6] drm/msm/gpu: Remove hardcoded
- interrupt name
-Date: Tue, 18 Dec 2018 14:54:13 -0800
-Message-ID: <CAD=FV=VU+7LNkDke59cbXXcF=tEExALW+N24iEZn3vXMBuMZAg@mail.gmail.com>
+Subject: Re: [PATCH v7 4/6] arm64: dts: qcom: msm8916: Remove
+ unused interrupt-names from GPU
+Date: Tue, 18 Dec 2018 14:57:09 -0800
+Message-ID: <CAD=FV=VD7Hnu__k98bk3-SyrVwb=cjuOtZj=A3wv1_i813Jk+A@mail.gmail.com>
 References: <20181218183241.12830-1-jcrouse@codeaurora.org>
- <20181218183241.12830-2-jcrouse@codeaurora.org>
+ <20181218183241.12830-5-jcrouse@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181218183241.12830-2-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+In-Reply-To: <20181218183241.12830-5-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
  <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
 List-Archive: <https://lists.freedesktop.org/archives/freedreno>
@@ -24,15 +24,16 @@ Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2
 List-Id: linux-pm@vger.kernel.org
 
 SGksCgpPbiBUdWUsIERlYyAxOCwgMjAxOCBhdCAxMDozMiBBTSBKb3JkYW4gQ3JvdXNlIDxqY3Jv
-dXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPgo+IEV2ZXJ5IEdQVSBjb3JlIG9ubHkgaGFzIG9u
-ZSBpbnRlcnJ1cHQgc28gdGhlcmUgaXNuJ3QgYW55Cj4gdmFsdWUgaW4gbG9va2luZyB1cCB0aGUg
-aW50ZXJydXB0IGJ5IG5hbWUuIFJlbW92ZSB0aGUgbmFtZSAod2hpY2gKPiBpcyBsZWdhY3kgYW55
-d2F5KSBhbmQgdXNlIHBsYXRmb3JtX2dldF9pcnEoKSBpbnN0ZWFkLgo+Cj4gU2lnbmVkLW9mZi1i
-eTogSm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgZHJpdmVy
-cy9ncHUvZHJtL21zbS9hZHJlbm8vYWRyZW5vX2dwdS5jIHwgMSAtCj4gIGRyaXZlcnMvZ3B1L2Ry
-bS9tc20vbXNtX2dwdS5jICAgICAgICAgICB8IDIgKy0KPiAgZHJpdmVycy9ncHUvZHJtL21zbS9t
-c21fZ3B1LmggICAgICAgICAgIHwgMSAtCj4gIDMgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb24o
-KyksIDMgZGVsZXRpb25zKC0pCgpSZXZpZXdlZC1ieTogRG91Z2xhcyBBbmRlcnNvbiA8ZGlhbmRl
+dXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPgo+ICdpbnRlcnJ1cHQtbmFtZXMnIHNob3VsZG4n
+dCBiZSB1c2VkIGluIGNhc2VzIHdoZW4gdGhlcmUgaXMgb25seQo+IG9uZSBpbnRlcnJ1cHQgYW5k
+IGl0IGlzIG5vdCBvdGhlcndpc2UgdXNlZCBpbiB0aGUgZHJpdmVyLgo+Cj4gU2lnbmVkLW9mZi1i
+eTogSm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgYXJjaC9h
+cm02NC9ib290L2R0cy9xY29tL21zbTg5MTYuZHRzaSB8IDEgLQo+ICAxIGZpbGUgY2hhbmdlZCwg
+MSBkZWxldGlvbigtKQoKTG9va3MgZ29vZCB0byBtZS4gIEl0IHNob3VsZCBiZSBub3RlZCB0aGF0
+IEFuZHkgc2hvdWxkbid0IGxhbmQgdGhpcwp1bnRpbCBoZSBoYXMgYSB0cmVlIHRoYXQgY29udGFp
+bnMgKCJkcm0vbXNtL2dwdTogUmVtb3ZlIGhhcmRjb2RlZAppbnRlcnJ1cHQgbmFtZSIpLiAgLi4u
+b3IgaGUgc2hvdWxkIEFjayB0aGlzIGFuZCBpdCBzaG91bGQgZ28gdGhyb3VnaAp0aGUgc2FtZSB0
+cmVlIGFzIHRoYXQgcGF0Y2guCgpSZXZpZXdlZC1ieTogRG91Z2xhcyBBbmRlcnNvbiA8ZGlhbmRl
 cnNAY2hyb21pdW0ub3JnPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
 X19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3Rv
 cC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVl
