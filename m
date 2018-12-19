@@ -1,65 +1,77 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 05/10] i2c: zx2967: use core helper to mark adapter suspended
-Date: Wed, 19 Dec 2018 17:48:21 +0100
-Message-ID: <20181219164827.20985-6-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 06/10] i2c: sprd: don't use pdev as variable name for struct device *
+Date: Wed, 19 Dec 2018 17:48:22 +0100
+Message-ID: <20181219164827.20985-7-wsa+renesas@sang-engineering.com>
 References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Jun Nie <jun.nie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linaro.org>, Chunyan Zhang <zhang.lyra@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rejecting transfers should be handled by the core. Also, this will
-ensure proper locking which was forgotten in this open coded version
-and make sure resume mark is set after enabling clocks (not before).
+The pointer to a device is usually named 'dev'. These 'pdev' here look
+much like copy&paste errors. Fix them to avoid confusion.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Acked-by: Shawn Guo <shawnguo@kernel.org>
 ---
- drivers/i2c/busses/i2c-zx2967.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/i2c/busses/i2c-sprd.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-zx2967.c b/drivers/i2c/busses/i2c-zx2967.c
-index b8f9e020d80e..7b98d97da3c6 100644
---- a/drivers/i2c/busses/i2c-zx2967.c
-+++ b/drivers/i2c/busses/i2c-zx2967.c
-@@ -66,7 +66,6 @@ struct zx2967_i2c {
- 	int			msg_rd;
- 	u8			*cur_trans;
- 	u8			access_cnt;
--	bool			is_suspended;
- 	int			error;
- };
- 
-@@ -313,9 +312,6 @@ static int zx2967_i2c_xfer(struct i2c_adapter *adap,
- 	int ret;
- 	int i;
- 
--	if (i2c->is_suspended)
--		return -EBUSY;
--
- 	zx2967_set_addr(i2c, msgs->addr);
- 
- 	for (i = 0; i < num; i++) {
-@@ -470,7 +466,7 @@ static int __maybe_unused zx2967_i2c_suspend(struct device *dev)
- {
- 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
- 
--	i2c->is_suspended = true;
-+	i2c_mark_adapter_suspended(&i2c->adap);
- 	clk_disable_unprepare(i2c->clk);
- 
+diff --git a/drivers/i2c/busses/i2c-sprd.c b/drivers/i2c/busses/i2c-sprd.c
+index a94e724f51dc..e266d8a713d9 100644
+--- a/drivers/i2c/busses/i2c-sprd.c
++++ b/drivers/i2c/busses/i2c-sprd.c
+@@ -586,40 +586,40 @@ static int sprd_i2c_remove(struct platform_device *pdev)
  	return 0;
-@@ -480,8 +476,8 @@ static int __maybe_unused zx2967_i2c_resume(struct device *dev)
- {
- 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
+ }
  
--	i2c->is_suspended = false;
- 	clk_prepare_enable(i2c->clk);
-+	i2c_mark_adapter_resumed(&i2c->adap);
+-static int __maybe_unused sprd_i2c_suspend_noirq(struct device *pdev)
++static int __maybe_unused sprd_i2c_suspend_noirq(struct device *dev)
+ {
+-	struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
++	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+ 
+ 	i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+ 	i2c_dev->is_suspended = true;
+ 	i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+ 
+-	return pm_runtime_force_suspend(pdev);
++	return pm_runtime_force_suspend(dev);
+ }
+ 
+-static int __maybe_unused sprd_i2c_resume_noirq(struct device *pdev)
++static int __maybe_unused sprd_i2c_resume_noirq(struct device *dev)
+ {
+-	struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
++	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+ 
+ 	i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+ 	i2c_dev->is_suspended = false;
+ 	i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+ 
+-	return pm_runtime_force_resume(pdev);
++	return pm_runtime_force_resume(dev);
+ }
+ 
+-static int __maybe_unused sprd_i2c_runtime_suspend(struct device *pdev)
++static int __maybe_unused sprd_i2c_runtime_suspend(struct device *dev)
+ {
+-	struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
++	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+ 
+ 	clk_disable_unprepare(i2c_dev->clk);
  
  	return 0;
  }
+ 
+-static int __maybe_unused sprd_i2c_runtime_resume(struct device *pdev)
++static int __maybe_unused sprd_i2c_runtime_resume(struct device *dev)
+ {
+-	struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
++	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+ 	int ret;
+ 
+ 	ret = clk_prepare_enable(i2c_dev->clk);
 -- 
 2.11.0
