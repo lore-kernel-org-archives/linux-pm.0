@@ -1,54 +1,33 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RFC/RFT 10/10] i2c: rcar: add suspend/resume support
-Date: Wed, 19 Dec 2018 00:47:08 +0100
-Message-ID: <20181218234707.bpagrnelne5xwuot@ninjato>
-References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
- <20181210210310.12677-11-wsa+renesas@sang-engineering.com>
- <944a2523-aa40-eaf2-2c4a-d27254e7cbca@axentia.se>
+From: Peng Fan <peng.fan@nxp.com>
+Subject: tee/optee driver pm question
+Date: Wed, 19 Dec 2018 02:12:59 +0000
+Message-ID: <AM0PR04MB4481CD18AC19D03D98358DEB88BE0@AM0PR04MB4481.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2wd5zy6ly6ev5syp"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <944a2523-aa40-eaf2-2c4a-d27254e7cbca@axentia.se>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hiromitsu Yamasaki <hiromitsu.yamasaki.ym@renesas.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jens Wiklander <jens.wiklander@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Jerome Forissier <jerome.forissier@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Jens, Ulf
 
---2wd5zy6ly6ev5syp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We met an issue is OP-TEE is actively doing some DMA operations, such as CA=
+AM DMA, while Linux is doing some ddr freq change and will let ddr into sel=
+f-refresh state, this will cause issues.
 
+On ARMv8 i.MX, we have code request_bus_freq/release_bus_freq to ask ATF to=
+ make ddr into/out self refresh state. On ARMv7, we use similar code, but t=
+he request/release will runs into OP-TEE to make ddr into/out self refresh =
+state.
 
-> > Because the adapter will be set up before every transaction anyhow, we
-> > just need to mark it as adapted to the I2C core.
->=20
-> mark it as "suspended", not "adapted"?
+We have a RPC design, that is OP-TEE issue a RPC call to Linux, to ask Linu=
+x to not issue release bus freq, but this will introduce complexity and not=
+ aligned with other drivers in Linux Kernel. We are thinking to add pm call=
+ back to optee/tee drivers, but did not find a good method. Do you have any=
+ suggestions?
 
-Sure thing :D Thanks!
-
-
---2wd5zy6ly6ev5syp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwZhvsACgkQFA3kzBSg
-KbbaJA/+Ob1YPSF6Xjksbil3XEOIkN0XoZ3Nj8E89hLT7tS3ctwAGg38gGTkA9jq
-oh4UfWpqw6EkGle/mcg2NAzqjZgZssQ5zJnq7CbJKnAQqL5Ss35o7iWle3gCX5Wt
-0ebH5rcksESYEsL3a+3r/jw4YRPllAJjna76uhX+rcQ3TeNxRzXfvHOUWErW90SD
-PPwZjUQbk5ryO9hLzaHvOFst8eid7Cjv5EwZc6NAfxuHzg3BtDVooSeKdESDhUww
-DyejT1aYuDOHbhSNqecz61QYxbORlaVTTbLPaaM8/9DPFnlUrGGDWr1THawwLN4C
-0osmhb/MxPA3SFGkWliGbGPvhE4y+fT8+oBucsQWx+Rg8L/4JtqImhu3AY8WrVDN
-9TXWFp1u75plrBfnuCrv6zfLE/qgXg8QljNRsBVgBeZe/dwZ2MPhICqxOF2FI3ZV
-tblDZUUS7wRWom/eAwHt1+BlZ0IlDfx2+hZNTsDW7Gvdm5P82rQieior4RP7BJYo
-f6p0UIJUARj3M3zhUC3frNiYvVF871b9AiBuXuqFElfAEnc29RoXO7PwChHwF9Xo
-BLoi5V8t78NMAkOhx5R+FUiTxt2ur4O5qn0xeq9RDkIt1Z/7vNOfgiUeN3kKQLA0
-QRnbOjrvBz3X7xxIRWqV/R1YSyGYCP1d56yHYhoT/RLJdDxnnFA=
-=mlgw
------END PGP SIGNATURE-----
-
---2wd5zy6ly6ev5syp--
+Thanks,
+Peng.
