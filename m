@@ -1,109 +1,77 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v10 24/27] drivers: firmware: psci: Support CPU hotplug
- for the hierarchical model
-Date: Wed, 19 Dec 2018 11:17:44 +0000
-Message-ID: <20181219111744.GA23393@e107981-ln.cambridge.arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v10 07/27] cpuidle: dt: Support hierarchical CPU idle
+ states
+Date: Wed, 19 Dec 2018 12:20:00 +0100
+Message-ID: <8b8eaac3-9b17-a853-b02e-a5ec4a0c911d@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-25-ulf.hansson@linaro.org>
+ <20181129174700.16585-8-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181129174700.16585-25-ulf.hansson@linaro.org>
+In-Reply-To: <20181129174700.16585-8-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 29, 2018 at 06:46:57PM +0100, Ulf Hansson wrote:
-> When the hierarchical CPU topology is used and when a CPU has been put
-> offline (hotplug), that same CPU prevents its PM domain and thus also
-> potential master PM domains, from being powered off. This is because genpd
-> observes the CPU's struct device to remain being active from a runtime PM
-> point of view.
+On 29/11/2018 18:46, Ulf Hansson wrote:
+> From: Lina Iyer <lina.iyer@linaro.org>
 > 
-> To deal with this, let's decrease the runtime PM usage count by calling
-> pm_runtime_put_sync_suspend() of the CPU's struct device when putting it
-> offline. Consequentially, we must then increase the runtime PM usage for
-> the CPU, while putting it online again.
+> Currently CPU's idle states are represented in a flattened model, via the
+> "cpu-idle-states" binding from within the CPU's device nodes.
 > 
+> Support the hierarchical layout during parsing and validating of the CPU's
+> idle states. This is simply done by calling the new OF helper,
+> of_get_cpu_state_node().
+> 
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
 > ---
 > 
 > Changes in v10:
-> 	- Make it work when the hierarchical CPU topology is used, which may be
-> 	  used both for OSI and PC mode.
-> 	- Rework the code to prevent "BUG: sleeping function called from
-> 	  invalid context".
+> 	- None.
+> 
 > ---
->  drivers/firmware/psci/psci.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
+>  drivers/cpuidle/dt_idle_states.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index b03bccce0a5d..f62c4963eb62 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -15,6 +15,7 @@
+> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
+> index 53342b7f1010..13f9b7cd32d1 100644
+> --- a/drivers/cpuidle/dt_idle_states.c
+> +++ b/drivers/cpuidle/dt_idle_states.c
+> @@ -118,8 +118,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
+>  	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
+>  	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
+>  		cpu_node = of_cpu_device_node_get(cpu);
+> -		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+> -						   idx);
+> +		curr_state_node = of_get_cpu_state_node(cpu_node, idx);
+>  		if (state_node != curr_state_node)
+>  			valid = false;
 >  
->  #include <linux/acpi.h>
->  #include <linux/arm-smccc.h>
-> +#include <linux/cpu.h>
->  #include <linux/cpuidle.h>
->  #include <linux/errno.h>
->  #include <linux/linkage.h>
-> @@ -199,9 +200,20 @@ static int psci_cpu_suspend(u32 state, unsigned long entry_point)
+> @@ -176,7 +175,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
+>  	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
 >  
->  static int psci_cpu_off(u32 state)
->  {
-> +	struct device *dev;
->  	int err;
->  	u32 fn;
+>  	for (i = 0; ; i++) {
+> -		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
+> +		state_node = of_get_cpu_state_node(cpu_node, i);
+>  		if (!state_node)
+>  			break;
 >  
-> +	/*
-> +	 * When the hierarchical CPU topology is used, decrease the runtime PM
-> +	 * usage count for the current CPU, as to allow other parts in the
-> +	 * topology to enter low power states.
-> +	 */
-> +	if (psci_dt_topology) {
-> +		dev = get_cpu_device(smp_processor_id());
-> +		pm_runtime_put_sync_suspend(dev);
-> +	}
-> +
->  	fn = psci_function_id[PSCI_FN_CPU_OFF];
->  	err = invoke_psci_fn(fn, state, 0, 0);
->  	return psci_to_linux_errno(err);
-> @@ -209,6 +221,7 @@ static int psci_cpu_off(u32 state)
->  
->  static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
->  {
-> +	struct device *dev;
->  	int err;
->  	u32 fn;
->  
-> @@ -216,6 +229,13 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
->  	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
->  	/* Clear the domain state to start fresh. */
->  	psci_set_domain_state(0);
-> +
-> +	/* Increase runtime PM usage count if the hierarchical CPU toplogy. */
-> +	if (!err && psci_dt_topology) {
-> +		dev = get_cpu_device(cpuid);
-
-I do not like adding this code in the cpu_{on/off} method themselves, I will
-have a look at the patchset as whole to see how we can restructure it.
-
-More to the point, using cpuid as a logical cpu id is wrong, it is a
-physical id that you should convert to a logical id through
-get_logical_index().
-
-Lorenzo
-
-> +		pm_runtime_get_sync(dev);
-> +	}
-> +
->  	return psci_to_linux_errno(err);
->  }
->  
-> -- 
-> 2.17.1
 > 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
