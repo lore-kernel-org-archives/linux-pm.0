@@ -1,67 +1,262 @@
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 07/10] i2c: sprd: use core helper to mark adapter suspended
-Date: Wed, 19 Dec 2018 17:48:23 +0100
-Message-ID: <20181219164827.20985-8-wsa+renesas@sang-engineering.com>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get accounted time
+Date: Wed, 19 Dec 2018 17:52:15 +0100
+Message-ID: <CAKfTPtBp+eCqyCWh27FWe8pkrFJiLQitPL_+kfL42r_BTq6DcQ@mail.gmail.com>
+References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
+ <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
+ <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
+ <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
+ <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
+ <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
+ <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
+ <CAKfTPtA4Fr6Xk7+dUpzZqGvK6dJGtWAiz70Ho4noQk3gBdGFdg@mail.gmail.com> <CAPDyKFqpieqgh-0U_N1wwWdciotMAAJ2SRNXpGAb8D2voiaOJA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <CAPDyKFqpieqgh-0U_N1wwWdciotMAAJ2SRNXpGAb8D2voiaOJA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linaro.org>, Chunyan Zhang <zhang.lyra@gmail.com>, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rejecting transfers should be handled by the core.
+On Wed, 19 Dec 2018 at 17:36, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Wed, 19 Dec 2018 at 14:26, Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
+> >
+> > On Wed, 19 Dec 2018 at 11:43, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Wed, 19 Dec 2018 at 11:34, Vincent Guittot
+> > > <vincent.guittot@linaro.org> wrote:
+> > > >
+> > > > On Wed, 19 Dec 2018 at 11:21, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > > >
+> >
+> > > > > > > >
+> > > > > > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > > > > > > index 7062469..6461469 100644
+> > > > > > > > --- a/drivers/base/power/runtime.c
+> > > > > > > > +++ b/drivers/base/power/runtime.c
+> > > > > > > > @@ -88,6 +88,32 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+> > > > > > > >         dev->power.runtime_status = status;
+> > > > > > > >  }
+> > > > > > > >
+> > > > > > > > +u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update)
+> > > > > > > > +{
+> > > > > > > > +       u64 now = ktime_to_ns(ktime_get());
+> > > > > > >
+> > > > > > > I think you should stay on jiffies here - and then switch to ktime in patch 3.
+> > > > > > >
+> > > > > > > > +       u64 delta = 0, time = 0;
+> > > > > > > > +       unsigned long flags;
+> > > > > > > > +
+> > > > > > > > +       spin_lock_irqsave(&dev->power.lock, flags);
+> > > > > > > > +
+> > > > > > > > +       if (dev->power.disable_depth > 0)
+> > > > > > > > +               goto unlock;
+> > > > > > > > +
+> > > > > > > > +       /* Add ongoing state  if requested */
+> > > > > > > > +       if (update && dev->power.runtime_status == status)
+> > > > > > > > +               delta = now - dev->power.accounting_timestamp;
+> > > > > > > > +
+> > > > > > >
+> > > > > > > Hmm. Do we really need to update the accounting timestamp? I would
+> > > > > > > rather avoid it if possible.
+> > > > > >
+> > > > > > i915/drm uses this to track ongoing suspended state. In fact they are
+> > > > > > mainly interested by this part
+> > > > >
+> > > > > Again, sorry I don't follow.
+> > > >
+> > > > In fact we don't update dev->power.accounting_timestamp but only use
+> > > > it to get how much time has elapsed in the current state.
+> > > >
+> > > > >
+> > > > > My suggested changes below, would do exactly that; track the ongoing
+> > > > > suspended state.
+> > > > >
+> > > > > The user can call the function several times while the device remains
+> > > > > RPM_SUSPENDED, and if needed the user could then compute the delta
+> > > > > in-between the calls, for whatever reason that may be needed.
+> > > >
+> > > > So I'm not sure to catch your question:
+> > > > Is your problem linked to status != RPM_SUSPENDED or the update
+> > > > parameter that compute delta ?
+> > >
+> > > My intent was to keep things simple.
+> > >
+> > > 1. Only expose last suspended time, which means tracking the ongoing
+> > > suspended state. In other words, you can also remove "enum rpm_status
+> > > status" as the in-parameter to pm_runtime_accounted_time_get().
+> >
+> > Ok for this point if Rafael doesn't see any benefit of keeping the
+> > generic interface
+> >
+> > > 2. Don't allow the user of pm_runtime_accounted_time_get() to update
+> > > the current timestamp, in "dev->power.accounting_timestamp".
+> >
+> > But pm_runtime_accounted_time_get doesn't update
+> > dev->power.accounting_timestamp, it only reads it to know when when
+> > the last state transition happened
+>
+> I understand, sorry for not being clear enough.
+>
+> My point is, you must not update dev->power.suspended_time, without
+> also setting a new value for dev->power.accounting_timestamp.
+> Otherwise, the next time the core calls
+> update_pm_runtime_accounting(), it will end up adding a wrong delta to
+> dev->power.suspended_time.
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/i2c/busses/i2c-sprd.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+I fully agree on that and that's why dev->power.accounting_timestamp
+is not and has never been modified
 
-diff --git a/drivers/i2c/busses/i2c-sprd.c b/drivers/i2c/busses/i2c-sprd.c
-index e266d8a713d9..961123529678 100644
---- a/drivers/i2c/busses/i2c-sprd.c
-+++ b/drivers/i2c/busses/i2c-sprd.c
-@@ -86,7 +86,6 @@ struct sprd_i2c {
- 	u32 count;
- 	int irq;
- 	int err;
--	bool is_suspended;
- };
- 
- static void sprd_i2c_set_count(struct sprd_i2c *i2c_dev, u32 count)
-@@ -284,9 +283,6 @@ static int sprd_i2c_master_xfer(struct i2c_adapter *i2c_adap,
- 	struct sprd_i2c *i2c_dev = i2c_adap->algo_data;
- 	int im, ret;
- 
--	if (i2c_dev->is_suspended)
--		return -EBUSY;
--
- 	ret = pm_runtime_get_sync(i2c_dev->dev);
- 	if (ret < 0)
- 		return ret;
-@@ -590,10 +586,7 @@ static int __maybe_unused sprd_i2c_suspend_noirq(struct device *dev)
- {
- 	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
- 
--	i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
--	i2c_dev->is_suspended = true;
--	i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
--
-+	i2c_mark_adapter_suspended(&i2c_dev->adap);
- 	return pm_runtime_force_suspend(dev);
- }
- 
-@@ -601,10 +594,7 @@ static int __maybe_unused sprd_i2c_resume_noirq(struct device *dev)
- {
- 	struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
- 
--	i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
--	i2c_dev->is_suspended = false;
--	i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
--
-+	i2c_mark_adapter_resumed(&i2c_dev->adap);
- 	return pm_runtime_force_resume(dev);
- }
- 
--- 
-2.11.0
+>
+> BTW, it seems like you have based this on top of some patch converting
+> from jiffies to ktime, as I can't fine dev->power.suspended_time, but
+> instead I have dev->power.suspended_jiffies.
+>
+> On Wed, 19 Dec 2018 at 14:26, Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
+> >
+> > On Wed, 19 Dec 2018 at 11:43, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Wed, 19 Dec 2018 at 11:34, Vincent Guittot
+> > > <vincent.guittot@linaro.org> wrote:
+> > > >
+> > > > On Wed, 19 Dec 2018 at 11:21, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > > >
+> >
+> > > > > > > >
+> > > > > > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > > > > > > index 7062469..6461469 100644
+> > > > > > > > --- a/drivers/base/power/runtime.c
+> > > > > > > > +++ b/drivers/base/power/runtime.c
+> > > > > > > > @@ -88,6 +88,32 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+> > > > > > > >         dev->power.runtime_status = status;
+> > > > > > > >  }
+> > > > > > > >
+> > > > > > > > +u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update)
+> > > > > > > > +{
+> > > > > > > > +       u64 now = ktime_to_ns(ktime_get());
+> > > > > > >
+> > > > > > > I think you should stay on jiffies here - and then switch to ktime in patch 3.
+> > > > > > >
+> > > > > > > > +       u64 delta = 0, time = 0;
+> > > > > > > > +       unsigned long flags;
+> > > > > > > > +
+> > > > > > > > +       spin_lock_irqsave(&dev->power.lock, flags);
+> > > > > > > > +
+> > > > > > > > +       if (dev->power.disable_depth > 0)
+> > > > > > > > +               goto unlock;
+> > > > > > > > +
+> > > > > > > > +       /* Add ongoing state  if requested */
+> > > > > > > > +       if (update && dev->power.runtime_status == status)
+> > > > > > > > +               delta = now - dev->power.accounting_timestamp;
+> > > > > > > > +
+> > > > > > >
+> > > > > > > Hmm. Do we really need to update the accounting timestamp? I would
+> > > > > > > rather avoid it if possible.
+> > > > > >
+> > > > > > i915/drm uses this to track ongoing suspended state. In fact they are
+> > > > > > mainly interested by this part
+> > > > >
+> > > > > Again, sorry I don't follow.
+> > > >
+> > > > In fact we don't update dev->power.accounting_timestamp but only use
+> > > > it to get how much time has elapsed in the current state.
+> > > >
+> > > > >
+> > > > > My suggested changes below, would do exactly that; track the ongoing
+> > > > > suspended state.
+> > > > >
+> > > > > The user can call the function several times while the device remains
+> > > > > RPM_SUSPENDED, and if needed the user could then compute the delta
+> > > > > in-between the calls, for whatever reason that may be needed.
+> > > >
+> > > > So I'm not sure to catch your question:
+> > > > Is your problem linked to status != RPM_SUSPENDED or the update
+> > > > parameter that compute delta ?
+> > >
+> > > My intent was to keep things simple.
+> > >
+> > > 1. Only expose last suspended time, which means tracking the ongoing
+> > > suspended state. In other words, you can also remove "enum rpm_status
+> > > status" as the in-parameter to pm_runtime_accounted_time_get().
+> >
+> > Ok for this point if Rafael doesn't see any benefit of keeping the
+> > generic interface
+> >
+> > > 2. Don't allow the user of pm_runtime_accounted_time_get() to update
+> > > the current timestamp, in "dev->power.accounting_timestamp".
+> >
+> > But pm_runtime_accounted_time_get doesn't update
+> > dev->power.accounting_timestamp, it only reads it to know when when
+> > the last state transition happened
+> >
+> > >
+> > > Is that okay for the drm driver, to do what it does today?
+> >
+> > drm driver needs 2 things: the  accounted suspended time since the
+> > last transition
+>
+> The core keeps tracks of the "total suspended time". Each time
+> update_pm_runtime_accounting() is called, and the state is
+> RPM_SUSPENDED it adds a delta to the total suspended time. Just to be
+> clear, this may even happen when userspace reads the
+> "runtime_suspended_time" sysfs node.
+>
+> My point is, the core doesn't track the "total suspended time since
+> the last transition", which seems to be what the drm driver tries to
+> figure out.
+>
+> Just to be clear, I don't think we should update the core to provide
+> the data reflecting that time, as it would add overhead from
+> additional time computations. I think it's better to push this down to
+
+Which kind of overhead are you referring ? This is done only when
+pm_runtime_accounted_time_get') is called and doesn't modify
+pm core metrics
+
+> those drivers that needs it, as it seems like a highly unusual thing.
+>
+> Instead, perhaps we should provide an API
+> (pm_runtime_suspended_time()) that simply returns the value of
+> dev->power.suspended_jiffies. The driver/subsystem could then call
+> this API from its ->runtime_suspend|resume() callbacks, for example,
+> to store values from it locally and later compute the deltas from it
+> that it needs.
+
+not sure that i915/drm has such call back
+
+>
+> Do note that, the core updates the status of the device to
+> RPM_SUSPENDED, after the ->runtime_suspend() callback has returned a
+> successful error code. Hence, calling the API from a
+> ->runtime_suspend() callback would fetch the total suspended time, up
+> until the last time the device became runtime resumed. That should be
+> helpful, right?
+
+TBH, I don't know if this would help or not. i915/drm driver developer
+should have the answer
+
+AFAICT, all this code is not driver in itself but some perf monitoring
+stuff that estimate a events when it is not accessible anymore because
+devices is suspended
+>
+> > and the time elapse in the current state when suspened
+>
+> Re-thinking this a bit from my earlier comments - and by following the
+> above reasoning, it sounds like this better belongs in the
+> driver/subsystem, without requiring any data from the core.
+>
+> The driver/subsystem could just store a timestamp in it's
+> ->runtime_suspend() callback and whenever needed, it could compute a
+> delta towards it. That should work, right?
+
+I don't know i915/drm enough to know all that details
+
+>
+> [...]
+>
+> Kind regards
+> Uffe
