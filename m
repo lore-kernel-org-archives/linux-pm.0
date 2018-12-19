@@ -1,136 +1,118 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v10 04/27] PM / Domains: Add genpd governor for CPUs
-Date: Wed, 19 Dec 2018 11:09:28 +0100
-Message-ID: <CAPDyKFr4KmCMciLANLCEsTKj2Mz-B89BybSvX4Y8g=L5vim=fw@mail.gmail.com>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-5-ulf.hansson@linaro.org> <5529fc0a-af96-b10a-ca4a-f1417598f4ee@linaro.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get accounted time
+Date: Wed, 19 Dec 2018 11:11:40 +0100
+Message-ID: <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
+References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
+ <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org> <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5529fc0a-af96-b10a-ca4a-f1417598f4ee@linaro.org>
+In-Reply-To: <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 19 Dec 2018 at 10:54, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On Wed, 19 Dec 2018 at 10:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> On 29/11/2018 18:46, Ulf Hansson wrote:
-> > As it's now perfectly possible that a PM domain managed by genpd contains
-> > devices belonging to CPUs, we should start to take into account the
-> > residency values for the idle states during the state selection process.
-> > The residency value specifies the minimum duration of time, the CPU or a
-> > group of CPUs, needs to spend in an idle state to not waste energy entering
-> > it.
+> On Tue, 18 Dec 2018 at 15:55, Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
 > >
-> > To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
-> > may be used for a PM domain that have CPU devices attached or if the CPUs
-> > are attached through subdomains.
+> > Some drivers (like i915/drm) need to get the accounted suspended time.
+> > pm_runtime_accounted_time_get() will return the suspended or active
+> > accounted time until now.
+>
+> I suggest to leave the active accounted time out for now. At least
+> until we have some users.
+
+This is needed to keep same feature level for i915/drm
+
+>
+> That said, perhaps rename the function to something along the lines
+> of, pm_runtime_last_suspended_time(), to make it more clear.
+>
 > >
-> > The new governor computes the minimum expected idle duration time for the
-> > online CPUs being attached to the PM domain and its subdomains. Then in the
-> > state selection process, trying the deepest state first, it verifies that
-> > the idle duration time satisfies the state's residency value.
-> >
-> > It should be noted that, when computing the minimum expected idle duration
-> > time, we use the information from tick_nohz_get_next_wakeup(), to find the
-> > next wakeup for the related CPUs. Future wise, this may deserve to be
-> > improved, as there are more reasons to why a CPU may be woken up from idle.
-> >
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Lina Iyer <ilina@codeaurora.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Ingo Molnar <mingo@kernel.org>
-> > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 > > ---
+> >  drivers/base/power/runtime.c | 26 ++++++++++++++++++++++++++
+> >  include/linux/pm_runtime.h   |  2 ++
+> >  2 files changed, 28 insertions(+)
 > >
-> > Changes in v10:
-> >       - Fold in patch that extended the new genpd CPU governor to cope with
-> >         QoS constraints, as to avoid confusion.
-> >       - Simplified the code according to suggestions from Rafael.
-> >
-> > ---
-> >  drivers/base/power/domain_governor.c | 61 +++++++++++++++++++++++++++-
-> >  include/linux/pm_domain.h            |  3 ++
-> >  2 files changed, 63 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> > index 99896fbf18e4..61a7c3c03c98 100644
-> > --- a/drivers/base/power/domain_governor.c
-> > +++ b/drivers/base/power/domain_governor.c
-> > @@ -10,6 +10,9 @@
-> >  #include <linux/pm_domain.h>
-> >  #include <linux/pm_qos.h>
-> >  #include <linux/hrtimer.h>
-> > +#include <linux/cpumask.h>
-> > +#include <linux/ktime.h>
-> > +#include <linux/tick.h>
-> >
-> >  static int dev_update_qos_constraint(struct device *dev, void *data)
-> >  {
-> > @@ -211,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
-> >       struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> >       struct gpd_link *link;
-> >
-> > -     if (!genpd->max_off_time_changed)
-> > +     if (!genpd->max_off_time_changed) {
-> > +             genpd->state_idx = genpd->cached_power_down_state_idx;
-> >               return genpd->cached_power_down_ok;
-> > +     }
-> >
-> >       /*
-> >        * We have to invalidate the cached results for the masters, so
-> > @@ -237,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
-> >               genpd->state_idx--;
-> >       }
-> >
-> > +     genpd->cached_power_down_state_idx = genpd->state_idx;
-> >       return genpd->cached_power_down_ok;
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 7062469..6461469 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -88,6 +88,32 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+> >         dev->power.runtime_status = status;
 > >  }
 > >
-> > @@ -245,6 +251,54 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
-> >       return false;
-> >  }
-> >
-> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+> > +u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update)
 > > +{
-> > +     struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> > +     ktime_t domain_wakeup, cpu_wakeup;
-> > +     s64 idle_duration_ns;
-> > +     int cpu, i;
-> > +
-> > +     /* Validate dev PM QoS constraints. */
-> > +     if (!default_power_down_ok(pd))
-> > +             return false;
-> > +
-> > +     if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-> > +             return true;
+> > +       u64 now = ktime_to_ns(ktime_get());
 >
-> Is it possible to have this function called without the
-> GENPD_FLAG_CPU_DOMAIN flag set in the genpd?
+> I think you should stay on jiffies here - and then switch to ktime in patch 3.
+>
+> > +       u64 delta = 0, time = 0;
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave(&dev->power.lock, flags);
+> > +
+> > +       if (dev->power.disable_depth > 0)
+> > +               goto unlock;
+> > +
+> > +       /* Add ongoing state  if requested */
+> > +       if (update && dev->power.runtime_status == status)
+> > +               delta = now - dev->power.accounting_timestamp;
+> > +
+>
+> Hmm. Do we really need to update the accounting timestamp? I would
+> rather avoid it if possible.
 
-Theoretically yes, however in practice, probably not.
-
-Do note, if the GENPD_FLAG_CPU_DOMAIN isn't set, then we haven't
-allocated the cpumask for the genpd, so then we shouldn't use it.
+i915/drm uses this to track ongoing suspended state. In fact they are
+mainly interested by this part
 
 >
-> > +     /*
-> > +      * Find the next wakeup for any of the online CPUs within the PM domain
-> > +      * and its subdomains. Note, we only need the genpd->cpus, as it already
-> > +      * contains a mask of all CPUs from subdomains.
-> > +      */
-> > +     domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> > +     for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> > +             cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
-> > +             if (ktime_before(cpu_wakeup, domain_wakeup))
-> > +                     domain_wakeup = cpu_wakeup;
-> > +     }
+> It seems like it should be sufficient to return the delta between
+> "now" and the "dev->power.accounting_timestamp", when
+> "dev->power.runtime_status == RPM_SUSPENDED".
+>
+> In other case, just return 0, because we are not in RPM_SUSPENDED state.
+
+only the RPM_SUSPENDED is used by i915/drm but wanted to provide a
+generic interface to get
+suspended or not suspend state
+
+>
+> > +       if (status == RPM_SUSPENDED)
+> > +               time = dev->power.suspended_time + delta;
+> > +       else
+> > +               time = dev->power.active_time + delta;
 > > +
-
-[...]
-
-Kind regards
-Uffe
+> > +unlock:
+> > +       spin_unlock_irqrestore(&dev->power.lock, flags);
+> > +
+> > +       return time;
+> > +}
+> > +
+> >  /**
+> >   * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
+> >   * @dev: Device to handle.
+> > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> > index 54af4ee..86f21f9 100644
+> > --- a/include/linux/pm_runtime.h
+> > +++ b/include/linux/pm_runtime.h
+> > @@ -113,6 +113,8 @@ static inline bool pm_runtime_is_irq_safe(struct device *dev)
+> >         return dev->power.irq_safe;
+> >  }
+> >
+> > +extern u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update);
+> > +
+> >  #else /* !CONFIG_PM */
+> >
+> >  static inline bool queue_pm_work(struct work_struct *work) { return false; }
+> > --
+> > 2.7.4
+> >
+>
+> Kind regards
+> Uffe
