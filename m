@@ -1,89 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v12 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
- HW driver
-Date: Wed, 19 Dec 2018 11:14:42 +0530
-Message-ID: <20181219054442.ffkyv6bcmrlkgcga@vireshk-i7>
-References: <1544687394-331-1-git-send-email-tdas@codeaurora.org>
- <1544687394-331-3-git-send-email-tdas@codeaurora.org>
- <154469510700.19322.7762676027024031719@swboyd.mtv.corp.google.com>
- <20181213100506.sy3haqjbxtmkthvt@vireshk-i7>
- <154469596755.19322.16319349046735344084@swboyd.mtv.corp.google.com>
- <20181218054545.k77jh5lxvmj2zott@vireshk-i7>
- <154516038159.238328.2917665370794230521@swboyd.mtv.corp.google.com>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: Re: [PATCH V3 11/20] cpufreq: tegra124: do not handle the CPU rail
+Date: Wed, 19 Dec 2018 14:24:09 +0800
+Message-ID: <312ac6e6-0480-b638-a26b-311013929c2c@nvidia.com>
+References: <20181218091232.23532-1-josephl@nvidia.com>
+ <20181218091232.23532-12-josephl@nvidia.com>
+ <CAJZ5v0h0n2AXERvXFX_dQWMUw_89ap_LgB6dUK0ThJgZ+unkkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <154516038159.238328.2917665370794230521@swboyd.mtv.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Matthias Kaehlcke <mka@chromium.org>, vincent.guittot@linaro.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAJZ5v0h0n2AXERvXFX_dQWMUw_89ap_LgB6dUK0ThJgZ+unkkQ@mail.gmail.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, linux-clk <linux-clk@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18-12-18, 11:13, Stephen Boyd wrote:
-> I don't see any failure returned from cpufreq_dt's cpufreq_init()
-> function. Maybe put a static int counter = 0 and then fail
-> cpufreq_init() the second time that it's called for the same policy
-> pointer? I have a system with two policies, so I made it fail and return
-> -EINVAL when the counter == 2 and I see the lockdep splat.
-
-Yuck. You were so clear on this earlier, how can I forget it. :(
-
-Here is the additional diff. And I do get this print message on my screen while
-I try to online CPU4.
-
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 639feca22d27..b836e93fd87d 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -151,6 +151,11 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-        const char *name;
-        int ret;
- 
-+       if (policy->count++) {
-+               pr_info("%s: %d\n", __func__, __LINE__);
-+               return -EINVAL;
-+       }
-+
-        cpu_dev = get_cpu_device(policy->cpu);
-        if (!cpu_dev) {
-                pr_err("failed to get cpu%d device\n", policy->cpu);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 882a9b9e34bc..643141a2013f 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -151,6 +151,7 @@ struct cpufreq_policy {
- 
-        /* For cpufreq driver's internal use */
-        void                    *driver_data;
-+       int                     count;
- };
-
-> I did the following:
+On 12/18/18 5:37 PM, Rafael J. Wysocki wrote:
+> On Tue, Dec 18, 2018 at 10:13 AM Joseph Lo <josephl@nvidia.com> wrote:
+>>
+>> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
+>> rail. So this driver shouldn't handle for the CPU clock switching from
+>> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
+>> which handle the frequency/voltage scaling in the background.
+>>
+>> This patch removes the driver dependency of the CPU rail, as well as not
+>> allow it to be built as a module and remove the removal function. So it
+>> can keep working on DFLL clock.
+>>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+>> Acked-by: Jon Hunter <jonathanh@nvidia.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
->   grep . /sys/devices/system/cpu/cpufreq/*/* >/dev/null
->   echo 0 > /sys/devices/system/cpu/cpu4/online 
->   echo 0 > /sys/devices/system/cpu/cpu5/online 
->   echo 0 > /sys/devices/system/cpu/cpu6/online 
->   echo 0 > /sys/devices/system/cpu/cpu7/online 
->   echo 1 > /sys/devices/system/cpu/cpu4/online 
->   dmesg
+> I'm assuming that this entire series will go in via arm-soc, so I
+> won't be picking up the cpufreq patches from it.
 > 
-> And boom, lockdep splat.
+> Please let me know if that is not what you want.
+> 
+> Thanks,
+> Rafael
+> 
 
-  502  grep . /sys/devices/system/cpu/cpufreq/*/*
-  503  echo 0 > /sys/devices/system/cpu/cpu4/online
-  504  echo 0 > /sys/devices/system/cpu/cpu5/online
-  505  echo 0 > /sys/devices/system/cpu/cpu6/online
-  506  echo 0 > /sys/devices/system/cpu/cpu7/online
-  507  grep . /sys/devices/system/cpu/cpufreq/*/*
-  508  echo 1 > /sys/devices/system/cpu/cpu4/online
-  509  dmesg 
+Hi Rafael,
 
+Thanks, will check with Thierry.
 
-But still no lockdep :(
-
-Can you try that on mainline as well ?
-
--- 
-viresh
+Joseph
