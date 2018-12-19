@@ -1,58 +1,45 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: Re: [PATCH V3 11/20] cpufreq: tegra124: do not handle the CPU rail
-Date: Wed, 19 Dec 2018 14:24:09 +0800
-Message-ID: <312ac6e6-0480-b638-a26b-311013929c2c@nvidia.com>
-References: <20181218091232.23532-1-josephl@nvidia.com>
- <20181218091232.23532-12-josephl@nvidia.com>
- <CAJZ5v0h0n2AXERvXFX_dQWMUw_89ap_LgB6dUK0ThJgZ+unkkQ@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RESEND] PM / Domains: remove define_genpd_open_function() and
+ define_genpd_debugfs_fops()
+Date: Wed, 19 Dec 2018 09:32:23 +0100
+Message-ID: <20181219083223.GC31670@kroah.com>
+References: <20181215084526.27210-1-tiny.windzz@gmail.com>
+ <CAPDyKFq5oxDc1drn-0Tj-aBJCPCXcd_AO0q=56s9sumgiY4Dpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0h0n2AXERvXFX_dQWMUw_89ap_LgB6dUK0ThJgZ+unkkQ@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, linux-tegra@vger.kernel.org, linux-clk <linux-clk@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFq5oxDc1drn-0Tj-aBJCPCXcd_AO0q=56s9sumgiY4Dpg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Yangtao Li <tiny.windzz@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/18/18 5:37 PM, Rafael J. Wysocki wrote:
-> On Tue, Dec 18, 2018 at 10:13 AM Joseph Lo <josephl@nvidia.com> wrote:
->>
->> The Tegra124 cpufreq driver has no information to handle the Vdd-CPU
->> rail. So this driver shouldn't handle for the CPU clock switching from
->> DFLL to other PLL clocks. It was designed to work on DFLL clock only,
->> which handle the frequency/voltage scaling in the background.
->>
->> This patch removes the driver dependency of the CPU rail, as well as not
->> allow it to be built as a module and remove the removal function. So it
->> can keep working on DFLL clock.
->>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Joseph Lo <josephl@nvidia.com>
->> Acked-by: Jon Hunter <jonathanh@nvidia.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Mon, Dec 17, 2018 at 09:19:07AM +0100, Ulf Hansson wrote:
+> On Sat, 15 Dec 2018 at 09:45, Yangtao Li <tiny.windzz@gmail.com> wrote:
+> >
+> > We already have the DEFINE_SHOW_ATTRIBUTE, There is no need to define
+> > such a macro, so remove define_genpd_open_function and
+> > define_genpd_debugfs_fops.
+> >
+> > Convert them to DEFINE_SHOW_ATTRIBUTE.
+> >
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> >  drivers/base/power/domain.c | 71 +++++++++++++------------------------
+> >  1 file changed, 24 insertions(+), 47 deletions(-)
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 7f38a92b444a..10a61d6147d0 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -2671,7 +2671,7 @@ static int genpd_summary_one(struct seq_file *s,
+> >         return 0;
+> >  }
+> >
+> > -static int genpd_summary_show(struct seq_file *s, void *data)
+> > +static int summary_show(struct seq_file *s, void *data)
 > 
-> I'm assuming that this entire series will go in via arm-soc, so I
-> won't be picking up the cpufreq patches from it.
-> 
-> Please let me know if that is not what you want.
-> 
-> Thanks,
-> Rafael
-> 
+> Why rename the function(s)?
 
-Hi Rafael,
-
-Thanks, will check with Thierry.
-
-Joseph
+Because the macro requires it?
