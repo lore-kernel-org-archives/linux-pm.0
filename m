@@ -1,191 +1,66 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get
- accounted time
-Date: Wed, 19 Dec 2018 17:36:16 +0100
-Message-ID: <CAPDyKFqpieqgh-0U_N1wwWdciotMAAJ2SRNXpGAb8D2voiaOJA@mail.gmail.com>
-References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
- <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
- <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
- <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
- <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
- <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
- <CAKfTPtA4Fr6Xk7+dUpzZqGvK6dJGtWAiz70Ho4noQk3gBdGFdg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKfTPtA4Fr6Xk7+dUpzZqGvK6dJGtWAiz70Ho4noQk3gBdGFdg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: [PATCH 00/10] i2c: move handling of suspended adapters to the core
+Date: Wed, 19 Dec 2018 17:48:16 +0100
+Message-ID: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxNDoyNiwgVmluY2VudCBHdWl0dG90Cjx2aW5jZW50Lmd1
-aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBPbiBXZWQsIDE5IERlYyAyMDE4IGF0IDExOjQz
-LCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4gd3JvdGU6Cj4gPgo+ID4gT24g
-V2VkLCAxOSBEZWMgMjAxOCBhdCAxMTozNCwgVmluY2VudCBHdWl0dG90Cj4gPiA8dmluY2VudC5n
-dWl0dG90QGxpbmFyby5vcmc+IHdyb3RlOgo+ID4gPgo+ID4gPiBPbiBXZWQsIDE5IERlYyAyMDE4
-IGF0IDExOjIxLCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4gd3JvdGU6Cj4g
-PiA+ID4KPgo+ID4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-YmFzZS9wb3dlci9ydW50aW1lLmMgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPiA+
-ID4gPiA+ID4gaW5kZXggNzA2MjQ2OS4uNjQ2MTQ2OSAxMDA2NDQKPiA+ID4gPiA+ID4gPiAtLS0g
-YS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPiA+ID4gPiA+ID4gKysrIGIvZHJpdmVy
-cy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gPiA+ID4gPiA+IEBAIC04OCw2ICs4OCwzMiBAQCBz
-dGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVu
-dW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gPiA+ID4gPiA+ID4gICAgICAgICBkZXYtPnBvd2VyLnJ1
-bnRpbWVfc3RhdHVzID0gc3RhdHVzOwo+ID4gPiA+ID4gPiA+ICB9Cj4gPiA+ID4gPiA+ID4KPiA+
-ID4gPiA+ID4gPiArdTY0IHBtX3J1bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0KHN0cnVjdCBkZXZp
-Y2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cywgYm9vbCB1cGRhdGUpCj4gPiA+ID4gPiA+
-ID4gK3sKPiA+ID4gPiA+ID4gPiArICAgICAgIHU2NCBub3cgPSBrdGltZV90b19ucyhrdGltZV9n
-ZXQoKSk7Cj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+IEkgdGhpbmsgeW91IHNob3VsZCBzdGF5IG9u
-IGppZmZpZXMgaGVyZSAtIGFuZCB0aGVuIHN3aXRjaCB0byBrdGltZSBpbiBwYXRjaCAzLgo+ID4g
-PiA+ID4gPgo+ID4gPiA+ID4gPiA+ICsgICAgICAgdTY0IGRlbHRhID0gMCwgdGltZSA9IDA7Cj4g
-PiA+ID4gPiA+ID4gKyAgICAgICB1bnNpZ25lZCBsb25nIGZsYWdzOwo+ID4gPiA+ID4gPiA+ICsK
-PiA+ID4gPiA+ID4gPiArICAgICAgIHNwaW5fbG9ja19pcnFzYXZlKCZkZXYtPnBvd2VyLmxvY2ss
-IGZsYWdzKTsKPiA+ID4gPiA+ID4gPiArCj4gPiA+ID4gPiA+ID4gKyAgICAgICBpZiAoZGV2LT5w
-b3dlci5kaXNhYmxlX2RlcHRoID4gMCkKPiA+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAgZ290
-byB1bmxvY2s7Cj4gPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiA+ICsgICAgICAgLyogQWRkIG9u
-Z29pbmcgc3RhdGUgIGlmIHJlcXVlc3RlZCAqLwo+ID4gPiA+ID4gPiA+ICsgICAgICAgaWYgKHVw
-ZGF0ZSAmJiBkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IHN0YXR1cykKPiA+ID4gPiA+ID4g
-PiArICAgICAgICAgICAgICAgZGVsdGEgPSBub3cgLSBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGlt
-ZXN0YW1wOwo+ID4gPiA+ID4gPiA+ICsKPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gSG1tLiBEbyB3
-ZSByZWFsbHkgbmVlZCB0byB1cGRhdGUgdGhlIGFjY291bnRpbmcgdGltZXN0YW1wPyBJIHdvdWxk
-Cj4gPiA+ID4gPiA+IHJhdGhlciBhdm9pZCBpdCBpZiBwb3NzaWJsZS4KPiA+ID4gPiA+Cj4gPiA+
-ID4gPiBpOTE1L2RybSB1c2VzIHRoaXMgdG8gdHJhY2sgb25nb2luZyBzdXNwZW5kZWQgc3RhdGUu
-IEluIGZhY3QgdGhleSBhcmUKPiA+ID4gPiA+IG1haW5seSBpbnRlcmVzdGVkIGJ5IHRoaXMgcGFy
-dAo+ID4gPiA+Cj4gPiA+ID4gQWdhaW4sIHNvcnJ5IEkgZG9uJ3QgZm9sbG93Lgo+ID4gPgo+ID4g
-PiBJbiBmYWN0IHdlIGRvbid0IHVwZGF0ZSBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1w
-IGJ1dCBvbmx5IHVzZQo+ID4gPiBpdCB0byBnZXQgaG93IG11Y2ggdGltZSBoYXMgZWxhcHNlZCBp
-biB0aGUgY3VycmVudCBzdGF0ZS4KPiA+ID4KPiA+ID4gPgo+ID4gPiA+IE15IHN1Z2dlc3RlZCBj
-aGFuZ2VzIGJlbG93LCB3b3VsZCBkbyBleGFjdGx5IHRoYXQ7IHRyYWNrIHRoZSBvbmdvaW5nCj4g
-PiA+ID4gc3VzcGVuZGVkIHN0YXRlLgo+ID4gPiA+Cj4gPiA+ID4gVGhlIHVzZXIgY2FuIGNhbGwg
-dGhlIGZ1bmN0aW9uIHNldmVyYWwgdGltZXMgd2hpbGUgdGhlIGRldmljZSByZW1haW5zCj4gPiA+
-ID4gUlBNX1NVU1BFTkRFRCwgYW5kIGlmIG5lZWRlZCB0aGUgdXNlciBjb3VsZCB0aGVuIGNvbXB1
-dGUgdGhlIGRlbHRhCj4gPiA+ID4gaW4tYmV0d2VlbiB0aGUgY2FsbHMsIGZvciB3aGF0ZXZlciBy
-ZWFzb24gdGhhdCBtYXkgYmUgbmVlZGVkLgo+ID4gPgo+ID4gPiBTbyBJJ20gbm90IHN1cmUgdG8g
-Y2F0Y2ggeW91ciBxdWVzdGlvbjoKPiA+ID4gSXMgeW91ciBwcm9ibGVtIGxpbmtlZCB0byBzdGF0
-dXMgIT0gUlBNX1NVU1BFTkRFRCBvciB0aGUgdXBkYXRlCj4gPiA+IHBhcmFtZXRlciB0aGF0IGNv
-bXB1dGUgZGVsdGEgPwo+ID4KPiA+IE15IGludGVudCB3YXMgdG8ga2VlcCB0aGluZ3Mgc2ltcGxl
-Lgo+ID4KPiA+IDEuIE9ubHkgZXhwb3NlIGxhc3Qgc3VzcGVuZGVkIHRpbWUsIHdoaWNoIG1lYW5z
-IHRyYWNraW5nIHRoZSBvbmdvaW5nCj4gPiBzdXNwZW5kZWQgc3RhdGUuIEluIG90aGVyIHdvcmRz
-LCB5b3UgY2FuIGFsc28gcmVtb3ZlICJlbnVtIHJwbV9zdGF0dXMKPiA+IHN0YXR1cyIgYXMgdGhl
-IGluLXBhcmFtZXRlciB0byBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldCgpLgo+Cj4gT2sg
-Zm9yIHRoaXMgcG9pbnQgaWYgUmFmYWVsIGRvZXNuJ3Qgc2VlIGFueSBiZW5lZml0IG9mIGtlZXBp
-bmcgdGhlCj4gZ2VuZXJpYyBpbnRlcmZhY2UKPgo+ID4gMi4gRG9uJ3QgYWxsb3cgdGhlIHVzZXIg
-b2YgcG1fcnVudGltZV9hY2NvdW50ZWRfdGltZV9nZXQoKSB0byB1cGRhdGUKPiA+IHRoZSBjdXJy
-ZW50IHRpbWVzdGFtcCwgaW4gImRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAiLgo+Cj4g
-QnV0IHBtX3J1bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0IGRvZXNuJ3QgdXBkYXRlCj4gZGV2LT5w
-b3dlci5hY2NvdW50aW5nX3RpbWVzdGFtcCwgaXQgb25seSByZWFkcyBpdCB0byBrbm93IHdoZW4g
-d2hlbgo+IHRoZSBsYXN0IHN0YXRlIHRyYW5zaXRpb24gaGFwcGVuZWQKCkkgdW5kZXJzdGFuZCwg
-c29ycnkgZm9yIG5vdCBiZWluZyBjbGVhciBlbm91Z2guCgpNeSBwb2ludCBpcywgeW91IG11c3Qg
-bm90IHVwZGF0ZSBkZXYtPnBvd2VyLnN1c3BlbmRlZF90aW1lLCB3aXRob3V0CmFsc28gc2V0dGlu
-ZyBhIG5ldyB2YWx1ZSBmb3IgZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFtcC4KT3RoZXJ3
-aXNlLCB0aGUgbmV4dCB0aW1lIHRoZSBjb3JlIGNhbGxzCnVwZGF0ZV9wbV9ydW50aW1lX2FjY291
-bnRpbmcoKSwgaXQgd2lsbCBlbmQgdXAgYWRkaW5nIGEgd3JvbmcgZGVsdGEgdG8KZGV2LT5wb3dl
-ci5zdXNwZW5kZWRfdGltZS4KCkJUVywgaXQgc2VlbXMgbGlrZSB5b3UgaGF2ZSBiYXNlZCB0aGlz
-IG9uIHRvcCBvZiBzb21lIHBhdGNoIGNvbnZlcnRpbmcKZnJvbSBqaWZmaWVzIHRvIGt0aW1lLCBh
-cyBJIGNhbid0IGZpbmUgZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZSwgYnV0Cmluc3RlYWQgSSBo
-YXZlIGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXMuCgpPbiBXZWQsIDE5IERlYyAyMDE4IGF0
-IDE0OjI2LCBWaW5jZW50IEd1aXR0b3QKPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90
-ZToKPgo+IE9uIFdlZCwgMTkgRGVjIDIwMTggYXQgMTE6NDMsIFVsZiBIYW5zc29uIDx1bGYuaGFu
-c3NvbkBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBPbiBXZWQsIDE5IERlYyAyMDE4IGF0IDEx
-OjM0LCBWaW5jZW50IEd1aXR0b3QKPiA+IDx2aW5jZW50Lmd1aXR0b3RAbGluYXJvLm9yZz4gd3Jv
-dGU6Cj4gPiA+Cj4gPiA+IE9uIFdlZCwgMTkgRGVjIDIwMTggYXQgMTE6MjEsIFVsZiBIYW5zc29u
-IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPiB3cm90ZToKPiA+ID4gPgo+Cj4gPiA+ID4gPiA+ID4K
-PiA+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyBi
-L2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMKPiA+ID4gPiA+ID4gPiBpbmRleCA3MDYyNDY5
-Li42NDYxNDY5IDEwMDY0NAo+ID4gPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvYmFzZS9wb3dlci9y
-dW50aW1lLmMKPiA+ID4gPiA+ID4gPiArKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5j
-Cj4gPiA+ID4gPiA+ID4gQEAgLTg4LDYgKzg4LDMyIEBAIHN0YXRpYyB2b2lkIF9fdXBkYXRlX3J1
-bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZpY2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cykK
-PiA+ID4gPiA+ID4gPiAgICAgICAgIGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPSBzdGF0dXM7
-Cj4gPiA+ID4gPiA+ID4gIH0KPiA+ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiA+ICt1NjQgcG1fcnVu
-dGltZV9hY2NvdW50ZWRfdGltZV9nZXQoc3RydWN0IGRldmljZSAqZGV2LCBlbnVtIHJwbV9zdGF0
-dXMgc3RhdHVzLCBib29sIHVwZGF0ZSkKPiA+ID4gPiA+ID4gPiArewo+ID4gPiA+ID4gPiA+ICsg
-ICAgICAgdTY0IG5vdyA9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKTsKPiA+ID4gPiA+ID4KPiA+
-ID4gPiA+ID4gSSB0aGluayB5b3Ugc2hvdWxkIHN0YXkgb24gamlmZmllcyBoZXJlIC0gYW5kIHRo
-ZW4gc3dpdGNoIHRvIGt0aW1lIGluIHBhdGNoIDMuCj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ID4g
-KyAgICAgICB1NjQgZGVsdGEgPSAwLCB0aW1lID0gMDsKPiA+ID4gPiA+ID4gPiArICAgICAgIHVu
-c2lnbmVkIGxvbmcgZmxhZ3M7Cj4gPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiA+ICsgICAgICAg
-c3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93ZXIubG9jaywgZmxhZ3MpOwo+ID4gPiA+ID4gPiA+
-ICsKPiA+ID4gPiA+ID4gPiArICAgICAgIGlmIChkZXYtPnBvd2VyLmRpc2FibGVfZGVwdGggPiAw
-KQo+ID4gPiA+ID4gPiA+ICsgICAgICAgICAgICAgICBnb3RvIHVubG9jazsKPiA+ID4gPiA+ID4g
-PiArCj4gPiA+ID4gPiA+ID4gKyAgICAgICAvKiBBZGQgb25nb2luZyBzdGF0ZSAgaWYgcmVxdWVz
-dGVkICovCj4gPiA+ID4gPiA+ID4gKyAgICAgICBpZiAodXBkYXRlICYmIGRldi0+cG93ZXIucnVu
-dGltZV9zdGF0dXMgPT0gc3RhdHVzKQo+ID4gPiA+ID4gPiA+ICsgICAgICAgICAgICAgICBkZWx0
-YSA9IG5vdyAtIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXA7Cj4gPiA+ID4gPiA+ID4g
-Kwo+ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiBIbW0uIERvIHdlIHJlYWxseSBuZWVkIHRvIHVwZGF0
-ZSB0aGUgYWNjb3VudGluZyB0aW1lc3RhbXA/IEkgd291bGQKPiA+ID4gPiA+ID4gcmF0aGVyIGF2
-b2lkIGl0IGlmIHBvc3NpYmxlLgo+ID4gPiA+ID4KPiA+ID4gPiA+IGk5MTUvZHJtIHVzZXMgdGhp
-cyB0byB0cmFjayBvbmdvaW5nIHN1c3BlbmRlZCBzdGF0ZS4gSW4gZmFjdCB0aGV5IGFyZQo+ID4g
-PiA+ID4gbWFpbmx5IGludGVyZXN0ZWQgYnkgdGhpcyBwYXJ0Cj4gPiA+ID4KPiA+ID4gPiBBZ2Fp
-biwgc29ycnkgSSBkb24ndCBmb2xsb3cuCj4gPiA+Cj4gPiA+IEluIGZhY3Qgd2UgZG9uJ3QgdXBk
-YXRlIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAgYnV0IG9ubHkgdXNlCj4gPiA+IGl0
-IHRvIGdldCBob3cgbXVjaCB0aW1lIGhhcyBlbGFwc2VkIGluIHRoZSBjdXJyZW50IHN0YXRlLgo+
-ID4gPgo+ID4gPiA+Cj4gPiA+ID4gTXkgc3VnZ2VzdGVkIGNoYW5nZXMgYmVsb3csIHdvdWxkIGRv
-IGV4YWN0bHkgdGhhdDsgdHJhY2sgdGhlIG9uZ29pbmcKPiA+ID4gPiBzdXNwZW5kZWQgc3RhdGUu
-Cj4gPiA+ID4KPiA+ID4gPiBUaGUgdXNlciBjYW4gY2FsbCB0aGUgZnVuY3Rpb24gc2V2ZXJhbCB0
-aW1lcyB3aGlsZSB0aGUgZGV2aWNlIHJlbWFpbnMKPiA+ID4gPiBSUE1fU1VTUEVOREVELCBhbmQg
-aWYgbmVlZGVkIHRoZSB1c2VyIGNvdWxkIHRoZW4gY29tcHV0ZSB0aGUgZGVsdGEKPiA+ID4gPiBp
-bi1iZXR3ZWVuIHRoZSBjYWxscywgZm9yIHdoYXRldmVyIHJlYXNvbiB0aGF0IG1heSBiZSBuZWVk
-ZWQuCj4gPiA+Cj4gPiA+IFNvIEknbSBub3Qgc3VyZSB0byBjYXRjaCB5b3VyIHF1ZXN0aW9uOgo+
-ID4gPiBJcyB5b3VyIHByb2JsZW0gbGlua2VkIHRvIHN0YXR1cyAhPSBSUE1fU1VTUEVOREVEIG9y
-IHRoZSB1cGRhdGUKPiA+ID4gcGFyYW1ldGVyIHRoYXQgY29tcHV0ZSBkZWx0YSA/Cj4gPgo+ID4g
-TXkgaW50ZW50IHdhcyB0byBrZWVwIHRoaW5ncyBzaW1wbGUuCj4gPgo+ID4gMS4gT25seSBleHBv
-c2UgbGFzdCBzdXNwZW5kZWQgdGltZSwgd2hpY2ggbWVhbnMgdHJhY2tpbmcgdGhlIG9uZ29pbmcK
-PiA+IHN1c3BlbmRlZCBzdGF0ZS4gSW4gb3RoZXIgd29yZHMsIHlvdSBjYW4gYWxzbyByZW1vdmUg
-ImVudW0gcnBtX3N0YXR1cwo+ID4gc3RhdHVzIiBhcyB0aGUgaW4tcGFyYW1ldGVyIHRvIHBtX3J1
-bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0KCkuCj4KPiBPayBmb3IgdGhpcyBwb2ludCBpZiBSYWZh
-ZWwgZG9lc24ndCBzZWUgYW55IGJlbmVmaXQgb2Yga2VlcGluZyB0aGUKPiBnZW5lcmljIGludGVy
-ZmFjZQo+Cj4gPiAyLiBEb24ndCBhbGxvdyB0aGUgdXNlciBvZiBwbV9ydW50aW1lX2FjY291bnRl
-ZF90aW1lX2dldCgpIHRvIHVwZGF0ZQo+ID4gdGhlIGN1cnJlbnQgdGltZXN0YW1wLCBpbiAiZGV2
-LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFtcCIuCj4KPiBCdXQgcG1fcnVudGltZV9hY2NvdW50
-ZWRfdGltZV9nZXQgZG9lc24ndCB1cGRhdGUKPiBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0
-YW1wLCBpdCBvbmx5IHJlYWRzIGl0IHRvIGtub3cgd2hlbiB3aGVuCj4gdGhlIGxhc3Qgc3RhdGUg
-dHJhbnNpdGlvbiBoYXBwZW5lZAo+Cj4gPgo+ID4gSXMgdGhhdCBva2F5IGZvciB0aGUgZHJtIGRy
-aXZlciwgdG8gZG8gd2hhdCBpdCBkb2VzIHRvZGF5Pwo+Cj4gZHJtIGRyaXZlciBuZWVkcyAyIHRo
-aW5nczogdGhlICBhY2NvdW50ZWQgc3VzcGVuZGVkIHRpbWUgc2luY2UgdGhlCj4gbGFzdCB0cmFu
-c2l0aW9uCgpUaGUgY29yZSBrZWVwcyB0cmFja3Mgb2YgdGhlICJ0b3RhbCBzdXNwZW5kZWQgdGlt
-ZSIuIEVhY2ggdGltZQp1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKCkgaXMgY2FsbGVkLCBh
-bmQgdGhlIHN0YXRlIGlzClJQTV9TVVNQRU5ERUQgaXQgYWRkcyBhIGRlbHRhIHRvIHRoZSB0b3Rh
-bCBzdXNwZW5kZWQgdGltZS4gSnVzdCB0byBiZQpjbGVhciwgdGhpcyBtYXkgZXZlbiBoYXBwZW4g
-d2hlbiB1c2Vyc3BhY2UgcmVhZHMgdGhlCiJydW50aW1lX3N1c3BlbmRlZF90aW1lIiBzeXNmcyBu
-b2RlLgoKTXkgcG9pbnQgaXMsIHRoZSBjb3JlIGRvZXNuJ3QgdHJhY2sgdGhlICJ0b3RhbCBzdXNw
-ZW5kZWQgdGltZSBzaW5jZQp0aGUgbGFzdCB0cmFuc2l0aW9uIiwgd2hpY2ggc2VlbXMgdG8gYmUg
-d2hhdCB0aGUgZHJtIGRyaXZlciB0cmllcyB0bwpmaWd1cmUgb3V0LgoKSnVzdCB0byBiZSBjbGVh
-ciwgSSBkb24ndCB0aGluayB3ZSBzaG91bGQgdXBkYXRlIHRoZSBjb3JlIHRvIHByb3ZpZGUKdGhl
-IGRhdGEgcmVmbGVjdGluZyB0aGF0IHRpbWUsIGFzIGl0IHdvdWxkIGFkZCBvdmVyaGVhZCBmcm9t
-CmFkZGl0aW9uYWwgdGltZSBjb21wdXRhdGlvbnMuIEkgdGhpbmsgaXQncyBiZXR0ZXIgdG8gcHVz
-aCB0aGlzIGRvd24gdG8KdGhvc2UgZHJpdmVycyB0aGF0IG5lZWRzIGl0LCBhcyBpdCBzZWVtcyBs
-aWtlIGEgaGlnaGx5IHVudXN1YWwgdGhpbmcuCgpJbnN0ZWFkLCBwZXJoYXBzIHdlIHNob3VsZCBw
-cm92aWRlIGFuIEFQSQoocG1fcnVudGltZV9zdXNwZW5kZWRfdGltZSgpKSB0aGF0IHNpbXBseSBy
-ZXR1cm5zIHRoZSB2YWx1ZSBvZgpkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzLiBUaGUgZHJp
-dmVyL3N1YnN5c3RlbSBjb3VsZCB0aGVuIGNhbGwKdGhpcyBBUEkgZnJvbSBpdHMgLT5ydW50aW1l
-X3N1c3BlbmR8cmVzdW1lKCkgY2FsbGJhY2tzLCBmb3IgZXhhbXBsZSwKdG8gc3RvcmUgdmFsdWVz
-IGZyb20gaXQgbG9jYWxseSBhbmQgbGF0ZXIgY29tcHV0ZSB0aGUgZGVsdGFzIGZyb20gaXQKdGhh
-dCBpdCBuZWVkcy4KCkRvIG5vdGUgdGhhdCwgdGhlIGNvcmUgdXBkYXRlcyB0aGUgc3RhdHVzIG9m
-IHRoZSBkZXZpY2UgdG8KUlBNX1NVU1BFTkRFRCwgYWZ0ZXIgdGhlIC0+cnVudGltZV9zdXNwZW5k
-KCkgY2FsbGJhY2sgaGFzIHJldHVybmVkIGEKc3VjY2Vzc2Z1bCBlcnJvciBjb2RlLiBIZW5jZSwg
-Y2FsbGluZyB0aGUgQVBJIGZyb20gYQotPnJ1bnRpbWVfc3VzcGVuZCgpIGNhbGxiYWNrIHdvdWxk
-IGZldGNoIHRoZSB0b3RhbCBzdXNwZW5kZWQgdGltZSwgdXAKdW50aWwgdGhlIGxhc3QgdGltZSB0
-aGUgZGV2aWNlIGJlY2FtZSBydW50aW1lIHJlc3VtZWQuIFRoYXQgc2hvdWxkIGJlCmhlbHBmdWws
-IHJpZ2h0PwoKPiBhbmQgdGhlIHRpbWUgZWxhcHNlIGluIHRoZSBjdXJyZW50IHN0YXRlIHdoZW4g
-c3VzcGVuZWQKClJlLXRoaW5raW5nIHRoaXMgYSBiaXQgZnJvbSBteSBlYXJsaWVyIGNvbW1lbnRz
-IC0gYW5kIGJ5IGZvbGxvd2luZyB0aGUKYWJvdmUgcmVhc29uaW5nLCBpdCBzb3VuZHMgbGlrZSB0
-aGlzIGJldHRlciBiZWxvbmdzIGluIHRoZQpkcml2ZXIvc3Vic3lzdGVtLCB3aXRob3V0IHJlcXVp
-cmluZyBhbnkgZGF0YSBmcm9tIHRoZSBjb3JlLgoKVGhlIGRyaXZlci9zdWJzeXN0ZW0gY291bGQg
-anVzdCBzdG9yZSBhIHRpbWVzdGFtcCBpbiBpdCdzCi0+cnVudGltZV9zdXNwZW5kKCkgY2FsbGJh
-Y2sgYW5kIHdoZW5ldmVyIG5lZWRlZCwgaXQgY291bGQgY29tcHV0ZSBhCmRlbHRhIHRvd2FyZHMg
-aXQuIFRoYXQgc2hvdWxkIHdvcmssIHJpZ2h0PwoKWy4uLl0KCktpbmQgcmVnYXJkcwpVZmZlCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBt
-YWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+Finally, here is the implementation Hans and I agreed on. Plus, all potential
+users I could spot already converted. Renesas R-Car driver was added on top.
+This series was tested on a Renesas Lager board (R-Car H2). I had to hack some
+error cases into the code to verify the workings. Thanks for all the tests so
+far. Of course, more testing never hurts ;)
+
+Please comment, review, test... a branch can be found here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/core-pm-helpers
+
+Thanks,
+
+   Wolfram
+
+Changes since RFC:
+
+* don't use bitfields anymore but an unsigned long flags variable which is only
+  meant for flags to be changed when the adapter lock is held
+
+* split the genereic accessor into _mark_suspended() and _mark_resumed()
+
+* added kerneldoc and noted that using these helpers is optional
+
+* documented -ESHUTDOWN as the error code when trying to transfer using an
+  already suspended adapter
+
+* added acks from last series. Changes were minor enough to keep them. Please let
+  me know if you disagree.
+
+
+Wolfram Sang (10):
+  i2c: add suspended flag and accessors for i2c adapters
+  i2c: reject new transfers when adapters are suspended
+  i2c: synquacer: remove unused is_suspended flag
+  i2c: brcmstb: use core helper to mark adapter suspended
+  i2c: zx2967: use core helper to mark adapter suspended
+  i2c: sprd: don't use pdev as variable name for struct device *
+  i2c: sprd: use core helper to mark adapter suspended
+  i2c: exynos5: use core helper to mark adapter suspended
+  i2c: s3c2410: use core helper to mark adapter suspended
+  i2c: rcar: add suspend/resume support
+
+ Documentation/i2c/fault-codes      |  4 ++++
+ drivers/i2c/busses/i2c-brcmstb.c   | 13 ++-----------
+ drivers/i2c/busses/i2c-exynos5.c   | 11 ++---------
+ drivers/i2c/busses/i2c-rcar.c      | 25 +++++++++++++++++++++++++
+ drivers/i2c/busses/i2c-s3c2410.c   |  8 ++------
+ drivers/i2c/busses/i2c-sprd.c      | 34 ++++++++++++----------------------
+ drivers/i2c/busses/i2c-synquacer.c |  5 -----
+ drivers/i2c/busses/i2c-zx2967.c    |  8 ++------
+ drivers/i2c/i2c-core-base.c        |  3 +++
+ include/linux/i2c.h                | 34 ++++++++++++++++++++++++++++++++++
+ 10 files changed, 86 insertions(+), 59 deletions(-)
+
+-- 
+2.11.0
