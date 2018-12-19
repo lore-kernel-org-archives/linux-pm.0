@@ -1,64 +1,77 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 08/10] i2c: exynos5: use core helper to mark adapter suspended
-Date: Wed, 19 Dec 2018 17:48:24 +0100
-Message-ID: <20181219164827.20985-9-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 04/10] i2c: brcmstb: use core helper to mark adapter suspended
+Date: Wed, 19 Dec 2018 17:48:20 +0100
+Message-ID: <20181219164827.20985-5-wsa+renesas@sang-engineering.com>
 References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Florian Fainelli <f.fainelli@gmail.com>, Kamal Dasu <kdasu.kdev@gmail.com>, linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, bcm-kernel-feedback-list@broadcom.com, Gregory Fong <gregory.0xf0@gmail.com>, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Rejecting transfers should be handled by the core. Also, this will
-ensure proper locking which was forgotten in this open coded version.
+Rejecting transfers should be handled by the core.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Kamal Dasu <kdasu.kdev@gmail.com>
 ---
- drivers/i2c/busses/i2c-exynos5.c | 11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ drivers/i2c/busses/i2c-brcmstb.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-exynos5.c b/drivers/i2c/busses/i2c-exynos5.c
-index c1ce2299a76e..41de4ee409b6 100644
---- a/drivers/i2c/busses/i2c-exynos5.c
-+++ b/drivers/i2c/busses/i2c-exynos5.c
-@@ -183,7 +183,6 @@ enum i2c_type_exynos {
+diff --git a/drivers/i2c/busses/i2c-brcmstb.c b/drivers/i2c/busses/i2c-brcmstb.c
+index 826d32049996..f4d862234980 100644
+--- a/drivers/i2c/busses/i2c-brcmstb.c
++++ b/drivers/i2c/busses/i2c-brcmstb.c
+@@ -170,7 +170,6 @@ struct brcmstb_i2c_dev {
+ 	struct bsc_regs *bsc_regmap;
+ 	struct i2c_adapter adapter;
+ 	struct completion done;
+-	bool is_suspended;
+ 	u32 clk_freq_hz;
+ 	int data_regsz;
+ };
+@@ -467,9 +466,6 @@ static int brcmstb_i2c_xfer(struct i2c_adapter *adapter,
+ 	int xfersz = brcmstb_i2c_get_xfersz(dev);
+ 	u32 cond, cond_per_msg;
  
- struct exynos5_i2c {
- 	struct i2c_adapter	adap;
--	unsigned int		suspended:1;
- 
- 	struct i2c_msg		*msg;
- 	struct completion	msg_complete;
-@@ -715,11 +714,6 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
- 	struct exynos5_i2c *i2c = adap->algo_data;
- 	int i, ret;
- 
--	if (i2c->suspended) {
--		dev_err(i2c->dev, "HS-I2C is not initialized.\n");
--		return -EIO;
--	}
+-	if (dev->is_suspended)
+-		return -EBUSY;
 -
- 	ret = clk_enable(i2c->clk);
- 	if (ret)
- 		return ret;
-@@ -847,8 +841,7 @@ static int exynos5_i2c_suspend_noirq(struct device *dev)
+ 	/* Loop through all messages */
+ 	for (i = 0; i < num; i++) {
+ 		pmsg = &msgs[i];
+@@ -689,10 +685,7 @@ static int brcmstb_i2c_suspend(struct device *dev)
  {
- 	struct exynos5_i2c *i2c = dev_get_drvdata(dev);
+ 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
  
--	i2c->suspended = 1;
+-	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
+-	i2c_dev->is_suspended = true;
+-	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
 -
-+	i2c_mark_adapter_suspended(&i2c->adap);
- 	clk_unprepare(i2c->clk);
- 
++	i2c_mark_adapter_suspended(&i2c_dev->adapter);
  	return 0;
-@@ -871,7 +864,7 @@ static int exynos5_i2c_resume_noirq(struct device *dev)
+ }
  
- 	exynos5_i2c_init(i2c);
- 	clk_disable(i2c->clk);
--	i2c->suspended = 0;
-+	i2c_mark_adapter_resumed(&i2c->adap);
+@@ -700,10 +693,8 @@ static int brcmstb_i2c_resume(struct device *dev)
+ {
+ 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
+ 
+-	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
+ 	brcmstb_i2c_set_bsc_reg_defaults(i2c_dev);
+-	i2c_dev->is_suspended = false;
+-	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
++	i2c_mark_adapter_resumed(&i2c_dev->adapter);
  
  	return 0;
  }
