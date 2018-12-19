@@ -1,66 +1,45 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
- adapters
-Date: Wed, 19 Dec 2018 19:36:54 +0100
-Message-ID: <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
- <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
- <20181219172250.ytronxeq2yc4vp4r@wunner.de>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Wed, 19 Dec 2018 14:08:52 -0600
+Message-ID: <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <20181212211848.26768-3-jcrouse@codeaurora.org>
+ <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
+ <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
+ <20181217070647.xtvfgsixggua5yod@vireshk-i7>
+ <CAD=FV=WKfKyZe6sc4drfa9kLQVbG1b9nCe6qbPmUPQGNEKAh=Q@mail.gmail.com>
+ <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
+ <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
+ <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181219172250.ytronxeq2yc4vp4r@wunner.de>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa@the-dreams.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 19-12-18 18:22, Lukas Wunner wrote:
-> On Wed, Dec 19, 2018 at 05:48:17PM +0100, Wolfram Sang wrote:
->> +static inline void i2c_mark_adapter_suspended(struct i2c_adapter *adap)
->> +{
->> +	i2c_lock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
->> +	set_bit(I2C_ALF_IS_SUSPENDED, &adap->locked_flags);
->> +	i2c_unlock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
->> +}
-> 
-> This looks like a duplication of the is_suspended flag in struct dev_pm_info.
-> Any reason why you can't use that?  If so, it would be good to document the
-> reason in the commit message.
-
-Oh, that is a very good point and that one only gets set on system suspend
-and not on resume suspend, working around the problems with the i2c-designware
-driver.
-
-I think this might be as simple as adding:
-
-	if (WARN_ON(adap->dev.parent->power.is_suspended))
-		return -ESHUTDOWN;
-
-To __i2c_transfer (and document the -ESHUTDOWN) combined with removing
-all the now no longer DIY code from various bus drivers.
-
-Regards,
-
-Hans
-
-
-
-
-> 
-> If the point is to constrain refusal of transfers in suspended state to
-> certain drivers, those drivers could opt in to that functionality by
-> setting a flag, and the i2c core could then gate refusal based on
-> that flag and the is_suspended flag in struct dev_pm_info.
-> 
-> Also, why is it necessary to take a lock to perform an atomic bitop?
-> (Sorry if that's a dumb question, seems non-obvious to me.)
-> 
-> Thanks,
-> 
-> Lukas
-> 
+T24gVHVlLCBEZWMgMTgsIDIwMTggYXQgMTA6NDkgUE0gVmlyZXNoIEt1bWFyIDx2aXJlc2gua3Vt
+YXJAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBPbiAxOC0xMi0xOCwgMTE6MDUsIERvdWcgQW5kZXJz
+b24gd3JvdGU6Cj4gPiBPSywgaXQncyBmaW5lIHdpdGggbWUgdG8gaGF2ZSB0aGUgZmFsbGJhY2ss
+IGJ1dCBpZiB3ZSBkbyB3ZSBzaG91bGQgYmUKPiA+IGNvbnNpc3RlbnQgYWJvdXQgaXQgYW5kIG1h
+a2Ugc3VyZSBpdCdzIGluIGFsbCB0aGUgYmluZGluZ3MgYW5kIGRldmljZQo+ID4gdHJlZSBmaWxl
+cy4uLgo+Cj4gU3VyZS4KPgo+IEkgYW0gbm90IHN1cmUgd2hhdCdzIHRoZSByaWdodCB3YXkgdG8g
+ZG8gaXQgaXMsIGkuZS4gc2hvdWxkIHdlIGtlZXAgdGhlCj4gIm9wZXJhdGluZy1wb2ludHMtdjIi
+IHN0cmluZyBvciBub3QuCgpEb2VzIGhhdmluZyBpdCBidXkgeW91IGFueXRoaW5nPyBHaXZlbiB0
+aGUgUUNvbSBvbmUgZG9lc24ndCBoYXZlIGFueQpmcmVxdWVuY3kgb3Igdm9sdGFnZSwgSSBkb24n
+dCBzZWUgaG93IGl0IHdvdWxkIGJlIHVzZWZ1bCB0byBoYXZlIGl0LgoKUm9iCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxp
+c3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
+dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
