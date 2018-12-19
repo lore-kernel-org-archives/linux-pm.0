@@ -1,58 +1,99 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get
- accounted time
-Date: Wed, 19 Dec 2018 16:25:08 +0100
-Message-ID: <CAKfTPtBokDKeaPOPNqxP_2CfzRRNdfZUmxDqsQ6puc+_FQRGbg@mail.gmail.com>
-References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
- <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [RFC/RFT 01/10] i2c: add 'is_suspended' flag for i2c adapters
+Date: Wed, 19 Dec 2018 17:31:15 +0100
+Message-ID: <20181219163115.fdnl6kivywuxdgmu@ninjato>
+References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
+ <20181210210310.12677-2-wsa+renesas@sang-engineering.com>
+ <a4fdd7f1-be79-48fd-0d13-410276962384@axentia.se>
+ <20181218233354.pie5i3lvrrhq5q2c@ninjato>
+ <CAMuHMdWH-bh=cfZhxrD6MYfqFUYroai5WbyYZ6+H4MQeubN=PA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+Content-Type: multipart/mixed; boundary="===============9083179363208059057=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMuHMdWH-bh=cfZhxrD6MYfqFUYroai5WbyYZ6+H4MQeubN=PA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Peter Rosin <peda@axentia.se>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxMDo1OCwgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxp
-bmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gVHVlLCAxOCBEZWMgMjAxOCBhdCAxNTo1NSwgVmluY2Vu
-dCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBT
-b21lIGRyaXZlcnMgKGxpa2UgaTkxNS9kcm0pIG5lZWQgdG8gZ2V0IHRoZSBhY2NvdW50ZWQgc3Vz
-cGVuZGVkIHRpbWUuCj4gPiBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldCgpIHdpbGwgcmV0
-dXJuIHRoZSBzdXNwZW5kZWQgb3IgYWN0aXZlCj4gPiBhY2NvdW50ZWQgdGltZSB1bnRpbCBub3cu
-Cj4KPiBJIHN1Z2dlc3QgdG8gbGVhdmUgdGhlIGFjdGl2ZSBhY2NvdW50ZWQgdGltZSBvdXQgZm9y
-IG5vdy4gQXQgbGVhc3QKPiB1bnRpbCB3ZSBoYXZlIHNvbWUgdXNlcnMuCj4KPiBUaGF0IHNhaWQs
-IHBlcmhhcHMgcmVuYW1lIHRoZSBmdW5jdGlvbiB0byBzb21ldGhpbmcgYWxvbmcgdGhlIGxpbmVz
-Cj4gb2YsIHBtX3J1bnRpbWVfbGFzdF9zdXNwZW5kZWRfdGltZSgpLCB0byBtYWtlIGl0IG1vcmUg
-Y2xlYXIuCj4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZpbmNlbnQu
-Z3VpdHRvdEBsaW5hcm8ub3JnPgo+ID4gLS0tCj4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRp
-bWUuYyB8IDI2ICsrKysrKysrKysrKysrKysrKysrKysrKysrCj4gPiAgaW5jbHVkZS9saW51eC9w
-bV9ydW50aW1lLmggICB8ICAyICsrCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCAyOCBpbnNlcnRpb25z
-KCspCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMgYi9k
-cml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPiBpbmRleCA3MDYyNDY5Li42NDYxNDY5IDEw
-MDY0NAo+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gKysrIGIvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gQEAgLTg4LDYgKzg4LDMyIEBAIHN0YXRpYyB2
-b2lkIF9fdXBkYXRlX3J1bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZpY2UgKmRldiwgZW51bSBycG1f
-c3RhdHVzIHN0YXR1cykKPiA+ICAgICAgICAgZGV2LT5wb3dlci5ydW50aW1lX3N0YXR1cyA9IHN0
-YXR1czsKPiA+ICB9Cj4gPgo+ID4gK3U2NCBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldChz
-dHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMsIGJvb2wgdXBkYXRlKQo+
-ID4gK3sKPiA+ICsgICAgICAgdTY0IG5vdyA9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKTsKPgo+
-IEkgdGhpbmsgeW91IHNob3VsZCBzdGF5IG9uIGppZmZpZXMgaGVyZSAtIGFuZCB0aGVuIHN3aXRj
-aCB0byBrdGltZSBpbiBwYXRjaCAzLgoKSSBmb3Jnb3QgdG8gcmVwbHkgdG8gdGhpcyBjb21tZW50
-ClllcyBJIGFncmVlIHRoYXQgSSBzaG91bGQgc3RheSBpbiBqaWZmaWVzIHRoZXJlCgoKPgo+ID4g
-KyAgICAgICB1NjQgZGVsdGEgPSAwLCB0aW1lID0gMDsKPiA+ICsgICAgICAgdW5zaWduZWQgbG9u
-ZyBmbGFnczsKPiA+ICsKPiA+ICsgICAgICAgc3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93ZXIu
-bG9jaywgZmxhZ3MpOwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5v
-cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1n
-ZngK
+
+--===============9083179363208059057==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="qjxzn2xrzruodsqv"
+Content-Disposition: inline
+
+
+--qjxzn2xrzruodsqv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Dec 19, 2018 at 10:39:05AM +0100, Geert Uytterhoeven wrote:
+> Hi Wolfram,
+>=20
+> On Wed, Dec 19, 2018 at 12:34 AM Wolfram Sang <wsa@the-dreams.de> wrote:
+> > > > +   unsigned int is_suspended:1;    /* owned by the I2C core */
+> > >
+> > > When more stuff is added to this bit field (which always happens at
+> > > some point) updates to all members of the bit field will have to use
+> > > the same root-adapter-locking, or we will suffer from RMW-races. So
+> > > this feels like an invitation for future disaster. Maybe a comment
+> > > about that to remind our future selves? Or perhaps the bit field
+> > > should be avoided altogether?
+> >
+> > Changed to bool. Thanks!
+>=20
+> Does that help, given bool is smaller than the CPUs word size?
+> Is it Alpha that cannot do atomic operations on bytes?
+
+Yup, I overestimated bools :( I guess good old
+
+unsigned long locked_flags;
+#define <PREFIX>_IS_SUSPENDED	0
+
+set_bit(), clear_bit(), and test_bit() is it then.
+
+
+--qjxzn2xrzruodsqv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwack8ACgkQFA3kzBSg
+KbY9JRAAhxm2Kip+tvnMls1hk+/Edk4mmwGCNgQoxQX2AhW3Lw0vyAffaBG7S+eG
+UwNg372M5JC8Rva111oTpAVr8MhvAVuJnGFpG0UMJIDWXQGJ2UKcumx7DNHwYjiB
+zkDtrdjilgbGSe9SVRco+BbBK6qy/mdNI+GBAnXB9bC+Xbawe+3KTlgGVlFpjS9r
+Yb02KmVERIxeBYbzNw23S9Tx3raZVOnGSz2am/n9GGrM/kFtBK1Ge7W+Acq92VoF
+9C3AOy0ZoyY8sgz5rR0TRuoVgkXC/8AKsWqS3dVCpR0iZPVG9ZYth5ta7rRojjeJ
+C/s1Hgq6oR2zxXLiM/NG7SbdIiVMekYbEDrRx2zsBwg18aynLRuygwnqHkT6WE8A
+lfZKa/LEVvP9p5Xw4Lwak0jxtqAJzGIv6ebJRN5tLmcRP9vYRuKk/D5RbWq4U6bZ
+fuI6Z589b4nZkWgx52G8RCu3NImmLFxbhJd9RjOm9buE5b3nz4aatviQbno2uJ6s
+gC3SMz9p0nG7A0cdEYcXXG2/FrKXl3lQtIU028DFRkkfGARRX5bj6+I7bp/s4Vby
+0wsdtXwezh9SQPBiJBbtilD9j6oDZGep3/tLVWacvbn3T819oEfVltn26YHQbuz2
+VDmUUE5YtgAdUqjUJ2YM0BOZ+bHAGEzGDY2DJLMSwWs7Clu79FE=
+=KkzT
+-----END PGP SIGNATURE-----
+
+--qjxzn2xrzruodsqv--
+
+
+--===============9083179363208059057==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============9083179363208059057==--
