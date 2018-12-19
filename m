@@ -1,97 +1,43 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH] cpuidle: New timer events oriented governor for tickless
- systems
-Date: Wed, 19 Dec 2018 09:32:03 +0000
-Message-ID: <20181219093200.3e5zr7ixxowboanv@queper01-lin>
-References: <128769314.7imKxugEn6@aspire.rjw.lan>
- <20181218114949.c6npu357fj65l5iv@queper01-ThinkPad-T460s>
- <CAJZ5v0grJJi7572vdT7eudMTSW6h+9KT8WSNXa-z8rWqp-Fikw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC/RFT 01/10] i2c: add 'is_suspended' flag for i2c adapters
+Date: Wed, 19 Dec 2018 10:39:05 +0100
+Message-ID: <CAMuHMdWH-bh=cfZhxrD6MYfqFUYroai5WbyYZ6+H4MQeubN=PA@mail.gmail.com>
+References: <20181210210310.12677-1-wsa+renesas@sang-engineering.com>
+ <20181210210310.12677-2-wsa+renesas@sang-engineering.com> <a4fdd7f1-be79-48fd-0d13-410276962384@axentia.se>
+ <20181218233354.pie5i3lvrrhq5q2c@ninjato>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0grJJi7572vdT7eudMTSW6h+9KT8WSNXa-z8rWqp-Fikw@mail.gmail.com>
+In-Reply-To: <20181218233354.pie5i3lvrrhq5q2c@ninjato>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, hu1.chen@intel.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Peter Rosin <peda@axentia.se>, Hans de Goede <hdegoede@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 18 Dec 2018 at 16:31:13 (+0100), Rafael J. Wysocki wrote:
-> > > +             /*
-> > > +              * Count and sum the most recent idle duration values less than
-> > > +              * the target residency of the state selected so far, find the
-> > > +              * max.
-> > > +              */
-> > > +             for (i = 0; i < INTERVALS; i++) {
-> > > +                     unsigned int val = cpu_data->intervals[i];
-> > > +
-> > > +                     if (val >= drv->states[idx].target_residency)
-> > > +                             continue;
-> > > +
-> > > +                     count++;
-> > > +                     sum += val;
-> > > +             }
-> > > +
-> > > +             /*
-> > > +              * Give up unless the majority of the most recent idle duration
-> > > +              * values are in the interesting range.
-> > > +              */
-> > > +             if (count > INTERVALS / 2) {
+Hi Wolfram,
+
+On Wed, Dec 19, 2018 at 12:34 AM Wolfram Sang <wsa@the-dreams.de> wrote:
+> > > +   unsigned int is_suspended:1;    /* owned by the I2C core */
 > >
-> > I understand this probably works well enough in practice, but how 'robust'
-> > is supposed to be this filtering here ? If you have, say, 2 tasks with
-> > prime periods, then the hyper-period (which is when the pattern repeats)
-> > can get high really quickly, and you'll never see the full extent of
-> > that pattern with this mechanism.
-> 
-> That's correct, but this is just about whether or not there is a
-> reason to select an idle state shallower than the one selected
-> already.  How the pattern looks like exactly doesn't matter too much
-> here AFAICS.
+> > When more stuff is added to this bit field (which always happens at
+> > some point) updates to all members of the bit field will have to use
+> > the same root-adapter-locking, or we will suffer from RMW-races. So
+> > this feels like an invitation for future disaster. Maybe a comment
+> > about that to remind our future selves? Or perhaps the bit field
+> > should be avoided altogether?
+>
+> Changed to bool. Thanks!
 
-Right, I think what I was trying to say is that if you could actually
-capture at least one full hyper-period, then the avg_us you're computing
-here would be 'stable' as long as you're not changing workloads. So the
-prediction should be accurate overall, in average.
+Does that help, given bool is smaller than the CPUs word size?
+Is it Alpha that cannot do atomic operations on bytes?
 
-But maybe we don't want that. At least it's not obvious we always want
-that. Maybe the hyper-period is so large that you'd be better off
-looking only at portion of it and locally optimize things ...
+Gr{oetje,eeting}s,
 
-So yes, this is very much a theoretical question. And the results will,
-as always, largely depend on the workload you're running, so nevermind.
+                        Geert
 
-> > Yes, it's hard to do much better without introducing tons of complexity
-> > in here, but how did you define INTERVALS=8 and so ?
-> 
-> I blatantly stole this number from the menu governor. :-)
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Fair enough ;-)
-
-> > > +                     unsigned int avg_us = div64_u64(sum, count);
-> > > +
-> > > +                     /*
-> > > +                      * Avoid spending too much time in an idle state that
-> > > +                      * would be too shallow.
-> > > +                      */
-> > > +                     if (!(tick_nohz_tick_stopped() && avg_us < TICK_USEC)) {
-> >
-> > IIUC, this is saying we shouldn't trust the predicted sleep time if it
-> > is shorter than the tick and the tick is stopped. What is the use case
-> > you have in mind for this ?
-> >
-> > In other words, in which scenario do you expect to see a lot of high
-> > frequency non-timer-related wake-ups and have the tick disabled ?
-> 
-> It is mostly theoretical, but the rationale here is that the cost of
-> using a shallow idle state with the tick stopped is potentially very
-> high (the CPU may stay in that idle state for a very long time then),
-> so it is better to assume misprediction in that case to avoid that
-> cost.
-
-I see, and since we should in fact have the tick enabled when loads of
-tasks are running, then this check should usually be harmless in
-practice. Makes sense.
-
-Thanks,
-Quentin
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
