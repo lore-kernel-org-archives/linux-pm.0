@@ -1,166 +1,136 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get accounted time
-Date: Wed, 19 Dec 2018 11:34:47 +0100
-Message-ID: <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get
+ accounted time
+Date: Wed, 19 Dec 2018 11:43:12 +0100
+Message-ID: <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
 References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
  <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
  <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
- <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com> <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
+ <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
+ <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
+ <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 19 Dec 2018 at 11:21, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Wed, 19 Dec 2018 at 11:11, Vincent Guittot
-> <vincent.guittot@linaro.org> wrote:
-> >
-> > On Wed, 19 Dec 2018 at 10:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Tue, 18 Dec 2018 at 15:55, Vincent Guittot
-> > > <vincent.guittot@linaro.org> wrote:
-> > > >
-> > > > Some drivers (like i915/drm) need to get the accounted suspended time.
-> > > > pm_runtime_accounted_time_get() will return the suspended or active
-> > > > accounted time until now.
-> > >
-> > > I suggest to leave the active accounted time out for now. At least
-> > > until we have some users.
-> >
-> > This is needed to keep same feature level for i915/drm
->
-> I don't follow. According to the changes in the drm driver in patch2,
-> we are only calling the new pm_runtime interface with RPM_SUSPENDED?
-
-sorry I mix your question above and the one about  accounting_timestamp.
-
-So I agree that only RPM_SUSPENDED is used for now
-
->
-> >
-> > >
-> > > That said, perhaps rename the function to something along the lines
-> > > of, pm_runtime_last_suspended_time(), to make it more clear.
-> > >
-> > > >
-> > > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > > > ---
-> > > >  drivers/base/power/runtime.c | 26 ++++++++++++++++++++++++++
-> > > >  include/linux/pm_runtime.h   |  2 ++
-> > > >  2 files changed, 28 insertions(+)
-> > > >
-> > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > > index 7062469..6461469 100644
-> > > > --- a/drivers/base/power/runtime.c
-> > > > +++ b/drivers/base/power/runtime.c
-> > > > @@ -88,6 +88,32 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
-> > > >         dev->power.runtime_status = status;
-> > > >  }
-> > > >
-> > > > +u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update)
-> > > > +{
-> > > > +       u64 now = ktime_to_ns(ktime_get());
-> > >
-> > > I think you should stay on jiffies here - and then switch to ktime in patch 3.
-> > >
-> > > > +       u64 delta = 0, time = 0;
-> > > > +       unsigned long flags;
-> > > > +
-> > > > +       spin_lock_irqsave(&dev->power.lock, flags);
-> > > > +
-> > > > +       if (dev->power.disable_depth > 0)
-> > > > +               goto unlock;
-> > > > +
-> > > > +       /* Add ongoing state  if requested */
-> > > > +       if (update && dev->power.runtime_status == status)
-> > > > +               delta = now - dev->power.accounting_timestamp;
-> > > > +
-> > >
-> > > Hmm. Do we really need to update the accounting timestamp? I would
-> > > rather avoid it if possible.
-> >
-> > i915/drm uses this to track ongoing suspended state. In fact they are
-> > mainly interested by this part
->
-> Again, sorry I don't follow.
-
-In fact we don't update dev->power.accounting_timestamp but only use
-it to get how much time has elapsed in the current state.
-
->
-> My suggested changes below, would do exactly that; track the ongoing
-> suspended state.
->
-> The user can call the function several times while the device remains
-> RPM_SUSPENDED, and if needed the user could then compute the delta
-> in-between the calls, for whatever reason that may be needed.
-
-So I'm not sure to catch your question:
-Is your problem linked to status != RPM_SUSPENDED or the update
-parameter that compute delta ?
-
->
-> >
-> > >
-> > > It seems like it should be sufficient to return the delta between
-> > > "now" and the "dev->power.accounting_timestamp", when
-> > > "dev->power.runtime_status == RPM_SUSPENDED".
-> > >
-> > > In other case, just return 0, because we are not in RPM_SUSPENDED state.
-> >
-> > only the RPM_SUSPENDED is used by i915/drm but wanted to provide a
-> > generic interface to get
-> > suspended or not suspend state
->
-> I see.
->
-> Although, unless Rafael thinks different, I would rather try to keep
-> this as simple as possible and expose only what is needed and nothing
-> more.
-
-I'm fine with both. Rafael ?
-
->
-> >
-> > >
-> > > > +       if (status == RPM_SUSPENDED)
-> > > > +               time = dev->power.suspended_time + delta;
-> > > > +       else
-> > > > +               time = dev->power.active_time + delta;
-> > > > +
-> > > > +unlock:
-> > > > +       spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > > +
-> > > > +       return time;
-> > > > +}
-> > > > +
-> > > >  /**
-> > > >   * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
-> > > >   * @dev: Device to handle.
-> > > > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> > > > index 54af4ee..86f21f9 100644
-> > > > --- a/include/linux/pm_runtime.h
-> > > > +++ b/include/linux/pm_runtime.h
-> > > > @@ -113,6 +113,8 @@ static inline bool pm_runtime_is_irq_safe(struct device *dev)
-> > > >         return dev->power.irq_safe;
-> > > >  }
-> > > >
-> > > > +extern u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update);
-> > > > +
-> > > >  #else /* !CONFIG_PM */
-> > > >
-> > > >  static inline bool queue_pm_work(struct work_struct *work) { return false; }
-> > > > --
-> > > > 2.7.4
-> > > >
-> > >
-> > > Kind regards
-> > > Uffe
->
-> Kind regards
-> Uffe
+T24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxMTozNCwgVmluY2VudCBHdWl0dG90Cjx2aW5jZW50Lmd1
+aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBPbiBXZWQsIDE5IERlYyAyMDE4IGF0IDExOjIx
+LCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4gd3JvdGU6Cj4gPgo+ID4gT24g
+V2VkLCAxOSBEZWMgMjAxOCBhdCAxMToxMSwgVmluY2VudCBHdWl0dG90Cj4gPiA8dmluY2VudC5n
+dWl0dG90QGxpbmFyby5vcmc+IHdyb3RlOgo+ID4gPgo+ID4gPiBPbiBXZWQsIDE5IERlYyAyMDE4
+IGF0IDEwOjU4LCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4gd3JvdGU6Cj4g
+PiA+ID4KPiA+ID4gPiBPbiBUdWUsIDE4IERlYyAyMDE4IGF0IDE1OjU1LCBWaW5jZW50IEd1aXR0
+b3QKPiA+ID4gPiA8dmluY2VudC5ndWl0dG90QGxpbmFyby5vcmc+IHdyb3RlOgo+ID4gPiA+ID4K
+PiA+ID4gPiA+IFNvbWUgZHJpdmVycyAobGlrZSBpOTE1L2RybSkgbmVlZCB0byBnZXQgdGhlIGFj
+Y291bnRlZCBzdXNwZW5kZWQgdGltZS4KPiA+ID4gPiA+IHBtX3J1bnRpbWVfYWNjb3VudGVkX3Rp
+bWVfZ2V0KCkgd2lsbCByZXR1cm4gdGhlIHN1c3BlbmRlZCBvciBhY3RpdmUKPiA+ID4gPiA+IGFj
+Y291bnRlZCB0aW1lIHVudGlsIG5vdy4KPiA+ID4gPgo+ID4gPiA+IEkgc3VnZ2VzdCB0byBsZWF2
+ZSB0aGUgYWN0aXZlIGFjY291bnRlZCB0aW1lIG91dCBmb3Igbm93LiBBdCBsZWFzdAo+ID4gPiA+
+IHVudGlsIHdlIGhhdmUgc29tZSB1c2Vycy4KPiA+ID4KPiA+ID4gVGhpcyBpcyBuZWVkZWQgdG8g
+a2VlcCBzYW1lIGZlYXR1cmUgbGV2ZWwgZm9yIGk5MTUvZHJtCj4gPgo+ID4gSSBkb24ndCBmb2xs
+b3cuIEFjY29yZGluZyB0byB0aGUgY2hhbmdlcyBpbiB0aGUgZHJtIGRyaXZlciBpbiBwYXRjaDIs
+Cj4gPiB3ZSBhcmUgb25seSBjYWxsaW5nIHRoZSBuZXcgcG1fcnVudGltZSBpbnRlcmZhY2Ugd2l0
+aCBSUE1fU1VTUEVOREVEPwo+Cj4gc29ycnkgSSBtaXggeW91ciBxdWVzdGlvbiBhYm92ZSBhbmQg
+dGhlIG9uZSBhYm91dCAgYWNjb3VudGluZ190aW1lc3RhbXAuCj4KPiBTbyBJIGFncmVlIHRoYXQg
+b25seSBSUE1fU1VTUEVOREVEIGlzIHVzZWQgZm9yIG5vdwo+Cj4gPgo+ID4gPgo+ID4gPiA+Cj4g
+PiA+ID4gVGhhdCBzYWlkLCBwZXJoYXBzIHJlbmFtZSB0aGUgZnVuY3Rpb24gdG8gc29tZXRoaW5n
+IGFsb25nIHRoZSBsaW5lcwo+ID4gPiA+IG9mLCBwbV9ydW50aW1lX2xhc3Rfc3VzcGVuZGVkX3Rp
+bWUoKSwgdG8gbWFrZSBpdCBtb3JlIGNsZWFyLgo+ID4gPiA+Cj4gPiA+ID4gPgo+ID4gPiA+ID4g
+U2lnbmVkLW9mZi1ieTogVmluY2VudCBHdWl0dG90IDx2aW5jZW50Lmd1aXR0b3RAbGluYXJvLm9y
+Zz4KPiA+ID4gPiA+IC0tLQo+ID4gPiA+ID4gIGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMg
+fCAyNiArKysrKysrKysrKysrKysrKysrKysrKysrKwo+ID4gPiA+ID4gIGluY2x1ZGUvbGludXgv
+cG1fcnVudGltZS5oICAgfCAgMiArKwo+ID4gPiA+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMjggaW5z
+ZXJ0aW9ucygrKQo+ID4gPiA+ID4KPiA+ID4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2Uv
+cG93ZXIvcnVudGltZS5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gPiA+ID4g
+aW5kZXggNzA2MjQ2OS4uNjQ2MTQ2OSAxMDA2NDQKPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvYmFz
+ZS9wb3dlci9ydW50aW1lLmMKPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50
+aW1lLmMKPiA+ID4gPiA+IEBAIC04OCw2ICs4OCwzMiBAQCBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9y
+dW50aW1lX3N0YXR1cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMp
+Cj4gPiA+ID4gPiAgICAgICAgIGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPSBzdGF0dXM7Cj4g
+PiA+ID4gPiAgfQo+ID4gPiA+ID4KPiA+ID4gPiA+ICt1NjQgcG1fcnVudGltZV9hY2NvdW50ZWRf
+dGltZV9nZXQoc3RydWN0IGRldmljZSAqZGV2LCBlbnVtIHJwbV9zdGF0dXMgc3RhdHVzLCBib29s
+IHVwZGF0ZSkKPiA+ID4gPiA+ICt7Cj4gPiA+ID4gPiArICAgICAgIHU2NCBub3cgPSBrdGltZV90
+b19ucyhrdGltZV9nZXQoKSk7Cj4gPiA+ID4KPiA+ID4gPiBJIHRoaW5rIHlvdSBzaG91bGQgc3Rh
+eSBvbiBqaWZmaWVzIGhlcmUgLSBhbmQgdGhlbiBzd2l0Y2ggdG8ga3RpbWUgaW4gcGF0Y2ggMy4K
+PiA+ID4gPgo+ID4gPiA+ID4gKyAgICAgICB1NjQgZGVsdGEgPSAwLCB0aW1lID0gMDsKPiA+ID4g
+PiA+ICsgICAgICAgdW5zaWduZWQgbG9uZyBmbGFnczsKPiA+ID4gPiA+ICsKPiA+ID4gPiA+ICsg
+ICAgICAgc3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93ZXIubG9jaywgZmxhZ3MpOwo+ID4gPiA+
+ID4gKwo+ID4gPiA+ID4gKyAgICAgICBpZiAoZGV2LT5wb3dlci5kaXNhYmxlX2RlcHRoID4gMCkK
+PiA+ID4gPiA+ICsgICAgICAgICAgICAgICBnb3RvIHVubG9jazsKPiA+ID4gPiA+ICsKPiA+ID4g
+PiA+ICsgICAgICAgLyogQWRkIG9uZ29pbmcgc3RhdGUgIGlmIHJlcXVlc3RlZCAqLwo+ID4gPiA+
+ID4gKyAgICAgICBpZiAodXBkYXRlICYmIGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gc3Rh
+dHVzKQo+ID4gPiA+ID4gKyAgICAgICAgICAgICAgIGRlbHRhID0gbm93IC0gZGV2LT5wb3dlci5h
+Y2NvdW50aW5nX3RpbWVzdGFtcDsKPiA+ID4gPiA+ICsKPiA+ID4gPgo+ID4gPiA+IEhtbS4gRG8g
+d2UgcmVhbGx5IG5lZWQgdG8gdXBkYXRlIHRoZSBhY2NvdW50aW5nIHRpbWVzdGFtcD8gSSB3b3Vs
+ZAo+ID4gPiA+IHJhdGhlciBhdm9pZCBpdCBpZiBwb3NzaWJsZS4KPiA+ID4KPiA+ID4gaTkxNS9k
+cm0gdXNlcyB0aGlzIHRvIHRyYWNrIG9uZ29pbmcgc3VzcGVuZGVkIHN0YXRlLiBJbiBmYWN0IHRo
+ZXkgYXJlCj4gPiA+IG1haW5seSBpbnRlcmVzdGVkIGJ5IHRoaXMgcGFydAo+ID4KPiA+IEFnYWlu
+LCBzb3JyeSBJIGRvbid0IGZvbGxvdy4KPgo+IEluIGZhY3Qgd2UgZG9uJ3QgdXBkYXRlIGRldi0+
+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAgYnV0IG9ubHkgdXNlCj4gaXQgdG8gZ2V0IGhvdyBt
+dWNoIHRpbWUgaGFzIGVsYXBzZWQgaW4gdGhlIGN1cnJlbnQgc3RhdGUuCj4KPiA+Cj4gPiBNeSBz
+dWdnZXN0ZWQgY2hhbmdlcyBiZWxvdywgd291bGQgZG8gZXhhY3RseSB0aGF0OyB0cmFjayB0aGUg
+b25nb2luZwo+ID4gc3VzcGVuZGVkIHN0YXRlLgo+ID4KPiA+IFRoZSB1c2VyIGNhbiBjYWxsIHRo
+ZSBmdW5jdGlvbiBzZXZlcmFsIHRpbWVzIHdoaWxlIHRoZSBkZXZpY2UgcmVtYWlucwo+ID4gUlBN
+X1NVU1BFTkRFRCwgYW5kIGlmIG5lZWRlZCB0aGUgdXNlciBjb3VsZCB0aGVuIGNvbXB1dGUgdGhl
+IGRlbHRhCj4gPiBpbi1iZXR3ZWVuIHRoZSBjYWxscywgZm9yIHdoYXRldmVyIHJlYXNvbiB0aGF0
+IG1heSBiZSBuZWVkZWQuCj4KPiBTbyBJJ20gbm90IHN1cmUgdG8gY2F0Y2ggeW91ciBxdWVzdGlv
+bjoKPiBJcyB5b3VyIHByb2JsZW0gbGlua2VkIHRvIHN0YXR1cyAhPSBSUE1fU1VTUEVOREVEIG9y
+IHRoZSB1cGRhdGUKPiBwYXJhbWV0ZXIgdGhhdCBjb21wdXRlIGRlbHRhID8KCk15IGludGVudCB3
+YXMgdG8ga2VlcCB0aGluZ3Mgc2ltcGxlLgoKMS4gT25seSBleHBvc2UgbGFzdCBzdXNwZW5kZWQg
+dGltZSwgd2hpY2ggbWVhbnMgdHJhY2tpbmcgdGhlIG9uZ29pbmcKc3VzcGVuZGVkIHN0YXRlLiBJ
+biBvdGhlciB3b3JkcywgeW91IGNhbiBhbHNvIHJlbW92ZSAiZW51bSBycG1fc3RhdHVzCnN0YXR1
+cyIgYXMgdGhlIGluLXBhcmFtZXRlciB0byBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldCgp
+LgoyLiBEb24ndCBhbGxvdyB0aGUgdXNlciBvZiBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dl
+dCgpIHRvIHVwZGF0ZQp0aGUgY3VycmVudCB0aW1lc3RhbXAsIGluICJkZXYtPnBvd2VyLmFjY291
+bnRpbmdfdGltZXN0YW1wIi4KCklzIHRoYXQgb2theSBmb3IgdGhlIGRybSBkcml2ZXIsIHRvIGRv
+IHdoYXQgaXQgZG9lcyB0b2RheT8KCj4KPiA+Cj4gPiA+Cj4gPiA+ID4KPiA+ID4gPiBJdCBzZWVt
+cyBsaWtlIGl0IHNob3VsZCBiZSBzdWZmaWNpZW50IHRvIHJldHVybiB0aGUgZGVsdGEgYmV0d2Vl
+bgo+ID4gPiA+ICJub3ciIGFuZCB0aGUgImRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAi
+LCB3aGVuCj4gPiA+ID4gImRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRF
+RCIuCj4gPiA+ID4KPiA+ID4gPiBJbiBvdGhlciBjYXNlLCBqdXN0IHJldHVybiAwLCBiZWNhdXNl
+IHdlIGFyZSBub3QgaW4gUlBNX1NVU1BFTkRFRCBzdGF0ZS4KPiA+ID4KPiA+ID4gb25seSB0aGUg
+UlBNX1NVU1BFTkRFRCBpcyB1c2VkIGJ5IGk5MTUvZHJtIGJ1dCB3YW50ZWQgdG8gcHJvdmlkZSBh
+Cj4gPiA+IGdlbmVyaWMgaW50ZXJmYWNlIHRvIGdldAo+ID4gPiBzdXNwZW5kZWQgb3Igbm90IHN1
+c3BlbmQgc3RhdGUKPiA+Cj4gPiBJIHNlZS4KPiA+Cj4gPiBBbHRob3VnaCwgdW5sZXNzIFJhZmFl
+bCB0aGlua3MgZGlmZmVyZW50LCBJIHdvdWxkIHJhdGhlciB0cnkgdG8ga2VlcAo+ID4gdGhpcyBh
+cyBzaW1wbGUgYXMgcG9zc2libGUgYW5kIGV4cG9zZSBvbmx5IHdoYXQgaXMgbmVlZGVkIGFuZCBu
+b3RoaW5nCj4gPiBtb3JlLgo+Cj4gSSdtIGZpbmUgd2l0aCBib3RoLiBSYWZhZWwgPwo+Cj4gPgo+
+ID4gPgo+ID4gPiA+Cj4gPiA+ID4gPiArICAgICAgIGlmIChzdGF0dXMgPT0gUlBNX1NVU1BFTkRF
+RCkKPiA+ID4gPiA+ICsgICAgICAgICAgICAgICB0aW1lID0gZGV2LT5wb3dlci5zdXNwZW5kZWRf
+dGltZSArIGRlbHRhOwo+ID4gPiA+ID4gKyAgICAgICBlbHNlCj4gPiA+ID4gPiArICAgICAgICAg
+ICAgICAgdGltZSA9IGRldi0+cG93ZXIuYWN0aXZlX3RpbWUgKyBkZWx0YTsKPiA+ID4gPiA+ICsK
+PiA+ID4gPiA+ICt1bmxvY2s6Cj4gPiA+ID4gPiArICAgICAgIHNwaW5fdW5sb2NrX2lycXJlc3Rv
+cmUoJmRldi0+cG93ZXIubG9jaywgZmxhZ3MpOwo+ID4gPiA+ID4gKwo+ID4gPiA+ID4gKyAgICAg
+ICByZXR1cm4gdGltZTsKPiA+ID4gPiA+ICt9Cj4gPiA+ID4gPiArCj4gPiA+ID4gPiAgLyoqCj4g
+PiA+ID4gPiAgICogcG1fcnVudGltZV9kZWFjdGl2YXRlX3RpbWVyIC0gRGVhY3RpdmF0ZSBnaXZl
+biBkZXZpY2UncyBzdXNwZW5kIHRpbWVyLgo+ID4gPiA+ID4gICAqIEBkZXY6IERldmljZSB0byBo
+YW5kbGUuCj4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgg
+Yi9pbmNsdWRlL2xpbnV4L3BtX3J1bnRpbWUuaAo+ID4gPiA+ID4gaW5kZXggNTRhZjRlZS4uODZm
+MjFmOSAxMDA2NDQKPiA+ID4gPiA+IC0tLSBhL2luY2x1ZGUvbGludXgvcG1fcnVudGltZS5oCj4g
+PiA+ID4gPiArKysgYi9pbmNsdWRlL2xpbnV4L3BtX3J1bnRpbWUuaAo+ID4gPiA+ID4gQEAgLTEx
+Myw2ICsxMTMsOCBAQCBzdGF0aWMgaW5saW5lIGJvb2wgcG1fcnVudGltZV9pc19pcnFfc2FmZShz
+dHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiA+ID4gPiAgICAgICAgIHJldHVybiBkZXYtPnBvd2VyLmly
+cV9zYWZlOwo+ID4gPiA+ID4gIH0KPiA+ID4gPiA+Cj4gPiA+ID4gPiArZXh0ZXJuIHU2NCBwbV9y
+dW50aW1lX2FjY291bnRlZF90aW1lX2dldChzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0
+YXR1cyBzdGF0dXMsIGJvb2wgdXBkYXRlKTsKPiA+ID4gPiA+ICsKPiA+ID4gPiA+ICAjZWxzZSAv
+KiAhQ09ORklHX1BNICovCj4gPiA+ID4gPgo+ID4gPiA+ID4gIHN0YXRpYyBpbmxpbmUgYm9vbCBx
+dWV1ZV9wbV93b3JrKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykgeyByZXR1cm4gZmFsc2U7IH0K
+PiA+ID4gPiA+IC0tCj4gPiA+ID4gPiAyLjcuNAo+ID4gPiA+ID4KPiA+ID4gPgo+ID4gPiA+IEtp
+bmQgcmVnYXJkcwo+ID4gPiA+IFVmZmUKPiA+Cj4gPiBLaW5kIHJlZ2FyZHMKPiA+IFVmZmUKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1h
+aWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
+ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
