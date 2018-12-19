@@ -1,79 +1,63 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 04/10] i2c: brcmstb: use core helper to mark adapter suspended
-Date: Wed, 19 Dec 2018 17:48:20 +0100
-Message-ID: <20181219164827.20985-5-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 10/10] i2c: rcar: add suspend/resume support
+Date: Wed, 19 Dec 2018 17:48:26 +0100
+Message-ID: <20181219164827.20985-11-wsa+renesas@sang-engineering.com>
 References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Kamal Dasu <kdasu.kdev@gmail.com>, linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, bcm-kernel-feedback-list@broadcom.com, Gregory Fong <gregory.0xf0@gmail.com>, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Hiromitsu Yamasaki <hiromitsu.yamasaki.ym@renesas.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rejecting transfers should be handled by the core.
+Because the adapter will be set up before every transaction anyhow, we
+just need to mark it as suspended to the I2C core.
 
+Signed-off-by: Hiromitsu Yamasaki <hiromitsu.yamasaki.ym@renesas.com>
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Reviewed-by: Kamal Dasu <kdasu.kdev@gmail.com>
 ---
- drivers/i2c/busses/i2c-brcmstb.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/i2c/busses/i2c-rcar.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/drivers/i2c/busses/i2c-brcmstb.c b/drivers/i2c/busses/i2c-brcmstb.c
-index 826d32049996..f4d862234980 100644
---- a/drivers/i2c/busses/i2c-brcmstb.c
-+++ b/drivers/i2c/busses/i2c-brcmstb.c
-@@ -170,7 +170,6 @@ struct brcmstb_i2c_dev {
- 	struct bsc_regs *bsc_regmap;
- 	struct i2c_adapter adapter;
- 	struct completion done;
--	bool is_suspended;
- 	u32 clk_freq_hz;
- 	int data_regsz;
- };
-@@ -467,9 +466,6 @@ static int brcmstb_i2c_xfer(struct i2c_adapter *adapter,
- 	int xfersz = brcmstb_i2c_get_xfersz(dev);
- 	u32 cond, cond_per_msg;
- 
--	if (dev->is_suspended)
--		return -EBUSY;
--
- 	/* Loop through all messages */
- 	for (i = 0; i < num; i++) {
- 		pmsg = &msgs[i];
-@@ -689,10 +685,7 @@ static int brcmstb_i2c_suspend(struct device *dev)
- {
- 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
- 
--	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
--	i2c_dev->is_suspended = true;
--	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
--
-+	i2c_mark_adapter_suspended(&i2c_dev->adapter);
+diff --git a/drivers/i2c/busses/i2c-rcar.c b/drivers/i2c/busses/i2c-rcar.c
+index 254e6219e538..1d6390eed861 100644
+--- a/drivers/i2c/busses/i2c-rcar.c
++++ b/drivers/i2c/busses/i2c-rcar.c
+@@ -1017,10 +1017,35 @@ static int rcar_i2c_remove(struct platform_device *pdev)
  	return 0;
  }
  
-@@ -700,10 +693,8 @@ static int brcmstb_i2c_resume(struct device *dev)
- {
- 	struct brcmstb_i2c_dev *i2c_dev = dev_get_drvdata(dev);
- 
--	i2c_lock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
- 	brcmstb_i2c_set_bsc_reg_defaults(i2c_dev);
--	i2c_dev->is_suspended = false;
--	i2c_unlock_bus(&i2c_dev->adapter, I2C_LOCK_ROOT_ADAPTER);
-+	i2c_mark_adapter_resumed(&i2c_dev->adapter);
- 
- 	return 0;
- }
++#ifdef CONFIG_PM_SLEEP
++static int rcar_i2c_suspend(struct device *dev)
++{
++	struct rcar_i2c_priv *priv = dev_get_drvdata(dev);
++
++	i2c_mark_adapter_suspended(&priv->adap);
++	return 0;
++}
++
++static int rcar_i2c_resume(struct device *dev)
++{
++	struct rcar_i2c_priv *priv = dev_get_drvdata(dev);
++
++	i2c_mark_adapter_resumed(&priv->adap);
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(rcar_i2c_pm_ops, rcar_i2c_suspend, rcar_i2c_resume);
++
++#define DEV_PM_OPS (&rcar_i2c_pm_ops)
++#else
++#define DEV_PM_OPS NULL
++#endif /* CONFIG_PM_SLEEP */
++
+ static struct platform_driver rcar_i2c_driver = {
+ 	.driver	= {
+ 		.name	= "i2c-rcar",
+ 		.of_match_table = rcar_i2c_dt_ids,
++		.pm	= DEV_PM_OPS,
+ 	},
+ 	.probe		= rcar_i2c_probe,
+ 	.remove		= rcar_i2c_remove,
 -- 
 2.11.0
