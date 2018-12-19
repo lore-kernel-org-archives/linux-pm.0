@@ -1,163 +1,148 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get accounted time
-Date: Wed, 19 Dec 2018 14:25:58 +0100
-Message-ID: <CAKfTPtA4Fr6Xk7+dUpzZqGvK6dJGtWAiz70Ho4noQk3gBdGFdg@mail.gmail.com>
-References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
- <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
- <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
- <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
- <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com> <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [driver-core PATCH v9 1/9] driver core: Establish order of
+ operations for device_add and device_del via bitflag
+Date: Wed, 19 Dec 2018 15:27:48 +0100
+Message-ID: <CAJZ5v0hSWOb4b7FWJmfi86mYY+T1kedtC=ydS8VMUvpH4ctzbw@mail.gmail.com>
+References: <154466182249.9126.3905559325944768059.stgit@ahduyck-desk1.jf.intel.com>
+ <154466189880.9126.10737761541647369077.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
+In-Reply-To: <154466189880.9126.10737761541647369077.stgit@ahduyck-desk1.jf.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+To: alexander.h.duyck@linux.intel.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Dan Williams <dan.j.williams@intel.com>, dave.jiang@intel.com, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 19 Dec 2018 at 11:43, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Thu, Dec 13, 2018 at 1:45 AM Alexander Duyck
+<alexander.h.duyck@linux.intel.com> wrote:
 >
-> On Wed, 19 Dec 2018 at 11:34, Vincent Guittot
-> <vincent.guittot@linaro.org> wrote:
-> >
-> > On Wed, 19 Dec 2018 at 11:21, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-
-> > > > > >
-> > > > > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > > > > index 7062469..6461469 100644
-> > > > > > --- a/drivers/base/power/runtime.c
-> > > > > > +++ b/drivers/base/power/runtime.c
-> > > > > > @@ -88,6 +88,32 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
-> > > > > >         dev->power.runtime_status = status;
-> > > > > >  }
-> > > > > >
-> > > > > > +u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update)
-> > > > > > +{
-> > > > > > +       u64 now = ktime_to_ns(ktime_get());
-> > > > >
-> > > > > I think you should stay on jiffies here - and then switch to ktime in patch 3.
-> > > > >
-> > > > > > +       u64 delta = 0, time = 0;
-> > > > > > +       unsigned long flags;
-> > > > > > +
-> > > > > > +       spin_lock_irqsave(&dev->power.lock, flags);
-> > > > > > +
-> > > > > > +       if (dev->power.disable_depth > 0)
-> > > > > > +               goto unlock;
-> > > > > > +
-> > > > > > +       /* Add ongoing state  if requested */
-> > > > > > +       if (update && dev->power.runtime_status == status)
-> > > > > > +               delta = now - dev->power.accounting_timestamp;
-> > > > > > +
-> > > > >
-> > > > > Hmm. Do we really need to update the accounting timestamp? I would
-> > > > > rather avoid it if possible.
-> > > >
-> > > > i915/drm uses this to track ongoing suspended state. In fact they are
-> > > > mainly interested by this part
-> > >
-> > > Again, sorry I don't follow.
-> >
-> > In fact we don't update dev->power.accounting_timestamp but only use
-> > it to get how much time has elapsed in the current state.
-> >
-> > >
-> > > My suggested changes below, would do exactly that; track the ongoing
-> > > suspended state.
-> > >
-> > > The user can call the function several times while the device remains
-> > > RPM_SUSPENDED, and if needed the user could then compute the delta
-> > > in-between the calls, for whatever reason that may be needed.
-> >
-> > So I'm not sure to catch your question:
-> > Is your problem linked to status != RPM_SUSPENDED or the update
-> > parameter that compute delta ?
+> Add an additional bit flag to the device struct named "dead".
 >
-> My intent was to keep things simple.
+> This additional flag provides a guarantee that when a device_del is
+> executed on a given interface an async worker will not attempt to attach
+> the driver following the earlier device_del call. Previously this
+> guarantee was not present and could result in the device_del call
+> attempting to remove a driver from an interface only to have the async
+> worker attempt to probe the driver later when it finally completes the
+> asynchronous probe call.
 >
-> 1. Only expose last suspended time, which means tracking the ongoing
-> suspended state. In other words, you can also remove "enum rpm_status
-> status" as the in-parameter to pm_runtime_accounted_time_get().
-
-Ok for this point if Rafael doesn't see any benefit of keeping the
-generic interface
-
-> 2. Don't allow the user of pm_runtime_accounted_time_get() to update
-> the current timestamp, in "dev->power.accounting_timestamp".
-
-But pm_runtime_accounted_time_get doesn't update
-dev->power.accounting_timestamp, it only reads it to know when when
-the last state transition happened
-
+> One additional change added was that I pulled the check for dev->driver
+> out of the __device_attach_driver call and instead placed it in the
+> __device_attach_async_helper call. This was motivated by the fact that the
+> only other caller of this, __device_attach, had already taken the
+> device_lock() and checked for dev->driver. Instead of testing for this
+> twice in this path it makes more sense to just consolidate the dev->dead
+> and dev->driver checks together into one set of checks.
 >
-> Is that okay for the drm driver, to do what it does today?
+> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 
-drm driver needs 2 things: the  accounted suspended time since the
-last transition
-and the time elapse in the current state when suspened
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+> ---
+>  drivers/base/core.c    |   11 +++++++++++
+>  drivers/base/dd.c      |   22 +++++++++++-----------
+>  include/linux/device.h |    5 +++++
+>  3 files changed, 27 insertions(+), 11 deletions(-)
 >
-> >
-> > >
-> > > >
-> > > > >
-> > > > > It seems like it should be sufficient to return the delta between
-> > > > > "now" and the "dev->power.accounting_timestamp", when
-> > > > > "dev->power.runtime_status == RPM_SUSPENDED".
-> > > > >
-> > > > > In other case, just return 0, because we are not in RPM_SUSPENDED state.
-> > > >
-> > > > only the RPM_SUSPENDED is used by i915/drm but wanted to provide a
-> > > > generic interface to get
-> > > > suspended or not suspend state
-> > >
-> > > I see.
-> > >
-> > > Although, unless Rafael thinks different, I would rather try to keep
-> > > this as simple as possible and expose only what is needed and nothing
-> > > more.
-> >
-> > I'm fine with both. Rafael ?
-> >
-> > >
-> > > >
-> > > > >
-> > > > > > +       if (status == RPM_SUSPENDED)
-> > > > > > +               time = dev->power.suspended_time + delta;
-> > > > > > +       else
-> > > > > > +               time = dev->power.active_time + delta;
-> > > > > > +
-> > > > > > +unlock:
-> > > > > > +       spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > > > > +
-> > > > > > +       return time;
-> > > > > > +}
-> > > > > > +
-> > > > > >  /**
-> > > > > >   * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
-> > > > > >   * @dev: Device to handle.
-> > > > > > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-> > > > > > index 54af4ee..86f21f9 100644
-> > > > > > --- a/include/linux/pm_runtime.h
-> > > > > > +++ b/include/linux/pm_runtime.h
-> > > > > > @@ -113,6 +113,8 @@ static inline bool pm_runtime_is_irq_safe(struct device *dev)
-> > > > > >         return dev->power.irq_safe;
-> > > > > >  }
-> > > > > >
-> > > > > > +extern u64 pm_runtime_accounted_time_get(struct device *dev, enum rpm_status status, bool update);
-> > > > > > +
-> > > > > >  #else /* !CONFIG_PM */
-> > > > > >
-> > > > > >  static inline bool queue_pm_work(struct work_struct *work) { return false; }
-> > > > > > --
-> > > > > > 2.7.4
-> > > > > >
-> > > > >
-> > > > > Kind regards
-> > > > > Uffe
-> > >
-> > > Kind regards
-> > > Uffe
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 0073b09bb99f..950e25495726 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -2080,6 +2080,17 @@ void device_del(struct device *dev)
+>         struct kobject *glue_dir = NULL;
+>         struct class_interface *class_intf;
+>
+> +       /*
+> +        * Hold the device lock and set the "dead" flag to guarantee that
+> +        * the update behavior is consistent with the other bitfields near
+> +        * it and that we cannot have an asynchronous probe routine trying
+> +        * to run while we are tearing out the bus/class/sysfs from
+> +        * underneath the device.
+> +        */
+> +       device_lock(dev);
+> +       dev->dead = true;
+> +       device_unlock(dev);
+> +
+>         /* Notify clients of device removal.  This call must come
+>          * before dpm_sysfs_remove().
+>          */
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 88713f182086..74c194ac99df 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -731,15 +731,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
+>         bool async_allowed;
+>         int ret;
+>
+> -       /*
+> -        * Check if device has already been claimed. This may
+> -        * happen with driver loading, device discovery/registration,
+> -        * and deferred probe processing happens all at once with
+> -        * multiple threads.
+> -        */
+> -       if (dev->driver)
+> -               return -EBUSY;
+> -
+>         ret = driver_match_device(drv, dev);
+>         if (ret == 0) {
+>                 /* no match */
+> @@ -774,6 +765,15 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+>
+>         device_lock(dev);
+>
+> +       /*
+> +        * Check if device has already been removed or claimed. This may
+> +        * happen with driver loading, device discovery/registration,
+> +        * and deferred probe processing happens all at once with
+> +        * multiple threads.
+> +        */
+> +       if (dev->dead || dev->driver)
+> +               goto out_unlock;
+> +
+>         if (dev->parent)
+>                 pm_runtime_get_sync(dev->parent);
+>
+> @@ -784,7 +784,7 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+>
+>         if (dev->parent)
+>                 pm_runtime_put(dev->parent);
+> -
+> +out_unlock:
+>         device_unlock(dev);
+>
+>         put_device(dev);
+> @@ -897,7 +897,7 @@ static int __driver_attach(struct device *dev, void *data)
+>         if (dev->parent && dev->bus->need_parent_lock)
+>                 device_lock(dev->parent);
+>         device_lock(dev);
+> -       if (!dev->driver)
+> +       if (!dev->dead && !dev->driver)
+>                 driver_probe_device(drv, dev);
+>         device_unlock(dev);
+>         if (dev->parent && dev->bus->need_parent_lock)
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 1b25c7a43f4c..f73dad81e811 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -957,6 +957,10 @@ struct dev_links_info {
+>   *              device.
+>   * @dma_coherent: this particular device is dma coherent, even if the
+>   *             architecture supports non-coherent devices.
+> + * @dead:      This device is currently either in the process of or has
+> + *             been removed from the system. Any asynchronous events
+> + *             scheduled for this device should exit without taking any
+> + *             action.
+>   *
+>   * At the lowest level, every device in a Linux system is represented by an
+>   * instance of struct device. The device structure contains the information
+> @@ -1051,6 +1055,7 @@ struct device {
+>      defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+>         bool                    dma_coherent:1;
+>  #endif
+> +       bool                    dead:1;
+>  };
+>
+>  static inline struct device *kobj_to_dev(struct kobject *kobj)
+>
