@@ -1,112 +1,154 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get
- accounted time
-Date: Wed, 19 Dec 2018 11:52:39 +0100
-Message-ID: <CAPDyKFpfDF_7ZyhRY-jfapjuQQ=5KpQt7QV2-d_a-qki=omAYA@mail.gmail.com>
-References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
- <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
- <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
- <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
- <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
- <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v10 06/27] of: base: Add of_get_cpu_state_node() to get
+ idle states for a CPU node
+Date: Wed, 19 Dec 2018 12:05:56 +0100
+Message-ID: <65605bbd-ceda-2266-615e-20b9d3491bed@linaro.org>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-7-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181129174700.16585-7-ulf.hansson@linaro.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxMTo0MywgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxp
-bmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxMTozNCwgVmluY2Vu
-dCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBP
-biBXZWQsIDE5IERlYyAyMDE4IGF0IDExOjIxLCBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGlu
-YXJvLm9yZz4gd3JvdGU6Cj4gPiA+Cj4gPiA+IE9uIFdlZCwgMTkgRGVjIDIwMTggYXQgMTE6MTEs
-IFZpbmNlbnQgR3VpdHRvdAo+ID4gPiA8dmluY2VudC5ndWl0dG90QGxpbmFyby5vcmc+IHdyb3Rl
-Ogo+ID4gPiA+Cj4gPiA+ID4gT24gV2VkLCAxOSBEZWMgMjAxOCBhdCAxMDo1OCwgVWxmIEhhbnNz
-b24gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+IHdyb3RlOgo+ID4gPiA+ID4KPiA+ID4gPiA+IE9u
-IFR1ZSwgMTggRGVjIDIwMTggYXQgMTU6NTUsIFZpbmNlbnQgR3VpdHRvdAo+ID4gPiA+ID4gPHZp
-bmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4g
-U29tZSBkcml2ZXJzIChsaWtlIGk5MTUvZHJtKSBuZWVkIHRvIGdldCB0aGUgYWNjb3VudGVkIHN1
-c3BlbmRlZCB0aW1lLgo+ID4gPiA+ID4gPiBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldCgp
-IHdpbGwgcmV0dXJuIHRoZSBzdXNwZW5kZWQgb3IgYWN0aXZlCj4gPiA+ID4gPiA+IGFjY291bnRl
-ZCB0aW1lIHVudGlsIG5vdy4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBJIHN1Z2dlc3QgdG8gbGVhdmUg
-dGhlIGFjdGl2ZSBhY2NvdW50ZWQgdGltZSBvdXQgZm9yIG5vdy4gQXQgbGVhc3QKPiA+ID4gPiA+
-IHVudGlsIHdlIGhhdmUgc29tZSB1c2Vycy4KPiA+ID4gPgo+ID4gPiA+IFRoaXMgaXMgbmVlZGVk
-IHRvIGtlZXAgc2FtZSBmZWF0dXJlIGxldmVsIGZvciBpOTE1L2RybQo+ID4gPgo+ID4gPiBJIGRv
-bid0IGZvbGxvdy4gQWNjb3JkaW5nIHRvIHRoZSBjaGFuZ2VzIGluIHRoZSBkcm0gZHJpdmVyIGlu
-IHBhdGNoMiwKPiA+ID4gd2UgYXJlIG9ubHkgY2FsbGluZyB0aGUgbmV3IHBtX3J1bnRpbWUgaW50
-ZXJmYWNlIHdpdGggUlBNX1NVU1BFTkRFRD8KPiA+Cj4gPiBzb3JyeSBJIG1peCB5b3VyIHF1ZXN0
-aW9uIGFib3ZlIGFuZCB0aGUgb25lIGFib3V0ICBhY2NvdW50aW5nX3RpbWVzdGFtcC4KPiA+Cj4g
-PiBTbyBJIGFncmVlIHRoYXQgb25seSBSUE1fU1VTUEVOREVEIGlzIHVzZWQgZm9yIG5vdwo+ID4K
-PiA+ID4KPiA+ID4gPgo+ID4gPiA+ID4KPiA+ID4gPiA+IFRoYXQgc2FpZCwgcGVyaGFwcyByZW5h
-bWUgdGhlIGZ1bmN0aW9uIHRvIHNvbWV0aGluZyBhbG9uZyB0aGUgbGluZXMKPiA+ID4gPiA+IG9m
-LCBwbV9ydW50aW1lX2xhc3Rfc3VzcGVuZGVkX3RpbWUoKSwgdG8gbWFrZSBpdCBtb3JlIGNsZWFy
-Lgo+ID4gPiA+ID4KPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogVmluY2Vu
-dCBHdWl0dG90IDx2aW5jZW50Lmd1aXR0b3RAbGluYXJvLm9yZz4KPiA+ID4gPiA+ID4gLS0tCj4g
-PiA+ID4gPiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIHwgMjYgKysrKysrKysrKysr
-KysrKysrKysrKysrKysKPiA+ID4gPiA+ID4gIGluY2x1ZGUvbGludXgvcG1fcnVudGltZS5oICAg
-fCAgMiArKwo+ID4gPiA+ID4gPiAgMiBmaWxlcyBjaGFuZ2VkLCAyOCBpbnNlcnRpb25zKCspCj4g
-PiA+ID4gPiA+Cj4gPiA+ID4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
-dGltZS5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gPiA+ID4gPiBpbmRleCA3
-MDYyNDY5Li42NDYxNDY5IDEwMDY0NAo+ID4gPiA+ID4gPiAtLS0gYS9kcml2ZXJzL2Jhc2UvcG93
-ZXIvcnVudGltZS5jCj4gPiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
-LmMKPiA+ID4gPiA+ID4gQEAgLTg4LDYgKzg4LDMyIEBAIHN0YXRpYyB2b2lkIF9fdXBkYXRlX3J1
-bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZpY2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cykK
-PiA+ID4gPiA+ID4gICAgICAgICBkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID0gc3RhdHVzOwo+
-ID4gPiA+ID4gPiAgfQo+ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiArdTY0IHBtX3J1bnRpbWVfYWNj
-b3VudGVkX3RpbWVfZ2V0KHN0cnVjdCBkZXZpY2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1
-cywgYm9vbCB1cGRhdGUpCj4gPiA+ID4gPiA+ICt7Cj4gPiA+ID4gPiA+ICsgICAgICAgdTY0IG5v
-dyA9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKTsKPiA+ID4gPiA+Cj4gPiA+ID4gPiBJIHRoaW5r
-IHlvdSBzaG91bGQgc3RheSBvbiBqaWZmaWVzIGhlcmUgLSBhbmQgdGhlbiBzd2l0Y2ggdG8ga3Rp
-bWUgaW4gcGF0Y2ggMy4KPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ICsgICAgICAgdTY0IGRlbHRhID0g
-MCwgdGltZSA9IDA7Cj4gPiA+ID4gPiA+ICsgICAgICAgdW5zaWduZWQgbG9uZyBmbGFnczsKPiA+
-ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiArICAgICAgIHNwaW5fbG9ja19pcnFzYXZlKCZkZXYtPnBv
-d2VyLmxvY2ssIGZsYWdzKTsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiArICAgICAgIGlmIChk
-ZXYtPnBvd2VyLmRpc2FibGVfZGVwdGggPiAwKQo+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAg
-Z290byB1bmxvY2s7Cj4gPiA+ID4gPiA+ICsKPiA+ID4gPiA+ID4gKyAgICAgICAvKiBBZGQgb25n
-b2luZyBzdGF0ZSAgaWYgcmVxdWVzdGVkICovCj4gPiA+ID4gPiA+ICsgICAgICAgaWYgKHVwZGF0
-ZSAmJiBkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IHN0YXR1cykKPiA+ID4gPiA+ID4gKyAg
-ICAgICAgICAgICAgIGRlbHRhID0gbm93IC0gZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFt
-cDsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4KPiA+ID4gPiA+IEhtbS4gRG8gd2UgcmVhbGx5IG5l
-ZWQgdG8gdXBkYXRlIHRoZSBhY2NvdW50aW5nIHRpbWVzdGFtcD8gSSB3b3VsZAo+ID4gPiA+ID4g
-cmF0aGVyIGF2b2lkIGl0IGlmIHBvc3NpYmxlLgo+ID4gPiA+Cj4gPiA+ID4gaTkxNS9kcm0gdXNl
-cyB0aGlzIHRvIHRyYWNrIG9uZ29pbmcgc3VzcGVuZGVkIHN0YXRlLiBJbiBmYWN0IHRoZXkgYXJl
-Cj4gPiA+ID4gbWFpbmx5IGludGVyZXN0ZWQgYnkgdGhpcyBwYXJ0Cj4gPiA+Cj4gPiA+IEFnYWlu
-LCBzb3JyeSBJIGRvbid0IGZvbGxvdy4KPiA+Cj4gPiBJbiBmYWN0IHdlIGRvbid0IHVwZGF0ZSBk
-ZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wIGJ1dCBvbmx5IHVzZQo+ID4gaXQgdG8gZ2V0
-IGhvdyBtdWNoIHRpbWUgaGFzIGVsYXBzZWQgaW4gdGhlIGN1cnJlbnQgc3RhdGUuCj4gPgo+ID4g
-Pgo+ID4gPiBNeSBzdWdnZXN0ZWQgY2hhbmdlcyBiZWxvdywgd291bGQgZG8gZXhhY3RseSB0aGF0
-OyB0cmFjayB0aGUgb25nb2luZwo+ID4gPiBzdXNwZW5kZWQgc3RhdGUuCj4gPiA+Cj4gPiA+IFRo
-ZSB1c2VyIGNhbiBjYWxsIHRoZSBmdW5jdGlvbiBzZXZlcmFsIHRpbWVzIHdoaWxlIHRoZSBkZXZp
-Y2UgcmVtYWlucwo+ID4gPiBSUE1fU1VTUEVOREVELCBhbmQgaWYgbmVlZGVkIHRoZSB1c2VyIGNv
-dWxkIHRoZW4gY29tcHV0ZSB0aGUgZGVsdGEKPiA+ID4gaW4tYmV0d2VlbiB0aGUgY2FsbHMsIGZv
-ciB3aGF0ZXZlciByZWFzb24gdGhhdCBtYXkgYmUgbmVlZGVkLgo+ID4KPiA+IFNvIEknbSBub3Qg
-c3VyZSB0byBjYXRjaCB5b3VyIHF1ZXN0aW9uOgo+ID4gSXMgeW91ciBwcm9ibGVtIGxpbmtlZCB0
-byBzdGF0dXMgIT0gUlBNX1NVU1BFTkRFRCBvciB0aGUgdXBkYXRlCj4gPiBwYXJhbWV0ZXIgdGhh
-dCBjb21wdXRlIGRlbHRhID8KPgo+IE15IGludGVudCB3YXMgdG8ga2VlcCB0aGluZ3Mgc2ltcGxl
-Lgo+Cj4gMS4gT25seSBleHBvc2UgbGFzdCBzdXNwZW5kZWQgdGltZSwgd2hpY2ggbWVhbnMgdHJh
-Y2tpbmcgdGhlIG9uZ29pbmcKPiBzdXNwZW5kZWQgc3RhdGUuIEluIG90aGVyIHdvcmRzLCB5b3Ug
-Y2FuIGFsc28gcmVtb3ZlICJlbnVtIHJwbV9zdGF0dXMKPiBzdGF0dXMiIGFzIHRoZSBpbi1wYXJh
-bWV0ZXIgdG8gcG1fcnVudGltZV9hY2NvdW50ZWRfdGltZV9nZXQoKS4KPiAyLiBEb24ndCBhbGxv
-dyB0aGUgdXNlciBvZiBwbV9ydW50aW1lX2FjY291bnRlZF90aW1lX2dldCgpIHRvIHVwZGF0ZQo+
-IHRoZSBjdXJyZW50IHRpbWVzdGFtcCwgaW4gImRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3Rh
-bXAiLgo+Cj4gSXMgdGhhdCBva2F5IGZvciB0aGUgZHJtIGRyaXZlciwgdG8gZG8gd2hhdCBpdCBk
-b2VzIHRvZGF5PwoKSG9sZCBvbi4gSSBhbSB3b25kZXJpbmcgaWYgdGhlIGRybSBkcml2ZXIgY291
-bGQgdXNlIHRoZSBleGlzdGluZwpwbV9ydW50aW1lX2F1dG9zdXNwZW5kX2V4cGlyYXRpb24oKSBm
-dW5jdGlvbiBpbnN0ZWFkLiBJc24ndCB0aGF0CnJlYWxseSB0aGF0IHdoYXQgaXMgbmVlZGVkPwoK
-Wy4uLl0KCktpbmQgcmVnYXJkcwpVZmZlCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZy
-ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2ludGVsLWdmeAo=
+On 29/11/2018 18:46, Ulf Hansson wrote:
+> The CPU's idle state nodes are currently parsed at the common cpuidle DT
+> library, but also when initializing back-end data for the arch specific CPU
+> operations, as in the PSCI driver case.
+> 
+> To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
+> the device node for the CPU and the index to the requested idle state node,
+> as in-parameters. In case a corresponding idle state node is found, it
+> returns the node with the refcount incremented for it, else it returns
+> NULL.
+> 
+> Moreover, for ARM, there are two generic methods, to describe the CPU's
+> idle states, either via the flattened description through the
+> "cpu-idle-states" binding [1] or via the hierarchical layout, using the
+> "power-domains" and the "domain-idle-states" bindings [2]. Hence, let's
+> take both options into account.
+> 
+> [1]
+> Documentation/devicetree/bindings/arm/idle-states.txt
+> [2]
+> Documentation/devicetree/bindings/arm/psci.txt
+> 
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+
+Nitpicking some kerneldoc formatting below.
+
+Other than that:
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+> 
+> Changes in v10:
+> 	- None.
+> 
+> ---
+>  drivers/of/base.c  | 35 +++++++++++++++++++++++++++++++++++
+>  include/linux/of.h |  8 ++++++++
+>  2 files changed, 43 insertions(+)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 09692c9b32a7..8f6974a22006 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -429,6 +429,41 @@ int of_cpu_node_to_id(struct device_node *cpu_node)
+>  }
+>  EXPORT_SYMBOL(of_cpu_node_to_id);
+>  
+> +/**
+> + * of_get_cpu_state_node - Get CPU's idle state node at the given index
+> + *
+> + * @cpu_node: The device node for the CPU
+> + * @index: The index in the list of the idle states
+> + *
+> + * Two generic methods can be used to describe a CPU's idle states, either via
+> + * a flattened description through the "cpu-idle-states" binding or via the
+> + * hierarchical layout, using the "power-domains" and the "domain-idle-states"
+> + * bindings. This function check for both and returns the idle state node for
+> + * the requested index.
+> + *
+> + * In case and idle state node is found at index, the refcount incremented for
+
+s/and/an/
+
+s/index/@index/
+
+
+> + * it, so call of_node_put() on it when done. Returns NULL if not found.
+
+The Return description must be in a separate section.
+
+> + */
+> +struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
+> +					  int index)
+> +{
+> +	struct of_phandle_args args;
+> +	int err;
+> +
+> +	err = of_parse_phandle_with_args(cpu_node, "power-domains",
+> +					"#power-domain-cells", 0, &args);
+> +	if (!err) {
+> +		struct device_node *state_node =
+> +			of_parse_phandle(args.np, "domain-idle-states", index);
+> +
+> +		of_node_put(args.np);
+> +		return state_node;
+> +	}
+> +
+> +	return of_parse_phandle(cpu_node, "cpu-idle-states", index);
+> +}
+> +EXPORT_SYMBOL(of_get_cpu_state_node);
+> +
+>  /**
+>   * __of_device_is_compatible() - Check if the node matches given constraints
+>   * @device: pointer to node
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index a5aee3c438ad..f9f0c65c095c 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -348,6 +348,8 @@ extern const void *of_get_property(const struct device_node *node,
+>  				int *lenp);
+>  extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+>  extern struct device_node *of_get_next_cpu_node(struct device_node *prev);
+> +extern struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
+> +						 int index);
+>  
+>  #define for_each_property_of_node(dn, pp) \
+>  	for (pp = dn->properties; pp != NULL; pp = pp->next)
+> @@ -762,6 +764,12 @@ static inline struct device_node *of_get_next_cpu_node(struct device_node *prev)
+>  	return NULL;
+>  }
+>  
+> +static inline struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
+> +					int index)
+> +{
+> +	return NULL;
+> +}
+> +
+>  static inline int of_n_addr_cells(struct device_node *np)
+>  {
+>  	return 0;
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
