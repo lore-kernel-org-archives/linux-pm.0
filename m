@@ -1,67 +1,190 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Wed, 19 Dec 2018 17:47:25 -0600
-Message-ID: <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181212211848.26768-3-jcrouse@codeaurora.org>
- <20181214044057.wybv6wqg75qdnmic@vireshk-i7>
- <CAD=FV=VQEtQtnPJyo6vLm7ndPjowZ35FY-cibJyN_imZMoVU3w@mail.gmail.com>
- <20181217070647.xtvfgsixggua5yod@vireshk-i7>
- <CAD=FV=WKfKyZe6sc4drfa9kLQVbG1b9nCe6qbPmUPQGNEKAh=Q@mail.gmail.com>
- <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
- <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
- <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
- <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
- <CAD=FV=VMMYKoW4RU_TTjLdyrNcWZU-Gyou9b6qynKFX9wDn5Mw@mail.gmail.com>
- <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg@mail.gmail.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v6 3/4] thermal: tegra: parse sensor id before sensor
+ register
+Date: Thu, 20 Dec 2018 10:44:07 +0800
+Message-ID: <6f511eb9-e3f6-0a23-c0d0-5a866a6ec547@nvidia.com>
+References: <1544780993-20744-1-git-send-email-wni@nvidia.com>
+ <1544780993-20744-4-git-send-email-wni@nvidia.com>
+ <20181219012450.GA2842@localhost.localdomain>
+ <5c48701f-aafc-2db0-2191-41f169c8f33f@nvidia.com>
+ <20181219145732.GA3516@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181219145732.GA3516@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, thierry.reding@gmail.com, daniel.lezcano@linaro.org, linux-tegra@vger.kernel.org, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBEZWMgMTksIDIwMTggYXQgNDo0MCBQTSBEb3VnIEFuZGVyc29uIDxkaWFuZGVyc0Bj
-aHJvbWl1bS5vcmc+IHdyb3RlOgo+Cj4gSGksCj4KPiBPbiBXZWQsIERlYyAxOSwgMjAxOCBhdCAx
-Mjo0MCBQTSBEb3VnIEFuZGVyc29uIDxkaWFuZGVyc0BjaHJvbWl1bS5vcmc+IHdyb3RlOgo+ID4K
-PiA+IEhpLAo+ID4KPiA+IE9uIFdlZCwgRGVjIDE5LCAyMDE4IGF0IDEyOjA5IFBNIFJvYiBIZXJy
-aW5nIDxyb2JoQGtlcm5lbC5vcmc+IHdyb3RlOgo+ID4gPgo+ID4gPiBPbiBUdWUsIERlYyAxOCwg
-MjAxOCBhdCAxMDo0OSBQTSBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPiB3
-cm90ZToKPiA+ID4gPgo+ID4gPiA+IE9uIDE4LTEyLTE4LCAxMTowNSwgRG91ZyBBbmRlcnNvbiB3
-cm90ZToKPiA+ID4gPiA+IE9LLCBpdCdzIGZpbmUgd2l0aCBtZSB0byBoYXZlIHRoZSBmYWxsYmFj
-aywgYnV0IGlmIHdlIGRvIHdlIHNob3VsZCBiZQo+ID4gPiA+ID4gY29uc2lzdGVudCBhYm91dCBp
-dCBhbmQgbWFrZSBzdXJlIGl0J3MgaW4gYWxsIHRoZSBiaW5kaW5ncyBhbmQgZGV2aWNlCj4gPiA+
-ID4gPiB0cmVlIGZpbGVzLi4uCj4gPiA+ID4KPiA+ID4gPiBTdXJlLgo+ID4gPiA+Cj4gPiA+ID4g
-SSBhbSBub3Qgc3VyZSB3aGF0J3MgdGhlIHJpZ2h0IHdheSB0byBkbyBpdCBpcywgaS5lLiBzaG91
-bGQgd2Uga2VlcCB0aGUKPiA+ID4gPiAib3BlcmF0aW5nLXBvaW50cy12MiIgc3RyaW5nIG9yIG5v
-dC4KPiA+ID4KPiA+ID4gRG9lcyBoYXZpbmcgaXQgYnV5IHlvdSBhbnl0aGluZz8gR2l2ZW4gdGhl
-IFFDb20gb25lIGRvZXNuJ3QgaGF2ZSBhbnkKPiA+ID4gZnJlcXVlbmN5IG9yIHZvbHRhZ2UsIEkg
-ZG9uJ3Qgc2VlIGhvdyBpdCB3b3VsZCBiZSB1c2VmdWwgdG8gaGF2ZSBpdC4KPiA+Cj4gPiAuLi5i
-dXQgaXQgZG9lcyBoYXZlIGEgZnJlcXVlbmN5LCBkb2Vzbid0IGl0Pwo+ID4KPiA+ICsgICBjb21w
-YXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7Cj4gPiArCj4gPiArICAg
-b3BwLTcxMDAwMDAwMCB7Cj4gPiArICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDcxMDAwMDAwMD47
-Cj4gPiArICAgICBxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVMX1RVUkJPX0wxPjsK
-PiA+ICsgICB9Owo+Cj4gQWgsIEkgcGVyaGFwcyBzZWUgdGhlIGNvbmZ1c2lvbi4gIFNvIFJhamVu
-ZHJhJ3MgdXNhZ2Ugb2YKPiAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIiBbMV0gZG9l
-c24ndCBoYXZlIGEgZnJlcXVlbmN5IGJ1dAo+IEpvcmRhbidzIGRvLiAgU28gSSBndWVzcyBpdCBt
-YWtlcyBzZW5zZSB0aGF0IEpvcmRhbidzIGhhdmUgdGhlCj4gZmFsbGJhY2sgY29tcGF0aWJsZSBi
-dXQgUmFqZW5kcmEncyBkb24ndD8KCklzIGhhdmluZyBpdCB1c2VmdWwgdG8gcy93IHRoYXQgZG9l
-c24ndCB1bmRlcnN0YW5kCiJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiPyBJZiBzbywg
-dGhlbiBhZGQKIm9wZXJhdGluZy1wb2ludHMtdjIiLiBJZiBub3QsIHRoZW4gZG9uJ3QuCgpJIGRv
-bid0IHJlYWxseSBjYXJlIGVpdGhlciB3YXkuIEp1c3QgZG9uJ3QgZG8gYm90aCB3YXlzIGFuZCBk
-b2N1bWVudAp3aGljaCB3YXkgaXMgY29ycmVjdC4KClJvYgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVu
-b0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
-bG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+
+
+On 19/12/2018 10:57 PM, Eduardo Valentin wrote:
+> On Wed, Dec 19, 2018 at 11:00:10AM +0800, Wei Ni wrote:
+>>
+>>
+>> On 19/12/2018 9:24 AM, Eduardo Valentin wrote:
+>>> On Fri, Dec 14, 2018 at 05:49:52PM +0800, Wei Ni wrote:
+>>>> Since different platforms may not support all 4
+>>>> sensors, so the sensor registration may be failed.
+>>>> Add codes to parse dt to find sensor id which
+>>>> need to be registered. So that the registration
+>>>> can be successful on all platform.
+>>>>
+>>>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>>> ---
+>>>>  drivers/thermal/tegra/soctherm.c | 45 ++++++++++++++++++++++++++++++++++++++--
+>>>>  1 file changed, 43 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+>>>> index fd2703c0cfc5..6bee31cd4621 100644
+>>>> --- a/drivers/thermal/tegra/soctherm.c
+>>>> +++ b/drivers/thermal/tegra/soctherm.c
+>>>> @@ -1224,6 +1224,41 @@ static void soctherm_init(struct platform_device *pdev)
+>>>>  	tegra_soctherm_throttle(&pdev->dev);
+>>>>  }
+>>>>  
+>>>> +static bool tegra_soctherm_find_sensor_id(unsigned int sensor_id)
+>>>> +{
+>>>> +	bool ret = false;
+>>>> +	struct of_phandle_args sensor_specs;
+>>>> +	struct device_node *np, *sensor_np;
+>>>> +
+>>>> +	np = of_find_node_by_name(NULL, "thermal-zones");
+>>>> +	if (!np)
+>>>> +		return ret;
+>>>> +
+>>>> +	for_each_available_child_of_node(np, sensor_np) {
+>>>> +		if (of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+>>>> +						 "#thermal-sensor-cells",
+>>>> +						 0, &sensor_specs))
+>>>> +			continue;
+>>>> +
+>>>> +		if (sensor_specs.args_count != 1) {
+>>>> +			WARN(sensor_specs.args_count != 1,
+>>>> +			     "%s: wrong cells in sensor specifier %d\n",
+>>>> +			     sensor_specs.np->name, sensor_specs.args_count);
+>>>> +			continue;
+>>>> +		}
+>>>> +
+>>>> +		if (sensor_specs.args[0] == sensor_id) {
+>>>> +			of_node_put(sensor_np);
+>>>> +			ret = true;
+>>>> +			break;
+>>>> +		}
+>>>> +	}
+>>>> +
+>>>> +	of_node_put(np);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>
+>>> So, I am still failing to see why this is really needed. 
+>>>
+>>> Why can't you simply resolve this with different compatibles?
+>>> If the sensor is not present or disabled, the compatible is not, well,
+>>> compatible anymore.
+>>
+>> This driver can support three Tegra chip t124, t132 and t210. And we
+>> also support some platforms for every chips. As the description in the
+>> commit, different platforms may not support all 4 sensors, so I
+>> upstreamed this patch.
+> 
+> ok.. Which means, all platforms need to have a proper DT that describes
+> the correct amount of sensors.
+
+Thanks for your comments.
+I thought about it carefully again, and found we doesn't need to change
+any codes for this issue.
+In the DT, actually the node "thermal-zones{} already describes the
+correct sensors, so we doesn't need to add more changes in DT.
+
+> 
+>> If we use different compatibles, I think we can't resolve it simply,
+>> because we also need to add codes to configure which platform support
+>> which sensors, and may add more in the future. If use this patch, we
+> 
+> There is a very common way of solving this, you can pass .data and grab
+> after calling of_node_match(), just like the tegra soc thermal driver
+> already does.
+
+Yes, for the driver, we just need to add a new file, something like
+tegra210-soctherm.c, to configure a new platform, which can remove the
+configuration for the disabled sensor, so that the soctherm driver will
+not try to register that sensors anymore.
+
+> 
+>> doesn't need to do any more in the future.
+> 
+> Well, if the patch is needed to add support for different versions of
+> your sensor block, then there is no reason why not patching.
+
+Since in current released platforms, they support all 4 sensors, so I
+will not send new patches by now.
+
+So please ignore this change.
+And will you take other 3 changes?
+
+
+Thanks.
+Wei.
+
+> 
+>> Actually in my original change, I just ignore the registration failure
+>> to fix this issue, it will not affect loading driver, but as Daniel's
+>> comment, it's not better to ignore, so I followed his comment to refer
+> 
+> It is not good to ignore. The correct thing to do here is for tegra to
+> have correct DT entries for each sensor block version, to correctly
+> represent the amount of sensors present in the RTL, then you reflect
+> that in device driver using compatible. This way you wont need to ignore
+> failures, and you will support the correct amount of sensors for each
+> block version.
+> 
+>> the QORIQ thermal driver to get the sensor id.
+>>
+> 
+> I am not sure that is a good example to follow.
+> 
+>> Thanks.
+>> Wei.
+>>
+>>>
+>>>> +
+>>>>  static const struct of_device_id tegra_soctherm_of_match[] = {
+>>>>  #ifdef CONFIG_ARCH_TEGRA_124_SOC
+>>>>  	{
+>>>> @@ -1365,13 +1400,16 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
+>>>>  		zone->sg = soc->ttgs[i];
+>>>>  		zone->ts = tegra;
+>>>>  
+>>>> +		if (!tegra_soctherm_find_sensor_id(soc->ttgs[i]->id))
+>>>> +			continue;
+>>>> +
+>>>>  		z = devm_thermal_zone_of_sensor_register(&pdev->dev,
+>>>>  							 soc->ttgs[i]->id, zone,
+>>>>  							 &tegra_of_thermal_ops);
+>>>>  		if (IS_ERR(z)) {
+>>>>  			err = PTR_ERR(z);
+>>>> -			dev_err(&pdev->dev, "failed to register sensor: %d\n",
+>>>> -				err);
+>>>> +			dev_err(&pdev->dev, "failed to register sensor %s: %d\n",
+>>>> +				soc->ttgs[i]->name, err);
+>>>>  			goto disable_clocks;
+>>>>  		}
+>>>>  
+>>>> @@ -1434,6 +1472,9 @@ static int __maybe_unused soctherm_resume(struct device *dev)
+>>>>  		struct thermal_zone_device *tz;
+>>>>  
+>>>>  		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
+>>>> +		if (!tz)
+>>>> +			continue;
+>>>> +
+>>>>  		err = tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
+>>>>  		if (err) {
+>>>>  			dev_err(&pdev->dev,
+>>>> -- 
+>>>> 2.7.4
+>>>>
