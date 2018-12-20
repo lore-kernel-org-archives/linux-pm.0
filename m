@@ -1,419 +1,291 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v10 18/27] drivers: firmware: psci: Add support for PM
- domains using genpd
-Date: Thu, 20 Dec 2018 15:35:46 +0100
-Message-ID: <fa99b1a9-2e4d-e97c-9478-43b4d3ef9819@linaro.org>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-19-ulf.hansson@linaro.org>
+From: Valentin Schneider <valentin.schneider@arm.com>
+Subject: [BUG] dev_pm_opp refcount issue on Arm Juno r0
+Date: Thu, 20 Dec 2018 15:27:24 +0000
+Message-ID: <a2a42913-04e0-e6fc-d9ee-a2e355ac22c9@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181129174700.16585-19-ulf.hansson@linaro.org>
-Content-Language: en-US
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
-Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, nm@ti.com, sboyd@kernel.org, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Douglas Raillard <Douglas.Raillard@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 29/11/2018 18:46, Ulf Hansson wrote:
-> When the hierarchical CPU topology layout is used in DT, we need to setup
-> the corresponding PM domain data structures, as to allow a CPU and a group
-> of CPUs to be power managed accordingly. Let's enable this by deploying
-> support through the genpd interface.
-> 
-> Additionally, when the OS initiated mode is supported by the PSCI FW, let's
-> also parse the domain idle states DT bindings as to make genpd responsible
-> for the state selection, when the states are compatible with
-> "domain-idle-state". Otherwise, when only Platform Coordinated mode is
-> supported, we rely solely on the state selection to be managed through the
-> regular cpuidle framework.
-> 
-> If the initialization of the PM domain data structures succeeds and the OS
-> initiated mode is supported, we try to switch to it. In case it fails,
-> let's fall back into a degraded mode, rather than bailing out and returning
-> an error code.
-> 
-> Due to that the OS initiated mode may become enabled, we need to adjust to
-> maintain backwards compatibility for a kernel started through a kexec call.
-> Do this by explicitly switch to Platform Coordinated mode during boot.
-> 
-> To try to initiate the PM domain data structures, the PSCI driver shall
-> call the new function, psci_dt_init_pm_domains(). However, this is done
-> from following changes.
-> 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in V10:
-> 	- Enable the PM domains to be used for both PC and OSI mode.
-> 	- Fixup error paths.
-> 	- Move the management of kexec started kernels into this patch.
-> 	- Rewrite changelog.
-> 
-> ---
->  drivers/firmware/psci/Makefile         |   2 +-
->  drivers/firmware/psci/psci.c           |   7 +-
->  drivers/firmware/psci/psci.h           |   6 +
->  drivers/firmware/psci/psci_pm_domain.c | 262 +++++++++++++++++++++++++
->  4 files changed, 275 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/firmware/psci/psci_pm_domain.c
-> 
-> diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
-> index 1956b882470f..ff300f1fec86 100644
-> --- a/drivers/firmware/psci/Makefile
-> +++ b/drivers/firmware/psci/Makefile
-> @@ -1,4 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0
->  #
-> -obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
-> +obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o psci_pm_domain.o
+Hi,
 
-Same comment as 17/27.
+While running some hotplug torture test [1] on my Juno r0 I came across
+the follow splat:
 
-+obj-$(CONFIG_PSCI_IDLE) += psci_pm_domain.o
+[  716.561862] ------------[ cut here ]------------
+[  716.566451] refcount_t: underflow; use-after-free.
+[  716.571240] WARNING: CPU: 2 PID: 18 at lib/refcount.c:280 refcount_dec_not_one+0x9c/0xc0
+[  716.579246] Modules linked in:
+[  716.582269] CPU: 2 PID: 18 Comm: cpuhp/2 Not tainted 4.20.0-rc7 #39
+[  716.588469] Hardware name: ARM Juno development board (r0) (DT)
+[  716.594326] pstate: 40000005 (nZcv daif -PAN -UAO)
+[  716.599065] pc : refcount_dec_not_one+0x9c/0xc0
+[  716.603546] lr : refcount_dec_not_one+0x9c/0xc0
+[  716.608024] sp : ffff00000a063c70
+[  716.611299] x29: ffff00000a063c70 x28: 0000000000000000 
+[  716.616555] x27: 0000000000000000 x26: 0000000000000002 
+[  716.621810] x25: ffff000009169000 x24: ffff000008f8e1b0 
+[  716.627065] x23: ffff000008ce0920 x22: 00000000ffffffff 
+[  716.632319] x21: ffff000009169000 x20: ffff8009762a2664 
+[  716.637574] x19: ffff000009294a90 x18: 0000000000000400 
+[  716.642828] x17: 0000000000000000 x16: 0000000000000000 
+[  716.648082] x15: 0000000000000000 x14: 0000000000000400 
+[  716.653336] x13: 000000000000023f x12: 0000000000043705 
+[  716.658590] x11: 0000000000000108 x10: 0000000000000960 
+[  716.663844] x9 : ffff00000a063970 x8 : ffff800976943ec0 
+[  716.669098] x7 : 0000000000000000 x6 : ffff80097ff720b8 
+[  716.674353] x5 : ffff80097ff720b8 x4 : 0000000000000000 
+[  716.679607] x3 : ffff80097ff78e68 x2 : ffff80097ff720b8 
+[  716.684861] x1 : 6374e2a7925c1100 x0 : 0000000000000000 
+[  716.690115] Call trace:
+[  716.692532]  refcount_dec_not_one+0x9c/0xc0
+[  716.696669]  refcount_dec_and_mutex_lock+0x18/0x70
+[  716.701409]  _put_opp_list_kref+0x28/0x50
+[  716.705373]  _dev_pm_opp_find_and_remove_table+0x24/0x88
+[  716.710628]  _dev_pm_opp_cpumask_remove_table+0x50/0xa0
+[  716.715796]  dev_pm_opp_cpumask_remove_table+0x10/0x18
+[  716.720879]  scpi_cpufreq_exit+0x40/0x50
+[  716.724758]  cpufreq_offline+0x108/0x1e0
+[  716.728637]  cpuhp_cpufreq_offline+0xc/0x18
+[  716.732775]  cpuhp_invoke_callback+0x84/0x248
+[  716.737084]  cpuhp_thread_fun+0xc4/0x148
+[  716.740963]  smpboot_thread_fn+0x168/0x268
+[  716.745013]  kthread+0x128/0x130
+[  716.748204]  ret_from_fork+0x10/0x18
+[  716.751738] ---[ end trace 0c658e0103aac29d ]---
 
->  obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index 623591b541a4..19af2093151b 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -704,9 +704,14 @@ static int __init psci_1_0_init(struct device_node *np)
->  	if (err)
->  		return err;
->  
-> -	if (psci_has_osi_support())
-> +	if (psci_has_osi_support()) {
->  		pr_info("OSI mode supported.\n");
->  
-> +		/* Make sure we default to PC mode. */
-> +		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-> +			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
-> +	}
-> +
->  	return 0;
->  }
->  
-> diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
-> index 7d9d38fd57e1..8cf6d7206fab 100644
-> --- a/drivers/firmware/psci/psci.h
-> +++ b/drivers/firmware/psci/psci.h
-> @@ -11,4 +11,10 @@ void psci_set_domain_state(u32 state);
->  bool psci_has_osi_support(void);
->  int psci_dt_parse_state_node(struct device_node *np, u32 *state);
->  
-> +#ifdef CONFIG_CPU_IDLE
+The test produces a script [2] that can be found at the end of this email.
 
-Same comment as 17/27 for the config option.
+Kernel:
+	7566ec393f41 ("Linux 4.20-rc7")
+Config:
+	arm64 defconfig w/ CONFIG_MOUSE_PS2=n
+Firmware:
+	ARM V2M_Juno Firmware v1.4.4
+	Build Date: Jul 26 2016
 
-> +int psci_dt_init_pm_domains(struct device_node *np);
-> +#else
-> +static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
-> +#endif
-> +
->  #endif /* __PSCI_H */
-> diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
-> new file mode 100644
-> index 000000000000..d0dc38e96f85
-> --- /dev/null
-> +++ b/drivers/firmware/psci/psci_pm_domain.c
-> @@ -0,0 +1,262 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * PM domains for CPUs via genpd - managed by PSCI.
-> + *
-> + * Copyright (C) 2018 Linaro Ltd.
-> + * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> + *
-> + */
-> +
-> +#define pr_fmt(fmt) "psci: " fmt
-> +
-> +#include <linux/device.h>
-> +#include <linux/kernel.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/slab.h>
-> +#include <linux/string.h>
-> +
-> +#include "psci.h"
-> +
-> +#ifdef CONFIG_CPU_IDLE
+	NOTICE:  BL31: v1.3(debug):v1.3-567-g3fb340a2
+	NOTICE:  BL31: Built : 18:52:35, Apr 25 2017
 
-Same comment as 17/27 for the config option. This condition should go away.
+Cheers,
+Valentin
 
-> +struct psci_pd_provider {
-> +	struct list_head link;
-> +	struct device_node *node;
-> +};
-> +
-> +static LIST_HEAD(psci_pd_providers);
-> +static bool osi_mode_enabled;
-> +
-> +static int psci_pd_power_off(struct generic_pm_domain *pd)
-> +{
-> +	struct genpd_power_state *state = &pd->states[pd->state_idx];
-> +	u32 *pd_state;
-> +	u32 composite_pd_state;
-> +
-> +	/* If we have failed to enable OSI mode, then abort power off. */
-> +	if (psci_has_osi_support() && !osi_mode_enabled)
-> +		return -EBUSY;
+---
 
-I'm not sure EBUSY is the best error code to describe this situation.
-May be ENOTSUP ?
+[1]: https://github.com/ARM-software/lisa/blob/next/lisa/tests/kernel/hotplug/torture.py
 
-However, how possible is it to pass in this function if the OSI mode was
-not enabled ?
-
-> +	if (!state->data)
-> +		return 0;
-> +
-> +	/* When OSI mode is enabled, set the corresponding domain state. */
-> +	pd_state = state->data;
-> +	composite_pd_state = *pd_state | psci_get_domain_state();
-> +	psci_set_domain_state(composite_pd_state);
-> +
-> +	return 0;
-> +}
-> +
-> +static int psci_pd_parse_state_nodes(struct genpd_power_state *states,
-> +				int state_count)
-
-__init ?
-
-> +{
-> +	int i, ret;
-> +	u32 psci_state, *psci_state_buf;
-> +
-> +	for (i = 0; i < state_count; i++) {
-> +		ret = psci_dt_parse_state_node(to_of_node(states[i].fwnode),
-> +					&psci_state);
-> +		if (ret)
-> +			goto free_state;
-> +
-> +		psci_state_buf = kmalloc(sizeof(u32), GFP_KERNEL);
-> +		if (!psci_state_buf) {
-> +			ret = -ENOMEM;
-> +			goto free_state;
-> +		}
-> +		*psci_state_buf = psci_state;
-> +		states[i].data = psci_state_buf;
-> +	}
-> +
-> +	return 0;
-> +
-> +free_state:
-> +	while (i >= 0) {
-> +		kfree(states[i].data);
-> +		i--;
-> +	}
-
-for (; i >= 0; i--)
-
-> +	return ret;
-> +}
-> +
-> +static int psci_pd_parse_states(struct device_node *np,
-> +			struct genpd_power_state **states, int *state_count)
-
-__init ?
-
-> +{
-> +	int ret;
-> +
-> +	/* Parse the domain idle states. */
-> +	ret = of_genpd_parse_idle_states(np, states, state_count);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* Fill out the PSCI specifics for each found state. */
-> +	ret = psci_pd_parse_state_nodes(*states, *state_count);
-> +	if (ret)
-> +		kfree(*states);
-> +
-> +	return ret;
-> +}
-> +
-> +static int psci_pd_init(struct device_node *np)
-
-__init ?
-
-> +{
-> +	struct generic_pm_domain *pd;
-> +	struct psci_pd_provider *pd_provider;
-> +	struct dev_power_governor *pd_gov;
-> +	struct genpd_power_state *states = NULL;
-> +	int i, ret = -ENOMEM, state_count = 0;
-> +
-> +	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-> +	if (!pd)
-> +		goto out;
-> +
-> +	pd_provider = kzalloc(sizeof(*pd_provider), GFP_KERNEL);
-> +	if (!pd_provider)
-> +		goto free_pd;
-> +
-> +	pd->name = kasprintf(GFP_KERNEL, "%pOF", np);
-> +	if (!pd->name)
-> +		goto free_pd_prov;
-> +
-> +	/*
-> +	 * For OSI mode, parse the domain idle states and let genpd manage the
-> +	 * state selection for those being compatible with "domain-idle-state".
-> +	 */
-> +	if (psci_has_osi_support()) {
-> +		ret = psci_pd_parse_states(np, &states, &state_count);
-> +		if (ret)
-> +			goto free_name;
-> +	}
-> +
-> +	pd->name = kbasename(pd->name);
-> +	pd->power_off = psci_pd_power_off;
-> +	pd->states = states;
-> +	pd->state_count = state_count;
-> +	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
-> +
-> +	/* Use governor for CPU PM domains if it has some states to manage. */
-> +	pd_gov = state_count > 0 ? &pm_domain_cpu_gov : NULL;
-> +
-> +	ret = pm_genpd_init(pd, pd_gov, false);
-> +	if (ret)
-> +		goto free_state;
-> +
-> +	ret = of_genpd_add_provider_simple(np, pd);
-> +	if (ret)
-> +		goto remove_pd;
-> +
-> +	pd_provider->node = of_node_get(np);
-> +	list_add(&pd_provider->link, &psci_pd_providers);
-> +
-> +	pr_debug("init PM domain %s\n", pd->name);
-> +	return 0;
-> +
-> +remove_pd:
-> +	pm_genpd_remove(pd);
-> +free_state:
-> +	for (i = 0; i < state_count; i++)
-> +		kfree(states[i].data);
-> +	kfree(states);
-> +free_name:
-> +	kfree(pd->name);
-> +free_pd_prov:
-> +	kfree(pd_provider);
-> +free_pd:
-> +	kfree(pd);
-> +out:
-> +	pr_err("failed to init PM domain ret=%d %pOF\n", ret, np);
-> +	return ret;
-> +}
-> +
-> +static void psci_pd_remove(void)
-> +{
-> +	struct psci_pd_provider *pd_provider, *it;
-> +	struct generic_pm_domain *genpd;
-> +	int i;
-> +
-> +	list_for_each_entry_safe(pd_provider, it, &psci_pd_providers, link) {
-> +		of_genpd_del_provider(pd_provider->node);
-> +
-> +		genpd = of_genpd_remove_last(pd_provider->node);
-> +		if (!IS_ERR(genpd)) {
-> +			for (i = 0; i < genpd->state_count; i++)
-> +				kfree(genpd->states[i].data);
-> +			kfree(genpd->states);
-> +			kfree(genpd);
-> +		}
-> +
-> +		of_node_put(pd_provider->node);
-> +		list_del(&pd_provider->link);
-> +		kfree(pd_provider);
-> +	}
-> +}
-> +
-> +static int psci_pd_init_topology(struct device_node *np)
-
-__init ?
-
-> +{
-> +	struct device_node *node;
-> +	struct of_phandle_args child, parent;
-> +	int ret;
-> +
-> +	for_each_child_of_node(np, node) {
-> +		if (of_parse_phandle_with_args(node, "power-domains",
-> +					"#power-domain-cells", 0, &parent))
-> +			continue;
-> +
-> +		child.np = node;
-> +		child.args_count = 0;
-> +
-> +		ret = of_genpd_add_subdomain(&parent, &child);
-> +		of_node_put(parent.np);
-> +		if (ret) {
-> +			of_node_put(node);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +int psci_dt_init_pm_domains(struct device_node *np)
-
-__init ?
-
-> +{
-> +	struct device_node *node;
-> +	int ret, pd_count = 0;
-> +
-> +	/*
-> +	 * Parse child nodes for the "#power-domain-cells" property and
-> +	 * initialize a genpd/genpd-of-provider pair when it's found.
-> +	 */
-> +	for_each_child_of_node(np, node) {
-> +		if (!of_find_property(node, "#power-domain-cells", NULL))
-> +			continue;
-> +
-> +		ret = psci_pd_init(node);
-> +		if (ret)
-> +			goto put_node;
-> +
-> +		pd_count++;
-> +	}
-> +
-> +	/* Bail out if not using the hierarchical CPU topology. */
-> +	if (!pd_count)
-> +		return 0;
-> +
-> +	/* Link genpd masters/subdomains to model the CPU topology. */
-> +	ret = psci_pd_init_topology(np);
-> +	if (ret)
-> +		goto remove_pd;
-> +
-> +	/* Try to enable OSI mode if supported. */
-> +	if (psci_has_osi_support())
-> +		osi_mode_enabled = psci_set_osi_mode();
-> +
-> +	pr_info("Initialized CPU PM domain topology\n");
-> +	return pd_count;
-> +
-> +put_node:
-> +	of_node_put(node);
-> +remove_pd:
-> +	if (pd_count)
-> +		psci_pd_remove();
-> +	pr_err("failed to create CPU PM domains ret=%d\n", ret);
-> +	return ret;
-> +}
-> +#endif
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+[2]: random_cpuhp.sh
+#!/bin/sh
+set -e
+while true
+do
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.055
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.084
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.014
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.069
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.037
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.075
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.088
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.064
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.049
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.024
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.097
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.013
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.094
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.073
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.022
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.057
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.054
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.022
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.018
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.057
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.046
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.018
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.016
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.016
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.044
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.046
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.093
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.098
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.072
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.013
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.099
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.07
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.022
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.041
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.098
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.032
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.043
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.076
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.072
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.036
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.042
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.016
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.07
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.018
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.055
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.096
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.012
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.093
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.086
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.09
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.077
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.01
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.026
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.049
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.083
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.096
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.067
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.083
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.089
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.065
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.066
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.099
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.08
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.076
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.01
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.017
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.049
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.057
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.083
+    echo 0 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.037
+    echo 0 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.04
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.051
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.03
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.067
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.011
+    echo 1 > /sys/devices/system/cpu/cpu4/online
+    sleep 0.041
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.057
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.082
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.067
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.069
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.062
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.074
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.025
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.016
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.017
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.025
+    echo 0 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.016
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.082
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.021
+    echo 0 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.02
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.035
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.063
+    echo 0 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.064
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.029
+    echo 1 > /sys/devices/system/cpu/cpu1/online
+    sleep 0.096
+    echo 1 > /sys/devices/system/cpu/cpu3/online
+    sleep 0.073
+    echo 1 > /sys/devices/system/cpu/cpu0/online
+    sleep 0.049
+    echo 1 > /sys/devices/system/cpu/cpu5/online
+    sleep 0.065
+    echo 0 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.024
+    echo 1 > /sys/devices/system/cpu/cpu2/online
+    sleep 0.092
+done &
+LOOP_PID=$!
+sleep 10
+[ $(ps -q $LOOP_PID | wc -l) -gt 1 ] && kill -9 $LOOP_PID
+set +e
