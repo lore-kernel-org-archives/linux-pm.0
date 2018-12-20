@@ -1,52 +1,83 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
-Date: Thu, 20 Dec 2018 13:40:44 -0800
-Message-ID: <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
-References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org> <20181130154145.GK18262@codeaurora.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 3/3] PM/runtime:Replace jiffies based
+ accounting with ktime based accounting
+Date: Thu, 20 Dec 2018 23:02:55 +0100
+Message-ID: <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
+References: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181130154145.GK18262@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Fri, Nov 30, 2018 at 7:41 AM Lina Iyer <ilina@codeaurora.org> wrote:
->
-> On Tue, Oct 30 2018 at 11:23 -0600, Raju P.L.S.S.S.N wrote:
-> >Add device bindings for cpuidle states for cpu devices.
-> >
-> >Cc: <devicetree@vger.kernel.org>
-> >Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-> >---
-> >Changes in v2
-> > - Address comments from Doug
-> >---
-> >---
-> > arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
-> > 1 file changed, 62 insertions(+)
-> >
-> >diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> >index 0c9a2aa..3a8381e 100644
-> >--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> >+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> >@@ -96,6 +96,7 @@
-> >                       reg = <0x0 0x0>;
-> >                       enable-method = "psci";
-> >                       next-level-cache = <&L2_0>;
-> >+                      cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
-> I think it might be better to use
-> <&C0_CPU_PD>, <&C0_CPU_RPD>, <&CLUSTER_PD>
-
-I disagree.  All existing examples in both bindings and other device
-trees use the syntax that Raju uses.  It doesn't matter
-functionality-wise, but I'd much rather match everyone else.  We
-should land what Raju has posted and if someone feels super strongly
-that the examples in the bindings are wrong then they should attempt
-to convince Rob Herring to Ack a change to the examples in the
-bindings.  Doesn't seem like a good use of time to me, though.
-
--Doug
+T24gVGh1LCAyMCBEZWMgMjAxOCBhdCAxNToxNywgVmluY2VudCBHdWl0dG90Cjx2aW5jZW50Lmd1
+aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBGcm9tOiBUaGFyYSBHb3BpbmF0aCA8dGhhcmEu
+Z29waW5hdGhAbGluYXJvLm9yZz4KPgo+IFRoaXMgcGF0Y2ggcmVwbGFjZXMgamlmZmllcyBiYXNl
+ZCBhY2NvdW50aW5nIGZvciBydW50aW1lX2FjdGl2ZV90aW1lCj4gYW5kIHJ1bnRpbWVfc3VzcGVu
+ZGVkX3RpbWUgd2l0aCBrdGltZSBiYXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gcnVu
+dGltZSBkZWJ1ZyBjb3VudGVycyBpbmxpbmUgd2l0aCBnZW5wZCBhbmQgb3RoZXIgcG0gc3Vic3l0
+ZW1zIHdoaWNoCj4gdXNlcyBrdGltZSBiYXNlZCBhY2NvdW50aW5nLgo+Cj4gU2lnbmVkLW9mZi1i
+eTogVGhhcmEgR29waW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+Cj4gW21vdmUgZnJv
+bSBrdGltZSB0byByYXcgbnNlY10KPiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZp
+bmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPgo+IC0tLQo+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
+dGltZS5jIHwgMTcgKysrKysrKysrLS0tLS0tLS0KPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2Zz
+LmMgICB8IDExICsrKysrKysrLS0tCj4gIGluY2x1ZGUvbGludXgvcG0uaCAgICAgICAgICAgfCAg
+NiArKystLS0KPiAgMyBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCAxNCBkZWxldGlv
+bnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGIvZHJp
+dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+IGluZGV4IGU2OTU1NDQuLmY3MDA1MjQgMTAwNjQ0
+Cj4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ICsrKyBiL2RyaXZlcnMvYmFz
+ZS9wb3dlci9ydW50aW1lLmMKPiBAQCAtNjQsOCArNjQsOCBAQCBzdGF0aWMgaW50IHJwbV9zdXNw
+ZW5kKHN0cnVjdCBkZXZpY2UgKmRldiwgaW50IHJwbWZsYWdzKTsKPiAgICovCj4gIHZvaWQgdXBk
+YXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIHsKPiAtICAg
+ICAgIHVuc2lnbmVkIGxvbmcgbm93ID0gamlmZmllczsKPiAtICAgICAgIHVuc2lnbmVkIGxvbmcg
+ZGVsdGE7Cj4gKyAgICAgICB1NjQgbm93ID0ga3RpbWVfdG9fbnMoa3RpbWVfZ2V0KCkpOwo+ICsg
+ICAgICAgdTY0IGRlbHRhOwo+Cj4gICAgICAgICBkZWx0YSA9IG5vdyAtIGRldi0+cG93ZXIuYWNj
+b3VudGluZ190aW1lc3RhbXA7Cj4KPiBAQCAtNzUsOSArNzUsOSBAQCB2b2lkIHVwZGF0ZV9wbV9y
+dW50aW1lX2FjY291bnRpbmcoc3RydWN0IGRldmljZSAqZGV2KQo+ICAgICAgICAgICAgICAgICBy
+ZXR1cm47Cj4KPiAgICAgICAgIGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IFJQTV9T
+VVNQRU5ERUQpCj4gLSAgICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXMg
+Kz0gZGVsdGE7Cj4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWUgKz0g
+ZGVsdGE7Cj4gICAgICAgICBlbHNlCj4gLSAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZl
+X2ppZmZpZXMgKz0gZGVsdGE7Cj4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZlX3Rp
+bWUgKz0gZGVsdGE7Cj4gIH0KPgo+ICBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1
+cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gQEAgLTg4LDE3
+ICs4OCwxOCBAQCBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1cyhzdHJ1Y3QgZGV2
+aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4KPiAgdTY0IHBtX3J1bnRpbWVfc3Vz
+cGVuZGVkX3RpbWUoc3RydWN0IGRldmljZSAqZGV2KQo+ICB7Cj4gLSAgICAgICB1bnNpZ25lZCBs
+b25nIGZsYWdzLCB0aW1lOwo+ICsgICAgICAgdTY0IHRpbWU7Cj4gKyAgICAgICB1bnNpZ25lZCBs
+b25nIGZsYWdzOwo+Cj4gICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmZGV2LT5wb3dlci5sb2Nr
+LCBmbGFncyk7Cj4KPiAgICAgICAgIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291bnRpbmcoZGV2KTsK
+Pgo+IC0gICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXM7Cj4gKyAgICAg
+ICB0aW1lID0gZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZTsKPgo+ICAgICAgICAgc3Bpbl91bmxv
+Y2tfaXJxcmVzdG9yZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4KPiAtICAgICAgIHJldHVy
+biBqaWZmaWVzX3RvX25zZWNzKHRpbWUpOwo+ICsgICAgICAgcmV0dXJuIHRpbWU7Cj4gIH0KPiAg
+RVhQT1JUX1NZTUJPTF9HUEwocG1fcnVudGltZV9zdXNwZW5kZWRfdGltZSk7Cj4KPiBAQCAtMTUw
+Myw3ICsxNTA0LDcgQEAgdm9pZCBwbV9ydW50aW1lX2luaXQoc3RydWN0IGRldmljZSAqZGV2KQo+
+ICAgICAgICAgZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKPiAgICAgICAgIGRl
+di0+cG93ZXIucmVxdWVzdCA9IFJQTV9SRVFfTk9ORTsKPiAgICAgICAgIGRldi0+cG93ZXIuZGVm
+ZXJyZWRfcmVzdW1lID0gZmFsc2U7Cj4gLSAgICAgICBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGlt
+ZXN0YW1wID0gamlmZmllczsKPiArICAgICAgIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3Rh
+bXAgPSBrdGltZV90b19ucyhrdGltZV9nZXQoKSk7CgpUaGlzIGNoYW5nZSB3b3JyaWVzIG1lIGEg
+Yml0LCBidXQgaXQgbWF5IG5vdCBiZSBhIHByb2JsZW0gaW4gcHJhY3RpY2UuCgpwbV9ydW50aW1l
+X2luaXQoKSBpcyBjYWxsZWQgd2hlbiBkZXZpY2VzIGdldCBpbml0aWFsaXplZCwgdmlhCmRldmlj
+ZV9pbml0aWFsaXplKCkuIElmIHRpbWVrZWVwaW5nIGhhcyBub3QgYmVlbiBpbml0aWFsaXplZCBw
+cmlvciBhCmNhbGwgdG8ga3RpbWVfZ2V0KCkgaXMgZG9uZSwgaXQgd2lsbCBmYWlsIGFuZCBjYXVz
+aW5nIGEgTlVMTCBwb2ludGVyCmRlZmVyZW5jZSBvciBzb21ldGhpbmcgYWxvbmcgdGhvc2UgbGlu
+ZXMuCgpJbiBvdGhlciB3b3JkcywgZG8gd2Uga25vdyB0aGF0IGRldmljZV9pbml0aWFsaXplKCkg
+aXMgYWx3YXlzIGNhbGxlZAphZnRlciB0aW1la2VlcGluZyBoYXMgYmVlbiBpbml0aWFsaXplZCBk
+dXJpbmcgYm9vdD8KClsuLi5dCgpLaW5kIHJlZ2FyZHMKVWZmZQpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVs
+LWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
