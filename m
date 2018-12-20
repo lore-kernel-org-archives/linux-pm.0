@@ -1,90 +1,117 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
- adapters
-Date: Thu, 20 Dec 2018 11:00:29 +0100
-Message-ID: <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
- <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
- <20181219172250.ytronxeq2yc4vp4r@wunner.de>
- <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
- <20181219223341.GA998@kunai>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v10 15/27] drivers: firmware: psci: Announce support for
+ OS initiated suspend mode
+Date: Thu, 20 Dec 2018 14:11:00 +0100
+Message-ID: <b333c9db-9ef0-cdba-093e-6735a23ec5f6@linaro.org>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-16-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181219223341.GA998@kunai>
+In-Reply-To: <20181129174700.16585-16-ulf.hansson@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 19-12-18 23:33, Wolfram Sang wrote:
-> Hi Lukas, Hans,
+On 29/11/2018 18:46, Ulf Hansson wrote:
+> PSCI firmware v1.0+, supports two different modes for CPU_SUSPEND. The
+> Platform Coordinated mode, which is the default and mandatory mode, while
+> support for the OS initiated mode is optional.
 > 
-> On Wed, Dec 19, 2018 at 07:36:54PM +0100, Hans de Goede wrote:
->> Hi,
->>
->> On 19-12-18 18:22, Lukas Wunner wrote:
->>> On Wed, Dec 19, 2018 at 05:48:17PM +0100, Wolfram Sang wrote:
->>>> +static inline void i2c_mark_adapter_suspended(struct i2c_adapter *adap)
->>>> +{
->>>> +	i2c_lock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
->>>> +	set_bit(I2C_ALF_IS_SUSPENDED, &adap->locked_flags);
->>>> +	i2c_unlock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
->>>> +}
->>>
->>> This looks like a duplication of the is_suspended flag in struct dev_pm_info.
->>> Any reason why you can't use that?  If so, it would be good to document the
->>> reason in the commit message.
->>
->> Oh, that is a very good point and that one only gets set on system suspend
->> and not on resume suspend, working around the problems with the i2c-designware
+> This change introduces initial support for the OS initiated mode, in way
+> that it adds the related PSCI bits from the spec and prints a message in
+> the log to inform whether the mode is supported by the PSCI FW.
 > 
-> Just to make it clear: you mean runtime suspend, not resume suspend, or?
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Yes I mean runtime-suspend, sorry.
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
->> driver.
->>
->> I think this might be as simple as adding:
->>
->> 	if (WARN_ON(adap->dev.parent->power.is_suspended))
->> 		return -ESHUTDOWN;
+> ---
 > 
-> I have seen this flag but decided against it. One reason is because it
-> is marked as "PM core only".
-
-Right and we definitely should not be touching it, but reading it should
-be fine.
-
-> The other reason is that it doesn't know
-> about the adapter lock. It might get set while a transfer is on going.
-> Or even right after the suggested if-block above. The code from this
-> series gets the mutex first which ensures that on going transfers are
-> completed and no new ones are started in parallel.
+> Changes in v10:
+> 	- None.
 > 
-> Unless I am totally overlooking something...
+> ---
+>  drivers/firmware/psci/psci.c | 21 ++++++++++++++++++++-
+>  include/uapi/linux/psci.h    |  5 +++++
+>  2 files changed, 25 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> index 6bfa47cbd174..4f0cbc95e41b 100644
+> --- a/drivers/firmware/psci/psci.c
+> +++ b/drivers/firmware/psci/psci.c
+> @@ -95,6 +95,11 @@ static inline bool psci_has_ext_power_state(void)
+>  				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
+>  }
+>  
+> +static inline bool psci_has_osi_support(void)
+> +{
+> +	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
+> +}
+> +
+>  static inline bool psci_power_state_loses_context(u32 state)
+>  {
+>  	const u32 mask = psci_has_ext_power_state() ?
+> @@ -659,10 +664,24 @@ static int __init psci_0_1_init(struct device_node *np)
+>  	return 0;
+>  }
+>  
+> +static int __init psci_1_0_init(struct device_node *np)
+> +{
+> +	int err;
+> +
+> +	err = psci_0_2_init(np);
+> +	if (err)
+> +		return err;
+> +
+> +	if (psci_has_osi_support())
+> +		pr_info("OSI mode supported.\n");
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct of_device_id psci_of_match[] __initconst = {
+>  	{ .compatible = "arm,psci",	.data = psci_0_1_init},
+>  	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
+> -	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
+> +	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
+>  	{},
+>  };
+>  
+> diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
+> index b3bcabe380da..581f72085c33 100644
+> --- a/include/uapi/linux/psci.h
+> +++ b/include/uapi/linux/psci.h
+> @@ -49,6 +49,7 @@
+>  
+>  #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
+>  #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
+> +#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
+>  
+>  #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
+>  
+> @@ -97,6 +98,10 @@
+>  #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
+>  			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
+>  
+> +#define PSCI_1_0_OS_INITIATED			BIT(0)
+> +#define PSCI_1_0_SUSPEND_MODE_PC		0
+> +#define PSCI_1_0_SUSPEND_MODE_OSI		1
+> +
+>  /* PSCI return values (inclusive of all PSCI versions) */
+>  #define PSCI_RET_SUCCESS			0
+>  #define PSCI_RET_NOT_SUPPORTED			-1
+> 
 
-No you are right, there is a race here, but I don't think we are likely to
-hit that race. Normally there won't be any ongoing i2c-transfers during
-a system suspend and more over, the goal of adding this check is to help
-find problems, so even if the check sometimes does not trigger because
-of the race that is not really a big deal.
 
-I think we need to get really unlucky to have both a suspend ordering
-problem in the first case (already a somewhat rare thing) combined with
-hitting this race in such a way *each time* that we don't trigger the
-WARN_ON.
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-To me this seems a case of perfect being the enemy of good. When we
-first started discussing this you wanted to not have to modify the
-adapter/bus drivers for the check, using adap->dev.parent->power.is_suspended
-gives us that and it will also work for complex cases like
-the i2c-designware case, so I believe the benefits outway the downsides.
-
-Regards,
-
-Hans
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
