@@ -1,136 +1,159 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v4 3/3] PM/runtime:Replace jiffies based accounting with ktime based accounting
-Date: Thu, 20 Dec 2018 15:17:06 +0100
-Message-ID: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM
+ domains
+Date: Thu, 20 Dec 2018 15:19:23 +0100
+Message-ID: <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-18-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181129174700.16585-18-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: ulf.hansson@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Thara Gopinath <thara.gopinath@linaro.org>
+On 29/11/2018 18:46, Ulf Hansson wrote:
+> Following changes are about to implement support for PM domains to PSCI.
+> Those changes are mainly going to be implemented in a new separate file,
+> hence a couple of the internal PSCI functions needs to be shared to be
+> accessible. So, let's do that via adding new PSCI header file.
+> 
+> Moreover, the changes deploying support for PM domains, needs to be able to
+> switch the PSCI FW into the OS initiated mode. For that reason, let's add a
+> new function that deals with this and share it via the new PSCI header
+> file.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Changes in v10:
+> 	- New patch. Re-places the earlier patch: "drivers: firmware: psci:
+> 	  Share a few internal PSCI functions".
+> 
+> ---
+>  drivers/firmware/psci/psci.c | 28 +++++++++++++++++++++-------
+>  drivers/firmware/psci/psci.h | 14 ++++++++++++++
+>  2 files changed, 35 insertions(+), 7 deletions(-)
+>  create mode 100644 drivers/firmware/psci/psci.h
+> 
+> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> index 8dbcdecc2ae4..623591b541a4 100644
+> --- a/drivers/firmware/psci/psci.c
+> +++ b/drivers/firmware/psci/psci.c
+> @@ -34,6 +34,8 @@
+>  #include <asm/smp_plat.h>
+>  #include <asm/suspend.h>
+>  
+> +#include "psci.h"
+> +
+>  /*
+>   * While a 64-bit OS can make calls with SMC32 calling conventions, for some
+>   * calls it is necessary to use SMC64 to pass or return 64-bit values.
+> @@ -90,23 +92,35 @@ static u32 psci_function_id[PSCI_FN_MAX];
+>  static DEFINE_PER_CPU(u32, domain_state);
+>  static u32 psci_cpu_suspend_feature;
+>  
+> -static inline u32 psci_get_domain_state(void)
+> +u32 psci_get_domain_state(void)
+>  {
+>  	return __this_cpu_read(domain_state);
+>  }
+>
+> -static inline void psci_set_domain_state(u32 state)
+> +void psci_set_domain_state(u32 state)
+>  {
+>  	__this_cpu_write(domain_state, state);
+>  }
+>  
+> +bool psci_set_osi_mode(void)
+> +{
+> +	int ret;
+> +
+> +	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
+> +			PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
+> +	if (ret)
+> +		pr_warn("failed to enable OSI mode: %d\n", ret);
+> +
+> +	return !ret;
+> +}
 
-This patch replaces jiffies based accounting for runtime_active_time
-and runtime_suspended_time with ktime base accounting. This makes the
-runtime debug counters inline with genpd and other pm subsytems which
-uses ktime based accounting.
+Please keep the convention with the error code (0 => success)
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-[move from ktime to raw nsec]
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/base/power/runtime.c | 17 +++++++++--------
- drivers/base/power/sysfs.c   | 11 ++++++++---
- include/linux/pm.h           |  6 +++---
- 3 files changed, 20 insertions(+), 14 deletions(-)
+In the next patch it can be called:
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index e695544..f700524 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -64,8 +64,8 @@ static int rpm_suspend(struct device *dev, int rpmflags);
-  */
- void update_pm_runtime_accounting(struct device *dev)
- {
--	unsigned long now = jiffies;
--	unsigned long delta;
-+	u64 now = ktime_to_ns(ktime_get());
-+	u64 delta;
- 
- 	delta = now - dev->power.accounting_timestamp;
- 
-@@ -75,9 +75,9 @@ void update_pm_runtime_accounting(struct device *dev)
- 		return;
- 
- 	if (dev->power.runtime_status == RPM_SUSPENDED)
--		dev->power.suspended_jiffies += delta;
-+		dev->power.suspended_time += delta;
- 	else
--		dev->power.active_jiffies += delta;
-+		dev->power.active_time += delta;
- }
- 
- static void __update_runtime_status(struct device *dev, enum rpm_status status)
-@@ -88,17 +88,18 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
- 
- u64 pm_runtime_suspended_time(struct device *dev)
- {
--	unsigned long flags, time;
-+	u64 time;
-+	unsigned long flags;
- 
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 
- 	update_pm_runtime_accounting(dev);
- 
--	time = dev->power.suspended_jiffies;
-+	time = dev->power.suspended_time;
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- 
--	return jiffies_to_nsecs(time);
-+	return time;
- }
- EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
- 
-@@ -1503,7 +1504,7 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.request_pending = false;
- 	dev->power.request = RPM_REQ_NONE;
- 	dev->power.deferred_resume = false;
--	dev->power.accounting_timestamp = jiffies;
-+	dev->power.accounting_timestamp = ktime_to_ns(ktime_get());
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
- 	dev->power.timer_expires = 0;
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index d713738..96c8a22 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -125,9 +125,12 @@ static ssize_t runtime_active_time_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	int ret;
-+	u64 tmp;
- 	spin_lock_irq(&dev->power.lock);
- 	update_pm_runtime_accounting(dev);
--	ret = sprintf(buf, "%i\n", jiffies_to_msecs(dev->power.active_jiffies));
-+	tmp = dev->power.active_time;
-+	do_div(tmp, NSEC_PER_MSEC);
-+	ret = sprintf(buf, "%llu\n", tmp);
- 	spin_unlock_irq(&dev->power.lock);
- 	return ret;
- }
-@@ -138,10 +141,12 @@ static ssize_t runtime_suspended_time_show(struct device *dev,
- 				struct device_attribute *attr, char *buf)
- {
- 	int ret;
-+	u64 tmp;
- 	spin_lock_irq(&dev->power.lock);
- 	update_pm_runtime_accounting(dev);
--	ret = sprintf(buf, "%i\n",
--		jiffies_to_msecs(dev->power.suspended_jiffies));
-+	tmp = dev->power.suspended_time;
-+	do_div(tmp, NSEC_PER_MSEC);
-+	ret = sprintf(buf, "%llu\n", tmp);
- 	spin_unlock_irq(&dev->power.lock);
- 	return ret;
- }
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78..e5a34e2 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -632,9 +632,9 @@ struct dev_pm_info {
- 	int			runtime_error;
- 	int			autosuspend_delay;
- 	unsigned long		last_busy;
--	unsigned long		active_jiffies;
--	unsigned long		suspended_jiffies;
--	unsigned long		accounting_timestamp;
-+	u64			active_time;
-+	u64			suspended_time;
-+	u64			accounting_timestamp;
- #endif
- 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
- 	void (*set_latency_tolerance)(struct device *, s32);
+if (psci_has_osi_support())
+	osi_mode_enabled = psci_set_osi_mode() ? false : true;
+
+> +
+>  static inline bool psci_has_ext_power_state(void)
+>  {
+>  	return psci_cpu_suspend_feature &
+>  				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
+>  }
+>  
+> -static inline bool psci_has_osi_support(void)
+> +bool psci_has_osi_support(void)
+>  {
+>  	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
+>  }
+> @@ -285,10 +299,7 @@ static int __init psci_features(u32 psci_func_id)
+>  			      psci_func_id, 0, 0);
+>  }
+>  
+> -#ifdef CONFIG_CPU_IDLE
+> -static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
+> -
+> -static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+> +int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+>  {
+>  	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
+>  
+> @@ -305,6 +316,9 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+>  	return 0;
+>  }
+>  
+> +#ifdef CONFIG_CPU_IDLE
+
+It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
+with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
+CONFIG_CPU_IDLE, so the config options stay contained in their
+respective subsystems directory.
+
+> +static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
+> +
+>  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+>  			struct device_node *cpu_node, int cpu)
+>  {
+> diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+> new file mode 100644
+> index 000000000000..7d9d38fd57e1
+> --- /dev/null
+> +++ b/drivers/firmware/psci/psci.h
+> @@ -0,0 +1,14 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +
+> +#ifndef __PSCI_H
+> +#define __PSCI_H
+> +
+> +struct device_node;
+> +
+> +bool psci_set_osi_mode(void);
+> +u32 psci_get_domain_state(void);
+> +void psci_set_domain_state(u32 state);
+> +bool psci_has_osi_support(void);
+> +int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+> +
+> +#endif /* __PSCI_H */
+> 
+
+
 -- 
-2.7.4
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
