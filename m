@@ -1,61 +1,52 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM domains
-Date: Thu, 20 Dec 2018 22:37:43 +0100
-Message-ID: <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-18-ulf.hansson@linaro.org> <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
- <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com> <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Thu, 20 Dec 2018 13:40:44 -0800
+Message-ID: <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
+References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org> <20181130154145.GK18262@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
+In-Reply-To: <20181130154145.GK18262@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Dec 2018 at 19:06, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+Hi,
+
+On Fri, Nov 30, 2018 at 7:41 AM Lina Iyer <ilina@codeaurora.org> wrote:
 >
-> On 20/12/2018 16:49, Ulf Hansson wrote:
->
-> [ ... ]
->
-> >>> +#ifdef CONFIG_CPU_IDLE
-> >>
-> >> It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
-> >> with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
-> >> CONFIG_CPU_IDLE, so the config options stay contained in their
-> >> respective subsystems directory.
+> On Tue, Oct 30 2018 at 11:23 -0600, Raju P.L.S.S.S.N wrote:
+> >Add device bindings for cpuidle states for cpu devices.
 > >
-> > I am all for simplifying the Kconfig options in here, as indeed it's
-> > rather messy. However, I would rather avoid folding in additional
-> > cleanup changes to this series, is already extensive enough.
+> >Cc: <devicetree@vger.kernel.org>
+> >Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> >---
+> >Changes in v2
+> > - Address comments from Doug
+> >---
+> >---
+> > arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+> > 1 file changed, 62 insertions(+)
 > >
-> > Would you be okay if we deal with that on top?
->
-> IMO, there are patches in this series which can be grouped into a
-> cleanup + set the scene patchset and merged immediately. An option
-> similar to ARM_SCMI_POWER_DOMAIN can be part of it.
+> >diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> >index 0c9a2aa..3a8381e 100644
+> >--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> >+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> >@@ -96,6 +96,7 @@
+> >                       reg = <0x0 0x0>;
+> >                       enable-method = "psci";
+> >                       next-level-cache = <&L2_0>;
+> >+                      cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+> I think it might be better to use
+> <&C0_CPU_PD>, <&C0_CPU_RPD>, <&CLUSTER_PD>
 
-I certainly agree to that. The tricky is, to know what pieces people
-are happy with to go in. :-)
+I disagree.  All existing examples in both bindings and other device
+trees use the syntax that Raju uses.  It doesn't matter
+functionality-wise, but I'd much rather match everyone else.  We
+should land what Raju has posted and if someone feels super strongly
+that the examples in the bindings are wrong then they should attempt
+to convince Rob Herring to Ack a change to the examples in the
+bindings.  Doesn't seem like a good use of time to me, though.
 
-Earlier, in v9 I tried your suggested approach (kind of), but then
-Lorenzo stated that it's kind of all or nothing. Maybe we can bring up
-that discussion again with him and see what we can figure out.
-
->
-> However, if you swear you will do the change after and sign with your
-> blood, I'm fine with that 0:)
->
-
-Whatever it takes!
-
-Anyway, as stated, the reason why I want to tackle that on top, is
-that I don't want to make the series more extensive than it already
-is.
-
-Agree?
-
-Kind regards
-Uffe
+-Doug
