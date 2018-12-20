@@ -1,111 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 2/3] drm/i915: Move on the new pm runtime interface
-Date: Thu, 20 Dec 2018 23:03:28 +0100
-Message-ID: <CAPDyKFqZfCoL1N_Ca12mR0sk_JR7EhxchXGR_R3=9dFXu6Qoyw@mail.gmail.com>
-References: <1545315417-14483-1-git-send-email-vincent.guittot@linaro.org>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Thu, 20 Dec 2018 15:55:58 -0700
+Message-ID: <20181220225557.GE14960@codeaurora.org>
+References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
+ <20181130154145.GK18262@codeaurora.org>
+ <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1545315417-14483-1-git-send-email-vincent.guittot@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Dec 2018 at 15:17, Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
+On Thu, Dec 20 2018 at 14:42 -0700, Doug Anderson wrote:
+>Hi,
 >
-> Use the new pm runtime interface to get the accounted suspended time:
-> pm_runtime_accounted_time_get()
+>On Fri, Nov 30, 2018 at 7:41 AM Lina Iyer <ilina@codeaurora.org> wrote:
+>>
+>> On Tue, Oct 30 2018 at 11:23 -0600, Raju P.L.S.S.S.N wrote:
+>> >Add device bindings for cpuidle states for cpu devices.
+>> >
+>> >Cc: <devicetree@vger.kernel.org>
+>> >Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+>> >---
+>> >Changes in v2
+>> > - Address comments from Doug
+>> >---
+>> >---
+>> > arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+>> > 1 file changed, 62 insertions(+)
+>> >
+>> >diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>> >index 0c9a2aa..3a8381e 100644
+>> >--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>> >+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>> >@@ -96,6 +96,7 @@
+>> >                       reg = <0x0 0x0>;
+>> >                       enable-method = "psci";
+>> >                       next-level-cache = <&L2_0>;
+>> >+                      cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+>> I think it might be better to use
+>> <&C0_CPU_PD>, <&C0_CPU_RPD>, <&CLUSTER_PD>
+>
+>I disagree.  All existing examples in both bindings and other device
+>trees use the syntax that Raju uses.  It doesn't matter
+>functionality-wise, but I'd much rather match everyone else.  We
+>should land what Raju has posted and if someone feels super strongly
+>that the examples in the bindings are wrong then they should attempt
+>to convince Rob Herring to Ack a change to the examples in the
+>bindings.  Doesn't seem like a good use of time to me, though.
+>
+No strong preference from my end.
 
-pm_runtime_suspended_time()
-
-This change also makes quite some nice cleanups to the code, which is
-mostly because of converting to the new runtime PM API. I think the
-changelog deserves to state that, in some simple way.
-
->
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-
-Other than the minor things above:
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
-
-> ---
->  drivers/gpu/drm/i915/i915_pmu.c | 16 ++++++----------
->  drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
->  2 files changed, 8 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
-> index d6c8f8f..3f76f60 100644
-> --- a/drivers/gpu/drm/i915/i915_pmu.c
-> +++ b/drivers/gpu/drm/i915/i915_pmu.c
-> @@ -5,6 +5,7 @@
->   */
->
->  #include <linux/irq.h>
-> +#include <linux/pm_runtime.h>
->  #include "i915_pmu.h"
->  #include "intel_ringbuffer.h"
->  #include "i915_drv.h"
-> @@ -478,7 +479,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
->                  * counter value.
->                  */
->                 spin_lock_irqsave(&i915->pmu.lock, flags);
-> -               spin_lock(&kdev->power.lock);
->
->                 /*
->                  * After the above branch intel_runtime_pm_get_if_in_use failed
-> @@ -491,16 +491,13 @@ static u64 get_rc6(struct drm_i915_private *i915)
->                  * suspended and if not we cannot do better than report the last
->                  * known RC6 value.
->                  */
-> -               if (kdev->power.runtime_status == RPM_SUSPENDED) {
-> -                       if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
-> -                               i915->pmu.suspended_jiffies_last =
-> -                                                 kdev->power.suspended_jiffies;
-> +               if (pm_runtime_status_suspended(kdev)) {
-> +                       val = pm_runtime_suspended_time(kdev);
->
-> -                       val = kdev->power.suspended_jiffies -
-> -                             i915->pmu.suspended_jiffies_last;
-> -                       val += jiffies - kdev->power.accounting_timestamp;
-> +                       if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
-> +                               i915->pmu.suspended_time_last = val;
->
-> -                       val = jiffies_to_nsecs(val);
-> +                       val -= i915->pmu.suspended_time_last;
->                         val += i915->pmu.sample[__I915_SAMPLE_RC6].cur;
->
->                         i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur = val;
-> @@ -510,7 +507,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
->                         val = i915->pmu.sample[__I915_SAMPLE_RC6].cur;
->                 }
->
-> -               spin_unlock(&kdev->power.lock);
->                 spin_unlock_irqrestore(&i915->pmu.lock, flags);
->         }
->
-> diff --git a/drivers/gpu/drm/i915/i915_pmu.h b/drivers/gpu/drm/i915/i915_pmu.h
-> index 7f164ca..3dc2a30 100644
-> --- a/drivers/gpu/drm/i915/i915_pmu.h
-> +++ b/drivers/gpu/drm/i915/i915_pmu.h
-> @@ -95,9 +95,9 @@ struct i915_pmu {
->          */
->         struct i915_pmu_sample sample[__I915_NUM_PMU_SAMPLERS];
->         /**
-> -        * @suspended_jiffies_last: Cached suspend time from PM core.
-> +        * @suspended_time_last: Cached suspend time from PM core.
->          */
-> -       unsigned long suspended_jiffies_last;
-> +       u64 suspended_time_last;
->         /**
->          * @i915_attr: Memory block holding device attributes.
->          */
-> --
-> 2.7.4
->
+-- Lina
