@@ -1,83 +1,76 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Thu, 20 Dec 2018 23:02:55 +0100
-Message-ID: <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
-References: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+Subject: Re: [PATCH v4 1/3] PM/runtime: Add a new interface to get accounted time
+Date: Thu, 20 Dec 2018 23:03:18 +0100
+Message-ID: <CAPDyKFo9GedhCVF4sRxvYzgWCiXK7aPzKnDXPWX5YT+vopAV5g@mail.gmail.com>
+References: <1545315385-14384-1-git-send-email-vincent.guittot@linaro.org> <1545315385-14384-2-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1545315385-14384-2-git-send-email-vincent.guittot@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, jani.nikula@linux.intel.com, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMCBEZWMgMjAxOCBhdCAxNToxNywgVmluY2VudCBHdWl0dG90Cjx2aW5jZW50Lmd1
-aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBGcm9tOiBUaGFyYSBHb3BpbmF0aCA8dGhhcmEu
-Z29waW5hdGhAbGluYXJvLm9yZz4KPgo+IFRoaXMgcGF0Y2ggcmVwbGFjZXMgamlmZmllcyBiYXNl
-ZCBhY2NvdW50aW5nIGZvciBydW50aW1lX2FjdGl2ZV90aW1lCj4gYW5kIHJ1bnRpbWVfc3VzcGVu
-ZGVkX3RpbWUgd2l0aCBrdGltZSBiYXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gcnVu
-dGltZSBkZWJ1ZyBjb3VudGVycyBpbmxpbmUgd2l0aCBnZW5wZCBhbmQgb3RoZXIgcG0gc3Vic3l0
-ZW1zIHdoaWNoCj4gdXNlcyBrdGltZSBiYXNlZCBhY2NvdW50aW5nLgo+Cj4gU2lnbmVkLW9mZi1i
-eTogVGhhcmEgR29waW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+Cj4gW21vdmUgZnJv
-bSBrdGltZSB0byByYXcgbnNlY10KPiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZp
-bmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPgo+IC0tLQo+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
-dGltZS5jIHwgMTcgKysrKysrKysrLS0tLS0tLS0KPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2Zz
-LmMgICB8IDExICsrKysrKysrLS0tCj4gIGluY2x1ZGUvbGludXgvcG0uaCAgICAgICAgICAgfCAg
-NiArKystLS0KPiAgMyBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCAxNCBkZWxldGlv
-bnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGIvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+IGluZGV4IGU2OTU1NDQuLmY3MDA1MjQgMTAwNjQ0
-Cj4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ICsrKyBiL2RyaXZlcnMvYmFz
-ZS9wb3dlci9ydW50aW1lLmMKPiBAQCAtNjQsOCArNjQsOCBAQCBzdGF0aWMgaW50IHJwbV9zdXNw
-ZW5kKHN0cnVjdCBkZXZpY2UgKmRldiwgaW50IHJwbWZsYWdzKTsKPiAgICovCj4gIHZvaWQgdXBk
-YXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gIHsKPiAtICAg
-ICAgIHVuc2lnbmVkIGxvbmcgbm93ID0gamlmZmllczsKPiAtICAgICAgIHVuc2lnbmVkIGxvbmcg
-ZGVsdGE7Cj4gKyAgICAgICB1NjQgbm93ID0ga3RpbWVfdG9fbnMoa3RpbWVfZ2V0KCkpOwo+ICsg
-ICAgICAgdTY0IGRlbHRhOwo+Cj4gICAgICAgICBkZWx0YSA9IG5vdyAtIGRldi0+cG93ZXIuYWNj
-b3VudGluZ190aW1lc3RhbXA7Cj4KPiBAQCAtNzUsOSArNzUsOSBAQCB2b2lkIHVwZGF0ZV9wbV9y
-dW50aW1lX2FjY291bnRpbmcoc3RydWN0IGRldmljZSAqZGV2KQo+ICAgICAgICAgICAgICAgICBy
-ZXR1cm47Cj4KPiAgICAgICAgIGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IFJQTV9T
-VVNQRU5ERUQpCj4gLSAgICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXMg
-Kz0gZGVsdGE7Cj4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWUgKz0g
-ZGVsdGE7Cj4gICAgICAgICBlbHNlCj4gLSAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZl
-X2ppZmZpZXMgKz0gZGVsdGE7Cj4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZlX3Rp
-bWUgKz0gZGVsdGE7Cj4gIH0KPgo+ICBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1
-cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gQEAgLTg4LDE3
-ICs4OCwxOCBAQCBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1cyhzdHJ1Y3QgZGV2
-aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4KPiAgdTY0IHBtX3J1bnRpbWVfc3Vz
-cGVuZGVkX3RpbWUoc3RydWN0IGRldmljZSAqZGV2KQo+ICB7Cj4gLSAgICAgICB1bnNpZ25lZCBs
-b25nIGZsYWdzLCB0aW1lOwo+ICsgICAgICAgdTY0IHRpbWU7Cj4gKyAgICAgICB1bnNpZ25lZCBs
-b25nIGZsYWdzOwo+Cj4gICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmZGV2LT5wb3dlci5sb2Nr
-LCBmbGFncyk7Cj4KPiAgICAgICAgIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291bnRpbmcoZGV2KTsK
-Pgo+IC0gICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXM7Cj4gKyAgICAg
-ICB0aW1lID0gZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZTsKPgo+ICAgICAgICAgc3Bpbl91bmxv
-Y2tfaXJxcmVzdG9yZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4KPiAtICAgICAgIHJldHVy
-biBqaWZmaWVzX3RvX25zZWNzKHRpbWUpOwo+ICsgICAgICAgcmV0dXJuIHRpbWU7Cj4gIH0KPiAg
-RVhQT1JUX1NZTUJPTF9HUEwocG1fcnVudGltZV9zdXNwZW5kZWRfdGltZSk7Cj4KPiBAQCAtMTUw
-Myw3ICsxNTA0LDcgQEAgdm9pZCBwbV9ydW50aW1lX2luaXQoc3RydWN0IGRldmljZSAqZGV2KQo+
-ICAgICAgICAgZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKPiAgICAgICAgIGRl
-di0+cG93ZXIucmVxdWVzdCA9IFJQTV9SRVFfTk9ORTsKPiAgICAgICAgIGRldi0+cG93ZXIuZGVm
-ZXJyZWRfcmVzdW1lID0gZmFsc2U7Cj4gLSAgICAgICBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGlt
-ZXN0YW1wID0gamlmZmllczsKPiArICAgICAgIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3Rh
-bXAgPSBrdGltZV90b19ucyhrdGltZV9nZXQoKSk7CgpUaGlzIGNoYW5nZSB3b3JyaWVzIG1lIGEg
-Yml0LCBidXQgaXQgbWF5IG5vdCBiZSBhIHByb2JsZW0gaW4gcHJhY3RpY2UuCgpwbV9ydW50aW1l
-X2luaXQoKSBpcyBjYWxsZWQgd2hlbiBkZXZpY2VzIGdldCBpbml0aWFsaXplZCwgdmlhCmRldmlj
-ZV9pbml0aWFsaXplKCkuIElmIHRpbWVrZWVwaW5nIGhhcyBub3QgYmVlbiBpbml0aWFsaXplZCBw
-cmlvciBhCmNhbGwgdG8ga3RpbWVfZ2V0KCkgaXMgZG9uZSwgaXQgd2lsbCBmYWlsIGFuZCBjYXVz
-aW5nIGEgTlVMTCBwb2ludGVyCmRlZmVyZW5jZSBvciBzb21ldGhpbmcgYWxvbmcgdGhvc2UgbGlu
-ZXMuCgpJbiBvdGhlciB3b3JkcywgZG8gd2Uga25vdyB0aGF0IGRldmljZV9pbml0aWFsaXplKCkg
-aXMgYWx3YXlzIGNhbGxlZAphZnRlciB0aW1la2VlcGluZyBoYXMgYmVlbiBpbml0aWFsaXplZCBk
-dXJpbmcgYm9vdD8KClsuLi5dCgpLaW5kIHJlZ2FyZHMKVWZmZQpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVs
-LWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+On Thu, 20 Dec 2018 at 15:16, Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+>
+> Some drivers (like i915/drm) needs to get the accounted suspended time.
+> pm_runtime_suspended_time() will return the suspended accounted time
+> in ns unit.
+>
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/base/power/runtime.c | 16 ++++++++++++++++
+>  include/linux/pm_runtime.h   |  2 ++
+>  2 files changed, 18 insertions(+)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index beb85c3..e695544 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -86,6 +86,22 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+>         dev->power.runtime_status = status;
+>  }
+>
+> +u64 pm_runtime_suspended_time(struct device *dev)
+> +{
+> +       unsigned long flags, time;
+> +
+> +       spin_lock_irqsave(&dev->power.lock, flags);
+> +
+> +       update_pm_runtime_accounting(dev);
+> +
+> +       time = dev->power.suspended_jiffies;
+> +
+> +       spin_unlock_irqrestore(&dev->power.lock, flags);
+> +
+> +       return jiffies_to_nsecs(time);
+> +}
+> +EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
+> +
+>  /**
+>   * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
+>   * @dev: Device to handle.
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index f0fc470..d479707 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -113,6 +113,8 @@ static inline bool pm_runtime_is_irq_safe(struct device *dev)
+>         return dev->power.irq_safe;
+>  }
+>
+> +extern u64 pm_runtime_suspended_time(struct device *dev);
+> +
+>  #else /* !CONFIG_PM */
+>
+>  static inline bool queue_pm_work(struct work_struct *work) { return false; }
+> --
+> 2.7.4
+>
