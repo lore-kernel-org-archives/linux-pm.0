@@ -1,51 +1,37 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM
- domains
-Date: Thu, 20 Dec 2018 19:06:35 +0100
-Message-ID: <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-18-ulf.hansson@linaro.org>
- <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
- <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Kangjie Lu <kjlu@umn.edu>
+Subject: [PATCH] power: twl4030: fix a missing check of return value
+Date: Thu, 20 Dec 2018 13:51:24 -0600
+Message-ID: <20181220195124.29467-1-kjlu@umn.edu>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: kjlu@umn.edu
+Cc: pakki001@umn.edu, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 20/12/2018 16:49, Ulf Hansson wrote:
+If twl4030_bci_read() fails, the read data in "s" is incorrect,
+which is however used in the following execution. The fix checks
+the return value of twl4030_bci_read() and returns an error code
+upstream upon the failure of twl4030_bci_read().
 
-[ ... ]
+Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+---
+ drivers/power/supply/twl4030_charger.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
->>> +#ifdef CONFIG_CPU_IDLE
->>
->> It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
->> with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
->> CONFIG_CPU_IDLE, so the config options stay contained in their
->> respective subsystems directory.
-> 
-> I am all for simplifying the Kconfig options in here, as indeed it's
-> rather messy. However, I would rather avoid folding in additional
-> cleanup changes to this series, is already extensive enough.
-> 
-> Would you be okay if we deal with that on top?
-
-IMO, there are patches in this series which can be grouped into a
-cleanup + set the scene patchset and merged immediately. An option
-similar to ARM_SCMI_POWER_DOMAIN can be part of it.
-
-However, if you swear you will do the change after and sign with your
-blood, I'm fine with that 0:)
-
-
+diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+index 0e202d4273fb..4299873a1118 100644
+--- a/drivers/power/supply/twl4030_charger.c
++++ b/drivers/power/supply/twl4030_charger.c
+@@ -809,7 +809,9 @@ static int twl4030_bci_get_property(struct power_supply *psy,
+ 		is_charging = state & TWL4030_MSTATEC_AC;
+ 	if (!is_charging) {
+ 		u8 s;
+-		twl4030_bci_read(TWL4030_BCIMDEN, &s);
++		ret = twl4030_bci_read(TWL4030_BCIMDEN, &s);
++		if (ret < 0)
++			return ret;
+ 		if (psy->desc->type == POWER_SUPPLY_TYPE_USB)
+ 			is_charging = s & 1;
+ 		else
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.17.1
