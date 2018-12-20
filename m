@@ -1,71 +1,136 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v4 2/3] drm/i915: Move on the new pm runtime
- interface
-Date: Thu, 20 Dec 2018 15:16:57 +0100
-Message-ID: <1545315417-14483-1-git-send-email-vincent.guittot@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+Subject: [PATCH v4 3/3] PM/runtime:Replace jiffies based accounting with ktime based accounting
+Date: Thu, 20 Dec 2018 15:17:06 +0100
+Message-ID: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: ulf.hansson@linaro.org
+Cc: ulf.hansson@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-VXNlIHRoZSBuZXcgcG0gcnVudGltZSBpbnRlcmZhY2UgdG8gZ2V0IHRoZSBhY2NvdW50ZWQgc3Vz
-cGVuZGVkIHRpbWU6CnBtX3J1bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0KCkKClNpZ25lZC1vZmYt
-Ynk6IFZpbmNlbnQgR3VpdHRvdCA8dmluY2VudC5ndWl0dG90QGxpbmFyby5vcmc+Ci0tLQogZHJp
-dmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuYyB8IDE2ICsrKysrKy0tLS0tLS0tLS0KIGRyaXZl
-cnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmggfCAgNCArKy0tCiAyIGZpbGVzIGNoYW5nZWQsIDgg
-aW5zZXJ0aW9ucygrKSwgMTIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUv
-ZHJtL2k5MTUvaTkxNV9wbXUuYyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmMKaW5k
-ZXggZDZjOGY4Zi4uM2Y3NmY2MCAxMDA2NDQKLS0tIGEvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkx
-NV9wbXUuYworKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5jCkBAIC01LDYgKzUs
-NyBAQAogICovCiAKICNpbmNsdWRlIDxsaW51eC9pcnEuaD4KKyNpbmNsdWRlIDxsaW51eC9wbV9y
-dW50aW1lLmg+CiAjaW5jbHVkZSAiaTkxNV9wbXUuaCIKICNpbmNsdWRlICJpbnRlbF9yaW5nYnVm
-ZmVyLmgiCiAjaW5jbHVkZSAiaTkxNV9kcnYuaCIKQEAgLTQ3OCw3ICs0NzksNiBAQCBzdGF0aWMg
-dTY0IGdldF9yYzYoc3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCiAJCSAqIGNvdW50ZXIg
-dmFsdWUuCiAJCSAqLwogCQlzcGluX2xvY2tfaXJxc2F2ZSgmaTkxNS0+cG11LmxvY2ssIGZsYWdz
-KTsKLQkJc3Bpbl9sb2NrKCZrZGV2LT5wb3dlci5sb2NrKTsKIAogCQkvKgogCQkgKiBBZnRlciB0
-aGUgYWJvdmUgYnJhbmNoIGludGVsX3J1bnRpbWVfcG1fZ2V0X2lmX2luX3VzZSBmYWlsZWQKQEAg
-LTQ5MSwxNiArNDkxLDEzIEBAIHN0YXRpYyB1NjQgZ2V0X3JjNihzdHJ1Y3QgZHJtX2k5MTVfcHJp
-dmF0ZSAqaTkxNSkKIAkJICogc3VzcGVuZGVkIGFuZCBpZiBub3Qgd2UgY2Fubm90IGRvIGJldHRl
-ciB0aGFuIHJlcG9ydCB0aGUgbGFzdAogCQkgKiBrbm93biBSQzYgdmFsdWUuCiAJCSAqLwotCQlp
-ZiAoa2Rldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRFRCkgewotCQkJaWYg
-KCFpOTE1LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1QTEVfUkM2X0VTVElNQVRFRF0uY3VyKQotCQkJ
-CWk5MTUtPnBtdS5zdXNwZW5kZWRfamlmZmllc19sYXN0ID0KLQkJCQkJCSAga2Rldi0+cG93ZXIu
-c3VzcGVuZGVkX2ppZmZpZXM7CisJCWlmIChwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kZWQoa2Rl
-dikpIHsKKwkJCXZhbCA9IHBtX3J1bnRpbWVfc3VzcGVuZGVkX3RpbWUoa2Rldik7CiAKLQkJCXZh
-bCA9IGtkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzIC0KLQkJCSAgICAgIGk5MTUtPnBtdS5z
-dXNwZW5kZWRfamlmZmllc19sYXN0OwotCQkJdmFsICs9IGppZmZpZXMgLSBrZGV2LT5wb3dlci5h
-Y2NvdW50aW5nX3RpbWVzdGFtcDsKKwkJCWlmICghaTkxNS0+cG11LnNhbXBsZVtfX0k5MTVfU0FN
-UExFX1JDNl9FU1RJTUFURURdLmN1cikKKwkJCQlpOTE1LT5wbXUuc3VzcGVuZGVkX3RpbWVfbGFz
-dCA9IHZhbDsKIAotCQkJdmFsID0gamlmZmllc190b19uc2Vjcyh2YWwpOworCQkJdmFsIC09IGk5
-MTUtPnBtdS5zdXNwZW5kZWRfdGltZV9sYXN0OwogCQkJdmFsICs9IGk5MTUtPnBtdS5zYW1wbGVb
-X19JOTE1X1NBTVBMRV9SQzZdLmN1cjsKIAogCQkJaTkxNS0+cG11LnNhbXBsZVtfX0k5MTVfU0FN
-UExFX1JDNl9FU1RJTUFURURdLmN1ciA9IHZhbDsKQEAgLTUxMCw3ICs1MDcsNiBAQCBzdGF0aWMg
-dTY0IGdldF9yYzYoc3RydWN0IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCiAJCQl2YWwgPSBpOTE1
-LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1QTEVfUkM2XS5jdXI7CiAJCX0KIAotCQlzcGluX3VubG9j
-aygma2Rldi0+cG93ZXIubG9jayk7CiAJCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmk5MTUtPnBt
-dS5sb2NrLCBmbGFncyk7CiAJfQogCmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9p
-OTE1X3BtdS5oIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuaAppbmRleCA3ZjE2NGNh
-Li4zZGMyYTMwIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5oCisr
-KyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmgKQEAgLTk1LDkgKzk1LDkgQEAgc3Ry
-dWN0IGk5MTVfcG11IHsKIAkgKi8KIAlzdHJ1Y3QgaTkxNV9wbXVfc2FtcGxlIHNhbXBsZVtfX0k5
-MTVfTlVNX1BNVV9TQU1QTEVSU107CiAJLyoqCi0JICogQHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q6
-IENhY2hlZCBzdXNwZW5kIHRpbWUgZnJvbSBQTSBjb3JlLgorCSAqIEBzdXNwZW5kZWRfdGltZV9s
-YXN0OiBDYWNoZWQgc3VzcGVuZCB0aW1lIGZyb20gUE0gY29yZS4KIAkgKi8KLQl1bnNpZ25lZCBs
-b25nIHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q7CisJdTY0IHN1c3BlbmRlZF90aW1lX2xhc3Q7CiAJ
-LyoqCiAJICogQGk5MTVfYXR0cjogTWVtb3J5IGJsb2NrIGhvbGRpbmcgZGV2aWNlIGF0dHJpYnV0
-ZXMuCiAJICovCi0tIAoyLjcuNAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
-aW50ZWwtZ2Z4Cg==
+From: Thara Gopinath <thara.gopinath@linaro.org>
+
+This patch replaces jiffies based accounting for runtime_active_time
+and runtime_suspended_time with ktime base accounting. This makes the
+runtime debug counters inline with genpd and other pm subsytems which
+uses ktime based accounting.
+
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+[move from ktime to raw nsec]
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ drivers/base/power/runtime.c | 17 +++++++++--------
+ drivers/base/power/sysfs.c   | 11 ++++++++---
+ include/linux/pm.h           |  6 +++---
+ 3 files changed, 20 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index e695544..f700524 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -64,8 +64,8 @@ static int rpm_suspend(struct device *dev, int rpmflags);
+  */
+ void update_pm_runtime_accounting(struct device *dev)
+ {
+-	unsigned long now = jiffies;
+-	unsigned long delta;
++	u64 now = ktime_to_ns(ktime_get());
++	u64 delta;
+ 
+ 	delta = now - dev->power.accounting_timestamp;
+ 
+@@ -75,9 +75,9 @@ void update_pm_runtime_accounting(struct device *dev)
+ 		return;
+ 
+ 	if (dev->power.runtime_status == RPM_SUSPENDED)
+-		dev->power.suspended_jiffies += delta;
++		dev->power.suspended_time += delta;
+ 	else
+-		dev->power.active_jiffies += delta;
++		dev->power.active_time += delta;
+ }
+ 
+ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+@@ -88,17 +88,18 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+ 
+ u64 pm_runtime_suspended_time(struct device *dev)
+ {
+-	unsigned long flags, time;
++	u64 time;
++	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+ 
+ 	update_pm_runtime_accounting(dev);
+ 
+-	time = dev->power.suspended_jiffies;
++	time = dev->power.suspended_time;
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+-	return jiffies_to_nsecs(time);
++	return time;
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
+ 
+@@ -1503,7 +1504,7 @@ void pm_runtime_init(struct device *dev)
+ 	dev->power.request_pending = false;
+ 	dev->power.request = RPM_REQ_NONE;
+ 	dev->power.deferred_resume = false;
+-	dev->power.accounting_timestamp = jiffies;
++	dev->power.accounting_timestamp = ktime_to_ns(ktime_get());
+ 	INIT_WORK(&dev->power.work, pm_runtime_work);
+ 
+ 	dev->power.timer_expires = 0;
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index d713738..96c8a22 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -125,9 +125,12 @@ static ssize_t runtime_active_time_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	int ret;
++	u64 tmp;
+ 	spin_lock_irq(&dev->power.lock);
+ 	update_pm_runtime_accounting(dev);
+-	ret = sprintf(buf, "%i\n", jiffies_to_msecs(dev->power.active_jiffies));
++	tmp = dev->power.active_time;
++	do_div(tmp, NSEC_PER_MSEC);
++	ret = sprintf(buf, "%llu\n", tmp);
+ 	spin_unlock_irq(&dev->power.lock);
+ 	return ret;
+ }
+@@ -138,10 +141,12 @@ static ssize_t runtime_suspended_time_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	int ret;
++	u64 tmp;
+ 	spin_lock_irq(&dev->power.lock);
+ 	update_pm_runtime_accounting(dev);
+-	ret = sprintf(buf, "%i\n",
+-		jiffies_to_msecs(dev->power.suspended_jiffies));
++	tmp = dev->power.suspended_time;
++	do_div(tmp, NSEC_PER_MSEC);
++	ret = sprintf(buf, "%llu\n", tmp);
+ 	spin_unlock_irq(&dev->power.lock);
+ 	return ret;
+ }
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index e723b78..e5a34e2 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -632,9 +632,9 @@ struct dev_pm_info {
+ 	int			runtime_error;
+ 	int			autosuspend_delay;
+ 	unsigned long		last_busy;
+-	unsigned long		active_jiffies;
+-	unsigned long		suspended_jiffies;
+-	unsigned long		accounting_timestamp;
++	u64			active_time;
++	u64			suspended_time;
++	u64			accounting_timestamp;
+ #endif
+ 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+ 	void (*set_latency_tolerance)(struct device *, s32);
+-- 
+2.7.4
