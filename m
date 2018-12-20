@@ -1,82 +1,90 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v3 1/3] PM/runtime: Add a new interface to get
- accounted time
-Date: Thu, 20 Dec 2018 10:40:32 +0100
-Message-ID: <CAPDyKFqwB4qPAjhgSGkZmwyzd38AiFzkFVpqcea6K7Sm7BWcfQ@mail.gmail.com>
-References: <1545144923-31546-1-git-send-email-vincent.guittot@linaro.org>
- <1545144923-31546-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFq6X8vJU=pK1fgirGkD2-GS=LryRP1No8bSgPNLbyvAEg@mail.gmail.com>
- <CAKfTPtCpv0MqF64JGTyR63bqKdAhXzL1fEsNbS6DHsD-jXYpKw@mail.gmail.com>
- <CAPDyKFrSxX-eBsTiEvbrbjVpqkSuBnhxruCgtihH6hSvWSFD1g@mail.gmail.com>
- <CAKfTPtB=TUAz=KpZzJsRUvK8ymiXnTgQ3BxcY0yu9YbJ1BW7QA@mail.gmail.com>
- <CAPDyKFoR7t=K65n0_+4yRqdpRMZ0BbA16cDhmxEvNhm0qEOXNQ@mail.gmail.com>
- <CAKfTPtA4Fr6Xk7+dUpzZqGvK6dJGtWAiz70Ho4noQk3gBdGFdg@mail.gmail.com>
- <CAPDyKFqpieqgh-0U_N1wwWdciotMAAJ2SRNXpGAb8D2voiaOJA@mail.gmail.com>
- <CAKfTPtBp+eCqyCWh27FWe8pkrFJiLQitPL_+kfL42r_BTq6DcQ@mail.gmail.com>
- <CAPDyKFocLDoJG5P3ywAV7+p6PL3fnno1cZ87=-Mzn49ag-y6tw@mail.gmail.com>
- <CAKfTPtA7Y5=wQ-CqKxquyiRVA1PjqqjV1A9aDn8tMok=eDYX5A@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
+ adapters
+Date: Thu, 20 Dec 2018 11:00:29 +0100
+Message-ID: <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
+References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+ <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
+ <20181219172250.ytronxeq2yc4vp4r@wunner.de>
+ <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
+ <20181219223341.GA998@kunai>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKfTPtA7Y5=wQ-CqKxquyiRVA1PjqqjV1A9aDn8tMok=eDYX5A@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181219223341.GA998@kunai>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Wy4uLl0KCj4gPiA+ID4gUmUtdGhpbmtpbmcgdGhpcyBhIGJpdCBmcm9tIG15IGVhcmxpZXIgY29t
-bWVudHMgLSBhbmQgYnkgZm9sbG93aW5nIHRoZQo+ID4gPiA+IGFib3ZlIHJlYXNvbmluZywgaXQg
-c291bmRzIGxpa2UgdGhpcyBiZXR0ZXIgYmVsb25ncyBpbiB0aGUKPiA+ID4gPiBkcml2ZXIvc3Vi
-c3lzdGVtLCB3aXRob3V0IHJlcXVpcmluZyBhbnkgZGF0YSBmcm9tIHRoZSBjb3JlLgo+ID4gPiA+
-Cj4gPiA+ID4gVGhlIGRyaXZlci9zdWJzeXN0ZW0gY291bGQganVzdCBzdG9yZSBhIHRpbWVzdGFt
-cCBpbiBpdCdzCj4gPiA+ID4gLT5ydW50aW1lX3N1c3BlbmQoKSBjYWxsYmFjayBhbmQgd2hlbmV2
-ZXIgbmVlZGVkLCBpdCBjb3VsZCBjb21wdXRlIGEKPiA+ID4gPiBkZWx0YSB0b3dhcmRzIGl0LiBU
-aGF0IHNob3VsZCB3b3JrLCByaWdodD8KPiA+ID4KPiA+ID4gSSBkb24ndCBrbm93IGk5MTUvZHJt
-IGVub3VnaCB0byBrbm93IGFsbCB0aGF0IGRldGFpbHMKPiA+Cj4gPiBPa2F5LCBzbyBsZXQgbWUg
-cmUtc3VtbWFyaXplIHRoZSBtYWluIGlzc3VlIEkgc2VlIHdpdGggeW91ciBhcHByb2FjaAo+ID4g
-aW4gJHN1YmplY3QgcGF0Y2guCj4gPgo+ID4gZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFt
-cCBjYW4ndCBiZSB1c2VkIHRvIGtub3cgd2hlbiBsYXN0Cj4gPiB0cmFuc2l0aW9uIHdhcyBtYWRl
-LiBJZiBJIHVuZGVyc3RhbmQgY29ycmVjdGx5LCB0aGF0IGlzIGhvdyB5b3UgdXNlCj4gPiBpdC4g
-Tm8/Cj4KPiBZZXMuIEF0IGxlYXN0IHRoYXQgaG93IEkgaGF2ZSBpbnRlcnByZXRlZCB0aGUgY3Vy
-cmVudCBjb2RlCj4KPiA+Cj4gPiBBbnl3YXksIGFzIHN0YXRlZCwgdGhhdCdzIGJlY2F1c2UgdGhl
-IHRpbWVzdGFtcCBiZWNvbWVzIHVwZGF0ZWQsIGlmCj4gPiB1cGRhdGVfcG1fcnVudGltZV9hY2Nv
-dW50aW5nKCkgaXMgY2FsbGVkIHZpYSB0aGUgc3lzZnMgbm9icywgd2hpY2gKPiA+IG1lYW5zIHRo
-ZXJlIGlzIG5vIHN0YXRlIHRyYW5zaXRpb24gaGFwcGVuaW5nLCBidXQgb25seSBhY2NvdW50aW5n
-IGRhdGEKPiA+IGlzIHVwZGF0ZWQuCj4KPiBZZXMgSSBoYXZlIG5vdCByZWFsaXplZCB0aGF0IHRo
-ZSB1cGRhdGUgYWxzbyBoYXBwZW5zIHRoZXJlIHdoaWNoIG1ha2VzCj4gbWUgdGhpbmsgdGhhdCBp
-IGhhdmUKPiBtYXkgYmUgb3ZlciBpbnRlcnByZXRlZCB0aGUgY29kZSBhbmQgdGhlIGluaXRpYWxp
-emF0aW9uIG9mCj4gaTkxNS0+cG11LnN1c3BlbmRlZF9qaWZmaWVzX2xhc3QKPgo+ID4KPiA+IFNv
-LCB3aGF0IEkgdGhpbmsgd2UgY2FuIGRvIGZyb20gdGhlIGNvcmUgcGVyc3BlY3RpdmUsIGlmIGl0
-IGhlbHBzCj4gPiAod2hpY2ggSSBhbSBub3Qgc3VyZSBvZik6Cj4gPiAxLiBFeHBvcnQgYSBmdW5j
-dGlvbiwgd2hpY2ggcmV0dXJucyB0aGUgdmFsdWUgb2YgZGV2LT5wb3dlci5zdXNwZW5kZWRfamlm
-Zmllcy4KPiA+IDIuIEV4cG9ydCBhIHdyYXBwZXIgZnVuY3Rpb24gKHRvIGRlYWwgd2l0aCBsb2Nr
-aW5nKSB3aGljaCBjYWxscwo+ID4gdXBkYXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZygpLiBUaGlz
-IHdyYXBwZXIgZnVuY3Rpb24gYWxsb3dzIHRoZSB1c2VyCj4gPiB0aGUgdXBkYXRlIHRoZSB0b3Rh
-bCBzdXNwZW5kZWQgdGltZSwgYWxzbyB0YWtpbmcgaW50byBhY2NvdW50IHRoZSB0aW1lCj4gPiBz
-cGVudCBpbiB0aGUgY3VycmVudCBzdGF0ZS4KPgo+IEhhdmluZyBub3cgaW4gbWluZCB0aGF0IHN1
-c3BlbmRlZF9qaWZmaWVzIGNhbiBiZSB1cGRhdGVkIG91dHNpZGUgc3RhdGUKPiB0cmFuc2l0aW9u
-IGxpa2UgdmlhIHN5c2ZzIGNhbGwsCj4gd2UgY2FuIG1heWJlIGp1c3QgaW1wbGVtZW50cyAyIGFu
-ZCByZXR1cm4gZGV2LT5wb3dlci5zdXNwZW5kZWRfamlmZmllcwo+Cj4gc29tZXRoaW5nIGxpa2Ug
-YmVsb3cKPiB1bnNpZ25lZCBsb25nIHBtX3J1bnRpbWVfZ2V0X3N1c3BlbmRlZF90aW1lKHN0cnVj
-dCBkZXZpY2UgKmRldikKCiJwbV9ydW50aW1lX3N1c3BlbmRlZF90aW1lKCkiIHNob3VsZCBiZSBz
-dWZmaWNpZW50IEkgdGhpbmsuIFRoZSAiZ2V0IgpwYXJ0IHdvdWxkIGJlY29tZSBjb25mdXNpbmcg
-ZHVlIHRvIHRoZSBleGlzdGluZyBnZXQvcHV0IGZ1bmN0aW9ucyB0aGF0CmFyZSBwYXJ0IG9mIHRo
-ZSBydW50aW1lIFBNIGludGVyZmFjZS4KCj4gewo+IHVuc2lnbmVkIGxvbmcgdGltZTsKPiB1bnNp
-Z25lZCBsb25nIGZsYWdzOwo+Cj4gc3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93ZXIubG9jaywg
-ZmxhZ3MpOwo+Cj4gdXBkYXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZyhkZXYpOwo+Cj4gdGltZSA9
-IGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWU7CgpkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVz
-CgouLi5hdCBsZWFzdCB1bnRpbCB5b3UgY29udmVydHMgdG8ga3RpbWUgOi0pCgo+Cj4gc3Bpbl91
-bmxvY2tfaXJxcmVzdG9yZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4KPiByZXR1cm4gdGlt
-ZTsKPiB9CgpZZXMsIHRoaXMgbG9va3MgZmluZSB0byBtZSEKCktpbmQgcmVnYXJkcwpVZmZlCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBt
-YWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+Hi,
+
+On 19-12-18 23:33, Wolfram Sang wrote:
+> Hi Lukas, Hans,
+> 
+> On Wed, Dec 19, 2018 at 07:36:54PM +0100, Hans de Goede wrote:
+>> Hi,
+>>
+>> On 19-12-18 18:22, Lukas Wunner wrote:
+>>> On Wed, Dec 19, 2018 at 05:48:17PM +0100, Wolfram Sang wrote:
+>>>> +static inline void i2c_mark_adapter_suspended(struct i2c_adapter *adap)
+>>>> +{
+>>>> +	i2c_lock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
+>>>> +	set_bit(I2C_ALF_IS_SUSPENDED, &adap->locked_flags);
+>>>> +	i2c_unlock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
+>>>> +}
+>>>
+>>> This looks like a duplication of the is_suspended flag in struct dev_pm_info.
+>>> Any reason why you can't use that?  If so, it would be good to document the
+>>> reason in the commit message.
+>>
+>> Oh, that is a very good point and that one only gets set on system suspend
+>> and not on resume suspend, working around the problems with the i2c-designware
+> 
+> Just to make it clear: you mean runtime suspend, not resume suspend, or?
+
+Yes I mean runtime-suspend, sorry.
+
+>> driver.
+>>
+>> I think this might be as simple as adding:
+>>
+>> 	if (WARN_ON(adap->dev.parent->power.is_suspended))
+>> 		return -ESHUTDOWN;
+> 
+> I have seen this flag but decided against it. One reason is because it
+> is marked as "PM core only".
+
+Right and we definitely should not be touching it, but reading it should
+be fine.
+
+> The other reason is that it doesn't know
+> about the adapter lock. It might get set while a transfer is on going.
+> Or even right after the suggested if-block above. The code from this
+> series gets the mutex first which ensures that on going transfers are
+> completed and no new ones are started in parallel.
+> 
+> Unless I am totally overlooking something...
+
+No you are right, there is a race here, but I don't think we are likely to
+hit that race. Normally there won't be any ongoing i2c-transfers during
+a system suspend and more over, the goal of adding this check is to help
+find problems, so even if the check sometimes does not trigger because
+of the race that is not really a big deal.
+
+I think we need to get really unlucky to have both a suspend ordering
+problem in the first case (already a somewhat rare thing) combined with
+hitting this race in such a way *each time* that we don't trigger the
+WARN_ON.
+
+To me this seems a case of perfect being the enemy of good. When we
+first started discussing this you wanted to not have to modify the
+adapter/bus drivers for the check, using adap->dev.parent->power.is_suspended
+gives us that and it will also work for complex cases like
+the i2c-designware case, so I believe the benefits outway the downsides.
+
+Regards,
+
+Hans
