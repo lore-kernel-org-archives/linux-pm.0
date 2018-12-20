@@ -1,37 +1,26 @@
-From: Kangjie Lu <kjlu@umn.edu>
-Subject: [PATCH] power: twl4030: fix a missing check of return value
-Date: Thu, 20 Dec 2018 13:51:24 -0600
-Message-ID: <20181220195124.29467-1-kjlu@umn.edu>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] dt-bindings: thermal: rcar-thermal: add R8A774C0 support
+Date: Thu, 20 Dec 2018 14:36:17 -0600
+Message-ID: <20181220203617.GA18535@bogus>
+References: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1544732388-6313-1-git-send-email-fabrizio.castro@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kjlu@umn.edu
-Cc: pakki001@umn.edu, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-If twl4030_bci_read() fails, the read data in "s" is incorrect,
-which is however used in the following execution. The fix checks
-the return value of twl4030_bci_read() and returns an error code
-upstream upon the failure of twl4030_bci_read().
+On Thu, 13 Dec 2018 20:19:48 +0000, Fabrizio Castro wrote:
+> Document RZ/G2E SoC (a.k.a. r8a774c0) bindings.
+> 
+> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+> 
+> ---
+> 
+>  Documentation/devicetree/bindings/thermal/rcar-thermal.txt | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
 
-Signed-off-by: Kangjie Lu <kjlu@umn.edu>
----
- drivers/power/supply/twl4030_charger.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 0e202d4273fb..4299873a1118 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -809,7 +809,9 @@ static int twl4030_bci_get_property(struct power_supply *psy,
- 		is_charging = state & TWL4030_MSTATEC_AC;
- 	if (!is_charging) {
- 		u8 s;
--		twl4030_bci_read(TWL4030_BCIMDEN, &s);
-+		ret = twl4030_bci_read(TWL4030_BCIMDEN, &s);
-+		if (ret < 0)
-+			return ret;
- 		if (psy->desc->type == POWER_SUPPLY_TYPE_USB)
- 			is_charging = s & 1;
- 		else
--- 
-2.17.1
+Reviewed-by: Rob Herring <robh@kernel.org>
