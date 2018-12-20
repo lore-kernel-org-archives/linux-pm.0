@@ -1,67 +1,61 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu device nodes
-Date: Thu, 20 Dec 2018 13:29:24 -0800
-Message-ID: <154534136449.79149.14097954220921296509@swboyd.mtv.corp.google.com>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181217070647.xtvfgsixggua5yod@vireshk-i7>
- <CAD=FV=WKfKyZe6sc4drfa9kLQVbG1b9nCe6qbPmUPQGNEKAh=Q@mail.gmail.com>
- <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
- <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
- <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
- <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
- <CAD=FV=VMMYKoW4RU_TTjLdyrNcWZU-Gyou9b6qynKFX9wDn5Mw@mail.gmail.com>
- <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg@mail.gmail.com>
- <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM domains
+Date: Thu, 20 Dec 2018 22:37:43 +0100
+Message-ID: <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-18-ulf.hansson@linaro.org> <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
+ <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com> <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Doug Anderson <dianders@chromium.org>, Rob Herring <robh@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, freedreno <freedreno@lists.freedesktop.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <vireshk@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-UXVvdGluZyBSb2IgSGVycmluZyAoMjAxOC0xMi0xOSAxNTo0NzoyNSkKPiBPbiBXZWQsIERlYyAx
-OSwgMjAxOCBhdCA0OjQwIFBNIERvdWcgQW5kZXJzb24gPGRpYW5kZXJzQGNocm9taXVtLm9yZz4g
-d3JvdGU6Cj4gPiBPbiBXZWQsIERlYyAxOSwgMjAxOCBhdCAxMjo0MCBQTSBEb3VnIEFuZGVyc29u
-IDxkaWFuZGVyc0BjaHJvbWl1bS5vcmc+IHdyb3RlOgo+ID4gPiBPbiBXZWQsIERlYyAxOSwgMjAx
-OCBhdCAxMjowOSBQTSBSb2IgSGVycmluZyA8cm9iaEBrZXJuZWwub3JnPiB3cm90ZToKPiA+ID4g
-Li4uYnV0IGl0IGRvZXMgaGF2ZSBhIGZyZXF1ZW5jeSwgZG9lc24ndCBpdD8KPiA+ID4KPiA+ID4g
-KyAgIGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIjsKPiA+ID4g
-Kwo+ID4gPiArICAgb3BwLTcxMDAwMDAwMCB7Cj4gPiA+ICsgICAgIG9wcC1oeiA9IC9iaXRzLyA2
-NCA8NzEwMDAwMDAwPjsKPiA+ID4gKyAgICAgcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9M
-RVZFTF9UVVJCT19MMT47Cj4gPiA+ICsgICB9Owo+ID4KPiA+IEFoLCBJIHBlcmhhcHMgc2VlIHRo
-ZSBjb25mdXNpb24uICBTbyBSYWplbmRyYSdzIHVzYWdlIG9mCj4gPiAib3BlcmF0aW5nLXBvaW50
-cy12Mi1xY29tLWxldmVsIiBbMV0gZG9lc24ndCBoYXZlIGEgZnJlcXVlbmN5IGJ1dAo+ID4gSm9y
-ZGFuJ3MgZG8uICBTbyBJIGd1ZXNzIGl0IG1ha2VzIHNlbnNlIHRoYXQgSm9yZGFuJ3MgaGF2ZSB0
-aGUKPiA+IGZhbGxiYWNrIGNvbXBhdGlibGUgYnV0IFJhamVuZHJhJ3MgZG9uJ3Q/Cj4gCj4gSXMg
-aGF2aW5nIGl0IHVzZWZ1bCB0byBzL3cgdGhhdCBkb2Vzbid0IHVuZGVyc3RhbmQKPiAib3BlcmF0
-aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIj8gSWYgc28sIHRoZW4gYWRkCj4gIm9wZXJhdGluZy1w
-b2ludHMtdjIiLiBJZiBub3QsIHRoZW4gZG9uJ3QuCgpUaGUgb25seSBiZW5lZml0IEkgc2VlIGlu
-IGhhdmluZyAib3BlcmF0aW5nLXBvaW50cy12MiIgaXMgdGhhdCB3ZSBkb24ndApuZWVkIHRvIHVw
-ZGF0ZSB0aGUgb2Zfc2tpcHBlZF9ub2RlX3RhYmxlW10gaW4gZHJpdmVycy9wbGF0Zm9ybS9vZi5j
-IHRvCmhhdmUgYWxsIHRoZSB2YXJpYW50cyBvZiBvcGVyYXRpbmctcG9pbnRzLXYyLSogd2hlbiB0
-aGV5IGRlY2lkZSB0byBub3QKdXNlIGFueXRoaW5nIGZyb20gdGhlICJiYXNlIiBiaW5kaW5nLgoK
-SWYgdGhhdCBmYWlscyB0byB3b3JrIGJlY2F1c2Ugb3BwLWh6IGlzIHJlcXVpcmVkIGZvciB0aGUK
-Im9wZXJhdGluZy1wb2ludHMtdjIiIGJpbmRpbmcgYnV0IHNvbWV0aW1lcwpvcGVyYXRpbmctcG9p
-bnRzLXYyLXFjb20tbGV2ZWwgZG9lc24ndCByZXF1aXJlIGl0IEkgZ3Vlc3Mgd2UgbmVlZCB0bwp1
-cGRhdGUgdGhlIHNraXAgdGFibGUgb3IgbWFrZSBzb21lIGdlbmVyaWMgcHJvcGVydHkgbGlrZQon
-dGhpcy1pcy1ub3QtYS1kZXZpY2UnIHRoYXQgdGhlc2UgdmFyaW91cyBkYXRhIHRhYmxlcyBpbiBE
-VCBjYW4gYmUKbWFya2VkIHdpdGggc28gd2UgZG9uJ3QgbWFrZSBwbGF0Zm9ybSBkZXZpY2VzIGZv
-ciB0aGVtLgoKUmVnYXJkbGVzcyBvZiB0aGUgYWJvdmUsIHdlIHNob3VsZCB1cGRhdGUgdGhlIGJp
-bmRpbmcgZm9yCm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCB0byBzYXkgdGhhdCBvcHAt
-aHogaXNuJ3QgYWx3YXlzIHJlcXVpcmVkCndoZW4gdGhlIHFjb20tbGV2ZWwgY29tcGF0aWJsZSBp
-cyBwcmVzZW50LiBJdCBsb29rcyBsaWtlIGl0IGp1c3Qgc2F5cwp0aGF0IGl0IGJ1aWxkcyBvbiB0
-b3Agb2YgdGhlIG9wcCBiaW5kaW5nIHNvIHRoYXQncyBub3Qgb2J2aW91cy4KCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxp
-c3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
-dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Thu, 20 Dec 2018 at 19:06, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> On 20/12/2018 16:49, Ulf Hansson wrote:
+>
+> [ ... ]
+>
+> >>> +#ifdef CONFIG_CPU_IDLE
+> >>
+> >> It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
+> >> with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
+> >> CONFIG_CPU_IDLE, so the config options stay contained in their
+> >> respective subsystems directory.
+> >
+> > I am all for simplifying the Kconfig options in here, as indeed it's
+> > rather messy. However, I would rather avoid folding in additional
+> > cleanup changes to this series, is already extensive enough.
+> >
+> > Would you be okay if we deal with that on top?
+>
+> IMO, there are patches in this series which can be grouped into a
+> cleanup + set the scene patchset and merged immediately. An option
+> similar to ARM_SCMI_POWER_DOMAIN can be part of it.
+
+I certainly agree to that. The tricky is, to know what pieces people
+are happy with to go in. :-)
+
+Earlier, in v9 I tried your suggested approach (kind of), but then
+Lorenzo stated that it's kind of all or nothing. Maybe we can bring up
+that discussion again with him and see what we can figure out.
+
+>
+> However, if you swear you will do the change after and sign with your
+> blood, I'm fine with that 0:)
+>
+
+Whatever it takes!
+
+Anyway, as stated, the reason why I want to tackle that on top, is
+that I don't want to make the series more extensive than it already
+is.
+
+Agree?
+
+Kind regards
+Uffe
