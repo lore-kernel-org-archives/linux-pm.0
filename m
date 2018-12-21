@@ -1,166 +1,98 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [Intel-gfx] [PATCH v5 2/3] drm/i915: Move on the new pm runtime interface
-Date: Fri, 21 Dec 2018 14:26:54 +0100
-Message-ID: <CAKfTPtDx8u_TnZQnQNmn+=A5A78CPVSWKvMdOVD0UEw4m4s1iQ@mail.gmail.com>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-3-git-send-email-vincent.guittot@linaro.org> <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
+ adapters
+Date: Fri, 21 Dec 2018 15:50:22 +0100
+Message-ID: <20181221145022.umsugdwadw5a5ag6@ninjato>
+References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+ <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
+ <20181219172250.ytronxeq2yc4vp4r@wunner.de>
+ <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
+ <20181219223341.GA998@kunai>
+ <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="s2jmrr4347zzegwl"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 21 Dec 2018 at 12:33, Tvrtko Ursulin
-<tvrtko.ursulin@linux.intel.com> wrote:
->
->
-> Hi,
->
-> On 21/12/2018 10:33, Vincent Guittot wrote:
-> > Use the new pm runtime interface to get the accounted suspended time:
-> > pm_runtime_suspended_time().
-> > This new interface helps to simplify and cleanup the code that computes
-> > __I915_SAMPLE_RC6_ESTIMATED and to remove direct access to internals of
-> > PM runtime.
-> >
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >   drivers/gpu/drm/i915/i915_pmu.c | 16 ++++++----------
-> >   drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
-> >   2 files changed, 8 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
-> > index d6c8f8f..3f76f60 100644
-> > --- a/drivers/gpu/drm/i915/i915_pmu.c
-> > +++ b/drivers/gpu/drm/i915/i915_pmu.c
-> > @@ -5,6 +5,7 @@
-> >    */
-> >
-> >   #include <linux/irq.h>
-> > +#include <linux/pm_runtime.h>
-> >   #include "i915_pmu.h"
-> >   #include "intel_ringbuffer.h"
-> >   #include "i915_drv.h"
-> > @@ -478,7 +479,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
-> >                * counter value.
-> >                */
-> >               spin_lock_irqsave(&i915->pmu.lock, flags);
-> > -             spin_lock(&kdev->power.lock);
-> >
-> >               /*
-> >                * After the above branch intel_runtime_pm_get_if_in_use failed
-> > @@ -491,16 +491,13 @@ static u64 get_rc6(struct drm_i915_private *i915)
-> >                * suspended and if not we cannot do better than report the last
-> >                * known RC6 value.
-> >                */
-> > -             if (kdev->power.runtime_status == RPM_SUSPENDED) {
-> > -                     if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
-> > -                             i915->pmu.suspended_jiffies_last =
-> > -                                               kdev->power.suspended_jiffies;
-> > +             if (pm_runtime_status_suspended(kdev)) {
-> > +                     val = pm_runtime_suspended_time(kdev);
->
-> There is a race condition between the status check and timestamp access
-> which the existing code solves by holding the power.lock over it. But I
-> don't exactly remember how this issue was manifesting. Is
-> kdev->power.suspended_jiffies perhaps reset on exit from runtime
-> suspend, which was then underflowing the val, not sure.
->
-> Anyways, is the new way of doing this safe with regards to this race? In
 
-AFAICT it is safe.
-The current version does:
-1-take lock,
-2-test if dev is suspended
-3-read some internals field to computed an up-to-date suspended time
-4-update __I915_SAMPLE_RC6_ESTIMATED
-5-release lock
-
-The new version does:
-1-test if dev is suspended
-2-get an up-to-date  suspended time with pm_runtime_suspended_time.
-This is atomic and monotonic
-3-update __I915_SAMPLE_RC6_ESTIMATED
-
-A change from suspended to another states that happens just before
-step 1 is ok for both as we will run the else if
-No change of the state can happen after step 1 in current code and the
-estimated suspended time will be the time up to step2. In parallel,
-Any state change will have to wait step5 to continue
-If a change from suspended to another state happens after step 1 in
-new code, the suspended time return by PM core will be the time up to
-this change. So I would say you don't delay state transition and you
-get a more accurate estimated suspended time (even if the difference
-should be small).
-If a change from suspended to another state happens after step 2 in
-new code, the suspended time return by PM core will be the time up to
-step 2 so there is no changes
+--s2jmrr4347zzegwl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
-> other words is the value pm_runtime_suspended_time always monotonic,
-> even when not suspended? If not we have to handle the race somehow.
+> > > I think this might be as simple as adding:
+> > >=20
+> > > 	if (WARN_ON(adap->dev.parent->power.is_suspended))
+> > > 		return -ESHUTDOWN;
 
-Yes pm_runtime_suspended_time is monotonic and stays unchanged when
-not suspended
+Peter, I think this should work for muxes, too, or? The i2c_transfer()
+call to the mux will not be rejected, but it will be later when we reach
+the root adapter. And then the error code will be pushed down the tree
+until we arrive at the mux again. So, the rejection will not happen at
+the earliest time, but it will happen. Is my understanding correct?
 
->
-> If it is always monotonic, then worst case we report one wrong sample,
-> which I guess is still not ideal since someone could be querying the PMU
-> with quite low frequency.
->
-> There are tests which probably can hit this, but to run them
-> automatically your patches would need to be rebased on drm-tip and maybe
-> sent to our trybot. I can do that after the holiday break if you are
-> okay with having the series waiting until then.
+> > I have seen this flag but decided against it. One reason is because it
+> > is marked as "PM core only".
+>=20
+> Right and we definitely should not be touching it, but reading it should
+> be fine.
 
-yes looks good to me
+Seems like it. So far, no rejection from the other PM people :)
 
-Thanks,
-Vincent
+> No you are right, there is a race here, but I don't think we are likely to
+> hit that race. Normally there won't be any ongoing i2c-transfers during
+> a system suspend and more over, the goal of adding this check is to help
+> find problems, so even if the check sometimes does not trigger because
+> of the race that is not really a big deal.
 
->
-> Regards,
->
-> Tvrtko
->
-> >
-> > -                     val = kdev->power.suspended_jiffies -
-> > -                           i915->pmu.suspended_jiffies_last;
-> > -                     val += jiffies - kdev->power.accounting_timestamp;
-> > +                     if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
-> > +                             i915->pmu.suspended_time_last = val;
-> >
-> > -                     val = jiffies_to_nsecs(val);
-> > +                     val -= i915->pmu.suspended_time_last;
-> >                       val += i915->pmu.sample[__I915_SAMPLE_RC6].cur;
-> >
-> >                       i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur = val;
-> > @@ -510,7 +507,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
-> >                       val = i915->pmu.sample[__I915_SAMPLE_RC6].cur;
-> >               }
-> >
-> > -             spin_unlock(&kdev->power.lock);
-> >               spin_unlock_irqrestore(&i915->pmu.lock, flags);
-> >       }
-> >
-> > diff --git a/drivers/gpu/drm/i915/i915_pmu.h b/drivers/gpu/drm/i915/i915_pmu.h
-> > index 7f164ca..3dc2a30 100644
-> > --- a/drivers/gpu/drm/i915/i915_pmu.h
-> > +++ b/drivers/gpu/drm/i915/i915_pmu.h
-> > @@ -95,9 +95,9 @@ struct i915_pmu {
-> >        */
-> >       struct i915_pmu_sample sample[__I915_NUM_PMU_SAMPLERS];
-> >       /**
-> > -      * @suspended_jiffies_last: Cached suspend time from PM core.
-> > +      * @suspended_time_last: Cached suspend time from PM core.
-> >        */
-> > -     unsigned long suspended_jiffies_last;
-> > +     u64 suspended_time_last;
-> >       /**
-> >        * @i915_attr: Memory block holding device attributes.
-> >        */
-> >
+You are right that the impact of a missed detection is not fatal. That
+helps. The low likeliness was not an argument for me, though, because
+detecting rare things is very important IMO. Because, well, they are
+rare and especially hard to debug.
+
+> I think we need to get really unlucky to have both a suspend ordering
+> problem in the first case (already a somewhat rare thing) combined with
+> hitting this race in such a way *each time* that we don't trigger the
+> WARN_ON.
+
+And here you convinced me: even if we miss a detection once, I agree it
+is super super unlikely to hit the race every time.
+
+> To me this seems a case of perfect being the enemy of good. When we
+> first started discussing this you wanted to not have to modify the
+> adapter/bus drivers for the check, using adap->dev.parent->power.is_suspe=
+nded
+> gives us that and it will also work for complex cases like
+> the i2c-designware case, so I believe the benefits outway the downsides.
+
+I'll try it.
+
+
+--s2jmrr4347zzegwl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwc/aoACgkQFA3kzBSg
+Kbb5bQ//URYlNvbXXExtMF0qLfiMDARGWqfm2kgBo2NeAlG+mCOpUuKOdjzF2Xbc
+32cnfKCyw1bvKLMTyLLdaEzuQihOCUlKSsc1le6qepNiOvedI6Tp9XfS17Q6Z73K
+fJLIjImgM5ZHOEN0y2GnSfz3QxM265h5VUBqyZzfkAddi5QrDwDP1wniTXVrw0Z7
+04q1EQ1ypXbgvkHgRtnzg/gv5OkmovUEV7QBFS9U8RchgiXmYOvlJZkR/l4ZW60K
+PEqv6IuBgfC6ikHMaRyovnhVm2jiEm6bsLi/RgwJxxAWPwFJaFcF2hf4r6rnBSi4
+sZrDP0jOQxKARqKaiRv/Szp2RlJY5f/PFsrmwDt/LD7F591vhVZdG8/mO4oYLphd
+pKgnu2VBFENJVEMVZ76KbhAGz6J4mh+agjOlX0NKKXWO/au0+qFWVrcqJfP0VbiC
+CL7Dux/fjMsBvmDwaawP0uR2dSsKgnL8YQhDDxjN9PXU/RmFzF1dpGaAa/nuXKVZ
+8KsbZaricdNv+jrHLklZPTZi9a9hTJrOtjeTvbYt2DLpitZRdiTjtC6bds9sWisz
+4SGO8KMgxm0tBMSwsTIYNmMA8d/5AdVMCtPxlrUXk7AgPFjzAhU/li+emcQ5pUO4
+GkrPLtjbUll25du9Gr4O1I6qcq+x7hwgBr4uSClf63QizTK4L24=
+=LQSI
+-----END PGP SIGNATURE-----
+
+--s2jmrr4347zzegwl--
