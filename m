@@ -1,85 +1,74 @@
-From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Fri, 21 Dec 2018 10:22:34 +0530
-Message-ID: <7e310416-78d3-b7e5-5013-0bcc8bfd0351@codeaurora.org>
-References: <20181212211848.26768-1-jcrouse@codeaurora.org>
- <20181217070647.xtvfgsixggua5yod@vireshk-i7>
- <CAD=FV=WKfKyZe6sc4drfa9kLQVbG1b9nCe6qbPmUPQGNEKAh=Q@mail.gmail.com>
- <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
- <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
- <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
- <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
- <CAD=FV=VMMYKoW4RU_TTjLdyrNcWZU-Gyou9b6qynKFX9wDn5Mw@mail.gmail.com>
- <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg@mail.gmail.com>
- <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
- <154534136449.79149.14097954220921296509@swboyd.mtv.corp.google.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM
+ domains
+Date: Fri, 21 Dec 2018 08:15:05 +0100
+Message-ID: <66f0871e-fd1d-2f9a-13ce-1164c04e65ca@linaro.org>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-18-ulf.hansson@linaro.org>
+ <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
+ <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com>
+ <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
+ <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <154534136449.79149.14097954220921296509-n1Xw8LXHxjTHt/MElyovVYaSKrA+ACpX0E9HWUfgJXw@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
 Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ck9uIDEyLzIxLzIwMTggMjo1OSBBTSwgU3RlcGhlbiBCb3lkIHdyb3RlOgo+IFF1b3RpbmcgUm9i
-IEhlcnJpbmcgKDIwMTgtMTItMTkgMTU6NDc6MjUpCj4+IE9uIFdlZCwgRGVjIDE5LCAyMDE4IGF0
-IDQ6NDAgUE0gRG91ZyBBbmRlcnNvbiA8ZGlhbmRlcnNAY2hyb21pdW0ub3JnPiB3cm90ZToKPj4+
-IE9uIFdlZCwgRGVjIDE5LCAyMDE4IGF0IDEyOjQwIFBNIERvdWcgQW5kZXJzb24gPGRpYW5kZXJz
-QGNocm9taXVtLm9yZz4gd3JvdGU6Cj4+Pj4gT24gV2VkLCBEZWMgMTksIDIwMTggYXQgMTI6MDkg
-UE0gUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4gd3JvdGU6Cj4+Pj4gLi4uYnV0IGl0IGRv
-ZXMgaGF2ZSBhIGZyZXF1ZW5jeSwgZG9lc24ndCBpdD8KPj4+Pgo+Pj4+ICsgICBjb21wYXRpYmxl
-ID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7Cj4+Pj4gKwo+Pj4+ICsgICBvcHAt
-NzEwMDAwMDAwIHsKPj4+PiArICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDcxMDAwMDAwMD47Cj4+
-Pj4gKyAgICAgcWNvbSxsZXZlbCA9IDxSUE1IX1JFR1VMQVRPUl9MRVZFTF9UVVJCT19MMT47Cj4+
-Pj4gKyAgIH07Cj4+Pgo+Pj4gQWgsIEkgcGVyaGFwcyBzZWUgdGhlIGNvbmZ1c2lvbi4gIFNvIFJh
-amVuZHJhJ3MgdXNhZ2Ugb2YKPj4+ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiIFsx
-XSBkb2Vzbid0IGhhdmUgYSBmcmVxdWVuY3kgYnV0Cj4+PiBKb3JkYW4ncyBkby4gIFNvIEkgZ3Vl
-c3MgaXQgbWFrZXMgc2Vuc2UgdGhhdCBKb3JkYW4ncyBoYXZlIHRoZQo+Pj4gZmFsbGJhY2sgY29t
-cGF0aWJsZSBidXQgUmFqZW5kcmEncyBkb24ndD8KPj4KPj4gSXMgaGF2aW5nIGl0IHVzZWZ1bCB0
-byBzL3cgdGhhdCBkb2Vzbid0IHVuZGVyc3RhbmQKPj4gIm9wZXJhdGluZy1wb2ludHMtdjItcWNv
-bS1sZXZlbCI/IElmIHNvLCB0aGVuIGFkZAo+PiAib3BlcmF0aW5nLXBvaW50cy12MiIuIElmIG5v
-dCwgdGhlbiBkb24ndC4KPiAKPiBUaGUgb25seSBiZW5lZml0IEkgc2VlIGluIGhhdmluZyAib3Bl
-cmF0aW5nLXBvaW50cy12MiIgaXMgdGhhdCB3ZSBkb24ndAo+IG5lZWQgdG8gdXBkYXRlIHRoZSBv
-Zl9za2lwcGVkX25vZGVfdGFibGVbXSBpbiBkcml2ZXJzL3BsYXRmb3JtL29mLmMgdG8KPiBoYXZl
-IGFsbCB0aGUgdmFyaWFudHMgb2Ygb3BlcmF0aW5nLXBvaW50cy12Mi0qIHdoZW4gdGhleSBkZWNp
-ZGUgdG8gbm90Cj4gdXNlIGFueXRoaW5nIGZyb20gdGhlICJiYXNlIiBiaW5kaW5nLgo+IAo+IElm
-IHRoYXQgZmFpbHMgdG8gd29yayBiZWNhdXNlIG9wcC1oeiBpcyByZXF1aXJlZCBmb3IgdGhlCj4g
-Im9wZXJhdGluZy1wb2ludHMtdjIiIGJpbmRpbmcgYnV0IHNvbWV0aW1lcwo+IG9wZXJhdGluZy1w
-b2ludHMtdjItcWNvbS1sZXZlbCBkb2Vzbid0IHJlcXVpcmUgaXQgSSBndWVzcyB3ZSBuZWVkIHRv
-Cj4gdXBkYXRlIHRoZSBza2lwIHRhYmxlIG9yIG1ha2Ugc29tZSBnZW5lcmljIHByb3BlcnR5IGxp
-a2UKPiAndGhpcy1pcy1ub3QtYS1kZXZpY2UnIHRoYXQgdGhlc2UgdmFyaW91cyBkYXRhIHRhYmxl
-cyBpbiBEVCBjYW4gYmUKPiBtYXJrZWQgd2l0aCBzbyB3ZSBkb24ndCBtYWtlIHBsYXRmb3JtIGRl
-dmljZXMgZm9yIHRoZW0uCj4gCj4gUmVnYXJkbGVzcyBvZiB0aGUgYWJvdmUsIHdlIHNob3VsZCB1
-cGRhdGUgdGhlIGJpbmRpbmcgZm9yCj4gb3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIHRv
-IHNheSB0aGF0IG9wcC1oeiBpc24ndCBhbHdheXMgcmVxdWlyZWQKPiB3aGVuIHRoZSBxY29tLWxl
-dmVsIGNvbXBhdGlibGUgaXMgcHJlc2VudC4gSXQgbG9va3MgbGlrZSBpdCBqdXN0IHNheXMKPiB0
-aGF0IGl0IGJ1aWxkcyBvbiB0b3Agb2YgdGhlIG9wcCBiaW5kaW5nIHNvIHRoYXQncyBub3Qgb2J2
-aW91cy4KClN1cmUsIEkgY2FuIHJlc3BpbiB3aXRoIHRob3NlIGRldGFpbHMgYWRkZWQgaW4uClNv
-IEkgYW0gZ3Vlc3NpbmcgdGhlIGNvbmNsdXNpb24gaXMgdG8gdXNlIGEgZmFsbGJhY2sgIm9wZXJh
-dGluZy1wb2ludHMtdjIiCmNvbXBhdGlibGUgKm9ubHkqIHdoZW4gd2UgZG8gaGF2ZSBvcHAtaHog
-YWxvbmcgd2l0aCBxY29tLGxldmVsIChhcyBpbiB0aGUKY2FzZSB3aXRoIGdwdSkgYW5kIG5vdCBo
-YXZlIGEgZmFsbGJhY2sgY29tcGF0aWJsZSBpbiBjYXNlcyB3aGVuIHdlIGRvbid0CmhhdmUgb3Bw
-LWh6IChhcyBpbiB0aGUgY2FzZSBvZiBycG0gcG93ZXIgZG9tYWlucyk/ClRoYXQgc2VlbXMgYSBs
-aXR0bGUgaW5jb25zaXN0ZW50LCBhbmQgZ2l2ZW4gUm9iIHNhaWQgZWl0aGVyIHdheSBpcyBmaW5l
-LApqdXN0IGRvIG9uZSB3YXkgb3IgdGhlIG90aGVyIGFuZCBub3QgYm90aCwgSSBhbSBpbmNsaW5l
-ZCB0byB0aGluayB3ZSBzaG91bGQKanVzdCBoYXZlIGEgIm9wZXJhdGluZy1wb2ludHMtdjItcWNv
-bS1sZXZlbCIgYW5kIG5vIGZhbGxiYWNrIGNvbXBhdGlibGUuCkRvZXMgdGhhdCBtYWtlIHNlbnNl
-PwoKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IGxp
-bnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnCj4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1hcm0ta2VybmVsCj4gCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
-ZWVkcmVubwo=
+On 20/12/2018 22:37, Ulf Hansson wrote:
+> On Thu, 20 Dec 2018 at 19:06, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 20/12/2018 16:49, Ulf Hansson wrote:
+>>
+>> [ ... ]
+>>
+>>>>> +#ifdef CONFIG_CPU_IDLE
+>>>>
+>>>> It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
+>>>> with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
+>>>> CONFIG_CPU_IDLE, so the config options stay contained in their
+>>>> respective subsystems directory.
+>>>
+>>> I am all for simplifying the Kconfig options in here, as indeed it's
+>>> rather messy. However, I would rather avoid folding in additional
+>>> cleanup changes to this series, is already extensive enough.
+>>>
+>>> Would you be okay if we deal with that on top?
+>>
+>> IMO, there are patches in this series which can be grouped into a
+>> cleanup + set the scene patchset and merged immediately. An option
+>> similar to ARM_SCMI_POWER_DOMAIN can be part of it.
+> 
+> I certainly agree to that. The tricky is, to know what pieces people
+> are happy with to go in. :-)
+> 
+> Earlier, in v9 I tried your suggested approach (kind of), but then
+> Lorenzo stated that it's kind of all or nothing. Maybe we can bring up
+> that discussion again with him and see what we can figure out.
+> 
+>>
+>> However, if you swear you will do the change after and sign with your
+>> blood, I'm fine with that 0:)
+>>
+> 
+> Whatever it takes!
+> 
+> Anyway, as stated, the reason why I want to tackle that on top, is
+> that I don't want to make the series more extensive than it already
+> is.
+> 
+> Agree?
+
+Yes
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
