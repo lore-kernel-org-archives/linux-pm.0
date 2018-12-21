@@ -1,89 +1,95 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v4 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Fri, 21 Dec 2018 09:31:43 +0100
-Message-ID: <CAKfTPtAkZ54mrkiHOms-5g0-6JVVZ=KvTPPa68p4sV49P4UyQw@mail.gmail.com>
-References: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 06/10] i2c: sprd: don't use pdev as variable name for
+ struct device *
+Date: Fri, 21 Dec 2018 16:58:11 +0800
+Message-ID: <CAMz4kuKSepzktF+ZUVsrxD-pAgRDiGUC_f0oLL2CTyBMz3tfoQ@mail.gmail.com>
+References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com> <20181219164827.20985-7-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181219164827.20985-7-wsa+renesas@sang-engineering.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Orson Zhai <orsonzhai@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMCBEZWMgMjAxOCBhdCAyMzowMywgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxp
-bmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gVGh1LCAyMCBEZWMgMjAxOCBhdCAxNToxNywgVmluY2Vu
-dCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBG
-cm9tOiBUaGFyYSBHb3BpbmF0aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+Cj4gPiBU
-aGlzIHBhdGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9h
-Y3RpdmVfdGltZQo+ID4gYW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBiYXNl
-IGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gPiBydW50aW1lIGRlYnVnIGNvdW50ZXJzIGlu
-bGluZSB3aXRoIGdlbnBkIGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+IHVzZXMga3Rp
-bWUgYmFzZWQgYWNjb3VudGluZy4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBUaGFyYSBHb3BpbmF0
-aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+IFttb3ZlIGZyb20ga3RpbWUgdG8gcmF3
-IG5zZWNdCj4gPiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZpbmNlbnQuZ3VpdHRv
-dEBsaW5hcm8ub3JnPgo+ID4gLS0tCj4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyB8
-IDE3ICsrKysrKysrKy0tLS0tLS0tCj4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMgICB8
-IDExICsrKysrKysrLS0tCj4gPiAgaW5jbHVkZS9saW51eC9wbS5oICAgICAgICAgICB8ICA2ICsr
-Ky0tLQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMjAgaW5zZXJ0aW9ucygrKSwgMTQgZGVsZXRpb25z
-KC0pCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMgYi9k
-cml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPiBpbmRleCBlNjk1NTQ0Li5mNzAwNTI0IDEw
-MDY0NAo+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gKysrIGIvZHJp
-dmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gQEAgLTY0LDggKzY0LDggQEAgc3RhdGljIGlu
-dCBycG1fc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYsIGludCBycG1mbGFncyk7Cj4gPiAgICov
-Cj4gPiAgdm9pZCB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKHN0cnVjdCBkZXZpY2UgKmRl
-dikKPiA+ICB7Cj4gPiAtICAgICAgIHVuc2lnbmVkIGxvbmcgbm93ID0gamlmZmllczsKPiA+IC0g
-ICAgICAgdW5zaWduZWQgbG9uZyBkZWx0YTsKPiA+ICsgICAgICAgdTY0IG5vdyA9IGt0aW1lX3Rv
-X25zKGt0aW1lX2dldCgpKTsKPiA+ICsgICAgICAgdTY0IGRlbHRhOwo+ID4KPiA+ICAgICAgICAg
-ZGVsdGEgPSBub3cgLSBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wOwo+ID4KPiA+IEBA
-IC03NSw5ICs3NSw5IEBAIHZvaWQgdXBkYXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZyhzdHJ1Y3Qg
-ZGV2aWNlICpkZXYpCj4gPiAgICAgICAgICAgICAgICAgcmV0dXJuOwo+ID4KPiA+ICAgICAgICAg
-aWYgKGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRFRCkKPiA+IC0gICAg
-ICAgICAgICAgICBkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzICs9IGRlbHRhOwo+ID4gKyAg
-ICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWUgKz0gZGVsdGE7Cj4gPiAgICAg
-ICAgIGVsc2UKPiA+IC0gICAgICAgICAgICAgICBkZXYtPnBvd2VyLmFjdGl2ZV9qaWZmaWVzICs9
-IGRlbHRhOwo+ID4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZlX3RpbWUgKz0gZGVs
-dGE7Cj4gPiAgfQo+ID4KPiA+ICBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1cyhz
-dHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gPiBAQCAtODgsMTcg
-Kzg4LDE4IEBAIHN0YXRpYyB2b2lkIF9fdXBkYXRlX3J1bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZp
-Y2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cykKPiA+Cj4gPiAgdTY0IHBtX3J1bnRpbWVf
-c3VzcGVuZGVkX3RpbWUoc3RydWN0IGRldmljZSAqZGV2KQo+ID4gIHsKPiA+IC0gICAgICAgdW5z
-aWduZWQgbG9uZyBmbGFncywgdGltZTsKPiA+ICsgICAgICAgdTY0IHRpbWU7Cj4gPiArICAgICAg
-IHVuc2lnbmVkIGxvbmcgZmxhZ3M7Cj4gPgo+ID4gICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgm
-ZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4gPgo+ID4gICAgICAgICB1cGRhdGVfcG1fcnVudGlt
-ZV9hY2NvdW50aW5nKGRldik7Cj4gPgo+ID4gLSAgICAgICB0aW1lID0gZGV2LT5wb3dlci5zdXNw
-ZW5kZWRfamlmZmllczsKPiA+ICsgICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVkX3Rp
-bWU7Cj4gPgo+ID4gICAgICAgICBzcGluX3VubG9ja19pcnFyZXN0b3JlKCZkZXYtPnBvd2VyLmxv
-Y2ssIGZsYWdzKTsKPiA+Cj4gPiAtICAgICAgIHJldHVybiBqaWZmaWVzX3RvX25zZWNzKHRpbWUp
-Owo+ID4gKyAgICAgICByZXR1cm4gdGltZTsKPiA+ICB9Cj4gPiAgRVhQT1JUX1NZTUJPTF9HUEwo
-cG1fcnVudGltZV9zdXNwZW5kZWRfdGltZSk7Cj4gPgo+ID4gQEAgLTE1MDMsNyArMTUwNCw3IEBA
-IHZvaWQgcG1fcnVudGltZV9pbml0KHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ICAgICAgICAgZGV2
-LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKPiA+ICAgICAgICAgZGV2LT5wb3dlci5y
-ZXF1ZXN0ID0gUlBNX1JFUV9OT05FOwo+ID4gICAgICAgICBkZXYtPnBvd2VyLmRlZmVycmVkX3Jl
-c3VtZSA9IGZhbHNlOwo+ID4gLSAgICAgICBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1w
-ID0gamlmZmllczsKPiA+ICsgICAgICAgZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFtcCA9
-IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKTsKPgo+IFRoaXMgY2hhbmdlIHdvcnJpZXMgbWUgYSBi
-aXQsIGJ1dCBpdCBtYXkgbm90IGJlIGEgcHJvYmxlbSBpbiBwcmFjdGljZS4KPgo+IHBtX3J1bnRp
-bWVfaW5pdCgpIGlzIGNhbGxlZCB3aGVuIGRldmljZXMgZ2V0IGluaXRpYWxpemVkLCB2aWEKPiBk
-ZXZpY2VfaW5pdGlhbGl6ZSgpLiBJZiB0aW1la2VlcGluZyBoYXMgbm90IGJlZW4gaW5pdGlhbGl6
-ZWQgcHJpb3IgYQo+IGNhbGwgdG8ga3RpbWVfZ2V0KCkgaXMgZG9uZSwgaXQgd2lsbCBmYWlsIGFu
-ZCBjYXVzaW5nIGEgTlVMTCBwb2ludGVyCj4gZGVmZXJlbmNlIG9yIHNvbWV0aGluZyBhbG9uZyB0
-aG9zZSBsaW5lcy4KPgo+IEluIG90aGVyIHdvcmRzLCBkbyB3ZSBrbm93IHRoYXQgZGV2aWNlX2lu
-aXRpYWxpemUoKSBpcyBhbHdheXMgY2FsbGVkCj4gYWZ0ZXIgdGltZWtlZXBpbmcgaGFzIGJlZW4g
-aW5pdGlhbGl6ZWQgZHVyaW5nIGJvb3Q/CgpUaGF0IHNvbWV0aGluZyB3ZSBkaXNjdXNzZWQgYXQg
-bHBjIGFuZCB3ZSBzaG91bGQgYmUgc2FmZQoKPgo+IFsuLi5dCj4KPiBLaW5kIHJlZ2FyZHMKPiBV
-ZmZlCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVs
-LWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
-L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+Hi Wolfram,
+
+On Thu, 20 Dec 2018 at 00:48, Wolfram Sang
+<wsa+renesas@sang-engineering.com> wrote:
+>
+> The pointer to a device is usually named 'dev'. These 'pdev' here look
+> much like copy&paste errors. Fix them to avoid confusion.
+>
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+
+Thanks for fixing the copy&paste errors.
+Reviewed-by: Baolin Wang <baolin.wang@linaro.org>
+
+> ---
+>  drivers/i2c/busses/i2c-sprd.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-sprd.c b/drivers/i2c/busses/i2c-sprd.c
+> index a94e724f51dc..e266d8a713d9 100644
+> --- a/drivers/i2c/busses/i2c-sprd.c
+> +++ b/drivers/i2c/busses/i2c-sprd.c
+> @@ -586,40 +586,40 @@ static int sprd_i2c_remove(struct platform_device *pdev)
+>         return 0;
+>  }
+>
+> -static int __maybe_unused sprd_i2c_suspend_noirq(struct device *pdev)
+> +static int __maybe_unused sprd_i2c_suspend_noirq(struct device *dev)
+>  {
+> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
+> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+>
+>         i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+>         i2c_dev->is_suspended = true;
+>         i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+>
+> -       return pm_runtime_force_suspend(pdev);
+> +       return pm_runtime_force_suspend(dev);
+>  }
+>
+> -static int __maybe_unused sprd_i2c_resume_noirq(struct device *pdev)
+> +static int __maybe_unused sprd_i2c_resume_noirq(struct device *dev)
+>  {
+> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
+> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+>
+>         i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+>         i2c_dev->is_suspended = false;
+>         i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
+>
+> -       return pm_runtime_force_resume(pdev);
+> +       return pm_runtime_force_resume(dev);
+>  }
+>
+> -static int __maybe_unused sprd_i2c_runtime_suspend(struct device *pdev)
+> +static int __maybe_unused sprd_i2c_runtime_suspend(struct device *dev)
+>  {
+> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
+> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+>
+>         clk_disable_unprepare(i2c_dev->clk);
+>
+>         return 0;
+>  }
+>
+> -static int __maybe_unused sprd_i2c_runtime_resume(struct device *pdev)
+> +static int __maybe_unused sprd_i2c_runtime_resume(struct device *dev)
+>  {
+> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
+> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
+>         int ret;
+>
+>         ret = clk_prepare_enable(i2c_dev->clk);
+> --
+> 2.11.0
+>
+
+
+-- 
+Baolin Wang
+Best Regards
