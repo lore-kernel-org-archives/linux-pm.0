@@ -1,58 +1,65 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
-Date: Thu, 20 Dec 2018 15:55:58 -0700
-Message-ID: <20181220225557.GE14960@codeaurora.org>
-References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
- <20181130154145.GK18262@codeaurora.org>
- <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH v3 4/5] drivers: power: suspend: call devfreq
+ suspend/resume
+Date: Fri, 21 Dec 2018 09:33:05 +0900
+Message-ID: <20181221003305epcms1p756d76191d5f233c6e3238400d233b3c6@epcms1p7>
+References: <ce1d415d-2a00-ef0e-6b58-23d16cffee4a@partner.samsung.com>
+        <1544007956-28889-1-git-send-email-l.luba@partner.samsung.com>
+        <1544007956-28889-5-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181205110623eucas1p120f9d8b38822bf856a5b7d427d00e49f@epcms1p7>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAD=FV=XWftL_aFb7rNPMW1AE+1y+Zh3W+qqtfSKHRPN+Qe_w2A@mail.gmail.com>
+In-Reply-To: <ce1d415d-2a00-ef0e-6b58-23d16cffee4a@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "keescook@chromium.org" <keescook@chromium.org>, "anton@enomsg.org" <anton@enomsg.org>, "ccross@android.com" <ccross@android.com>, "tony.luck@intel.com" <tony.luck@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "kgene@kernel.org" <kgene@kernel.org>, "krzk@kernel.org" <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 20 2018 at 14:42 -0700, Doug Anderson wrote:
->Hi,
->
->On Fri, Nov 30, 2018 at 7:41 AM Lina Iyer <ilina@codeaurora.org> wrote:
+>On 2018-12-05 12:05, Lukasz Luba wrote:
+>> Devfreq framework supports suspend of its devices.
+>> Call the the devfreq interface and allow devfreq devices preserve/restore
+>> their states during suspend/resume.
 >>
->> On Tue, Oct 30 2018 at 11:23 -0600, Raju P.L.S.S.S.N wrote:
->> >Add device bindings for cpuidle states for cpu devices.
->> >
->> >Cc: <devicetree@vger.kernel.org>
->> >Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
->> >---
->> >Changes in v2
->> > - Address comments from Doug
->> >---
->> >---
->> > arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
->> > 1 file changed, 62 insertions(+)
->> >
->> >diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> >index 0c9a2aa..3a8381e 100644
->> >--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> >+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> >@@ -96,6 +96,7 @@
->> >                       reg = <0x0 0x0>;
->> >                       enable-method = "psci";
->> >                       next-level-cache = <&L2_0>;
->> >+                      cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
->> I think it might be better to use
->> <&C0_CPU_PD>, <&C0_CPU_RPD>, <&CLUSTER_PD>
->
->I disagree.  All existing examples in both bindings and other device
->trees use the syntax that Raju uses.  It doesn't matter
->functionality-wise, but I'd much rather match everyone else.  We
->should land what Raju has posted and if someone feels super strongly
->that the examples in the bindings are wrong then they should attempt
->to convince Rob Herring to Ack a change to the examples in the
->bindings.  Doesn't seem like a good use of time to me, though.
->
-No strong preference from my end.
+>> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 
--- Lina
+This looks all good to me.
+
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+
+>> ---
+>>  drivers/base/power/main.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index a690fd4..0992e67 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -32,6 +32,7 @@
+>>  #include <trace/events/power.h>
+>>  #include <linux/cpufreq.h>
+>>  #include <linux/cpuidle.h>
+>> +#include <linux/devfreq.h>
+>>  #include <linux/timer.h>
+>>  
+>>  #include "../base.h"
+>> @@ -1078,6 +1079,7 @@ void dpm_resume(pm_message_t state)
+>>  	dpm_show_time(starttime, state, 0, NULL);
+>>  
+>>  	cpufreq_resume();
+>> +	devfreq_resume();
+>>  	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+>>  }
+>>  
+>> @@ -1852,6 +1854,7 @@ int dpm_suspend(pm_message_t state)
+>>  	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
+>>  	might_sleep();
+>>  
+>> +	devfreq_suspend();
+>>  	cpufreq_suspend();
+>>  
+>>  	mutex_lock(&dpm_list_mtx);
