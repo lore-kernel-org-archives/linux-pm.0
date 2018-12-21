@@ -1,104 +1,66 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v5 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Fri, 21 Dec 2018 11:33:56 +0100
-Message-ID: <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
+ adapters
+Date: Fri, 21 Dec 2018 11:43:13 +0100
+Message-ID: <6fb7d574-9648-2960-5724-8b02a3348012@redhat.com>
+References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+ <20181219223341.GA998@kunai>
+ <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
+ <2368540.q2jLLRDsj0@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: ulf.hansson@linaro.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2368540.q2jLLRDsj0@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogVGhhcmEgR29waW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+CgpUaGlzIHBh
-dGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3RpdmVf
-dGltZQphbmQgcnVudGltZV9zdXNwZW5kZWRfdGltZSB3aXRoIGt0aW1lIGJhc2UgYWNjb3VudGlu
-Zy4gVGhpcyBtYWtlcyB0aGUKcnVudGltZSBkZWJ1ZyBjb3VudGVycyBpbmxpbmUgd2l0aCBnZW5w
-ZCBhbmQgb3RoZXIgcG0gc3Vic3l0ZW1zIHdoaWNoCnVzZXMga3RpbWUgYmFzZWQgYWNjb3VudGlu
-Zy4KCnRpbWVrZWVwaW5nIGlzIGluaXRpYWxpemVkIGJlZm9yZSBwbV9ydW50aW1lX2luaXQoKSBz
-byBrdGltZV9nZXQoKSB3aWxsCmJlIHJlYWR5IGJlZm9yZSBmaXJzdCBjYWxsLiBJbiBmYWN0LCB0
-aW1la2VlcGluZ19pbml0KCkgaXMgY2FsbGVkIGVhcmx5CmluIHN0YXJ0X2tlcm5lbCgpIHdoaWNo
-IGlzIHdheSBiZWZvcmUgZHJpdmVyX2luaXQoKSAoYW5kIHRoYXQncyB3aGVuCmRldmljZXMgY2Fu
-IHN0YXJ0IHRvIGJlIGluaXRpYWxpemVkKSBjYWxsZWQgZnJvbSByZXN0X2luaXQoKSB2aWEKa2Vy
-bmVsX2luaXRfZnJlZWFibGUoKSBhbmQgZG9fYmFzaWNfc2V0dXAoKS4KClNpZ25lZC1vZmYtYnk6
-IFRoYXJhIEdvcGluYXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8ub3JnPgpbbW92ZSBmcm9tIGt0
-aW1lIHRvIHJhdyBuc2VjXQpTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZpbmNlbnQu
-Z3VpdHRvdEBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMgfCAx
-NyArKysrKysrKystLS0tLS0tLQogZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMgICB8IDExICsr
-KysrKysrLS0tCiBpbmNsdWRlL2xpbnV4L3BtLmggICAgICAgICAgIHwgIDYgKysrLS0tCiAzIGZp
-bGVzIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDE0IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
-dGltZS5jCmluZGV4IGU2OTU1NDQuLmY3MDA1MjQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvYmFzZS9w
-b3dlci9ydW50aW1lLmMKKysrIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwpAQCAtNjQs
-OCArNjQsOCBAQCBzdGF0aWMgaW50IHJwbV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldiwgaW50
-IHJwbWZsYWdzKTsKICAqLwogdm9pZCB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKHN0cnVj
-dCBkZXZpY2UgKmRldikKIHsKLQl1bnNpZ25lZCBsb25nIG5vdyA9IGppZmZpZXM7Ci0JdW5zaWdu
-ZWQgbG9uZyBkZWx0YTsKKwl1NjQgbm93ID0ga3RpbWVfdG9fbnMoa3RpbWVfZ2V0KCkpOworCXU2
-NCBkZWx0YTsKIAogCWRlbHRhID0gbm93IC0gZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFt
-cDsKIApAQCAtNzUsOSArNzUsOSBAQCB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291bnRpbmco
-c3RydWN0IGRldmljZSAqZGV2KQogCQlyZXR1cm47CiAKIAlpZiAoZGV2LT5wb3dlci5ydW50aW1l
-X3N0YXR1cyA9PSBSUE1fU1VTUEVOREVEKQotCQlkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVz
-ICs9IGRlbHRhOworCQlkZXYtPnBvd2VyLnN1c3BlbmRlZF90aW1lICs9IGRlbHRhOwogCWVsc2UK
-LQkJZGV2LT5wb3dlci5hY3RpdmVfamlmZmllcyArPSBkZWx0YTsKKwkJZGV2LT5wb3dlci5hY3Rp
-dmVfdGltZSArPSBkZWx0YTsKIH0KIAogc3RhdGljIHZvaWQgX191cGRhdGVfcnVudGltZV9zdGF0
-dXMoc3RydWN0IGRldmljZSAqZGV2LCBlbnVtIHJwbV9zdGF0dXMgc3RhdHVzKQpAQCAtODgsMTcg
-Kzg4LDE4IEBAIHN0YXRpYyB2b2lkIF9fdXBkYXRlX3J1bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZp
-Y2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cykKIAogdTY0IHBtX3J1bnRpbWVfc3VzcGVu
-ZGVkX3RpbWUoc3RydWN0IGRldmljZSAqZGV2KQogewotCXVuc2lnbmVkIGxvbmcgZmxhZ3MsIHRp
-bWU7CisJdTY0IHRpbWU7CisJdW5zaWduZWQgbG9uZyBmbGFnczsKIAogCXNwaW5fbG9ja19pcnFz
-YXZlKCZkZXYtPnBvd2VyLmxvY2ssIGZsYWdzKTsKIAogCXVwZGF0ZV9wbV9ydW50aW1lX2FjY291
-bnRpbmcoZGV2KTsKIAotCXRpbWUgPSBkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzOworCXRp
-bWUgPSBkZXYtPnBvd2VyLnN1c3BlbmRlZF90aW1lOwogCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9y
-ZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7CiAKLQlyZXR1cm4gamlmZmllc190b19uc2Vjcyh0
-aW1lKTsKKwlyZXR1cm4gdGltZTsKIH0KIEVYUE9SVF9TWU1CT0xfR1BMKHBtX3J1bnRpbWVfc3Vz
-cGVuZGVkX3RpbWUpOwogCkBAIC0xNTAzLDcgKzE1MDQsNyBAQCB2b2lkIHBtX3J1bnRpbWVfaW5p
-dChzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxz
-ZTsKIAlkZXYtPnBvd2VyLnJlcXVlc3QgPSBSUE1fUkVRX05PTkU7CiAJZGV2LT5wb3dlci5kZWZl
-cnJlZF9yZXN1bWUgPSBmYWxzZTsKLQlkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0g
-amlmZmllczsKKwlkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0ga3RpbWVfdG9fbnMo
-a3RpbWVfZ2V0KCkpOwogCUlOSVRfV09SSygmZGV2LT5wb3dlci53b3JrLCBwbV9ydW50aW1lX3dv
-cmspOwogCiAJZGV2LT5wb3dlci50aW1lcl9leHBpcmVzID0gMDsKZGlmZiAtLWdpdCBhL2RyaXZl
-cnMvYmFzZS9wb3dlci9zeXNmcy5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMKaW5kZXgg
-ZDcxMzczOC4uOTZjOGEyMiAxMDA2NDQKLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMK
-KysrIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMKQEAgLTEyNSw5ICsxMjUsMTIgQEAgc3Rh
-dGljIHNzaXplX3QgcnVudGltZV9hY3RpdmVfdGltZV9zaG93KHN0cnVjdCBkZXZpY2UgKmRldiwK
-IAkJCQlzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQogewogCWludCBy
-ZXQ7CisJdTY0IHRtcDsKIAlzcGluX2xvY2tfaXJxKCZkZXYtPnBvd2VyLmxvY2spOwogCXVwZGF0
-ZV9wbV9ydW50aW1lX2FjY291bnRpbmcoZGV2KTsKLQlyZXQgPSBzcHJpbnRmKGJ1ZiwgIiVpXG4i
-LCBqaWZmaWVzX3RvX21zZWNzKGRldi0+cG93ZXIuYWN0aXZlX2ppZmZpZXMpKTsKKwl0bXAgPSBk
-ZXYtPnBvd2VyLmFjdGl2ZV90aW1lOworCWRvX2Rpdih0bXAsIE5TRUNfUEVSX01TRUMpOworCXJl
-dCA9IHNwcmludGYoYnVmLCAiJWxsdVxuIiwgdG1wKTsKIAlzcGluX3VubG9ja19pcnEoJmRldi0+
-cG93ZXIubG9jayk7CiAJcmV0dXJuIHJldDsKIH0KQEAgLTEzOCwxMCArMTQxLDEyIEBAIHN0YXRp
-YyBzc2l6ZV90IHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWVfc2hvdyhzdHJ1Y3QgZGV2aWNlICpkZXYs
-CiAJCQkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikKIHsKIAlpbnQg
-cmV0OworCXU2NCB0bXA7CiAJc3Bpbl9sb2NrX2lycSgmZGV2LT5wb3dlci5sb2NrKTsKIAl1cGRh
-dGVfcG1fcnVudGltZV9hY2NvdW50aW5nKGRldik7Ci0JcmV0ID0gc3ByaW50ZihidWYsICIlaVxu
-IiwKLQkJamlmZmllc190b19tc2VjcyhkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzKSk7CisJ
-dG1wID0gZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZTsKKwlkb19kaXYodG1wLCBOU0VDX1BFUl9N
-U0VDKTsKKwlyZXQgPSBzcHJpbnRmKGJ1ZiwgIiVsbHVcbiIsIHRtcCk7CiAJc3Bpbl91bmxvY2tf
-aXJxKCZkZXYtPnBvd2VyLmxvY2spOwogCXJldHVybiByZXQ7CiB9CmRpZmYgLS1naXQgYS9pbmNs
-dWRlL2xpbnV4L3BtLmggYi9pbmNsdWRlL2xpbnV4L3BtLmgKaW5kZXggZTcyM2I3OC4uZTVhMzRl
-MiAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9wbS5oCisrKyBiL2luY2x1ZGUvbGludXgvcG0u
-aApAQCAtNjMyLDkgKzYzMiw5IEBAIHN0cnVjdCBkZXZfcG1faW5mbyB7CiAJaW50CQkJcnVudGlt
-ZV9lcnJvcjsKIAlpbnQJCQlhdXRvc3VzcGVuZF9kZWxheTsKIAl1bnNpZ25lZCBsb25nCQlsYXN0
-X2J1c3k7Ci0JdW5zaWduZWQgbG9uZwkJYWN0aXZlX2ppZmZpZXM7Ci0JdW5zaWduZWQgbG9uZwkJ
-c3VzcGVuZGVkX2ppZmZpZXM7Ci0JdW5zaWduZWQgbG9uZwkJYWNjb3VudGluZ190aW1lc3RhbXA7
-CisJdTY0CQkJYWN0aXZlX3RpbWU7CisJdTY0CQkJc3VzcGVuZGVkX3RpbWU7CisJdTY0CQkJYWNj
-b3VudGluZ190aW1lc3RhbXA7CiAjZW5kaWYKIAlzdHJ1Y3QgcG1fc3Vic3lzX2RhdGEJKnN1YnN5
-c19kYXRhOyAgLyogT3duZWQgYnkgdGhlIHN1YnN5c3RlbS4gKi8KIAl2b2lkICgqc2V0X2xhdGVu
-Y3lfdG9sZXJhbmNlKShzdHJ1Y3QgZGV2aWNlICosIHMzMik7Ci0tIAoyLjcuNAoKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcg
-bGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
+Hi,
+
+On 20-12-18 22:09, Rafael J. Wysocki wrote:
+> On Thursday, December 20, 2018 11:00:29 AM CET Hans de Goede wrote:
+>> Hi,
+>>
+>> On 19-12-18 23:33, Wolfram Sang wrote:
+>>> Hi Lukas, Hans,
+>>>
+>>> On Wed, Dec 19, 2018 at 07:36:54PM +0100, Hans de Goede wrote:
+>>>> Hi,
+>>>>
+>>>> On 19-12-18 18:22, Lukas Wunner wrote:
+>>>>> On Wed, Dec 19, 2018 at 05:48:17PM +0100, Wolfram Sang wrote:
+>>>>>> +static inline void i2c_mark_adapter_suspended(struct i2c_adapter *adap)
+>>>>>> +{
+>>>>>> +	i2c_lock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
+>>>>>> +	set_bit(I2C_ALF_IS_SUSPENDED, &adap->locked_flags);
+>>>>>> +	i2c_unlock_bus(adap, I2C_LOCK_ROOT_ADAPTER);
+>>>>>> +}
+>>>>>
+>>>>> This looks like a duplication of the is_suspended flag in struct dev_pm_info.
+>>>>> Any reason why you can't use that?  If so, it would be good to document the
+>>>>> reason in the commit message.
+>>>>
+>>>> Oh, that is a very good point and that one only gets set on system suspend
+>>>> and not on resume suspend, working around the problems with the i2c-designware
+>>>
+>>> Just to make it clear: you mean runtime suspend, not resume suspend, or?
+>>
+>> Yes I mean runtime-suspend, sorry.
+> 
+> The power.is_suspended flag is about system-wide suspend, however.
+
+Right, which is why it is good for us to use, when runtime-suspend the
+i2c-adapter drivers transfer function will do a runtime_pm_get and all
+is well, we want to check for someone trying to do i2c-transfers on
+the adapter while it is system-suspended, since then the runtime_pm_get
+is a no-op and things fail.
+
+So for this use case it is a good thing that power.is_suspended flag is about
+system-wide suspend (which is what I was trying to say in the first place).
+
+Regards,
+
+Hans
