@@ -1,95 +1,92 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 06/10] i2c: sprd: don't use pdev as variable name for
- struct device *
-Date: Fri, 21 Dec 2018 16:58:11 +0800
-Message-ID: <CAMz4kuKSepzktF+ZUVsrxD-pAgRDiGUC_f0oLL2CTyBMz3tfoQ@mail.gmail.com>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com> <20181219164827.20985-7-wsa+renesas@sang-engineering.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 3/3] PM/runtime:Replace jiffies based accounting with
+ ktime based accounting
+Date: Fri, 21 Dec 2018 09:58:18 +0100
+Message-ID: <CAJZ5v0jp-+rG2usiumWmORTvqCYDJJbFUB+ey3wLyQUrimdTLw@mail.gmail.com>
+References: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+ <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181219164827.20985-7-wsa+renesas@sang-engineering.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Orson Zhai <orsonzhai@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wolfram,
-
-On Thu, 20 Dec 2018 at 00:48, Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
->
-> The pointer to a device is usually named 'dev'. These 'pdev' here look
-> much like copy&paste errors. Fix them to avoid confusion.
->
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Thanks for fixing the copy&paste errors.
-Reviewed-by: Baolin Wang <baolin.wang@linaro.org>
-
-> ---
->  drivers/i2c/busses/i2c-sprd.c | 20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-sprd.c b/drivers/i2c/busses/i2c-sprd.c
-> index a94e724f51dc..e266d8a713d9 100644
-> --- a/drivers/i2c/busses/i2c-sprd.c
-> +++ b/drivers/i2c/busses/i2c-sprd.c
-> @@ -586,40 +586,40 @@ static int sprd_i2c_remove(struct platform_device *pdev)
->         return 0;
->  }
->
-> -static int __maybe_unused sprd_i2c_suspend_noirq(struct device *pdev)
-> +static int __maybe_unused sprd_i2c_suspend_noirq(struct device *dev)
->  {
-> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
-> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->
->         i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
->         i2c_dev->is_suspended = true;
->         i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
->
-> -       return pm_runtime_force_suspend(pdev);
-> +       return pm_runtime_force_suspend(dev);
->  }
->
-> -static int __maybe_unused sprd_i2c_resume_noirq(struct device *pdev)
-> +static int __maybe_unused sprd_i2c_resume_noirq(struct device *dev)
->  {
-> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
-> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->
->         i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
->         i2c_dev->is_suspended = false;
->         i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
->
-> -       return pm_runtime_force_resume(pdev);
-> +       return pm_runtime_force_resume(dev);
->  }
->
-> -static int __maybe_unused sprd_i2c_runtime_suspend(struct device *pdev)
-> +static int __maybe_unused sprd_i2c_runtime_suspend(struct device *dev)
->  {
-> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
-> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->
->         clk_disable_unprepare(i2c_dev->clk);
->
->         return 0;
->  }
->
-> -static int __maybe_unused sprd_i2c_runtime_resume(struct device *pdev)
-> +static int __maybe_unused sprd_i2c_runtime_resume(struct device *dev)
->  {
-> -       struct sprd_i2c *i2c_dev = dev_get_drvdata(pdev);
-> +       struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->         int ret;
->
->         ret = clk_prepare_enable(i2c_dev->clk);
-> --
-> 2.11.0
->
-
-
--- 
-Baolin Wang
-Best Regards
+T24gVGh1LCBEZWMgMjAsIDIwMTggYXQgMTE6MDMgUE0gVWxmIEhhbnNzb24gPHVsZi5oYW5zc29u
+QGxpbmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gVGh1LCAyMCBEZWMgMjAxOCBhdCAxNToxNywgVmlu
+Y2VudCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4g
+PiBGcm9tOiBUaGFyYSBHb3BpbmF0aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+Cj4g
+PiBUaGlzIHBhdGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGlt
+ZV9hY3RpdmVfdGltZQo+ID4gYW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBi
+YXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gPiBydW50aW1lIGRlYnVnIGNvdW50ZXJz
+IGlubGluZSB3aXRoIGdlbnBkIGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+IHVzZXMg
+a3RpbWUgYmFzZWQgYWNjb3VudGluZy4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBUaGFyYSBHb3Bp
+bmF0aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+IFttb3ZlIGZyb20ga3RpbWUgdG8g
+cmF3IG5zZWNdCj4gPiBTaWduZWQtb2ZmLWJ5OiBWaW5jZW50IEd1aXR0b3QgPHZpbmNlbnQuZ3Vp
+dHRvdEBsaW5hcm8ub3JnPgo+ID4gLS0tCj4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUu
+YyB8IDE3ICsrKysrKysrKy0tLS0tLS0tCj4gPiAgZHJpdmVycy9iYXNlL3Bvd2VyL3N5c2ZzLmMg
+ICB8IDExICsrKysrKysrLS0tCj4gPiAgaW5jbHVkZS9saW51eC9wbS5oICAgICAgICAgICB8ICA2
+ICsrKy0tLQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMjAgaW5zZXJ0aW9ucygrKSwgMTQgZGVsZXRp
+b25zKC0pCj4gPgo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMg
+Yi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPiBpbmRleCBlNjk1NTQ0Li5mNzAwNTI0
+IDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gKysrIGIv
+ZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gQEAgLTY0LDggKzY0LDggQEAgc3RhdGlj
+IGludCBycG1fc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYsIGludCBycG1mbGFncyk7Cj4gPiAg
+ICovCj4gPiAgdm9pZCB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKHN0cnVjdCBkZXZpY2Ug
+KmRldikKPiA+ICB7Cj4gPiAtICAgICAgIHVuc2lnbmVkIGxvbmcgbm93ID0gamlmZmllczsKPiA+
+IC0gICAgICAgdW5zaWduZWQgbG9uZyBkZWx0YTsKPiA+ICsgICAgICAgdTY0IG5vdyA9IGt0aW1l
+X3RvX25zKGt0aW1lX2dldCgpKTsKPiA+ICsgICAgICAgdTY0IGRlbHRhOwo+ID4KPiA+ICAgICAg
+ICAgZGVsdGEgPSBub3cgLSBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wOwo+ID4KPiA+
+IEBAIC03NSw5ICs3NSw5IEBAIHZvaWQgdXBkYXRlX3BtX3J1bnRpbWVfYWNjb3VudGluZyhzdHJ1
+Y3QgZGV2aWNlICpkZXYpCj4gPiAgICAgICAgICAgICAgICAgcmV0dXJuOwo+ID4KPiA+ICAgICAg
+ICAgaWYgKGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRFRCkKPiA+IC0g
+ICAgICAgICAgICAgICBkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzICs9IGRlbHRhOwo+ID4g
+KyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWUgKz0gZGVsdGE7Cj4gPiAg
+ICAgICAgIGVsc2UKPiA+IC0gICAgICAgICAgICAgICBkZXYtPnBvd2VyLmFjdGl2ZV9qaWZmaWVz
+ICs9IGRlbHRhOwo+ID4gKyAgICAgICAgICAgICAgIGRldi0+cG93ZXIuYWN0aXZlX3RpbWUgKz0g
+ZGVsdGE7Cj4gPiAgfQo+ID4KPiA+ICBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1lX3N0YXR1
+cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gPiBAQCAtODgs
+MTcgKzg4LDE4IEBAIHN0YXRpYyB2b2lkIF9fdXBkYXRlX3J1bnRpbWVfc3RhdHVzKHN0cnVjdCBk
+ZXZpY2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1cykKPiA+Cj4gPiAgdTY0IHBtX3J1bnRp
+bWVfc3VzcGVuZGVkX3RpbWUoc3RydWN0IGRldmljZSAqZGV2KQo+ID4gIHsKPiA+IC0gICAgICAg
+dW5zaWduZWQgbG9uZyBmbGFncywgdGltZTsKPiA+ICsgICAgICAgdTY0IHRpbWU7Cj4gPiArICAg
+ICAgIHVuc2lnbmVkIGxvbmcgZmxhZ3M7Cj4gPgo+ID4gICAgICAgICBzcGluX2xvY2tfaXJxc2F2
+ZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4gPgo+ID4gICAgICAgICB1cGRhdGVfcG1fcnVu
+dGltZV9hY2NvdW50aW5nKGRldik7Cj4gPgo+ID4gLSAgICAgICB0aW1lID0gZGV2LT5wb3dlci5z
+dXNwZW5kZWRfamlmZmllczsKPiA+ICsgICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVk
+X3RpbWU7Cj4gPgo+ID4gICAgICAgICBzcGluX3VubG9ja19pcnFyZXN0b3JlKCZkZXYtPnBvd2Vy
+LmxvY2ssIGZsYWdzKTsKPiA+Cj4gPiAtICAgICAgIHJldHVybiBqaWZmaWVzX3RvX25zZWNzKHRp
+bWUpOwo+ID4gKyAgICAgICByZXR1cm4gdGltZTsKPiA+ICB9Cj4gPiAgRVhQT1JUX1NZTUJPTF9H
+UEwocG1fcnVudGltZV9zdXNwZW5kZWRfdGltZSk7Cj4gPgo+ID4gQEAgLTE1MDMsNyArMTUwNCw3
+IEBAIHZvaWQgcG1fcnVudGltZV9pbml0KHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ICAgICAgICAg
+ZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKPiA+ICAgICAgICAgZGV2LT5wb3dl
+ci5yZXF1ZXN0ID0gUlBNX1JFUV9OT05FOwo+ID4gICAgICAgICBkZXYtPnBvd2VyLmRlZmVycmVk
+X3Jlc3VtZSA9IGZhbHNlOwo+ID4gLSAgICAgICBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0
+YW1wID0gamlmZmllczsKPiA+ICsgICAgICAgZGV2LT5wb3dlci5hY2NvdW50aW5nX3RpbWVzdGFt
+cCA9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgpKTsKPgo+IFRoaXMgY2hhbmdlIHdvcnJpZXMgbWUg
+YSBiaXQsIGJ1dCBpdCBtYXkgbm90IGJlIGEgcHJvYmxlbSBpbiBwcmFjdGljZS4KPgo+IHBtX3J1
+bnRpbWVfaW5pdCgpIGlzIGNhbGxlZCB3aGVuIGRldmljZXMgZ2V0IGluaXRpYWxpemVkLCB2aWEK
+PiBkZXZpY2VfaW5pdGlhbGl6ZSgpLiBJZiB0aW1la2VlcGluZyBoYXMgbm90IGJlZW4gaW5pdGlh
+bGl6ZWQgcHJpb3IgYQo+IGNhbGwgdG8ga3RpbWVfZ2V0KCkgaXMgZG9uZSwgaXQgd2lsbCBmYWls
+IGFuZCBjYXVzaW5nIGEgTlVMTCBwb2ludGVyCj4gZGVmZXJlbmNlIG9yIHNvbWV0aGluZyBhbG9u
+ZyB0aG9zZSBsaW5lcy4KPgo+IEluIG90aGVyIHdvcmRzLCBkbyB3ZSBrbm93IHRoYXQgZGV2aWNl
+X2luaXRpYWxpemUoKSBpcyBhbHdheXMgY2FsbGVkCj4gYWZ0ZXIgdGltZWtlZXBpbmcgaGFzIGJl
+ZW4gaW5pdGlhbGl6ZWQgZHVyaW5nIGJvb3Q/CgpXZSBkby4KCnRpbWVrZWVwaW5nX2luaXQoKSBp
+cyBjYWxsZWQgZWFybHkgaW4gc3RhcnRfa2VybmVsKCkgd2hpY2ggaXMgd2F5CmJlZm9yZSBkcml2
+ZXJfaW5pdCgpIChhbmQgdGhhdCdzIHdoZW4gZGV2aWNlcyBjYW4gc3RhcnQgdG8gYmUKaW5pdGlh
+bGl6ZWQpIGNhbGxlZCBmcm9tIHJlc3RfaW5pdCgpIHZpYSBrZXJuZWxfaW5pdF9mcmVlYWJsZSgp
+IGFuZApkb19iYXNpY19zZXR1cCgpLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9kcmktZGV2ZWwK
