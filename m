@@ -1,74 +1,97 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM
- domains
-Date: Fri, 21 Dec 2018 08:15:05 +0100
-Message-ID: <66f0871e-fd1d-2f9a-13ce-1164c04e65ca@linaro.org>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-18-ulf.hansson@linaro.org>
- <d82f3fe0-7f60-c89a-6503-435cc6dcc5cf@linaro.org>
- <CAPDyKFpfp+d9K-i-ytCqwSq2ToQvqApatH0YyRXbW55wLyU=wA@mail.gmail.com>
- <c5587b35-734c-5c1d-a433-ce78c8583ef1@linaro.org>
- <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v4 2/3] drm/i915: Move on the new pm runtime interface
+Date: Fri, 21 Dec 2018 09:30:14 +0100
+Message-ID: <CAKfTPtBZqGY07mj2uKaMJXsOXfN708uJKSaiivXKZ5qdct0oZw@mail.gmail.com>
+References: <1545315417-14483-1-git-send-email-vincent.guittot@linaro.org>
+ <CAPDyKFqZfCoL1N_Ca12mR0sk_JR7EhxchXGR_R3=9dFXu6Qoyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqdeSm56hVB+9dwJekNhZU10DE+-WaWa4m=wdUmjAdAdw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAPDyKFqZfCoL1N_Ca12mR0sk_JR7EhxchXGR_R3=9dFXu6Qoyw@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On 20/12/2018 22:37, Ulf Hansson wrote:
-> On Thu, 20 Dec 2018 at 19:06, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>
->> On 20/12/2018 16:49, Ulf Hansson wrote:
->>
->> [ ... ]
->>
->>>>> +#ifdef CONFIG_CPU_IDLE
->>>>
->>>> It would be nicer if you can remove the CONFIG_CPU_IDLE by replacing it
->>>> with a specific one (eg. CONFIG_PSCI_IDLE) and make it depend on
->>>> CONFIG_CPU_IDLE, so the config options stay contained in their
->>>> respective subsystems directory.
->>>
->>> I am all for simplifying the Kconfig options in here, as indeed it's
->>> rather messy. However, I would rather avoid folding in additional
->>> cleanup changes to this series, is already extensive enough.
->>>
->>> Would you be okay if we deal with that on top?
->>
->> IMO, there are patches in this series which can be grouped into a
->> cleanup + set the scene patchset and merged immediately. An option
->> similar to ARM_SCMI_POWER_DOMAIN can be part of it.
-> 
-> I certainly agree to that. The tricky is, to know what pieces people
-> are happy with to go in. :-)
-> 
-> Earlier, in v9 I tried your suggested approach (kind of), but then
-> Lorenzo stated that it's kind of all or nothing. Maybe we can bring up
-> that discussion again with him and see what we can figure out.
-> 
->>
->> However, if you swear you will do the change after and sign with your
->> blood, I'm fine with that 0:)
->>
-> 
-> Whatever it takes!
-> 
-> Anyway, as stated, the reason why I want to tackle that on top, is
-> that I don't want to make the series more extensive than it already
-> is.
-> 
-> Agree?
-
-Yes
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+T24gVGh1LCAyMCBEZWMgMjAxOCBhdCAyMzowNCwgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxp
+bmFyby5vcmc+IHdyb3RlOgo+Cj4gT24gVGh1LCAyMCBEZWMgMjAxOCBhdCAxNToxNywgVmluY2Vu
+dCBHdWl0dG90Cj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPiA+Cj4gPiBV
+c2UgdGhlIG5ldyBwbSBydW50aW1lIGludGVyZmFjZSB0byBnZXQgdGhlIGFjY291bnRlZCBzdXNw
+ZW5kZWQgdGltZToKPiA+IHBtX3J1bnRpbWVfYWNjb3VudGVkX3RpbWVfZ2V0KCkKPgo+IHBtX3J1
+bnRpbWVfc3VzcGVuZGVkX3RpbWUoKQo+Cj4gVGhpcyBjaGFuZ2UgYWxzbyBtYWtlcyBxdWl0ZSBz
+b21lIG5pY2UgY2xlYW51cHMgdG8gdGhlIGNvZGUsIHdoaWNoIGlzCj4gbW9zdGx5IGJlY2F1c2Ug
+b2YgY29udmVydGluZyB0byB0aGUgbmV3IHJ1bnRpbWUgUE0gQVBJLiBJIHRoaW5rIHRoZQo+IGNo
+YW5nZWxvZyBkZXNlcnZlcyB0byBzdGF0ZSB0aGF0LCBpbiBzb21lIHNpbXBsZSB3YXkuCgpvawo+
+Cj4gPgo+ID4gU2lnbmVkLW9mZi1ieTogVmluY2VudCBHdWl0dG90IDx2aW5jZW50Lmd1aXR0b3RA
+bGluYXJvLm9yZz4KPgo+IE90aGVyIHRoYW4gdGhlIG1pbm9yIHRoaW5ncyBhYm92ZToKPgo+IFJl
+dmlld2VkLWJ5OiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4KPgo+IEtpbmQg
+cmVnYXJkcwo+IFVmZmUKPgo+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1
+X3BtdS5jIHwgMTYgKysrKysrLS0tLS0tLS0tLQo+ID4gIGRyaXZlcnMvZ3B1L2RybS9pOTE1L2k5
+MTVfcG11LmggfCAgNCArKy0tCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA4IGluc2VydGlvbnMoKyks
+IDEyIGRlbGV0aW9ucygtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vaTkx
+NS9pOTE1X3BtdS5jIGIvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkxNV9wbXUuYwo+ID4gaW5kZXgg
+ZDZjOGY4Zi4uM2Y3NmY2MCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5
+MTVfcG11LmMKPiA+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmMKPiA+IEBA
+IC01LDYgKzUsNyBAQAo+ID4gICAqLwo+ID4KPiA+ICAjaW5jbHVkZSA8bGludXgvaXJxLmg+Cj4g
+PiArI2luY2x1ZGUgPGxpbnV4L3BtX3J1bnRpbWUuaD4KPiA+ICAjaW5jbHVkZSAiaTkxNV9wbXUu
+aCIKPiA+ICAjaW5jbHVkZSAiaW50ZWxfcmluZ2J1ZmZlci5oIgo+ID4gICNpbmNsdWRlICJpOTE1
+X2Rydi5oIgo+ID4gQEAgLTQ3OCw3ICs0NzksNiBAQCBzdGF0aWMgdTY0IGdldF9yYzYoc3RydWN0
+IGRybV9pOTE1X3ByaXZhdGUgKmk5MTUpCj4gPiAgICAgICAgICAgICAgICAgICogY291bnRlciB2
+YWx1ZS4KPiA+ICAgICAgICAgICAgICAgICAgKi8KPiA+ICAgICAgICAgICAgICAgICBzcGluX2xv
+Y2tfaXJxc2F2ZSgmaTkxNS0+cG11LmxvY2ssIGZsYWdzKTsKPiA+IC0gICAgICAgICAgICAgICBz
+cGluX2xvY2soJmtkZXYtPnBvd2VyLmxvY2spOwo+ID4KPiA+ICAgICAgICAgICAgICAgICAvKgo+
+ID4gICAgICAgICAgICAgICAgICAqIEFmdGVyIHRoZSBhYm92ZSBicmFuY2ggaW50ZWxfcnVudGlt
+ZV9wbV9nZXRfaWZfaW5fdXNlIGZhaWxlZAo+ID4gQEAgLTQ5MSwxNiArNDkxLDEzIEBAIHN0YXRp
+YyB1NjQgZ2V0X3JjNihzdHJ1Y3QgZHJtX2k5MTVfcHJpdmF0ZSAqaTkxNSkKPiA+ICAgICAgICAg
+ICAgICAgICAgKiBzdXNwZW5kZWQgYW5kIGlmIG5vdCB3ZSBjYW5ub3QgZG8gYmV0dGVyIHRoYW4g
+cmVwb3J0IHRoZSBsYXN0Cj4gPiAgICAgICAgICAgICAgICAgICoga25vd24gUkM2IHZhbHVlLgo+
+ID4gICAgICAgICAgICAgICAgICAqLwo+ID4gLSAgICAgICAgICAgICAgIGlmIChrZGV2LT5wb3dl
+ci5ydW50aW1lX3N0YXR1cyA9PSBSUE1fU1VTUEVOREVEKSB7Cj4gPiAtICAgICAgICAgICAgICAg
+ICAgICAgICBpZiAoIWk5MTUtPnBtdS5zYW1wbGVbX19JOTE1X1NBTVBMRV9SQzZfRVNUSU1BVEVE
+XS5jdXIpCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGk5MTUtPnBtdS5zdXNw
+ZW5kZWRfamlmZmllc19sYXN0ID0KPiA+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAga2Rldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXM7Cj4gPiArICAg
+ICAgICAgICAgICAgaWYgKHBtX3J1bnRpbWVfc3RhdHVzX3N1c3BlbmRlZChrZGV2KSkgewo+ID4g
+KyAgICAgICAgICAgICAgICAgICAgICAgdmFsID0gcG1fcnVudGltZV9zdXNwZW5kZWRfdGltZShr
+ZGV2KTsKPiA+Cj4gPiAtICAgICAgICAgICAgICAgICAgICAgICB2YWwgPSBrZGV2LT5wb3dlci5z
+dXNwZW5kZWRfamlmZmllcyAtCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpOTE1
+LT5wbXUuc3VzcGVuZGVkX2ppZmZpZXNfbGFzdDsKPiA+IC0gICAgICAgICAgICAgICAgICAgICAg
+IHZhbCArPSBqaWZmaWVzIC0ga2Rldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXA7Cj4gPiAr
+ICAgICAgICAgICAgICAgICAgICAgICBpZiAoIWk5MTUtPnBtdS5zYW1wbGVbX19JOTE1X1NBTVBM
+RV9SQzZfRVNUSU1BVEVEXS5jdXIpCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IGk5MTUtPnBtdS5zdXNwZW5kZWRfdGltZV9sYXN0ID0gdmFsOwo+ID4KPiA+IC0gICAgICAgICAg
+ICAgICAgICAgICAgIHZhbCA9IGppZmZpZXNfdG9fbnNlY3ModmFsKTsKPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgIHZhbCAtPSBpOTE1LT5wbXUuc3VzcGVuZGVkX3RpbWVfbGFzdDsKPiA+ICAg
+ICAgICAgICAgICAgICAgICAgICAgIHZhbCArPSBpOTE1LT5wbXUuc2FtcGxlW19fSTkxNV9TQU1Q
+TEVfUkM2XS5jdXI7Cj4gPgo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgaTkxNS0+cG11LnNh
+bXBsZVtfX0k5MTVfU0FNUExFX1JDNl9FU1RJTUFURURdLmN1ciA9IHZhbDsKPiA+IEBAIC01MTAs
+NyArNTA3LDYgQEAgc3RhdGljIHU2NCBnZXRfcmM2KHN0cnVjdCBkcm1faTkxNV9wcml2YXRlICpp
+OTE1KQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgdmFsID0gaTkxNS0+cG11LnNhbXBsZVtf
+X0k5MTVfU0FNUExFX1JDNl0uY3VyOwo+ID4gICAgICAgICAgICAgICAgIH0KPiA+Cj4gPiAtICAg
+ICAgICAgICAgICAgc3Bpbl91bmxvY2soJmtkZXYtPnBvd2VyLmxvY2spOwo+ID4gICAgICAgICAg
+ICAgICAgIHNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmk5MTUtPnBtdS5sb2NrLCBmbGFncyk7Cj4g
+PiAgICAgICAgIH0KPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2k5MTUvaTkx
+NV9wbXUuaCBiL2RyaXZlcnMvZ3B1L2RybS9pOTE1L2k5MTVfcG11LmgKPiA+IGluZGV4IDdmMTY0
+Y2EuLjNkYzJhMzAgMTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3Bt
+dS5oCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3BtdS5oCj4gPiBAQCAtOTUs
+OSArOTUsOSBAQCBzdHJ1Y3QgaTkxNV9wbXUgewo+ID4gICAgICAgICAgKi8KPiA+ICAgICAgICAg
+c3RydWN0IGk5MTVfcG11X3NhbXBsZSBzYW1wbGVbX19JOTE1X05VTV9QTVVfU0FNUExFUlNdOwo+
+ID4gICAgICAgICAvKioKPiA+IC0gICAgICAgICogQHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q6IENh
+Y2hlZCBzdXNwZW5kIHRpbWUgZnJvbSBQTSBjb3JlLgo+ID4gKyAgICAgICAgKiBAc3VzcGVuZGVk
+X3RpbWVfbGFzdDogQ2FjaGVkIHN1c3BlbmQgdGltZSBmcm9tIFBNIGNvcmUuCj4gPiAgICAgICAg
+ICAqLwo+ID4gLSAgICAgICB1bnNpZ25lZCBsb25nIHN1c3BlbmRlZF9qaWZmaWVzX2xhc3Q7Cj4g
+PiArICAgICAgIHU2NCBzdXNwZW5kZWRfdGltZV9sYXN0Owo+ID4gICAgICAgICAvKioKPiA+ICAg
+ICAgICAgICogQGk5MTVfYXR0cjogTWVtb3J5IGJsb2NrIGhvbGRpbmcgZGV2aWNlIGF0dHJpYnV0
+ZXMuCj4gPiAgICAgICAgICAqLwo+ID4gLS0KPiA+IDIuNy40Cj4gPgpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRy
+aS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5v
+cmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
