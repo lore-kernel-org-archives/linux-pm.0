@@ -1,84 +1,100 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 07/10] i2c: sprd: use core helper to mark adapter suspended
-Date: Fri, 21 Dec 2018 17:03:09 +0800
-Message-ID: <CAMz4kuLv_s6t6n0OfRP8EW3=z8QD0ezn2=45sKg9aXJs5Agrbg@mail.gmail.com>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com> <20181219164827.20985-8-wsa+renesas@sang-engineering.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v4 3/3] PM/runtime:Replace jiffies based accounting with
+ ktime based accounting
+Date: Fri, 21 Dec 2018 11:06:53 +0100
+Message-ID: <CAKfTPtC47-KHWJibvuN1oi==CrtRTNUyHfYZcJtZ+7Y6rM+Chg@mail.gmail.com>
+References: <1545315426-14545-1-git-send-email-vincent.guittot@linaro.org>
+ <CAPDyKFqPf3RzUG+YjSQmMPESjDhmgQmQXpbQdp5j7zk7b9hVNA@mail.gmail.com>
+ <CAJZ5v0jp-+rG2usiumWmORTvqCYDJJbFUB+ey3wLyQUrimdTLw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181219164827.20985-8-wsa+renesas@sang-engineering.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Orson Zhai <orsonzhai@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAJZ5v0jp-+rG2usiumWmORTvqCYDJJbFUB+ey3wLyQUrimdTLw@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wolfram,
-
-On Thu, 20 Dec 2018 at 00:48, Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
->
-> Rejecting transfers should be handled by the core.
->
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Great to see the I2C core can handle this issue.
-Reviewed-by: Baolin Wang <baolin.wang@linaro.org>
-
-> ---
->  drivers/i2c/busses/i2c-sprd.c | 14 ++------------
->  1 file changed, 2 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-sprd.c b/drivers/i2c/busses/i2c-sprd.c
-> index e266d8a713d9..961123529678 100644
-> --- a/drivers/i2c/busses/i2c-sprd.c
-> +++ b/drivers/i2c/busses/i2c-sprd.c
-> @@ -86,7 +86,6 @@ struct sprd_i2c {
->         u32 count;
->         int irq;
->         int err;
-> -       bool is_suspended;
->  };
->
->  static void sprd_i2c_set_count(struct sprd_i2c *i2c_dev, u32 count)
-> @@ -284,9 +283,6 @@ static int sprd_i2c_master_xfer(struct i2c_adapter *i2c_adap,
->         struct sprd_i2c *i2c_dev = i2c_adap->algo_data;
->         int im, ret;
->
-> -       if (i2c_dev->is_suspended)
-> -               return -EBUSY;
-> -
->         ret = pm_runtime_get_sync(i2c_dev->dev);
->         if (ret < 0)
->                 return ret;
-> @@ -590,10 +586,7 @@ static int __maybe_unused sprd_i2c_suspend_noirq(struct device *dev)
->  {
->         struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->
-> -       i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
-> -       i2c_dev->is_suspended = true;
-> -       i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
-> -
-> +       i2c_mark_adapter_suspended(&i2c_dev->adap);
->         return pm_runtime_force_suspend(dev);
->  }
->
-> @@ -601,10 +594,7 @@ static int __maybe_unused sprd_i2c_resume_noirq(struct device *dev)
->  {
->         struct sprd_i2c *i2c_dev = dev_get_drvdata(dev);
->
-> -       i2c_lock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
-> -       i2c_dev->is_suspended = false;
-> -       i2c_unlock_bus(&i2c_dev->adap, I2C_LOCK_ROOT_ADAPTER);
-> -
-> +       i2c_mark_adapter_resumed(&i2c_dev->adap);
->         return pm_runtime_force_resume(dev);
->  }
->
-> --
-> 2.11.0
->
-
-
--- 
-Baolin Wang
-Best Regards
+SGkgUmFmYWVsLAoKT24gRnJpLCAyMSBEZWMgMjAxOCBhdCAwOTo1OCwgUmFmYWVsIEouIFd5c29j
+a2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPgo+IE9uIFRodSwgRGVjIDIwLCAyMDE4IGF0
+IDExOjAzIFBNIFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPiB3cm90ZToKPiA+
+Cj4gPiBPbiBUaHUsIDIwIERlYyAyMDE4IGF0IDE1OjE3LCBWaW5jZW50IEd1aXR0b3QKPiA+IDx2
+aW5jZW50Lmd1aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4gPiA+Cj4gPiA+IEZyb206IFRoYXJh
+IEdvcGluYXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8ub3JnPgo+ID4gPgo+ID4gPiBUaGlzIHBh
+dGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3RpdmVf
+dGltZQo+ID4gPiBhbmQgcnVudGltZV9zdXNwZW5kZWRfdGltZSB3aXRoIGt0aW1lIGJhc2UgYWNj
+b3VudGluZy4gVGhpcyBtYWtlcyB0aGUKPiA+ID4gcnVudGltZSBkZWJ1ZyBjb3VudGVycyBpbmxp
+bmUgd2l0aCBnZW5wZCBhbmQgb3RoZXIgcG0gc3Vic3l0ZW1zIHdoaWNoCj4gPiA+IHVzZXMga3Rp
+bWUgYmFzZWQgYWNjb3VudGluZy4KPiA+ID4KPiA+ID4gU2lnbmVkLW9mZi1ieTogVGhhcmEgR29w
+aW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+Cj4gPiA+IFttb3ZlIGZyb20ga3RpbWUg
+dG8gcmF3IG5zZWNdCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFZpbmNlbnQgR3VpdHRvdCA8dmluY2Vu
+dC5ndWl0dG90QGxpbmFyby5vcmc+Cj4gPiA+IC0tLQo+ID4gPiAgZHJpdmVycy9iYXNlL3Bvd2Vy
+L3J1bnRpbWUuYyB8IDE3ICsrKysrKysrKy0tLS0tLS0tCj4gPiA+ICBkcml2ZXJzL2Jhc2UvcG93
+ZXIvc3lzZnMuYyAgIHwgMTEgKysrKysrKystLS0KPiA+ID4gIGluY2x1ZGUvbGludXgvcG0uaCAg
+ICAgICAgICAgfCAgNiArKystLS0KPiA+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMjAgaW5zZXJ0aW9u
+cygrKSwgMTQgZGVsZXRpb25zKC0pCj4gPiA+Cj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jh
+c2UvcG93ZXIvcnVudGltZS5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYwo+ID4gPiBp
+bmRleCBlNjk1NTQ0Li5mNzAwNTI0IDEwMDY0NAo+ID4gPiAtLS0gYS9kcml2ZXJzL2Jhc2UvcG93
+ZXIvcnVudGltZS5jCj4gPiA+ICsrKyBiL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMKPiA+
+ID4gQEAgLTY0LDggKzY0LDggQEAgc3RhdGljIGludCBycG1fc3VzcGVuZChzdHJ1Y3QgZGV2aWNl
+ICpkZXYsIGludCBycG1mbGFncyk7Cj4gPiA+ICAgKi8KPiA+ID4gIHZvaWQgdXBkYXRlX3BtX3J1
+bnRpbWVfYWNjb3VudGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiA+ICB7Cj4gPiA+IC0gICAg
+ICAgdW5zaWduZWQgbG9uZyBub3cgPSBqaWZmaWVzOwo+ID4gPiAtICAgICAgIHVuc2lnbmVkIGxv
+bmcgZGVsdGE7Cj4gPiA+ICsgICAgICAgdTY0IG5vdyA9IGt0aW1lX3RvX25zKGt0aW1lX2dldCgp
+KTsKPiA+ID4gKyAgICAgICB1NjQgZGVsdGE7Cj4gPiA+Cj4gPiA+ICAgICAgICAgZGVsdGEgPSBu
+b3cgLSBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wOwo+ID4gPgo+ID4gPiBAQCAtNzUs
+OSArNzUsOSBAQCB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291bnRpbmcoc3RydWN0IGRldmlj
+ZSAqZGV2KQo+ID4gPiAgICAgICAgICAgICAgICAgcmV0dXJuOwo+ID4gPgo+ID4gPiAgICAgICAg
+IGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IFJQTV9TVVNQRU5ERUQpCj4gPiA+IC0g
+ICAgICAgICAgICAgICBkZXYtPnBvd2VyLnN1c3BlbmRlZF9qaWZmaWVzICs9IGRlbHRhOwo+ID4g
+PiArICAgICAgICAgICAgICAgZGV2LT5wb3dlci5zdXNwZW5kZWRfdGltZSArPSBkZWx0YTsKPiA+
+ID4gICAgICAgICBlbHNlCj4gPiA+IC0gICAgICAgICAgICAgICBkZXYtPnBvd2VyLmFjdGl2ZV9q
+aWZmaWVzICs9IGRlbHRhOwo+ID4gPiArICAgICAgICAgICAgICAgZGV2LT5wb3dlci5hY3RpdmVf
+dGltZSArPSBkZWx0YTsKPiA+ID4gIH0KPiA+ID4KPiA+ID4gIHN0YXRpYyB2b2lkIF9fdXBkYXRl
+X3J1bnRpbWVfc3RhdHVzKHN0cnVjdCBkZXZpY2UgKmRldiwgZW51bSBycG1fc3RhdHVzIHN0YXR1
+cykKPiA+ID4gQEAgLTg4LDE3ICs4OCwxOCBAQCBzdGF0aWMgdm9pZCBfX3VwZGF0ZV9ydW50aW1l
+X3N0YXR1cyhzdHJ1Y3QgZGV2aWNlICpkZXYsIGVudW0gcnBtX3N0YXR1cyBzdGF0dXMpCj4gPiA+
+Cj4gPiA+ICB1NjQgcG1fcnVudGltZV9zdXNwZW5kZWRfdGltZShzdHJ1Y3QgZGV2aWNlICpkZXYp
+Cj4gPiA+ICB7Cj4gPiA+IC0gICAgICAgdW5zaWduZWQgbG9uZyBmbGFncywgdGltZTsKPiA+ID4g
+KyAgICAgICB1NjQgdGltZTsKPiA+ID4gKyAgICAgICB1bnNpZ25lZCBsb25nIGZsYWdzOwo+ID4g
+Pgo+ID4gPiAgICAgICAgIHNwaW5fbG9ja19pcnFzYXZlKCZkZXYtPnBvd2VyLmxvY2ssIGZsYWdz
+KTsKPiA+ID4KPiA+ID4gICAgICAgICB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKGRldik7
+Cj4gPiA+Cj4gPiA+IC0gICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVkX2ppZmZpZXM7
+Cj4gPiA+ICsgICAgICAgdGltZSA9IGRldi0+cG93ZXIuc3VzcGVuZGVkX3RpbWU7Cj4gPiA+Cj4g
+PiA+ICAgICAgICAgc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFn
+cyk7Cj4gPiA+Cj4gPiA+IC0gICAgICAgcmV0dXJuIGppZmZpZXNfdG9fbnNlY3ModGltZSk7Cj4g
+PiA+ICsgICAgICAgcmV0dXJuIHRpbWU7Cj4gPiA+ICB9Cj4gPiA+ICBFWFBPUlRfU1lNQk9MX0dQ
+TChwbV9ydW50aW1lX3N1c3BlbmRlZF90aW1lKTsKPiA+ID4KPiA+ID4gQEAgLTE1MDMsNyArMTUw
+NCw3IEBAIHZvaWQgcG1fcnVudGltZV9pbml0KHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ID4gICAg
+ICAgICBkZXYtPnBvd2VyLnJlcXVlc3RfcGVuZGluZyA9IGZhbHNlOwo+ID4gPiAgICAgICAgIGRl
+di0+cG93ZXIucmVxdWVzdCA9IFJQTV9SRVFfTk9ORTsKPiA+ID4gICAgICAgICBkZXYtPnBvd2Vy
+LmRlZmVycmVkX3Jlc3VtZSA9IGZhbHNlOwo+ID4gPiAtICAgICAgIGRldi0+cG93ZXIuYWNjb3Vu
+dGluZ190aW1lc3RhbXAgPSBqaWZmaWVzOwo+ID4gPiArICAgICAgIGRldi0+cG93ZXIuYWNjb3Vu
+dGluZ190aW1lc3RhbXAgPSBrdGltZV90b19ucyhrdGltZV9nZXQoKSk7Cj4gPgo+ID4gVGhpcyBj
+aGFuZ2Ugd29ycmllcyBtZSBhIGJpdCwgYnV0IGl0IG1heSBub3QgYmUgYSBwcm9ibGVtIGluIHBy
+YWN0aWNlLgo+ID4KPiA+IHBtX3J1bnRpbWVfaW5pdCgpIGlzIGNhbGxlZCB3aGVuIGRldmljZXMg
+Z2V0IGluaXRpYWxpemVkLCB2aWEKPiA+IGRldmljZV9pbml0aWFsaXplKCkuIElmIHRpbWVrZWVw
+aW5nIGhhcyBub3QgYmVlbiBpbml0aWFsaXplZCBwcmlvciBhCj4gPiBjYWxsIHRvIGt0aW1lX2dl
+dCgpIGlzIGRvbmUsIGl0IHdpbGwgZmFpbCBhbmQgY2F1c2luZyBhIE5VTEwgcG9pbnRlcgo+ID4g
+ZGVmZXJlbmNlIG9yIHNvbWV0aGluZyBhbG9uZyB0aG9zZSBsaW5lcy4KPiA+Cj4gPiBJbiBvdGhl
+ciB3b3JkcywgZG8gd2Uga25vdyB0aGF0IGRldmljZV9pbml0aWFsaXplKCkgaXMgYWx3YXlzIGNh
+bGxlZAo+ID4gYWZ0ZXIgdGltZWtlZXBpbmcgaGFzIGJlZW4gaW5pdGlhbGl6ZWQgZHVyaW5nIGJv
+b3Q/Cj4KPiBXZSBkby4KPgo+IHRpbWVrZWVwaW5nX2luaXQoKSBpcyBjYWxsZWQgZWFybHkgaW4g
+c3RhcnRfa2VybmVsKCkgd2hpY2ggaXMgd2F5Cj4gYmVmb3JlIGRyaXZlcl9pbml0KCkgKGFuZCB0
+aGF0J3Mgd2hlbiBkZXZpY2VzIGNhbiBzdGFydCB0byBiZQo+IGluaXRpYWxpemVkKSBjYWxsZWQg
+ZnJvbSByZXN0X2luaXQoKSB2aWEga2VybmVsX2luaXRfZnJlZWFibGUoKSBhbmQKPiBkb19iYXNp
+Y19zZXR1cCgpLgoKVGhhbmtzIGZvciB0aGUgY29uZmlybWF0aW9uLiBJJ20gZ29pbmcgdG8gYWRk
+IHlvdXIgYW5zd2VyIGluIHRoZQpjb21taXQgbWVzc2FnZSBzbyB3ZSB3aWxsIGhhdmUgdGhlIGFu
+c3dlciBuZXh0IHRpbWUgc29tZW9uZSB3aWxsCndvbmRlcgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZl
+bEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
