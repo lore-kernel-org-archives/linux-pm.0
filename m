@@ -1,52 +1,166 @@
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH RFC 5/5] arm64: dts: msm: add PDC timer for apps_rsc for SDM845
-Date: Fri, 21 Dec 2018 17:29:46 +0530
-Message-ID: <20181221115946.10095-6-rplsssn@codeaurora.org>
-References: <20181221115946.10095-1-rplsssn@codeaurora.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [Intel-gfx] [PATCH v5 2/3] drm/i915: Move on the new pm runtime interface
+Date: Fri, 21 Dec 2018 14:26:54 +0100
+Message-ID: <CAKfTPtDx8u_TnZQnQNmn+=A5A78CPVSWKvMdOVD0UEw4m4s1iQ@mail.gmail.com>
+References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+ <1545388436-7489-3-git-send-email-vincent.guittot@linaro.org> <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181221115946.10095-1-rplsssn@codeaurora.org>
+In-Reply-To: <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+To: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add PDC timer node for apps_rsc to program next wake-up
-timer value.
+On Fri, 21 Dec 2018 at 12:33, Tvrtko Ursulin
+<tvrtko.ursulin@linux.intel.com> wrote:
+>
+>
+> Hi,
+>
+> On 21/12/2018 10:33, Vincent Guittot wrote:
+> > Use the new pm runtime interface to get the accounted suspended time:
+> > pm_runtime_suspended_time().
+> > This new interface helps to simplify and cleanup the code that computes
+> > __I915_SAMPLE_RC6_ESTIMATED and to remove direct access to internals of
+> > PM runtime.
+> >
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > ---
+> >   drivers/gpu/drm/i915/i915_pmu.c | 16 ++++++----------
+> >   drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
+> >   2 files changed, 8 insertions(+), 12 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
+> > index d6c8f8f..3f76f60 100644
+> > --- a/drivers/gpu/drm/i915/i915_pmu.c
+> > +++ b/drivers/gpu/drm/i915/i915_pmu.c
+> > @@ -5,6 +5,7 @@
+> >    */
+> >
+> >   #include <linux/irq.h>
+> > +#include <linux/pm_runtime.h>
+> >   #include "i915_pmu.h"
+> >   #include "intel_ringbuffer.h"
+> >   #include "i915_drv.h"
+> > @@ -478,7 +479,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
+> >                * counter value.
+> >                */
+> >               spin_lock_irqsave(&i915->pmu.lock, flags);
+> > -             spin_lock(&kdev->power.lock);
+> >
+> >               /*
+> >                * After the above branch intel_runtime_pm_get_if_in_use failed
+> > @@ -491,16 +491,13 @@ static u64 get_rc6(struct drm_i915_private *i915)
+> >                * suspended and if not we cannot do better than report the last
+> >                * known RC6 value.
+> >                */
+> > -             if (kdev->power.runtime_status == RPM_SUSPENDED) {
+> > -                     if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
+> > -                             i915->pmu.suspended_jiffies_last =
+> > -                                               kdev->power.suspended_jiffies;
+> > +             if (pm_runtime_status_suspended(kdev)) {
+> > +                     val = pm_runtime_suspended_time(kdev);
+>
+> There is a race condition between the status check and timestamp access
+> which the existing code solves by holding the power.lock over it. But I
+> don't exactly remember how this issue was manifesting. Is
+> kdev->power.suspended_jiffies perhaps reset on exit from runtime
+> suspend, which was then underflowing the val, not sure.
+>
+> Anyways, is the new way of doing this safe with regards to this race? In
 
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
----
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+AFAICT it is safe.
+The current version does:
+1-take lock,
+2-test if dev is suspended
+3-read some internals field to computed an up-to-date suspended time
+4-update __I915_SAMPLE_RC6_ESTIMATED
+5-release lock
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index b256357e4db1..c73b717ed8ea 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -1372,6 +1372,9 @@
- 			      <0x179d0000 0x10000>,
- 			      <0x179e0000 0x10000>;
- 			reg-names = "drv-0", "drv-1", "drv-2";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
- 			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
-@@ -1382,6 +1385,12 @@
- 					  <WAKE_TCS    3>,
- 					  <CONTROL_TCS 1>;
- 
-+			pdc_timer@38 {
-+				compatible = "qcom,pdc-timer";
-+				reg = <0x38 0x1>,
-+				      <0x40 0x1>;
-+			};
-+
- 			rpmhcc: clock-controller {
- 				compatible = "qcom,sdm845-rpmh-clk";
- 				#clock-cells = <1>;
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of the Code Aurora Forum, hosted by The Linux Foundation.
+The new version does:
+1-test if dev is suspended
+2-get an up-to-date  suspended time with pm_runtime_suspended_time.
+This is atomic and monotonic
+3-update __I915_SAMPLE_RC6_ESTIMATED
+
+A change from suspended to another states that happens just before
+step 1 is ok for both as we will run the else if
+No change of the state can happen after step 1 in current code and the
+estimated suspended time will be the time up to step2. In parallel,
+Any state change will have to wait step5 to continue
+If a change from suspended to another state happens after step 1 in
+new code, the suspended time return by PM core will be the time up to
+this change. So I would say you don't delay state transition and you
+get a more accurate estimated suspended time (even if the difference
+should be small).
+If a change from suspended to another state happens after step 2 in
+new code, the suspended time return by PM core will be the time up to
+step 2 so there is no changes
+
+
+> other words is the value pm_runtime_suspended_time always monotonic,
+> even when not suspended? If not we have to handle the race somehow.
+
+Yes pm_runtime_suspended_time is monotonic and stays unchanged when
+not suspended
+
+>
+> If it is always monotonic, then worst case we report one wrong sample,
+> which I guess is still not ideal since someone could be querying the PMU
+> with quite low frequency.
+>
+> There are tests which probably can hit this, but to run them
+> automatically your patches would need to be rebased on drm-tip and maybe
+> sent to our trybot. I can do that after the holiday break if you are
+> okay with having the series waiting until then.
+
+yes looks good to me
+
+Thanks,
+Vincent
+
+>
+> Regards,
+>
+> Tvrtko
+>
+> >
+> > -                     val = kdev->power.suspended_jiffies -
+> > -                           i915->pmu.suspended_jiffies_last;
+> > -                     val += jiffies - kdev->power.accounting_timestamp;
+> > +                     if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
+> > +                             i915->pmu.suspended_time_last = val;
+> >
+> > -                     val = jiffies_to_nsecs(val);
+> > +                     val -= i915->pmu.suspended_time_last;
+> >                       val += i915->pmu.sample[__I915_SAMPLE_RC6].cur;
+> >
+> >                       i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur = val;
+> > @@ -510,7 +507,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
+> >                       val = i915->pmu.sample[__I915_SAMPLE_RC6].cur;
+> >               }
+> >
+> > -             spin_unlock(&kdev->power.lock);
+> >               spin_unlock_irqrestore(&i915->pmu.lock, flags);
+> >       }
+> >
+> > diff --git a/drivers/gpu/drm/i915/i915_pmu.h b/drivers/gpu/drm/i915/i915_pmu.h
+> > index 7f164ca..3dc2a30 100644
+> > --- a/drivers/gpu/drm/i915/i915_pmu.h
+> > +++ b/drivers/gpu/drm/i915/i915_pmu.h
+> > @@ -95,9 +95,9 @@ struct i915_pmu {
+> >        */
+> >       struct i915_pmu_sample sample[__I915_NUM_PMU_SAMPLERS];
+> >       /**
+> > -      * @suspended_jiffies_last: Cached suspend time from PM core.
+> > +      * @suspended_time_last: Cached suspend time from PM core.
+> >        */
+> > -     unsigned long suspended_jiffies_last;
+> > +     u64 suspended_time_last;
+> >       /**
+> >        * @i915_attr: Memory block holding device attributes.
+> >        */
+> >
