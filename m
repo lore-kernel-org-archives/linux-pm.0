@@ -1,69 +1,178 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
- adapters
-Date: Fri, 21 Dec 2018 19:50:46 +0100
-Message-ID: <20181221185045.5lw3d4y3znvfdlj3@ninjato>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
- <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
- <20181219172250.ytronxeq2yc4vp4r@wunner.de>
- <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
- <20181219223341.GA998@kunai>
- <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
- <20181221145022.umsugdwadw5a5ag6@ninjato>
- <c1518533-ccc0-1a82-31b4-959682fb9b9e@axentia.se>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v1] cpufreq: qcom: Read voltage LUT and populate OPP
+Date: Fri, 21 Dec 2018 12:57:52 -0800
+Message-ID: <20181221205752.GD261387@google.com>
+References: <1545415608-15163-1-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="xapu6r7mgpyebcwy"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <c1518533-ccc0-1a82-31b4-959682fb9b9e@axentia.se>
+In-Reply-To: <1545415608-15163-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: Hans de Goede <hdegoede@redhat.com>, Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Taniya,
 
---xapu6r7mgpyebcwy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Fri, Dec 21, 2018 at 11:36:48PM +0530, Taniya Das wrote:
+> Add support to read the voltage look up table and populate OPP for all
+> corresponding CPUS.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 32 ++++++++++++++++++++++++++++++--
+>  1 file changed, 30 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> index d83939a..7559b87 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -10,18 +10,21 @@
+>  #include <linux/module.h>
+>  #include <linux/of_address.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/pm_opp.h>
+>  #include <linux/slab.h>
+> 
+>  #define LUT_MAX_ENTRIES			40U
+>  #define LUT_SRC				GENMASK(31, 30)
+>  #define LUT_L_VAL			GENMASK(7, 0)
+>  #define LUT_CORE_COUNT			GENMASK(18, 16)
+> +#define LUT_VOLT			GENMASK(11, 0)
+>  #define LUT_ROW_SIZE			32
+>  #define CLK_HW_DIV			2
+> 
+>  /* Register offsets */
+>  #define REG_ENABLE			0x0
+> -#define REG_LUT_TABLE			0x110
+> +#define REG_FREQ_LUT_TABLE		0x110
+> +#define REG_VOLT_LUT_TABLE		0x114
 
-Hi Peter,
+The new names suggest that there is a LUT for frequencies and another
+one for voltages. I don't have access to hardware documentation, but
+from the code and offsets in this driver it seems there is a single
+table at offset 0x110, with a 'row' of 32 bytes per OPP. Within this
+row the frequency (and other values) is located at offset 0, the
+voltage at offset 4.
 
-> Yes, I agree with that analysis. All mux actions eventually end up with
+I'd suggest to keep REG_LUT_TABLE, add a define LUT_OFFSET_VOLTAGE/MV
+(or similar) and adjust the math in qcom_cpufreq_hw_read_lut() to use
+REG_LUT_TABLE as base offset.
 
-Good!
+>  #define REG_PERF_STATE			0x920
+> 
+>  static unsigned long cpu_hw_rate, xo_rate;
+> @@ -75,19 +78,26 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+>  				    void __iomem *base)
+>  {
+>  	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
+> +	u32 volt;
+>  	unsigned int max_cores = cpumask_weight(policy->cpus);
+>  	struct cpufreq_frequency_table	*table;
+> +	unsigned long cpu_r;
 
-> an __i2c_transfer() call on the relevant root adapter. Hmm, but not *all*
-> calls. How about SMBus adapters? Should there not be a similar WARN_ON
-> in __i2c_smbus_xfer?
+nit: why 'cpu_r' and not just 'cpu'?
 
-Yes, there should. Yeah, that's what I like about our way of hacking; I
-somewhen thought to not forget about SMBus, nevertheless forgot about it
-again, and then there is someone else to remind me \o/
+(if it is needed at all, see my comment below)
 
-Thanks,
+> 
+>  	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
+>  	if (!table)
+>  		return -ENOMEM;
+> 
+>  	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+> -		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
+> +		data = readl_relaxed(base + REG_FREQ_LUT_TABLE +
+> +				      i * LUT_ROW_SIZE);
+>  		src = FIELD_GET(LUT_SRC, data);
+>  		lval = FIELD_GET(LUT_L_VAL, data);
+>  		core_count = FIELD_GET(LUT_CORE_COUNT, data);
+> 
+> +		data = readl_relaxed(base + REG_VOLT_LUT_TABLE +
+> +				      i * LUT_ROW_SIZE);
+> +		volt = FIELD_GET(LUT_VOLT, data) * 1000;
+> +
+>  		if (src)
+>  			freq = xo_rate * lval / 1000;
+>  		else
+> @@ -123,6 +133,10 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+> 
+>  		prev_cc = core_count;
+>  		prev_freq = freq;
+> +
+> +		freq *= 1000;
+> +		for_each_cpu(cpu_r, policy->cpus)
+> +			dev_pm_opp_add(get_cpu_device(cpu_r), freq, volt);
 
-   Wolfram
+Are you sure we want to duplicate the OPP entries for all CPUs in the
+cluster? IIUC the frequencies of the cores in a cluster can't be
+changed individually, hence the cores should have a shared table. I
+think dev_pm_opp_get_sharing_cpus() does what you need.
 
+You currently also add OPPs for invalid frequencies. From my SDM845
+device:
 
---xapu6r7mgpyebcwy
-Content-Type: application/pgp-signature; name="signature.asc"
+cat /sys/devices/system/cpu/cpufreq/policy4/scaling_available_freq
+  => 825600 902400 979200 1056000 1209600 1286400 1363200 1459200
+  1536000 1612800 1689600 1766400 1843200 1920000 1996800 2092800
+  2169600 2246400 2323200 2400000 2476800 2553600 2649600
 
------BEGIN PGP SIGNATURE-----
+cat /sys/devices/system/cpu/cpufreq/policy4/scaling_boost_frequencies
+2803200
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwdNgEACgkQFA3kzBSg
-KbaRnA/+Kh2Zw+bQP/rVQJRA+DlW0Pfer3ht2Ot+W456V0UD1pV8LLILytqqit+s
-EUNkI7E0DqTTY0SPmj8UYTWOShV+a+jUpbXLxs9A+KAE2oa11k8Ktyls6DIDv5Xa
-h47CLMIto1P25c568n/j7aT5jo//UqV+7RsSzkrceUgc7qM4M/8s9GD8zRG068I3
-RvieQkk8pUFYaTC8H9jMu7Yz15bP/L7cv5xK1mS1tgiSnFUnYDtWBSl04aCtpbVL
-g3cGmYZZbo1672l1Aj1UYbhNHpI99buQQgaguPgYycYbOC99I4XjlypKoc0AfltX
-JQeJayLzlc5Yl2ljPkwFrRzMLCIvKgX29QFrhdw9qwNm8uTqLtCkqMKpoGfRBg1X
-RAcBzpOBZ47nfqt7YFKKvf4mhKs7OaAVcjkk2xMTja0lzGvVE6Zi+MEqwoLIS8NA
-8rXsfcREPRJ2kV6YhZCl2/P7rhlf7mgQjVuCE7HTTC3hBp2EjgkmNk0JunJXOHfo
-Ci6pcMeZZHIajHAbwZRsS6H7uJHV7ygIWrj0VTD03vaHAQ7+j6uNEmxndrDlN/KX
-orGXFxj4/Ot7xmUSIS/z7IxMrYVIO3aT/BgZuvlevYpud8l/6BnCOKHelktEjGOg
-qz4XWcEKtxc0Z1rbkBqSU12YDXwNKe011FBjwWwK7Lm5azy2b2o=
-=6tUM
------END PGP SIGNATURE-----
+ls /sys/kernel/debug/opp/cpu4/
+opp:1056000000  opp:1612800000  opp:2092800000  opp:2553600000  opp:825600000
+opp:1209600000  opp:1689600000  opp:2169600000  opp:2649600000  opp:902400000
+opp:1286400000  opp:1766400000  opp:2246400000  opp:2707200000  opp:979200000
+opp:1363200000  opp:1843200000  opp:2323200000  opp:2764800000
+opp:1459200000  opp:1920000000  opp:2400000000  opp:2784000000
+opp:1536000000  opp:1996800000  opp:2476800000  opp:2803200000
 
---xapu6r7mgpyebcwy--
+There are OPP entries for 2707200000, 2764800000 and 2784000000 Hz,
+however these frequencies appear neither in available_frequencies nor
+boost_frequencies.
+
+>  	}
+> 
+>  	table[i].frequency = CPUFREQ_TABLE_END;
+> @@ -159,10 +173,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+>  	struct device *dev = &global_pdev->dev;
+>  	struct of_phandle_args args;
+>  	struct device_node *cpu_np;
+> +	struct device *cpu_dev;
+>  	struct resource *res;
+>  	void __iomem *base;
+>  	int ret, index;
+> 
+> +	cpu_dev = get_cpu_device(policy->cpu);
+> +	if (!cpu_dev) {
+> +		pr_err("%s: failed to get cpu%d device\n", __func__,
+> +		       policy->cpu);
+> +		return -ENODEV;
+> +	}
+> +
+>  	cpu_np = of_cpu_device_node_get(policy->cpu);
+>  	if (!cpu_np)
+>  		return -EINVAL;
+> @@ -205,6 +227,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+>  		goto error;
+>  	}
+> 
+> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
+> +	if (ret <= 0) {
+> +		dev_err(cpu_dev, "OPP table is not ready\n");
+> +		goto error;
+> +	}
+> +
+>  	policy->fast_switch_possible = true;
+> 
+>  	return 0;
+
+I suppose we want to remove the OPPs when the cpufreq driver is
+unloaded, looks like dev_pm_opp_cpumask_remove_table() should do the
+trick.
+
+Cheers
+
+Matthias
