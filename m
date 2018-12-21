@@ -1,119 +1,46 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH v1] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Fri, 21 Dec 2018 23:36:48 +0530
-Message-ID: <1545415608-15163-1-git-send-email-tdas@codeaurora.org>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [PATCH 01/10] i2c: add suspended flag and accessors for i2c
+ adapters
+Date: Fri, 21 Dec 2018 18:40:08 +0000
+Message-ID: <c1518533-ccc0-1a82-31b4-959682fb9b9e@axentia.se>
+References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+ <20181219164827.20985-2-wsa+renesas@sang-engineering.com>
+ <20181219172250.ytronxeq2yc4vp4r@wunner.de>
+ <83b17734-2437-5a04-8843-e18ccf7ad398@redhat.com>
+ <20181219223341.GA998@kunai>
+ <e8bfcadc-7c1a-6659-7173-4ce484ceeca3@redhat.com>
+ <20181221145022.umsugdwadw5a5ag6@ninjato>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181221145022.umsugdwadw5a5ag6@ninjato>
+Content-Language: en-US
+Content-ID: <02D913DAABD69147955C10E49A5487A1@eurprd02.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
+To: Wolfram Sang <wsa@the-dreams.de>, Hans de Goede <hdegoede@redhat.com>
+Cc: Lukas Wunner <lukas@wunner.de>, Wolfram Sang <wsa+renesas@sang-engineering.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add support to read the voltage look up table and populate OPP for all
-corresponding CPUS.
+On 2018-12-21 15:50, Wolfram Sang wrote:
+>=20
+>>>> I think this might be as simple as adding:
+>>>>
+>>>> 	if (WARN_ON(adap->dev.parent->power.is_suspended))
+>>>> 		return -ESHUTDOWN;
+>=20
+> Peter, I think this should work for muxes, too, or? The i2c_transfer()
+> call to the mux will not be rejected, but it will be later when we reach
+> the root adapter. And then the error code will be pushed down the tree
+> until we arrive at the mux again. So, the rejection will not happen at
+> the earliest time, but it will happen. Is my understanding correct?
 
-Signed-off-by: Taniya Das <tdas@codeaurora.org>
----
- drivers/cpufreq/qcom-cpufreq-hw.c | 32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+Yes, I agree with that analysis. All mux actions eventually end up with
+an __i2c_transfer() call on the relevant root adapter. Hmm, but not *all*
+calls. How about SMBus adapters? Should there not be a similar WARN_ON
+in __i2c_smbus_xfer?
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index d83939a..7559b87 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -10,18 +10,21 @@
- #include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
-+#include <linux/pm_opp.h>
- #include <linux/slab.h>
+But maybe that's not applicable for some reason? Just asking...
 
- #define LUT_MAX_ENTRIES			40U
- #define LUT_SRC				GENMASK(31, 30)
- #define LUT_L_VAL			GENMASK(7, 0)
- #define LUT_CORE_COUNT			GENMASK(18, 16)
-+#define LUT_VOLT			GENMASK(11, 0)
- #define LUT_ROW_SIZE			32
- #define CLK_HW_DIV			2
-
- /* Register offsets */
- #define REG_ENABLE			0x0
--#define REG_LUT_TABLE			0x110
-+#define REG_FREQ_LUT_TABLE		0x110
-+#define REG_VOLT_LUT_TABLE		0x114
- #define REG_PERF_STATE			0x920
-
- static unsigned long cpu_hw_rate, xo_rate;
-@@ -75,19 +78,26 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
- 				    void __iomem *base)
- {
- 	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
-+	u32 volt;
- 	unsigned int max_cores = cpumask_weight(policy->cpus);
- 	struct cpufreq_frequency_table	*table;
-+	unsigned long cpu_r;
-
- 	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
- 	if (!table)
- 		return -ENOMEM;
-
- 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
--		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
-+		data = readl_relaxed(base + REG_FREQ_LUT_TABLE +
-+				      i * LUT_ROW_SIZE);
- 		src = FIELD_GET(LUT_SRC, data);
- 		lval = FIELD_GET(LUT_L_VAL, data);
- 		core_count = FIELD_GET(LUT_CORE_COUNT, data);
-
-+		data = readl_relaxed(base + REG_VOLT_LUT_TABLE +
-+				      i * LUT_ROW_SIZE);
-+		volt = FIELD_GET(LUT_VOLT, data) * 1000;
-+
- 		if (src)
- 			freq = xo_rate * lval / 1000;
- 		else
-@@ -123,6 +133,10 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-
- 		prev_cc = core_count;
- 		prev_freq = freq;
-+
-+		freq *= 1000;
-+		for_each_cpu(cpu_r, policy->cpus)
-+			dev_pm_opp_add(get_cpu_device(cpu_r), freq, volt);
- 	}
-
- 	table[i].frequency = CPUFREQ_TABLE_END;
-@@ -159,10 +173,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	struct device *dev = &global_pdev->dev;
- 	struct of_phandle_args args;
- 	struct device_node *cpu_np;
-+	struct device *cpu_dev;
- 	struct resource *res;
- 	void __iomem *base;
- 	int ret, index;
-
-+	cpu_dev = get_cpu_device(policy->cpu);
-+	if (!cpu_dev) {
-+		pr_err("%s: failed to get cpu%d device\n", __func__,
-+		       policy->cpu);
-+		return -ENODEV;
-+	}
-+
- 	cpu_np = of_cpu_device_node_get(policy->cpu);
- 	if (!cpu_np)
- 		return -EINVAL;
-@@ -205,6 +227,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 		goto error;
- 	}
-
-+	ret = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (ret <= 0) {
-+		dev_err(cpu_dev, "OPP table is not ready\n");
-+		goto error;
-+	}
-+
- 	policy->fast_switch_possible = true;
-
- 	return 0;
---
-Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-of the Code Aurora Forum, hosted by the  Linux Foundation.
+Cheers,
+Peter
