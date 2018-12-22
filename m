@@ -1,8 +1,7 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH v2 1/9] PM / core: add helper to return suspend status of a
- device
-Date: Sat, 22 Dec 2018 21:26:15 +0100
-Message-ID: <20181222202623.4521-2-wsa+renesas@sang-engineering.com>
+Subject: [PATCH v2 3/9] i2c: synquacer: remove unused is_suspended flag
+Date: Sat, 22 Dec 2018 21:26:17 +0100
+Message-ID: <20181222202623.4521-4-wsa+renesas@sang-engineering.com>
 References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,32 +18,39 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-i2c@vger.kernel.org
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-I2C core would like this to reject transfers on an already suspended
-adapter.
+This flag was defined and checked but never set a value. Remove it.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- include/linux/device.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/i2c/busses/i2c-synquacer.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 1b25c7a43f4c..e63d3e06989f 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -1138,6 +1138,11 @@ static inline int device_is_registered(struct device *dev)
- 	return dev->kobj.state_in_sysfs;
- }
+diff --git a/drivers/i2c/busses/i2c-synquacer.c b/drivers/i2c/busses/i2c-synquacer.c
+index 2184b7c3580e..d18b0941b71a 100644
+--- a/drivers/i2c/busses/i2c-synquacer.c
++++ b/drivers/i2c/busses/i2c-synquacer.c
+@@ -144,8 +144,6 @@ struct synquacer_i2c {
+ 	u32			timeout_ms;
+ 	enum i2c_state		state;
+ 	struct i2c_adapter	adapter;
+-
+-	bool			is_suspended;
+ };
  
-+static inline bool device_is_suspended(struct device *dev)
-+{
-+	return dev->power.is_suspended;
-+}
-+
- static inline void device_enable_async_suspend(struct device *dev)
- {
- 	if (!dev->power.is_prepared)
+ static inline int is_lastmsg(struct synquacer_i2c *i2c)
+@@ -316,9 +314,6 @@ static int synquacer_i2c_doxfer(struct synquacer_i2c *i2c,
+ 	unsigned long timeout;
+ 	int ret;
+ 
+-	if (i2c->is_suspended)
+-		return -EBUSY;
+-
+ 	synquacer_i2c_hw_init(i2c);
+ 	bsr = readb(i2c->base + SYNQUACER_I2C_REG_BSR);
+ 	if (bsr & SYNQUACER_I2C_BSR_BB) {
 -- 
 2.19.1
