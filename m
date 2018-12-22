@@ -1,62 +1,70 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH v2 0/9] i2c: move handling of suspended adapters to the core
-Date: Sat, 22 Dec 2018 21:26:14 +0100
-Message-ID: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+Subject: [PATCH v2 2/9] i2c: reject new transfers when adapters are suspended
+Date: Sat, 22 Dec 2018 21:26:16 +0100
+Message-ID: <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
+References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-Here is the new version without specific I2C helpers but using the
-'is_suspended' flag from the PM core. I didn't like messing with the
-flag directly, so I did a helper in patch 1. So far, I like the
-approach. The diffstat looks nice, and i2c-rcar.c and i2c-sh_mobile.c
-rejected rightfully too later transfers without further modifications.
-Tested on a Renesas Lager board (R-Car H2).
+Using the 'is_suspended' flag from the PM core, we now reject new
+transfers if the parent of the adapter is already marked suspended.
 
-I dropped a few Tested-by tags because I think this approach is too
-different from V1 to keep them. I hope you guys can have a look again.
-Thanks for all the testing, so far!
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
+ Documentation/i2c/fault-codes | 4 ++++
+ drivers/i2c/i2c-core-base.c   | 3 +++
+ drivers/i2c/i2c-core-smbus.c  | 4 ++++
+ 3 files changed, 11 insertions(+)
 
-A branch can be found here:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/reject-when-suspended
-
-If this series is acceptable, I'd suggest to take it via my i2c tree
-after rc1. And then I'll provide an immutable branch for the PM tree to
-pick. Let me know if this works for you.
-
-And thanks to Renesas for funding this work!
-
-Thanks and kind regards,
-
-   Wolfram
-
-Wolfram Sang (9):
-  PM / core: add helper to return suspend status of a device
-  i2c: reject new transfers when adapters are suspended
-  i2c: synquacer: remove unused is_suspended flag
-  i2c: brcmstb: don't open code to reject transfers when suspended
-  i2c: zx2967: don't open code to reject transfers when suspended
-  i2c: sprd: don't use pdev as variable name for struct device *
-  i2c: sprd: don't open code to reject transfers when suspended
-  i2c: exynos5: don't open code to reject transfers when suspended
-  i2c: s3c2410: don't open code to reject transfers when suspended
-
- Documentation/i2c/fault-codes      |  4 ++++
- drivers/i2c/busses/i2c-brcmstb.c   | 22 +-------------------
- drivers/i2c/busses/i2c-exynos5.c   | 10 ----------
- drivers/i2c/busses/i2c-s3c2410.c   |  7 -------
- drivers/i2c/busses/i2c-sprd.c      | 32 ++++++++++--------------------
- drivers/i2c/busses/i2c-synquacer.c |  5 -----
- drivers/i2c/busses/i2c-zx2967.c    |  8 --------
- drivers/i2c/i2c-core-base.c        |  3 +++
- drivers/i2c/i2c-core-smbus.c       |  4 ++++
- include/linux/device.h             |  5 +++++
- 10 files changed, 27 insertions(+), 73 deletions(-)
-
+diff --git a/Documentation/i2c/fault-codes b/Documentation/i2c/fault-codes
+index 47c25abb7d52..0cee0fc545b4 100644
+--- a/Documentation/i2c/fault-codes
++++ b/Documentation/i2c/fault-codes
+@@ -112,6 +112,10 @@ EPROTO
+ 	case is when the length of an SMBus block data response
+ 	(from the SMBus slave) is outside the range 1-32 bytes.
+ 
++ESHUTDOWN
++	Returned when a transfer was requested using an adapter
++	which is already suspended.
++
+ ETIMEDOUT
+ 	This is returned by drivers when an operation took too much
+ 	time, and was aborted before it completed.
+diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+index 28460f6a60cc..3ce238b782f3 100644
+--- a/drivers/i2c/i2c-core-base.c
++++ b/drivers/i2c/i2c-core-base.c
+@@ -1865,6 +1865,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 
+ 	if (WARN_ON(!msgs || num < 1))
+ 		return -EINVAL;
++	if (WARN(device_is_suspended(adap->dev.parent),
++		 "Accessing already suspended I2C/SMBus adapter"))
++		return -ESHUTDOWN;
+ 
+ 	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
+ 		return -EOPNOTSUPP;
+diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
+index 9cd66cabb84f..e0f7f22feabd 100644
+--- a/drivers/i2c/i2c-core-smbus.c
++++ b/drivers/i2c/i2c-core-smbus.c
+@@ -547,6 +547,10 @@ s32 __i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr,
+ 	int try;
+ 	s32 res;
+ 
++	if (WARN(device_is_suspended(adapter->dev.parent),
++		 "Accessing already suspended I2C/SMBus adapter"))
++		return -ESHUTDOWN;
++
+ 	/* If enabled, the following two tracepoints are conditional on
+ 	 * read_write and protocol.
+ 	 */
 -- 
 2.19.1
