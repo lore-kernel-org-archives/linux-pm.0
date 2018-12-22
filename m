@@ -1,56 +1,65 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH v2 3/9] i2c: synquacer: remove unused is_suspended flag
-Date: Sat, 22 Dec 2018 21:26:17 +0100
-Message-ID: <20181222202623.4521-4-wsa+renesas@sang-engineering.com>
+Subject: [PATCH v2 5/9] i2c: zx2967: don't open code to reject transfers when suspended
+Date: Sat, 22 Dec 2018 21:26:19 +0100
+Message-ID: <20181222202623.4521-6-wsa+renesas@sang-engineering.com>
 References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Jun Nie <jun.nie@linaro.org>, Shawn Guo <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This flag was defined and checked but never set a value. Remove it.
+This is handled by the I2C core meanwhile.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- drivers/i2c/busses/i2c-synquacer.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/i2c/busses/i2c-zx2967.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-synquacer.c b/drivers/i2c/busses/i2c-synquacer.c
-index 2184b7c3580e..d18b0941b71a 100644
---- a/drivers/i2c/busses/i2c-synquacer.c
-+++ b/drivers/i2c/busses/i2c-synquacer.c
-@@ -144,8 +144,6 @@ struct synquacer_i2c {
- 	u32			timeout_ms;
- 	enum i2c_state		state;
- 	struct i2c_adapter	adapter;
--
+diff --git a/drivers/i2c/busses/i2c-zx2967.c b/drivers/i2c/busses/i2c-zx2967.c
+index b8f9e020d80e..cb1f45647a8b 100644
+--- a/drivers/i2c/busses/i2c-zx2967.c
++++ b/drivers/i2c/busses/i2c-zx2967.c
+@@ -66,7 +66,6 @@ struct zx2967_i2c {
+ 	int			msg_rd;
+ 	u8			*cur_trans;
+ 	u8			access_cnt;
 -	bool			is_suspended;
+ 	int			error;
  };
  
- static inline int is_lastmsg(struct synquacer_i2c *i2c)
-@@ -316,9 +314,6 @@ static int synquacer_i2c_doxfer(struct synquacer_i2c *i2c,
- 	unsigned long timeout;
+@@ -313,9 +312,6 @@ static int zx2967_i2c_xfer(struct i2c_adapter *adap,
  	int ret;
+ 	int i;
  
 -	if (i2c->is_suspended)
 -		return -EBUSY;
 -
- 	synquacer_i2c_hw_init(i2c);
- 	bsr = readb(i2c->base + SYNQUACER_I2C_REG_BSR);
- 	if (bsr & SYNQUACER_I2C_BSR_BB) {
+ 	zx2967_set_addr(i2c, msgs->addr);
+ 
+ 	for (i = 0; i < num; i++) {
+@@ -470,9 +466,7 @@ static int __maybe_unused zx2967_i2c_suspend(struct device *dev)
+ {
+ 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
+ 
+-	i2c->is_suspended = true;
+ 	clk_disable_unprepare(i2c->clk);
+-
+ 	return 0;
+ }
+ 
+@@ -480,9 +474,7 @@ static int __maybe_unused zx2967_i2c_resume(struct device *dev)
+ {
+ 	struct zx2967_i2c *i2c = dev_get_drvdata(dev);
+ 
+-	i2c->is_suspended = false;
+ 	clk_prepare_enable(i2c->clk);
+-
+ 	return 0;
+ }
+ 
 -- 
 2.19.1
