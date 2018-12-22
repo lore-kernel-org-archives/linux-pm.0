@@ -1,36 +1,62 @@
-From: Sinan Kaya <okaya@kernel.org>
-Subject: [PATCH v2 11/11] drivers: thermal: Make PCI dependency explicit
-Date: Sat, 22 Dec 2018 09:07:20 +0000
-Message-ID: <20181222090720.19234-12-okaya@kernel.org>
-References: <20181222090720.19234-1-okaya@kernel.org>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: [PATCH v2 0/9] i2c: move handling of suspended adapters to the core
+Date: Sat, 22 Dec 2018 21:26:14 +0100
+Message-ID: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181222090720.19234-1-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-next@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: linux-i2c@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 List-Id: linux-pm@vger.kernel.org
 
-IOSF_CORE depends on PCI. This was never mentioned.
+Here is the new version without specific I2C helpers but using the
+'is_suspended' flag from the PM core. I didn't like messing with the
+flag directly, so I did a helper in patch 1. So far, I like the
+approach. The diffstat looks nice, and i2c-rcar.c and i2c-sh_mobile.c
+rejected rightfully too later transfers without further modifications.
+Tested on a Renesas Lager board (R-Car H2).
 
-Signed-off-by: Sinan Kaya <okaya@kernel.org>
----
- drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I dropped a few Tested-by tags because I think this approach is too
+different from V1 to keep them. I hope you guys can have a look again.
+Thanks for all the testing, so far!
 
-diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
-index 0582bd12a239..0ca908d12750 100644
---- a/drivers/thermal/intel/int340x_thermal/Kconfig
-+++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-@@ -4,7 +4,7 @@
- 
- config INT340X_THERMAL
- 	tristate "ACPI INT340X thermal drivers"
--	depends on X86 && ACPI
-+	depends on X86 && ACPI && PCI
- 	select THERMAL_GOV_USER_SPACE
- 	select ACPI_THERMAL_REL
- 	select ACPI_FAN
+A branch can be found here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/reject-when-suspended
+
+If this series is acceptable, I'd suggest to take it via my i2c tree
+after rc1. And then I'll provide an immutable branch for the PM tree to
+pick. Let me know if this works for you.
+
+And thanks to Renesas for funding this work!
+
+Thanks and kind regards,
+
+   Wolfram
+
+Wolfram Sang (9):
+  PM / core: add helper to return suspend status of a device
+  i2c: reject new transfers when adapters are suspended
+  i2c: synquacer: remove unused is_suspended flag
+  i2c: brcmstb: don't open code to reject transfers when suspended
+  i2c: zx2967: don't open code to reject transfers when suspended
+  i2c: sprd: don't use pdev as variable name for struct device *
+  i2c: sprd: don't open code to reject transfers when suspended
+  i2c: exynos5: don't open code to reject transfers when suspended
+  i2c: s3c2410: don't open code to reject transfers when suspended
+
+ Documentation/i2c/fault-codes      |  4 ++++
+ drivers/i2c/busses/i2c-brcmstb.c   | 22 +-------------------
+ drivers/i2c/busses/i2c-exynos5.c   | 10 ----------
+ drivers/i2c/busses/i2c-s3c2410.c   |  7 -------
+ drivers/i2c/busses/i2c-sprd.c      | 32 ++++++++++--------------------
+ drivers/i2c/busses/i2c-synquacer.c |  5 -----
+ drivers/i2c/busses/i2c-zx2967.c    |  8 --------
+ drivers/i2c/i2c-core-base.c        |  3 +++
+ drivers/i2c/i2c-core-smbus.c       |  4 ++++
+ include/linux/device.h             |  5 +++++
+ 10 files changed, 27 insertions(+), 73 deletions(-)
+
 -- 
-2.19.0
+2.19.1
