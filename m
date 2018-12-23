@@ -1,38 +1,36 @@
 From: Sinan Kaya <okaya@kernel.org>
-Subject: Re: [PATCH v2 07/11] drivers: thermal: Hide PCI driver when
- CONFIG_PCI is unset
-Date: Sun, 23 Dec 2018 23:23:24 +0100
-Message-ID: <e695ac50-0e7c-6cc4-5f63-42c842787fd7@kernel.org>
-References: <20181222090720.19234-1-okaya@kernel.org>
- <20181222090720.19234-8-okaya@kernel.org>
- <CAJZ5v0j6Z42pk16fFGpQz+xvU-gVnarkoafcWJuQPWY=X532YQ@mail.gmail.com>
+Subject: [PATCH v3 11/11] drivers: thermal: int340x_thermal: Make PCI dependency explicit
+Date: Sun, 23 Dec 2018 23:25:20 +0000
+Message-ID: <20181223232521.11320-12-okaya@kernel.org>
+References: <20181223232521.11320-1-okaya@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j6Z42pk16fFGpQz+xvU-gVnarkoafcWJuQPWY=X532YQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20181223232521.11320-1-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, sumeet.r.pawnikar@intel.com, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-next@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/23/2018 10:48 PM, Rafael J. Wysocki wrote:
-> Can you actually test this driver with your new #ifdef stuff and with
-> CONFIG_PCI unset?
-> 
-> Have you really test it in that configuration?
-> 
+IOSF_CORE depends on PCI. This was never mentioned.
 
-No, I haven't. Code was compile tested only.
+Signed-off-by: Sinan Kaya <okaya@kernel.org>
+---
+ drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> If not, you shouldn't even post this patch.
-> 
-
-I was hoping the maintainer to chime in. By looking at the code, it was
-registering a platform and PCI driver. I assumed that it was generic code
-that can be used with and without PCI.
-
-> Please make the driver depend on PCI.
-
-I can do that.
+diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
+index fba1976d5f8d..2acddf8fb314 100644
+--- a/drivers/thermal/intel/int340x_thermal/Kconfig
++++ b/drivers/thermal/intel/int340x_thermal/Kconfig
+@@ -4,7 +4,7 @@
+ 
+ config INT340X_THERMAL
+ 	tristate "ACPI INT340X thermal drivers"
+-	depends on X86 && ACPI
++	depends on X86 && ACPI && PCI
+ 	select THERMAL_GOV_USER_SPACE
+ 	select ACPI_THERMAL_REL
+ 	select ACPI_FAN
+-- 
+2.19.0
