@@ -1,255 +1,75 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v1] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Mon, 24 Dec 2018 00:29:18 +0530
-Message-ID: <2977f340-cd4e-86bc-da3a-8845676e39ed@codeaurora.org>
-References: <1545415608-15163-1-git-send-email-tdas@codeaurora.org>
- <20181221205752.GD261387@google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 07/11] drivers: thermal: Hide PCI driver when
+ CONFIG_PCI is unset
+Date: Sun, 23 Dec 2018 22:48:11 +0100
+Message-ID: <CAJZ5v0j6Z42pk16fFGpQz+xvU-gVnarkoafcWJuQPWY=X532YQ@mail.gmail.com>
+References: <20181222090720.19234-1-okaya@kernel.org> <20181222090720.19234-8-okaya@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181221205752.GD261387@google.com>
-Content-Language: en-US
+In-Reply-To: <20181222090720.19234-8-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: okaya@kernel.org
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, sumeet.r.pawnikar@intel.com, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Matthias,
+On Sat, Dec 22, 2018 at 6:49 PM Sinan Kaya <okaya@kernel.org> wrote:
+>
+> This driver is both a platform and PCI driver. Hide PCI specific pieces
+> when CONFIG_PCI is unset.
+>
+> Signed-off-by: Sinan Kaya <okaya@kernel.org>
+> ---
+>  .../intel/int340x_thermal/processor_thermal_device.c      | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> index 284cf2c5a8fd..b84a475a1162 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> @@ -374,6 +374,7 @@ static int int3401_remove(struct platform_device *pdev)
+>         return 0;
+>  }
+>
+> +#ifdef CONFIG_PCI
+>  static irqreturn_t proc_thermal_pci_msi_irq(int irq, void *devid)
+>  {
+>         struct proc_thermal_device *proc_priv;
+> @@ -482,6 +483,7 @@ static struct pci_driver proc_thermal_pci_driver = {
+>         .remove         = proc_thermal_pci_remove,
+>         .id_table       = proc_thermal_pci_ids,
+>  };
+> +#endif
+>
+>  static const struct acpi_device_id int3401_device_ids[] = {
+>         {"INT3401", 0},
+> @@ -505,16 +507,18 @@ static int __init proc_thermal_init(void)
+>         ret = platform_driver_register(&int3401_driver);
+>         if (ret)
+>                 return ret;
+> -
+> +#ifdef CONFIG_PCI
+>         ret = pci_register_driver(&proc_thermal_pci_driver);
+> -
+> +#endif
+>         return ret;
+>  }
+>
+>  static void __exit proc_thermal_exit(void)
+>  {
+>         platform_driver_unregister(&int3401_driver);
+> +#ifdef CONFIG_PCI
+>         pci_unregister_driver(&proc_thermal_pci_driver);
+> +#endif
+>  }
+>
+>  module_init(proc_thermal_init);
 
-Thanks for your review comments.
+Can you actually test this driver with your new #ifdef stuff and with
+CONFIG_PCI unset?
 
-On 12/22/2018 2:27 AM, Matthias Kaehlcke wrote:
-> Hi Taniya,
-> 
-> On Fri, Dec 21, 2018 at 11:36:48PM +0530, Taniya Das wrote:
->> Add support to read the voltage look up table and populate OPP for all
->> corresponding CPUS.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   drivers/cpufreq/qcom-cpufreq-hw.c | 32 ++++++++++++++++++++++++++++++--
->>   1 file changed, 30 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
->> index d83939a..7559b87 100644
->> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
->> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
->> @@ -10,18 +10,21 @@
->>   #include <linux/module.h>
->>   #include <linux/of_address.h>
->>   #include <linux/of_platform.h>
->> +#include <linux/pm_opp.h>
->>   #include <linux/slab.h>
->>
->>   #define LUT_MAX_ENTRIES			40U
->>   #define LUT_SRC				GENMASK(31, 30)
->>   #define LUT_L_VAL			GENMASK(7, 0)
->>   #define LUT_CORE_COUNT			GENMASK(18, 16)
->> +#define LUT_VOLT			GENMASK(11, 0)
->>   #define LUT_ROW_SIZE			32
->>   #define CLK_HW_DIV			2
->>
->>   /* Register offsets */
->>   #define REG_ENABLE			0x0
->> -#define REG_LUT_TABLE			0x110
->> +#define REG_FREQ_LUT_TABLE		0x110
->> +#define REG_VOLT_LUT_TABLE		0x114
-> 
-> The new names suggest that there is a LUT for frequencies and another
-> one for voltages. I don't have access to hardware documentation, but
-> from the code and offsets in this driver it seems there is a single
-> table at offset 0x110, with a 'row' of 32 bytes per OPP. Within this
-> row the frequency (and other values) is located at offset 0, the
-> voltage at offset 4.
-> 
-> I'd suggest to keep REG_LUT_TABLE, add a define LUT_OFFSET_VOLTAGE/MV
-> (or similar) and adjust the math in qcom_cpufreq_hw_read_lut() to use
-> REG_LUT_TABLE as base offset.
-> 
+Have you really test it in that configuration?
 
-These names are as per HW documentation and the math is kept as per the 
-documentation for reading the voltage.
+If not, you shouldn't even post this patch.
 
->>   #define REG_PERF_STATE			0x920
->>
->>   static unsigned long cpu_hw_rate, xo_rate;
->> @@ -75,19 +78,26 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->>   				    void __iomem *base)
->>   {
->>   	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
->> +	u32 volt;
->>   	unsigned int max_cores = cpumask_weight(policy->cpus);
->>   	struct cpufreq_frequency_table	*table;
->> +	unsigned long cpu_r;
-> 
-> nit: why 'cpu_r' and not just 'cpu'?
-> 
-> (if it is needed at all, see my comment below)
-> 
->>
->>   	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
->>   	if (!table)
->>   		return -ENOMEM;
->>
->>   	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
->> -		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
->> +		data = readl_relaxed(base + REG_FREQ_LUT_TABLE +
->> +				      i * LUT_ROW_SIZE);
->>   		src = FIELD_GET(LUT_SRC, data);
->>   		lval = FIELD_GET(LUT_L_VAL, data);
->>   		core_count = FIELD_GET(LUT_CORE_COUNT, data);
->>
->> +		data = readl_relaxed(base + REG_VOLT_LUT_TABLE +
->> +				      i * LUT_ROW_SIZE);
->> +		volt = FIELD_GET(LUT_VOLT, data) * 1000;
->> +
->>   		if (src)
->>   			freq = xo_rate * lval / 1000;
->>   		else
->> @@ -123,6 +133,10 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->>
->>   		prev_cc = core_count;
->>   		prev_freq = freq;
->> +
->> +		freq *= 1000;
->> +		for_each_cpu(cpu_r, policy->cpus)
->> +			dev_pm_opp_add(get_cpu_device(cpu_r), freq, volt);
-> 
-> Are you sure we want to duplicate the OPP entries for all CPUs in the
-> cluster? IIUC the frequencies of the cores in a cluster can't be
-> changed individually, hence the cores should have a shared table. I
-> think dev_pm_opp_get_sharing_cpus() does what you need.
-> 
-> You currently also add OPPs for invalid frequencies. From my SDM845
-> device:
-> 
-> cat /sys/devices/system/cpu/cpufreq/policy4/scaling_available_freq
->    => 825600 902400 979200 1056000 1209600 1286400 1363200 1459200
->    1536000 1612800 1689600 1766400 1843200 1920000 1996800 2092800
->    2169600 2246400 2323200 2400000 2476800 2553600 2649600
-> 
-> cat /sys/devices/system/cpu/cpufreq/policy4/scaling_boost_frequencies
-> 2803200
-> 
-> ls /sys/kernel/debug/opp/cpu4/
-> opp:1056000000  opp:1612800000  opp:2092800000  opp:2553600000  opp:825600000
-> opp:1209600000  opp:1689600000  opp:2169600000  opp:2649600000  opp:902400000
-> opp:1286400000  opp:1766400000  opp:2246400000  opp:2707200000  opp:979200000
-> opp:1363200000  opp:1843200000  opp:2323200000  opp:2764800000
-> opp:1459200000  opp:1920000000  opp:2400000000  opp:2784000000
-> opp:1536000000  opp:1996800000  opp:2476800000  opp:2803200000
-> 
-> There are OPP entries for 2707200000, 2764800000 and 2784000000 Hz,
-> however these frequencies appear neither in available_frequencies nor
-> boost_frequencies.
-> 
->>   	}
->>
-
-Could you help validating with the patch below?
-
->>   	table[i].frequency = CPUFREQ_TABLE_END;
->> @@ -159,10 +173,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->>   	struct device *dev = &global_pdev->dev;
->>   	struct of_phandle_args args;
->>   	struct device_node *cpu_np;
->> +	struct device *cpu_dev;
->>   	struct resource *res;
->>   	void __iomem *base;
->>   	int ret, index;
->>
->> +	cpu_dev = get_cpu_device(policy->cpu);
->> +	if (!cpu_dev) {
->> +		pr_err("%s: failed to get cpu%d device\n", __func__,
->> +		       policy->cpu);
->> +		return -ENODEV;
->> +	}
->> +
->>   	cpu_np = of_cpu_device_node_get(policy->cpu);
->>   	if (!cpu_np)
->>   		return -EINVAL;
->> @@ -205,6 +227,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->>   		goto error;
->>   	}
->>
->> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
->> +	if (ret <= 0) {
->> +		dev_err(cpu_dev, "OPP table is not ready\n");
->> +		goto error;
->> +	}
->> +
->>   	policy->fast_switch_possible = true;
->>
->>   	return 0;
-> 
-> I suppose we want to remove the OPPs when the cpufreq driver is
-> unloaded, looks like dev_pm_opp_cpumask_remove_table() should do the
-> trick.
-> 
-> Cheers
-> 
-> Matthias
-> 
-
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c 
-b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 7559b87..23338b2 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -81,7 +81,6 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-         u32 volt;
-         unsigned int max_cores = cpumask_weight(policy->cpus);
-         struct cpufreq_frequency_table  *table;
--       unsigned long cpu_r;
-
-         table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
-         if (!table)
-@@ -110,6 +109,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-                         table[i].frequency = freq;
-                         dev_dbg(dev, "index=%d freq=%d, core_count 
-%d\n", i,
-                                 freq, core_count);
-+                       dev_pm_opp_add(get_cpu_device(policy->cpu),
-+                                       freq * 1000, volt);
-                 }
-
-                 /*
-@@ -126,6 +127,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-                         if (prev_cc != max_cores) {
-                                 prev->frequency = prev_freq;
-                                 prev->flags = CPUFREQ_BOOST_FREQ;
-+                               dev_pm_opp_add(get_cpu_device(policy->cpu),
-+                                               prev_freq * 1000, volt);
-                         }
-
-                         break;
-@@ -133,12 +136,9 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-
-                 prev_cc = core_count;
-                 prev_freq = freq;
--
--               freq *= 1000;
--               for_each_cpu(cpu_r, policy->cpus)
--                       dev_pm_opp_add(get_cpu_device(cpu_r), freq, volt);
-         }
-
-+       dev_pm_opp_set_sharing_cpus(get_cpu_device(policy->cpu), 
-policy->cpus);
-         table[i].frequency = CPUFREQ_TABLE_END;
-         policy->freq_table = table;
-
-@@ -245,6 +245,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct 
-cpufreq_policy *policy)
-  {
-         void __iomem *base = policy->driver_data - REG_PERF_STATE;
-
-+       dev_pm_opp_cpumask_remove_table(policy->cpus);
-         kfree(policy->freq_table);
-         devm_iounmap(&global_pdev->dev, base);
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Please make the driver depend on PCI.
