@@ -1,63 +1,80 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH] thermal: generic-adc: Fix adc to temp interpolation
-Date: Sun, 23 Dec 2018 23:26:44 -0800
-Message-ID: <20181224072644.30096-1-bjorn.andersson@linaro.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 0/9] i2c: move handling of suspended adapters to the
+ core
+Date: Mon, 24 Dec 2018 09:55:35 +0100
+Message-ID: <7fd31445-6cf8-5094-3cd8-d6ca5c059541@redhat.com>
+References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-First correct the edge case to return the last element if we're
-outside the range, rather than at the last element, so that
-interpolation is not omitted for points between the two last entries in
-the table.
+Hi,
 
-Then correct the formula to perform linear interpolation based the two
-points surrounding the read ADC value. The indices for temp are kept as
-"hi" and "lo" to pair with the adc indices, but there's no requirement
-that the temperature is provided in descendent order. mult_frac() is
-used to prevent issues with overflowing the int.
+On 22-12-18 21:26, Wolfram Sang wrote:
+> Here is the new version without specific I2C helpers but using the
+> 'is_suspended' flag from the PM core. I didn't like messing with the
+> flag directly, so I did a helper in patch 1. So far, I like the
+> approach. The diffstat looks nice, and i2c-rcar.c and i2c-sh_mobile.c
+> rejected rightfully too later transfers without further modifications.
+> Tested on a Renesas Lager board (R-Car H2).
+> 
+> I dropped a few Tested-by tags because I think this approach is too
+> different from V1 to keep them. I hope you guys can have a look again.
+> Thanks for all the testing, so far!
+> 
+> A branch can be found here:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/reject-when-suspended
+> 
+> If this series is acceptable, I'd suggest to take it via my i2c tree
+> after rc1. And then I'll provide an immutable branch for the PM tree to
+> pick. Let me know if this works for you.
+> 
+> And thanks to Renesas for funding this work!
 
-Cc: Laxman Dewangan <ldewangan@nvidia.com>
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
- drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+Series looks good to me:
 
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index bf1c628d4a7a..e22fc60ad36d 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -26,7 +26,7 @@ struct gadc_thermal_info {
- 
- static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- {
--	int temp, adc_hi, adc_lo;
-+	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
- 	int i;
- 
- 	for (i = 0; i < gti->nlookup_table; i++) {
-@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- 
- 	if (i == 0) {
- 		temp = gti->lookup_table[0];
--	} else if (i >= (gti->nlookup_table - 1)) {
-+	} else if (i >= gti->nlookup_table) {
- 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
- 	} else {
- 		adc_hi = gti->lookup_table[2 * i - 1];
- 		adc_lo = gti->lookup_table[2 * i + 1];
--		temp = gti->lookup_table[2 * i];
--		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
-+
-+		temp_hi = gti->lookup_table[2 * i - 2];
-+		temp_lo = gti->lookup_table[2 * i];
-+
-+		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
-+					   adc_lo - adc_hi);
- 	}
- 
- 	return temp;
--- 
-2.18.0
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+
+Regards,
+
+Hans
+
+
+
+
+> 
+> Thanks and kind regards,
+> 
+>     Wolfram
+> 
+> Wolfram Sang (9):
+>    PM / core: add helper to return suspend status of a device
+>    i2c: reject new transfers when adapters are suspended
+>    i2c: synquacer: remove unused is_suspended flag
+>    i2c: brcmstb: don't open code to reject transfers when suspended
+>    i2c: zx2967: don't open code to reject transfers when suspended
+>    i2c: sprd: don't use pdev as variable name for struct device *
+>    i2c: sprd: don't open code to reject transfers when suspended
+>    i2c: exynos5: don't open code to reject transfers when suspended
+>    i2c: s3c2410: don't open code to reject transfers when suspended
+> 
+>   Documentation/i2c/fault-codes      |  4 ++++
+>   drivers/i2c/busses/i2c-brcmstb.c   | 22 +-------------------
+>   drivers/i2c/busses/i2c-exynos5.c   | 10 ----------
+>   drivers/i2c/busses/i2c-s3c2410.c   |  7 -------
+>   drivers/i2c/busses/i2c-sprd.c      | 32 ++++++++++--------------------
+>   drivers/i2c/busses/i2c-synquacer.c |  5 -----
+>   drivers/i2c/busses/i2c-zx2967.c    |  8 --------
+>   drivers/i2c/i2c-core-base.c        |  3 +++
+>   drivers/i2c/i2c-core-smbus.c       |  4 ++++
+>   include/linux/device.h             |  5 +++++
+>   10 files changed, 27 insertions(+), 73 deletions(-)
+> 
