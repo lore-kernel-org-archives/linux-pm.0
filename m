@@ -1,36 +1,63 @@
-From: Sinan Kaya <okaya@kernel.org>
-Subject: [PATCH v3 07/11] drivers: thermal: int3406_thermal: Make PCI dependency explicit
-Date: Sun, 23 Dec 2018 23:25:16 +0000
-Message-ID: <20181223232521.11320-8-okaya@kernel.org>
-References: <20181223232521.11320-1-okaya@kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: [PATCH] thermal: generic-adc: Fix adc to temp interpolation
+Date: Sun, 23 Dec 2018 23:26:44 -0800
+Message-ID: <20181224072644.30096-1-bjorn.andersson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181223232521.11320-1-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-next@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Need CONFIG_PCI to be set in order to be able to use this driver.
+First correct the edge case to return the last element if we're
+outside the range, rather than at the last element, so that
+interpolation is not omitted for points between the two last entries in
+the table.
 
-Signed-off-by: Sinan Kaya <okaya@kernel.org>
+Then correct the formula to perform linear interpolation based the two
+points surrounding the read ADC value. The indices for temp are kept as
+"hi" and "lo" to pair with the adc indices, but there's no requirement
+that the temperature is provided in descendent order. mult_frac() is
+used to prevent issues with overflowing the int.
+
+Cc: Laxman Dewangan <ldewangan@nvidia.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
-index 0582bd12a239..fba1976d5f8d 100644
---- a/drivers/thermal/intel/int340x_thermal/Kconfig
-+++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-@@ -31,7 +31,7 @@ if INT340X_THERMAL
+diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
+index bf1c628d4a7a..e22fc60ad36d 100644
+--- a/drivers/thermal/thermal-generic-adc.c
++++ b/drivers/thermal/thermal-generic-adc.c
+@@ -26,7 +26,7 @@ struct gadc_thermal_info {
  
- config INT3406_THERMAL
- 	tristate "ACPI INT3406 display thermal driver"
--	depends on ACPI_VIDEO
-+	depends on ACPI_VIDEO && PCI
- 	help
- 	  The display thermal device represents the LED/LCD display panel
- 	  that may or may not include touch support. The main function of
+ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
+ {
+-	int temp, adc_hi, adc_lo;
++	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
+ 	int i;
+ 
+ 	for (i = 0; i < gti->nlookup_table; i++) {
+@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
+ 
+ 	if (i == 0) {
+ 		temp = gti->lookup_table[0];
+-	} else if (i >= (gti->nlookup_table - 1)) {
++	} else if (i >= gti->nlookup_table) {
+ 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
+ 	} else {
+ 		adc_hi = gti->lookup_table[2 * i - 1];
+ 		adc_lo = gti->lookup_table[2 * i + 1];
+-		temp = gti->lookup_table[2 * i];
+-		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
++
++		temp_hi = gti->lookup_table[2 * i - 2];
++		temp_lo = gti->lookup_table[2 * i];
++
++		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
++					   adc_lo - adc_hi);
+ 	}
+ 
+ 	return temp;
 -- 
-2.19.0
+2.18.0
