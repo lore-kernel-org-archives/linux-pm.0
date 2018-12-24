@@ -1,120 +1,196 @@
-From: Aaron Hill <aa1ronham@gmail.com>
-Subject: [PATCH v2] drivers: thermal: int340x_thermal: Fix sysfs race
- condition
-Date: Mon, 24 Dec 2018 14:23:36 -0500
-Message-ID: <20181224192336.GA6057@ArchLaptop>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 2/9] i2c: reject new transfers when adapters are
+ suspended
+Date: Mon, 24 Dec 2018 22:32:55 +0100
+Message-ID: <5e560c2e-4da9-05ef-9bfa-3391fdd8ad23@redhat.com>
+References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+ <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed;
+ boundary="------------34983B75F30C509E4209A341"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-Changes since V1:
-* Use dev_info instead of printk
-* Use dev_warn instead of BUG_ON
+This is a multi-part message in MIME format.
+--------------34983B75F30C509E4209A341
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Previously, sysfs_create_group was called before all initialization had
-fully run - specifically, before pci_set_drvdata was called. Since the
-sysctl group is visible to userspace as soon as sysfs_create_group
-returns, a small window of time existed during which a process could read
-from an uninitialized/partially-initialized device.
+Hi,
 
-This commit moves the creation of the sysctl group to after all
-initialized is completed. This ensures that it's impossible for
-userspace to read from a sysctl file before initialization has fully
-completed.
+Thank you for this new version.
 
-To catch any future regressions, I've added a check to ensure
-that proc_thermal_emum_mode is never PROC_THERMAL_NONE when a process
-tries to read from a sysctl file. Previously, the aforementioned race
-condition could result in the 'else' branch
-running while PROC_THERMAL_NONE was set,
-leading to a null pointer deference.
+On 22-12-18 21:26, Wolfram Sang wrote:
+> Using the 'is_suspended' flag from the PM core, we now reject new
+> transfers if the parent of the adapter is already marked suspended.
 
-Signed-off-by: Aaron Hill <aa1ronham@gmail.com>
+I've been running some tests and I'm afraid that those have
+exposed multiple issues:
+
+1) It seems that adap->dev.parent can be NULL in some cases, specifically
+this patch causes the i915 driver to crash during probe on an Apollo Lake
+laptop with an eDP panel. I've attached a fixup patch which fixes this.
+
+2) There are multiple suspend stages: prepare suspend, suspend_late,
+suspend_no_irq and several devices which need access to i2c-transfers
+suspend from the suspend_late or even the suspend_no_irq handler.
+
+The way this works is that first all devices are moved to the prepared
+state, then a second run is done moving all devices over to suspended,
+then a third run moving all devices over to suspend_late, etc.
+
+To make this work, e.g. the i2c-designware driver has a nop suspend
+callback and does the actual suspend from its suspend_late or
+suspend_no_irq callback. But the is_suspended flag we are testing for
+now gets set during the suspend phase. So when we are then asked to
+do an i2c-transfer during the suspend_late phase we get a false-positive
+triggering of the:
+
+	if (WARN(device_is_suspended(adap->dev.parent),
+		 "Accessing already suspended I2C/SMBus adapter"))
+		return -ESHUTDOWN;
+
+WARN and a return of -ESHUTDOWN, because the adapter is in the
+suspended state, but it has not actually been suspended / moved
+to the D3 low-power state as that happens later when we reach
+e.g. the suspend_no_irq phase of the suspend.
+
+This is not only a problem with the somewhat complex PMIC
+situation on some Cherry Trail devices, but it also breaks the
+i915 driver since as a PCI device the i915 device also only
+really gets turned off from the suspend_no_irq phase of the suspend.
+
+Sorry, this is something which I should have realized before, but
+well I didn't.
+
+TL;DR: really only the adapter driver knows when the device is
+put in such a state that it can no longer do transfers, as it
+actually turns of clks / moves it D3 / etc. Which may happen at
+any of the 3 suspend phases so any "core" based solution is going
+to get this wrong.
+
+I share your desire to have the check for this shared in core code,
+but I'm afraid that just is not going to work.
+
+Regards,
+
+Hans
+
+
+
+
+
+
+
+
+
+
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> ---
+>   Documentation/i2c/fault-codes | 4 ++++
+>   drivers/i2c/i2c-core-base.c   | 3 +++
+>   drivers/i2c/i2c-core-smbus.c  | 4 ++++
+>   3 files changed, 11 insertions(+)
+> 
+> diff --git a/Documentation/i2c/fault-codes b/Documentation/i2c/fault-codes
+> index 47c25abb7d52..0cee0fc545b4 100644
+> --- a/Documentation/i2c/fault-codes
+> +++ b/Documentation/i2c/fault-codes
+> @@ -112,6 +112,10 @@ EPROTO
+>   	case is when the length of an SMBus block data response
+>   	(from the SMBus slave) is outside the range 1-32 bytes.
+>   
+> +ESHUTDOWN
+> +	Returned when a transfer was requested using an adapter
+> +	which is already suspended.
+> +
+>   ETIMEDOUT
+>   	This is returned by drivers when an operation took too much
+>   	time, and was aborted before it completed.
+> diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+> index 28460f6a60cc..3ce238b782f3 100644
+> --- a/drivers/i2c/i2c-core-base.c
+> +++ b/drivers/i2c/i2c-core-base.c
+> @@ -1865,6 +1865,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+>   
+>   	if (WARN_ON(!msgs || num < 1))
+>   		return -EINVAL;
+> +	if (WARN(device_is_suspended(adap->dev.parent),
+> +		 "Accessing already suspended I2C/SMBus adapter"))
+> +		return -ESHUTDOWN;
+>   
+>   	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
+>   		return -EOPNOTSUPP;
+> diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
+> index 9cd66cabb84f..e0f7f22feabd 100644
+> --- a/drivers/i2c/i2c-core-smbus.c
+> +++ b/drivers/i2c/i2c-core-smbus.c
+> @@ -547,6 +547,10 @@ s32 __i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr,
+>   	int try;
+>   	s32 res;
+>   
+> +	if (WARN(device_is_suspended(adapter->dev.parent),
+> +		 "Accessing already suspended I2C/SMBus adapter"))
+> +		return -ESHUTDOWN;
+> +
+>   	/* If enabled, the following two tracepoints are conditional on
+>   	 * read_write and protocol.
+>   	 */
+> 
+
+--------------34983B75F30C509E4209A341
+Content-Type: text/x-patch;
+ name="0001-FIXUP-i2c-reject-new-transfers-when-adapters-are-sus.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-FIXUP-i2c-reject-new-transfers-when-adapters-are-sus.pa";
+ filename*1="tch"
+
+>From 0ff431b48f7f2d08bbf299265c67589a598ec5d4 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 24 Dec 2018 22:00:31 +0100
+Subject: [PATCH] FIXUP: i2c: reject new transfers when adapters are suspended
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- .../processor_thermal_device.c                | 28 ++++++++++---------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ drivers/i2c/i2c-core-base.c  | 2 +-
+ drivers/i2c/i2c-core-smbus.c | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 284cf2c5a8fd..0a43dbf0131b 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -81,10 +81,15 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
- 					struct device_attribute *attr, \
- 					char *buf) \
- { \
-+	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
-+		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
-+		return 0; \
-+	} \
-+	\
- 	struct pci_dev *pci_dev; \
- 	struct platform_device *pdev; \
- 	struct proc_thermal_device *proc_dev; \
--\
-+	\
- 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
- 		pdev = to_platform_device(dev); \
- 		proc_dev = platform_get_drvdata(pdev); \
-@@ -298,11 +303,6 @@ static int proc_thermal_add(struct device *dev,
- 	*priv = proc_priv;
+diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+index 3ce238b782f3..e2fae7ec6c95 100644
+--- a/drivers/i2c/i2c-core-base.c
++++ b/drivers/i2c/i2c-core-base.c
+@@ -1865,7 +1865,7 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
  
- 	ret = proc_thermal_read_ppcc(proc_priv);
--	if (!ret) {
--		ret = sysfs_create_group(&dev->kobj,
--					 &power_limit_attribute_group);
--
--	}
- 	if (ret)
- 		return ret;
+ 	if (WARN_ON(!msgs || num < 1))
+ 		return -EINVAL;
+-	if (WARN(device_is_suspended(adap->dev.parent),
++	if (WARN(adap->dev.parent && device_is_suspended(adap->dev.parent),
+ 		 "Accessing already suspended I2C/SMBus adapter"))
+ 		return -ESHUTDOWN;
  
-@@ -316,8 +316,7 @@ static int proc_thermal_add(struct device *dev,
+diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
+index e0f7f22feabd..1376620ae204 100644
+--- a/drivers/i2c/i2c-core-smbus.c
++++ b/drivers/i2c/i2c-core-smbus.c
+@@ -547,7 +547,8 @@ s32 __i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr,
+ 	int try;
+ 	s32 res;
  
- 	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
- 	if (IS_ERR(proc_priv->int340x_zone)) {
--		ret = PTR_ERR(proc_priv->int340x_zone);
--		goto remove_group;
-+		return PTR_ERR(proc_priv->int340x_zone);
- 	} else
- 		ret = 0;
+-	if (WARN(device_is_suspended(adapter->dev.parent),
++	if (WARN(adapter->dev.parent &&
++			device_is_suspended(adapter->dev.parent),
+ 		 "Accessing already suspended I2C/SMBus adapter"))
+ 		return -ESHUTDOWN;
  
-@@ -331,9 +330,6 @@ static int proc_thermal_add(struct device *dev,
- 
- remove_zone:
- 	int340x_thermal_zone_remove(proc_priv->int340x_zone);
--remove_group:
--	sysfs_remove_group(&proc_priv->dev->kobj,
--			   &power_limit_attribute_group);
- 
- 	return ret;
- }
-@@ -364,7 +360,10 @@ static int int3401_add(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, proc_priv);
- 	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
- 
--	return 0;
-+	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PLATFORM_DEV\n");
-+
-+	return sysfs_create_group(&pdev->dev.kobj,
-+					 &power_limit_attribute_group);
- }
- 
- static int int3401_remove(struct platform_device *pdev)
-@@ -441,7 +440,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
- 			dev_err(&pdev->dev, "No auxiliary DTSs enabled\n");
- 	}
- 
--	return 0;
-+	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PCI\n");
-+
-+	return sysfs_create_group(&pdev->dev.kobj,
-+					 &power_limit_attribute_group);
- }
- 
- static void  proc_thermal_pci_remove(struct pci_dev *pdev)
 -- 
 2.20.1
+
+
+--------------34983B75F30C509E4209A341--
