@@ -1,80 +1,120 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 0/9] i2c: move handling of suspended adapters to the
- core
-Date: Mon, 24 Dec 2018 09:55:35 +0100
-Message-ID: <7fd31445-6cf8-5094-3cd8-d6ca5c059541@redhat.com>
-References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+From: Aaron Hill <aa1ronham@gmail.com>
+Subject: [PATCH v2] drivers: thermal: int340x_thermal: Fix sysfs race
+ condition
+Date: Mon, 24 Dec 2018 14:23:36 -0500
+Message-ID: <20181224192336.GA6057@ArchLaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Changes since V1:
+* Use dev_info instead of printk
+* Use dev_warn instead of BUG_ON
 
-On 22-12-18 21:26, Wolfram Sang wrote:
-> Here is the new version without specific I2C helpers but using the
-> 'is_suspended' flag from the PM core. I didn't like messing with the
-> flag directly, so I did a helper in patch 1. So far, I like the
-> approach. The diffstat looks nice, and i2c-rcar.c and i2c-sh_mobile.c
-> rejected rightfully too later transfers without further modifications.
-> Tested on a Renesas Lager board (R-Car H2).
-> 
-> I dropped a few Tested-by tags because I think this approach is too
-> different from V1 to keep them. I hope you guys can have a look again.
-> Thanks for all the testing, so far!
-> 
-> A branch can be found here:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/reject-when-suspended
-> 
-> If this series is acceptable, I'd suggest to take it via my i2c tree
-> after rc1. And then I'll provide an immutable branch for the PM tree to
-> pick. Let me know if this works for you.
-> 
-> And thanks to Renesas for funding this work!
+Previously, sysfs_create_group was called before all initialization had
+fully run - specifically, before pci_set_drvdata was called. Since the
+sysctl group is visible to userspace as soon as sysfs_create_group
+returns, a small window of time existed during which a process could read
+from an uninitialized/partially-initialized device.
 
-Series looks good to me:
+This commit moves the creation of the sysctl group to after all
+initialized is completed. This ensures that it's impossible for
+userspace to read from a sysctl file before initialization has fully
+completed.
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+To catch any future regressions, I've added a check to ensure
+that proc_thermal_emum_mode is never PROC_THERMAL_NONE when a process
+tries to read from a sysctl file. Previously, the aforementioned race
+condition could result in the 'else' branch
+running while PROC_THERMAL_NONE was set,
+leading to a null pointer deference.
 
-Regards,
+Signed-off-by: Aaron Hill <aa1ronham@gmail.com>
+---
+ .../processor_thermal_device.c                | 28 ++++++++++---------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-Hans
-
-
-
-
-> 
-> Thanks and kind regards,
-> 
->     Wolfram
-> 
-> Wolfram Sang (9):
->    PM / core: add helper to return suspend status of a device
->    i2c: reject new transfers when adapters are suspended
->    i2c: synquacer: remove unused is_suspended flag
->    i2c: brcmstb: don't open code to reject transfers when suspended
->    i2c: zx2967: don't open code to reject transfers when suspended
->    i2c: sprd: don't use pdev as variable name for struct device *
->    i2c: sprd: don't open code to reject transfers when suspended
->    i2c: exynos5: don't open code to reject transfers when suspended
->    i2c: s3c2410: don't open code to reject transfers when suspended
-> 
->   Documentation/i2c/fault-codes      |  4 ++++
->   drivers/i2c/busses/i2c-brcmstb.c   | 22 +-------------------
->   drivers/i2c/busses/i2c-exynos5.c   | 10 ----------
->   drivers/i2c/busses/i2c-s3c2410.c   |  7 -------
->   drivers/i2c/busses/i2c-sprd.c      | 32 ++++++++++--------------------
->   drivers/i2c/busses/i2c-synquacer.c |  5 -----
->   drivers/i2c/busses/i2c-zx2967.c    |  8 --------
->   drivers/i2c/i2c-core-base.c        |  3 +++
->   drivers/i2c/i2c-core-smbus.c       |  4 ++++
->   include/linux/device.h             |  5 +++++
->   10 files changed, 27 insertions(+), 73 deletions(-)
-> 
+diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+index 284cf2c5a8fd..0a43dbf0131b 100644
+--- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+@@ -81,10 +81,15 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
+ 					struct device_attribute *attr, \
+ 					char *buf) \
+ { \
++	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
++		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
++		return 0; \
++	} \
++	\
+ 	struct pci_dev *pci_dev; \
+ 	struct platform_device *pdev; \
+ 	struct proc_thermal_device *proc_dev; \
+-\
++	\
+ 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
+ 		pdev = to_platform_device(dev); \
+ 		proc_dev = platform_get_drvdata(pdev); \
+@@ -298,11 +303,6 @@ static int proc_thermal_add(struct device *dev,
+ 	*priv = proc_priv;
+ 
+ 	ret = proc_thermal_read_ppcc(proc_priv);
+-	if (!ret) {
+-		ret = sysfs_create_group(&dev->kobj,
+-					 &power_limit_attribute_group);
+-
+-	}
+ 	if (ret)
+ 		return ret;
+ 
+@@ -316,8 +316,7 @@ static int proc_thermal_add(struct device *dev,
+ 
+ 	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
+ 	if (IS_ERR(proc_priv->int340x_zone)) {
+-		ret = PTR_ERR(proc_priv->int340x_zone);
+-		goto remove_group;
++		return PTR_ERR(proc_priv->int340x_zone);
+ 	} else
+ 		ret = 0;
+ 
+@@ -331,9 +330,6 @@ static int proc_thermal_add(struct device *dev,
+ 
+ remove_zone:
+ 	int340x_thermal_zone_remove(proc_priv->int340x_zone);
+-remove_group:
+-	sysfs_remove_group(&proc_priv->dev->kobj,
+-			   &power_limit_attribute_group);
+ 
+ 	return ret;
+ }
+@@ -364,7 +360,10 @@ static int int3401_add(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, proc_priv);
+ 	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
+ 
+-	return 0;
++	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PLATFORM_DEV\n");
++
++	return sysfs_create_group(&pdev->dev.kobj,
++					 &power_limit_attribute_group);
+ }
+ 
+ static int int3401_remove(struct platform_device *pdev)
+@@ -441,7 +440,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+ 			dev_err(&pdev->dev, "No auxiliary DTSs enabled\n");
+ 	}
+ 
+-	return 0;
++	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PCI\n");
++
++	return sysfs_create_group(&pdev->dev.kobj,
++					 &power_limit_attribute_group);
+ }
+ 
+ static void  proc_thermal_pci_remove(struct pci_dev *pdev)
+-- 
+2.20.1
