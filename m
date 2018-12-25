@@ -1,196 +1,288 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 2/9] i2c: reject new transfers when adapters are
- suspended
-Date: Mon, 24 Dec 2018 22:32:55 +0100
-Message-ID: <5e560c2e-4da9-05ef-9bfa-3391fdd8ad23@redhat.com>
-References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
- <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V5 2/4] thermal: imx_sc: add i.MX system controller
+ thermal support
+Date: Tue, 25 Dec 2018 14:43:38 -0800
+Message-ID: <20181225224336.GA8220@localhost.localdomain>
+References: <1545296609-20477-1-git-send-email-Anson.Huang@nxp.com>
+ <1545296609-20477-3-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------34983B75F30C509E4209A341"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1545296609-20477-3-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Andy Gross <andy.gross@linaro.org>, "arnd@arndb.de" <arnd@arndb.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>ez
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------34983B75F30C509E4209A341
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hi,
-
-Thank you for this new version.
-
-On 22-12-18 21:26, Wolfram Sang wrote:
-> Using the 'is_suspended' flag from the PM core, we now reject new
-> transfers if the parent of the adapter is already marked suspended.
-
-I've been running some tests and I'm afraid that those have
-exposed multiple issues:
-
-1) It seems that adap->dev.parent can be NULL in some cases, specifically
-this patch causes the i915 driver to crash during probe on an Apollo Lake
-laptop with an eDP panel. I've attached a fixup patch which fixes this.
-
-2) There are multiple suspend stages: prepare suspend, suspend_late,
-suspend_no_irq and several devices which need access to i2c-transfers
-suspend from the suspend_late or even the suspend_no_irq handler.
-
-The way this works is that first all devices are moved to the prepared
-state, then a second run is done moving all devices over to suspended,
-then a third run moving all devices over to suspend_late, etc.
-
-To make this work, e.g. the i2c-designware driver has a nop suspend
-callback and does the actual suspend from its suspend_late or
-suspend_no_irq callback. But the is_suspended flag we are testing for
-now gets set during the suspend phase. So when we are then asked to
-do an i2c-transfer during the suspend_late phase we get a false-positive
-triggering of the:
-
-	if (WARN(device_is_suspended(adap->dev.parent),
-		 "Accessing already suspended I2C/SMBus adapter"))
-		return -ESHUTDOWN;
-
-WARN and a return of -ESHUTDOWN, because the adapter is in the
-suspended state, but it has not actually been suspended / moved
-to the D3 low-power state as that happens later when we reach
-e.g. the suspend_no_irq phase of the suspend.
-
-This is not only a problem with the somewhat complex PMIC
-situation on some Cherry Trail devices, but it also breaks the
-i915 driver since as a PCI device the i915 device also only
-really gets turned off from the suspend_no_irq phase of the suspend.
-
-Sorry, this is something which I should have realized before, but
-well I didn't.
-
-TL;DR: really only the adapter driver knows when the device is
-put in such a state that it can no longer do transfers, as it
-actually turns of clks / moves it D3 / etc. Which may happen at
-any of the 3 suspend phases so any "core" based solution is going
-to get this wrong.
-
-I share your desire to have the check for this shared in core code,
-but I'm afraid that just is not going to work.
-
-Regards,
-
-Hans
-
-
-
-
-
-
-
-
-
-
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+On Thu, Dec 20, 2018 at 09:08:32AM +0000, Anson Huang wrote:
+> i.MX8QXP is an ARMv8 SoC which has a Cortex-M4 system controller
+> inside, the system controller is in charge of controlling power,
+> clock and thermal sensors etc..
+> 
+> This patch adds i.MX system controller thermal driver support,
+> Linux kernel has to communicate with system controller via MU
+> (message unit) IPC to get each thermal sensor's temperature,
+> it supports multiple sensors which are passed from device tree,
+> please see the binding doc for details.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 > ---
->   Documentation/i2c/fault-codes | 4 ++++
->   drivers/i2c/i2c-core-base.c   | 3 +++
->   drivers/i2c/i2c-core-smbus.c  | 4 ++++
->   3 files changed, 11 insertions(+)
+> ChangeLog since V4:
+>     - Add driver dependency on IMX_SCU to avoid compile error when IMX_SCU is NOT selected;
+>     - Remove unnecessary of different errors handle for imx_scu_get_handle, already included in API.
+> ---
+>  drivers/thermal/Kconfig          |  11 +++
+>  drivers/thermal/Makefile         |   1 +
+>  drivers/thermal/imx_sc_thermal.c | 200 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 212 insertions(+)
+>  create mode 100644 drivers/thermal/imx_sc_thermal.c
 > 
-> diff --git a/Documentation/i2c/fault-codes b/Documentation/i2c/fault-codes
-> index 47c25abb7d52..0cee0fc545b4 100644
-> --- a/Documentation/i2c/fault-codes
-> +++ b/Documentation/i2c/fault-codes
-> @@ -112,6 +112,10 @@ EPROTO
->   	case is when the length of an SMBus block data response
->   	(from the SMBus slave) is outside the range 1-32 bytes.
->   
-> +ESHUTDOWN
-> +	Returned when a transfer was requested using an adapter
-> +	which is already suspended.
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 0e69edc..8d4601d 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -222,6 +222,17 @@ config IMX_THERMAL
+>  	  cpufreq is used as the cooling device to throttle CPUs when the
+>  	  passive trip is crossed.
+>  
+> +config IMX_SC_THERMAL
+> +	tristate "Temperature sensor driver for NXP i.MX SoCs with System Controller"
+> +	depends on (ARCH_MXC && IMX_SCU) || COMPILE_TEST
+> +	depends on OF
+> +	help
+> +	  Support for Temperature Monitor (TEMPMON) found on NXP i.MX SoCs with
+> +	  system controller inside, Linux kernel has to communicate with system
+> +	  controller via MU (message unit) IPC to get temperature from thermal
+> +	  sensor. It supports one critical trip point and one
+> +	  passive trip point for each thermal sensor.
 > +
->   ETIMEDOUT
->   	This is returned by drivers when an operation took too much
->   	time, and was aborted before it completed.
-> diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-> index 28460f6a60cc..3ce238b782f3 100644
-> --- a/drivers/i2c/i2c-core-base.c
-> +++ b/drivers/i2c/i2c-core-base.c
-> @@ -1865,6 +1865,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
->   
->   	if (WARN_ON(!msgs || num < 1))
->   		return -EINVAL;
-> +	if (WARN(device_is_suspended(adap->dev.parent),
-> +		 "Accessing already suspended I2C/SMBus adapter"))
-> +		return -ESHUTDOWN;
->   
->   	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
->   		return -EOPNOTSUPP;
-> diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
-> index 9cd66cabb84f..e0f7f22feabd 100644
-> --- a/drivers/i2c/i2c-core-smbus.c
-> +++ b/drivers/i2c/i2c-core-smbus.c
-> @@ -547,6 +547,10 @@ s32 __i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr,
->   	int try;
->   	s32 res;
->   
-> +	if (WARN(device_is_suspended(adapter->dev.parent),
-> +		 "Accessing already suspended I2C/SMBus adapter"))
-> +		return -ESHUTDOWN;
+>  config MAX77620_THERMAL
+>  	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
+>  	depends on MFD_MAX77620
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 610344e..1b13f6a 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -41,6 +41,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+>  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+>  obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+>  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+> +obj-$(CONFIG_IMX_SC_THERMAL)	+= imx_sc_thermal.o
+>  obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
+>  obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
+>  obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
+> diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
+> new file mode 100644
+> index 0000000..1030a31
+> --- /dev/null
+> +++ b/drivers/thermal/imx_sc_thermal.c
+> @@ -0,0 +1,200 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2018 NXP.
+> + */
 > +
->   	/* If enabled, the following two tracepoints are conditional on
->   	 * read_write and protocol.
->   	 */
+> +#include <linux/err.h>
+> +#include <linux/firmware/imx/sci.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +#include <linux/thermal.h>
+> +
+> +#include "thermal_core.h"
+> +
+> +#define IMX_SC_MISC_FUNC_GET_TEMP	13
+> +#define IMX_SC_C_TEMP			0
+> +
+> +static struct imx_sc_ipc *thermal_ipc_handle;
+> +
+> +struct imx_sc_sensor {
+> +	struct thermal_zone_device *tzd;
+> +	u32 resource_id;
+> +};
+> +
+> +struct imx_sc_thermal_data {
+> +	struct imx_sc_sensor *sensor;
+> +};
+> +
+> +struct req_get_temp {
+> +	u16 resource_id;
+> +	u8 type;
+> +} __packed;
+> +
+> +struct resp_get_temp {
+> +	u16 celsius;
+> +	u8 tenths;
+> +} __packed;
+> +
+> +struct imx_sc_msg_misc_get_temp {
+> +	struct imx_sc_rpc_msg hdr;
+> +	union {
+> +		struct req_get_temp req;
+> +		struct resp_get_temp resp;
+> +	} data;
+> +} __packed;
+> +
+> +static int imx_sc_thermal_get_temp(void *data, int *temp)
+> +{
+> +	struct imx_sc_msg_misc_get_temp msg;
+> +	struct imx_sc_rpc_msg *hdr = &msg.hdr;
+> +	struct imx_sc_sensor *sensor = data;
+> +	int ret;
+> +
+> +	msg.data.req.resource_id = sensor->resource_id;
+> +	msg.data.req.type = IMX_SC_C_TEMP;
+> +
+> +	hdr->ver = IMX_SC_RPC_VERSION;
+> +	hdr->svc = IMX_SC_RPC_SVC_MISC;
+> +	hdr->func = IMX_SC_MISC_FUNC_GET_TEMP;
+> +	hdr->size = 2;
+> +
+> +	ret = imx_scu_call_rpc(thermal_ipc_handle, &msg, true);
+> +	if (ret) {
+> +		pr_err("read temp sensor %d failed, ret %d\n",
+> +			sensor->resource_id, ret);
+> +		return ret;
+> +	}
+> +
+> +	*temp = msg.data.resp.celsius * 1000 + msg.data.resp.tenths * 100;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct thermal_zone_of_device_ops imx_sc_thermal_ops = {
+> +	.get_temp = imx_sc_thermal_get_temp,
+> +};
+> +
+> +static int imx_sc_thermal_register_sensor(struct platform_device *pdev,
+> +					  struct imx_sc_sensor *sensor)
+> +{
+> +	struct thermal_zone_device *tzd;
+> +
+> +	tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+> +						   sensor->resource_id,
+> +						   sensor,
+> +						   &imx_sc_thermal_ops);
+> +	if (IS_ERR(tzd)) {
+> +		dev_err(&pdev->dev, "failed to register sensor: %d\n",
+> +			sensor->resource_id);
+> +		return PTR_ERR(tzd);
+> +	}
+> +
+> +	sensor->tzd = tzd;
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_sc_thermal_get_sensor_id(struct device_node *sensor_np, u32 *id)
+> +{
+> +	struct of_phandle_args sensor_specs;
+> +	int ret;
+> +
+> +	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+> +			"#thermal-sensor-cells",
+> +			0, &sensor_specs);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (sensor_specs.args_count >= 1) {
+> +		*id = sensor_specs.args[0];
+> +		WARN(sensor_specs.args_count > 1,
+> +				"%pOFn: too many cells in sensor specifier %d\n",
+> +				sensor_specs.np, sensor_specs.args_count);
+> +	} else {
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+
+So, there should be no need for doing a search of sensor ids. In fact,
+if the amount of sensors or the type of sensors supported changes, i.e.
+the sensor ids are do not match, you should have a different compatible, IMO.
+
+> +static int imx_sc_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np = pdev->dev.of_node;
+> +	struct device_node *sensor_np = NULL;
+> +	struct imx_sc_thermal_data *data;
+> +	struct imx_sc_sensor *sensors;
+> +	u32 sensor_num;
+> +	int ret, i;
+> +
+> +	ret = imx_scu_get_handle(&thermal_ipc_handle);
+> +	if (ret)
+> +		return ret;
+> +
+> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	ret = of_property_read_u32(np, "tsens-num", &sensor_num);
+> +	if (ret || !sensor_num) {
+> +		dev_err(&pdev->dev, "failed to get valid temp sensor number!\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	sensors = devm_kzalloc(&pdev->dev, sizeof(*data->sensor) * sensor_num,
+> +			       GFP_KERNEL);
+> +	if (!sensors)
+> +		return -ENOMEM;
+> +
+> +	data->sensor = sensors;
+> +
+> +	np = of_find_node_by_name(NULL, "thermal-zones");
+> +	if (!np)
+> +		return -ENODEV;
+> +
+> +	for (i = 0; i < sensor_num; i++) {
+> +		struct imx_sc_sensor *sensor = &data->sensor[i];
+> +
+> +		sensor_np = of_get_next_child(np, sensor_np);
+> +		ret = imx_sc_thermal_get_sensor_id(sensor_np, &sensor->resource_id);
+> +		if (ret < 0) {
+> +			dev_err(&pdev->dev,
+> +				"failed to get valid sensor resource id: %d\n",
+> +				ret);
+> +			break;
+> +		}
+> +
+> +		ret = imx_sc_thermal_register_sensor(pdev, sensor);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
+> +				ret);
+> +			break;
+> +		}
+> +	}
+> +
+> +	of_node_put(np);
+> +	of_node_put(sensor_np);
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct of_device_id imx_sc_thermal_table[] = {
+> +	{ .compatible = "fsl,imx8qxp-sc-thermal", },
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(of, imx_sc_thermal_table);
+> +
+> +static struct platform_driver imx_sc_thermal_driver = {
+> +		.probe = imx_sc_thermal_probe,
+> +		.driver = {
+> +			.name = "imx-sc-thermal",
+> +			.of_match_table = imx_sc_thermal_table,
+> +		},
+> +};
+> +module_platform_driver(imx_sc_thermal_driver);
+> +
+> +MODULE_AUTHOR("Anson Huang <Anson.Huang@nxp.com>");
+> +MODULE_DESCRIPTION("Thermal driver for NXP i.MX SoCs with system controller");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.7.4
 > 
-
---------------34983B75F30C509E4209A341
-Content-Type: text/x-patch;
- name="0001-FIXUP-i2c-reject-new-transfers-when-adapters-are-sus.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-FIXUP-i2c-reject-new-transfers-when-adapters-are-sus.pa";
- filename*1="tch"
-
->From 0ff431b48f7f2d08bbf299265c67589a598ec5d4 Mon Sep 17 00:00:00 2001
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 24 Dec 2018 22:00:31 +0100
-Subject: [PATCH] FIXUP: i2c: reject new transfers when adapters are suspended
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/i2c/i2c-core-base.c  | 2 +-
- drivers/i2c/i2c-core-smbus.c | 3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 3ce238b782f3..e2fae7ec6c95 100644
---- a/drivers/i2c/i2c-core-base.c
-+++ b/drivers/i2c/i2c-core-base.c
-@@ -1865,7 +1865,7 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 
- 	if (WARN_ON(!msgs || num < 1))
- 		return -EINVAL;
--	if (WARN(device_is_suspended(adap->dev.parent),
-+	if (WARN(adap->dev.parent && device_is_suspended(adap->dev.parent),
- 		 "Accessing already suspended I2C/SMBus adapter"))
- 		return -ESHUTDOWN;
- 
-diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
-index e0f7f22feabd..1376620ae204 100644
---- a/drivers/i2c/i2c-core-smbus.c
-+++ b/drivers/i2c/i2c-core-smbus.c
-@@ -547,7 +547,8 @@ s32 __i2c_smbus_xfer(struct i2c_adapter *adapter, u16 addr,
- 	int try;
- 	s32 res;
- 
--	if (WARN(device_is_suspended(adapter->dev.parent),
-+	if (WARN(adapter->dev.parent &&
-+			device_is_suspended(adapter->dev.parent),
- 		 "Accessing already suspended I2C/SMBus adapter"))
- 		return -ESHUTDOWN;
- 
--- 
-2.20.1
-
-
---------------34983B75F30C509E4209A341--
