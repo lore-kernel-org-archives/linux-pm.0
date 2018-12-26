@@ -1,46 +1,16 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH v4 1/2] MAINTAINERS: add new entries for Armada 8K cpufreq
- driver
-Date: Wed, 26 Dec 2018 16:33:41 +0100
-Message-ID: <20181226153342.17796-2-gregory.clement@bootlin.com>
-References: <20181226153342.17796-1-gregory.clement@bootlin.com>
+From: Frank Lee <tiny.windzz@gmail.com>
+Subject: Re: [PATCH] power: supply: axp288_fuel_gauge: Change to use
+ DEFINE_SHOW_ATTRIBUTE macro
+Date: Thu, 27 Dec 2018 00:03:16 +0800
+Message-ID: <CAEExFWv5OTpSC0A2jvr0+w5nMtxWk9VDThdk4T1d+2fi0AV7FQ@mail.gmail.com>
+References: <20181122142551.25367-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181226153342.17796-1-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181122142551.25367-1-tiny.windzz@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, hdegoede@redhat.com, Chen-Yu Tsai <wens@csie.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This new driver belongs to the mvebu family, update the MAINTAINER file
-to document it.
-
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f4855974f325..c71e4f9c1173 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1717,6 +1717,7 @@ F:	arch/arm/configs/mvebu_*_defconfig
- F:	arch/arm/mach-mvebu/
- F:	arch/arm64/boot/dts/marvell/armada*
- F:	drivers/cpufreq/armada-37xx-cpufreq.c
-+F:	drivers/cpufreq/armada-8k-cpufreq.c
- F:	drivers/cpufreq/mvebu-cpufreq.c
- F:	drivers/irqchip/irq-armada-370-xp.c
- F:	drivers/irqchip/irq-mvebu-*
--- 
-2.19.2
+ping...
