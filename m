@@ -1,76 +1,93 @@
-From: Raju P L S S S N <rplsssn@codeaurora.org>
-Subject: Re: [PATCH RFC 3/5] dt-bindings: Add PDC timer bindings for Qualcomm
- SoCs
-Date: Wed, 26 Dec 2018 15:14:43 +0530
-Message-ID: <504cae51-0f35-beb8-496b-a335863a9071@codeaurora.org>
-References: <20181221115946.10095-1-rplsssn@codeaurora.org>
- <20181221115946.10095-4-rplsssn@codeaurora.org>
- <154546438942.179992.14851496143150245966@swboyd.mtv.corp.google.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 0/9] i2c: move handling of suspended adapters to the core
+Date: Wed, 26 Dec 2018 12:01:49 +0100
+Message-ID: <CAMuHMdUyxcYcT7uAhsQ0xa++yzi3TnBhNS90O6Achz3KD6E4dA@mail.gmail.com>
+References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154546438942.179992.14851496143150245966@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+In-Reply-To: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>, andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, devicetree@vger.kernel.org
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Linux I2C <linux-i2c@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Wolfram,
 
+On Sat, Dec 22, 2018 at 9:26 PM Wolfram Sang
+<wsa+renesas@sang-engineering.com> wrote:
+> Here is the new version without specific I2C helpers but using the
+> 'is_suspended' flag from the PM core. I didn't like messing with the
+> flag directly, so I did a helper in patch 1. So far, I like the
+> approach. The diffstat looks nice, and i2c-rcar.c and i2c-sh_mobile.c
+> rejected rightfully too later transfers without further modifications.
+> Tested on a Renesas Lager board (R-Car H2).
+>
+> I dropped a few Tested-by tags because I think this approach is too
+> different from V1 to keep them. I hope you guys can have a look again.
+> Thanks for all the testing, so far!
+>
+> A branch can be found here:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/reject-when-suspended
+>
+> If this series is acceptable, I'd suggest to take it via my i2c tree
+> after rc1. And then I'll provide an immutable branch for the PM tree to
+> pick. Let me know if this works for you.
 
-On 12/22/2018 1:09 PM, Stephen Boyd wrote:
->> +If an RSC needs to program next wake-up in the PDC timer, it must specify the
->> +binding as child node with the following properties:
->> +
->> +Properties:
->> +- compatible:
->> +    Usage: required
->> +       Value type: <string>
->> +       Definition: must be "qcom,pdc-timer".
->> +
->> +- reg:
->> +    Usage: required
->> +       Value type: <prop-encoded-array>
->> +       Definition: Specifies the offset of the control register.
->> +
->>   Example 1:
->>   
->>   For a TCS whose RSC base address is is 0x179C0000 and is at a DRV id of 2, the
->> @@ -103,6 +123,9 @@ TCS-OFFSET: 0xD00
->>                        <0x179d0000 0x10000>,
->>                        <0x179e0000 0x10000>;
->>                  reg-names = "drv-0", "drv-1", "drv-2";
->> +               #address-cells = <1>;
->> +               #size-cells = <1>;
->> +               ranges;
->>                  interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
->>                               <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
->>                               <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
->> @@ -112,6 +135,12 @@ TCS-OFFSET: 0xD00
->>                                    <SLEEP_TCS   3>,
->>                                    <WAKE_TCS    3>,
->>                                    <CONTROL_TCS 1>;
->> +
->> +               pdc_timer@38 {
->> +                       compatible = "qcom,pdc-timer";
->> +                       reg = <0x38 0x1>,
->> +                             <0x40 0x1>;
-> I don't understand this whole binding. Why can't the pdc timer be
-> programmed within the rpmh driver? This looks like a node is being added
-> as a child just to make a platform driver and device match up in the
-> linux kernel. And that in turn causes a regmap to need to be created?
-> Sorry, it just looks really bad.
+This breaks resume of the CS2000 clock driver on Salvator-X(S) (and
+presumable ULCB, too):
 
+    Accessing already suspended I2C/SMBus adapter
+    WARNING: CPU: 1 PID: 1186 at drivers/i2c/i2c-core-smbus.c:551
+__i2c_smbus_xfer+0x38/0x66c
+    Modules linked in:
+    CPU: 1 PID: 1186 Comm: s2idle Not tainted
+4.20.0-salvator-x-08442-ge5992c41ac706409 #264
+    Hardware name: Renesas Salvator-X board based on r8a7795 ES1.x (DT)
+    pstate: 60400005 (nZCv daif +PAN -UAO)
+    pc : __i2c_smbus_xfer+0x38/0x66c
+    lr : __i2c_smbus_xfer+0x38/0x66c
+    sp : ffffff8013413880
+    x29: ffffff8013413880 x28: ffffffc6f78b4820
+    x27: 0000000000000010 x26: ffffff8010cf6178
+    x25: ffffff8013413976 x24: 0000000000000002
+    x23: 0000000000000016 x22: ffffffc6f7872088
+    x21: 0000000000000000 x20: 000000000000004f
+    x19: ffffffc6f7872088 x18: 000000000000000a
+    x17: 0000000000000000 x16: 0000000000000000
+    x15: 0000000000029c80 x14: 0720072007200720
+    x13: 0720072007200720 x12: 0720072007200720
+    x11: 0720072007200720 x10: 0720072007200720
+    x9 : ffffff801100e6d0 x8 : 6461207375424d53
+    x7 : ffffff8011c825c8 x6 : ffffff8011c82000
+    x5 : 0000000000000000 x4 : ffffff8013414000
+    x3 : ffffff80134136e0 x2 : 00000046ee875000
+    x1 : 82c6d7c720d64000 x0 : 0000000000000000
+    Call trace:
+     __i2c_smbus_xfer+0x38/0x66c
+     i2c_smbus_xfer+0x64/0x98
+     i2c_smbus_read_byte_data+0x40/0x6c
+     cs2000_bset.isra.1+0x2c/0x58
+     __cs2000_set_rate.constprop.7+0x8c/0x134
+     cs2000_resume+0x14/0x1c
+     dpm_run_callback+0x15c/0x2d8
+     device_resume_early+0x98/0xec
+     dpm_resume_early+0x3b0/0x454
+     suspend_devices_and_enter+0x7bc/0xbb0
 
-There are two RSC devices in SoC one for application processor subsystem 
-& other display subsystem. Both RSC contain registers for PDC timers 
-(one for each subsystem). But only for application processor the PDC 
-timer needs to be programmed when application processor enters 
-sleep/suspend. As the driver is common between both RSC devices, this 
-approach is taken. Do you have any other suggestions to distinguish 
-between the two? Perhaps, by additional compatible string?
+The CS2000 driver uses SET_LATE_SYSTEM_SLEEP_PM_OPS().
 
-Thanks for the review.
+Suspend/resume of the BD9571 driver works fine, as that one uses
+SET_SYSTEM_SLEEP_PM_OPS().
 
-- Raju
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
