@@ -1,51 +1,49 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v2] thermal: uniphier: Convert to SPDX identifier
-Date: Wed, 26 Dec 2018 15:16:27 +0900
-Message-ID: <1545804987-6479-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] base: fix a missing check of clk_prepare
+Date: Wed, 26 Dec 2018 10:37:54 +0100
+Message-ID: <CAJZ5v0iK+ASbadEjj+9vgCV+1ycjp8Hs2GbEmT3dGSqjLVGbPA@mail.gmail.com>
+References: <20181226024700.72318-1-kjlu@umn.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181226024700.72318-1-kjlu@umn.edu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+To: kjlu@umn.edu
+Cc: pakki001@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This converts license boilerplate to SPDX identifier, and removes
-unnecessary lines.
+On Wed, Dec 26, 2018 at 3:47 AM Kangjie Lu <kjlu@umn.edu> wrote:
+>
+> clk_prepare() could fail, so let's check its status, and if it fails,
+> issue an error message.
+>
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+> ---
+>  drivers/base/power/clock_ops.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+> index 5a42ae4078c2..cb6144fb24e2 100644
+> --- a/drivers/base/power/clock_ops.c
+> +++ b/drivers/base/power/clock_ops.c
+> @@ -65,7 +65,9 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+>         if (IS_ERR(ce->clk)) {
+>                 ce->status = PCE_STATUS_ERROR;
+>         } else {
+> -               clk_prepare(ce->clk);
+> +               if (clk_prepare(ce->clk))
+> +                       dev_err(dev, "clk_prepare failed.\n");
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
----
- drivers/thermal/uniphier_thermal.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+I'm not sure that this is useful.  The code continues regardless of
+the error anyway and it should at least set ce->status to
+PCE_STATUS_ERROR in the failing case.
 
-Changes since v1:
-- Add Reviewd-by line
+Have you seen a failure in this particular spot in practice?
 
-diff --git a/drivers/thermal/uniphier_thermal.c b/drivers/thermal/uniphier_thermal.c
-index 55477d7..bba2284 100644
---- a/drivers/thermal/uniphier_thermal.c
-+++ b/drivers/thermal/uniphier_thermal.c
-@@ -1,21 +1,10 @@
-+// SPDX-License-Identifier: GPL-2.0
- /**
-  * uniphier_thermal.c - Socionext UniPhier thermal driver
-- *
-  * Copyright 2014      Panasonic Corporation
-  * Copyright 2016-2017 Socionext Inc.
-- * All rights reserved.
-- *
-  * Author:
-  *	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-- *
-- * This program is free software: you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2  of
-- * the License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-  */
- 
- #include <linux/bitops.h>
--- 
-2.7.4
+> +
+>                 ce->status = PCE_STATUS_ACQUIRED;
+>                 dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
+>                         ce->clk, ce->con_id);
+> --
+> 2.17.2 (Apple Git-113)
+>
