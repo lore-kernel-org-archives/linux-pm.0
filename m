@@ -1,49 +1,76 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] base: fix a missing check of clk_prepare
-Date: Wed, 26 Dec 2018 10:37:54 +0100
-Message-ID: <CAJZ5v0iK+ASbadEjj+9vgCV+1ycjp8Hs2GbEmT3dGSqjLVGbPA@mail.gmail.com>
-References: <20181226024700.72318-1-kjlu@umn.edu>
+From: Raju P L S S S N <rplsssn@codeaurora.org>
+Subject: Re: [PATCH RFC 3/5] dt-bindings: Add PDC timer bindings for Qualcomm
+ SoCs
+Date: Wed, 26 Dec 2018 15:14:43 +0530
+Message-ID: <504cae51-0f35-beb8-496b-a335863a9071@codeaurora.org>
+References: <20181221115946.10095-1-rplsssn@codeaurora.org>
+ <20181221115946.10095-4-rplsssn@codeaurora.org>
+ <154546438942.179992.14851496143150245966@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181226024700.72318-1-kjlu@umn.edu>
+In-Reply-To: <154546438942.179992.14851496143150245966@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: kjlu@umn.edu
-Cc: pakki001@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <swboyd@chromium.org>, andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 26, 2018 at 3:47 AM Kangjie Lu <kjlu@umn.edu> wrote:
->
-> clk_prepare() could fail, so let's check its status, and if it fails,
-> issue an error message.
->
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> ---
->  drivers/base/power/clock_ops.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 5a42ae4078c2..cb6144fb24e2 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -65,7 +65,9 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
->         if (IS_ERR(ce->clk)) {
->                 ce->status = PCE_STATUS_ERROR;
->         } else {
-> -               clk_prepare(ce->clk);
-> +               if (clk_prepare(ce->clk))
-> +                       dev_err(dev, "clk_prepare failed.\n");
 
-I'm not sure that this is useful.  The code continues regardless of
-the error anyway and it should at least set ce->status to
-PCE_STATUS_ERROR in the failing case.
 
-Have you seen a failure in this particular spot in practice?
+On 12/22/2018 1:09 PM, Stephen Boyd wrote:
+>> +If an RSC needs to program next wake-up in the PDC timer, it must specify the
+>> +binding as child node with the following properties:
+>> +
+>> +Properties:
+>> +- compatible:
+>> +    Usage: required
+>> +       Value type: <string>
+>> +       Definition: must be "qcom,pdc-timer".
+>> +
+>> +- reg:
+>> +    Usage: required
+>> +       Value type: <prop-encoded-array>
+>> +       Definition: Specifies the offset of the control register.
+>> +
+>>   Example 1:
+>>   
+>>   For a TCS whose RSC base address is is 0x179C0000 and is at a DRV id of 2, the
+>> @@ -103,6 +123,9 @@ TCS-OFFSET: 0xD00
+>>                        <0x179d0000 0x10000>,
+>>                        <0x179e0000 0x10000>;
+>>                  reg-names = "drv-0", "drv-1", "drv-2";
+>> +               #address-cells = <1>;
+>> +               #size-cells = <1>;
+>> +               ranges;
+>>                  interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>,
+>>                               <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>,
+>>                               <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+>> @@ -112,6 +135,12 @@ TCS-OFFSET: 0xD00
+>>                                    <SLEEP_TCS   3>,
+>>                                    <WAKE_TCS    3>,
+>>                                    <CONTROL_TCS 1>;
+>> +
+>> +               pdc_timer@38 {
+>> +                       compatible = "qcom,pdc-timer";
+>> +                       reg = <0x38 0x1>,
+>> +                             <0x40 0x1>;
+> I don't understand this whole binding. Why can't the pdc timer be
+> programmed within the rpmh driver? This looks like a node is being added
+> as a child just to make a platform driver and device match up in the
+> linux kernel. And that in turn causes a regmap to need to be created?
+> Sorry, it just looks really bad.
 
-> +
->                 ce->status = PCE_STATUS_ACQUIRED;
->                 dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
->                         ce->clk, ce->con_id);
-> --
-> 2.17.2 (Apple Git-113)
->
+
+There are two RSC devices in SoC one for application processor subsystem 
+& other display subsystem. Both RSC contain registers for PDC timers 
+(one for each subsystem). But only for application processor the PDC 
+timer needs to be programmed when application processor enters 
+sleep/suspend. As the driver is common between both RSC devices, this 
+approach is taken. Do you have any other suggestions to distinguish 
+between the two? Perhaps, by additional compatible string?
+
+Thanks for the review.
+
+- Raju
