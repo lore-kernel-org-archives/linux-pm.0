@@ -1,215 +1,63 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [RFC PATCH 1/1] PM / Domains: Add multi PM domains support for
- attach_dev
-Date: Thu, 27 Dec 2018 17:14:48 +0000
-Message-ID: <1545930550-9906-1-git-send-email-aisheng.dong@nxp.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: cpcap-charger: generate events for userspace
+Date: Thu, 27 Dec 2018 20:52:21 +0100
+Message-ID: <20181227195221.GA11920@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "khilman@kernel.org" <khilman@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Aisheng Dong <aisheng.dong@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently attach_dev() in power domain infrastructure still does
-not support multi domains case as the struct device *dev passed
-down from genpd_dev_pm_attach_by_id() is a virtual PD device, it
-does not help for parsing the real device information from device
-tree, e.g. Device/Power IDs, Clocks and it's unware of which real
-power domain the device should attach.
 
-Extend the framework a bit to store the multi PM domains information
-in per-device struct generic_pm_domain_data, then power domain driver
-could retrieve it for necessary operations during attach_dev().
+--opJtzjQTFsWo+cga
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Two new APIs genpd_is_mpd_device() and dev_gpd_mpd_data() are also
-introduced to ease the driver operation.
+   =20
+The driver doesn't generate uevents on charger connect/disconnect.
+This leads to UPower not detecting when AC is on or off... and that is
+bad.
+   =20
+Reported by Arthur D. on github (
+https://github.com/maemo-leste/bugtracker/issues/206 ), thanks to
+Merlijn Wajer for suggesting a fix.
+   =20
+Cc: stable@kernel.org
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-This patch is a follow-up work of the earlier discussion with Ulf Hansson
-about the multi PM domains support for the attach_dev() function [1].
-After a bit more thinking, this is a less intrusive implementation with
-the mininum impact on the exist function definitions and calling follows.
-One known little drawback is that we have to use the device driver private
-data (device.drvdata) to pass down the multi domains information in a
-earlier time. However, as multi PD devices are created by domain framework,
-this seems to be safe to use it in domain core code as device driver
-is not likely going to use it.
-Anyway, if any better ideas, please let me know.
-
-With the two new APIs, the using can be simply as:
-static int xxx_attach_dev(struct generic_pm_domain *domain,
-			  struct device *dev)
-{
-	...
-	if (genpd_is_mpd_device(dev)) {
-		mpd_data =3D dev_gpd_mpd_data(dev);
-		np =3D mpd_data->parent->of_node;
-		idx =3D mpd_data->index;
-		//dts parsing
-		...
-	}
-	...
-}
-
-[1] https://patchwork.kernel.org/patch/10658669/
----
- drivers/base/power/domain.c | 31 +++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 23 +++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 7f38a92..1aa0918 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1343,6 +1343,9 @@ static struct generic_pm_domain_data *genpd_alloc_dev=
-_data(struct device *dev,
- 	gpd_data->td.effective_constraint_ns =3D PM_QOS_RESUME_LATENCY_NO_CONSTRA=
-INT_NS;
- 	gpd_data->nb.notifier_call =3D genpd_dev_pm_qos_notifier;
-=20
-+	if (genpd_is_mpd_device(dev))
-+		gpd_data->mpd_data =3D dev_get_drvdata(dev);
-+
- 	spin_lock_irq(&dev->power.lock);
-=20
- 	if (dev->power.subsys_data->domain_data) {
-@@ -2179,6 +2182,7 @@ EXPORT_SYMBOL_GPL(of_genpd_remove_last);
-=20
- static void genpd_release_dev(struct device *dev)
- {
-+	kfree(dev->driver_data);
- 	kfree(dev);
- }
-=20
-@@ -2320,6 +2324,20 @@ int genpd_dev_pm_attach(struct device *dev)
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
-=20
- /**
-+ * genpd_is_mpd_device - Check if a device is associated with multi PM dom=
-ains
-+ * @dev: Device to check.
-+ */
-+
-+bool genpd_is_mpd_device(struct device *dev)
-+{
-+	if (!dev || (dev && !dev->bus))
-+		return false;
-+
-+	return dev->bus =3D=3D &genpd_bus_type;
-+};
-+EXPORT_SYMBOL_GPL(genpd_is_mpd_device);
-+
-+/**
-  * genpd_dev_pm_attach_by_id - Associate a device with one of its PM domai=
-ns.
-  * @dev: The device used to lookup the PM domain.
-  * @index: The index of the PM domain.
-@@ -2338,6 +2356,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 					 unsigned int index)
- {
-+	struct pm_domain_mpd_data *mpd_data;
- 	struct device *genpd_dev;
- 	int num_domains;
- 	int ret;
-@@ -2366,6 +2385,18 @@ struct device *genpd_dev_pm_attach_by_id(struct devi=
-ce *dev,
- 		return ERR_PTR(ret);
+diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cp=
+cap-charger.c
+index 9e8ff5c..7d8b4d5 100644
+--- a/drivers/power/supply/cpcap-charger.c
++++ b/drivers/power/supply/cpcap-charger.c
+@@ -576,6 +576,7 @@ static void cpcap_usb_detect(struct work_struct *work)
+ 			goto out_err;
  	}
 =20
-+	/* Allocate multi power domains data */
-+	mpd_data =3D kzalloc(sizeof(*mpd_data), GFP_KERNEL);
-+	if (!mpd_data) {
-+		device_unregister(genpd_dev);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	mpd_data->parent =3D dev;
-+	mpd_data->index =3D index;
-+
-+	dev_set_drvdata(genpd_dev, mpd_data);
-+
- 	/* Try to attach the device to the PM domain at the specified index. */
- 	ret =3D __genpd_dev_pm_attach(genpd_dev, dev->of_node, index, false);
- 	if (ret < 1) {
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 3b5d728..106d4e7 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -144,6 +144,11 @@ struct gpd_timing_data {
- 	bool cached_suspend_ok;
- };
++	power_supply_changed(ddata->usb);
+ 	return;
 =20
-+struct pm_domain_mpd_data {
-+	struct device *parent;
-+	unsigned int index;
-+};
-+
- struct pm_domain_data {
- 	struct list_head list_node;
- 	struct device *dev;
-@@ -151,6 +156,7 @@ struct pm_domain_data {
-=20
- struct generic_pm_domain_data {
- 	struct pm_domain_data base;
-+	struct pm_domain_mpd_data *mpd_data;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
- 	unsigned int performance_state;
-@@ -262,10 +268,17 @@ unsigned int of_genpd_opp_to_performance_state(struct=
- device *dev,
- 				struct device_node *np);
-=20
- int genpd_dev_pm_attach(struct device *dev);
-+bool genpd_is_mpd_device(struct device *dev);
- struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 					 unsigned int index);
- struct device *genpd_dev_pm_attach_by_name(struct device *dev,
- 					   char *name);
-+
-+static inline struct pm_domain_mpd_data *dev_gpd_mpd_data(struct device *d=
-ev)
-+{
-+	return dev_gpd_data(dev)->mpd_data;
-+}
-+
- #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
- static inline int of_genpd_add_provider_simple(struct device_node *np,
- 					struct generic_pm_domain *genpd)
-@@ -311,6 +324,11 @@ static inline int genpd_dev_pm_attach(struct device *d=
-ev)
- 	return 0;
- }
-=20
-+static bool genpd_is_mpd_device(struct device *dev)
-+{
-+	return false;
-+}
-+
- static inline struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 						       unsigned int index)
- {
-@@ -323,6 +341,11 @@ static inline struct device *genpd_dev_pm_attach_by_na=
-me(struct device *dev,
- 	return NULL;
- }
-=20
-+static inline struct pm_domain_mpd_data *dev_gpd_mpd_data(struct device *d=
-ev)
-+{
-+	return ERR_PTR(-ENOSYS);
-+}
-+
- static inline
- struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
- {
+ out_err:
+
 --=20
-2.7.4
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--opJtzjQTFsWo+cga
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlwlLXUACgkQMOfwapXb+vLYPgCdGSb1Xix0v8c/98jQt4q0SjNl
+aaYAnjX5359IdWTVGczs4aF+UtxlGfeH
+=VwT6
+-----END PGP SIGNATURE-----
+
+--opJtzjQTFsWo+cga--
