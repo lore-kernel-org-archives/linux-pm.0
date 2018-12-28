@@ -1,63 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: cpcap-charger: generate events for userspace
-Date: Thu, 27 Dec 2018 20:52:21 +0100
-Message-ID: <20181227195221.GA11920@amd>
+From: Aisheng Dong <aisheng.dong@nxp.com>
+Subject: RE: [PATCH 0/3] firmware: imx: scu-pd: add fallback compatible string
+ support
+Date: Fri, 28 Dec 2018 02:38:19 +0000
+Message-ID: <AM0PR04MB4211FB9C3BA2CBBDB58F03FC80B70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <robh+dt@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Sorry, missed DT guys.
 
---opJtzjQTFsWo+cga
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Rob & Ulf,
 
-   =20
-The driver doesn't generate uevents on charger connect/disconnect.
-This leads to UPower not detecting when AC is on or off... and that is
-bad.
-   =20
-Reported by Arthur D. on github (
-https://github.com/maemo-leste/bugtracker/issues/206 ), thanks to
-Merlijn Wajer for suggesting a fix.
-   =20
-Cc: stable@kernel.org
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Would you help review this patch series?
 
-diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cp=
-cap-charger.c
-index 9e8ff5c..7d8b4d5 100644
---- a/drivers/power/supply/cpcap-charger.c
-+++ b/drivers/power/supply/cpcap-charger.c
-@@ -576,6 +576,7 @@ static void cpcap_usb_detect(struct work_struct *work)
- 			goto out_err;
- 	}
-=20
-+	power_supply_changed(ddata->usb);
- 	return;
-=20
- out_err:
+Regards
+Dong Aisheng
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---opJtzjQTFsWo+cga
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlwlLXUACgkQMOfwapXb+vLYPgCdGSb1Xix0v8c/98jQt4q0SjNl
-aaYAnjX5359IdWTVGczs4aF+UtxlGfeH
-=VwT6
------END PGP SIGNATURE-----
-
---opJtzjQTFsWo+cga--
+> -----Original Message-----
+> From: Aisheng Dong
+> Sent: Wednesday, December 19, 2018 12:01 AM
+> 
+> SCU power domain can be used in the same way by IMX8QXP and IMX8QM
+> SoCs.
+> Let's add a "fsl,scu-pd" fallback compatible string to allow other SoCs to reuse
+> the common part.
+> 
+> Dong Aisheng (3):
+>   dt-bindings: fsl: scu: add fallback compatible string for power domain
+>   dt-bindings: fsl: scu: add imx8qm scu power domain support
+>   firmware: imx: scu-pd: add fallback compatible string support
+> 
+>  Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt | 8 ++++++--
+>  drivers/firmware/imx/scu-pd.c                               | 1 +
+>  2 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> --
+> 2.7.4
