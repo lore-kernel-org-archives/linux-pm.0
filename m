@@ -1,42 +1,85 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/3] dt-bindings: fsl: scu: add imx8qm scu power domain
- support
-Date: Fri, 28 Dec 2018 17:28:36 -0600
-Message-ID: <20181228232836.GA11339@bogus>
-References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
- <1545148524-658-3-git-send-email-aisheng.dong@nxp.com>
+From: Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Fri, 28 Dec 2018 17:29:42 -0800
+Message-ID: <154604698217.179992.9966831118584978893@swboyd.mtv.corp.google.com>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
+ <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
+ <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
+ <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
+ <CAD=FV=VMMYKoW4RU_TTjLdyrNcWZU-Gyou9b6qynKFX9wDn5Mw@mail.gmail.com>
+ <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg@mail.gmail.com>
+ <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
+ <154534136449.79149.14097954220921296509@swboyd.mtv.corp.google.com>
+ <7e310416-78d3-b7e5-5013-0bcc8bfd0351@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1545148524-658-3-git-send-email-aisheng.dong@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <7e310416-78d3-b7e5-5013-0bcc8bfd0351-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 18 Dec 2018 16:01:25 +0000, Aisheng Dong wrote:
-> Add imx8qm scu power domain support
-> 
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Shawn Guo <shawnguo@kernel.org>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
->  Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt | 1 +
->  1 file changed, 1 insertion(+)
-> 
-
-Reviewed-by: Rob Herring <robh@kernel.org>
+UXVvdGluZyBSYWplbmRyYSBOYXlhayAoMjAxOC0xMi0yMCAyMDo1MjozNCkKPiAKPiBPbiAxMi8y
+MS8yMDE4IDI6NTkgQU0sIFN0ZXBoZW4gQm95ZCB3cm90ZToKPiA+IFF1b3RpbmcgUm9iIEhlcnJp
+bmcgKDIwMTgtMTItMTkgMTU6NDc6MjUpCj4gPj4gT24gV2VkLCBEZWMgMTksIDIwMTggYXQgNDo0
+MCBQTSBEb3VnIEFuZGVyc29uIDxkaWFuZGVyc0BjaHJvbWl1bS5vcmc+IHdyb3RlOgo+ID4+PiBP
+biBXZWQsIERlYyAxOSwgMjAxOCBhdCAxMjo0MCBQTSBEb3VnIEFuZGVyc29uIDxkaWFuZGVyc0Bj
+aHJvbWl1bS5vcmc+IHdyb3RlOgo+ID4+Pj4gT24gV2VkLCBEZWMgMTksIDIwMTggYXQgMTI6MDkg
+UE0gUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4gd3JvdGU6Cj4gPj4+PiAuLi5idXQgaXQg
+ZG9lcyBoYXZlIGEgZnJlcXVlbmN5LCBkb2Vzbid0IGl0Pwo+ID4+Pj4KPiA+Pj4+ICsgICBjb21w
+YXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7Cj4gPj4+PiArCj4gPj4+
+PiArICAgb3BwLTcxMDAwMDAwMCB7Cj4gPj4+PiArICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDcx
+MDAwMDAwMD47Cj4gPj4+PiArICAgICBxY29tLGxldmVsID0gPFJQTUhfUkVHVUxBVE9SX0xFVkVM
+X1RVUkJPX0wxPjsKPiA+Pj4+ICsgICB9Owo+ID4+Pgo+ID4+PiBBaCwgSSBwZXJoYXBzIHNlZSB0
+aGUgY29uZnVzaW9uLiAgU28gUmFqZW5kcmEncyB1c2FnZSBvZgo+ID4+PiAib3BlcmF0aW5nLXBv
+aW50cy12Mi1xY29tLWxldmVsIiBbMV0gZG9lc24ndCBoYXZlIGEgZnJlcXVlbmN5IGJ1dAo+ID4+
+PiBKb3JkYW4ncyBkby4gIFNvIEkgZ3Vlc3MgaXQgbWFrZXMgc2Vuc2UgdGhhdCBKb3JkYW4ncyBo
+YXZlIHRoZQo+ID4+PiBmYWxsYmFjayBjb21wYXRpYmxlIGJ1dCBSYWplbmRyYSdzIGRvbid0Pwo+
+ID4+Cj4gPj4gSXMgaGF2aW5nIGl0IHVzZWZ1bCB0byBzL3cgdGhhdCBkb2Vzbid0IHVuZGVyc3Rh
+bmQKPiA+PiAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIj8gSWYgc28sIHRoZW4gYWRk
+Cj4gPj4gIm9wZXJhdGluZy1wb2ludHMtdjIiLiBJZiBub3QsIHRoZW4gZG9uJ3QuCj4gPiAKPiA+
+IFRoZSBvbmx5IGJlbmVmaXQgSSBzZWUgaW4gaGF2aW5nICJvcGVyYXRpbmctcG9pbnRzLXYyIiBp
+cyB0aGF0IHdlIGRvbid0Cj4gPiBuZWVkIHRvIHVwZGF0ZSB0aGUgb2Zfc2tpcHBlZF9ub2RlX3Rh
+YmxlW10gaW4gZHJpdmVycy9wbGF0Zm9ybS9vZi5jIHRvCj4gPiBoYXZlIGFsbCB0aGUgdmFyaWFu
+dHMgb2Ygb3BlcmF0aW5nLXBvaW50cy12Mi0qIHdoZW4gdGhleSBkZWNpZGUgdG8gbm90Cj4gPiB1
+c2UgYW55dGhpbmcgZnJvbSB0aGUgImJhc2UiIGJpbmRpbmcuCj4gPiAKPiA+IElmIHRoYXQgZmFp
+bHMgdG8gd29yayBiZWNhdXNlIG9wcC1oeiBpcyByZXF1aXJlZCBmb3IgdGhlCj4gPiAib3BlcmF0
+aW5nLXBvaW50cy12MiIgYmluZGluZyBidXQgc29tZXRpbWVzCj4gPiBvcGVyYXRpbmctcG9pbnRz
+LXYyLXFjb20tbGV2ZWwgZG9lc24ndCByZXF1aXJlIGl0IEkgZ3Vlc3Mgd2UgbmVlZCB0bwo+ID4g
+dXBkYXRlIHRoZSBza2lwIHRhYmxlIG9yIG1ha2Ugc29tZSBnZW5lcmljIHByb3BlcnR5IGxpa2UK
+PiA+ICd0aGlzLWlzLW5vdC1hLWRldmljZScgdGhhdCB0aGVzZSB2YXJpb3VzIGRhdGEgdGFibGVz
+IGluIERUIGNhbiBiZQo+ID4gbWFya2VkIHdpdGggc28gd2UgZG9uJ3QgbWFrZSBwbGF0Zm9ybSBk
+ZXZpY2VzIGZvciB0aGVtLgo+ID4gCj4gPiBSZWdhcmRsZXNzIG9mIHRoZSBhYm92ZSwgd2Ugc2hv
+dWxkIHVwZGF0ZSB0aGUgYmluZGluZyBmb3IKPiA+IG9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1s
+ZXZlbCB0byBzYXkgdGhhdCBvcHAtaHogaXNuJ3QgYWx3YXlzIHJlcXVpcmVkCj4gPiB3aGVuIHRo
+ZSBxY29tLWxldmVsIGNvbXBhdGlibGUgaXMgcHJlc2VudC4gSXQgbG9va3MgbGlrZSBpdCBqdXN0
+IHNheXMKPiA+IHRoYXQgaXQgYnVpbGRzIG9uIHRvcCBvZiB0aGUgb3BwIGJpbmRpbmcgc28gdGhh
+dCdzIG5vdCBvYnZpb3VzLgo+IAo+IFN1cmUsIEkgY2FuIHJlc3BpbiB3aXRoIHRob3NlIGRldGFp
+bHMgYWRkZWQgaW4uCgpPay4KCj4gU28gSSBhbSBndWVzc2luZyB0aGUgY29uY2x1c2lvbiBpcyB0
+byB1c2UgYSBmYWxsYmFjayAib3BlcmF0aW5nLXBvaW50cy12MiIKPiBjb21wYXRpYmxlICpvbmx5
+KiB3aGVuIHdlIGRvIGhhdmUgb3BwLWh6IGFsb25nIHdpdGggcWNvbSxsZXZlbCAoYXMgaW4gdGhl
+Cj4gY2FzZSB3aXRoIGdwdSkgYW5kIG5vdCBoYXZlIGEgZmFsbGJhY2sgY29tcGF0aWJsZSBpbiBj
+YXNlcyB3aGVuIHdlIGRvbid0Cj4gaGF2ZSBvcHAtaHogKGFzIGluIHRoZSBjYXNlIG9mIHJwbSBw
+b3dlciBkb21haW5zKT8KPiBUaGF0IHNlZW1zIGEgbGl0dGxlIGluY29uc2lzdGVudCwgYW5kIGdp
+dmVuIFJvYiBzYWlkIGVpdGhlciB3YXkgaXMgZmluZSwKPiBqdXN0IGRvIG9uZSB3YXkgb3IgdGhl
+IG90aGVyIGFuZCBub3QgYm90aCwgSSBhbSBpbmNsaW5lZCB0byB0aGluayB3ZSBzaG91bGQKPiBq
+dXN0IGhhdmUgYSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIiBhbmQgbm8gZmFsbGJh
+Y2sgY29tcGF0aWJsZS4KPiBEb2VzIHRoYXQgbWFrZSBzZW5zZT8KPiAKCkFyZSB5b3UgZ29pbmcg
+dG8gdXBkYXRlIHRoZSBza2lwIHRhYmxlIHRvIG5vdCBjcmVhdGUgcGxhdGZvcm0gZGV2aWNlcz8K
+T3IgaW50cm9kdWNlIHNvbWUgZ2VuZXJpYyBwcm9wZXJ0eSB0byBpbmRpY2F0ZSB0aGF0IHRoaXMg
+aXMganVzdCBkYXRhCmFuZCBub3QgYSBkZXZpY2Ugbm9kZT8KCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRy
+ZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
