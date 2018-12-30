@@ -1,40 +1,37 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 2/2] PM / Sleep: Check the file capability when writing
- wake lock interface
-Date: Sun, 30 Dec 2018 15:48:35 +0100
-Message-ID: <20181230144835.GB18985@kroah.com>
-References: <20181230132856.24095-1-jlee@suse.com>
- <20181230132856.24095-3-jlee@suse.com>
+From: Sinan Kaya <okaya@kernel.org>
+Subject: [PATCH v4 07/11] drivers: thermal: int3406_thermal: Make PCI dependency explicit
+Date: Sun, 30 Dec 2018 19:56:08 +0000
+Message-ID: <20181230195612.6657-8-okaya@kernel.org>
+References: <20181230195612.6657-1-okaya@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181230132856.24095-3-jlee@suse.com>
+In-Reply-To: <20181230195612.6657-1-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Randy Dunlap <rdunlap@infradead.org>, Joe Perches <joe@perches.com>, Bart Van Assche <bvanassche@acm.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Chen Yu <yu.c.chen@intel.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: linux-next@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 30, 2018 at 09:28:56PM +0800, Lee, Chun-Yi wrote:
-> The wake lock/unlock sysfs interfaces check that the writer must has
-> CAP_BLOCK_SUSPEND capability. But the checking logic can be bypassed
-> by opening sysfs file within an unprivileged process and then writing
-> the file within a privileged process. The tricking way has been exposed
-> by Andy Lutomirski in CVE-2013-1959.
+Need CONFIG_PCI to be set in order to be able to use this driver.
 
-Don't you mean "open by privileged and then written by unprivileged?"
-Or if not, exactly how is this a problem?  You check the capabilities
-when you do the write and if that is not allowed then, well
+Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without CONFIG_PCI set")
+Signed-off-by: Sinan Kaya <okaya@kernel.org>
+---
+ drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-And you are checking the namespace of the person trying to do the write
-when the write happens, which is correct here, right?
-
-If you really want to mess with wake locks in a namespaced environment,
-then put it in a real namespaced environment, which is {HUGE HINT} not
-sysfs.
-
-So no, this patch isn't ok...
-
-thanks,
-
-greg k-h
+diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
+index 0582bd12a239..fba1976d5f8d 100644
+--- a/drivers/thermal/intel/int340x_thermal/Kconfig
++++ b/drivers/thermal/intel/int340x_thermal/Kconfig
+@@ -31,7 +31,7 @@ if INT340X_THERMAL
+ 
+ config INT3406_THERMAL
+ 	tristate "ACPI INT3406 display thermal driver"
+-	depends on ACPI_VIDEO
++	depends on ACPI_VIDEO && PCI
+ 	help
+ 	  The display thermal device represents the LED/LCD display panel
+ 	  that may or may not include touch support. The main function of
+-- 
+2.19.0
