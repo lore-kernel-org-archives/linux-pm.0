@@ -1,122 +1,93 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 0/2] [RFC] sysfs: Add hook for checking the file
- capability of opener
-Date: Mon, 31 Dec 2018 11:38:20 +0100
-Message-ID: <20181231103820.GA27420@kroah.com>
+Subject: Re: [PATCH 2/2] PM / Sleep: Check the file capability when writing
+ wake lock interface
+Date: Mon, 31 Dec 2018 11:40:55 +0100
+Message-ID: <20181231104055.GB27420@kroah.com>
 References: <20181230132856.24095-1-jlee@suse.com>
- <20181230144506.GA18985@kroah.com>
- <20181231094105.GO3506@linux-l9pv.suse>
+ <20181230132856.24095-3-jlee@suse.com>
+ <20181230144835.GB18985@kroah.com>
+ <20181231093851.GN3506@linux-l9pv.suse>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181231094105.GO3506@linux-l9pv.suse>
+In-Reply-To: <20181231093851.GN3506@linux-l9pv.suse>
 Sender: linux-kernel-owner@vger.kernel.org
 To: joeyli <jlee@suse.com>
 Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Randy Dunlap <rdunlap@infradead.org>, Joe Perches <joe@perches.com>, Bart Van Assche <bvanassche@acm.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 31, 2018 at 05:41:05PM +0800, joeyli wrote:
-> Hi Greg, 
+On Mon, Dec 31, 2018 at 05:38:51PM +0800, joeyli wrote:
+> Hi Greg,
 > 
-> Thanks for your review!
-> 
-> On Sun, Dec 30, 2018 at 03:45:06PM +0100, Greg Kroah-Hartman wrote:
-> > On Sun, Dec 30, 2018 at 09:28:54PM +0800, Lee, Chun-Yi wrote:
-> > > There have some discussion in the following mail loop about checking
-> > > capability in sysfs write handler:
-> > >     https://lkml.org/lkml/2018/9/13/978
+> On Sun, Dec 30, 2018 at 03:48:35PM +0100, Greg Kroah-Hartman wrote:
+> > On Sun, Dec 30, 2018 at 09:28:56PM +0800, Lee, Chun-Yi wrote:
+> > > The wake lock/unlock sysfs interfaces check that the writer must has
+> > > CAP_BLOCK_SUSPEND capability. But the checking logic can be bypassed
+> > > by opening sysfs file within an unprivileged process and then writing
+> > > the file within a privileged process. The tricking way has been exposed
+> > > by Andy Lutomirski in CVE-2013-1959.
 > > 
-> > A sysfs callback should not care about stuff like this.
-> > 
-> > Worst case, do a simple:
-> > 	if (!capable(CAP_FOO))
-> > 		return -EPERM
-> > 
-> > you don't care or need to worry about the file handle for that at all,
-> > right?
+> > Don't you mean "open by privileged and then written by unprivileged?"
+> > Or if not, exactly how is this a problem?  You check the capabilities
+> > when you do the write and if that is not allowed then, well
 > >
 > 
-> The capable() can be bypassed.
+> Sorry for I didn't provide clear explanation.
+> 
+> The privileged means CAP_BLOCK_SUSPEND but not file permission. The file permission
+> has already relaxed for non-root user. Then the expected behavior is that non-root
+> process must has CAP_BLOCK_SUSPEND capability for writing wake_lock sysfs.
+> 
+> But, the CAP_BLOCK_SUSPEND restrict can be bypassed:
+> 
+> int main(int argc, char* argv[])
+> {
+>         int fd, ret = 0;
+> 
+>         fd = open("/sys/power/wake_lock", O_RDWR);
+>         if (fd < 0)
+>                 err(1, "open wake_lock");
+> 
+>         if (dup2(fd, 1) != 1)	// overwrite the stdout with wake_lock
+>                 err(1, "dup2");
+>         sleep(1);
+>         execl("./string", "string");	//string has capability
+> 
+>         return ret;
+> }
+> 
+> This program is an unpriviledged process (has no CAP_BLOCK_SUSPEND), it opened
+> wake_lock sysfs and overwrited stdout. Then it executes the "string" program
+> that has CAP_BLOCK_SUSPEND.
 
-How?
+That's the problem right there, do not give CAP_BLOCK_SUSPEND rights to
+"string".  If any user can run that program, there's nothing the kernel
+can do about this, right?  Just don't allow that program on the system :)
 
-> Unprivileged process may reads or writes those sysfs if file
-> permission be relaxed by root for non-root user.
+> The string program writes to stdout, which means that it writes to
+> wake_lock. So an unpriviledged opener can trick an priviledged writer
+> for writing sysfs.  
 
-So if root says "I want a non-root user to be able to write to this
-file" by changing its permissions, yes, a non-root user will be able to
-write to them.  But the capable() check will catch this, right?
+That sounds like a userspace program that was somehow given incorrect
+rights by the admin, and a user is taking advantage of it.  That's not
+the kernel's fault.
 
-And why is the kernel trying to protect userspace from itself?  Root
-explicitly asked for anyone to read/write this file, why do we think the
-kernel knows better?
-
-> > > Sometimes we check the capability in sysfs implementation by using
-> > > capable function.
+> > And you are checking the namespace of the person trying to do the write
+> > when the write happens, which is correct here, right?
 > > 
-> > Which should be fine, right?
+> > If you really want to mess with wake locks in a namespaced environment,
+> > then put it in a real namespaced environment, which is {HUGE HINT} not
+> > sysfs.
 > >
 > 
-> If file permission is enough to restrict sysfs that can only be used
-> by root. Why do some sysfs interfaces use capable()? It's not
-> redundancy?
+> I don't want to mess with wake locks in namespace.
 
-I don't know why some sysfs files use this, it was the choice of that
-author it seems.  Perhaps it is to "check" that the root user really
-does have that capability.  Some root users do not have all capabilities
-if they were previously "dropped".
+Neither do I :)
 
-> > > But the checking can be bypassed by opening sysfs
-> > > file within an unprivileged process then writing the file within a
-> > > privileged process. The tricking way has been exposed by Andy Lutomirski
-> > > for CVE-2013-1959.
-> > 
-> > And who does this for a sysfs file?  And why?
-> 
-> Just want to bypass the capable() checking. 
-
-But why would you want to bypass this?  I don't understand.
-
-What is the use case you are trying to solve for here.
-
-> > > Because the sysfs_ops does not forward the file descriptor to the
-> > > show/store callback, there doesn't have chance to check the capability
-> > > of file's opener.
-> > 
-> > Which is by design.  If you care about open, you are using sysfs wrong.
-> >
-> 
-> OK~ So the sysfs doesn't care opener's capability.
-
-Exactly.
-
-Except for the permission/mode that the file has on it.  The vfs checks
-this at open time and either allows it or forbids it.
-
-> > > This patch adds the hook to sysfs_ops that allows
-> > > different implementation in object and attribute levels for checking
-> > > file capable before accessing sysfs interfaces.
-> > 
-> > No, please no.
-> >
-> > > The callback function of kobject sysfs_ops is the first implementation
-> > > of new hook. It casts attribute to kobj_attribute then calls the file
-> > > capability callback function of attribute level. The same logic can
-> > > be implemented in other sysfs file types, like: device, driver and
-> > > bus type. 
-> > > 
-> > > The capability checking logic in wake_lock/wake_unlock sysfs interface
-> > > is the first example for kobject. It will check the opener's capability.
-> > 
-> > Why doesn't the file permission of that sysfs file determine who can or
-> > can not write to that file?
-> >
-> 
-> I agree that the file permission can restrict the writer of sysfs. But,
-> I still confused for why do some sysfs interface use capable()?
-
-Go ask the individual authors who added those checks :)
+so all should be fine, don't allow crazy executables with odd
+permissions to be run by any user and you should be fine.  That's always
+been the case, right?
 
 thanks,
 
