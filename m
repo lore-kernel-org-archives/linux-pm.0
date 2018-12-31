@@ -1,138 +1,104 @@
-From: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
-Subject: Re: [Intel-gfx] [PATCH v5 2/3] drm/i915: Move on the new pm runtime
- interface
-Date: Mon, 31 Dec 2018 12:32:26 +0000
-Message-ID: <d15e49e3-8d86-9c25-6412-a8534f1790d4@linux.intel.com>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-3-git-send-email-vincent.guittot@linaro.org>
- <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
- <CAKfTPtDx8u_TnZQnQNmn+=A5A78CPVSWKvMdOVD0UEw4m4s1iQ@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 2/2] PM / Sleep: Check the file capability when writing
+ wake lock interface
+Date: Mon, 31 Dec 2018 13:33:10 +0100
+Message-ID: <20181231123310.GA3038@kroah.com>
+References: <20181230132856.24095-1-jlee@suse.com>
+ <20181230132856.24095-3-jlee@suse.com>
+ <20181230144835.GB18985@kroah.com>
+ <20181231093851.GN3506@linux-l9pv.suse>
+ <20181231104055.GB27420@kroah.com>
+ <CAG48ez3-YEVsyuk1H6hjGy9Ogm-z46bmdnqy0JbW9YL297FsTw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtDx8u_TnZQnQNmn+=A5A78CPVSWKvMdOVD0UEw4m4s1iQ@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAG48ez3-YEVsyuk1H6hjGy9Ogm-z46bmdnqy0JbW9YL297FsTw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Jann Horn <jannh@google.com>
+Cc: joeyli <jlee@suse.com>, Andy Lutomirski <luto@kernel.org>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Randy Dunlap <rdunlap@infradead.org>, Joe Perches <joe@perches.com>, Bart Van Assche <bvanassche@acm.org>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Giovanni Gherdovich <ggherdovich@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Dec 31, 2018 at 01:02:35PM +0100, Jann Horn wrote:
+> On Mon, Dec 31, 2018 at 11:41 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Mon, Dec 31, 2018 at 05:38:51PM +0800, joeyli wrote:
+> > > Hi Greg,
+> > >
+> > > On Sun, Dec 30, 2018 at 03:48:35PM +0100, Greg Kroah-Hartman wrote:
+> > > > On Sun, Dec 30, 2018 at 09:28:56PM +0800, Lee, Chun-Yi wrote:
+> > > > > The wake lock/unlock sysfs interfaces check that the writer must has
+> > > > > CAP_BLOCK_SUSPEND capability. But the checking logic can be bypassed
+> > > > > by opening sysfs file within an unprivileged process and then writing
+> > > > > the file within a privileged process. The tricking way has been exposed
+> > > > > by Andy Lutomirski in CVE-2013-1959.
+> > > >
+> > > > Don't you mean "open by privileged and then written by unprivileged?"
+> > > > Or if not, exactly how is this a problem?  You check the capabilities
+> > > > when you do the write and if that is not allowed then, well
+> > > >
+> > >
+> > > Sorry for I didn't provide clear explanation.
+> > >
+> > > The privileged means CAP_BLOCK_SUSPEND but not file permission. The file permission
+> > > has already relaxed for non-root user. Then the expected behavior is that non-root
+> > > process must has CAP_BLOCK_SUSPEND capability for writing wake_lock sysfs.
+> > >
+> > > But, the CAP_BLOCK_SUSPEND restrict can be bypassed:
+> > >
+> > > int main(int argc, char* argv[])
+> > > {
+> > >         int fd, ret = 0;
+> > >
+> > >         fd = open("/sys/power/wake_lock", O_RDWR);
+> > >         if (fd < 0)
+> > >                 err(1, "open wake_lock");
+> > >
+> > >         if (dup2(fd, 1) != 1) // overwrite the stdout with wake_lock
+> > >                 err(1, "dup2");
+> > >         sleep(1);
+> > >         execl("./string", "string");  //string has capability
+> > >
+> > >         return ret;
+> > > }
+> > >
+> > > This program is an unpriviledged process (has no CAP_BLOCK_SUSPEND), it opened
+> > > wake_lock sysfs and overwrited stdout. Then it executes the "string" program
+> > > that has CAP_BLOCK_SUSPEND.
+> >
+> > That's the problem right there, do not give CAP_BLOCK_SUSPEND rights to
+> > "string".  If any user can run that program, there's nothing the kernel
+> > can do about this, right?  Just don't allow that program on the system :)
+> >
+> > > The string program writes to stdout, which means that it writes to
+> > > wake_lock. So an unpriviledged opener can trick an priviledged writer
+> > > for writing sysfs.
+> >
+> > That sounds like a userspace program that was somehow given incorrect
+> > rights by the admin, and a user is taking advantage of it.  That's not
+> > the kernel's fault.
+> 
+> Isn't it? Pretty much any setuid program will write to stdout or
+> stderr; even the glibc linker code does so if you set LD_DEBUG.
+> (Normally the output isn't entirely attacker-controlled, but it is in
+> the case of stuff like "procmail", which I think Debian still ships as
+> setuid root.) setuid programs should always be able to safely call
+> read() and write() on caller-provided file descriptors. Also, you're
+> supposed to be able to receive file descriptors over unix domain
+> sockets and then write to them without trusting the sender. Basically,
+> the ->read and ->write VFS handlers should never look at the caller's
+> credentials, only the opener's (with the exception of LSMs, which tend
+> to do weird things to the system's security model).
 
-On 21/12/2018 13:26, Vincent Guittot wrote:
-> On Fri, 21 Dec 2018 at 12:33, Tvrtko Ursulin
-> <tvrtko.ursulin@linux.intel.com> wrote:
->>
->>
->> Hi,
->>
->> On 21/12/2018 10:33, Vincent Guittot wrote:
->>> Use the new pm runtime interface to get the accounted suspended time:
->>> pm_runtime_suspended_time().
->>> This new interface helps to simplify and cleanup the code that computes
->>> __I915_SAMPLE_RC6_ESTIMATED and to remove direct access to internals of
->>> PM runtime.
->>>
->>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
->>> ---
->>>    drivers/gpu/drm/i915/i915_pmu.c | 16 ++++++----------
->>>    drivers/gpu/drm/i915/i915_pmu.h |  4 ++--
->>>    2 files changed, 8 insertions(+), 12 deletions(-)
->>>
->>> diff --git a/drivers/gpu/drm/i915/i915_pmu.c b/drivers/gpu/drm/i915/i915_pmu.c
->>> index d6c8f8f..3f76f60 100644
->>> --- a/drivers/gpu/drm/i915/i915_pmu.c
->>> +++ b/drivers/gpu/drm/i915/i915_pmu.c
->>> @@ -5,6 +5,7 @@
->>>     */
->>>
->>>    #include <linux/irq.h>
->>> +#include <linux/pm_runtime.h>
->>>    #include "i915_pmu.h"
->>>    #include "intel_ringbuffer.h"
->>>    #include "i915_drv.h"
->>> @@ -478,7 +479,6 @@ static u64 get_rc6(struct drm_i915_private *i915)
->>>                 * counter value.
->>>                 */
->>>                spin_lock_irqsave(&i915->pmu.lock, flags);
->>> -             spin_lock(&kdev->power.lock);
->>>
->>>                /*
->>>                 * After the above branch intel_runtime_pm_get_if_in_use failed
->>> @@ -491,16 +491,13 @@ static u64 get_rc6(struct drm_i915_private *i915)
->>>                 * suspended and if not we cannot do better than report the last
->>>                 * known RC6 value.
->>>                 */
->>> -             if (kdev->power.runtime_status == RPM_SUSPENDED) {
->>> -                     if (!i915->pmu.sample[__I915_SAMPLE_RC6_ESTIMATED].cur)
->>> -                             i915->pmu.suspended_jiffies_last =
->>> -                                               kdev->power.suspended_jiffies;
->>> +             if (pm_runtime_status_suspended(kdev)) {
->>> +                     val = pm_runtime_suspended_time(kdev);
->>
->> There is a race condition between the status check and timestamp access
->> which the existing code solves by holding the power.lock over it. But I
->> don't exactly remember how this issue was manifesting. Is
->> kdev->power.suspended_jiffies perhaps reset on exit from runtime
->> suspend, which was then underflowing the val, not sure.
->>
->> Anyways, is the new way of doing this safe with regards to this race? In
-> 
-> AFAICT it is safe.
-> The current version does:
-> 1-take lock,
-> 2-test if dev is suspended
-> 3-read some internals field to computed an up-to-date suspended time
-> 4-update __I915_SAMPLE_RC6_ESTIMATED
-> 5-release lock
-> 
-> The new version does:
-> 1-test if dev is suspended
-> 2-get an up-to-date  suspended time with pm_runtime_suspended_time.
-> This is atomic and monotonic
-> 3-update __I915_SAMPLE_RC6_ESTIMATED
-> 
-> A change from suspended to another states that happens just before
-> step 1 is ok for both as we will run the else if
-> No change of the state can happen after step 1 in current code and the
-> estimated suspended time will be the time up to step2. In parallel,
-> Any state change will have to wait step5 to continue
-> If a change from suspended to another state happens after step 1 in
-> new code, the suspended time return by PM core will be the time up to
-> this change. So I would say you don't delay state transition and you
-> get a more accurate estimated suspended time (even if the difference
-> should be small).
-> If a change from suspended to another state happens after step 2 in
-> new code, the suspended time return by PM core will be the time up to
-> step 2 so there is no changes
-> 
-> 
->> other words is the value pm_runtime_suspended_time always monotonic,
->> even when not suspended? If not we have to handle the race somehow.
-> 
-> Yes pm_runtime_suspended_time is monotonic and stays unchanged when
-> not suspended
-> 
->>
->> If it is always monotonic, then worst case we report one wrong sample,
->> which I guess is still not ideal since someone could be querying the PMU
->> with quite low frequency.
->>
->> There are tests which probably can hit this, but to run them
->> automatically your patches would need to be rebased on drm-tip and maybe
->> sent to our trybot. I can do that after the holiday break if you are
->> okay with having the series waiting until then.
-> 
-> yes looks good to me
+So a root program gets the file handle to the sysfs file and then passes
+it off to a setuid program and the kernel should somehow protect from
+this?
 
-Looks good to me as well. And our CI agrees with it. So:
+I think that any sysfs file that is relying on the capable() check
+should just set their permissions properly first, and then it should be
+ok.
 
-Reviewed-by: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
+thanks,
 
-I assume you will take the patch through some power related tree and we 
-will eventually pull it back to drm-tip.
-
-Regards,
-
-Tvrtko
+greg k-h
