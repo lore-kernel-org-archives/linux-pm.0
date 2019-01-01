@@ -1,45 +1,27 @@
-From: Eduardo Valentin <edubezval@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.21-rc1
-Date: Tue, 1 Jan 2019 15:15:31 -0800
-Message-ID: <20190101231526.GA7944@localhost.localdomain>
-References: <20190101160503.GA3306@localhost.localdomain>
- <CAHk-=whXWWXSMMPpm3eGV=PL12=K5LFM3didLBuGy1Y7vUbXVg@mail.gmail.com>
+Date: Tue, 1 Jan 2019 15:32:50 -0800
+Message-ID: <CAHk-=wiku0MygbFLmLjvCo-zzu4ygivkshdGzVVADYdwe-b57A@mail.gmail.com>
+References: <20190101160503.GA3306@localhost.localdomain> <CAHk-=whXWWXSMMPpm3eGV=PL12=K5LFM3didLBuGy1Y7vUbXVg@mail.gmail.com>
+ <20190101231526.GA7944@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAHk-=whXWWXSMMPpm3eGV=PL12=K5LFM3didLBuGy1Y7vUbXVg@mail.gmail.com>
+In-Reply-To: <20190101231526.GA7944@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eduardo Valentin <edubezval@gmail.com>
 Cc: Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 01, 2019 at 01:35:36PM -0800, Linus Torvalds wrote:
-> On Tue, Jan 1, 2019 at 8:05 AM Eduardo Valentin <edubezval@gmail.com> wrote:
+On Tue, Jan 1, 2019 at 3:16 PM Eduardo Valentin <edubezval@gmail.com> wrote:
+>
+> > It doesn't even build cleanly.
 > >
-> > Please consider pulling from
-> >
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
-> 
-> No.
-> 
-> I pulled and immediately unpulled again.
-> 
+>
+> Do you still have have a copy of the build error?
 
-hmm... ok I am double checking.
+A plain "make allmodconfig" shows a warning.
 
-> It doesn't even build cleanly.
-> 
+And I refuse to add new warnings.
 
-Do you still have have a copy of the build error? 
-
-The local tests I did were not enough to see this error,
-neither were the kernel CI builds. Only failed build was
-on something completely unrelated (ARC) to these
-changes:
-Full Build Summary:
-https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v4.20-rc5-42-g055ddb633a35/
-
-
-
->                 Linus
+                 Linus
