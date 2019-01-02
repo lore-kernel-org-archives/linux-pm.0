@@ -1,45 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq / Documentation: Update cpufreq MAINTAINERS entry
-Date: Wed, 02 Jan 2019 12:13:52 +0100
-Message-ID: <7154380.sNYZWJVSaJ@aspire.rjw.lan>
+From: Henry Chen <henryc.chen@mediatek.com>
+Subject: [RFC PATCH 0/7] Add driver for dvfsrc and add support for active state of scpsys on mt8183
+Date: Wed, 2 Jan 2019 21:43:57 +0800
+Message-ID: <1546436644-19234-1-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
+To: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The patchsets add support for MediaTek hardware module named DVFSRC
+(dynamic voltage and frequency scaling resource collector). The DVFSRC is
+a HW module which is used to collect all the requests from both software
+and hardware and turn into the decision of minimum operating voltage and
+minimum DRAM frequency to fulfill those requests.
 
-Update the MAINTAINERS entry for cpufreq by making it clear that it
-is not just drivers and adding current documentation records to it.
+So, This series is to implement the dvfsrc driver to collect all the
+requests of operating voltage or DRAM bandwidth from other device drivers
+likes GPU/Camera through 2 frameworks basically:
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- MAINTAINERS |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
+   requirements from different clients
+2. Active state management of power domains[1]: to handle the operating
+   voltage opp requirement from different power domains
 
-Index: linux-pm/MAINTAINERS
-===================================================================
---- linux-pm.orig/MAINTAINERS
-+++ linux-pm/MAINTAINERS
-@@ -3888,7 +3888,7 @@ L:	netdev@vger.kernel.org
- S:	Maintained
- F:	drivers/net/ethernet/ti/cpmac.c
- 
--CPU FREQUENCY DRIVERS
-+CPU FREQUENCY SCALING FRAMEWORK
- M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
- M:	Viresh Kumar <viresh.kumar@linaro.org>
- L:	linux-pm@vger.kernel.org
-@@ -3896,6 +3896,8 @@ S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
- T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
- B:	https://bugzilla.kernel.org
-+F:	Documentation/admin-guide/pm/cpufreq.rst
-+F:	Documentation/admin-guide/pm/intel_pstate.rst
- F:	Documentation/cpu-freq/
- F:	Documentation/devicetree/bindings/cpufreq/
- F:	drivers/cpufreq/
+[1] https://lwn.net/Articles/744047/
