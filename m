@@ -1,45 +1,88 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.21-rc1
-Date: Tue, 1 Jan 2019 16:51:25 -0800
-Message-ID: <20190102005121.GB7944@localhost.localdomain>
-References: <20190101160503.GA3306@localhost.localdomain>
- <CAHk-=whXWWXSMMPpm3eGV=PL12=K5LFM3didLBuGy1Y7vUbXVg@mail.gmail.com>
- <20190101231526.GA7944@localhost.localdomain>
- <CAHk-=wiku0MygbFLmLjvCo-zzu4ygivkshdGzVVADYdwe-b57A@mail.gmail.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v2] thermal: tsens: qcom: do not create duplicate regmap
+ debugfs entries
+Date: Tue, 1 Jan 2019 19:32:40 -0800
+Message-ID: <20190102033240.GA22852@builder>
+References: <20181206093917.26610-1-srinivas.kandagatla@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAHk-=wiku0MygbFLmLjvCo-zzu4ygivkshdGzVVADYdwe-b57A@mail.gmail.com>
+In-Reply-To: <20181206093917.26610-1-srinivas.kandagatla@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Cc: amit.kucheria@linaro.org, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 01, 2019 at 03:32:50PM -0800, Linus Torvalds wrote:
-> On Tue, Jan 1, 2019 at 3:16 PM Eduardo Valentin <edubezval@gmail.com> wrote:
-> >
-> > > It doesn't even build cleanly.
-> > >
-> >
-> > Do you still have have a copy of the build error?
+On Thu 06 Dec 01:39 PST 2018, Srinivas Kandagatla wrote:
+
+> Regmap would use device name to create debugfs entries. If the device
+> has multiple regmaps it is recommended to use name field in regmap_config.
+> Fix this by providing name to the regmap configs correctly.
 > 
-> A plain "make allmodconfig" shows a warning.
-
-I see. I am afraid I really did not catch this. I supposed you are
-referring to the warning like this:
-
-    thermal_hwmon.h:29:1: warning: ‘thermal_remove_hwmon_sysfs’ defined but not used [-Wunused-function]
-
-I am sending out a patch for this on thermal_hwmon.h  and will be resending the pull request
-once the CIs report back.
-
-
+> Without this patch we would see below error on DB820c.
 > 
-> And I refuse to add new warnings.
-
-Fair enough. I would not expect anything different. Thanks for reporting.
-
+> qcom-tsens 4a9000.thermal-sensor: Failed to create 4a9000.thermal-sensor
+> debugfs directory
 > 
->                  Linus
+> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+> Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Tested-by: Amit Kucheria <amit.kucheria@linaro.org>
+
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+
+Regards,
+Bjorn
+
+> ---
+> Changes since v1:
+>  -rename tsens_config to tsens_tm_config as suggested by Amit.
+> 
+>  drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++----
+>  1 file changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index 3be4be2e0465..ddfdf88ffb4e 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -113,7 +113,15 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+>  	return 0;
+>  }
+>  
+> -static const struct regmap_config tsens_config = {
+> +static const struct regmap_config tsens_tm_config = {
+> +	.name		= "tm",
+> +	.reg_bits	= 32,
+> +	.val_bits	= 32,
+> +	.reg_stride	= 4,
+> +};
+> +
+> +static const struct regmap_config tsens_srot_config = {
+> +	.name		= "srot",
+>  	.reg_bits	= 32,
+>  	.val_bits	= 32,
+>  	.reg_stride	= 4,
+> @@ -139,8 +147,8 @@ int __init init_common(struct tsens_device *tmdev)
+>  		if (IS_ERR(srot_base))
+>  			return PTR_ERR(srot_base);
+>  
+> -		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
+> -							srot_base, &tsens_config);
+> +		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev, srot_base,
+> +							&tsens_srot_config);
+>  		if (IS_ERR(tmdev->srot_map))
+>  			return PTR_ERR(tmdev->srot_map);
+>  
+> @@ -154,7 +162,8 @@ int __init init_common(struct tsens_device *tmdev)
+>  	if (IS_ERR(tm_base))
+>  		return PTR_ERR(tm_base);
+>  
+> -	tmdev->tm_map = devm_regmap_init_mmio(tmdev->dev, tm_base, &tsens_config);
+> +	tmdev->tm_map = devm_regmap_init_mmio(tmdev->dev, tm_base,
+> +						 &tsens_tm_config);
+>  	if (IS_ERR(tmdev->tm_map))
+>  		return PTR_ERR(tmdev->tm_map);
+>  
+> -- 
+> 2.19.2
+> 
