@@ -1,12 +1,12 @@
 From: Henry Chen <henryc.chen@mediatek.com>
-Subject: [RFC PATCH 5/7] soc: mediatek: add header for mediatek SIP interface
-Date: Wed, 2 Jan 2019 21:44:02 +0800
-Message-ID: <1546436644-19234-6-git-send-email-henryc.chen@mediatek.com>
-References: <1546436644-19234-1-git-send-email-henryc.chen@mediatek.com>
+Subject: [RFC RESEND PATCH 5/7] soc: mediatek: add header for mediatek SIP interface
+Date: Wed, 2 Jan 2019 22:09:56 +0800
+Message-ID: <1546438198-1677-6-git-send-email-henryc.chen@mediatek.com>
+References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546436644-19234-1-git-send-email-henryc.chen@mediatek.com>
+In-Reply-To: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Henry Chen <henryc.chen@mediatek.com>
