@@ -1,7 +1,7 @@
 From: Henry Chen <henryc.chen@mediatek.com>
-Subject: [RFC RESEND PATCH 2/7] dt-bindings: soc: Add opp table on scpsys bindings
-Date: Wed, 2 Jan 2019 22:09:53 +0800
-Message-ID: <1546438198-1677-3-git-send-email-henryc.chen@mediatek.com>
+Subject: [RFC RESEND PATCH 3/7] soc: mediatek: add support for the performance state
+Date: Wed, 2 Jan 2019 22:09:54 +0800
+Message-ID: <1546438198-1677-4-git-send-email-henryc.chen@mediatek.com>
 References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,109 +12,142 @@ To: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rob Herr
 Cc: Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Henry Chen <henryc.chen@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add opp table on scpsys dt-bindings for Mediatek SoC.
+Support power domain performance state, add header file for scp event.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- Documentation/devicetree/bindings/opp/mtk-opp.txt  | 24 +++++++++++++
- .../devicetree/bindings/soc/mediatek/scpsys.txt    | 42 ++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/opp/mtk-opp.txt
+ drivers/soc/mediatek/mtk-scpsys.c | 60 +++++++++++++++++++++++++++++++++++++++
+ drivers/soc/mediatek/mtk-scpsys.h | 22 ++++++++++++++
+ 2 files changed, 82 insertions(+)
+ create mode 100644 drivers/soc/mediatek/mtk-scpsys.h
 
-diff --git a/Documentation/devicetree/bindings/opp/mtk-opp.txt b/Documentation/devicetree/bindings/opp/mtk-opp.txt
+diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
+index 58d84fe..90102ae 100644
+--- a/drivers/soc/mediatek/mtk-scpsys.c
++++ b/drivers/soc/mediatek/mtk-scpsys.c
+@@ -11,7 +11,9 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
++#include <linux/pm_opp.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/slab.h>
+ #include <linux/soc/mediatek/infracfg.h>
+ #include <linux/soc/mediatek/scpsys-ext.h>
+ 
+@@ -22,6 +24,7 @@
+ #include <dt-bindings/power/mt7623a-power.h>
+ #include <dt-bindings/power/mt8173-power.h>
+ #include <dt-bindings/power/mt8183-power.h>
++#include "mtk-scpsys.h"
+ 
+ #define MTK_POLL_DELAY_US   10
+ #define MTK_POLL_TIMEOUT    (jiffies_to_usecs(HZ))
+@@ -187,6 +190,18 @@ struct scp_soc_data {
+ 	bool bus_prot_reg_update;
+ };
+ 
++BLOCKING_NOTIFIER_HEAD(scpsys_notifier_list);
++
++int register_scpsys_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&scpsys_notifier_list, nb);
++}
++
++int unregister_scpsys_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&scpsys_notifier_list, nb);
++}
++
+ static int scpsys_domain_is_on(struct scp_domain *scpd)
+ {
+ 	struct scp *scp = scpd->scp;
+@@ -536,6 +551,48 @@ static void init_clks(struct platform_device *pdev, struct clk **clk)
+ 		clk[i] = devm_clk_get(&pdev->dev, clk_names[i]);
+ }
+ 
++static int mtk_pd_set_performance(struct generic_pm_domain *genpd,
++				  unsigned int state)
++{
++	int i;
++	struct scp_domain *scpd =
++		container_of(genpd, struct scp_domain, genpd);
++	struct scp_event_data scpe;
++	struct scp *scp = scpd->scp;
++	struct genpd_onecell_data *pd_data = &scp->pd_data;
++
++	for (i = 0; i < pd_data->num_domains; i++) {
++		if (genpd == pd_data->domains[i]) {
++			dev_dbg(scp->dev, "%d. %s = %d\n",
++				i, genpd->name, state);
++			break;
++		}
++	}
++
++	scpe.event_type = MTK_SCPSYS_PSTATE;
++	scpe.genpd = genpd;
++	scpe.domain_id = i;
++	blocking_notifier_call_chain(&scpsys_notifier_list, state, &scpe);
++
++	return 0;
++}
++
++static unsigned int mtk_pd_get_performance(struct generic_pm_domain *genpd,
++					   struct dev_pm_opp *opp)
++{
++	struct device_node *np;
++	unsigned int state;
++
++	np = dev_pm_opp_get_of_node(opp);
++
++	if (of_property_read_u32(np, "mtk,level", &state))
++		return 0;
++
++	of_node_put(np);
++
++	return state;
++}
++
+ static struct scp *init_scp(struct platform_device *pdev,
+ 			const struct scp_domain_data *scp_domain_data, int num,
+ 			const struct scp_ctrl_reg *scp_ctrl_reg,
+@@ -659,6 +716,9 @@ static struct scp *init_scp(struct platform_device *pdev,
+ 		genpd->power_on = scpsys_power_on;
+ 		if (MTK_SCPD_CAPS(scpd, MTK_SCPD_ACTIVE_WAKEUP))
+ 			genpd->flags |= GENPD_FLAG_ACTIVE_WAKEUP;
++
++		genpd->set_performance_state = mtk_pd_set_performance;
++		genpd->opp_to_performance_state = mtk_pd_get_performance;
+ 	}
+ 
+ 	return scp;
+diff --git a/drivers/soc/mediatek/mtk-scpsys.h b/drivers/soc/mediatek/mtk-scpsys.h
 new file mode 100644
-index 0000000..036be1c
+index 0000000..c1e8325
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/opp/mtk-opp.txt
-@@ -0,0 +1,24 @@
-+Mediatek OPP bindings to descibe OPP nodes with level values
++++ b/drivers/soc/mediatek/mtk-scpsys.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0
++ *
++ * Copyright (c) 2018 MediaTek Inc.
++ */
 +
-+OPP tables for devices on Mediatek platforms require an additional
-+platform specific level value to be specified.
-+This value is passed on to the mediatek Power Management Unit by the
-+CPU, which then takes the necessary actions to set a voltage rail
-+to an appropriate voltage based on the value passed.
++#ifndef __MTK_SCPSYS_H__
++#define __MTK_SCPSYS_H__
 +
-+The bindings are based on top of the operating-points-v2 bindings
-+described in Documentation/devicetree/bindings/opp/opp.txt
-+Additional properties are described below.
++struct scp_event_data {
++	int event_type;
++	int domain_id;
++	struct generic_pm_domain *genpd;
++};
 +
-+* OPP Table Node
++enum scp_event_type {
++	MTK_SCPSYS_PSTATE,
++};
 +
-+Required properties:
-+- compatible: Allow OPPs to express their compatibility. It should be:
-+  "operating-points-v2-mtk-level"
++int register_scpsys_notifier(struct notifier_block *nb);
++int unregister_scpsys_notifier(struct notifier_block *nb);
 +
-+* OPP Node
-+
-+Required properties:
-+- mtk,level: On Mediatek platforms an OPP node can describe a positive value
-+representing a level that's communicated with a our power management hardware
-+which then translates it into a certain voltage on a voltage rail.
-diff --git a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
-index b4728ce..299b526 100644
---- a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
-+++ b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
-@@ -63,6 +63,10 @@ Optional properties:
- - mfg_2d-supply: Power supply for the mfg_2d power domain
- - mfg-supply: Power supply for the mfg power domain
- 
-+- operating-points-v2: Phandle to the OPP table for the Power domain.
-+	Refer to Documentation/devicetree/bindings/power/power_domain.txt
-+	and Documentation/devicetree/bindings/opp/mtk-opp.txt for more details
-+
- Example:
- 
- 	scpsys: scpsys@10006000 {
-@@ -75,6 +79,27 @@ Example:
- 			 <&topckgen CLK_TOP_VENC_SEL>,
- 			 <&topckgen CLK_TOP_VENC_LT_SEL>;
- 		clock-names = "mfg", "mm", "venc", "venc_lt";
-+		operating-points-v2 = <&dvfsrc_opp_table>;
-+
-+		dvfsrc_opp_table: opp-table {
-+			compatible = "operating-points-v2-mtk-level";
-+
-+			dvfsrc_vol_min: opp1 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_1>;
-+			};
-+
-+			dvfsrc_freq_medium: opp2 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_2>;
-+			};
-+
-+			dvfsrc_freq_max: opp3 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_3>;
-+			};
-+
-+			dvfsrc_vol_max: opp4 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_4>;
-+			};
-+		};
- 	};
- 
- Example consumer:
-@@ -82,4 +107,21 @@ Example consumer:
- 	afe: mt8173-afe-pcm@11220000 {
- 		compatible = "mediatek,mt8173-afe-pcm";
- 		power-domains = <&scpsys MT8173_POWER_DOMAIN_AUDIO>;
-+		operating-points-v2 = <&aud_opp_table>;
-+	};
-+
-+	aud_opp_table: aud-opp-table {
-+		compatible = "operating-points-v2";
-+		opp1 {
-+			opp-hz = /bits/ 64 <793000000>;
-+			required-opps = <&dvfsrc_vol_min>;
-+		};
-+		opp2 {
-+			opp-hz = /bits/ 64 <910000000>;
-+			required-opps = <&dvfsrc_vol_max>;
-+		};
-+		opp3 {
-+			opp-hz = /bits/ 64 <1014000000>;
-+			required-opps = <&dvfsrc_vol_max>;
-+		};
- 	};
++#endif /* __MTK_SCPSYS_H__ */
 -- 
 1.9.1
