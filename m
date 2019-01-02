@@ -1,7 +1,7 @@
 From: Henry Chen <henryc.chen@mediatek.com>
-Subject: [RFC RESEND PATCH 4/7] arm64: dts: mt8183: add performance state support of scpsys
-Date: Wed, 2 Jan 2019 22:09:55 +0800
-Message-ID: <1546438198-1677-5-git-send-email-henryc.chen@mediatek.com>
+Subject: [RFC RESEND PATCH 7/7] arm64: dts: mt8183: add dvfsrc related nodes
+Date: Wed, 2 Jan 2019 22:09:58 +0800
+Message-ID: <1546438198-1677-8-git-send-email-henryc.chen@mediatek.com>
 References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,51 +12,31 @@ To: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rob Herr
 Cc: Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Henry Chen <henryc.chen@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add support for performance state of scpsys on mt8183 platform.
+Enable dvfsrc on mt8183 platform.
 
 Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 47926a7..e396410 100644
+index e396410..06206fd 100644
 --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
 +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -9,6 +9,7 @@
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/power/mt8183-power.h>
-+#include <dt-bindings/soc/mtk,dvfsrc.h>
- 
- / {
- 	compatible = "mediatek,mt8183";
-@@ -243,6 +244,26 @@
- 			      "vpu-3", "vpu-4", "vpu-5";
- 		infracfg = <&infracfg>;
- 		smi_comm = <&smi_common>;
-+		operating-points-v2 = <&dvfsrc_opp_table>;
-+		dvfsrc_opp_table: opp-table {
-+			compatible = "operating-points-v2-mtk-level";
-+
-+			dvfsrc_vol_min: opp1 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_1>;
-+			};
-+
-+			dvfsrc_freq_medium: opp2 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_2>;
-+			};
-+
-+			dvfsrc_freq_max: opp3 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_3>;
-+			};
-+
-+			dvfsrc_vol_max: opp4 {
-+				mtk,level = <MT8183_DVFSRC_LEVEL_4>;
-+			};
-+		};
+@@ -132,6 +132,14 @@
+ 		clock-output-names = "clk26m";
  	};
  
- 	apmixedsys: syscon@1000c000 {
++	dvfsrc_top@10012000 {
++		compatible = "mediatek,mt8183-dvfsrc";
++		reg = <0 0x10012000 0 0x1000>;
++		clocks = <&infracfg CLK_INFRA_DVFSRC>;
++		clock-names = "dvfsrc";
++		dram_type = <MT8183_DVFSRC_OPP_LP4>;
++	};
++
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupt-parent = <&gic>;
 -- 
 1.9.1
