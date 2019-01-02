@@ -1,240 +1,127 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/2] cpufreq: ap806: add cpufreq driver for Armada 8K
-Date: Wed, 2 Jan 2019 16:10:57 +0530
-Message-ID: <20190102104057.hbgoobe77ftqsq5p@vireshk-i7>
-References: <20181226153342.17796-1-gregory.clement@bootlin.com>
- <20181226153342.17796-3-gregory.clement@bootlin.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH 1/1] PM / Domains: Add multi PM domains support for attach_dev
+Date: Wed, 2 Jan 2019 11:49:20 +0100
+Message-ID: <CAPDyKFq4eji_FVKrRJ2k=c1iKuVP_3aERspy6vpXQzeFdBYt9w@mail.gmail.com>
+References: <1545930550-9906-1-git-send-email-aisheng.dong@nxp.com>
+ <CAPDyKFrP8HOum_4S0-4Bx+sYbTNSyctv3rQDB78zozeNWOuv=A@mail.gmail.com> <AM0PR04MB42117D773477A408462D19D180B00@AM0PR04MB4211.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20181226153342.17796-3-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AM0PR04MB42117D773477A408462D19D180B00@AM0PR04MB4211.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Aisheng Dong <aisheng.dong@nxp.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "khilman@kernel.org" <khilman@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26-12-18, 16:33, Gregory CLEMENT wrote:
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/clk.h>
-> +#include <linux/cpu.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +
-> +/*
-> + * Setup the opps list with the divider for the max frequency, that
-> + * will be filled at runtime.
-> + */
-> +static const int opps_div[] __initconst = {1, 2, 3, 4};
-> +
-> +static struct platform_device *armada_8k_pdev;
-> +
-> +struct freq_table {
-> +	struct device *cpu_dev;
-> +	unsigned int freq[ARRAY_SIZE(opps_div)];
-> +};
-> +
-> +/* If the CPUs share the same clock, then they are in the same cluster. */
-> +static void __init armada_8k_get_sharing_cpus(struct clk *cur_clk,
-> +					      struct cpumask *cpumask)
-> +{
-> +	int cpu;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		struct device *cpu_dev;
-> +		struct clk *clk;
-> +
-> +		cpu_dev = get_cpu_device(cpu);
-> +		if (!cpu_dev) {
-> +			pr_warn("Failed to get cpu%d device\n", cpu);
-> +			continue;
-> +		}
-> +
-> +		clk = clk_get(cpu_dev, 0);
-> +		if (IS_ERR(clk))
-> +			pr_warn("Cannot get clock for CPU %d\n", cpu);
-> +		else if (clk_is_match(clk, cur_clk))
-> +			cpumask_set_cpu(cpu, cpumask);
-> +
-> +		if (!IS_ERR(clk))
-> +			clk_put(clk);
+On Sat, 29 Dec 2018 at 07:43, Aisheng Dong <aisheng.dong@nxp.com> wrote:
+>
+> > From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
+> > Sent: Friday, December 28, 2018 11:37 PM
+> >
+> > On Thu, 27 Dec 2018 at 18:14, Aisheng Dong <aisheng.dong@nxp.com>
+> > wrote:
+> > >
+> > > Currently attach_dev() in power domain infrastructure still does not
+> > > support multi domains case as the struct device *dev passed down from
+> > > genpd_dev_pm_attach_by_id() is a virtual PD device, it does not help
+> > > for parsing the real device information from device tree, e.g.
+> > > Device/Power IDs, Clocks and it's unware of which real power domain
+> > > the device should attach.
+> >
+> > Thanks for working on this!
+> >
+> > I would appreciate if the changelog could clarify the problem a bit.
+> > Perhaps something along the lines of the below.
+> >
+>
+> Sounds good to me.
+> I will add them in commit message.
+> Thanks for the suggestion.
+>
+> > "A genpd provider's ->attach_dev() callback may be invoked with a so called
+> > virtual device, which is created by genpd, at the point when a device is being
+> > attached to one of its corresponding multiple PM domains.
+> >
+> > In these cases, the genpd provider fails to look up any resource, by a
+> > clk_get() for example, for the virtual device in question. This is because, the
+> > virtual device that was created by genpd, does not have the virt_dev->of_node
+> > assigned."
+> >
+> > >
+> > > Extend the framework a bit to store the multi PM domains information
+> > > in per-device struct generic_pm_domain_data, then power domain driver
+> > > could retrieve it for necessary operations during attach_dev().
+> > >
+> > > Two new APIs genpd_is_mpd_device() and dev_gpd_mpd_data() are also
+> > > introduced to ease the driver operation.
+> > >
+> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > > Cc: Kevin Hilman <khilman@kernel.org>
+> > > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> > > ---
+> > > This patch is a follow-up work of the earlier discussion with Ulf
+> > > Hansson about the multi PM domains support for the attach_dev() function
+> > [1].
+> > > After a bit more thinking, this is a less intrusive implementation
+> > > with the mininum impact on the exist function definitions and calling
+> > follows.
+> > > One known little drawback is that we have to use the device driver
+> > > private data (device.drvdata) to pass down the multi domains
+> > > information in a earlier time. However, as multi PD devices are
+> > > created by domain framework, this seems to be safe to use it in domain
+> > > core code as device driver is not likely going to use it.
+> > > Anyway, if any better ideas, please let me know.
+> > >
+> > > With the two new APIs, the using can be simply as:
+> > > static int xxx_attach_dev(struct generic_pm_domain *domain,
+> > >                           struct device *dev) {
+> > >         ...
+> > >         if (genpd_is_mpd_device(dev)) {
+> > >                 mpd_data = dev_gpd_mpd_data(dev);
+> > >                 np = mpd_data->parent->of_node;
+> > >                 idx = mpd_data->index;
+> > >                 //dts parsing
+> > >                 ...
+> > >         }
+> > >         ...
+> >
+> > I think we can make this a lot less complicated. Just assign virt_dev->of_node =
+> > of_node_get(dev->of_node), somewhere in
+> > genpd_dev_pm_attach_by_id() and before calling __genpd_dev_pm_attach().
+> >
+> > Doing that, would mean the genpd provider's ->attach_dev() callback, don't
+> > have to distinguish between virtual and non-virtual devices.
+> > Instead they should be able to look up resources in the same way as they did
+> > before.
+> >
+>
+> Yes, that seems like a smart way.
+> But there's still a remain problem that how about the domain index information
+> needed for attach_dev()?
+>
 
-You can write this as:
+What do you mean by domain index?
 
-		clk = clk_get(cpu_dev, 0);
-		if (IS_ERR(clk)) {
-			pr_warn("Cannot get clock for CPU %d\n", cpu);
-		} else {
-                        if (clk_is_match(clk, cur_clk))
-        			cpumask_set_cpu(cpu, cpumask);
+The ->attach_dev() is given both the device and the genpd in question
+as in-parameters. Could you store the domain index as part of your
+genpd struct? No?
 
-			clk_put(clk);
-                }
+If you are talking about using the "power-domains" specifier from the
+DT node of the device, that should then work, similar to as been done
+in:
 
-> +	}
-> +}
-> +
-> +static int __init armada_8k_add_opp(struct clk *clk, struct device *cpu_dev,
-> +				    struct freq_table *freq_tables,
-> +				    int opps_index)
-> +{
-> +	unsigned int cur_frequency;
-> +	unsigned int freq;
-> +	int i, ret;
-> +
-> +	/* Get nominal (current) CPU frequency. */
-> +	cur_frequency = clk_get_rate(clk);
-> +	if (!cur_frequency) {
-> +		dev_err(cpu_dev, "Failed to get clock rate for this CPU\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	freq_tables[opps_index].cpu_dev = cpu_dev;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(opps_div); i++) {
-> +		freq = cur_frequency / opps_div[i];
-> +
-> +		ret = dev_pm_opp_add(cpu_dev, freq, 0);
-> +		if (ret)
-> +			return ret;
-> +
-> +		freq_tables[opps_index].freq[i] = freq;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void armada_8k_cpufreq_free_table(struct freq_table *freq_tables)
-> +{
-> +	int opps_index, nb_cpus = num_possible_cpus();
-> +
-> +	for (opps_index = 0 ; opps_index <= nb_cpus; opps_index++) {
-> +		int i;
-> +
-> +		/* If cpu_dev is NULL then we reached the end of the array */
-> +		if (!freq_tables[opps_index].cpu_dev)
-> +			break;
-> +
-> +		for (i = 0; i < ARRAY_SIZE(opps_div); i++) {
-> +			/*
-> +			 * A 0Hz frequency is not valid, this meant
-> +			 * that it was not yet initialized so there is
-> +			 * no more opp to free
-> +			 */
-> +			if (freq_tables[opps_index].freq[i] == 0)
-> +				break;
-> +
-> +			dev_pm_opp_remove(freq_tables[opps_index].cpu_dev,
-> +					  freq_tables[opps_index].freq[i]);
-> +		}
-> +	}
-> +
-> +	kfree(freq_tables);
-> +}
-> +
-> +static int __init armada_8k_cpufreq_init(void)
-> +{
-> +	int ret = 0, opps_index = 0, cpu, nb_cpus;
-> +	struct freq_table *freq_tables;
-> +	struct device_node *node;
-> +	struct cpumask cpus;
-> +
-> +	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
-> +	if (!node || !of_device_is_available(node))
-> +		return -ENODEV;
-> +
-> +	nb_cpus = num_possible_cpus();
-> +	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
-> +	cpumask_copy(&cpus, cpu_possible_mask);
-> +
-> +	/*
-> +	 * For each CPU, this loop registers the operating points
-> +	 * supported (which are the nominal CPU frequency and full integer
-> +	 * divisions of it).
-> +	 */
-> +	for_each_cpu(cpu, &cpus) {
-> +		struct cpumask shared_cpus;
-> +		struct device *cpu_dev;
-> +		struct clk *clk;
-> +
-> +		cpu_dev = get_cpu_device(cpu);
-> +
-> +		if (!cpu_dev) {
-> +			pr_err("Cannot get CPU %d\n", cpu);
-> +			continue;
-> +		}
-> +
-> +		clk = clk_get(cpu_dev, 0);
-> +
-> +		if (IS_ERR(clk)) {
-> +			pr_err("Cannot get clock for CPU %d\n", cpu);
-> +			ret = PTR_ERR(clk);
-> +			goto remove_opp;
-> +		}
-> +
-> +		ret = armada_8k_add_opp(clk, cpu_dev, freq_tables, opps_index);
-> +		if (ret) {
-> +			clk_put(clk);
-> +			goto remove_opp;
-> +		}
-> +
-> +		opps_index++;
-> +		cpumask_clear(&shared_cpus);
-> +		armada_8k_get_sharing_cpus(clk, &shared_cpus);
-> +		dev_pm_opp_set_sharing_cpus(cpu_dev, &shared_cpus);
-> +		cpumask_andnot(&cpus, &cpus, &shared_cpus);
-> +		clk_put(clk);
-> +	}
-> +
-> +	armada_8k_pdev = platform_device_register_simple("cpufreq-dt", -1,
-> +							 NULL, 0);
-> +	ret = PTR_ERR_OR_ZERO(armada_8k_pdev);
-> +	if (ret)
-> +		goto remove_opp;
-> +
-> +	platform_set_drvdata(armada_8k_pdev, freq_tables);
-> +
-> +	return 0;
-> +
-> +remove_opp:
-> +	armada_8k_cpufreq_free_table(freq_tables);
-> +	return ret;
-> +}
-> +module_init(armada_8k_cpufreq_init);
-> +
-> +static void __exit armada_8k_cpufreq_exit(void)
-> +{
-> +	struct freq_table *freq_tables = platform_get_drvdata(armada_8k_pdev);
-> +
-> +	armada_8k_cpufreq_free_table(freq_tables);
-> +	platform_device_unregister(armada_8k_pdev);
+drivers/soc/ti/ti_sci_pm_domains.c
+ti_sci_pd_attach_dev()
 
-The sequence should be exact opposite, unregister first and then free tables.
+You may also provide your own xlate callback for your genpd provider,
+like what is done in drivers/soc/tegra/powergate-bpmp. - if that
+helps!?
 
-> +}
-> +module_exit(armada_8k_cpufreq_exit);
-> +
-> +MODULE_AUTHOR("Gregory Clement <gregory.clement@bootlin.com>");
-> +MODULE_DESCRIPTION("Armada 8K cpufreq driver");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 2.19.2
+Or am I missing something?
 
--- 
-viresh
+[...]
+
+Kind regards
+Uffe
