@@ -1,7 +1,7 @@
 From: Sinan Kaya <okaya@kernel.org>
-Subject: [PATCH v5 11/11] drivers: thermal: int340x_thermal: Make PCI dependency explicit
-Date: Wed,  2 Jan 2019 18:10:38 +0000
-Message-ID: <20190102181038.4418-12-okaya@kernel.org>
+Subject: [PATCH v5 07/11] drivers: thermal: int3406_thermal: Make PCI dependency explicit
+Date: Wed,  2 Jan 2019 18:10:34 +0000
+Message-ID: <20190102181038.4418-8-okaya@kernel.org>
 References: <20190102181038.4418-1-okaya@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -15,8 +15,8 @@ List-Id: linux-pm@vger.kernel.org
 After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built without
 CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
 satisfied implicitly through dependencies on CONFIG_ACPI have to be
-specified directly. IOSF_CORE depends on PCI. For this reason, add a
-direct dependency on CONFIG_PCI.
+specified directly. Need CONFIG_PCI to be set in order to be able to use
+this driver.
 
 Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without CONFIG_PCI set")
 Signed-off-by: Sinan Kaya <okaya@kernel.org>
@@ -25,17 +25,17 @@ Signed-off-by: Sinan Kaya <okaya@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
-index fba1976d5f8d..2acddf8fb314 100644
+index 0582bd12a239..fba1976d5f8d 100644
 --- a/drivers/thermal/intel/int340x_thermal/Kconfig
 +++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-@@ -4,7 +4,7 @@
+@@ -31,7 +31,7 @@ if INT340X_THERMAL
  
- config INT340X_THERMAL
- 	tristate "ACPI INT340X thermal drivers"
--	depends on X86 && ACPI
-+	depends on X86 && ACPI && PCI
- 	select THERMAL_GOV_USER_SPACE
- 	select ACPI_THERMAL_REL
- 	select ACPI_FAN
+ config INT3406_THERMAL
+ 	tristate "ACPI INT3406 display thermal driver"
+-	depends on ACPI_VIDEO
++	depends on ACPI_VIDEO && PCI
+ 	help
+ 	  The display thermal device represents the LED/LCD display panel
+ 	  that may or may not include touch support. The main function of
 -- 
 2.19.0
