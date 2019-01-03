@@ -1,35 +1,59 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [BUG] dev_pm_opp refcount issue on Arm Juno r0
-Date: Thu, 3 Jan 2019 10:41:27 +0000
-Message-ID: <20190103104127.GB23511@e107155-lin>
-References: <a2a42913-04e0-e6fc-d9ee-a2e355ac22c9@arm.com>
- <20190103070514.o6yaqvpxouazosnn@vireshk-i7>
- <20190103103318.GA23511@e107155-lin>
- <20190103103829.2bqxhkpihp4r7x22@vireshk-i7>
+Subject: Re: [PATCH v10 00/27] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Thu, 3 Jan 2019 12:06:12 +0000
+Message-ID: <20190103120612.GC23511@e107155-lin>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20190103103829.2bqxhkpihp4r7x22@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Valentin Schneider <valentin.schneider@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, nm@ti.com, sboyd@kernel.org, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Douglas Raillard <Douglas.Raillard@arm.com>
+In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Sudeep Holla <sudeep.holla@arm.com>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 03, 2019 at 04:08:29PM +0530, Viresh Kumar wrote:
-> On 03-01-19, 10:33, Sudeep Holla wrote:
-> > As you already state the checks are unnecessary, if we drop them we don't need
-> > to add any firmware specific callbacks. I am thinking if it makes sense to
-> > add a generic helper function to remove the OPPs from a device. If we have
-> > that any driver needing that can use it. The main reason I think helper is
-> > useful is that we need exactly same fix for SCMI driver too.
-> >
-> > Thoughts ?
->
-> Okay, will do that and fix both the drivers as well.
->
+On Thu, Nov 29, 2018 at 06:46:33PM +0100, Ulf Hansson wrote:
+> Over the years this series have been iterated and discussed at various Linux
+> conferences and LKML. In this new v10, a quite significant amount of changes
+> have been made to address comments from v8 and v9. A summary is available
+> below, although let's start with a brand new clarification of the motivation
+> behind this series.
 
-Thanks, happy to test here.
+I would like to raise few points, not blockers as such but need to be
+discussed and resolved before proceeding further.
+1. CPU Idle Retention states
+	- How will be deal with flattening (which brings back the DT bindings,
+	  i.e. do we have all we need) ? Because today there are no users of
+	  this binding yet. I know we all agreed and added after LPC2017 but
+	  I am not convinced about flattening with only valid states.
+	- Will domain governor ensure not to enter deeper idles states based
+	  on its sub-domain states. E.g.: when CPUs are in retention, so
+	  called container/cluster domain can enter retention or below and not
+	  power off states.
+	- Is the case of not calling cpu_pm_{enter,exit} handled now ?
+
+2. Now that we have SDM845 which may soon have platform co-ordinated idle
+   support in mainline, I *really* would like to see some power comparison
+   numbers(i.e. PC without cluster idle states). This has been the main theme
+   for most of the discussion on this topic for years and now we are close
+   to have some platform, we need to try.
+
+3. Also, after adding such complexity, we really need a platform with an
+   option to build and upgrade firmware easily. This will help to prevent
+   this being not maintained for long without a platform to test, also
+   avoid adding lots of quirks to deal with broken firmware so that newer
+   platforms deal those issues in the firmware correctly.
 
 --
 Regards,
