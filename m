@@ -1,16 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC RESEND PATCH 4/7] arm64: dts: mt8183: add performance state
- support of scpsys
-Date: Thu, 3 Jan 2019 10:17:27 +0530
-Message-ID: <20190103044727.i34ak7vw6qfircvq@vireshk-i7>
+Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support for
+ active state of scpsys on mt8183
+Date: Thu, 3 Jan 2019 10:18:52 +0530
+Message-ID: <20190103044852.l7sxfqeqnxx2xbp5@vireshk-i7>
 References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
- <1546438198-1677-5-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1546438198-1677-5-git-send-email-henryc.chen@mediatek.com>
+In-Reply-To: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,53 +24,29 @@ Cc: Mark Rutland <mark.rutland@arm.com>, James Liao <jamesjj.liao@mediatek.com>,
 List-Id: linux-pm@vger.kernel.org
 
 On 02-01-19, 22:09, Henry Chen wrote:
-> Add support for performance state of scpsys on mt8183 platform.
+> The patchsets add support for MediaTek hardware module named DVFSRC
+> (dynamic voltage and frequency scaling resource collector). The DVFSRC is
+> a HW module which is used to collect all the requests from both software
+> and hardware and turn into the decision of minimum operating voltage and
+> minimum DRAM frequency to fulfill those requests.
 > 
-> Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-> ---
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
+> So, This series is to implement the dvfsrc driver to collect all the
+> requests of operating voltage or DRAM bandwidth from other device drivers
+> likes GPU/Camera through 2 frameworks basically:
 > 
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 47926a7..e396410 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -9,6 +9,7 @@
->  #include <dt-bindings/interrupt-controller/irq.h>
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
->  #include <dt-bindings/power/mt8183-power.h>
-> +#include <dt-bindings/soc/mtk,dvfsrc.h>
->  
->  / {
->  	compatible = "mediatek,mt8183";
-> @@ -243,6 +244,26 @@
->  			      "vpu-3", "vpu-4", "vpu-5";
->  		infracfg = <&infracfg>;
->  		smi_comm = <&smi_common>;
-> +		operating-points-v2 = <&dvfsrc_opp_table>;
-> +		dvfsrc_opp_table: opp-table {
-> +			compatible = "operating-points-v2-mtk-level";
-> +
-> +			dvfsrc_vol_min: opp1 {
-> +				mtk,level = <MT8183_DVFSRC_LEVEL_1>;
-> +			};
-> +
-> +			dvfsrc_freq_medium: opp2 {
-> +				mtk,level = <MT8183_DVFSRC_LEVEL_2>;
-> +			};
-> +
-> +			dvfsrc_freq_max: opp3 {
-> +				mtk,level = <MT8183_DVFSRC_LEVEL_3>;
-> +			};
-> +
-> +			dvfsrc_vol_max: opp4 {
-> +				mtk,level = <MT8183_DVFSRC_LEVEL_4>;
-> +			};
-> +		};
->  	};
+> 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
+>    requirements from different clients
+> 2. Active state management of power domains[1]: to handle the operating
+>    voltage opp requirement from different power domains
 
-I don't see a patch which makes use of this OPP table using the required-opps
-thing. Where is that ?
+Honestly speaking I wasn't sure if anyone apart from Qcom will ever use this
+feature when I wrote it first and I am quite surprised and happy to see your
+patches.
+
+They are mostly very neat and clean patches and I don't have complaints with
+most of them. Lets see what comments others provide on them.
+
+Thanks.
 
 -- 
 viresh
