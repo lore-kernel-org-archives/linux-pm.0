@@ -1,59 +1,54 @@
-From: Rob Herring <robh+dt@kernel.org>
-Subject: Re: [RFC RESEND PATCH 2/7] dt-bindings: soc: Add opp table on scpsys bindings
-Date: Thu, 3 Jan 2019 12:45:54 -0600
-Message-ID: <CAL_JsqJXFAEdSaexA3p62u8f3RsVA1vfNsOLu4aetB-iLb9qFg@mail.gmail.com>
-References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com> <1546438198-1677-3-git-send-email-henryc.chen@mediatek.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v2 2/9] i2c: reject new transfers when adapters are
+ suspended
+Date: Thu, 3 Jan 2019 19:59:18 +0100
+Message-ID: <20190103185917.zfcw24n5w4n4qu2q@ninjato>
+References: <20181222202623.4521-1-wsa+renesas@sang-engineering.com>
+ <20181222202623.4521-3-wsa+renesas@sang-engineering.com>
+ <5e560c2e-4da9-05ef-9bfa-3391fdd8ad23@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="waep5l5pjqydoewa"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546438198-1677-3-git-send-email-henryc.chen@mediatek.com>
+Content-Disposition: inline
+In-Reply-To: <5e560c2e-4da9-05ef-9bfa-3391fdd8ad23@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Henry Chen <henryc.chen@mediatek.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-mediatek@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 2, 2019 at 8:10 AM Henry Chen <henryc.chen@mediatek.com> wrote:
->
-> Add opp table on scpsys dt-bindings for Mediatek SoC.
->
-> Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-> ---
->  Documentation/devicetree/bindings/opp/mtk-opp.txt  | 24 +++++++++++++
->  .../devicetree/bindings/soc/mediatek/scpsys.txt    | 42 ++++++++++++++++++++++
->  2 files changed, 66 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/opp/mtk-opp.txt
->
-> diff --git a/Documentation/devicetree/bindings/opp/mtk-opp.txt b/Documentation/devicetree/bindings/opp/mtk-opp.txt
-> new file mode 100644
-> index 0000000..036be1c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/opp/mtk-opp.txt
-> @@ -0,0 +1,24 @@
-> +Mediatek OPP bindings to descibe OPP nodes with level values
-> +
-> +OPP tables for devices on Mediatek platforms require an additional
-> +platform specific level value to be specified.
-> +This value is passed on to the mediatek Power Management Unit by the
-> +CPU, which then takes the necessary actions to set a voltage rail
-> +to an appropriate voltage based on the value passed.
-> +
-> +The bindings are based on top of the operating-points-v2 bindings
-> +described in Documentation/devicetree/bindings/opp/opp.txt
-> +Additional properties are described below.
-> +
-> +* OPP Table Node
-> +
-> +Required properties:
-> +- compatible: Allow OPPs to express their compatibility. It should be:
-> +  "operating-points-v2-mtk-level"
-> +
-> +* OPP Node
-> +
-> +Required properties:
-> +- mtk,level: On Mediatek platforms an OPP node can describe a positive value
-> +representing a level that's communicated with a our power management hardware
-> +which then translates it into a certain voltage on a voltage rail.
 
-Work with the Qcom folks and create a common level property.
+--waep5l5pjqydoewa
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Rob
+
+> I share your desire to have the check for this shared in core code,
+> but I'm afraid that just is not going to work.
+
+Okay, so this series is definately not it. Probably the previous one
+which exposes helpers is not a bad idea after all. Because it is
+ulitmately the driver's decision when to use the helpers...
+
+
+--waep5l5pjqydoewa
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlwuW4EACgkQFA3kzBSg
+KbbIYA//U3lleoAK/oWl+9UNpk7CP0tKUplkb/9WLfa5od5R+/aqf5OcavI6ebxa
+WELpu0Hu849QTMrm5eYiADrtR4nRdsCHwxtUTfpgbyX63j8DIb0PoQOX6T7vDHNm
+ODoIzVQ/rBEK0CFBGGUhqBrU6ZeH2Cgp30WsgB76KhRQptrtK7why4J4afBlGeMS
+ZwEkd+bHyY4iFB4DY685UcvK4x0W+PJbmgEDnSG2ArR4M/G9M8RTljd+5aYO96zb
+feEp0CTL3huFaVRyUKam6+V8aQc4FgLUl+WlSzlK4zdZ+CVUlxB3r45KA9QXDhi0
+xxScjdMoYWAhQ1VZPCMSYgCzV3duiChgztBtzI+uiSOlI1Og94uu0VzasIQ7diNM
+VeOgKLEiO4viwncZOY/cg/tnwz/PJFjubY2xrXdWGURnlNBGfxznso9FCnEy06Pk
+jWShb8+X0q3NQFMepdD2DlzQYUYGguEANRXkkRICBqXoHhjo8GOyd1Rf7HiA+hqO
+cYYHo3+zY6hllamSTkuEHKLLGPu7GP+seUyVXz2MvEgq3yL763MEviUCCt1/xb/G
+5v2XkY0Jv5NaRj6n0xD+xj1lS//vUNDtIf8JegowCQqaAAsLXJeT1/MJyo7xMQvC
+YggEZWu+12HQvPZyq446l9wP46xV8D95GukSI6HCnJsDSqDaTkA=
+=ujG8
+-----END PGP SIGNATURE-----
+
+--waep5l5pjqydoewa--
