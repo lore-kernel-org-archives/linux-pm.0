@@ -1,53 +1,77 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq / Documentation: Update cpufreq MAINTAINERS entry
-Date: Thu, 3 Jan 2019 09:35:46 +0530
-Message-ID: <20190103040546.akeyvennctxnfcw7@vireshk-i7>
-References: <7154380.sNYZWJVSaJ@aspire.rjw.lan>
+Subject: Re: [RFC RESEND PATCH 4/7] arm64: dts: mt8183: add performance state
+ support of scpsys
+Date: Thu, 3 Jan 2019 10:17:27 +0530
+Message-ID: <20190103044727.i34ak7vw6qfircvq@vireshk-i7>
+References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
+ <1546438198-1677-5-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <7154380.sNYZWJVSaJ@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
+In-Reply-To: <1546438198-1677-5-git-send-email-henryc.chen@mediatek.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Henry Chen <henryc.chen@mediatek.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, James Liao <jamesjj.liao@mediatek.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kees Cook <keescook@chromium.org>, Weiyi Lu <weiyi.lu@mediatek.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-kernel@vger.kernel.org, Fan Chen <fan.chen@mediatek.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02-01-19, 12:13, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 02-01-19, 22:09, Henry Chen wrote:
+> Add support for performance state of scpsys on mt8183 platform.
 > 
-> Update the MAINTAINERS entry for cpufreq by making it clear that it
-> is not just drivers and adding current documentation records to it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
 > ---
->  MAINTAINERS |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
 > 
-> Index: linux-pm/MAINTAINERS
-> ===================================================================
-> --- linux-pm.orig/MAINTAINERS
-> +++ linux-pm/MAINTAINERS
-> @@ -3888,7 +3888,7 @@ L:	netdev@vger.kernel.org
->  S:	Maintained
->  F:	drivers/net/ethernet/ti/cpmac.c
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> index 47926a7..e396410 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> @@ -9,6 +9,7 @@
+>  #include <dt-bindings/interrupt-controller/irq.h>
+>  #include <dt-bindings/interrupt-controller/arm-gic.h>
+>  #include <dt-bindings/power/mt8183-power.h>
+> +#include <dt-bindings/soc/mtk,dvfsrc.h>
 >  
-> -CPU FREQUENCY DRIVERS
-> +CPU FREQUENCY SCALING FRAMEWORK
->  M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
->  M:	Viresh Kumar <viresh.kumar@linaro.org>
->  L:	linux-pm@vger.kernel.org
-> @@ -3896,6 +3896,8 @@ S:	Maintained
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
->  T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
->  B:	https://bugzilla.kernel.org
-> +F:	Documentation/admin-guide/pm/cpufreq.rst
-> +F:	Documentation/admin-guide/pm/intel_pstate.rst
->  F:	Documentation/cpu-freq/
->  F:	Documentation/devicetree/bindings/cpufreq/
->  F:	drivers/cpufreq/
+>  / {
+>  	compatible = "mediatek,mt8183";
+> @@ -243,6 +244,26 @@
+>  			      "vpu-3", "vpu-4", "vpu-5";
+>  		infracfg = <&infracfg>;
+>  		smi_comm = <&smi_common>;
+> +		operating-points-v2 = <&dvfsrc_opp_table>;
+> +		dvfsrc_opp_table: opp-table {
+> +			compatible = "operating-points-v2-mtk-level";
+> +
+> +			dvfsrc_vol_min: opp1 {
+> +				mtk,level = <MT8183_DVFSRC_LEVEL_1>;
+> +			};
+> +
+> +			dvfsrc_freq_medium: opp2 {
+> +				mtk,level = <MT8183_DVFSRC_LEVEL_2>;
+> +			};
+> +
+> +			dvfsrc_freq_max: opp3 {
+> +				mtk,level = <MT8183_DVFSRC_LEVEL_3>;
+> +			};
+> +
+> +			dvfsrc_vol_max: opp4 {
+> +				mtk,level = <MT8183_DVFSRC_LEVEL_4>;
+> +			};
+> +		};
+>  	};
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I don't see a patch which makes use of this OPP table using the required-opps
+thing. Where is that ?
 
 -- 
 viresh
