@@ -1,170 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [BUG] dev_pm_opp refcount issue on Arm Juno r0
-Date: Thu, 3 Jan 2019 12:35:14 +0530
-Message-ID: <20190103070514.o6yaqvpxouazosnn@vireshk-i7>
-References: <a2a42913-04e0-e6fc-d9ee-a2e355ac22c9@arm.com>
+From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v6 2/2] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Thu, 3 Jan 2019 14:15:53 +0530
+Message-ID: <dcb3e046-d0bd-af68-e42d-1db0db3bf2df@codeaurora.org>
+References: <20181212211848.26768-1-jcrouse@codeaurora.org>
+ <154515840025.238328.5075439774176447808@swboyd.mtv.corp.google.com>
+ <CAD=FV=XeFYmOJx9Wxy7hLQwSq1GoF84eQ93Y4KgrO1JM-g9ZiA@mail.gmail.com>
+ <20181219044901.x76bd5vdsznhhrmz@vireshk-i7>
+ <CAL_JsqLs69=nr=2J_48N3VtD0qNRnxAgDU8uMRwY_Qqp6Dzs_Q@mail.gmail.com>
+ <CAD=FV=VMMYKoW4RU_TTjLdyrNcWZU-Gyou9b6qynKFX9wDn5Mw@mail.gmail.com>
+ <CAD=FV=Utko6B6OycYpef3OQAF1v-rthcdgAKMm0GLxRM4=ummg@mail.gmail.com>
+ <CAL_Jsq+U8Vj4+w6jA+B3_CyG8N==ABbw31nm+LE=6pwXEopApw@mail.gmail.com>
+ <154534136449.79149.14097954220921296509@swboyd.mtv.corp.google.com>
+ <7e310416-78d3-b7e5-5013-0bcc8bfd0351@codeaurora.org>
+ <154604698217.179992.9966831118584978893@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <a2a42913-04e0-e6fc-d9ee-a2e355ac22c9@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Valentin Schneider <valentin.schneider@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>
-Cc: nm@ti.com, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Douglas Raillard <Douglas.Raillard@arm.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <154604698217.179992.9966831118584978893-n1Xw8LXHxjTHt/MElyovVYaSKrA+ACpX0E9HWUfgJXw@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-12-18, 15:27, Valentin Schneider wrote:
-> Hi,
-> 
-> While running some hotplug torture test [1] on my Juno r0 I came across
-> the follow splat:
-> 
-> [  716.561862] ------------[ cut here ]------------
-> [  716.566451] refcount_t: underflow; use-after-free.
-> [  716.571240] WARNING: CPU: 2 PID: 18 at lib/refcount.c:280 refcount_dec_not_one+0x9c/0xc0
-> [  716.579246] Modules linked in:
-> [  716.582269] CPU: 2 PID: 18 Comm: cpuhp/2 Not tainted 4.20.0-rc7 #39
-> [  716.588469] Hardware name: ARM Juno development board (r0) (DT)
-> [  716.594326] pstate: 40000005 (nZcv daif -PAN -UAO)
-> [  716.599065] pc : refcount_dec_not_one+0x9c/0xc0
-> [  716.603546] lr : refcount_dec_not_one+0x9c/0xc0
-> [  716.608024] sp : ffff00000a063c70
-> [  716.611299] x29: ffff00000a063c70 x28: 0000000000000000 
-> [  716.616555] x27: 0000000000000000 x26: 0000000000000002 
-> [  716.621810] x25: ffff000009169000 x24: ffff000008f8e1b0 
-> [  716.627065] x23: ffff000008ce0920 x22: 00000000ffffffff 
-> [  716.632319] x21: ffff000009169000 x20: ffff8009762a2664 
-> [  716.637574] x19: ffff000009294a90 x18: 0000000000000400 
-> [  716.642828] x17: 0000000000000000 x16: 0000000000000000 
-> [  716.648082] x15: 0000000000000000 x14: 0000000000000400 
-> [  716.653336] x13: 000000000000023f x12: 0000000000043705 
-> [  716.658590] x11: 0000000000000108 x10: 0000000000000960 
-> [  716.663844] x9 : ffff00000a063970 x8 : ffff800976943ec0 
-> [  716.669098] x7 : 0000000000000000 x6 : ffff80097ff720b8 
-> [  716.674353] x5 : ffff80097ff720b8 x4 : 0000000000000000 
-> [  716.679607] x3 : ffff80097ff78e68 x2 : ffff80097ff720b8 
-> [  716.684861] x1 : 6374e2a7925c1100 x0 : 0000000000000000 
-> [  716.690115] Call trace:
-> [  716.692532]  refcount_dec_not_one+0x9c/0xc0
-> [  716.696669]  refcount_dec_and_mutex_lock+0x18/0x70
-> [  716.701409]  _put_opp_list_kref+0x28/0x50
-> [  716.705373]  _dev_pm_opp_find_and_remove_table+0x24/0x88
-> [  716.710628]  _dev_pm_opp_cpumask_remove_table+0x50/0xa0
-> [  716.715796]  dev_pm_opp_cpumask_remove_table+0x10/0x18
-> [  716.720879]  scpi_cpufreq_exit+0x40/0x50
-> [  716.724758]  cpufreq_offline+0x108/0x1e0
-> [  716.728637]  cpuhp_cpufreq_offline+0xc/0x18
-
-This probably happened due to some of recent OPP core changes and I missed
-updating this platform (I updated mvebu though). The problem is completely
-different from what you logs show :)
-
-Please try the below patch.
-
-@Sudeep: Please help review it as well.
-
--- 
-viresh
-
--------------------------8<-------------------------
-
->From f3913738618031e9d71ebf64461cee22909e6e20 Mon Sep 17 00:00:00 2001
-Message-Id: <f3913738618031e9d71ebf64461cee22909e6e20.1546498940.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Thu, 3 Jan 2019 12:28:26 +0530
-Subject: [PATCH] cpufreq: scpi: Fix freeing of OPPs
-
-Since the commit 2a4eb7358aba ("OPP: Don't remove dynamic OPPs from
-_dev_pm_opp_remove_table()"), dynamically created OPP aren't
-automatically removed anymore by dev_pm_opp_cpumask_remove_table().
-
-The OPPs for scpi cpufreq driver aren't getting freed currently, fix
-that by adding a new callback scpi_ops->remove_device_opps() which will
-remove those OPPs.
-
-Cc: 4.20 <stable@vger.kernel.org> # v4.20
-Reported-by: Valentin Schneider <valentin.schneider@arm.com>
-Fixes: 2a4eb7358aba ("OPP: Don't remove dynamic OPPs from _dev_pm_opp_remove_table()")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/scpi-cpufreq.c |  4 ++--
- drivers/firmware/arm_scpi.c    | 15 +++++++++++++++
- include/linux/scpi_protocol.h  |  1 +
- 3 files changed, 18 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 87a98ec77773..1bfd168de0b2 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -177,7 +177,7 @@ static int scpi_cpufreq_init(struct cpufreq_policy *policy)
- out_free_priv:
- 	kfree(priv);
- out_free_opp:
--	dev_pm_opp_cpumask_remove_table(policy->cpus);
-+	scpi_ops->remove_device_opps(cpu_dev);
- 
- 	return ret;
- }
-@@ -190,7 +190,7 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- 	clk_put(priv->clk);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	kfree(priv);
--	dev_pm_opp_cpumask_remove_table(policy->related_cpus);
-+	scpi_ops->remove_device_opps(priv->cpu_dev);
- 
- 	return 0;
- }
-diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
-index c7d06a36b23a..963f2ffbd820 100644
---- a/drivers/firmware/arm_scpi.c
-+++ b/drivers/firmware/arm_scpi.c
-@@ -716,6 +716,20 @@ static int scpi_dvfs_add_opps_to_device(struct device *dev)
- 	return 0;
- }
- 
-+static void scpi_dvfs_remove_device_opps(struct device *dev)
-+{
-+	int idx;
-+	struct scpi_opp *opp;
-+	struct scpi_dvfs_info *info = scpi_dvfs_info(dev);
-+
-+	/* We already added OPPs successfully, this data can't be invalid */
-+	if (WARN_ON(IS_ERR(info) || !info->opps))
-+		return;
-+
-+	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++)
-+		dev_pm_opp_remove(dev, opp->freq);
-+}
-+
- static int scpi_sensor_get_capability(u16 *sensors)
- {
- 	__le16 cap;
-@@ -799,6 +813,7 @@ static struct scpi_ops scpi_ops = {
- 	.device_domain_id = scpi_dev_domain_id,
- 	.get_transition_latency = scpi_dvfs_get_transition_latency,
- 	.add_opps_to_device = scpi_dvfs_add_opps_to_device,
-+	.remove_device_opps = scpi_dvfs_remove_device_opps,
- 	.sensor_get_capability = scpi_sensor_get_capability,
- 	.sensor_get_info = scpi_sensor_get_info,
- 	.sensor_get_value = scpi_sensor_get_value,
-diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
-index 327d65663dbf..d020d517ecaa 100644
---- a/include/linux/scpi_protocol.h
-+++ b/include/linux/scpi_protocol.h
-@@ -70,6 +70,7 @@ struct scpi_ops {
- 	int (*device_domain_id)(struct device *);
- 	int (*get_transition_latency)(struct device *);
- 	int (*add_opps_to_device)(struct device *);
-+	void (*remove_device_opps)(struct device *);
- 	int (*sensor_get_capability)(u16 *sensors);
- 	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
- 	int (*sensor_get_value)(u16, u64 *);
+Ck9uIDEyLzI5LzIwMTggNjo1OSBBTSwgU3RlcGhlbiBCb3lkIHdyb3RlOgo+PiBTbyBJIGFtIGd1
+ZXNzaW5nIHRoZSBjb25jbHVzaW9uIGlzIHRvIHVzZSBhIGZhbGxiYWNrICJvcGVyYXRpbmctcG9p
+bnRzLXYyIgo+PiBjb21wYXRpYmxlKm9ubHkqICB3aGVuIHdlIGRvIGhhdmUgb3BwLWh6IGFsb25n
+IHdpdGggcWNvbSxsZXZlbCAoYXMgaW4gdGhlCj4+IGNhc2Ugd2l0aCBncHUpIGFuZCBub3QgaGF2
+ZSBhIGZhbGxiYWNrIGNvbXBhdGlibGUgaW4gY2FzZXMgd2hlbiB3ZSBkb24ndAo+PiBoYXZlIG9w
+cC1oeiAoYXMgaW4gdGhlIGNhc2Ugb2YgcnBtIHBvd2VyIGRvbWFpbnMpPwo+PiBUaGF0IHNlZW1z
+IGEgbGl0dGxlIGluY29uc2lzdGVudCwgYW5kIGdpdmVuIFJvYiBzYWlkIGVpdGhlciB3YXkgaXMg
+ZmluZSwKPj4ganVzdCBkbyBvbmUgd2F5IG9yIHRoZSBvdGhlciBhbmQgbm90IGJvdGgsIEkgYW0g
+aW5jbGluZWQgdG8gdGhpbmsgd2Ugc2hvdWxkCj4+IGp1c3QgaGF2ZSBhICJvcGVyYXRpbmctcG9p
+bnRzLXYyLXFjb20tbGV2ZWwiIGFuZCBubyBmYWxsYmFjayBjb21wYXRpYmxlLgo+PiBEb2VzIHRo
+YXQgbWFrZSBzZW5zZT8KPj4KPiBBcmUgeW91IGdvaW5nIHRvIHVwZGF0ZSB0aGUgc2tpcCB0YWJs
+ZSB0byBub3QgY3JlYXRlIHBsYXRmb3JtIGRldmljZXM/Cj4gT3IgaW50cm9kdWNlIHNvbWUgZ2Vu
+ZXJpYyBwcm9wZXJ0eSB0byBpbmRpY2F0ZSB0aGF0IHRoaXMgaXMganVzdCBkYXRhCj4gYW5kIG5v
+dCBhIGRldmljZSBub2RlPwoKSXMgYW55IG9mIGl0IHJlYWxseSBuZWVkZWQsIGdpdmVuIHRoZSBi
+aW5kaW5ncyBzcGVjaWZ5IHRoYXQgdGhlIE9QUCB0YWJsZQpzaG91bGQgYWN0dWFsbHkgYmUgYSBj
+aGlsZCBub2RlIG9mIHRoZSBkZXZpY2UvcG93ZXIgZG9tYWluIHN1cHBvcnRpbmcKaXQ/IEkgZG9u
+J3Qgc2VlIHdobyB3b3VsZCBlbmQgdXAgY3JlYXRpbmcgcGxhdGZvcm0gZGV2aWNlcyBmb3IgdGhl
+bS4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVk
+cmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
+L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
