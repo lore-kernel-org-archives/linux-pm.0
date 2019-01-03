@@ -1,7 +1,7 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH v7 1/3] thermal: tegra: remove unnecessary warnings
-Date: Thu, 3 Jan 2019 18:12:47 +0800
-Message-ID: <1546510369-28491-2-git-send-email-wni@nvidia.com>
+Subject: [PATCH v7 2/3] thermal: tegra: fix memory allocation
+Date: Thu, 3 Jan 2019 18:12:48 +0800
+Message-ID: <1546510369-28491-3-git-send-email-wni@nvidia.com>
 References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,35 +12,27 @@ To: daniel.lezcano@linaro.org, edubezval@gmail.com
 Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Convert warnings to info as not all platforms may
-have all the thresholds and sensors enabled.
+Fix memory allocation to store the pointers to
+thermal_zone_device.
 
 Signed-off-by: Wei Ni <wni@nvidia.com>
+Acked-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/thermal/tegra/soctherm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/tegra/soctherm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index ed28110a3535..f07de8258e93 100644
+index f07de8258e93..fd2703c0cfc5 100644
 --- a/drivers/thermal/tegra/soctherm.c
 +++ b/drivers/thermal/tegra/soctherm.c
-@@ -569,7 +569,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
- set_throttle:
- 	ret = get_hot_temp(tz, &trip, &temperature);
- 	if (ret) {
--		dev_warn(dev, "throttrip: %s: missing hot temperature\n",
-+		dev_info(dev, "throttrip: %s: missing hot temperature\n",
- 			 sg->name);
- 		return 0;
- 	}
-@@ -600,7 +600,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+@@ -1339,7 +1339,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
  	}
  
- 	if (i == THROTTLE_SIZE)
--		dev_warn(dev, "throttrip: %s: missing throttle cdev\n",
-+		dev_info(dev, "throttrip: %s: missing throttle cdev\n",
- 			 sg->name);
- 
- 	return 0;
+ 	tegra->thermctl_tzs = devm_kcalloc(&pdev->dev,
+-					   soc->num_ttgs, sizeof(*z),
++					   soc->num_ttgs, sizeof(z),
+ 					   GFP_KERNEL);
+ 	if (!tegra->thermctl_tzs)
+ 		return -ENOMEM;
 -- 
 2.7.4
