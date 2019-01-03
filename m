@@ -1,7 +1,7 @@
 From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Subject: [PATCH 3/5] PM / hibernate: Encrypt snapshot image
-Date: Thu,  3 Jan 2019 22:32:25 +0800
-Message-ID: <20190103143227.9138-4-jlee@suse.com>
+Subject: [PATCH 4/5 v2] PM / hibernate: Erase the snapshot master key in snapshot pages
+Date: Thu,  3 Jan 2019 22:32:26 +0800
+Message-ID: <20190103143227.9138-5-jlee@suse.com>
 References: <20190103143227.9138-1-jlee@suse.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190103143227.9138-1-jlee@suse.com>
@@ -10,13 +10,16 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-To protect the secret in memory snapshot image, this patch adds the
-logic to encrypt snapshot pages by AES-CTR. Using AES-CTR is because
-it's simple, fast and parallelizable. But this patch didn't implement
-parallel encryption.
+If the encryption key be guessed then the snapshot master key can
+also be grabbed from snapshot image. Which means that the authentication
+key can also be calculated. So kernel erases master key in snapshot
+pages.
 
-The encrypt key is derived from the snapshot key. And the initialization
-vector will be kept in snapshot header for resuming.
+Because the master key in image kernel be erased, kernel uses the
+trampoline page to forward snapshot master key to image kernel.
+
+v2:
+- Add memory barrier after cleaning key initialized flag.
 
 Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 Cc: Pavel Machek <pavel@ucw.cz>
@@ -30,298 +33,172 @@ Cc: Jann Horn <jannh@google.com>
 Cc: Andy Lutomirski <luto@kernel.org>
 Signed-off-by: "Lee, Chun-Yi" <jlee@suse.com>
 ---
- kernel/power/hibernate.c |   8 ++-
- kernel/power/power.h     |   6 ++
- kernel/power/snapshot.c  | 154 ++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 164 insertions(+), 4 deletions(-)
+ kernel/power/power.h        |  6 ++++
+ kernel/power/snapshot.c     |  5 ++++
+ kernel/power/snapshot_key.c | 67 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 78 insertions(+)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 0dda6a9f0af1..5ac2ab6f4a0e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -275,10 +275,14 @@ static int create_image(int platform_mode)
- 	if (error)
- 		return error;
- 
-+	error = snapshot_prepare_crypto(false, true);
-+	if (error)
-+		goto finish_hash;
-+
- 	error = dpm_suspend_end(PMSG_FREEZE);
- 	if (error) {
- 		pr_err("Some devices failed to power down, aborting hibernation\n");
--		goto finish_hash;
-+		goto finish_crypto;
- 	}
- 
- 	error = platform_pre_snapshot(platform_mode);
-@@ -335,6 +339,8 @@ static int create_image(int platform_mode)
- 	dpm_resume_start(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
- 
-+ finish_crypto:
-+	snapshot_finish_crypto();
-  finish_hash:
- 	snapshot_finish_hash();
- 
 diff --git a/kernel/power/power.h b/kernel/power/power.h
-index c614b0a294e3..41263fdd3a54 100644
+index 41263fdd3a54..d2fc73b2e200 100644
 --- a/kernel/power/power.h
 +++ b/kernel/power/power.h
-@@ -5,6 +5,7 @@
- #include <linux/freezer.h>
- #include <linux/compiler.h>
- #include <crypto/sha.h>
-+#include <crypto/aes.h>
- 
- /* The max size of encrypted key blob */
- #define KEY_BLOB_BUFF_LEN 512
-@@ -24,6 +25,7 @@ struct swsusp_info {
- 	unsigned long		pages;
- 	unsigned long		size;
- 	unsigned long		trampoline_pfn;
-+	u8			iv[AES_BLOCK_SIZE];
- 	u8			signature[SNAPSHOT_DIGEST_SIZE];
+@@ -36,6 +36,7 @@ struct swsusp_info {
+ struct trampoline {
+ 	bool snapshot_key_valid;
+ 	int sig_verify_ret;
++	u8 snapshot_key[SNAPSHOT_KEY_SIZE];
  } __aligned(PAGE_SIZE);
  
-@@ -44,6 +46,8 @@ extern void __init hibernate_image_size_init(void);
- #ifdef CONFIG_HIBERNATION_ENC_AUTH
- /* kernel/power/snapshot.c */
- extern int snapshot_image_verify_decrypt(void);
-+extern int snapshot_prepare_crypto(bool may_sleep, bool create_iv);
-+extern void snapshot_finish_crypto(void);
- extern int snapshot_prepare_hash(bool may_sleep);
- extern void snapshot_finish_hash(void);
- /* kernel/power/snapshot_key.c */
-@@ -53,6 +57,8 @@ extern int snapshot_get_auth_key(u8 *auth_key, bool may_sleep);
+ #ifdef CONFIG_HIBERNATION
+@@ -55,6 +56,9 @@ extern int snapshot_key_init(void);
+ extern bool snapshot_key_initialized(void);
+ extern int snapshot_get_auth_key(u8 *auth_key, bool may_sleep);
  extern int snapshot_get_enc_key(u8 *enc_key, bool may_sleep);
++extern void snapshot_key_page_erase(unsigned long pfn, void *buff_addr);
++extern void snapshot_key_trampoline_backup(struct trampoline *t);
++extern void snapshot_key_trampoline_restore(struct trampoline *t);
  #else
  static inline int snapshot_image_verify_decrypt(void) { return 0; }
-+static inline int snapshot_prepare_crypto(bool may_sleep, bool create_iv) { return 0; }
-+static inline void snapshot_finish_crypto(void) {}
+ static inline int snapshot_prepare_crypto(bool may_sleep, bool create_iv) { return 0; }
+@@ -62,6 +66,8 @@ static inline void snapshot_finish_crypto(void) {}
  static inline int snapshot_prepare_hash(bool may_sleep) { return 0; }
  static inline void snapshot_finish_hash(void) {}
  static inline int snapshot_key_init(void) { return 0; }
++static inline void snapshot_key_trampoline_backup(struct trampoline *t) {}
++static inline void snapshot_key_trampoline_restore(struct trampoline *t) {}
+ #endif	/* !CONFIG_HIBERNATION_ENC_AUTH */
+ 
+ #ifdef CONFIG_ARCH_HIBERNATION_HEADER
 diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index e817c035f378..cd10ab5e4850 100644
+index cd10ab5e4850..80ed8e7c5ed8 100644
 --- a/kernel/power/snapshot.c
 +++ b/kernel/power/snapshot.c
-@@ -41,7 +41,11 @@
- #include <asm/tlbflush.h>
- #include <asm/io.h>
- #ifdef CONFIG_HIBERNATION_ENC_AUTH
-+#include <linux/random.h>
-+#include <linux/scatterlist.h>
-+#include <crypto/aes.h>
- #include <crypto/hash.h>
-+#include <crypto/skcipher.h>
- #endif
- 
- #include "power.h"
-@@ -1413,6 +1417,127 @@ static unsigned int nr_copy_pages;
- static void **h_buf;
- 
- #ifdef CONFIG_HIBERNATION_ENC_AUTH
-+static struct skcipher_request *sk_req;
-+static u8 iv[AES_BLOCK_SIZE];
-+static void *c_buffer;
-+
-+static void init_iv(struct swsusp_info *info)
-+{
-+	memcpy(info->iv, iv, AES_BLOCK_SIZE);
-+}
-+
-+static void load_iv(struct swsusp_info *info)
-+{
-+	memcpy(iv, info->iv, AES_BLOCK_SIZE);
-+}
-+
-+int snapshot_prepare_crypto(bool may_sleep, bool create_iv)
-+{
-+	char enc_key[DERIVED_KEY_SIZE];
-+	struct crypto_skcipher *tfm;
-+	int ret = 0;
-+
-+	ret = snapshot_get_enc_key(enc_key, may_sleep);
-+	if (ret) {
-+		pr_warn_once("enc key is invalid\n");
-+		return -EINVAL;
-+	}
-+
-+	c_buffer = (void *)get_zeroed_page(GFP_KERNEL);
-+	if (!c_buffer) {
-+		pr_err("Allocate crypto buffer page failed\n");
-+		return -ENOMEM;
-+	}
-+
-+	tfm = crypto_alloc_skcipher("ctr(aes)", 0, CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(tfm)) {
-+		ret = PTR_ERR(tfm);
-+		pr_err("failed to allocate skcipher (%d)\n", ret);
-+		goto alloc_fail;
-+	}
-+
-+	ret = crypto_skcipher_setkey(tfm, enc_key, AES_MAX_KEY_SIZE);
-+	if (ret) {
-+		pr_err("failed to setkey (%d)\n", ret);
-+		goto set_fail;
-+	}
-+
-+	sk_req = skcipher_request_alloc(tfm, GFP_KERNEL);
-+	if (!sk_req) {
-+		pr_err("failed to allocate request\n");
-+		ret = -ENOMEM;
-+		goto set_fail;
-+	}
-+	if (may_sleep)
-+		skcipher_request_set_callback(sk_req, CRYPTO_TFM_REQ_MAY_SLEEP,
-+						NULL, NULL);
-+	if (create_iv)
-+		get_random_bytes(iv, AES_BLOCK_SIZE);
-+
-+	return 0;
-+
-+set_fail:
-+	crypto_free_skcipher(tfm);
-+alloc_fail:
-+	__free_page(c_buffer);
-+
-+	return ret;
-+}
-+
-+void snapshot_finish_crypto(void)
-+{
-+	struct crypto_skcipher *tfm;
-+ 
-+	if (!sk_req)
-+		return;
-+
-+	tfm = crypto_skcipher_reqtfm(sk_req);
-+	skcipher_request_zero(sk_req);
-+	skcipher_request_free(sk_req);
-+	crypto_free_skcipher(tfm);
-+	__free_page(c_buffer);
-+	sk_req = NULL;
-+}
-+
-+static int encrypt_data_page(void *hash_buffer)
-+{
-+	struct scatterlist src[1], dst[1];
-+	u8 iv_tmp[AES_BLOCK_SIZE];
-+	int ret = 0;
-+
-+	if (!sk_req)
-+		return 0;
-+
-+	memcpy(iv_tmp, iv, sizeof(iv));
-+	sg_init_one(src, hash_buffer, PAGE_SIZE);
-+	sg_init_one(dst, c_buffer, PAGE_SIZE);
-+	skcipher_request_set_crypt(sk_req, src, dst, PAGE_SIZE, iv_tmp);
-+	ret = crypto_skcipher_encrypt(sk_req);
-+
-+	copy_page(hash_buffer, c_buffer);
-+	memset(c_buffer, 0, PAGE_SIZE);
-+
-+	return ret;
-+}
-+
-+static int decrypt_data_page(void *encrypted_page)
-+{
-+	struct scatterlist src[1], dst[1];
-+	u8 iv_tmp[AES_BLOCK_SIZE];
-+	int ret = 0;
-+
-+	memcpy(iv_tmp, iv, sizeof(iv));
-+	sg_init_one(src, encrypted_page, PAGE_SIZE);
-+	sg_init_one(dst, c_buffer, PAGE_SIZE);
-+	skcipher_request_set_crypt(sk_req, src, dst, PAGE_SIZE, iv_tmp);
-+	ret = crypto_skcipher_decrypt(sk_req);
-+
-+	copy_page(encrypted_page, c_buffer);
-+	memset(c_buffer, 0, PAGE_SIZE);
-+
-+	return ret;
-+}
-+
- /*
-  * Signature of snapshot image
-  */
-@@ -1508,22 +1633,30 @@ int snapshot_image_verify_decrypt(void)
- 	if (ret || !s4_verify_desc)
- 		goto error_prep;
- 
-+	ret = snapshot_prepare_crypto(true, false);
-+	if (ret)
-+		goto error_prep;
-+
- 	for (i = 0; i < nr_copy_pages; i++) {
- 		ret = crypto_shash_update(s4_verify_desc, *(h_buf + i), PAGE_SIZE);
- 		if (ret)
--			goto error_shash;
-+			goto error_shash_crypto;
-+		ret = decrypt_data_page(*(h_buf + i));
-+		if (ret)
-+			goto error_shash_crypto;
- 	}
- 
- 	ret = crypto_shash_final(s4_verify_desc, s4_verify_digest);
- 	if (ret)
--		goto error_shash;
-+		goto error_shash_crypto;
- 
- 	pr_debug("Signature %*phN\n", SNAPSHOT_DIGEST_SIZE, signature);
- 	pr_debug("Digest    %*phN\n", SNAPSHOT_DIGEST_SIZE, s4_verify_digest);
- 	if (memcmp(signature, s4_verify_digest, SNAPSHOT_DIGEST_SIZE))
- 		ret = -EKEYREJECTED;
- 
-- error_shash:
-+ error_shash_crypto:
-+	snapshot_finish_crypto();
- 	snapshot_finish_hash();
- 
-  error_prep:
-@@ -1564,6 +1697,17 @@ __copy_data_pages(struct memory_bitmap *copy_bm, struct memory_bitmap *orig_bm)
+@@ -1697,6 +1697,9 @@ __copy_data_pages(struct memory_bitmap *copy_bm, struct memory_bitmap *orig_bm)
  			crypto_buffer = page_address(d_page);
  		}
  
-+		/* Encrypt hashed page */
-+		encrypt_data_page(crypto_buffer);
++		/* Erase key data in snapshot */
++		snapshot_key_page_erase(pfn, crypto_buffer);
 +
-+		/* Copy encrypted buffer to destination page in high memory */
-+		if (PageHighMem(d_page)) {
-+			void *kaddr = kmap_atomic(d_page);
-+
-+			copy_page(kaddr, crypto_buffer);
-+			kunmap_atomic(kaddr);
-+		}
-+
- 		/* Generate digest */
- 		if (!s4_verify_desc)
- 			continue;
-@@ -1638,6 +1782,8 @@ __copy_data_pages(struct memory_bitmap *copy_bm, struct memory_bitmap *orig_bm)
+ 		/* Encrypt hashed page */
+ 		encrypt_data_page(crypto_buffer);
+ 
+@@ -2482,6 +2485,7 @@ void snapshot_init_trampoline(void)
+ 	t = (struct trampoline *)trampoline_buff;
+ 
+ 	init_sig_verify(t);
++	snapshot_key_trampoline_backup(t);
+ 
+ 	pr_info("Hibernation trampoline page prepared\n");
+ }
+@@ -2505,6 +2509,7 @@ void snapshot_restore_trampoline(void)
+ 	t = (struct trampoline *)trampoline_virt;
+ 
+ 	handle_sig_verify(t);
++	snapshot_key_trampoline_restore(t);
+ 	snapshot_free_trampoline();
  }
  
- static inline void alloc_h_buf(void) {}
-+static inline void init_iv(struct swsusp_info *info) {}
-+static inline void load_iv(struct swsusp_info *info) {}
- static inline void init_signature(struct swsusp_info *info) {}
- static inline void load_signature(struct swsusp_info *info) {}
- static inline void init_sig_verify(struct trampoline *t) {}
-@@ -2286,6 +2432,7 @@ static int init_header(struct swsusp_info *info)
- 	info->size = info->pages;
- 	info->size <<= PAGE_SHIFT;
- 	info->trampoline_pfn = page_to_pfn(virt_to_page(trampoline_virt));
-+	init_iv(info);
- 	init_signature(info);
- 	return init_header_complete(info);
+diff --git a/kernel/power/snapshot_key.c b/kernel/power/snapshot_key.c
+index 3a569b505d8d..9d478c27d6b9 100644
+--- a/kernel/power/snapshot_key.c
++++ b/kernel/power/snapshot_key.c
+@@ -29,11 +29,27 @@ static struct snapshot_key {
+ 	const char *key_name;
+ 	bool initialized;
+ 	unsigned int key_len;
++	unsigned long pfn;			/* pfn of keyblob */
++	unsigned long addr_offset;		/* offset in page for keyblob */
+ 	u8 key[SNAPSHOT_KEY_SIZE];
++	u8 fingerprint[SHA512_DIGEST_SIZE];	/* fingerprint of keyblob */
+ } skey = {
+ 	.key_name = "swsusp-kmk",
+ };
+ 
++static void snapshot_key_clean(void)
++{
++	crypto_free_shash(hash_tfm);
++	hash_tfm = NULL;
++	skey.initialized = false;
++	barrier();
++	skey.pfn = 0;
++	skey.key_len = 0;
++	skey.addr_offset = 0;
++	memzero_explicit(skey.key, SNAPSHOT_KEY_SIZE);
++	memzero_explicit(skey.fingerprint, SHA512_DIGEST_SIZE);
++}
++
+ static int calc_hash(u8 *digest, const u8 *buf, unsigned int buflen,
+ 		     bool may_sleep)
+ {
+@@ -81,6 +97,53 @@ static int calc_key_hash(u8 *key, unsigned int key_len, const char *salt,
+ 	return ret;
  }
-@@ -2524,6 +2671,7 @@ static int load_header(struct swsusp_info *info)
- 		nr_copy_pages = info->image_pages;
- 		nr_meta_pages = info->pages - info->image_pages - 1;
- 		trampoline_pfn = info->trampoline_pfn;
-+		load_iv(info);
- 		load_signature(info);
- 	}
- 	return error;
+ 
++static int get_key_fingerprint(u8 *fingerprint, u8 *key, unsigned int key_len,
++				bool may_sleep)
++{
++	return calc_key_hash(key, key_len, "FINGERPRINT", fingerprint, may_sleep);
++}
++
++void snapshot_key_page_erase(unsigned long pfn, void *buff_addr)
++{
++	if (!skey.initialized || pfn != skey.pfn)
++		return;
++
++	/* erase key data from snapshot buffer page */
++	if (!memcmp(skey.key, buff_addr + skey.addr_offset, skey.key_len)) {
++		memzero_explicit(buff_addr + skey.addr_offset, skey.key_len);
++		pr_info("Erased swsusp key in snapshot pages.\n");
++	}
++}
++
++/* this function may sleeps because snapshot_key_init() */
++void snapshot_key_trampoline_backup(struct trampoline *t)
++{
++	if (!t || snapshot_key_init())
++		return;
++
++	memcpy(t->snapshot_key, skey.key, skey.key_len);
++}
++
++/* Be called after snapshot image restored success */
++void snapshot_key_trampoline_restore(struct trampoline *t)
++{
++	u8 fingerprint[SHA512_DIGEST_SIZE];
++
++	if (!skey.initialized || !t)
++		return;
++
++	/* check key fingerprint before restore */
++	get_key_fingerprint(fingerprint, t->snapshot_key, skey.key_len, true);
++	if (memcmp(skey.fingerprint, fingerprint, SHA512_DIGEST_SIZE)) {
++		pr_warn("Restored swsusp key failed, fingerprint mismatch.\n");
++		snapshot_key_clean();
++		return;
++	}
++
++	memcpy(skey.key, t->snapshot_key, skey.key_len);
++	memzero_explicit(t->snapshot_key, SNAPSHOT_KEY_SIZE);
++}
++
+ /* Derive authentication/encryption key */
+ static int get_derived_key(u8 *derived_key, const char *derived_type_str,
+ 			   bool may_sleep)
+@@ -230,10 +293,14 @@ int snapshot_key_init(void)
+ 	if (err)
+ 		goto key_fail;
+ 
++	skey.pfn = page_to_pfn(virt_to_page(skey.key));
++	skey.addr_offset = (unsigned long) skey.key & ~PAGE_MASK;
++	get_key_fingerprint(skey.fingerprint, skey.key, skey.key_len, true);
+ 	barrier();
+ 	skey.initialized = true;
+ 
+ 	pr_info("Snapshot key is initialled.\n");
++	pr_debug("Fingerprint %*phN\n", SHA512_DIGEST_SIZE, skey.fingerprint);
+ 
+ 	return 0;
+ 
 -- 
 2.13.6
