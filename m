@@ -1,276 +1,150 @@
-From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Subject: [PATCH 5/5 v2] PM / hibernate: An option to request that snapshot image must be authenticated
-Date: Thu,  3 Jan 2019 22:32:27 +0800
-Message-ID: <20190103143227.9138-6-jlee@suse.com>
-References: <20190103143227.9138-1-jlee@suse.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.21-rc1
+Date: Fri, 04 Jan 2019 02:43:14 +0800
+Message-ID: <1546540994.2072.26.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190103143227.9138-1-jlee@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: linux-pm@vger.kernel.org
 
-This kernel option is similar to the option for kernel module signature
-verification. When this option is unselected, kernel will be tainted by
-restored from a snapshot image without (valid) signature.
+Hi, Linus,
 
-When the option is selected, kernel will refuse the system to be restored
-from a unauthenticated image. The hibernation resume process will be stopped
-, the snapshot image will be discarded and system just boots as normal.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-The hibernation can be triggered without snapshot master key when this
-option is unselected. But kernel will be tainted after hibernation resume.
+to receive the latest Thermal management updates for v4.21-rc1 with
+top-most commit 24ef9ec891c761483c5270528781b8637b908eef:
 
-v2:
-- Fixed wording in Kconfig
+  thermal/intel: fixup for Kconfig string parsing tightening up (2019-
+01-03 23:52:28 +0800)
 
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Chen Yu <yu.c.chen@intel.com>
-Cc: Oliver Neukum <oneukum@suse.com>
-Cc: Ryan Chen <yu.chen.surf@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Jann Horn <jannh@google.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Signed-off-by: "Lee, Chun-Yi" <jlee@suse.com>
----
- Documentation/admin-guide/kernel-parameters.txt |  6 ++++
- include/linux/kernel.h                          |  3 +-
- kernel/panic.c                                  |  1 +
- kernel/power/Kconfig                            | 11 +++++++
- kernel/power/hibernate.c                        |  8 +++--
- kernel/power/power.h                            |  5 ++++
- kernel/power/snapshot.c                         | 40 +++++++++++++++++++++++--
- kernel/power/user.c                             |  2 +-
- 8 files changed, 69 insertions(+), 7 deletions(-)
+on top of commit 2e6e902d185027f8e3cb8b7305238f7e35d6a436:
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 37e235be1d35..f103b5d4676f 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3991,6 +3991,12 @@
- 		protect_image	Turn on image protection during restoration
- 				(that will set all pages holding image data
- 				during restoration read-only).
-+		enforce_auth	When HIBERNATION_ENC_AUTH is set, this means
-+				that snapshot image without (valid) signature
-+				will fail to restore.
-+				Note that if HIBERNATION_ENC_AUTH_FORCE is
-+				set, that is always true, so this option does
-+				nothing.
- 
- 	retain_initrd	[RAM] Keep initrd memory after extraction
- 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d6aac75b51ba..61714489cb57 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -598,7 +598,8 @@ extern enum system_states {
- #define TAINT_LIVEPATCH			15
- #define TAINT_AUX			16
- #define TAINT_RANDSTRUCT		17
--#define TAINT_FLAGS_COUNT		18
-+#define TAINT_UNSAFE_HIBERNATE		18
-+#define TAINT_FLAGS_COUNT		19
- 
- struct taint_flag {
- 	char c_true;	/* character printed when tainted */
-diff --git a/kernel/panic.c b/kernel/panic.c
-index d10c340c43b0..7179c6d8d38f 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -335,6 +335,7 @@ const struct taint_flag taint_flags[TAINT_FLAGS_COUNT] = {
- 	[ TAINT_LIVEPATCH ]		= { 'K', ' ', true },
- 	[ TAINT_AUX ]			= { 'X', ' ', true },
- 	[ TAINT_RANDSTRUCT ]		= { 'T', ' ', true },
-+	[ TAINT_UNSAFE_HIBERNATE ]	= { 'H', ' ', true },
- };
- 
- /**
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 506a3c5a7a0d..cf1896c32014 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -90,6 +90,17 @@ config HIBERNATION_ENC_AUTH
- 	  as the master key of hibernation. The TPM trusted key depends on TPM.
- 	  The security of user defined key relies on user space.
- 
-+config HIBERNATION_ENC_AUTH_FORCE
-+	bool "Require hibernate snapshot image to be validly signed"
-+	depends on HIBERNATION_ENC_AUTH
-+	help
-+	  This option will prevent that a snapshot image without (valid)
-+	  signature be restored. Without this option, an unauthenticated
-+	  snapshot image can be restored but the restored kernel will be
-+	  tainted, which also means that the hibernation can be triggered
-+	  without snapshot key but kernel will be tainted without this
-+	  option.
-+
- config ARCH_SAVE_PAGE_KEYS
- 	bool
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 5ac2ab6f4a0e..9515bad0897e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -272,11 +272,11 @@ static int create_image(int platform_mode)
- 	int error;
- 
- 	error = snapshot_prepare_hash(false);
--	if (error)
-+	if (error && snapshot_is_enforce_auth())
- 		return error;
- 
- 	error = snapshot_prepare_crypto(false, true);
--	if (error)
-+	if (error && snapshot_is_enforce_auth())
- 		goto finish_hash;
- 
- 	error = dpm_suspend_end(PMSG_FREEZE);
-@@ -708,7 +708,7 @@ int hibernate(void)
- 	}
- 
- 	error = snapshot_key_init();
--	if (error)
-+	if (error && snapshot_is_enforce_auth())
- 		return error;
- 
- 	error = snapshot_create_trampoline();
-@@ -1248,6 +1248,8 @@ static int __init hibernate_setup(char *str)
- 	} else if (IS_ENABLED(CONFIG_STRICT_KERNEL_RWX)
- 		   && !strncmp(str, "protect_image", 13)) {
- 		enable_restore_image_protection();
-+	} else if (!strncmp(str, "enforce_auth", 10)) {
-+		snapshot_set_enforce_auth();
- 	}
- 	return 1;
- }
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index d2fc73b2e200..edb63991bcdc 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -36,6 +36,7 @@ struct swsusp_info {
- struct trampoline {
- 	bool snapshot_key_valid;
- 	int sig_verify_ret;
-+	bool enforce_auth;
- 	u8 snapshot_key[SNAPSHOT_KEY_SIZE];
- } __aligned(PAGE_SIZE);
- 
-@@ -51,6 +52,8 @@ extern int snapshot_prepare_crypto(bool may_sleep, bool create_iv);
- extern void snapshot_finish_crypto(void);
- extern int snapshot_prepare_hash(bool may_sleep);
- extern void snapshot_finish_hash(void);
-+extern void snapshot_set_enforce_auth(void);
-+extern int snapshot_is_enforce_auth(void);
- /* kernel/power/snapshot_key.c */
- extern int snapshot_key_init(void);
- extern bool snapshot_key_initialized(void);
-@@ -65,6 +68,8 @@ static inline int snapshot_prepare_crypto(bool may_sleep, bool create_iv) { retu
- static inline void snapshot_finish_crypto(void) {}
- static inline int snapshot_prepare_hash(bool may_sleep) { return 0; }
- static inline void snapshot_finish_hash(void) {}
-+static inline void snapshot_set_enforce_auth(void) {}
-+static inline int snapshot_is_enforce_auth(void) { return 0; }
- static inline int snapshot_key_init(void) { return 0; }
- static inline void snapshot_key_trampoline_backup(struct trampoline *t) {}
- static inline void snapshot_key_trampoline_restore(struct trampoline *t) {}
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 80ed8e7c5ed8..03a76c474ab7 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1538,6 +1538,23 @@ static int decrypt_data_page(void *encrypted_page)
- 	return ret;
- }
- 
-+/* enforce the snapshot to be signed */
-+#ifdef CONFIG_HIBERNATION_ENC_AUTH_FORCE
-+static bool enforce_auth = true;
-+#else
-+static bool enforce_auth;
-+#endif
-+
-+void snapshot_set_enforce_auth(void)
-+{
-+	enforce_auth = true;
-+}
-+
-+int snapshot_is_enforce_auth(void)
-+{
-+	return enforce_auth;
-+}
-+
- /*
-  * Signature of snapshot image
-  */
-@@ -1604,6 +1621,8 @@ int snapshot_prepare_hash(bool may_sleep)
- 	crypto_free_shash(tfm);
- 	s4_verify_digest = NULL;
- 	s4_verify_desc = NULL;
-+	if (!enforce_auth)
-+		ret = 0;
- 	return ret;
- }
- 
-@@ -1665,6 +1684,8 @@ int snapshot_image_verify_decrypt(void)
- 		pr_warn("Signature verification failed: %d\n", ret);
-  error:
- 	sig_verify_ret = ret;
-+	if (!enforce_auth)
-+		ret = 0;
- 	return ret;
- }
- 
-@@ -1752,6 +1773,7 @@ static void load_signature(struct swsusp_info *info)
- 
- static void init_sig_verify(struct trampoline *t)
- {
-+	t->enforce_auth = enforce_auth;
- 	t->sig_verify_ret = sig_verify_ret;
- 	t->snapshot_key_valid = snapshot_key_valid;
- 	sig_verify_ret = 0;
-@@ -1760,11 +1782,25 @@ static void init_sig_verify(struct trampoline *t)
- 
- static void handle_sig_verify(struct trampoline *t)
- {
--	if (t->sig_verify_ret)
-+	enforce_auth = t->enforce_auth;
-+	if (enforce_auth)
-+		pr_info("Enforce the snapshot to be validly signed\n");
-+
-+	if (t->sig_verify_ret) {
- 		pr_warn("Signature verification failed: %d\n",
- 			t->sig_verify_ret);
--	else if (t->snapshot_key_valid)
-+		if (t->snapshot_key_valid)
-+			pr_warn("Did not find valid snapshot key.\n");
-+		/* taint kernel */
-+		if (!enforce_auth) {
-+			pr_warn("System resumed from unsafe snapshot - "
-+				"tainting kernel\n");
-+			add_taint(TAINT_UNSAFE_HIBERNATE, LOCKDEP_STILL_OK);
-+			pr_info("%s\n", print_tainted());
-+		}
-+	} else if (t->snapshot_key_valid) {
- 		pr_info("Signature verification passed.\n");
-+	}
- }
- #else
- static int
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index d5c8f777e8d8..9597f48f01d0 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -261,7 +261,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 			break;
- 		}
- 		error = snapshot_key_init();
--		if (error)
-+		if (error && snapshot_is_enforce_auth())
- 			return error;
- 		error = snapshot_create_trampoline();
- 		if (error)
--- 
-2.13.6
+  Linux 4.20-rc4 (2018-11-25 14:19:31 -0800)
+
+Note that commit 8636a1f9677d ("treewide: surround Kconfig file paths
+with double quotes") makes some change to drivers/thermal/Kconfig, and
+introduces a merge conflict. A manual merge is needed and commit
+24ef9ec891c7 ("thermal/intel: fixup for Kconfig string parsing
+tightening up") is applied in my tree in the last minute (it was kept
+by Stephen Rothwell in linux-next previously).
+
+Specifics:
+
+- Add locking for cooling device sysfs attribute in case the cooling
+device state is changed by userspace and thermal framework
+simultaneously. (Thara Gopinath)
+
+- Fix a problem that passive cooling is reset improperly after system
+suspend/resume. (Wei Wang)
+
+- Cleanup the driver/thermal/ directory by moving intel and qcom
+platform specific drivers to platform specific sub-directories. (Amit
+Kucheria)
+
+- Some trivial cleanups. (Lukasz Luba, Wolfram Sang)
+
+thanks,
+rui
+
+
+
+----------------------------------------------------------------
+Amit Kucheria (2):
+      drivers: thermal: Move various drivers for intel platforms into a
+subdir
+      drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
+
+Lukasz Luba (1):
+      thermal: remove unused function parameter
+
+Stephen Rothwell (1):
+      thermal/intel: fixup for Kconfig string parsing tightening up
+
+Thara Gopinath (1):
+      thermal: Fix locking in cooling device sysfs update cur_state
+
+Wei Wang (1):
+      Thermal: do not clear passive state during system sleep
+
+Wolfram Sang (5):
+      thermal: int340x_thermal: int3400_thermal: simplify getting
+.driver_data
+      thermal: rockchip_thermal: simplify getting .driver_data
+      thermal: spear_thermal: simplify getting .driver_data
+      thermal: st: st_thermal: simplify getting .driver_data
+      thermal: zx2967_thermal: simplify getting .driver_data
+
+Zhang Rui (1):
+      Merge branches 'for-rc' and 'thermal-core' into next
+
+ drivers/thermal/Kconfig                            | 94 ++----------
+----------
+ drivers/thermal/Makefile                           | 10 +--
+ drivers/thermal/intel/Kconfig                      | 77
+++++++++++++++++++
+ drivers/thermal/intel/Makefile                     | 12 +++
+ .../thermal/{ => intel}/int340x_thermal/Kconfig    |  0
+ .../thermal/{ => intel}/int340x_thermal/Makefile   |  0
+ .../{ => intel}/int340x_thermal/acpi_thermal_rel.c |  0
+ .../{ => intel}/int340x_thermal/acpi_thermal_rel.h |  0
+ .../{ => intel}/int340x_thermal/int3400_thermal.c  |  9 +--
+ .../{ => intel}/int340x_thermal/int3402_thermal.c  |  0
+ .../{ => intel}/int340x_thermal/int3403_thermal.c  |  0
+ .../{ => intel}/int340x_thermal/int3406_thermal.c  |  0
+ .../int340x_thermal/int340x_thermal_zone.c         |  0
+ .../int340x_thermal/int340x_thermal_zone.h         |  0
+ .../int340x_thermal/processor_thermal_device.c     |  0
+ .../thermal/{ => intel}/intel_bxt_pmic_thermal.c   |  0
+ drivers/thermal/{ => intel}/intel_pch_thermal.c    |  0
+ drivers/thermal/{ => intel}/intel_powerclamp.c     |  0
+ .../thermal/{ => intel}/intel_quark_dts_thermal.c  |  0
+ drivers/thermal/{ => intel}/intel_soc_dts_iosf.c   |  0
+ drivers/thermal/{ => intel}/intel_soc_dts_iosf.h   |  0
+ .../thermal/{ => intel}/intel_soc_dts_thermal.c    |  0
+ drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c |  0
+ drivers/thermal/qcom/Kconfig                       | 11 +++
+ drivers/thermal/qcom/Makefile                      |  1 +
+ drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c  |  2 +-
+ drivers/thermal/rockchip_thermal.c                 |  8 +-
+ drivers/thermal/spear_thermal.c                    |  8 +-
+ drivers/thermal/st/st_thermal.c                    |  6 +-
+ drivers/thermal/thermal_core.c                     | 18 +++--
+ drivers/thermal/thermal_sysfs.c                    | 11 ++-
+ drivers/thermal/zx2967_thermal.c                   |  6 +-
+ 32 files changed, 138 insertions(+), 135 deletions(-)
+ create mode 100644 drivers/thermal/intel/Kconfig
+ create mode 100644 drivers/thermal/intel/Makefile
+ rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c
+(100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h
+(100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c
+(96%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c
+(100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c
+(100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c
+(100%)
+ rename drivers/thermal/{ =>
+intel}/int340x_thermal/int340x_thermal_zone.c (100%)
+ rename drivers/thermal/{ =>
+intel}/int340x_thermal/int340x_thermal_zone.h (100%)
+ rename drivers/thermal/{ =>
+intel}/int340x_thermal/processor_thermal_device.c (100%)
+ rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
+ rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
+ rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (99%)
