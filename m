@@ -1,41 +1,45 @@
-From: Sinan Kaya <okaya@kernel.org>
-Subject: [PATCH v6 11/11] drivers: thermal: int340x_thermal: Make PCI dependency explicit
-Date: Sat,  5 Jan 2019 10:06:06 +0000
-Message-ID: <20190105100606.6673-12-okaya@kernel.org>
-References: <20190105100606.6673-1-okaya@kernel.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Aditya Pakki <pakki001@umn.edu>
+Subject: [PATCH] v2 pm: clk: fix a missing check of clk_prepare
+Date: Sat,  5 Jan 2019 13:58:45 -0600
+Message-ID: <20190105195845.5453-1-pakki001@umn.edu>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190105100606.6673-1-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-next@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: pakki001@umn.edu
+Cc: kjlu@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built without
-CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
-satisfied implicitly through dependencies on CONFIG_ACPI have to be
-specified directly. IOSF_CORE depends on PCI. For this reason, add a
-direct dependency on CONFIG_PCI.
+clk_prepare() could fail, so let's check its status, and if it fails,
+issue an error message and change the clock_entry_status to
+PCE_STATUS_ERROR
 
-Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without CONFIG_PCI set")
-Signed-off-by: Sinan Kaya <okaya@kernel.org>
+Signed-off-by: Aditya Pakki <pakki001@umn.edu>
 ---
- drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/clock_ops.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
-index fba1976d5f8d..2acddf8fb314 100644
---- a/drivers/thermal/intel/int340x_thermal/Kconfig
-+++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-@@ -4,7 +4,7 @@
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 5a42ae4078c2..732764becafe 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -65,10 +65,15 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+ 	if (IS_ERR(ce->clk)) {
+ 		ce->status = PCE_STATUS_ERROR;
+ 	} else {
+-		clk_prepare(ce->clk);
+-		ce->status = PCE_STATUS_ACQUIRED;
+-		dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
+-			ce->clk, ce->con_id);
++		if (clk_prepare(ce->clk)) {
++			ce->status = PCE_STATUS_ERROR;
++			dev_err(dev, "clk_prepare failed\n");
++		} else {
++			ce->status = PCE_STATUS_ACQUIRED;
++			dev_dbg(dev,
++				"Clock %pC con_id %s managed by runtime PM.\n",
++				ce->clk, ce->con_id);
++		}
+ 	}
+ }
  
- config INT340X_THERMAL
- 	tristate "ACPI INT340X thermal drivers"
--	depends on X86 && ACPI
-+	depends on X86 && ACPI && PCI
- 	select THERMAL_GOV_USER_SPACE
- 	select ACPI_THERMAL_REL
- 	select ACPI_FAN
 -- 
-2.19.0
+2.17.1
