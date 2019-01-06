@@ -1,45 +1,24 @@
-From: Aditya Pakki <pakki001@umn.edu>
-Subject: [PATCH] v2 pm: clk: fix a missing check of clk_prepare
-Date: Sat,  5 Jan 2019 13:58:45 -0600
-Message-ID: <20190105195845.5453-1-pakki001@umn.edu>
+From: pr-tracker-bot@kernel.org
+Subject: Re: [GIT PULL v2] Thermal-SoC management updates for v4.21-rc1
+Date: Sun, 06 Jan 2019 00:15:02 +0000
+Message-ID: <20190106001502.814.26251.pr-tracker-bot@pdx-korg-gitolite-1.ci.codeaurora.org>
+References: <20190102200532.GA2320@localhost.localdomain>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190102200532.GA2320@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: pakki001@umn.edu
-Cc: kjlu@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-clk_prepare() could fail, so let's check its status, and if it fails,
-issue an error message and change the clock_entry_status to
-PCE_STATUS_ERROR
+The pull request you sent on Wed, 2 Jan 2019 12:05:33 -0800:
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
----
- drivers/base/power/clock_ops.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 5a42ae4078c2..732764becafe 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -65,10 +65,15 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- 	if (IS_ERR(ce->clk)) {
- 		ce->status = PCE_STATUS_ERROR;
- 	} else {
--		clk_prepare(ce->clk);
--		ce->status = PCE_STATUS_ACQUIRED;
--		dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
--			ce->clk, ce->con_id);
-+		if (clk_prepare(ce->clk)) {
-+			ce->status = PCE_STATUS_ERROR;
-+			dev_err(dev, "clk_prepare failed\n");
-+		} else {
-+			ce->status = PCE_STATUS_ACQUIRED;
-+			dev_dbg(dev,
-+				"Clock %pC con_id %s managed by runtime PM.\n",
-+				ce->clk, ce->con_id);
-+		}
- 	}
- }
- 
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/c280230254635da33703dd8f4a10cad23f640fb0
+
+Thank you!
+
 -- 
-2.17.1
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
