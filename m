@@ -1,58 +1,54 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support for
- active state of scpsys on mt8183
-Date: Mon, 7 Jan 2019 18:34:54 +0200
-Message-ID: <08d15fa8-7e53-518c-54bb-8050b0e4aabd@linaro.org>
-References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
- <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
- <1546859080.6818.128.camel@mtksdaap41>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: [PATCH] cpufreq: e_powersaver: Use struct_size() in kzalloc()
+Date: Mon, 7 Jan 2019 11:33:43 -0600
+Message-ID: <20190107173343.GA4258@embeddedor>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546859080.6818.128.camel@mtksdaap41>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Henry Chen <henryc.chen@mediatek.com>, Stephen Boyd <swboyd@chromium.org>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Henry,
+One of the more common cases of allocation size calculations is finding the
+size of a structure that has a zero-sized array at the end, along with memory
+for some number of elements for that array. For example:
 
-On 1/7/19 13:04, Henry Chen wrote:
-> On Thu, 2019-01-03 at 14:53 -0800, Stephen Boyd wrote:
->> Quoting Henry Chen (2019-01-02 06:09:51)
->>> The patchsets add support for MediaTek hardware module named DVFSRC
->>> (dynamic voltage and frequency scaling resource collector). The DVFSRC is
->>> a HW module which is used to collect all the requests from both software
->>> and hardware and turn into the decision of minimum operating voltage and
->>> minimum DRAM frequency to fulfill those requests.
->>>
->>> So, This series is to implement the dvfsrc driver to collect all the
->>> requests of operating voltage or DRAM bandwidth from other device drivers
->>> likes GPU/Camera through 2 frameworks basically:
->>>
->>> 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
->>>    requirements from different clients
->>
->> Have you looked at using the interconnect framework for this instead of
->> using PM_QOS_MEMORY_BANDWIDTH? Qcom is pushing an interconnect framework
->> to do DRAM bandwidth requirement aggregation.
-> 
-> Sorry, I haven't heard that before. Do you mean is following series
-> patch?
-> https://patchwork.kernel.org/project/linux-arm-msm/list/?series=53775
-> 
+struct foo {
+    int stuff;
+    void *entry[];
+};
 
-Yes, this one. The idea is that consumer drivers like GPU, camera, video
-encoder etc. report their bandwidth needs by using the interconnect API.
-The framework does the aggregation and configures the hardware. In order
-to use it you need to implement a platform-specific dvfsrc interconnect
-provider driver that understands the SoC topology and knows how to
-configure the hardware. I am not familiar with DVFSRC, but it seems to
-me that it can fit as interconnect provider.
-Does this HW module support any QoS priority/latency configuration or is
-it only bandwidth and voltage?
+instance = kzalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
 
-Thanks,
-Georgi
+Instead of leaving these open-coded and prone to type mistakes, we can now
+use the new struct_size() helper:
+
+instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL);
+
+This code was detected with the help of Coccinelle.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/cpufreq/e_powersaver.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index 60bea302abbe..2d3ef208dd70 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -323,9 +323,8 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ 		states = 2;
+ 
+ 	/* Allocate private data and frequency table for current cpu */
+-	centaur = kzalloc(sizeof(*centaur)
+-		    + (states + 1) * sizeof(struct cpufreq_frequency_table),
+-		    GFP_KERNEL);
++	centaur = kzalloc(struct_size(centaur, freq_table, states + 1),
++			  GFP_KERNEL);
+ 	if (!centaur)
+ 		return -ENOMEM;
+ 	eps_cpu[0] = centaur;
+-- 
+2.20.1
