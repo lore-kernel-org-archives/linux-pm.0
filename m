@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v3 04/16] Platform: OLPC: Move OLPC config symbol out of x86 tree
-Date: Mon,  7 Jan 2019 19:34:27 +0100
-Message-ID: <20190107183439.50626-5-lkundrak@v3.sk>
+Subject: [PATCH v3 08/16] Platform: OLPC: Use BIT() and GENMASK() for event masks
+Date: Mon,  7 Jan 2019 19:34:31 +0100
+Message-ID: <20190107183439.50626-9-lkundrak@v3.sk>
 References: <20190107183439.50626-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,105 +12,57 @@ To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, pl
 Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-There are ARM OLPC machines that use mostly the same drivers, including
-EC infrastructure, DCON and Battery.
-
-While at that, fix Kconfig to allow building this as a module.
+Just a cosmetic tidy-up.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
 Changes since v1:
-- Use 'depends on OLPC && X86' idiom (thanks Andy Shevchenko)
+- This patch was added to the set.
 
- arch/x86/Kconfig                  | 11 -----------
- drivers/input/mouse/Kconfig       |  3 ++-
- drivers/platform/Kconfig          |  2 ++
- drivers/platform/olpc/Kconfig     | 11 +++++++++++
- drivers/staging/olpc_dcon/Kconfig |  3 ++-
- 5 files changed, 17 insertions(+), 13 deletions(-)
- create mode 100644 drivers/platform/olpc/Kconfig
+ include/linux/olpc-ec.h | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 6185d4f33296..0a3fc97827cf 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2707,17 +2707,6 @@ config SCx200HR_TIMER
- 	  processor goes idle (as is done by the scheduler).  The
- 	  other workaround is idle=3Dpoll boot option.
+diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
+index 7fa3d27f7fee..f7b6a7eda232 100644
+--- a/include/linux/olpc-ec.h
++++ b/include/linux/olpc-ec.h
+@@ -2,6 +2,8 @@
+ #ifndef _LINUX_OLPC_EC_H
+ #define _LINUX_OLPC_EC_H
 =20
--config OLPC
--	bool "One Laptop Per Child support"
--	depends on !X86_PAE
--	select GPIOLIB
--	select OF
--	select OF_PROMTREE
--	select IRQ_DOMAIN
--	---help---
--	  Add support for detecting the unique features of the OLPC
--	  XO hardware.
--
- config OLPC_XO1_PM
- 	bool "OLPC XO-1 Power Management"
- 	depends on OLPC && MFD_CS5535=3Dy && PM_SLEEP
-diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-index 566a1e3aa504..cf12d0e4fba2 100644
---- a/drivers/input/mouse/Kconfig
-+++ b/drivers/input/mouse/Kconfig
-@@ -165,7 +165,8 @@ config MOUSE_PS2_TOUCHKIT
-=20
- config MOUSE_PS2_OLPC
- 	bool "OLPC PS/2 mouse protocol extension"
--	depends on MOUSE_PS2 && OLPC
-+	depends on MOUSE_PS2
-+	depends on OLPC && X86
- 	help
- 	  Say Y here if you have an OLPC XO-1 laptop (with built-in
- 	  PS/2 touchpad/tablet device).  The manufacturer calls the
-diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
-index d4c2e424a700..4313d73d3618 100644
---- a/drivers/platform/Kconfig
-+++ b/drivers/platform/Kconfig
-@@ -10,3 +10,5 @@ source "drivers/platform/goldfish/Kconfig"
- source "drivers/platform/chrome/Kconfig"
-=20
- source "drivers/platform/mellanox/Kconfig"
++#include <linux/bits.h>
 +
-+source "drivers/platform/olpc/Kconfig"
-diff --git a/drivers/platform/olpc/Kconfig b/drivers/platform/olpc/Kconfi=
-g
-new file mode 100644
-index 000000000000..7b736c9e67ac
---- /dev/null
-+++ b/drivers/platform/olpc/Kconfig
-@@ -0,0 +1,11 @@
-+config OLPC
-+	tristate "One Laptop Per Child support"
-+	depends on X86 || ARM || COMPILE_TEST
-+	depends on !X86_PAE
-+	select GPIOLIB
-+	select OF
-+	select OF_PROMTREE if X86
-+	select IRQ_DOMAIN
-+	help
-+	  Add support for detecting the unique features of the OLPC
-+	  XO hardware.
-diff --git a/drivers/staging/olpc_dcon/Kconfig b/drivers/staging/olpc_dco=
-n/Kconfig
-index 192cc8d0853f..ff540350f50f 100644
---- a/drivers/staging/olpc_dcon/Kconfig
-+++ b/drivers/staging/olpc_dcon/Kconfig
-@@ -1,8 +1,9 @@
- config FB_OLPC_DCON
- 	tristate "One Laptop Per Child Display CONtroller support"
--	depends on OLPC && FB
-+	depends on FB
- 	depends on I2C
- 	depends on BACKLIGHT_LCD_SUPPORT
-+	depends on OLPC && X86
- 	depends on (GPIO_CS5535 || GPIO_CS5535=3Dn)
- 	select BACKLIGHT_CLASS_DEVICE
- 	help
+ /* XO-1 EC commands */
+ #define EC_FIRMWARE_REV			0x08
+ #define EC_WRITE_SCI_MASK		0x1b
+@@ -17,17 +19,16 @@
+ #define EC_EXT_SCI_QUERY		0x85
+=20
+ /* SCI source values */
+-#define EC_SCI_SRC_EMPTY        0x00
+-#define EC_SCI_SRC_GAME         0x01
+-#define EC_SCI_SRC_BATTERY      0x02
+-#define EC_SCI_SRC_BATSOC       0x04
+-#define EC_SCI_SRC_BATERR       0x08
+-#define EC_SCI_SRC_EBOOK        0x10    /* XO-1 only */
+-#define EC_SCI_SRC_WLAN         0x20    /* XO-1 only */
+-#define EC_SCI_SRC_ACPWR        0x40
+-#define EC_SCI_SRC_BATCRIT      0x80
+-#define EC_SCI_SRC_GPWAKE       0x100   /* XO-1.5 only */
+-#define EC_SCI_SRC_ALL          0x1FF
++#define EC_SCI_SRC_GAME         BIT(0)
++#define EC_SCI_SRC_BATTERY      BIT(1)
++#define EC_SCI_SRC_BATSOC       BIT(2)
++#define EC_SCI_SRC_BATERR       BIT(3)
++#define EC_SCI_SRC_EBOOK        BIT(4)    /* XO-1 only */
++#define EC_SCI_SRC_WLAN         BIT(5)    /* XO-1 only */
++#define EC_SCI_SRC_ACPWR        BIT(6)
++#define EC_SCI_SRC_BATCRIT      BIT(7)
++#define EC_SCI_SRC_GPWAKE       BIT(8)   /* XO-1.5 only */
++#define EC_SCI_SRC_ALL          GENMASK(8, 0)
+=20
+ struct platform_device;
+=20
 --=20
 2.20.1
