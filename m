@@ -1,110 +1,82 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
- snapshot image
-Date: Tue, 8 Jan 2019 01:37:43 +0800
-Message-ID: <20190107173743.GC4210@linux-l9pv.suse>
-References: <20190103143227.9138-1-jlee@suse.com>
- <20190106181026.GA15256@amd>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: Re: [PATCH v2 17/17] power: supply: olpc_battery: Add OLPC XO 1.75
+ support
+Date: Mon, 07 Jan 2019 19:02:37 +0100
+Message-ID: <d541d82647338c07fa59b0f2ef63880610733505.camel@v3.sk>
+References: <20181116162403.49854-1-lkundrak@v3.sk>
+         <20181116162403.49854-18-lkundrak@v3.sk> <20181202233458.GE23087@wrath>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190106181026.GA15256@amd>
+In-Reply-To: <20181202233458.GE23087@wrath>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: Darren Hart <dvhart@infradead.org>
+Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pavel, 
-
-Thanks for your review!
-
-On Sun, Jan 06, 2019 at 07:10:27PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > This patchset is the implementation of encryption and authentication
-> > for hibernate snapshot image. The image will be encrypted by AES and
-> > authenticated by HMAC.
-> 
-> Ok, so you encrypt. 
->
-
-Yes, encryption and authentication. 
- 
-> > The hibernate function can be used to snapshot memory pages to an image,
-> > then kernel restores the image to memory space in a appropriate time.
-> > There have secrets in snapshot image and cracker may modifies it for
-> > hacking system. Encryption and authentication of snapshot image can protect
-> > the system.
+On Sun, 2018-12-02 at 15:34 -0800, Darren Hart wrote:
+> On Fri, Nov 16, 2018 at 05:24:03PM +0100, Lubomir Rintel wrote:
+> > The battery and the protocol are essentially the same as OLPC XO 1.5,
+> > but the responses from the EC are LSB first.
 > > 
-> > Hibernate function requests the master key through key retention service.
-> > The snapshot master key can be a trusted key or a user defined key. The
-> > name of snapshot master key is fixed to "swsusp-kmk". User should loads
-> > swsusp-kmk to kernel by keyctl tool before the hibernation resume.
-> > e.g. The swsusp-kmk must be loaded before systemd-hibernate-resume
-> 
-> But if userspace has a key, encryption is useless against root.
->
-
-Yes, but this concern is not only for hibernation encryption. This patch
-set does not provide solution against this concern.
-
-The purpose of this patch set is to encrypt and authenticate hibernate
-snapshot image in kernel space. It also requests key through keyring
-mechanism. Which means that we can easy to adapt to new key type from
-keyring in the future. 
-
-Currently TPM trusted key or user defined key types are not against
-root. Even using the TPM trusted key, it still can be unsealed by root
-before the PCRs be capped (unless we capped PCRs in kernel). 
-
-My solution for keeping the secret by kernel is the EFI secure key type:
-	https://lkml.org/lkml/2018/8/5/31
-
-But the EFI boot variable doesn't design for keeping secret, so Windows
-and OEM/ODM do not use boot variable to keep secret. So this idea can
-not be accepted. We must think other key type against root. 
-
-> > The TPM trusted key type is preferred to be the master key. But user
-> > defined key can also be used for testing or when the platform doesn't
-> > have TPM. User must be aware that the security of user key relies on
-> > user space. If the root account be compromised, then the user key will
-> > easy to be grabbed.
-> 
-> In the TPM case, does userland have access to the key? 
->
-
-In the TPM case, userland can only touch the sealed key blob. So userland
-doesn't know the real secret. But it has risk that root unseals the key
-before PCRs be capped.
-    
-> Please explain your security goals.
-> 
-
-My security goals:
-
-- Encrypt and authicate hibernate snapshot image in kernel space. Userspace
-  can only touch an encrypted and signed snapshot image.
-
-- The code of encryption are in kernel. They will be signed and verify with
-  kernel binary when secure boot enabled. It's better than using
-  unauthenticated userspace code at runtime.
-
-- Using TPM trusted key, at least the security of hibernation aligns with
-  other subsystem. e.g. EVM. 
-
-- Using keyring as the key source of hibernation. Then we can easy to
-  adapt to new key type against root be compromised. 
-
-> 
-> > Lee, Chun-Yi (5):
-> >   PM / hibernate: Create snapshot keys handler
-> >   PM / hibernate: Generate and verify signature for snapshot image
-> >   PM / hibernate: Encrypt snapshot image
-> >   PM / hibernate: Erase the snapshot master key in snapshot pages
-> >   PM / hibernate: An option to request that snapshot image must be
-> >     authenticated
+> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
 > > 
+> > ---
+> > Changes since v1:
+> > - s/s16 ecword_to_cpu/u16 ecword_to_cpu/
+> > - s/u16 ec_byte/u16 ec_word/
+> > 
+> >  drivers/power/supply/olpc_battery.c | 23 ++++++++++++++++++-----
+> >  1 file changed, 18 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
+> 
+> ...
+> 
+> > @@ -626,6 +635,10 @@ static int olpc_battery_probe(struct platform_device *pdev)
+> >  	if (ecver > 0x44) {
+> >  		/* XO 1 or 1.5 with a new EC firmware. */
+> >  		data->new_proto = 1;
+> > +	} else if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
+> 
+> This if/else blocks concerns me a bit, but I might just be missing some
+> context.
+> 
+> This tests both ecver as well as the OF compatible string, is this reliable? Do
+> we know that for all xo1.75-ec compatible nodes the ecver will be <= 0x44? Or,
+> is ecver undefined? If the latter, then perhaps this test should be performed
+> first?
+> 
+> if (of_find_compatible_node....x01.75-ec...)
+> 	...
+> else if (ecver > 0x44)
+> 	...
+> else
+> 	...
+> 
+> And what happens when ecver == 0x44? We test for > and < but not ==, <=,
+> or >= in this block
 
-Thanks a lot!
-Joey Lee
+You're right, the conditionals are not correct. On XO 1.75 the
+versioning is different (now at level 0x05) and uninteresting,
+therefore the XO 1.75 check needs to go first.
+
+On XO 1 and XO 1.75, we don't support < 0x44. 0x44 is okay, though uses
+stays with an old protocol, and > 0x44 uses a new protocol.
+
+Will follow up with a new version of the patch soon.
+
+> 
+> > +		/* XO 1.75 */
+> > +		data->new_proto = 1;
+> > +		data->little_endian = 1;
+> >  	} else if (ecver < 0x44) {
+> >  		/*
+> >  		 * We've seen a number of EC protocol changes; this driver
+> > -- 
+> > 2.19.1
+
+Thanks
+Lubo
