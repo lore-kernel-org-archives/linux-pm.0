@@ -1,68 +1,62 @@
 From: Henry Chen <henryc.chen@mediatek.com>
-Subject: Re: [RFC RESEND PATCH 2/7] dt-bindings: soc: Add opp table on
- scpsys bindings
-Date: Mon, 7 Jan 2019 19:04:14 +0800
-Message-ID: <1546859054.6818.126.camel@mtksdaap41>
+Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support
+ for active state of scpsys on mt8183
+Date: Mon, 7 Jan 2019 19:04:40 +0800
+Message-ID: <1546859080.6818.128.camel@mtksdaap41>
 References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
-         <1546438198-1677-3-git-send-email-henryc.chen@mediatek.com>
-         <CAL_JsqJXFAEdSaexA3p62u8f3RsVA1vfNsOLu4aetB-iLb9qFg@mail.gmail.com>
+         <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqJXFAEdSaexA3p62u8f3RsVA1vfNsOLu4aetB-iLb9qFg@mail.gmail.com>
+In-Reply-To: <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-mediatek@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <swboyd@chromium.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2019-01-03 at 12:45 -0600, Rob Herring wrote:
-> On Wed, Jan 2, 2019 at 8:10 AM Henry Chen <henryc.chen@mediatek.com> wrote:
-> >
-> > Add opp table on scpsys dt-bindings for Mediatek SoC.
-> >
-> > Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-> > ---
-> >  Documentation/devicetree/bindings/opp/mtk-opp.txt  | 24 +++++++++++++
-> >  .../devicetree/bindings/soc/mediatek/scpsys.txt    | 42 ++++++++++++++++++++++
-> >  2 files changed, 66 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/opp/mtk-opp.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/opp/mtk-opp.txt b/Documentation/devicetree/bindings/opp/mtk-opp.txt
-> > new file mode 100644
-> > index 0000000..036be1c
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/opp/mtk-opp.txt
-> > @@ -0,0 +1,24 @@
-> > +Mediatek OPP bindings to descibe OPP nodes with level values
-> > +
-> > +OPP tables for devices on Mediatek platforms require an additional
-> > +platform specific level value to be specified.
-> > +This value is passed on to the mediatek Power Management Unit by the
-> > +CPU, which then takes the necessary actions to set a voltage rail
-> > +to an appropriate voltage based on the value passed.
-> > +
-> > +The bindings are based on top of the operating-points-v2 bindings
-> > +described in Documentation/devicetree/bindings/opp/opp.txt
-> > +Additional properties are described below.
-> > +
-> > +* OPP Table Node
-> > +
-> > +Required properties:
-> > +- compatible: Allow OPPs to express their compatibility. It should be:
-> > +  "operating-points-v2-mtk-level"
-> > +
-> > +* OPP Node
-> > +
-> > +Required properties:
-> > +- mtk,level: On Mediatek platforms an OPP node can describe a positive value
-> > +representing a level that's communicated with a our power management hardware
-> > +which then translates it into a certain voltage on a voltage rail.
+On Thu, 2019-01-03 at 14:53 -0800, Stephen Boyd wrote:
+> Quoting Henry Chen (2019-01-02 06:09:51)
+> > The patchsets add support for MediaTek hardware module named DVFSRC
+> > (dynamic voltage and frequency scaling resource collector). The DVFSRC is
+> > a HW module which is used to collect all the requests from both software
+> > and hardware and turn into the decision of minimum operating voltage and
+> > minimum DRAM frequency to fulfill those requests.
+> > 
+> > So, This series is to implement the dvfsrc driver to collect all the
+> > requests of operating voltage or DRAM bandwidth from other device drivers
+> > likes GPU/Camera through 2 frameworks basically:
+> > 
+> > 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
+> >    requirements from different clients
 > 
-> Work with the Qcom folks and create a common level property.
-> 
-> Rob
+> Have you looked at using the interconnect framework for this instead of
+> using PM_QOS_MEMORY_BANDWIDTH? Qcom is pushing an interconnect framework
+> to do DRAM bandwidth requirement aggregation.
 
-Ok, I see the reply from Rajendra on
-https://lore.kernel.org/patchwork/patch/1027082/
-I will follow the new common property, thanks.
+Sorry, I haven't heard that before. Do you mean is following series
+patch?
+https://patchwork.kernel.org/project/linux-arm-msm/list/?series=53775
+
+
+> > 2. Active state management of power domains[1]: to handle the operating
+> >    voltage opp requirement from different power domains
+> 
+> Do you have any devices that aren't "OPP-ish" in how they use
+> frequencies and voltages? What I mean is devices such as i2c, SPI, UART
+> controllers that don't use the OPP library to set a frequency but want
+> to affect some voltage of their power domain when clk frequencies
+> change. The existing code works well for devices that naturally use the
+> OPP rate changing API, typically multimedia devices that churn through
+> data like a CPU and don't care about the frequency of their main clk
+> because it doesn't match physical link bit rates, etc. I haven't seen
+> any good solution for devices that don't fit well with the OPP API
+> though so I'm curious if Mediatek needs to solve that problem. 
+
+As I know, we don't have such device that need change clk and voltage
+together without used OPP API.We suppose that user driver will call opp
+library and performance state of power domain is combined into opp
+table.
+
+Thanks.
+Henry
