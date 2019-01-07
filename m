@@ -1,45 +1,191 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 07/11] drivers: thermal: int3406_thermal: Make PCI
- dependency explicit
-Date: Mon, 7 Jan 2019 12:19:51 +0100
-Message-ID: <CAJZ5v0gst1ZDgG-uP9GUUB1ziPnqhfArio3um=wCQjfbeH2_iw@mail.gmail.com>
-References: <20190105100606.6673-1-okaya@kernel.org> <20190105100606.6673-8-okaya@kernel.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH] PM / EM: Expose the Energy Model in debugfs
+Date: Mon,  7 Jan 2019 12:26:08 +0000
+Message-ID: <20190107122608.21913-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190105100606.6673-8-okaya@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sinan Kaya <okaya@kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 5, 2019 at 11:06 AM Sinan Kaya <okaya@kernel.org> wrote:
->
-> After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built without
-> CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
-> satisfied implicitly through dependencies on CONFIG_ACPI have to be
-> specified directly. Need CONFIG_PCI to be set in order to be able to use
-> this driver.
->
-> Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without CONFIG_PCI set")
-> Signed-off-by: Sinan Kaya <okaya@kernel.org>
-> ---
->  drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
-> index 0582bd12a239..fba1976d5f8d 100644
-> --- a/drivers/thermal/intel/int340x_thermal/Kconfig
-> +++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-> @@ -31,7 +31,7 @@ if INT340X_THERMAL
->
->  config INT3406_THERMAL
->         tristate "ACPI INT3406 display thermal driver"
-> -       depends on ACPI_VIDEO
-> +       depends on ACPI_VIDEO && PCI
->         help
->           The display thermal device represents the LED/LCD display panel
->           that may or may not include touch support. The main function of
-> --
+The recently introduced Energy Model (EM) framework manages power cost
+tables of CPUs. These tables are currently only visible from kernel
+space. However, in order to debug the behaviour of subsystems that use
+the EM, it is often required to know what the power costs are from
+userspace.
 
-Rui, any objections here?  And for the [11/11]?
+For this reason, introduce under /sys/kernel/debug/energy_model a set of
+directories representing the performance domains of the system. Each
+performance domain contains a set of sub-directories representing the
+different capacity states (cs) and their attributes, as well as a file
+exposing the related CPUs.
+
+The resulting hierarchy is as follows on Arm juno r0 for example:
+
+    /sys/kernel/debug/energy_model
+    ├── pd0
+    │   ├── cpus
+    │   ├── cs:450000
+    │   │   ├── cost
+    │   │   ├── frequency
+    │   │   └── power
+    │   ├── cs:575000
+    │   │   ├── cost
+    │   │   ├── frequency
+    │   │   └── power
+    │   ├── cs:700000
+    │   │   ├── cost
+    │   │   ├── frequency
+    │   │   └── power
+    │   ├── cs:775000
+    │   │   ├── cost
+    │   │   ├── frequency
+    │   │   └── power
+    │   └── cs:850000
+    │       ├── cost
+    │       ├── frequency
+    │       └── power
+    └── pd1
+        ├── cpus
+        ├── cs:1100000
+        │   ├── cost
+        │   ├── frequency
+        │   └── power
+        ├── cs:450000
+        │   ├── cost
+        │   ├── frequency
+        │   └── power
+        ├── cs:625000
+        │   ├── cost
+        │   ├── frequency
+        │   └── power
+        ├── cs:800000
+        │   ├── cost
+        │   ├── frequency
+        │   └── power
+        └── cs:950000
+            ├── cost
+            ├── frequency
+            └── power
+
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+---
+ kernel/power/energy_model.c | 86 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 86 insertions(+)
+
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index d9dc2c38764a..8ef48daa62ff 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/cpu.h>
+ #include <linux/cpumask.h>
++#include <linux/debugfs.h>
+ #include <linux/energy_model.h>
+ #include <linux/sched/topology.h>
+ #include <linux/slab.h>
+@@ -23,6 +24,88 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
+  */
+ static DEFINE_MUTEX(em_pd_mutex);
+ 
++#ifdef CONFIG_DEBUG_FS
++static struct dentry *rootdir;
++
++static int em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
++{
++	struct dentry *d;
++	char name[24];
++
++	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
++
++	d = debugfs_create_dir(name, pd);
++	if (!d)
++		return -ENOMEM;
++
++	if (!debugfs_create_ulong("frequency", 0444, d, &cs->frequency))
++		return -ENOMEM;
++
++	if (!debugfs_create_ulong("power", 0444, d, &cs->power))
++		return -ENOMEM;
++
++	if (!debugfs_create_ulong("cost", 0444, d, &cs->cost))
++		return -ENOMEM;
++
++	return 0;
++}
++
++static int em_debug_cpus_show(struct seq_file *s, void *unused)
++{
++	seq_printf(s, "%*pbl\n", cpumask_pr_args(to_cpumask(s->private)));
++
++	return 0;
++}
++DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
++
++static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
++{
++	struct dentry *d;
++	char name[16];
++	int i;
++
++	if (!rootdir)
++		return -EINVAL;
++
++	snprintf(name, sizeof(name), "pd%d", cpu);
++
++	/* Create the directory of the performance domain */
++	d = debugfs_create_dir(name, rootdir);
++	if (!d)
++		return -ENOMEM;
++
++	/* Create one file per pd to expose the related CPUs */
++	if (!debugfs_create_file("cpus", 0444, d, pd->cpus,
++							&em_debug_cpus_fops))
++		return -ENOMEM;
++
++	/* Create a sub-directory for each capacity state */
++	for (i = 0; i < pd->nr_cap_states; i++) {
++		if (em_debug_create_cs(&pd->table[i], d))
++			return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static int __init em_debug_init(void)
++{
++	/* Create /sys/kernel/debug/energy_model directory */
++	rootdir = debugfs_create_dir("energy_model", NULL);
++	if (!rootdir) {
++		pr_err("%s: Failed to create root directory\n", __func__);
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++core_initcall(em_debug_init);
++#else /* CONFIG_DEBUG_FS */
++static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
++{
++	return 0;
++}
++#endif
+ static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
+ 						struct em_data_callback *cb)
+ {
+@@ -102,6 +185,9 @@ static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
+ 	pd->nr_cap_states = nr_states;
+ 	cpumask_copy(to_cpumask(pd->cpus), span);
+ 
++	if (em_debug_create_pd(pd, cpu))
++		pr_err("Failed to create debugfs for pd%d\n", cpu);
++
+ 	return pd;
+ 
+ free_cs_table:
+-- 
+2.20.1
