@@ -1,62 +1,102 @@
 From: Henry Chen <henryc.chen@mediatek.com>
-Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support
- for active state of scpsys on mt8183
-Date: Mon, 7 Jan 2019 19:04:40 +0800
-Message-ID: <1546859080.6818.128.camel@mtksdaap41>
+Subject: Re: [RFC RESEND PATCH 3/7] soc: mediatek: add support for the
+ performance state
+Date: Mon, 7 Jan 2019 19:06:34 +0800
+Message-ID: <1546859194.6818.129.camel@mtksdaap41>
 References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
-         <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
+         <1546438198-1677-4-git-send-email-henryc.chen@mediatek.com>
+         <154655622671.15366.9695869469694306752@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
+In-Reply-To: <154655622671.15366.9695869469694306752@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>
+To: Stephen Boyd <sboyd@kernel.org>
 Cc: Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2019-01-03 at 14:53 -0800, Stephen Boyd wrote:
-> Quoting Henry Chen (2019-01-02 06:09:51)
-> > The patchsets add support for MediaTek hardware module named DVFSRC
-> > (dynamic voltage and frequency scaling resource collector). The DVFSRC is
-> > a HW module which is used to collect all the requests from both software
-> > and hardware and turn into the decision of minimum operating voltage and
-> > minimum DRAM frequency to fulfill those requests.
-> > 
-> > So, This series is to implement the dvfsrc driver to collect all the
-> > requests of operating voltage or DRAM bandwidth from other device drivers
-> > likes GPU/Camera through 2 frameworks basically:
-> > 
-> > 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
-> >    requirements from different clients
+On Thu, 2019-01-03 at 14:57 -0800, Stephen Boyd wrote:
+> Quoting Henry Chen (2019-01-02 06:09:54)
+> > @@ -187,6 +190,18 @@ struct scp_soc_data {
+> >         bool bus_prot_reg_update;
+> >  };
+> >  
+> > +BLOCKING_NOTIFIER_HEAD(scpsys_notifier_list);
 > 
-> Have you looked at using the interconnect framework for this instead of
-> using PM_QOS_MEMORY_BANDWIDTH? Qcom is pushing an interconnect framework
-> to do DRAM bandwidth requirement aggregation.
-
-Sorry, I haven't heard that before. Do you mean is following series
-patch?
-https://patchwork.kernel.org/project/linux-arm-msm/list/?series=53775
-
-
-> > 2. Active state management of power domains[1]: to handle the operating
-> >    voltage opp requirement from different power domains
+> static?
+OK
 > 
-> Do you have any devices that aren't "OPP-ish" in how they use
-> frequencies and voltages? What I mean is devices such as i2c, SPI, UART
-> controllers that don't use the OPP library to set a frequency but want
-> to affect some voltage of their power domain when clk frequencies
-> change. The existing code works well for devices that naturally use the
-> OPP rate changing API, typically multimedia devices that churn through
-> data like a CPU and don't care about the frequency of their main clk
-> because it doesn't match physical link bit rates, etc. I haven't seen
-> any good solution for devices that don't fit well with the OPP API
-> though so I'm curious if Mediatek needs to solve that problem. 
+> > +
+> > +int register_scpsys_notifier(struct notifier_block *nb)
+> > +{
+> > +       return blocking_notifier_chain_register(&scpsys_notifier_list, nb);
+> > +}
+> > +
+> > +int unregister_scpsys_notifier(struct notifier_block *nb)
+> > +{
+> > +       return blocking_notifier_chain_unregister(&scpsys_notifier_list, nb);
+> > +}
+> 
+> What is the notifier for?
+It used to notifier the DVFSRC driver that performance stat was changed.
+> 
+> > +
+> >  static int scpsys_domain_is_on(struct scp_domain *scpd)
+> >  {
+> >         struct scp *scp = scpd->scp;
+> > @@ -536,6 +551,48 @@ static void init_clks(struct platform_device *pdev, struct clk **clk)
+> >                 clk[i] = devm_clk_get(&pdev->dev, clk_names[i]);
+> >  }
+> >  
+> > +static int mtk_pd_set_performance(struct generic_pm_domain *genpd,
+> > +                                 unsigned int state)
+> > +{
+> > +       int i;
+> > +       struct scp_domain *scpd =
+> > +               container_of(genpd, struct scp_domain, genpd);
+> > +       struct scp_event_data scpe;
+> > +       struct scp *scp = scpd->scp;
+> > +       struct genpd_onecell_data *pd_data = &scp->pd_data;
+> > +
+> > +       for (i = 0; i < pd_data->num_domains; i++) {
+> > +               if (genpd == pd_data->domains[i]) {
+> > +                       dev_dbg(scp->dev, "%d. %s = %d\n",
+> > +                               i, genpd->name, state);
+> > +                       break;
+> > +               }
+> > +       }
+> > +
+> > +       scpe.event_type = MTK_SCPSYS_PSTATE;
+> > +       scpe.genpd = genpd;
+> > +       scpe.domain_id = i;
+> > +       blocking_notifier_call_chain(&scpsys_notifier_list, state, &scpe);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static unsigned int mtk_pd_get_performance(struct generic_pm_domain *genpd,
+> > +                                          struct dev_pm_opp *opp)
+> > +{
+> > +       struct device_node *np;
+> > +       unsigned int state;
+> > +
+> > +       np = dev_pm_opp_get_of_node(opp);
+> > +
+> > +       if (of_property_read_u32(np, "mtk,level", &state))
+> > +               return 0;
+> > +
+> > +       of_node_put(np);
+> 
+> The generic API that Rajendra is adding I guess will become even more
+> generic by assuming some sort of property like 'opp-level' or
+> 'performance-state' that is just some raw number.
+ok, I will follow the new property from Rajendra.
 
-As I know, we don't have such device that need change clk and voltage
-together without used OPP API.We suppose that user driver will call opp
-library and performance state of power domain is combined into opp
-table.
-
-Thanks.
-Henry
+> > +
+> > +       return state;
+> > +}
+> > +
+> >  static struct scp *init_scp(struct platform_device *pdev,
+> >                         const struct scp_domain_data *scp_domain_data, int num,
+> >                         const struct scp_ctrl_reg *scp_ctrl_reg,
