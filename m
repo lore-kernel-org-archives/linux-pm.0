@@ -1,82 +1,87 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH v2 17/17] power: supply: olpc_battery: Add OLPC XO 1.75
- support
-Date: Mon, 07 Jan 2019 19:02:37 +0100
-Message-ID: <d541d82647338c07fa59b0f2ef63880610733505.camel@v3.sk>
-References: <20181116162403.49854-1-lkundrak@v3.sk>
-         <20181116162403.49854-18-lkundrak@v3.sk> <20181202233458.GE23087@wrath>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Mon, 7 Jan 2019 19:07:03 +0100
+Message-ID: <20190107180703.GE933@amd>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <20190106181026.GA15256@amd>
+ <20190107173743.GC4210@linux-l9pv.suse>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="4Epv4kl9IRBfg3rk"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181202233458.GE23087@wrath>
+Content-Disposition: inline
+In-Reply-To: <20190107173743.GC4210@linux-l9pv.suse>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Darren Hart <dvhart@infradead.org>
-Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org
+To: joeyli <jlee@suse.com>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2018-12-02 at 15:34 -0800, Darren Hart wrote:
-> On Fri, Nov 16, 2018 at 05:24:03PM +0100, Lubomir Rintel wrote:
-> > The battery and the protocol are essentially the same as OLPC XO 1.5,
-> > but the responses from the EC are LSB first.
-> > 
-> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > ---
-> > Changes since v1:
-> > - s/s16 ecword_to_cpu/u16 ecword_to_cpu/
-> > - s/u16 ec_byte/u16 ec_word/
-> > 
-> >  drivers/power/supply/olpc_battery.c | 23 ++++++++++++++++++-----
-> >  1 file changed, 18 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
-> 
-> ...
-> 
-> > @@ -626,6 +635,10 @@ static int olpc_battery_probe(struct platform_device *pdev)
-> >  	if (ecver > 0x44) {
-> >  		/* XO 1 or 1.5 with a new EC firmware. */
-> >  		data->new_proto = 1;
-> > +	} else if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
-> 
-> This if/else blocks concerns me a bit, but I might just be missing some
-> context.
-> 
-> This tests both ecver as well as the OF compatible string, is this reliable? Do
-> we know that for all xo1.75-ec compatible nodes the ecver will be <= 0x44? Or,
-> is ecver undefined? If the latter, then perhaps this test should be performed
-> first?
-> 
-> if (of_find_compatible_node....x01.75-ec...)
-> 	...
-> else if (ecver > 0x44)
-> 	...
-> else
-> 	...
-> 
-> And what happens when ecver == 0x44? We test for > and < but not ==, <=,
-> or >= in this block
 
-You're right, the conditionals are not correct. On XO 1.75 the
-versioning is different (now at level 0x05) and uninteresting,
-therefore the XO 1.75 check needs to go first.
+--4Epv4kl9IRBfg3rk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On XO 1 and XO 1.75, we don't support < 0x44. 0x44 is okay, though uses
-stays with an old protocol, and > 0x44 uses a new protocol.
+Hi!
 
-Will follow up with a new version of the patch soon.
+> Thanks for your review!
+>=20
+> > > The hibernate function can be used to snapshot memory pages to an ima=
+ge,
+> > > then kernel restores the image to memory space in a appropriate time.
+> > > There have secrets in snapshot image and cracker may modifies it for
+> > > hacking system. Encryption and authentication of snapshot image can p=
+rotect
+> > > the system.
+> > >=20
+> > > Hibernate function requests the master key through key retention serv=
+ice.
+> > > The snapshot master key can be a trusted key or a user defined key. T=
+he
+> > > name of snapshot master key is fixed to "swsusp-kmk". User should loa=
+ds
+> > > swsusp-kmk to kernel by keyctl tool before the hibernation resume.
+> > > e.g. The swsusp-kmk must be loaded before systemd-hibernate-resume
+> >=20
+> > But if userspace has a key, encryption is useless against root.
+> >
+>=20
+> Yes, but this concern is not only for hibernation encryption. This patch
+> set does not provide solution against this concern.
 
-> 
-> > +		/* XO 1.75 */
-> > +		data->new_proto = 1;
-> > +		data->little_endian = 1;
-> >  	} else if (ecver < 0x44) {
-> >  		/*
-> >  		 * We've seen a number of EC protocol changes; this driver
-> > -- 
-> > 2.19.1
+So, can we postpone these patches until we have a solution secure
+against root users?
 
-Thanks
-Lubo
+> My security goals:
+>=20
+> - Encrypt and authicate hibernate snapshot image in kernel space. Userspa=
+ce
+>   can only touch an encrypted and signed snapshot image.
+>=20
+> - The code of encryption are in kernel. They will be signed and verify wi=
+th
+>   kernel binary when secure boot enabled. It's better than using
+>   unauthenticated userspace code at runtime.
+
+These are not goals. I'd like to understand why you want to put it into
+kernel in the first place.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--4Epv4kl9IRBfg3rk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlwzlUcACgkQMOfwapXb+vK4kgCfVB1Z62JFyX7Bq7sSXrFTCqN8
+rT0AoKyLzzIy+PWQLFi2lG7Z/J1iUq3L
+=H3zH
+-----END PGP SIGNATURE-----
+
+--4Epv4kl9IRBfg3rk--
