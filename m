@@ -1,191 +1,51 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH] PM / EM: Expose the Energy Model in debugfs
-Date: Mon,  7 Jan 2019 12:26:08 +0000
-Message-ID: <20190107122608.21913-1-quentin.perret@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [Intel-gfx] [PATCH v5 2/3] drm/i915: Move on the new pm runtime
+ interface
+Date: Mon, 7 Jan 2019 15:03:55 +0100
+Message-ID: <CAKfTPtC1VVqK8Fde=AdRFyd4--09XVoNg8xHUja2siynL_o_3Q@mail.gmail.com>
+References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+ <1545388436-7489-3-git-send-email-vincent.guittot@linaro.org>
+ <ae85c6d4-5482-1376-7573-8ece9f78bc61@linux.intel.com>
+ <CAKfTPtDx8u_TnZQnQNmn+=A5A78CPVSWKvMdOVD0UEw4m4s1iQ@mail.gmail.com>
+ <d15e49e3-8d86-9c25-6412-a8534f1790d4@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <d15e49e3-8d86-9c25-6412-a8534f1790d4@linux.intel.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-The recently introduced Energy Model (EM) framework manages power cost
-tables of CPUs. These tables are currently only visible from kernel
-space. However, in order to debug the behaviour of subsystems that use
-the EM, it is often required to know what the power costs are from
-userspace.
-
-For this reason, introduce under /sys/kernel/debug/energy_model a set of
-directories representing the performance domains of the system. Each
-performance domain contains a set of sub-directories representing the
-different capacity states (cs) and their attributes, as well as a file
-exposing the related CPUs.
-
-The resulting hierarchy is as follows on Arm juno r0 for example:
-
-    /sys/kernel/debug/energy_model
-    ├── pd0
-    │   ├── cpus
-    │   ├── cs:450000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:575000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:700000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:775000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   └── cs:850000
-    │       ├── cost
-    │       ├── frequency
-    │       └── power
-    └── pd1
-        ├── cpus
-        ├── cs:1100000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:450000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:625000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:800000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        └── cs:950000
-            ├── cost
-            ├── frequency
-            └── power
-
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- kernel/power/energy_model.c | 86 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 86 insertions(+)
-
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index d9dc2c38764a..8ef48daa62ff 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
-+#include <linux/debugfs.h>
- #include <linux/energy_model.h>
- #include <linux/sched/topology.h>
- #include <linux/slab.h>
-@@ -23,6 +24,88 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
-  */
- static DEFINE_MUTEX(em_pd_mutex);
- 
-+#ifdef CONFIG_DEBUG_FS
-+static struct dentry *rootdir;
-+
-+static int em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
-+{
-+	struct dentry *d;
-+	char name[24];
-+
-+	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
-+
-+	d = debugfs_create_dir(name, pd);
-+	if (!d)
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_ulong("frequency", 0444, d, &cs->frequency))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_ulong("power", 0444, d, &cs->power))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_ulong("cost", 0444, d, &cs->cost))
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static int em_debug_cpus_show(struct seq_file *s, void *unused)
-+{
-+	seq_printf(s, "%*pbl\n", cpumask_pr_args(to_cpumask(s->private)));
-+
-+	return 0;
-+}
-+DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
-+
-+static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
-+{
-+	struct dentry *d;
-+	char name[16];
-+	int i;
-+
-+	if (!rootdir)
-+		return -EINVAL;
-+
-+	snprintf(name, sizeof(name), "pd%d", cpu);
-+
-+	/* Create the directory of the performance domain */
-+	d = debugfs_create_dir(name, rootdir);
-+	if (!d)
-+		return -ENOMEM;
-+
-+	/* Create one file per pd to expose the related CPUs */
-+	if (!debugfs_create_file("cpus", 0444, d, pd->cpus,
-+							&em_debug_cpus_fops))
-+		return -ENOMEM;
-+
-+	/* Create a sub-directory for each capacity state */
-+	for (i = 0; i < pd->nr_cap_states; i++) {
-+		if (em_debug_create_cs(&pd->table[i], d))
-+			return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init em_debug_init(void)
-+{
-+	/* Create /sys/kernel/debug/energy_model directory */
-+	rootdir = debugfs_create_dir("energy_model", NULL);
-+	if (!rootdir) {
-+		pr_err("%s: Failed to create root directory\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+core_initcall(em_debug_init);
-+#else /* CONFIG_DEBUG_FS */
-+static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
-+{
-+	return 0;
-+}
-+#endif
- static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
- 						struct em_data_callback *cb)
- {
-@@ -102,6 +185,9 @@ static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
- 	pd->nr_cap_states = nr_states;
- 	cpumask_copy(to_cpumask(pd->cpus), span);
- 
-+	if (em_debug_create_pd(pd, cpu))
-+		pr_err("Failed to create debugfs for pd%d\n", cpu);
-+
- 	return pd;
- 
- free_cs_table:
--- 
-2.20.1
+SGkgVHZydGtvLAoKT24gTW9uLCAzMSBEZWMgMjAxOCBhdCAxMzozMiwgVHZydGtvIFVyc3VsaW4K
+PHR2cnRrby51cnN1bGluQGxpbnV4LmludGVsLmNvbT4gd3JvdGU6Cj4KPgo+IE9uIDIxLzEyLzIw
+MTggMTM6MjYsIFZpbmNlbnQgR3VpdHRvdCB3cm90ZToKPiA+IE9uIEZyaSwgMjEgRGVjIDIwMTgg
+YXQgMTI6MzMsIFR2cnRrbyBVcnN1bGluCgpbc25pcF0KCj4gPj4KPiA+PiBJZiBpdCBpcyBhbHdh
+eXMgbW9ub3RvbmljLCB0aGVuIHdvcnN0IGNhc2Ugd2UgcmVwb3J0IG9uZSB3cm9uZyBzYW1wbGUs
+Cj4gPj4gd2hpY2ggSSBndWVzcyBpcyBzdGlsbCBub3QgaWRlYWwgc2luY2Ugc29tZW9uZSBjb3Vs
+ZCBiZSBxdWVyeWluZyB0aGUgUE1VCj4gPj4gd2l0aCBxdWl0ZSBsb3cgZnJlcXVlbmN5Lgo+ID4+
+Cj4gPj4gVGhlcmUgYXJlIHRlc3RzIHdoaWNoIHByb2JhYmx5IGNhbiBoaXQgdGhpcywgYnV0IHRv
+IHJ1biB0aGVtCj4gPj4gYXV0b21hdGljYWxseSB5b3VyIHBhdGNoZXMgd291bGQgbmVlZCB0byBi
+ZSByZWJhc2VkIG9uIGRybS10aXAgYW5kIG1heWJlCj4gPj4gc2VudCB0byBvdXIgdHJ5Ym90LiBJ
+IGNhbiBkbyB0aGF0IGFmdGVyIHRoZSBob2xpZGF5IGJyZWFrIGlmIHlvdSBhcmUKPiA+PiBva2F5
+IHdpdGggaGF2aW5nIHRoZSBzZXJpZXMgd2FpdGluZyB1bnRpbCB0aGVuLgo+ID4KPiA+IHllcyBs
+b29rcyBnb29kIHRvIG1lCj4KPiBMb29rcyBnb29kIHRvIG1lIGFzIHdlbGwuIEFuZCBvdXIgQ0kg
+YWdyZWVzIHdpdGggaXQuIFNvOgo+Cj4gUmV2aWV3ZWQtYnk6IFR2cnRrbyBVcnN1bGluIDx0dnJ0
+a28udXJzdWxpbkBpbnRlbC5jb20+CgpUaGFua3MgZm9yIHRoZSByZXZpZXcgYW5kIHRoZSB0ZXN0
+Cgo+Cj4gSSBhc3N1bWUgeW91IHdpbGwgdGFrZSB0aGUgcGF0Y2ggdGhyb3VnaCBzb21lIHBvd2Vy
+IHJlbGF0ZWQgdHJlZSBhbmQgd2UKPiB3aWxsIGV2ZW50dWFsbHkgcHVsbCBpdCBiYWNrIHRvIGRy
+bS10aXAuCgpSYWZhZWwsCkhvdyBkbyB5b3Ugd2FudCB0byBwcm9jZWVkIHdpdGggdGhpcyBwYXRj
+aCBhbmQgdGhlIDIgb3RoZXJzIG9mIHRoZSBzZXJpZSA/CgpSZWdhcmRzLApWaW5jZW50Cgo+Cj4g
+UmVnYXJkcywKPgo+IFR2cnRrbwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
+cmktZGV2ZWwK
