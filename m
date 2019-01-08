@@ -1,11 +1,14 @@
 From: <Claudiu.Beznea@microchip.com>
-Subject: [PATCH v2 0/3] add support for power off check in suspend
-Date: Tue, 8 Jan 2019 10:56:25 +0000
-Message-ID: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+Subject: [PATCH v2 1/3] PM / Suspend: Add support to check if platform's power
+ is off in suspend
+Date: Tue, 8 Jan 2019 10:56:29 +0000
+Message-ID: <1546944944-13911-2-git-send-email-claudiu.beznea@microchip.com>
+References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, broonie@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
@@ -14,79 +17,86 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Claudiu Beznea <claudiu.beznea@microchip.com>
 
-Hi,
+Add support to check if platform's power will be cut off in suspend.
+This will help drivers shared by multiple platforms to take only the
+necessary actions while suspending/resuming (some platform may not need
+to save/restore all the registers if platforms remains powered while
+suspended). In this way suspend/resume time could be improved.
 
-AT91 platforms support a power saving mode where SoC's power is cut off (we=
- call
-it backup mode). The resume is done with the help of bootloaders. To be abl=
-e to
-suspend/resume Linux to/from this mode all the drivers suspend/resume callb=
-acks
-should save/restore the content of all the active registers. We have 2 prob=
-lems
-we are trying to solve:
-- some of these drivers are shared with other non Microchip SoCs (e.g. macb
-  driver) and we don't want to disturbe other users of corresponding IPs wi=
-th
-  all the register save/restore operations;
-- the suspend/resume time for the rest of the power saving mode we are usin=
-g
-  could be improved if we would know in drivers the suspend mode the platfo=
-rm
-  is switched to.
+Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+---
+ include/linux/suspend.h |  6 ++++++
+ kernel/power/suspend.c  | 13 +++++++++++++
+ 2 files changed, 19 insertions(+)
 
-A solution that would have been solve our problems was proposed in [1] but =
-in
-the end it wasn't accepted. It ended up with the introduction of
-pm_suspend_target_state variable that could be used along with the changes =
-in
-this series.
-
-While the discussion of [1] progressed it has been proposed (in [2]) to
-implement a function that would tell if the platform's power would be cut o=
-ff
-at the end of the suspend procedure.
-
-The patches in this series does as follows:
-1/3 - add a new member to platform_suspend_ops that will tell if platform's
-      power will be cut off at the end of the suspend procedure; drivers co=
-uld
-      use it via platform_off_in_suspend()
-2/3 - add a new function to regulator's core that could be used to check if=
- a
-      proper regulator has been configured (via DT) to be powered off in
-      suspend. This is used on this series to check the CPU's regulator is
-      properly configured in DT to be turned off in suspend.
-3/3 - fill .off_in_suspend member of at91_pm_ops; the functionality in patc=
-h 2/3
-      is used to double check CPU's regulator would be turned off in suspen=
-d.
-
-Thank you,
-Claudiu Beznea
-
-[1] https://lkml.org/lkml/2017/6/22/938
-[2] https://lkml.org/lkml/2017/7/16/457
-
-Changes in v2:
-- remove !! instruction in regulator_is_disabled_in_suspend() and
-  at91_pm_state_allowed()
-- s/weather/wether in patch 1/1
-
-Claudiu Beznea (3):
-  PM / Suspend: Add support to check if platform's power is off in
-    suspend
-  regulator: core: add helper to check if regulator is disabled in
-    suspend
-  ARM: at91: pm: add support for .off_in_suspend
-
- arch/arm/mach-at91/pm.c            | 61 ++++++++++++++++++++++++++++++++++=
-+---
- drivers/regulator/core.c           | 17 +++++++++++
- include/linux/regulator/consumer.h |  7 +++++
- include/linux/suspend.h            |  6 ++++
- kernel/power/suspend.c             | 13 ++++++++
- 5 files changed, 100 insertions(+), 4 deletions(-)
-
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 3f529ad9a9d2..21f19b167fe2 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -173,6 +173,9 @@ static inline void dpm_save_failed_step(enum suspend_st=
+at_step step)
+  *	Called by the PM core if the suspending of devices fails.
+  *	This callback is optional and should only be implemented by platforms
+  *	which require special recovery actions in that situation.
++ *
++ * @off_in_suspend: Returns wether the platform's power will be cut off at
++ *	the end of suspend procedure or not.
+  */
+ struct platform_suspend_ops {
+ 	int (*valid)(suspend_state_t state);
+@@ -185,6 +188,7 @@ struct platform_suspend_ops {
+ 	bool (*suspend_again)(void);
+ 	void (*end)(void);
+ 	void (*recover)(void);
++	bool (*off_in_suspend)(suspend_state_t state);
+ };
+=20
+ struct platform_s2idle_ops {
+@@ -275,6 +279,7 @@ extern void arch_suspend_disable_irqs(void);
+ extern void arch_suspend_enable_irqs(void);
+=20
+ extern int pm_suspend(suspend_state_t state);
++extern bool platform_off_in_suspend(suspend_state_t state);
+ #else /* !CONFIG_SUSPEND */
+ #define suspend_valid_only_mem	NULL
+=20
+@@ -287,6 +292,7 @@ static inline bool pm_suspend_via_s2idle(void) { return=
+ false; }
+=20
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops)=
+ {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
++static inline bool platform_off_in_suspend(suspend_state_t state) { return=
+ false; }
+ static inline bool idle_should_enter_s2idle(void) { return false; }
+ static inline void __init pm_states_init(void) {}
+ static inline void s2idle_set_ops(const struct platform_s2idle_ops *ops) {=
+}
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0bd595a0b610..e1f60c8a17b9 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -319,6 +319,19 @@ static bool platform_suspend_again(suspend_state_t sta=
+te)
+ 		suspend_ops->suspend_again() : false;
+ }
+=20
++/**
++ * platform_off_in_suspend() - specifies if SoC's power will pe cut off at=
+ the
++ * end of suspend procedure.
++ */
++bool platform_off_in_suspend(suspend_state_t state)
++{
++	if (!suspend_ops || !suspend_ops->off_in_suspend)
++		return false;
++
++	return suspend_ops->off_in_suspend(state);
++}
++EXPORT_SYMBOL_GPL(platform_off_in_suspend);
++
+ #ifdef CONFIG_PM_DEBUG
+ static unsigned int pm_test_delay =3D 5;
+ module_param(pm_test_delay, uint, 0644);
 --=20
 2.7.4
