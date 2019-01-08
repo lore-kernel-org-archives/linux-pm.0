@@ -1,43 +1,79 @@
 From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH 1/4] ARM: dts: s5pv210: Add dmc nodes
-Date: Tue,  8 Jan 2019 21:05:06 +0100
-Message-ID: <20190108200509.30494-2-pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH 3/4] cpufreq: s5pv210: Defer probe if getting regulators fail
+Date: Tue,  8 Jan 2019 21:05:08 +0100
+Message-ID: <20190108200509.30494-4-pawel.mikolaj.chmiel@gmail.com>
 References: <20190108200509.30494-1-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190108200509.30494-1-pawel.mikolaj.chmiel@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: kgene@kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux@armlinux.org.uk, krzk@kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+Cc: krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBjb21taXQgYWRkcyBkbWMgbm9kZXMsIHdoaWNoIGFyZSBuZWVkZWQgYnkgczVwdjIxMCBj
-cHVmcmVxIGRyaXZlcgp0byB3b3JrLgoKU2lnbmVkLW9mZi1ieTogUGF3ZcWCIENobWllbCA8cGF3
-ZWwubWlrb2xhai5jaG1pZWxAZ21haWwuY29tPgotLS0KIGFyY2gvYXJtL2Jvb3QvZHRzL3M1cHYy
-MTAuZHRzaSB8IDEyICsrKysrKysrKysrKwogMSBmaWxlIGNoYW5nZWQsIDEyIGluc2VydGlvbnMo
-KykKCmRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9zNXB2MjEwLmR0c2kgYi9hcmNoL2Fy
-bS9ib290L2R0cy9zNXB2MjEwLmR0c2kKaW5kZXggZTk2MTM0MTgyMjhkLi4yZDU1YTNhNmU3OWUg
-MTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL3M1cHYyMTAuZHRzaQorKysgYi9hcmNoL2Fy
-bS9ib290L2R0cy9zNXB2MjEwLmR0c2kKQEAgLTI1LDYgKzI1LDggQEAKIAogCWFsaWFzZXMgewog
-CQljc2lzMCA9ICZjc2lzMDsKKwkJZG1jMCA9ICZkbWMwOworCQlkbWMxID0gJmRtYzE7CiAJCWZp
-bWMwID0gJmZpbWMwOwogCQlmaW1jMSA9ICZmaW1jMTsKIAkJZmltYzIgPSAmZmltYzI7CkBAIC01
-MjEsNiArNTIzLDE2IEBACiAJCQlzdGF0dXMgPSAiZGlzYWJsZWQiOwogCQl9OwogCisJCWRtYzA6
-IGRtY0BmMDAwMDAwMCB7CisJCQljb21wYXRpYmxlID0gInNhbXN1bmcsczVwdjIxMC1kbWMiOwor
-CQkJcmVnID0gPDB4ZjAwMDAwMDAgMHgxMDAwPjsKKwkJfTsKKworCQlkbWMxOiBkbWNAZjE0MDAw
-MDAgeworCQkJY29tcGF0aWJsZSA9ICJzYW1zdW5nLHM1cHYyMTAtZG1jIjsKKwkJCXJlZyA9IDww
-eGYxNDAwMDAwIDB4MTAwMD47CisJCX07CisKIAkJZzJkOiBnMmRAZmEwMDAwMDAgewogCQkJY29t
-cGF0aWJsZSA9ICJzYW1zdW5nLHM1cHYyMTAtZzJkIjsKIAkJCXJlZyA9IDwweGZhMDAwMDAwIDB4
-MTAwMD47Ci0tIAoyLjE3LjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVs
-QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+There is possibility, that when probing driver, regulators are not yet
+initialized. In this case we should return EPROBE_DEFER and wait till
+they're initialized, since they're required currently for cpufreq driver
+to work. Also move regulator initialization code at beginning of probe,
+so we can defer as fast as posibble.
+
+Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
+---
+ drivers/cpufreq/s5pv210-cpufreq.c | 33 +++++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index f51697f1e0b3..2d0e4dc7ede7 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -594,6 +594,26 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 	 * this whole driver as soon as S5PV210 gets migrated to use
+ 	 * cpufreq-dt driver.
+ 	 */
++	arm_regulator = regulator_get(NULL, "vddarm");
++	if (PTR_ERR(arm_regulator) == -EPROBE_DEFER) {
++		pr_dbg("vddarm regulator not ready, defer\n");
++		return -EPROBE_DEFER;
++	} else if (IS_ERR(arm_regulator)) {
++		pr_err("failed to get regulator vddarm\n");
++		return PTR_ERR(arm_regulator);
++	}
++
++	int_regulator = regulator_get(NULL, "vddint");
++	if (PTR_ERR(int_regulator == -EPROBE_DEFER) {
++		regulator_put(arm_regulator);
++		pr_dbg("vddint regulator not ready, defer\n");
++		return -EPROBE_DEFER;
++	} else if (IS_ERR(int_regulator)) {
++		regulator_put(arm_regulator);
++		pr_err("failed to get regulator vddint\n");
++		return PTR_ERR(int_regulator);
++	}
++
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
+ 	if (!np) {
+ 		pr_err("%s: failed to find clock controller DT node\n",
+@@ -633,19 +653,6 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	arm_regulator = regulator_get(NULL, "vddarm");
+-	if (IS_ERR(arm_regulator)) {
+-		pr_err("failed to get regulator vddarm\n");
+-		return PTR_ERR(arm_regulator);
+-	}
+-
+-	int_regulator = regulator_get(NULL, "vddint");
+-	if (IS_ERR(int_regulator)) {
+-		pr_err("failed to get regulator vddint\n");
+-		regulator_put(arm_regulator);
+-		return PTR_ERR(int_regulator);
+-	}
+-
+ 	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
+ 
+ 	return cpufreq_register_driver(&s5pv210_driver);
+-- 
+2.17.1
