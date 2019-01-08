@@ -1,56 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 0/3] add support for power off check in suspend
-Date: Tue, 8 Jan 2019 12:46:21 +0100
-Message-ID: <CAJZ5v0gohGWgpmTx8mzuWdru2M9xbSGoOV=WBxzVo07JZW3G1g@mail.gmail.com>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v6 07/11] drivers: thermal: int3406_thermal: Make PCI
+ dependency explicit
+Date: Tue, 08 Jan 2019 19:58:05 +0800
+Message-ID: <1546948685.2072.95.camel@intel.com>
+References: <20190105100606.6673-1-okaya@kernel.org>
+         <20190105100606.6673-8-okaya@kernel.org>
+         <CAJZ5v0gst1ZDgG-uP9GUUB1ziPnqhfArio3um=wCQjfbeH2_iw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <CAJZ5v0gst1ZDgG-uP9GUUB1ziPnqhfArio3um=wCQjfbeH2_iw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: Nicolas.Ferre@microchip.com, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic.Desroches@microchip.com, Russell King - ARM Linux <linux@armlinux.org.uk>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Sinan Kaya <okaya@kernel.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 8, 2019 at 11:56 AM <Claudiu.Beznea@microchip.com> wrote:
->
-> From: Claudiu Beznea <claudiu.beznea@microchip.com>
->
-> Hi,
->
-> AT91 platforms support a power saving mode where SoC's power is cut off (we call
-> it backup mode). The resume is done with the help of bootloaders.
+On 一, 2019-01-07 at 12:19 +0100, Rafael J. Wysocki wrote:
+> On Sat, Jan 5, 2019 at 11:06 AM Sinan Kaya <okaya@kernel.org> wrote:
+> > 
+> > 
+> > After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built
+> > without
+> > CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
+> > satisfied implicitly through dependencies on CONFIG_ACPI have to be
+> > specified directly. Need CONFIG_PCI to be set in order to be able
+> > to use
+> > this driver.
+> > 
+> > Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without
+> > CONFIG_PCI set")
+> > Signed-off-by: Sinan Kaya <okaya@kernel.org>
+> > ---
+> >  drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig
+> > b/drivers/thermal/intel/int340x_thermal/Kconfig
+> > index 0582bd12a239..fba1976d5f8d 100644
+> > --- a/drivers/thermal/intel/int340x_thermal/Kconfig
+> > +++ b/drivers/thermal/intel/int340x_thermal/Kconfig
+> > @@ -31,7 +31,7 @@ if INT340X_THERMAL
+> > 
+> >  config INT3406_THERMAL
+> >         tristate "ACPI INT3406 display thermal driver"
+> > -       depends on ACPI_VIDEO
+> > +       depends on ACPI_VIDEO && PCI
+> >         help
+> >           The display thermal device represents the LED/LCD display
+> > panel
+> >           that may or may not include touch support. The main
+> > function of
+> > --
+> Rui, any objections here?  And for the [11/11]?
 
-But still the contents of RAM are preserved?
+CONFIG_INT3406_THERMAL depends on CONFIG_INT340X_THERMAL, so IMO, patch
+11 is sufficient.
 
-That would require at least the memory controller to be under power AFAICS.
-
-> To be able to
-> suspend/resume Linux to/from this mode all the drivers suspend/resume callbacks
-> should save/restore the content of all the active registers. We have 2 problems
-> we are trying to solve:
-> - some of these drivers are shared with other non Microchip SoCs (e.g. macb
->   driver) and we don't want to disturbe other users of corresponding IPs with
->   all the register save/restore operations;
-> - the suspend/resume time for the rest of the power saving mode we are using
->   could be improved if we would know in drivers the suspend mode the platform
->   is switched to.
->
-> A solution that would have been solve our problems was proposed in [1] but in
-> the end it wasn't accepted. It ended up with the introduction of
-> pm_suspend_target_state variable that could be used along with the changes in
-> this series.
->
-> While the discussion of [1] progressed it has been proposed (in [2]) to
-> implement a function that would tell if the platform's power would be cut off
-> at the end of the suspend procedure.
->
-> The patches in this series does as follows:
-> 1/3 - add a new member to platform_suspend_ops that will tell if platform's
->       power will be cut off at the end of the suspend procedure; drivers could
->       use it via platform_off_in_suspend()
-
-I would rather avoid doing this if possible.
-
-Thanks,
-Rafael
+thanks,
+rui
