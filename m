@@ -1,15 +1,25 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 3.18 05/19] powerpc/pseries/cpuidle: Fix preempt warning
-Date: Tue,  8 Jan 2019 14:35:17 -0500
-Message-ID: <20190108193534.124555-5-sashal@kernel.org>
-References: <20190108193534.124555-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 048/117] powerpc/pseries/cpuidle: Fix preempt
+ warning
+Date: Tue,  8 Jan 2019 14:25:16 -0500
+Message-ID: <20190108192628.121270-48-sashal@kernel.org>
+References: <20190108192628.121270-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190108193534.124555-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Breno Leitao <leitao@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Breno Leitao <leitao@debian.org>
@@ -56,10 +66,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 6f7b01956885..b755d3a54e3c 100644
+index 9e56bc411061..74c247972bb3 100644
 --- a/drivers/cpuidle/cpuidle-pseries.c
 +++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -237,7 +237,13 @@ static int pseries_idle_probe(void)
+@@ -247,7 +247,13 @@ static int pseries_idle_probe(void)
  		return -ENODEV;
  
  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
