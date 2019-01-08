@@ -1,107 +1,78 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 1/2] power: supply: add input voltage limit property
-Date: Tue, 8 Jan 2019 19:47:14 +0100
-Message-ID: <20190108184714.GA11289@amd>
-References: <20181213120944.30967-1-enric.balletbo@collabora.com>
- <20181213222000.GA12302@amd>
- <2fcfc863-3218-55e8-2a0f-75d7cb2d55db@collabora.com>
- <CAFqH_53E1ori_b69XkpAafaAZKZE3GzbN5eFvU9FbUTgjHbi+g@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 38/97] powerpc/pseries/cpuidle: Fix preempt warning
+Date: Tue,  8 Jan 2019 14:28:47 -0500
+Message-ID: <20190108192949.122407-38-sashal@kernel.org>
+References: <20190108192949.122407-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAFqH_53E1ori_b69XkpAafaAZKZE3GzbN5eFvU9FbUTgjHbi+g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo Serra <eballetbo@gmail.com>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Sameer Nanda <snanda@chromium.org>, Benson Leung <bleung@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20190108192949.122407-1-sashal@kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Breno Leitao <leitao@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
+From: Breno Leitao <leitao@debian.org>
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[ Upstream commit 2b038cbc5fcf12a7ee1cc9bfd5da1e46dacdee87 ]
 
-Hi!
+When booting a pseries kernel with PREEMPT enabled, it dumps the
+following warning:
 
-> > >> For folks hacking on Pixel Cs (which is now outside of Google's offi=
-cial
-> > >> support window for Android) and customizing their own kernel and use=
-rspace
-> > >> this would be acceptable, but we wanted to expose this feature in the
-> > >> power supply properties because the feature does exist in the Emedded
-> > >> Controller firmware of the Pixel C and all of Google's Chromebooks w=
-ith
-> > >> USB-C made since 2015 in case someone running an up to date kernel w=
-anted
-> > >> to limit the charging power for thermal or other reasons.
-> > >>
-> > >> This patch exposes a new property, similar to input current limit, to
-> > >> re-configure the maximum voltage from the external supply at runtime
-> > >> based on system-level knowledge or user input.
-> > >
-> > > Could we get power input limit, instead?
-> > >
-> >
-> > I'm open but I have some concerns, so lets discuss a bit about it :)
-> >
-> > According to the USB PD 2.0 specs if we limit the source at 15W we can =
-get 5V/3A
-> > or 9V/1.67A, if I am not mistaken the higher voltage caused problem sin=
-ce the
-> > conversion to lower internal voltages generated more heat, so in this c=
-ase
-> > 9V/1.67A is not a valid value for us (maybe someone from ChromeOS can c=
-onfirm
-> > this?).
+   BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
+   caller is pseries_processor_idle_init+0x5c/0x22c
+   CPU: 13 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc3-00090-g12201a0128bc-dirty #828
+   Call Trace:
+   [c000000429437ab0] [c0000000009c8878] dump_stack+0xec/0x164 (unreliable)
+   [c000000429437b00] [c0000000005f2f24] check_preemption_disabled+0x154/0x160
+   [c000000429437b90] [c000000000cab8e8] pseries_processor_idle_init+0x5c/0x22c
+   [c000000429437c10] [c000000000010ed4] do_one_initcall+0x64/0x300
+   [c000000429437ce0] [c000000000c54500] kernel_init_freeable+0x3f0/0x500
+   [c000000429437db0] [c0000000000112dc] kernel_init+0x2c/0x160
+   [c000000429437e20] [c00000000000c1d0] ret_from_kernel_thread+0x5c/0x6c
 
-> Around Xmas are bad dates to start a discussion. I don't want this
-> patch will be forgotten, so a gentle ping on your thoughts on this :)
-> (just in case)
+This happens because the code calls get_lppaca() which calls
+get_paca() and it checks if preemption is disabled through
+check_preemption_disabled().
 
-If someone can indeed confirm it is _voltage_ that is problematic,
-then approach is ok with me. [But I'd not expect buck convertor
-efficiency to differ greatly based on input voltage.]
+Preemption should be disabled because the per CPU variable may make no
+sense if there is a preemption (and a CPU switch) after it reads the
+per CPU data and when it is used.
 
-Best regards,
-									Pavel
-								=09
+In this device driver specifically, it is not a problem, because this
+code just needs to have access to one lppaca struct, and it does not
+matter if it is the current per CPU lppaca struct or not (i.e. when
+there is a preemption and a CPU migration).
 
-> > >> +What:               /sys/class/power_supply/<supply_name>/input_vol=
-tage_limit
-> > >> +Date:               Nov 2018
-> > >> +Contact:    linux-pm@vger.kernel.org
-> > >> +Description:
-> > >> +            This entry configures the incoming VBUS voltage limit c=
-urrently
-> > >> +            set in the supply. Normally this is configured based on
-> > >> +            system-level knowledge or user input (e.g. This is part=
- of the
-> > >> +            Pixel C's thermal management strategy to effectively li=
-mit the
-> > >> +            input power to 5V when the screen is on to meet Google'=
-s skin
-> > >> +            temperature targets). Note that this feature should not=
- be
-> > >> +            used for safety critical things.
+That said, the most appropriate fix seems to be related to avoiding
+the debug_smp_processor_id() call at get_paca(), instead of calling
+preempt_disable() before get_paca().
 
+Signed-off-by: Breno Leitao <leitao@debian.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---GvXjxJ+pjyke8COw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlw08DIACgkQMOfwapXb+vKW6wCghA+1ikUGqjLf99j1wZRH6Iac
-OB0AnROGmZU1+WiqOg7Bmk/EoWE3hSkk
-=2G+L
------END PGP SIGNATURE-----
-
---GvXjxJ+pjyke8COw--
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index 9e56bc411061..74c247972bb3 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -247,7 +247,13 @@ static int pseries_idle_probe(void)
+ 		return -ENODEV;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		if (lppaca_shared_proc(get_lppaca())) {
++		/*
++		 * Use local_paca instead of get_lppaca() since
++		 * preemption is not disabled, and it is not required in
++		 * fact, since lppaca_ptr does not need to be the value
++		 * associated to the current CPU, it can be from any CPU.
++		 */
++		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
+ 			cpuidle_state_table = shared_states;
+ 			max_idle_state = ARRAY_SIZE(shared_states);
+ 		} else {
+-- 
+2.19.1
