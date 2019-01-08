@@ -1,119 +1,74 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v4 14/15] power: supply: olpc_battery: Avoid using platform_info
-Date: Tue,  8 Jan 2019 18:58:17 +0100
-Message-ID: <20190108175818.705110-15-lkundrak@v3.sk>
+Subject: [PATCH v4 02/15] dt-bindings: olpc,
+ xo1.75-ec: Add OLPC XO-1.75 EC bindings
+Date: Tue,  8 Jan 2019 18:58:05 +0100
+Message-ID: <20190108175818.705110-3-lkundrak@v3.sk>
 References: <20190108175818.705110-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20190108175818.705110-1-lkundrak@v3.sk>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Russell King <linux@armlinux.org.uk>
-Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, James Cameron <quozl@laptop.org>, linux-pm@vger.kernel.org, x86@kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
-n
-directly from the EC driver instead.
-
-This makes the driver no longer x86 specific.
+The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
+signals for handshaking. It needs to know when is the slave (Linux)
+side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
+controller node) and when does it wish to respond with a command (the
+cmd-gpio property).
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
-Changes since v2:
-- Move the priv data allocation hunk from this patch to a proper place
-
 Changes since v1:
-- Use uint8_t instead of unsigned char [1] for ecver
+- s/cmd-gpio/cmd-gpios/
+- s/ready-gpio/ready-gpios/ in the documentation paragraph
+- Remove status = "okay" from the example
 
- drivers/power/supply/Kconfig        |  2 +-
- drivers/power/supply/olpc_battery.c | 27 ++++++++++++++++++---------
- 2 files changed, 19 insertions(+), 10 deletions(-)
+ .../bindings/misc/olpc,xo1.75-ec.txt          | 23 +++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879e7e..67a3bb26da39 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -151,7 +151,7 @@ config BATTERY_PMU
-=20
- config BATTERY_OLPC
- 	tristate "One Laptop Per Child battery"
--	depends on X86_32 && OLPC
-+	depends on OLPC
- 	help
- 	  Say Y to enable support for the battery on the OLPC laptop.
-=20
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-index 0c9f7ce6b26b..8ebb4284cf05 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -20,8 +20,6 @@
- #include <linux/jiffies.h>
- #include <linux/sched.h>
- #include <linux/olpc-ec.h>
--#include <asm/olpc.h>
--
-=20
- #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
- #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
-@@ -57,6 +55,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_ac;
- 	struct power_supply *olpc_bat;
- 	char bat_serial[17];
-+	int new_proto;
- };
-=20
- /*********************************************************************
-@@ -100,7 +99,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
- {
- static int olpc_bat_get_status(struct olpc_battery_data *data,
- 		union power_supply_propval *val, uint8_t ec_byte)
- {
--	if (olpc_platform_info.ecver > 0x44) {
-+	if (data->new_proto) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
- 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
- 		else if (ec_byte & BAT_STAT_DISCHARGING)
-@@ -608,19 +607,29 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 	struct power_supply_config psy_cfg =3D {};
- 	struct olpc_battery_data *data;
- 	uint8_t status;
-+	uint8_t ecver;
-+	int ret;
-=20
- 	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, data);
-=20
--	/*
--	 * We've seen a number of EC protocol changes; this driver requires
--	 * the latest EC protocol, supported by 0x44 and above.
--	 */
--	if (olpc_platform_info.ecver < 0x44) {
-+	/* See if the EC is already there and get the EC revision */
-+	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
-+	if (ret)
-+		return ret;
+diff --git a/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+new file mode 100644
+index 000000000000..8c4d649cdd8f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+@@ -0,0 +1,23 @@
++OLPC XO-1.75 Embedded Controller
 +
-+	if (ecver > 0x44) {
-+		/* XO 1 or 1.5 with a new EC firmware. */
-+		data->new_proto =3D 1;
-+	} else if (ecver < 0x44) {
-+		/*
-+		 * We've seen a number of EC protocol changes; this driver
-+		 * requires the latest EC protocol, supported by 0x44 and above.
-+		 */
- 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
--			"battery driver.\n", olpc_platform_info.ecver);
-+			"battery driver.\n", ecver);
- 		return -ENXIO;
- 	}
-=20
---=20
++Required properties:
++- compatible: Should be "olpc,xo1.75-ec".
++- cmd-gpios: gpio specifier of the CMD pin
++
++The embedded controller requires the SPI controller driver to signal readiness
++to receive a transfer (that is, when TX FIFO contains the response data) by
++strobing the ACK pin with the ready signal. See the "ready-gpios" property of the
++SSP binding as documented in:
++<Documentation/devicetree/bindings/spi/spi-pxa2xx.txt>.
++
++Example:
++	&ssp3 {
++		spi-slave;
++		ready-gpios = <&gpio 125 GPIO_ACTIVE_HIGH>;
++
++		slave {
++			compatible = "olpc,xo1.75-ec";
++			spi-cpha;
++			cmd-gpios = <&gpio 155 GPIO_ACTIVE_HIGH>;
++		};
++	};
+-- 
 2.20.1
