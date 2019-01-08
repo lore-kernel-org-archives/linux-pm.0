@@ -1,66 +1,63 @@
-From: Sinan Kaya <Okaya@kernel.org>
-Subject: Re: [PATCH v6 07/11] drivers: thermal: int3406_thermal: Make PCI
- dependency explicit
-Date: Tue, 8 Jan 2019 08:03:05 -0500
-Message-ID: <CAK9iUCNPD_mVkN-NnuCyCpZ8n17OqfjQxBeo=gUms_SMX91scg@mail.gmail.com>
-References: <20190105100606.6673-1-okaya@kernel.org> <20190105100606.6673-8-okaya@kernel.org>
- <CAJZ5v0gst1ZDgG-uP9GUUB1ziPnqhfArio3um=wCQjfbeH2_iw@mail.gmail.com> <1546948685.2072.95.camel@intel.com>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH v2 0/3] add support for power off check in suspend
+Date: Tue, 8 Jan 2019 14:07:35 +0000
+Message-ID: <c749ad04-1f95-1f8d-7fd8-93b228ace10c@microchip.com>
+References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+ <CAJZ5v0gohGWgpmTx8mzuWdru2M9xbSGoOV=WBxzVo07JZW3G1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546948685.2072.95.camel@intel.com>
+In-Reply-To: <CAJZ5v0gohGWgpmTx8mzuWdru2M9xbSGoOV=WBxzVo07JZW3G1g@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <AABC9D277420DB4F8F8565D6707197FD@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: rafael@kernel.org
+Cc: len.brown@intel.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, Ludovic.Desroches@microchip.com, broonie@kernel.org, pavel@ucw.cz, linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 8, 2019 at 6:58 AM Zhang Rui <rui.zhang@intel.com> wrote:
->
-> On =E4=B8=80, 2019-01-07 at 12:19 +0100, Rafael J. Wysocki wrote:
-> > On Sat, Jan 5, 2019 at 11:06 AM Sinan Kaya <okaya@kernel.org> wrote:
-> > >
-> > >
-> > > After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built
-> > > without
-> > > CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
-> > > satisfied implicitly through dependencies on CONFIG_ACPI have to be
-> > > specified directly. Need CONFIG_PCI to be set in order to be able
-> > > to use
-> > > this driver.
-> > >
-> > > Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without
-> > > CONFIG_PCI set")
-> > > Signed-off-by: Sinan Kaya <okaya@kernel.org>
-> > > ---
-> > >  drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig
-> > > b/drivers/thermal/intel/int340x_thermal/Kconfig
-> > > index 0582bd12a239..fba1976d5f8d 100644
-> > > --- a/drivers/thermal/intel/int340x_thermal/Kconfig
-> > > +++ b/drivers/thermal/intel/int340x_thermal/Kconfig
-> > > @@ -31,7 +31,7 @@ if INT340X_THERMAL
-> > >
-> > >  config INT3406_THERMAL
-> > >         tristate "ACPI INT3406 display thermal driver"
-> > > -       depends on ACPI_VIDEO
-> > > +       depends on ACPI_VIDEO && PCI
-> > >         help
-> > >           The display thermal device represents the LED/LCD display
-> > > panel
-> > >           that may or may not include touch support. The main
-> > > function of
-> > > --
-> > Rui, any objections here?  And for the [11/11]?
->
-> CONFIG_INT3406_THERMAL depends on CONFIG_INT340X_THERMAL, so IMO, patch
-> 11 is sufficient.
-
-Yes, we can drop this patch. I found the issues in reverse order. Can
-we get an ACK for 11/11?
-
->
-> thanks,
-> rui
+DQoNCk9uIDA4LjAxLjIwMTkgMTM6NDYsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOg0KPiBPbiBU
+dWUsIEphbiA4LCAyMDE5IGF0IDExOjU2IEFNIDxDbGF1ZGl1LkJlem5lYUBtaWNyb2NoaXAuY29t
+PiB3cm90ZToNCj4+DQo+PiBGcm9tOiBDbGF1ZGl1IEJlem5lYSA8Y2xhdWRpdS5iZXpuZWFAbWlj
+cm9jaGlwLmNvbT4NCj4+DQo+PiBIaSwNCj4+DQo+PiBBVDkxIHBsYXRmb3JtcyBzdXBwb3J0IGEg
+cG93ZXIgc2F2aW5nIG1vZGUgd2hlcmUgU29DJ3MgcG93ZXIgaXMgY3V0IG9mZiAod2UgY2FsbA0K
+Pj4gaXQgYmFja3VwIG1vZGUpLiBUaGUgcmVzdW1lIGlzIGRvbmUgd2l0aCB0aGUgaGVscCBvZiBi
+b290bG9hZGVycy4NCj4gDQo+IEJ1dCBzdGlsbCB0aGUgY29udGVudHMgb2YgUkFNIGFyZSBwcmVz
+ZXJ2ZWQ/DQoNClllcywgdGhlIFJBTSBpcyBrZXB0IGFsaXZlLCBpbiBzZWxmLXJlZnJlc2ggKGZv
+cmdvdCB0byBtZW50aW9uKS4NCkJlc2lkZXMgdGhpcywgdGhlcmUgaXMgdGhlIHNvIGNhbGxlZCBi
+YWNrdXAgYXJlYSB3aGljaCBjb250YWlucyBSVEMNCnNodXRkb3duIGNvbnRyb2xsZXIsIFJDIG9z
+Y2lsbGF0b3Igd2hpY2ggcmVtYWlucyBwb3dlcmVkLiBUaGUgcmVzdCBpcyBvZmYuDQoNCj4gDQo+
+IFRoYXQgd291bGQgcmVxdWlyZSBhdCBsZWFzdCB0aGUgbWVtb3J5IGNvbnRyb2xsZXIgdG8gYmUg
+dW5kZXIgcG93ZXIgQUZBSUNTLg0KDQpZZXMsIHRoaXMgaXMgcG93ZXJlZCBieSBhIGRpZmZlcmVu
+dCByZWd1bGF0b3IuDQoNCj4gDQo+PiBUbyBiZSBhYmxlIHRvDQo+PiBzdXNwZW5kL3Jlc3VtZSBM
+aW51eCB0by9mcm9tIHRoaXMgbW9kZSBhbGwgdGhlIGRyaXZlcnMgc3VzcGVuZC9yZXN1bWUgY2Fs
+bGJhY2tzDQo+PiBzaG91bGQgc2F2ZS9yZXN0b3JlIHRoZSBjb250ZW50IG9mIGFsbCB0aGUgYWN0
+aXZlIHJlZ2lzdGVycy4gV2UgaGF2ZSAyIHByb2JsZW1zDQo+PiB3ZSBhcmUgdHJ5aW5nIHRvIHNv
+bHZlOg0KPj4gLSBzb21lIG9mIHRoZXNlIGRyaXZlcnMgYXJlIHNoYXJlZCB3aXRoIG90aGVyIG5v
+biBNaWNyb2NoaXAgU29DcyAoZS5nLiBtYWNiDQo+PiAgIGRyaXZlcikgYW5kIHdlIGRvbid0IHdh
+bnQgdG8gZGlzdHVyYmUgb3RoZXIgdXNlcnMgb2YgY29ycmVzcG9uZGluZyBJUHMgd2l0aA0KPj4g
+ICBhbGwgdGhlIHJlZ2lzdGVyIHNhdmUvcmVzdG9yZSBvcGVyYXRpb25zOw0KPj4gLSB0aGUgc3Vz
+cGVuZC9yZXN1bWUgdGltZSBmb3IgdGhlIHJlc3Qgb2YgdGhlIHBvd2VyIHNhdmluZyBtb2RlIHdl
+IGFyZSB1c2luZw0KPj4gICBjb3VsZCBiZSBpbXByb3ZlZCBpZiB3ZSB3b3VsZCBrbm93IGluIGRy
+aXZlcnMgdGhlIHN1c3BlbmQgbW9kZSB0aGUgcGxhdGZvcm0NCj4+ICAgaXMgc3dpdGNoZWQgdG8u
+DQo+Pg0KPj4gQSBzb2x1dGlvbiB0aGF0IHdvdWxkIGhhdmUgYmVlbiBzb2x2ZSBvdXIgcHJvYmxl
+bXMgd2FzIHByb3Bvc2VkIGluIFsxXSBidXQgaW4NCj4+IHRoZSBlbmQgaXQgd2Fzbid0IGFjY2Vw
+dGVkLiBJdCBlbmRlZCB1cCB3aXRoIHRoZSBpbnRyb2R1Y3Rpb24gb2YNCj4+IHBtX3N1c3BlbmRf
+dGFyZ2V0X3N0YXRlIHZhcmlhYmxlIHRoYXQgY291bGQgYmUgdXNlZCBhbG9uZyB3aXRoIHRoZSBj
+aGFuZ2VzIGluDQo+PiB0aGlzIHNlcmllcy4NCj4+DQo+PiBXaGlsZSB0aGUgZGlzY3Vzc2lvbiBv
+ZiBbMV0gcHJvZ3Jlc3NlZCBpdCBoYXMgYmVlbiBwcm9wb3NlZCAoaW4gWzJdKSB0bw0KPj4gaW1w
+bGVtZW50IGEgZnVuY3Rpb24gdGhhdCB3b3VsZCB0ZWxsIGlmIHRoZSBwbGF0Zm9ybSdzIHBvd2Vy
+IHdvdWxkIGJlIGN1dCBvZmYNCj4+IGF0IHRoZSBlbmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJl
+Lg0KPj4NCj4+IFRoZSBwYXRjaGVzIGluIHRoaXMgc2VyaWVzIGRvZXMgYXMgZm9sbG93czoNCj4+
+IDEvMyAtIGFkZCBhIG5ldyBtZW1iZXIgdG8gcGxhdGZvcm1fc3VzcGVuZF9vcHMgdGhhdCB3aWxs
+IHRlbGwgaWYgcGxhdGZvcm0ncw0KPj4gICAgICAgcG93ZXIgd2lsbCBiZSBjdXQgb2ZmIGF0IHRo
+ZSBlbmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJlOyBkcml2ZXJzIGNvdWxkDQo+PiAgICAgICB1
+c2UgaXQgdmlhIHBsYXRmb3JtX29mZl9pbl9zdXNwZW5kKCkNCj4gDQo+IEkgd291bGQgcmF0aGVy
+IGF2b2lkIGRvaW5nIHRoaXMgaWYgcG9zc2libGUuDQoNCkhhdmluZyB0aGlzIG1lY2hhbmlzbSBh
+cyBwYXJ0IG9mIHBsYXRmb3JtX3N1c3BlbmRfb3BzPyBPciB0aGlzIG1lY2hhbmlzbSBhdA0KYWxs
+Pw0KQ291bGQgeW91IGdpdmUgbWUgc29tZSBoaW50cyBvbiBob3cgd291bGQgeW91IHByZWZlciB0
+byBkbyBpdCwgaWYgYW55Pw0KDQpUaGFuayB5b3UsDQpDbGF1ZGl1IEJlem5lYQ0KDQo+IA0KPiBU
+aGFua3MsDQo+IFJhZmFlbA0KPiANCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18NCj4gbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QNCj4gbGludXgt
+YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQu
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbA0KPiANCg==
