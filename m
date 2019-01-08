@@ -1,42 +1,107 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v4 09/15] dt-bindings: olpc_battery: Add XO-1.5 battery
-Date: Tue,  8 Jan 2019 18:58:12 +0100
-Message-ID: <20190108175818.705110-10-lkundrak@v3.sk>
-References: <20190108175818.705110-1-lkundrak@v3.sk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v3 1/2] power: supply: add input voltage limit property
+Date: Tue, 8 Jan 2019 19:47:14 +0100
+Message-ID: <20190108184714.GA11289@amd>
+References: <20181213120944.30967-1-enric.balletbo@collabora.com>
+ <20181213222000.GA12302@amd>
+ <2fcfc863-3218-55e8-2a0f-75d7cb2d55db@collabora.com>
+ <CAFqH_53E1ori_b69XkpAafaAZKZE3GzbN5eFvU9FbUTgjHbi+g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190108175818.705110-1-lkundrak@v3.sk>
+Content-Disposition: inline
+In-Reply-To: <CAFqH_53E1ori_b69XkpAafaAZKZE3GzbN5eFvU9FbUTgjHbi+g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Russell King <linux@armlinux.org.uk>
-Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh@kernel.org>, Sebastian Reichel <sebastian.reichel@collabora.com>
+To: Enric Balletbo Serra <eballetbo@gmail.com>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Sameer Nanda <snanda@chromium.org>, Benson Leung <bleung@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-ambient temperature.
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----
-Changes since v1:
-- Collected Reviewed-by and Acked-by tags
+Hi!
 
- Documentation/devicetree/bindings/power/supply/olpc_battery.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > >> For folks hacking on Pixel Cs (which is now outside of Google's offi=
+cial
+> > >> support window for Android) and customizing their own kernel and use=
+rspace
+> > >> this would be acceptable, but we wanted to expose this feature in the
+> > >> power supply properties because the feature does exist in the Emedded
+> > >> Controller firmware of the Pixel C and all of Google's Chromebooks w=
+ith
+> > >> USB-C made since 2015 in case someone running an up to date kernel w=
+anted
+> > >> to limit the charging power for thermal or other reasons.
+> > >>
+> > >> This patch exposes a new property, similar to input current limit, to
+> > >> re-configure the maximum voltage from the external supply at runtime
+> > >> based on system-level knowledge or user input.
+> > >
+> > > Could we get power input limit, instead?
+> > >
+> >
+> > I'm open but I have some concerns, so lets discuss a bit about it :)
+> >
+> > According to the USB PD 2.0 specs if we limit the source at 15W we can =
+get 5V/3A
+> > or 9V/1.67A, if I am not mistaken the higher voltage caused problem sin=
+ce the
+> > conversion to lower internal voltages generated more heat, so in this c=
+ase
+> > 9V/1.67A is not a valid value for us (maybe someone from ChromeOS can c=
+onfirm
+> > this?).
 
-diff --git a/Documentation/devicetree/bindings/power/supply/olpc_battery.=
-txt b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-index c8901b3992d9..8d87d6b35a98 100644
---- a/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-@@ -2,4 +2,4 @@ OLPC battery
- ~~~~~~~~~~~~
-=20
- Required properties:
--  - compatible : "olpc,xo1-battery"
-+  - compatible : "olpc,xo1-battery" or "olpc,xo1.5-battery"
+> Around Xmas are bad dates to start a discussion. I don't want this
+> patch will be forgotten, so a gentle ping on your thoughts on this :)
+> (just in case)
+
+If someone can indeed confirm it is _voltage_ that is problematic,
+then approach is ok with me. [But I'd not expect buck convertor
+efficiency to differ greatly based on input voltage.]
+
+Best regards,
+									Pavel
+								=09
+
+> > >> +What:               /sys/class/power_supply/<supply_name>/input_vol=
+tage_limit
+> > >> +Date:               Nov 2018
+> > >> +Contact:    linux-pm@vger.kernel.org
+> > >> +Description:
+> > >> +            This entry configures the incoming VBUS voltage limit c=
+urrently
+> > >> +            set in the supply. Normally this is configured based on
+> > >> +            system-level knowledge or user input (e.g. This is part=
+ of the
+> > >> +            Pixel C's thermal management strategy to effectively li=
+mit the
+> > >> +            input power to 5V when the screen is on to meet Google'=
+s skin
+> > >> +            temperature targets). Note that this feature should not=
+ be
+> > >> +            used for safety critical things.
+
+
 --=20
-2.20.1
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlw08DIACgkQMOfwapXb+vKW6wCghA+1ikUGqjLf99j1wZRH6Iac
+OB0AnROGmZU1+WiqOg7Bmk/EoWE3hSkk
+=2G+L
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
