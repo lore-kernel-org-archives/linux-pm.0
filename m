@@ -1,8 +1,8 @@
 From: <Claudiu.Beznea@microchip.com>
-Subject: [PATCH 1/3] PM / Suspend: Add support to check if platform's power is
- off in suspend
-Date: Tue, 8 Jan 2019 09:52:53 +0000
-Message-ID: <1546941147-18410-2-git-send-email-claudiu.beznea@microchip.com>
+Subject: [PATCH 2/3] regulator: core: add helper to check if regulator is
+ disabled in suspend
+Date: Tue, 8 Jan 2019 09:52:57 +0000
+Message-ID: <1546941147-18410-3-git-send-email-claudiu.beznea@microchip.com>
 References: <1546941147-18410-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -17,87 +17,78 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Claudiu Beznea <claudiu.beznea@microchip.com>
 
-Add support to check if platform's power will be cut off in suspend.
-This will help drivers shared by multiple platforms to take only the
-necessary actions while suspending/resuming (some platform may not need
-to save/restore all the registers if platforms remains powered while
-suspended). In this way suspend/resume time could be improved.
+Add helper to check if regulator will be disabled in suspend.
 
 Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 ---
- include/linux/suspend.h |  6 ++++++
- kernel/power/suspend.c  | 13 +++++++++++++
- 2 files changed, 19 insertions(+)
+ drivers/regulator/core.c           | 17 +++++++++++++++++
+ include/linux/regulator/consumer.h |  7 +++++++
+ 2 files changed, 24 insertions(+)
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 3f529ad9a9d2..21f19b167fe2 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -173,6 +173,9 @@ static inline void dpm_save_failed_step(enum suspend_st=
-at_step step)
-  *	Called by the PM core if the suspending of devices fails.
-  *	This callback is optional and should only be implemented by platforms
-  *	which require special recovery actions in that situation.
-+ *
-+ * @off_in_suspend: Returns wheather the platform's power will be cut off =
-at
-+ *	the end of suspend procedure or not.
-  */
- struct platform_suspend_ops {
- 	int (*valid)(suspend_state_t state);
-@@ -185,6 +188,7 @@ struct platform_suspend_ops {
- 	bool (*suspend_again)(void);
- 	void (*end)(void);
- 	void (*recover)(void);
-+	bool (*off_in_suspend)(suspend_state_t state);
- };
-=20
- struct platform_s2idle_ops {
-@@ -275,6 +279,7 @@ extern void arch_suspend_disable_irqs(void);
- extern void arch_suspend_enable_irqs(void);
-=20
- extern int pm_suspend(suspend_state_t state);
-+extern bool platform_off_in_suspend(suspend_state_t state);
- #else /* !CONFIG_SUSPEND */
- #define suspend_valid_only_mem	NULL
-=20
-@@ -287,6 +292,7 @@ static inline bool pm_suspend_via_s2idle(void) { return=
- false; }
-=20
- static inline void suspend_set_ops(const struct platform_suspend_ops *ops)=
- {}
- static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
-+static inline bool platform_off_in_suspend(suspend_state_t state) { return=
- false; }
- static inline bool idle_should_enter_s2idle(void) { return false; }
- static inline void __init pm_states_init(void) {}
- static inline void s2idle_set_ops(const struct platform_s2idle_ops *ops) {=
-}
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 0bd595a0b610..e1f60c8a17b9 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -319,6 +319,19 @@ static bool platform_suspend_again(suspend_state_t sta=
-te)
- 		suspend_ops->suspend_again() : false;
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index b9d7b45c7295..a876ec369450 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -3786,6 +3786,23 @@ int regulator_suspend_disable(struct regulator_dev *=
+rdev,
  }
+ EXPORT_SYMBOL_GPL(regulator_suspend_disable);
 =20
-+/**
-+ * platform_off_in_suspend() - specifies if SoC's power will pe cut off at=
- the
-+ * end of suspend procedure.
-+ */
-+bool platform_off_in_suspend(suspend_state_t state)
++bool regulator_is_disabled_in_suspend(struct regulator *regulator,
++				      suspend_state_t state)
 +{
-+	if (!suspend_ops || !suspend_ops->off_in_suspend)
++	struct regulator_state *rstate;
++
++	if (!regulator->rdev->constraints)
 +		return false;
 +
-+	return suspend_ops->off_in_suspend(state);
-+}
-+EXPORT_SYMBOL_GPL(platform_off_in_suspend);
++	rstate =3D regulator_get_suspend_state(regulator->rdev, state);
++	if (!rstate)
++		return false;
 +
- #ifdef CONFIG_PM_DEBUG
- static unsigned int pm_test_delay =3D 5;
- module_param(pm_test_delay, uint, 0644);
++	return !!(regulator->rdev->desc->ops->set_suspend_disable &&
++		  rstate->enabled =3D=3D DISABLE_IN_SUSPEND);
++}
++EXPORT_SYMBOL_GPL(regulator_is_disabled_in_suspend);
++
+ static int _regulator_set_suspend_voltage(struct regulator *regulator,
+ 					  int min_uV, int max_uV,
+ 					  suspend_state_t state)
+diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/c=
+onsumer.h
+index f3f76051e8b0..cf5e71dc63ce 100644
+--- a/include/linux/regulator/consumer.h
++++ b/include/linux/regulator/consumer.h
+@@ -36,6 +36,7 @@
+ #define __LINUX_REGULATOR_CONSUMER_H_
+=20
+ #include <linux/err.h>
++#include <linux/suspend.h>
+=20
+ struct device;
+ struct notifier_block;
+@@ -285,6 +286,9 @@ void devm_regulator_unregister_notifier(struct regulato=
+r *regulator,
+ void *regulator_get_drvdata(struct regulator *regulator);
+ void regulator_set_drvdata(struct regulator *regulator, void *data);
+=20
++/* regulator suspend/resume state */
++bool regulator_is_disabled_in_suspend(struct regulator *regulator,
++				      suspend_state_t state);
+ #else
+=20
+ /*
+@@ -579,6 +583,9 @@ static inline int regulator_list_voltage(struct regulat=
+or *regulator, unsigned s
+ 	return -EINVAL;
+ }
+=20
++bool regulator_is_disabled_in_suspend(struct regulator *regulator,
++				      suspend_state_t state);
++
+ #endif
+=20
+ static inline int regulator_set_voltage_triplet(struct regulator *regulato=
+r,
 --=20
 2.7.4
