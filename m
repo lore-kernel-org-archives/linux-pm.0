@@ -1,104 +1,66 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH] power: supply: charger-manager: Fix trivial language typos
-Date: Tue,  8 Jan 2019 13:12:12 +0100
-Message-ID: <1546949532-30150-1-git-send-email-krzk@kernel.org>
+From: Sinan Kaya <Okaya@kernel.org>
+Subject: Re: [PATCH v6 07/11] drivers: thermal: int3406_thermal: Make PCI
+ dependency explicit
+Date: Tue, 8 Jan 2019 08:03:05 -0500
+Message-ID: <CAK9iUCNPD_mVkN-NnuCyCpZ8n17OqfjQxBeo=gUms_SMX91scg@mail.gmail.com>
+References: <20190105100606.6673-1-okaya@kernel.org> <20190105100606.6673-8-okaya@kernel.org>
+ <CAJZ5v0gst1ZDgG-uP9GUUB1ziPnqhfArio3um=wCQjfbeH2_iw@mail.gmail.com> <1546948685.2072.95.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1546948685.2072.95.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Jiri Kosina <trivial@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux-Next Mailing List <linux-next@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Fix few trivial language typos.
+On Tue, Jan 8, 2019 at 6:58 AM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On =E4=B8=80, 2019-01-07 at 12:19 +0100, Rafael J. Wysocki wrote:
+> > On Sat, Jan 5, 2019 at 11:06 AM Sinan Kaya <okaya@kernel.org> wrote:
+> > >
+> > >
+> > > After 'commit 5d32a66541c4 ("PCI/ACPI: Allow ACPI to be built
+> > > without
+> > > CONFIG_PCI set")' dependencies on CONFIG_PCI that previously were
+> > > satisfied implicitly through dependencies on CONFIG_ACPI have to be
+> > > specified directly. Need CONFIG_PCI to be set in order to be able
+> > > to use
+> > > this driver.
+> > >
+> > > Fixes: 5d32a66541c46 ("PCI/ACPI: Allow ACPI to be built without
+> > > CONFIG_PCI set")
+> > > Signed-off-by: Sinan Kaya <okaya@kernel.org>
+> > > ---
+> > >  drivers/thermal/intel/int340x_thermal/Kconfig | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig
+> > > b/drivers/thermal/intel/int340x_thermal/Kconfig
+> > > index 0582bd12a239..fba1976d5f8d 100644
+> > > --- a/drivers/thermal/intel/int340x_thermal/Kconfig
+> > > +++ b/drivers/thermal/intel/int340x_thermal/Kconfig
+> > > @@ -31,7 +31,7 @@ if INT340X_THERMAL
+> > >
+> > >  config INT3406_THERMAL
+> > >         tristate "ACPI INT3406 display thermal driver"
+> > > -       depends on ACPI_VIDEO
+> > > +       depends on ACPI_VIDEO && PCI
+> > >         help
+> > >           The display thermal device represents the LED/LCD display
+> > > panel
+> > >           that may or may not include touch support. The main
+> > > function of
+> > > --
+> > Rui, any objections here?  And for the [11/11]?
+>
+> CONFIG_INT3406_THERMAL depends on CONFIG_INT340X_THERMAL, so IMO, patch
+> 11 is sufficient.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/power/supply/charger-manager.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+Yes, we can drop this patch. I found the issues in reverse order. Can
+we get an ACK for 11/11?
 
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index 38be91f21cc4..2e8db5e6de0b 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -4,7 +4,7 @@
-  *
-  * This driver enables to monitor battery health and control charger
-  * during suspend-to-mem.
-- * Charger manager depends on other devices. register this later than
-+ * Charger manager depends on other devices. Register this later than
-  * the depending devices.
-  *
-  * This program is free software; you can redistribute it and/or modify
-@@ -29,7 +29,7 @@
- #include <linux/thermal.h>
- 
- /*
-- * Default termperature threshold for charging.
-+ * Default temperature threshold for charging.
-  * Every temperature units are in tenth of centigrade.
-  */
- #define CM_DEFAULT_RECHARGE_TEMP_DIFF	50
-@@ -356,7 +356,7 @@ static bool is_polling_required(struct charger_manager *cm)
-  * Note that Charger Manager keeps the charger enabled regardless whether
-  * the charger is charging or not (because battery is full or no external
-  * power source exists) except when CM needs to disable chargers forcibly
-- * bacause of emergency causes; when the battery is overheated or too cold.
-+ * because of emergency causes; when the battery is overheated or too cold.
-  */
- static int try_charger_enable(struct charger_manager *cm, bool enable)
- {
-@@ -643,7 +643,7 @@ static int cm_check_thermal_status(struct charger_manager *cm)
- 	if (ret) {
- 		/* FIXME:
- 		 * No information of battery temperature might
--		 * occur hazadous result. We have to handle it
-+		 * occur hazardous result. We have to handle it
- 		 * depending on battery type.
- 		 */
- 		dev_err(cm->dev, "Failed to get battery temperature\n");
-@@ -693,7 +693,7 @@ static bool _cm_monitor(struct charger_manager *cm)
- 			uevent_notify(cm, default_event_names[temp_alrt]);
- 
- 	/*
--	 * Check whole charging duration and discharing duration
-+	 * Check whole charging duration and discharging duration
- 	 * after full-batt.
- 	 */
- 	} else if (!cm->emergency_stop && check_charging_duration(cm)) {
-@@ -866,7 +866,7 @@ static void battout_handler(struct charger_manager *cm)
- }
- 
- /**
-- * misc_event_handler - Handler for other evnets
-+ * misc_event_handler - Handler for other events
-  * @cm: the Charger Manager representing the battery.
-  * @type: the Charger Manager representing the battery.
-  */
-@@ -1218,7 +1218,7 @@ static int charger_extcon_init(struct charger_manager *cm,
- }
- 
- /**
-- * charger_manager_register_extcon - Register extcon device to recevie state
-+ * charger_manager_register_extcon - Register extcon device to receive state
-  *				     of charger cable.
-  * @cm: the Charger Manager representing the battery.
-  *
-@@ -1538,7 +1538,7 @@ static struct charger_desc *of_cm_parse_desc(struct device *dev)
- 	of_property_read_u32(np, "cm-discharging-max",
- 				&desc->discharging_max_duration_ms);
- 
--	/* battery charger regualtors */
-+	/* battery charger regulators */
- 	desc->num_charger_regulators = of_get_child_count(np);
- 	if (desc->num_charger_regulators) {
- 		struct charger_regulator *chg_regs;
-@@ -1801,7 +1801,7 @@ static int charger_manager_probe(struct platform_device *pdev)
- 
- 	/*
- 	 * Charger-manager have to check the charging state right after
--	 * tialization of charger-manager and then update current charging
-+	 * initialization of charger-manager and then update current charging
- 	 * state.
- 	 */
- 	cm_monitor();
--- 
-2.7.4
+>
+> thanks,
+> rui
