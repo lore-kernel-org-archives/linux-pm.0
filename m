@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 15/36] powerpc/pseries/cpuidle: Fix preempt warning
-Date: Tue,  8 Jan 2019 14:33:27 -0500
-Message-ID: <20190108193348.123880-15-sashal@kernel.org>
-References: <20190108193348.123880-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 19/53] powerpc/pseries/cpuidle: Fix preempt warning
+Date: Tue,  8 Jan 2019 14:31:47 -0500
+Message-ID: <20190108193222.123316-19-sashal@kernel.org>
+References: <20190108193222.123316-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190108193348.123880-1-sashal@kernel.org>
+In-Reply-To: <20190108193222.123316-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Breno Leitao <leitao@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -56,10 +56,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 166ccd711ec9..83203c59bf59 100644
+index a187a39fb866..7f21c6a57178 100644
 --- a/drivers/cpuidle/cpuidle-pseries.c
 +++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -230,7 +230,13 @@ static int pseries_idle_probe(void)
+@@ -239,7 +239,13 @@ static int pseries_idle_probe(void)
  		return -ENODEV;
  
  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
