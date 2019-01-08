@@ -1,31 +1,85 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Regression in v5.0-rc1 with autosuspend hrtimers
-Date: Mon, 7 Jan 2019 15:38:33 -0800
-Message-ID: <20190107233833.GI5544@atomide.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v1] cpufreq: qcom: Read voltage LUT and populate OPP
+Date: Mon, 7 Jan 2019 16:02:14 -0800
+Message-ID: <20190108000214.GR261387@google.com>
+References: <1545415608-15163-1-git-send-email-tdas@codeaurora.org>
+ <20181221205752.GD261387@google.com>
+ <2977f340-cd4e-86bc-da3a-8845676e39ed@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <2977f340-cd4e-86bc-da3a-8845676e39ed@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Hi Taniya. 
 
-Looks like commit 8234f6734c5d ("PM-runtime: Switch autosuspend
-over to using hrtimers") caused a regression on at least
-omap5-uevm where 8250 UART rx wake no longer works. I have not
-noticed this happening on others so far.
+On Mon, Dec 24, 2018 at 12:29:18AM +0530, Taniya Das wrote:
 
-The devices I've tested all are using 8250 with dedicated
-wakeirqs configured for the rx pin. I can see the interrupt
-increase on omap5-uevm after some one or more keypresses,
-but then nothing. It seems that the uart just falls back
-asleep right away or something.
+> Could you help validating with the patch below?
 
-Any ideas what might be going wrong?
+...
 
-Regards,
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c
+> b/drivers/cpufreq/qcom-cpufreq-hw.c
+> index 7559b87..23338b2 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -81,7 +81,6 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+>         u32 volt;
+>         unsigned int max_cores = cpumask_weight(policy->cpus);
+>         struct cpufreq_frequency_table  *table;
+> -       unsigned long cpu_r;
+> 
+>         table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
+>         if (!table)
+> @@ -110,6 +109,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+>                         table[i].frequency = freq;
+>                         dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
+>                                 freq, core_count);
+> +                       dev_pm_opp_add(get_cpu_device(policy->cpu),
+> +                                       freq * 1000, volt);
+>                 }
+> 
+>                 /*
+> @@ -126,6 +127,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+>                         if (prev_cc != max_cores) {
+>                                 prev->frequency = prev_freq;
+>                                 prev->flags = CPUFREQ_BOOST_FREQ;
+> +                               dev_pm_opp_add(get_cpu_device(policy->cpu),
+> +                                               prev_freq * 1000, volt);
+>                         }
+> 
+>                         break;
+> @@ -133,12 +136,9 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+> 
+>                 prev_cc = core_count;
+>                 prev_freq = freq;
+> -
+> -               freq *= 1000;
+> -               for_each_cpu(cpu_r, policy->cpus)
+> -                       dev_pm_opp_add(get_cpu_device(cpu_r), freq, volt);
+>         }
+> 
+> +       dev_pm_opp_set_sharing_cpus(get_cpu_device(policy->cpu),
+> policy->cpus);
+>         table[i].frequency = CPUFREQ_TABLE_END;
+>         policy->freq_table = table;
+> 
+> @@ -245,6 +245,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct
+> cpufreq_policy *policy)
+>  {
+>         void __iomem *base = policy->driver_data - REG_PERF_STATE;
+> 
+> +       dev_pm_opp_cpumask_remove_table(policy->cpus);
 
-Tony
+Evan found that this doesn't actually remove dynamically added
+OPPs. You'll have to use the shiny new dev_pm_opp_remove_all_dynamic()
+(https://lore.kernel.org/patchwork/patch/1028942/) instead.
+
+Cheers
+
+Matthias
