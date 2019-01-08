@@ -1,78 +1,41 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 19/53] powerpc/pseries/cpuidle: Fix preempt warning
-Date: Tue,  8 Jan 2019 14:31:47 -0500
-Message-ID: <20190108193222.123316-19-sashal@kernel.org>
-References: <20190108193222.123316-1-sashal@kernel.org>
+From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH 0/4] ARM: dts: s5pv210: Enable cpufreq support
+Date: Tue,  8 Jan 2019 21:05:05 +0100
+Message-ID: <20190108200509.30494-1-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190108193222.123316-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Breno Leitao <leitao@debian.org>, Michael Ellerman <mpe@ellerman.id.au>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: kgene@kernel.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux@armlinux.org.uk, krzk@kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Breno Leitao <leitao@debian.org>
-
-[ Upstream commit 2b038cbc5fcf12a7ee1cc9bfd5da1e46dacdee87 ]
-
-When booting a pseries kernel with PREEMPT enabled, it dumps the
-following warning:
-
-   BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
-   caller is pseries_processor_idle_init+0x5c/0x22c
-   CPU: 13 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc3-00090-g12201a0128bc-dirty #828
-   Call Trace:
-   [c000000429437ab0] [c0000000009c8878] dump_stack+0xec/0x164 (unreliable)
-   [c000000429437b00] [c0000000005f2f24] check_preemption_disabled+0x154/0x160
-   [c000000429437b90] [c000000000cab8e8] pseries_processor_idle_init+0x5c/0x22c
-   [c000000429437c10] [c000000000010ed4] do_one_initcall+0x64/0x300
-   [c000000429437ce0] [c000000000c54500] kernel_init_freeable+0x3f0/0x500
-   [c000000429437db0] [c0000000000112dc] kernel_init+0x2c/0x160
-   [c000000429437e20] [c00000000000c1d0] ret_from_kernel_thread+0x5c/0x6c
-
-This happens because the code calls get_lppaca() which calls
-get_paca() and it checks if preemption is disabled through
-check_preemption_disabled().
-
-Preemption should be disabled because the per CPU variable may make no
-sense if there is a preemption (and a CPU switch) after it reads the
-per CPU data and when it is used.
-
-In this device driver specifically, it is not a problem, because this
-code just needs to have access to one lppaca struct, and it does not
-matter if it is the current per CPU lppaca struct or not (i.e. when
-there is a preemption and a CPU migration).
-
-That said, the most appropriate fix seems to be related to avoiding
-the debug_smp_processor_id() call at get_paca(), instead of calling
-preempt_disable() before get_paca().
-
-Signed-off-by: Breno Leitao <leitao@debian.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpuidle/cpuidle-pseries.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index a187a39fb866..7f21c6a57178 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -239,7 +239,13 @@ static int pseries_idle_probe(void)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		if (lppaca_shared_proc(get_lppaca())) {
-+		/*
-+		 * Use local_paca instead of get_lppaca() since
-+		 * preemption is not disabled, and it is not required in
-+		 * fact, since lppaca_ptr does not need to be the value
-+		 * associated to the current CPU, it can be from any CPU.
-+		 */
-+		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
--- 
-2.19.1
+VGhpcyBwYXRjaHNldCBlbmFibGVzIGNwdWZyZXEgc3VwcG9ydCB1c2luZyBzNXB2MjEwLWNwdWZy
+ZXEgZHJpdmVyLgoKRmlyc3QgcGF0Y2ggYWRkcyBtaXNzaW5nIGRtYyBub2Rlcywgd2hpY2ggYXJl
+IHJlcXVpcmVkIGJ5IGRyaXZlci4KClNlY29uZCBwYXRjaCBpcyBjb3NtZXRpYywgaXQgc3RvcHMg
+ZHJpdmVyIGZyb20gZmxvb2Rpbmcga2VybmVsIGxvZyB3aXRoCiBtZXNzYWdlcywgYWZ0ZXIgZXZl
+cnkgY2hhbmdlIG9mIGZyZXEuCgpUaGlyZCBwYXRjaCBhZGRzIGRlZmVyIHByb2JlIHN1cHBvcnQg
+Zm9yIHJlZ3VsYXRvcnMsIG5lZWRlZCBieSBkcml2ZXIuCkl0IHdhcyBvYnNlcnZlZCwgdGhhdCB0
+aG9zZSByZWd1bGF0b3JzIGNhbiBiZSBubyB5ZXQgaW5pdGlhbGl6ZWQsIHdoZW4KIGRyaXZlciBp
+cyBwcm9iZWQsIHNvIHdlIHNob3VsZCB3YWl0IHRpbGwgd2UgY2FuIGdldCB0aGVtLgoKTGFzdCBw
+YXRjaCBlbmFibGVzIHJlcXVpcmVkIGtlcm5lbCBjb25maWcgb3B0aW9ucy4KClBhd2XFgiBDaG1p
+ZWwgKDQpOgogIEFSTTogZHRzOiBzNXB2MjEwOiBBZGQgZG1jIG5vZGVzCiAgY3B1ZnJlcTogczVw
+djIxMDogRG9uJ3QgZmxvb2Qga2VybmVsIGxvZyBhZnRlciBjcHVmcmVxIGNoYW5nZQogIGNwdWZy
+ZXE6IHM1cHYyMTA6IERlZmVyIHByb2JlIGlmIGdldHRpbmcgcmVndWxhdG9ycyBmYWlsCiAgQVJN
+OiBkZWZjb25maWc6IHM1cHYyMTA6IEFkZCBjcHVmcmVxIHN1cHBvcnQKCiBhcmNoL2FybS9ib290
+L2R0cy9zNXB2MjEwLmR0c2kgICAgIHwgMTIgKysrKysrKysrKwogYXJjaC9hcm0vY29uZmlncy9z
+NXB2MjEwX2RlZmNvbmZpZyB8ICA2ICsrKysrCiBkcml2ZXJzL2NwdWZyZXEvczVwdjIxMC1jcHVm
+cmVxLmMgIHwgMzUgKysrKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tCiAzIGZpbGVzIGNoYW5n
+ZWQsIDM5IGluc2VydGlvbnMoKyksIDE0IGRlbGV0aW9ucygtKQoKLS0gCjIuMTcuMQoKCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJu
+ZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
+Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
