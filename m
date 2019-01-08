@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v4 11/15] power: supply: olpc_battery: Use DT to get battery version
-Date: Tue,  8 Jan 2019 18:58:14 +0100
-Message-ID: <20190108175818.705110-12-lkundrak@v3.sk>
+Subject: [PATCH v4 15/15] power: supply: olpc_battery: Add OLPC XO 1.75 support
+Date: Tue,  8 Jan 2019 18:58:18 +0100
+Message-ID: <20190108175818.705110-16-lkundrak@v3.sk>
 References: <20190108175818.705110-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -9,70 +9,128 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190108175818.705110-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Russell King <linux@armlinux.org.uk>
-Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Andy Shevchenko <andy.shevchenko@gmail.com>, Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-Avoid using the x86 OLPC platform specific call to get the board
-version. That wouldn't work on FDT-based ARM MMP2 platform.
-
-Add the XO 1.5 compatible string too. This is actually not completely
-necessary as the battery nodes on XO 1.5 claim to be compatible with
-"olpc,xo1-battery", but there are, in fact, differencies.
+The battery and the protocol are essentially the same as OLPC XO 1.5,
+but the responses from the EC are LSB first.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
 Changes since v2:
-- Clarify the XO 1 compatibility in the commit message.
+- Fix the version conditional
 
 Changes since v1:
-- Sort the new include a bit higher
+- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
+- s/u16 ec_byte/u16 ec_word/
 
- drivers/power/supply/olpc_battery.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/power/supply/Kconfig        |  2 +-
+ drivers/power/supply/olpc_battery.c | 25 +++++++++++++++++++------
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 67a3bb26da39..66e4d1958de3 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -151,7 +151,7 @@ config BATTERY_PMU
+=20
+ config BATTERY_OLPC
+ 	tristate "One Laptop Per Child battery"
+-	depends on OLPC
++	depends on OLPC_EC
+ 	help
+ 	  Say Y to enable support for the battery on the OLPC laptop.
+=20
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index 5a97e42a3547..5323987d9284 100644
+index 8ebb4284cf05..e32c1e457026 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
- #include <linux/err.h>
- #include <linux/device.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/jiffies.h>
-@@ -622,11 +623,13 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
- 	if (IS_ERR(olpc_ac))
- 		return PTR_ERR(olpc_ac);
--
--	if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5 */
-+	if (of_property_match_string(pdev->dev.of_node, "compatible",
-+					"olpc,xo1.5-battery") >=3D 0) {
-+		/* XO-1.5 */
- 		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
- 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo15_bat_props);
--	} else { /* XO-1 */
-+	} else {
-+		/* XO-1 */
- 		olpc_bat_desc.properties =3D olpc_xo1_bat_props;
- 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
- 	}
-@@ -672,6 +675,7 @@ static int olpc_battery_remove(struct platform_device=
- *pdev)
-=20
- static const struct of_device_id olpc_battery_ids[] =3D {
- 	{ .compatible =3D "olpc,xo1-battery" },
-+	{ .compatible =3D "olpc,xo1.5-battery" },
- 	{}
+@@ -56,6 +56,7 @@ struct olpc_battery_data {
+ 	struct power_supply *olpc_bat;
+ 	char bat_serial[17];
+ 	int new_proto;
++	int little_endian;
  };
- MODULE_DEVICE_TABLE(of, olpc_battery_ids);
+=20
+ /*********************************************************************
+@@ -321,6 +322,14 @@ static int olpc_bat_get_voltage_max_design(union pow=
+er_supply_propval *val)
+ 	return ret;
+ }
+=20
++static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
++{
++	if (data->little_endian)
++		return le16_to_cpu(ec_word);
++	else
++		return be16_to_cpu(ec_word);
++}
++
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -393,7 +402,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 9760L / 32;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 9760L / 32;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+@@ -401,7 +410,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 15625L / 120;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 15625L / 120;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
+@@ -432,21 +441,21 @@ static int olpc_bat_get_property(struct power_suppl=
+y *psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+ 		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D (int)ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 6250 / 15;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 6250 / 15;
+ 		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+@@ -620,7 +629,11 @@ static int olpc_battery_probe(struct platform_device=
+ *pdev)
+ 	if (ret)
+ 		return ret;
+=20
+-	if (ecver > 0x44) {
++	if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
++		/* XO 1.75 */
++		data->new_proto =3D 1;
++		data->little_endian =3D 1;
++	} else if (ecver > 0x44) {
+ 		/* XO 1 or 1.5 with a new EC firmware. */
+ 		data->new_proto =3D 1;
+ 	} else if (ecver < 0x44) {
 --=20
 2.20.1
