@@ -1,71 +1,87 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH v3 03/16] Revert "platform/olpc: Make ec explicitly
- non-modular"
-Date: Tue, 08 Jan 2019 09:29:07 +0100
-Message-ID: <04e606dd8551bdf71d3b79b12aed46d1ad5157b6.camel@v3.sk>
-References: <20190107183439.50626-1-lkundrak@v3.sk>
-         <20190107183439.50626-4-lkundrak@v3.sk>
+From: <Claudiu.Beznea@microchip.com>
+Subject: [PATCH 0/3] add support for power off check in suspend
+Date: Tue, 8 Jan 2019 09:52:48 +0000
+Message-ID: <1546941147-18410-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190107183439.50626-4-lkundrak@v3.sk>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org
-Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, broonie@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu.Beznea@microchip.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2019-01-07 at 19:34 +0100, Lubomir Rintel wrote:
-> It doesn't make sense to always have this built-in, e.g. on ARM
-> multiplatform kernels.
-> 
-> A better way to address the problem the original commit aimed to solve is
-> to fix Kconfig. That is what the next commit in the series does.
-> 
-> This reverts commit f48d1496b8537d75776478c6942dd87f34d7f270.
+From: Claudiu Beznea <claudiu.beznea@microchip.com>
 
-The kBuild but figured out that this is not such a great idea.
+Hi,
 
-I'm going to follow-up with a new patch set; sorry for the noise.
+AT91 platforms support a power saving mode where SoC's power is cut off (we=
+ call
+it backup mode). The resume is done with the help of bootloaders. To be abl=
+e to
+suspend/resume Linux to/from this mode all the drivers suspend/resume callb=
+acks
+should save/restore the content of all the active registers. We have 2 prob=
+lems
+we are trying to solve:
+- some of these drivers are shared with other non Microchip SoCs (e.g. macb
+  driver) and we don't want to disturbe other users of corresponding IPs wi=
+th
+  all the register save/restore operations;
+- the suspend/resume time for the rest of the power saving mode we are usin=
+g
+  could be improved if we would know in drivers the suspend mode the platfo=
+rm
+  is switched to.
 
-> 
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> 
-> ---
-> Changes since v1:
-> - Sort it later in the patch set
-> 
->  drivers/platform/olpc/olpc-ec.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc-ec.c
-> index 981955dce926..35a21c66cd0d 100644
-> --- a/drivers/platform/olpc/olpc-ec.c
-> +++ b/drivers/platform/olpc/olpc-ec.c
-> @@ -1,8 +1,6 @@
->  /*
->   * Generic driver for the OLPC Embedded Controller.
->   *
-> - * Author: Andres Salomon <dilinger@queued.net>
-> - *
->   * Copyright (C) 2011-2012 One Laptop per Child Foundation.
->   *
->   * Licensed under the GPL v2 or later.
-> @@ -14,7 +12,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
->  #include <linux/workqueue.h>
-> -#include <linux/init.h>
-> +#include <linux/module.h>
->  #include <linux/list.h>
->  #include <linux/olpc-ec.h>
->  
-> @@ -327,4 +325,8 @@ static int __init olpc_ec_init_module(void)
->  {
->  	return platform_driver_register(&olpc_ec_plat_driver);
->  }
-> +
->  arch_initcall(olpc_ec_init_module);
-> +
-> +MODULE_AUTHOR("Andres Salomon <dilinger@queued.net>");
-> +MODULE_LICENSE("GPL");
+A solution that would have been solve our problems was proposed in [1] but =
+in
+the end it wasn't accepted. It ended up with the introduction of
+pm_suspend_target_state variable that could be used along with the changes =
+in
+this series.
+
+While the discussion of [1] progressed it has been proposed (in [2]) to
+implement a function that would tell if the platform's power would be cut o=
+ff
+at the end of the suspend procedure.
+
+The patches in this series does as follows:
+1/3 - add a new member to platform_suspend_ops that will tell if platform's
+      power will be cut off at the end of the suspend procedure; drivers co=
+uld
+      use it via platform_off_in_suspend()
+2/3 - add a new function to regulator's core that could be used to check if=
+ a
+      proper regulator has been configured (via DT) to be powered off in
+      suspend. This is used on this series to check the CPU's regulator is
+      properly configured in DT to be turned off in suspend.
+3/3 - fill .off_in_suspend member of at91_pm_ops; the functionality in patc=
+h 2/3
+      is used to double check CPU's regulator would be turned off in suspen=
+d.
+
+Thank you,
+Claudiu Beznea
+
+[1] https://lkml.org/lkml/2017/6/22/938
+[2] https://lkml.org/lkml/2017/7/16/457
+
+Claudiu Beznea (3):
+  PM / Suspend: Add support to check if platform's power is off in
+    suspend
+  regulator: core: add helper to check if regulator is disabled in
+    suspend
+  ARM: at91: pm: add support for .off_in_suspend
+
+ arch/arm/mach-at91/pm.c            | 61 ++++++++++++++++++++++++++++++++++=
++---
+ drivers/regulator/core.c           | 17 +++++++++++
+ include/linux/regulator/consumer.h |  7 +++++
+ include/linux/suspend.h            |  6 ++++
+ kernel/power/suspend.c             | 13 ++++++++
+ 5 files changed, 100 insertions(+), 4 deletions(-)
+
+--=20
+2.7.4
