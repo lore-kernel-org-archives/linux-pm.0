@@ -1,109 +1,136 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 00/10] i2c: move handling of suspended adapters to the
- core
-Date: Tue, 8 Jan 2019 21:09:38 +0100
-Message-ID: <20190108200937.bratvsbz4grk6m4e@ninjato>
-References: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v10 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
+Date: Tue, 8 Jan 2019 12:38:13 -0800
+Message-ID: <20190108203813.GS261387@google.com>
+References: <20181203095628.11858-1-quentin.perret@arm.com>
+ <20181203095628.11858-16-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="mwtdafiryfs7cnw6"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181219164827.20985-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20181203095628.11858-16-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-i2c@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Quentin,
 
---mwtdafiryfs7cnw6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Dec 03, 2018 at 09:56:28AM +0000, Quentin Perret wrote:
+> *******************************************************************
+> * This patch illustrates the usage of the newly introduced Energy *
+> * Model framework and isn't supposed to be merged as-is.          *
+> *******************************************************************
+> 
+> The Energy Model framework provides an API to register the active power
+> of CPUs. Call this API from the cpufreq-dt driver with an estimation
+> of the power as P = C * V^2 * f with C, V, and f respectively the
+> capacitance of the CPU and the voltage and frequency of the OPP.
+> 
+> The CPU capacitance is read from the "dynamic-power-coefficient" DT
+> binding (originally introduced for thermal/IPA), and the voltage and
+> frequency values from PM_OPP.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 48 +++++++++++++++++++++++++++++++++++-
+>  1 file changed, 47 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index e58bfcb1169e..4cfef5554d86 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/cpu_cooling.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpumask.h>
+> +#include <linux/energy_model.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> @@ -150,8 +151,50 @@ static int resources_available(void)
+>  	return 0;
+>  }
+>  
+> +static int __maybe_unused of_est_power(unsigned long *mW, unsigned long *KHz,
+> +				       int cpu)
+> +{
+> +	unsigned long mV, Hz, MHz;
+> +	struct device *cpu_dev;
+> +	struct dev_pm_opp *opp;
+> +	struct device_node *np;
+> +	u32 cap;
+> +	u64 tmp;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return -EINVAL;
+> +
+> +	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
+> +		return -EINVAL;
+> +
+> +	Hz = *KHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> +	dev_pm_opp_put(opp);
+> +	if (!mV)
+> +		return -EINVAL;
+> +
+> +	MHz = Hz / 1000000;
+> +	tmp = (u64)cap * mV * mV * MHz;
+> +	do_div(tmp, 1000000000);
+> +
+> +	*mW = (unsigned long)tmp;
+> +	*KHz = Hz / 1000;
+> +
+> +	return 0;
+> +}
+> +
+>  static int cpufreq_init(struct cpufreq_policy *policy)
+>  {
+> +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
+>  	struct cpufreq_frequency_table *freq_table;
+>  	struct opp_table *opp_table = NULL;
+>  	struct private_data *priv;
+> @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	unsigned int transition_latency;
+>  	bool fallback = false;
+>  	const char *name;
+> -	int ret;
+> +	int ret, nr_opp;
+>  
+>  	cpu_dev = get_cpu_device(policy->cpu);
+>  	if (!cpu_dev) {
+> @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  		ret = -EPROBE_DEFER;
+>  		goto out_free_opp;
+>  	}
+> +	nr_opp = ret;
+>  
+>  	if (fallback) {
+>  		cpumask_setall(policy->cpus);
+> @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->cpuinfo.transition_latency = transition_latency;
+>  	policy->dvfs_possible_from_any_cpu = true;
+>  
+> +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
 
-On Wed, Dec 19, 2018 at 05:48:16PM +0100, Wolfram Sang wrote:
-> Finally, here is the implementation Hans and I agreed on. Plus, all poten=
-tial
-> users I could spot already converted. Renesas R-Car driver was added on t=
-op.
-> This series was tested on a Renesas Lager board (R-Car H2). I had to hack=
- some
-> error cases into the code to verify the workings. Thanks for all the test=
-s so
-> far. Of course, more testing never hurts ;)
->=20
-> Please comment, review, test... a branch can be found here:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/i2c/c=
-ore-pm-helpers
->=20
-> Thanks,
->=20
->    Wolfram
->=20
-> Changes since RFC:
->=20
-> * don't use bitfields anymore but an unsigned long flags variable which i=
-s only
->   meant for flags to be changed when the adapter lock is held
->=20
-> * split the genereic accessor into _mark_suspended() and _mark_resumed()
->=20
-> * added kerneldoc and noted that using these helpers is optional
->=20
-> * documented -ESHUTDOWN as the error code when trying to transfer using an
->   already suspended adapter
->=20
-> * added acks from last series. Changes were minor enough to keep them. Pl=
-ease let
->   me know if you disagree.
->=20
->=20
-> Wolfram Sang (10):
->   i2c: add suspended flag and accessors for i2c adapters
->   i2c: reject new transfers when adapters are suspended
->   i2c: synquacer: remove unused is_suspended flag
->   i2c: brcmstb: use core helper to mark adapter suspended
->   i2c: zx2967: use core helper to mark adapter suspended
->   i2c: sprd: don't use pdev as variable name for struct device *
->   i2c: sprd: use core helper to mark adapter suspended
->   i2c: exynos5: use core helper to mark adapter suspended
->   i2c: s3c2410: use core helper to mark adapter suspended
->   i2c: rcar: add suspend/resume support
+Shouldn't there also be a function to unregister a perf domain to be
+called from cpufreq_exit()?
 
-After a long road, I applied this series now to for-next. I only
-squashed patches 1+2 to have the functionality in one place. And fixed a
-typo in patch 1. Thanks to the testers and reviewers, and especially
-Hans, for the input and discussions.
+->exit() is called on suspend when the CPUs are taken offline, and
+->init() on resume, hence em_register_perf_domain() is called multiple
+times, but without doing any cleanup.
 
-This will now get a full test cycle in -next. Let's see what happens...
+Cheers
 
-And let's move on to how to add 'very late transfers without irqs' on
-top of this series.
-
-Happy hacking,
-
-   Wolfram
-
-
---mwtdafiryfs7cnw6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlw1A30ACgkQFA3kzBSg
-KbbxWw/8CGkkrx9NPVQwRLHRnix2QucE3r9aD0Df5ybapZtzhPdInKj5cJ6rtJjO
-Ly0VQzmjKc+6FirBXJKF2Zdu35+/8k4y7owr0oh8fNxRjeWU0Pukp4n9NoX9+CsO
-kXyzFEmbx8goTH1zzJgVz1yytO8ebGDCXX086M7D8MDW5ULx0mgzlIWcHkgy81Aj
-gUEmnOjbw/JbmeBL0l+gseT2gO5GWArBv/mUFNkuz7pH0AjV/BbkImZ7BuhlYpOV
-pvWM2PI2/7xbxpsjFIhIQbOs7hHY1iNkQjONftMT2sjCm8PKFRvf1Il+9K8AA/tp
-N13Jn7IGI/lRrxlxGZZ3zr8o715PohfdI4G1OPFpjSorTBs1UV4f8BatsodHk8bh
-fAKKjAkPw5/qRcMA8HnkyIrszoM7qCToOYFkBiMtv8+Drdtn5W13HCKL52PGiOds
-sE9QS5at1rGWtzQX1fkLpq93GQTyNvFMURJ21YvXnU2U47o1hVLQNQKLQFjNNaLj
-k9SOHjoI9xM7PWRgVghphFuUYqQMlHID9GHR1R0bS9uA++CxHzzP4/OTBwTIVBBl
-YpTlg4+UtKgmSTWmWR/QSjGAIpRGiAOSIt2mz8YcCF2E9QtLFm2wMTWXxe48Wavt
-9n/kVEg/kVdxR2yHZWu5guX3AmiPxUBiZxHhfKCYkrlFUuqL97Y=
-=Vtra
------END PGP SIGNATURE-----
-
---mwtdafiryfs7cnw6--
+Matthias
