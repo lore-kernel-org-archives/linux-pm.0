@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v4 05/15] Platform: OLPC: Avoid a warning if the EC didn't register yet
-Date: Tue,  8 Jan 2019 18:58:08 +0100
-Message-ID: <20190108175818.705110-6-lkundrak@v3.sk>
+Subject: [PATCH v4 07/15] Platform: OLPC: Use BIT() and GENMASK() for event masks
+Date: Tue,  8 Jan 2019 18:58:10 +0100
+Message-ID: <20190108175818.705110-8-lkundrak@v3.sk>
 References: <20190108175818.705110-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,42 +12,57 @@ To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, pl
 Cc: James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-Just return EPROBE_DEFER, so that whoever attempted to use the EC call ca=
-n
-defer their work.
+Just a cosmetic tidy-up.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
-Changes since v2:
-- Adjust the commit message for the s/ENODEV/EPROBE_DEFER/ change
-
 Changes since v1:
-- EPROBE_DEFER instead of ENODEV
+- This patch was added to the set.
 
- drivers/platform/olpc/olpc-ec.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ include/linux/olpc-ec.h | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
--ec.c
-index 981955dce926..d7d51a851937 100644
---- a/drivers/platform/olpc/olpc-ec.c
-+++ b/drivers/platform/olpc/olpc-ec.c
-@@ -118,8 +118,11 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 =
-*outbuf, size_t outlen)
- 	struct olpc_ec_priv *ec =3D ec_priv;
- 	struct ec_cmd_desc desc;
+diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
+index e28f72416a57..c4602364e909 100644
+--- a/include/linux/olpc-ec.h
++++ b/include/linux/olpc-ec.h
+@@ -2,6 +2,8 @@
+ #ifndef _LINUX_OLPC_EC_H
+ #define _LINUX_OLPC_EC_H
 =20
--	/* Ensure a driver and ec hook have been registered */
--	if (WARN_ON(!ec_driver || !ec_driver->ec_cmd))
-+	/* Driver not yet registered. */
-+	if (!ec_driver)
-+		return -EPROBE_DEFER;
++#include <linux/bits.h>
 +
-+	if (WARN_ON(!ec_driver->ec_cmd))
- 		return -ENODEV;
+ /* XO-1 EC commands */
+ #define EC_FIRMWARE_REV			0x08
+ #define EC_WRITE_SCI_MASK		0x1b
+@@ -17,17 +19,16 @@
+ #define EC_EXT_SCI_QUERY		0x85
 =20
- 	if (!ec)
+ /* SCI source values */
+-#define EC_SCI_SRC_EMPTY        0x00
+-#define EC_SCI_SRC_GAME         0x01
+-#define EC_SCI_SRC_BATTERY      0x02
+-#define EC_SCI_SRC_BATSOC       0x04
+-#define EC_SCI_SRC_BATERR       0x08
+-#define EC_SCI_SRC_EBOOK        0x10    /* XO-1 only */
+-#define EC_SCI_SRC_WLAN         0x20    /* XO-1 only */
+-#define EC_SCI_SRC_ACPWR        0x40
+-#define EC_SCI_SRC_BATCRIT      0x80
+-#define EC_SCI_SRC_GPWAKE       0x100   /* XO-1.5 only */
+-#define EC_SCI_SRC_ALL          0x1FF
++#define EC_SCI_SRC_GAME         BIT(0)
++#define EC_SCI_SRC_BATTERY      BIT(1)
++#define EC_SCI_SRC_BATSOC       BIT(2)
++#define EC_SCI_SRC_BATERR       BIT(3)
++#define EC_SCI_SRC_EBOOK        BIT(4)    /* XO-1 only */
++#define EC_SCI_SRC_WLAN         BIT(5)    /* XO-1 only */
++#define EC_SCI_SRC_ACPWR        BIT(6)
++#define EC_SCI_SRC_BATCRIT      BIT(7)
++#define EC_SCI_SRC_GPWAKE       BIT(8)   /* XO-1.5 only */
++#define EC_SCI_SRC_ALL          GENMASK(8, 0)
+=20
+ struct platform_device;
+=20
 --=20
 2.20.1
