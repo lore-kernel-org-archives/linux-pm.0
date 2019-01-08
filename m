@@ -1,136 +1,41 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v10 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Tue, 8 Jan 2019 12:38:13 -0800
-Message-ID: <20190108203813.GS261387@google.com>
-References: <20181203095628.11858-1-quentin.perret@arm.com>
- <20181203095628.11858-16-quentin.perret@arm.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
+Date: Tue, 8 Jan 2019 13:37:43 -0800
+Message-ID: <20190108213743.GN5544@atomide.com>
+References: <20190107233833.GI5544@atomide.com>
+ <CAKfTPtDBEmcsLotp-6K1KU1wM9Ba1EpMp3niXScRxYgzjs0nog@mail.gmail.com>
+ <20190108155354.GL5544@atomide.com>
+ <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181203095628.11858-16-quentin.perret@arm.com>
+In-Reply-To: <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
-
-On Mon, Dec 03, 2018 at 09:56:28AM +0000, Quentin Perret wrote:
-> *******************************************************************
-> * This patch illustrates the usage of the newly introduced Energy *
-> * Model framework and isn't supposed to be merged as-is.          *
-> *******************************************************************
+* Vincent Guittot <vincent.guittot@linaro.org> [190108 16:42]:
+> On Tue, 8 Jan 2019 at 16:53, Tony Lindgren <tony@atomide.com> wrote:
+> > Hmm so could it be that we now rely on timers that that may
+> > not be capable of waking up the system from idle states with
+> > hrtimer?
 > 
-> The Energy Model framework provides an API to register the active power
-> of CPUs. Call this API from the cpufreq-dt driver with an estimation
-> of the power as P = C * V^2 * f with C, V, and f respectively the
-> capacitance of the CPU and the voltage and frequency of the OPP.
-> 
-> The CPU capacitance is read from the "dynamic-power-coefficient" DT
-> binding (originally introduced for thermal/IPA), and the voltage and
-> frequency values from PM_OPP.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 48 +++++++++++++++++++++++++++++++++++-
->  1 file changed, 47 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index e58bfcb1169e..4cfef5554d86 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -16,6 +16,7 @@
->  #include <linux/cpu_cooling.h>
->  #include <linux/cpufreq.h>
->  #include <linux/cpumask.h>
-> +#include <linux/energy_model.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> @@ -150,8 +151,50 @@ static int resources_available(void)
->  	return 0;
->  }
->  
-> +static int __maybe_unused of_est_power(unsigned long *mW, unsigned long *KHz,
-> +				       int cpu)
-> +{
-> +	unsigned long mV, Hz, MHz;
-> +	struct device *cpu_dev;
-> +	struct dev_pm_opp *opp;
-> +	struct device_node *np;
-> +	u32 cap;
-> +	u64 tmp;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np)
-> +		return -EINVAL;
-> +
-> +	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-> +		return -EINVAL;
-> +
-> +	Hz = *KHz * 1000;
-> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> +	if (IS_ERR(opp))
-> +		return -EINVAL;
-> +
-> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
-> +	dev_pm_opp_put(opp);
-> +	if (!mV)
-> +		return -EINVAL;
-> +
-> +	MHz = Hz / 1000000;
-> +	tmp = (u64)cap * mV * mV * MHz;
-> +	do_div(tmp, 1000000000);
-> +
-> +	*mW = (unsigned long)tmp;
-> +	*KHz = Hz / 1000;
-> +
-> +	return 0;
-> +}
-> +
->  static int cpufreq_init(struct cpufreq_policy *policy)
->  {
-> +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
->  	struct cpufreq_frequency_table *freq_table;
->  	struct opp_table *opp_table = NULL;
->  	struct private_data *priv;
-> @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	unsigned int transition_latency;
->  	bool fallback = false;
->  	const char *name;
-> -	int ret;
-> +	int ret, nr_opp;
->  
->  	cpu_dev = get_cpu_device(policy->cpu);
->  	if (!cpu_dev) {
-> @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  		ret = -EPROBE_DEFER;
->  		goto out_free_opp;
->  	}
-> +	nr_opp = ret;
->  
->  	if (fallback) {
->  		cpumask_setall(policy->cpus);
-> @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.transition_latency = transition_latency;
->  	policy->dvfs_possible_from_any_cpu = true;
->  
-> +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
+> With nohz and hrtimer enabled,  timer relies on hrtimer to generate
+> the tick so you should use the same interrupt.
 
-Shouldn't there also be a function to unregister a perf domain to be
-called from cpufreq_exit()?
+OK yeah looks like that part is working just fine.
 
-->exit() is called on suspend when the CPUs are taken offline, and
-->init() on resume, hence em_register_perf_domain() is called multiple
-times, but without doing any cleanup.
+Adding some printks and debugging over ssh, looks like
+omap8250_runtime_resume() gets called just fine based on a wakeirq,
+but then omap8250_runtime_suspend() runs immediately instead of
+waiting for the three second timeout.
 
-Cheers
+Lowering the autosuspend_delay_ms to 2100 ms makes things work again.
+Anything higher than 2200 ms seems to somehow time out immediately
+now :)
 
-Matthias
+Regards,
+
+Tony
