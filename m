@@ -1,7 +1,7 @@
-From: Quentin Perret <quentin.perret@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: scmi: Fix frequency invariance in slow path
-Date: Wed, 9 Jan 2019 10:59:05 +0000
-Message-ID: <20190109105902.ytnolu2gldhana4c@queper01-lin>
+Date: Wed, 9 Jan 2019 16:29:35 +0530
+Message-ID: <20190109105935.i4f7wpedvk5wynwr@vireshk-i7>
 References: <20190109104236.6532-1-quentin.perret@arm.com>
  <20190109104511.mi3gtdcytkky4eyn@vireshk-i7>
  <5435767.4D6MIGYIVi@aspire.rjw.lan>
@@ -12,10 +12,10 @@ Content-Disposition: inline
 In-Reply-To: <5435767.4D6MIGYIVi@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, qais.yousef@arm.com
+Cc: Quentin Perret <quentin.perret@arm.com>, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, qais.yousef@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 Jan 2019 at 11:56:06 (+0100), Rafael J. Wysocki wrote:
+On 09-01-19, 11:56, Rafael J. Wysocki wrote:
 > On Wednesday, January 9, 2019 11:45:11 AM CET Viresh Kumar wrote:
 > > On 09-01-19, 10:42, Quentin Perret wrote:
 > > > The scmi-cpufreq driver calls the arch_set_freq_scale() callback on
@@ -55,8 +55,7 @@ On Wednesday 09 Jan 2019 at 11:56:06 (+0100), Rafael J. Wysocki wrote:
 > 
 > This would be stable-candidate I guess?
 
-I think so yes. I was hoping the 'Fixes:' tag would be enough ? Or do I
-still need to CC stable too ?
+Cc: 4.17+ <stable@vger.kernel.org> # v4.17+
 
-Thanks,
-Quentin
+-- 
+viresh
