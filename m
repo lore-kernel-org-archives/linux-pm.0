@@ -1,55 +1,77 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
-Date: Wed, 9 Jan 2019 23:06:34 +0100
-Message-ID: <CAJZ5v0jPJYyszAs4qJhqX+5RGwzJoo=+reTS__buoCrfTeYY8Q@mail.gmail.com>
-References: <20190108213743.GN5544@atomide.com> <20190109014218.GA8363@linaro.org>
- <20190109111703.GA28605@lenoch> <CAKfTPtBvzZvJNxBRMbGbNFBYG0-pAR-P7X2=KrBWH01OMWvJYA@mail.gmail.com>
- <20190109115824.GA1353@lenoch> <CAKfTPtAAgYYW8A1LDg18bM=5vCAMDbQ05APp9QWSaifW=F0SgQ@mail.gmail.com>
- <20190109133337.GA13579@lenoch> <CAKfTPtAsENRKh_wTFXCLW2_MdMBug+tV2KtjC7x6RigN7hgPmw@mail.gmail.com>
- <20190109160736.GA7416@lenoch> <CAKfTPtBnNA6knrsHsZXeaotBSn5mS12xNWNUKdSwZ1EUvueQkA@mail.gmail.com>
- <20190109172623.GB1711@lenoch> <CAKfTPtBGh+ShbNCZLiYr4PZJooun7uctuQaomc40czvAk5Yizg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Wed, 9 Jan 2019 23:19:28 +0100
+Message-ID: <20190109221928.GA32688@amd>
+References: <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
+ <1565399.7ulKdI1fm5@tauon.chronox.de>
+ <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+ <1546994671.6077.10.camel@HansenPartnership.com>
+ <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
+ <1547016579.2789.17.camel@HansenPartnership.com>
+ <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
+ <1547063189.2879.47.camel@HansenPartnership.com>
+ <CALCETrWKUTKp1tO00fPcbtm5vu2b4CHJQ6XcmkrWJY9P1h+mzA@mail.gmail.com>
+ <1547070220.2758.4.camel@HansenPartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtBGh+ShbNCZLiYr4PZJooun7uctuQaomc40czvAk5Yizg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1547070220.2758.4.camel@HansenPartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ladislav Michl <ladis@linux-mips.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 9, 2019 at 7:05 PM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
-> On Wed, 9 Jan 2019 at 18:26, Ladislav Michl <ladis@linux-mips.org> wrote:
-> >
-> > On Wed, Jan 09, 2019 at 05:32:31PM +0100, Vincent Guittot wrote:
-> > > On Wed, 9 Jan 2019 at 17:07, Ladislav Michl <ladis@linux-mips.org> wrote:
-> > > >
-> > > > On Wed, Jan 09, 2019 at 03:12:25PM +0100, Vincent Guittot wrote:
-> > > > > Please keep all thread list when replying :-)
-> > > >
-> > > > Ahh, sorry for that...
-> > > > [snip]
-> > > > > On Wed, 9 Jan 2019 at 14:33, Ladislav Michl <ladis@linux-mips.org> wrote:
-> > > > > > I agree, but it doea all the magic correctly, so you won't need
-> > > > > > to touch that code is ktime_t changes (I know, unlikely..)
-> > > > >
-> > > > > But the current implementation doesn't care of any changes in ktime_t
-> > > > > as it uses raw ns
-> > > >
-> > > > Fair enough, so let's go back to:
-> > >
-> > > This one looks good for me
-> >
-> > Lets split is for 'comments fix' patch, which was just send and 'the rest'.
-> > Now, 'the rest' can either be v2 of your "PM/runtime: Fix autosuspend_delay on
-> > 32bits arch" or will wait for 5.1. You decide :)
->
-> I don't really mind.
->
-> Rafael,
-> Do you prefer to only take the fix for u64 casting problem or do you
-> prefer to also take the optimization below in one single patch ?
 
-The casting problem is a bug and the optimization is next release
-material in my view.  Please send the optimization separately.
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi!
+
+> > > Note if someone has your laptop and the ability to boot their own
+> > > kernels, they could always corrupt the kernel into decrypting the
+> > > image or giving you the unsealed key, but there's no real way of
+> > > preventing that even with PCR sealing or lockdown, so the basis for
+> > > the threat model is very much my laptop in my possession running my
+> > > kernel.
+> >=20
+> > I'm not entirely sure I agree.  With a TPM-aware bootloader, it
+> > really ought to be possible to seal to PCRs such that a corrupted
+> > kernel can't restore the image.  Obviously a *compromised* but
+> > otherwise valid kernel will be able to restore the image.
+>=20
+> It is possible to seal the key so that only the same booted kernel can
+> restore the image, yes.  One of the measurements that goes into the
+> boot log is the hash of the kernel and you can seal to this value ...
+> obviously if you upgrade your kernel RPM (or shim or grub) this value
+> changes and you'd lose the ability to restore the hibernated image, but
+> since the image is very kernel specific, that's probably OK.
+
+Non-ancient kernels actually support hibernation by one kernel and
+restore by another one.
+
+But yes, normally it is same kernel binary doing hibernation and
+restore.
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--82I3+IH0IqGh5yIs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlw2c3AACgkQMOfwapXb+vJsLQCfQpFcrOhA1gXr6iyY8t2KD3C7
+e9wAnR2l05dQ/Z/mafMvvKDMZM5JLHog
+=KQIG
+-----END PGP SIGNATURE-----
+
+--82I3+IH0IqGh5yIs--
