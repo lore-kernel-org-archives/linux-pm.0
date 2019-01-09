@@ -1,98 +1,171 @@
-From: Rob Clark <robdclark@gmail.com>
-Subject: Re: [PATCH v7 0/6] arm64: dts: Add sdm845 GPU/GMU and SMMU
-Date: Wed, 9 Jan 2019 14:16:28 -0500
-Message-ID: <CAF6AEGvuzcFxsNv+MO_B50eA8ztemc0VXe0dSQLARPprTvyAbQ@mail.gmail.com>
-References: <20181218183241.12830-1-jcrouse@codeaurora.org>
- <CAD=FV=XLWUwkQLStKzV5DGji0WNEk44ft51NTWJmQNG7GW4Rkg@mail.gmail.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Wed, 09 Jan 2019 11:46:29 -0800
+Message-ID: <1547063189.2879.47.camel@HansenPartnership.com>
+References: <20190103143227.9138-1-jlee@suse.com>
+         <4499700.LRS4F2YjjC@tauon.chronox.de>
+         <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
+         <1565399.7ulKdI1fm5@tauon.chronox.de>
+         <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+         <1546994671.6077.10.camel@HansenPartnership.com>
+         <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
+         <1547016579.2789.17.camel@HansenPartnership.com>
+         <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAD=FV=XLWUwkQLStKzV5DGji0WNEk44ft51NTWJmQNG7GW4Rkg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Jordan Crouse <jcrouse@codeaurora.org>, vireshk@kernel.org, Andy Gross <andy.gross@linaro.org>, freedreno <freedreno@lists.freedesktop.org>, Georgi Djakov <georgi.djakov@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 9, 2019 at 1:20 PM Doug Anderson <dianders@chromium.org> wrote:
->
-> Hi Rob,
->
-> On Tue, Dec 18, 2018 at 10:32 AM Jordan Crouse <jcrouse@codeaurora.org> wrote:
-> >
-> > Now that more of the sdm845 bindings are headed upstream this a refresh of
-> > of https://patchwork.freedesktop.org/series/39308/ to add bindings and nodes
-> > for the GPU/GMU and GPU SMMU for sdm845. v7 of this patchset also removes
-> > interrupt-names from the driver and the existing DT changes per feedback from
-> > Rob Herring.
-> >
-> > This is based on :
-> > git://git.kernel.org/pub/scm/linux/kernel/git/agross/linux.git for-next
-> >
-> > with:
-> > https://lore.kernel.org/patchwork/patch/1018365/
-> >
-> > This change requires the following dependencies:
-> >
-> > include/dt-bindings/power/qcom-rpmpd.h:
-> > https://patchwork.kernel.org/patch/10711119/
-> >
-> > qcom,smmu-v2 binding:
-> > https://patchwork.kernel.org/patch/10581911/
-> >
-> > v7: Add patches to remove interrupt-names, add version specific compatible
-> >     string for gmu
-> > v6: Update GPU bindings for a6xx and make the examples match the nodes and vice
-> >  versa.  Clean up types and rebase on
-> >  https://lore.kernel.org/patchwork/patch/1018365/ to help facilitate merging.
-> > v5: Use symbolic names for the RPMH power levels defined in OPP table,
-> >  move the opp tables as children of their respective nodes and rename
-> >  the iommu device.
-> > v4: Rebase
-> > v3: Split GMU PDC region into two GPU specific sections, fix indentation,
-> >   really use qcom,gmu for the phandle name
-> > v2: changed qcom,arc-level to qcom,level following discussion with Viresh;
-> >   change gmu phandle to qcom,gmu per Rob
-> >
-> > Jordan Crouse (6):
-> >   drm/msm/gpu: Remove hardcoded interrupt name
-> >   drm/msm: drop interrupt-names
-> >   ARM: dts: qcom: Removed unused interrupt-names from GPU node
-> >   arm64: dts: qcom: msm8916: Remove unused interrupt-names from GPU
-> >   dt-bindings: drm/msm/a6xx: Document GMU and update GPU bindings
-> >   arm64: dts: sdm845: Add gpu and gmu device nodes
->
-> I know it's been holidays and everyone (including me) has been on
-> vacation, but just wanted to make sure the current status of this
-> series was explicitly called out.  :-)
->
->
-> I believe patches #1 and #2 are ready to land and will go through your tree.
->
-> Patches #3 and #4 should probably go through Andy's tree and are not
-> urgent (they are just cleanup).  They can sit on the back burner until
-> patches #1 and #2 have hit mainline.  That's a good reason to land #1
-> and #2 sooner.  ;-)
->
-> I think patch #5 is also ready to land.  There's been some
-> bikeshedding about the exact format for the opp table, but none of
-> that bikeshedding affects the bindings that Jordan wrote.  If you
-> agree that this is OK to land, it would also be nice to get in.
->
-> ...then Jordan can spin patch #6 (once Rob H Acks Rajendra's opp
-> bindings) alone at a future date.
->
+On Wed, 2019-01-09 at 10:34 -0800, Andy Lutomirski wrote:
+> > > On Jan 8, 2019, at 10:49 PM, James Bottomley <James.Bottomley@han
+> > > senpartnership.com> wrote:
+> > > 
+> > > On Tue, 2019-01-08 at 17:43 -0800, Andy Lutomirski wrote:
+> > > [Adding Jarkko because this stuff relates to the TPM.]
+> > > Anyway, if we're talking about the TPM, it seems like the entire
+> > > "trusted key" mechanism in the kernel is missing the point.  If I
+> > > want to encrypt something like a hibernation image on a machine
+> > > with a TPM, it makes essentially no sense to me that we would get
+> > > a key with a known raw value that is merely TPM-backed (i.e. the
+> > > "trusted key") and use that to decrypt the image.  The right way
+> > > to do it is to the use the TPM as it was intended to be used:
+> > > generate a single-use key that protects the hibernation image and
+> > > seal *that* directly on the TPM, such that it can only be
+> > > unsealed with appropriate PCR values.  Heck, we could even use
+> > > one of the fancy NV counters such that we *can't* decrypt the
+> > > image later on.  And using HMAC or any AE construction the normal
+> > > way is also wrong -- we should *hash* the image and sign the hash
+> > > directly on the TPM so that the restore code can validate the PCR
+> > > values that were in place when the hibernation image was
+> > > created.  [0]
+> > 
+> > Well, theoretically, trusted keys can be used for PCR sealed
+> > bundles, at least in 1.2 ... I'm not sure the 2.0 one actually
+> > works because you have to construct the policy session outside the
+> > kernel.
+> 
+> I suppose I should go read the 2.0 spec. I’ve read the 1.2 spec, but
+> I always assumed that 2.0 was essentially a superset of 1.2
+> functionality.
 
-I've picked up 1+2 and 5..  I assume it makes more sense for agross to
-pick up the rest?
+It was sold as an incremental upgrade, but in practice, adding crypto
+agility and flexible policy (the main 2.0 enhancements) meant that the
+API is redically different.
 
-BR,
--R
+> > >  Presumably we should at least try to replay the PCR operations
+> > > that have occurred so that we can massage the PCRs into the same
+> > > state post-hibernation.  Also, do we have any way for the kernel
+> > > to sign something with the TPM along with an attestation that the
+> > > signature was requested *by the kernel*?  Something like a sub-
+> > > hierarchy of keys that the kernel explicitly prevents userspace
+> > > from accessing?)
+> > 
+> > We're just growing that now with the TPM asymmetric operations.
+> > Attesting that the kernel requested the signature is harder.  The
+> > TPM can attest to log entries (as it does for the UEFI log and IMA)
+> > and it can certify keys, but that only proves they're TPM resident
+> > not who the requestor was.  Effectively the latter is an assertion
+> > about who knows the key authority, which is hard to prove.
+> 
+> Can the kernel filter TPM 2.0 operations?
+
+There is a proposal for this, but the proposal is on the operations by
+type, not the content.  Meaning we can't really police loading and
+using a kernel key because we can't distinguish whether any key is a
+kernel key.  We can't forbid all key load operations to non-kernel
+because that removes most of the TPM usefulness as a keystore.
+
+>   If so, then a signature that the kernel would have prevented user
+> code from generating is de facto an attestation that the kernel
+> generated it (or that the kernel was compromised, which is sort of
+> equivalent).
+
+The TPM's idea of this is it polices by authorization.  Now one of the
+things we can do here is add what's called locality based
+authorization.  we have three non-uefi localities to play with and we
+could enforce walling one off for the kernel only to use, so a kernel
+key could come with a policy requiring use of the kernel locality for
+use of the key.  That would give you an effective guarantee that only
+the kernel could use this key.  Note the enforcement of locality would
+require a key policy, which is easy for TPM 1.2, but requires the use
+of a policy session for TPM 2.0 which means we'd have to improve our
+policy session handling.
+
+> > > [0] If you take some data, run it through an authenticated
+> > > encryption algorithm, and sign (key, nonce, tag), I think you're
+> > > operating outside of the accepted security definitions if you
+> > > expect this to guarantee that the data wasn't tampered with.  I'm
+> > > reasonably confident that there are quite a few excellent AE
+> > > algorithms that completely fail if used this like this.  In fact,
+> > > pretty much all of the modern fast ones probably fail.  AE is for
+> > > when the key is *secret*.
+> > 
+> > Well, I think here, if we were actually trying to solve the problem
+> > of proving the hibernated image were the same one we would need to
+> > prove some log of the kernel operation came to a particular value
+> > *after* the hibernated image were restored ... it's not really
+> > possible to condition key release which must occur before the
+> > restore on that outcome, so it strikes me we need more than a
+> > simple release bound to PCR values.
+> 
+> I’m not sure I follow. Here are the two properties I’d like to see:
+> 
+> 1. If you have an encrypted hibernation image, the only thing you
+> should be able to do with it is to restore it. So only an actual
+> Linux kernel in hibernation restore mode ought to be able to restore
+> it.  We get this if the image can only be read with appropriate PCRs
+> and then only by the kernel.  This way, you can’t just read out
+> secrets from the image if you steal a laptop — you have to actually
+> boot the thing.
+
+Right, this we can do and if you use a TPM sealed encryption key, you
+can guarantee the image will only restore on the same physical system. 
+You don't need PCRs for this, just the TPM and the locality
+enforcement.
+
+Note if someone has your laptop and the ability to boot their own
+kernels, they could always corrupt the kernel into decrypting the image
+or giving you the unsealed key, but there's no real way of preventing
+that even with PCR sealing or lockdown, so the basis for the threat
+model is very much my laptop in my possession running my kernel.
+
+> 2. You shouldn’t be able to create an intentionally corrupt image
+> that pwns you when you restore it unless you have already pwned the
+> kernel.
+
+So here there's a problem: the policy stated above governs key *use*
+not key creation, so anyone can create a key that has a locality
+restriction.  The way to guarantee that the key was created by
+something that has access to the locality is to have a parent key with
+a locality use policy (key creation requires parent key use
+authorization).  Which means every system would have to create a
+persistent parent key for the kernel to use (the kernel could do this
+and it could be made NV resident for persistence, so it's not
+impossible, just complicated).
+
+> Maybe the “kernel” bit in #1 can be relaxed to “root” without totally
+> defeating the purpose, but if some random non-root process that
+> happens to have access to /dev/tpm* can make a valid-looking TPM
+> image, then I think we fail.  Limiting it to the kernel is only
+> dubiously better than limiting it to root until we implement
+> lockdown, in which case it's important.
+> 
+> #2 only really matters with lockdown.
+> 
+> I suppose that a good summary of my opinion is that there is no point
+> to kernel support for encrypted hibernation images until lockdown is
+> upstream.
+
+I really don't think lockdown helps.  If we implement locality
+isolation for the kernels use of keys, a properly functioning kernel
+isn't going to be tricked into releasing one of its keys to userspace. 
+A buggy kernel might be exploited to cause it to give one up but that
+would happen irrespective of lockdown and, of course, all bets are off
+if the attacker can boot their own kernel.
+
+James
