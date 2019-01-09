@@ -1,62 +1,86 @@
 From: Stephan Mueller <smueller@chronox.de>
 Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Wed, 09 Jan 2019 07:27:28 +0100
-Message-ID: <3239276.QO2kezntxR@tauon.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <1565399.7ulKdI1fm5@tauon.chronox.de> <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+Date: Wed, 09 Jan 2019 07:45:21 +0100
+Message-ID: <309406107.k3W2fMQUza@tauon.chronox.de>
+References: <20190103143227.9138-1-jlee@suse.com> <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net> <1546994671.6077.10.camel@HansenPartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+In-Reply-To: <1546994671.6077.10.camel@HansenPartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 9. Januar 2019, 00:54:22 CET schrieb Andy Lutomirski:
+Am Mittwoch, 9. Januar 2019, 01:44:31 CET schrieb James Bottomley:
 
-Hi Andy,
->=20
-> I think that, if the crypto API is going to grow a KDF facility, it should
-> be done right. Have a key type or flag or whatever that says =E2=80=9Cthi=
-s key may
-> *only* be used to derive keys using such-and-such algorithm=E2=80=9D, and=
- have a
-> helper to derive a key.  That helper should take some useful parameters a=
-nd
-> mix them in:
->=20
-> - What type of key is being derived?  ECDSA signing key?  HMAC key?  AES
-> key?
->=20
-> - Can user code access the derived key?
->=20
-> - What is the key=E2=80=99s purpose?  =E2=80=9CEncrypt and authenticate a=
- hibernation image=E2=80=9D
-> would be a purpose.
->=20
-> - Number of bytes.
->=20
-> All of these parameters should be mixed in to the key derivation.
->=20
-> Also, an AE key, even for AES+HMAC, should be just one derived key.  If y=
-ou
-> need 512 bits, ask for a 512-bit key, not two 256-bit keys.
+Hi James,
 
-I concur with your requirements. However, is the kernel crypto API the righ=
-t=20
-place to enforce such policies? To me, the kernel crypto API is a tinker-to=
-y=20
-set of ciphers.
+> Actually, it would be enormously helpful if we could reuse these pieces
+> for the TPM as well. 
 
-The real policy enforcer would or should be the keyring facility. Thus, may=
- I=20
-propose to:
+Could you please help me understand whether the KDFs in TPM are directly 
+usable as a standalone cipher primitive or does it go together with additional 
+key generation operations?
 
-=2D implement the cryptographic primitive of the KDF in the kernel crypto A=
-PI
+> It has two KDFs: KDFa, which is the CTR-KDF from
+> SP800-108 and KDFe which is the SP800-56A KDF for elliptic curve one
+> pass Diffie Hellman, so if we're going to do the former, I'd really
+> like the latter as well.
+> 
+> The way the TPM parametrises input to both KDFs is
+> 
+> (hashAlg, key, label, contextU, contextV, bits)
+> 
+> Where
+> 
+> hashAlg  = the hash algorithm used as the PRF
+> key      = the input parameter of variable bit size or
+>            the x co-ordinate of the shared point
+> label    = An ASCII string representing the use
+> contextU = public input U
+> contextV = public input V
+> bits     = number of output bits
 
-=2D implement the policy system how to use the KDF in the keyring facility
+When implementing KDFs as an extension of the kernel crypto API's RNG facility 
+we currently have to handle the limitiation of the existing API. The label/
+context data (and when considering RFC 5869 HKDF requring IKM, salt and 
+additional information as input) currently cannot directly be communicated 
+through the API.
+
+The issue is that the RNG facility currently has the following prototype 
+defined:
+
+int (*generate)(struct crypto_rng *tfm,
+                        const u8 *src, unsigned int slen,
+                        u8 *dst, unsigned int dlen);
+
+The src pointer would need to take the label/context data.
+
+Would it be appropriate, to implement a type cast to a structure from the u8 
+pointer?
+
+E.g. for the aforementioned label/context data, we could define something like
+
+struct crypto_kdf_ctr {
+	char *label;
+	size_t label_len;
+	u8 *contextU;
+	size_t contextU_len;
+	u8 *contextV;
+	size_t contextV_len;
+};
+
+And the implementation of the generate function for CTR KDF would then have a 
+type cast along the following lines:
+
+	if (slen != sizeof(struct crypto_kdf_ctr))
+		return -EINVAL;
+	const struct crypto_kdf_ctr *kdf_ctr_input = (struct crypto_kdf_ctr *)src;
+
+
+For different KDFs, different structs would be needed.
 
 Ciao
 Stephan
