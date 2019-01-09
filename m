@@ -1,81 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 1/3] PM / Suspend: Add support to check if platform's
- power is off in suspend
-Date: Wed, 9 Jan 2019 15:14:17 +0100
-Message-ID: <20190109141417.GA8529@amd>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
- <1546944944-13911-2-git-send-email-claudiu.beznea@microchip.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Wed, 09 Jan 2019 07:34:48 -0800
+Message-ID: <1547048088.2879.6.camel@HansenPartnership.com>
+References: <20190103143227.9138-1-jlee@suse.com>
+         <309406107.k3W2fMQUza@tauon.chronox.de>
+         <1547017108.2789.24.camel@HansenPartnership.com>
+         <1894062.aDvIuj92vB@tauon.chronox.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1546944944-13911-2-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <1894062.aDvIuj92vB@tauon.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, broonie@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Stephan Mueller <smueller@chronox.de>
+Cc: Andy Lutomirski <luto@amacapital.net>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 2019-01-09 at 08:05 +0100, Stephan Mueller wrote:
+> Am Mittwoch, 9. Januar 2019, 07:58:28 CET schrieb James Bottomley:
+> 
+> Hi James,
+> 
+> > On Wed, 2019-01-09 at 07:45 +0100, Stephan Mueller wrote:
+> > > Am Mittwoch, 9. Januar 2019, 01:44:31 CET schrieb James
+> > > Bottomley:
+> > > 
+> > > Hi James,
+> > > 
+> > > > Actually, it would be enormously helpful if we could reuse
+> > > > these pieces for the TPM as well.
+> > > 
+> > > Could you please help me understand whether the KDFs in TPM are
+> > > directly usable as a standalone cipher primitive or does it go
+> > > together with additional  key generation operations?
+> > 
+> > They're used as generators ... which means they deterministically
+> > produce keys from what the TPM calls seeds so we can get crypto
+> > agility of TPM 2.0 ... well KDFa does.  KDFe is simply what NIST
+> > recommends you do when using EC for a shared key agreement ... and
+> > really we shouldn't be using ECDH in the kernel without it.
+> > 
+> 
+> Thanks for clarifying. That would mean that indeed we would have
+> hardware-provided KDF implementations that may be usable with the
+> kernel crypto API.
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Just on this point, the TPM doesn't actually provide any KDFa or e API,
+so it can't be used for hardware acceleration (and even if it did, the
+TPM is a pretty slow engine, so software would be faster anyway).  We
+need these algorithms in software because the TPM uses key agreements
+derived from shared secrets to produce session encryption keys to
+ensure confidentiality and integrity (HMAC key), so we establish the
+shared secret then have to derive our key in software and the TPM
+derives the same key internally and we use the shared derived key to
+symmetrically encrypt and/or HMAC secret communications.
 
-Hi!
-
-> Add support to check if platform's power will be cut off in suspend.
-> This will help drivers shared by multiple platforms to take only the
-> necessary actions while suspending/resuming (some platform may not need
-> to save/restore all the registers if platforms remains powered while
-> suspended). In this way suspend/resume time could be improved.
->=20
-> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
-> ---
->  include/linux/suspend.h |  6 ++++++
->  kernel/power/suspend.c  | 13 +++++++++++++
->  2 files changed, 19 insertions(+)
->=20
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 3f529ad9a9d2..21f19b167fe2 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -173,6 +173,9 @@ static inline void dpm_save_failed_step(enum suspend_=
-stat_step step)
->   *	Called by the PM core if the suspending of devices fails.
->   *	This callback is optional and should only be implemented by platforms
->   *	which require special recovery actions in that situation.
-> + *
-> + * @off_in_suspend: Returns wether the platform's power will be cut off =
-at
-
-wether -- spelling?
-
-> @@ -185,6 +188,7 @@ struct platform_suspend_ops {
->  	bool (*suspend_again)(void);
->  	void (*end)(void);
->  	void (*recover)(void);
-> +	bool (*off_in_suspend)(suspend_state_t state);
->  };
-
-Dunno, should it be per-regulator? SoCs commonly have more than one
-power supply, with some of them off during suspend...
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlw2AbkACgkQMOfwapXb+vLmQgCgqAUamz2/knUA9Lf1Tl4BAceL
-vXEAoIbw66S7wi6alwJxvhCaPmHDkJyA
-=BZfz
------END PGP SIGNATURE-----
-
---FCuugMFkClbJLl1L--
+James
