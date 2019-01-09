@@ -1,75 +1,103 @@
-From: Henry Chen <henryc.chen@mediatek.com>
-Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support
- for active state of scpsys on mt8183
-Date: Wed, 9 Jan 2019 11:08:44 +0800
-Message-ID: <1547003324.6818.156.camel@mtksdaap41>
-References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
-         <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
-         <1546859080.6818.128.camel@mtksdaap41>
-         <08d15fa8-7e53-518c-54bb-8050b0e4aabd@linaro.org>
+From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Tue, 8 Jan 2019 21:20:44 -0800
+Message-ID: <CAD=FV=WZkOV95Ka2MVtHtUAYLjzKAZwwe=H87LJCefbm06ogeg@mail.gmail.com>
+References: <20181218183241.12830-1-jcrouse@codeaurora.org>
+ <20181218183241.12830-7-jcrouse@codeaurora.org>
+ <CAD=FV=VRv82aHfd1dQ_8mjtFFu-u_=JxNGz1qYG+5apTsmBz2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <08d15fa8-7e53-518c-54bb-8050b0e4aabd@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Stephen Boyd <swboyd@chromium.org>, Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAD=FV=VRv82aHfd1dQ_8mjtFFu-u_=JxNGz1qYG+5apTsmBz2Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2019-01-07 at 18:34 +0200, Georgi Djakov wrote:
-> Hi Henry,
-> 
-> On 1/7/19 13:04, Henry Chen wrote:
-> > On Thu, 2019-01-03 at 14:53 -0800, Stephen Boyd wrote:
-> >> Quoting Henry Chen (2019-01-02 06:09:51)
-> >>> The patchsets add support for MediaTek hardware module named DVFSRC
-> >>> (dynamic voltage and frequency scaling resource collector). The DVFSRC is
-> >>> a HW module which is used to collect all the requests from both software
-> >>> and hardware and turn into the decision of minimum operating voltage and
-> >>> minimum DRAM frequency to fulfill those requests.
-> >>>
-> >>> So, This series is to implement the dvfsrc driver to collect all the
-> >>> requests of operating voltage or DRAM bandwidth from other device drivers
-> >>> likes GPU/Camera through 2 frameworks basically:
-> >>>
-> >>> 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
-> >>>    requirements from different clients
-> >>
-> >> Have you looked at using the interconnect framework for this instead of
-> >> using PM_QOS_MEMORY_BANDWIDTH? Qcom is pushing an interconnect framework
-> >> to do DRAM bandwidth requirement aggregation.
-> > 
-> > Sorry, I haven't heard that before. Do you mean is following series
-> > patch?
-> > https://patchwork.kernel.org/project/linux-arm-msm/list/?series=53775
-> > 
-> 
-> Yes, this one. The idea is that consumer drivers like GPU, camera, video
-> encoder etc. report their bandwidth needs by using the interconnect API.
-> The framework does the aggregation and configures the hardware. In order
-> to use it you need to implement a platform-specific dvfsrc interconnect
-> provider driver that understands the SoC topology and knows how to
-> configure the hardware. I am not familiar with DVFSRC, but it seems to
-> me that it can fit as interconnect provider.
-> Does this HW module support any QoS priority/latency configuration or is
-> it only bandwidth and voltage?
-> 
-> Thanks,
-> Georgi
-
-Hi Georgi,
-
-Yes, the design is only to support bandwidth and voltage. The one of the
-function is to collect the memory bandwidth requirement from consumer
-and select the minimum DRAM frequency to fulfill system performance.It
-just get the total bandwidth then set it to HW, not involves complex SoC
-topology. So we choose to use PM QOS to model that DVFSRC driver can
-receive the bandwidth information from consumer driver via
-PM_QOS_MEMORY_BANDWIDTH.
-
-Do you have a patch that show how consumer driver used interconnect to
-update their requirement.
-
-Thanks,
-Henry
+SGksCgpPbiBUdWUsIERlYyAxOCwgMjAxOCBhdCAyOjU3IFBNIERvdWcgQW5kZXJzb24gPGRpYW5k
+ZXJzQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4KPiBIaSwKPgo+IE9uIFR1ZSwgRGVjIDE4LCAyMDE4
+IGF0IDEwOjMzIEFNIEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9yYS5vcmc+IHdyb3Rl
+Ogo+ID4KPiA+IEFkZCB0aGUgbm9kZXMgdG8gZGVzY3JpYmUgdGhlIEFkcmVubyBHUFUgYW5kIEdN
+VSBkZXZpY2VzLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IEpvcmRhbiBDcm91c2UgPGpjcm91c2VA
+Y29kZWF1cm9yYS5vcmc+Cj4gPiAtLS0KPiA+Cj4gPiB2NzogVXBkYXRlZCB0aGUgR01VIGNvbXBh
+dGlibGUgc3RyaW5nIGFuZCByZW1vdmVkIGludGVycnVwdC1uYW1lcwo+ID4KPiA+ICBhcmNoL2Fy
+bTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kgfCAxMjIgKysrKysrKysrKysrKysrKysrKysr
+KysrKysrCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDEyMiBpbnNlcnRpb25zKCspCj4gPgo+ID4gZGlm
+ZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJt
+NjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+ID4gaW5kZXggMjMzYTU4OThlYmMyLi40Nzc5
+MDE0ZTRhMDUgMTAwNjQ0Cj4gPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1
+LmR0c2kKPiA+ICsrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQo+ID4g
+QEAgLTExLDYgKzExLDcgQEAKPiA+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvY2xvY2svcWNvbSxy
+cG1oLmg+Cj4gPiAgI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2ludGVycnVwdC1jb250cm9sbGVyL2Fy
+bS1naWMuaD4KPiA+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvcGh5L3BoeS1xY29tLXF1c2IyLmg+
+Cj4gPiArI2luY2x1ZGUgPGR0LWJpbmRpbmdzL3Bvd2VyL3Fjb20tcnBtcGQuaD4KPiA+ICAjaW5j
+bHVkZSA8ZHQtYmluZGluZ3MvcmVzZXQvcWNvbSxzZG04NDUtYW9zcy5oPgo+ID4gICNpbmNsdWRl
+IDxkdC1iaW5kaW5ncy9zb2MvcWNvbSxycG1oLXJzYy5oPgo+ID4gICNpbmNsdWRlIDxkdC1iaW5k
+aW5ncy9jbG9jay9xY29tLGdjYy1zZG04NDUuaD4KPiA+IEBAIC0xMzQ5LDYgKzEzNTAsMTI3IEBA
+Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgICB9Owo+ID4gICAgICAgICAgICAgICAgIH07Cj4g
+Pgo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgIGdwdUA1MDAwMDAwIHsKPgo+IFJlcGVhdGluZyBt
+eSBjb21tZW50cyBmcm9tIHY2Ogo+Cj4gbml0IHRoYXQgeW91J3JlIGFkZGluZyBhbiBleHRyYSBi
+bGFuayBsaW5lIGhlcmUgdGhhdCB5b3UgZG9uJ3QgbmVlZC4KPiBHaXZlbiB0aGUgcXVhbnRpdHkg
+b2Ygb3V0c3RhbmRpbmcgZHRzIHBhdGNoZXMgdGhvdWdoLCBpdCdzIGFsbW9zdAo+IGNlcnRhaW4g
+dGhhdCBBbmR5IHdpbGwgbmVlZCB0byBtYW51YWxseSByZXNvbHZlIGNvbmZsaWN0cyB3aGVuCj4g
+YXBwbHlpbmcgdGhpcyBwYXRjaCBzbyBwcmVzdW1hYmx5IGhlIGNhbiBmaXggdXAgd2hlbiBoZSBs
+YW5kcy4KPgo+IEluIGFueSBjYXNlLCBmZWVsIGZyZWUgdG8gYWRkOgo+Cj4gUmV2aWV3ZWQtYnk6
+IERvdWdsYXMgQW5kZXJzb24gPGRpYW5kZXJzQGNocm9taXVtLm9yZz4KPiBUZXN0ZWQtYnk6IERv
+dWdsYXMgQW5kZXJzb24gPGRpYW5kZXJzQGNocm9taXVtLm9yZz4KPgo+Cj4gPiArICAgICAgICAg
+ICAgICAgICAgICAgICBjb21wYXRpYmxlID0gInFjb20sYWRyZW5vLTYzMC4yIiwgInFjb20sYWRy
+ZW5vIjsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICNzdHJlYW0taWQtY2VsbHMgPSA8MTY+
+Owo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4NTAwMDAwMCAweDQw
+MDAwPiwgPDB4NTA5ZTAwMCAweDEwPjsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHJlZy1u
+YW1lcyA9ICJrZ3NsXzNkMF9yZWdfbWVtb3J5IiwgImN4X21lbSI7Cj4gPiArCj4gPiArICAgICAg
+ICAgICAgICAgICAgICAgICAvKgo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICogTG9vayBt
+YSwgbm8gY2xvY2tzISBUaGUgR1BVIGNsb2NrcyBhbmQgcG93ZXIgYXJlCj4gPiArICAgICAgICAg
+ICAgICAgICAgICAgICAgKiBjb250cm9sbGVkIGVudGlyZWx5IGJ5IHRoZSBHTVUKPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAqLwo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAg
+aW50ZXJydXB0cyA9IDxHSUNfU1BJIDMwMCBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKPiA+ICsKPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgIGlvbW11cyA9IDwmYWRyZW5vX3NtbXUgMD47Cj4gPiAr
+Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICBvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVf
+b3BwX3RhYmxlPjsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHFjb20sZ211ID0g
+PCZnbXU+Owo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZ3B1X29wcF90YWJsZTog
+b3BwLXRhYmxlIHsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJs
+ZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiOwo+Cj4gSSBiZWxpZXZlIHRoYXQg
+dGhlIGNvbnNlbnN1cyBmcm9tIHRoZSB2MiBjb21tZW50cyBhdAo+IDxodHRwczovL3BhdGNod29y
+ay5rZXJuZWwub3JnL3BhdGNoLzEwNzI3MTIxLz4gYXJlIHRoYXQgdGhpcyBzaG91bGQKPiBiZToK
+Pgo+IGNvbXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIiwgIm9wZXJh
+dGluZy1wb2ludHMtdjIiOwo+Cj4gLi4uc2FtZSB3aXRoIHRoZSBvdGhlciBvbmUgYmVsb3cuLi4K
+Ck9LLCBzbyBJIHJlYWQgYW5kIHJlLXJlYWQgYWxsIHRoZSBkaXNjdXNzaW9ucyBhYm91dCB0aGlz
+IHRoYXQgaGF2ZQpoYXBwZW5lZCBzaW5jZSBteSBsYXN0IGVtYWlsIGFuZCBhbHNvIGhhZCBhbiBv
+ZmZsaW5lIGNoYXQgd2l0aCBTdGVwaGVuCmFuZCBJIGJlbGlldmUgdGhlIGRlY2lzaW9uIGlzIF9u
+b3RfIHRvIGRvIHRoZSAib3BlcmF0aW5nLXBvaW50cy12MiIKZmFsbGJhY2sgZXZlbiBpZiB5b3Vy
+IHRhYmxlIGhhcHBlbnMgdG8gaGF2ZSAib3BwLWh6IiBpbiBpdC4gIFNvCnByZXN1bWFibHkgdGhh
+dCdzIHJlc29sdmVkLiAgT25lIHJlYXNvbiB0aGlzIHdvcmtzIE9LIGZvciB1cyBpcyB0aGF0Cndl
+IGhhdmUgdGhlICJvcGVyYXRpbmctcG9pbnRzIiBhcyBhIHN1Yi1ub2RlIG9mIHRoZSBHUFUgYW5k
+IHRodXMgZG9uJ3QKaGF2ZSB0byB3b3JyeSBhYm91dCB0aGUgbWVzc2luZyB3aXRoIHRoZSBza2lw
+IHRhYmxlIHRvIHByZXZlbnQgYQpkZXZpY2UgZnJvbSBiZWluZyBjcmVhdGVkIChhcyBkaXNjdXNz
+ZWQgaW4gdGhlIGNvbW1lbnRzIG9mIHY2KSBbMV0KCi4uLmJ1dCBpbiB0aGUgbWVhbnRpbWUgUmFq
+ZW5kcmEgaGFzIGhhZCB0byBjaGFuZ2UgaGlzIGJpbmRpbmdzLCBzbyB5b3UKc3RpbGwgbmVlZCB0
+byBzcGluIHRoaXMgdG8gYWNjb3VudCBmb3IgUmFqZW5kcmEncyB2OSBiaW5kaW5ncyBbMl0uClNw
+ZWNpZmljYWxseSB5b3UgbmVlZCB0byBtYWtlIGNoYW5nZXMgbGlrZToKCi0gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20t
+bGV2ZWwiOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAib3Bl
+cmF0aW5nLXBvaW50cy12Mi1sZXZlbCI7CgouLi5hbmQ6CgotICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgcWNvbSxsZXZlbCA9CjxSUE1IX1JFR1VMQVRPUl9MRVZFTF9UVVJC
+T19MMT47CisgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBvcHAtbGV2ZWwg
+PQo8UlBNSF9SRUdVTEFUT1JfTEVWRUxfVFVSQk9fTDE+OwoKLi4ud2hlbiB5b3Ugc3BpbiBmb3Ig
+dGhpcywgcGxlYXNlIG1ha2Ugc3VyZSB5b3UgYWNjb3VudCBmb3IgdGhlIG5pdAooYmxhbmsgbGlu
+ZSkgSSBjb21tZW50ZWQgYWJvdXQgYWJvdmUuCgotRG91ZwoKWzFdIGh0dHBzOi8vbG9yZS5rZXJu
+ZWwub3JnL2xpbnV4LWFybS1rZXJuZWwvN2UzMTA0MTYtNzhkMy1iN2U1LTUwMTMtMGJjYzhiZmQw
+MzUxQGNvZGVhdXJvcmEub3JnLwpbMl0gaHR0cHM6Ly9sa21sLmtlcm5lbC5vcmcvci8yMDE5MDEw
+NzEwMDk1OS4xNDUyOC0yLXJuYXlha0Bjb2RlYXVyb3JhLm9yZwpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVk
+cmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
