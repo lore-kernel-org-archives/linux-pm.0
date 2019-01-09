@@ -1,57 +1,62 @@
-From: Pi-Hsun Shih <pihsun@chromium.org>
-Subject: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
-Date: Wed,  9 Jan 2019 13:57:24 +0800
-Message-ID: <20190109055724.184692-1-pihsun@chromium.org>
+From: Stephan Mueller <smueller@chronox.de>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Wed, 09 Jan 2019 07:27:28 +0100
+Message-ID: <3239276.QO2kezntxR@tauon.chronox.de>
+References: <20190103143227.9138-1-jlee@suse.com> <1565399.7ulKdI1fm5@tauon.chronox.de> <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: Pi-Hsun Shih <pihsun@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC
-        support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC
-        support" <linux-mediatek@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The mtk_thermal struct contains a 'struct mtk_thermal_bank banks[];',
-but the allocation only allocates sizeof(struct mtk_thermal) bytes,
-which cause out of bound access with the ->banks[] member. Change it to
-a fixed size array instead.
+Am Mittwoch, 9. Januar 2019, 00:54:22 CET schrieb Andy Lutomirski:
 
-Signed-off-by: Pi-Hsun Shih <pihsun@chromium.org>
----
- drivers/thermal/mtk_thermal.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Hi Andy,
+>=20
+> I think that, if the crypto API is going to grow a KDF facility, it should
+> be done right. Have a key type or flag or whatever that says =E2=80=9Cthi=
+s key may
+> *only* be used to derive keys using such-and-such algorithm=E2=80=9D, and=
+ have a
+> helper to derive a key.  That helper should take some useful parameters a=
+nd
+> mix them in:
+>=20
+> - What type of key is being derived?  ECDSA signing key?  HMAC key?  AES
+> key?
+>=20
+> - Can user code access the derived key?
+>=20
+> - What is the key=E2=80=99s purpose?  =E2=80=9CEncrypt and authenticate a=
+ hibernation image=E2=80=9D
+> would be a purpose.
+>=20
+> - Number of bytes.
+>=20
+> All of these parameters should be mixed in to the key derivation.
+>=20
+> Also, an AE key, even for AES+HMAC, should be just one derived key.  If y=
+ou
+> need 512 bits, ask for a 512-bit key, not two 256-bit keys.
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 0691f260f6eabe..ea11edb3fcced6 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -159,6 +159,9 @@
- #define MT7622_NUM_SENSORS_PER_ZONE	1
- #define MT7622_TS1	0
- 
-+/* The maximum number of banks */
-+#define MAX_NUM_ZONES		8
-+
- struct mtk_thermal;
- 
- struct thermal_bank_cfg {
-@@ -178,7 +181,7 @@ struct mtk_thermal_data {
- 	const int *sensor_mux_values;
- 	const int *msr;
- 	const int *adcpnp;
--	struct thermal_bank_cfg bank_data[];
-+	struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
- };
- 
- struct mtk_thermal {
-@@ -197,7 +200,7 @@ struct mtk_thermal {
- 	s32 vts[MT8173_NUM_SENSORS];
- 
- 	const struct mtk_thermal_data *conf;
--	struct mtk_thermal_bank banks[];
-+	struct mtk_thermal_bank banks[MAX_NUM_ZONES];
- };
- 
- /* MT8173 thermal sensor data */
--- 
-2.20.1.97.g81188d93c3-goog
+I concur with your requirements. However, is the kernel crypto API the righ=
+t=20
+place to enforce such policies? To me, the kernel crypto API is a tinker-to=
+y=20
+set of ciphers.
+
+The real policy enforcer would or should be the keyring facility. Thus, may=
+ I=20
+propose to:
+
+=2D implement the cryptographic primitive of the KDF in the kernel crypto A=
+PI
+
+=2D implement the policy system how to use the KDF in the keyring facility
+
+Ciao
+Stephan
