@@ -1,77 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Wed, 9 Jan 2019 23:19:28 +0100
-Message-ID: <20190109221928.GA32688@amd>
-References: <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
- <1565399.7ulKdI1fm5@tauon.chronox.de>
- <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
- <1546994671.6077.10.camel@HansenPartnership.com>
- <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
- <1547016579.2789.17.camel@HansenPartnership.com>
- <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
- <1547063189.2879.47.camel@HansenPartnership.com>
- <CALCETrWKUTKp1tO00fPcbtm5vu2b4CHJQ6XcmkrWJY9P1h+mzA@mail.gmail.com>
- <1547070220.2758.4.camel@HansenPartnership.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: [PATCH v2] PM/runtime: Fix 'jiffies' in comments after move to
+ hrtimers
+Date: Thu, 10 Jan 2019 00:19:44 +0100
+Message-ID: <20190109231944.GA21177@lenoch>
+References: <20190109172336.GA1711@lenoch>
+ <CAJZ5v0iZRUaAb-eiodgByZiEAe8AWxk9G2p8zHK45J-LuXgaAA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1547070220.2758.4.camel@HansenPartnership.com>
+In-Reply-To: <CAJZ5v0iZRUaAb-eiodgByZiEAe8AWxk9G2p8zHK45J-LuXgaAA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+PM-runtime now uses the hrtimers infrastructure for autosuspend, however
+comments still reference 'jiffies'.
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using hrtimers")
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+---
+ Changes:
+ -v2: Reword comment accoring to Rafael's suggestion
 
-Hi!
+ drivers/base/power/runtime.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-> > > Note if someone has your laptop and the ability to boot their own
-> > > kernels, they could always corrupt the kernel into decrypting the
-> > > image or giving you the unsealed key, but there's no real way of
-> > > preventing that even with PCR sealing or lockdown, so the basis for
-> > > the threat model is very much my laptop in my possession running my
-> > > kernel.
-> >=20
-> > I'm not entirely sure I agree.  With a TPM-aware bootloader, it
-> > really ought to be possible to seal to PCRs such that a corrupted
-> > kernel can't restore the image.  Obviously a *compromised* but
-> > otherwise valid kernel will be able to restore the image.
->=20
-> It is possible to seal the key so that only the same booted kernel can
-> restore the image, yes.  One of the measurements that goes into the
-> boot log is the hash of the kernel and you can seal to this value ...
-> obviously if you upgrade your kernel RPM (or shim or grub) this value
-> changes and you'd lose the ability to restore the hibernated image, but
-> since the image is very kernel specific, that's probably OK.
-
-Non-ancient kernels actually support hibernation by one kernel and
-restore by another one.
-
-But yes, normally it is same kernel binary doing hibernation and
-restore.
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlw2c3AACgkQMOfwapXb+vJsLQCfQpFcrOhA1gXr6iyY8t2KD3C7
-e9wAnR2l05dQ/Z/mafMvvKDMZM5JLHog
-=KQIG
------END PGP SIGNATURE-----
-
---82I3+IH0IqGh5yIs--
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 70624695b6d5..a282e74d1a16 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -121,7 +121,7 @@ static void pm_runtime_cancel_pending(struct device *dev)
+  * Compute the autosuspend-delay expiration time based on the device's
+  * power.last_busy time.  If the delay has already expired or is disabled
+  * (negative) or the power.use_autosuspend flag isn't set, return 0.
+- * Otherwise return the expiration time in jiffies (adjusted to be nonzero).
++ * Otherwise return the expiration time in nanoseconds (adjusted to be nonzero).
+  *
+  * This function may be called either with or without dev->power.lock held.
+  * Either way it can be racy, since power.last_busy may be updated at any time.
+@@ -905,7 +905,10 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+ 
+ 	expires = dev->power.timer_expires;
+-	/* If 'expire' is after 'jiffies' we've been called too early. */
++	/*
++	 * If 'expires' is after the current time, we've been called
++	 * too early.
++	 */
+ 	if (expires > 0 && expires < ktime_to_ns(ktime_get())) {
+ 		dev->power.timer_expires = 0;
+ 		rpm_suspend(dev, dev->power.timer_autosuspends ?
+-- 
+2.20.1
