@@ -1,101 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Wed, 9 Jan 2019 14:24:00 +0530
-Message-ID: <20190109085400.mscuzezwxta4fpfh@vireshk-i7>
-References: <1547021248-27258-1-git-send-email-tdas@codeaurora.org>
+From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v7 6/6] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Wed, 9 Jan 2019 15:02:17 +0530
+Message-ID: <ead09599-f4f7-d505-8e22-4eb1869f9cf1@codeaurora.org>
+References: <20181218183241.12830-1-jcrouse@codeaurora.org>
+ <20181218183241.12830-7-jcrouse@codeaurora.org>
+ <CAD=FV=VRv82aHfd1dQ_8mjtFFu-u_=JxNGz1qYG+5apTsmBz2Q@mail.gmail.com>
+ <CAD=FV=WZkOV95Ka2MVtHtUAYLjzKAZwwe=H87LJCefbm06ogeg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1547021248-27258-1-git-send-email-tdas@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAD=FV=WZkOV95Ka2MVtHtUAYLjzKAZwwe=H87LJCefbm06ogeg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-01-19, 13:37, Taniya Das wrote:
-> @@ -98,6 +107,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-
-You are only using this "dev" parameter for dev_dbg(), instead of that
-pass cpu_dev pointer.
-
->  			table[i].frequency = CPUFREQ_ENTRY_INVALID;
->  		} else {
->  			table[i].frequency = freq;
-> +			dev_pm_opp_add(get_cpu_device(policy->cpu),
-> +					freq * 1000, volt);
->  			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
->  				freq, core_count);
->  		}
-> @@ -116,6 +127,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->  			if (prev_cc != max_cores) {
->  				prev->frequency = prev_freq;
->  				prev->flags = CPUFREQ_BOOST_FREQ;
-> +				dev_pm_opp_add(get_cpu_device(policy->cpu),
-> +						prev_freq * 1000, volt);
->  			}
-> 
->  			break;
-> @@ -127,6 +140,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-> 
->  	table[i].frequency = CPUFREQ_TABLE_END;
->  	policy->freq_table = table;
-> +	dev_pm_opp_set_sharing_cpus(get_cpu_device(policy->cpu), policy->cpus);
-
-and then all the above sites can be simplified a bit.
-
->  	return 0;
->  }
-> @@ -159,10 +173,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  	struct device *dev = &global_pdev->dev;
->  	struct of_phandle_args args;
->  	struct device_node *cpu_np;
-> +	struct device *cpu_dev;
->  	struct resource *res;
->  	void __iomem *base;
->  	int ret, index;
-> 
-> +	cpu_dev = get_cpu_device(policy->cpu);
-> +	if (!cpu_dev) {
-> +		pr_err("%s: failed to get cpu%d device\n", __func__,
-> +		       policy->cpu);
-> +		return -ENODEV;
-> +	}
-> +
->  	cpu_np = of_cpu_device_node_get(policy->cpu);
->  	if (!cpu_np)
->  		return -EINVAL;
-> @@ -205,6 +227,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  		goto error;
->  	}
-> 
-> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
-> +	if (ret <= 0) {
-> +		dev_err(cpu_dev, "OPP table is not ready\n");
-
-Rather say "Failed to add OPPs\n".
-
-> +		goto error;
-> +	}
-> +
->  	policy->fast_switch_possible = true;
-> 
->  	return 0;
-> @@ -217,6 +245,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	void __iomem *base = policy->driver_data - REG_PERF_STATE;
-> 
-> +	dev_pm_opp_remove_all_dynamic(&global_pdev->dev);
-
-This is platform device's device structure, while you added the OPPs
-using cpu_dev. You sure this will work ?
-
->  	kfree(policy->freq_table);
->  	devm_iounmap(&global_pdev->dev, base);
-> 
-> --
-> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-> of the Code Aurora Forum, hosted by the  Linux Foundation.
-
--- 
-viresh
+CgpPbiAxLzkvMjAxOSAxMDo1MCBBTSwgRG91ZyBBbmRlcnNvbiB3cm90ZToKPiAuLi5idXQgaW4g
+dGhlIG1lYW50aW1lIFJhamVuZHJhIGhhcyBoYWQgdG8gY2hhbmdlIGhpcyBiaW5kaW5ncywgc28g
+eW91Cj4gc3RpbGwgbmVlZCB0byBzcGluIHRoaXMgdG8gYWNjb3VudCBmb3IgUmFqZW5kcmEncyB2
+OSBiaW5kaW5ncyBbMl0uCj4gU3BlY2lmaWNhbGx5IHlvdSBuZWVkIHRvIG1ha2UgY2hhbmdlcyBs
+aWtlOgo+IAo+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJv
+cGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwiOwo+ICsgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgY29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLWxldmVsIjsKCnNvIHRo
+ZXJlJ3Mgbm93IGEgdjEwIFsxXSBhbmQgdGhlIG5ldyBjb21wYXRpYmxlIGlzIGNvbXBsZXRlbHkg
+ZHJvcHBlZCBhbmQgb3BwLWxldmVsCmlzIG5vdyBhbiBvcHRpb25hbCBwcm9wZXJ0eSB1c2luZyB0
+aGUgZGVmYXVsdCAib3BlcmF0aW5nLXBvaW50cy12MiIKCnNvIHRoZSBjaGFuZ2Ugc2hvdWxkIGJl
+Ci0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJvcGVyYXRpbmct
+cG9pbnRzLXYyLXFjb20tbGV2ZWwiOworICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNv
+bXBhdGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12MiI7CgpbMV0gaHR0cHM6Ly9sa21sLm9yZy9s
+a21sLzIwMTkvMS85LzE1MgoKLS0gClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVhbGNv
+bW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJvcmEgRm9y
+dW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVu
+b0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
