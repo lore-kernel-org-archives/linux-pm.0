@@ -1,53 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: scmi: Fix frequency invariance in slow path
-Date: Wed, 09 Jan 2019 11:56:06 +0100
-Message-ID: <5435767.4D6MIGYIVi@aspire.rjw.lan>
-References: <20190109104236.6532-1-quentin.perret@arm.com> <20190109104511.mi3gtdcytkky4eyn@vireshk-i7>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v10 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
+Date: Wed, 9 Jan 2019 10:57:57 +0000
+Message-ID: <20190109105757.2rowxn3anzyycuod@queper01-lin>
+References: <20181203095628.11858-1-quentin.perret@arm.com>
+ <20181203095628.11858-16-quentin.perret@arm.com>
+ <20190108203813.GS261387@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190109104511.mi3gtdcytkky4eyn@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <20190108203813.GS261387@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Quentin Perret <quentin.perret@arm.com>
-Cc: sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, qais.yousef@arm.com
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 9, 2019 11:45:11 AM CET Viresh Kumar wrote:
-> On 09-01-19, 10:42, Quentin Perret wrote:
-> > The scmi-cpufreq driver calls the arch_set_freq_scale() callback on
-> > frequency changes to provide scale-invariant load-tracking signals to
-> > the scheduler. However, in the slow path, it does so while specifying
-> > the current and max frequencies in different units, hence resulting in a
-> > broken freq_scale factor.
-> > 
-> > Fix this by passing all frequencies in KHz, as stored in the CPUFreq
-> > frequency table.
-> > 
-> > Fixes: 99d6bdf33877 ("cpufreq: add support for CPU DVFS based on SCMI
-> > message protocol")
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > ---
-> >  drivers/cpufreq/scmi-cpufreq.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-> > index 50b1551ba894..3f0693439486 100644
-> > --- a/drivers/cpufreq/scmi-cpufreq.c
-> > +++ b/drivers/cpufreq/scmi-cpufreq.c
-> > @@ -52,9 +52,9 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
-> >  	int ret;
-> >  	struct scmi_data *priv = policy->driver_data;
-> >  	struct scmi_perf_ops *perf_ops = handle->perf_ops;
-> > -	u64 freq = policy->freq_table[index].frequency * 1000;
-> > +	u64 freq = policy->freq_table[index].frequency;
-> >  
-> > -	ret = perf_ops->freq_set(handle, priv->domain_id, freq, false);
-> > +	ret = perf_ops->freq_set(handle, priv->domain_id, freq * 1000, false);
-> >  	if (!ret)
-> >  		arch_set_freq_scale(policy->related_cpus, freq,
-> >  				    policy->cpuinfo.max_freq);
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Matthias ,
 
-This would be stable-candidate I guess?
+On Tuesday 08 Jan 2019 at 12:38:13 (-0800), Matthias Kaehlcke wrote:
+> >  static int cpufreq_init(struct cpufreq_policy *policy)
+> >  {
+> > +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
+> >  	struct cpufreq_frequency_table *freq_table;
+> >  	struct opp_table *opp_table = NULL;
+> >  	struct private_data *priv;
+> > @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	unsigned int transition_latency;
+> >  	bool fallback = false;
+> >  	const char *name;
+> > -	int ret;
+> > +	int ret, nr_opp;
+> >  
+> >  	cpu_dev = get_cpu_device(policy->cpu);
+> >  	if (!cpu_dev) {
+> > @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  		ret = -EPROBE_DEFER;
+> >  		goto out_free_opp;
+> >  	}
+> > +	nr_opp = ret;
+> >  
+> >  	if (fallback) {
+> >  		cpumask_setall(policy->cpus);
+> > @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency = transition_latency;
+> >  	policy->dvfs_possible_from_any_cpu = true;
+> >  
+> > +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
+> 
+> Shouldn't there also be a function to unregister a perf domain to be
+> called from cpufreq_exit()?
+> 
+> ->exit() is called on suspend when the CPUs are taken offline, and
+> ->init() on resume, hence em_register_perf_domain() is called multiple
+> times, but without doing any cleanup.
+
+Right, but this is safe to do as em_register_perf_domain() checks for
+the existence of the domain straight away. So the second time you call
+this em_register_perf_domain() should just bail out. Are you seeing an
+issue with this ?
+
+As of now, the EM framework is really simple -- it justs allocates the
+pd tables once during boot, and they stay in memory forever. While
+arguably less than optimal, that makes things a whole lot easier to
+manage on the client side (i.e. the scheduler) w/o needing RCU
+protection or so.
+
+Thanks,
+Quentin
