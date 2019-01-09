@@ -1,106 +1,70 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Tue, 08 Jan 2019 16:44:31 -0800
-Message-ID: <1546994671.6077.10.camel@HansenPartnership.com>
-References: <20190103143227.9138-1-jlee@suse.com>
-         <4499700.LRS4F2YjjC@tauon.chronox.de>
-         <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
-         <1565399.7ulKdI1fm5@tauon.chronox.de>
-         <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
+Date: Wed, 9 Jan 2019 02:42:18 +0100
+Message-ID: <20190109014218.GA8363@linaro.org>
+References: <20190107233833.GI5544@atomide.com>
+ <CAKfTPtDBEmcsLotp-6K1KU1wM9Ba1EpMp3niXScRxYgzjs0nog@mail.gmail.com>
+ <20190108155354.GL5544@atomide.com>
+ <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
+ <20190108213743.GN5544@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+Content-Disposition: inline
+In-Reply-To: <20190108213743.GN5544@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>, Stephan Mueller <smueller@chronox.de>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2019-01-08 at 15:54 -0800, Andy Lutomirski wrote:
-> > On Jan 7, 2019, at 11:09 PM, Stephan Mueller <smueller@chronox.de>
-> > wrote:
+Le Tuesday 08 Jan 2019 � 13:37:43 (-0800), Tony Lindgren a �crit :
+> * Vincent Guittot <vincent.guittot@linaro.org> [190108 16:42]:
+> > On Tue, 8 Jan 2019 at 16:53, Tony Lindgren <tony@atomide.com> wrote:
+> > > Hmm so could it be that we now rely on timers that that may
+> > > not be capable of waking up the system from idle states with
+> > > hrtimer?
 > > 
-> > Am Dienstag, 8. Januar 2019, 06:03:58 CET schrieb Herbert Xu:
-> > 
-> > Hi Herbert,
-> > 
-> > > Are we going to have multiple implementations for the same KDF?
-> > > If not then the crypto API is not a good fit.  To consolidate
-> > > multiple implementations of the same KDF, simply provide helpers
-> > > for them.
-> > 
-> > It is unlikely to have multiple implementations of a KDF. However,
-> > KDFs relate to hashes like block chaining modes to raw block
-> > ciphers. Thus a KDF can be applied with different hashes.
-> > 
-> > My idea was to add template support to RNGs (because KDFs are
-> > effectively a type of RNG since they produce an arbitrary output
-> > from a fixed input). The KDFs would be a template wrapping hashes.
-> > For example, the CTR-KDF from SP800-108 could be instantiated like
-> > kdf-ctr(sha256).
-> > 
-> > 
+> > With nohz and hrtimer enabled,  timer relies on hrtimer to generate
+> > the tick so you should use the same interrupt.
 > 
-> I think that, if the crypto API is going to grow a KDF facility, it
-> should be done right. Have a key type or flag or whatever that says
-> “this key may *only* be used to derive keys using such-and-such
-> algorithm”, and have a helper to derive a key.  That helper should
-> take some useful parameters and mix them in:
+> OK yeah looks like that part is working just fine.
 > 
-> - What type of key is being derived?  ECDSA signing key?  HMAC
-> key?  AES key?
+> Adding some printks and debugging over ssh, looks like
+> omap8250_runtime_resume() gets called just fine based on a wakeirq,
+> but then omap8250_runtime_suspend() runs immediately instead of
+> waiting for the three second timeout.
 > 
-> - Can user code access the derived key?
+> Lowering the autosuspend_delay_ms to 2100 ms makes things work again.
+> Anything higher than 2200 ms seems to somehow time out immediately
+> now :)
+
+This is quite close to the max ns of an int on arm 32bits
+
+Could you try the patch below ?
+
+---
+ drivers/base/power/runtime.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 7062469..44c5c76 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -141,7 +141,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+ 
+ 	last_busy = READ_ONCE(dev->power.last_busy);
+ 
+-	expires = last_busy + autosuspend_delay * NSEC_PER_MSEC;
++	expires = last_busy + (u64)(autosuspend_delay) * NSEC_PER_MSEC;
+ 	if (expires <= now)
+ 		expires = 0;	/* Already expired. */
+ 
+-- 
+2.7.4
+
+
 > 
-> - What is the key’s purpose?  “Encrypt and authenticate a hibernation
-> image” would be a purpose.
+> Regards,
 > 
-> - Number of bytes.
-> 
-> All of these parameters should be mixed in to the key derivation.
-> 
-> Also, an AE key, even for AES+HMAC, should be just one derived
-> key.  If you need 512 bits, ask for a 512-bit key, not two 256-bit
-> keys.
-
-Actually, it would be enormously helpful if we could reuse these pieces
-for the TPM as well.  It has two KDFs: KDFa, which is the CTR-KDF from
-SP800-108 and KDFe which is the SP800-56A KDF for elliptic curve one
-pass Diffie Hellman, so if we're going to do the former, I'd really
-like the latter as well.
-
-The way the TPM parametrises input to both KDFs is
-
-(hashAlg, key, label, contextU, contextV, bits)
-
-Where
-
-hashAlg  = the hash algorithm used as the PRF
-key      = the input parameter of variable bit size or
-           the x co-ordinate of the shared point
-label    = An ASCII string representing the use
-contextU = public input U
-contextV = public input V
-bits     = number of output bits
-
-Is that a good enough parametrisation (not the only way you distinguish
-uses is with the label, which is not recoverable)?  ContextU and
-ContextV are simply concatenated to form the full Context of SP800-108, 
-but we tend to need two separate inputs (for KDFe they're the public x
-co-ordinates of the points of the two inputs to ECDH for instance; in
-KDFa they're usually the local and remote nonces).
-
-The labels for TPM usage are things like "INTEGRITY" for HMAC keys or
-"CFB" when generating an aes128-cfb session key. For KDFe, the tpm
-seems to like the label "SECRET".  Although the TPM specifies fixed
-short strings for the label, nothing prevents them being longer like
-the purpose you state above (essentially we could mix purpose, use and
-key type into the label and the contexts).
-
->From the point of view of accelerators, the only thing you really need
-to know is the hash algorthim (PRF), because everything else above is
-an input to the function, so I suppose it makes sense to name them as
-kdf-X(PRF)  where X would be ctr or ecdh and PRF would be a hash.
-
-James
+> Tony
