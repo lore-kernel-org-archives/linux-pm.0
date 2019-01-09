@@ -1,43 +1,75 @@
-From: Stephan Mueller <smueller@chronox.de>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Wed, 09 Jan 2019 19:18:13 +0100
-Message-ID: <2049180.FbvvROCS3Z@tauon.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <2344329.gmPllosFfp@tauon.chronox.de> <20190109173454.GB249140@gmail.com>
+From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v7 0/6] arm64: dts: Add sdm845 GPU/GMU and
+ SMMU
+Date: Wed, 9 Jan 2019 10:20:20 -0800
+Message-ID: <CAD=FV=XLWUwkQLStKzV5DGji0WNEk44ft51NTWJmQNG7GW4Rkg@mail.gmail.com>
+References: <20181218183241.12830-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190109173454.GB249140@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181218183241.12830-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 9. Januar 2019, 18:34:55 CET schrieb Eric Biggers:
-
-Hi Eric,
-
-> That would not meet my performance requirements as I want to precompute
-> HKDF-Extract, and then do HKDF-Expand many times.  Also the HKDF-Expand part
-> should be thread-safe and not require allocating memory, especially not a
-> whole crypto_shash tfm every time.
-> 
-> So presumably with crypto_rng, crypto_rng_reset() would need to take the
-> input keyring material and salt and do HKDF-Extract (like my
-> fscrypt_init_hkdf()), and crypto_rng_generate() would need to take the
-> application-specific info string and do HKDF-Expand (like my
-> fscrypt_hkdf_expand()).
-
-Great, that was the idea I had in mind as well. Maybe the example was not 
-right to convey that. Let me work on that.
-> 
-> It is ugly though.  Please also consider just having simple crypto_hkdf_*()
-> helper functions which wrap a HMAC tfm along the lines of my patch, rather
-> than shoehorning it into the crypto_rng API.
-> 
-> - Eric
-
-
-
-Ciao
-Stephan
+SGkgUm9iLAoKT24gVHVlLCBEZWMgMTgsIDIwMTggYXQgMTA6MzIgQU0gSm9yZGFuIENyb3VzZSA8
+amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4KPiBOb3cgdGhhdCBtb3JlIG9mIHRoZSBz
+ZG04NDUgYmluZGluZ3MgYXJlIGhlYWRlZCB1cHN0cmVhbSB0aGlzIGEgcmVmcmVzaCBvZgo+IG9m
+IGh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9yZy9zZXJpZXMvMzkzMDgvIHRvIGFkZCBi
+aW5kaW5ncyBhbmQgbm9kZXMKPiBmb3IgdGhlIEdQVS9HTVUgYW5kIEdQVSBTTU1VIGZvciBzZG04
+NDUuIHY3IG9mIHRoaXMgcGF0Y2hzZXQgYWxzbyByZW1vdmVzCj4gaW50ZXJydXB0LW5hbWVzIGZy
+b20gdGhlIGRyaXZlciBhbmQgdGhlIGV4aXN0aW5nIERUIGNoYW5nZXMgcGVyIGZlZWRiYWNrIGZy
+b20KPiBSb2IgSGVycmluZy4KPgo+IFRoaXMgaXMgYmFzZWQgb24gOgo+IGdpdDovL2dpdC5rZXJu
+ZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9hZ3Jvc3MvbGludXguZ2l0IGZvci1uZXh0
+Cj4KPiB3aXRoOgo+IGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3BhdGNod29yay9wYXRjaC8xMDE4
+MzY1Lwo+Cj4gVGhpcyBjaGFuZ2UgcmVxdWlyZXMgdGhlIGZvbGxvd2luZyBkZXBlbmRlbmNpZXM6
+Cj4KPiBpbmNsdWRlL2R0LWJpbmRpbmdzL3Bvd2VyL3Fjb20tcnBtcGQuaDoKPiBodHRwczovL3Bh
+dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNzExMTE5Lwo+Cj4gcWNvbSxzbW11LXYyIGJpbmRp
+bmc6Cj4gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDU4MTkxMS8KPgo+IHY3
+OiBBZGQgcGF0Y2hlcyB0byByZW1vdmUgaW50ZXJydXB0LW5hbWVzLCBhZGQgdmVyc2lvbiBzcGVj
+aWZpYyBjb21wYXRpYmxlCj4gICAgIHN0cmluZyBmb3IgZ211Cj4gdjY6IFVwZGF0ZSBHUFUgYmlu
+ZGluZ3MgZm9yIGE2eHggYW5kIG1ha2UgdGhlIGV4YW1wbGVzIG1hdGNoIHRoZSBub2RlcyBhbmQg
+dmljZQo+ICB2ZXJzYS4gIENsZWFuIHVwIHR5cGVzIGFuZCByZWJhc2Ugb24KPiAgaHR0cHM6Ly9s
+b3JlLmtlcm5lbC5vcmcvcGF0Y2h3b3JrL3BhdGNoLzEwMTgzNjUvIHRvIGhlbHAgZmFjaWxpdGF0
+ZSBtZXJnaW5nLgo+IHY1OiBVc2Ugc3ltYm9saWMgbmFtZXMgZm9yIHRoZSBSUE1IIHBvd2VyIGxl
+dmVscyBkZWZpbmVkIGluIE9QUCB0YWJsZSwKPiAgbW92ZSB0aGUgb3BwIHRhYmxlcyBhcyBjaGls
+ZHJlbiBvZiB0aGVpciByZXNwZWN0aXZlIG5vZGVzIGFuZCByZW5hbWUKPiAgdGhlIGlvbW11IGRl
+dmljZS4KPiB2NDogUmViYXNlCj4gdjM6IFNwbGl0IEdNVSBQREMgcmVnaW9uIGludG8gdHdvIEdQ
+VSBzcGVjaWZpYyBzZWN0aW9ucywgZml4IGluZGVudGF0aW9uLAo+ICAgcmVhbGx5IHVzZSBxY29t
+LGdtdSBmb3IgdGhlIHBoYW5kbGUgbmFtZQo+IHYyOiBjaGFuZ2VkIHFjb20sYXJjLWxldmVsIHRv
+IHFjb20sbGV2ZWwgZm9sbG93aW5nIGRpc2N1c3Npb24gd2l0aCBWaXJlc2g7Cj4gICBjaGFuZ2Ug
+Z211IHBoYW5kbGUgdG8gcWNvbSxnbXUgcGVyIFJvYgo+Cj4gSm9yZGFuIENyb3VzZSAoNik6Cj4g
+ICBkcm0vbXNtL2dwdTogUmVtb3ZlIGhhcmRjb2RlZCBpbnRlcnJ1cHQgbmFtZQo+ICAgZHJtL21z
+bTogZHJvcCBpbnRlcnJ1cHQtbmFtZXMKPiAgIEFSTTogZHRzOiBxY29tOiBSZW1vdmVkIHVudXNl
+ZCBpbnRlcnJ1cHQtbmFtZXMgZnJvbSBHUFUgbm9kZQo+ICAgYXJtNjQ6IGR0czogcWNvbTogbXNt
+ODkxNjogUmVtb3ZlIHVudXNlZCBpbnRlcnJ1cHQtbmFtZXMgZnJvbSBHUFUKPiAgIGR0LWJpbmRp
+bmdzOiBkcm0vbXNtL2E2eHg6IERvY3VtZW50IEdNVSBhbmQgdXBkYXRlIEdQVSBiaW5kaW5ncwo+
+ICAgYXJtNjQ6IGR0czogc2RtODQ1OiBBZGQgZ3B1IGFuZCBnbXUgZGV2aWNlIG5vZGVzCgpJIGtu
+b3cgaXQncyBiZWVuIGhvbGlkYXlzIGFuZCBldmVyeW9uZSAoaW5jbHVkaW5nIG1lKSBoYXMgYmVl
+biBvbgp2YWNhdGlvbiwgYnV0IGp1c3Qgd2FudGVkIHRvIG1ha2Ugc3VyZSB0aGUgY3VycmVudCBz
+dGF0dXMgb2YgdGhpcwpzZXJpZXMgd2FzIGV4cGxpY2l0bHkgY2FsbGVkIG91dC4gIDotKQoKCkkg
+YmVsaWV2ZSBwYXRjaGVzICMxIGFuZCAjMiBhcmUgcmVhZHkgdG8gbGFuZCBhbmQgd2lsbCBnbyB0
+aHJvdWdoIHlvdXIgdHJlZS4KClBhdGNoZXMgIzMgYW5kICM0IHNob3VsZCBwcm9iYWJseSBnbyB0
+aHJvdWdoIEFuZHkncyB0cmVlIGFuZCBhcmUgbm90CnVyZ2VudCAodGhleSBhcmUganVzdCBjbGVh
+bnVwKS4gIFRoZXkgY2FuIHNpdCBvbiB0aGUgYmFjayBidXJuZXIgdW50aWwKcGF0Y2hlcyAjMSBh
+bmQgIzIgaGF2ZSBoaXQgbWFpbmxpbmUuICBUaGF0J3MgYSBnb29kIHJlYXNvbiB0byBsYW5kICMx
+CmFuZCAjMiBzb29uZXIuICA7LSkKCkkgdGhpbmsgcGF0Y2ggIzUgaXMgYWxzbyByZWFkeSB0byBs
+YW5kLiAgVGhlcmUncyBiZWVuIHNvbWUKYmlrZXNoZWRkaW5nIGFib3V0IHRoZSBleGFjdCBmb3Jt
+YXQgZm9yIHRoZSBvcHAgdGFibGUsIGJ1dCBub25lIG9mCnRoYXQgYmlrZXNoZWRkaW5nIGFmZmVj
+dHMgdGhlIGJpbmRpbmdzIHRoYXQgSm9yZGFuIHdyb3RlLiAgSWYgeW91CmFncmVlIHRoYXQgdGhp
+cyBpcyBPSyB0byBsYW5kLCBpdCB3b3VsZCBhbHNvIGJlIG5pY2UgdG8gZ2V0IGluLgoKLi4udGhl
+biBKb3JkYW4gY2FuIHNwaW4gcGF0Y2ggIzYgKG9uY2UgUm9iIEggQWNrcyBSYWplbmRyYSdzIG9w
+cApiaW5kaW5ncykgYWxvbmUgYXQgYSBmdXR1cmUgZGF0ZS4KCgotRG91ZwpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0
+CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
+cC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
