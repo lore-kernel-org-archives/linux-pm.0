@@ -1,76 +1,83 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
-Date: Wed, 9 Jan 2019 17:55:46 +0100
-Message-ID: <CAKfTPtD4ZnRDKF6wG_AdX-5+R0cW0=uwj9Ww6y7O0xocuL+bkQ@mail.gmail.com>
-References: <20190107233833.GI5544@atomide.com> <CAKfTPtDBEmcsLotp-6K1KU1wM9Ba1EpMp3niXScRxYgzjs0nog@mail.gmail.com>
- <20190108155354.GL5544@atomide.com> <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
- <20190108213743.GN5544@atomide.com> <20190109014218.GA8363@linaro.org>
- <20190109015124.GO5544@atomide.com> <CAJZ5v0hi5sVESKPbZoniikOhNxdUDtJhQrs39Fib8B03MYoMMQ@mail.gmail.com>
- <20190109162846.GP5544@atomide.com> <CAKfTPtBzE9fqDgUOJ4uTj_Dtfe2KCp+R4FajAaQqpV02upQZJA@mail.gmail.com>
- <20190109165004.GQ5544@atomide.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 2/3] regulator: core: add helper to check if regulator
+ is disabled in suspend
+Date: Wed, 9 Jan 2019 16:57:06 +0000
+Message-ID: <20190109165706.GG10405@sirena.org.uk>
+References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+ <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190109165004.GQ5544@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Ladislav Michl <ladis@linux-mips.org>
+Content-Type: multipart/mixed; boundary="===============4827744518063021447=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Claudiu.Beznea@microchip.com
+Cc: len.brown@intel.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, Ludovic.Desroches@microchip.com, pavel@ucw.cz, linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 9 Jan 2019 at 17:50, Tony Lindgren <tony@atomide.com> wrote:
->
-> * Vincent Guittot <vincent.guittot@linaro.org> [190109 16:48]:
-> > On Wed, 9 Jan 2019 at 17:28, Tony Lindgren <tony@atomide.com> wrote:
-> > >
-> > > * Rafael J. Wysocki <rafael@kernel.org> [190109 09:44]:
-> > > > On Wed, Jan 9, 2019 at 2:51 AM Tony Lindgren <tony@atomide.com> wro=
-te:
-> > > > >
-> > > > > * Vincent Guittot <vincent.guittot@linaro.org> [190109 01:42]:
-> > > > > > Le Tuesday 08 Jan 2019 =C3=A0 13:37:43 (-0800), Tony Lindgren a=
- =C3=A9crit :
-> > > > > > > Lowering the autosuspend_delay_ms to 2100 ms makes things wor=
-k again.
-> > > > > > > Anything higher than 2200 ms seems to somehow time out immedi=
-ately
-> > > > > > > now :)
-> > > > > >
-> > > > > > This is quite close to the max ns of an int on arm 32bits
-> > > > > >
-> > > > > > Could you try the patch below ?
-> > > > >
-> > > > > Yup great thanks, that's it:
-> > > > >
-> > > > > Tested-by: Tony Lindgren <tony@atomide.com>
-> > > >
-> > > > Cool.  Thanks for getting to the bottom of this!
-> > >
-> > > No problem.
-> > >
-> > > One more thing I noticed: The 25% slack can get noticeable
-> > > for larger values. For things like a 3 second uart console
-> > > timeout slack of 750 ms is quite large variation.
-> > >
-> > > Should we have a limit of max 100 ms for the slack?
-> >
-> > Keep in mind that when jiffies were used, expires was rounded to a
-> > full second when delay was greater than a second. So you could already
-> > have difference of up 990ms on arm before this patch
-> > And i don't take into account the rework of timer infra which add
-> > another level of variation, something like up to 640 ms more when the
-> > timer is greater than 2880 ms for arm IIRC
->
-> I think it was rounded up earlier.
->
-> Don't we get rounded down now also?
 
-We still round up. In hrtimer we have :
-timer->_softexpires =3D time;
-timer->node.expires =3D ktime_add_safe(time, delta);
-so the hrtimer will expire between "time" and "time+delta"
+--===============4827744518063021447==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="KR/qxknboQ7+Tpez"
+Content-Disposition: inline
 
->
-> Regards,
->
-> Tony
+
+--KR/qxknboQ7+Tpez
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Jan 08, 2019 at 10:56:32AM +0000, Claudiu.Beznea@microchip.com wrot=
+e:
+> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+>=20
+> Add helper to check if regulator will be disabled in suspend.
+>=20
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+
+This feels like it's the wrong way round - if this is configurable I'd
+expect something to configure the suspend mode and then for that to
+arrange to configure the regulator appropriately (along with anything
+else that needs doing) rather than to infer the configuration from the
+regulator state which feels fragile.  But based on the cover letter
+that's kind of like what the initial proposal about target states was so
+perhaps this is the way we end up going...  this certainly looks a lot
+less impactful that the target state stuff though.
+
+--KR/qxknboQ7+Tpez
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlw2J+IACgkQJNaLcl1U
+h9DcRQf/f2syn6A2vAA52taqMOX2yicco2vyAygNn47KH3gVlPg1zONPpEQpIgbA
+bLBFQrcsF6qDNKhaFtuyoAf6OhTW0Zhx7GMGpiUAeGO1MhG4YH1KYw+bGMG6BxW6
+QwaIOK15x1wagCtuI+837xmUUaWDHESLog4uvgpg7lEjZxfeXgsiPc9pCkLlrI2o
+2ed96DyT4s/wHdwz61gi5INpScrynAEfzkyHhluYnHVES+6yS52E3NhipLgqbIj8
+EhunSZJQFh+QpM3AG5ithO237q3mvPsKV0tUmBjWRZsuL/xrUlqd26J7iDye/52r
+CZzk8FIhWeH/0fODpyARFAjqacYa5Q==
+=Oh5J
+-----END PGP SIGNATURE-----
+
+--KR/qxknboQ7+Tpez--
+
+
+--===============4827744518063021447==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============4827744518063021447==--
