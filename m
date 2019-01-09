@@ -1,76 +1,90 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH] cpufreq: scmi: Fix frequency invariance in slow path
-Date: Wed, 9 Jan 2019 11:07:52 +0000
-Message-ID: <20190109110749.6ry4fxujkmrpcl7y@queper01-lin>
-References: <20190109104236.6532-1-quentin.perret@arm.com>
- <5435767.4D6MIGYIVi@aspire.rjw.lan>
- <20190109105902.ytnolu2gldhana4c@queper01-lin>
- <1798133.Rn2TxhOzAS@aspire.rjw.lan>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v4 07/15] Platform: OLPC: Use BIT() and GENMASK() for
+ event masks
+Date: Wed, 9 Jan 2019 13:14:08 +0200
+Message-ID: <CAHp75Vf=B4TxZ5ETXaezQAm3HGzQ6cNkApwxq+3_fw92phumkw@mail.gmail.com>
+References: <20190108175818.705110-1-lkundrak@v3.sk>
+ <20190108175818.705110-8-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1798133.Rn2TxhOzAS@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, qais.yousef@arm.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190108175818.705110-8-lkundrak@v3.sk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, James Cameron <quozl@laptop.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Platform Driver <platform-driver-x86@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 09 Jan 2019 at 12:03:49 (+0100), Rafael J. Wysocki wrote:
-> On Wednesday, January 9, 2019 11:59:05 AM CET Quentin Perret wrote:
-> > On Wednesday 09 Jan 2019 at 11:56:06 (+0100), Rafael J. Wysocki wrote:
-> > > On Wednesday, January 9, 2019 11:45:11 AM CET Viresh Kumar wrote:
-> > > > On 09-01-19, 10:42, Quentin Perret wrote:
-> > > > > The scmi-cpufreq driver calls the arch_set_freq_scale() callback on
-> > > > > frequency changes to provide scale-invariant load-tracking signals to
-> > > > > the scheduler. However, in the slow path, it does so while specifying
-> > > > > the current and max frequencies in different units, hence resulting in a
-> > > > > broken freq_scale factor.
-> > > > > 
-> > > > > Fix this by passing all frequencies in KHz, as stored in the CPUFreq
-> > > > > frequency table.
-> > > > > 
-> > > > > Fixes: 99d6bdf33877 ("cpufreq: add support for CPU DVFS based on SCMI
-> > > > > message protocol")
-> > > > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > > > > ---
-> > > > >  drivers/cpufreq/scmi-cpufreq.c | 4 ++--
-> > > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > > 
-> > > > > diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-> > > > > index 50b1551ba894..3f0693439486 100644
-> > > > > --- a/drivers/cpufreq/scmi-cpufreq.c
-> > > > > +++ b/drivers/cpufreq/scmi-cpufreq.c
-> > > > > @@ -52,9 +52,9 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
-> > > > >  	int ret;
-> > > > >  	struct scmi_data *priv = policy->driver_data;
-> > > > >  	struct scmi_perf_ops *perf_ops = handle->perf_ops;
-> > > > > -	u64 freq = policy->freq_table[index].frequency * 1000;
-> > > > > +	u64 freq = policy->freq_table[index].frequency;
-> > > > >  
-> > > > > -	ret = perf_ops->freq_set(handle, priv->domain_id, freq, false);
-> > > > > +	ret = perf_ops->freq_set(handle, priv->domain_id, freq * 1000, false);
-> > > > >  	if (!ret)
-> > > > >  		arch_set_freq_scale(policy->related_cpus, freq,
-> > > > >  				    policy->cpuinfo.max_freq);
-> > > > 
-> > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > 
-> > > This would be stable-candidate I guess?
-> > 
-> > I think so yes. I was hoping the 'Fixes:' tag would be enough ?
-> 
-> It doesn't cause -stable to pick up commits automatically if that's
-> what you're asking about.
+On Tue, Jan 8, 2019 at 7:58 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
 >
-> > Or do I still need to CC stable too ?
-> 
-> No, you don't need to (and should not) CC -stable yourself.
-> 
-> You can, however, add a Cc: <stable..> tag to the patch which helps
-> maintainers a bit.
+> Just a cosmetic tidy-up.
+>
 
-OK, will do from now on.
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
-Thanks !
-Quentin
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+>
+> ---
+> Changes since v1:
+> - This patch was added to the set.
+>
+>  include/linux/olpc-ec.h | 23 ++++++++++++-----------
+>  1 file changed, 12 insertions(+), 11 deletions(-)
+>
+> diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
+> index e28f72416a57..c4602364e909 100644
+> --- a/include/linux/olpc-ec.h
+> +++ b/include/linux/olpc-ec.h
+> @@ -2,6 +2,8 @@
+>  #ifndef _LINUX_OLPC_EC_H
+>  #define _LINUX_OLPC_EC_H
+>
+> +#include <linux/bits.h>
+> +
+>  /* XO-1 EC commands */
+>  #define EC_FIRMWARE_REV                        0x08
+>  #define EC_WRITE_SCI_MASK              0x1b
+> @@ -17,17 +19,16 @@
+>  #define EC_EXT_SCI_QUERY               0x85
+>
+>  /* SCI source values */
+> -#define EC_SCI_SRC_EMPTY        0x00
+> -#define EC_SCI_SRC_GAME         0x01
+> -#define EC_SCI_SRC_BATTERY      0x02
+> -#define EC_SCI_SRC_BATSOC       0x04
+> -#define EC_SCI_SRC_BATERR       0x08
+> -#define EC_SCI_SRC_EBOOK        0x10    /* XO-1 only */
+> -#define EC_SCI_SRC_WLAN         0x20    /* XO-1 only */
+> -#define EC_SCI_SRC_ACPWR        0x40
+> -#define EC_SCI_SRC_BATCRIT      0x80
+> -#define EC_SCI_SRC_GPWAKE       0x100   /* XO-1.5 only */
+> -#define EC_SCI_SRC_ALL          0x1FF
+> +#define EC_SCI_SRC_GAME         BIT(0)
+> +#define EC_SCI_SRC_BATTERY      BIT(1)
+> +#define EC_SCI_SRC_BATSOC       BIT(2)
+> +#define EC_SCI_SRC_BATERR       BIT(3)
+> +#define EC_SCI_SRC_EBOOK        BIT(4)    /* XO-1 only */
+> +#define EC_SCI_SRC_WLAN         BIT(5)    /* XO-1 only */
+> +#define EC_SCI_SRC_ACPWR        BIT(6)
+> +#define EC_SCI_SRC_BATCRIT      BIT(7)
+> +#define EC_SCI_SRC_GPWAKE       BIT(8)   /* XO-1.5 only */
+> +#define EC_SCI_SRC_ALL          GENMASK(8, 0)
+>
+>  struct platform_device;
+>
+> --
+> 2.20.1
+>
+
+
+-- 
+With Best Regards,
+Andy Shevchenko
