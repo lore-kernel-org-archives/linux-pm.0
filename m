@@ -1,116 +1,301 @@
 From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Wed, 9 Jan 2019 10:34:42 -0800
-Message-ID: <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
-References: <20190103143227.9138-1-jlee@suse.com> <4499700.LRS4F2YjjC@tauon.chronox.de>
- <20190108050358.llsox32hggn2jioe@gondor.apana.org.au> <1565399.7ulKdI1fm5@tauon.chronox.de>
- <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net> <1546994671.6077.10.camel@HansenPartnership.com>
- <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com> <1547016579.2789.17.camel@HansenPartnership.com>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Wed, 9 Jan 2019 10:47:42 -0800
+Message-ID: <CALCETrUprUNLci+tQ+P7PV3PvS4ruxz5jrGH3R_FDV4SFp3r9g@mail.gmail.com>
+References: <20190103143227.9138-1-jlee@suse.com> <20190106181026.GA15256@amd>
+ <20190107173743.GC4210@linux-l9pv.suse> <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
+ <20190109163958.GG9503@linux-l9pv.suse>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1547016579.2789.17.camel@HansenPartnership.com>
+In-Reply-To: <20190109163958.GG9503@linux-l9pv.suse>
 Sender: linux-kernel-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
+To: joeyli <jlee@suse.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
->> On Jan 8, 2019, at 10:49 PM, James Bottomley <James.Bottomley@hansenpart=
-nership.com> wrote:
->>
->> On Tue, 2019-01-08 at 17:43 -0800, Andy Lutomirski wrote:
->> [Adding Jarkko because this stuff relates to the TPM.]
+On Wed, Jan 9, 2019 at 8:40 AM joeyli <jlee@suse.com> wrote:
 >
->> Anyway, if we're talking about the TPM, it seems like the entire
->> "trusted key" mechanism in the kernel is missing the point.  If I
->> want to encrypt something like a hibernation image on a machine with
->> a TPM, it makes essentially no sense to me that we would get a key
->> with a known raw value that is merely TPM-backed (i.e. the "trusted
->> key") and use that to decrypt the image.  The right way to do it is
->> to the use the TPM as it was intended to be used: generate a single-
->> use key that protects the hibernation image and seal *that* directly
->> on the TPM, such that it can only be unsealed with appropriate PCR
->> values.  Heck, we could even use one of the fancy NV counters such
->> that we *can't* decrypt the image later on.  And using HMAC or any AE
->> construction the normal way is also wrong -- we should *hash* the
->> image and sign the hash directly on the TPM so that the restore code
->> can validate the PCR values that were in place when the hibernation
->> image was created.  [0]
+> Hi Andy,
 >
-> Well, theoretically, trusted keys can be used for PCR sealed bundles,
-> at least in 1.2 ... I'm not sure the 2.0 one actually works because you
-> have to construct the policy session outside the kernel.
-
-I suppose I should go read the 2.0 spec. I=E2=80=99ve read the 1.2 spec, bu=
-t I
-always assumed that 2.0 was essentially a superset of 1.2
-functionality.
-
->>  Presumably we should at least try to replay the PCR operations that
->> have occurred so that we can massage the PCRs into the same state
->> post-hibernation.  Also, do we have any way for the kernel to sign
->> something with the TPM along with an attestation that the signature
->> was requested *by the kernel*?  Something like a sub-hierarchy of
->> keys that the kernel explicitly prevents userspace from accessing?)
+> Thanks for your review!
 >
-> We're just growing that now with the TPM asymmetric operations.
-> Attesting that the kernel requested the signature is harder.  The TPM
-> can attest to log entries (as it does for the UEFI log and IMA) and it
-> can certify keys, but that only proves they're TPM resident not who the
-> requestor was.  Effectively the latter is an assertion about who knows
-> the key authority, which is hard to prove.
+> On Tue, Jan 08, 2019 at 01:41:48PM -0800, Andy Lutomirski wrote:
+> > > On Jan 7, 2019, at 9:37 AM, joeyli <jlee@suse.com> wrote:
+> > >
+> > > Hi Pavel,
+> > >
+> > > Thanks for your review!
+> > >
+> > >> On Sun, Jan 06, 2019 at 07:10:27PM +0100, Pavel Machek wrote:
+> > >> Hi!
+> > >>
+> > >>> This patchset is the implementation of encryption and authenticatio=
+n
+> > >>> for hibernate snapshot image. The image will be encrypted by AES an=
+d
+> > >>> authenticated by HMAC.
+> > >>
+> > >> Ok, so you encrypt.
+> > >
+> > > Yes, encryption and authentication.
+> > >
+> > >>> The hibernate function can be used to snapshot memory pages to an i=
+mage,
+> > >>> then kernel restores the image to memory space in a appropriate tim=
+e.
+> > >>> There have secrets in snapshot image and cracker may modifies it fo=
+r
+> > >>> hacking system. Encryption and authentication of snapshot image can=
+ protect
+> > >>> the system.
+> > >>>
+> > >>> Hibernate function requests the master key through key retention se=
+rvice.
+> > >>> The snapshot master key can be a trusted key or a user defined key.=
+ The
+> > >>> name of snapshot master key is fixed to "swsusp-kmk". User should l=
+oads
+> > >>> swsusp-kmk to kernel by keyctl tool before the hibernation resume.
+> > >>> e.g. The swsusp-kmk must be loaded before systemd-hibernate-resume
+> > >>
+> > >> But if userspace has a key, encryption is useless against root.
+> > >
+> > > Yes, but this concern is not only for hibernation encryption. This pa=
+tch
+> > > set does not provide solution against this concern.
+> > >
+> > > The purpose of this patch set is to encrypt and authenticate hibernat=
+e
+> > > snapshot image in kernel space. It also requests key through keyring
+> > > mechanism. Which means that we can easy to adapt to new key type from
+> > > keyring in the future.
+> > >
+> > > Currently TPM trusted key or user defined key types are not against
+> > > root. Even using the TPM trusted key, it still can be unsealed by roo=
+t
+> > > before the PCRs be capped (unless we capped PCRs in kernel).
+> > >
+> > > My solution for keeping the secret by kernel is the EFI secure key ty=
+pe:
+> > >    https://lkml.org/lkml/2018/8/5/31
+> > >
+> > > But the EFI boot variable doesn't design for keeping secret, so Windo=
+ws
+> > > and OEM/ODM do not use boot variable to keep secret. So this idea can
+> > > not be accepted. We must think other key type against root.
+> > >
+> > >>> The TPM trusted key type is preferred to be the master key. But use=
+r
+> > >>> defined key can also be used for testing or when the platform doesn=
+'t
+> > >>> have TPM. User must be aware that the security of user key relies o=
+n
+> > >>> user space. If the root account be compromised, then the user key w=
+ill
+> > >>> easy to be grabbed.
+> > >>
+> > >> In the TPM case, does userland have access to the key?
+> > >
+> > > In the TPM case, userland can only touch the sealed key blob. So user=
+land
+> > > doesn't know the real secret. But it has risk that root unseals the k=
+ey
+> > > before PCRs be capped.
+> > >
+> > >> Please explain your security goals.
+> > >
+> > > My security goals:
+> > >
+> > > - Encrypt and authicate hibernate snapshot image in kernel space. Use=
+rspace
+> > >  can only touch an encrypted and signed snapshot image.
+> >
+> > Signed?
+> >
+> > I=E2=80=99m not entirely convinced that the keyring mechanism is what y=
+ou
+> > want. ISTM that there are two goals here:
+> >
+> > a) Encryption: it should be as hard as can reasonably be arranged to
+> > extract secrets from a hibernation image.
+> >
+> > b) Authentication part 1: it should not be possible for someone in
+> > possession of a turned-off machine to tamper with the hibernation
+> > image such that the image, when booted, will leak its secrets. This
+> > should protect against attackers who don=E2=80=99t know the encryption =
+key.
+> >
+> > c) Authentication part 2: it should be to verify, to the extent
+> > practical, that the image came from the same machine and was really
+> > created using hibernation.  Or maybe by the same user.
+> >
+> > For (a) and (b), using an AE mode where the key is protected in some
+> > reasonable way.  Joey, why are you using HMAC?  Please tell me you=E2=
+=80=99re
+> > at least doing encrypt-then-MAC.  But why not use a real AE mode like
+> > AES-GCM?
+>
+> The reason for using HMAC is the history for development. My first patch
+> set is only for hibernate authentication. Then I added encryption code on
+> top of my authentication patches in last version.
+>
+> I am doing encrypt-then-MAC. My code ecrypts each page by AES then HMAC
+> whole snapshot image. I feed encrypted data pages one by one to
+> crypto_shash_update() API for calculating the hash for whole image.
 
-Can the kernel filter TPM 2.0 operations?  If so, then a signature
-that the kernel would have prevented user code from generating is de
-facto an attestation that the kernel generated it (or that the kernel
-was compromised, which is sort of equivalent).
+...
+
+I think you should write down a clear description of the data format.
+A general problem with crypto is that the fact that it appears to work
+doesn't mean it's secure at all, and it's very hard to follow the
+code.  Especially in Linux using the crypto API -- code using the
+crypto API tends to be mostly boilerplate.
 
 >
->> [0] If you take some data, run it through an authenticated encryption
->> algorithm, and sign (key, nonce, tag), I think you're operating
->> outside of the accepted security definitions if you expect this to
->> guarantee that the data wasn't tampered with.  I'm reasonably
->> confident that there are quite a few excellent AE algorithms that
->> completely fail if used this like this.  In fact, pretty much all of
->> the modern fast ones probably fail.  AE is for when the key is
->> *secret*.
+> >
+> >
+> > I reviewed the code a bit.  Here are some thoughts:
+> >
+
 >
-> Well, I think here, if we were actually trying to solve the problem of
-> proving the hibernated image were the same one we would need to prove
-> some log of the kernel operation came to a particular value *after* the
-> hibernated image were restored ... it's not really possible to
-> condition key release which must occur before the restore on that
-> outcome, so it strikes me we need more than a simple release bound to
-> PCR values.
+> > You=E2=80=99re explicitly checking that it=E2=80=99s not zero, and I do=
+n=E2=80=99t see why.
+> >
+>
+> That's because I use trampoline page to forward the key from boot
+> kernel to resume kernel for next hibernation cycle. When resuming,
+> the empty key means that the boot kernel didn't forward valid key
+> to resume kernel. Then the key initial failed, hibernation can not
+> be triggered in next cycle.
+>
 
-I=E2=80=99m not sure I follow. Here are the two properties I=E2=80=99d like=
- to see:
+This seems like a poor design.  If you need some indication of "there
+is no key", then implement that.  Don't use a special all-zero value
+to mean something special.
 
-1. If you have an encrypted hibernation image, the only thing you
-should be able to do with it is to restore it. So only an actual Linux
-kernel in hibernation restore mode ought to be able to restore it.  We
-get this if the image can only be read with appropriate PCRs and then
-only by the kernel.  This way, you can=E2=80=99t just read out secrets from
-the image if you steal a laptop =E2=80=94 you have to actually boot the thi=
-ng.
+>
+> > the acceptable usage of trusted keys?
+> >
+>
+> Sorry for I didn't capture the meaning of "acceptable usage". The trusted
+> key already be unsealed by TPM when the key be enrolled by keyctl tool.
+> So my code just extract the unsealed key data (the random number) for
+> encryption.
 
-2. You shouldn=E2=80=99t be able to create an intentionally corrupt image t=
-hat
-pwns you when you restore it unless you have already pwned the kernel.
+If someone creates a trusted key that is used for asymmetric crypto or
+perhaps a trusted key that is intended to be used for, say, an HMAC
+key, you should not also use it to derive hibernation keys.  This is
+what I mean by "acceptable usage".
 
-Maybe the =E2=80=9Ckernel=E2=80=9D bit in #1 can be relaxed to =E2=80=9Croo=
-t=E2=80=9D without totally
-defeating the purpose, but if some random non-root process that
-happens to have access to /dev/tpm* can make a valid-looking TPM
-image, then I think we fail.  Limiting it to the kernel is only
-dubiously better than limiting it to root until we implement lockdown,
-in which case it's important.
+>
+> > You are using a non-ephemeral key and generating a fresh IV each time.
+> > This is probably okay, but it=E2=80=99s needlessly fragile. Just genera=
+te an
+> > entirely fresh key each time, please.  You also seem to be doing
+> > encrypt-and-MAC, which is not generally considered acceptable. And
+>
+> I have thought about using one time key before. But that means I need
+> attach the key with snapshot image. Keyring API doesn't provide interface
+> for other kernel subsystem to feed an encrypted key blob, so I choice
+> to use non-ephemeral key that's enrolled by userland through keyctl. I
+> can change to one time key if keyring subsystem allows to be modified.
 
-#2 only really matters with lockdown.
+I don't see what this has to do with the keyring API.  If you want a
+one time key in the hibernation code, generate a one-time key in the
+hibernation code and wrap the key accordingly.
 
-I suppose that a good summary of my opinion is that there is no point
-to kernel support for encrypted hibernation images until lockdown is
-upstream.
 
---Andy
+>
+> The encrypt-and-MAC is not acceptable? I am OK to change to other way
+> just I hope that I can encrypt/decrypt page one by one for the reason
+> that I just mentioned.
+>
+> > you=E2=80=99re not authenticating everything =E2=80=94 just the data. T=
+his seems very
+> > weak.
+> >
+>
+> Is it too weak? Why?
+>
+> There have three parts of an snapshot image:
+>         image header :: page table pages :: data pages
+>
+> The real data are in data pages. I thought that encrypt/hmac data pages
+> can protect sensitive data in pages and also avoid those pages be arbitra=
+ry
+> modified. IMHO arbitrary modifing page table pages is easy to cause
+> resume kernel crashed.
+
+First you need to define *why* you're authenticating anything.  But I
+would guess that under any reasonable security model, a tampered-with
+image should not be able to take over the system.  And, if you don't
+protect the page tables, then it's probably quite easy to tamper with
+an image such that the HMAC is unaffected but the image takes over the
+system.
+
+I think that, if this series goes in at all, it should authenticate
+the *entire* image.  (But you still have to define what "authentic"
+even means.  "It passed an HMAC check" is not a good definition.)
+
+>
+> > Can you explain the trampoline?  It looks like you are using it to
+> > tell the resumed kernel that it was tampered with. If so, NAK to that.
+> > Just abort.
+> >
+>
+> The main job of trampoline page is using by boot kernel to forward
+> key to resume kernel for next hibernation cycle. The authorization result
+> is just an add on.
+>
+> In resume process, the key will be loaded in early boot stage. Either in
+> EFI stub (EFI secure key type, be rejected by EFI subsystem) or initrd. O=
+n
+> the other hand, PCRs may capped after TPM trusted key be loaded. So resum=
+e
+> kernel has no chance to load or unseal key again. The only way to get the
+> unsealed/decrypted key is from boot kernel.
+>
+> The trampoline page is an empty page that it's pre-reserved in snapshot i=
+mage
+> when hibernation. When resuming, this trampoline page will be written by =
+boot
+> kernel to fill unsealed key. Then resume kernel will check the trampoline
+> page to take the key. If the key is empty(zero), which means that boot
+> kernel didn't forward valid key because some reasons. Either the key is
+> broken (EFI key be erased) or userspace didn't enroll key to boot kernel.
+> That's why I check the zero key in code.
+
+I don't follow this at all.  After reading the code, I couldn't figure
+out which stage generates the trampoline, which stage reads the
+trampoline, and where there are any keys at all in the trampoline.
+
+There are effectively three kernels:
+
+a) The kernel that gets hibernated and generates the hibernation
+image.  This kernel obviously has access to all the keying
+information, although some of that information may actually be
+resident on the TPM and not in memory.
+
+b) The boot kernel that reads the hibernation image.
+
+c) The resumed kernel.  This kernel has the same code as (a) but
+possibly different PCRs.
+
+If the encryption is going to protect anything at all, then kernel (b)
+needs to have a way to get the key, which is presumably done using the
+TPM, since it's not obvious to me that there's any other credible way
+to do it.  (A passphrase could also make sense, but then you'd just
+put the hibernation image on a dm-crypt volume and the problem is
+solved.)  Kernel (c) shouldn't need to do any crypto, since, by the
+time any code in kernel (c) executes at all, you've already decrypted
+everything and you've effectively committed to trusting the
+hibernation image.
+
+If something goes wrong when you hibernate a second time, this means
+that the first hibernation screwed up and corrupted something, e.g.
+PCRs.  That should be fixed independently of this series IMO.
+
+So I still don't get what the trampoline is for.
