@@ -1,69 +1,47 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
-Date: Wed, 9 Jan 2019 08:50:04 -0800
-Message-ID: <20190109165004.GQ5544@atomide.com>
-References: <20190107233833.GI5544@atomide.com>
- <CAKfTPtDBEmcsLotp-6K1KU1wM9Ba1EpMp3niXScRxYgzjs0nog@mail.gmail.com>
- <20190108155354.GL5544@atomide.com>
- <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
- <20190108213743.GN5544@atomide.com>
- <20190109014218.GA8363@linaro.org>
- <20190109015124.GO5544@atomide.com>
- <CAJZ5v0hi5sVESKPbZoniikOhNxdUDtJhQrs39Fib8B03MYoMMQ@mail.gmail.com>
- <20190109162846.GP5544@atomide.com>
- <CAKfTPtBzE9fqDgUOJ4uTj_Dtfe2KCp+R4FajAaQqpV02upQZJA@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Thu, 10 Jan 2019 00:51:39 +0800
+Message-ID: <20190109165139.GH9503@linux-l9pv.suse>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <20190106181026.GA15256@amd>
+ <20190107173743.GC4210@linux-l9pv.suse>
+ <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
+ <20190109163958.GG9503@linux-l9pv.suse>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtBzE9fqDgUOJ4uTj_Dtfe2KCp+R4FajAaQqpV02upQZJA@mail.gmail.com>
+In-Reply-To: <20190109163958.GG9503@linux-l9pv.suse>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Ladislav Michl <ladis@linux-mips.org>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Vincent Guittot <vincent.guittot@linaro.org> [190109 16:48]:
-> On Wed, 9 Jan 2019 at 17:28, Tony Lindgren <tony@atomide.com> wrote:
-> >
-> > * Rafael J. Wysocki <rafael@kernel.org> [190109 09:44]:
-> > > On Wed, Jan 9, 2019 at 2:51 AM Tony Lindgren <tony@atomide.com> wrote:
-> > > >
-> > > > * Vincent Guittot <vincent.guittot@linaro.org> [190109 01:42]:
-> > > > > Le Tuesday 08 Jan 2019 à 13:37:43 (-0800), Tony Lindgren a écrit :
-> > > > > > Lowering the autosuspend_delay_ms to 2100 ms makes things work again.
-> > > > > > Anything higher than 2200 ms seems to somehow time out immediately
-> > > > > > now :)
-> > > > >
-> > > > > This is quite close to the max ns of an int on arm 32bits
-> > > > >
-> > > > > Could you try the patch below ?
-> > > >
-> > > > Yup great thanks, that's it:
-> > > >
-> > > > Tested-by: Tony Lindgren <tony@atomide.com>
-> > >
-> > > Cool.  Thanks for getting to the bottom of this!
-> >
-> > No problem.
-> >
-> > One more thing I noticed: The 25% slack can get noticeable
-> > for larger values. For things like a 3 second uart console
-> > timeout slack of 750 ms is quite large variation.
-> >
-> > Should we have a limit of max 100 ms for the slack?
+On Thu, Jan 10, 2019 at 12:39:58AM +0800, joeyli wrote:
+> Hi Andy,
+>
+[...snip] 
 > 
-> Keep in mind that when jiffies were used, expires was rounded to a
-> full second when delay was greater than a second. So you could already
-> have difference of up 990ms on arm before this patch
-> And i don't take into account the rework of timer infra which add
-> another level of variation, something like up to 640 ms more when the
-> timer is greater than 2880 ms for arm IIRC
+> Let's why I encrypt/decrypt data pages one by one, then I copy the
+^^^^^^^ That's why
 
-I think it was rounded up earlier.
+> encrypt/decrypt data from buffer page (only one buffer page reserved
+> for encrypt/decrypt) to original page. I encreypt pages one by one, but
+> I HMAC and verify the whole snapshot image by update mode.
+> 
+[...snip]
+>  
+> > Why are you manually supporting three different key types?  Can’t you
+> > just somehow support all key types?  And shouldn’t you be verifying
+> 
+> I only supported two key typs in my patch set, user defined key and
+> TPM trusted key. The EFI secure boot did not accept by EFI subsystem.
+                   ^^^^^^^^^^^^^^^^^^^ EFI secure key
+   https://lkml.org/lkml/2018/8/5/10
 
-Don't we get rounded down now also?
+Sorry for I produced too many typo when feeling sleepy...
 
-Regards,
-
-Tony
+Thanks a lot!
+Joey Lee
