@@ -1,68 +1,106 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v4 00/15] Add support for OLPC XO 1.75 Embedded Controller
-Date: Wed, 9 Jan 2019 13:15:35 +0200
-Message-ID: <CAHp75VcDXmARXAyE1tPouj0cLqg1Ohs5hq+LZ7dsoGY8pJWO2g@mail.gmail.com>
-References: <20190108175818.705110-1-lkundrak@v3.sk>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
+Date: Wed, 9 Jan 2019 12:17:03 +0100
+Message-ID: <20190109111703.GA28605@lenoch>
+References: <20190107233833.GI5544@atomide.com>
+ <CAKfTPtDBEmcsLotp-6K1KU1wM9Ba1EpMp3niXScRxYgzjs0nog@mail.gmail.com>
+ <20190108155354.GL5544@atomide.com>
+ <CAKfTPtCoOK-cYLXJ--sOfpVa9RVmzOAEN1+zB2qHMCzkJN0qaQ@mail.gmail.com>
+ <20190108213743.GN5544@atomide.com>
+ <20190109014218.GA8363@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190108175818.705110-1-lkundrak@v3.sk>
+Content-Disposition: inline
+In-Reply-To: <20190109014218.GA8363@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 8, 2019 at 7:58 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
->
-> Hello!
->
-> This is a fourth spin of the patch set that adds support for the
-> Embedded Controller on an OLPC XO 1.75 machine.
->
-> It hopefully incorporated all feedback received previously and also
-> fixes the kbuild test bot failures. The failed builds were generally
-> caused by configurations where the EC driver was built as module.
->
-> It turned out that the patch that turned the OLPC EC common code into
-> a module was not the brightest idea. I now dropped it and modified the
-> 04/15 to not require it.
->
-> Also, the 01/15 patch has been added to allow the module to provide a
-> reboot handler. Patch 15/15 depends on it.
+On Wed, Jan 09, 2019 at 02:42:18AM +0100, Vincent Guittot wrote:
+> Le Tuesday 08 Jan 2019 à 13:37:43 (-0800), Tony Lindgren a écrit :
+> > * Vincent Guittot <vincent.guittot@linaro.org> [190108 16:42]:
+> > > On Tue, 8 Jan 2019 at 16:53, Tony Lindgren <tony@atomide.com> wrote:
+> > > > Hmm so could it be that we now rely on timers that that may
+> > > > not be capable of waking up the system from idle states with
+> > > > hrtimer?
+> > > 
+> > > With nohz and hrtimer enabled,  timer relies on hrtimer to generate
+> > > the tick so you should use the same interrupt.
+> > 
+> > OK yeah looks like that part is working just fine.
+> > 
+> > Adding some printks and debugging over ssh, looks like
+> > omap8250_runtime_resume() gets called just fine based on a wakeirq,
+> > but then omap8250_runtime_suspend() runs immediately instead of
+> > waiting for the three second timeout.
+> > 
+> > Lowering the autosuspend_delay_ms to 2100 ms makes things work again.
+> > Anything higher than 2200 ms seems to somehow time out immediately
+> > now :)
+> 
+> This is quite close to the max ns of an int on arm 32bits
+> 
+> Could you try the patch below ?
+> 
+> ---
+>  drivers/base/power/runtime.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 7062469..44c5c76 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -141,7 +141,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+>  
+>  	last_busy = READ_ONCE(dev->power.last_busy);
+>  
+> -	expires = last_busy + autosuspend_delay * NSEC_PER_MSEC;
+> +	expires = last_busy + (u64)(autosuspend_delay) * NSEC_PER_MSEC;
+>  	if (expires <= now)
+>  		expires = 0;	/* Already expired. */
 
-Isn't it a quite big distance between provider and consumer?
-Especially taking into consideration concerns about patch 1 which
-blocks the series.
-Perhaps you may drop it as a patch 1 and do something on top of patch
-15 as feature extension?
+Hmm, comment above function states it returns "the expiration time in jiffies
+(adjusted to be nonzero)", so there's probably more to fix...
 
+You can also consider change like this (still does not return jiffies):
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 70624695b6d5..c72eaf21a61c 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -129,23 +129,20 @@ static void pm_runtime_cancel_pending(struct device *dev)
+ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+ {
+ 	int autosuspend_delay;
+-	u64 last_busy, expires = 0;
+-	u64 now = ktime_to_ns(ktime_get());
++	ktime_t expires;
+ 
+ 	if (!dev->power.use_autosuspend)
+-		goto out;
++		return 0;
+ 
+ 	autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
+ 	if (autosuspend_delay < 0)
+-		goto out;
+-
+-	last_busy = READ_ONCE(dev->power.last_busy);
++		return 0;
+ 
+-	expires = last_busy + autosuspend_delay * NSEC_PER_MSEC;
+-	if (expires <= now)
+-		expires = 0;	/* Already expired. */
++	expires = ktime_add_ns(ms_to_ktime(autosuspend_delay),
++			       READ_ONCE(dev->power.last_busy));
++	if (expires <= ktime_get())
++		return 0;	/* Already expired. */
+ 
+- out:
+ 	return expires;
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
 
->
-> Tested to work on an OLPC XO 1.75 and also tested not to break x86
-> support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
-> unlikely this breaks it when XO 1 works.
->
-> [01/15] ARM: export arm_pm_restart()
-> [02/15] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75 EC bindings
-> [03/15] Platform: OLPC: Remove an unused include
-> [04/15] Platform: OLPC: Add XO-1.75 EC driver
-> [05/15] Platform: OLPC: Avoid a warning if the EC didn't register yet
-> [06/15] Platform: OLPC: Move EC-specific functionality out from x86
-> [07/15] Platform: OLPC: Use BIT() and GENMASK() for event masks
-> [08/15] Platform: OLPC: add a regulator for the DCON
-> [09/15] dt-bindings: olpc_battery: Add XO-1.5 battery
-> [10/15] x86, olpc: Use a correct version when making up a battery node
-> [11/15] power: supply: olpc_battery: Use DT to get battery version
-> [12/15] power: supply: olpc_battery: Move priv data to a struct
-> [13/15] power: supply: olpc_battery: Use devm_power_supply_register()
-> [14/15] power: supply: olpc_battery: Avoid using platform_info
-> [15/15] power: supply: olpc_battery: Add OLPC XO 1.75 support
->
-> Lubo
->
->
-
-
--- 
-With Best Regards,
-Andy Shevchenko
+Regards,
+	ladis
