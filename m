@@ -1,89 +1,38 @@
-From: Stephan Mueller <smueller@chronox.de>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Wed, 09 Jan 2019 08:05:21 +0100
-Message-ID: <1894062.aDvIuj92vB@tauon.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <309406107.k3W2fMQUza@tauon.chronox.de> <1547017108.2789.24.camel@HansenPartnership.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: Re: [PATCH v4 01/15] ARM: export arm_pm_restart()
+Date: Wed, 09 Jan 2019 08:24:04 +0100
+Message-ID: <916efaa742e0b621f02b385f0ac6f186b960c028.camel@v3.sk>
+References: <20190108175818.705110-1-lkundrak@v3.sk>
+         <20190108175818.705110-2-lkundrak@v3.sk>
+         <20190108233137.GW11171@n2100.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1547017108.2789.24.camel@HansenPartnership.com>
+In-Reply-To: <20190108233137.GW11171@n2100.armlinux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, James Cameron <quozl@laptop.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, x86@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 9. Januar 2019, 07:58:28 CET schrieb James Bottomley:
-
-Hi James,
-
-> On Wed, 2019-01-09 at 07:45 +0100, Stephan Mueller wrote:
-> > Am Mittwoch, 9. Januar 2019, 01:44:31 CET schrieb James Bottomley:
-> > 
-> > Hi James,
-> > 
-> > > Actually, it would be enormously helpful if we could reuse these
-> > > pieces for the TPM as well.
-> > 
-> > Could you please help me understand whether the KDFs in TPM are
-> > directly usable as a standalone cipher primitive or does it go
-> > together with additional  key generation operations?
+On Tue, 2019-01-08 at 23:31 +0000, Russell King - ARM Linux wrote:
+> On Tue, Jan 08, 2019 at 06:58:04PM +0100, Lubomir Rintel wrote:
+> > The OLPC XO 1.75 laptop is rebooted with a command to the Embedded
+> > Controller. The EC driver should be a module, since most people don't need
+> > it to be compiled in.
 > 
-> They're used as generators ... which means they deterministically
-> produce keys from what the TPM calls seeds so we can get crypto agility
-> of TPM 2.0 ... well KDFa does.  KDFe is simply what NIST recommends you
-> do when using EC for a shared key agreement ... and really we shouldn't
-> be using ECDH in the kernel without it.
-> 
+> Why do you need this - is there a reason why you can't hook onto the
+> restart_handler_list using register_restart_handler()?  The registered
+> handlers are passed the command.
 
-Thanks for clarifying. That would mean that indeed we would have hardware-
-provided KDF implementations that may be usable with the kernel crypto API.
+Actually, yes. The restart handlers are invoked in atomic context, but
+the EC communication needs to block. (The 1.75 EC is actually a SPI
+master: a command it initiated by poking a GPIO and waiting until EC
+tells us it's ready to read a command.)
 
-[...]
-> 
-> > Would it be appropriate, to implement a type cast to a structure from
-> > the u8 pointer?
-> > 
-> > E.g. for the aforementioned label/context data, we could define
-> > something like
-> > 
-> > struct crypto_kdf_ctr {
-> > 
-> > 	char *label;
-> > 	size_t label_len;
-> > 	u8 *contextU;
-> > 	size_t contextU_len;
-> > 	u8 *contextV;
-> > 	size_t contextV_len;
-> > 
-> > };
-> > 
-> > And the implementation of the generate function for CTR KDF would
-> > 
-> > then have a  type cast along the following lines:
-> > 	if (slen != sizeof(struct crypto_kdf_ctr))
-> > 	
-> > 		return -EINVAL;
-> > 	
-> > 	const struct crypto_kdf_ctr *kdf_ctr_input = (struct
-> > 
-> > crypto_kdf_ctr *)src;
-> > 
-> > 
-> > For different KDFs, different structs would be needed.
-> 
-> Actually, we probably just need the input key (or secret material), the
-> concatenation and the number of output bits.
+Sorry for not mentioning that earlier, I forgot that it is the case.
 
-Thanks for confirming. Though, when it comes to HKDF (not that I see it being 
-needed or required in the kernel), there is a need to split up the src pointer 
-since the mentioned input is used in different ways.
+> I would rather this is not exported to modules, it is generally unsafe
+> to hook stuff by directly poking function pointers from module code.
 
-In order to try to get the implementation and thus the interface right, I 
-would suggest to at least have a consensus on how to handle such situations.
-
-Thus, would the proposal be acceptable for such KDFs that may need to have 
-different components communicated as input to the KDF?
-
-Ciao
-Stephan
+Lubo
