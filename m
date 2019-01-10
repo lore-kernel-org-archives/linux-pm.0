@@ -1,77 +1,50 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: Re: Regression in v5.0-rc1 with autosuspend hrtimers
-Date: Thu, 10 Jan 2019 08:54:44 +0100
-Message-ID: <20190110075444.GA26920@lenoch>
-References: <CAKfTPtAAgYYW8A1LDg18bM=5vCAMDbQ05APp9QWSaifW=F0SgQ@mail.gmail.com>
- <20190109133337.GA13579@lenoch>
- <CAKfTPtAsENRKh_wTFXCLW2_MdMBug+tV2KtjC7x6RigN7hgPmw@mail.gmail.com>
- <20190109160736.GA7416@lenoch>
- <CAKfTPtBnNA6knrsHsZXeaotBSn5mS12xNWNUKdSwZ1EUvueQkA@mail.gmail.com>
- <20190109172623.GB1711@lenoch>
- <CAKfTPtBGh+ShbNCZLiYr4PZJooun7uctuQaomc40czvAk5Yizg@mail.gmail.com>
- <CAJZ5v0jPJYyszAs4qJhqX+5RGwzJoo=+reTS__buoCrfTeYY8Q@mail.gmail.com>
- <20190110074558.GA26167@lenoch>
- <CAKfTPtA53BS0MTW7SaiC7B+KsGmWCiUJW+PzT57CUN5YpGN5vA@mail.gmail.com>
+From: =?UTF-8?Q?Pawe=C5=82_Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+Subject: Re: [PATCH 4/4] ARM: defconfig: s5pv210: Add cpufreq support
+Date: Thu, 10 Jan 2019 08:55:31 +0100
+Message-ID: <CAKpie0TvS4bzdv82m8T24GaH_DrGsjdznCSQcugtt9DqKss_sg@mail.gmail.com>
+References: <20190108200509.30494-1-pawel.mikolaj.chmiel@gmail.com>
+ <20190108200509.30494-5-pawel.mikolaj.chmiel@gmail.com>
+ <20190110070208.lvnrcd2nld3zthmk@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtA53BS0MTW7SaiC7B+KsGmWCiUJW+PzT57CUN5YpGN5vA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190110070208.lvnrcd2nld3zthmk@vireshk-i7>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, DTML <devicetree@vger.kernel.org>, "moderated list:SAMSUNG SOC CLOCK DRIVERS" <linux-samsung-soc@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux@armlinux.org.uk, Krzysztof Kozlowski <krzk@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2019 at 08:50:14AM +0100, Vincent Guittot wrote:
-> On Thu, 10 Jan 2019 at 08:46, Ladislav Michl <ladis@linux-mips.org> wrote:
-> >
-> > On Wed, Jan 09, 2019 at 11:06:34PM +0100, Rafael J. Wysocki wrote:
-> > > On Wed, Jan 9, 2019 at 7:05 PM Vincent Guittot
-> > > <vincent.guittot@linaro.org> wrote:
-> > > >
-> > > > On Wed, 9 Jan 2019 at 18:26, Ladislav Michl <ladis@linux-mips.org> wrote:
-> > > > >
-> > > > > On Wed, Jan 09, 2019 at 05:32:31PM +0100, Vincent Guittot wrote:
-> > > > > > On Wed, 9 Jan 2019 at 17:07, Ladislav Michl <ladis@linux-mips.org> wrote:
-> > > > > > >
-> > > > > > > On Wed, Jan 09, 2019 at 03:12:25PM +0100, Vincent Guittot wrote:
-> > > > > > > > Please keep all thread list when replying :-)
-> > > > > > >
-> > > > > > > Ahh, sorry for that...
-> > > > > > > [snip]
-> > > > > > > > On Wed, 9 Jan 2019 at 14:33, Ladislav Michl <ladis@linux-mips.org> wrote:
-> > > > > > > > > I agree, but it doea all the magic correctly, so you won't need
-> > > > > > > > > to touch that code is ktime_t changes (I know, unlikely..)
-> > > > > > > >
-> > > > > > > > But the current implementation doesn't care of any changes in ktime_t
-> > > > > > > > as it uses raw ns
-> > > > > > >
-> > > > > > > Fair enough, so let's go back to:
-> > > > > >
-> > > > > > This one looks good for me
-> > > > >
-> > > > > Lets split is for 'comments fix' patch, which was just send and 'the rest'.
-> > > > > Now, 'the rest' can either be v2 of your "PM/runtime: Fix autosuspend_delay on
-> > > > > 32bits arch" or will wait for 5.1. You decide :)
-> > > >
-> > > > I don't really mind.
-> > > >
-> > > > Rafael,
-> > > > Do you prefer to only take the fix for u64 casting problem or do you
-> > > > prefer to also take the optimization below in one single patch ?
-> > >
-> > > The casting problem is a bug and the optimization is next release
-> > > material in my view.  Please send the optimization separately.
-> >
-> > Ok, will send that separately in a few moments...
-> > Btw, u64 casting problem seems to be still present in rpm_suspend while
-> > computing slack for autosuspend delay greater than 25% of 2^31 (2^33) ns.
-> 
-> Good point. I will add it to the fix as well
-
-Another nit then, for (u64)(autosuspend_delay) is (u64)autosuspend_delay
-enough :)
-
-I'll wait for your v2 before sending optimization patch.
-
-> > Not sure if that triggers any real bug.
+Y3p3LiwgMTAgc3R5IDIwMTkgbyAwODowMiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
+cm8ub3JnPiBuYXBpc2HFgihhKToKPgo+IE9uIDA4LTAxLTE5LCAyMTowNSwgUGF3ZcWCIENobWll
+bCB3cm90ZToKPiA+IFRoaXMgY29tbWl0IGVuYWJsZXMgY3B1ZnJlcSBzdXBwb3J0IGZvciBhbGwg
+czVwdjIxMCBkZXZpY2VzLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFBhd2XFgiBDaG1pZWwgPHBh
+d2VsLm1pa29sYWouY2htaWVsQGdtYWlsLmNvbT4KPiA+IC0tLQo+ID4gIGFyY2gvYXJtL2NvbmZp
+Z3MvczVwdjIxMF9kZWZjb25maWcgfCA2ICsrKysrKwo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA2IGlu
+c2VydGlvbnMoKykKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vY29uZmlncy9zNXB2MjEw
+X2RlZmNvbmZpZyBiL2FyY2gvYXJtL2NvbmZpZ3MvczVwdjIxMF9kZWZjb25maWcKPiA+IGluZGV4
+IDk1MTE5NmJkZjAwOC4uZmQ0ZjI4YWFiZGE2IDEwMDY0NAo+ID4gLS0tIGEvYXJjaC9hcm0vY29u
+Zmlncy9zNXB2MjEwX2RlZmNvbmZpZwo+ID4gKysrIGIvYXJjaC9hcm0vY29uZmlncy9zNXB2MjEw
+X2RlZmNvbmZpZwo+ID4gQEAgLTExLDYgKzExLDEyIEBAIENPTkZJR19BUkNIX1M1UFYyMTA9eQo+
+ID4gIENPTkZJR19WTVNQTElUXzJHPXkKPiA+ICBDT05GSUdfQVJNX0FQUEVOREVEX0RUQj15Cj4g
+PiAgQ09ORklHX0NNRExJTkU9InJvb3Q9L2Rldi9yYW0wIHJ3IHJhbWRpc2s9ODE5MiBpbml0cmQ9
+MHgyMDgwMDAwMCw4TSBjb25zb2xlPXR0eVNBQzEsMTE1MjAwIGluaXQ9L2xpbnV4cmMiCj4gPiAr
+Q09ORklHX0NQVV9GUkVRPXkKPiA+ICtDT05GSUdfQ1BVX0ZSRVFfU1RBVD15Cj4gPiArQ09ORklH
+X0NQVV9GUkVRX0RFRkFVTFRfR09WX09OREVNQU5EPXkKPiA+ICtDT05GSUdfQ1BVX0ZSRVFfR09W
+X1BPV0VSU0FWRT1tCj4gPiArQ09ORklHX0NQVV9GUkVRX0dPVl9VU0VSU1BBQ0U9bQo+ID4gK0NP
+TkZJR19DUFVfRlJFUV9HT1ZfQ09OU0VSVkFUSVZFPW0KPgo+IFlvdSBkb24ndCB3YW50IHRvIHVz
+ZSBzY2hlZHV0aWwgPyBUaGF0IGlzIHRoZSBkZWZhdWx0IGdvdmVybm9yIGZvcgo+IGV2ZXJ5b25l
+IG5vdyBhIGRheXMuCnNjaGVkdXRpbCBkZXBlbmRzIG9uIFNNUCwgd2hpY2ggaXMgbm90IGVuYWJs
+ZWQgb24gczVwdjIxMCAoaXQgaGFzIG9ubHkKb25lIGNwdSBjb3JlKS4KPgo+IC0tCj4gdmlyZXNo
+CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1h
+cm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5v
+cmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0t
+a2VybmVsCg==
