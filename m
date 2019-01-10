@@ -1,54 +1,53 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v5 0/10] Add support for OLPC XO 1.75 Embedded Controller
-Date: Thu, 10 Jan 2019 18:58:35 +0100
-Message-ID: <20190110175845.1203986-1-lkundrak@v3.sk>
+Subject: [PATCH v5 04/10] Platform: OLPC: Avoid a warning if the EC didn't register yet
+Date: Thu, 10 Jan 2019 18:58:39 +0100
+Message-ID: <20190110175845.1203986-5-lkundrak@v3.sk>
+References: <20190110175845.1203986-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190110175845.1203986-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hello!
+Just return EPROBE_DEFER, so that whoever attempted to use the EC call ca=
+n
+defer their work.
 
-This is a fifth spin of the patch set that adds support for the Embedded
-Controller on an OLPC XO 1.75 machine.
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-It notably removes the patches that adjust the battery driver -- those we=
-re
-submitted to linux-pm separately [1].
+---
+Changes since v2:
+- Adjust the commit message for the s/ENODEV/EPROBE_DEFER/ change
 
-[1] https://lore.kernel.org/lkml/20190110174005.1202564-1-lkundrak@v3.sk/=
-T/#m9da9aee9e6482ee680a103280ebb769ebcbb32ef
+Changes since v1:
+- EPROBE_DEFER instead of ENODEV
 
-This DT bindings doc is pretty much independent of the above:
+ drivers/platform/olpc/olpc-ec.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-[01/10] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75 EC
-
-The OLPC EC changes follow. Cleanups first, then functionality:
-
-[02/10] Platform: OLPC: Remove an unused include
-[03/10] Platform: OLPC: Move EC-specific functionality out from
-[04/10] Platform: OLPC: Avoid a warning if the EC didn't
-[05/10] Platform: OLPC: Use BIT() and GENMASK() for event masks
-[06/10] Platform: OLPC: Add XO-1.75 EC driver
-[07/10] Platform: OLPC: Add a regulator for the DCON
-
-The patch 08/10 only makes sense once both the above and the XO 1.75
-battery support is merged, otherwise enabling CONFIG_BATTERY_OLPC on
-ARM would break build.
-
-[08/10] power: supply: olpc_battery: Allow building the driver
-
-The restart support has been split off, because there's a possibility it
-needs to be reworked: the arm_pm_restart export patch was objected to:
-
-[09/10] ARM: export arm_pm_restart
-[10/10] Platform: OLPC: Add restart support to XO-1.75 EC
-
-Tested to work on an OLPC XO 1.75 and also tested not to break x86
-support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
-unlikely this breaks it when XO 1 works.
-
-Lubo
+diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
+-ec.c
+index 2a647455a368..a91f78245f5e 100644
+--- a/drivers/platform/olpc/olpc-ec.c
++++ b/drivers/platform/olpc/olpc-ec.c
+@@ -125,8 +125,11 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 =
+*outbuf, size_t outlen)
+ 	struct olpc_ec_priv *ec =3D ec_priv;
+ 	struct ec_cmd_desc desc;
+=20
+-	/* Ensure a driver and ec hook have been registered */
+-	if (WARN_ON(!ec_driver || !ec_driver->ec_cmd))
++	/* Driver not yet registered. */
++	if (!ec_driver)
++		return -EPROBE_DEFER;
++
++	if (WARN_ON(!ec_driver->ec_cmd))
+ 		return -ENODEV;
+=20
+ 	if (!ec)
+--=20
+2.20.1
