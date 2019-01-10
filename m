@@ -1,38 +1,71 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v5 08/10] power: supply: olpc_battery: Allow building the driver on non-x86
-Date: Thu, 10 Jan 2019 18:58:43 +0100
-Message-ID: <20190110175845.1203986-9-lkundrak@v3.sk>
-References: <20190110175845.1203986-1-lkundrak@v3.sk>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH] PM/runtime: Do not needlessly call ktime_get
+Date: Thu, 10 Jan 2019 19:56:19 +0100
+Message-ID: <CAKfTPtCV=PYAqG=LavafTpMxvXdr7W-bfsOkpP+04EtOaicjyg@mail.gmail.com>
+References: <20190110095125.GA4491@lenoch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190110175845.1203986-1-lkundrak@v3.sk>
+In-Reply-To: <20190110095125.GA4491@lenoch>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lubomir Rintel <lkundrak@v3.sk>
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-With the recent changes to the driver and addition of OLPC XO-1.75 EC
-driver it is possible to use this driver on ARM-based XO laptops as
-well.
+On Thu, 10 Jan 2019 at 10:51, Ladislav Michl <ladis@linux-mips.org> wrote:
+>
+> pm_runtime_autosuspend_expiration calls ktime_get even when
+> its returned value may be unused. Therefore get current time
+> later and remove gotos while there.
+>
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
----
- drivers/power/supply/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879e7e..66e4d1958de3 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -151,7 +151,7 @@ config BATTERY_PMU
-=20
- config BATTERY_OLPC
- 	tristate "One Laptop Per Child battery"
--	depends on X86_32 && OLPC
-+	depends on OLPC_EC
- 	help
- 	  Say Y to enable support for the battery on the OLPC laptop.
-=20
---=20
-2.20.1
+> ---
+>  NOTE: Depends on Vincent's "[PATCH v2] PM/runtime: Fix autosuspend_delay
+>        on 32bits arch"!
+>
+>  drivers/base/power/runtime.c | 19 ++++++++-----------
+>  1 file changed, 8 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 457be03b744d..836b1b8784eb 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -129,24 +129,21 @@ static void pm_runtime_cancel_pending(struct device *dev)
+>  u64 pm_runtime_autosuspend_expiration(struct device *dev)
+>  {
+>         int autosuspend_delay;
+> -       u64 last_busy, expires = 0;
+> -       u64 now = ktime_to_ns(ktime_get());
+> +       u64 expires;
+>
+>         if (!dev->power.use_autosuspend)
+> -               goto out;
+> +               return 0;
+>
+>         autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
+>         if (autosuspend_delay < 0)
+> -               goto out;
+> -
+> -       last_busy = READ_ONCE(dev->power.last_busy);
+> +               return 0;
+>
+> -       expires = last_busy + (u64)autosuspend_delay * NSEC_PER_MSEC;
+> -       if (expires <= now)
+> -               expires = 0;    /* Already expired. */
+> +       expires  = READ_ONCE(dev->power.last_busy);
+> +       expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
+> +       if (expires > ktime_to_ns(ktime_get()))
+> +               return expires; /* Expires in the future */
+>
+> - out:
+> -       return expires;
+> +       return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
+>
+> --
+> 2.20.1
+>
