@@ -1,45 +1,38 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v5 02/10] Platform: OLPC: Remove an unused include
-Date: Thu, 10 Jan 2019 18:58:37 +0100
-Message-ID: <20190110175845.1203986-3-lkundrak@v3.sk>
+Subject: [PATCH v5 08/10] power: supply: olpc_battery: Allow building the driver on non-x86
+Date: Thu, 10 Jan 2019 18:58:43 +0100
+Message-ID: <20190110175845.1203986-9-lkundrak@v3.sk>
 References: <20190110175845.1203986-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190110175845.1203986-1-lkundrak@v3.sk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, platform-driver-x86@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
+Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-Also, the header is x86 specific, while there are non-x86 OLPC machines.
+With the recent changes to the driver and addition of OLPC XO-1.75 EC
+driver it is possible to use this driver on ARM-based XO laptops as
+well.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- drivers/platform/olpc/olpc-ec.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/power/supply/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc-ec.c
-index 374a8028fec7..981955dce926 100644
---- a/drivers/platform/olpc/olpc-ec.c
-+++ b/drivers/platform/olpc/olpc-ec.c
-@@ -17,7 +17,6 @@
- #include <linux/init.h>
- #include <linux/list.h>
- #include <linux/olpc-ec.h>
--#include <asm/olpc.h>
- 
- struct ec_cmd_desc {
- 	u8 cmd;
--- 
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index e901b9879e7e..66e4d1958de3 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -151,7 +151,7 @@ config BATTERY_PMU
+=20
+ config BATTERY_OLPC
+ 	tristate "One Laptop Per Child battery"
+-	depends on X86_32 && OLPC
++	depends on OLPC_EC
+ 	help
+ 	  Say Y to enable support for the battery on the OLPC laptop.
+=20
+--=20
 2.20.1
