@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v5 5/7] power: supply: olpc_battery: Use devm_power_supply_register()
-Date: Thu, 10 Jan 2019 18:40:03 +0100
-Message-ID: <20190110174005.1202564-6-lkundrak@v3.sk>
+Subject: [PATCH v5 7/7] power: supply: olpc_battery: Add OLPC XO 1.75 support
+Date: Thu, 10 Jan 2019 18:40:05 +0100
+Message-ID: <20190110174005.1202564-8-lkundrak@v3.sk>
 References: <20190110174005.1202564-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -9,84 +9,114 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190110174005.1202564-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-This simplifies the error handling.
+The battery and the protocol are essentially the same as OLPC XO 1.5,
+but the responses from the EC are LSB first.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
-Changes since v1:
-- This was split off the "power: supply: olpc_battery: Move priv data to
-  a struct" patch.
+Changes since v2:
+- Fix the version conditional
 
- drivers/power/supply/olpc_battery.c | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+Changes since v1:
+- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
+- s/u16 ec_byte/u16 ec_word/
+
+ drivers/power/supply/olpc_battery.c | 25 +++++++++++++++++++------
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index 7067cb500669..1fcc459433a8 100644
+index a6c89d002d5d..52de90049980 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -634,7 +634,7 @@ static int olpc_battery_probe(struct platform_device =
-*pdev)
- 	psy_cfg.of_node =3D pdev->dev.of_node;
- 	psy_cfg.drv_data =3D data;
+@@ -57,6 +57,7 @@ struct olpc_battery_data {
+ 	struct power_supply *olpc_bat;
+ 	char bat_serial[17];
+ 	int new_proto;
++	int little_endian;
+ };
 =20
--	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
-_cfg);
-+	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,=
- &psy_cfg);
- 	if (IS_ERR(data->olpc_ac))
- 		return PTR_ERR(data->olpc_ac);
-=20
-@@ -649,15 +649,13 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
- 	}
-=20
--	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
-sy_cfg);
--	if (IS_ERR(data->olpc_bat)) {
--		ret =3D PTR_ERR(data->olpc_bat);
--		goto battery_failed;
--	}
-+	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
-c, &psy_cfg);
-+	if (IS_ERR(data->olpc_bat))
-+		return PTR_ERR(data->olpc_bat);
-=20
- 	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
- 	if (ret)
--		goto eeprom_failed;
-+		return ret;
-=20
- 	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	if (ret)
-@@ -672,10 +670,6 @@ static int olpc_battery_probe(struct platform_device=
- *pdev)
-=20
- error_failed:
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--eeprom_failed:
--	power_supply_unregister(data->olpc_bat);
--battery_failed:
--	power_supply_unregister(data->olpc_ac);
+ /*********************************************************************
+@@ -322,6 +323,14 @@ static int olpc_bat_get_voltage_max_design(union pow=
+er_supply_propval *val)
  	return ret;
  }
 =20
-@@ -685,9 +679,6 @@ static int olpc_battery_remove(struct platform_device=
++static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
++{
++	if (data->little_endian)
++		return le16_to_cpu(ec_word);
++	else
++		return be16_to_cpu(ec_word);
++}
++
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -394,7 +403,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 9760L / 32;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 9760L / 32;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+@@ -402,7 +411,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 15625L / 120;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 15625L / 120;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
+@@ -433,21 +442,21 @@ static int olpc_bat_get_property(struct power_suppl=
+y *psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+ 		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D (int)ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 6250 / 15;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 6250 / 15;
+ 		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+@@ -621,7 +630,11 @@ static int olpc_battery_probe(struct platform_device=
  *pdev)
+ 	if (ret)
+ 		return ret;
 =20
- 	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--	power_supply_unregister(data->olpc_bat);
--	power_supply_unregister(data->olpc_ac);
--
- 	return 0;
- }
-=20
+-	if (ecver > 0x44) {
++	if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
++		/* XO 1.75 */
++		data->new_proto =3D 1;
++		data->little_endian =3D 1;
++	} else if (ecver > 0x44) {
+ 		/* XO 1 or 1.5 with a new EC firmware. */
+ 		data->new_proto =3D 1;
+ 	} else if (ecver < 0x44) {
 --=20
 2.20.1
