@@ -1,64 +1,110 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: [PATCH] PM/runtime: Do not needlessly call ktime_get
-Date: Thu, 10 Jan 2019 10:51:25 +0100
-Message-ID: <20190110095125.GA4491@lenoch>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Thu, 10 Jan 2019 10:52:59 +0100
+Message-ID: <e89ee355-3d87-1fe7-a1ff-91a1dd43177b@linaro.org>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-pm_runtime_autosuspend_expiration calls ktime_get even when
-its returned value may be unused. Therefore get current time
-later and remove gotos while there.
+On 10/12/2018 12:30, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Add two new metrics for CPU idle states, "above" and "below", to count
+> the number of times the given state had been asked for (or entered
+> from the kernel's perspective), but the observed idle duration turned
+> out to be too short or too long for it (respectively).
+> 
+> These metrics help to estimate the quality of the CPU idle governor
+> in use.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> -> v2: Fix a leftover in the documentation from the previous versions
+>        of the patch and a typo in the changelog.
+> 
+> ---
+>  Documentation/ABI/testing/sysfs-devices-system-cpu |    7 ++++
+>  Documentation/admin-guide/pm/cpuidle.rst           |   10 ++++++
+>  drivers/cpuidle/cpuidle.c                          |   31 ++++++++++++++++++++-
+>  drivers/cpuidle/sysfs.c                            |    6 ++++
+>  include/linux/cpuidle.h                            |    2 +
+>  5 files changed, 55 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
+> +++ linux-pm/drivers/cpuidle/cpuidle.c
+> @@ -202,7 +202,6 @@ int cpuidle_enter_state(struct cpuidle_d
+>  	struct cpuidle_state *target_state = &drv->states[index];
+>  	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+>  	ktime_t time_start, time_end;
+> -	s64 diff;
+>  
+>  	/*
+>  	 * Tell the time framework to switch to a broadcast timer because our
+> @@ -248,6 +247,9 @@ int cpuidle_enter_state(struct cpuidle_d
+>  		local_irq_enable();
+>  
+>  	if (entered_state >= 0) {
+> +		s64 diff, delay = drv->states[entered_state].exit_latency;
+> +		int i;
+> +
+>  		/*
+>  		 * Update cpuidle counters
+>  		 * This can be moved to within driver enter routine,
+> @@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
+>  		dev->last_residency = (int)diff;
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- NOTE: Depends on Vincent's "[PATCH v2] PM/runtime: Fix autosuspend_delay
-       on 32bits arch"!
+Shouldn't we subtract the 'delay' from the computed 'diff' in any case ?
 
- drivers/base/power/runtime.c | 19 ++++++++-----------
- 1 file changed, 8 insertions(+), 11 deletions(-)
+Otherwise the 'last_residency' accumulates the effective sleep time and
+the time to wakeup. We are interested in the sleep time only for
+prediction and metrics no ?
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 457be03b744d..836b1b8784eb 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -129,24 +129,21 @@ static void pm_runtime_cancel_pending(struct device *dev)
- u64 pm_runtime_autosuspend_expiration(struct device *dev)
- {
- 	int autosuspend_delay;
--	u64 last_busy, expires = 0;
--	u64 now = ktime_to_ns(ktime_get());
-+	u64 expires;
- 
- 	if (!dev->power.use_autosuspend)
--		goto out;
-+		return 0;
- 
- 	autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
- 	if (autosuspend_delay < 0)
--		goto out;
--
--	last_busy = READ_ONCE(dev->power.last_busy);
-+		return 0;
- 
--	expires = last_busy + (u64)autosuspend_delay * NSEC_PER_MSEC;
--	if (expires <= now)
--		expires = 0;	/* Already expired. */
-+	expires  = READ_ONCE(dev->power.last_busy);
-+	expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
-+	if (expires > ktime_to_ns(ktime_get()))
-+		return expires;	/* Expires in the future */
- 
-- out:
--	return expires;
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
- 
+>  		dev->states_usage[entered_state].time += dev->last_residency;
+>  		dev->states_usage[entered_state].usage++;
+> +
+> +		if (diff < drv->states[entered_state].target_residency) {
+> +			for (i = entered_state - 1; i >= 0; i--) {
+> +				if (drv->states[i].disabled ||
+> +				    dev->states_usage[i].disable)
+> +					continue;
+> +
+> +				/* Shallower states are enabled, so update. */
+> +				dev->states_usage[entered_state].above++;
+> +				break;
+> +			}
+> +		} else if (diff > delay) {
+> +			for (i = entered_state + 1; i < drv->state_count; i++) {
+> +				if (drv->states[i].disabled ||
+> +				    dev->states_usage[i].disable)
+> +					continue;
+> +
+> +				/*
+> +				 * Update if a deeper state would have been a
+> +				 * better match for the observed idle duration.
+> +				 */
+> +				if (diff - delay >= drv->states[i].target_residency)
+> +					dev->states_usage[entered_state].below++;
+> +
+> +				break;
+> +			}
+> +		}
+>  	} else {
+
+
 -- 
-2.20.1
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
