@@ -1,298 +1,347 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 02/11] thermal: add irq-mode configuration for trip
- point
-Date: Thu, 10 Jan 2019 22:20:15 +0800
-Message-ID: <1547130015.10666.17.camel@intel.com>
-References: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-         <CGME20181107171036eucas1p13253d56b463c8f888ab8f8e418635297@eucas1p1.samsung.com>
-         <1541610593-28542-3-git-send-email-l.luba@partner.samsung.com>
-         <1544022595.2841.45.camel@intel.com>
-         <2ac425fc-7c32-6e2f-7086-c14f85b0bbfd@partner.samsung.com>
-         <3314da31-1b8b-ec19-4aee-38d98aa8adbf@partner.samsung.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Thu, 10 Jan 2019 23:12:56 +0800
+Message-ID: <20190110151256.GN3599@linux-l9pv.suse>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <20190106181026.GA15256@amd>
+ <20190107173743.GC4210@linux-l9pv.suse>
+ <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
+ <20190109163958.GG9503@linux-l9pv.suse>
+ <CALCETrUprUNLci+tQ+P7PV3PvS4ruxz5jrGH3R_FDV4SFp3r9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3314da31-1b8b-ec19-4aee-38d98aa8adbf@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <CALCETrUprUNLci+tQ+P7PV3PvS4ruxz5jrGH3R_FDV4SFp3r9g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Lukasz,
-
-On 四, 2018-12-06 at 20:55 +0100, Lukasz Luba wrote:
+On Wed, Jan 09, 2019 at 10:47:42AM -0800, Andy Lutomirski wrote:
+> On Wed, Jan 9, 2019 at 8:40 AM joeyli <jlee@suse.com> wrote:
+> >
+> > Hi Andy,
+> >
+> > Thanks for your review!
+> >
+> > On Tue, Jan 08, 2019 at 01:41:48PM -0800, Andy Lutomirski wrote:
+> > > > On Jan 7, 2019, at 9:37 AM, joeyli <jlee@suse.com> wrote:
+> > > >
+> > > > Hi Pavel,
+> > > >
+> > > > Thanks for your review!
+> > > >
+> > > >> On Sun, Jan 06, 2019 at 07:10:27PM +0100, Pavel Machek wrote:
+> > > >> Hi!
+> > > >>
+> > > >>> This patchset is the implementation of encryption and authentication
+> > > >>> for hibernate snapshot image. The image will be encrypted by AES and
+> > > >>> authenticated by HMAC.
+> > > >>
+> > > >> Ok, so you encrypt.
+> > > >
+> > > > Yes, encryption and authentication.
+> > > >
+> > > >>> The hibernate function can be used to snapshot memory pages to an image,
+> > > >>> then kernel restores the image to memory space in a appropriate time.
+> > > >>> There have secrets in snapshot image and cracker may modifies it for
+> > > >>> hacking system. Encryption and authentication of snapshot image can protect
+> > > >>> the system.
+> > > >>>
+> > > >>> Hibernate function requests the master key through key retention service.
+> > > >>> The snapshot master key can be a trusted key or a user defined key. The
+> > > >>> name of snapshot master key is fixed to "swsusp-kmk". User should loads
+> > > >>> swsusp-kmk to kernel by keyctl tool before the hibernation resume.
+> > > >>> e.g. The swsusp-kmk must be loaded before systemd-hibernate-resume
+> > > >>
+> > > >> But if userspace has a key, encryption is useless against root.
+> > > >
+> > > > Yes, but this concern is not only for hibernation encryption. This patch
+> > > > set does not provide solution against this concern.
+> > > >
+> > > > The purpose of this patch set is to encrypt and authenticate hibernate
+> > > > snapshot image in kernel space. It also requests key through keyring
+> > > > mechanism. Which means that we can easy to adapt to new key type from
+> > > > keyring in the future.
+> > > >
+> > > > Currently TPM trusted key or user defined key types are not against
+> > > > root. Even using the TPM trusted key, it still can be unsealed by root
+> > > > before the PCRs be capped (unless we capped PCRs in kernel).
+> > > >
+> > > > My solution for keeping the secret by kernel is the EFI secure key type:
+> > > >    https://lkml.org/lkml/2018/8/5/31
+> > > >
+> > > > But the EFI boot variable doesn't design for keeping secret, so Windows
+> > > > and OEM/ODM do not use boot variable to keep secret. So this idea can
+> > > > not be accepted. We must think other key type against root.
+> > > >
+> > > >>> The TPM trusted key type is preferred to be the master key. But user
+> > > >>> defined key can also be used for testing or when the platform doesn't
+> > > >>> have TPM. User must be aware that the security of user key relies on
+> > > >>> user space. If the root account be compromised, then the user key will
+> > > >>> easy to be grabbed.
+> > > >>
+> > > >> In the TPM case, does userland have access to the key?
+> > > >
+> > > > In the TPM case, userland can only touch the sealed key blob. So userland
+> > > > doesn't know the real secret. But it has risk that root unseals the key
+> > > > before PCRs be capped.
+> > > >
+> > > >> Please explain your security goals.
+> > > >
+> > > > My security goals:
+> > > >
+> > > > - Encrypt and authicate hibernate snapshot image in kernel space. Userspace
+> > > >  can only touch an encrypted and signed snapshot image.
+> > >
+> > > Signed?
+> > >
+> > > I’m not entirely convinced that the keyring mechanism is what you
+> > > want. ISTM that there are two goals here:
+> > >
+> > > a) Encryption: it should be as hard as can reasonably be arranged to
+> > > extract secrets from a hibernation image.
+> > >
+> > > b) Authentication part 1: it should not be possible for someone in
+> > > possession of a turned-off machine to tamper with the hibernation
+> > > image such that the image, when booted, will leak its secrets. This
+> > > should protect against attackers who don’t know the encryption key.
+> > >
+> > > c) Authentication part 2: it should be to verify, to the extent
+> > > practical, that the image came from the same machine and was really
+> > > created using hibernation.  Or maybe by the same user.
+> > >
+> > > For (a) and (b), using an AE mode where the key is protected in some
+> > > reasonable way.  Joey, why are you using HMAC?  Please tell me you’re
+> > > at least doing encrypt-then-MAC.  But why not use a real AE mode like
+> > > AES-GCM?
+> >
+> > The reason for using HMAC is the history for development. My first patch
+> > set is only for hibernate authentication. Then I added encryption code on
+> > top of my authentication patches in last version.
+> >
+> > I am doing encrypt-then-MAC. My code ecrypts each page by AES then HMAC
+> > whole snapshot image. I feed encrypted data pages one by one to
+> > crypto_shash_update() API for calculating the hash for whole image.
 > 
-> On 12/6/18 8:18 PM, Lukasz Luba wrote:
-> > 
-> > Hi Rui,
-> > 
-> > On 12/5/18 4:09 PM, Zhang Rui wrote:
-> > > 
-> > > On 三, 2018-11-07 at 18:09 +0100, Lukasz Luba wrote:
-> > > > 
-> > > > This patch adds support irq mode in trip point.
-> > > > When that flag is set in DT, there is no need for polling
-> > > > in thermal framework. Crossing the trip point will rise an IRQ.
-> > > > The naming convention for tip point 'type' can be confussing
-> > > > and 'passive' (whic is passive cooling) might be interpretted
-> > > > wrongly.
-> > > > 
-> > > > This mechanism prevents from missue and adds explicit setting
-> > > > for hardware which support interrupts for pre-configured
-> > > > temperature
-> > > > threshold.
-> > > > 
-> > > > Cc: Zhang Rui <rui.zhang@intel.com>
-> > > > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > > > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > > > Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> > > > ---
-> > > >   drivers/thermal/of-thermal.c   | 17 +++++++++++++++++
-> > > >   drivers/thermal/thermal_core.c | 10 ++++++++--
-> > > >   include/linux/thermal.h        |  5 +++++
-> > > >   3 files changed, 30 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
-> > > > thermal.c
-> > > > index 4bfdb4a..1a75946a 100644
-> > > > --- a/drivers/thermal/of-thermal.c
-> > > > +++ b/drivers/thermal/of-thermal.c
-> > > > @@ -312,6 +312,20 @@ static int of_thermal_get_trip_type(struct
-> > > > thermal_zone_device *tz, int trip,
-> > > >       return 0;
-> > > >   }
-> > > > +static int
-> > > > +of_thermal_get_trip_irq_mode(struct thermal_zone_device *tz,
-> > > > int
-> > > > trip,
-> > > > +                 bool *mode)
-> > > > +{
-> > > > +    struct __thermal_zone *data = tz->devdata;
-> > > > +
-> > > > +    if (trip >= data->ntrips || trip < 0)
-> > > > +        return -EDOM;
-> > > > +
-> > > > +    *mode = data->trips[trip].irq_mode;
-> > > > +
-> > > > +    return 0;
-> > > > +}
-> > > > +
-> > > >   static int of_thermal_get_trip_temp(struct
-> > > > thermal_zone_device *tz,
-> > > > int trip,
-> > > >                       int *temp)
-> > > >   {
-> > > > @@ -394,6 +408,7 @@ static struct thermal_zone_device_ops
-> > > > of_thermal_ops = {
-> > > >       .set_mode = of_thermal_set_mode,
-> > > >       .get_trip_type = of_thermal_get_trip_type,
-> > > > +    .get_trip_irq_mode = of_thermal_get_trip_irq_mode,
-> > > >       .get_trip_temp = of_thermal_get_trip_temp,
-> > > >       .set_trip_temp = of_thermal_set_trip_temp,
-> > > >       .get_trip_hyst = of_thermal_get_trip_hyst,
-> > > > @@ -827,6 +842,8 @@ static int thermal_of_populate_trip(struct
-> > > > device_node *np,
-> > > >           return ret;
-> > > >       }
-> > > > +    trip->irq_mode = of_property_read_bool(np, "irq-mode");
-> > > > +
-> > > >       /* Required for cooling map matching */
-> > > >       trip->np = np;
-> > > >       of_node_get(np);
-> > > > diff --git a/drivers/thermal/thermal_core.c
-> > > > b/drivers/thermal/thermal_core.c
-> > > > index 39fc812..6d41e08 100644
-> > > > --- a/drivers/thermal/thermal_core.c
-> > > > +++ b/drivers/thermal/thermal_core.c
-> > > > @@ -406,6 +406,7 @@ static void handle_critical_trips(struct
-> > > > thermal_zone_device *tz,
-> > > >   static void handle_thermal_trip(struct thermal_zone_device
-> > > > *tz, int
-> > > > trip)
-> > > >   {
-> > > >       enum thermal_trip_type type;
-> > > > +    bool irq_mode = false;
-> > > >       /* Ignore disabled trip points */
-> > > >       if (test_bit(trip, &tz->trips_disabled))
-> > > > @@ -419,9 +420,14 @@ static void handle_thermal_trip(struct
-> > > > thermal_zone_device *tz, int trip)
-> > > >           handle_non_critical_trips(tz, trip);
-> > > >       /*
-> > > >        * Alright, we handled this trip successfully.
-> > > > -     * So, start monitoring again.
-> > > > +     * So, start monitoring in polling mode if
-> > > > +     * trip is not using irq HW support.
-> > > >        */
-> > > > -    monitor_thermal_zone(tz);
-> > > > +    if (tz->ops->get_trip_irq_mode)
-> > > > +        tz->ops->get_trip_irq_mode(tz, trip, &irq_mode);
-> > > > +
-> > > > +    if (!irq_mode)
-> > > > +        monitor_thermal_zone(tz);
-> > > >   }
-> > > handle_thermal_trip() is called from
-> > > thermal_zone_device_update(), and
-> > > it is invoked for every trip points.
-> > > say, you have a passive trip point 1 that supports irq_mode, and
-> > > another passive trip point 2 that does not support irq_mode,
-> > > monitor_thermal_zone() is still called in handle_thermal_trip(tz,
-> > > 2),
-> > > and the passive timer will be activated anyway, do I miss
-> > > something?
-
-sorry that I missed this thread.
-
-> > Yes, the passive timer will be activated in your example. It is
-> > correct
-> > behavior and does not break anything.
-> > case 1: there is 'k' passive trip points which have irq_mode and 1
-> > additional which does not have 'irq_mode', the framework will start
-> > polling but skip check for those 'k' trip points.
-> > case 2: all of the passive trip points have irq_mode set, the
-> > framework
-> > will not register 'scheduled_work' because it will not call 
-> > 'monitor_thermal_zone()'.
-> > This is the case of most Exynos platforms, but there is one
-> > exception 
-> > which has 'case 1' with 2 trip points not supporting irq_mode.
-> Do you suggest to cover the 'case 1'?
-
-So this solution does not cover case 1.
-And for case 2, why not set passive_delay to 0? are they sharing the
-same DT file?
-
-> It would be possible after adding a new enum THERMAL_FRAMEWORK_POLL, 
-> then function:
-
-hmmm, I think we can
-1. use tz->passive to count the passive trip points that need passive
-polling.
-2. count tz->passive properly in the governors
-3. always do passive polling when tz->passive > 0.
-
-This will cover both cases, right?
-
-some sample code to handle this in step_wise governor attached below,
-
-what do you think?
-
-thanks,
-rui
-
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index ee047ca..59d9a1d 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -121,8 +121,15 @@ static void update_passive_instance(struct
-thermal_zone_device *tz,
-         * If value is +1, activate a passive instance.
-         * If value is -1, deactivate a passive instance.
-         */
--       if (type == THERMAL_TRIP_PASSIVE || type == THERMAL_TRIPS_NONE)
--               tz->passive += value;
-+       if (type != THERMAL_TRIP_PASSIVE && type != THERMAL_TRIPS_NONE)
-+               return;
-+       if (tz->ops->get_trip_irq_mode) {
-+               if (tz->ops->get_trip_irq_mode(tz, trip, &irq_mode))
-+                               return;
-+               if (irq_mode)
-+                               return;
-+       }
-+       tz->passive += value;
- }
-
-
-> thermal_zone_device_check() will call
-> thermal_zone_device_update(tz, THERMAL_FRAMEWORK_POLL)
-> and in handle_thermal_trip() implement something like:
-> --------------8<----------------
-> static void handle_thermal_trip(struct thermal_zone_device *tz, int
-> trip)
-> {
-> 	enum thermal_trip_type type;
-> 	bool irq_mode = false;
-> 
-> 	/* Ignore disabled trip points */
-> 	if (test_bit(trip, &tz->trips_disabled))
-> 		return;
-> 
-> 	if (tz->ops->get_trip_irq_mode)
-> 		tz->ops->get_trip_irq_mode(tz, trip, &irq_mode)
-> 
-> 	if (tz->notify_event == THERMAL_FRAMEWORK_POLL && irq_mode)
-> 		return;
 > ...
 > 
-> 	if (!irq_mode)
-> 		monitor_thermal_zone(tz);
-> }
+> I think you should write down a clear description of the data format.
+
+Hibernation allocates free pages for building snapshot image. Those free
+pages are scattered in memory. So kernel marks those page numbers on a
+bitmap to locate them. Because this image buffer is discontinuous, so I
+use update mode hashing whole image.
+
+> A general problem with crypto is that the fact that it appears to work
+> doesn't mean it's secure at all, and it's very hard to follow the
+> code.  Especially in Linux using the crypto API -- code using the
+> crypto API tends to be mostly boilerplate.
+>
+
+hm... Do you mean that the implementation of HMAC in crypto cannot be
+trusted? I hope at least that I can trust the update mode for normal
+hash like SHA256 or SHA512?
+ 
+> >
+> > >
+> > >
+> > > I reviewed the code a bit.  Here are some thoughts:
+> > >
 > 
-> ---------->8-----------------------
+> >
+> > > You’re explicitly checking that it’s not zero, and I don’t see why.
+> > >
+> >
+> > That's because I use trampoline page to forward the key from boot
+> > kernel to resume kernel for next hibernation cycle. When resuming,
+> > the empty key means that the boot kernel didn't forward valid key
+> > to resume kernel. Then the key initial failed, hibernation can not
+> > be triggered in next cycle.
+> >
 > 
-> I could implement it in v3 if you don't see that it add too much of
-> mess 
-> and agree for this approach.
+> This seems like a poor design.  If you need some indication of "there
+> is no key", then implement that.  Don't use a special all-zero value
+> to mean something special.
+>
+
+OK, I will use other way to detect the state of key. 
+ 
+> >
+> > > the acceptable usage of trusted keys?
+> > >
+> >
+> > Sorry for I didn't capture the meaning of "acceptable usage". The trusted
+> > key already be unsealed by TPM when the key be enrolled by keyctl tool.
+> > So my code just extract the unsealed key data (the random number) for
+> > encryption.
 > 
-> Regards,
-> Lukasz
+> If someone creates a trusted key that is used for asymmetric crypto or
+> perhaps a trusted key that is intended to be used for, say, an HMAC
+> key, you should not also use it to derive hibernation keys.  This is
+> what I mean by "acceptable usage".
+>
+
+When keyring is producing encrypted key, the trusted key be used to
+derive the encrypt key and authenticate key to encrypt and hmac sign
+a encrypted key. So trusted key can be used in symmetric crypto.
+ 
+> >
+> > > You are using a non-ephemeral key and generating a fresh IV each time.
+> > > This is probably okay, but it’s needlessly fragile. Just generate an
+> > > entirely fresh key each time, please.  You also seem to be doing
+> > > encrypt-and-MAC, which is not generally considered acceptable. And
+> >
+> > I have thought about using one time key before. But that means I need
+> > attach the key with snapshot image. Keyring API doesn't provide interface
+> > for other kernel subsystem to feed an encrypted key blob, so I choice
+> > to use non-ephemeral key that's enrolled by userland through keyctl. I
+> > can change to one time key if keyring subsystem allows to be modified.
 > 
-> > 
-> > 
-> > Regards,
-> > Lukasz
-> > 
-> > > 
-> > > 
-> > > thanks,
-> > > rui
-> > > 
-> > > > 
-> > > >   static void update_temperature(struct thermal_zone_device
-> > > > *tz)
-> > > > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > > > index 5f4705f..b064565 100644
-> > > > --- a/include/linux/thermal.h
-> > > > +++ b/include/linux/thermal.h
-> > > > @@ -103,6 +103,7 @@ struct thermal_zone_device_ops {
-> > > >           enum thermal_device_mode);
-> > > >       int (*get_trip_type) (struct thermal_zone_device *, int,
-> > > >           enum thermal_trip_type *);
-> > > > +    int (*get_trip_irq_mode) (struct thermal_zone_device *,
-> > > > int,
-> > > > bool *);
-> > > >       int (*get_trip_temp) (struct thermal_zone_device *, int,
-> > > > int
-> > > > *);
-> > > >       int (*set_trip_temp) (struct thermal_zone_device *, int,
-> > > > int);
-> > > >       int (*get_trip_hyst) (struct thermal_zone_device *, int,
-> > > > int
-> > > > *);
-> > > > @@ -196,6 +197,7 @@ struct thermal_zone_device {
-> > > >       struct thermal_attr *trip_temp_attrs;
-> > > >       struct thermal_attr *trip_type_attrs;
-> > > >       struct thermal_attr *trip_hyst_attrs;
-> > > > +    struct thermal_attr *trip_irq_mode_attrs;
-> > > >       void *devdata;
-> > > >       int trips;
-> > > >       unsigned long trips_disabled;    /* bitmap for disabled
-> > > > trips */
-> > > > @@ -364,6 +366,8 @@ struct thermal_zone_of_device_ops {
-> > > >    * @temperature: temperature value in miliCelsius
-> > > >    * @hysteresis: relative hysteresis in miliCelsius
-> > > >    * @type: trip point type
-> > > > + * @irq_mode: to not use polling in framework set support of
-> > > > HW irq
-> > > > (which will
-> > > > + *          be triggered when temperature reaches this level).
-> > > >    */
-> > > >   struct thermal_trip {
-> > > > @@ -371,6 +375,7 @@ struct thermal_trip {
-> > > >       int temperature;
-> > > >       int hysteresis;
-> > > >       enum thermal_trip_type type;
-> > > > +    bool irq_mode;
-> > > >   };
-> > > >   /* Function declarations */
-> > > 
+> I don't see what this has to do with the keyring API.  If you want a
+> one time key in the hibernation code, generate a one-time key in the
+> hibernation code and wrap the key accordingly.
+>
+
+When using trusted key, the keyring subsystem helps to deal TPM. On the
+other hand, I want that hibernate can easy to support other key types. e.g.
+user defined key can also be used when debugging or development.
+
+If hibernation direct deals with TPM to seal the hibernation key. Then
+yes, we don't need keyring as the abstract layer for hibernation key.
+ 
+> 
+> >
+> > The encrypt-and-MAC is not acceptable? I am OK to change to other way
+> > just I hope that I can encrypt/decrypt page one by one for the reason
+> > that I just mentioned.
+> >
+> > > you’re not authenticating everything — just the data. This seems very
+> > > weak.
+> > >
+> >
+> > Is it too weak? Why?
+> >
+> > There have three parts of an snapshot image:
+> >         image header :: page table pages :: data pages
+> >
+> > The real data are in data pages. I thought that encrypt/hmac data pages
+> > can protect sensitive data in pages and also avoid those pages be arbitrary
+> > modified. IMHO arbitrary modifing page table pages is easy to cause
+> > resume kernel crashed.
+> 
+> First you need to define *why* you're authenticating anything.  But I
+> would guess that under any reasonable security model, a tampered-with
+> image should not be able to take over the system.  And, if you don't
+> protect the page tables, then it's probably quite easy to tamper with
+> an image such that the HMAC is unaffected but the image takes over the
+> system.
+>
+
+OK, I will protect page tables and also fields in image header.
+ 
+> I think that, if this series goes in at all, it should authenticate
+> the *entire* image.  (But you still have to define what "authentic"
+> even means.  "It passed an HMAC check" is not a good definition.)
+>
+
+I thought that the authentic of image means that the image should not
+be tampered. I will try to protect whole image.
+ 
+> >
+> > > Can you explain the trampoline?  It looks like you are using it to
+> > > tell the resumed kernel that it was tampered with. If so, NAK to that.
+> > > Just abort.
+> > >
+> >
+> > The main job of trampoline page is using by boot kernel to forward
+> > key to resume kernel for next hibernation cycle. The authorization result
+> > is just an add on.
+> >
+> > In resume process, the key will be loaded in early boot stage. Either in
+> > EFI stub (EFI secure key type, be rejected by EFI subsystem) or initrd. On
+> > the other hand, PCRs may capped after TPM trusted key be loaded. So resume
+> > kernel has no chance to load or unseal key again. The only way to get the
+> > unsealed/decrypted key is from boot kernel.
+> >
+> > The trampoline page is an empty page that it's pre-reserved in snapshot image
+> > when hibernation. When resuming, this trampoline page will be written by boot
+> > kernel to fill unsealed key. Then resume kernel will check the trampoline
+> > page to take the key. If the key is empty(zero), which means that boot
+> > kernel didn't forward valid key because some reasons. Either the key is
+> > broken (EFI key be erased) or userspace didn't enroll key to boot kernel.
+> > That's why I check the zero key in code.
+> 
+> I don't follow this at all.  After reading the code, I couldn't figure
+> out which stage generates the trampoline, which stage reads the
+> trampoline, and where there are any keys at all in the trampoline.
+>
+
+Very thinks for your review to my code...
+ 
+> There are effectively three kernels:
+> 
+> a) The kernel that gets hibernated and generates the hibernation
+> image.  This kernel obviously has access to all the keying
+> information, although some of that information may actually be
+> resident on the TPM and not in memory.
+> 
+> b) The boot kernel that reads the hibernation image.
+> 
+> c) The resumed kernel.  This kernel has the same code as (a) but
+> possibly different PCRs.
+> 
+> If the encryption is going to protect anything at all, then kernel (b)
+
+Sorry for I forgot mention in previous mail...
+
+Here is the point. I developed authentication before encryption, so the
+image is not encrypted in early version. In my original design, I try
+to avoid that hibernate key be snapshotted to image. So I erased
+hibernate key from kernel (a), which means that the kernel (b) should
+forwards hibernate key to kernel (c). Otherwise next hibernate cycle
+will be failed because no key.
+
+You are right. When the snpashot image be encrypted, the key doesn't
+need to be erased. Then kernel (b) doesn't need to forward key to kernel
+(c). 
+
+I will remove trampoline. But, I still have a question when using PCRs
+with hibernate as below...
+
+> needs to have a way to get the key, which is presumably done using the
+> TPM, since it's not obvious to me that there's any other credible way
+> to do it.  (A passphrase could also make sense, but then you'd just
+> put the hibernation image on a dm-crypt volume and the problem is
+> solved.)  Kernel (c) shouldn't need to do any crypto, since, by the
+> time any code in kernel (c) executes at all, you've already decrypted
+> everything and you've effectively committed to trusting the
+> hibernation image.
+> 
+> If something goes wrong when you hibernate a second time, this means
+> that the first hibernation screwed up and corrupted something, e.g.
+> PCRs.  That should be fixed independently of this series IMO.
+> 
+
+For kernel lockdown situation, if PCRs are not capped, which means
+that a sealed bundle can be unsealed by root. If root be compromised
+then the sealed key can also be compromised.
+
+I was thinking if kernel generates a sealed key when booting, then
+kernel capped the PCR with a constant value[1] before the userspace
+is available. Then the sealed key can not be unsealed by compromised
+root. 
+
+In this case, kernel (b) will do the job to produce the sealed key
+before PCR be capped. Then the key must be forwarded by kernel (b)
+to kernel (c).
+
+[1]
+Using constant value for capping but not random number is for other
+subsystem or userland can continue to use the PCR.
+
+Thanks a lot!
+Joey Lee
