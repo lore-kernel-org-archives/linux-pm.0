@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH v2 4/4] ARM: defconfig: s5pv210: Add cpufreq support
-Date: Thu, 10 Jan 2019 21:52:15 +0100
-Message-ID: <20190110205215.22030-5-pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH v2 2/4] cpufreq: s5pv210: Don't flood kernel log after cpufreq change
+Date: Thu, 10 Jan 2019 21:52:13 +0100
+Message-ID: <20190110205215.22030-3-pawel.mikolaj.chmiel@gmail.com>
 References: <20190110205215.22030-1-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,29 +13,29 @@ To: kgene@kernel.org
 Cc: krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This commit enables cpufreq support for all s5pv210 devices.
+This commit replaces printk with pr_debug, so we don't flood kernel log.
 
 Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- arch/arm/configs/s5pv210_defconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+Changes from v1:
+  - Added Acked-by
+---
+ drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/s5pv210_defconfig b/arch/arm/configs/s5pv210_defconfig
-index 951196bdf008..fd4f28aabda6 100644
---- a/arch/arm/configs/s5pv210_defconfig
-+++ b/arch/arm/configs/s5pv210_defconfig
-@@ -11,6 +11,12 @@ CONFIG_ARCH_S5PV210=y
- CONFIG_VMSPLIT_2G=y
- CONFIG_ARM_APPENDED_DTB=y
- CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x20800000,8M console=ttySAC1,115200 init=/linuxrc"
-+CONFIG_CPU_FREQ=y
-+CONFIG_CPU_FREQ_STAT=y
-+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-+CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-+CONFIG_CPU_FREQ_GOV_USERSPACE=m
-+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
- CONFIG_VFP=y
- CONFIG_NEON=y
- CONFIG_MODULES=y
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index dbecd7667db2..f51697f1e0b3 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -481,7 +481,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 				arm_volt, arm_volt_max);
+ 	}
+ 
+-	printk(KERN_DEBUG "Perf changed[L%d]\n", index);
++	pr_debug("Perf changed[L%d]\n", index);
+ 
+ exit:
+ 	mutex_unlock(&set_freq_lock);
 -- 
 2.17.1
