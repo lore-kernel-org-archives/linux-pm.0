@@ -1,37 +1,42 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 0/7] Thermal throttling for SDM845
-Date: Thu, 10 Jan 2019 05:30:49 +0530
-Message-ID: <cover.1547078153.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 1/7] drivers: thermal: of-thermal: Print name of device node with error
+Date: Thu, 10 Jan 2019 05:30:50 +0530
+Message-ID: <52c46a3a4fd1674295d9c2577be87d73ce545044.1547078153.git.amit.kucheria@linaro.org>
+References: <cover.1547078153.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1547078153.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1547078153.git.amit.kucheria@linaro.org>
+References: <cover.1547078153.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Javi Merino <javi.merino@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:OPEN FIRMWARE AND FLATTENED
-        DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add support for thermal throttling on SDM845. 
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/thermal/of-thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-We introduce a generic .ready callback to be used by cpufreq drivers to
-register as a thermal cooling device. If this approach is acceptable I can
-send a series converting other cpufreq drivers to use this callback.
-
-Amit Kucheria (7):
-  drivers: thermal: of-thermal: Print name of device node with error
-  drivers: cpufreq: Add thermal_cooling_device pointer to struct
-    cpufreq_policy
-  cpu_cooling: Add generic driver ready callback
-  cpufreq: qcom-hw: Move to device_initcall
-  cpufreq: qcom-hw: Register as a cpufreq cooling device
-  arm64: dts: sdm845: Increase alert trip point to 95 degrees
-  arm64: dts: sdm845: wireup the thermal trip points to cpufreq
-
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 161 +++++++++++++++++++++++++--
- drivers/cpufreq/qcom-cpufreq-hw.c    |   7 +-
- drivers/thermal/cpu_cooling.c        |  18 +++
- drivers/thermal/of-thermal.c         |   4 +-
- include/linux/cpu_cooling.h          |   9 ++
- include/linux/cpufreq.h              |   2 +
- 6 files changed, 190 insertions(+), 11 deletions(-)
-
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 4bfdb4a1e47d..5ca2a6b370ea 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -867,14 +867,14 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 
+ 	ret = of_property_read_u32(np, "polling-delay-passive", &prop);
+ 	if (ret < 0) {
+-		pr_err("missing polling-delay-passive property\n");
++		pr_err("%s: missing polling-delay-passive property\n", np->name);
+ 		goto free_tz;
+ 	}
+ 	tz->passive_delay = prop;
+ 
+ 	ret = of_property_read_u32(np, "polling-delay", &prop);
+ 	if (ret < 0) {
+-		pr_err("missing polling-delay property\n");
++		pr_err("%s: missing polling-delay property\n", np->name);
+ 		goto free_tz;
+ 	}
+ 	tz->polling_delay = prop;
 -- 
 2.17.1
