@@ -1,70 +1,90 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v1 5/7] cpufreq: qcom-hw: Register as a cpufreq cooling device
-Date: Thu, 10 Jan 2019 10:32:19 +0100
-Message-ID: <CAJZ5v0hKODG2hT+8iwpX3te1dpbLPuy4=7RrEmAp=aATuEdkhA@mail.gmail.com>
-References: <cover.1547078153.git.amit.kucheria@linaro.org>
- <3c7d0e4a8373e89d6922543ccf56749970de5567.1547078153.git.amit.kucheria@linaro.org>
- <20190110061210.lz5i5wf7wxh22q7c@vireshk-i7>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC RESEND PATCH 0/7] Add driver for dvfsrc and add support for
+ active state of scpsys on mt8183
+Date: Thu, 10 Jan 2019 11:39:03 +0200
+Message-ID: <d03ec933-5fe6-d076-d658-9b966cee9c0f@linaro.org>
+References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
+ <154655603153.15366.7761694381359713995@swboyd.mtv.corp.google.com>
+ <1546859080.6818.128.camel@mtksdaap41>
+ <08d15fa8-7e53-518c-54bb-8050b0e4aabd@linaro.org>
+ <1547003324.6818.156.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190110061210.lz5i5wf7wxh22q7c@vireshk-i7>
+In-Reply-To: <1547003324.6818.156.camel@mtksdaap41>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, bjorn.andersson@linaro.org, Eduardo Valentin <edubezval@gmail.com>, Andy Gross <andy.gross@linaro.org>, Taniya Das <tdas@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+To: Henry Chen <henryc.chen@mediatek.com>
+Cc: Stephen Boyd <swboyd@chromium.org>, Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2019 at 7:12 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 10-01-19, 05:30, Amit Kucheria wrote:
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > ---
-> >  drivers/cpufreq/qcom-cpufreq-hw.c | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > index 649dddd72749..1c01311e5927 100644
-> > --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> > +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > @@ -5,6 +5,7 @@
-> >
-> >  #include <linux/bitfield.h>
-> >  #include <linux/cpufreq.h>
-> > +#include <linux/cpu_cooling.h>
-> >  #include <linux/init.h>
-> >  #include <linux/kernel.h>
-> >  #include <linux/module.h>
-> > @@ -216,7 +217,10 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
-> >  static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
-> >  {
-> >       void __iomem *base = policy->driver_data - REG_PERF_STATE;
-> > +     struct thermal_cooling_device *cdev = policy->cooldev;
-> >
-> > +     if (cdev)
-> > +             cpufreq_cooling_unregister(cdev);
-> >       kfree(policy->freq_table);
-> >       devm_iounmap(&global_pdev->dev, base);
-> >
-> > @@ -238,6 +242,7 @@ static struct cpufreq_driver cpufreq_qcom_hw_driver = {
-> >       .init           = qcom_cpufreq_hw_cpu_init,
-> >       .exit           = qcom_cpufreq_hw_cpu_exit,
-> >       .fast_switch    = qcom_cpufreq_hw_fast_switch,
-> > +     .ready          = generic_cpufreq_ready,
-> >       .name           = "qcom-cpufreq-hw",
-> >       .attr           = qcom_cpufreq_hw_attr,
-> >  };
->
-> I liked the idea of reducing code duplication, but not much the
-> implementation. All we were able to get rid of was a call to
-> of_cpufreq_cooling_register() and nothing else. Is it worth it ?
->
-> Maybe we can add another flag in cpufreq.h:
->
-> #define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
->
-> and let the core do it all automatically by itself, that will get rid
-> of code duplication actually.
->
-> @Rafael: What do you say ?
+Hi,
 
-Getting rid of code duplication is good, let's do that.
+On 1/9/19 05:08, Henry Chen wrote:
+> On Mon, 2019-01-07 at 18:34 +0200, Georgi Djakov wrote:
+>> Hi Henry,
+>>
+>> On 1/7/19 13:04, Henry Chen wrote:
+>>> On Thu, 2019-01-03 at 14:53 -0800, Stephen Boyd wrote:
+>>>> Quoting Henry Chen (2019-01-02 06:09:51)
+>>>>> The patchsets add support for MediaTek hardware module named DVFSRC
+>>>>> (dynamic voltage and frequency scaling resource collector). The DVFSRC is
+>>>>> a HW module which is used to collect all the requests from both software
+>>>>> and hardware and turn into the decision of minimum operating voltage and
+>>>>> minimum DRAM frequency to fulfill those requests.
+>>>>>
+>>>>> So, This series is to implement the dvfsrc driver to collect all the
+>>>>> requests of operating voltage or DRAM bandwidth from other device drivers
+>>>>> likes GPU/Camera through 2 frameworks basically:
+>>>>>
+>>>>> 1. PM_QOS_MEMORY_BANDWIDTH from PM QOS: to aggregate the bandwidth
+>>>>>    requirements from different clients
+>>>>
+>>>> Have you looked at using the interconnect framework for this instead of
+>>>> using PM_QOS_MEMORY_BANDWIDTH? Qcom is pushing an interconnect framework
+>>>> to do DRAM bandwidth requirement aggregation.
+>>>
+>>> Sorry, I haven't heard that before. Do you mean is following series
+>>> patch?
+>>> https://patchwork.kernel.org/project/linux-arm-msm/list/?series=53775
+>>>
+>>
+>> Yes, this one. The idea is that consumer drivers like GPU, camera, video
+>> encoder etc. report their bandwidth needs by using the interconnect API.
+>> The framework does the aggregation and configures the hardware. In order
+>> to use it you need to implement a platform-specific dvfsrc interconnect
+>> provider driver that understands the SoC topology and knows how to
+>> configure the hardware. I am not familiar with DVFSRC, but it seems to
+>> me that it can fit as interconnect provider.
+>> Does this HW module support any QoS priority/latency configuration or is
+>> it only bandwidth and voltage?
+>>
+>> Thanks,
+>> Georgi
+> 
+> Hi Georgi,
+> 
+> Yes, the design is only to support bandwidth and voltage. The one of the
+> function is to collect the memory bandwidth requirement from consumer
+> and select the minimum DRAM frequency to fulfill system performance.It
+> just get the total bandwidth then set it to HW, not involves complex SoC
+> topology. So we choose to use PM QOS to model that DVFSRC driver can
+> receive the bandwidth information from consumer driver via
+> PM_QOS_MEMORY_BANDWIDTH.
+
+Ok, good. The current patchset supports bandwidth, but there was a
+discussion about adding support for latency and priority in the future.
+Thanks for the information!
+
+> Do you have a patch that show how consumer driver used interconnect to
+> update their requirement.
+
+Here are some examples:
+https://lkml.org/lkml/2018/12/7/584
+https://lkml.org/lkml/2018/10/11/499
+https://lkml.org/lkml/2018/9/20/986
+https://lkml.org/lkml/2018/11/22/772
+
+Thanks,
+Georgi
