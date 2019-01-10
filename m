@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH v2 2/4] cpufreq: s5pv210: Don't flood kernel log after cpufreq change
-Date: Thu, 10 Jan 2019 21:52:13 +0100
-Message-ID: <20190110205215.22030-3-pawel.mikolaj.chmiel@gmail.com>
+Subject: [PATCH v2 3/4] cpufreq: s5pv210: Defer probe if getting regulators fail
+Date: Thu, 10 Jan 2019 21:52:14 +0100
+Message-ID: <20190110205215.22030-4-pawel.mikolaj.chmiel@gmail.com>
 References: <20190110205215.22030-1-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,29 +13,70 @@ To: kgene@kernel.org
 Cc: krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This commit replaces printk with pr_debug, so we don't flood kernel log.
+There is possibility, that when probing driver, regulators are not yet
+initialized. In this case we should return EPROBE_DEFER and wait till
+they're initialized, since they're required currently for cpufreq driver
+to work. Also move regulator initialization code at beginning of probe,
+so we can defer as fast as posibble.
 
 Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
 Changes from v1:
-  - Added Acked-by
+  - Fix compilation error
+  - Reorganize code so it's smaller
 ---
- drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 32 ++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index dbecd7667db2..f51697f1e0b3 100644
+index f51697f1e0b3..6df95941ba96 100644
 --- a/drivers/cpufreq/s5pv210-cpufreq.c
 +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -481,7 +481,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 				arm_volt, arm_volt_max);
+@@ -594,6 +594,25 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 	 * this whole driver as soon as S5PV210 gets migrated to use
+ 	 * cpufreq-dt driver.
+ 	 */
++	arm_regulator = regulator_get(NULL, "vddarm");
++	if (IS_ERR(arm_regulator)) {
++		if (PTR_ERR(arm_regulator) == -EPROBE_DEFER)
++			pr_debug("vddarm regulator not ready, defer\n");
++		else
++			pr_err("failed to get regulator vddarm\n");
++		return PTR_ERR(arm_regulator);
++	}
++
++	int_regulator = regulator_get(NULL, "vddint");
++	if (IS_ERR(int_regulator)) {
++		if (PTR_ERR(int_regulator) == -EPROBE_DEFER)
++			pr_debug("vddint regulator not ready, defer\n");
++		else
++			pr_err("failed to get regulator vddint\n");
++		regulator_put(arm_regulator);
++		return PTR_ERR(int_regulator);
++	}
++
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
+ 	if (!np) {
+ 		pr_err("%s: failed to find clock controller DT node\n",
+@@ -633,19 +652,6 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 		}
  	}
  
--	printk(KERN_DEBUG "Perf changed[L%d]\n", index);
-+	pr_debug("Perf changed[L%d]\n", index);
+-	arm_regulator = regulator_get(NULL, "vddarm");
+-	if (IS_ERR(arm_regulator)) {
+-		pr_err("failed to get regulator vddarm\n");
+-		return PTR_ERR(arm_regulator);
+-	}
+-
+-	int_regulator = regulator_get(NULL, "vddint");
+-	if (IS_ERR(int_regulator)) {
+-		pr_err("failed to get regulator vddint\n");
+-		regulator_put(arm_regulator);
+-		return PTR_ERR(int_regulator);
+-	}
+-
+ 	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
  
- exit:
- 	mutex_unlock(&set_freq_lock);
+ 	return cpufreq_register_driver(&s5pv210_driver);
 -- 
 2.17.1
