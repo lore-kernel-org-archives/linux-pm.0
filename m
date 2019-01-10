@@ -1,53 +1,74 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v5 04/10] Platform: OLPC: Avoid a warning if the EC didn't register yet
-Date: Thu, 10 Jan 2019 18:58:39 +0100
-Message-ID: <20190110175845.1203986-5-lkundrak@v3.sk>
+Subject: [PATCH v5 01/10] dt-bindings: olpc,
+ xo1.75-ec: Add OLPC XO-1.75 EC bindings
+Date: Thu, 10 Jan 2019 18:58:36 +0100
+Message-ID: <20190110175845.1203986-2-lkundrak@v3.sk>
 References: <20190110175845.1203986-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20190110175845.1203986-1-lkundrak@v3.sk>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, platform-driver-x86@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Just return EPROBE_DEFER, so that whoever attempted to use the EC call ca=
-n
-defer their work.
+The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
+signals for handshaking. It needs to know when is the slave (Linux)
+side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
+controller node) and when does it wish to respond with a command (the
+cmd-gpio property).
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
-Changes since v2:
-- Adjust the commit message for the s/ENODEV/EPROBE_DEFER/ change
-
 Changes since v1:
-- EPROBE_DEFER instead of ENODEV
+- s/cmd-gpio/cmd-gpios/
+- s/ready-gpio/ready-gpios/ in the documentation paragraph
+- Remove status = "okay" from the example
 
- drivers/platform/olpc/olpc-ec.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ .../bindings/misc/olpc,xo1.75-ec.txt          | 23 +++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
 
-diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
--ec.c
-index 2a647455a368..a91f78245f5e 100644
---- a/drivers/platform/olpc/olpc-ec.c
-+++ b/drivers/platform/olpc/olpc-ec.c
-@@ -125,8 +125,11 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 =
-*outbuf, size_t outlen)
- 	struct olpc_ec_priv *ec =3D ec_priv;
- 	struct ec_cmd_desc desc;
-=20
--	/* Ensure a driver and ec hook have been registered */
--	if (WARN_ON(!ec_driver || !ec_driver->ec_cmd))
-+	/* Driver not yet registered. */
-+	if (!ec_driver)
-+		return -EPROBE_DEFER;
+diff --git a/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+new file mode 100644
+index 000000000000..8c4d649cdd8f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+@@ -0,0 +1,23 @@
++OLPC XO-1.75 Embedded Controller
 +
-+	if (WARN_ON(!ec_driver->ec_cmd))
- 		return -ENODEV;
-=20
- 	if (!ec)
---=20
++Required properties:
++- compatible: Should be "olpc,xo1.75-ec".
++- cmd-gpios: gpio specifier of the CMD pin
++
++The embedded controller requires the SPI controller driver to signal readiness
++to receive a transfer (that is, when TX FIFO contains the response data) by
++strobing the ACK pin with the ready signal. See the "ready-gpios" property of the
++SSP binding as documented in:
++<Documentation/devicetree/bindings/spi/spi-pxa2xx.txt>.
++
++Example:
++	&ssp3 {
++		spi-slave;
++		ready-gpios = <&gpio 125 GPIO_ACTIVE_HIGH>;
++
++		slave {
++			compatible = "olpc,xo1.75-ec";
++			spi-cpha;
++			cmd-gpios = <&gpio 155 GPIO_ACTIVE_HIGH>;
++		};
++	};
+-- 
 2.20.1
