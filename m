@@ -1,45 +1,52 @@
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: Re: [RFC RESEND PATCH 6/7] soc: mediatek: add MT8183 dvfsrc support
-Date: Wed, 09 Jan 2019 16:38:41 -0800
-Message-ID: <154708072159.15366.10685577152949535083@swboyd.mtv.corp.google.com>
-References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
- <1546438198-1677-7-git-send-email-henryc.chen@mediatek.com>
- <154655691363.15366.15223653253336032554@swboyd.mtv.corp.google.com>
- <1546859353.6818.132.camel@mtksdaap41>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v1 2/7] drivers: cpufreq: Add thermal_cooling_device
+ pointer to struct cpufreq_policy
+Date: Wed, 9 Jan 2019 17:01:57 -0800
+Message-ID: <20190110010157.GU261387@google.com>
+References: <cover.1547078153.git.amit.kucheria@linaro.org>
+ <aadc9cff04dc310138b41979239ce51938afedce.1547078153.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1546859353.6818.132.camel@mtksdaap41>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Henry Chen <henryc.chen@mediatek.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kees Cook <keescook@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <vireshk@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <aadc9cff04dc310138b41979239ce51938afedce.1547078153.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Henry Chen (2019-01-07 03:09:13)
-> On Fri, 2019-01-04 at 07:08 +0800, Stephen Boyd wrote:
-> > Quoting Henry Chen (2019-01-02 06:09:57)
-> > > +       val = dvfsrc_read(dvfsrc, DVFSRC_INT);
-> > > +       dvfsrc_write(dvfsrc, DVFSRC_INT_CLR, val);
-> > > +       dvfsrc_write(dvfsrc, DVFSRC_INT_CLR, 0x0);
-> > > +       if (val & DVFSRC_IRQ_TIMEOUT_EN)
-> > > +               dev_warn(dvfsrc->dev, "timeout at spm = %x", val);
-> > > +
-> > 
-> > Do you need to handle the irq at all? It looks like you are cleaning up
-> > something and then complaining if there's a timeout, but otherwise
-> > nothing goes on so perhaps the irq can just be ignored and nobody will
-> > be the wiser?
+On Thu, Jan 10, 2019 at 05:30:51AM +0530, Amit Kucheria wrote:
+> Several cpufreq drivers register themselves as thermal cooling devices.
+> Adding a pointer to struct cpufreq_policy removes the need for them to
+> store this pointer in a private data structure.
 > 
-> ok, it only for alarm system a timeout message. 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  include/linux/cpufreq.h | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index c86d6d8bdfed..2496549d7573 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -95,6 +95,8 @@ struct cpufreq_policy {
+>  	struct cpufreq_frequency_table	*freq_table;
+>  	enum cpufreq_table_sorting freq_table_sorted;
+>  
+> +	struct thermal_cooling_device *cooldev; /* Pointer to the cooling
+> +						 * device if used for thermal mitigation */
+>  	struct list_head        policy_list;
+>  	struct kobject		kobj;
+>  	struct completion	kobj_unregister;
 
-Well if it's some timeout do you need to fail some dvfs operation if it
-times out? Or take the whole system down in that scenario?
+I've mixed feelings about this. It's definitely desirable to avoid
+code duplication and tying the cooling device to the cpufreq_policy is
+a convenient way to achieve that. However semantically it seems a bit
+odd that a CPU cooling device is part of the cpufreq policy.
+
+Anyway, unless there are better ideas we probably want to be pragmatic
+here, so if Viresh is fine with it who am I to complain ;-)
+
+Cheers
+
+Matthias
