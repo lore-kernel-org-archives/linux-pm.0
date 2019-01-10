@@ -1,70 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 5/7] cpufreq: qcom-hw: Register as a cpufreq cooling
- device
-Date: Thu, 10 Jan 2019 11:42:10 +0530
-Message-ID: <20190110061210.lz5i5wf7wxh22q7c@vireshk-i7>
+Subject: Re: [PATCH v1 3/7] cpu_cooling: Add generic driver ready callback
+Date: Thu, 10 Jan 2019 11:44:50 +0530
+Message-ID: <20190110061450.tdvanixjr6zdajhb@vireshk-i7>
 References: <cover.1547078153.git.amit.kucheria@linaro.org>
- <3c7d0e4a8373e89d6922543ccf56749970de5567.1547078153.git.amit.kucheria@linaro.org>
+ <9cccfabf22ccae92dfd31175b57baab3206eac0d.1547078153.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3c7d0e4a8373e89d6922543ccf56749970de5567.1547078153.git.amit.kucheria@linaro.org>
+In-Reply-To: <9cccfabf22ccae92dfd31175b57baab3206eac0d.1547078153.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 10-01-19, 05:30, Amit Kucheria wrote:
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/cpufreq/qcom-cpufreq-hw.c | 5 +++++
->  1 file changed, 5 insertions(+)
+> All cpufreq drivers do similar things to register as a cooling device.
+> Provide a generic call back so we can get rid of duplicated code in the
+> drivers.
 > 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> index 649dddd72749..1c01311e5927 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -5,6 +5,7 @@
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> ---
+>  drivers/thermal/cpu_cooling.c | 18 ++++++++++++++++++
+>  include/linux/cpu_cooling.h   |  9 +++++++++
+>  2 files changed, 27 insertions(+)
+
+We may be doing this differently, but I found some other issues with
+the patch.
+
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index dfd23245f778..5154ffc12332 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -694,6 +694,7 @@ __cpufreq_cooling_register(struct device_node *np,
 >  
->  #include <linux/bitfield.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/init.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
-> @@ -216,7 +217,10 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	void __iomem *base = policy->driver_data - REG_PERF_STATE;
-> +	struct thermal_cooling_device *cdev = policy->cooldev;
+>  	cpufreq_cdev->clipped_freq = cpufreq_cdev->freq_table[0].frequency;
+>  	cpufreq_cdev->cdev = cdev;
+> +	policy->cooldev = cdev;
+
+Why was this required ? The below routine was already doing it...
+
 >  
-> +	if (cdev)
-> +		cpufreq_cooling_unregister(cdev);
->  	kfree(policy->freq_table);
->  	devm_iounmap(&global_pdev->dev, base);
+>  	mutex_lock(&cooling_list_lock);
+>  	/* Register the notifier for first cpufreq cooling device */
+> @@ -785,6 +786,23 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
+>  }
+>  EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
 >  
-> @@ -238,6 +242,7 @@ static struct cpufreq_driver cpufreq_qcom_hw_driver = {
->  	.init		= qcom_cpufreq_hw_cpu_init,
->  	.exit		= qcom_cpufreq_hw_cpu_exit,
->  	.fast_switch    = qcom_cpufreq_hw_fast_switch,
-> +	.ready		= generic_cpufreq_ready,
->  	.name		= "qcom-cpufreq-hw",
->  	.attr		= qcom_cpufreq_hw_attr,
->  };
+> +/**
+> + * generic_cpufreq_ready - generic driver callback to register a thermal_cooling_device
+> + * @policy: cpufreq policy
+> + */
+> +void generic_cpufreq_ready(struct cpufreq_policy *policy)
+> +{
+> +	struct thermal_cooling_device **cdev = &policy->cooldev;
+> +
+> +	*cdev = of_cpufreq_cooling_register(policy);
 
-I liked the idea of reducing code duplication, but not much the
-implementation. All we were able to get rid of was a call to
-of_cpufreq_cooling_register() and nothing else. Is it worth it ?
+... here
 
-Maybe we can add another flag in cpufreq.h:
+> +	if (IS_ERR(*cdev)) {
 
-#define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
+We never get an error here, only NULL.
 
-and let the core do it all automatically by itself, that will get rid
-of code duplication actually.
+> +		pr_err("Failed to register cpufreq cooling device for CPU%d: %ld\n",
+> +		       policy->cpu, PTR_ERR(cdev));
 
-@Rafael: What do you say ?
+The of_cpufreq_cooling_register() routine already prints enough error
+messages on failures.
+
+> +		cdev = NULL;
+
+This is a meaningless statement, perhaps you wanted to do *cdev = NULL
+:)
 
 -- 
 viresh
