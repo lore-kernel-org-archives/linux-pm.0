@@ -1,110 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v10 03/27] timer: Export next wakeup time of a CPU
-Date: Fri, 11 Jan 2019 12:06:15 +0100
-Message-ID: <119031115.C8gHTGbYmQ@aspire.rjw.lan>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org> <20181129174700.16585-4-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 00/27] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
+Date: Fri, 11 Jan 2019 12:08:32 +0100
+Message-ID: <2260944.bWjCqvLuxn@aspire.rjw.lan>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org> <CAPDyKFpV0uQhZnJhSg79RxmCq+0PFUeaXCgmBgRU5aNF8WNoDw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181129174700.16585-4-ulf.hansson@linaro.org>
+In-Reply-To: <CAPDyKFpV0uQhZnJhSg79RxmCq+0PFUeaXCgmBgRU5aNF8WNoDw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, November 29, 2018 6:46:36 PM CET Ulf Hansson wrote:
-> From: Lina Iyer <lina.iyer@linaro.org>
+On Monday, December 17, 2018 5:12:54 PM CET Ulf Hansson wrote:
+> Rafael, Sudeep, Lorenzo, Mark,
 > 
-> Knowing the sleep duration of CPUs, is known to be needed while selecting
-> the most energy efficient idle state for a CPU or a group of CPUs.
+> On Thu, 29 Nov 2018 at 18:47, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > Over the years this series have been iterated and discussed at various Linux
+> > conferences and LKML. In this new v10, a quite significant amount of changes
+> > have been made to address comments from v8 and v9. A summary is available
+> > below, although let's start with a brand new clarification of the motivation
+> > behind this series.
+> >
+> > For ARM64/ARM based platforms CPUs are often arranged in a hierarchical manner.
+> > From a CPU idle state perspective, this means some states may be shared among a
+> > group of CPUs (aka CPU cluster).
+> >
+> > To deal with idle management of a group of CPUs, sometimes the kernel needs to
+> > be involved to manage the last-man standing algorithm, simply because it can't
+> > rely solely on power management FWs to deal with this. Depending on the
+> > platform, of course.
+> >
+> > There are a couple of typical scenarios for when the kernel needs to be in
+> > control, dealing with synchronization of when the last CPU in a cluster is about
+> > to enter a deep idle state.
+> >
+> > 1)
+> > The kernel needs to carry out so called last-man activities before the
+> > CPU cluster can enter a deep idle state. This may for example involve to
+> > configure external logics for wakeups, as the GIC may no longer be functional
+> > once a deep cluster idle state have been entered. Likewise, these operations
+> > may need to be restored, when the first CPU wakes up.
+> >
+> > 2)
+> > Other more generic I/O devices, such as an MMC controller for example, may be a
+> > part of the same power domain as the CPU cluster, due to a shared power-rail.
+> > For these scenarios, when the MMC controller is in use dealing with an MMC
+> > request, a deeper idle state of the CPU cluster may needs to be temporarily
+> > disabled. This is needed to retain the MMC controller in a functional state,
+> > else it may loose its register-context in the middle of serving a request.
+> >
+> > In this series, we are extending the generic PM domain (aka genpd) to be used
+> > for also CPU devices. Hence the goal is to re-use much of its current code to
+> > help us manage the last-man standing synchronization. Moreover, as we already
+> > use genpd to model power domains for generic I/O devices, both 1) and 2) can be
+> > address with its help.
+> >
+> > Moreover, to address these problems for ARM64 DT based platforms, we are
+> > deploying support for genpd and runtime PM to the PSCI FW driver - and finally
+> > we make some updates to two ARM64 DTBs, as to deploy the new PSCI CPU topology
+> > layout.
+> >
+> > The series has been tested on the QCOM 410c dragonboard and the Hisilicon Hikey
+> > board. You may also find the code at:
+> >
+> > git.linaro.org/people/ulf.hansson/linux-pm.git next
 > 
-> However, to be able to compute the sleep duration, we need to know at what
-> time the next expected wakeup is for the CPU. Therefore, let's export this
-> information via a new function, tick_nohz_get_next_wakeup(). Following
-> changes make use of it.
+> It's soon been three weeks since I posted this and I would really
+> appreciate some feedback.
 > 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v10:
-> 	- Updated function header of tick_nohz_get_next_wakeup().
-> 
-> ---
->  include/linux/tick.h     |  8 ++++++++
->  kernel/time/tick-sched.c | 13 +++++++++++++
->  2 files changed, 21 insertions(+)
-> 
-> diff --git a/include/linux/tick.h b/include/linux/tick.h
-> index 55388ab45fd4..e48f6b26b425 100644
-> --- a/include/linux/tick.h
-> +++ b/include/linux/tick.h
-> @@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
->  extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
->  extern unsigned long tick_nohz_get_idle_calls(void);
->  extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-> +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
->  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
->  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
->  
-> @@ -151,6 +152,13 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
->  	*delta_next = TICK_NSEC;
->  	return *delta_next;
->  }
-> +
-> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	/* Next wake up is the tick period, assume it starts now */
-> +	return ktime_add(ktime_get(), TICK_NSEC);
-> +}
-> +
->  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
->  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
->  
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index 69e673b88474..7a9166506503 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -1089,6 +1089,19 @@ unsigned long tick_nohz_get_idle_calls(void)
->  	return ts->idle_calls;
->  }
->  
-> +/**
-> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-> + * @cpu: the particular CPU to get next wake up for
-> + *
-> + * Called for idle CPUs only.
-> + */
-> +ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
-> +
-> +	return dev->next_event;
-> +}
-> +
->  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
->  {
->  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-> 
+> Rafael, I need your feedback on patch 1->4.
 
-Well, I have concerns regarding this one.
+Sorry for the delay, I've replied to the patches.
 
-I don't believe it is valid to call this new function for non-idle CPUs and
-the kerneldoc kind of says so, but the next patch doesn't actually prevent
-it from being called for a non-idle CPU (at the time it is called in there
-the target CPU may not be idle any more AFAICS).
+The bottom line is that the mechanism introduced in patch 3 and used
+in patch 4 doesn't look particularly clean to me.
 
-In principle, the cpuidle core can store this value, say in struct
-cpuidle_device of the given CPU, and expose a helper to access it from
-genpd, but that would be extra overhead totally unnecessary on everthing
-that doesn't use genpd for cpuidle.
-
-So maybe the driver could store it in its ->enter callback?  After all,
-the driver knows that genpd is going to be used later.
+Cheers,
+Rafael
