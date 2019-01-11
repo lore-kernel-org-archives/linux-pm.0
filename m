@@ -1,84 +1,58 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible string
- for power domain
-Date: Fri, 11 Jan 2019 15:24:11 +0000
-Message-ID: <AM0PR04MB4211BFB2A3D02F67E4AE0B1F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
-References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
- <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
- <20190111090009.GG32649@dragon> <20190111090653.GH32649@dragon>
- <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
- <20190111130311.GA3599@dragon>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Fri, 11 Jan 2019 07:28:58 -0800
+Message-ID: <1547220538.2793.6.camel@HansenPartnership.com>
+References: <20190103143227.9138-1-jlee@suse.com>
+         <4499700.LRS4F2YjjC@tauon.chronox.de>
+         <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
+         <1565399.7ulKdI1fm5@tauon.chronox.de>
+         <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+         <1546994671.6077.10.camel@HansenPartnership.com>
+         <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
+         <20190111140226.GA6448@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190111130311.GA3599@dragon>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawnguo@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190111140226.GA6448@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Andy Lutomirski <luto@kernel.org>
+Cc: Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Shawn Guo [mailto:shawnguo@kernel.org]
-> Sent: Friday, January 11, 2019 9:03 PM
-> On Fri, Jan 11, 2019 at 10:48:21AM +0000, Aisheng Dong wrote:
-> > Hi Shawn,
-> >
-> > > -----Original Message-----
-> > > From: Shawn Guo [mailto:shawnguo@kernel.org]
-> > > Sent: Friday, January 11, 2019 5:07 PM
-> > >
-> > > On Fri, Jan 11, 2019 at 05:00:11PM +0800, Shawn Guo wrote:
-> > > > On Tue, Dec 18, 2018 at 04:01:20PM +0000, Aisheng Dong wrote:
-> > > > > SCU power domain can be used in the same way by IMX8QXP and
-> > > IMX8QM SoCs.
-> > > > > Let's add a "fsl,scu-pd" fallback compatible string to allow
-> > > > > other SoCs to reuse the common part.
-> > > >
-> > > > This is not the practice we used to match devices with
-> > > > compatibilities, i.e. coding the compatible string with the SoC
-> > > > name that firstly introduces the device, and use the compatible as
-> > > > fallback for new
-> > > SoCs.
-> > >
-> >
-> > This is suggested by Rob that if the future SoCs are likely to be compatible.
-> > Then we can use a general fallback compatible string like "fsl,scu-pd".
-> >
-> >
-> > From SCU HW protocol point of view, they're indeed compatible.
-> > Just varies a bit on the domains numbers.
-> > That's why we introduce "fsl,scu-pd".
-> > But still keep SoC specific compatible string in case any special
-> > tricks to ensure the ABI stability.
-> >
-> > How do you think?
+On Fri, 2019-01-11 at 16:02 +0200, Jarkko Sakkinen wrote:
+> On Tue, Jan 08, 2019 at 05:43:53PM -0800, Andy Lutomirski wrote:
+> > (Also, do we have a sensible story of how the TPM interacts with
+> > hibernation at all?  Presumably we should at least try to replay
+> > the PCR operations that have occurred so that we can massage the
+> > PCRs into the same state post-hibernation.  Also, do we have any
+> > way for the kernel to sign something with the TPM along with an
+> > attestation that the signature was requested *by the
+> > kernel*?  Something like a sub-hierarchy of keys that the kernel
+> > explicitly prevents userspace from accessing?)
 > 
-> Unless Rob is against the practice we have been used for long time on i.MX, I
-> would keep using it for i.MX8, i.e. instead of introducing a generic compatible
-> for fallback, simply falling on the compatible SoC specified IP block.
+> Kernel can keep it is own key hierarchy in memory as TPM2 chips allow
+> to offload data in encrypted form and load it to TPM when it needs to
+> use it.
 > 
+> The in-kernel resource manager that I initiated couple years ago
+> provides this type of functionality.
 
-Hmm, i feel protocol based devices is slightly a bit different from our old practice.
-See ARM and TI are all used generic compatible string.
-Documentation/devicetree/bindings/arm/arm,scpi.txt
-Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+Actually, the resource manager only keeps volatile objects separated
+when in use not when offloaded.  The problem here is that the object
+needs to be persisted across reboots, so either it gets written to the
+NV area, bypassing the resource manager and making it globally visible
+or it has to get stored in TPM form in the hibernation image, meaning
+anyone with access to the TPM who can read the image can extract and
+load it. Further: anyone with access to the TPM can create a bogus
+sealed key and encrypt a malicious hibernation image with it.  So there
+are two additional problems
 
-If from firmware protocol point of view, they're defined SoC independent.
-SW(driver) implementation might be a different on platforms due to special tricks
-or implemented as platform independent.
+   1. Given that the attacker may have access to the binary form of the
+      key, can we make sure only the kernel can get it released?
+   2. How do we prevent an attacker with access to the TPM from creating a
+      bogus sealed key?
 
-Anyway, if you strongly against this, i will change to what you requested.
+This is why I was thinking localities.
 
-Regards
-Dong Aisheng
-
-> Shawn
+James
