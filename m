@@ -1,71 +1,214 @@
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: Re: [PATCH RFC 3/5] dt-bindings: Add PDC timer bindings for Qualcomm SoCs
-Date: Thu, 10 Jan 2019 13:27:56 -0800
-Message-ID: <154715567680.19284.12367636883540337540@swboyd.mtv.corp.google.com>
-References: <20181221115946.10095-1-rplsssn@codeaurora.org> <154546438942.179992.14851496143150245966@swboyd.mtv.corp.google.com> <504cae51-0f35-beb8-496b-a335863a9071@codeaurora.org> <154603310752.179992.9262815873457262616@swboyd.mtv.corp.google.com> <b97937a0-68ff-ded7-d63b-680981818114@codeaurora.org> <154655037205.15366.7302521016277534390@swboyd.mtv.corp.google.com> <6384bcac-634c-5e7e-b357-93982de6eafb@codeaurora.org> <93a4b632-5740-42a9-9552-b46dd599ad68@codeaurora.org> <154705600478.15366.3563482093409250809@swboyd.mtv.corp.google.com> <3ae4bf87-88be-466d-0f1e-ff7bf5c4e816@codeaurora.org>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Thu, 10 Jan 2019 17:09:46 -0800
+Message-ID: <CALCETrU5qWzMSLxa28XHXBsg-gZwkxfzrqztTbBO+qcCYQbTMA@mail.gmail.com>
+References: <20190103143227.9138-1-jlee@suse.com> <20190106181026.GA15256@amd>
+ <20190107173743.GC4210@linux-l9pv.suse> <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
+ <20190109163958.GG9503@linux-l9pv.suse> <CALCETrUprUNLci+tQ+P7PV3PvS4ruxz5jrGH3R_FDV4SFp3r9g@mail.gmail.com>
+ <20190110151256.GN3599@linux-l9pv.suse>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3ae4bf87-88be-466d-0f1e-ff7bf5c4e816@codeaurora.org>
+In-Reply-To: <20190110151256.GN3599@linux-l9pv.suse>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Raju P L S S S N <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: joeyli <jlee@suse.com>, David Howells <dhowells@redhat.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Raju P L S S S N (2019-01-10 08:58:41)
->=20
->=20
-> On 1/9/2019 11:16 PM, Stephen Boyd wrote:
-> > That could be done by making a PDC clockevent that has some DT binding
-> > of a property pointing to an MMIO timer frame and then reimplementing
-> > the MMIO timer code in the PDC driver on top of the frame/register
-> > region it pulls out of there. Or it could be written in reverse by
-> > having the generic MMIO timer driver point to the PDC somehow and
-> > implement some platform specific API to pass that information to the
-> > real wakeup programming part in PDC.
-> >=20
-> > I'm leaning toward the first approach where PDC is the clockevent and
-> > that uses the MMIO timer on the backend to do what it needs to program a
-> > wakeup. That way you can mandate the usage of the physical timer and
-> > keep this quirk away from the ARM timer driver. It also makes the idea
-> > of a qcom,pdc-timer-mode sort of useless because the PDC will have a
-> > property that points to the timer frame and that will mean "use this for
-> > broadcast wakeup". I'm not sure how the ARM folks feel about this
-> > though. It would probably require some sort of ARM timer API that lets
-> > us program the MMIO timer frame from the PDC driver. So exporting
-> > arch_timer_reg_write() and making that always inlined to optimize hot
-> > paths would be required.
-> >=20
->=20
-> Regarding the first approach -
-> If PDC clk_evt_dev is created and registered to broadcast framework, it=20
-> means it will replace MMIO timer event device in broadcast framework (as =
+On Thu, Jan 10, 2019 at 7:13 AM joeyli <jlee@suse.com> wrote:
+>
+> On Wed, Jan 09, 2019 at 10:47:42AM -0800, Andy Lutomirski wrote:
+> > On Wed, Jan 9, 2019 at 8:40 AM joeyli <jlee@suse.com> wrote:
+> > >
+> > > Hi Andy,
+> > >
+> > > Thanks for your review!
+> > >
+> > > On Tue, Jan 08, 2019 at 01:41:48PM -0800, Andy Lutomirski wrote:
+> > > > > On Jan 7, 2019, at 9:37 AM, joeyli <jlee@suse.com> wrote:
+> > > > >
+> > > > > Hi Pavel,
+> > > > >
+> > > > > Thanks for your review!
+> > > > >
+> > > > >> On Sun, Jan 06, 2019 at 07:10:27PM +0100, Pavel Machek wrote:
+> > > > >> Hi!
+> > > > >>
+> > > > >>> This patchset is the implementation of encryption and authentic=
+ation
+> > > > >>> for hibernate snapshot image. The image will be encrypted by AE=
+S and
+> > > > >>> authenticated by HMAC.
+> > > > >>
+> > > > >> Ok, so you encrypt.
+> > > > >
+> > > > > Yes, encryption and authentication.
+> > > > >
+> > > > >>> The hibernate function can be used to snapshot memory pages to =
+an image,
+> > > > >>> then kernel restores the image to memory space in a appropriate=
+ time.
+> > > > >>> There have secrets in snapshot image and cracker may modifies i=
+t for
+> > > > >>> hacking system. Encryption and authentication of snapshot image=
+ can protect
+> > > > >>> the system.
+> > > > >>>
+> > > > >>> Hibernate function requests the master key through key retentio=
+n service.
+> > > > >>> The snapshot master key can be a trusted key or a user defined =
+key. The
+> > > > >>> name of snapshot master key is fixed to "swsusp-kmk". User shou=
+ld loads
+> > > > >>> swsusp-kmk to kernel by keyctl tool before the hibernation resu=
+me.
+> > > > >>> e.g. The swsusp-kmk must be loaded before systemd-hibernate-res=
+ume
+> > > > >>
+> > > > >> But if userspace has a key, encryption is useless against root.
+> > > > >
+> > > > > Yes, but this concern is not only for hibernation encryption. Thi=
+s patch
+> > > > > set does not provide solution against this concern.
+> > > > >
+> > > > > The purpose of this patch set is to encrypt and authenticate hibe=
+rnate
+> > > > > snapshot image in kernel space. It also requests key through keyr=
+ing
+> > > > > mechanism. Which means that we can easy to adapt to new key type =
+from
+> > > > > keyring in the future.
+> > > > >
+> > > > > Currently TPM trusted key or user defined key types are not again=
+st
+> > > > > root. Even using the TPM trusted key, it still can be unsealed by=
+ root
+> > > > > before the PCRs be capped (unless we capped PCRs in kernel).
+> > > > >
+> > > > > My solution for keeping the secret by kernel is the EFI secure ke=
+y type:
+> > > > >    https://lkml.org/lkml/2018/8/5/31
+> > > > >
+> > > > > But the EFI boot variable doesn't design for keeping secret, so W=
+indows
+> > > > > and OEM/ODM do not use boot variable to keep secret. So this idea=
+ can
+> > > > > not be accepted. We must think other key type against root.
+> > > > >
+> > > > >>> The TPM trusted key type is preferred to be the master key. But=
+ user
+> > > > >>> defined key can also be used for testing or when the platform d=
+oesn't
+> > > > >>> have TPM. User must be aware that the security of user key reli=
+es on
+> > > > >>> user space. If the root account be compromised, then the user k=
+ey will
+> > > > >>> easy to be grabbed.
+> > > > >>
+> > > > >> In the TPM case, does userland have access to the key?
+> > > > >
+> > > > > In the TPM case, userland can only touch the sealed key blob. So =
+userland
+> > > > > doesn't know the real secret. But it has risk that root unseals t=
+he key
+> > > > > before PCRs be capped.
+> > > > >
+> > > > >> Please explain your security goals.
+> > > > >
+> > > > > My security goals:
+> > > > >
+> > > > > - Encrypt and authicate hibernate snapshot image in kernel space.=
+ Userspace
+> > > > >  can only touch an encrypted and signed snapshot image.
+> > > >
+> > > > Signed?
+> > > >
+> > > > I=E2=80=99m not entirely convinced that the keyring mechanism is wh=
+at you
+> > > > want. ISTM that there are two goals here:
+> > > >
+> > > > a) Encryption: it should be as hard as can reasonably be arranged t=
+o
+> > > > extract secrets from a hibernation image.
+> > > >
+> > > > b) Authentication part 1: it should not be possible for someone in
+> > > > possession of a turned-off machine to tamper with the hibernation
+> > > > image such that the image, when booted, will leak its secrets. This
+> > > > should protect against attackers who don=E2=80=99t know the encrypt=
+ion key.
+> > > >
+> > > > c) Authentication part 2: it should be to verify, to the extent
+> > > > practical, that the image came from the same machine and was really
+> > > > created using hibernation.  Or maybe by the same user.
+> > > >
+> > > > For (a) and (b), using an AE mode where the key is protected in som=
+e
+> > > > reasonable way.  Joey, why are you using HMAC?  Please tell me you=
+=E2=80=99re
+> > > > at least doing encrypt-then-MAC.  But why not use a real AE mode li=
+ke
+> > > > AES-GCM?
+> > >
+> > > The reason for using HMAC is the history for development. My first pa=
+tch
+> > > set is only for hibernate authentication. Then I added encryption cod=
+e on
+> > > top of my authentication patches in last version.
+> > >
+> > > I am doing encrypt-then-MAC. My code ecrypts each page by AES then HM=
+AC
+> > > whole snapshot image. I feed encrypted data pages one by one to
+> > > crypto_shash_update() API for calculating the hash for whole image.
+> >
+> > ...
+> >
+> > I think you should write down a clear description of the data format.
+>
+> Hibernation allocates free pages for building snapshot image. Those free
+> pages are scattered in memory. So kernel marks those page numbers on a
+> bitmap to locate them. Because this image buffer is discontinuous, so I
+> use update mode hashing whole image.
+>
+> > A general problem with crypto is that the fact that it appears to work
+> > doesn't mean it's secure at all, and it's very hard to follow the
+> > code.  Especially in Linux using the crypto API -- code using the
+> > crypto API tends to be mostly boilerplate.
+> >
+>
+> hm... Do you mean that the implementation of HMAC in crypto cannot be
+> trusted? I hope at least that I can trust the update mode for normal
+> hash like SHA256 or SHA512?
 
-> only one broadcast event timer can exist). So in registration phase, the =
+No, I fully expect the crypto code to do what it says.  What I mean is
+that you can easily create utterly broken things that involve crypto,
+but they still work fine when you use then non-maliciously.
 
-> tick broadcast framework would configure broadcat event handler for=20
-> PDC(clk_evt_dev).
+> > >
+> > > Sorry for I didn't capture the meaning of "acceptable usage". The tru=
+sted
+> > > key already be unsealed by TPM when the key be enrolled by keyctl too=
+l.
+> > > So my code just extract the unsealed key data (the random number) for
+> > > encryption.
+> >
+> > If someone creates a trusted key that is used for asymmetric crypto or
+> > perhaps a trusted key that is intended to be used for, say, an HMAC
+> > key, you should not also use it to derive hibernation keys.  This is
+> > what I mean by "acceptable usage".
+> >
+>
+> When keyring is producing encrypted key, the trusted key be used to
+> derive the encrypt key and authenticate key to encrypt and hmac sign
+> a encrypted key. So trusted key can be used in symmetric crypto.
 
-Yes all the MMIO timer frames would need to be marked as "disabled" I
-suppose, or somehow we would need to tell the MMIO timer driver to not
-register the MMIO timer frame from there because it's used by the PDC
-now. Maybe that would require changing the MMIO timer's compatible
-string to be something different.
+Can it?
 
->=20
-> Even if we have some way of exporting arch_timer_reg_write() to program=20
-> the wakeup for MMIO timer, the irq handler for MMIO timer is responsible =
+David, you actually understand the overall kernel keyring design.  Do
+keys in the keyring have usage constraints?
 
-> to invoke event_handler. However, since MMIO timer is replaced by PDC=20
-> timer event device, event handler will not be able to inform broadcast=20
-> framework. What can be done about this?
->=20
-
-It sounds like you imagine that the MMIO timer frame will still be
-active and in use by the ARM architected timer driver? I wasn't thinking
-that would be the case. I was thinking that the PDC code would basically
-reimplement all of the ARM timer code again by calling some shared timer
-code so that we avoid code duplication. Including the irq handler that
-would be registered for by the PDC driver and flow from that piece of
-code instead of the ARM timer code.
+But I think you need to take a big step back here.  We already have
+kernel/power/user.c.  It seems to me that you can do a better job of
+what you're trying to do with less code by using it.  Why do you need
+new kernel code *at all* to accomplish your goals?
