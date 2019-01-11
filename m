@@ -1,18 +1,14 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible
- string for power domain
-Date: Fri, 11 Jan 2019 21:03:14 +0800
-Message-ID: <20190111130311.GA3599@dragon>
-References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
- <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
- <20190111090009.GG32649@dragon> <20190111090653.GH32649@dragon>
- <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
+Date: Fri, 11 Jan 2019 14:34:04 +0100
+Message-ID: <20190111143404.518723a3@xps13>
+References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
+ <35c5cdcf-0d89-9236-7937-0c750a781d13@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
+In-Reply-To: <35c5cdcf-0d89-9236-7937-0c750a781d13@kernel.dk>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,45 +18,33 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Aisheng Dong <aisheng.dong@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, linux-ide@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 11, 2019 at 10:48:21AM +0000, Aisheng Dong wrote:
-> Hi Shawn,
-> 
-> > -----Original Message-----
-> > From: Shawn Guo [mailto:shawnguo@kernel.org]
-> > Sent: Friday, January 11, 2019 5:07 PM
-> > 
-> > On Fri, Jan 11, 2019 at 05:00:11PM +0800, Shawn Guo wrote:
-> > > On Tue, Dec 18, 2018 at 04:01:20PM +0000, Aisheng Dong wrote:
-> > > > SCU power domain can be used in the same way by IMX8QXP and
-> > IMX8QM SoCs.
-> > > > Let's add a "fsl,scu-pd" fallback compatible string to allow other
-> > > > SoCs to reuse the common part.
-> > >
-> > > This is not the practice we used to match devices with
-> > > compatibilities, i.e. coding the compatible string with the SoC name
-> > > that firstly introduces the device, and use the compatible as fallback for new
-> > SoCs.
-> > 
-> 
-> This is suggested by Rob that if the future SoCs are likely to be compatible.
-> Then we can use a general fallback compatible string like "fsl,scu-pd".
-> https://patchwork.kernel.org/patch/10644815/
-> 
-> From SCU HW protocol point of view, they're indeed compatible.
-> Just varies a bit on the domains numbers. 
-> That's why we introduce "fsl,scu-pd".
-> But still keep SoC specific compatible string in case any special tricks
-> to ensure the ABI stability.
-> 
-> How do you think?
-
-Unless Rob is against the practice we have been used for long time on
-i.MX, I would keep using it for i.MX8, i.e. instead of introducing a
-generic compatible for fallback, simply falling on the compatible SoC
-specified IP block.
-
-Shawn
+SGkgSmVucywKCkplbnMgQXhib2UgPGF4Ym9lQGtlcm5lbC5kaz4gd3JvdGUgb24gVHVlLCA0IERl
+YyAyMDE4IDE3OjExOjE4IC0wNzAwOgoKPiBPbiAxMi80LzE4IDEyOjI4IFBNLCBNaXF1ZWwgUmF5
+bmFsIHdyb3RlOgo+ID4gSGVsbG8sCj4gPiAKPiA+IEFzIHBhcnQgb2YgYW4gZWZmb3J0IHRvIGJy
+aW5nIHN1c3BlbmQgdG8gUkFNIHN1cHBvcnQgdG8gQXJtYWRhIDM3MDAKPiA+IFNvQ3MgKG1haW4g
+dGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMgc2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5k
+Cj4gPiB0aGUgU0FUQSBJUC4KPiA+IAo+ID4gRmlyc3QsIGEgY2hhbmdlIGluIHRoZSBsaWJhaGNp
+IHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkKPiA+IGZyYW1ld29yayBieSBm
+b2xsb3dpbmcgdGhlIHBoeV9zZXRfbW9kZSgpL3BoeV9wb3dlcl9vbigpCj4gPiBzZXF1ZW5jZS4g
+VGhlbiwgdGhlIEFIQ0kgTVZFQlUgZHJpdmVyIGlzIGEgYml0IHVwZGF0ZWQgKHBhdGNoIDIgJiAz
+KQo+ID4gYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhlIEEzNzAw
+IGluIHBhdGNoIDQgKG9ubHkKPiA+IGRvbmUgYnkgdGhlIEJvb3Rsb2FkZXIgYmVmb3JlKS4gTWlz
+c2luZyBjbG9jayBzdXBwb3J0IGlzIGltcGxlbWVudGVkCj4gPiBpbiBwYXRjaCA1IHRvIGJlIHN1
+cmUgdGhlIGNsb2NrIHdpbGwgYmUgcmVzdW1lZCBiZWZvcmUgdGhpcyBkcml2ZXIKPiA+IChzZWUg
+WzFdIGZvciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUp
+Lgo+ID4gCj4gPiBGaW5hbGx5LCBkZXZpY2UgdHJlZXMgYXJlIHVwZGF0ZWQgdG8gcmVmbGVjdCB0
+aGUgaGFyZHdhcmU6IHRoZSBtaXNzaW5nCj4gPiBQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NP
+YmluIERULCBhbmQgdGhlIGNsb2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKPiA+IERUIChwYXRjaCA2
+ICYgNykuIEJpbmRpbmdzIGFscmVhZHkgZG9jdW1lbnQgdGhlIGNsb2NrIGFuZCB0aGUgUEhZIHNv
+Cj4gPiBubyB1cGRhdGUgaXMgbmVlZGVkIG9uIHRoaXMgcmVnYXJkLiAgCj4gCj4gUHJvYmFibHkg
+dGhlIGJlc3QvZWFzaWVzdCB0byBxdWV1ZSB0aGlzIHRocm91Z2ggdGhlIGxpYmF0YSB0cmVlIGZv
+cgo+IDQuMjEuIEFncmVlPwo+IAoKSXQgbG9va3MgbGlrZSB0aGlzIHBhdGNoc2V0IGdvdCBsZWZ0
+IGFzaWRlIGZvciA1LjAsIHNoYWxsIEkgcmUtc2VuZD8gKEkKcmViYXNlZCBvbiB0b3Agb2YgNS4w
+IGFuZCB0aGUgc2VyaWVzIGFwcGxpZWQgZmluZSkuCgoKVGhhbmtzLApNaXF1w6hsCgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
+IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
+L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
