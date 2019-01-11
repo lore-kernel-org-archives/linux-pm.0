@@ -1,155 +1,63 @@
-From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH v3] cpufreq: s5pv210: Defer probe if getting regulators fail
-Date: Fri, 11 Jan 2019 20:42:44 +0100
-Message-ID: <20190111194244.2439-1-pawel.mikolaj.chmiel@gmail.com>
+From: Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
+Date: Fri, 11 Jan 2019 14:48:08 -0700
+Message-ID: <b5be50cf-336b-c10f-5cb1-efbf8b69ab61@kernel.dk>
+References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
+ <35c5cdcf-0d89-9236-7937-0c750a781d13@kernel.dk>
+ <20190111143404.518723a3@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: kgene@kernel.org
-Cc: krzk@kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190111143404.518723a3@xps13>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, linux-ide@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-There is possibility, that when probing driver, regulators are not yet
-initialized. In this case we should return EPROBE_DEFER and wait till
-they're initialized, since they're required currently for cpufreq driver
-to work. Also move regulator initialization code at beginning of probe,
-so we can defer as fast as posibble.
+On 1/11/19 6:34 AM, Miquel Raynal wrote:
+> Hi Jens,
+> 
+> Jens Axboe <axboe@kernel.dk> wrote on Tue, 4 Dec 2018 17:11:18 -0700:
+> 
+>> On 12/4/18 12:28 PM, Miquel Raynal wrote:
+>>> Hello,
+>>>
+>>> As part of an effort to bring suspend to RAM support to Armada 3700
+>>> SoCs (main target: ESPRESSObin), this series handles the work around
+>>> the SATA IP.
+>>>
+>>> First, a change in the libahci platform adds support for the new PHY
+>>> framework by following the phy_set_mode()/phy_power_on()
+>>> sequence. Then, the AHCI MVEBU driver is a bit updated (patch 2 & 3)
+>>> and a missing initialization is added for the A3700 in patch 4 (only
+>>> done by the Bootloader before). Missing clock support is implemented
+>>> in patch 5 to be sure the clock will be resumed before this driver
+>>> (see [1] for the series adding device links to the clock core).
+>>>
+>>> Finally, device trees are updated to reflect the hardware: the missing
+>>> PHY is added to the ESPRESSObin DT, and the clock is added to the SoC
+>>> DT (patch 6 & 7). Bindings already document the clock and the PHY so
+>>> no update is needed on this regard.  
+>>
+>> Probably the best/easiest to queue this through the libata tree for
+>> 4.21. Agree?
+>>
+> 
+> It looks like this patchset got left aside for 5.0, shall I re-send? (I
+> rebased on top of 5.0 and the series applied fine).
 
-Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
----
-Changes from v2:
-  - Handle all error paths in probe
+I never got a reply to the above, so I didn't add it. I've now picked
+up 1-5, 6-7 should go in through someone elses tree.
 
-Changes from v1:
-  - Fix compilation error
-  - Reorganize code so it's smaller
----
- drivers/cpufreq/s5pv210-cpufreq.c | 68 ++++++++++++++++++++++---------
- 1 file changed, 49 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index f51697f1e0b3..627b132e3e61 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -584,7 +584,7 @@ static struct notifier_block s5pv210_cpufreq_reboot_notifier = {
- static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
--	int id;
-+	int id, result = 0;
- 
- 	/*
- 	 * HACK: This is a temporary workaround to get access to clock
-@@ -594,18 +594,40 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 	 * this whole driver as soon as S5PV210 gets migrated to use
- 	 * cpufreq-dt driver.
- 	 */
-+	arm_regulator = regulator_get(NULL, "vddarm");
-+	if (IS_ERR(arm_regulator)) {
-+		if (PTR_ERR(arm_regulator) == -EPROBE_DEFER)
-+			pr_debug("vddarm regulator not ready, defer\n");
-+		else
-+			pr_err("failed to get regulator vddarm\n");
-+		result = PTR_ERR(arm_regulator);
-+		goto err_arm_regulator;
-+	}
-+
-+	int_regulator = regulator_get(NULL, "vddint");
-+	if (IS_ERR(int_regulator)) {
-+		if (PTR_ERR(int_regulator) == -EPROBE_DEFER)
-+			pr_debug("vddint regulator not ready, defer\n");
-+		else
-+			pr_err("failed to get regulator vddint\n");
-+		result = PTR_ERR(int_regulator);
-+		goto err_int_regulator;
-+	}
-+
- 	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
- 	if (!np) {
- 		pr_err("%s: failed to find clock controller DT node\n",
- 			__func__);
--		return -ENODEV;
-+		result = -ENODEV;
-+		goto err_clock;
- 	}
- 
- 	clk_base = of_iomap(np, 0);
- 	of_node_put(np);
- 	if (!clk_base) {
- 		pr_err("%s: failed to map clock registers\n", __func__);
--		return -EFAULT;
-+		result = -EFAULT;
-+		goto err_clock;
- 	}
- 
- 	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
-@@ -614,7 +636,8 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 			pr_err("%s: failed to get alias of dmc node '%pOFn'\n",
- 				__func__, np);
- 			of_node_put(np);
--			return id;
-+			result = id;
-+			goto err_clk_base;
- 		}
- 
- 		dmc_base[id] = of_iomap(np, 0);
-@@ -622,33 +645,40 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 			pr_err("%s: failed to map dmc%d registers\n",
- 				__func__, id);
- 			of_node_put(np);
--			return -EFAULT;
-+			result = -EFAULT;
-+			goto err_dmc;
- 		}
- 	}
- 
- 	for (id = 0; id < ARRAY_SIZE(dmc_base); ++id) {
- 		if (!dmc_base[id]) {
- 			pr_err("%s: failed to find dmc%d node\n", __func__, id);
--			return -ENODEV;
-+			result = -ENODEV;
-+			goto err_dmc;
- 		}
- 	}
- 
--	arm_regulator = regulator_get(NULL, "vddarm");
--	if (IS_ERR(arm_regulator)) {
--		pr_err("failed to get regulator vddarm\n");
--		return PTR_ERR(arm_regulator);
--	}
--
--	int_regulator = regulator_get(NULL, "vddint");
--	if (IS_ERR(int_regulator)) {
--		pr_err("failed to get regulator vddint\n");
--		regulator_put(arm_regulator);
--		return PTR_ERR(int_regulator);
--	}
--
- 	register_reboot_notifier(&s5pv210_cpufreq_reboot_notifier);
- 
- 	return cpufreq_register_driver(&s5pv210_driver);
-+
-+err_dmc:
-+	for (id = 0; id < ARRAY_SIZE(dmc_base); ++id)
-+		if (dmc_base[id])
-+			iounmap(dmc_base[id]);
-+
-+err_clk_base:
-+	iounmap(clk_base);
-+
-+err_clock:
-+	regulator_put(int_regulator);
-+
-+err_int_regulator:
-+	regulator_put(arm_regulator);
-+
-+err_arm_regulator:
-+
-+	return result;
- }
- 
- static struct platform_driver s5pv210_cpufreq_platdrv = {
 -- 
-2.17.1
+Jens Axboe
