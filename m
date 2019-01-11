@@ -1,214 +1,59 @@
-From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
- snapshot image
-Date: Thu, 10 Jan 2019 17:09:46 -0800
-Message-ID: <CALCETrU5qWzMSLxa28XHXBsg-gZwkxfzrqztTbBO+qcCYQbTMA@mail.gmail.com>
-References: <20190103143227.9138-1-jlee@suse.com> <20190106181026.GA15256@amd>
- <20190107173743.GC4210@linux-l9pv.suse> <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
- <20190109163958.GG9503@linux-l9pv.suse> <CALCETrUprUNLci+tQ+P7PV3PvS4ruxz5jrGH3R_FDV4SFp3r9g@mail.gmail.com>
- <20190110151256.GN3599@linux-l9pv.suse>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v7 0/3] Fixes for Tegra soctherm
+Date: Fri, 11 Jan 2019 10:20:46 +0800
+Message-ID: <28d197f9-9b72-78ad-0769-7514d329b3c4@nvidia.com>
+References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190110151256.GN3599@linux-l9pv.suse>
+In-Reply-To: <1546510369-28491-1-git-send-email-wni@nvidia.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>, David Howells <dhowells@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
+To: daniel.lezcano@linaro.org, edubezval@gmail.com
+Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2019 at 7:13 AM joeyli <jlee@suse.com> wrote:
->
-> On Wed, Jan 09, 2019 at 10:47:42AM -0800, Andy Lutomirski wrote:
-> > On Wed, Jan 9, 2019 at 8:40 AM joeyli <jlee@suse.com> wrote:
-> > >
-> > > Hi Andy,
-> > >
-> > > Thanks for your review!
-> > >
-> > > On Tue, Jan 08, 2019 at 01:41:48PM -0800, Andy Lutomirski wrote:
-> > > > > On Jan 7, 2019, at 9:37 AM, joeyli <jlee@suse.com> wrote:
-> > > > >
-> > > > > Hi Pavel,
-> > > > >
-> > > > > Thanks for your review!
-> > > > >
-> > > > >> On Sun, Jan 06, 2019 at 07:10:27PM +0100, Pavel Machek wrote:
-> > > > >> Hi!
-> > > > >>
-> > > > >>> This patchset is the implementation of encryption and authentic=
-ation
-> > > > >>> for hibernate snapshot image. The image will be encrypted by AE=
-S and
-> > > > >>> authenticated by HMAC.
-> > > > >>
-> > > > >> Ok, so you encrypt.
-> > > > >
-> > > > > Yes, encryption and authentication.
-> > > > >
-> > > > >>> The hibernate function can be used to snapshot memory pages to =
-an image,
-> > > > >>> then kernel restores the image to memory space in a appropriate=
- time.
-> > > > >>> There have secrets in snapshot image and cracker may modifies i=
-t for
-> > > > >>> hacking system. Encryption and authentication of snapshot image=
- can protect
-> > > > >>> the system.
-> > > > >>>
-> > > > >>> Hibernate function requests the master key through key retentio=
-n service.
-> > > > >>> The snapshot master key can be a trusted key or a user defined =
-key. The
-> > > > >>> name of snapshot master key is fixed to "swsusp-kmk". User shou=
-ld loads
-> > > > >>> swsusp-kmk to kernel by keyctl tool before the hibernation resu=
-me.
-> > > > >>> e.g. The swsusp-kmk must be loaded before systemd-hibernate-res=
-ume
-> > > > >>
-> > > > >> But if userspace has a key, encryption is useless against root.
-> > > > >
-> > > > > Yes, but this concern is not only for hibernation encryption. Thi=
-s patch
-> > > > > set does not provide solution against this concern.
-> > > > >
-> > > > > The purpose of this patch set is to encrypt and authenticate hibe=
-rnate
-> > > > > snapshot image in kernel space. It also requests key through keyr=
-ing
-> > > > > mechanism. Which means that we can easy to adapt to new key type =
-from
-> > > > > keyring in the future.
-> > > > >
-> > > > > Currently TPM trusted key or user defined key types are not again=
-st
-> > > > > root. Even using the TPM trusted key, it still can be unsealed by=
- root
-> > > > > before the PCRs be capped (unless we capped PCRs in kernel).
-> > > > >
-> > > > > My solution for keeping the secret by kernel is the EFI secure ke=
-y type:
-> > > > >    https://lkml.org/lkml/2018/8/5/31
-> > > > >
-> > > > > But the EFI boot variable doesn't design for keeping secret, so W=
-indows
-> > > > > and OEM/ODM do not use boot variable to keep secret. So this idea=
- can
-> > > > > not be accepted. We must think other key type against root.
-> > > > >
-> > > > >>> The TPM trusted key type is preferred to be the master key. But=
- user
-> > > > >>> defined key can also be used for testing or when the platform d=
-oesn't
-> > > > >>> have TPM. User must be aware that the security of user key reli=
-es on
-> > > > >>> user space. If the root account be compromised, then the user k=
-ey will
-> > > > >>> easy to be grabbed.
-> > > > >>
-> > > > >> In the TPM case, does userland have access to the key?
-> > > > >
-> > > > > In the TPM case, userland can only touch the sealed key blob. So =
-userland
-> > > > > doesn't know the real secret. But it has risk that root unseals t=
-he key
-> > > > > before PCRs be capped.
-> > > > >
-> > > > >> Please explain your security goals.
-> > > > >
-> > > > > My security goals:
-> > > > >
-> > > > > - Encrypt and authicate hibernate snapshot image in kernel space.=
- Userspace
-> > > > >  can only touch an encrypted and signed snapshot image.
-> > > >
-> > > > Signed?
-> > > >
-> > > > I=E2=80=99m not entirely convinced that the keyring mechanism is wh=
-at you
-> > > > want. ISTM that there are two goals here:
-> > > >
-> > > > a) Encryption: it should be as hard as can reasonably be arranged t=
-o
-> > > > extract secrets from a hibernation image.
-> > > >
-> > > > b) Authentication part 1: it should not be possible for someone in
-> > > > possession of a turned-off machine to tamper with the hibernation
-> > > > image such that the image, when booted, will leak its secrets. This
-> > > > should protect against attackers who don=E2=80=99t know the encrypt=
-ion key.
-> > > >
-> > > > c) Authentication part 2: it should be to verify, to the extent
-> > > > practical, that the image came from the same machine and was really
-> > > > created using hibernation.  Or maybe by the same user.
-> > > >
-> > > > For (a) and (b), using an AE mode where the key is protected in som=
-e
-> > > > reasonable way.  Joey, why are you using HMAC?  Please tell me you=
-=E2=80=99re
-> > > > at least doing encrypt-then-MAC.  But why not use a real AE mode li=
-ke
-> > > > AES-GCM?
-> > >
-> > > The reason for using HMAC is the history for development. My first pa=
-tch
-> > > set is only for hibernate authentication. Then I added encryption cod=
-e on
-> > > top of my authentication patches in last version.
-> > >
-> > > I am doing encrypt-then-MAC. My code ecrypts each page by AES then HM=
-AC
-> > > whole snapshot image. I feed encrypted data pages one by one to
-> > > crypto_shash_update() API for calculating the hash for whole image.
-> >
-> > ...
-> >
-> > I think you should write down a clear description of the data format.
->
-> Hibernation allocates free pages for building snapshot image. Those free
-> pages are scattered in memory. So kernel marks those page numbers on a
-> bitmap to locate them. Because this image buffer is discontinuous, so I
-> use update mode hashing whole image.
->
-> > A general problem with crypto is that the fact that it appears to work
-> > doesn't mean it's secure at all, and it's very hard to follow the
-> > code.  Especially in Linux using the crypto API -- code using the
-> > crypto API tends to be mostly boilerplate.
-> >
->
-> hm... Do you mean that the implementation of HMAC in crypto cannot be
-> trusted? I hope at least that I can trust the update mode for normal
-> hash like SHA256 or SHA512?
+Hi Eduardo,
+Do you have any more comments, will you take this serial?
 
-No, I fully expect the crypto code to do what it says.  What I mean is
-that you can easily create utterly broken things that involve crypto,
-but they still work fine when you use then non-maliciously.
+Thanks.
+Wei.
 
-> > >
-> > > Sorry for I didn't capture the meaning of "acceptable usage". The tru=
-sted
-> > > key already be unsealed by TPM when the key be enrolled by keyctl too=
-l.
-> > > So my code just extract the unsealed key data (the random number) for
-> > > encryption.
-> >
-> > If someone creates a trusted key that is used for asymmetric crypto or
-> > perhaps a trusted key that is intended to be used for, say, an HMAC
-> > key, you should not also use it to derive hibernation keys.  This is
-> > what I mean by "acceptable usage".
-> >
->
-> When keyring is producing encrypted key, the trusted key be used to
-> derive the encrypt key and authenticate key to encrypt and hmac sign
-> a encrypted key. So trusted key can be used in symmetric crypto.
-
-Can it?
-
-David, you actually understand the overall kernel keyring design.  Do
-keys in the keyring have usage constraints?
-
-But I think you need to take a big step back here.  We already have
-kernel/power/user.c.  It seems to me that you can do a better job of
-what you're trying to do with less code by using it.  Why do you need
-new kernel code *at all* to accomplish your goals?
+On 3/1/2019 6:12 PM, Wei Ni wrote:
+> This series fixed some issues for Tegra soctherm,
+> and add get_trend().
+> 
+> Main changes from v6:
+> 1. Per Eduardo's comment, we can remove the change:
+> "thermal: tegra: parse sensor id before sensor register"
+> 
+> Main changes from v5:
+> 1. Move the get_trend() patch https://lkml.org/lkml/2018/11/20/643
+> into this serial.
+> 
+> Main changes from v4:
+> 1. fixed for the parsing sensor id.
+> 2. keep warning for missing critical trips.
+> 
+> Main changes from v3:
+> 1. updated codes for parsing sensor id, per Thierry's comments
+> 
+> Main changes from v2:
+> 1. add codes to parse sensor id to avoid registration
+> failure.
+> 
+> Main changes from v1:
+> 1. Acked by Thierry Reding <treding@nvidia.com> for the patch
+> "thermal: tegra: fix memory allocation".
+> 2. Print out the sensor name when register failed.
+> 2. Remove patch "thermal: tegra: fix coverity defect"
+> 
+> Wei Ni (3):
+>   thermal: tegra: remove unnecessary warnings
+>   thermal: tegra: fix memory allocation
+>   thermal: tegra: add get_trend ops
+> 
+>  drivers/thermal/tegra/soctherm.c | 40 +++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 37 insertions(+), 3 deletions(-)
+> 
