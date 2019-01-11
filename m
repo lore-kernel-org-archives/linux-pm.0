@@ -1,33 +1,42 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
- snapshot image
-Date: Fri, 11 Jan 2019 22:29:59 +0800
-Message-ID: <20190111142959.GZ3599@linux-l9pv.suse>
-References: <20190103143227.9138-1-jlee@suse.com>
- <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
- <20190109163958.GG9503@linux-l9pv.suse>
- <2049173.FbhQ43HnNr@tauon.chronox.de>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 01/10] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75
+ EC bindings
+Date: Fri, 11 Jan 2019 08:36:35 -0600
+Message-ID: <20190111143635.GA21484@bogus>
+References: <20190110175845.1203986-1-lkundrak@v3.sk>
+ <20190110175845.1203986-2-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2049173.FbhQ43HnNr@tauon.chronox.de>
+In-Reply-To: <20190110175845.1203986-2-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephan Mueller <smueller@chronox.de>
-Cc: Andy Lutomirski <luto@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
+Cc: Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, Russell King <linux@armlinux.org.uk>, Mark Rutland <mark.rutland@arm.com>, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 09, 2019 at 05:47:53PM +0100, Stephan Mueller wrote:
-> Am Mittwoch, 9. Januar 2019, 17:39:58 CET schrieb joeyli:
+On Thu, 10 Jan 2019 18:58:36 +0100, Lubomir Rintel wrote:
+> The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
+> signals for handshaking. It needs to know when is the slave (Linux)
+> side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
+> controller node) and when does it wish to respond with a command (the
+> cmd-gpio property).
 > 
-> Hi joeyli,
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 > 
-> > 
-> > I am doing encrypt-then-MAC.
+> ---
+> Changes since v1:
+> - s/cmd-gpio/cmd-gpios/
+> - s/ready-gpio/ready-gpios/ in the documentation paragraph
+> - Remove status = "okay" from the example
 > 
-> Note, this is what the authenc() AEAD cipher does.
->
+>  .../bindings/misc/olpc,xo1.75-ec.txt          | 23 +++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+> 
 
-OK.. Thanks for your reminding. I will look at it.
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
 
-Joey Lee 
+If a tag was not added on purpose, please state why and what changed.
