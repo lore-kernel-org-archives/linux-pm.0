@@ -1,93 +1,110 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v10 02/27] PM / Domains: Add support for CPU devices to genpd
-Date: Fri, 11 Jan 2019 11:54:20 +0100
-Message-ID: <1993885.1ZciKZtFgT@aspire.rjw.lan>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org> <45ff9a4b-6130-7800-28cc-a2f5f736f44b@linaro.org> <CAPDyKFpPa1u1ouoa2zFzMe2McqEpxu7Vex2zd1nYoQUQtY2s-A@mail.gmail.com>
+Subject: Re: [PATCH v10 03/27] timer: Export next wakeup time of a CPU
+Date: Fri, 11 Jan 2019 12:06:15 +0100
+Message-ID: <119031115.C8gHTGbYmQ@aspire.rjw.lan>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org> <20181129174700.16585-4-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpPa1u1ouoa2zFzMe2McqEpxu7Vex2zd1nYoQUQtY2s-A@mail.gmail.com>
+In-Reply-To: <20181129174700.16585-4-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 19, 2018 11:02:05 AM CET Ulf Hansson wrote:
-> On Wed, 19 Dec 2018 at 10:53, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> >
-> > On 29/11/2018 18:46, Ulf Hansson wrote:
-> > > To enable a device belonging to a CPU to be attached to a PM domain managed
-> > > by genpd, let's do a few changes to it, as to make it convenient to manage
-> > > the specifics around CPUs.
-> > >
-> > > To be able to quickly find out what CPUs that are attached to a genpd,
-> > > which typically becomes useful from a genpd governor as following changes
-> > > is about to show, let's add a cpumask to the struct generic_pm_domain. At
-> > > the point when a CPU device gets attached to a genpd, let's update its
-> > > cpumask. Moreover, let's also propagate changes to the cpumask upwards in
-> > > the topology to the master PM domains. In this way, the cpumask for a genpd
-> > > hierarchically reflects all CPUs attached to the topology below it.
-> > >
-> > > Finally, let's make this an opt-in feature, to avoid having to manage CPUs
-> > > and the cpumask for a genpd that doesn't need it. For that reason, let's
-> > > add a new genpd configuration bit, GENPD_FLAG_CPU_DOMAIN.
-> > >
-> > > Cc: Lina Iyer <ilina@codeaurora.org>
-> > > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > > ---
-> > >
-> > > Changes in v10:
-> > >       - Don't allocate the cpumask when not used.
-> > >       - Simplify the code that updates the cpumask.
-> > >       - Document the GENPD_FLAG_CPU_DOMAIN.
-> > >
-> > > ---
-> > >  drivers/base/power/domain.c | 66 ++++++++++++++++++++++++++++++++++++-
-> > >  include/linux/pm_domain.h   | 13 ++++++++
-> > >  2 files changed, 78 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > > index e27b91d36a2a..c3ff8e395308 100644
-> > > --- a/drivers/base/power/domain.c
-> > > +++ b/drivers/base/power/domain.c
-> > > @@ -20,6 +20,7 @@
-> > >  #include <linux/sched.h>
-> > >  #include <linux/suspend.h>
-> > >  #include <linux/export.h>
-> > > +#include <linux/cpu.h>
-> > >
-> > >  #include "power.h"
-> > >
-> > > @@ -126,6 +127,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
-> > >  #define genpd_is_irq_safe(genpd)     (genpd->flags & GENPD_FLAG_IRQ_SAFE)
-> > >  #define genpd_is_always_on(genpd)    (genpd->flags & GENPD_FLAG_ALWAYS_ON)
-> > >  #define genpd_is_active_wakeup(genpd)        (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
-> > > +#define genpd_is_cpu_domain(genpd)   (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
-> > >
-> > >  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
-> > >               const struct generic_pm_domain *genpd)
-> > > @@ -1377,6 +1379,56 @@ static void genpd_free_dev_data(struct device *dev,
-> > >       dev_pm_put_subsys_data(dev);
-> > >  }
-> > >
-> > > +static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
-> > > +                                int cpu, bool set, unsigned int depth)
-> > > +{
-> > > +     struct gpd_link *link;
-> > > +
-> > > +     if (!genpd_is_cpu_domain(genpd))
-> > > +             return;
-> >
-> > With this test, we won't continue updating the cpumask for the other
-> > masters. Is it done on purpose ?
+On Thursday, November 29, 2018 6:46:36 PM CET Ulf Hansson wrote:
+> From: Lina Iyer <lina.iyer@linaro.org>
 > 
-> Correct, and yes it's on purpose.
+> Knowing the sleep duration of CPUs, is known to be needed while selecting
+> the most energy efficient idle state for a CPU or a group of CPUs.
 > 
-> We are not even allocating the cpumask for the genpd in question,
-> unless it has the GENPD_FLAG_CPU_DOMAIN set.
+> However, to be able to compute the sleep duration, we need to know at what
+> time the next expected wakeup is for the CPU. Therefore, let's export this
+> information via a new function, tick_nohz_get_next_wakeup(). Following
+> changes make use of it.
+> 
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Changes in v10:
+> 	- Updated function header of tick_nohz_get_next_wakeup().
+> 
+> ---
+>  include/linux/tick.h     |  8 ++++++++
+>  kernel/time/tick-sched.c | 13 +++++++++++++
+>  2 files changed, 21 insertions(+)
+> 
+> diff --git a/include/linux/tick.h b/include/linux/tick.h
+> index 55388ab45fd4..e48f6b26b425 100644
+> --- a/include/linux/tick.h
+> +++ b/include/linux/tick.h
+> @@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
+>  extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
+>  extern unsigned long tick_nohz_get_idle_calls(void);
+>  extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+> +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+>  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+>  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+>  
+> @@ -151,6 +152,13 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+>  	*delta_next = TICK_NSEC;
+>  	return *delta_next;
+>  }
+> +
+> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	/* Next wake up is the tick period, assume it starts now */
+> +	return ktime_add(ktime_get(), TICK_NSEC);
+> +}
+> +
+>  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+>  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+>  
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index 69e673b88474..7a9166506503 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -1089,6 +1089,19 @@ unsigned long tick_nohz_get_idle_calls(void)
+>  	return ts->idle_calls;
+>  }
+>  
+> +/**
+> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+> + * @cpu: the particular CPU to get next wake up for
+> + *
+> + * Called for idle CPUs only.
+> + */
+> +ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
+> +
+> +	return dev->next_event;
+> +}
+> +
+>  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+>  {
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> 
 
-So this patch is generally fine by me.  You can add my ACK to it when
-submitting it again, unless it is changed, so I know I've seen it
-already.
+Well, I have concerns regarding this one.
+
+I don't believe it is valid to call this new function for non-idle CPUs and
+the kerneldoc kind of says so, but the next patch doesn't actually prevent
+it from being called for a non-idle CPU (at the time it is called in there
+the target CPU may not be idle any more AFAICS).
+
+In principle, the cpuidle core can store this value, say in struct
+cpuidle_device of the given CPU, and expose a helper to access it from
+genpd, but that would be extra overhead totally unnecessary on everthing
+that doesn't use genpd for cpuidle.
+
+So maybe the driver could store it in its ->enter callback?  After all,
+the driver knows that genpd is going to be used later.
