@@ -1,67 +1,33 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: Re: [PATCH v2 2/3] regulator: core: add helper to check if regulator
- is disabled in suspend
-Date: Fri, 11 Jan 2019 14:08:19 +0000
-Message-ID: <40a2dbb6-56aa-173a-4be0-d7072ed32b53@microchip.com>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
- <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
- <20190109165706.GG10405@sirena.org.uk>
- <76298993-c1e8-1b00-6a54-5d41c48bc2d3@microchip.com>
- <20190111123913.GA2804@sirena.org.uk>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/5 v2][RFC] Encryption and authentication for hibernate
+ snapshot image
+Date: Fri, 11 Jan 2019 22:29:59 +0800
+Message-ID: <20190111142959.GZ3599@linux-l9pv.suse>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <CALCETrWHjn_WN1WRc2pbFPB+H-ZL_1y=8dhhHoVqA53Q7Pj5vA@mail.gmail.com>
+ <20190109163958.GG9503@linux-l9pv.suse>
+ <2049173.FbhQ43HnNr@tauon.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190111123913.GA2804@sirena.org.uk>
-Content-Language: en-US
-Content-ID: <34B25CA0FD97CF42A8D716CDA7456605@namprd11.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <2049173.FbhQ43HnNr@tauon.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: broonie@kernel.org
-Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Stephan Mueller <smueller@chronox.de>
+Cc: Andy Lutomirski <luto@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jan 09, 2019 at 05:47:53PM +0100, Stephan Mueller wrote:
+> Am Mittwoch, 9. Januar 2019, 17:39:58 CET schrieb joeyli:
+> 
+> Hi joeyli,
+> 
+> > 
+> > I am doing encrypt-then-MAC.
+> 
+> Note, this is what the authenc() AEAD cipher does.
+>
 
+OK.. Thanks for your reminding. I will look at it.
 
-On 11.01.2019 14:39, Mark Brown wrote:
-> On Thu, Jan 10, 2019 at 10:24:26AM +0000, Claudiu.Beznea@microchip.com wr=
-ote:
->> On 09.01.2019 18:57, Mark Brown wrote:
->=20
->>> regulator state which feels fragile.  But based on the cover letter
->>> that's kind of like what the initial proposal about target states was s=
-o
->>> perhaps this is the way we end up going...=20
->=20
->> Are you talking about [1] ?
->=20
-> I can't follow that link right now, I'm working offline.
->=20
->> I can get rid of this patch, take advantage of [3] and [4] and introduce
->> also the regulator standby states. In this case, no matter the mapping b=
-/w
->> Linux power saving modes and AT91 SoC's power saving modes, we will be
->> covered on misconfiguration (at least on SAMA5D2 Xplained board).
->=20
->> And in patch 3/3 I could get rid of regulator checks and rely on DT (bad
->> thing would be that in case of no input for regulator's state in
->> mem/standby the board could not properly suspended/resumed), if any.
->=20
->> What do you think about this?
->=20
-> Like I say I'm working offline so I can't check the links but it sounds
-> like you're saying that the existing suspend mode configuration features
-> are enough for your systems?=20
-
-Yes, if we rely on the fact that core's regulator device tree bindings for
-suspend-to-mem/suspend-to-standby were filled correctly.
-
-The function I added here was to double check that core's regulator will be
-off in suspend/standby based on what was parsed from DT.
-
-Thank you,
-Claudiu Beznea
-
-> so that's great - certainly what you're
-> saying above sounds sensible to me but it's possible I misunderstood
-> something based on not having the links.
->=20
+Joey Lee 
