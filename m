@@ -1,71 +1,66 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 2/3] regulator: core: add helper to check if regulator
- is disabled in suspend
-Date: Fri, 11 Jan 2019 12:39:13 +0000
-Message-ID: <20190111123913.GA2804@sirena.org.uk>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
- <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
- <20190109165706.GG10405@sirena.org.uk>
- <76298993-c1e8-1b00-6a54-5d41c48bc2d3@microchip.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible
+ string for power domain
+Date: Fri, 11 Jan 2019 21:03:14 +0800
+Message-ID: <20190111130311.GA3599@dragon>
+References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
+ <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
+ <20190111090009.GG32649@dragon> <20190111090653.GH32649@dragon>
+ <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <76298993-c1e8-1b00-6a54-5d41c48bc2d3@microchip.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Aisheng Dong <aisheng.dong@nxp.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Jan 11, 2019 at 10:48:21AM +0000, Aisheng Dong wrote:
+> Hi Shawn,
+> 
+> > -----Original Message-----
+> > From: Shawn Guo [mailto:shawnguo@kernel.org]
+> > Sent: Friday, January 11, 2019 5:07 PM
+> > 
+> > On Fri, Jan 11, 2019 at 05:00:11PM +0800, Shawn Guo wrote:
+> > > On Tue, Dec 18, 2018 at 04:01:20PM +0000, Aisheng Dong wrote:
+> > > > SCU power domain can be used in the same way by IMX8QXP and
+> > IMX8QM SoCs.
+> > > > Let's add a "fsl,scu-pd" fallback compatible string to allow other
+> > > > SoCs to reuse the common part.
+> > >
+> > > This is not the practice we used to match devices with
+> > > compatibilities, i.e. coding the compatible string with the SoC name
+> > > that firstly introduces the device, and use the compatible as fallback for new
+> > SoCs.
+> > 
+> 
+> This is suggested by Rob that if the future SoCs are likely to be compatible.
+> Then we can use a general fallback compatible string like "fsl,scu-pd".
+> https://patchwork.kernel.org/patch/10644815/
+> 
+> From SCU HW protocol point of view, they're indeed compatible.
+> Just varies a bit on the domains numbers. 
+> That's why we introduce "fsl,scu-pd".
+> But still keep SoC specific compatible string in case any special tricks
+> to ensure the ABI stability.
+> 
+> How do you think?
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Unless Rob is against the practice we have been used for long time on
+i.MX, I would keep using it for i.MX8, i.e. instead of introducing a
+generic compatible for fallback, simply falling on the compatible SoC
+specified IP block.
 
-On Thu, Jan 10, 2019 at 10:24:26AM +0000, Claudiu.Beznea@microchip.com wrot=
-e:
-> On 09.01.2019 18:57, Mark Brown wrote:
-
-> > regulator state which feels fragile.  But based on the cover letter
-> > that's kind of like what the initial proposal about target states was so
-> > perhaps this is the way we end up going...=20
-
-> Are you talking about [1] ?
-
-I can't follow that link right now, I'm working offline.
-
-> I can get rid of this patch, take advantage of [3] and [4] and introduce
-> also the regulator standby states. In this case, no matter the mapping b/w
-> Linux power saving modes and AT91 SoC's power saving modes, we will be
-> covered on misconfiguration (at least on SAMA5D2 Xplained board).
-
-> And in patch 3/3 I could get rid of regulator checks and rely on DT (bad
-> thing would be that in case of no input for regulator's state in
-> mem/standby the board could not properly suspended/resumed), if any.
-
-> What do you think about this?
-
-Like I say I'm working offline so I can't check the links but it sounds
-like you're saying that the existing suspend mode configuration features
-are enough for your systems?  If so that's great - certainly what you're
-saying above sounds sensible to me but it's possible I misunderstood
-something based on not having the links.
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlw4jm4ACgkQJNaLcl1U
-h9Ccswf+NULiFYb7x7jPouVeC7CIJLiKxHhaBH5KaCJsAITd15esv74wkfRHqf+A
-sI52Sg6uJA4Cxt68zZz9EAMslHECb1wdMcgLfj1C1GKP0mjiF2IQmbG0jlAwbjLX
-gt69eODFF9sWJs7FyCQsH605yavOv1jVYEPblgT9efgmJYZEm2FkVLDwUrGbI9rU
-ARsLuXTfJ0t0RWOvYr/H81P76EJgE95+x0tD9KygwNWENzx/u5nRBpZJmSbB9x3h
-C8HkW3ftkWZWU2KmgySOw0t+k7UM6/H8WmA0sUi/gHEocPtqIgPiu6BMOVqNwLuA
-Yf+vPlQk2zChUP2bfLqcxwdtmXCkfg==
-=uQKs
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
+Shawn
