@@ -1,44 +1,63 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible
- string for power domain
-Date: Fri, 11 Jan 2019 17:06:55 +0800
-Message-ID: <20190111090653.GH32649@dragon>
-References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
- <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
- <20190111090009.GG32649@dragon>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Fri, 11 Jan 2019 14:48:33 +0530
+Message-ID: <cover.1547197612.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20190111090009.GG32649@dragon>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Aisheng Dong <aisheng.dong@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 11, 2019 at 05:00:11PM +0800, Shawn Guo wrote:
-> On Tue, Dec 18, 2018 at 04:01:20PM +0000, Aisheng Dong wrote:
-> > SCU power domain can be used in the same way by IMX8QXP and IMX8QM SoCs.
-> > Let's add a "fsl,scu-pd" fallback compatible string to allow other SoCs
-> > to reuse the common part.
-> 
-> This is not the practice we used to match devices with compatibilities,
-> i.e. coding the compatible string with the SoC name that firstly
-> introduces the device, and use the compatible as fallback for new SoCs.
+Hi,
 
-For example, in imx8qm device tree, we can use compatible below to get
-it work without change on kernel driver, while we still need to document
-the compatible "fsl,imx8qm-scu-pd".
+This commit introduces the frequency constraint infrastructure, which
+provides a generic interface for parts of the kernel to constraint the
+working frequency range of a device.
 
-	compatible = "fsl,imx8qm-scu-pd", "fsl,imx8qxp-scu-pd";
+The primary users of this are the cpufreq and devfreq frameworks. The
+cpufreq framework already implements such constraints with help of
+notifier chains (for thermal and other constraints) and some local code
+(for user-space constraints). The devfreq framework developers have also
+shown interest [1] in such a framework, which may use it at a later
+point of time.
 
-Shawn
+The idea here is to provide a generic interface and get rid of the
+notifier based mechanism.
+
+Only one constraint is added for now for the cpufreq framework and the
+rest will follow after this stuff is merged.
+
+Matthias Kaehlcke was involved in the preparation of the first draft of
+this work and so I have added him as Co-author to the first patch.
+Thanks Matthias.
+
+FWIW, This doesn't have anything to do with the boot-constraints
+framework [2] I was trying to upstream earlier :)
+
+--
+viresh
+
+[1] lore.kernel.org/lkml/20181002220625.GJ22824@google.com
+[2] lore.kernel.org/lkml/cover.1519380923.git.viresh.kumar@linaro.org
+
+Viresh Kumar (3):
+  drivers: base: Add frequency constraint infrastructure
+  cpufreq: Implement freq-constraint callback
+  cpufreq: Implement USER constraint
+
+ MAINTAINERS                     |   8 +
+ drivers/base/Kconfig            |   5 +
+ drivers/base/Makefile           |   1 +
+ drivers/base/freq_constraint.c  | 633 ++++++++++++++++++++++++++++++++++++++++
+ drivers/cpufreq/Kconfig         |   1 +
+ drivers/cpufreq/cpufreq.c       |  92 ++++--
+ include/linux/cpufreq.h         |   8 +-
+ include/linux/freq_constraint.h |  45 +++
+ 8 files changed, 756 insertions(+), 37 deletions(-)
+ create mode 100644 drivers/base/freq_constraint.c
+ create mode 100644 include/linux/freq_constraint.h
+
+-- 
+2.7.4
