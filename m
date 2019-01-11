@@ -1,51 +1,100 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
-Date: Fri, 11 Jan 2019 18:04:13 +0200
-Message-ID: <20190111160413.GB12093@linux.intel.com>
-References: <20190103143227.9138-1-jlee@suse.com>
- <4499700.LRS4F2YjjC@tauon.chronox.de>
- <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
- <1565399.7ulKdI1fm5@tauon.chronox.de>
- <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
- <1546994671.6077.10.camel@HansenPartnership.com>
- <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
- <1547016579.2789.17.camel@HansenPartnership.com>
- <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC RESEND PATCH 1/7] dt-bindings: soc: Add DVFSRC driver
+ bindings
+Date: Fri, 11 Jan 2019 10:09:18 -0600
+Message-ID: <20190111160918.GA20480@bogus>
+References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
+ <1546438198-1677-2-git-send-email-henryc.chen@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CALCETrWoSAf4hHCXvqVZhQ5YAMBaZzaBCfnb6sC8JPrSs6FRog@mail.gmail.com>
+In-Reply-To: <1546438198-1677-2-git-send-email-henryc.chen@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
+To: Henry Chen <henryc.chen@mediatek.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Weiyi Lu <weiyi.lu@mediatek.com>, James Liao <jamesjj.liao@mediatek.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 09, 2019 at 10:34:42AM -0800, Andy Lutomirski wrote:
-> I suppose I should go read the 2.0 spec. I’ve read the 1.2 spec, but I
-> always assumed that 2.0 was essentially a superset of 1.2
-> functionality.
+On Wed, Jan 02, 2019 at 10:09:52PM +0800, Henry Chen wrote:
+> Document the binding for enabling DVFSRC on MediaTek SoC.
+> 
+> Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
+> ---
+>  .../devicetree/bindings/soc/mediatek/dvfsrc.txt    | 26 ++++++++++++++++++++++
+>  include/dt-bindings/soc/mtk,dvfsrc.h               | 18 +++++++++++++++
+>  2 files changed, 44 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+>  create mode 100644 include/dt-bindings/soc/mtk,dvfsrc.h
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+> new file mode 100644
+> index 0000000..402c885
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+> @@ -0,0 +1,26 @@
+> +MediaTek DVFSRC Driver
 
-They are essentially different protocols. No real compatibility.
+Bindings are for h/w blocks, not drivers.
 
+> +The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
+> +HW module which is used to collect all the requests from both software and
+> +hardware and turn into the decision of minimum operating voltage and minimum
+> +DRAM frequency to fulfill those requests.
 
-> Can the kernel filter TPM 2.0 operations?  If so, then a signature
-> that the kernel would have prevented user code from generating is de
-> facto an attestation that the kernel generated it (or that the kernel
-> was compromised, which is sort of equivalent).
+Seems like the OPP table should be a child of this instead of where you 
+currently have it?
 
-You shoud look into TPM resource manager that I implemented with great
-work from James on session swapping and see how far it scales what you
-have in mind. It is currently exposed only to the user space but could
-be easily made an in-kernel API.
+> +
+> +Required Properties:
+> +- compatible: Should be one of the following
+> +	- "mediatek,mt8183-dvfsrc": For MT8183 SoC
+> +- reg: Address range of the DVFSRC unit
+> +- dram_type: Refer to <include/dt-bindings/soc/mtk,dvfsrc.h> for the
+> +	different dram type support.
 
-Side-topic: right now the TPM driver can be compiled as a module when
-its APIs are not used by the kernel (namely IMA and trusted keys) with
-some Kconfig magic. Since it looks like that there will be even more
-customers, I think it would make sense to make the TPM driver core as
-part of the core kernel (device drivers for different types of chips
-could still be modules). I've proposed this before maybe two times, but
-it has always been rejected.
+This information should come from the DDR controller or memory nodes 
+probably. And we already have some properties related to DDR type.
 
-/Jarkko
+> +- clock-names: Must include the following entries:
+> +	"dvfsrc": DVFSRC module clock
+> +- clocks: Must contain an entry for each entry in clock-names.
+> +
+> +Example:
+> +
+> +	dvfsrc_top@10012000 {
+
+Drop the '_top'. (Don't use '_' in node and property names).
+
+> +		compatible = "mediatek,mt8183-dvfsrc";
+> +		reg = <0 0x10012000 0 0x1000>;
+> +		clocks = <&infracfg CLK_INFRA_DVFSRC>;
+> +		clock-names = "dvfsrc";
+> +		dram_type = <MT8183_DVFSRC_OPP_LP4>;
+> +	};
+> diff --git a/include/dt-bindings/soc/mtk,dvfsrc.h b/include/dt-bindings/soc/mtk,dvfsrc.h
+> new file mode 100644
+> index 0000000..60b3497
+> --- /dev/null
+> +++ b/include/dt-bindings/soc/mtk,dvfsrc.h
+> @@ -0,0 +1,18 @@
+> +/* SPDX-License-Identifier: GPL-2.0
+> + *
+> + * Copyright (c) 2018 MediaTek Inc.
+> + */
+> +
+> +#ifndef _DT_BINDINGS_POWER_MTK_DVFSRC_H
+> +#define _DT_BINDINGS_POWER_MTK_DVFSRC_H
+> +
+> +#define MT8183_DVFSRC_OPP_LP4	0
+> +#define MT8183_DVFSRC_OPP_LP4X	1
+> +#define MT8183_DVFSRC_OPP_LP3	2
+> +
+> +#define MT8183_DVFSRC_LEVEL_1	1
+> +#define MT8183_DVFSRC_LEVEL_2	2
+> +#define MT8183_DVFSRC_LEVEL_3	3
+> +#define MT8183_DVFSRC_LEVEL_4	4
+> +
+> +#endif /* _DT_BINDINGS_POWER_MTK_DVFSRC_H */
+> -- 
+> 1.9.1
+> 
