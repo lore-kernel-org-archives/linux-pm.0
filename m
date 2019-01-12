@@ -1,129 +1,70 @@
 From: Eric Biggers <ebiggers@kernel.org>
-Subject: Re: [PATCH 3/6] crypto: kdf - add known answer tests
-Date: Fri, 11 Jan 2019 21:26:46 -0800
-Message-ID: <20190112052645.GC639@sol.localdomain>
+Subject: Re: [PATCH 2/6] crypto: kdf - SP800-108 Key Derivation Function
+Date: Fri, 11 Jan 2019 21:27:59 -0800
+Message-ID: <20190112052758.GD639@sol.localdomain>
 References: <20190103143227.9138-1-jlee@suse.com>
  <20190109082103.GA8586@sol.localdomain>
  <9733066.Vrs4h5eWcW@positron.chronox.de>
- <8456866.1rT4qWozqf@positron.chronox.de>
+ <1830918.5I3Y3k8tQf@positron.chronox.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8456866.1rT4qWozqf@positron.chronox.de>
+In-Reply-To: <1830918.5I3Y3k8tQf@positron.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>
 Cc: Herbert Xu <herbert@gondor.apana.org.au>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 11, 2019 at 08:10:22PM +0100, Stephan Müller wrote:
-> Add known answer tests to the testmgr for the KDF (SP800-108) cipher.
+On Fri, Jan 11, 2019 at 08:10:02PM +0100, Stephan Müller wrote:
+> The SP800-108 compliant Key Derivation Function is implemented as a
+> random number generator considering that it behaves like a deterministic
+> RNG.
+> 
+> All three KDF types specified in SP800-108 are implemented.
+> 
+> The code comments provide details about how to invoke the different KDF
+> types.
 > 
 > Signed-off-by: Stephan Mueller <smueller@chronox.de>
 > ---
->  crypto/testmgr.c | 226 +++++++++++++++++++++++++++++++++++++++++++++++
->  crypto/testmgr.h | 110 +++++++++++++++++++++++
->  2 files changed, 336 insertions(+)
+>  crypto/Kconfig  |   7 +
+>  crypto/Makefile |   1 +
+>  crypto/kdf.c    | 492 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 500 insertions(+)
+>  create mode 100644 crypto/kdf.c
 > 
-> diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-> index 0f684a414acb..ff9051bffa1f 100644
-> --- a/crypto/testmgr.c
-> +++ b/crypto/testmgr.c
-> @@ -110,6 +110,11 @@ struct drbg_test_suite {
->  	unsigned int count;
->  };
+> diff --git a/crypto/Kconfig b/crypto/Kconfig
+> index 86960aa53e0f..cc80d89e0cf5 100644
+> --- a/crypto/Kconfig
+> +++ b/crypto/Kconfig
+> @@ -561,6 +561,13 @@ config CRYPTO_HMAC
+>  	  HMAC: Keyed-Hashing for Message Authentication (RFC2104).
+>  	  This is required for IPSec.
 >  
-> +struct kdf_test_suite {
-> +	struct kdf_testvec *vecs;
-> +	unsigned int count;
-> +};
+> +config CRYPTO_KDF
+> +	tristate "Key Derivation Function (SP800-108)"
+> +	select CRYPTO_RNG
+> +	help
+> +	  Support for KDF compliant to SP800-108. All three types of
+> +	  KDF specified in SP800-108 are implemented.
 > +
->  struct akcipher_test_suite {
->  	const struct akcipher_testvec *vecs;
->  	unsigned int count;
-> @@ -133,6 +138,7 @@ struct alg_test_desc {
->  		struct hash_test_suite hash;
->  		struct cprng_test_suite cprng;
->  		struct drbg_test_suite drbg;
-> +		struct kdf_test_suite kdf;
->  		struct akcipher_test_suite akcipher;
->  		struct kpp_test_suite kpp;
->  	} suite;
-> @@ -2020,6 +2026,64 @@ static int drbg_cavs_test(const struct drbg_testvec *test, int pr,
->  	return ret;
->  }
->  
-> +static int kdf_cavs_test(struct kdf_testvec *test,
-> +			 const char *driver, u32 type, u32 mask)
+>  config CRYPTO_XCBC
+>  	tristate "XCBC support"
+>  	select CRYPTO_HASH
+> diff --git a/crypto/Makefile b/crypto/Makefile
+> index 799ed5e94606..69a0bb64b0ac 100644
+> --- a/crypto/Makefile
+> +++ b/crypto/Makefile
+> @@ -58,6 +58,7 @@ crypto_user-y := crypto_user_base.o
+>  crypto_user-$(CONFIG_CRYPTO_STATS) += crypto_user_stat.o
+>  obj-$(CONFIG_CRYPTO_CMAC) += cmac.o
+>  obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
+> +obj-$(CONFIG_CRYPTO_KDF) += kdf.o
 
-Why not just "kdf_test()"?
-
-> +{
-> +	int ret = -EAGAIN;
-> +	struct crypto_rng *drng;
-> +	unsigned char *buf = kzalloc(test->expectedlen, GFP_KERNEL);
-
-s/unsigned char/u8
-
-> +
-> +	if (!buf)
-> +		return -ENOMEM;
-> +
-> +	drng = crypto_alloc_rng(driver, type | CRYPTO_ALG_INTERNAL, mask);
-> +	if (IS_ERR(drng)) {
-> +		printk(KERN_ERR "alg: kdf: could not allocate cipher handle "
-> +		       "for %s\n", driver);
-
-pr_err
-
-> +		kzfree(buf);
-
-kfree is fine here.
-
-> +		return -ENOMEM;
-> +	}
-> +
-> +	ret = crypto_rng_reset(drng, test->K1, test->K1len);
-> +	if (ret) {
-> +		printk(KERN_ERR "alg: kdf: could not set key derivation key\n");
-
-pr_err
-
-> +		goto err;
-> +	}
-> +
-> +	ret = crypto_rng_generate(drng, test->context, test->contextlen,
-> +				  buf, test->expectedlen);
-> +	if (ret) {
-> +		printk(KERN_ERR "alg: kdf: could not obtain key data\n");
-
-pr_err
-
-> +		goto err;
-> +	}
-> +
-> +	ret = memcmp(test->expected, buf, test->expectedlen);
-
-Elsewhere this function returns an -errno value but this is different.
-
-> +
-> +err:
-> +	crypto_free_rng(drng);
-> +	kzfree(buf);
-
-kfree would be fine here too.
-
-> +	return ret;
-> +}
-> +
-> +static int alg_test_kdf(const struct alg_test_desc *desc, const char *driver,
-> +			u32 type, u32 mask)
-> +{
-> +	int err = 0;
-> +	unsigned int i = 0;
-> +	struct kdf_testvec *template = desc->suite.kdf.vecs;
-
-const
+This naming is too generic.  CONFIG_CRYPTO_KDF and kdf.c imply that this is
+related to all KDFs.  But actually it is an implementation of a few specific
+KDFs.  Can you give it a clearer name, like KDF_SP800?
 
 - Eric
