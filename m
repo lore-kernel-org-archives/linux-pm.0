@@ -1,16 +1,16 @@
-From: Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
-Date: Fri, 11 Jan 2019 14:48:08 -0700
-Message-ID: <b5be50cf-336b-c10f-5cb1-efbf8b69ab61@kernel.dk>
-References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
- <35c5cdcf-0d89-9236-7937-0c750a781d13@kernel.dk>
- <20190111143404.518723a3@xps13>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 3/3] firmware: imx: scu-pd: add fallback compatible
+ string support
+Date: Sat, 12 Jan 2019 09:39:44 +0800
+Message-ID: <20190112013942.GJ32649@dragon>
+References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
+ <1545148524-658-4-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190111143404.518723a3@xps13>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1545148524-658-4-git-send-email-aisheng.dong@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,44 +20,51 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, linux-ide@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Aisheng Dong <aisheng.dong@nxp.com>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1/11/19 6:34 AM, Miquel Raynal wrote:
-> Hi Jens,
+On Tue, Dec 18, 2018 at 04:01:29PM +0000, Aisheng Dong wrote:
+> SCU power domain can be used in the same way by IMX8QXP and IMX8QM SoCs.
+> Make the driver support the fallback compatible string "fsl,scu-pd" to
+> allow other SoCs to reuse the common part.
 > 
-> Jens Axboe <axboe@kernel.dk> wrote on Tue, 4 Dec 2018 17:11:18 -0700:
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> ---
+>  drivers/firmware/imx/scu-pd.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
->> On 12/4/18 12:28 PM, Miquel Raynal wrote:
->>> Hello,
->>>
->>> As part of an effort to bring suspend to RAM support to Armada 3700
->>> SoCs (main target: ESPRESSObin), this series handles the work around
->>> the SATA IP.
->>>
->>> First, a change in the libahci platform adds support for the new PHY
->>> framework by following the phy_set_mode()/phy_power_on()
->>> sequence. Then, the AHCI MVEBU driver is a bit updated (patch 2 & 3)
->>> and a missing initialization is added for the A3700 in patch 4 (only
->>> done by the Bootloader before). Missing clock support is implemented
->>> in patch 5 to be sure the clock will be resumed before this driver
->>> (see [1] for the series adding device links to the clock core).
->>>
->>> Finally, device trees are updated to reflect the hardware: the missing
->>> PHY is added to the ESPRESSObin DT, and the clock is added to the SoC
->>> DT (patch 6 & 7). Bindings already document the clock and the PHY so
->>> no update is needed on this regard.  
->>
->> Probably the best/easiest to queue this through the libata tree for
->> 4.21. Agree?
->>
-> 
-> It looks like this patchset got left aside for 5.0, shall I re-send? (I
-> rebased on top of 5.0 and the series applied fine).
+> diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
+> index 407245f..1aaae98 100644
+> --- a/drivers/firmware/imx/scu-pd.c
+> +++ b/drivers/firmware/imx/scu-pd.c
+> @@ -321,6 +321,7 @@ static int imx_sc_pd_probe(struct platform_device *pdev)
+>  }
+>  
+>  static const struct of_device_id imx_sc_pd_match[] = {
+> +	{ .compatible = "fsl,scu-pd", &imx8qxp_scu_pd},
 
-I never got a reply to the above, so I didn't add it. I've now picked
-up 1-5, 6-7 should go in through someone elses tree.
+As the fallback compatible, it makes more sense to put it at end of the
+table.  I fixed it up and applied the series.
 
--- 
-Jens Axboe
+Shawn
+
+>  	{ .compatible = "fsl,imx8qxp-scu-pd", &imx8qxp_scu_pd},
+>  	{ /* sentinel */ }
+>  };
+> -- 
+> 2.7.4
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
