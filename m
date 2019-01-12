@@ -1,70 +1,43 @@
-From: Eric Biggers <ebiggers@kernel.org>
-Subject: Re: [PATCH 2/6] crypto: kdf - SP800-108 Key Derivation Function
-Date: Fri, 11 Jan 2019 21:27:59 -0800
-Message-ID: <20190112052758.GD639@sol.localdomain>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH 4/6] crypto: hkdf - RFC5869 Key Derivation Function
+Date: Sat, 12 Jan 2019 17:55:35 +0800
+Message-ID: <20190112095535.36rh3ptnrf7yxacv@gondor.apana.org.au>
 References: <20190103143227.9138-1-jlee@suse.com>
  <20190109082103.GA8586@sol.localdomain>
  <9733066.Vrs4h5eWcW@positron.chronox.de>
- <1830918.5I3Y3k8tQf@positron.chronox.de>
+ <2423373.Zd5ThvQH5g@positron.chronox.de>
+ <20190112051252.GA639@sol.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1830918.5I3Y3k8tQf@positron.chronox.de>
+In-Reply-To: <20190112051252.GA639@sol.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 11, 2019 at 08:10:02PM +0100, Stephan Müller wrote:
-> The SP800-108 compliant Key Derivation Function is implemented as a
-> random number generator considering that it behaves like a deterministic
-> RNG.
+On Fri, Jan 11, 2019 at 09:12:54PM -0800, Eric Biggers wrote:
+> Hi Stephan,
 > 
-> All three KDF types specified in SP800-108 are implemented.
+> On Fri, Jan 11, 2019 at 08:10:39PM +0100, Stephan Müller wrote:
+> > The RFC5869 compliant Key Derivation Function is implemented as a
+> > random number generator considering that it behaves like a deterministic
+> > RNG.
+> > 
 > 
-> The code comments provide details about how to invoke the different KDF
-> types.
-> 
-> Signed-off-by: Stephan Mueller <smueller@chronox.de>
-> ---
->  crypto/Kconfig  |   7 +
->  crypto/Makefile |   1 +
->  crypto/kdf.c    | 492 ++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 500 insertions(+)
->  create mode 100644 crypto/kdf.c
-> 
-> diff --git a/crypto/Kconfig b/crypto/Kconfig
-> index 86960aa53e0f..cc80d89e0cf5 100644
-> --- a/crypto/Kconfig
-> +++ b/crypto/Kconfig
-> @@ -561,6 +561,13 @@ config CRYPTO_HMAC
->  	  HMAC: Keyed-Hashing for Message Authentication (RFC2104).
->  	  This is required for IPSec.
->  
-> +config CRYPTO_KDF
-> +	tristate "Key Derivation Function (SP800-108)"
-> +	select CRYPTO_RNG
-> +	help
-> +	  Support for KDF compliant to SP800-108. All three types of
-> +	  KDF specified in SP800-108 are implemented.
-> +
->  config CRYPTO_XCBC
->  	tristate "XCBC support"
->  	select CRYPTO_HASH
-> diff --git a/crypto/Makefile b/crypto/Makefile
-> index 799ed5e94606..69a0bb64b0ac 100644
-> --- a/crypto/Makefile
-> +++ b/crypto/Makefile
-> @@ -58,6 +58,7 @@ crypto_user-y := crypto_user_base.o
->  crypto_user-$(CONFIG_CRYPTO_STATS) += crypto_user_stat.o
->  obj-$(CONFIG_CRYPTO_CMAC) += cmac.o
->  obj-$(CONFIG_CRYPTO_HMAC) += hmac.o
-> +obj-$(CONFIG_CRYPTO_KDF) += kdf.o
+> Thanks for the proof of concept!  I guess it ended up okay.  But can you explain
+> more the benefits of using the crypto_rng interface, as opposed to just some
+> crypto_hkdf_*() helper functions that are exported for modules to use?
 
-This naming is too generic.  CONFIG_CRYPTO_KDF and kdf.c imply that this is
-related to all KDFs.  But actually it is an implementation of a few specific
-KDFs.  Can you give it a clearer name, like KDF_SP800?
+I agree.  I see no benefit in adding this through the RNG API as
+opposed to just providing it as a helper.  If some form of hardware
+acceleration were to eventuate in the future we could always revisit
+this.
 
-- Eric
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
