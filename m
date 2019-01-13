@@ -1,96 +1,34 @@
-From: Stephan =?ISO-8859-1?Q?M=FCller?= <smueller@chronox.de>
-Subject: Re: [PATCH 4/6] crypto: hkdf - RFC5869 Key Derivation Function
-Date: Sun, 13 Jan 2019 08:56:32 +0100
-Message-ID: <9795894.APlZEWIbOH@positron.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <20190112051252.GA639@sol.localdomain> <20190112095535.36rh3ptnrf7yxacv@gondor.apana.org.au>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 4/4] ARM: defconfig: s5pv210: Add cpufreq support
+Date: Sun, 13 Jan 2019 10:34:16 +0100
+Message-ID: <20190113093416.GA27934@kozik-lap>
+References: <20190110205215.22030-1-pawel.mikolaj.chmiel@gmail.com>
+ <20190110205215.22030-5-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190112095535.36rh3ptnrf7yxacv@gondor.apana.org.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20190110205215.22030-5-pawel.mikolaj.chmiel@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux@armlinux.org.uk, robh+dt@kernel.org, linux-kernel@vger.kernel.org, kgene@kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag, 12. Januar 2019, 10:55:35 CET schrieb Herbert Xu:
-
-Hi Herbert,
-
-> On Fri, Jan 11, 2019 at 09:12:54PM -0800, Eric Biggers wrote:
-> > Hi Stephan,
-> >=20
-> > On Fri, Jan 11, 2019 at 08:10:39PM +0100, Stephan M=FCller wrote:
-> > > The RFC5869 compliant Key Derivation Function is implemented as a
-> > > random number generator considering that it behaves like a determinis=
-tic
-> > > RNG.
-> >=20
-> > Thanks for the proof of concept!  I guess it ended up okay.  But can you
-> > explain more the benefits of using the crypto_rng interface, as opposed
-> > to just some crypto_hkdf_*() helper functions that are exported for
-> > modules to use?
-> I agree.  I see no benefit in adding this through the RNG API as
-> opposed to just providing it as a helper.  If some form of hardware
-> acceleration were to eventuate in the future we could always revisit
-> this.
-
-The advantages for using the kernel crypto API to add KDFs as opposed to=20
-adding helper wrappers are the following in my view:
-
-=2D employment of the kernel crypto API testmgr - invocation of the testmgr=
- is=20
-transparent and thus already provided without any additional code to link t=
-o=20
-it
-
-=2D FIPS 140-2 compliance: To mark a KDF as FIPS 140-2 approved cipher, it =
-must=20
-be subject to a known-answer self test (implemented by the testmgr) as well=
- as=20
-to an enforcement of the integrity check verification. In FIPS 140-2 mode, =
-the=20
-kernel crypto API panic()s when a kernel crypto API module is loaded and it=
-s=20
-signature does not check out. As this is only relevant for crypto modules (=
-and=20
-not arbitrary other kernel modules), this is implemented with the invocatio=
-ns=20
-the crypto_register_alg as well as crypto_register_template functions. Thus=
-,=20
-when using a wrapper code to implement the KDF, they can per definition not=
- be=20
-=46IPS 140-2 approved.
-
-=2D The invoker of a KDF has one consistent API. This implies that the KDF=
-=20
-selection now becomes more of a "configuration" choice. For example, when y=
-ou=20
-look at the KDF use case for the keys subsystem (security/keys/dh.c),=20
-selecting the type of KDF would only necessitate a change of a string=20
-referencing the KDF. A lot of people somehow favor the extract-and-expand K=
-DFs=20
-over the traditional KDFs. Now, that the RFC5869 HKDF is also approved as p=
-er=20
-SP800-56A rev3, I could see that folks may want to switch to HKDF for the k=
-ey=20
-management. When we have a common API, this choice could even be left to th=
-e=20
-caller.
-
-The question may arise why to plug the KDFs into RNGs. The answer is quite=
-=20
-simple: KDFs are a form of random number generator. In that they take some=
-=20
-input for initialization (aka seed, salt, key, personalization string). The=
-n=20
-they produce pseudo-random bit sequences of arbitrary length. Possibly the=
-=20
-generation operation can be modified by providing some additional input to =
-be=20
-used by the generation process (aka label, context, info string, additional=
-=20
-information string). Thus, the RNG interface is a natural fit for the KDFs.
-
-Ciao
-Stephan
+T24gVGh1LCBKYW4gMTAsIDIwMTkgYXQgMDk6NTI6MTVQTSArMDEwMCwgUGF3ZcWCIENobWllbCB3
+cm90ZToKPiBUaGlzIGNvbW1pdCBlbmFibGVzIGNwdWZyZXEgc3VwcG9ydCBmb3IgYWxsIHM1cHYy
+MTAgZGV2aWNlcy4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBQYXdlxYIgQ2htaWVsIDxwYXdlbC5taWtv
+bGFqLmNobWllbEBnbWFpbC5jb20+Cj4gLS0tCj4gIGFyY2gvYXJtL2NvbmZpZ3MvczVwdjIxMF9k
+ZWZjb25maWcgfCA2ICsrKysrKwoKVGhhbmtzLCBhcHBsaWVkLgoKQmVzdCByZWdhcmRzLApLcnp5
+c3p0b2YKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
+aW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
+ZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
+eC1hcm0ta2VybmVsCg==
