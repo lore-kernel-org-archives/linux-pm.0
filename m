@@ -1,110 +1,45 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v3] cpufreq: s5pv210: Defer probe if getting regulators
- fail
-Date: Sun, 13 Jan 2019 14:16:24 +0100
-Message-ID: <20190113131624.GA2672@kozik-lap>
-References: <20190111194244.2439-1-pawel.mikolaj.chmiel@gmail.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 4/6] crypto: hkdf - RFC5869 Key Derivation Function
+Date: Sun, 13 Jan 2019 08:52:22 -0800
+Message-ID: <1547398342.4409.3.camel@HansenPartnership.com>
+References: <20190103143227.9138-1-jlee@suse.com>
+         <20190112051252.GA639@sol.localdomain>
+         <20190112095535.36rh3ptnrf7yxacv@gondor.apana.org.au>
+         <9795894.APlZEWIbOH@positron.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20190111194244.2439-1-pawel.mikolaj.chmiel@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, kgene@kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9795894.APlZEWIbOH@positron.chronox.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephan =?ISO-8859-1?Q?M=FCller?= <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Eric Biggers <ebiggers@kernel.org>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKYW4gMTEsIDIwMTkgYXQgMDg6NDI6NDRQTSArMDEwMCwgUGF3ZcWCIENobWllbCB3
-cm90ZToKPiBUaGVyZSBpcyBwb3NzaWJpbGl0eSwgdGhhdCB3aGVuIHByb2JpbmcgZHJpdmVyLCBy
-ZWd1bGF0b3JzIGFyZSBub3QgeWV0Cj4gaW5pdGlhbGl6ZWQuIEluIHRoaXMgY2FzZSB3ZSBzaG91
-bGQgcmV0dXJuIEVQUk9CRV9ERUZFUiBhbmQgd2FpdCB0aWxsCj4gdGhleSdyZSBpbml0aWFsaXpl
-ZCwgc2luY2UgdGhleSdyZSByZXF1aXJlZCBjdXJyZW50bHkgZm9yIGNwdWZyZXEgZHJpdmVyCj4g
-dG8gd29yay4gQWxzbyBtb3ZlIHJlZ3VsYXRvciBpbml0aWFsaXphdGlvbiBjb2RlIGF0IGJlZ2lu
-bmluZyBvZiBwcm9iZSwKPiBzbyB3ZSBjYW4gZGVmZXIgYXMgZmFzdCBhcyBwb3NpYmJsZS4KPiAK
-PiBTaWduZWQtb2ZmLWJ5OiBQYXdlxYIgQ2htaWVsIDxwYXdlbC5taWtvbGFqLmNobWllbEBnbWFp
-bC5jb20+Cj4gLS0tCj4gQ2hhbmdlcyBmcm9tIHYyOgo+ICAgLSBIYW5kbGUgYWxsIGVycm9yIHBh
-dGhzIGluIHByb2JlCj4gCj4gQ2hhbmdlcyBmcm9tIHYxOgo+ICAgLSBGaXggY29tcGlsYXRpb24g
-ZXJyb3IKPiAgIC0gUmVvcmdhbml6ZSBjb2RlIHNvIGl0J3Mgc21hbGxlcgo+IC0tLQo+ICBkcml2
-ZXJzL2NwdWZyZXEvczVwdjIxMC1jcHVmcmVxLmMgfCA2OCArKysrKysrKysrKysrKysrKysrKysr
-LS0tLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCA0OSBpbnNlcnRpb25zKCspLCAxOSBkZWxldGlv
-bnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3M1cHYyMTAtY3B1ZnJlcS5j
-IGIvZHJpdmVycy9jcHVmcmVxL3M1cHYyMTAtY3B1ZnJlcS5jCj4gaW5kZXggZjUxNjk3ZjFlMGIz
-Li42MjdiMTMyZTNlNjEgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL3M1cHYyMTAtY3B1
-ZnJlcS5jCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL3M1cHYyMTAtY3B1ZnJlcS5jCj4gQEAgLTU4
-NCw3ICs1ODQsNyBAQCBzdGF0aWMgc3RydWN0IG5vdGlmaWVyX2Jsb2NrIHM1cHYyMTBfY3B1ZnJl
-cV9yZWJvb3Rfbm90aWZpZXIgPSB7Cj4gIHN0YXRpYyBpbnQgczVwdjIxMF9jcHVmcmVxX3Byb2Jl
-KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gIHsKPiAgCXN0cnVjdCBkZXZpY2Vfbm9k
-ZSAqbnA7Cj4gLQlpbnQgaWQ7Cj4gKwlpbnQgaWQsIHJlc3VsdCA9IDA7Cj4gIAo+ICAJLyoKPiAg
-CSAqIEhBQ0s6IFRoaXMgaXMgYSB0ZW1wb3Jhcnkgd29ya2Fyb3VuZCB0byBnZXQgYWNjZXNzIHRv
-IGNsb2NrCj4gQEAgLTU5NCwxOCArNTk0LDQwIEBAIHN0YXRpYyBpbnQgczVwdjIxMF9jcHVmcmVx
-X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gIAkgKiB0aGlzIHdob2xlIGRy
-aXZlciBhcyBzb29uIGFzIFM1UFYyMTAgZ2V0cyBtaWdyYXRlZCB0byB1c2UKPiAgCSAqIGNwdWZy
-ZXEtZHQgZHJpdmVyLgo+ICAJICovCj4gKwlhcm1fcmVndWxhdG9yID0gcmVndWxhdG9yX2dldChO
-VUxMLCAidmRkYXJtIik7Cj4gKwlpZiAoSVNfRVJSKGFybV9yZWd1bGF0b3IpKSB7Cj4gKwkJaWYg
-KFBUUl9FUlIoYXJtX3JlZ3VsYXRvcikgPT0gLUVQUk9CRV9ERUZFUikKPiArCQkJcHJfZGVidWco
-InZkZGFybSByZWd1bGF0b3Igbm90IHJlYWR5LCBkZWZlclxuIik7Cj4gKwkJZWxzZQo+ICsJCQlw
-cl9lcnIoImZhaWxlZCB0byBnZXQgcmVndWxhdG9yIHZkZGFybVxuIik7Cj4gKwkJcmVzdWx0ID0g
-UFRSX0VSUihhcm1fcmVndWxhdG9yKTsKPiArCQlnb3RvIGVycl9hcm1fcmVndWxhdG9yOwoKSnVz
-dCByZXR1cm4gaGVyZS4KCj4gKwl9Cj4gKwo+ICsJaW50X3JlZ3VsYXRvciA9IHJlZ3VsYXRvcl9n
-ZXQoTlVMTCwgInZkZGludCIpOwo+ICsJaWYgKElTX0VSUihpbnRfcmVndWxhdG9yKSkgewo+ICsJ
-CWlmIChQVFJfRVJSKGludF9yZWd1bGF0b3IpID09IC1FUFJPQkVfREVGRVIpCj4gKwkJCXByX2Rl
-YnVnKCJ2ZGRpbnQgcmVndWxhdG9yIG5vdCByZWFkeSwgZGVmZXJcbiIpOwo+ICsJCWVsc2UKPiAr
-CQkJcHJfZXJyKCJmYWlsZWQgdG8gZ2V0IHJlZ3VsYXRvciB2ZGRpbnRcbiIpOwo+ICsJCXJlc3Vs
-dCA9IFBUUl9FUlIoaW50X3JlZ3VsYXRvcik7Cj4gKwkJZ290byBlcnJfaW50X3JlZ3VsYXRvcjsK
-PiArCX0KPiArCj4gIAlucCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9ub2RlKE5VTEwsIE5VTEwsICJz
-YW1zdW5nLHM1cHYyMTAtY2xvY2siKTsKPiAgCWlmICghbnApIHsKPiAgCQlwcl9lcnIoIiVzOiBm
-YWlsZWQgdG8gZmluZCBjbG9jayBjb250cm9sbGVyIERUIG5vZGVcbiIsCj4gIAkJCV9fZnVuY19f
-KTsKPiAtCQlyZXR1cm4gLUVOT0RFVjsKPiArCQlyZXN1bHQgPSAtRU5PREVWOwo+ICsJCWdvdG8g
-ZXJyX2Nsb2NrOwo+ICAJfQo+ICAKPiAgCWNsa19iYXNlID0gb2ZfaW9tYXAobnAsIDApOwo+ICAJ
-b2Zfbm9kZV9wdXQobnApOwo+ICAJaWYgKCFjbGtfYmFzZSkgewo+ICAJCXByX2VycigiJXM6IGZh
-aWxlZCB0byBtYXAgY2xvY2sgcmVnaXN0ZXJzXG4iLCBfX2Z1bmNfXyk7Cj4gLQkJcmV0dXJuIC1F
-RkFVTFQ7Cj4gKwkJcmVzdWx0ID0gLUVGQVVMVDsKPiArCQlnb3RvIGVycl9jbG9jazsKPiAgCX0K
-PiAgCj4gIAlmb3JfZWFjaF9jb21wYXRpYmxlX25vZGUobnAsIE5VTEwsICJzYW1zdW5nLHM1cHYy
-MTAtZG1jIikgewo+IEBAIC02MTQsNyArNjM2LDggQEAgc3RhdGljIGludCBzNXB2MjEwX2NwdWZy
-ZXFfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiAgCQkJcHJfZXJyKCIlczog
-ZmFpbGVkIHRvIGdldCBhbGlhcyBvZiBkbWMgbm9kZSAnJXBPRm4nXG4iLAo+ICAJCQkJX19mdW5j
-X18sIG5wKTsKPiAgCQkJb2Zfbm9kZV9wdXQobnApOwo+IC0JCQlyZXR1cm4gaWQ7Cj4gKwkJCXJl
-c3VsdCA9IGlkOwo+ICsJCQlnb3RvIGVycl9jbGtfYmFzZTsKPiAgCQl9Cj4gIAo+ICAJCWRtY19i
-YXNlW2lkXSA9IG9mX2lvbWFwKG5wLCAwKTsKPiBAQCAtNjIyLDMzICs2NDUsNDAgQEAgc3RhdGlj
-IGludCBzNXB2MjEwX2NwdWZyZXFfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikK
-PiAgCQkJcHJfZXJyKCIlczogZmFpbGVkIHRvIG1hcCBkbWMlZCByZWdpc3RlcnNcbiIsCj4gIAkJ
-CQlfX2Z1bmNfXywgaWQpOwo+ICAJCQlvZl9ub2RlX3B1dChucCk7Cj4gLQkJCXJldHVybiAtRUZB
-VUxUOwo+ICsJCQlyZXN1bHQgPSAtRUZBVUxUOwo+ICsJCQlnb3RvIGVycl9kbWM7Cj4gIAkJfQo+
-ICAJfQo+ICAKPiAgCWZvciAoaWQgPSAwOyBpZCA8IEFSUkFZX1NJWkUoZG1jX2Jhc2UpOyArK2lk
-KSB7Cj4gIAkJaWYgKCFkbWNfYmFzZVtpZF0pIHsKPiAgCQkJcHJfZXJyKCIlczogZmFpbGVkIHRv
-IGZpbmQgZG1jJWQgbm9kZVxuIiwgX19mdW5jX18sIGlkKTsKPiAtCQkJcmV0dXJuIC1FTk9ERVY7
-Cj4gKwkJCXJlc3VsdCA9IC1FTk9ERVY7Cj4gKwkJCWdvdG8gZXJyX2RtYzsKPiAgCQl9Cj4gIAl9
-Cj4gIAo+IC0JYXJtX3JlZ3VsYXRvciA9IHJlZ3VsYXRvcl9nZXQoTlVMTCwgInZkZGFybSIpOwo+
-IC0JaWYgKElTX0VSUihhcm1fcmVndWxhdG9yKSkgewo+IC0JCXByX2VycigiZmFpbGVkIHRvIGdl
-dCByZWd1bGF0b3IgdmRkYXJtXG4iKTsKPiAtCQlyZXR1cm4gUFRSX0VSUihhcm1fcmVndWxhdG9y
-KTsKPiAtCX0KPiAtCj4gLQlpbnRfcmVndWxhdG9yID0gcmVndWxhdG9yX2dldChOVUxMLCAidmRk
-aW50Iik7Cj4gLQlpZiAoSVNfRVJSKGludF9yZWd1bGF0b3IpKSB7Cj4gLQkJcHJfZXJyKCJmYWls
-ZWQgdG8gZ2V0IHJlZ3VsYXRvciB2ZGRpbnRcbiIpOwo+IC0JCXJlZ3VsYXRvcl9wdXQoYXJtX3Jl
-Z3VsYXRvcik7Cj4gLQkJcmV0dXJuIFBUUl9FUlIoaW50X3JlZ3VsYXRvcik7Cj4gLQl9Cj4gLQo+
-ICAJcmVnaXN0ZXJfcmVib290X25vdGlmaWVyKCZzNXB2MjEwX2NwdWZyZXFfcmVib290X25vdGlm
-aWVyKTsKPiAgCj4gIAlyZXR1cm4gY3B1ZnJlcV9yZWdpc3Rlcl9kcml2ZXIoJnM1cHYyMTBfZHJp
-dmVyKTsKPiArCj4gK2Vycl9kbWM6Cj4gKwlmb3IgKGlkID0gMDsgaWQgPCBBUlJBWV9TSVpFKGRt
-Y19iYXNlKTsgKytpZCkKPiArCQlpZiAoZG1jX2Jhc2VbaWRdKQo+ICsJCQlpb3VubWFwKGRtY19i
-YXNlW2lkXSk7CgpZb3Ugd2lsbCBpb3VubWFwIHRoZSBzYW1lIHBvaW50ZXIgdHdpY2UsIGlmIGZp
-cnN0IGRldmljZSBiaW5kIGZhaWxlZAp3aGlsZSBmb2xsb3dpbmcgdGhpcyBlcnJvciBwYXRoIGFu
-ZCBzb21lb25lIHRyaWVzIHRvIGJpbmQgc2Vjb25kIHRpbWUKKGFnYWluIHdpdGggZXJyb3IgbGVh
-ZGluZyB0byB0aGlzIGVycm9yIHBhdGgpLiBZb3UgemVybyB0aGUgcG9pbnRlcgplaXRoZXIgYXQg
-YmVnaW5uaW5nIG9mIHByb2JlIG9yIGFmdGVyIGlvdW5tYXBwaW5nLgoKQmVzdCByZWdhcmRzLApL
-cnp5c3p0b2YKCgo+ICsKPiArZXJyX2Nsa19iYXNlOgo+ICsJaW91bm1hcChjbGtfYmFzZSk7Cj4g
-Kwo+ICtlcnJfY2xvY2s6Cj4gKwlyZWd1bGF0b3JfcHV0KGludF9yZWd1bGF0b3IpOwo+ICsKPiAr
-ZXJyX2ludF9yZWd1bGF0b3I6Cj4gKwlyZWd1bGF0b3JfcHV0KGFybV9yZWd1bGF0b3IpOwo+ICsK
-PiArZXJyX2FybV9yZWd1bGF0b3I6Cj4gKwo+ICsJcmV0dXJuIHJlc3VsdDsKPiAgfQo+ICAKPiAg
-c3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgczVwdjIxMF9jcHVmcmVxX3BsYXRkcnYgPSB7
-Cj4gLS0gCj4gMi4xNy4xCj4gCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVs
-QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Sun, 2019-01-13 at 08:56 +0100, Stephan Müller wrote:
+> The question may arise why to plug the KDFs into RNGs. The answer is
+> quite simple: KDFs are a form of random number generator. In that
+> they take some input for initialization (aka seed, salt, key,
+> personalization string). Then they produce pseudo-random bit
+> sequences of arbitrary length. Possibly the generation operation can
+> be modified by providing some additional input to be used by the
+> generation process (aka label, context, info string, additional 
+> information string). Thus, the RNG interface is a natural fit for the
+> KDFs.
+
+Philosophically, that's quite wrong.  KDFs are a class of pseudorandom
+functions (PRFs).  PRFs are designed so that the output is
+indistinguishable from a random number generator to observers who don't
+know the input but is deterministically useful for participants who do.
+ That means the're definitely not RNGs they're functions whose output
+is designed to look like the output of an RNG.
+
+I suppose the mathematical thing that distinguishes PRFs and RNGs is
+entropy: PRFs have zero entropy because given the same inputs you
+expect the same output. Now whether it makes sense to use the RNG API
+or not I'll leave that up to the crypto people.  I would have expected
+any cryptographic RNG API to be mostly about entropy management (the
+Linux core internal one certainly is), but it appears that the one in
+crypto isn't.
+
+James
