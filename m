@@ -1,89 +1,210 @@
 From: Eric Biggers <ebiggers@kernel.org>
-Subject: Re: [PATCH 5/6] crypto: hkdf - add known answer tests
-Date: Mon, 14 Jan 2019 09:44:16 -0800
-Message-ID: <20190114174415.GA7644@gmail.com>
+Subject: Re: [PATCH 4/6] crypto: hkdf - RFC5869 Key Derivation Function
+Date: Mon, 14 Jan 2019 09:53:16 -0800
+Message-ID: <20190114175315.GB7644@gmail.com>
 References: <20190103143227.9138-1-jlee@suse.com>
- <9857029.1Sm7LFDBlJ@positron.chronox.de>
- <20190112051914.GB639@sol.localdomain>
- <2750733.sbdFDJOICv@positron.chronox.de>
+ <2423373.Zd5ThvQH5g@positron.chronox.de>
+ <20190112051252.GA639@sol.localdomain>
+ <4734428.Gj5BGI4uxL@positron.chronox.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2750733.sbdFDJOICv@positron.chronox.de>
+In-Reply-To: <4734428.Gj5BGI4uxL@positron.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>
 Cc: Herbert Xu <herbert@gondor.apana.org.au>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 14, 2019 at 10:25:16AM +0100, Stephan Müller wrote:
-> Am Samstag, 12. Januar 2019, 06:19:15 CET schrieb Eric Biggers:
+On Mon, Jan 14, 2019 at 10:30:39AM +0100, Stephan Müller wrote:
+> Am Samstag, 12. Januar 2019, 06:12:54 CET schrieb Eric Biggers:
 > 
 > Hi Eric,
 > 
 > [...]
+> 
+> > > The extract and expand phases use different instances of the underlying
+> > > keyed message digest cipher to ensure that while the extraction phase
+> > > generates a new key for the expansion phase, the cipher for the
+> > > expansion phase can still be used. This approach is intended to aid
+> > > multi-threaded uses cases.
 > > 
-> > > +			}
-> > > +		}
-> > > +	}, {
-> > > +		.alg = "hkdf(hmac(sha224))",
-> > > +		.test = alg_test_null,
-> > > +		.fips_allowed = 1,
+> > I think you partially misunderstood what I was asking for.  One HMAC tfm is
+> > sufficient as long as HKDF-Expand is separated from HKDF-Extract, which
+> > you've done.  So just use one HMAC tfm, and in crypto_hkdf_seed() key it
+> > with the 'salt', and then afterwards with the 'prk'.
+> 
+> Ok, thanks for the clarification. I will remove the 2nd HMAC TFM then.
 > > 
-> > I think it is dumb to add algorithms to the testmgr with no tests just so
-> > the 'fips_allowed' flag can be set. 
+> > Also everywhere in this patchset, please avoid using the word "cipher" to
+> > refer to algorithms that are not encryption/decryption.  I know a lot of
+> > the crypto API docs do this, but I think it is a mistake and confusing. 
+> > Hash algorithms and KDFs are not "ciphers".
 > 
-> Currently it is the only way. But I agree that it could be done better.
+> As you wish, I will refer to specific name of the cryptographic operation.
 > 
-> > And doesn't FIPS sometimes require
-> > tests anyway?  I don't think the "null test" should count as a test :-)
+> [...]
 > 
-> Yes, it DOES count as a test (as strange as it may sound)! :-)
-> 
-> The FIPS requirements are as follows:
-> 
-> - raw ciphers must be subject to a FIPS test with one block chaining mode to 
-> cover that cipher with all block chaining modes (e.g. you can test ecb(aes) to 
-> cover AES with *all* existing block chaining modes).
-> 
-> - for compound crypto algorithm (like RSA with respect to hashes, KDF with 
-> respect to the keyed message digest, HMAC with respect to hashes), the 
-> wrapping crypto algorithm needs to be tested with *one* wrapped cipher at 
-> least (but also not more. E.g. if you have a self test for, say, all SHA-1 and 
-> SHA-2, you only need one HMAC SHA test or one KDF HMAC SHA test.
-> 
-> - in some circumstances, it is even permissible to test wrapping crypto 
-> algorithms where the underlying algo is implicitly tested. E.g. if you have a 
-> HMAC SHA-256 test, you do not need an individual SHA-256 test.
-> 
-> 
+> > > + * NOTE: In-place cipher operations are not supported.
+> > > + */
 > > 
-> > Perhaps just include sha256 and sha512, and have tests for them?
+> > What does an "in-place cipher operation" mean in this context?  That the
+> > 'info' buffer must not overlap the 'dst' buffer? 
 > 
-> Do you happen to have an official SHA-512 HKDF test vector? RFC5869 only has 
-> SHA-1 and SHA-256 tests.
-> > 
+> Correct, no overlapping.
 > 
-
-No, I don't know of any official HKDF-SHA512 test vectors.
-
+> > Maybe
+> > crypto_rng_generate() should check that for all crypto_rngs?  Or is it
+> > different for different crypto_rngs?
+> 
+> This is the case in general for all KDFs (and even RNGs). It is no technical 
+> or cryptographic error to have overlapping buffers. The only issue is that the 
+> result will not match the expected value.
+> 
+> The issue is that the input buffer to the generate function is an input to 
+> every round of the KDF. If the input and output buffer overlap, starting with 
+> the 2nd iteration of the KDF, the input is the output of the 1st round. Again, 
+> I do not think it is a cryptographic error though.
+> 
+> (To support my conclusion: A colleague of mine has proposed an update to the 
+> HKDF specification where the input data changes for each KDF round. This 
+> proposal was considered appropriate by one of the authors of HKDF.)
+> 
+> If the requested output is smaller or equal to the output block size of the 
+> KDF, overlapping buffers are even harmless since the implementation will 
+> calculate the correct output.
+> 
+> Due to that, I removed the statement. But I am not sure we should add a 
+> technical block to deny overlapping input/output buffers.
+> 
 > [...]
 > > > 
-> > > +/* Test vectors from RFC 5869 appendix A */
-> > > +static struct kdf_testvec hkdf_hmac_sha256_tv_template[] = {
+> > > +	desc->flags = crypto_shash_get_flags(expand_kmd) &
+> > > +		      CRYPTO_TFM_REQ_MAY_SLEEP;
 > > 
-> > const
-> > 
-> > Likewise for all other kdf_testvecs.
+> > This line setting desc->flags doesn't make sense.  How is the user meant to
+> > control whether crypto_rng_generate() can sleep or not?  Or can it always
+> > sleep? Either way this part is wrong since the user can't get access to the
+> > HMAC tfm to set this flag being checked for.
 > 
-> const does not work with __VECS :-(
+> Could you please help me why a user should set this flag? Isn't the 
+> implementation specifying that flag to allow identifying whether the 
+> implementation could or could not sleep? Thus, we simply copy the sleeping 
+> flag from the lower level keyed message digest implementation.
 > 
-> I leave it without const at the moment. I think the __VECS should be updated 
-> along with all test vectors.
+> At least that is also the implementation found in crypto/hmac.c.
 > 
 > [...]
 
-I don't see why.  kdf_testvec just needs to be made const everywhere.
+Whether the crypto_shash* stuff can sleep is controlled on a per-request basis,
+not a per-implementation basis.  So I don't understand what you are talking
+about here.
+
+> 
+> > > +		if (dlen < h) {
+> > > +			u8 tmpbuffer[CRYPTO_HKDF_MAX_DIGESTSIZE];
+> > > +
+> > > +			err = crypto_shash_finup(desc, &ctr, 1, tmpbuffer);
+> > > +			if (err)
+> > > +				goto out;
+> > > +			memcpy(dst, tmpbuffer, dlen);
+> > > +			memzero_explicit(tmpbuffer, h);
+> > > +			goto out;
+> > > +		} else {
+> > 
+> > No need for the 'else'.
+> 
+> Could you please help me why that else branch is not needed? If the buffer to 
+> be generated is equal or larger than the output block length of the keyed 
+> message digest, I would like to directly operate on the output buffer to avoid 
+> a memcpy.
+
+I'm simply saying you don't need the 'else' keyword as the previous block ends
+with a goto.
+
+> > 
+> > > +			err = crypto_shash_finup(desc, &ctr, 1, dst);
+> > > +			if (err)
+> > > +				goto out;
+> > > +
+> > > +			prev = dst;
+> > > +			dst += h;
+> > > +			dlen -= h;
+> > > +			ctr++;
+> > > +		}
+> > > +	}
+> 
+> [...]
+> > 
+> > > +	struct crypto_shash *extract_kmd = ctx->extract_kmd;
+> > > +	struct crypto_shash *expand_kmd = ctx->expand_kmd;
+> > > +	struct rtattr *rta = (struct rtattr *)seed;
+> > > +	SHASH_DESC_ON_STACK(desc, extract_kmd);
+> > > +	u32 saltlen;
+> > > +	unsigned int h = crypto_shash_digestsize(extract_kmd);
+> > > +	int err;
+> > > +	const uint8_t null_salt[CRYPTO_HKDF_MAX_DIGESTSIZE] = { 0 };
+> > 
+> > static const
+> > 
+> 
+> Why would I want to turn that buffer into a static variable? All we need it 
+> for is in case there is no salt provided.
+> 
+> [...]
+> 
+> > > +
+> > > +	if (!RTA_OK(rta, slen))
+> > > +		return -EINVAL;
+> > > +	if (rta->rta_type != 1)
+> > > +		return -EINVAL;
+> > > +	if (RTA_PAYLOAD(rta) < sizeof(saltlen))
+> > > +		return -EINVAL;
+> > > +	saltlen = *((u32 *)RTA_DATA(rta));
+> > 
+> > I'm guessing you copied the weird "length as a rtattr payload" approach from
+> > the authenc template.  I think it's not necessary.  And it's overly
+> > error-prone, as shown by the authenc template getting the parsing wrong for
+> > years and you making the exact same mistake again here...
+> > (See https://patchwork.kernel.org/patch/10732803/)  How about just using a
+> > u32 at the beginning without the 'rtattr' preceding it?
+> 
+> I was not sure whether this approach would be acceptable. I very much would 
+> love to have a u32 pre-pended only without the RTA business.
+> 
+> I updated the implementation accordingly.
+> > 
+> [...]
+> 
+> > 
+> > > +	alg = &salg->base;
+> > 
+> > Check here that the underlying algorithm really is "hmac(" something?
+> 
+> I added a check for the presence of salg->setkey.
+> > 
+> > Alternatively it may be a good idea to simplify usage by making the template
+> > just take the unkeyed hash directly, like "hkdf(sha512)".  And if any users
+> > really need to specify a specific HMAC implementation then another template
+> > usable as "hkdf_base(hmac(sha512))" could be added later.
+> > 
+> 
+> I would not suggest this, because that rounds contrary to the concept of the 
+> kernel crypto API IMHO. The caller has to provide the wrapping cipher. It is 
+> perfectly viable to allow a caller to invoke a specific keyed message digest.
+> 
+
+Sure, but it would not conform to the HKDF specification.  Are you sure it is
+okay to specify an arbitrary keyed hash?
+
+> [...]
+> 
+> Thank you very much for your code review.
+> 
+> Ciao
+> Stephan
+> 
+> 
 
 - Eric
