@@ -1,88 +1,85 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 2/3] regulator: core: add helper to check if regulator
- is disabled in suspend
-Date: Mon, 14 Jan 2019 22:53:11 +0000
-Message-ID: <20190114225311.GJ11073@sirena.org.uk>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
- <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
- <20190109165706.GG10405@sirena.org.uk>
- <76298993-c1e8-1b00-6a54-5d41c48bc2d3@microchip.com>
- <20190111123913.GA2804@sirena.org.uk>
- <40a2dbb6-56aa-173a-4be0-d7072ed32b53@microchip.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
+Date: Tue, 15 Jan 2019 00:33:13 +0100
+Message-ID: <CAJZ5v0jB+_arUAL-rscJvH1Ej2SJA0TmbKS3Uh-2My2L=HDswg@mail.gmail.com>
+References: <3514439.dzOWKx1Cjx@aspire.rjw.lan> <e89ee355-3d87-1fe7-a1ff-91a1dd43177b@linaro.org>
+ <CAJZ5v0hPnoLzJPRgE43NrB2Vt4BZYx=jgw_-WHoAiBQvhviY1A@mail.gmail.com> <8e1593ee-5a68-c0a1-50e4-6fedb6f3ec5a@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0686652998473354990=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <40a2dbb6-56aa-173a-4be0-d7072ed32b53@microchip.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Claudiu.Beznea@microchip.com
-Cc: len.brown@intel.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, Ludovic.Desroches@microchip.com, pavel@ucw.cz, linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8e1593ee-5a68-c0a1-50e4-6fedb6f3ec5a@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Jan 14, 2019 at 11:39 AM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+>
+> Hi Rafael,
+>
+> sorry for the delay.
+>
+> On 10/01/2019 11:20, Rafael J. Wysocki wrote:
+>
+> [ ... ]
+>
+> >>>       if (entered_state >= 0) {
+> >>> +             s64 diff, delay = drv->states[entered_state].exit_latency;
+> >>> +             int i;
+> >>> +
+> >>>               /*
+> >>>                * Update cpuidle counters
+> >>>                * This can be moved to within driver enter routine,
+> >>> @@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
+> >>>               dev->last_residency = (int)diff;
+> >>
+> >> Shouldn't we subtract the 'delay' from the computed 'diff' in any case ?
+> >
+> > No.
+> >
+> >> Otherwise the 'last_residency' accumulates the effective sleep time and
+> >> the time to wakeup. We are interested in the sleep time only for
+> >> prediction and metrics no ?
+> >
+> > Yes, but 'delay' is the worst-case latency and not the actual one
+> > experienced, most of the time, and (on average) we would underestimate
+> > the sleep time if it was always subtracted.
+>
+> IMO, the exit latency is more or less constant for the cpu power down
+> state. When it is the cluster power down state, the first cpu waking up
+> has the worst latency, then the others have the same has the cpu power
+> down state.
+>
+> If we can model that, the gray area you mention below can be reduced.
+> There are platform where the exit latency is very high [1] and not
+> taking it into account will give very wrong metrics.
 
---===============0686652998473354990==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Do4IU1xF/9sod/r6"
-Content-Disposition: inline
+That is kind of a special case, though, and there is no way for the
+cpuidle core do distinguish it from all of the other cases.
 
+> > The idea here is to only count the wakeup as 'above' if the total
+> > 'last_residency' is below the target residency of the idle state that
+> > was asked for (as in that case we know for certain that the CPU has
+> > been woken up too early) and to only count it as 'below' if the
+> > difference between 'last_residency' and 'delay' is greater than or
+> > equal to the target residency of a deeper idle state (as in that case
+> > we know for certain that the CPU has been woken up too late).
+> >
+> > Of course, this means that there is a "gray area" in which we are not
+> > really sure if the sleep time has matched the idle state that was
+> > asked for, but there's not much we can do about that IMO.
+>
+> There is another aspect of the metric which can be improved, the 'above'
+> and the 'below' give an rough indication about the correctness of the
+> prediction but they don't tell us which idle state we should have
+> selected (we can be constantly choosing state3 instead of state1 for
+> example).
+>
+> It would be nice to add a 'missed' field for each idle states, so when
+> we check if there is a 'above' or a 'below' condition, we increment the
+> idle state 'missed' field for the idle state we should have selected.
 
---Do4IU1xF/9sod/r6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Jan 11, 2019 at 02:08:19PM +0000, Claudiu.Beznea@microchip.com wrot=
-e:
-> On 11.01.2019 14:39, Mark Brown wrote:
-
-> > Like I say I'm working offline so I can't check the links but it sounds
-> > like you're saying that the existing suspend mode configuration features
-> > are enough for your systems?=20
-
-> Yes, if we rely on the fact that core's regulator device tree bindings for
-> suspend-to-mem/suspend-to-standby were filled correctly.
-
-> The function I added here was to double check that core's regulator will =
-be
-> off in suspend/standby based on what was parsed from DT.
-
-Ah, so it's being used as a consistency check?  OK, that does make sense
-to me. =20
-
---Do4IU1xF/9sod/r6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlw9EtYACgkQJNaLcl1U
-h9AV+Qf+OscuST0WWOE2flYrj4veE7kRdI2nnKYgIWKwk1OvlpNJ4kQy4ZvDXITG
-oUMIOLImOSCAMHh+RnSP9ee0inU38wsnbLEnjGBhGf6l/Jybe8ARemNoPO4KJ3tj
-Sb4zJjhkrxN66N0KqJM5vh6mqrzz7jA1sfktIxRffRGTEZ4hx3gxVrH3Zwk7xUth
-NQIxW9YF8pXZ1j2jnf9NZ3sF8ZRkL9GjN5JdYoS6sRvFcsSF39Of6Nmh3OA6o1rP
-g77Jh2rns/BLphp3566eaDBE35QLq+tFELEc0oNWe33x/Dqok8rmC8+nWrOfIYC1
-A0pfshgAEcqeDQLac9tYXo6h3sfvfA==
-=KGpl
------END PGP SIGNATURE-----
-
---Do4IU1xF/9sod/r6--
-
-
---===============0686652998473354990==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============0686652998473354990==--
+That's a governor's job however.  That's why there is the ->reflect
+governor callback after all, among other things.
