@@ -1,34 +1,43 @@
-From: Stephan =?ISO-8859-1?Q?M=FCller?= <smueller@chronox.de>
-Subject: Re: [PATCH 2/6] crypto: kdf - SP800-108 Key Derivation Function
-Date: Mon, 14 Jan 2019 10:31:53 +0100
-Message-ID: <1573163.Xcg6e5WDL9@positron.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <1830918.5I3Y3k8tQf@positron.chronox.de> <20190112052758.GD639@sol.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 0/9] Thermal throttling for SDM845
+Date: Mon, 14 Jan 2019 15:51:02 +0530
+Message-ID: <cover.1547458732.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190112052758.GD639@sol.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Javi Merino <javi.merino@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:OPEN FIRMWARE AND FLATTENED
+        DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Samstag, 12. Januar 2019, 06:27:59 CET schrieb Eric Biggers:
+Add support for thermal throttling on SDM845. 
 
-Hi Eric,
+We introduce a generic flag to be used by cpufreq drivers to tell the
+cpufreq core to auto-register a thermal cooling device.
 
-[...]
-> > 
-> > +obj-$(CONFIG_CRYPTO_KDF) += kdf.o
-> 
-> This naming is too generic.  CONFIG_CRYPTO_KDF and kdf.c imply that this is
-> related to all KDFs.  But actually it is an implementation of a few specific
-> KDFs.  Can you give it a clearer name, like KDF_SP800?
-> 
-I am going to use kdf_sp800108 or CRYPTO_CONFIG_KDF_SP800108. The reason is 
-that there are many SP800 documents.
+There are a few miscellaneous fixes to keep checkpatch happy.
 
-Thanks
+If this approach is acceptable I can send a series converting other cpufreq
+drivers to use this flag and get rid of driver code.
 
-Ciao
-Stephan
+Amit Kucheria (9):
+  [ALREADY QUEUED] cpufreq: qcom-hw: Move to device_initcall
+  drivers: thermal: of-thermal: Print name of device node with error
+  drivers: cpufreq: Add thermal_cooling_device pointer to struct
+    cpufreq_policy
+  cpufreq: Add a flag to auto-register a cooling device
+  cpufreq: Replace open-coded << with BIT()
+  cpufreq: qcom-hw: Register as a cpufreq cooling device
+  arm64: dts: sdm845: Increase alert trip point to 95 degrees
+  arm64: dts: sdm845: wireup the thermal trip points to cpufreq
+  thermal: cpu_cooling: Clarify error message
+
+ arch/arm64/boot/dts/qcom/sdm845.dtsi | 193 +++++++++++++++++++++++----
+ drivers/cpufreq/cpufreq.c            |  13 ++
+ drivers/cpufreq/qcom-cpufreq-hw.c    |   5 +-
+ drivers/thermal/cpu_cooling.c        |   2 +-
+ drivers/thermal/of-thermal.c         |   4 +-
+ include/linux/cpufreq.h              |  34 +++--
+ 6 files changed, 210 insertions(+), 41 deletions(-)
+
+-- 
+2.17.1
