@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 03/10] cpufreq: Replace open-coded << with BIT()
-Date: Mon, 14 Jan 2019 22:04:55 +0530
-Message-ID: <e1984eedda04ca44a44b4972708855702f5d91e4.1547481320.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 04/10] cpufreq: qcom-hw: Register as a cpufreq cooling device
+Date: Mon, 14 Jan 2019 22:04:56 +0530
+Message-ID: <bd172905b0208b958f8c4f239b55ac3e345c60a8.1547481320.git.amit.kucheria@linaro.org>
 References: <cover.1547481320.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
@@ -12,81 +12,27 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Minor clean-up to use BIT() and keep checkpatch happy. Clean up the
-comment formatting while we're at it to make it easier to read.
+Add the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow the cpufreq core
+to auto-register the driver as a cooling device.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- include/linux/cpufreq.h | 27 ++++++++++++++-------------
- 1 file changed, 14 insertions(+), 13 deletions(-)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 70ad02088825..ea303dfd5f05 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -351,14 +351,15 @@ struct cpufreq_driver {
- };
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index d83939a1b3d4..ed32849a3d40 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -231,7 +231,8 @@ static struct freq_attr *qcom_cpufreq_hw_attr[] = {
  
- /* flags */
--#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
--						   all ->init() calls failed */
--#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
--						   kernel "constants" aren't
--						   affected by frequency
--						   transitions */
--#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
--						   speed mismatches */
-+
-+/* driver isn't removed even if all ->init() calls failed */
-+#define CPUFREQ_STICKY				BIT(0)
-+
-+/* loops_per_jiffy or other kernel "constants" aren't affected by frequency transitions */
-+#define CPUFREQ_CONST_LOOPS			BIT(1)
-+
-+/* don't warn on suspend/resume speed mismatches */
-+#define CPUFREQ_PM_NO_WARN			BIT(2)
- 
- /*
-  * This should be set by platforms having multiple clock-domains, i.e.
-@@ -366,14 +367,14 @@ struct cpufreq_driver {
-  * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
-  * governor with different tunables for different clusters.
-  */
--#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
-+#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY	BIT(3)
- 
- /*
-  * Driver will do POSTCHANGE notifications from outside of their ->target()
-  * routine and so must set cpufreq_driver->flags with this flag, so that core
-  * can handle them specially.
-  */
--#define CPUFREQ_ASYNC_NOTIFICATION  (1 << 4)
-+#define CPUFREQ_ASYNC_NOTIFICATION		BIT(4)
- 
- /*
-  * Set by drivers which want cpufreq core to check if CPU is running at a
-@@ -382,19 +383,19 @@ struct cpufreq_driver {
-  * from the table. And if that fails, we will stop further boot process by
-  * issuing a BUG_ON().
-  */
--#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
-+#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	BIT(5)
- 
- /*
-  * Set by drivers to disallow use of governors with "dynamic_switching" flag
-  * set.
-  */
--#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
-+#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
- 
- /*
-  * Set by drivers that want the core to automatically register the cpufreq
-  * driver as a thermal cooling device
-  */
--#define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
-+#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
- 
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ static struct cpufreq_driver cpufreq_qcom_hw_driver = {
+ 	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+-			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
++			  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qcom_cpufreq_hw_target_index,
+ 	.get		= qcom_cpufreq_hw_get,
 -- 
 2.17.1
