@@ -1,67 +1,89 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 0/9] Thermal throttling for SDM845
-Date: Mon, 14 Jan 2019 22:22:54 +0530
-Message-ID: <CAHLCerOH05ouDKuhe9Cz-qh-tJcqumHbrv7NqSc3STcH_UN-HA@mail.gmail.com>
-References: <cover.1547458732.git.amit.kucheria@linaro.org>
- <CAJZ5v0h+m6sR=nFFXSMv_FKy=y0W4mSd3W34qW48-BpnGBPcZQ@mail.gmail.com> <CAHLCerM+bbXbUzoqm_5oPw_o-zEFCN4FjXRGVVqYkGYzC5upDA@mail.gmail.com>
+From: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH 5/6] crypto: hkdf - add known answer tests
+Date: Mon, 14 Jan 2019 09:44:16 -0800
+Message-ID: <20190114174415.GA7644@gmail.com>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <9857029.1Sm7LFDBlJ@positron.chronox.de>
+ <20190112051914.GB639@sol.localdomain>
+ <2750733.sbdFDJOICv@positron.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerM+bbXbUzoqm_5oPw_o-zEFCN4FjXRGVVqYkGYzC5upDA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <2750733.sbdFDJOICv@positron.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Andy Gross <andy.gross@linaro.org>, Taniya Das <tdas@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Javi Merino <javi.merino@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree>
+To: Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 14, 2019 at 4:04 PM Amit Kucheria <amit.kucheria@linaro.org> wrote:
->
-> On Mon, Jan 14, 2019 at 3:57 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Mon, Jan 14, 2019 at 11:22 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> > >
-> > > Add support for thermal throttling on SDM845.
-> > >
-> > > We introduce a generic flag to be used by cpufreq drivers to tell the
-> > > cpufreq core to auto-register a thermal cooling device.
-> > >
-> > > There are a few miscellaneous fixes to keep checkpatch happy.
-> > >
-> > > If this approach is acceptable I can send a series converting other cpufreq
-> > > drivers to use this flag and get rid of driver code.
-> > >
-> > > Amit Kucheria (9):
-> > >   [ALREADY QUEUED] cpufreq: qcom-hw: Move to device_initcall
-> > >   drivers: thermal: of-thermal: Print name of device node with error
-> > >   drivers: cpufreq: Add thermal_cooling_device pointer to struct
-> > >     cpufreq_policy
-> > >   cpufreq: Add a flag to auto-register a cooling device
-> > >   cpufreq: Replace open-coded << with BIT()
-> > >   cpufreq: qcom-hw: Register as a cpufreq cooling device
-> > >   arm64: dts: sdm845: Increase alert trip point to 95 degrees
-> > >   arm64: dts: sdm845: wireup the thermal trip points to cpufreq
-> > >   thermal: cpu_cooling: Clarify error message
-> > >
-> > >  arch/arm64/boot/dts/qcom/sdm845.dtsi | 193 +++++++++++++++++++++++----
-> > >  drivers/cpufreq/cpufreq.c            |  13 ++
-> > >  drivers/cpufreq/qcom-cpufreq-hw.c    |   5 +-
-> > >  drivers/thermal/cpu_cooling.c        |   2 +-
-> > >  drivers/thermal/of-thermal.c         |   4 +-
-> > >  include/linux/cpufreq.h              |  34 +++--
-> > >  6 files changed, 210 insertions(+), 41 deletions(-)
-> >
-> > Would it be possible to split this series so as to put the cpufreq
-> > patches separately?
->
-> Sure, will send out another version.
+On Mon, Jan 14, 2019 at 10:25:16AM +0100, Stephan Müller wrote:
+> Am Samstag, 12. Januar 2019, 06:19:15 CET schrieb Eric Biggers:
+> 
+> Hi Eric,
+> 
+> [...]
+> > 
+> > > +			}
+> > > +		}
+> > > +	}, {
+> > > +		.alg = "hkdf(hmac(sha224))",
+> > > +		.test = alg_test_null,
+> > > +		.fips_allowed = 1,
+> > 
+> > I think it is dumb to add algorithms to the testmgr with no tests just so
+> > the 'fips_allowed' flag can be set. 
+> 
+> Currently it is the only way. But I agree that it could be done better.
+> 
+> > And doesn't FIPS sometimes require
+> > tests anyway?  I don't think the "null test" should count as a test :-)
+> 
+> Yes, it DOES count as a test (as strange as it may sound)! :-)
+> 
+> The FIPS requirements are as follows:
+> 
+> - raw ciphers must be subject to a FIPS test with one block chaining mode to 
+> cover that cipher with all block chaining modes (e.g. you can test ecb(aes) to 
+> cover AES with *all* existing block chaining modes).
+> 
+> - for compound crypto algorithm (like RSA with respect to hashes, KDF with 
+> respect to the keyed message digest, HMAC with respect to hashes), the 
+> wrapping crypto algorithm needs to be tested with *one* wrapped cipher at 
+> least (but also not more. E.g. if you have a self test for, say, all SHA-1 and 
+> SHA-2, you only need one HMAC SHA test or one KDF HMAC SHA test.
+> 
+> - in some circumstances, it is even permissible to test wrapping crypto 
+> algorithms where the underlying algo is implicitly tested. E.g. if you have a 
+> HMAC SHA-256 test, you do not need an individual SHA-256 test.
+> 
+> 
+> > 
+> > Perhaps just include sha256 and sha512, and have tests for them?
+> 
+> Do you happen to have an official SHA-512 HKDF test vector? RFC5869 only has 
+> SHA-1 and SHA-256 tests.
+> > 
+> 
 
-I've now sent out a separate series just tackling the
-auto-registration feature of a cooling device[1]. So the only bits in
-this series needing separate review are patches 2, 7,8 and 9.
+No, I don't know of any official HKDF-SHA512 test vectors.
 
-I'll wait couple of days to get some review on the other series before
-sending out another version of the remaining patches listed above.
-Feel free to comment on them in this thread, in the meanwhile.
+> [...]
+> > > 
+> > > +/* Test vectors from RFC 5869 appendix A */
+> > > +static struct kdf_testvec hkdf_hmac_sha256_tv_template[] = {
+> > 
+> > const
+> > 
+> > Likewise for all other kdf_testvecs.
+> 
+> const does not work with __VECS :-(
+> 
+> I leave it without const at the moment. I think the __VECS should be updated 
+> along with all test vectors.
+> 
+> [...]
 
-Thanks.
+I don't see why.  kdf_testvec just needs to be made const everywhere.
 
-[1] https://lore.kernel.org/patchwork/cover/1031909/
+- Eric
