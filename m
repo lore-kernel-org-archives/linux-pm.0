@@ -1,92 +1,116 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2] cpuidle: Add 'above' and 'below' idle state metrics
-Date: Mon, 14 Jan 2019 11:39:10 +0100
-Message-ID: <8e1593ee-5a68-c0a1-50e4-6fedb6f3ec5a@linaro.org>
-References: <3514439.dzOWKx1Cjx@aspire.rjw.lan>
- <e89ee355-3d87-1fe7-a1ff-91a1dd43177b@linaro.org>
- <CAJZ5v0hPnoLzJPRgE43NrB2Vt4BZYx=jgw_-WHoAiBQvhviY1A@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux Kernel
+ III edition (OSPM-summit 2019)
+Date: Mon, 14 Jan 2019 17:19:10 +0100
+Message-ID: <20190114161910.GB5581@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hPnoLzJPRgE43NrB2Vt4BZYx=jgw_-WHoAiBQvhviY1A@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Power Management and Scheduling in the Linux Kernel (OSPM-summit) III edition
+May 20-22, 2019
+Scuola Superiore Sant'Anna
+Pisa, Italy
 
-Hi Rafael,
+---
 
-sorry for the delay.
+.:: FOCUS
 
-On 10/01/2019 11:20, Rafael J. Wysocki wrote:
+The III edition of the Power Management and Scheduling in the Linux
+Kernel (OSPM) summit aims at fostering discussions on power management
+and (real-time) scheduling techniques. Summit will be held in Pisa
+(Italy) on May 20-22, 2019.
 
-[ ... ]
+Although scheduler techniques for reducing energy consumption while
+meeting performance and latency requirements are the prime interest of
+the summit, we welcome anybody interested in having discussions on the
+broader scope of real-time systems, real-time and non-real-time
+scheduling, tooling, debugging and tracing.
 
->>>       if (entered_state >= 0) {
->>> +             s64 diff, delay = drv->states[entered_state].exit_latency;
->>> +             int i;
->>> +
->>>               /*
->>>                * Update cpuidle counters
->>>                * This can be moved to within driver enter routine,
->>> @@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
->>>               dev->last_residency = (int)diff;
->>
->> Shouldn't we subtract the 'delay' from the computed 'diff' in any case ?
-> 
-> No.
-> 
->> Otherwise the 'last_residency' accumulates the effective sleep time and
->> the time to wakeup. We are interested in the sleep time only for
->> prediction and metrics no ?
-> 
-> Yes, but 'delay' is the worst-case latency and not the actual one
-> experienced, most of the time, and (on average) we would underestimate
-> the sleep time if it was always subtracted.
+Feel free to have a look at what happened previous years:
 
-IMO, the exit latency is more or less constant for the cpu power down
-state. When it is the cluster power down state, the first cpu waking up
-has the worst latency, then the others have the same has the cpu power
-down state.
+ I  edition - https://lwn.net/Articles/721573/
+ II edition - https://lwn.net/Articles/754923/
 
-If we can model that, the gray area you mention below can be reduced.
-There are platform where the exit latency is very high [1] and not
-taking it into account will give very wrong metrics.
+.:: FORMAT
 
-> The idea here is to only count the wakeup as 'above' if the total
-> 'last_residency' is below the target residency of the idle state that
-> was asked for (as in that case we know for certain that the CPU has
-> been woken up too early) and to only count it as 'below' if the
-> difference between 'last_residency' and 'delay' is greater than or
-> equal to the target residency of a deeper idle state (as in that case
-> we know for certain that the CPU has been woken up too late).
-> 
-> Of course, this means that there is a "gray area" in which we are not
-> really sure if the sleep time has matched the idle state that was
-> asked for, but there's not much we can do about that IMO.
+The summit is organized to cover three days of discussions and talks.
 
-There is another aspect of the metric which can be improved, the 'above'
-and the 'below' give an rough indication about the correctness of the
-prediction but they don't tell us which idle state we should have
-selected (we can be constantly choosing state3 instead of state1 for
-example).
+The list of topics of interest includes (but it is not limited to):
 
-It would be nice to add a 'missed' field for each idle states, so when
-we check if there is a 'above' or a 'below' condition, we increment the
-idle state 'missed' field for the idle state we should have selected.
+ * Power management techniques
+ * Real-time and non real-time scheduling techniques
+ * Energy consumption and CPU capacity aware scheduling
+ * Real-time virtualization
+ * Mobile/Server power management real-world use cases (successes and
+   failures)
+ * Power management and scheduling tooling (configuration, integration,
+   testing, etc.)
+ * Tracing
+ * Recap/lightning talks
 
-  -- Daniel
+Presentations can cover recently developed technologies, ongoing work
+and new ideas. Please understand that this workshop is not intended for
+presenting sales and marketing pitches.
 
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arm64/boot/dts/hisilicon/hi3660.dtsi#n199
+.:: ATTENDING
 
+Attending the OSPM-summit is free of charge, but registration to the
+event is mandatory. The event can allow a maximum of 50 people (so, be
+sure to register early!). Registrations open on February 22nd, 2019.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+To register fill in the registration form available at
+https://goo.gl/forms/33rgOC70ypRrrZV33.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+While it is not strictly required to submit a topic/presentation (see
+below), registrations with a topic/presentation proposal will take
+precedence.
+
+.:: SUBMIT A TOPIC/PRESENTATION
+
+To submit a topic/presentation add its details to this list:
+https://docs.google.com/spreadsheets/d/1s5JzAlPoISZFwvV6QajE3aPBGVaixdLb5ftamJ4Mn9U/edit?usp=sharing
+
+(feel free to get inspired by last year list of accepted topics
+https://docs.google.com/spreadsheets/d/1ZPfASW6zVOM3xQvOrcaDEf1c-Pxi1XnFukVYHHwGUq4/edit?usp=sharing)
+
+Or, if you prefer, simply reply (only to me, please :) to this email
+specifying:
+
+- name/surname
+- affiliation
+- short bio
+- email address
+- title
+- abstract
+- 30min or 50min slot
+
+Deadline for submitting topics/presentations is 8th of February 2019.
+Notifications for accepted topics/presentations will be sent out on 22nd
+of February 2019.
+
+.:: VENUE
+
+The workshop will take place at ReTiS Lab*, Scuola Superiore Sant'Anna,
+Pisa, Italy. Pisa is a small town, walking distance from the city center
+to the venue is 20 minutes, walking distance from the airport to the
+city center is 30 minutes. More details are available from the summit
+web page: http://retis.sssup.it/ospm-summit/#site
+
+* https://goo.gl/maps/2pPXG2v7Lfp
+
+.:: ORGANIZERS (in alphabetical order)
+
+Luca Abeni (SSSA)
+Patrick Bellasi (Arm)
+Tommaso Cucinotta (SSSA)
+Dietmar Eggemann (Arm)
+Sudeep Holla (Arm)
+Juri Lelli (Red Hat)
+Lorenzo Pieralisi (Arm)
+Morten Rasmussen (Arm)
+Claudio Scordino (Evidence SRL)
