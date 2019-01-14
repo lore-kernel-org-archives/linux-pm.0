@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 05/10] cpufreq: imx6q: Use auto-registration of thermal cooling device
-Date: Mon, 14 Jan 2019 22:04:57 +0530
-Message-ID: <49e531e140f299127ae6c0bc905b993b97c269e2.1547481320.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 06/10] cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
+Date: Mon, 14 Jan 2019 22:04:58 +0530
+Message-ID: <9ff853ce75cc1f64f106a239891f55be96a28db4.1547481320.git.amit.kucheria@linaro.org>
 References: <cover.1547481320.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
 References: <cover.1547481320.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anson Huang <anson.huang@nxp.com>, linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
@@ -19,68 +19,60 @@ This allows removal of boiler plate code from the driver.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ drivers/cpufreq/cpufreq-dt.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 9fedf627e000..ffb00291f48e 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -9,7 +9,6 @@
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index e58bfcb1169e..2a4c4ea7980b 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -13,7 +13,6 @@
+ 
  #include <linux/clk.h>
  #include <linux/cpu.h>
- #include <linux/cpufreq.h>
 -#include <linux/cpu_cooling.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
  #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/nvmem-consumer.h>
-@@ -52,7 +51,6 @@ static struct clk_bulk_data clks[] = {
+@@ -30,7 +29,6 @@
+ struct private_data {
+ 	struct opp_table *opp_table;
+ 	struct device *cpu_dev;
+-	struct thermal_cooling_device *cdev;
+ 	const char *reg_name;
+ 	bool have_static_opps;
  };
+@@ -301,7 +299,6 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct private_data *priv = policy->driver_data;
  
- static struct device *cpu_dev;
--static struct thermal_cooling_device *cdev;
- static bool free_opp;
- static struct cpufreq_frequency_table *freq_table;
- static unsigned int max_freq;
-@@ -193,16 +191,6 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+-	cpufreq_cooling_unregister(priv->cdev);
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	if (priv->have_static_opps)
+ 		dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+@@ -314,21 +311,14 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
  	return 0;
  }
  
--static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
+-static void cpufreq_ready(struct cpufreq_policy *policy)
 -{
--	cdev = of_cpufreq_cooling_register(policy);
+-	struct private_data *priv = policy->driver_data;
 -
--	if (!cdev)
--		dev_err(cpu_dev,
--			"running cpufreq without cooling device: %ld\n",
--			PTR_ERR(cdev));
+-	priv->cdev = of_cpufreq_cooling_register(policy);
 -}
 -
- static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	int ret;
-@@ -216,20 +204,18 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- 
- static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
- {
--	cpufreq_cooling_unregister(cdev);
--
- 	return 0;
- }
- 
- static struct cpufreq_driver imx6q_cpufreq_driver = {
--	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+ static struct cpufreq_driver dt_cpufreq_driver = {
+-	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
 +		 CPUFREQ_AUTO_REGISTER_COOLING_DEV,
  	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = imx6q_set_target,
+ 	.target_index = set_target,
  	.get = cpufreq_generic_get,
- 	.init = imx6q_cpufreq_init,
- 	.exit = imx6q_cpufreq_exit,
- 	.name = "imx6q-cpufreq",
--	.ready = imx6q_cpufreq_ready,
- 	.attr = cpufreq_generic_attr,
+ 	.init = cpufreq_init,
+ 	.exit = cpufreq_exit,
+-	.ready = cpufreq_ready,
+ 	.name = "cpufreq-dt",
+ 	.attr = cpufreq_dt_attr,
  	.suspend = cpufreq_generic_suspend,
- };
 -- 
 2.17.1
