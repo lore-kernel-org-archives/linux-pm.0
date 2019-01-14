@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 6/9] cpufreq: qcom-hw: Register as a cpufreq cooling device
-Date: Mon, 14 Jan 2019 15:51:08 +0530
-Message-ID: <b5e5698973c156f16af825ee92b8c94af224e634.1547458732.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 9/9] thermal: cpu_cooling: Clarify error message
+Date: Mon, 14 Jan 2019 15:51:11 +0530
+Message-ID: <2de2d178380525191d99d6c3619ad8c45efdbab4.1547458732.git.amit.kucheria@linaro.org>
 References: <cover.1547458732.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1547458732.git.amit.kucheria@linaro.org>
@@ -9,30 +9,30 @@ In-Reply-To: <cover.1547458732.git.amit.kucheria@linaro.org>
 References: <cover.1547458732.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, viresh.kumar@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, tdas@codeaurora.org, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow the cpufreq core
-to auto-register the driver as a cooling device.
+Make it clear that it is a failure if the cpufreq driver was unable to
+register as a cooling device. Makes it easier to find in logs and
+grepping for words like fail, err, warn.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/cpu_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 649dddd72749..47c7cea22da1 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -231,7 +231,8 @@ static struct freq_attr *qcom_cpufreq_hw_attr[] = {
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index dfd23245f778..6fff16113628 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -774,7 +774,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
  
- static struct cpufreq_driver cpufreq_qcom_hw_driver = {
- 	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
--			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-+			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-+			  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= qcom_cpufreq_hw_target_index,
- 	.get		= qcom_cpufreq_hw_get,
+ 		cdev = __cpufreq_cooling_register(np, policy, capacitance);
+ 		if (IS_ERR(cdev)) {
+-			pr_err("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
++			pr_err("cpu_cooling: cpu%d failed to register as cooling device: %ld\n",
+ 			       policy->cpu, PTR_ERR(cdev));
+ 			cdev = NULL;
+ 		}
 -- 
 2.17.1
