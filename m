@@ -1,51 +1,44 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 00/10] cpufreq: Add flag to auto-register as cooling device
-Date: Mon, 14 Jan 2019 22:04:52 +0530
-Message-ID: <cover.1547481320.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 01/10] cpufreq: Add thermal_cooling_device pointer to struct cpufreq_policy
+Date: Mon, 14 Jan 2019 22:04:53 +0530
+Message-ID: <168294311714f269b1050bcbf5d3324eae0808f2.1547481320.git.amit.kucheria@linaro.org>
+References: <cover.1547481320.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
+References: <cover.1547481320.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, "moderated list:ARM/Mediatek SoC
-        support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC
-        support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a flag to be used by cpufreq drivers to tell cpufreq core to
-auto-register themselves as a thermal cooling device.
+Several cpufreq drivers register themselves as thermal cooling devices.
+Adding a pointer to struct cpufreq_policy removes the need for them to
+store this pointer in a private data structure.
 
-There series converts over all the drivers except arm_big_little.c.
-Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
-others. 
+We can then auto-register the cpufreq driver as a thermal cooling device
+from cpufreq core code.
 
-Things needing fixing:
- - Look at how to detect that we're not in IKS mode in arm_big_little's
-   .ready callback.
- - The other pending issue is to fix allmodconfig that leaves us with
-   CPU_FREQ=y and THERMAL=m (CPU_THERMAL=y). That leads to undefined
-   references for functions defined in cpu_cooling.c
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ include/linux/cpufreq.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Amit Kucheria (10):
-  cpufreq: Add thermal_cooling_device pointer to struct cpufreq_policy
-  cpufreq: Add a flag to auto-register a cooling device
-  cpufreq: Replace open-coded << with BIT()
-  cpufreq: qcom-hw: Register as a cpufreq cooling device
-  cpufreq: imx6q: Use auto-registration of thermal cooling device
-  cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
-  cpufreq: mediatek: Use auto-registration of thermal cooling device
-  cpufreq: qoriq: Use auto-registration of thermal cooling device
-  cpufreq: scmi: Use auto-registration of thermal cooling device
-  cpufreq: scpi: Use auto-registration of thermal cooling device
-
- drivers/cpufreq/cpufreq-dt.c       | 14 ++----------
- drivers/cpufreq/cpufreq.c          | 17 ++++++++++++++
- drivers/cpufreq/imx6q-cpufreq.c    | 18 ++-------------
- drivers/cpufreq/mediatek-cpufreq.c | 14 ++----------
- drivers/cpufreq/qcom-cpufreq-hw.c  |  3 ++-
- drivers/cpufreq/qoriq-cpufreq.c    | 15 ++-----------
- drivers/cpufreq/scmi-cpufreq.c     | 14 ++----------
- drivers/cpufreq/scpi-cpufreq.c     | 14 ++----------
- include/linux/cpufreq.h            | 36 ++++++++++++++++++++----------
- 9 files changed, 55 insertions(+), 90 deletions(-)
-
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c86d6d8bdfed..7d0cf54125fa 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -95,6 +95,11 @@ struct cpufreq_policy {
+ 	struct cpufreq_frequency_table	*freq_table;
+ 	enum cpufreq_table_sorting freq_table_sorted;
+ 
++#ifdef CONFIG_CPU_THERMAL
++	/* Pointer to the cooling device if used for thermal mitigation */
++	struct thermal_cooling_device *cooldev;
++#endif
++
+ 	struct list_head        policy_list;
+ 	struct kobject		kobj;
+ 	struct completion	kobj_unregister;
 -- 
 2.17.1
