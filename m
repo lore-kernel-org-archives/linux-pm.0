@@ -1,31 +1,39 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v1 09/10] cpufreq: scmi: Use auto-registration of thermal
- cooling device
-Date: Tue, 15 Jan 2019 10:37:38 +0000
-Message-ID: <20190115103738.GA18365@e107155-lin>
-References: <cover.1547481320.git.amit.kucheria@linaro.org>
- <b39e20c223b108acbc144672c0d95a56e0587661.1547481320.git.amit.kucheria@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] cpuidle: use BIT() for idle state flags and remove CPUIDLE_DRIVER_FLAGS_MASK
+Date: Tue, 15 Jan 2019 12:22:10 -0500
+Message-ID: <20190115172210.19793-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <b39e20c223b108acbc144672c0d95a56e0587661.1547481320.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 14, 2019 at 10:05:01PM +0530, Amit Kucheria wrote:
-> Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-> automatically register as a thermal cooling device.
->
-> This allows removal of boiler plate code from the driver.
->
+Use BIT() macro to do a small tidy-up. The CPUIDLE_DRIVER_FLAGS_MASK
+ is not being used, so remove it.
 
-For this and the next patch(scpi),
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ include/linux/cpuidle.h | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-
---
-Regards,
-Sudeep
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 4dff74f48d4b..3b39472324a3 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -69,11 +69,9 @@ struct cpuidle_state {
+ 
+ /* Idle State Flags */
+ #define CPUIDLE_FLAG_NONE       (0x00)
+-#define CPUIDLE_FLAG_POLLING	(0x01) /* polling state */
+-#define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
+-#define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
+-
+-#define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
++#define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
++#define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
++#define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
+ 
+ struct cpuidle_device_kobj;
+ struct cpuidle_state_kobj;
+-- 
+2.17.0
