@@ -1,54 +1,206 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: Re: [PATCH v2 2/3] regulator: core: add helper to check if regulator
- is disabled in suspend
-Date: Tue, 15 Jan 2019 09:19:15 +0000
-Message-ID: <6cce226c-882a-9356-7be6-769d30ef0380@microchip.com>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
- <1546944944-13911-3-git-send-email-claudiu.beznea@microchip.com>
- <20190109165706.GG10405@sirena.org.uk>
- <76298993-c1e8-1b00-6a54-5d41c48bc2d3@microchip.com>
- <20190111123913.GA2804@sirena.org.uk>
- <40a2dbb6-56aa-173a-4be0-d7072ed32b53@microchip.com>
- <20190114225311.GJ11073@sirena.org.uk>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v6 00/16] Add utilization clamping support
+Date: Tue, 15 Jan 2019 10:14:57 +0000
+Message-ID: <20190115101513.2822-1-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190114225311.GJ11073@sirena.org.uk>
-Content-Language: en-US
-Content-ID: <3C69424740B90D49ABB8C2FFEDEA518A@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: broonie@kernel.org
-Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi all, this is a respin of:
+
+   https://lore.kernel.org/lkml/20181029183311.29175-1-patrick.bellasi@arm.com/
+
+which addresses all the comments collected in the previous posting and during
+the LPC presentation [1].
+
+It's based on v5.0-rc2, the full tree is available here:
+
+   git://linux-arm.org/linux-pb.git   lkml/utilclamp_v6
+   http://www.linux-arm.org/git?p=linux-pb.git;a=shortlog;h=refs/heads/lkml/utilclamp_v6
+
+Changes in this version are:
+
+ - rebased on top of recently merged EAS code [3] and better integrated with it
+ - squashed bucketization patch into previous patches
+ - wholesale s/group/bucket/
+ - wholesale s/_{get,put}/_{inc,dec}/ to match refcount APIs
+ - updated cmpxchg loops to looks like "do { } while (cmpxchg(ptr, old, new) != old)"
+ - switched to usage of try_cmpxchg()
+ - use SCHED_WARN_ON() instead of CONFIG_SCHED_DEBUG guarded blocks
+ - moved UCLAMP_FLAG_IDLE management into dedicated functions, i.e.
+   uclamp_idle_value() and uclamp_idle_reset()
+ - switched from rq::uclamp::flags to rq::uclamp_flags,
+   since now rq::uclamp is a per-clamp_id array
+ - added size check in sched_copy_attr()
+ - ensure se_count will never underflow
+ - better comment invariant conditions
+ - consistently use unary (++/--) operators
+ - redefined UCLAMP_GROUPS_COUNT range to be [5..20]
+ - added and make use of the bit_for() macro
+ - replaced some ifdifery with IS_ENABLED() checks
+ - overall documentation review to match new subsystem/maintainer
+   handbook for tip/sched/core
+
+Thanks to all the valuable comments, hopefully this should be a reasonably
+stable version for all the core scheduler bits. Thus, I hope we should
+be in a good position to unlock Tejun [2] to delve into the review of
+the proposed cgroup integration, but let see what Peter and Ingo think
+before.
+
+Cheers Patrick
 
 
-On 15.01.2019 00:53, Mark Brown wrote:
-> On Fri, Jan 11, 2019 at 02:08:19PM +0000, Claudiu.Beznea@microchip.com wr=
-ote:
->> On 11.01.2019 14:39, Mark Brown wrote:
->=20
->>> Like I say I'm working offline so I can't check the links but it sounds
->>> like you're saying that the existing suspend mode configuration feature=
-s
->>> are enough for your systems?=20
->=20
->> Yes, if we rely on the fact that core's regulator device tree bindings f=
-or
->> suspend-to-mem/suspend-to-standby were filled correctly.
->=20
->> The function I added here was to double check that core's regulator will=
- be
->> off in suspend/standby based on what was parsed from DT.
->=20
-> Ah, so it's being used as a consistency check?=20
+Series Organization
+===================
 
-Yes, that was the idea.
+The series is organized into these main sections:
 
-Thank you,
-Claudiu Beznea
+ - Patches [01-07]: Per task (primary) API
+ - Patches [08-09]: Schedutil integration for CFS and RT tasks
+ - Patches [10-11]: EAS's energy_compute() integration
+ - Patches [12-16]: Per task group (secondary) API
 
-> OK, that does make sense
-> to me. =20
->=20
+
+Newcomer's Short Abstract
+=========================
+
+The Linux scheduler tracks a "utilization" signal for each scheduling entity
+(SE), e.g. tasks, to know how much CPU time they use. This signal allows the
+scheduler to know how "big" a task is and, in principle, it can support
+advanced task placement strategies by selecting the best CPU to run a task.
+Some of these strategies are represented by the Energy Aware Scheduler [3].
+
+When the schedutil cpufreq governor is in use, the utilization signal allows
+the Linux scheduler to also drive frequency selection. The CPU utilization
+signal, which represents the aggregated utilization of tasks scheduled on that
+CPU, is used to select the frequency which best fits the workload generated by
+the tasks.
+
+The current translation of utilization values into a frequency selection is
+simple: we go to max for RT tasks or to the minimum frequency which can
+accommodate the utilization of DL+FAIR tasks.
+However, utilisation values by themselves cannot convey the desired
+power/performance behaviours of each task as intended by user-space.
+As such they are not ideally suited for task placement decisions.
+
+Task placement and frequency selection policies in the kernel can be improved
+by taking into consideration hints coming from authorised user-space elements,
+like for example the Android middleware or more generally any "System
+Management Software" (SMS) framework.
+
+Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
+utilization generated by RT and FAIR tasks within a range defined by user-space.
+The clamped utilization value can then be used, for example, to enforce a
+minimum and/or maximum frequency depending on which tasks are active on a CPU.
+
+The main use-cases for utilization clamping are:
+
+ - boosting: better interactive response for small tasks which
+   are affecting the user experience.
+
+   Consider for example the case of a small control thread for an external
+   accelerator (e.g. GPU, DSP, other devices). Here, from the task utilization
+   the scheduler does not have a complete view of what the task's requirements
+   are and, if it's a small utilization task, it keeps selecting a more energy
+   efficient CPU, with smaller capacity and lower frequency, thus negatively
+   impacting the overall time required to complete task activations.
+
+ - capping: increase energy efficiency for background tasks not affecting the
+   user experience.
+
+   Since running on a lower capacity CPU at a lower frequency is more energy
+   efficient, when the completion time is not a main goal, then capping the
+   utilization considered for certain (maybe big) tasks can have positive
+   effects, both on energy consumption and thermal headroom.
+   This feature allows also to make RT tasks more energy friendly on mobile
+   systems where running them on high capacity CPUs and at the maximum
+   frequency is not required.
+
+>From these two use-cases, it's worth noticing that frequency selection
+biasing, introduced by patches 9 and 10 of this series, is just one possible
+usage of utilization clamping. Another compelling extension of utilization
+clamping is in helping the scheduler in macking tasks placement decisions.
+
+Utilization is (also) a task specific property the scheduler uses to know
+how much CPU bandwidth a task requires, at least as long as there is idle time.
+Thus, the utilization clamp values, defined either per-task or per-task_group,
+can represent tasks to the scheduler as being bigger (or smaller) than what
+they actually are.
+
+Utilization clamping thus enables interesting additional optimizations, for
+example on asymmetric capacity systems like Arm big.LITTLE and DynamIQ CPUs,
+where:
+
+ - boosting: try to run small/foreground tasks on higher-capacity CPUs to
+   complete them faster despite being less energy efficient.
+
+ - capping: try to run big/background tasks on low-capacity CPUs to save power
+   and thermal headroom for more important tasks
+
+This series does not present this additional usage of utilization clamping but
+it's an integral part of the EAS feature set, where [1] is one of its main
+components.
+
+Android kernels use SchedTune, a solution similar to utilization clamping, to
+bias both 'frequency selection' and 'task placement'. This series provides the
+foundation to add similar features to mainline while focusing, for the
+time being, just on schedutil integration.
+
+
+References
+==========
+
+[1] "Expressing per-task/per-cgroup performance hints"
+     Linux Plumbers Conference 2018
+     https://linuxplumbersconf.org/event/2/contributions/128/
+
+[2] Message-ID: <20180911162827.GJ1100574@devbig004.ftw2.facebook.com>
+    https://lore.kernel.org/lkml/20180911162827.GJ1100574@devbig004.ftw2.facebook.com/
+
+[3] https://lore.kernel.org/lkml/20181203095628.11858-1-quentin.perret@arm.com/
+
+
+Patrick Bellasi (16):
+  sched/core: Allow sched_setattr() to use the current policy
+  sched/core: uclamp: Extend sched_setattr() to support utilization
+    clamping
+  sched/core: uclamp: Map TASK's clamp values into CPU's clamp buckets
+  sched/core: uclamp: Add CPU's clamp buckets refcounting
+  sched/core: uclamp: Update CPU's refcount on clamp changes
+  sched/core: uclamp: Enforce last task UCLAMP_MAX
+  sched/core: uclamp: Add system default clamps
+  sched/cpufreq: uclamp: Add utilization clamping for FAIR tasks
+  sched/cpufreq: uclamp: Add utilization clamping for RT tasks
+  sched/core: Add uclamp_util_with()
+  sched/fair: Add uclamp support to energy_compute()
+  sched/core: uclamp: Extend CPU's cgroup controller
+  sched/core: uclamp: Propagate parent clamps
+  sched/core: uclamp: Map TG's clamp values into CPU's clamp buckets
+  sched/core: uclamp: Use TG's clamps to restrict TASK's clamps
+  sched/core: uclamp: Update CPU's refcount on TG's clamp changes
+
+ Documentation/admin-guide/cgroup-v2.rst |  46 ++
+ include/linux/log2.h                    |  37 +
+ include/linux/sched.h                   |  87 +++
+ include/linux/sched/sysctl.h            |  11 +
+ include/linux/sched/task.h              |   6 +
+ include/linux/sched/topology.h          |   6 -
+ include/uapi/linux/sched.h              |  12 +-
+ include/uapi/linux/sched/types.h        |  65 +-
+ init/Kconfig                            |  75 ++
+ init/init_task.c                        |   1 +
+ kernel/exit.c                           |   1 +
+ kernel/sched/core.c                     | 947 +++++++++++++++++++++++-
+ kernel/sched/cpufreq_schedutil.c        |  46 +-
+ kernel/sched/fair.c                     |  41 +-
+ kernel/sched/rt.c                       |   4 +
+ kernel/sched/sched.h                    | 136 +++-
+ kernel/sysctl.c                         |  16 +
+ 17 files changed, 1480 insertions(+), 57 deletions(-)
+
+-- 
+2.19.2
