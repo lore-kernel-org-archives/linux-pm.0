@@ -1,39 +1,23 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] cpuidle: use BIT() for idle state flags and remove CPUIDLE_DRIVER_FLAGS_MASK
-Date: Tue, 15 Jan 2019 12:22:10 -0500
-Message-ID: <20190115172210.19793-1-tiny.windzz@gmail.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v1 03/10] cpufreq: Replace open-coded << with BIT()
+Date: Tue, 15 Jan 2019 11:05:31 -0800
+Message-ID: <154757913102.169631.11045991510648105366@swboyd.mtv.corp.google.com>
+References: <cover.1547481320.git.amit.kucheria@linaro.org> <e1984eedda04ca44a44b4972708855702f5d91e4.1547481320.git.amit.kucheria@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <e1984eedda04ca44a44b4972708855702f5d91e4.1547481320.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Use BIT() macro to do a small tidy-up. The CPUIDLE_DRIVER_FLAGS_MASK
- is not being used, so remove it.
+Quoting Amit Kucheria (2019-01-14 08:34:55)
+> Minor clean-up to use BIT() and keep checkpatch happy. Clean up the
+> comment formatting while we're at it to make it easier to read.
+>=20
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- include/linux/cpuidle.h | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 4dff74f48d4b..3b39472324a3 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -69,11 +69,9 @@ struct cpuidle_state {
- 
- /* Idle State Flags */
- #define CPUIDLE_FLAG_NONE       (0x00)
--#define CPUIDLE_FLAG_POLLING	(0x01) /* polling state */
--#define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
--#define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
--
--#define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
-+#define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
-+#define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
-+#define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
- 
- struct cpuidle_device_kobj;
- struct cpuidle_state_kobj;
--- 
-2.17.0
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
