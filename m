@@ -1,238 +1,155 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Tue, 15 Jan 2019 23:47:00 +0100
-Message-ID: <515889972.533tA6DaoZ@aspire.rjw.lan>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <CAJZ5v0gFiUx5tZUbhO9-kuDU9B3h13wEvaEf86j8td=3CajnRw@mail.gmail.com>
- <CAJZ5v0grEWD0d51DCcEXuS+9tbyWERBPv1wOCqznEuXEFmbvmQ@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 03/27] timer: Export next wakeup time of a CPU
+Date: Wed, 16 Jan 2019 08:57:46 +0100
+Message-ID: <CAPDyKFqQQnMKFNpGyi_dkP_Rm8qo-1WjPfVkp2unOxyXRa2wbA@mail.gmail.com>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-4-ulf.hansson@linaro.org> <119031115.C8gHTGbYmQ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0grEWD0d51DCcEXuS+9tbyWERBPv1wOCqznEuXEFmbvmQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>, Andrzej Hajda <a.hajda@samsung.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liviu Dudau <Liviu.Dudau@arm.com>, DRI Development <dri-devel@lists.freedesktop.org>, Lubomir Rintel <lkundrak@v3.sk>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <119031115.C8gHTGbYmQ@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-W0NDIEdyZWddCgpPbiBUdWVzZGF5LCBKYW51YXJ5IDE1LCAyMDE5IDE6MDQ6MDIgQU0gQ0VUIFJh
-ZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+IFtDQyBMdWthcyBhbmQgbGludXgtcG1dCj4gCj4gT24g
-TW9uLCBKYW4gMTQsIDIwMTkgYXQgMTozMiBQTSBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtl
-cm5lbC5vcmc+IHdyb3RlOgo+ID4KPiA+IE9uIEZyaSwgSmFuIDExLCAyMDE5IGF0IDM6NDkgUE0g
-UnVzc2VsbCBLaW5nIC0gQVJNIExpbnV4Cj4gPiA8bGludXhAYXJtbGludXgub3JnLnVrPiB3cm90
-ZToKPiAKPiBbY3V0XQo+IAo+ID4gPgo+ID4gPiBUaGlzIHRocmVhZCBpcyBkaXNjdXNzaW5nIGhv
-dyB0byBkZWFsIHdpdGggQXJtYWRhIERSTSwgaXRzIHVzZSBvZiB0aGUKPiA+ID4gY29tcG9uZW50
-IGhlbHBlciwgVERBOTk4eCdzIGh5YnJpZCB1c2Ugb2YgdGhlIGNvbXBvbmVudCBoZWxwZXIgYW5k
-Cj4gPiA+IERSTSBicmlkZ2VzLgo+ID4gPgo+ID4gPiBDdXJyZW50bHksIERSTSBicmlkZ2VzIHJl
-Z2lzdGVyIGludG8gdGhlIERSTSBzeXN0ZW0gYW5kIGFyZSBhZGRlZCB0bwo+ID4gPiBhIGdsb2Jh
-bCBsaXN0IG9mIGJyaWRnZXMuICBXaGVuIGEgRFJNIGRyaXZlciBiaW5kcywgaXQgbG9va3MgdXAg
-dGhlCj4gPiA+IERSTSBicmlkZ2UgYW5kIGF0dGFjaGVzIHRvIGl0LiAgVGhlcmUgaXMgbm8gd2F5
-IGluIGdlbmVyaWMgRFJNIGNvZGUKPiA+ID4gZm9yIHRoZSBEUk0gZHJpdmVyIHRvIGtub3cgaWYg
-dGhlIERSTSBicmlkZ2UgaXMgdW5ib3VuZCBmcm9tIERSTSwKPiA+ID4gY29uc2VxdWVudGx5IGEg
-RFJNIGRyaXZlciBtYXkgY29udGludWUgdHJ5aW5nIHRvIGNhbGwgZnVuY3Rpb25zIGluCj4gPiA+
-IHRoZSBEUk0gYnJpZGdlIGRyaXZlciB1c2luZyBtZW1vcnkgdGhhdCBoYXMgYWxyZWFkeSBiZWVu
-IGZyZWVkLgo+ID4gPgo+ID4gPiBXZSBoYWQgc2ltaWxhciBpc3N1ZXMgd2l0aCBpbXgtZHJtLCBh
-bmQgYSBudW1iZXIgb2YgeWVhcnMgYWdvIGF0IGEKPiA+ID4ga2VybmVsIHN1bW1pdCwgdGhpcyB3
-YXMgZGlzY3Vzc2VkLCBhbmQgSSBwcm9wb3NlZCBhIHN5c3RlbSB3aGljaCBpcwo+ID4gPiBub3cg
-a25vd24gYXMgdGhlIGNvbXBvbmVudCBoZWxwZXIuICBUaGlzIGhhbmRsZXMgdGhlIHByb2JsZW0g
-b2YgYQo+ID4gPiBtdWx0aS1jb21wb25lbnQgc3lzdGVtLgo+ID4gPgo+ID4gPiBIb3dldmVyLCBE
-Uk0gYnJpZGdlIHdhcyBhbHJlYWR5IGVzdGFibGlzaGVkLCBhbmQgdGhlcmUgYXBwZWFycyB0byBi
-ZQo+ID4gPiBubyBkZXNpcmUgdG8gY29udmVydCBEUk0gYnJpZGdlcyBhbmQgRFJNIGRyaXZlcnMg
-dG8gdXNlIHRoZSBjb21wb25lbnQKPiA+ID4gaGVscGVyLgo+ID4gPgo+ID4gPiBXZSBhcmUgcHJl
-c2VudGx5IGluIHRoZSBzaXR1YXRpb24gd2hlcmUgQXJtYWRhIERSTSBpcyBpbmNvbXBhdGlibGUK
-PiA+ID4gd2l0aCB0aGUgRFJNIGJyaWRnZXMgd2F5IG9mIGRvaW5nIHRoaW5ncywgYW5kIG1ha2lu
-ZyBpdCBjb21wYXRpYmxlCj4gPiA+IGVzc2VudGlhbGx5IG1lYW5zIGludHJvZHVjaW5nIHBvdGVu
-dGlhbCB1c2UtYWZ0ZXItZnJlZSBidWdzIGludG8gdGhlCj4gPiA+IGNvZGUuCj4gPiA+Cj4gPiA+
-IERldmljZSBsaW5rcyBpbiB0aGVpciBzdGF0ZWZ1bCBmb3JtIGFwcGVhciB0byBwcm92aWRlIGFu
-IGFsdGVybmF0aXZlCj4gPiA+IHRvIHRoZSBjb21wb25lbnQgaGVscGVyLCBpbiB0aGF0IGEgc3Rh
-dGVmdWwgZGV2aWNlIGxpbmsgd2lsbCByZW1vdmUKPiA+ID4gY29uc3VtZXJzIG9mIGEgcmVzb3Vy
-Y2Ugd2hlbiB0aGUgc3VwcGxpZXIgaXMgZ29pbmcgYXdheSAtIHdoaWNoIGlzCj4gPiA+IGV4YWN0
-bHkgdGhlIHByb2JsZW0gd2hpY2ggdGhlIGNvbXBvbmVudCBoZWxwZXIgaXMgc29sdmluZy4gIFRo
-ZQo+ID4gPiBkaWZmZXJlbmNlIGlzIHRoYXQgZGV2aWNlIGxpbmtzIGxvb2sgbGlrZSBiZWluZyBh
-IGNsZWFuZXIgc29sdXRpb24uCj4gPiA+Cj4gPiA+IEp1c3QgbGlrZSB0aGUgY29tcG9uZW50IGhl
-bHBlciwgYSBzdGF0ZWZ1bCBsaW5rIHdvdWxkIHVuYmluZCB0aGUKPiA+ID4gY29uc3VtZXIgb2Yg
-YSByZXNvdXJjZSB3aGVuIHRoZSBzdXBwbGllciBnb2VzIGF3YXkgLSB3aGljaCBpcyBleGFjdGx5
-Cj4gPiA+IHRoZSBiZWhhdmlvdXIgd2UncmUgd2FudGluZy4KPiA+ID4KPiA+ID4gVGhlIHByb2Js
-ZW0gaXMgdGhhdCB0aGUgY29ubmVjdGlvbiBiZXR3ZWVuIHZhcmlvdXMgZHJpdmVycyBpcyBvbmx5
-Cj4gPiA+IHJlYWxseSBrbm93biB3aGVuIHRoZSBkcml2ZXJzIG9idGFpbiB0aGVpciByZXNvdXJj
-ZXMsIGFuZCB0aGUKPiA+ID4gZm9sbG93aW5nIGNhbiBoYXBwZW46Cj4gPiA+Cj4gPiA+IHN1cHBs
-aWVyICAgICAgICAgICAgICAgIGNvbnN1bWVyCj4gPiA+Cj4gPiA+IHByb2JlKCkKPiA+ID4gIGFs
-bG9jCj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgIHByb2JlKCkKPiA+ID4gIHB1Ymxpc2gK
-PiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgb2J0YWluIHN1cHBsaWVyJ3MgcmVzb3VyY2UK
-PiA+ID4gIHJldHVybgo+ID4gPgo+ID4gPiBXaGVyZSB0aGluZ3MgZ28gd3JvbmcgaXMgaWYgYSBz
-dGF0ZWZ1bCBsaW5rIGlzIGNyZWF0ZWQgd2hlbiB0aGUKPiA+ID4gY29uc3VtZXIgb2J0YWlucyB0
-aGUgc3VwcGxpZXJzIHJlc291cmNlIGJlZm9yZSB0aGUgc3VwcGxpZXIgaGFzCj4gPiA+IGZpbmlz
-aGVkIHByb2JpbmcgLSB3aGljaCBmcm9tIHdoYXQncyBiZWVuIHNhaWQgaXMgaWxsZWdhbC4KPiA+
-Cj4gPiBJdCBqdXN0IGRvZXNuJ3Qgd29yayAod2hpY2ggbWVhbnMgImludmFsaWQiIHJhdGhlciB0
-aGFuICJpbGxlZ2FsIiBJCj4gPiBndWVzcywgYnV0IHdoYXRldmVyIDotKSkuCj4gPgo+ID4gQWRt
-aXR0ZWRseSwgdGhlIG9yaWdpbmFsIGRlc2lnbiBkaWRuJ3QgdGFrZSB0aGlzIHBhcnRpY3VsYXIg
-Y2FzZSBpbnRvCj4gPiBhY2NvdW50IGFuZCBJJ20gbm90IGFjdHVhbGx5IHN1cmUgaG93IGl0IGNh
-biBiZSB0YWtlbiBpbnRvIGFjY291bnQKPiA+IGVpdGhlci4KPiA+Cj4gPiBJZiB0aGUgbGluayBp
-cyBjcmVhdGVkIGJ5IHRoZSBjb25zdW1lciBpbiB0aGUgc2NlbmFyaW8gYWJvdmUsIGl0cwo+ID4g
-c3RhdHVzIHdpbGwgYmUgdXBkYXRlZCB0d2ljZSBpbiBhIHJvdyBhZnRlciB0aGUgY29uc3VtZXIg
-cHJvYmUgcmV0dXJucwo+ID4gYW5kIGFmdGVyIHRoZSBzdXBwbGllciBwcm9iZSByZXR1cm5zLiAg
-SXQgbG9va3MgbGlrZSB0aGlzIHVwZGF0ZSB3b3VsZAo+ID4gbmVlZCB0byB3b3JrIHJlZ2FyZGxl
-c3Mgb2YgdGhlIG9yZGVyIGl0IHdoaWNoIHRoaXMgaGFwcGVuZWQgd2hpY2gKPiA+IHNvdW5kcyBz
-b21ld2hhdCBjaGFsbGVuZ2luZy4gIEkgd291bGQgbmVlZCB0byB0aGluayBhYm91dCB0aGF0Lgo+
-IAo+IFNvIGlmIEknbSBub3QgbWlzdGFrZW4gaXQgY2FuIGJlIG1hZGUgd29yayB3aXRoIHRoZSBo
-ZWxwIG9mIHRoZQo+IChjb21wbGV0ZWx5IHVudGVzdGVkKSBhdHRhY2hlZCBwYXRjaCAob2YgY291
-cnNlLCB0aGUgZG9jdW1lbnRhdGlvbgo+IHdvdWxkIG5lZWQgdG8gYmUgdXBkYXRlZCB0b28pLgo+
-IAo+IFRoZSBrZXkgb2JzZXJ2YXRpb24gaGVyZSBpcyB0aGF0IGl0IHNob3VsZCBiZSBmaW5lIHRv
-IGNyZWF0ZSBhIGxpbmsKPiBmcm9tIHRoZSBjb25zdW1lciBkcml2ZXIncyBwcm9iZSB3aGlsZSB0
-aGUgc3VwcGxpZXIgaXMgc3RpbGwgcHJvYmluZwo+IGlmIHRoZSBjb25zdW1lciBoYXMgc29tZSB3
-YXkgdG8gZmluZCBvdXQgdGhhdCB0aGUgc3VwcGxpZXIgaXMKPiBmdW5jdGlvbmFsIGF0IHRoYXQg
-cG9pbnQgKGxpa2Ugd2hlbiBpdCBoYXMgcHVibGlzaGVkIGl0c2VsZiBhbHJlYWR5IGluCj4geW91
-ciBleGFtcGxlIGFib3ZlKS4gIFRoZSBpbml0aWFsIHN0YXRlIG9mIHRoZSBsaW5rIGNhbiBiZSAi
-Y29uc3VtZXIKPiBwcm9iZSIgaW4gdGhhdCBjYXNlIGFuZCBJIGRvbid0IHNlZSBhIHJlYXNvbiB3
-aHkgdGhhdCBtaWdodCBub3Qgd29yay4KPiAKCkJlbG93IGlzIGEgbW9yZSBjb21wbGV0ZSBwYXRj
-aCB0aGF0IHNob3VsZCB0YWtlIGFsbCBvZiB0aGUgY29ybmVyIGNhc2VzCmludG8gYWNjb3VudCB1
-bmxlc3MgSSBoYXZlIG1pc3NlZCBhbnl0aGluZy4gIFRlc3RpbmcgaXQgd291bGQgYmUKYXBwcmVj
-aWF0ZWQuIDotKQoKLS0tCkZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tp
-QGludGVsLmNvbT4KU3ViamVjdDogW1BBVENIXSBkcml2ZXIgY29yZTogRml4IGFkZGluZyBkZXZp
-Y2UgbGlua3MgdG8gcHJvYmluZyBzdXBwbGllcnMKCkN1cnJlbnRseSwgaXQgaXMgbm90IHZhbGlk
-IHRvIGFkZCBhIGRldmljZSBsaW5rIGZyb20gYSBjb25zdW1lcgpkcml2ZXIgLT5wcm9iZSgpIGNh
-bGxiYWNrIHRvIGEgc3VwcGxpZXIgdGhhdCBpcyBzdGlsbCBwcm9iaW5nIHRvbywgYnV0CmdlbmVy
-YWxseSB0aGlzIGlzIGEgdmFsaWQgdXNlIGNhc2UuICBGb3IgZXhhbXBsZSwgaWYgdGhlIGNvbnN1
-bWVyIGhhcwpqdXN0IGFjcXVpcmVkIGEgcmVzb3VyY2UgdGhhdCBjYW4gb25seSBiZSBhdmFpbGFi
-bGUgd2hlbiB0aGUgc3VwcGxpZXIKaXMgZnVuY3Rpb25hbCwgYWRkaW5nIGEgZGV2aWNlIGxpbmsg
-dG8gdGhhdCBzdXBwbGllciByaWdodCBhd2F5CnNob3VsZCBiZSBzYWZlIChhbmQgZXZlbiBkZXNp
-cmFibGUgYXJndWFibHkpLCBidXQgZGV2aWNlX2xpbmtfYWRkKCkKZG9lc24ndCBoYW5kbGUgdGhh
-dCBjYXNlIGNvcnJlY3RseSBhbmQgdGhlIGluaXRpYWwgc3RhdGUgb2YgdGhlIGxpbmsKY3JlYXRl
-ZCBieSBpdCBpcyB3cm9uZyB0aGVuLgoKVG8gYWRkcmVzcyB0aGlzIHByb2JsZW0sIGNoYW5nZSB0
-aGUgaW5pdGlhbCBzdGF0ZSBvZiBkZXZpY2UgbGlua3MKYWRkZWQgYmV0d2VlbiBhIHByb2Jpbmcg
-c3VwcGxpZXIgYW5kIGEgcHJvYmluZyBjb25zdW1lciB0bwpETF9TVEFURV9DT05TVU1FUl9QUk9C
-RSBhbmQgdXBkYXRlIGRldmljZV9saW5rc19kcml2ZXJfYm91bmQoKSB0bwpza2lwIHN1Y2ggbGlu
-a3Mgb24gdGhlIHN1cHBsaWVyIHNpZGUuCgpXaXRoIHRoaXMgY2hhbmdlLCBpZiB0aGUgc3VwcGxp
-ZXIgcHJvYmUgY29tcGxldGVzIGZpcnN0LApkZXZpY2VfbGlua3NfZHJpdmVyX2JvdW5kKCkgY2Fs
-bGVkIGZvciBpdCB3aWxsIHNraXAgdGhlIGxpbmsgc3RhdGUKdXBkYXRlIGFuZCB3aGVuIGl0IGlz
-IGNhbGxlZCBmb3IgdGhlIGNvbnN1bWVyLCB0aGUgbGluayBzdGF0ZSB3aWxsCmJlIHVwZGF0ZWQg
-dG8gImFjdGl2ZSIuICBJbiB0dXJuLCBpZiB0aGUgY29uc3VtZXIgcHJvYmUgY29tcGxldGVzCmZp
-cnN0LCBkZXZpY2VfbGlua3NfZHJpdmVyX2JvdW5kKCkgY2FsbGVkIGZvciBpdCB3aWxsIGNoYW5n
-ZSB0aGUKc3RhdGUgb2YgdGhlIGxpbmsgdG8gImFjdGl2ZSIgYW5kIHdoZW4gaXQgaXMgY2FsbGVk
-IGZvciB0aGUKc3VwcGxpZXIsIHRoZSBsaW5rIHN0YXR1cyB1cGRhdGUgd2lsbCBiZSBza2lwcGVk
-LgoKSG93ZXZlciwgaW4gcHJpbmNpcGxlIHRoZSBzdXBwbGllciBvciBjb25zdW1lciBwcm9iZSBt
-YXkgc3RpbGwgZmFpbAphZnRlciB0aGUgbGluayBoYXMgYmVlbiBhZGRlZCwgc28gbW9kaWZ5IGRl
-dmljZV9saW5rc19ub19kcml2ZXIoKSB0bwpjaGFuZ2UgZGV2aWNlIGxpbmtzIGluIHRoZSAiYWN0
-aXZlIiBvciAiY29uc3VtZXIgcHJvYmUiIHN0YXRlIHRvCiJkb3JtYW50IiBvbiB0aGUgc3VwcGxp
-ZXIgc2lkZSBhbmQgdXBkYXRlIF9fZGV2aWNlX2xpbmtzX25vX2RyaXZlcigpCnRvIGNoYW5nZSB0
-aGUgbGluayBzdGF0ZSB0byAiYXZhaWxhYmxlIiBvbmx5IGlmIGl0IGlzICJjb25zdW1lcgpwcm9i
-ZSIgb3IgImFjdGl2ZSIuCgpUaGVuLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgZmFpbHMgZmlyc3Qs
-IHRoZSBsZWZ0b3ZlciBsaW5rIHRvIHRoZQpwcm9iaW5nIGNvbnN1bWVyIHdpbGwgYmVjb21lICJk
-b3JtYW50IiBhbmQgZGV2aWNlX2xpbmtzX25vX2RyaXZlcigpCmNhbGxlZCBmb3IgdGhlIGNvbnN1
-bWVyICh3aGVuIGl0cyBwcm9iZSBmYWlscykgd2lsbCBjbGVhbiBpdCB1cC4KSW4gdHVybiwgaWYg
-dGhlIGNvbnN1bWVyIHByb2JlIGZhaWxzIGZpcnN0LCBpdCB3aWxsIGVpdGhlciBkcm9wIHRoZQps
-aW5rLCBvciBjaGFuZ2UgaXRzIHN0YXRlIHRvICJhdmFpbGFibGUiIGFuZCwgaW4gdGhlIGxhdHRl
-ciBjYXNlLAp3aGVuIGRldmljZV9saW5rc19ub19kcml2ZXIoKSBpcyBjYWxsZWQgZm9yIHRoZSBz
-dXBwbGllciwgaXQgd2lsbAp1cGRhdGUgdGhlIGxpbmsgc3RhdGUgdG8gImRvcm1hbnQiLiAgW0lm
-IHRoZSBzdXBwbGllciBwcm9iZSBmYWlscywKYnV0IHRoZSBjb25zdW1lciBwcm9iZSBzdWNjZWVk
-cywgd2hpY2ggc2hvdWxkIG5vdCBoYXBwZW4gYXMgbG9uZyBhcwp0aGUgY29uc3VtZXIgZHJpdmVy
-IGlzIGNvcnJlY3QsIHRoZSBsaW5rIHN0aWxsIHdpbGwgYmUgYXJvdW5kLCBidXQKaXQgd2lsbCBi
-ZSAiZG9ybWFudCIgdW50aWwgdGhlIHN1cHBsaWVyIGlzIHByb2JlZCBhZ2Fpbi5dCgpTaWduZWQt
-b2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+Ci0t
-LQogRG9jdW1lbnRhdGlvbi9kcml2ZXItYXBpL2RldmljZV9saW5rLnJzdCB8ICAgMTAgKystLQog
-ZHJpdmVycy9iYXNlL2NvcmUuYyAgICAgICAgICAgICAgICAgICAgICB8ICAgNzQgKysrKysrKysr
-KysrKysrKysrKysrKysrKysrLS0tLQogMiBmaWxlcyBjaGFuZ2VkLCA3MyBpbnNlcnRpb25zKCsp
-LCAxMSBkZWxldGlvbnMoLSkKCkluZGV4OiBsaW51eC1wbS9kcml2ZXJzL2Jhc2UvY29yZS5jCj09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT0KLS0tIGxpbnV4LXBtLm9yaWcvZHJpdmVycy9iYXNlL2NvcmUuYworKysgbGludXgt
-cG0vZHJpdmVycy9iYXNlL2NvcmUuYwpAQCAtMjYwLDE3ICsyNjAsMjYgQEAgc3RydWN0IGRldmlj
-ZV9saW5rICpkZXZpY2VfbGlua19hZGQoc3RydQogCQlsaW5rLT5zdGF0dXMgPSBETF9TVEFURV9O
-T05FOwogCX0gZWxzZSB7CiAJCXN3aXRjaCAoc3VwcGxpZXItPmxpbmtzLnN0YXR1cykgewotCQlj
-YXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6CisJCWNhc2UgRExfREVWX1BST0JJTkc6CiAJCQlzd2l0
-Y2ggKGNvbnN1bWVyLT5saW5rcy5zdGF0dXMpIHsKIAkJCWNhc2UgRExfREVWX1BST0JJTkc6CiAJ
-CQkJLyoKLQkJCQkgKiBTb21lIGNhbGxlcnMgZXhwZWN0IHRoZSBsaW5rIGNyZWF0aW9uIGR1cmlu
-ZwotCQkJCSAqIGNvbnN1bWVyIGRyaXZlciBwcm9iZSB0byByZXN1bWUgdGhlIHN1cHBsaWVyCi0J
-CQkJICogZXZlbiB3aXRob3V0IERMX0ZMQUdfUlBNX0FDVElWRS4KKwkJCQkgKiBBIGNvbnN1bWVy
-IGRyaXZlciBjYW4gY3JlYXRlIGEgbGluayB0byBhCisJCQkJICogc3VwcGxpZXIgdGhhdCBoYXMg
-bm90IGNvbXBsZXRlZCBpdHMgcHJvYmluZworCQkJCSAqIHlldCBhcyBsb25nIGFzIGl0IGtub3dz
-IHRoYXQgdGhlIHN1cHBsaWVyIGlzCisJCQkJICogYWxyZWFkeSBmdW5jdGlvbmFsIChmb3IgZXhh
-bXBsZSwgaXQgaGFzIGp1c3QKKwkJCQkgKiBhY3F1aXJlZCBzb21lIHJlc291cmNlcyBmcm9tIHRo
-ZSBzdXBwbGllcikuCiAJCQkJICovCi0JCQkJaWYgKGZsYWdzICYgRExfRkxBR19QTV9SVU5USU1F
-KQotCQkJCQlwbV9ydW50aW1lX3Jlc3VtZShzdXBwbGllcik7Ci0KKwkJCQlsaW5rLT5zdGF0dXMg
-PSBETF9TVEFURV9DT05TVU1FUl9QUk9CRTsKKwkJCQlicmVhazsKKwkJCWRlZmF1bHQ6CisJCQkJ
-bGluay0+c3RhdHVzID0gRExfU1RBVEVfRE9STUFOVDsKKwkJCQlicmVhazsKKwkJCX0KKwkJCWJy
-ZWFrOworCQljYXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6CisJCQlzd2l0Y2ggKGNvbnN1bWVyLT5s
-aW5rcy5zdGF0dXMpIHsKKwkJCWNhc2UgRExfREVWX1BST0JJTkc6CiAJCQkJbGluay0+c3RhdHVz
-ID0gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkU7CiAJCQkJYnJlYWs7CiAJCQljYXNlIERMX0RFVl9E
-UklWRVJfQk9VTkQ6CkBAIC0yOTEsNiArMzAwLDE0IEBAIHN0cnVjdCBkZXZpY2VfbGluayAqZGV2
-aWNlX2xpbmtfYWRkKHN0cnUKIAl9CiAKIAkvKgorCSAqIFNvbWUgY2FsbGVycyBleHBlY3QgdGhl
-IGxpbmsgY3JlYXRpb24gZHVyaW5nIGNvbnN1bWVyIGRyaXZlciBwcm9iZSB0bworCSAqIHJlc3Vt
-ZSB0aGUgc3VwcGxpZXIgZXZlbiB3aXRob3V0IERMX0ZMQUdfUlBNX0FDVElWRS4KKwkgKi8KKwlp
-ZiAobGluay0+c3RhdHVzID09IERMX1NUQVRFX0NPTlNVTUVSX1BST0JFICYmCisJICAgIGZsYWdz
-ICYgRExfRkxBR19QTV9SVU5USU1FKQorCQlwbV9ydW50aW1lX3Jlc3VtZShzdXBwbGllcik7CisK
-KwkvKgogCSAqIE1vdmUgdGhlIGNvbnN1bWVyIGFuZCBhbGwgb2YgdGhlIGRldmljZXMgZGVwZW5k
-aW5nIG9uIGl0IHRvIHRoZSBlbmQKIAkgKiBvZiBkcG1fbGlzdCBhbmQgdGhlIGRldmljZXNfa3Nl
-dCBsaXN0LgogCSAqCkBAIC00NzQsNiArNDkxLDE2IEBAIHZvaWQgZGV2aWNlX2xpbmtzX2RyaXZl
-cl9ib3VuZChzdHJ1Y3QgZGUKIAkJaWYgKGxpbmstPmZsYWdzICYgRExfRkxBR19TVEFURUxFU1Mp
-CiAJCQljb250aW51ZTsKIAorCQkvKgorCQkgKiBMaW5rcyBjcmVhdGVkIGR1cmluZyBjb25zdW1l
-ciBwcm9iZSBtYXkgYmUgaW4gdGhlICJjb25zdW1lcgorCQkgKiBwcm9iZSIgc3RhdGUgdG8gc3Rh
-cnQgd2l0aCBpZiB0aGUgc3VwcGxpZXIgaXMgc3RpbGwgcHJvYmluZworCQkgKiB3aGVuIHRoZXkg
-YXJlIGNyZWF0ZWQgYW5kIHRoZXkgbWF5IGJlY29tZSAiYWN0aXZlIiBpZiB0aGUKKwkJICogY29u
-c3VtZXIgcHJvYmUgcmV0dXJucyBmaXJzdC4gIFNraXAgdGhlbSBoZXJlLgorCQkgKi8KKwkJaWYg
-KGxpbmstPnN0YXR1cyA9PSBETF9TVEFURV9DT05TVU1FUl9QUk9CRSB8fAorCQkgICAgbGluay0+
-c3RhdHVzID09IERMX1NUQVRFX0FDVElWRSkKKwkJCWNvbnRpbnVlOworCiAJCVdBUk5fT04obGlu
-ay0+c3RhdHVzICE9IERMX1NUQVRFX0RPUk1BTlQpOwogCQlXUklURV9PTkNFKGxpbmstPnN0YXR1
-cywgRExfU1RBVEVfQVZBSUxBQkxFKTsKIAl9CkBAIC01MTMsMTcgKzU0MCw0OCBAQCBzdGF0aWMg
-dm9pZCBfX2RldmljZV9saW5rc19ub19kcml2ZXIoc3RyCiAKIAkJaWYgKGxpbmstPmZsYWdzICYg
-RExfRkxBR19BVVRPUkVNT1ZFX0NPTlNVTUVSKQogCQkJa3JlZl9wdXQoJmxpbmstPmtyZWYsIF9f
-ZGV2aWNlX2xpbmtfZGVsKTsKLQkJZWxzZSBpZiAobGluay0+c3RhdHVzICE9IERMX1NUQVRFX1NV
-UFBMSUVSX1VOQklORCkKKwkJZWxzZSBpZiAobGluay0+c3RhdHVzID09IERMX1NUQVRFX0NPTlNV
-TUVSX1BST0JFIHx8CisJCQkgbGluay0+c3RhdHVzID09IERMX1NUQVRFX0FDVElWRSkKIAkJCVdS
-SVRFX09OQ0UobGluay0+c3RhdHVzLCBETF9TVEFURV9BVkFJTEFCTEUpOwogCX0KIAogCWRldi0+
-bGlua3Muc3RhdHVzID0gRExfREVWX05PX0RSSVZFUjsKIH0KIAorLyoqCisgKiBkZXZpY2VfbGlu
-a3Nfbm9fZHJpdmVyIC0gVXBkYXRlIGxpbmtzIGFmdGVyIGZhaWxpbmcgZHJpdmVyIHByb2JlLgor
-ICogQGRldjogRGV2aWNlIHdob3NlIGRyaXZlciBoYXMganVzdCBmYWlsZWQgdG8gcHJvYmUuCisg
-KgorICogQ2xlYW4gdXAgbGVmdG92ZXIgbGlua3MgdG8gY29uc3VtZXJzIGZvciBAZGV2IGFuZCBp
-bnZva2UKKyAqICVfX2RldmljZV9saW5rc19ub19kcml2ZXIoKSB0byB1cGRhdGUgbGlua3MgdG8g
-c3VwcGxpZXJzIGZvciBpdCBhcworICogYXBwcm9wcmlhdGUuCisgKgorICogTGlua3Mgd2l0aCB0
-aGUgRExfRkxBR19TVEFURUxFU1MgZmxhZyBzZXQgYXJlIGlnbm9yZWQuCisgKi8KIHZvaWQgZGV2
-aWNlX2xpbmtzX25vX2RyaXZlcihzdHJ1Y3QgZGV2aWNlICpkZXYpCiB7CisJc3RydWN0IGRldmlj
-ZV9saW5rICpsaW5rOworCiAJZGV2aWNlX2xpbmtzX3dyaXRlX2xvY2soKTsKKworCWxpc3RfZm9y
-X2VhY2hfZW50cnkobGluaywgJmRldi0+bGlua3MuY29uc3VtZXJzLCBzX25vZGUpIHsKKwkJaWYg
-KGxpbmstPmZsYWdzICYgRExfRkxBR19TVEFURUxFU1MpCisJCQljb250aW51ZTsKKworCQkvKgor
-CQkgKiBUaGUgcHJvYmUgaGFzIGZhaWxlZCwgc28gaWYgdGhlIHN0YXR1cyBvZiB0aGUgbGluayBp
-cworCQkgKiAiY29uc3VtZXIgcHJvYmUiIG9yICJhY3RpdmUiLCBpdCBtdXN0IGhhdmUgYmVlbiBh
-ZGRlZCBieQorCQkgKiBhIHByb2JpbmcgY29uc3VtZXIgd2hpbGUgdGhpcyBkZXZpY2Ugd2FzIHN0
-aWxsIHByb2JpbmcuCisJCSAqIENoYW5nZSBpdHMgc3RhdGUgdG8gImRvcm1hbnQiLCBhcyBpdCBy
-ZXByZXNlbnRzIGEgdmFsaWQKKwkJICogcmVsYXRpb25zaGlwLCBidXQgaXQgaXMgbm90IGZ1bmN0
-aW9uYWxseSBtZWFuaW5nZnVsLgorCQkgKi8KKwkJaWYgKGxpbmstPnN0YXR1cyA9PSBETF9TVEFU
-RV9DT05TVU1FUl9QUk9CRSB8fAorCQkgICAgbGluay0+c3RhdHVzID09IERMX1NUQVRFX0FDVElW
-RSkKKwkJCVdSSVRFX09OQ0UobGluay0+c3RhdHVzLCBETF9TVEFURV9ET1JNQU5UKTsKKwl9CisK
-IAlfX2RldmljZV9saW5rc19ub19kcml2ZXIoZGV2KTsKKwogCWRldmljZV9saW5rc193cml0ZV91
-bmxvY2soKTsKIH0KIApJbmRleDogbGludXgtcG0vRG9jdW1lbnRhdGlvbi9kcml2ZXItYXBpL2Rl
-dmljZV9saW5rLnJzdAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC1wbS5vcmlnL0RvY3VtZW50YXRpb24v
-ZHJpdmVyLWFwaS9kZXZpY2VfbGluay5yc3QKKysrIGxpbnV4LXBtL0RvY3VtZW50YXRpb24vZHJp
-dmVyLWFwaS9kZXZpY2VfbGluay5yc3QKQEAgLTU5LDExICs1OSwxNSBAQCBkZXZpY2UgYGAtPnBy
-b2JlYGAgY2FsbGJhY2sgb3IgYSBib290LXRpCiAKIEFub3RoZXIgZXhhbXBsZSBmb3IgYW4gaW5j
-b25zaXN0ZW50IHN0YXRlIHdvdWxkIGJlIGEgZGV2aWNlIGxpbmsgdGhhdAogcmVwcmVzZW50cyBh
-IGRyaXZlciBwcmVzZW5jZSBkZXBlbmRlbmN5LCB5ZXQgaXMgYWRkZWQgZnJvbSB0aGUgY29uc3Vt
-ZXIncwotYGAtPnByb2JlYGAgY2FsbGJhY2sgd2hpbGUgdGhlIHN1cHBsaWVyIGhhc24ndCBwcm9i
-ZWQgeWV0OiAgSGFkIHRoZSBkcml2ZXIKLWNvcmUga25vd24gYWJvdXQgdGhlIGRldmljZSBsaW5r
-IGVhcmxpZXIsIGl0IHdvdWxkbid0IGhhdmUgcHJvYmVkIHRoZQorYGAtPnByb2JlYGAgY2FsbGJh
-Y2sgd2hpbGUgdGhlIHN1cHBsaWVyIGhhc24ndCBzdGFydGVkIHRvIHByb2JlIHlldDogIEhhZCB0
-aGUKK2RyaXZlciBjb3JlIGtub3duIGFib3V0IHRoZSBkZXZpY2UgbGluayBlYXJsaWVyLCBpdCB3
-b3VsZG4ndCBoYXZlIHByb2JlZCB0aGUKIGNvbnN1bWVyIGluIHRoZSBmaXJzdCBwbGFjZS4gIFRo
-ZSBvbnVzIGlzIHRodXMgb24gdGhlIGNvbnN1bWVyIHRvIGNoZWNrCiBwcmVzZW5jZSBvZiB0aGUg
-c3VwcGxpZXIgYWZ0ZXIgYWRkaW5nIHRoZSBsaW5rLCBhbmQgZGVmZXIgcHJvYmluZyBvbgotbm9u
-LXByZXNlbmNlLgorbm9uLXByZXNlbmNlLiAgW05vdGUgdGhhdCBpdCBpcyB2YWxpZCB0byBjcmVh
-dGUgYSBsaW5rIGZyb20gdGhlIGNvbnN1bWVyJ3MKK2BgLT5wcm9iZWBgIGNhbGxiYWNrIHdoaWxl
-IHRoZSBzdXBwbGllciBpcyBzdGlsbCBwcm9iaW5nLCBidXQgdGhlIGNvbnN1bWVyIG11c3QKK2tu
-b3cgdGhhdCB0aGUgc3VwcGxpZXIgaXMgZnVuY3Rpb25hbCBhbHJlYWR5IGF0IHRoZSBsaW5rIGNy
-ZWF0aW9uIHRpbWUgKHRoYXQgaXMKK3RoZSBjYXNlLCBmb3IgaW5zdGFuY2UsIGlmIHRoZSBjb25z
-dW1lciBoYXMganVzdCBhY3F1aXJlZCBzb21lIHJlc291cmNlcyB0aGF0Cit3b3VsZCBub3QgaGF2
-ZSBiZWVuIGF2YWlsYWJsZSBoYWQgdGhlIHN1cHBsaWVyIG5vdCBiZWVuIGZ1bmN0aW9uYWwgdGhl
-bikuXQogCiBJZiBhIGRldmljZSBsaW5rIGlzIGFkZGVkIGluIHRoZSBgYC0+cHJvYmVgYCBjYWxs
-YmFjayBvZiB0aGUgc3VwcGxpZXIgb3IKIGNvbnN1bWVyIGRyaXZlciwgaXQgaXMgdHlwaWNhbGx5
-IGRlbGV0ZWQgaW4gaXRzIGBgLT5yZW1vdmVgYCBjYWxsYmFjayBmb3IKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QK
-ZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9w
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Fri, 11 Jan 2019 at 12:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Thursday, November 29, 2018 6:46:36 PM CET Ulf Hansson wrote:
+> > From: Lina Iyer <lina.iyer@linaro.org>
+> >
+> > Knowing the sleep duration of CPUs, is known to be needed while selecting
+> > the most energy efficient idle state for a CPU or a group of CPUs.
+> >
+> > However, to be able to compute the sleep duration, we need to know at what
+> > time the next expected wakeup is for the CPU. Therefore, let's export this
+> > information via a new function, tick_nohz_get_next_wakeup(). Following
+> > changes make use of it.
+> >
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: Lina Iyer <ilina@codeaurora.org>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Ingo Molnar <mingo@kernel.org>
+> > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> > Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >
+> > Changes in v10:
+> >       - Updated function header of tick_nohz_get_next_wakeup().
+> >
+> > ---
+> >  include/linux/tick.h     |  8 ++++++++
+> >  kernel/time/tick-sched.c | 13 +++++++++++++
+> >  2 files changed, 21 insertions(+)
+> >
+> > diff --git a/include/linux/tick.h b/include/linux/tick.h
+> > index 55388ab45fd4..e48f6b26b425 100644
+> > --- a/include/linux/tick.h
+> > +++ b/include/linux/tick.h
+> > @@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
+> >  extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
+> >  extern unsigned long tick_nohz_get_idle_calls(void);
+> >  extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+> > +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+> >  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+> >  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+> >
+> > @@ -151,6 +152,13 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+> >       *delta_next = TICK_NSEC;
+> >       return *delta_next;
+> >  }
+> > +
+> > +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
+> > +{
+> > +     /* Next wake up is the tick period, assume it starts now */
+> > +     return ktime_add(ktime_get(), TICK_NSEC);
+> > +}
+> > +
+> >  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+> >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+> >
+> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> > index 69e673b88474..7a9166506503 100644
+> > --- a/kernel/time/tick-sched.c
+> > +++ b/kernel/time/tick-sched.c
+> > @@ -1089,6 +1089,19 @@ unsigned long tick_nohz_get_idle_calls(void)
+> >       return ts->idle_calls;
+> >  }
+> >
+> > +/**
+> > + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+> > + * @cpu: the particular CPU to get next wake up for
+> > + *
+> > + * Called for idle CPUs only.
+> > + */
+> > +ktime_t tick_nohz_get_next_wakeup(int cpu)
+> > +{
+> > +     struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
+> > +
+> > +     return dev->next_event;
+> > +}
+> > +
+> >  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+> >  {
+> >  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> >
+>
+> Well, I have concerns regarding this one.
+>
+> I don't believe it is valid to call this new function for non-idle CPUs and
+> the kerneldoc kind of says so, but the next patch doesn't actually prevent
+> it from being called for a non-idle CPU (at the time it is called in there
+> the target CPU may not be idle any more AFAICS).
+
+You are correct, but let me clarify things.
+
+We are calling this new API from the new genpd governor, which may
+have a cpumask indicating there is more than one CPU attached to its
+PM domain+sub-PM domains. In other words, we may call the API for
+another CPU than the one we are executing on.
+
+When the new genpd governor is called, all CPUs in the cpumask of the
+genpd in question, are already runtime suspended and will remain so
+throughout the decisions made by the governor.
+
+However, because of the race condition, which needs to be manged by
+the genpd backend driver and its corresponding FW, one of the CPU in
+the genpd cpumask could potentially wake up from idle when the genpd
+governor runs. However, as a part of exiting from idle, that CPU needs
+to wait for the call to pm_runtime_get_sync() to return before
+completing the exit patch of idle. This also means waiting for the
+genpd governor to finish.
+
+The point is, no matter what decision the governor takes under these
+circumstances, the genpd backend driver and its FW must manage this
+race condition during the last man standing. For PSCI OSI mode, it
+means that if a cluster idle state is suggested by Linux during these
+circumstances, it must be prevented and aborted.
+
+>
+> In principle, the cpuidle core can store this value, say in struct
+> cpuidle_device of the given CPU, and expose a helper to access it from
+> genpd, but that would be extra overhead totally unnecessary on everthing
+> that doesn't use genpd for cpuidle.
+>
+> So maybe the driver could store it in its ->enter callback?  After all,
+> the driver knows that genpd is going to be used later.
+
+This would work, but it wouldn't really change much when it comes to
+the race condition described above. Of course it would turn the code
+into being more cpuidle specific, which seems reasonable to me.
+
+Anyway, if I understand your suggestion, in principle it means
+changing $subject patch in such way that the API should not take "int
+cpu" as an in-parameter, but instead only use __this_cpu() to read out
+the next event for current idle CPU.
+
+Additionally, we need another new cpuidle API, which genpd can call to
+retrieve a new per CPU "next event data" stored by the cpuidle driver
+from its ->enter() callback. Is this a correct interpretation of your
+suggestion?
+
+Kind regards
+Uffe
