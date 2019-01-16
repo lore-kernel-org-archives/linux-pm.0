@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v13 2/8] dt-bindings: Introduce interconnect binding
-Date: Wed, 16 Jan 2019 18:10:57 +0200
-Message-ID: <20190116161103.6937-3-georgi.djakov@linaro.org>
+Subject: [PATCH v13 4/8] interconnect: Add debugfs support
+Date: Wed, 16 Jan 2019 18:10:59 +0200
+Message-ID: <20190116161103.6937-5-georgi.djakov@linaro.org>
 References: <20190116161103.6937-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,82 +12,114 @@ To: gregkh@linuxfoundation.org
 Cc: andy.gross@linaro.org, olof@lixom.net, arnd@arndb.de, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, abailon@baylibre.com, maxime.ripard@bootlin.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-mediatek@lists.infradead.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-This binding is intended to represent the relations between interconnect
-controllers (providers) and consumer device nodes. It will allow creating
-links between consumers and interconnect paths (exposed by interconnect
-providers).
+Add a functionality to provide information about the current constraints
+per each node and provider.
 
 Reviewed-by: Evan Green <evgreen@chromium.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- .../bindings/interconnect/interconnect.txt    | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+ drivers/interconnect/core.c | 70 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-new file mode 100644
-index 000000000000..5a3c575b387a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-@@ -0,0 +1,60 @@
-+Interconnect Provider Device Tree Bindings
-+=========================================
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index a8c2bd35197f..8091d998549a 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -6,6 +6,7 @@
+  * Author: Georgi Djakov <georgi.djakov@linaro.org>
+  */
+ 
++#include <linux/debugfs.h>
+ #include <linux/device.h>
+ #include <linux/idr.h>
+ #include <linux/init.h>
+@@ -21,6 +22,7 @@
+ static DEFINE_IDR(icc_idr);
+ static LIST_HEAD(icc_providers);
+ static DEFINE_MUTEX(icc_lock);
++static struct dentry *icc_debugfs_dir;
+ 
+ /**
+  * struct icc_req - constraints that are attached to each node
+@@ -48,6 +50,59 @@ struct icc_path {
+ 	struct icc_req reqs[];
+ };
+ 
++static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
++{
++	if (!n)
++		return;
 +
-+The purpose of this document is to define a common set of generic interconnect
-+providers/consumers properties.
++	seq_printf(s, "%-30s %12u %12u\n",
++		   n->name, n->avg_bw, n->peak_bw);
++}
 +
++static int icc_summary_show(struct seq_file *s, void *data)
++{
++	struct icc_provider *provider;
 +
-+= interconnect providers =
++	seq_puts(s, " node                                   avg         peak\n");
++	seq_puts(s, "--------------------------------------------------------\n");
 +
-+The interconnect provider binding is intended to represent the interconnect
-+controllers in the system. Each provider registers a set of interconnect
-+nodes, which expose the interconnect related capabilities of the interconnect
-+to consumer drivers. These capabilities can be throughput, latency, priority
-+etc. The consumer drivers set constraints on interconnect path (or endpoints)
-+depending on the use case. Interconnect providers can also be interconnect
-+consumers, such as in the case where two network-on-chip fabrics interface
-+directly.
++	mutex_lock(&icc_lock);
 +
-+Required properties:
-+- compatible : contains the interconnect provider compatible string
-+- #interconnect-cells : number of cells in a interconnect specifier needed to
-+			encode the interconnect node id
++	list_for_each_entry(provider, &icc_providers, provider_list) {
++		struct icc_node *n;
 +
-+Example:
++		list_for_each_entry(n, &provider->nodes, node_list) {
++			struct icc_req *r;
 +
-+		snoc: interconnect@580000 {
-+			compatible = "qcom,msm8916-snoc";
-+			#interconnect-cells = <1>;
-+			reg = <0x580000 0x14000>;
-+			clock-names = "bus_clk", "bus_a_clk";
-+			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-+				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
-+		};
++			icc_summary_show_one(s, n);
++			hlist_for_each_entry(r, &n->req_list, req_node) {
++				if (!r->dev)
++					continue;
 +
++				seq_printf(s, "    %-26s %12u %12u\n",
++					   dev_name(r->dev), r->avg_bw,
++					   r->peak_bw);
++			}
++		}
++	}
 +
-+= interconnect consumers =
++	mutex_unlock(&icc_lock);
 +
-+The interconnect consumers are device nodes which dynamically express their
-+bandwidth requirements along interconnect paths they are connected to. There
-+can be multiple interconnect providers on a SoC and the consumer may consume
-+multiple paths from different providers depending on use case and the
-+components it has to interact with.
++	return 0;
++}
 +
-+Required properties:
-+interconnects : Pairs of phandles and interconnect provider specifier to denote
-+	        the edge source and destination ports of the interconnect path.
++static int icc_summary_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, icc_summary_show, inode->i_private);
++}
 +
-+Optional properties:
-+interconnect-names : List of interconnect path name strings sorted in the same
-+		     order as the interconnects property. Consumers drivers will use
-+		     interconnect-names to match interconnect paths with interconnect
-+		     specifier pairs.
++static const struct file_operations icc_summary_fops = {
++	.open		= icc_summary_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
 +
-+Example:
+ static struct icc_node *node_find(const int id)
+ {
+ 	return idr_find(&icc_idr, id);
+@@ -711,6 +766,21 @@ int icc_provider_del(struct icc_provider *provider)
+ }
+ EXPORT_SYMBOL_GPL(icc_provider_del);
+ 
++static int __init icc_init(void)
++{
++	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
++	debugfs_create_file("interconnect_summary", 0444,
++			    icc_debugfs_dir, NULL, &icc_summary_fops);
++	return 0;
++}
 +
-+	sdhci@7864000 {
-+		...
-+		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
-+		interconnect-names = "sdhc-mem";
-+	};
++static void __exit icc_exit(void)
++{
++	debugfs_remove_recursive(icc_debugfs_dir);
++}
++module_init(icc_init);
++module_exit(icc_exit);
++
+ MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
+ MODULE_DESCRIPTION("Interconnect Driver Core");
+ MODULE_LICENSE("GPL v2");
