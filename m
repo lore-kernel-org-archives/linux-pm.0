@@ -1,155 +1,106 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v10 03/27] timer: Export next wakeup time of a CPU
-Date: Wed, 16 Jan 2019 08:57:46 +0100
-Message-ID: <CAPDyKFqQQnMKFNpGyi_dkP_Rm8qo-1WjPfVkp2unOxyXRa2wbA@mail.gmail.com>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-4-ulf.hansson@linaro.org> <119031115.C8gHTGbYmQ@aspire.rjw.lan>
+Subject: Re: [PATCH v10 00/27] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Wed, 16 Jan 2019 10:10:08 +0100
+Message-ID: <CAPDyKFp-JB85TZOs+oso0iidaAsm1A=UDrg=gv+QZ4VJ9gW=fA@mail.gmail.com>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org> <20190103120612.GC23511@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <119031115.C8gHTGbYmQ@aspire.rjw.lan>
+In-Reply-To: <20190103120612.GC23511@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Jan 2019 at 12:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Thu, 3 Jan 2019 at 13:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Thursday, November 29, 2018 6:46:36 PM CET Ulf Hansson wrote:
-> > From: Lina Iyer <lina.iyer@linaro.org>
-> >
-> > Knowing the sleep duration of CPUs, is known to be needed while selecting
-> > the most energy efficient idle state for a CPU or a group of CPUs.
-> >
-> > However, to be able to compute the sleep duration, we need to know at what
-> > time the next expected wakeup is for the CPU. Therefore, let's export this
-> > information via a new function, tick_nohz_get_next_wakeup(). Following
-> > changes make use of it.
-> >
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Lina Iyer <ilina@codeaurora.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Ingo Molnar <mingo@kernel.org>
-> > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> > Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > ---
-> >
-> > Changes in v10:
-> >       - Updated function header of tick_nohz_get_next_wakeup().
-> >
-> > ---
-> >  include/linux/tick.h     |  8 ++++++++
-> >  kernel/time/tick-sched.c | 13 +++++++++++++
-> >  2 files changed, 21 insertions(+)
-> >
-> > diff --git a/include/linux/tick.h b/include/linux/tick.h
-> > index 55388ab45fd4..e48f6b26b425 100644
-> > --- a/include/linux/tick.h
-> > +++ b/include/linux/tick.h
-> > @@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
-> >  extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
-> >  extern unsigned long tick_nohz_get_idle_calls(void);
-> >  extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-> > +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
-> >  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
-> >  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
-> >
-> > @@ -151,6 +152,13 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
-> >       *delta_next = TICK_NSEC;
-> >       return *delta_next;
-> >  }
-> > +
-> > +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-> > +{
-> > +     /* Next wake up is the tick period, assume it starts now */
-> > +     return ktime_add(ktime_get(), TICK_NSEC);
-> > +}
-> > +
-> >  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
-> >  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
-> >
-> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > index 69e673b88474..7a9166506503 100644
-> > --- a/kernel/time/tick-sched.c
-> > +++ b/kernel/time/tick-sched.c
-> > @@ -1089,6 +1089,19 @@ unsigned long tick_nohz_get_idle_calls(void)
-> >       return ts->idle_calls;
-> >  }
-> >
-> > +/**
-> > + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-> > + * @cpu: the particular CPU to get next wake up for
-> > + *
-> > + * Called for idle CPUs only.
-> > + */
-> > +ktime_t tick_nohz_get_next_wakeup(int cpu)
-> > +{
-> > +     struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
-> > +
-> > +     return dev->next_event;
-> > +}
-> > +
-> >  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
-> >  {
-> >  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-> >
+> On Thu, Nov 29, 2018 at 06:46:33PM +0100, Ulf Hansson wrote:
+> > Over the years this series have been iterated and discussed at various Linux
+> > conferences and LKML. In this new v10, a quite significant amount of changes
+> > have been made to address comments from v8 and v9. A summary is available
+> > below, although let's start with a brand new clarification of the motivation
+> > behind this series.
 >
-> Well, I have concerns regarding this one.
->
-> I don't believe it is valid to call this new function for non-idle CPUs and
-> the kerneldoc kind of says so, but the next patch doesn't actually prevent
-> it from being called for a non-idle CPU (at the time it is called in there
-> the target CPU may not be idle any more AFAICS).
+> I would like to raise few points, not blockers as such but need to be
+> discussed and resolved before proceeding further.
+> 1. CPU Idle Retention states
+>         - How will be deal with flattening (which brings back the DT bindings,
+>           i.e. do we have all we need) ? Because today there are no users of
+>           this binding yet. I know we all agreed and added after LPC2017 but
+>           I am not convinced about flattening with only valid states.
 
-You are correct, but let me clarify things.
+Not exactly sure I understand what you are concerned about here. When
+it comes to users of the new DT binding, I am converting two new
+platforms in this series to use of it.
 
-We are calling this new API from the new genpd governor, which may
-have a cpumask indicating there is more than one CPU attached to its
-PM domain+sub-PM domains. In other words, we may call the API for
-another CPU than the one we are executing on.
+Note, the flattened model is still a valid option to describe the CPU
+idle states after these changes. Especially when there are no last man
+standing activities to manage by Linux and no shared resource that
+need to prevent cluster idle states, when it's active.
 
-When the new genpd governor is called, all CPUs in the cpumask of the
-genpd in question, are already runtime suspended and will remain so
-throughout the decisions made by the governor.
+>         - Will domain governor ensure not to enter deeper idles states based
+>           on its sub-domain states. E.g.: when CPUs are in retention, so
+>           called container/cluster domain can enter retention or below and not
+>           power off states.
 
-However, because of the race condition, which needs to be manged by
-the genpd backend driver and its corresponding FW, one of the CPU in
-the genpd cpumask could potentially wake up from idle when the genpd
-governor runs. However, as a part of exiting from idle, that CPU needs
-to wait for the call to pm_runtime_get_sync() to return before
-completing the exit patch of idle. This also means waiting for the
-genpd governor to finish.
+I have tried to point this out as a known limitation in genpd of the
+current series, possibly I have failed to communicate that clearly.
+Anyway, I fully agree that this needs to be addressed in a future
+step.
 
-The point is, no matter what decision the governor takes under these
-circumstances, the genpd backend driver and its FW must manage this
-race condition during the last man standing. For PSCI OSI mode, it
-means that if a cluster idle state is suggested by Linux during these
-circumstances, it must be prevented and aborted.
+Note that, this isn't a specific limitation to how idle states are
+selected for CPUs and CPU clusters by genpd, but is rather a
+limitation to any hierarchical PM domain topology managed by genpd
+that has multiple idle states.
+
+Do note, I already started hacking on this and intend to post patches
+on top of this series, as these changes isn't needed for those two
+ARM64 platforms I have deployed support for.
+
+>         - Is the case of not calling cpu_pm_{enter,exit} handled now ?
+
+It is still called, so no changes in regards to that as apart of this series.
+
+When it comes to actually manage the "last man activities" as part of
+selecting an idle state of the cluster, that is going to be addressed
+on top as "optimizations".
+
+In principle we should not need to call cpu_pm_enter|exit() in the
+idle path at all, but rather only cpu_cluster_pm_enter|exit() when a
+cluster idle state is selected. That should improve latency when
+selecting an idle state for a CPU. However, to reach that point
+additional changes are needed in various drivers, such as the gic
+driver for example.
 
 >
-> In principle, the cpuidle core can store this value, say in struct
-> cpuidle_device of the given CPU, and expose a helper to access it from
-> genpd, but that would be extra overhead totally unnecessary on everthing
-> that doesn't use genpd for cpuidle.
+> 2. Now that we have SDM845 which may soon have platform co-ordinated idle
+>    support in mainline, I *really* would like to see some power comparison
+>    numbers(i.e. PC without cluster idle states). This has been the main theme
+>    for most of the discussion on this topic for years and now we are close
+>    to have some platform, we need to try.
+
+I have quite recently been talking to Qcom folkz about this as well,
+but no commitments are made.
+
+Although I fully agree that some comparison would be great, it still
+doesn't matter much, as we anyway need to support PSCI OSI mode in
+Linux. Lorenzo have agreed to this as well.
+
 >
-> So maybe the driver could store it in its ->enter callback?  After all,
-> the driver knows that genpd is going to be used later.
+> 3. Also, after adding such complexity, we really need a platform with an
+>    option to build and upgrade firmware easily. This will help to prevent
+>    this being not maintained for long without a platform to test, also
+>    avoid adding lots of quirks to deal with broken firmware so that newer
+>    platforms deal those issues in the firmware correctly.
 
-This would work, but it wouldn't really change much when it comes to
-the race condition described above. Of course it would turn the code
-into being more cpuidle specific, which seems reasonable to me.
+I don't see how this series change anything from what we already have
+today with the PSCI FW. No matter of OSI or PC mode is used, there are
+complexity involved.
 
-Anyway, if I understand your suggestion, in principle it means
-changing $subject patch in such way that the API should not take "int
-cpu" as an in-parameter, but instead only use __this_cpu() to read out
-the next event for current idle CPU.
-
-Additionally, we need another new cpuidle API, which genpd can call to
-retrieve a new per CPU "next event data" stored by the cpuidle driver
-from its ->enter() callback. Is this a correct interpretation of your
-suggestion?
+Although, of course I agree with you, that we should continue to try
+to convince ARM vendors about moving to the public version of ATF and
+avoid proprietary FW binaries as much as possible.
 
 Kind regards
 Uffe
