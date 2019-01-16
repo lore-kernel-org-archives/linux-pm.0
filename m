@@ -1,134 +1,27 @@
-From: Stephan =?ISO-8859-1?Q?M=FCller?= <smueller@chronox.de>
-Subject: [PATCH v2 1/6] crypto: add template handling for RNGs
-Date: Wed, 16 Jan 2019 12:07:34 +0100
-Message-ID: <61907509.O7QvflLhaU@positron.chronox.de>
-References: <20190103143227.9138-1-jlee@suse.com> <9733066.Vrs4h5eWcW@positron.chronox.de> <2082192.jPI8ve1O8G@positron.chronox.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM/runtime: Do not needlessly call ktime_get
+Date: Wed, 16 Jan 2019 12:57:13 +0100
+Message-ID: <10417091.Yigb8Rxq05@aspire.rjw.lan>
+References: <20190110095125.GA4491@lenoch> <CAKfTPtCV=PYAqG=LavafTpMxvXdr7W-bfsOkpP+04EtOaicjyg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2082192.jPI8ve1O8G@positron.chronox.de>
+In-Reply-To: <CAKfTPtCV=PYAqG=LavafTpMxvXdr7W-bfsOkpP+04EtOaicjyg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>, Ladislav Michl <ladis@linux-mips.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-Adds ability to register templates for pseudo random number generators
-(PRNG). PRNGs are "meta" mechanisms using raw cipher primitives. Thus,
-PRNGs can now be implemented as templates to allow the complete
-flexibility the kernel crypto API provides.
+On Thursday, January 10, 2019 7:56:19 PM CET Vincent Guittot wrote:
+> On Thu, 10 Jan 2019 at 10:51, Ladislav Michl <ladis@linux-mips.org> wrote:
+> >
+> > pm_runtime_autosuspend_expiration calls ktime_get even when
+> > its returned value may be unused. Therefore get current time
+> > later and remove gotos while there.
+> >
+> > Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> 
+> Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 
-The RNG API provides access to the PRNG algorithms without an entropy
-management.
-
-Signed-off-by: Stephan Mueller <smueller@chronox.de>
----
- crypto/rng.c                  | 44 +++++++++++++++++++++++++++++++++++
- include/crypto/internal/rng.h | 26 +++++++++++++++++++++
- 2 files changed, 70 insertions(+)
-
-diff --git a/crypto/rng.c b/crypto/rng.c
-index 33c38a72bff5..da4fd03c0acd 100644
---- a/crypto/rng.c
-+++ b/crypto/rng.c
-@@ -64,6 +64,25 @@ static int crypto_rng_init_tfm(struct crypto_tfm *tfm)
- 	return 0;
- }
- 
-+static inline struct rng_alg *__crypto_rng_alg(struct crypto_alg *alg)
-+{
-+	return container_of(alg, struct rng_alg, base);
-+}
-+
-+static inline struct rng_instance *rng_instance(
-+	struct crypto_instance *inst)
-+{
-+	return container_of(__crypto_rng_alg(&inst->alg),
-+			    struct rng_instance, alg);
-+}
-+
-+static void crypto_rng_free_instance(struct crypto_instance *inst)
-+{
-+	struct rng_instance *rng = rng_instance(inst);
-+
-+	rng->free(rng);
-+}
-+
- static unsigned int seedsize(struct crypto_alg *alg)
- {
- 	struct rng_alg *ralg = container_of(alg, struct rng_alg, base);
-@@ -102,6 +121,7 @@ static void crypto_rng_show(struct seq_file *m, struct crypto_alg *alg)
- static const struct crypto_type crypto_rng_type = {
- 	.extsize = crypto_alg_extsize,
- 	.init_tfm = crypto_rng_init_tfm,
-+	.free = crypto_rng_free_instance,
- #ifdef CONFIG_PROC_FS
- 	.show = crypto_rng_show,
- #endif
-@@ -229,5 +249,29 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
- }
- EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
- 
-+static int rng_prepare_alg(struct rng_alg *alg)
-+{
-+	struct crypto_alg *base = &alg->base;
-+
-+	base->cra_type = &crypto_rng_type;
-+	base->cra_flags &= ~CRYPTO_ALG_TYPE_MASK;
-+	base->cra_flags |= CRYPTO_ALG_TYPE_RNG;
-+
-+	return 0;
-+}
-+
-+int rng_register_instance(struct crypto_template *tmpl,
-+			  struct rng_instance *inst)
-+{
-+	int err;
-+
-+	err = rng_prepare_alg(&inst->alg);
-+	if (err)
-+		return err;
-+
-+	return crypto_register_instance(tmpl, rng_crypto_instance(inst));
-+}
-+EXPORT_SYMBOL_GPL(rng_register_instance);
-+
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("Random Number Generator");
-diff --git a/include/crypto/internal/rng.h b/include/crypto/internal/rng.h
-index a52ef3483dd7..bfe4482ad336 100644
---- a/include/crypto/internal/rng.h
-+++ b/include/crypto/internal/rng.h
-@@ -42,4 +42,30 @@ static inline void crypto_rng_set_entropy(struct crypto_rng *tfm,
- 	crypto_rng_alg(tfm)->set_ent(tfm, data, len);
- }
- 
-+struct rng_instance {
-+	void (*free)(struct rng_instance *inst);
-+	struct rng_alg alg;
-+};
-+
-+static inline struct rng_instance *rng_alloc_instance(
-+	const char *name, struct crypto_alg *alg)
-+{
-+	return crypto_alloc_instance(name, alg,
-+			      sizeof(struct rng_instance) - sizeof(*alg));
-+}
-+
-+static inline struct crypto_instance *rng_crypto_instance(
-+	struct rng_instance *inst)
-+{
-+	return container_of(&inst->alg.base, struct crypto_instance, alg);
-+}
-+
-+static inline void *rng_instance_ctx(struct rng_instance *inst)
-+{
-+	return crypto_instance_ctx(rng_crypto_instance(inst));
-+}
-+
-+int rng_register_instance(struct crypto_template *tmpl,
-+			  struct rng_instance *inst);
-+
- #endif
--- 
-2.20.1
+Patch applied, thanks!
