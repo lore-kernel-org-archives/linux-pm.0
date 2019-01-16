@@ -1,54 +1,37 @@
 From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Subject: [PATCH 0/8] ARM: at91/dt: update to existing drivers for the sam9x60 SoC
-Date: Wed, 16 Jan 2019 10:57:36 +0100
-Message-ID: <cover.1547629763.git.nicolas.ferre@microchip.com>
+Subject: [PATCH 1/8] dt-bindings: arm: atmel: add missing samx7 to reset controller
+Date: Wed, 16 Jan 2019 10:57:37 +0100
+Message-ID: <b073b46ab85e9c855640e674f12f2a0801876140.1547629763.git.nicolas.ferre@microchip.com>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <cover.1547629763.git.nicolas.ferre@microchip.com>
+Sender: netdev-owner@vger.kernel.org
 To: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add this missing compatibility string to the Reset Controller
+compatible string chip list.
 
-This serries collects some little modifications to DT bindings and associated
-drivers changes for supporting the upcoming SAM9X60 SoC.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+---
+ Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I took the advantage of this series for fixing some of the leftovers in DT
-bindings for reset controller and Ethernet macb.
-
-These changes touch several sub-systems but I would like that these (mostly
-trivial) patches stay together for facilitating reviews, prevent breaking
-dependencies and facilitating the tracking of acceptance status. However, tell
-me if you think otherwise.
-My intentions are that the series would enter Mainline through arm-soc tree:
-sounds okay to everyone? If okay, I'm ready to collect Ack tags...
-
-For the first batch, I send the whole series to everyone. I'll try my best to
-reduce subsequent message deliveries if one part of the serries needs rework.
-
-Best regards,
-  Nicolas
-
-
-Nicolas Ferre (8):
-  dt-bindings: arm: atmel: add missing samx7 to reset controller
-  dt-bindings: arm: atmel: add new sam9x60 reset controller binding
-  dt-bindings: arm: atmel: add new sam9x60 SFR binding
-  net/macb: bindings doc/trivial: fix documentation for sama5d3 10/100
-    interface
-  net/macb: bindings doc: add sam9x60 binding
-  power: reset: at91-reset: add support for sam9x60 SoC
-  USB: host: ohci-at91: add sam9x60-sfr definition for ohci
-  net: macb: add sam9x60-macb compatibility string
-
- .../devicetree/bindings/arm/atmel-sysregs.txt       |  4 +++-
- Documentation/devicetree/bindings/net/macb.txt      |  4 ++--
- drivers/net/ethernet/cadence/macb_main.c            |  1 +
- drivers/power/reset/at91-reset.c                    | 13 +++++++++++++
- drivers/usb/host/ohci-at91.c                        |  7 +++++--
- 5 files changed, 24 insertions(+), 5 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+index 14f319f694b7..36952cc39993 100644
+--- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
++++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+@@ -21,7 +21,7 @@ Its subnodes can be:
+ 
+ RSTC Reset Controller required properties:
+ - compatible: Should be "atmel,<chip>-rstc".
+-  <chip> can be "at91sam9260" or "at91sam9g45" or "sama5d3"
++  <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
+ - reg: Should contain registers location and length
+ - clocks: phandle to input clock.
+ 
 -- 
 2.17.1
