@@ -1,166 +1,97 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Wed, 16 Jan 2019 23:43:58 +0100
-Message-ID: <4051825.HNqyo8zv3N@aspire.rjw.lan>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
+Subject: Re: [PATCH v1 03/10] cpufreq: Replace open-coded << with BIT()
+Date: Wed, 16 Jan 2019 23:55:17 +0100
+Message-ID: <2392396.AI7Hxg4e4v@aspire.rjw.lan>
+References: <cover.1547481320.git.amit.kucheria@linaro.org> <e1984eedda04ca44a44b4972708855702f5d91e4.1547481320.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <e1984eedda04ca44a44b4972708855702f5d91e4.1547481320.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkbmVzZGF5LCBKYW51YXJ5IDE2LCAyMDE5IDc6NDI6NDUgUE0gQ0VUIERhbmllbCBWZXR0
-ZXIgd3JvdGU6Cj4gT24gVHVlLCBKYW4gMTUsIDIwMTkgYXQgMTE6NDcgUE0gUmFmYWVsIEouIFd5
-c29ja2kgPHJqd0Byand5c29ja2kubmV0PiB3cm90ZToKPiA+Cj4gPiBbQ0MgR3JlZ10KPiA+Cj4g
-PiBPbiBUdWVzZGF5LCBKYW51YXJ5IDE1LCAyMDE5IDE6MDQ6MDIgQU0gQ0VUIFJhZmFlbCBKLiBX
-eXNvY2tpIHdyb3RlOgo+ID4gPiBbQ0MgTHVrYXMgYW5kIGxpbnV4LXBtXQo+ID4gPgo+ID4gPiBP
-biBNb24sIEphbiAxNCwgMjAxOSBhdCAxOjMyIFBNIFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxA
-a2VybmVsLm9yZz4gd3JvdGU6Cj4gPiA+ID4KPiA+ID4gPiBPbiBGcmksIEphbiAxMSwgMjAxOSBh
-dCAzOjQ5IFBNIFJ1c3NlbGwgS2luZyAtIEFSTSBMaW51eAo+ID4gPiA+IDxsaW51eEBhcm1saW51
-eC5vcmcudWs+IHdyb3RlOgo+ID4gPgo+ID4gPiBbY3V0XQo+ID4gPgo+ID4gPiA+ID4KPiA+ID4g
-PiA+IFRoaXMgdGhyZWFkIGlzIGRpc2N1c3NpbmcgaG93IHRvIGRlYWwgd2l0aCBBcm1hZGEgRFJN
-LCBpdHMgdXNlIG9mIHRoZQo+ID4gPiA+ID4gY29tcG9uZW50IGhlbHBlciwgVERBOTk4eCdzIGh5
-YnJpZCB1c2Ugb2YgdGhlIGNvbXBvbmVudCBoZWxwZXIgYW5kCj4gPiA+ID4gPiBEUk0gYnJpZGdl
-cy4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBDdXJyZW50bHksIERSTSBicmlkZ2VzIHJlZ2lzdGVyIGlu
-dG8gdGhlIERSTSBzeXN0ZW0gYW5kIGFyZSBhZGRlZCB0bwo+ID4gPiA+ID4gYSBnbG9iYWwgbGlz
-dCBvZiBicmlkZ2VzLiAgV2hlbiBhIERSTSBkcml2ZXIgYmluZHMsIGl0IGxvb2tzIHVwIHRoZQo+
-ID4gPiA+ID4gRFJNIGJyaWRnZSBhbmQgYXR0YWNoZXMgdG8gaXQuICBUaGVyZSBpcyBubyB3YXkg
-aW4gZ2VuZXJpYyBEUk0gY29kZQo+ID4gPiA+ID4gZm9yIHRoZSBEUk0gZHJpdmVyIHRvIGtub3cg
-aWYgdGhlIERSTSBicmlkZ2UgaXMgdW5ib3VuZCBmcm9tIERSTSwKPiA+ID4gPiA+IGNvbnNlcXVl
-bnRseSBhIERSTSBkcml2ZXIgbWF5IGNvbnRpbnVlIHRyeWluZyB0byBjYWxsIGZ1bmN0aW9ucyBp
-bgo+ID4gPiA+ID4gdGhlIERSTSBicmlkZ2UgZHJpdmVyIHVzaW5nIG1lbW9yeSB0aGF0IGhhcyBh
-bHJlYWR5IGJlZW4gZnJlZWQuCj4gPiA+ID4gPgo+ID4gPiA+ID4gV2UgaGFkIHNpbWlsYXIgaXNz
-dWVzIHdpdGggaW14LWRybSwgYW5kIGEgbnVtYmVyIG9mIHllYXJzIGFnbyBhdCBhCj4gPiA+ID4g
-PiBrZXJuZWwgc3VtbWl0LCB0aGlzIHdhcyBkaXNjdXNzZWQsIGFuZCBJIHByb3Bvc2VkIGEgc3lz
-dGVtIHdoaWNoIGlzCj4gPiA+ID4gPiBub3cga25vd24gYXMgdGhlIGNvbXBvbmVudCBoZWxwZXIu
-ICBUaGlzIGhhbmRsZXMgdGhlIHByb2JsZW0gb2YgYQo+ID4gPiA+ID4gbXVsdGktY29tcG9uZW50
-IHN5c3RlbS4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBIb3dldmVyLCBEUk0gYnJpZGdlIHdhcyBhbHJl
-YWR5IGVzdGFibGlzaGVkLCBhbmQgdGhlcmUgYXBwZWFycyB0byBiZQo+ID4gPiA+ID4gbm8gZGVz
-aXJlIHRvIGNvbnZlcnQgRFJNIGJyaWRnZXMgYW5kIERSTSBkcml2ZXJzIHRvIHVzZSB0aGUgY29t
-cG9uZW50Cj4gPiA+ID4gPiBoZWxwZXIuCj4gPiA+ID4gPgo+ID4gPiA+ID4gV2UgYXJlIHByZXNl
-bnRseSBpbiB0aGUgc2l0dWF0aW9uIHdoZXJlIEFybWFkYSBEUk0gaXMgaW5jb21wYXRpYmxlCj4g
-PiA+ID4gPiB3aXRoIHRoZSBEUk0gYnJpZGdlcyB3YXkgb2YgZG9pbmcgdGhpbmdzLCBhbmQgbWFr
-aW5nIGl0IGNvbXBhdGlibGUKPiA+ID4gPiA+IGVzc2VudGlhbGx5IG1lYW5zIGludHJvZHVjaW5n
-IHBvdGVudGlhbCB1c2UtYWZ0ZXItZnJlZSBidWdzIGludG8gdGhlCj4gPiA+ID4gPiBjb2RlLgo+
-ID4gPiA+ID4KPiA+ID4gPiA+IERldmljZSBsaW5rcyBpbiB0aGVpciBzdGF0ZWZ1bCBmb3JtIGFw
-cGVhciB0byBwcm92aWRlIGFuIGFsdGVybmF0aXZlCj4gPiA+ID4gPiB0byB0aGUgY29tcG9uZW50
-IGhlbHBlciwgaW4gdGhhdCBhIHN0YXRlZnVsIGRldmljZSBsaW5rIHdpbGwgcmVtb3ZlCj4gPiA+
-ID4gPiBjb25zdW1lcnMgb2YgYSByZXNvdXJjZSB3aGVuIHRoZSBzdXBwbGllciBpcyBnb2luZyBh
-d2F5IC0gd2hpY2ggaXMKPiA+ID4gPiA+IGV4YWN0bHkgdGhlIHByb2JsZW0gd2hpY2ggdGhlIGNv
-bXBvbmVudCBoZWxwZXIgaXMgc29sdmluZy4gIFRoZQo+ID4gPiA+ID4gZGlmZmVyZW5jZSBpcyB0
-aGF0IGRldmljZSBsaW5rcyBsb29rIGxpa2UgYmVpbmcgYSBjbGVhbmVyIHNvbHV0aW9uLgo+ID4g
-PiA+ID4KPiA+ID4gPiA+IEp1c3QgbGlrZSB0aGUgY29tcG9uZW50IGhlbHBlciwgYSBzdGF0ZWZ1
-bCBsaW5rIHdvdWxkIHVuYmluZCB0aGUKPiA+ID4gPiA+IGNvbnN1bWVyIG9mIGEgcmVzb3VyY2Ug
-d2hlbiB0aGUgc3VwcGxpZXIgZ29lcyBhd2F5IC0gd2hpY2ggaXMgZXhhY3RseQo+ID4gPiA+ID4g
-dGhlIGJlaGF2aW91ciB3ZSdyZSB3YW50aW5nLgo+ID4gPiA+ID4KPiA+ID4gPiA+IFRoZSBwcm9i
-bGVtIGlzIHRoYXQgdGhlIGNvbm5lY3Rpb24gYmV0d2VlbiB2YXJpb3VzIGRyaXZlcnMgaXMgb25s
-eQo+ID4gPiA+ID4gcmVhbGx5IGtub3duIHdoZW4gdGhlIGRyaXZlcnMgb2J0YWluIHRoZWlyIHJl
-c291cmNlcywgYW5kIHRoZQo+ID4gPiA+ID4gZm9sbG93aW5nIGNhbiBoYXBwZW46Cj4gPiA+ID4g
-Pgo+ID4gPiA+ID4gc3VwcGxpZXIgICAgICAgICAgICAgICAgY29uc3VtZXIKPiA+ID4gPiA+Cj4g
-PiA+ID4gPiBwcm9iZSgpCj4gPiA+ID4gPiAgYWxsb2MKPiA+ID4gPiA+ICAgICAgICAgICAgICAg
-ICAgICAgICAgIHByb2JlKCkKPiA+ID4gPiA+ICBwdWJsaXNoCj4gPiA+ID4gPiAgICAgICAgICAg
-ICAgICAgICAgICAgICBvYnRhaW4gc3VwcGxpZXIncyByZXNvdXJjZQo+ID4gPiA+ID4gIHJldHVy
-bgo+ID4gPiA+ID4KPiA+ID4gPiA+IFdoZXJlIHRoaW5ncyBnbyB3cm9uZyBpcyBpZiBhIHN0YXRl
-ZnVsIGxpbmsgaXMgY3JlYXRlZCB3aGVuIHRoZQo+ID4gPiA+ID4gY29uc3VtZXIgb2J0YWlucyB0
-aGUgc3VwcGxpZXJzIHJlc291cmNlIGJlZm9yZSB0aGUgc3VwcGxpZXIgaGFzCj4gPiA+ID4gPiBm
-aW5pc2hlZCBwcm9iaW5nIC0gd2hpY2ggZnJvbSB3aGF0J3MgYmVlbiBzYWlkIGlzIGlsbGVnYWwu
-Cj4gPiA+ID4KPiA+ID4gPiBJdCBqdXN0IGRvZXNuJ3Qgd29yayAod2hpY2ggbWVhbnMgImludmFs
-aWQiIHJhdGhlciB0aGFuICJpbGxlZ2FsIiBJCj4gPiA+ID4gZ3Vlc3MsIGJ1dCB3aGF0ZXZlciA6
-LSkpLgo+ID4gPiA+Cj4gPiA+ID4gQWRtaXR0ZWRseSwgdGhlIG9yaWdpbmFsIGRlc2lnbiBkaWRu
-J3QgdGFrZSB0aGlzIHBhcnRpY3VsYXIgY2FzZSBpbnRvCj4gPiA+ID4gYWNjb3VudCBhbmQgSSdt
-IG5vdCBhY3R1YWxseSBzdXJlIGhvdyBpdCBjYW4gYmUgdGFrZW4gaW50byBhY2NvdW50Cj4gPiA+
-ID4gZWl0aGVyLgo+ID4gPiA+Cj4gPiA+ID4gSWYgdGhlIGxpbmsgaXMgY3JlYXRlZCBieSB0aGUg
-Y29uc3VtZXIgaW4gdGhlIHNjZW5hcmlvIGFib3ZlLCBpdHMKPiA+ID4gPiBzdGF0dXMgd2lsbCBi
-ZSB1cGRhdGVkIHR3aWNlIGluIGEgcm93IGFmdGVyIHRoZSBjb25zdW1lciBwcm9iZSByZXR1cm5z
-Cj4gPiA+ID4gYW5kIGFmdGVyIHRoZSBzdXBwbGllciBwcm9iZSByZXR1cm5zLiAgSXQgbG9va3Mg
-bGlrZSB0aGlzIHVwZGF0ZSB3b3VsZAo+ID4gPiA+IG5lZWQgdG8gd29yayByZWdhcmRsZXNzIG9m
-IHRoZSBvcmRlciBpdCB3aGljaCB0aGlzIGhhcHBlbmVkIHdoaWNoCj4gPiA+ID4gc291bmRzIHNv
-bWV3aGF0IGNoYWxsZW5naW5nLiAgSSB3b3VsZCBuZWVkIHRvIHRoaW5rIGFib3V0IHRoYXQuCj4g
-PiA+Cj4gPiA+IFNvIGlmIEknbSBub3QgbWlzdGFrZW4gaXQgY2FuIGJlIG1hZGUgd29yayB3aXRo
-IHRoZSBoZWxwIG9mIHRoZQo+ID4gPiAoY29tcGxldGVseSB1bnRlc3RlZCkgYXR0YWNoZWQgcGF0
-Y2ggKG9mIGNvdXJzZSwgdGhlIGRvY3VtZW50YXRpb24KPiA+ID4gd291bGQgbmVlZCB0byBiZSB1
-cGRhdGVkIHRvbykuCj4gPiA+Cj4gPiA+IFRoZSBrZXkgb2JzZXJ2YXRpb24gaGVyZSBpcyB0aGF0
-IGl0IHNob3VsZCBiZSBmaW5lIHRvIGNyZWF0ZSBhIGxpbmsKPiA+ID4gZnJvbSB0aGUgY29uc3Vt
-ZXIgZHJpdmVyJ3MgcHJvYmUgd2hpbGUgdGhlIHN1cHBsaWVyIGlzIHN0aWxsIHByb2JpbmcKPiA+
-ID4gaWYgdGhlIGNvbnN1bWVyIGhhcyBzb21lIHdheSB0byBmaW5kIG91dCB0aGF0IHRoZSBzdXBw
-bGllciBpcwo+ID4gPiBmdW5jdGlvbmFsIGF0IHRoYXQgcG9pbnQgKGxpa2Ugd2hlbiBpdCBoYXMg
-cHVibGlzaGVkIGl0c2VsZiBhbHJlYWR5IGluCj4gPiA+IHlvdXIgZXhhbXBsZSBhYm92ZSkuICBU
-aGUgaW5pdGlhbCBzdGF0ZSBvZiB0aGUgbGluayBjYW4gYmUgImNvbnN1bWVyCj4gPiA+IHByb2Jl
-IiBpbiB0aGF0IGNhc2UgYW5kIEkgZG9uJ3Qgc2VlIGEgcmVhc29uIHdoeSB0aGF0IG1pZ2h0IG5v
-dCB3b3JrLgo+ID4gPgo+ID4KPiA+IEJlbG93IGlzIGEgbW9yZSBjb21wbGV0ZSBwYXRjaCB0aGF0
-IHNob3VsZCB0YWtlIGFsbCBvZiB0aGUgY29ybmVyIGNhc2VzCj4gPiBpbnRvIGFjY291bnQgdW5s
-ZXNzIEkgaGF2ZSBtaXNzZWQgYW55dGhpbmcuICBUZXN0aW5nIGl0IHdvdWxkIGJlCj4gPiBhcHBy
-ZWNpYXRlZC4gOi0pCj4gPgo+ID4gLS0tCj4gPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFm
-YWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4gPiBTdWJqZWN0OiBbUEFUQ0hdIGRyaXZlciBjb3Jl
-OiBGaXggYWRkaW5nIGRldmljZSBsaW5rcyB0byBwcm9iaW5nIHN1cHBsaWVycwo+ID4KPiA+IEN1
-cnJlbnRseSwgaXQgaXMgbm90IHZhbGlkIHRvIGFkZCBhIGRldmljZSBsaW5rIGZyb20gYSBjb25z
-dW1lcgo+ID4gZHJpdmVyIC0+cHJvYmUoKSBjYWxsYmFjayB0byBhIHN1cHBsaWVyIHRoYXQgaXMg
-c3RpbGwgcHJvYmluZyB0b28sIGJ1dAo+ID4gZ2VuZXJhbGx5IHRoaXMgaXMgYSB2YWxpZCB1c2Ug
-Y2FzZS4gIEZvciBleGFtcGxlLCBpZiB0aGUgY29uc3VtZXIgaGFzCj4gPiBqdXN0IGFjcXVpcmVk
-IGEgcmVzb3VyY2UgdGhhdCBjYW4gb25seSBiZSBhdmFpbGFibGUgd2hlbiB0aGUgc3VwcGxpZXIK
-PiA+IGlzIGZ1bmN0aW9uYWwsIGFkZGluZyBhIGRldmljZSBsaW5rIHRvIHRoYXQgc3VwcGxpZXIg
-cmlnaHQgYXdheQo+ID4gc2hvdWxkIGJlIHNhZmUgKGFuZCBldmVuIGRlc2lyYWJsZSBhcmd1YWJs
-eSksIGJ1dCBkZXZpY2VfbGlua19hZGQoKQo+ID4gZG9lc24ndCBoYW5kbGUgdGhhdCBjYXNlIGNv
-cnJlY3RseSBhbmQgdGhlIGluaXRpYWwgc3RhdGUgb2YgdGhlIGxpbmsKPiA+IGNyZWF0ZWQgYnkg
-aXQgaXMgd3JvbmcgdGhlbi4KPiA+Cj4gPiBUbyBhZGRyZXNzIHRoaXMgcHJvYmxlbSwgY2hhbmdl
-IHRoZSBpbml0aWFsIHN0YXRlIG9mIGRldmljZSBsaW5rcwo+ID4gYWRkZWQgYmV0d2VlbiBhIHBy
-b2Jpbmcgc3VwcGxpZXIgYW5kIGEgcHJvYmluZyBjb25zdW1lciB0bwo+ID4gRExfU1RBVEVfQ09O
-U1VNRVJfUFJPQkUgYW5kIHVwZGF0ZSBkZXZpY2VfbGlua3NfZHJpdmVyX2JvdW5kKCkgdG8KPiA+
-IHNraXAgc3VjaCBsaW5rcyBvbiB0aGUgc3VwcGxpZXIgc2lkZS4KPiA+Cj4gPiBXaXRoIHRoaXMg
-Y2hhbmdlLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgY29tcGxldGVzIGZpcnN0LAo+ID4gZGV2aWNl
-X2xpbmtzX2RyaXZlcl9ib3VuZCgpIGNhbGxlZCBmb3IgaXQgd2lsbCBza2lwIHRoZSBsaW5rIHN0
-YXRlCj4gPiB1cGRhdGUgYW5kIHdoZW4gaXQgaXMgY2FsbGVkIGZvciB0aGUgY29uc3VtZXIsIHRo
-ZSBsaW5rIHN0YXRlIHdpbGwKPiA+IGJlIHVwZGF0ZWQgdG8gImFjdGl2ZSIuICBJbiB0dXJuLCBp
-ZiB0aGUgY29uc3VtZXIgcHJvYmUgY29tcGxldGVzCj4gPiBmaXJzdCwgZGV2aWNlX2xpbmtzX2Ry
-aXZlcl9ib3VuZCgpIGNhbGxlZCBmb3IgaXQgd2lsbCBjaGFuZ2UgdGhlCj4gPiBzdGF0ZSBvZiB0
-aGUgbGluayB0byAiYWN0aXZlIiBhbmQgd2hlbiBpdCBpcyBjYWxsZWQgZm9yIHRoZQo+ID4gc3Vw
-cGxpZXIsIHRoZSBsaW5rIHN0YXR1cyB1cGRhdGUgd2lsbCBiZSBza2lwcGVkLgo+ID4KPiA+IEhv
-d2V2ZXIsIGluIHByaW5jaXBsZSB0aGUgc3VwcGxpZXIgb3IgY29uc3VtZXIgcHJvYmUgbWF5IHN0
-aWxsIGZhaWwKPiA+IGFmdGVyIHRoZSBsaW5rIGhhcyBiZWVuIGFkZGVkLCBzbyBtb2RpZnkgZGV2
-aWNlX2xpbmtzX25vX2RyaXZlcigpIHRvCj4gPiBjaGFuZ2UgZGV2aWNlIGxpbmtzIGluIHRoZSAi
-YWN0aXZlIiBvciAiY29uc3VtZXIgcHJvYmUiIHN0YXRlIHRvCj4gPiAiZG9ybWFudCIgb24gdGhl
-IHN1cHBsaWVyIHNpZGUgYW5kIHVwZGF0ZSBfX2RldmljZV9saW5rc19ub19kcml2ZXIoKQo+ID4g
-dG8gY2hhbmdlIHRoZSBsaW5rIHN0YXRlIHRvICJhdmFpbGFibGUiIG9ubHkgaWYgaXQgaXMgImNv
-bnN1bWVyCj4gPiBwcm9iZSIgb3IgImFjdGl2ZSIuCj4gPgo+ID4gVGhlbiwgaWYgdGhlIHN1cHBs
-aWVyIHByb2JlIGZhaWxzIGZpcnN0LCB0aGUgbGVmdG92ZXIgbGluayB0byB0aGUKPiA+IHByb2Jp
-bmcgY29uc3VtZXIgd2lsbCBiZWNvbWUgImRvcm1hbnQiIGFuZCBkZXZpY2VfbGlua3Nfbm9fZHJp
-dmVyKCkKPiA+IGNhbGxlZCBmb3IgdGhlIGNvbnN1bWVyICh3aGVuIGl0cyBwcm9iZSBmYWlscykg
-d2lsbCBjbGVhbiBpdCB1cC4KPiA+IEluIHR1cm4sIGlmIHRoZSBjb25zdW1lciBwcm9iZSBmYWls
-cyBmaXJzdCwgaXQgd2lsbCBlaXRoZXIgZHJvcCB0aGUKPiA+IGxpbmssIG9yIGNoYW5nZSBpdHMg
-c3RhdGUgdG8gImF2YWlsYWJsZSIgYW5kLCBpbiB0aGUgbGF0dGVyIGNhc2UsCj4gPiB3aGVuIGRl
-dmljZV9saW5rc19ub19kcml2ZXIoKSBpcyBjYWxsZWQgZm9yIHRoZSBzdXBwbGllciwgaXQgd2ls
-bAo+ID4gdXBkYXRlIHRoZSBsaW5rIHN0YXRlIHRvICJkb3JtYW50Ii4gIFtJZiB0aGUgc3VwcGxp
-ZXIgcHJvYmUgZmFpbHMsCj4gPiBidXQgdGhlIGNvbnN1bWVyIHByb2JlIHN1Y2NlZWRzLCB3aGlj
-aCBzaG91bGQgbm90IGhhcHBlbiBhcyBsb25nIGFzCj4gPiB0aGUgY29uc3VtZXIgZHJpdmVyIGlz
-IGNvcnJlY3QsIHRoZSBsaW5rIHN0aWxsIHdpbGwgYmUgYXJvdW5kLCBidXQKPiA+IGl0IHdpbGwg
-YmUgImRvcm1hbnQiIHVudGlsIHRoZSBzdXBwbGllciBpcyBwcm9iZWQgYWdhaW4uXQo+ID4KPiA+
-IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVs
-LmNvbT4KPiAKPiBQdWxsaW5nIGluIGEgYnVuY2ggb2YgZHJtX2JyaWRnZSBhbmQgZHJtX3BhbmVs
-IHBlb3BsZS4gU2VlIGh1Z2UKPiBkaXNjdXNzaW9uIHVwdGhyZWFkLCB0aGlzIGhlcmUgaXMgUmFm
-YWVsJ3MgaWRlYSBmb3IgbWFraW5nIGRldmljZQo+IGxpbmtzIG1vcmUgdXNlZnVsLiBXb3VsZCBi
-ZSBncmVhdCBpZiBzb21lb25lIGNvdWxkIHRlc3QgdGhpcyBvdXQgd2l0aAo+IHBhbmVsL2JyaWRn
-ZSBkZXBlbmRlbmNpZXMuCj4gCj4gSSBndWVzcyB0aGlzIGhlcmUgaXNuJ3QgeWV0IHNvbHZpbmcg
-dGhlIHJlcHJvYmUgaXNzdWUgd2hlcmUgdGhlCj4gcHJvdmlkZXIgd2FzIHVubG9hZGVkIGFuZCBy
-ZWxvYWRlZCAod2hpY2ggc2hvdWxkIGNhdXNlIHRoZSBjb25zdW1lciB0bwo+IHJlcHJvYmUgdG9v
-LCB3aXRoIHRoZSBFUFJPQkVfREVGRVJSRUQgbG9naWMpLiBJIHRoaW5rIHRoYXQgd2FzIHRoZQo+
-IG90aGVyIGlzc3VlIHdlJ3ZlIGhpdC4KCkkgZG9uJ3QgdGhpbmsgaXQgaXMgYWRkcmVzc2VkIGhl
-cmUuCgpDYW4gYW55b25lIHBsZWFzZSBleHBsYWluIHRvIG1lIHdoYXQgaGFwcGVucyBpbiBtb3Jl
-IGRldGFpbD8KCkNoZWVycywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9kcmktZGV2ZWwK
+On Monday, January 14, 2019 5:34:55 PM CET Amit Kucheria wrote:
+> Minor clean-up to use BIT() and keep checkpatch happy. Clean up the
+> comment formatting while we're at it to make it easier to read.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+
+Can you please do this cleanup as the first patch in the series, so it
+doesn't depend on the other patches in it, which isn't necessary IMO?
+
+> ---
+>  include/linux/cpufreq.h | 27 ++++++++++++++-------------
+>  1 file changed, 14 insertions(+), 13 deletions(-)
+> 
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 70ad02088825..ea303dfd5f05 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -351,14 +351,15 @@ struct cpufreq_driver {
+>  };
+>  
+>  /* flags */
+> -#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
+> -						   all ->init() calls failed */
+> -#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
+> -						   kernel "constants" aren't
+> -						   affected by frequency
+> -						   transitions */
+> -#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
+> -						   speed mismatches */
+> +
+> +/* driver isn't removed even if all ->init() calls failed */
+> +#define CPUFREQ_STICKY				BIT(0)
+> +
+> +/* loops_per_jiffy or other kernel "constants" aren't affected by frequency transitions */
+> +#define CPUFREQ_CONST_LOOPS			BIT(1)
+> +
+> +/* don't warn on suspend/resume speed mismatches */
+> +#define CPUFREQ_PM_NO_WARN			BIT(2)
+>  
+>  /*
+>   * This should be set by platforms having multiple clock-domains, i.e.
+> @@ -366,14 +367,14 @@ struct cpufreq_driver {
+>   * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
+>   * governor with different tunables for different clusters.
+>   */
+> -#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
+> +#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY	BIT(3)
+>  
+>  /*
+>   * Driver will do POSTCHANGE notifications from outside of their ->target()
+>   * routine and so must set cpufreq_driver->flags with this flag, so that core
+>   * can handle them specially.
+>   */
+> -#define CPUFREQ_ASYNC_NOTIFICATION  (1 << 4)
+> +#define CPUFREQ_ASYNC_NOTIFICATION		BIT(4)
+>  
+>  /*
+>   * Set by drivers which want cpufreq core to check if CPU is running at a
+> @@ -382,19 +383,19 @@ struct cpufreq_driver {
+>   * from the table. And if that fails, we will stop further boot process by
+>   * issuing a BUG_ON().
+>   */
+> -#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
+> +#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	BIT(5)
+>  
+>  /*
+>   * Set by drivers to disallow use of governors with "dynamic_switching" flag
+>   * set.
+>   */
+> -#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
+> +#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
+>  
+>  /*
+>   * Set by drivers that want the core to automatically register the cpufreq
+>   * driver as a thermal cooling device
+>   */
+> -#define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
+> +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
+>  
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> 
