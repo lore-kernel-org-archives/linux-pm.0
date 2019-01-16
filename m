@@ -1,91 +1,280 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v11] cpuidle: New timer events oriented governor for
- tickless systems
-Date: Wed, 16 Jan 2019 13:22:35 +0100
-Message-ID: <7ce53e4d-69ca-f7a5-5880-21999d926d3d@linaro.org>
-References: <3625809.WY5lk7ujeb@aspire.rjw.lan>
- <2138748.C3tVedyW9D@aspire.rjw.lan>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v13 0/8] Introduce on-chip interconnect API
+Date: Wed, 16 Jan 2019 18:10:55 +0200
+Message-ID: <20190116161103.6937-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2138748.C3tVedyW9D@aspire.rjw.lan>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, "Chen, Hu" <hu1.chen@intel.com>, Quentin Perret <quentin.perret@arm.com>
+To: gregkh@linuxfoundation.org
+Cc: andy.gross@linaro.org, olof@lixom.net, arnd@arndb.de, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, dianders@chromium.org, abailon@baylibre.com, maxime.ripard@bootlin.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-mediatek@lists.infradead.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16/01/2019 13:03, Rafael J. Wysocki wrote:
-> On Friday, January 4, 2019 12:30:47 PM CET Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The venerable menu governor does some things that are quite
->> questionable in my view.
->>
->> First, it includes timer wakeups in the pattern detection data and
->> mixes them up with wakeups from other sources which in some cases
->> causes it to expect what essentially would be a timer wakeup in a
->> time frame in which no timer wakeups are possible (because it knows
->> the time until the next timer event and that is later than the
->> expected wakeup time).
->>
->> Second, it uses the extra exit latency limit based on the predicted
->> idle duration and depending on the number of tasks waiting on I/O,
->> even though those tasks may run on a different CPU when they are
->> woken up.  Moreover, the time ranges used by it for the sleep length
->> correction factors depend on whether or not there are tasks waiting
->> on I/O, which again doesn't imply anything in particular, and they
->> are not correlated to the list of available idle states in any way
->> whatever.
->>
->> Also, the pattern detection code in menu may end up considering
->> values that are too large to matter at all, in which cases running
->> it is a waste of time.
->>
->> A major rework of the menu governor would be required to address
->> these issues and the performance of at least some workloads (tuned
->> specifically to the current behavior of the menu governor) is likely
->> to suffer from that.  It is thus better to introduce an entirely new
->> governor without them and let everybody use the governor that works
->> better with their actual workloads.
->>
->> The new governor introduced here, the timer events oriented (TEO)
->> governor, uses the same basic strategy as menu: it always tries to
->> find the deepest idle state that can be used in the given conditions.
->> However, it applies a different approach to that problem.
->>
->> First, it doesn't use "correction factors" for the time till the
->> closest timer, but instead it tries to correlate the measured idle
->> duration values with the available idle states and use that
->> information to pick up the idle state that is most likely to "match"
->> the upcoming CPU idle interval.
->>
->> Second, it doesn't take the number of "I/O waiters" into account at
->> all and the pattern detection code in it avoids taking timer wakeups
->> into account.  It also only uses idle duration values less than the
->> current time till the closest timer (with the tick excluded) for that
->> purpose.
-> 
-> Given the lack of negative feedback and my confidence in this, I'm
-> queuing it up for 5.1.
+Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+graphics, modem). These cores are talking to each other and can generate a
+lot of data flowing through the on-chip interconnects. These interconnect
+buses could form different topologies such as crossbar, point to point buses,
+hierarchical buses or use the network-on-chip concept.
 
-Yeah, this governor was not proposed in the better moment for review for
-me :/
+These buses have been sized usually to handle use cases with high data
+throughput but it is not necessary all the time and consume a lot of power.
+Furthermore, the priority between masters can vary depending on the running
+use case like video playback or CPU intensive tasks.
 
-I agree writing a new governor is certainly simpler than revisiting the
-menu governor again. That is the advantage of the governors, we can add
-more of them suiting the needs.
+Having an API to control the requirement of the system in terms of bandwidth
+and QoS, so we can adapt the interconnect configuration to match those by
+scaling the frequencies, setting link priority and tuning QoS parameters.
+This configuration can be a static, one-time operation done at boot for some
+platforms or a dynamic set of operations that happen at run-time.
 
-If you are confident and Doug bench-marked it showing better results
-than the menu governor on x86, I don't see any reason to not merge it.
+This patchset introduce a new API to get the requirement and configure the
+interconnect buses across the entire chipset to fit with the current demand.
+The API is NOT for changing the performance of the endpoint devices, but only
+the interconnect path in between them.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+The API is using a consumer/provider-based model, where the providers are
+the interconnect buses and the consumers could be various drivers.
+The consumers request interconnect resources (path) to an endpoint and set
+the desired constraints on this data flow path. The provider(s) receive
+requests from consumers and aggregate these requests for all master-slave
+pairs on that path. Then the providers configure each participating in the
+topology node according to the requested data flow path, physical links and
+constraints. The topology could be complicated and multi-tiered and is SoC
+specific.
 
+Below is a simplified diagram of a real-world SoC topology. The interconnect
+providers are the NoCs.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
++----------------+    +----------------+
+| HW Accelerator |--->|      M NoC     |<---------------+
++----------------+    +----------------+                |
+                        |      |                    +------------+
+ +-----+  +-------------+      V       +------+     |            |
+ | DDR |  |                +--------+  | PCIe |     |            |
+ +-----+  |                | Slaves |  +------+     |            |
+   ^ ^    |                +--------+     |         |   C NoC    |
+   | |    V                               V         |            |
++------------------+   +------------------------+   |            |   +-----+
+|                  |-->|                        |-->|            |-->| CPU |
+|                  |-->|                        |<--|            |   +-----+
+|     Mem NoC      |   |         S NoC          |   +------------+
+|                  |<--|                        |---------+    |
+|                  |<--|                        |<------+ |    |   +--------+
++------------------+   +------------------------+       | |    +-->| Slaves |
+  ^  ^    ^    ^          ^                             | |        +--------+
+  |  |    |    |          |                             | V
++------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+| CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
++------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+          |
+      +-------+
+      | Modem |
+      +-------+
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+It's important to note that the interconnect API, in contrast with devfreq,
+is allowing drivers to express their needs in advance and be proactive.
+Devfreq is using a reactive approach (e.g. monitor performance counters and
+reconfigure bandwidth when the bottleneck had already occurred), which is
+suboptimal and might not work well. The interconnect API is designed to
+deal with multi-tiered bus topologies and aggregating constraints provided
+by drivers, while the devfreq is more oriented towards a device like GPU
+or CPU, that controls the power/performance of itself and not other devices.
+
+Some examples of how interconnect API is used by consumers:
+https://lkml.org/lkml/2018/12/20/811
+https://lkml.org/lkml/2019/1/9/740
+https://lkml.org/lkml/2018/10/11/499
+https://lkml.org/lkml/2018/9/20/986
+
+Platform drivers for different SoCs are available:
+https://lkml.org/lkml/2018/11/17/368
+https://lkml.org/lkml/2018/8/10/380
+
+TODO:
+* Create icc_set() to handle multiple parameters such as latency and other
+  QoS values. Nvidia and Qcom guys are interested in this.
+* Cache the path between nodes instead of walking the graph on each get().
+* Sync interconnect requests with the idle state of the device.
+
+Changes since patchset v12 (https://lkml.org/lkml/2018/12/8/152)
+* Rebased on v5.0-rc2
+* Picked Acked-by/Reviewed-by Rob Herring.
+* Renamed icc_set() to icc_set_bw() in patch 1. Rob suggested that icc_set()
+  is a too generic name of a function that sets only bandwidth. In the future
+  we plan to support also latency and priority.
+* Extended the cover letter with info why devfreq is not a good fit and added
+  links to consumer drivers as suggested by Olof Johansson and Mike Turquette.
+* Included the header with port IDs in patch 6 as suggested by Doug Anderson.
+* Added patch 8 to revert the bandwidth configuration if any of the requests
+  fails to apply. This came as a requirement for Nvidia platforms.
+
+Changes since patchset v11 (https://lkml.org/lkml/2018/12/7/491)
+* Squashed the newly introduced in v11 patch 8 into patch 5 to keep things
+  bisectable. (Quentin Perret, Doug Anderson)
+* Wrapped commit message of patch 2 to 75 chars.
+
+Changes since patchset v10 (https://lkml.org/lkml/2018/11/28/2)
+* Addressed comments from Joe Perches.
+* Addressed comments from Evan Green and picked Reviewed-by.
+* Changed the name of the DT node from qnoc to interconnect.
+* Minor changes - typos, whitespaces etc.
+* Added a new patch to adjust the sdm845 provider driver to the
+  recently changed cmd_db API in linux-next.
+
+Changes since patchset v9 (https://lkml.org/lkml/2018/8/31/444)
+* Converted from using global node identifiers to local per provider ids.
+* Dropped msm8916 platform driver until we figure out DT bindings.
+* Included sdm845 platform driver instead.
+* Added macros for converting to mbps, gbps, etc. to icc units.
+* Added comments about aggregation, other minor changes.
+* Fixed uninitialized variable. (Gustavo A. R. Silva)
+* Removed set but not used variable. (YueHaibing)
+* Fixed build error without DEBUGFS. (Arnd Bergmann)
+
+Changes since patchset v8 (https://lkml.org/lkml/2018/8/10/387)
+* Fixed the names of the files when built as modules.
+* Corrected some typos in comments.
+
+Changes since patchset v7 (https://lkml.org/lkml/2018/7/31/647)
+* Addressed comments on kernel-doc and grammar. (Randy)
+* Picked Reviewed-by: Evan
+* Squashed consumer and provider DT bindings into single patch. (Rob)
+* Cleaned-up msm8916 DT bindings docs by removing unused port ids.
+* Updated documentation for the cases when NULL is returned. (Saravana)
+* New patch to add myself as maintainer.
+
+Changes since patchset v6 (https://lkml.org/lkml/2018/7/9/698)
+* [patches 1,6]: Move the aggregation within the provider from the framework to
+  the platform driver's set() callback, as the aggregation point could be SoC
+  specific.
+* [patch 1]: Include missing header, reset state only of the traversed nodes,
+  move more code into path_init(), add more asserts, move misplaced mutex,
+  simplify icc_link_destroy() (Evan)
+* [patch 1]: Fix the order of requests to go from source to destination. (Alex)
+* [patch 7]: Use better wording in the documentation. (Evan)
+* [patch 6]: Reorder struct members, sort nodes alphabetically, improve naming
+  of variables , add missing clk_disable_unprepare() in error paths. (Matthias)
+* [patch 6]: Remove redundant NULL pointer check in msm8916 driver. (Alex)
+* [patch 6]: Add missing depend on QCOM_SMD_RPM in Kconfig. (Evan)
+* [patch 3]: Don't check for errors on debugfs calls, remove debugfs directory
+  when module is unloaded (Greg)
+
+Changes since patchset v5 (https://lkml.org/lkml/2018/6/20/453)
+* Fix the modular build, make rpm-smd driver a module.
+* Optimize locking and move to higher level. (Evan)
+* Code cleanups. Fix typos. (Evan, Matthias)
+* Add the source node to the path. (Evan)
+* Rename path_allocate() to path_init() with minor refactoring. (Evan)
+* Rename *_remove() functions to *_destroy().
+* Return fixed errors in icc_link_destroy(). (Evan)
+* Fix krealloc() usage in icc_link_destroy(). (Evan)
+* Add missing kfree() in icc_node_create(). (Matthias)
+* Make icc_node_add() return void. (Matthias)
+* Change mutex_init to mutex_lock in icc_provider_add(). (Matthias)
+* Add new icc_node_del() function to delete nodes from provider.
+* Fix the header guard to reflect the path in smd-rpm.h. (Evan)
+* Check for errors returned by qcom_icc_rpm_smd_send(). (Evan)
+* Propagate the error of icc_provider_del(). (Evan)
+
+Changes since patchset v4 (https://lkml.org/lkml/2018/3/9/856)
+* Simplified locking by using a single global mutex. (Evan)
+* Changed the aggregation function interface.
+* Implemented functions for node, link, provider removal. (Evan)
+* Naming changes on variables and functions, removed redundant code. (Evan)
+* Fixes and clarifications in the docs. (Matthias, Evan, Amit, Alexandre)
+* Removed mandatory reg DT property, made interconnect-names optional. (Bjorn)
+* Made interconnect-cells property required to align with other bindings. (Neil)
+* Moved msm8916 specific bindings into a separate file and patch. (Bjorn)
+* Use the names, instead of the hardcoded ids for topology. (Matthias)
+* Init the node before creating the links. (Evan)
+* Added icc_units_to_bps macro. (Amit)
+
+Changes since patchset v3 (https://lkml.org/lkml/2017/9/8/544)
+* Refactored the constraints aggregation.
+* Use the IDR API.
+* Split the provider and consumer bindings into separate patches and propose
+  new bindings for consumers, which allows to specify the local source port.
+* Adopted the icc_ prefix for API functions.
+* Introduced separate API functions for creating interconnect nodes and links.
+* Added DT lookup support in addition to platform data.
+* Dropped the event tracing patch for now.
+* Added a patch to provide summary via debugfs.
+* Use macro for the list of topology definitions in the platform driver.
+* Various minor changes.
+
+Changes since patchset v2 (https://lkml.org/lkml/2017/7/20/825)
+* Split the aggregation into per node and per provider. Cache the
+  aggregated values.
+* Various small refactorings and cleanups in the framework.
+* Added a patch introducing basic tracepoint support for monitoring
+  the time required to update the interconnect nodes.
+
+Changes since patchset v1 (https://lkml.org/lkml/2017/6/27/890)
+* Updates in the documentation.
+* Changes in request aggregation, locking.
+* Dropped the aggregate() callback and use the default as it currently
+  sufficient for the single vendor driver. Will add it later when needed.
+* Dropped the dt-bindings draft patch for now.
+
+Changes since RFC v2 (https://lkml.org/lkml/2017/6/12/316)
+* Converted documentation to rst format.
+* Fixed an incorrect call to mutex_lock. Renamed max_bw to peak_bw.
+
+Changes since RFC v1 (https://lkml.org/lkml/2017/5/15/605)
+* Refactored code into shorter functions.
+* Added a new aggregate() API function.
+* Rearranged some structs to reduce padding bytes.
+
+Changes since RFC v0 (https://lkml.org/lkml/2017/3/1/599)
+* Removed DT support and added optional Patch 3 with new bindings proposal.
+* Converted the topology into internal driver data.
+* Made the framework modular.
+* interconnect_get() now takes (src and dst ports as arguments).
+* Removed public declarations of some structs.
+* Now passing prev/next nodes to the vendor driver.
+* Properly remove requests on _put().
+* Added refcounting.
+* Updated documentation.
+* Changed struct interconnect_path to use array instead of linked list.
+
+David Dai (2):
+  interconnect: qcom: Add sdm845 interconnect provider driver
+  arm64: dts: sdm845: Add interconnect provider DT nodes
+
+Georgi Djakov (6):
+  interconnect: Add generic on-chip interconnect API
+  dt-bindings: Introduce interconnect binding
+  interconnect: Allow endpoints translation via DT
+  interconnect: Add debugfs support
+  MAINTAINERS: add a maintainer for the interconnect API
+  interconnect: Revert to previous config if any request fails
+
+ .../bindings/interconnect/interconnect.txt    |  60 ++
+ .../bindings/interconnect/qcom,sdm845.txt     |  24 +
+ Documentation/interconnect/interconnect.rst   |  94 ++
+ MAINTAINERS                                   |  10 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |   6 +
+ drivers/Kconfig                               |   2 +
+ drivers/Makefile                              |   1 +
+ drivers/interconnect/Kconfig                  |  15 +
+ drivers/interconnect/Makefile                 |   6 +
+ drivers/interconnect/core.c                   | 799 +++++++++++++++++
+ drivers/interconnect/qcom/Kconfig             |  13 +
+ drivers/interconnect/qcom/Makefile            |   5 +
+ drivers/interconnect/qcom/sdm845.c            | 838 ++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,sdm845.h    | 143 +++
+ include/linux/interconnect-provider.h         | 142 +++
+ include/linux/interconnect.h                  |  59 ++
+ 16 files changed, 2217 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+ create mode 100644 Documentation/interconnect/interconnect.rst
+ create mode 100644 drivers/interconnect/Kconfig
+ create mode 100644 drivers/interconnect/Makefile
+ create mode 100644 drivers/interconnect/core.c
+ create mode 100644 drivers/interconnect/qcom/Kconfig
+ create mode 100644 drivers/interconnect/qcom/Makefile
+ create mode 100644 drivers/interconnect/qcom/sdm845.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,sdm845.h
+ create mode 100644 include/linux/interconnect-provider.h
+ create mode 100644 include/linux/interconnect.h
