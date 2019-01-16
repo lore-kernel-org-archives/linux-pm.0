@@ -1,42 +1,37 @@
 From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Subject: [PATCH 7/8] USB: host: ohci-at91: add sam9x60-sfr definition for ohci
-Date: Wed, 16 Jan 2019 10:57:43 +0100
-Message-ID: <e7ea12330d4ba8f612110a185a2aa77d91522694.1547629763.git.nicolas.ferre@microchip.com>
+Subject: [PATCH 8/8] net: macb: add sam9x60-macb compatibility string
+Date: Wed, 16 Jan 2019 10:57:44 +0100
+Message-ID: <dfc7db7606e0898fbedc1f45ed9637379595f9cb.1547629763.git.nicolas.ferre@microchip.com>
 References: <cover.1547629763.git.nicolas.ferre@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <netdev-owner@vger.kernel.org>
 In-Reply-To: <cover.1547629763.git.nicolas.ferre@microchip.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: netdev-owner@vger.kernel.org
 To: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add this SFR compatible definition for the sam9x60 SoC and manage
-its use in ohci-at91.c driver.
+Add a new compatibility string for this product. It's using
+at91sam9260-macb layout but has a newer hardware revision: it's safer
+to use its own string.
 
 Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 ---
- drivers/usb/host/ohci-at91.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/cadence/macb_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
-index ec6739ef3129..fc35a7993b7b 100644
---- a/drivers/usb/host/ohci-at91.c
-+++ b/drivers/usb/host/ohci-at91.c
-@@ -141,8 +141,11 @@ static struct regmap *at91_dt_syscon_sfr(void)
- 	struct regmap *regmap;
- 
- 	regmap = syscon_regmap_lookup_by_compatible("atmel,sama5d2-sfr");
--	if (IS_ERR(regmap))
--		regmap = NULL;
-+	if (IS_ERR(regmap)) {
-+		regmap = syscon_regmap_lookup_by_compatible("microchip,sam9x60-sfr");
-+		if (IS_ERR(regmap))
-+			regmap = NULL;
-+	}
- 
- 	return regmap;
- }
+diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
+index 66cc7927061a..a0889ef107a1 100644
+--- a/drivers/net/ethernet/cadence/macb_main.c
++++ b/drivers/net/ethernet/cadence/macb_main.c
+@@ -3941,6 +3941,7 @@ static const struct of_device_id macb_dt_ids[] = {
+ 	{ .compatible = "cdns,np4-macb", .data = &np4_config },
+ 	{ .compatible = "cdns,pc302-gem", .data = &pc302gem_config },
+ 	{ .compatible = "cdns,gem", .data = &pc302gem_config },
++	{ .compatible = "cdns,sam9x60-macb", .data = &at91sam9260_config },
+ 	{ .compatible = "atmel,sama5d2-gem", .data = &sama5d2_config },
+ 	{ .compatible = "atmel,sama5d3-gem", .data = &sama5d3_config },
+ 	{ .compatible = "atmel,sama5d3-macb", .data = &sama5d3macb_config },
 -- 
 2.17.1
