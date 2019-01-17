@@ -1,95 +1,82 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 05/10] cpufreq: imx6q: Use auto-registration of
- thermal cooling device
-Date: Thu, 17 Jan 2019 10:19:06 +0530
-Message-ID: <20190117044906.jomvwecvjrkgsuak@vireshk-i7>
+Subject: Re: [PATCH v1 00/10] cpufreq: Add flag to auto-register as cooling
+ device
+Date: Thu, 17 Jan 2019 11:19:16 +0530
+Message-ID: <20190117054916.dqduckt7larn32av@vireshk-i7>
 References: <cover.1547481320.git.amit.kucheria@linaro.org>
- <49e531e140f299127ae6c0bc905b993b97c269e2.1547481320.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <49e531e140f299127ae6c0bc905b993b97c269e2.1547481320.git.amit.kucheria@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <cover.1547481320.git.amit.kucheria@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anson Huang <anson.huang@nxp.com>, linux-pm@vger.kernel.org
+Cc: "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dianders@chromium.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, mka@chromium.org, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, swboyd@chromium.org, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 14-01-19, 22:04, Amit Kucheria wrote:
-> Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-> automatically register as a thermal cooling device.
+> Add a flag to be used by cpufreq drivers to tell cpufreq core to
+> auto-register themselves as a thermal cooling device.
 > 
-> This allows removal of boiler plate code from the driver.
+> There series converts over all the drivers except arm_big_little.c.
+> Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
+> others. 
 > 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 18 ++----------------
->  1 file changed, 2 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 9fedf627e000..ffb00291f48e 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -9,7 +9,6 @@
->  #include <linux/clk.h>
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
-> -#include <linux/cpu_cooling.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
->  #include <linux/nvmem-consumer.h>
-> @@ -52,7 +51,6 @@ static struct clk_bulk_data clks[] = {
->  };
->  
->  static struct device *cpu_dev;
-> -static struct thermal_cooling_device *cdev;
->  static bool free_opp;
->  static struct cpufreq_frequency_table *freq_table;
->  static unsigned int max_freq;
-> @@ -193,16 +191,6 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	return 0;
->  }
->  
-> -static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
-> -{
-> -	cdev = of_cpufreq_cooling_register(policy);
-> -
-> -	if (!cdev)
-> -		dev_err(cpu_dev,
-> -			"running cpufreq without cooling device: %ld\n",
-> -			PTR_ERR(cdev));
-> -}
-> -
->  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
->  {
->  	int ret;
-> @@ -216,20 +204,18 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
->  
->  static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
->  {
-> -	cpufreq_cooling_unregister(cdev);
-> -
->  	return 0;
->  }
+> Things needing fixing:
+>  - Look at how to detect that we're not in IKS mode in arm_big_little's
+>    .ready callback.
 
-Remove the empty routine as well.
+is_bL_switching_enabled() lets you know if IKS is enabled or not.
+Set/clear flag conditionally before the cpufreq-driver is registered,
+based on the output of is_bL_switching_enabled().
 
->  static struct cpufreq_driver imx6q_cpufreq_driver = {
-> -	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-> +	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-> +		 CPUFREQ_AUTO_REGISTER_COOLING_DEV,
->  	.verify = cpufreq_generic_frequency_table_verify,
->  	.target_index = imx6q_set_target,
->  	.get = cpufreq_generic_get,
->  	.init = imx6q_cpufreq_init,
->  	.exit = imx6q_cpufreq_exit,
->  	.name = "imx6q-cpufreq",
-> -	.ready = imx6q_cpufreq_ready,
->  	.attr = cpufreq_generic_attr,
->  	.suspend = cpufreq_generic_suspend,
->  };
-> -- 
-> 2.17.1
+>  - The other pending issue is to fix allmodconfig that leaves us with
+>    CPU_FREQ=y and THERMAL=m (CPU_THERMAL=y). That leads to undefined
+>    references for functions defined in cpu_cooling.c
+
+Okay, that's a terrible thing and the solution looks to be rather
+difficult.
+
+For others who may not be aware of the issue here, currently the
+cpufreq drivers use helpers of cpu_cooling.c (CONFIG_CPU_THERMAL),
+which uses helpers of the thermal core (CONFIG_THERMAL).
+CONFIG_THERMAL is defined as tristate and CONFIG_CPU_THERMAL as bool
+in Kconfigs.
+
+The cpufreq drivers using the cpu_cooling.c file have this in their
+Kconfig entry:
+
+# if CPU_THERMAL is on and THERMAL=m, ARM_BIT_LITTLE_CPUFREQ cannot be =y
+#       depends on !CPU_THERMAL || THERMAL
+
+
+This series now places the cpufreq core in place of the cpufreq driver
+and it messes up everything. It is not just about allmodconfig, but
+any configuration which makes the compilation fail.
+
+What are the solutions we have now ?
+
+1. Have following for CONFIG_CPU_FREQ
+       depends on !CPU_THERMAL || THERMAL
+
+   The platforms which don't need CPU_THERMAL (like x86) should not
+   enable CPU_THERMAL anymore if they want CONFIG_THERMAL=m.
+
+   @amit: If this gets accepted, please update the Kconfig entries for
+   all those drivers to not have above lines anymore.
+
+- Change CONFIG_THERMAL to bool instead of tristate ?
+
+- Anything else ?
 
 -- 
 viresh
