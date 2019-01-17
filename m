@@ -1,119 +1,166 @@
 From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v2] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Thu, 17 Jan 2019 12:35:54 +0530
-Message-ID: <09114ef8-6ea7-ea92-caab-d5ea2904523f@codeaurora.org>
-References: <1547021248-27258-1-git-send-email-tdas@codeaurora.org>
- <20190109085400.mscuzezwxta4fpfh@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v3] cpufreq: qcom: Read voltage LUT and populate OPP
+Date: Thu, 17 Jan 2019 12:38:56 +0530
+Message-ID: <1547708936-25661-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190109085400.mscuzezwxta4fpfh@vireshk-i7>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Viresh,
+Add support to read the voltage look up table and populate OPP for all
+corresponding CPUS for consumers like the energy model could use the
+frequency and voltage from the OPP tables. Also update the logic to not add
+duplicate OPPs.
 
-On 1/9/2019 2:24 PM, Viresh Kumar wrote:
-> On 09-01-19, 13:37, Taniya Das wrote:
->> @@ -98,6 +107,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-> 
-> You are only using this "dev" parameter for dev_dbg(), instead of that
-> pass cpu_dev pointer.
-> 
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Taniya Das <tdas@codeaurora.org>
+---
+ drivers/cpufreq/qcom-cpufreq-hw.c | 43 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 35 insertions(+), 8 deletions(-)
 
-Sure, will clean it up to use cpu_dev.
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index d83939a..8da5576 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -10,18 +10,21 @@
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
++#include <linux/pm_opp.h>
+ #include <linux/slab.h>
 
->>   			table[i].frequency = CPUFREQ_ENTRY_INVALID;
->>   		} else {
->>   			table[i].frequency = freq;
->> +			dev_pm_opp_add(get_cpu_device(policy->cpu),
->> +					freq * 1000, volt);
->>   			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
->>   				freq, core_count);
->>   		}
->> @@ -116,6 +127,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->>   			if (prev_cc != max_cores) {
->>   				prev->frequency = prev_freq;
->>   				prev->flags = CPUFREQ_BOOST_FREQ;
->> +				dev_pm_opp_add(get_cpu_device(policy->cpu),
->> +						prev_freq * 1000, volt);
->>   			}
->>
->>   			break;
->> @@ -127,6 +140,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->>
->>   	table[i].frequency = CPUFREQ_TABLE_END;
->>   	policy->freq_table = table;
->> +	dev_pm_opp_set_sharing_cpus(get_cpu_device(policy->cpu), policy->cpus);
-> 
-> and then all the above sites can be simplified a bit.
-> 
->>   	return 0;
->>   }
->> @@ -159,10 +173,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->>   	struct device *dev = &global_pdev->dev;
->>   	struct of_phandle_args args;
->>   	struct device_node *cpu_np;
->> +	struct device *cpu_dev;
->>   	struct resource *res;
->>   	void __iomem *base;
->>   	int ret, index;
->>
->> +	cpu_dev = get_cpu_device(policy->cpu);
->> +	if (!cpu_dev) {
->> +		pr_err("%s: failed to get cpu%d device\n", __func__,
->> +		       policy->cpu);
->> +		return -ENODEV;
->> +	}
->> +
->>   	cpu_np = of_cpu_device_node_get(policy->cpu);
->>   	if (!cpu_np)
->>   		return -EINVAL;
->> @@ -205,6 +227,12 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->>   		goto error;
->>   	}
->>
->> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
->> +	if (ret <= 0) {
->> +		dev_err(cpu_dev, "OPP table is not ready\n");
-> 
-> Rather say "Failed to add OPPs\n".
-> 
+ #define LUT_MAX_ENTRIES			40U
+ #define LUT_SRC				GENMASK(31, 30)
+ #define LUT_L_VAL			GENMASK(7, 0)
+ #define LUT_CORE_COUNT			GENMASK(18, 16)
++#define LUT_VOLT			GENMASK(11, 0)
+ #define LUT_ROW_SIZE			32
+ #define CLK_HW_DIV			2
 
-Sure will update it.
+ /* Register offsets */
+ #define REG_ENABLE			0x0
+-#define REG_LUT_TABLE			0x110
++#define REG_FREQ_LUT			0x110
++#define REG_VOLT_LUT			0x114
+ #define REG_PERF_STATE			0x920
 
->> +		goto error;
->> +	}
->> +
->>   	policy->fast_switch_possible = true;
->>
->>   	return 0;
->> @@ -217,6 +245,7 @@ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
->>   {
->>   	void __iomem *base = policy->driver_data - REG_PERF_STATE;
->>
->> +	dev_pm_opp_remove_all_dynamic(&global_pdev->dev);
-> 
-> This is platform device's device structure, while you added the OPPs
-> using cpu_dev. You sure this will work ?
-> 
+ static unsigned long cpu_hw_rate, xo_rate;
+@@ -70,35 +73,41 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+ 	return policy->freq_table[index].frequency;
+ }
 
-Hmm, yeah, would update it in the next patch.
+-static int qcom_cpufreq_hw_read_lut(struct device *dev,
+-				    struct cpufreq_policy *policy,
++static int qcom_cpufreq_hw_read_lut(struct cpufreq_policy *policy,
+ 				    void __iomem *base)
+ {
+ 	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
++	u32 volt;
+ 	unsigned int max_cores = cpumask_weight(policy->cpus);
+ 	struct cpufreq_frequency_table	*table;
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
 
->>   	kfree(policy->freq_table);
->>   	devm_iounmap(&global_pdev->dev, base);
->>
->> --
->> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
->> of the Code Aurora Forum, hosted by the  Linux Foundation.
-> 
+ 	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
+ 	if (!table)
+ 		return -ENOMEM;
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
+ 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+-		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
++		data = readl_relaxed(base + REG_FREQ_LUT +
++				      i * LUT_ROW_SIZE);
+ 		src = FIELD_GET(LUT_SRC, data);
+ 		lval = FIELD_GET(LUT_L_VAL, data);
+ 		core_count = FIELD_GET(LUT_CORE_COUNT, data);
+
++		data = readl_relaxed(base + REG_VOLT_LUT +
++				      i * LUT_ROW_SIZE);
++		volt = FIELD_GET(LUT_VOLT, data) * 1000;
++
+ 		if (src)
+ 			freq = xo_rate * lval / 1000;
+ 		else
+ 			freq = cpu_hw_rate / 1000;
+
+-		/* Ignore boosts in the middle of the table */
+-		if (core_count != max_cores) {
++		if (freq != prev_freq && core_count == max_cores) {
+ 			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+ 		} else {
+ 			table[i].frequency = freq;
+-			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
++			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
++			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
+ 				freq, core_count);
+ 		}
+
+@@ -116,6 +125,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+ 			if (prev_cc != max_cores) {
+ 				prev->frequency = prev_freq;
+ 				prev->flags = CPUFREQ_BOOST_FREQ;
++				dev_pm_opp_add(cpu_dev,	prev_freq * 1000, volt);
+ 			}
+
+ 			break;
+@@ -127,6 +137,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+
+ 	table[i].frequency = CPUFREQ_TABLE_END;
+ 	policy->freq_table = table;
++	dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+
+ 	return 0;
+ }
+@@ -159,10 +170,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 	struct device *dev = &global_pdev->dev;
+ 	struct of_phandle_args args;
+ 	struct device_node *cpu_np;
++	struct device *cpu_dev;
+ 	struct resource *res;
+ 	void __iomem *base;
+ 	int ret, index;
+
++	cpu_dev = get_cpu_device(policy->cpu);
++	if (!cpu_dev) {
++		pr_err("%s: failed to get cpu%d device\n", __func__,
++		       policy->cpu);
++		return -ENODEV;
++	}
++
+ 	cpu_np = of_cpu_device_node_get(policy->cpu);
+ 	if (!cpu_np)
+ 		return -EINVAL;
+@@ -199,12 +218,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+
+ 	policy->driver_data = base + REG_PERF_STATE;
+
+-	ret = qcom_cpufreq_hw_read_lut(dev, policy, base);
++	ret = qcom_cpufreq_hw_read_lut(policy, base);
+ 	if (ret) {
+ 		dev_err(dev, "Domain-%d failed to read LUT\n", index);
+ 		goto error;
+ 	}
+
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		dev_err(cpu_dev, "Failed to add OPPs\n");
++		goto error;
++	}
++
+ 	policy->fast_switch_possible = true;
+
+ 	return 0;
+@@ -215,8 +240,10 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+
+ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+ {
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
+ 	void __iomem *base = policy->driver_data - REG_PERF_STATE;
+
++	dev_pm_opp_remove_all_dynamic(cpu_dev);
+ 	kfree(policy->freq_table);
+ 	devm_iounmap(&global_pdev->dev, base);
 
 --
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
