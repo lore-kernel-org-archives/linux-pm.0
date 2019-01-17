@@ -1,34 +1,47 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH -next] power: supply: core: remove duplicated include from power_supply_core.c
-Date: Thu, 17 Jan 2019 15:11:43 +0800
-Message-ID: <20190117071143.14652-1-yuehaibing@huawei.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: qcom: Read voltage LUT and populate OPP
+Date: Thu, 17 Jan 2019 12:57:16 +0530
+Message-ID: <20190117072716.iy3glrtdpobsh5u2@vireshk-i7>
+References: <1547708936-25661-1-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1547708936-25661-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sebastian.reichel@collabora.com, YueHaibing <yuehaibing@huawei.com>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Remove duplicated include.
+On 17-01-19, 12:38, Taniya Das wrote:
+> @@ -159,10 +170,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+>  	struct device *dev = &global_pdev->dev;
+>  	struct of_phandle_args args;
+>  	struct device_node *cpu_np;
+> +	struct device *cpu_dev;
+>  	struct resource *res;
+>  	void __iomem *base;
+>  	int ret, index;
+> 
+> +	cpu_dev = get_cpu_device(policy->cpu);
+> +	if (!cpu_dev) {
+> +		pr_err("%s: failed to get cpu%d device\n", __func__,
+> +		       policy->cpu);
+> +		return -ENODEV;
+> +	}
+> +
+>  	cpu_np = of_cpu_device_node_get(policy->cpu);
+>  	if (!cpu_np)
+>  		return -EINVAL;
+> @@ -199,12 +218,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+> 
+>  	policy->driver_data = base + REG_PERF_STATE;
+> 
+> -	ret = qcom_cpufreq_hw_read_lut(dev, policy, base);
+> +	ret = qcom_cpufreq_hw_read_lut(policy, base);
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/power/supply/power_supply_core.c | 2 --
- 1 file changed, 2 deletions(-)
+I asked you to pass cpu_dev here instead of dev and you said okay in
+the previous version of the patch. Didn't like it ?
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 569790e..07a85e1 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -156,8 +156,6 @@ static void power_supply_deferred_register_work(struct work_struct *work)
- }
- 
- #ifdef CONFIG_OF
--#include <linux/of.h>
--
- static int __power_supply_populate_supplied_from(struct device *dev,
- 						 void *data)
- {
 -- 
-2.7.0
+viresh
