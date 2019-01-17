@@ -1,54 +1,115 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH] dmaengine: usb-dmac: Make DMAC system sleep callbacks
- explicit
-Date: Thu, 17 Jan 2019 10:18:30 +0000
-Message-ID: <OSBPR01MB480771BF7304F4C42FFE0C5BD8830@OSBPR01MB4807.jpnprd01.prod.outlook.com>
-References: <1547692896-2362-1-git-send-email-yoshihiro.shimoda.uh@renesas.com>
- <CAMuHMdU_dbRp2Yqjjd4Vi-1bV4vSQe=UOEcrvCumfoYifzQzxw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v1 00/10] cpufreq: Add flag to auto-register as cooling
+ device
+Date: Thu, 17 Jan 2019 15:51:07 +0530
+Message-ID: <20190117102107.2n5liu325alisxhd@vireshk-i7>
+References: <cover.1547481320.git.amit.kucheria@linaro.org>
+ <20190117054916.dqduckt7larn32av@vireshk-i7>
+ <CAJZ5v0jUKcRQot9m5VOxqppWWrD-Cy=USpKMRtcq4zJ5EgmHCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdU_dbRp2Yqjjd4Vi-1bV4vSQe=UOEcrvCumfoYifzQzxw@mail.gmail.com>
-Content-Language: ja-JP
-Sender: stable-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Vinod Koul <vinod.koul@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, stable <stable@vger.kernel.org>, Phuong Nguyen <phuong.nguyen.xw@renesas.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jUKcRQot9m5VOxqppWWrD-Cy=USpKMRtcq4zJ5EgmHCg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgR2VlcnQtc2FuLA0KDQo+IEZyb206IEdlZXJ0IFV5dHRlcmhvZXZlbiwgU2VudDogVGh1cnNk
-YXksIEphbnVhcnkgMTcsIDIwMTkgNjowMyBQTQ0KPiANCj4gSGkgU2hpbW9kYS1zYW4sDQo+IA0K
-PiBDQyBsaW51eC1wbSBwZW9wbGUNCjxzbmlwPg0KPiANCj4gVGhhbmtzIGZvciB5b3VyIHBhdGNo
-IQ0KPiANCj4gVGhpcyBpcyBzaW1pbGFyIGluIHNwaXJpdCB0byBjb21taXRzIDExMzFiMGE0YWY5
-MTFkZTUgKCJkbWFlbmdpbmU6DQo+IHJjYXItZG1hYzogTWFrZSBETUFDIHJlaW5pdCBkdXJpbmcg
-c3lzdGVtIHJlc3VtZSBleHBsaWNpdCIpIGFuZA0KPiA3M2RjYzY2NmQ2YmQwZGI1ICgiZG1hZW5n
-aW5lOiByY2FyLWRtYWM6IEZpeCB0b28gZWFybHkvbGF0ZSBzeXN0ZW0NCj4gc3VzcGVuZC9yZXN1
-bWUgY2FsbGJhY2tzIikgZm9yIHJjYXItZG1hYy4NCj4gDQo+IEknbSBvbmx5IHdvbmRlcmluZyBp
-ZiB0aGUgImxhdGUiIHZhcmlhbnQgd291bGQgYmUgc3VmZmljaWVudCBoZXJlLg0KDQpJIHRyaWVk
-IHRvIHVzZSBTRVRfTEFURV8uLi4gKCkgaW5zdGVhZCBvZiBTRVRfTk9JUlFfLi4uLCBpdCBhbHNv
-IHdvcmtlZCBjb3JyZWN0bHkuDQoNCj4gRG9lcyBnX3NlcmlhbCBzdXBwb3J0IHdha2UtdXA/DQoN
-CkkgYmVsaWV2ZSBhbnkgVVNCIGdhZGdldHMgZG9uJ3Qgc3VwcG9ydCBvd24gc3lzdGVtIHdha2Ut
-dXAgYmVjYXVzZSB0aGV5DQphcmUgYWdhaW5zdCBVU0IgaG9zdC4NCg0KPiBBbnl3YXksIHVzaW5n
-IHRoZSAibm9pcnEiIHZhcmlhbnQsIGxpa2UgeW91IGRpZCwgaXMgcHJvYmFibHkgdGhlIHNhZmVz
-dC4NCj4gDQo+IFJldmlld2VkLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0K3JlbmVzYXNA
-Z2xpZGVyLmJlPg0KDQpUaGFuayB5b3UgZm9yIHlvdXIgcmV2aWV3IQ0KDQpCZXN0IHJlZ2FyZHMs
-DQpZb3NoaWhpcm8gU2hpbW9kYQ0KDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvZG1hL3NoL3VzYi1k
-bWFjLmMgfCAyICsrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKykNCj4gPg0K
-PiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RtYS9zaC91c2ItZG1hYy5jIGIvZHJpdmVycy9kbWEv
-c2gvdXNiLWRtYWMuYw0KPiA+IGluZGV4IDdmNzE4NGMuLjU5NDAzZjYgMTAwNjQ0DQo+ID4gLS0t
-IGEvZHJpdmVycy9kbWEvc2gvdXNiLWRtYWMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvZG1hL3NoL3Vz
-Yi1kbWFjLmMNCj4gPiBAQCAtNjk0LDYgKzY5NCw4IEBAIHN0YXRpYyBpbnQgdXNiX2RtYWNfcnVu
-dGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiA+ICAjZW5kaWYgLyogQ09ORklHX1BN
-ICovDQo+ID4NCj4gPiAgc3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1fb3BzIHVzYl9kbWFjX3Bt
-ID0gew0KPiA+ICsgICAgICAgU0VUX05PSVJRX1NZU1RFTV9TTEVFUF9QTV9PUFMocG1fcnVudGlt
-ZV9mb3JjZV9zdXNwZW5kLA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgcG1fcnVudGltZV9mb3JjZV9yZXN1bWUpDQo+ID4gICAgICAgICBTRVRfUlVOVElNRV9QTV9P
-UFModXNiX2RtYWNfcnVudGltZV9zdXNwZW5kLCB1c2JfZG1hY19ydW50aW1lX3Jlc3VtZSwNCj4g
-PiAgICAgICAgICAgICAgICAgICAgICAgICAgICBOVUxMKQ0KPiA+ICB9Ow0KPiANCj4gR3J7b2V0
-amUsZWV0aW5nfXMsDQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPiANCj4g
-LS0NCj4gR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBMaW51eCBiZXlvbmQg
-aWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZw0KPiANCj4gSW4gcGVyc29uYWwgY29udmVyc2F0
-aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIuIEJ1dA0K
-PiB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1tZXIi
-IG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuDQo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgLS0gTGludXMgVG9ydmFsZHMNCg==
+On 17-01-19, 11:08, Rafael J. Wysocki wrote:
+> On Thu, Jan 17, 2019 at 6:49 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > 1. Have following for CONFIG_CPU_FREQ
+> >        depends on !CPU_THERMAL || THERMAL
+> 
+> Sorry, but this makes my teeth hurt.
+
+I knew it :)
+
+> >    The platforms which don't need CPU_THERMAL (like x86) should not
+> >    enable CPU_THERMAL anymore if they want CONFIG_THERMAL=m.
+> >
+> >    @amit: If this gets accepted, please update the Kconfig entries for
+> >    all those drivers to not have above lines anymore.
+> >
+> > - Change CONFIG_THERMAL to bool instead of tristate ?
+> >
+> > - Anything else ?
+> 
+> The design in the thermal subsystem seems to be upside-down.
+> Non-modular code should never be made depend on anything only defined
+> in a module.
+> 
+> Would an explicit "select THERMAL" under CPU_THERMAL cause THERMAL to be 'y'?
+
+That causes recursive-dependency issues:
+
+drivers/thermal/Kconfig:5:error: recursive dependency detected!
+drivers/thermal/Kconfig:5:      symbol THERMAL is selected by CPU_THERMAL
+drivers/thermal/Kconfig:16:     symbol CPU_THERMAL depends on THERMAL_OF
+drivers/thermal/Kconfig:70:     symbol THERMAL_OF depends on THERMAL
+For a resolution refer to Documentation/kbuild/kconfig-language.txt
+subsection "Kconfig recursive dependency limitations"
+
+something like this works though:
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 30323426902e..ee9f9f2a795b 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -13,6 +13,20 @@ menuconfig THERMAL
+          All platforms with ACPI thermal support can use this driver.
+          If you want this support, you should say Y or M here.
+ 
++config CPU_THERMAL
++       bool "generic cpu cooling support"
++       depends on CPU_FREQ
++       select THERMAL_OF
++       select THERMAL
++       help
++         This implements the generic cpu cooling mechanism through frequency
++         reduction. An ACPI version of this already exists
++         (drivers/acpi/processor_thermal.c).
++         This will be useful for platforms using the generic thermal interface
++         and not the ACPI interface.
++
++         If you want this support, you should say Y here.
++
+ if THERMAL
+ 
+ config THERMAL_STATISTICS
+@@ -148,19 +162,6 @@ config THERMAL_GOV_POWER_ALLOCATOR
+          Enable this to manage platform thermals by dynamically
+          allocating and limiting power to devices.
+ 
+-config CPU_THERMAL
+-       bool "generic cpu cooling support"
+-       depends on CPU_FREQ
+-       depends on THERMAL_OF
+-       help
+-         This implements the generic cpu cooling mechanism through frequency
+-         reduction. An ACPI version of this already exists
+-         (drivers/acpi/processor_thermal.c).
+-         This will be useful for platforms using the generic thermal interface
+-         and not the ACPI interface.
+-
+-         If you want this support, you should say Y here.
+-
+ config CLOCK_THERMAL
+        bool "Generic clock cooling support"
+        depends on COMMON_CLK
+
+
+What about make CONFIG_THERMAL bool instead ? Who wants it to be a module ?
+
+$ git grep "CONFIG_THERMAL=m"
+arch/arm/configs/mini2440_defconfig:CONFIG_THERMAL=m
+arch/arm/configs/omap2plus_defconfig:CONFIG_THERMAL=m
+arch/arm/configs/pxa_defconfig:CONFIG_THERMAL=m
+arch/mips/configs/ip22_defconfig:CONFIG_THERMAL=m
+arch/mips/configs/ip27_defconfig:CONFIG_THERMAL=m
+arch/unicore32/configs/unicore32_defconfig:#CONFIG_THERMAL=m
+
+Not sure if they really want this code out :(
+
+-- 
+viresh
