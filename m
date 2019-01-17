@@ -1,166 +1,96 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v4] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Thu, 17 Jan 2019 13:04:17 -0800
-Message-ID: <20190117210417.GW261387@google.com>
-References: <1547722798-8455-1-git-send-email-tdas@codeaurora.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based
+ accounting with ktime based accounting
+Date: Thu, 17 Jan 2019 14:16:28 -0800
+Message-ID: <20190117221628.GA21979@roeck-us.net>
+References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+ <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <1547722798-8455-1-git-send-email-tdas@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+In-Reply-To: <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: ulf.hansson@linaro.org, dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, airlied@linux.ie, intel-gfx@lists.freedesktop.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, thara.gopinath@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tanyia,
-
-On Thu, Jan 17, 2019 at 04:29:58PM +0530, Taniya Das wrote:
-> Add support to read the voltage look up table and populate OPP for all
-> corresponding CPUS for consumers like the energy model could use the
-> frequency and voltage from the OPP tables. Also update the logic to not add
-> duplicate OPPs.
-> 
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  drivers/cpufreq/qcom-cpufreq-hw.c | 41 ++++++++++++++++++++++++++++++++-------
->  1 file changed, 34 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> index d83939a..e006938 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -10,18 +10,21 @@
->  #include <linux/module.h>
->  #include <linux/of_address.h>
->  #include <linux/of_platform.h>
-> +#include <linux/pm_opp.h>
->  #include <linux/slab.h>
-> 
->  #define LUT_MAX_ENTRIES			40U
->  #define LUT_SRC				GENMASK(31, 30)
->  #define LUT_L_VAL			GENMASK(7, 0)
->  #define LUT_CORE_COUNT			GENMASK(18, 16)
-> +#define LUT_VOLT			GENMASK(11, 0)
->  #define LUT_ROW_SIZE			32
->  #define CLK_HW_DIV			2
-> 
->  /* Register offsets */
->  #define REG_ENABLE			0x0
-> -#define REG_LUT_TABLE			0x110
-> +#define REG_FREQ_LUT			0x110
-> +#define REG_VOLT_LUT			0x114
->  #define REG_PERF_STATE			0x920
-> 
->  static unsigned long cpu_hw_rate, xo_rate;
-> @@ -70,11 +73,12 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
->  	return policy->freq_table[index].frequency;
->  }
-> 
-> -static int qcom_cpufreq_hw_read_lut(struct device *dev,
-> +static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
->  				    struct cpufreq_policy *policy,
->  				    void __iomem *base)
->  {
->  	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
-> +	u32 volt;
->  	unsigned int max_cores = cpumask_weight(policy->cpus);
->  	struct cpufreq_frequency_table	*table;
-> 
-> @@ -83,22 +87,27 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->  		return -ENOMEM;
-> 
->  	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
-> -		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
-> +		data = readl_relaxed(base + REG_FREQ_LUT +
-> +				      i * LUT_ROW_SIZE);
->  		src = FIELD_GET(LUT_SRC, data);
->  		lval = FIELD_GET(LUT_L_VAL, data);
->  		core_count = FIELD_GET(LUT_CORE_COUNT, data);
-> 
-> +		data = readl_relaxed(base + REG_VOLT_LUT +
-> +				      i * LUT_ROW_SIZE);
-> +		volt = FIELD_GET(LUT_VOLT, data) * 1000;
-> +
->  		if (src)
->  			freq = xo_rate * lval / 1000;
->  		else
->  			freq = cpu_hw_rate / 1000;
-> 
-> -		/* Ignore boosts in the middle of the table */
-> -		if (core_count != max_cores) {
-> +		if (freq != prev_freq && core_count == max_cores) {
->  			table[i].frequency = CPUFREQ_ENTRY_INVALID;
->  		} else {
->  			table[i].frequency = freq;
-> -			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
-> +			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
-> +			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
->  				freq, core_count);
->  		}
-
-This marks normal entries as invalid and tries to add (potential)
-boost frequencies to the OPP table. Note that the patch I posted on
-https://lore.kernel.org/patchwork/patch/1030239/#1218724 does not only
-change the condition, but also the order of the 'if' and 'else'
-branches.
-
-> @@ -116,6 +125,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
->  			if (prev_cc != max_cores) {
->  				prev->frequency = prev_freq;
->  				prev->flags = CPUFREQ_BOOST_FREQ;
-> +				dev_pm_opp_add(cpu_dev,	prev_freq * 1000, volt);
->  			}
-> 
->  			break;
-> @@ -127,6 +137,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
-> 
->  	table[i].frequency = CPUFREQ_TABLE_END;
->  	policy->freq_table = table;
-> +	dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
-> 
->  	return 0;
->  }
-> @@ -159,10 +170,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  	struct device *dev = &global_pdev->dev;
->  	struct of_phandle_args args;
->  	struct device_node *cpu_np;
-> +	struct device *cpu_dev;
->  	struct resource *res;
->  	void __iomem *base;
->  	int ret, index;
-> 
-> +	cpu_dev = get_cpu_device(policy->cpu);
-> +	if (!cpu_dev) {
-> +		pr_err("%s: failed to get cpu%d device\n", __func__,
-> +		       policy->cpu);
-> +		return -ENODEV;
-> +	}
-> +
->  	cpu_np = of_cpu_device_node_get(policy->cpu);
->  	if (!cpu_np)
->  		return -EINVAL;
-> @@ -199,12 +218,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
-> 
->  	policy->driver_data = base + REG_PERF_STATE;
-> 
-> -	ret = qcom_cpufreq_hw_read_lut(dev, policy, base);
-> +	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy, base);
->  	if (ret) {
->  		dev_err(dev, "Domain-%d failed to read LUT\n", index);
->  		goto error;
->  	}
-> 
-> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
-> +	if (ret <= 0) {
-> +		dev_err(cpu_dev, "Failed to add OPPs\n");
-> +		goto error;
-
-This will return 0 (success) if the OPP count is zero, which probably
-is not intended.
-
-Cheers
-
-Matthias
+T24gRnJpLCBEZWMgMjEsIDIwMTggYXQgMTE6MzM6NTZBTSArMDEwMCwgVmluY2VudCBHdWl0dG90
+IHdyb3RlOgo+IEZyb206IFRoYXJhIEdvcGluYXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8ub3Jn
+Pgo+IAo+IFRoaXMgcGF0Y2ggcmVwbGFjZXMgamlmZmllcyBiYXNlZCBhY2NvdW50aW5nIGZvciBy
+dW50aW1lX2FjdGl2ZV90aW1lCj4gYW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGlt
+ZSBiYXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gcnVudGltZSBkZWJ1ZyBjb3VudGVy
+cyBpbmxpbmUgd2l0aCBnZW5wZCBhbmQgb3RoZXIgcG0gc3Vic3l0ZW1zIHdoaWNoCj4gdXNlcyBr
+dGltZSBiYXNlZCBhY2NvdW50aW5nLgo+IAo+IHRpbWVrZWVwaW5nIGlzIGluaXRpYWxpemVkIGJl
+Zm9yZSBwbV9ydW50aW1lX2luaXQoKSBzbyBrdGltZV9nZXQoKSB3aWxsCj4gYmUgcmVhZHkgYmVm
+b3JlIGZpcnN0IGNhbGwuIEluIGZhY3QsIHRpbWVrZWVwaW5nX2luaXQoKSBpcyBjYWxsZWQgZWFy
+bHkKPiBpbiBzdGFydF9rZXJuZWwoKSB3aGljaCBpcyB3YXkgYmVmb3JlIGRyaXZlcl9pbml0KCkg
+KGFuZCB0aGF0J3Mgd2hlbgo+IGRldmljZXMgY2FuIHN0YXJ0IHRvIGJlIGluaXRpYWxpemVkKSBj
+YWxsZWQgZnJvbSByZXN0X2luaXQoKSB2aWEKPiBrZXJuZWxfaW5pdF9mcmVlYWJsZSgpIGFuZCBk
+b19iYXNpY19zZXR1cCgpLgo+IApUaGlzIGlzIG5vdCAoYWx3YXlzKSBjb3JyZWN0LiBNeSBxZW11
+ICJjb2xsaWUiIGJvb3QgdGVzdCBmYWlscyB3aXRoIHRoaXMKcGF0Y2ggYXBwbGllZC4gUmV2ZXJ0
+aW5nIHRoZSBwYXRjaCBmaXhlcyB0aGUgcHJvYmxlbS4gQmlzZWN0IGxvZyBhdHRhY2hlZC4KCldp
+dGggc29tZSBhZGRlZCBkZWJ1Z2dpbmc6CgouLi4KSVJRUzogMTYsIG5yX2lycXM6IDY1LCBwcmVh
+bGxvY2F0ZWQgaXJxczogNjUKaXJxOiBDYW5ub3QgYWxsb2NhdGUgaXJxX2Rlc2NzIEAgSVJRMSwg
+YXNzdW1pbmcgcHJlLWFsbG9jYXRlZApncGlvIGdwaW9jaGlwMDogIyMjIyMjIyMjIyMjIyMjIHBt
+X3J1bnRpbWVfaW5pdCgpICMjIyMjIyMjIyMjIwppcnE6IENhbm5vdCBhbGxvY2F0ZSBpcnFfZGVz
+Y3MgQCBJUlEzMywgYXNzdW1pbmcgcHJlLWFsbG9jYXRlZAojIyMjIyMjIyMjIyMjIyB0aW1la2Vl
+cGluZ19pbml0KCkgIyMjIyMjIyMjIyMjIyMjIyMjIyMKc2NoZWRfY2xvY2s6IDMyIGJpdHMgYXQg
+MzY4NmtIeiwgcmVzb2x1dGlvbiAyNzFucywgd3JhcHMgZXZlcnkgNTgyNTQyMjIyMjAwbnNeTQou
+Li4KClRoaXMgaXMgd2l0aDoKCnZvaWQgcG1fcnVudGltZV9pbml0KHN0cnVjdCBkZXZpY2UgKmRl
+dikKeworICAgICAgIGRldl9pbmZvKGRldiwgIiMjIyMjIyMjIyMjIyMjIyBwbV9ydW50aW1lX2lu
+aXQoKSAjIyMjIyMjIyMjIyNcbiIpOworCi4uLgpAQCAtMTUyNiw2ICsxNTI2LDggQEAgdm9pZCBf
+X2luaXQgdGltZWtlZXBpbmdfaW5pdCh2b2lkKQoJc3RydWN0IGNsb2Nrc291cmNlICpjbG9jazsK
+CXVuc2lnbmVkIGxvbmcgZmxhZ3M7CgkJIAorICAgICAgIHByX2luZm8oIiMjIyMjIyMjIyMjIyMj
+IHRpbWVrZWVwaW5nX2luaXQoKSAjIyMjIyMjIyMjIyMjIyMjIyMjI1xuIik7CisKCkd1ZW50ZXIK
+Ci0tLQojIGJhZDogW2EzN2Q1MGNhM2I4MzdjMTlhMjk3ZjM0OTM2NWQxMWEyMGMxMDg3ZDBdIEFk
+ZCBsaW51eC1uZXh0IHNwZWNpZmljIGZpbGVzIGZvciAyMDE5MDExNwojIGdvb2Q6IFsxYzdmYzVj
+YmMzMzk4MGFjZDEzZDY2OGYxYzhmMDMxM2Q2YWU5ZmQ4XSBMaW51eCA1LjAtcmMyCmdpdCBiaXNl
+Y3Qgc3RhcnQgJ0hFQUQnICd2NS4wLXJjMicKIyBiYWQ6IFs0ZWRiODE3ZDI5ZmRmMTlmYjVkNTI3
+ODRiYjNjMjljNDBlMDBmNTg2XSBNZXJnZSByZW1vdGUtdHJhY2tpbmcgYnJhbmNoICdwbS9saW51
+eC1uZXh0JwpnaXQgYmlzZWN0IGJhZCA0ZWRiODE3ZDI5ZmRmMTlmYjVkNTI3ODRiYjNjMjljNDBl
+MDBmNTg2CiMgZ29vZDogWzZkOTU4ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNiYzdhZWYwMThd
+IE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ29tYXAvZm9yLW5leHQnCmdpdCBiaXNlY3Qg
+Z29vZCA2ZDk1ODg2NzIwZDMwNmExOTE0YTdjOWE4YWViMGJjYmM3YWVmMDE4CiMgZ29vZDogWzk3
+NWI1Y2RkNzQ0MzBiYzhhMDRmODMyZDY1YTQ3Y2RiOTViNzNmZWNdIE1lcmdlIHJlbW90ZS10cmFj
+a2luZyBicmFuY2ggJ2Z1c2UvZm9yLW5leHQnCmdpdCBiaXNlY3QgZ29vZCA5NzViNWNkZDc0NDMw
+YmM4YTA0ZjgzMmQ2NWE0N2NkYjk1YjczZmVjCiMgZ29vZDogWzExMjM4NmQyMTg5ZmM1NGI5Nzlj
+M2E4YmY2NGIyOTA4ZGY5MWUxMjNdIE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ2kyYy9p
+MmMvZm9yLW5leHQnCmdpdCBiaXNlY3QgZ29vZCAxMTIzODZkMjE4OWZjNTRiOTc5YzNhOGJmNjRi
+MjkwOGRmOTFlMTIzCiMgZ29vZDogWzM5NDNmMDU5ODIzYjZlMTU4ODQzODdmMzE2MThiODQ4MjZl
+OTI0YjNdIG1lZGlhOiBjb2RhOiBBZGQgY29udHJvbCBmb3IgaC4yNjQgY2hyb21hIHFwIGluZGV4
+IG9mZnNldApnaXQgYmlzZWN0IGdvb2QgMzk0M2YwNTk4MjNiNmUxNTg4NDM4N2YzMTYxOGI4NDgy
+NmU5MjRiMwojIGdvb2Q6IFs0NDk3MGJiYmJiNTA3OWVlMTAwODc1YjA2ZTQ1ZGI1ZDZlOTFhMTZl
+XSBNZXJnZSByZW1vdGUtdHJhY2tpbmcgYnJhbmNoICd2NGwtZHZiL21hc3RlcicKZ2l0IGJpc2Vj
+dCBnb29kIDQ0OTcwYmJiYmI1MDc5ZWUxMDA4NzViMDZlNDVkYjVkNmU5MWExNmUKIyBiYWQ6IFs1
+OTkxNzBjMmI4NjBhY2EzMzY0NTc0ZjgzM2JiOWNjODAxYzk2NjhkXSBNZXJnZSBicmFuY2ggJ3Bt
+LWNvcmUnIGludG8gbGludXgtbmV4dApnaXQgYmlzZWN0IGJhZCA1OTkxNzBjMmI4NjBhY2EzMzY0
+NTc0ZjgzM2JiOWNjODAxYzk2NjhkCiMgZ29vZDogWzM0N2Q1NzA5MTljYTlhM2EzNjUzY2U5Y2Ji
+NzM5OWM3YzBiYTgyNDhdIE1lcmdlIGJyYW5jaCAnYWNwaS1wY2knIGludG8gbGludXgtbmV4dApn
+aXQgYmlzZWN0IGdvb2QgMzQ3ZDU3MDkxOWNhOWEzYTM2NTNjZTljYmI3Mzk5YzdjMGJhODI0OAoj
+IGdvb2Q6IFtlMGE5ZmRlODZiYTFiYzI2ZGQ3NTRjNzMzYjMyZTcwY2Q4ZjFjMTg3XSBNZXJnZSBi
+cmFuY2hlcyAnYWNwaS10YWJsZXMnIGFuZCAnYWNwaS1hcGVpJyBpbnRvIGxpbnV4LW5leHQKZ2l0
+IGJpc2VjdCBnb29kIGUwYTlmZGU4NmJhMWJjMjZkZDc1NGM3MzNiMzJlNzBjZDhmMWMxODcKIyBn
+b29kOiBbM2I0ZWQyZTJlYjU1ODM3NzRhMWVkNGFhNDU5NmE1YTNjNTVmMjU2N10gZHJtL2k5MTU6
+IE1vdmUgb24gdGhlIG5ldyBwbSBydW50aW1lIGludGVyZmFjZQpnaXQgYmlzZWN0IGdvb2QgM2I0
+ZWQyZTJlYjU1ODM3NzRhMWVkNGFhNDU5NmE1YTNjNTVmMjU2NwojIGJhZDogW2M3NWMzMDM5MzNh
+NjhjNTQ3ZjMzNTJkMWQ3MDg4NDNmOTQ0OWQzZjRdIFBNOiBjbG9ja19vcHM6IGZpeCBtaXNzaW5n
+IGNsa19wcmVwYXJlKCkgcmV0dXJuIHZhbHVlIGNoZWNrCmdpdCBiaXNlY3QgYmFkIGM3NWMzMDM5
+MzNhNjhjNTQ3ZjMzNTJkMWQ3MDg4NDNmOTQ0OWQzZjQKIyBiYWQ6IFszOTgyYWI5Y2U0MzNlZmM3
+MmNhMzFlYjlkZGM4NWQ5MzU1OTY2NDQ0XSBQTS1ydW50aW1lOiBSZXBsYWNlIGppZmZpZXMgYmFz
+ZWQgYWNjb3VudGluZyB3aXRoIGt0aW1lLWJhc2VkIGFjY291bnRpbmcKZ2l0IGJpc2VjdCBiYWQg
+Mzk4MmFiOWNlNDMzZWZjNzJjYTMxZWI5ZGRjODVkOTM1NTk2NjQ0NAojIGZpcnN0IGJhZCBjb21t
+aXQ6IFszOTgyYWI5Y2U0MzNlZmM3MmNhMzFlYjlkZGM4NWQ5MzU1OTY2NDQ0XSBQTS1ydW50aW1l
+OiBSZXBsYWNlIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyB3aXRoIGt0aW1lLWJhc2VkIGFjY291
+bnRpbmcKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50
+ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBz
+Oi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
