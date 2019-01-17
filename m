@@ -1,131 +1,95 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v1 02/10] cpufreq: Add a flag to auto-register a cooling
- device
-Date: Thu, 17 Jan 2019 10:12:46 +0530
-Message-ID: <20190117044246.jcwhb5bxb6he33lp@vireshk-i7>
+Subject: Re: [PATCH v1 05/10] cpufreq: imx6q: Use auto-registration of
+ thermal cooling device
+Date: Thu, 17 Jan 2019 10:19:06 +0530
+Message-ID: <20190117044906.jomvwecvjrkgsuak@vireshk-i7>
 References: <cover.1547481320.git.amit.kucheria@linaro.org>
- <c1e460c49ad2f16b15ace909514a770c9753d1b1.1547481320.git.amit.kucheria@linaro.org>
- <15792961.Mmjk2FNQN5@aspire.rjw.lan>
+ <49e531e140f299127ae6c0bc905b993b97c269e2.1547481320.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <15792961.Mmjk2FNQN5@aspire.rjw.lan>
+In-Reply-To: <49e531e140f299127ae6c0bc905b993b97c269e2.1547481320.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anson Huang <anson.huang@nxp.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 17-01-19, 00:03, Rafael J. Wysocki wrote:
-> On Monday, January 14, 2019 5:34:54 PM CET Amit Kucheria wrote:
-> > All cpufreq drivers do similar things to register as a cooling device.
-> > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> > to register the cooling device on their behalf. This allows us to get
-> > rid of duplicated code in the drivers.
-> > 
-> > Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 17 +++++++++++++++++
-> >  include/linux/cpufreq.h   |  6 ++++++
-> >  2 files changed, 23 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 6f23ebb395f1..cd6e750d3d82 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -30,6 +30,7 @@
-> >  #include <linux/syscore_ops.h>
-> >  #include <linux/tick.h>
-> >  #include <trace/events/power.h>
-> > +#include <linux/cpu_cooling.h>
-> >  
-> >  static LIST_HEAD(cpufreq_policy_list);
-> >  
-> > @@ -1318,6 +1319,14 @@ static int cpufreq_online(unsigned int cpu)
-> >  	if (cpufreq_driver->ready)
-> >  		cpufreq_driver->ready(policy);
-> >  
-> > +#ifdef CONFIG_CPU_THERMAL
-> > +	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
-> > +		struct thermal_cooling_device **cdev = &policy->cooldev;
-
-We use cdev for the cooling device everywhere in the kernel, so please
-do s/cooldev/cdev/ in your patches.
-
-> > +
-> > +		*cdev = of_cpufreq_cooling_register(policy);
+On 14-01-19, 22:04, Amit Kucheria wrote:
+> Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
+> automatically register as a thermal cooling device.
 > 
-> What would be wrong with
+> This allows removal of boiler plate code from the driver.
 > 
-> 		policy->cooldev = of_cpufreq_cooling_register(policy);
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 18 ++----------------
+>  1 file changed, 2 insertions(+), 16 deletions(-)
 > 
-> > +	}
-> > +#endif
-> 
-> Please remove the #ifdefs from cpufreq_online() and cpufreq_offline().
-> 
-> Use wrappers that would become empty stubs for CONFIG_CPU_THERMAL unset.
-> 
-> > +
-> >  	pr_debug("initialization complete\n");
-> >  
-> >  	return 0;
-> > @@ -1411,6 +1420,14 @@ static int cpufreq_offline(unsigned int cpu)
-> >  	if (has_target())
-> >  		cpufreq_exit_governor(policy);
-> >  
-> > +#ifdef CONFIG_CPU_THERMAL
-> > +	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
-> > +		struct thermal_cooling_device **cdev = &policy->cooldev;
-> > +
-> > +		cpufreq_cooling_unregister(*cdev);
-> 
-> Again, why don't you simply pass policy->cooldev here?
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 9fedf627e000..ffb00291f48e 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -9,7 +9,6 @@
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+> -#include <linux/cpu_cooling.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+>  #include <linux/nvmem-consumer.h>
+> @@ -52,7 +51,6 @@ static struct clk_bulk_data clks[] = {
+>  };
+>  
+>  static struct device *cpu_dev;
+> -static struct thermal_cooling_device *cdev;
+>  static bool free_opp;
+>  static struct cpufreq_frequency_table *freq_table;
+>  static unsigned int max_freq;
+> @@ -193,16 +191,6 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	return 0;
+>  }
+>  
+> -static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
+> -{
+> -	cdev = of_cpufreq_cooling_register(policy);
+> -
+> -	if (!cdev)
+> -		dev_err(cpu_dev,
+> -			"running cpufreq without cooling device: %ld\n",
+> -			PTR_ERR(cdev));
+> -}
+> -
+>  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+>  {
+>  	int ret;
+> @@ -216,20 +204,18 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+>  
+>  static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
+>  {
+> -	cpufreq_cooling_unregister(cdev);
+> -
+>  	return 0;
+>  }
 
-I also had the same comments when I looked at your patch :)
+Remove the empty routine as well.
 
-I also think we must do the unregistering before calling stop_cpu()
-callback.
-
-> Also, would it make sense to clear policy->cooldev at this point?  It points
-> to freed memory after cpufreq_cooling_unregister().
-
-Since the core doesn't refer to this field at all and uses it only
-while registering/unregistering as a cooling device, there is no
-technical issue that we will have today. If someone uses the dangling
-pointer later on in future, it will be a bug. So I wouldn't care much
-about resetting it here.
-
-> > +	}
-> > +#endif
-> > +
-> >  	/*
-> >  	 * Perform the ->exit() even during light-weight tear-down,
-> >  	 * since this is a core component, and is essential for the
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index 7d0cf54125fa..70ad02088825 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -390,6 +390,12 @@ struct cpufreq_driver {
-> >   */
-> >  #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
-> >  
-> > +/*
-> > + * Set by drivers that want the core to automatically register the cpufreq
-> > + * driver as a thermal cooling device
-
-Add a full-stop here please.
-
-> > + */
-> > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
-> > +
-> >  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
-> >  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
-> >  
-> > 
-> 
+>  static struct cpufreq_driver imx6q_cpufreq_driver = {
+> -	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+> +	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> +		 CPUFREQ_AUTO_REGISTER_COOLING_DEV,
+>  	.verify = cpufreq_generic_frequency_table_verify,
+>  	.target_index = imx6q_set_target,
+>  	.get = cpufreq_generic_get,
+>  	.init = imx6q_cpufreq_init,
+>  	.exit = imx6q_cpufreq_exit,
+>  	.name = "imx6q-cpufreq",
+> -	.ready = imx6q_cpufreq_ready,
+>  	.attr = cpufreq_generic_attr,
+>  	.suspend = cpufreq_generic_suspend,
+>  };
+> -- 
+> 2.17.1
 
 -- 
 viresh
