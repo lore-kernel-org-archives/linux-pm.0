@@ -1,493 +1,232 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
-Date: Thu, 17 Jan 2019 16:51:17 +0100
-Message-ID: <20190117155117.GG14385@localhost.localdomain>
-References: <20190110110546.8101-1-quentin.perret@arm.com>
- <20190110110546.8101-3-quentin.perret@arm.com>
+From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
+Subject: Re: Armada DRM: bridge with componentized devices
+Date: Thu, 17 Jan 2019 17:26:25 +0000
+Message-ID: <20190117172625.wr6gwgooowdjl5kq@e5254000004ec.dyn.armlinux.org.uk>
+References: <20190108132150.GT11171@n2100.armlinux.org.uk>
+ <CAJZ5v0gFiUx5tZUbhO9-kuDU9B3h13wEvaEf86j8td=3CajnRw@mail.gmail.com>
+ <CAJZ5v0grEWD0d51DCcEXuS+9tbyWERBPv1wOCqznEuXEFmbvmQ@mail.gmail.com>
+ <515889972.533tA6DaoZ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <20190110110546.8101-3-quentin.perret@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: corbet@lwn.net, peterz@infradead.org, rjw@rjwysocki.net, mingo@redhat.com, morten.rasmussen@arm.com, qais.yousef@arm.com, patrick.bellasi@arm.com, dietmar.eggemann@arm.com, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <515889972.533tA6DaoZ@aspire.rjw.lan>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lubomir Rintel <lkundrak@v3.sk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, DRI Development <dri-devel@lists.freedesktop.org>, Peter Rosin <peda@axentia.se>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 10/01/19 11:05, Quentin Perret wrote:
-> Add some documentation detailing the main design points of EAS, as well
-> as a list of its dependencies.
-> 
-> Parts of this documentation are taken from Morten Rasmussen's original
-> EAS posting: https://lkml.org/lkml/2015/7/7/754
-> 
-> Reviewed-by: Qais Yousef <qais.yousef@arm.com>
-> Co-authored-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> ---
->  Documentation/scheduler/sched-energy.txt | 425 +++++++++++++++++++++++
->  1 file changed, 425 insertions(+)
->  create mode 100644 Documentation/scheduler/sched-energy.txt
-> 
-> diff --git a/Documentation/scheduler/sched-energy.txt b/Documentation/scheduler/sched-energy.txt
-> new file mode 100644
-> index 000000000000..197d81f4b836
-> --- /dev/null
-> +++ b/Documentation/scheduler/sched-energy.txt
-> @@ -0,0 +1,425 @@
-> +			   =======================
-> +			   Energy Aware Scheduling
-> +			   =======================
-> +
-> +1. Introduction
-> +---------------
-> +
-> +Energy Aware Scheduling (or EAS) gives the scheduler the ability to predict
-> +the impact of its decisions on the energy consumed by CPUs. EAS relies on an
-> +Energy Model (EM) of the CPUs to select an energy efficient CPU for each task,
-> +with a minimal impact on throughput. This document aims at providing an
-> +introduction on how EAS works, what are the main design decisions behind it, and
-> +details what is needed to get it to run.
-> +
-> +Before going any further, please note that at the time of writing:
-> +
-> +   /!\ EAS does not support platforms with symmetric CPU topologies /!\
-> +
-> +EAS operates only on heterogeneous CPU topologies (such as Arm big.LITTLE)
-> +because this is where the potential for saving energy through scheduling is
-> +the highest.
-> +
-> +The actual EM used by EAS is _not_ maintained by the scheduler, but by a
-> +dedicated framework. For details about this framework and what it provides,
-> +please refer to its documentation (see Documentation/power/energy-model.txt).
-> +
-> +
-> +2. Background and Terminology
-> +-----------------------------
-> +
-> +To make it clear from the start:
-> + - energy = [joule] (resource like a battery on powered devices)
-> + - power = energy/time = [joule/second] = [watt]
-> +
-> +The goal of EAS is to minimize energy, while still getting the job done. That
-> +is, we want to maximize:
-> +
-> +	performance [inst/s]
-> +	--------------------
-> +	    power [W]
-> +
-> +which is equivalent to minimizing:
-> +
-> +	energy [J]
-> +	-----------
-> +	instruction
-> +
-> +while still getting 'good' performance. It is essentially an alternative
-> +optimization objective to the current performance-only objective for the
-> +scheduler. This alternative considers two objectives: energy-efficiency and
-> +performance.
-> +
-> +The idea behind introducing an EM is to allow the scheduler to evaluate the
-> +implications of its decisions rather than blindly applying energy-saving
-> +techniques that may have positive effects only on some platforms. At the same
-> +time, the EM must be as simple as possible to minimize the scheduler latency
-> +impact.
-> +
-> +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
-
-Not sure if we want to remark the fact that EAS is looking at CFS tasks
-only ATM.
-
-> +for the scheduler to decide where a task should run (during wake-up), the EM
-> +is used to break the tie between several good CPU candidates and pick the one
-> +that is predicted to yield the best energy consumption without harming the
-> +system's throughput. The predictions made by EAS rely on specific elements of
-> +knowledge about the platform's topology, which include the 'capacity' of CPUs,
-
-Add a reference to DT bindings docs defining 'capacity' (or define it
-somewhere)?
-
-> +and their respective energy costs.
-> +
-> +
-> +3. Topology information
-> +-----------------------
-> +
-> +EAS (as well as the rest of the scheduler) uses the notion of 'capacity' to
-> +differentiate CPUs with different computing throughput. The 'capacity' of a CPU
-> +represents the amount of work it can absorb when running at its highest
-> +frequency compared to the most capable CPU of the system. Capacity values are
-> +normalized in a 1024 range, and are comparable with the utilization signals of
-> +tasks and CPUs computed by the Per-Entity Load Tracking (PELT) mechanism. Thanks
-> +to capacity and utilization values, EAS is able to estimate how big/busy a
-> +task/CPU is, and to take this into consideration when evaluating performance vs
-> +energy trade-offs. The capacity of CPUs is provided via arch-specific code
-> +through the arch_scale_cpu_capacity() callback.
-
-Ah, it's here, mmm, maybe still introduce it before (or point here from
-above) and still point to dt bindings doc?
-
-> +
-> +The rest of platform knowledge used by EAS is directly read from the Energy
-> +Model (EM) framework. The EM of a platform is composed of a power cost table
-> +per 'performance domain' in the system (see Documentation/power/energy-model.txt
-> +for futher details about performance domains).
-> +
-> +The scheduler manages references to the EM objects in the topology code when the
-> +scheduling domains are built, or re-built. For each root domain (rd), the
-> +scheduler maintains a singly linked list of all performance domains intersecting
-> +the current rd->span. Each node in the list contains a pointer to a struct
-> +em_perf_domain as provided by the EM framework.
-> +
-> +The lists are attached to the root domains in order to cope with exclusive
-> +cpuset configurations. Since the boundaries of exclusive cpusets do not
-> +necessarily match those of performance domains, the lists of different root
-> +domains can contain duplicate elements.
-> +
-> +Example 1.
-> +    Let us consider a platform with 12 CPUs, split in 3 performance domains
-> +    (pd0, pd4 and pd8), organized as follows:
-> +
-> +	          CPUs:   0 1 2 3 4 5 6 7 8 9 10 11
-> +	          PDs:   |--pd0--|--pd4--|---pd8---|
-> +	          RDs:   |----rd1----|-----rd2-----|
-> +
-> +    Now, consider that userspace decided to split the system with two
-> +    exclusive cpusets, hence creating two independent root domains, each
-> +    containing 6 CPUs. The two root domains are denoted rd1 and rd2 in the
-> +    above figure. Since pd4 intersects with both rd1 and rd2, it will be
-> +    present in the linked list '->pd' attached to each of them:
-> +       * rd1->pd: pd0 -> pd4
-> +       * rd2->pd: pd4 -> pd8
-> +
-> +    Please note that the scheduler will create two duplicate list nodes for
-> +    pd4 (one for each list). However, both just hold a pointer to the same
-> +    shared data structure of the EM framework.
-> +
-> +Since the access to these lists can happen concurrently with hotplug and other
-> +things, they are protected by RCU, like the rest of topology structures
-> +manipulated by the scheduler.
-> +
-> +EAS also maintains a static key (sched_energy_present) which is enabled when at
-> +least one root domain meets all conditions for EAS to start. Those conditions
-> +are summarized in Section 6.
-> +
-> +
-> +4. Energy-Aware task placement
-> +------------------------------
-> +
-> +EAS overrides the CFS task wake-up balancing code. It uses the EM of the
-> +platform and the PELT signals to choose an energy-efficient target CPU during
-> +wake-up balance. When EAS is enabled, select_task_rq_fair() calls
-> +find_energy_efficient_cpu() to do the placement decision. This function looks
-> +for the CPU with the highest spare capacity (CPU capacity - CPU utilization) in
-> +each performance domain since it is the one which will allow us to keep the
-> +frequency the lowest. Then, the function checks if placing the task there could
-> +save energy compared to leaving it on prev_cpu, i.e. the CPU where the task ran
-> +in its previous activation.
-> +
-> +find_energy_efficient_cpu() uses compute_energy() to estimate what will be the
-> +energy consumed by the system if the waking task was migrated. compute_energy()
-> +looks at the current utilization landscape of the CPUs and adjusts it to
-> +'simulate' the task migration. The EM framework provides the em_pd_energy() API
-> +which computes the expected energy consumption of each performance domain for
-> +the given utilization landscape.
-> +
-> +An example of energy-optimized task placement decision is detailed below.
-> +
-> +Example 2.
-> +    Let us consider a (fake) platform with 2 independent performance domains
-> +    composed of two CPUs each. CPU0 and CPU1 are little CPUs; CPU2 and CPU3
-> +    are big.
-> +
-> +    The scheduler must decide where to place a task P whose util_avg = 200
-> +    and prev_cpu = 0.
-> +
-> +    The current utilization landscape of the CPUs is depicted on the graph
-> +    below. CPUs 0-3 have a util_avg of 400, 100, 600 and 500 respectively
-> +    Each performance domain has three Operating Performance Points (OPPs).
-> +    The CPU capacity and power cost associated with each OPP is listed in
-> +    the Energy Model table. The util_avg of P is shown on the figures
-> +    below as 'PP'.
-> +
-> +    CPU util.
-> +      1024                 - - - - - - -              Energy Model
-> +                                               +-----------+-------------+
-> +                                               |  Little   |     Big     |
-> +       768                 =============       +-----+-----+------+------+
-> +                                               | Cap | Pwr | Cap  | Pwr  |
-> +                                               +-----+-----+------+------+
-> +       512  ===========    - ##- - - - -       | 170 | 50  | 512  | 400  |
-> +                             ##     ##         | 341 | 150 | 768  | 800  |
-> +       341  -PP - - - -      ##     ##         | 512 | 300 | 1024 | 1700 |
-> +             PP              ##     ##         +-----+-----+------+------+
-> +       170  -## - - - -      ##     ##
-> +             ##     ##       ##     ##
-> +           ------------    -------------
-> +            CPU0   CPU1     CPU2   CPU3
-> +
-> +      Current OPP: =====       Other OPP: - - -     util_avg (100 each): ##
-> +
-> +
-> +    find_energy_efficient_cpu() will first look for the CPUs with the
-> +    maximum spare capacity in the two performance domains. In this example,
-> +    CPU1 and CPU3. Then it will estimate the energy of the system if P was
-> +    placed on either of them, and check if that would save some energy
-> +    compared to leaving P on CPU0. EAS assumes that OPPs follow utilization
-> +    (which is coherent with the behaviour of the schedutil CPUFreq
-> +    governor, see Section 6. for more details on this topic).
-> +
-> +    Case 1. P is migrated to CPU1
-> +    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +      1024                 - - - - - - -
-> +
-> +                                            Energy calculation:
-> +       768                 =============     * CPU0: 200 / 341 * 150 = 88
-> +                                             * CPU1: 300 / 341 * 150 = 131
-> +                                             * CPU2: 600 / 768 * 800 = 625
-> +       512  - - - - - -    - ##- - - - -     * CPU3: 500 / 768 * 800 = 520
-> +                             ##     ##          => total_energy = 1364
-> +       341  ===========      ##     ##
-> +                    PP       ##     ##
-> +       170  -## - - PP-      ##     ##
-> +             ##     ##       ##     ##
-> +           ------------    -------------
-> +            CPU0   CPU1     CPU2   CPU3
-> +
-> +
-> +    Case 2. P is migrated to CPU3
-> +    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +      1024                 - - - - - - -
-> +
-> +                                            Energy calculation:
-> +       768                 =============     * CPU0: 200 / 341 * 150 = 88
-> +                                             * CPU1: 100 / 341 * 150 = 43
-> +                                    PP       * CPU2: 600 / 768 * 800 = 625
-> +       512  - - - - - -    - ##- - -PP -     * CPU3: 700 / 768 * 800 = 729
-> +                             ##     ##          => total_energy = 1485
-> +       341  ===========      ##     ##
-> +                             ##     ##
-> +       170  -## - - - -      ##     ##
-> +             ##     ##       ##     ##
-> +           ------------    -------------
-> +            CPU0   CPU1     CPU2   CPU3
-> +
-> +
-> +    Case 3. P stays on prev_cpu / CPU 0
-> +    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +      1024                 - - - - - - -
-> +
-> +                                            Energy calculation:
-> +       768                 =============     * CPU0: 400 / 512 * 300 = 234
-> +                                             * CPU1: 100 / 512 * 300 = 58
-> +                                             * CPU2: 600 / 768 * 800 = 625
-> +       512  ===========    - ##- - - - -     * CPU3: 500 / 768 * 800 = 520
-> +                             ##     ##          => total_energy = 1437
-> +       341  -PP - - - -      ##     ##
-> +             PP              ##     ##
-> +       170  -## - - - -      ##     ##
-> +             ##     ##       ##     ##
-> +           ------------    -------------
-> +            CPU0   CPU1     CPU2   CPU3
-> +
-> +
-> +    From these calculations, the Case 1 has the lowest total energy. So CPU 1
-> +    is be the best candidate from an energy-efficiency standpoint.
-> +
-> +Big CPUs are generally more power hungry than the little ones and are thus used
-> +mainly when a task doesn't fit the littles. However, little CPUs aren't always
-> +necessarily more energy-efficient than big CPUs. For some systems, the high OPPs
-> +of the little CPUs can be less energy-efficient than the lowest OPPs of the
-> +bigs, for example. So, if the little CPUs happen to have enough utilization at
-> +a specific point in time, a small task waking up at that moment could be better
-> +of executing on the big side in order to save energy, even though it would fit
-     ^ +f
-
-> +on the little side.
-> +
-> +And even in the case where all OPPs of the big CPUs are less energy-efficient
-> +than those of the little, using the big CPUs for a small task might still, under
-> +specific conditions, save energy. Indeed, placing a task on a little CPU can
-> +result in raising the OPP of the entire performance domain, and that will
-> +increase the cost of the tasks already running there. If the waking task is
-> +placed on a big CPU, its own execution cost might be higher than if it was
-> +running on a little, but it won't impact the other tasks of the little CPUs
-> +which will keep running at a lower OPP. So, when considering the total energy
-> +consumed by CPUs, the extra cost of running that one task on a big core can be
-> +smaller than the cost of raising the OPP on the little CPUs for all the other
-> +tasks.
-> +
-> +The examples above would be nearly impossible to get right in a generic way, and
-> +for all platforms, without knowing the cost of running at different OPPs on all
-> +CPUs of the system. Thanks to its EM-based design, EAS should cope with them
-> +correctly without too many troubles. However, in order to ensure a minimal
-> +impact on throughput for high-utilization scenarios, EAS also implements another
-> +mechanism called 'over-utilization'.
-> +
-> +
-> +5. Over-utilization
-> +-------------------
-> +
-> +From a general standpoint, the use-cases where EAS can help the most are those
-> +involving a light/medium CPU utilization. Whenever long CPU-bound tasks are
-> +being run, they will require all of the available CPU capacity, and there isn't
-> +much that can be done by the scheduler to save energy without severly harming
-                                                                  +e ^
-
-> +throughput. In order to avoid hurting performance with EAS, CPUs are flagged as
-> +'over-utilized' as soon as they are used at more than 80% of their compute
-> +capacity. As long as no CPUs are over-utilized in a root domain, load balancing
-> +is disabled and EAS overridess the wake-up balancing code. EAS is likely to load
-                                ^ -s  :-)
-
-> +the most energy efficient CPUs of the system more than the others if that can be
-> +done without harming throughput. So, the load-balancer is disabled to prevent
-
-Load-balancing being disabled in EAS mode it's quite an important thing
-to notice IMHO. Maybe state it clearly somewhere above?
-
-> +it from breaking the energy-efficient task placement found by EAS. It is safe to
-> +do so when the system isn't overutilized since being below the 80% tipping point
-> +implies that:
-> +
-> +    a. there is some idle time on all CPUs, so the utilization signals used by
-> +       EAS are likely to accurately represent the 'size' of the various tasks
-> +       in the system;
-> +    b. all tasks should already be provided with enough CPU capacity,
-> +       regardless of their nice values;
-> +    c. since there is spare capacity all tasks must be blocking/sleeping
-> +       regularly and balancing at wake-up is sufficient.
-> +
-> +As soon as one CPU goes above the 80% tipping point, at least one of the three
-> +assumptions above becomes incorrect. In this scenario, the 'overutilized' flag
-> +is raised for the entire root domain, EAS is disabled, and the load-balancer is
-> +re-enabled. By doing so, the scheduler falls back onto load-based algorithms for
-> +wake-up and load balance under CPU-bound conditions. This provides a better
-> +respect of the nice values of tasks.
-> +
-> +Since the notion of overutilization largely relies on detecting whether or not
-> +there is some idle time in the system, the CPU capacity 'stolen' by higher
-> +(than CFS) scheduling classes (as well as IRQ) must be taken into account. As
-> +such, the detection of overutilization accounts for the capacity used not only
-> +by CFS tasks, but also by the other scheduling classes and IRQ.
-> +
-> +
-> +6. Dependencies and requirements for EAS
-> +----------------------------------------
-> +
-> +Energy Aware Scheduling depends on the CPUs of the system having specific
-> +hardware properties and on other features of the kernel being enabled. This
-> +section lists these dependencies and provides hints as to how they can be met.
-> +
-> +
-> +  6.1 - Asymmetric CPU topology
-> +
-> +As mentioned in the introduction, EAS is only supported on platforms with
-> +asymmetric CPU topologies for now. This requirement is checked at run-time by
-> +looking for the presence of the SD_ASYM_CPUCAPACITY flag when the scheduling
-> +domains are built.
-> +
-> +The flag is set/cleared automatically by the scheduler topology code whenever
-> +there are CPUs with different capacities in a root domain. The capacities of
-> +CPUs are provided by arch-specific code through the arch_scale_cpu_capacity()
-> +callback. As an example, arm and arm64 share an implementation of this callback
-> +which uses a combination of CPUFreq data and device-tree bindings to compute the
-> +capacity of CPUs (see drivers/base/arch_topology.c for more details).
-> +
-> +So, in order to use EAS on your platform your architecture must implement the
-
-Mmm, using 'your' form is a change of 'style', no?
-
-> +arch_scale_cpu_capacity() callback, and some of the CPUs must have a lower
-> +capacity than others.
-> +
-> +Please note that EAS is not fundamentally incompatible with SMP, but no
-> +significant savings on SMP platforms have been observed yet. This restriction
-> +could be amended in the future if proven otherwise.
-> +
-> +
-> +  6.2 - Energy Model presence
-> +
-> +EAS uses the EM of a platform to estimate the impact of scheduling decisions on
-> +energy. So, your platform must provide power cost tables to the EM framework in
-> +order to make EAS start. To do so, please refer to documentation of the
-> +independent EM framework in Documentation/power/energy-model.txt.
-> +
-> +Please also note that the scheduling domains need to be re-built after the
-> +EM has been registered in order to start EAS.
-> +
-> +
-> +  6.3 - Energy Model complexity
-> +
-> +The task wake-up path is very latency-sensitive. When the EM of a platform is
-> +too complex (too many CPUs, too many performance domains, too many performance
-> +states, ...), the cost of using it in the wake-up path can become prohibitive.
-> +The energy-aware wake-up algorithm has a complexity of:
-> +
-> +	C = Nd * (Nc + Ns)
-> +
-> +with: Nd the number of performance domains; Nc the number of CPUs; and Ns the
-> +total number of OPPs (ex: for two perf. domains with 4 OPPs each, Ns = 8).
-> +
-> +A complexity check is performed at the root domain level, when scheduling
-> +domains are built. EAS will not start on a root domain if its C happens to be
-> +higher than the completely arbitrary EM_MAX_COMPLEXITY threshold (2048 at the
-> +time of writing).
-> +
-> +If you really want to use EAS but the complexity of your platform's Energy
-> +Model is too high to be used with a single root domain, you're left with only
-> +two possible options:
-> +
-> +    1. split your system into separate, smaller, root domains using exclusive
-> +       cpusets and enable EAS locally on each of them. This option has the
-> +       benefit to work out of the box but the drawback of preventing load
-> +       balance between root domains, which can result in an unbalanced system
-> +       overall;
-> +    2. submit patches to reduce the complexity of the EAS wake-up algorithm,
-> +       hence enabling it to cope with larger EMs in reasonable time.
-> +
-> +
-> +  6.4 - Schedutil governor
-> +
-> +EAS tries to predict at which OPP will the CPUs be running in the close future
-> +in order to estimate their energy consumption. To do so, it is assumed that OPPs
-> +of CPUs follow their utilization.
-> +
-> +Although it is very difficult to provide hard guarantees regarding the accuracy
-> +of this assumption in practice (because the hardware might not do what it is
-> +told to do, for example), schedutil as opposed to other CPUFreq governors at
-> +least _requests_ frequencies calculated using the utilization signals.
-> +Consequently, the only sane governor to use together with EAS is schedutil,
-> +because it is the only one providing some degree of consistency between
-> +frequency requests and energy predictions.
-> +
-> +Using EAS with any other governor than schedutil is not supported.
-> +
-> +
-> +  6.5 Scale-invariant utilization signals
-> +
-> +In order to make accurate prediction across CPUs and for all performance
-> +states, EAS needs frequency-invariant and CPU-invariant PELT signals. These can
-> +be obtained using the architecture-defined arch_scale{cpu,freq}_capacity()
-> +callbacks.
-> +
-> +Using EAS on a platform that doesn't implement these two callbacks is not
-> +supported.
-> +
-> +
-> +  6.6 Multithreading (SMT)
-> +
-> +EAS in its current form is SMT unaware and is not able to leverage
-> +multithreaded hardware to save energy. EAS considers threads as independent
-> +CPUs, which can actually be counter-productive for both performance and energy.
-> +
-> +EAS on SMT is not supported.
-
-Best,
-
-- Juri
+T24gVHVlLCBKYW4gMTUsIDIwMTkgYXQgMTE6NDc6MDBQTSArMDEwMCwgUmFmYWVsIEouIFd5c29j
+a2kgd3JvdGU6Cj4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50
+ZWwuY29tPgo+IFN1YmplY3Q6IFtQQVRDSF0gZHJpdmVyIGNvcmU6IEZpeCBhZGRpbmcgZGV2aWNl
+IGxpbmtzIHRvIHByb2Jpbmcgc3VwcGxpZXJzCj4gCj4gQ3VycmVudGx5LCBpdCBpcyBub3QgdmFs
+aWQgdG8gYWRkIGEgZGV2aWNlIGxpbmsgZnJvbSBhIGNvbnN1bWVyCj4gZHJpdmVyIC0+cHJvYmUo
+KSBjYWxsYmFjayB0byBhIHN1cHBsaWVyIHRoYXQgaXMgc3RpbGwgcHJvYmluZyB0b28sIGJ1dAo+
+IGdlbmVyYWxseSB0aGlzIGlzIGEgdmFsaWQgdXNlIGNhc2UuICBGb3IgZXhhbXBsZSwgaWYgdGhl
+IGNvbnN1bWVyIGhhcwo+IGp1c3QgYWNxdWlyZWQgYSByZXNvdXJjZSB0aGF0IGNhbiBvbmx5IGJl
+IGF2YWlsYWJsZSB3aGVuIHRoZSBzdXBwbGllcgo+IGlzIGZ1bmN0aW9uYWwsIGFkZGluZyBhIGRl
+dmljZSBsaW5rIHRvIHRoYXQgc3VwcGxpZXIgcmlnaHQgYXdheQo+IHNob3VsZCBiZSBzYWZlIChh
+bmQgZXZlbiBkZXNpcmFibGUgYXJndWFibHkpLCBidXQgZGV2aWNlX2xpbmtfYWRkKCkKPiBkb2Vz
+bid0IGhhbmRsZSB0aGF0IGNhc2UgY29ycmVjdGx5IGFuZCB0aGUgaW5pdGlhbCBzdGF0ZSBvZiB0
+aGUgbGluawo+IGNyZWF0ZWQgYnkgaXQgaXMgd3JvbmcgdGhlbi4KPiAKPiBUbyBhZGRyZXNzIHRo
+aXMgcHJvYmxlbSwgY2hhbmdlIHRoZSBpbml0aWFsIHN0YXRlIG9mIGRldmljZSBsaW5rcwo+IGFk
+ZGVkIGJldHdlZW4gYSBwcm9iaW5nIHN1cHBsaWVyIGFuZCBhIHByb2JpbmcgY29uc3VtZXIgdG8K
+PiBETF9TVEFURV9DT05TVU1FUl9QUk9CRSBhbmQgdXBkYXRlIGRldmljZV9saW5rc19kcml2ZXJf
+Ym91bmQoKSB0bwo+IHNraXAgc3VjaCBsaW5rcyBvbiB0aGUgc3VwcGxpZXIgc2lkZS4KPiAKPiBX
+aXRoIHRoaXMgY2hhbmdlLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgY29tcGxldGVzIGZpcnN0LAo+
+IGRldmljZV9saW5rc19kcml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwgc2tpcCB0aGUg
+bGluayBzdGF0ZQo+IHVwZGF0ZSBhbmQgd2hlbiBpdCBpcyBjYWxsZWQgZm9yIHRoZSBjb25zdW1l
+ciwgdGhlIGxpbmsgc3RhdGUgd2lsbAo+IGJlIHVwZGF0ZWQgdG8gImFjdGl2ZSIuICBJbiB0dXJu
+LCBpZiB0aGUgY29uc3VtZXIgcHJvYmUgY29tcGxldGVzCj4gZmlyc3QsIGRldmljZV9saW5rc19k
+cml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwgY2hhbmdlIHRoZQo+IHN0YXRlIG9mIHRo
+ZSBsaW5rIHRvICJhY3RpdmUiIGFuZCB3aGVuIGl0IGlzIGNhbGxlZCBmb3IgdGhlCj4gc3VwcGxp
+ZXIsIHRoZSBsaW5rIHN0YXR1cyB1cGRhdGUgd2lsbCBiZSBza2lwcGVkLgo+IAo+IEhvd2V2ZXIs
+IGluIHByaW5jaXBsZSB0aGUgc3VwcGxpZXIgb3IgY29uc3VtZXIgcHJvYmUgbWF5IHN0aWxsIGZh
+aWwKPiBhZnRlciB0aGUgbGluayBoYXMgYmVlbiBhZGRlZCwgc28gbW9kaWZ5IGRldmljZV9saW5r
+c19ub19kcml2ZXIoKSB0bwo+IGNoYW5nZSBkZXZpY2UgbGlua3MgaW4gdGhlICJhY3RpdmUiIG9y
+ICJjb25zdW1lciBwcm9iZSIgc3RhdGUgdG8KPiAiZG9ybWFudCIgb24gdGhlIHN1cHBsaWVyIHNp
+ZGUgYW5kIHVwZGF0ZSBfX2RldmljZV9saW5rc19ub19kcml2ZXIoKQo+IHRvIGNoYW5nZSB0aGUg
+bGluayBzdGF0ZSB0byAiYXZhaWxhYmxlIiBvbmx5IGlmIGl0IGlzICJjb25zdW1lcgo+IHByb2Jl
+IiBvciAiYWN0aXZlIi4KPiAKPiBUaGVuLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgZmFpbHMgZmly
+c3QsIHRoZSBsZWZ0b3ZlciBsaW5rIHRvIHRoZQo+IHByb2JpbmcgY29uc3VtZXIgd2lsbCBiZWNv
+bWUgImRvcm1hbnQiIGFuZCBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkKPiBjYWxsZWQgZm9yIHRo
+ZSBjb25zdW1lciAod2hlbiBpdHMgcHJvYmUgZmFpbHMpIHdpbGwgY2xlYW4gaXQgdXAuCj4gSW4g
+dHVybiwgaWYgdGhlIGNvbnN1bWVyIHByb2JlIGZhaWxzIGZpcnN0LCBpdCB3aWxsIGVpdGhlciBk
+cm9wIHRoZQo+IGxpbmssIG9yIGNoYW5nZSBpdHMgc3RhdGUgdG8gImF2YWlsYWJsZSIgYW5kLCBp
+biB0aGUgbGF0dGVyIGNhc2UsCj4gd2hlbiBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkgaXMgY2Fs
+bGVkIGZvciB0aGUgc3VwcGxpZXIsIGl0IHdpbGwKPiB1cGRhdGUgdGhlIGxpbmsgc3RhdGUgdG8g
+ImRvcm1hbnQiLiAgW0lmIHRoZSBzdXBwbGllciBwcm9iZSBmYWlscywKPiBidXQgdGhlIGNvbnN1
+bWVyIHByb2JlIHN1Y2NlZWRzLCB3aGljaCBzaG91bGQgbm90IGhhcHBlbiBhcyBsb25nIGFzCj4g
+dGhlIGNvbnN1bWVyIGRyaXZlciBpcyBjb3JyZWN0LCB0aGUgbGluayBzdGlsbCB3aWxsIGJlIGFy
+b3VuZCwgYnV0Cj4gaXQgd2lsbCBiZSAiZG9ybWFudCIgdW50aWwgdGhlIHN1cHBsaWVyIGlzIHBy
+b2JlZCBhZ2Fpbi5dCj4gCj4gU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
+bC5qLnd5c29ja2lAaW50ZWwuY29tPgoKSGkgUmFmYWVsLAoKSSd2ZSB0cmllZCB0aGlzIHdpdGgg
+QXJtYWRhIERSTSB3aXRob3V0IHVzaW5nIHRoZSBjb21wb25lbnQgaGVscGVyIGZvcgpicmlkZ2Vz
+LCBhbmQgaXQgc2VlbXMgdG8gd29yayB1cCB0byBhIHBvaW50IChJIGhhdmUgYSB2Z2EgYnJpZGdl
+IGhlcmUKdG8gYWxsb3cgZnVydGhlciB0ZXN0aW5nKToKClsgICAgMi4zMjM0NDFdIGFybWFkYS1k
+cm0gZGlzcGxheS1zdWJzeXN0ZW06IGFzc2lnbmVkIHJlc2VydmVkIG1lbW9yeSBub2RlIGZyYW1l
+YnVmZmVyClsgICAgMi4zMzIwMDFdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJvdW5k
+IGYxODIwMDAwLmxjZC1jb250cm9sbGVyIChvcHMgYXJtYWRhX2xjZF9vcHMpClsgICAgMi4zNDA3
+OTBdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJvdW5kIGYxODEwMDAwLmxjZC1jb250
+cm9sbGVyIChvcHMgYXJtYWRhX2xjZF9vcHMpClsgICAgMi4zNDkzNDVdIGFybWFkYS1kcm0gZGlz
+cGxheS1zdWJzeXN0ZW06IG5vZGU9L2kyYy1tdXgvaTJjQDAvaGRtaS1lbmNvZGVyQDcwClsgICAg
+Mi4zNTY3MTldIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IHBhbmVsPWZmZmZmZGZiIGJy
+aWRnZT0gIChudWxsKSByZXQ9MApbICAgIDIuMzY0MDM4XSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vi
+c3lzdGVtOiBMaW5rZWQgYXMgYSBjb25zdW1lciB0byAxLTAwNzAKWyAgICAyLjM3MDgxOF0gYXJt
+YWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogYnJpZGdlPWVlOGNkYTJjIHJldD0wClsgICAgMi4z
+NzY4OTRdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IG5vZGU9L3ZnYS1icmlkZ2UKWyAg
+ICAyLjM4MjQ1M10gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogcGFuZWw9ZmZmZmZkZmIg
+YnJpZGdlPShudWxsKSByZXQ9MApbICAgIDIuMzg5NzYyXSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vi
+c3lzdGVtOiBMaW5rZWQgYXMgYSBjb25zdW1lciB0byB2Z2EtYnJpZGdlClsgICAgMi4zOTY4ODNd
+IGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJyaWRnZT1lZjNiZWM0MCByZXQ9MAoKV2hl
+biBJIHJlbW92ZSB0aGUgSERNSSBlbmNvZGVyOgoKcm9vdEBjdWJveDovc3lzL2J1cy9pMmMvZHJp
+dmVycy90ZGE5OTh4IyBlY2hvIDEtMDA3MCA+IHVuYmluZAoKdGhlbiBJIGdldDoKClsgMTAxMy44
+MjQ4NjBdIENvbnNvbGU6IHN3aXRjaGluZyB0byBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDMwClsg
+MTAxMy44NjY3ODVdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IERyb3BwaW5nIHRoZSBs
+aW5rIHRvCnZnYS1icmlkZ2UKWyAxMDEzLjg2NzEyNl0gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5
+c3RlbTogRHJvcHBpbmcgdGhlIGxpbmsgdG8gMS0wMDcwCgp3aGljaCBsb29rcyBsaWtlIGl0IGRp
+ZCB3aGF0IHdhcyBleHBlY3RlZCAtIHRoZSBEUk0gZGV2aWNlIGlzIGluZGVlZAp1bmJvdW5kLCB0
+aGUgbm9kZXMgaW4gL2Rldi9kcmkgYXJlIGdvbmUuICBXaGVuIHJlYmluZGluZyB0aGUgSERNSQpl
+bmNvZGVyOgoKWyAxMDE1Ljg2NDcwM10gdGRhOTk4eCAxLTAwNzA6IGZvdW5kIFREQTE5OTg4Clsg
+MTAxNS44OTgwNzhdIHRkYTk5NTAgMS0wMDM0OiBUREE5OTUwIENFQyBpbnRlcmZhY2UsIGhhcmR3
+YXJlIHZlcnNpb24gMy4zClsgMTAxNS45NDEzNzRdIFJlZ2lzdGVyZWQgSVIga2V5bWFwIHJjLWNl
+YwpbIDEwMTUuOTQxNjg0XSByYyByYzA6IHRkYTk5NTAgYXMgL2RldmljZXMvcGxhdGZvcm0vbWJ1
+cy9tYnVzOmludGVybmFsLXJlZ3MvZjEwMTEwMDAuaTJjL2kyYy0wL2kyYy0xLzEtMDA3MC9yYy9y
+YzAKWyAxMDE1Ljk0MjQzOV0gaW5wdXQ6IHRkYTk5NTAgYXMgL2RldmljZXMvcGxhdGZvcm0vbWJ1
+cy9tYnVzOmludGVybmFsLXJlZ3MvZjEwMTEwMDAuaTJjL2kyYy0wL2kyYy0xLzEtMDA3MC9yYy9y
+YzAvaW5wdXQyClsgMTAxNi45ODI5MjFdIGFsbG9jX2NvbnRpZ19yYW5nZTogWzEwMzkwLCAxMDQ5
+MCkgUEZOcyBidXN5ClsgMTAxNi45ODc0MDBdIGtpcmt3b29kLXNwZGlmLWF1ZGlvIGF1ZGlvLXN1
+YnN5c3RlbTogc25kLXNvYy1kdW1teS1kYWkgPC0+IGtpcmt3b29kLWZlIG1hcHBpbmcgb2sKWyAx
+MDE2Ljk4NzU5MV0ga2lya3dvb2Qtc3BkaWYtYXVkaW8gYXVkaW8tc3Vic3lzdGVtOiBtdWx0aWNv
+ZGVjIDwtPiBraXJrd29vZC1zcGRpZiBtYXBwaW5nIG9rCgpidXQgdGhlIERSTSBzdHVmZiBkb2Vz
+bid0IGNvbWUgYmFjayAtIHRoaXMgaXMgd2hhdCBEYW5pZWwgd2FzIHRhbGtpbmcKYWJvdXQgZnVy
+dGhlciBkb3duIHRoaXMgdGhyZWFkLgoKSSBndWVzcyB0aGUga2VybmVsIGNhbid0IGtub3cgdGhh
+dCBpdCBzaG91bGQgY29tZSBiYWNrIGJlY2F1c2UgdGhlCmRldmljZSBsaW5rcyB3ZXJlIGRyb3Bw
+ZWQgYXQgdGhlIHVuYmluZCBzdGFnZSwgd2hpY2ggbWVhbnMgdGhlIGtlcm5lbApoYXMgbG9zdCB0
+aGUgaW5mb3JtYXRpb24gbmVjZXNzYXJ5IHRvIGtub3cgdGhhdCB0aGUgZGlzcGxheSBzdWJzeXN0
+ZW0KaXMgZGVwZW5kZW50IG9uIHRoZSBwcmVzZW5jZSBvZiB0aGUgSERNSSBlbmNvZGVyLiAgSSBk
+b24ndCBzZWUgYW4gZWFzeQp3YXkgYXJvdW5kIHRoYXQuCgpJZiB3ZSBrZWVwIHRoZSBkZXZpY2Ug
+bGlua3MgYWZ0ZXIgYW4gdW5iaW5kIGV2ZW50LCB0aGVuLCBiZWNhdXNlIHdlCmNyZWF0ZSB0aGVt
+IGR1cmluZyBwcm9iZSwgd2UnbGwgYmUgYXR0ZW1wdGluZyB0byByZWNyZWF0ZSB0aGUgbGluawp3
+aGVuIHdlIHJlYXR0YWNoIHRoZSBzdXBwbGllciB0byB0aGUgY29uc3VtZXIuICBJZiB3ZSBvbmx5
+IGFsbG93IG9uZQppbnN0YW5jZSwgdGhlbiB3aGF0IGRvZXMgZGV2aWNlX2xpbmtfYWRkKCkgcmV0
+dXJuLgoKTWF5YmUgaXQgaXMgZ29pbmcgdG8gYmUgbGVzcyBwYWluZnVsIHRvIHB1c2ggZXZlcnl0
+aGluZyBicmlkZ2UtcmVsYXRlZAp0byB1c2UgdGhlIGNvbXBvbmVudCBoZWxwZXIgYWZ0ZXIgYWxs
+LiAgRHVubm8uICBQcm9ibGVtcyBlaXRoZXIgd2F5LgoKPiAtLS0KPiAgRG9jdW1lbnRhdGlvbi9k
+cml2ZXItYXBpL2RldmljZV9saW5rLnJzdCB8ICAgMTAgKystLQo+ICBkcml2ZXJzL2Jhc2UvY29y
+ZS5jICAgICAgICAgICAgICAgICAgICAgIHwgICA3NCArKysrKysrKysrKysrKysrKysrKysrKysr
+KystLS0tCj4gIDIgZmlsZXMgY2hhbmdlZCwgNzMgaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25z
+KC0pCj4gCj4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvYmFzZS9jb3JlLmMKPiA9PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+Cj4gLS0tIGxpbnV4LXBtLm9yaWcvZHJpdmVycy9iYXNlL2NvcmUuYwo+ICsrKyBsaW51eC1wbS9k
+cml2ZXJzL2Jhc2UvY29yZS5jCj4gQEAgLTI2MCwxNyArMjYwLDI2IEBAIHN0cnVjdCBkZXZpY2Vf
+bGluayAqZGV2aWNlX2xpbmtfYWRkKHN0cnUKPiAgCQlsaW5rLT5zdGF0dXMgPSBETF9TVEFURV9O
+T05FOwo+ICAJfSBlbHNlIHsKPiAgCQlzd2l0Y2ggKHN1cHBsaWVyLT5saW5rcy5zdGF0dXMpIHsK
+PiAtCQljYXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6Cj4gKwkJY2FzZSBETF9ERVZfUFJPQklORzoK
+PiAgCQkJc3dpdGNoIChjb25zdW1lci0+bGlua3Muc3RhdHVzKSB7Cj4gIAkJCWNhc2UgRExfREVW
+X1BST0JJTkc6Cj4gIAkJCQkvKgo+IC0JCQkJICogU29tZSBjYWxsZXJzIGV4cGVjdCB0aGUgbGlu
+ayBjcmVhdGlvbiBkdXJpbmcKPiAtCQkJCSAqIGNvbnN1bWVyIGRyaXZlciBwcm9iZSB0byByZXN1
+bWUgdGhlIHN1cHBsaWVyCj4gLQkJCQkgKiBldmVuIHdpdGhvdXQgRExfRkxBR19SUE1fQUNUSVZF
+Lgo+ICsJCQkJICogQSBjb25zdW1lciBkcml2ZXIgY2FuIGNyZWF0ZSBhIGxpbmsgdG8gYQo+ICsJ
+CQkJICogc3VwcGxpZXIgdGhhdCBoYXMgbm90IGNvbXBsZXRlZCBpdHMgcHJvYmluZwo+ICsJCQkJ
+ICogeWV0IGFzIGxvbmcgYXMgaXQga25vd3MgdGhhdCB0aGUgc3VwcGxpZXIgaXMKPiArCQkJCSAq
+IGFscmVhZHkgZnVuY3Rpb25hbCAoZm9yIGV4YW1wbGUsIGl0IGhhcyBqdXN0Cj4gKwkJCQkgKiBh
+Y3F1aXJlZCBzb21lIHJlc291cmNlcyBmcm9tIHRoZSBzdXBwbGllcikuCj4gIAkJCQkgKi8KPiAt
+CQkJCWlmIChmbGFncyAmIERMX0ZMQUdfUE1fUlVOVElNRSkKPiAtCQkJCQlwbV9ydW50aW1lX3Jl
+c3VtZShzdXBwbGllcik7Cj4gLQo+ICsJCQkJbGluay0+c3RhdHVzID0gRExfU1RBVEVfQ09OU1VN
+RVJfUFJPQkU7Cj4gKwkJCQlicmVhazsKPiArCQkJZGVmYXVsdDoKPiArCQkJCWxpbmstPnN0YXR1
+cyA9IERMX1NUQVRFX0RPUk1BTlQ7Cj4gKwkJCQlicmVhazsKPiArCQkJfQo+ICsJCQlicmVhazsK
+PiArCQljYXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6Cj4gKwkJCXN3aXRjaCAoY29uc3VtZXItPmxp
+bmtzLnN0YXR1cykgewo+ICsJCQljYXNlIERMX0RFVl9QUk9CSU5HOgo+ICAJCQkJbGluay0+c3Rh
+dHVzID0gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkU7Cj4gIAkJCQlicmVhazsKPiAgCQkJY2FzZSBE
+TF9ERVZfRFJJVkVSX0JPVU5EOgo+IEBAIC0yOTEsNiArMzAwLDE0IEBAIHN0cnVjdCBkZXZpY2Vf
+bGluayAqZGV2aWNlX2xpbmtfYWRkKHN0cnUKPiAgCX0KPiAgCj4gIAkvKgo+ICsJICogU29tZSBj
+YWxsZXJzIGV4cGVjdCB0aGUgbGluayBjcmVhdGlvbiBkdXJpbmcgY29uc3VtZXIgZHJpdmVyIHBy
+b2JlIHRvCj4gKwkgKiByZXN1bWUgdGhlIHN1cHBsaWVyIGV2ZW4gd2l0aG91dCBETF9GTEFHX1JQ
+TV9BQ1RJVkUuCj4gKwkgKi8KPiArCWlmIChsaW5rLT5zdGF0dXMgPT0gRExfU1RBVEVfQ09OU1VN
+RVJfUFJPQkUgJiYKPiArCSAgICBmbGFncyAmIERMX0ZMQUdfUE1fUlVOVElNRSkKPiArCQlwbV9y
+dW50aW1lX3Jlc3VtZShzdXBwbGllcik7Cj4gKwo+ICsJLyoKPiAgCSAqIE1vdmUgdGhlIGNvbnN1
+bWVyIGFuZCBhbGwgb2YgdGhlIGRldmljZXMgZGVwZW5kaW5nIG9uIGl0IHRvIHRoZSBlbmQKPiAg
+CSAqIG9mIGRwbV9saXN0IGFuZCB0aGUgZGV2aWNlc19rc2V0IGxpc3QuCj4gIAkgKgo+IEBAIC00
+NzQsNiArNDkxLDE2IEBAIHZvaWQgZGV2aWNlX2xpbmtzX2RyaXZlcl9ib3VuZChzdHJ1Y3QgZGUK
+PiAgCQlpZiAobGluay0+ZmxhZ3MgJiBETF9GTEFHX1NUQVRFTEVTUykKPiAgCQkJY29udGludWU7
+Cj4gIAo+ICsJCS8qCj4gKwkJICogTGlua3MgY3JlYXRlZCBkdXJpbmcgY29uc3VtZXIgcHJvYmUg
+bWF5IGJlIGluIHRoZSAiY29uc3VtZXIKPiArCQkgKiBwcm9iZSIgc3RhdGUgdG8gc3RhcnQgd2l0
+aCBpZiB0aGUgc3VwcGxpZXIgaXMgc3RpbGwgcHJvYmluZwo+ICsJCSAqIHdoZW4gdGhleSBhcmUg
+Y3JlYXRlZCBhbmQgdGhleSBtYXkgYmVjb21lICJhY3RpdmUiIGlmIHRoZQo+ICsJCSAqIGNvbnN1
+bWVyIHByb2JlIHJldHVybnMgZmlyc3QuICBTa2lwIHRoZW0gaGVyZS4KPiArCQkgKi8KPiArCQlp
+ZiAobGluay0+c3RhdHVzID09IERMX1NUQVRFX0NPTlNVTUVSX1BST0JFIHx8Cj4gKwkJICAgIGxp
+bmstPnN0YXR1cyA9PSBETF9TVEFURV9BQ1RJVkUpCj4gKwkJCWNvbnRpbnVlOwo+ICsKPiAgCQlX
+QVJOX09OKGxpbmstPnN0YXR1cyAhPSBETF9TVEFURV9ET1JNQU5UKTsKPiAgCQlXUklURV9PTkNF
+KGxpbmstPnN0YXR1cywgRExfU1RBVEVfQVZBSUxBQkxFKTsKPiAgCX0KPiBAQCAtNTEzLDE3ICs1
+NDAsNDggQEAgc3RhdGljIHZvaWQgX19kZXZpY2VfbGlua3Nfbm9fZHJpdmVyKHN0cgo+ICAKPiAg
+CQlpZiAobGluay0+ZmxhZ3MgJiBETF9GTEFHX0FVVE9SRU1PVkVfQ09OU1VNRVIpCj4gIAkJCWty
+ZWZfcHV0KCZsaW5rLT5rcmVmLCBfX2RldmljZV9saW5rX2RlbCk7Cj4gLQkJZWxzZSBpZiAobGlu
+ay0+c3RhdHVzICE9IERMX1NUQVRFX1NVUFBMSUVSX1VOQklORCkKPiArCQllbHNlIGlmIChsaW5r
+LT5zdGF0dXMgPT0gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkUgfHwKPiArCQkJIGxpbmstPnN0YXR1
+cyA9PSBETF9TVEFURV9BQ1RJVkUpCj4gIAkJCVdSSVRFX09OQ0UobGluay0+c3RhdHVzLCBETF9T
+VEFURV9BVkFJTEFCTEUpOwo+ICAJfQo+ICAKPiAgCWRldi0+bGlua3Muc3RhdHVzID0gRExfREVW
+X05PX0RSSVZFUjsKPiAgfQo+ICAKPiArLyoqCj4gKyAqIGRldmljZV9saW5rc19ub19kcml2ZXIg
+LSBVcGRhdGUgbGlua3MgYWZ0ZXIgZmFpbGluZyBkcml2ZXIgcHJvYmUuCj4gKyAqIEBkZXY6IERl
+dmljZSB3aG9zZSBkcml2ZXIgaGFzIGp1c3QgZmFpbGVkIHRvIHByb2JlLgo+ICsgKgo+ICsgKiBD
+bGVhbiB1cCBsZWZ0b3ZlciBsaW5rcyB0byBjb25zdW1lcnMgZm9yIEBkZXYgYW5kIGludm9rZQo+
+ICsgKiAlX19kZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkgdG8gdXBkYXRlIGxpbmtzIHRvIHN1cHBs
+aWVycyBmb3IgaXQgYXMKPiArICogYXBwcm9wcmlhdGUuCj4gKyAqCj4gKyAqIExpbmtzIHdpdGgg
+dGhlIERMX0ZMQUdfU1RBVEVMRVNTIGZsYWcgc2V0IGFyZSBpZ25vcmVkLgo+ICsgKi8KPiAgdm9p
+ZCBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgewo+ICsJc3Ry
+dWN0IGRldmljZV9saW5rICpsaW5rOwo+ICsKPiAgCWRldmljZV9saW5rc193cml0ZV9sb2NrKCk7
+Cj4gKwo+ICsJbGlzdF9mb3JfZWFjaF9lbnRyeShsaW5rLCAmZGV2LT5saW5rcy5jb25zdW1lcnMs
+IHNfbm9kZSkgewo+ICsJCWlmIChsaW5rLT5mbGFncyAmIERMX0ZMQUdfU1RBVEVMRVNTKQo+ICsJ
+CQljb250aW51ZTsKPiArCj4gKwkJLyoKPiArCQkgKiBUaGUgcHJvYmUgaGFzIGZhaWxlZCwgc28g
+aWYgdGhlIHN0YXR1cyBvZiB0aGUgbGluayBpcwo+ICsJCSAqICJjb25zdW1lciBwcm9iZSIgb3Ig
+ImFjdGl2ZSIsIGl0IG11c3QgaGF2ZSBiZWVuIGFkZGVkIGJ5Cj4gKwkJICogYSBwcm9iaW5nIGNv
+bnN1bWVyIHdoaWxlIHRoaXMgZGV2aWNlIHdhcyBzdGlsbCBwcm9iaW5nLgo+ICsJCSAqIENoYW5n
+ZSBpdHMgc3RhdGUgdG8gImRvcm1hbnQiLCBhcyBpdCByZXByZXNlbnRzIGEgdmFsaWQKPiArCQkg
+KiByZWxhdGlvbnNoaXAsIGJ1dCBpdCBpcyBub3QgZnVuY3Rpb25hbGx5IG1lYW5pbmdmdWwuCj4g
+KwkJICovCj4gKwkJaWYgKGxpbmstPnN0YXR1cyA9PSBETF9TVEFURV9DT05TVU1FUl9QUk9CRSB8
+fAo+ICsJCSAgICBsaW5rLT5zdGF0dXMgPT0gRExfU1RBVEVfQUNUSVZFKQo+ICsJCQlXUklURV9P
+TkNFKGxpbmstPnN0YXR1cywgRExfU1RBVEVfRE9STUFOVCk7Cj4gKwl9Cj4gKwo+ICAJX19kZXZp
+Y2VfbGlua3Nfbm9fZHJpdmVyKGRldik7Cj4gKwo+ICAJZGV2aWNlX2xpbmtzX3dyaXRlX3VubG9j
+aygpOwo+ICB9Cj4gIAo+IEluZGV4OiBsaW51eC1wbS9Eb2N1bWVudGF0aW9uL2RyaXZlci1hcGkv
+ZGV2aWNlX2xpbmsucnN0Cj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51eC1wbS5vcmlnL0RvY3VtZW50
+YXRpb24vZHJpdmVyLWFwaS9kZXZpY2VfbGluay5yc3QKPiArKysgbGludXgtcG0vRG9jdW1lbnRh
+dGlvbi9kcml2ZXItYXBpL2RldmljZV9saW5rLnJzdAo+IEBAIC01OSwxMSArNTksMTUgQEAgZGV2
+aWNlIGBgLT5wcm9iZWBgIGNhbGxiYWNrIG9yIGEgYm9vdC10aQo+ICAKPiAgQW5vdGhlciBleGFt
+cGxlIGZvciBhbiBpbmNvbnNpc3RlbnQgc3RhdGUgd291bGQgYmUgYSBkZXZpY2UgbGluayB0aGF0
+Cj4gIHJlcHJlc2VudHMgYSBkcml2ZXIgcHJlc2VuY2UgZGVwZW5kZW5jeSwgeWV0IGlzIGFkZGVk
+IGZyb20gdGhlIGNvbnN1bWVyJ3MKPiAtYGAtPnByb2JlYGAgY2FsbGJhY2sgd2hpbGUgdGhlIHN1
+cHBsaWVyIGhhc24ndCBwcm9iZWQgeWV0OiAgSGFkIHRoZSBkcml2ZXIKPiAtY29yZSBrbm93biBh
+Ym91dCB0aGUgZGV2aWNlIGxpbmsgZWFybGllciwgaXQgd291bGRuJ3QgaGF2ZSBwcm9iZWQgdGhl
+Cj4gK2BgLT5wcm9iZWBgIGNhbGxiYWNrIHdoaWxlIHRoZSBzdXBwbGllciBoYXNuJ3Qgc3RhcnRl
+ZCB0byBwcm9iZSB5ZXQ6ICBIYWQgdGhlCj4gK2RyaXZlciBjb3JlIGtub3duIGFib3V0IHRoZSBk
+ZXZpY2UgbGluayBlYXJsaWVyLCBpdCB3b3VsZG4ndCBoYXZlIHByb2JlZCB0aGUKPiAgY29uc3Vt
+ZXIgaW4gdGhlIGZpcnN0IHBsYWNlLiAgVGhlIG9udXMgaXMgdGh1cyBvbiB0aGUgY29uc3VtZXIg
+dG8gY2hlY2sKPiAgcHJlc2VuY2Ugb2YgdGhlIHN1cHBsaWVyIGFmdGVyIGFkZGluZyB0aGUgbGlu
+aywgYW5kIGRlZmVyIHByb2Jpbmcgb24KPiAtbm9uLXByZXNlbmNlLgo+ICtub24tcHJlc2VuY2Uu
+ICBbTm90ZSB0aGF0IGl0IGlzIHZhbGlkIHRvIGNyZWF0ZSBhIGxpbmsgZnJvbSB0aGUgY29uc3Vt
+ZXIncwo+ICtgYC0+cHJvYmVgYCBjYWxsYmFjayB3aGlsZSB0aGUgc3VwcGxpZXIgaXMgc3RpbGwg
+cHJvYmluZywgYnV0IHRoZSBjb25zdW1lciBtdXN0Cj4gK2tub3cgdGhhdCB0aGUgc3VwcGxpZXIg
+aXMgZnVuY3Rpb25hbCBhbHJlYWR5IGF0IHRoZSBsaW5rIGNyZWF0aW9uIHRpbWUgKHRoYXQgaXMK
+PiArdGhlIGNhc2UsIGZvciBpbnN0YW5jZSwgaWYgdGhlIGNvbnN1bWVyIGhhcyBqdXN0IGFjcXVp
+cmVkIHNvbWUgcmVzb3VyY2VzIHRoYXQKPiArd291bGQgbm90IGhhdmUgYmVlbiBhdmFpbGFibGUg
+aGFkIHRoZSBzdXBwbGllciBub3QgYmVlbiBmdW5jdGlvbmFsIHRoZW4pLl0KPiAgCj4gIElmIGEg
+ZGV2aWNlIGxpbmsgaXMgYWRkZWQgaW4gdGhlIGBgLT5wcm9iZWBgIGNhbGxiYWNrIG9mIHRoZSBz
+dXBwbGllciBvcgo+ICBjb25zdW1lciBkcml2ZXIsIGl0IGlzIHR5cGljYWxseSBkZWxldGVkIGlu
+IGl0cyBgYC0+cmVtb3ZlYGAgY2FsbGJhY2sgZm9yCj4gCj4gCgotLSAKUk1LJ3MgUGF0Y2ggc3lz
+dGVtOiBodHRwczovL3d3dy5hcm1saW51eC5vcmcudWsvZGV2ZWxvcGVyL3BhdGNoZXMvCkZUVEMg
+YnJvYWRiYW5kIGZvciAwLjhtaWxlIGxpbmUgaW4gc3VidXJiaWE6IHN5bmMgYXQgMTIuMU1icHMg
+ZG93biA2MjJrYnBzIHVwCkFjY29yZGluZyB0byBzcGVlZHRlc3QubmV0OiAxMS45TWJwcyBkb3du
+IDUwMGticHMgdXAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVs
+Cg==
