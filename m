@@ -1,232 +1,190 @@
-From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Thu, 17 Jan 2019 17:26:25 +0000
-Message-ID: <20190117172625.wr6gwgooowdjl5kq@e5254000004ec.dyn.armlinux.org.uk>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <CAJZ5v0gFiUx5tZUbhO9-kuDU9B3h13wEvaEf86j8td=3CajnRw@mail.gmail.com>
- <CAJZ5v0grEWD0d51DCcEXuS+9tbyWERBPv1wOCqznEuXEFmbvmQ@mail.gmail.com>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v10 00/27] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Thu, 17 Jan 2019 17:44:10 +0000
+Message-ID: <20190117174410.GA8839@e107155-lin>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20190103120612.GC23511@e107155-lin>
+ <CAPDyKFp-JB85TZOs+oso0iidaAsm1A=UDrg=gv+QZ4VJ9gW=fA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <515889972.533tA6DaoZ@aspire.rjw.lan>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, DRI Development <dri-devel@lists.freedesktop.org>, Peter Rosin <peda@axentia.se>
+In-Reply-To: <CAPDyKFp-JB85TZOs+oso0iidaAsm1A=UDrg=gv+QZ4VJ9gW=fA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBKYW4gMTUsIDIwMTkgYXQgMTE6NDc6MDBQTSArMDEwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50
-ZWwuY29tPgo+IFN1YmplY3Q6IFtQQVRDSF0gZHJpdmVyIGNvcmU6IEZpeCBhZGRpbmcgZGV2aWNl
-IGxpbmtzIHRvIHByb2Jpbmcgc3VwcGxpZXJzCj4gCj4gQ3VycmVudGx5LCBpdCBpcyBub3QgdmFs
-aWQgdG8gYWRkIGEgZGV2aWNlIGxpbmsgZnJvbSBhIGNvbnN1bWVyCj4gZHJpdmVyIC0+cHJvYmUo
-KSBjYWxsYmFjayB0byBhIHN1cHBsaWVyIHRoYXQgaXMgc3RpbGwgcHJvYmluZyB0b28sIGJ1dAo+
-IGdlbmVyYWxseSB0aGlzIGlzIGEgdmFsaWQgdXNlIGNhc2UuICBGb3IgZXhhbXBsZSwgaWYgdGhl
-IGNvbnN1bWVyIGhhcwo+IGp1c3QgYWNxdWlyZWQgYSByZXNvdXJjZSB0aGF0IGNhbiBvbmx5IGJl
-IGF2YWlsYWJsZSB3aGVuIHRoZSBzdXBwbGllcgo+IGlzIGZ1bmN0aW9uYWwsIGFkZGluZyBhIGRl
-dmljZSBsaW5rIHRvIHRoYXQgc3VwcGxpZXIgcmlnaHQgYXdheQo+IHNob3VsZCBiZSBzYWZlIChh
-bmQgZXZlbiBkZXNpcmFibGUgYXJndWFibHkpLCBidXQgZGV2aWNlX2xpbmtfYWRkKCkKPiBkb2Vz
-bid0IGhhbmRsZSB0aGF0IGNhc2UgY29ycmVjdGx5IGFuZCB0aGUgaW5pdGlhbCBzdGF0ZSBvZiB0
-aGUgbGluawo+IGNyZWF0ZWQgYnkgaXQgaXMgd3JvbmcgdGhlbi4KPiAKPiBUbyBhZGRyZXNzIHRo
-aXMgcHJvYmxlbSwgY2hhbmdlIHRoZSBpbml0aWFsIHN0YXRlIG9mIGRldmljZSBsaW5rcwo+IGFk
-ZGVkIGJldHdlZW4gYSBwcm9iaW5nIHN1cHBsaWVyIGFuZCBhIHByb2JpbmcgY29uc3VtZXIgdG8K
-PiBETF9TVEFURV9DT05TVU1FUl9QUk9CRSBhbmQgdXBkYXRlIGRldmljZV9saW5rc19kcml2ZXJf
-Ym91bmQoKSB0bwo+IHNraXAgc3VjaCBsaW5rcyBvbiB0aGUgc3VwcGxpZXIgc2lkZS4KPiAKPiBX
-aXRoIHRoaXMgY2hhbmdlLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgY29tcGxldGVzIGZpcnN0LAo+
-IGRldmljZV9saW5rc19kcml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwgc2tpcCB0aGUg
-bGluayBzdGF0ZQo+IHVwZGF0ZSBhbmQgd2hlbiBpdCBpcyBjYWxsZWQgZm9yIHRoZSBjb25zdW1l
-ciwgdGhlIGxpbmsgc3RhdGUgd2lsbAo+IGJlIHVwZGF0ZWQgdG8gImFjdGl2ZSIuICBJbiB0dXJu
-LCBpZiB0aGUgY29uc3VtZXIgcHJvYmUgY29tcGxldGVzCj4gZmlyc3QsIGRldmljZV9saW5rc19k
-cml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwgY2hhbmdlIHRoZQo+IHN0YXRlIG9mIHRo
-ZSBsaW5rIHRvICJhY3RpdmUiIGFuZCB3aGVuIGl0IGlzIGNhbGxlZCBmb3IgdGhlCj4gc3VwcGxp
-ZXIsIHRoZSBsaW5rIHN0YXR1cyB1cGRhdGUgd2lsbCBiZSBza2lwcGVkLgo+IAo+IEhvd2V2ZXIs
-IGluIHByaW5jaXBsZSB0aGUgc3VwcGxpZXIgb3IgY29uc3VtZXIgcHJvYmUgbWF5IHN0aWxsIGZh
-aWwKPiBhZnRlciB0aGUgbGluayBoYXMgYmVlbiBhZGRlZCwgc28gbW9kaWZ5IGRldmljZV9saW5r
-c19ub19kcml2ZXIoKSB0bwo+IGNoYW5nZSBkZXZpY2UgbGlua3MgaW4gdGhlICJhY3RpdmUiIG9y
-ICJjb25zdW1lciBwcm9iZSIgc3RhdGUgdG8KPiAiZG9ybWFudCIgb24gdGhlIHN1cHBsaWVyIHNp
-ZGUgYW5kIHVwZGF0ZSBfX2RldmljZV9saW5rc19ub19kcml2ZXIoKQo+IHRvIGNoYW5nZSB0aGUg
-bGluayBzdGF0ZSB0byAiYXZhaWxhYmxlIiBvbmx5IGlmIGl0IGlzICJjb25zdW1lcgo+IHByb2Jl
-IiBvciAiYWN0aXZlIi4KPiAKPiBUaGVuLCBpZiB0aGUgc3VwcGxpZXIgcHJvYmUgZmFpbHMgZmly
-c3QsIHRoZSBsZWZ0b3ZlciBsaW5rIHRvIHRoZQo+IHByb2JpbmcgY29uc3VtZXIgd2lsbCBiZWNv
-bWUgImRvcm1hbnQiIGFuZCBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkKPiBjYWxsZWQgZm9yIHRo
-ZSBjb25zdW1lciAod2hlbiBpdHMgcHJvYmUgZmFpbHMpIHdpbGwgY2xlYW4gaXQgdXAuCj4gSW4g
-dHVybiwgaWYgdGhlIGNvbnN1bWVyIHByb2JlIGZhaWxzIGZpcnN0LCBpdCB3aWxsIGVpdGhlciBk
-cm9wIHRoZQo+IGxpbmssIG9yIGNoYW5nZSBpdHMgc3RhdGUgdG8gImF2YWlsYWJsZSIgYW5kLCBp
-biB0aGUgbGF0dGVyIGNhc2UsCj4gd2hlbiBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkgaXMgY2Fs
-bGVkIGZvciB0aGUgc3VwcGxpZXIsIGl0IHdpbGwKPiB1cGRhdGUgdGhlIGxpbmsgc3RhdGUgdG8g
-ImRvcm1hbnQiLiAgW0lmIHRoZSBzdXBwbGllciBwcm9iZSBmYWlscywKPiBidXQgdGhlIGNvbnN1
-bWVyIHByb2JlIHN1Y2NlZWRzLCB3aGljaCBzaG91bGQgbm90IGhhcHBlbiBhcyBsb25nIGFzCj4g
-dGhlIGNvbnN1bWVyIGRyaXZlciBpcyBjb3JyZWN0LCB0aGUgbGluayBzdGlsbCB3aWxsIGJlIGFy
-b3VuZCwgYnV0Cj4gaXQgd2lsbCBiZSAiZG9ybWFudCIgdW50aWwgdGhlIHN1cHBsaWVyIGlzIHBy
-b2JlZCBhZ2Fpbi5dCj4gCj4gU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
-bC5qLnd5c29ja2lAaW50ZWwuY29tPgoKSGkgUmFmYWVsLAoKSSd2ZSB0cmllZCB0aGlzIHdpdGgg
-QXJtYWRhIERSTSB3aXRob3V0IHVzaW5nIHRoZSBjb21wb25lbnQgaGVscGVyIGZvcgpicmlkZ2Vz
-LCBhbmQgaXQgc2VlbXMgdG8gd29yayB1cCB0byBhIHBvaW50IChJIGhhdmUgYSB2Z2EgYnJpZGdl
-IGhlcmUKdG8gYWxsb3cgZnVydGhlciB0ZXN0aW5nKToKClsgICAgMi4zMjM0NDFdIGFybWFkYS1k
-cm0gZGlzcGxheS1zdWJzeXN0ZW06IGFzc2lnbmVkIHJlc2VydmVkIG1lbW9yeSBub2RlIGZyYW1l
-YnVmZmVyClsgICAgMi4zMzIwMDFdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJvdW5k
-IGYxODIwMDAwLmxjZC1jb250cm9sbGVyIChvcHMgYXJtYWRhX2xjZF9vcHMpClsgICAgMi4zNDA3
-OTBdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJvdW5kIGYxODEwMDAwLmxjZC1jb250
-cm9sbGVyIChvcHMgYXJtYWRhX2xjZF9vcHMpClsgICAgMi4zNDkzNDVdIGFybWFkYS1kcm0gZGlz
-cGxheS1zdWJzeXN0ZW06IG5vZGU9L2kyYy1tdXgvaTJjQDAvaGRtaS1lbmNvZGVyQDcwClsgICAg
-Mi4zNTY3MTldIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IHBhbmVsPWZmZmZmZGZiIGJy
-aWRnZT0gIChudWxsKSByZXQ9MApbICAgIDIuMzY0MDM4XSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vi
-c3lzdGVtOiBMaW5rZWQgYXMgYSBjb25zdW1lciB0byAxLTAwNzAKWyAgICAyLjM3MDgxOF0gYXJt
-YWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogYnJpZGdlPWVlOGNkYTJjIHJldD0wClsgICAgMi4z
-NzY4OTRdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IG5vZGU9L3ZnYS1icmlkZ2UKWyAg
-ICAyLjM4MjQ1M10gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogcGFuZWw9ZmZmZmZkZmIg
-YnJpZGdlPShudWxsKSByZXQ9MApbICAgIDIuMzg5NzYyXSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vi
-c3lzdGVtOiBMaW5rZWQgYXMgYSBjb25zdW1lciB0byB2Z2EtYnJpZGdlClsgICAgMi4zOTY4ODNd
-IGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGJyaWRnZT1lZjNiZWM0MCByZXQ9MAoKV2hl
-biBJIHJlbW92ZSB0aGUgSERNSSBlbmNvZGVyOgoKcm9vdEBjdWJveDovc3lzL2J1cy9pMmMvZHJp
-dmVycy90ZGE5OTh4IyBlY2hvIDEtMDA3MCA+IHVuYmluZAoKdGhlbiBJIGdldDoKClsgMTAxMy44
-MjQ4NjBdIENvbnNvbGU6IHN3aXRjaGluZyB0byBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDMwClsg
-MTAxMy44NjY3ODVdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IERyb3BwaW5nIHRoZSBs
-aW5rIHRvCnZnYS1icmlkZ2UKWyAxMDEzLjg2NzEyNl0gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5
-c3RlbTogRHJvcHBpbmcgdGhlIGxpbmsgdG8gMS0wMDcwCgp3aGljaCBsb29rcyBsaWtlIGl0IGRp
-ZCB3aGF0IHdhcyBleHBlY3RlZCAtIHRoZSBEUk0gZGV2aWNlIGlzIGluZGVlZAp1bmJvdW5kLCB0
-aGUgbm9kZXMgaW4gL2Rldi9kcmkgYXJlIGdvbmUuICBXaGVuIHJlYmluZGluZyB0aGUgSERNSQpl
-bmNvZGVyOgoKWyAxMDE1Ljg2NDcwM10gdGRhOTk4eCAxLTAwNzA6IGZvdW5kIFREQTE5OTg4Clsg
-MTAxNS44OTgwNzhdIHRkYTk5NTAgMS0wMDM0OiBUREE5OTUwIENFQyBpbnRlcmZhY2UsIGhhcmR3
-YXJlIHZlcnNpb24gMy4zClsgMTAxNS45NDEzNzRdIFJlZ2lzdGVyZWQgSVIga2V5bWFwIHJjLWNl
-YwpbIDEwMTUuOTQxNjg0XSByYyByYzA6IHRkYTk5NTAgYXMgL2RldmljZXMvcGxhdGZvcm0vbWJ1
-cy9tYnVzOmludGVybmFsLXJlZ3MvZjEwMTEwMDAuaTJjL2kyYy0wL2kyYy0xLzEtMDA3MC9yYy9y
-YzAKWyAxMDE1Ljk0MjQzOV0gaW5wdXQ6IHRkYTk5NTAgYXMgL2RldmljZXMvcGxhdGZvcm0vbWJ1
-cy9tYnVzOmludGVybmFsLXJlZ3MvZjEwMTEwMDAuaTJjL2kyYy0wL2kyYy0xLzEtMDA3MC9yYy9y
-YzAvaW5wdXQyClsgMTAxNi45ODI5MjFdIGFsbG9jX2NvbnRpZ19yYW5nZTogWzEwMzkwLCAxMDQ5
-MCkgUEZOcyBidXN5ClsgMTAxNi45ODc0MDBdIGtpcmt3b29kLXNwZGlmLWF1ZGlvIGF1ZGlvLXN1
-YnN5c3RlbTogc25kLXNvYy1kdW1teS1kYWkgPC0+IGtpcmt3b29kLWZlIG1hcHBpbmcgb2sKWyAx
-MDE2Ljk4NzU5MV0ga2lya3dvb2Qtc3BkaWYtYXVkaW8gYXVkaW8tc3Vic3lzdGVtOiBtdWx0aWNv
-ZGVjIDwtPiBraXJrd29vZC1zcGRpZiBtYXBwaW5nIG9rCgpidXQgdGhlIERSTSBzdHVmZiBkb2Vz
-bid0IGNvbWUgYmFjayAtIHRoaXMgaXMgd2hhdCBEYW5pZWwgd2FzIHRhbGtpbmcKYWJvdXQgZnVy
-dGhlciBkb3duIHRoaXMgdGhyZWFkLgoKSSBndWVzcyB0aGUga2VybmVsIGNhbid0IGtub3cgdGhh
-dCBpdCBzaG91bGQgY29tZSBiYWNrIGJlY2F1c2UgdGhlCmRldmljZSBsaW5rcyB3ZXJlIGRyb3Bw
-ZWQgYXQgdGhlIHVuYmluZCBzdGFnZSwgd2hpY2ggbWVhbnMgdGhlIGtlcm5lbApoYXMgbG9zdCB0
-aGUgaW5mb3JtYXRpb24gbmVjZXNzYXJ5IHRvIGtub3cgdGhhdCB0aGUgZGlzcGxheSBzdWJzeXN0
-ZW0KaXMgZGVwZW5kZW50IG9uIHRoZSBwcmVzZW5jZSBvZiB0aGUgSERNSSBlbmNvZGVyLiAgSSBk
-b24ndCBzZWUgYW4gZWFzeQp3YXkgYXJvdW5kIHRoYXQuCgpJZiB3ZSBrZWVwIHRoZSBkZXZpY2Ug
-bGlua3MgYWZ0ZXIgYW4gdW5iaW5kIGV2ZW50LCB0aGVuLCBiZWNhdXNlIHdlCmNyZWF0ZSB0aGVt
-IGR1cmluZyBwcm9iZSwgd2UnbGwgYmUgYXR0ZW1wdGluZyB0byByZWNyZWF0ZSB0aGUgbGluawp3
-aGVuIHdlIHJlYXR0YWNoIHRoZSBzdXBwbGllciB0byB0aGUgY29uc3VtZXIuICBJZiB3ZSBvbmx5
-IGFsbG93IG9uZQppbnN0YW5jZSwgdGhlbiB3aGF0IGRvZXMgZGV2aWNlX2xpbmtfYWRkKCkgcmV0
-dXJuLgoKTWF5YmUgaXQgaXMgZ29pbmcgdG8gYmUgbGVzcyBwYWluZnVsIHRvIHB1c2ggZXZlcnl0
-aGluZyBicmlkZ2UtcmVsYXRlZAp0byB1c2UgdGhlIGNvbXBvbmVudCBoZWxwZXIgYWZ0ZXIgYWxs
-LiAgRHVubm8uICBQcm9ibGVtcyBlaXRoZXIgd2F5LgoKPiAtLS0KPiAgRG9jdW1lbnRhdGlvbi9k
-cml2ZXItYXBpL2RldmljZV9saW5rLnJzdCB8ICAgMTAgKystLQo+ICBkcml2ZXJzL2Jhc2UvY29y
-ZS5jICAgICAgICAgICAgICAgICAgICAgIHwgICA3NCArKysrKysrKysrKysrKysrKysrKysrKysr
-KystLS0tCj4gIDIgZmlsZXMgY2hhbmdlZCwgNzMgaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25z
-KC0pCj4gCj4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvYmFzZS9jb3JlLmMKPiA9PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-Cj4gLS0tIGxpbnV4LXBtLm9yaWcvZHJpdmVycy9iYXNlL2NvcmUuYwo+ICsrKyBsaW51eC1wbS9k
-cml2ZXJzL2Jhc2UvY29yZS5jCj4gQEAgLTI2MCwxNyArMjYwLDI2IEBAIHN0cnVjdCBkZXZpY2Vf
-bGluayAqZGV2aWNlX2xpbmtfYWRkKHN0cnUKPiAgCQlsaW5rLT5zdGF0dXMgPSBETF9TVEFURV9O
-T05FOwo+ICAJfSBlbHNlIHsKPiAgCQlzd2l0Y2ggKHN1cHBsaWVyLT5saW5rcy5zdGF0dXMpIHsK
-PiAtCQljYXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6Cj4gKwkJY2FzZSBETF9ERVZfUFJPQklORzoK
-PiAgCQkJc3dpdGNoIChjb25zdW1lci0+bGlua3Muc3RhdHVzKSB7Cj4gIAkJCWNhc2UgRExfREVW
-X1BST0JJTkc6Cj4gIAkJCQkvKgo+IC0JCQkJICogU29tZSBjYWxsZXJzIGV4cGVjdCB0aGUgbGlu
-ayBjcmVhdGlvbiBkdXJpbmcKPiAtCQkJCSAqIGNvbnN1bWVyIGRyaXZlciBwcm9iZSB0byByZXN1
-bWUgdGhlIHN1cHBsaWVyCj4gLQkJCQkgKiBldmVuIHdpdGhvdXQgRExfRkxBR19SUE1fQUNUSVZF
-Lgo+ICsJCQkJICogQSBjb25zdW1lciBkcml2ZXIgY2FuIGNyZWF0ZSBhIGxpbmsgdG8gYQo+ICsJ
-CQkJICogc3VwcGxpZXIgdGhhdCBoYXMgbm90IGNvbXBsZXRlZCBpdHMgcHJvYmluZwo+ICsJCQkJ
-ICogeWV0IGFzIGxvbmcgYXMgaXQga25vd3MgdGhhdCB0aGUgc3VwcGxpZXIgaXMKPiArCQkJCSAq
-IGFscmVhZHkgZnVuY3Rpb25hbCAoZm9yIGV4YW1wbGUsIGl0IGhhcyBqdXN0Cj4gKwkJCQkgKiBh
-Y3F1aXJlZCBzb21lIHJlc291cmNlcyBmcm9tIHRoZSBzdXBwbGllcikuCj4gIAkJCQkgKi8KPiAt
-CQkJCWlmIChmbGFncyAmIERMX0ZMQUdfUE1fUlVOVElNRSkKPiAtCQkJCQlwbV9ydW50aW1lX3Jl
-c3VtZShzdXBwbGllcik7Cj4gLQo+ICsJCQkJbGluay0+c3RhdHVzID0gRExfU1RBVEVfQ09OU1VN
-RVJfUFJPQkU7Cj4gKwkJCQlicmVhazsKPiArCQkJZGVmYXVsdDoKPiArCQkJCWxpbmstPnN0YXR1
-cyA9IERMX1NUQVRFX0RPUk1BTlQ7Cj4gKwkJCQlicmVhazsKPiArCQkJfQo+ICsJCQlicmVhazsK
-PiArCQljYXNlIERMX0RFVl9EUklWRVJfQk9VTkQ6Cj4gKwkJCXN3aXRjaCAoY29uc3VtZXItPmxp
-bmtzLnN0YXR1cykgewo+ICsJCQljYXNlIERMX0RFVl9QUk9CSU5HOgo+ICAJCQkJbGluay0+c3Rh
-dHVzID0gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkU7Cj4gIAkJCQlicmVhazsKPiAgCQkJY2FzZSBE
-TF9ERVZfRFJJVkVSX0JPVU5EOgo+IEBAIC0yOTEsNiArMzAwLDE0IEBAIHN0cnVjdCBkZXZpY2Vf
-bGluayAqZGV2aWNlX2xpbmtfYWRkKHN0cnUKPiAgCX0KPiAgCj4gIAkvKgo+ICsJICogU29tZSBj
-YWxsZXJzIGV4cGVjdCB0aGUgbGluayBjcmVhdGlvbiBkdXJpbmcgY29uc3VtZXIgZHJpdmVyIHBy
-b2JlIHRvCj4gKwkgKiByZXN1bWUgdGhlIHN1cHBsaWVyIGV2ZW4gd2l0aG91dCBETF9GTEFHX1JQ
-TV9BQ1RJVkUuCj4gKwkgKi8KPiArCWlmIChsaW5rLT5zdGF0dXMgPT0gRExfU1RBVEVfQ09OU1VN
-RVJfUFJPQkUgJiYKPiArCSAgICBmbGFncyAmIERMX0ZMQUdfUE1fUlVOVElNRSkKPiArCQlwbV9y
-dW50aW1lX3Jlc3VtZShzdXBwbGllcik7Cj4gKwo+ICsJLyoKPiAgCSAqIE1vdmUgdGhlIGNvbnN1
-bWVyIGFuZCBhbGwgb2YgdGhlIGRldmljZXMgZGVwZW5kaW5nIG9uIGl0IHRvIHRoZSBlbmQKPiAg
-CSAqIG9mIGRwbV9saXN0IGFuZCB0aGUgZGV2aWNlc19rc2V0IGxpc3QuCj4gIAkgKgo+IEBAIC00
-NzQsNiArNDkxLDE2IEBAIHZvaWQgZGV2aWNlX2xpbmtzX2RyaXZlcl9ib3VuZChzdHJ1Y3QgZGUK
-PiAgCQlpZiAobGluay0+ZmxhZ3MgJiBETF9GTEFHX1NUQVRFTEVTUykKPiAgCQkJY29udGludWU7
-Cj4gIAo+ICsJCS8qCj4gKwkJICogTGlua3MgY3JlYXRlZCBkdXJpbmcgY29uc3VtZXIgcHJvYmUg
-bWF5IGJlIGluIHRoZSAiY29uc3VtZXIKPiArCQkgKiBwcm9iZSIgc3RhdGUgdG8gc3RhcnQgd2l0
-aCBpZiB0aGUgc3VwcGxpZXIgaXMgc3RpbGwgcHJvYmluZwo+ICsJCSAqIHdoZW4gdGhleSBhcmUg
-Y3JlYXRlZCBhbmQgdGhleSBtYXkgYmVjb21lICJhY3RpdmUiIGlmIHRoZQo+ICsJCSAqIGNvbnN1
-bWVyIHByb2JlIHJldHVybnMgZmlyc3QuICBTa2lwIHRoZW0gaGVyZS4KPiArCQkgKi8KPiArCQlp
-ZiAobGluay0+c3RhdHVzID09IERMX1NUQVRFX0NPTlNVTUVSX1BST0JFIHx8Cj4gKwkJICAgIGxp
-bmstPnN0YXR1cyA9PSBETF9TVEFURV9BQ1RJVkUpCj4gKwkJCWNvbnRpbnVlOwo+ICsKPiAgCQlX
-QVJOX09OKGxpbmstPnN0YXR1cyAhPSBETF9TVEFURV9ET1JNQU5UKTsKPiAgCQlXUklURV9PTkNF
-KGxpbmstPnN0YXR1cywgRExfU1RBVEVfQVZBSUxBQkxFKTsKPiAgCX0KPiBAQCAtNTEzLDE3ICs1
-NDAsNDggQEAgc3RhdGljIHZvaWQgX19kZXZpY2VfbGlua3Nfbm9fZHJpdmVyKHN0cgo+ICAKPiAg
-CQlpZiAobGluay0+ZmxhZ3MgJiBETF9GTEFHX0FVVE9SRU1PVkVfQ09OU1VNRVIpCj4gIAkJCWty
-ZWZfcHV0KCZsaW5rLT5rcmVmLCBfX2RldmljZV9saW5rX2RlbCk7Cj4gLQkJZWxzZSBpZiAobGlu
-ay0+c3RhdHVzICE9IERMX1NUQVRFX1NVUFBMSUVSX1VOQklORCkKPiArCQllbHNlIGlmIChsaW5r
-LT5zdGF0dXMgPT0gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkUgfHwKPiArCQkJIGxpbmstPnN0YXR1
-cyA9PSBETF9TVEFURV9BQ1RJVkUpCj4gIAkJCVdSSVRFX09OQ0UobGluay0+c3RhdHVzLCBETF9T
-VEFURV9BVkFJTEFCTEUpOwo+ICAJfQo+ICAKPiAgCWRldi0+bGlua3Muc3RhdHVzID0gRExfREVW
-X05PX0RSSVZFUjsKPiAgfQo+ICAKPiArLyoqCj4gKyAqIGRldmljZV9saW5rc19ub19kcml2ZXIg
-LSBVcGRhdGUgbGlua3MgYWZ0ZXIgZmFpbGluZyBkcml2ZXIgcHJvYmUuCj4gKyAqIEBkZXY6IERl
-dmljZSB3aG9zZSBkcml2ZXIgaGFzIGp1c3QgZmFpbGVkIHRvIHByb2JlLgo+ICsgKgo+ICsgKiBD
-bGVhbiB1cCBsZWZ0b3ZlciBsaW5rcyB0byBjb25zdW1lcnMgZm9yIEBkZXYgYW5kIGludm9rZQo+
-ICsgKiAlX19kZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkgdG8gdXBkYXRlIGxpbmtzIHRvIHN1cHBs
-aWVycyBmb3IgaXQgYXMKPiArICogYXBwcm9wcmlhdGUuCj4gKyAqCj4gKyAqIExpbmtzIHdpdGgg
-dGhlIERMX0ZMQUdfU1RBVEVMRVNTIGZsYWcgc2V0IGFyZSBpZ25vcmVkLgo+ICsgKi8KPiAgdm9p
-ZCBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgewo+ICsJc3Ry
-dWN0IGRldmljZV9saW5rICpsaW5rOwo+ICsKPiAgCWRldmljZV9saW5rc193cml0ZV9sb2NrKCk7
-Cj4gKwo+ICsJbGlzdF9mb3JfZWFjaF9lbnRyeShsaW5rLCAmZGV2LT5saW5rcy5jb25zdW1lcnMs
-IHNfbm9kZSkgewo+ICsJCWlmIChsaW5rLT5mbGFncyAmIERMX0ZMQUdfU1RBVEVMRVNTKQo+ICsJ
-CQljb250aW51ZTsKPiArCj4gKwkJLyoKPiArCQkgKiBUaGUgcHJvYmUgaGFzIGZhaWxlZCwgc28g
-aWYgdGhlIHN0YXR1cyBvZiB0aGUgbGluayBpcwo+ICsJCSAqICJjb25zdW1lciBwcm9iZSIgb3Ig
-ImFjdGl2ZSIsIGl0IG11c3QgaGF2ZSBiZWVuIGFkZGVkIGJ5Cj4gKwkJICogYSBwcm9iaW5nIGNv
-bnN1bWVyIHdoaWxlIHRoaXMgZGV2aWNlIHdhcyBzdGlsbCBwcm9iaW5nLgo+ICsJCSAqIENoYW5n
-ZSBpdHMgc3RhdGUgdG8gImRvcm1hbnQiLCBhcyBpdCByZXByZXNlbnRzIGEgdmFsaWQKPiArCQkg
-KiByZWxhdGlvbnNoaXAsIGJ1dCBpdCBpcyBub3QgZnVuY3Rpb25hbGx5IG1lYW5pbmdmdWwuCj4g
-KwkJICovCj4gKwkJaWYgKGxpbmstPnN0YXR1cyA9PSBETF9TVEFURV9DT05TVU1FUl9QUk9CRSB8
-fAo+ICsJCSAgICBsaW5rLT5zdGF0dXMgPT0gRExfU1RBVEVfQUNUSVZFKQo+ICsJCQlXUklURV9P
-TkNFKGxpbmstPnN0YXR1cywgRExfU1RBVEVfRE9STUFOVCk7Cj4gKwl9Cj4gKwo+ICAJX19kZXZp
-Y2VfbGlua3Nfbm9fZHJpdmVyKGRldik7Cj4gKwo+ICAJZGV2aWNlX2xpbmtzX3dyaXRlX3VubG9j
-aygpOwo+ICB9Cj4gIAo+IEluZGV4OiBsaW51eC1wbS9Eb2N1bWVudGF0aW9uL2RyaXZlci1hcGkv
-ZGV2aWNlX2xpbmsucnN0Cj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51eC1wbS5vcmlnL0RvY3VtZW50
-YXRpb24vZHJpdmVyLWFwaS9kZXZpY2VfbGluay5yc3QKPiArKysgbGludXgtcG0vRG9jdW1lbnRh
-dGlvbi9kcml2ZXItYXBpL2RldmljZV9saW5rLnJzdAo+IEBAIC01OSwxMSArNTksMTUgQEAgZGV2
-aWNlIGBgLT5wcm9iZWBgIGNhbGxiYWNrIG9yIGEgYm9vdC10aQo+ICAKPiAgQW5vdGhlciBleGFt
-cGxlIGZvciBhbiBpbmNvbnNpc3RlbnQgc3RhdGUgd291bGQgYmUgYSBkZXZpY2UgbGluayB0aGF0
-Cj4gIHJlcHJlc2VudHMgYSBkcml2ZXIgcHJlc2VuY2UgZGVwZW5kZW5jeSwgeWV0IGlzIGFkZGVk
-IGZyb20gdGhlIGNvbnN1bWVyJ3MKPiAtYGAtPnByb2JlYGAgY2FsbGJhY2sgd2hpbGUgdGhlIHN1
-cHBsaWVyIGhhc24ndCBwcm9iZWQgeWV0OiAgSGFkIHRoZSBkcml2ZXIKPiAtY29yZSBrbm93biBh
-Ym91dCB0aGUgZGV2aWNlIGxpbmsgZWFybGllciwgaXQgd291bGRuJ3QgaGF2ZSBwcm9iZWQgdGhl
-Cj4gK2BgLT5wcm9iZWBgIGNhbGxiYWNrIHdoaWxlIHRoZSBzdXBwbGllciBoYXNuJ3Qgc3RhcnRl
-ZCB0byBwcm9iZSB5ZXQ6ICBIYWQgdGhlCj4gK2RyaXZlciBjb3JlIGtub3duIGFib3V0IHRoZSBk
-ZXZpY2UgbGluayBlYXJsaWVyLCBpdCB3b3VsZG4ndCBoYXZlIHByb2JlZCB0aGUKPiAgY29uc3Vt
-ZXIgaW4gdGhlIGZpcnN0IHBsYWNlLiAgVGhlIG9udXMgaXMgdGh1cyBvbiB0aGUgY29uc3VtZXIg
-dG8gY2hlY2sKPiAgcHJlc2VuY2Ugb2YgdGhlIHN1cHBsaWVyIGFmdGVyIGFkZGluZyB0aGUgbGlu
-aywgYW5kIGRlZmVyIHByb2Jpbmcgb24KPiAtbm9uLXByZXNlbmNlLgo+ICtub24tcHJlc2VuY2Uu
-ICBbTm90ZSB0aGF0IGl0IGlzIHZhbGlkIHRvIGNyZWF0ZSBhIGxpbmsgZnJvbSB0aGUgY29uc3Vt
-ZXIncwo+ICtgYC0+cHJvYmVgYCBjYWxsYmFjayB3aGlsZSB0aGUgc3VwcGxpZXIgaXMgc3RpbGwg
-cHJvYmluZywgYnV0IHRoZSBjb25zdW1lciBtdXN0Cj4gK2tub3cgdGhhdCB0aGUgc3VwcGxpZXIg
-aXMgZnVuY3Rpb25hbCBhbHJlYWR5IGF0IHRoZSBsaW5rIGNyZWF0aW9uIHRpbWUgKHRoYXQgaXMK
-PiArdGhlIGNhc2UsIGZvciBpbnN0YW5jZSwgaWYgdGhlIGNvbnN1bWVyIGhhcyBqdXN0IGFjcXVp
-cmVkIHNvbWUgcmVzb3VyY2VzIHRoYXQKPiArd291bGQgbm90IGhhdmUgYmVlbiBhdmFpbGFibGUg
-aGFkIHRoZSBzdXBwbGllciBub3QgYmVlbiBmdW5jdGlvbmFsIHRoZW4pLl0KPiAgCj4gIElmIGEg
-ZGV2aWNlIGxpbmsgaXMgYWRkZWQgaW4gdGhlIGBgLT5wcm9iZWBgIGNhbGxiYWNrIG9mIHRoZSBz
-dXBwbGllciBvcgo+ICBjb25zdW1lciBkcml2ZXIsIGl0IGlzIHR5cGljYWxseSBkZWxldGVkIGlu
-IGl0cyBgYC0+cmVtb3ZlYGAgY2FsbGJhY2sgZm9yCj4gCj4gCgotLSAKUk1LJ3MgUGF0Y2ggc3lz
-dGVtOiBodHRwczovL3d3dy5hcm1saW51eC5vcmcudWsvZGV2ZWxvcGVyL3BhdGNoZXMvCkZUVEMg
-YnJvYWRiYW5kIGZvciAwLjhtaWxlIGxpbmUgaW4gc3VidXJiaWE6IHN5bmMgYXQgMTIuMU1icHMg
-ZG93biA2MjJrYnBzIHVwCkFjY29yZGluZyB0byBzcGVlZHRlc3QubmV0OiAxMS45TWJwcyBkb3du
-IDUwMGticHMgdXAKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVs
-Cg==
+On Wed, Jan 16, 2019 at 10:10:08AM +0100, Ulf Hansson wrote:
+> On Thu, 3 Jan 2019 at 13:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >
+> > On Thu, Nov 29, 2018 at 06:46:33PM +0100, Ulf Hansson wrote:
+> > > Over the years this series have been iterated and discussed at various Linux
+> > > conferences and LKML. In this new v10, a quite significant amount of changes
+> > > have been made to address comments from v8 and v9. A summary is available
+> > > below, although let's start with a brand new clarification of the motivation
+> > > behind this series.
+> >
+> > I would like to raise few points, not blockers as such but need to be
+> > discussed and resolved before proceeding further.
+> > 1. CPU Idle Retention states
+> >         - How will be deal with flattening (which brings back the DT bindings,
+> >           i.e. do we have all we need) ? Because today there are no users of
+> >           this binding yet. I know we all agreed and added after LPC2017 but
+> >           I am not convinced about flattening with only valid states.
+>
+> Not exactly sure I understand what you are concerned about here. When
+> it comes to users of the new DT binding, I am converting two new
+> platforms in this series to use of it.
+>
+
+Yes that's exactly my concern. So if someone updates DT(since it's part
+of the kernel still), but don't update the firmware(for complexity reasons)
+the end result on those platform is broken CPUIdle which is a regression/
+feature break and that's what I am objecting here.
+
+> Note, the flattened model is still a valid option to describe the CPU
+> idle states after these changes. Especially when there are no last man
+> standing activities to manage by Linux and no shared resource that
+> need to prevent cluster idle states, when it's active.
+
+Since OSI vs PC is discoverable, we shouldn't tie up with DT in anyway.
+
+>
+> >         - Will domain governor ensure not to enter deeper idles states based
+> >           on its sub-domain states. E.g.: when CPUs are in retention, so
+> >           called container/cluster domain can enter retention or below and not
+> >           power off states.
+>
+> I have tried to point this out as a known limitation in genpd of the
+> current series, possibly I have failed to communicate that clearly.
+> Anyway, I fully agree that this needs to be addressed in a future
+> step.
+>
+
+Sorry, I might have missed to read. The point is if we are sacrificing
+few retention states with this new feature, I am sure PC would perform
+better that OSI on platforms which has retention states. Another
+reason for having comparison data or we should simply assume and state
+clearly OSI may perform bad on such system until the support is added.
+
+> Note that, this isn't a specific limitation to how idle states are
+> selected for CPUs and CPU clusters by genpd, but is rather a
+> limitation to any hierarchical PM domain topology managed by genpd
+> that has multiple idle states.
+>
+
+Agreed, but with flattened mode we compile the list of valid states so
+the limitation is automatically eliminated.
+
+> Do note, I already started hacking on this and intend to post patches
+> on top of this series, as these changes isn't needed for those two
+> ARM64 platforms I have deployed support for.
+>
+
+Good to know.
+
+> >         - Is the case of not calling cpu_pm_{enter,exit} handled now ?
+>
+> It is still called, so no changes in regards to that as apart of this series.
+>
+
+OK, so I assume for now we are not going to support retention states with OSI
+for now ?
+
+> When it comes to actually manage the "last man activities" as part of
+> selecting an idle state of the cluster, that is going to be addressed
+> on top as "optimizations".
+>
+
+OK
+
+> In principle we should not need to call cpu_pm_enter|exit() in the
+> idle path at all,
+
+Not sure if we can do that. We need to notify things like PMU, FP, GIC
+which have per cpu context too and not just "cluster" context.
+
+> but rather only cpu_cluster_pm_enter|exit() when a cluster idle state is
+> selected.
+
+We need to avoid relying on concept of "cluster" and just think of power
+domains and what's hanging on those domains. Sorry for naive question, but
+does genpd have concept of notifiers. I do understand that it's more
+bottom up approach where each entity in genpd saves the context and requests
+to enter a particular state. But with CPU devices like GIC/VFP/PMU, it
+needs to be more top down approach where CPU genpd has to enter a enter
+so it notifies the devices attached to it to save it's context. Not ideal
+but that's current solution. Because with the new DT bindings, platforms
+can express if PMU/GIC is in per cpu domain or any pd in the hierarchy and
+we ideally need to honor that. But that's optimisation, just mentioning.
+
+> That should improve latency when
+> selecting an idle state for a CPU. However, to reach that point
+> additional changes are needed in various drivers, such as the gic
+> driver for example.
+>
+
+Agreed.
+
+> >
+> > 2. Now that we have SDM845 which may soon have platform co-ordinated idle
+> >    support in mainline, I *really* would like to see some power comparison
+> >    numbers(i.e. PC without cluster idle states). This has been the main theme
+> >    for most of the discussion on this topic for years and now we are close
+> >    to have some platform, we need to try.
+>
+> I have quite recently been talking to Qcom folkz about this as well,
+> but no commitments are made.
+>
+
+Indeed that's the worrying. IMO, this is requested since day#1 and not
+even simple interest is shown, but that's another topic.
+
+> Although I fully agree that some comparison would be great, it still
+> doesn't matter much, as we anyway need to support PSCI OSI mode in
+> Linux. Lorenzo have agreed to this as well.
+>
+
+OK, I am fine if others agree. Since we are sacrificing on few (retention)
+states that might disappear with OSI, I am still very much still interested
+as OSI might perform bad that PC especially in such cases.
+
+> >
+> > 3. Also, after adding such complexity, we really need a platform with an
+> >    option to build and upgrade firmware easily. This will help to prevent
+> >    this being not maintained for long without a platform to test, also
+> >    avoid adding lots of quirks to deal with broken firmware so that newer
+> >    platforms deal those issues in the firmware correctly.
+>
+> I don't see how this series change anything from what we already have
+> today with the PSCI FW. No matter of OSI or PC mode is used, there are
+> complexity involved.
+>
+
+I agree, but PC is already merged, mainitained and well tested regularly
+as it's default mode that must be supported and TF-A supports/maintains
+that. OSI is new and is on platform which may not have much commitments
+and can be thrown away and any bugs we find in future many need to worked
+around in kernel. That's what I meant as worrying.
+
+> Although, of course I agree with you, that we should continue to try
+> to convince ARM vendors about moving to the public version of ATF and
+> avoid proprietary FW binaries as much as possible.
+>
+
+Indeed.
+
+--
+Regards,
+Sudeep
