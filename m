@@ -1,92 +1,100 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Fri, 18 Jan 2019 12:06:28 +0100
-Message-ID: <CAKMK7uHHhFt8kUwuUc6v1UkXQ3CPtoFAh5W_bvSuYYbSTuFnZg@mail.gmail.com>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
- <4051825.HNqyo8zv3N@aspire.rjw.lan>
- <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
- <1547804218.2626.7.camel@pengutronix.de>
- <CAJZ5v0iteL55yjxw=NFkKJ+4=gCJ36jviruLTsyFDU+Oj+j-og@mail.gmail.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
+Date: Fri, 18 Jan 2019 11:11:16 +0000
+Message-ID: <20190118111114.dytdk7oq63illgkg@queper01-lin>
+References: <20190110110546.8101-1-quentin.perret@arm.com>
+ <20190110110546.8101-3-quentin.perret@arm.com>
+ <20190117155117.GG14385@localhost.localdomain>
+ <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+ <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
+ <20190118103359.jqctbopx25h3zvqs@queper01-lin>
+ <CAJZ5v0jHq8pgB=XPydTyiqpUpX4ZdA5DVbk=Lqh=aUDBr-QOQQ@mail.gmail.com>
+ <CAJZ5v0h24RZf1vF7zV5_2yqrVif_y5W4sBrBWC0Hdf3q5rArNQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0iteL55yjxw=NFkKJ+4=gCJ36jviruLTsyFDU+Oj+j-og@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h24RZf1vF7zV5_2yqrVif_y5W4sBrBWC0Hdf3q5rArNQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTE6MDMgQU0gUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
-bEBrZXJuZWwub3JnPiB3cm90ZToKPgo+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDEwOjM3IEFN
-IEx1Y2FzIFN0YWNoIDxsLnN0YWNoQHBlbmd1dHJvbml4LmRlPiB3cm90ZToKPiA+Cj4gPiBBbSBE
-b25uZXJzdGFnLCBkZW4gMTcuMDEuMjAxOSwgMTM6MjAgKzAxMDAgc2NocmllYiBEYW5pZWwgVmV0
-dGVyOgo+ID4gWy4uLl0KPiA+ID4KPiA+ID4gPiBJIGRvbid0IHRoaW5rIGl0IGlzIGFkZHJlc3Nl
-ZCBoZXJlLgo+ID4gPiA+Cj4gPiA+ID4gQ2FuIGFueW9uZSBwbGVhc2UgZXhwbGFpbiB0byBtZSB3
-aGF0IGhhcHBlbnMgaW4gbW9yZSBkZXRhaWw/Cj4gPiA+Cj4gPiA+IE15IHVuZGVyc3RhbmRpbmcg
-KGFuZCB0aGlzIG1pZ2h0IGJlIHdyb25nLCBSdXNzZWxsLCBBbmRyemVqLCAuLi4gcGxzCj4gPiA+
-IGNvcnJlY3QpIGlzIHRoYXQgdGhlIGZvbGxvd2luZyBzZXF1ZW5jZSBnb2VzIHdyb25nOgo+ID4g
-Pgo+ID4gPiAtIGNvbXBvbmVudGl6ZWQgZHJpdmVyIChib3RoIHByb2R1Y2VyIGFuZCBjb25zdW1l
-cikgZnVsbHkgbG9hZGVkJndvcmtpbmcKPiA+ID4gLSB5b3UgdW5iaW5kIHRoZSBwcm9kdWNlci9v
-bmUgb2YgdGhlIGNvbXBvbmVudHMKPiA+ID4gLSBjb21wb25lbnQgZnJhbWV3b3JrIG9yIGRyaXZl
-ciBjb3JlIHRocm91Z2ggZGV2aWNlX2xpbmsgYWxzbyB1bmJpbmRzCj4gPiA+IHRoZSBtYXN0ZXIv
-Y29uc3VtZXIKPiA+ID4gLSB5b3UgcmVsb2FkL3JlYmluZCB0aGUgY29tcG9uZW50Cj4gPiA+IC0g
-d2l0aCB0aGUgY29tcG9uZW50IGZyYW1ld29yayB0aGlzIHJlc3VsdHMgaW4gdGhlIG1hc3RlciBi
-ZWluZwo+ID4gPiByZWJvdW5kLCBhbmQgdGhlIG92ZXJhbGwgZHJpdmVyIHdvcmtpbmcgYWdhaW4u
-IFdpdGggZGV2aWNlX2xpbmtzCj4gPiA+IG5vdGhpbmcgaGFwcGVucy4KPiA+ID4KPiA+ID4gSSB0
-aGluayB0aGVyZSB3YXMgYSBwYXRjaCBmbG9hdGluZyBhcm91bmQgb25jZSB0byBwdXQgZHJpdmVy
-cyB1bmJvdW5kCj4gPiA+IGR1ZSB0byBkZXZpY2VfbGlua3Mgb250byB0aGUgZGVmZXJyZWQgcHJv
-YmUgbGlzdCwgc28gdGhhdCB0aGUgbmV4dAo+ID4gPiB0aW1lIHNvbWV0aGluZyBpcyBib3VuZCB0
-aGV5IGhhdmUgYSBjaGFuY2UgdG8gcmViaW5kLiBCdXQgSSBjYW4ndCBmaW5kCj4gPiA+IHRoYXQg
-cGF0Y2ggYW55bW9yZSwgbWF5YmUgc29tZW9uZSBlbHNlIGhhcyB0aGUgbGluayBzdGlsbD8KPiA+
-Cj4gPiBodHRwczovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
-bC5vcmcvbXNnMTM0ODAyMy5odG1sCj4gPiBodHRwczovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNnMTM1NTI0My5odG1sCgpUaGFua3MgZm9yIGRp
-Z2dpbmcgaXQgb3V0LCB0aG9zZSBhcmUgdGhlIHBhdGNoZXMgSSBoYWQgaW4gbWluZC4KCj4gPiBJ
-IGNhbiByZXBvc3QgaWYgdGhpcyBpcyBmaW5hbGx5IGRlZW1lZCBhIGdvb2QgaWRlYS4KPgo+IEkg
-ZG9uJ3QgdGhpbmsgdGhpcyB3aWxsIGhlbHAuCj4KPiBUd28gdGhpbmdzIGFwcGVhciB0byBiZSBu
-ZWVkZWQgaGVyZTogbWlzc2luZyBzdXBwbGllcnMgbmVlZCB0byBiZQo+IHByb2JlZCBhdXRvbWF0
-aWNhbGx5IGF0IGEgY29uc3VtZXIgcHJvYmUgdGltZSBhbmQgInBlcnNpc3RlbnQiIGxpbmtzCj4g
-Y3JlYXRlZCBieSAtPnByb2JlKCkgY2FsbGJhY2tzIHNob3VsZCBub3QgYmUgcmVmZXJlbmNlLWNv
-dW50ZWQgd2hlbgo+IHRob3NlIGNhbGxiYWNrcyBydW4gYWdhaW4uICBJJ20gZ29pbmcgdG8gY3V0
-IGEgcGF0Y2ggdG8gZG8gdGhhdCAoZWFybHkKPiBuZXh0IHdlZWsgaWYgYWxsIGdvZXMgd2VsbCku
-CgpJIHRob3VnaHQgdGhpcyBzaG91bGQgd29yaywgc2luY2UgaXQgbWFrZXMgYW4gdW5iaW5kIG9m
-IGEgY29uc3VtZXIgYWN0CnRoZSBzYW1lIHdheSBhcyBpZiB0aGF0IGNvbnN1bWVyJ3MgYmluZCBm
-dW5jdGlvbiBoYXMgaGl0IGFuCkVQUk9CRV9ERUZFUi4gRXhhbXBsZToKCjEuIGNvbnN1bWVyJ3Mg
-YmluZCBpcyBjYWxsZWQsIHJlYWxpemVzICh0aHJvdWdoIGEgc3Vic3lzdGVtIGZ1bmN0aW9uCmxp
-a2Ugb2ZfZHJtX2ZpbmRfcGFuZWwpIHRoYXQgdGhlIHByb2R1Y2VyIGlzbid0IHRoZXJlIHlldCwg
-ZmFpbHMgd2l0aApFUFJPQkUgREVGRVIuCgoyLiBkcml2ZXIgY29yZSBwdXRzIHRoZSBjb25zdW1l
-ciBvbnRvIHRoZSBkZWZlcnJlZCBwcm9iZSBsaXN0LgoKMy4gcHJvZHVjZXIgZ2V0cyBsb2FkZWQs
-IHJlZ2lzdGVycyB0aGUgcGFuZWwKCjQuIGRyaXZlciBjb3JlIHJlLXJ1bnMgdGhlIGNvbnN1bWVy
-J3MgYmluZCBmdW5jdGlvbgoKNS4gY29uc3VtZXIncyBiaW5kIGZ1bmN0aW9uIGZpbmRzIHRoZSBw
-cm9kdWNlZCBhbmQgc2V0cyB1cCB0aGUgZGV2aWNlIGxpbmsuCgpOb3cgZm9yIHRoZSB1bmJpbmQg
-Y2FzZToKCjEuIHByb2R1Y2VyIGlzIHVuYm91bmQsIGRyaXZlciBjb3JlIHVuYmluZHMgY29uc3Vt
-ZXIgZHVlIHRvIHRoZSBkZXZpY2VfbGluawoKMi4gKE9ubHkgd2l0aCBMdWNhcycgcGF0Y2gpIGRy
-aXZlciBjb3JlIHB1dHMgdGhlIGNvbnN1bWVyIG9udG8gdGhlCmRlZmVycmVkIHByb2JlIGxpc3Qu
-CgozLiBEZXZlbG9wZXIgKHRoaXMgcmVhbGx5IGlzIHVzZWZ1bCBmb3IgZGV2ZWxvcG1lbnQpIHJl
-YmluZHMvcmVsb2Fkcwpwcm9kdWNlciBkcml2ZXIsIHdoaWNoIHJlLXJlZ2lzdGVycyB0aGUgcGFu
-ZWwKCjQgJiA1IHdvcmsgZXhhY3RseSB0aGUgc2FtZSBhcyB3aXRoIHRoZSBpbml0aWFsIGxvYWQg
-c2VxdWVuY2UuCgpXaXRoIHRoaXMgaW5pdGlhbCBsb2FkaW5nIGFuZCByZWxvYWRpbmcgd291bGQg
-YmUgdmVyeSBzaW1pbGFyLCBhbmQgSQp0aGluayB0aGF0J3MgYSBnb29kIHRoaW5nLiBJdCBhbHNv
-IHNvbHZlcyB0aGUgZGV2aWNlX2xpbmsKbGlmZXRpbWUvcmVmY291bnRpbmcgaXNzdWUsIHNpbmNl
-IHRoZSBkZXZpY2VfbGluayBnZXRzIHRvcm4gZG93bgppbi9yZXN0b3JlZCBjb21wbGV0ZWx5LCBh
-bmQgcmVsb2FkaW5nIGlzbid0IGEgc3BlY2lhbCBjYXNlIGxpa2UgaW4KeW91ciBwcm9wb3NlZCBz
-b2x1dGlvbiAtIHRoZXJlJ3Mgbm8gZGV2aWNlX2xpbmsgbGVmdCBvdmVyIGZyb20gYQpwcmV2aW91
-cyBsb2FkaW5nIG9mIHRoZSBkcml2ZXIsIHRoZSBkZXBlbmRlbmN5IGlzIG9ubHkgaGFuZGxlZCBi
-eQpwdXR0aW5nIHRoZSBjb25zdW1lciAoYmFjaykgIG9udG8gdGhlIGRlZmVycmVkIHByb2JlIGxp
-c3QuCgpDaGVlcnMsIERhbmllbAotLSAKRGFuaWVsIFZldHRlcgpTb2Z0d2FyZSBFbmdpbmVlciwg
-SW50ZWwgQ29ycG9yYXRpb24KKzQxICgwKSA3OSAzNjUgNTcgNDggLSBodHRwOi8vYmxvZy5mZnds
-bC5jaApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmkt
-ZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6
-Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+On Friday 18 Jan 2019 at 12:01:35 (+0100), Rafael J. Wysocki wrote:
+> On Fri, Jan 18, 2019 at 11:58 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Fri, Jan 18, 2019 at 11:34 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > >
+> > > Hi Rafael,
+> > >
+> > > On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
+> > > > On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > > > >
+> > > > > Hi Juri,
+> > > > >
+> > > > > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
+> > > > > > On 10/01/19 11:05, Quentin Perret wrote:
+> > > > > [...]
+> > > > > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
+> > > > > > > +implications of its decisions rather than blindly applying energy-saving
+> > > > > > > +techniques that may have positive effects only on some platforms. At the same
+> > > > > > > +time, the EM must be as simple as possible to minimize the scheduler latency
+> > > > > > > +impact.
+> > > > > > > +
+> > > > > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+> > > > > >
+> > > > > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
+> > > > > > only ATM.
+> > > > >
+> > > > > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
+> > > >
+> > > > But it won't hurt to mention that it may cover other scheduling
+> > > > classes in the future.  IOW, the scope limit is not fundamental.
+> > >
+> > > Agreed, I can do that.
+> > >
+> > > > > > > +for the scheduler to decide where a task should run (during wake-up), the EM
+> > > > > > > +is used to break the tie between several good CPU candidates and pick the one
+> > > > > > > +that is predicted to yield the best energy consumption without harming the
+> > > > > > > +system's throughput. The predictions made by EAS rely on specific elements of
+> > > > > > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
+> > > > > >
+> > > > > > Add a reference to DT bindings docs defining 'capacity' (or define it
+> > > > > > somewhere)?
+> > > > >
+> > > > > Right, I can mention this is defined in the next section. But are you
+> > > > > sure about the reference to the DT bindings ? They're arm-specific right ?
+> > > > > Maybe I can give that as an example or something ...
+> > > >
+> > > > Example sounds right.
+> > > >
+> > > > You also can point to the section below from here.
+> > >
+> > > Sounds good.
+> > >
+> > > > Side note: If the doc is in the .rst format (which Peter won't like
+> > > > I'm sure :-)), you can actually use cross-references in it and you get
+> > > > a translation to an HTML doc (hosted at kernel.org) for free and the
+> > > > cross-references become clickable links in that.
+> > >
+> > > Right, I personally don't mind the .rst format, but the existing files
+> > > in Documentation/power/ and Documentation/scheduler/ are good old txt
+> > > files so I just wanted to keep things consistent.
+> >
+> > In fact, Documentation/power/ is under a slow on-going transition to
+> > .rst (due to the benefits mentioned above).
+> >
+> > > I don't mind converting to rst if necessary :-)
+> >
+> > It is not necessary, but maybe worth considering.
+> 
+> That said, as this is targeted at Documentation/scheduler/, being
+> consistent with the other material in there is probably more
+> important.
+
+Right. Patch 01/02 is targeted at Documentation/power/ though. So if
+that makes your life easier I can turn that one into a .rst file, no
+problem at all.
+
+Thanks,
+Quentin
