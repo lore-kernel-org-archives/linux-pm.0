@@ -1,127 +1,95 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Fri, 18 Jan 2019 11:53:35 +0100
-Message-ID: <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
+ ktime based accounting
+Date: Fri, 18 Jan 2019 11:54:18 +0100
+Message-ID: <CAJZ5v0gC-v=3etOE_PuBvvVCbiqwk6J4+2ZkssdGjJG0BkBk6A@mail.gmail.com>
 References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
+ <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org> <20190117221628.GA21979@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <20190118104215.GA13168@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190117221628.GA21979@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Guenter Roeck <linux@roeck-us.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAxOCBKYW4gMjAxOSBhdCAxMTo0MiwgVmluY2VudCBHdWl0dG90Cjx2aW5jZW50Lmd1
-aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBIaSBHdWVudGVyLAo+Cj4gTGUgVGh1cnNkYXkg
-MTcgSmFuIDIwMTkgw6AgMTQ6MTY6MjggKC0wODAwKSwgR3VlbnRlciBSb2VjayBhIMOpY3JpdCA6
-Cj4gPiBPbiBGcmksIERlYyAyMSwgMjAxOCBhdCAxMTozMzo1NkFNICswMTAwLCBWaW5jZW50IEd1
-aXR0b3Qgd3JvdGU6Cj4gPiA+IEZyb206IFRoYXJhIEdvcGluYXRoIDx0aGFyYS5nb3BpbmF0aEBs
-aW5hcm8ub3JnPgo+ID4gPgo+ID4gPiBUaGlzIHBhdGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQg
-YWNjb3VudGluZyBmb3IgcnVudGltZV9hY3RpdmVfdGltZQo+ID4gPiBhbmQgcnVudGltZV9zdXNw
-ZW5kZWRfdGltZSB3aXRoIGt0aW1lIGJhc2UgYWNjb3VudGluZy4gVGhpcyBtYWtlcyB0aGUKPiA+
-ID4gcnVudGltZSBkZWJ1ZyBjb3VudGVycyBpbmxpbmUgd2l0aCBnZW5wZCBhbmQgb3RoZXIgcG0g
-c3Vic3l0ZW1zIHdoaWNoCj4gPiA+IHVzZXMga3RpbWUgYmFzZWQgYWNjb3VudGluZy4KPiA+ID4K
-PiA+ID4gdGltZWtlZXBpbmcgaXMgaW5pdGlhbGl6ZWQgYmVmb3JlIHBtX3J1bnRpbWVfaW5pdCgp
-IHNvIGt0aW1lX2dldCgpIHdpbGwKPiA+ID4gYmUgcmVhZHkgYmVmb3JlIGZpcnN0IGNhbGwuIElu
-IGZhY3QsIHRpbWVrZWVwaW5nX2luaXQoKSBpcyBjYWxsZWQgZWFybHkKPiA+ID4gaW4gc3RhcnRf
-a2VybmVsKCkgd2hpY2ggaXMgd2F5IGJlZm9yZSBkcml2ZXJfaW5pdCgpIChhbmQgdGhhdCdzIHdo
-ZW4KPiA+ID4gZGV2aWNlcyBjYW4gc3RhcnQgdG8gYmUgaW5pdGlhbGl6ZWQpIGNhbGxlZCBmcm9t
-IHJlc3RfaW5pdCgpIHZpYQo+ID4gPiBrZXJuZWxfaW5pdF9mcmVlYWJsZSgpIGFuZCBkb19iYXNp
-Y19zZXR1cCgpLgo+ID4gPgo+ID4gVGhpcyBpcyBub3QgKGFsd2F5cykgY29ycmVjdC4gTXkgcWVt
-dSAiY29sbGllIiBib290IHRlc3QgZmFpbHMgd2l0aCB0aGlzCj4gPiBwYXRjaCBhcHBsaWVkLiBS
-ZXZlcnRpbmcgdGhlIHBhdGNoIGZpeGVzIHRoZSBwcm9ibGVtLiBCaXNlY3QgbG9nIGF0dGFjaGVk
-Lgo+ID4KPgo+IENhbiB5b3UgdHJ5IHRoZSBwYXRjaCBiZWxvdyA/Cj4ga3RpbWVfZ2V0X21vbm9f
-ZmFzdF9ucygpIGhhcyB0aGUgYWR2YW50YWdlIG9mIGJlaW5nIGluaXQgd2l0aCBkdW1teSBjbG9j
-ayBzbwo+IGl0IGNhbiBiZSB1c2VkIGF0IGVhcmx5X2luaXQuCgpBbm90aGVyIHBvc3NpYmlsaXR5
-IHdvdWxkIGJlIGRlbGF5IHRoZSBpbml0IG9mIHRoZSBncGlvY2hpcAoKPgo+IC0tLQo+ICBkcml2
-ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIHwgNCArKy0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGlu
-c2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNl
-L3Bvd2VyL3J1bnRpbWUuYyBiL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMKPiBpbmRleCBh
-ZTFjNzI4Li4xMThjN2Y2IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
-LmMKPiArKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gQEAgLTY2LDcgKzY2LDcg
-QEAgc3RhdGljIGludCBycG1fc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYsIGludCBycG1mbGFn
-cyk7Cj4gICAqLwo+ICB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2FjY291bnRpbmcoc3RydWN0IGRl
-dmljZSAqZGV2KQo+ICB7Cj4gLSAgICAgICB1NjQgbm93ID0ga3RpbWVfdG9fbnMoa3RpbWVfZ2V0
-KCkpOwo+ICsgICAgICAgdTY0IG5vdyA9IGt0aW1lX2dldF9tb25vX2Zhc3RfbnMoKTsKPiAgICAg
-ICAgIHU2NCBkZWx0YTsKPgo+ICAgICAgICAgZGVsdGEgPSBub3cgLSBkZXYtPnBvd2VyLmFjY291
-bnRpbmdfdGltZXN0YW1wOwo+IEBAIC0xNTA3LDcgKzE1MDcsNyBAQCB2b2lkIHBtX3J1bnRpbWVf
-aW5pdChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gICAgICAgICBkZXYtPnBvd2VyLnJlcXVlc3RfcGVu
-ZGluZyA9IGZhbHNlOwo+ICAgICAgICAgZGV2LT5wb3dlci5yZXF1ZXN0ID0gUlBNX1JFUV9OT05F
-Owo+ICAgICAgICAgZGV2LT5wb3dlci5kZWZlcnJlZF9yZXN1bWUgPSBmYWxzZTsKPiAtICAgICAg
-IGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAgPSBrdGltZV90b19ucyhrdGltZV9nZXQo
-KSk7Cj4gKyAgICAgICBkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0ga3RpbWVfZ2V0
-X21vbm9fZmFzdF9ucygpOwo+ICAgICAgICAgSU5JVF9XT1JLKCZkZXYtPnBvd2VyLndvcmssIHBt
-X3J1bnRpbWVfd29yayk7Cj4KPiAgICAgICAgIGRldi0+cG93ZXIudGltZXJfZXhwaXJlcyA9IDA7
-Cj4gLS0KPiAyLjcuNAo+Cj4KPiA+IFdpdGggc29tZSBhZGRlZCBkZWJ1Z2dpbmc6Cj4gPgo+ID4g
-Li4uCj4gPiBJUlFTOiAxNiwgbnJfaXJxczogNjUsIHByZWFsbG9jYXRlZCBpcnFzOiA2NQo+ID4g
-aXJxOiBDYW5ub3QgYWxsb2NhdGUgaXJxX2Rlc2NzIEAgSVJRMSwgYXNzdW1pbmcgcHJlLWFsbG9j
-YXRlZAo+ID4gZ3BpbyBncGlvY2hpcDA6ICMjIyMjIyMjIyMjIyMjIyBwbV9ydW50aW1lX2luaXQo
-KSAjIyMjIyMjIyMjIyMKPiA+IGlycTogQ2Fubm90IGFsbG9jYXRlIGlycV9kZXNjcyBAIElSUTMz
-LCBhc3N1bWluZyBwcmUtYWxsb2NhdGVkCj4gPiAjIyMjIyMjIyMjIyMjIyB0aW1la2VlcGluZ19p
-bml0KCkgIyMjIyMjIyMjIyMjIyMjIyMjIyMKPiA+IHNjaGVkX2Nsb2NrOiAzMiBiaXRzIGF0IDM2
-ODZrSHosIHJlc29sdXRpb24gMjcxbnMsIHdyYXBzIGV2ZXJ5IDU4MjU0MjIyMjIwMG5zXk0KPiA+
-IC4uLgo+ID4KPiA+IFRoaXMgaXMgd2l0aDoKPiA+Cj4gPiB2b2lkIHBtX3J1bnRpbWVfaW5pdChz
-dHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiB7Cj4gPiArICAgICAgIGRldl9pbmZvKGRldiwgIiMjIyMj
-IyMjIyMjIyMjIyBwbV9ydW50aW1lX2luaXQoKSAjIyMjIyMjIyMjIyNcbiIpOwo+ID4gKwo+ID4g
-Li4uCj4gPiBAQCAtMTUyNiw2ICsxNTI2LDggQEAgdm9pZCBfX2luaXQgdGltZWtlZXBpbmdfaW5p
-dCh2b2lkKQo+ID4gICAgICAgc3RydWN0IGNsb2Nrc291cmNlICpjbG9jazsKPiA+ICAgICAgIHVu
-c2lnbmVkIGxvbmcgZmxhZ3M7Cj4gPgo+ID4gKyAgICAgICBwcl9pbmZvKCIjIyMjIyMjIyMjIyMj
-IyB0aW1la2VlcGluZ19pbml0KCkgIyMjIyMjIyMjIyMjIyMjIyMjIyNcbiIpOwo+ID4gKwo+ID4K
-PiA+IEd1ZW50ZXIKPiA+Cj4gPiAtLS0KPiA+ICMgYmFkOiBbYTM3ZDUwY2EzYjgzN2MxOWEyOTdm
-MzQ5MzY1ZDExYTIwYzEwODdkMF0gQWRkIGxpbnV4LW5leHQgc3BlY2lmaWMgZmlsZXMgZm9yIDIw
-MTkwMTE3Cj4gPiAjIGdvb2Q6IFsxYzdmYzVjYmMzMzk4MGFjZDEzZDY2OGYxYzhmMDMxM2Q2YWU5
-ZmQ4XSBMaW51eCA1LjAtcmMyCj4gPiBnaXQgYmlzZWN0IHN0YXJ0ICdIRUFEJyAndjUuMC1yYzIn
-Cj4gPiAjIGJhZDogWzRlZGI4MTdkMjlmZGYxOWZiNWQ1Mjc4NGJiM2MyOWM0MGUwMGY1ODZdIE1l
-cmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ3BtL2xpbnV4LW5leHQnCj4gPiBnaXQgYmlzZWN0
-IGJhZCA0ZWRiODE3ZDI5ZmRmMTlmYjVkNTI3ODRiYjNjMjljNDBlMDBmNTg2Cj4gPiAjIGdvb2Q6
-IFs2ZDk1ODg2NzIwZDMwNmExOTE0YTdjOWE4YWViMGJjYmM3YWVmMDE4XSBNZXJnZSByZW1vdGUt
-dHJhY2tpbmcgYnJhbmNoICdvbWFwL2Zvci1uZXh0Jwo+ID4gZ2l0IGJpc2VjdCBnb29kIDZkOTU4
-ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNiYzdhZWYwMTgKPiA+ICMgZ29vZDogWzk3NWI1Y2Rk
-NzQ0MzBiYzhhMDRmODMyZDY1YTQ3Y2RiOTViNzNmZWNdIE1lcmdlIHJlbW90ZS10cmFja2luZyBi
-cmFuY2ggJ2Z1c2UvZm9yLW5leHQnCj4gPiBnaXQgYmlzZWN0IGdvb2QgOTc1YjVjZGQ3NDQzMGJj
-OGEwNGY4MzJkNjVhNDdjZGI5NWI3M2ZlYwo+ID4gIyBnb29kOiBbMTEyMzg2ZDIxODlmYzU0Yjk3
-OWMzYThiZjY0YjI5MDhkZjkxZTEyM10gTWVyZ2UgcmVtb3RlLXRyYWNraW5nIGJyYW5jaCAnaTJj
-L2kyYy9mb3ItbmV4dCcKPiA+IGdpdCBiaXNlY3QgZ29vZCAxMTIzODZkMjE4OWZjNTRiOTc5YzNh
-OGJmNjRiMjkwOGRmOTFlMTIzCj4gPiAjIGdvb2Q6IFszOTQzZjA1OTgyM2I2ZTE1ODg0Mzg3ZjMx
-NjE4Yjg0ODI2ZTkyNGIzXSBtZWRpYTogY29kYTogQWRkIGNvbnRyb2wgZm9yIGguMjY0IGNocm9t
-YSBxcCBpbmRleCBvZmZzZXQKPiA+IGdpdCBiaXNlY3QgZ29vZCAzOTQzZjA1OTgyM2I2ZTE1ODg0
-Mzg3ZjMxNjE4Yjg0ODI2ZTkyNGIzCj4gPiAjIGdvb2Q6IFs0NDk3MGJiYmJiNTA3OWVlMTAwODc1
-YjA2ZTQ1ZGI1ZDZlOTFhMTZlXSBNZXJnZSByZW1vdGUtdHJhY2tpbmcgYnJhbmNoICd2NGwtZHZi
-L21hc3RlcicKPiA+IGdpdCBiaXNlY3QgZ29vZCA0NDk3MGJiYmJiNTA3OWVlMTAwODc1YjA2ZTQ1
-ZGI1ZDZlOTFhMTZlCj4gPiAjIGJhZDogWzU5OTE3MGMyYjg2MGFjYTMzNjQ1NzRmODMzYmI5Y2M4
-MDFjOTY2OGRdIE1lcmdlIGJyYW5jaCAncG0tY29yZScgaW50byBsaW51eC1uZXh0Cj4gPiBnaXQg
-YmlzZWN0IGJhZCA1OTkxNzBjMmI4NjBhY2EzMzY0NTc0ZjgzM2JiOWNjODAxYzk2NjhkCj4gPiAj
-IGdvb2Q6IFszNDdkNTcwOTE5Y2E5YTNhMzY1M2NlOWNiYjczOTljN2MwYmE4MjQ4XSBNZXJnZSBi
-cmFuY2ggJ2FjcGktcGNpJyBpbnRvIGxpbnV4LW5leHQKPiA+IGdpdCBiaXNlY3QgZ29vZCAzNDdk
-NTcwOTE5Y2E5YTNhMzY1M2NlOWNiYjczOTljN2MwYmE4MjQ4Cj4gPiAjIGdvb2Q6IFtlMGE5ZmRl
-ODZiYTFiYzI2ZGQ3NTRjNzMzYjMyZTcwY2Q4ZjFjMTg3XSBNZXJnZSBicmFuY2hlcyAnYWNwaS10
-YWJsZXMnIGFuZCAnYWNwaS1hcGVpJyBpbnRvIGxpbnV4LW5leHQKPiA+IGdpdCBiaXNlY3QgZ29v
-ZCBlMGE5ZmRlODZiYTFiYzI2ZGQ3NTRjNzMzYjMyZTcwY2Q4ZjFjMTg3Cj4gPiAjIGdvb2Q6IFsz
-YjRlZDJlMmViNTU4Mzc3NGExZWQ0YWE0NTk2YTVhM2M1NWYyNTY3XSBkcm0vaTkxNTogTW92ZSBv
-biB0aGUgbmV3IHBtIHJ1bnRpbWUgaW50ZXJmYWNlCj4gPiBnaXQgYmlzZWN0IGdvb2QgM2I0ZWQy
-ZTJlYjU1ODM3NzRhMWVkNGFhNDU5NmE1YTNjNTVmMjU2Nwo+ID4gIyBiYWQ6IFtjNzVjMzAzOTMz
-YTY4YzU0N2YzMzUyZDFkNzA4ODQzZjk0NDlkM2Y0XSBQTTogY2xvY2tfb3BzOiBmaXggbWlzc2lu
-ZyBjbGtfcHJlcGFyZSgpIHJldHVybiB2YWx1ZSBjaGVjawo+ID4gZ2l0IGJpc2VjdCBiYWQgYzc1
-YzMwMzkzM2E2OGM1NDdmMzM1MmQxZDcwODg0M2Y5NDQ5ZDNmNAo+ID4gIyBiYWQ6IFszOTgyYWI5
-Y2U0MzNlZmM3MmNhMzFlYjlkZGM4NWQ5MzU1OTY2NDQ0XSBQTS1ydW50aW1lOiBSZXBsYWNlIGpp
-ZmZpZXMgYmFzZWQgYWNjb3VudGluZyB3aXRoIGt0aW1lLWJhc2VkIGFjY291bnRpbmcKPiA+IGdp
-dCBiaXNlY3QgYmFkIDM5ODJhYjljZTQzM2VmYzcyY2EzMWViOWRkYzg1ZDkzNTU5NjY0NDQKPiA+
-ICMgZmlyc3QgYmFkIGNvbW1pdDogWzM5ODJhYjljZTQzM2VmYzcyY2EzMWViOWRkYzg1ZDkzNTU5
-NjY0NDRdIFBNLXJ1bnRpbWU6IFJlcGxhY2UgamlmZmllcyBiYXNlZCBhY2NvdW50aW5nIHdpdGgg
-a3RpbWUtYmFzZWQgYWNjb3VudGluZwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9pbnRlbC1nZngK
+On Thu, Jan 17, 2019 at 11:16 PM Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> On Fri, Dec 21, 2018 at 11:33:56AM +0100, Vincent Guittot wrote:
+> > From: Thara Gopinath <thara.gopinath@linaro.org>
+> >
+> > This patch replaces jiffies based accounting for runtime_active_time
+> > and runtime_suspended_time with ktime base accounting. This makes the
+> > runtime debug counters inline with genpd and other pm subsytems which
+> > uses ktime based accounting.
+> >
+> > timekeeping is initialized before pm_runtime_init() so ktime_get() will
+> > be ready before first call. In fact, timekeeping_init() is called early
+> > in start_kernel() which is way before driver_init() (and that's when
+> > devices can start to be initialized) called from rest_init() via
+> > kernel_init_freeable() and do_basic_setup().
+> >
+> This is not (always) correct. My qemu "collie" boot test fails with this
+> patch applied. Reverting the patch fixes the problem. Bisect log attached.
+>
+> With some added debugging:
+>
+> ...
+> IRQS: 16, nr_irqs: 65, preallocated irqs: 65
+> irq: Cannot allocate irq_descs @ IRQ1, assuming pre-allocated
+> gpio gpiochip0: ############### pm_runtime_init() ############
+> irq: Cannot allocate irq_descs @ IRQ33, assuming pre-allocated
+> ############## timekeeping_init() ####################
+> sched_clock: 32 bits at 3686kHz, resolution 271ns, wraps every 582542222200ns^M
+> ...
+>
+> This is with:
+>
+> void pm_runtime_init(struct device *dev)
+> {
+> +       dev_info(dev, "############### pm_runtime_init() ############\n");
+> +
+> ...
+> @@ -1526,6 +1526,8 @@ void __init timekeeping_init(void)
+>         struct clocksource *clock;
+>         unsigned long flags;
+>
+> +       pr_info("############## timekeeping_init() ####################\n");
+> +
+>
+> Guenter
+>
+> ---
+> # bad: [a37d50ca3b837c19a297f349365d11a20c1087d0] Add linux-next specific files for 20190117
+> # good: [1c7fc5cbc33980acd13d668f1c8f0313d6ae9fd8] Linux 5.0-rc2
+> git bisect start 'HEAD' 'v5.0-rc2'
+> # bad: [4edb817d29fdf19fb5d52784bb3c29c40e00f586] Merge remote-tracking branch 'pm/linux-next'
+> git bisect bad 4edb817d29fdf19fb5d52784bb3c29c40e00f586
+> # good: [6d95886720d306a1914a7c9a8aeb0bcbc7aef018] Merge remote-tracking branch 'omap/for-next'
+> git bisect good 6d95886720d306a1914a7c9a8aeb0bcbc7aef018
+> # good: [975b5cdd74430bc8a04f832d65a47cdb95b73fec] Merge remote-tracking branch 'fuse/for-next'
+> git bisect good 975b5cdd74430bc8a04f832d65a47cdb95b73fec
+> # good: [112386d2189fc54b979c3a8bf64b2908df91e123] Merge remote-tracking branch 'i2c/i2c/for-next'
+> git bisect good 112386d2189fc54b979c3a8bf64b2908df91e123
+> # good: [3943f059823b6e15884387f31618b84826e924b3] media: coda: Add control for h.264 chroma qp index offset
+> git bisect good 3943f059823b6e15884387f31618b84826e924b3
+> # good: [44970bbbbb5079ee100875b06e45db5d6e91a16e] Merge remote-tracking branch 'v4l-dvb/master'
+> git bisect good 44970bbbbb5079ee100875b06e45db5d6e91a16e
+> # bad: [599170c2b860aca3364574f833bb9cc801c9668d] Merge branch 'pm-core' into linux-next
+> git bisect bad 599170c2b860aca3364574f833bb9cc801c9668d
+> # good: [347d570919ca9a3a3653ce9cbb7399c7c0ba8248] Merge branch 'acpi-pci' into linux-next
+> git bisect good 347d570919ca9a3a3653ce9cbb7399c7c0ba8248
+> # good: [e0a9fde86ba1bc26dd754c733b32e70cd8f1c187] Merge branches 'acpi-tables' and 'acpi-apei' into linux-next
+> git bisect good e0a9fde86ba1bc26dd754c733b32e70cd8f1c187
+> # good: [3b4ed2e2eb5583774a1ed4aa4596a5a3c55f2567] drm/i915: Move on the new pm runtime interface
+> git bisect good 3b4ed2e2eb5583774a1ed4aa4596a5a3c55f2567
+> # bad: [c75c303933a68c547f3352d1d708843f9449d3f4] PM: clock_ops: fix missing clk_prepare() return value check
+> git bisect bad c75c303933a68c547f3352d1d708843f9449d3f4
+> # bad: [3982ab9ce433efc72ca31eb9ddc85d9355966444] PM-runtime: Replace jiffies based accounting with ktime-based accounting
+> git bisect bad 3982ab9ce433efc72ca31eb9ddc85d9355966444
+> # first bad commit: [3982ab9ce433efc72ca31eb9ddc85d9355966444] PM-runtime: Replace jiffies based accounting with ktime-based accounting
+
+OK, dropping this one for now, we need a working replacement.
+
+Thanks!
