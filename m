@@ -1,96 +1,57 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Fri, 18 Jan 2019 04:08:39 -0800
-Message-ID: <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
- <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
- <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
+Date: Fri, 18 Jan 2019 13:34:09 +0100
+Message-ID: <20190118123409.GI14385@localhost.localdomain>
+References: <20190110110546.8101-1-quentin.perret@arm.com>
+ <20190110110546.8101-3-quentin.perret@arm.com>
+ <20190117155117.GG14385@localhost.localdomain>
+ <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+ <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
+ <20190118103359.jqctbopx25h3zvqs@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190118103359.jqctbopx25h3zvqs@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMS8xOC8xOSAzOjA1IEFNLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiBPbiBGcmksIEph
-biAxOCwgMjAxOSBhdCAxMTo1MyBBTSBWaW5jZW50IEd1aXR0b3QKPiA8dmluY2VudC5ndWl0dG90
-QGxpbmFyby5vcmc+IHdyb3RlOgo+Pgo+PiBPbiBGcmksIDE4IEphbiAyMDE5IGF0IDExOjQyLCBW
-aW5jZW50IEd1aXR0b3QKPj4gPHZpbmNlbnQuZ3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPj4+
-Cj4+PiBIaSBHdWVudGVyLAo+Pj4KPj4+IExlIFRodXJzZGF5IDE3IEphbiAyMDE5IMOgIDE0OjE2
-OjI4ICgtMDgwMCksIEd1ZW50ZXIgUm9lY2sgYSDDqWNyaXQgOgo+Pj4+IE9uIEZyaSwgRGVjIDIx
-LCAyMDE4IGF0IDExOjMzOjU2QU0gKzAxMDAsIFZpbmNlbnQgR3VpdHRvdCB3cm90ZToKPj4+Pj4g
-RnJvbTogVGhhcmEgR29waW5hdGggPHRoYXJhLmdvcGluYXRoQGxpbmFyby5vcmc+Cj4+Pj4+Cj4+
-Pj4+IFRoaXMgcGF0Y2ggcmVwbGFjZXMgamlmZmllcyBiYXNlZCBhY2NvdW50aW5nIGZvciBydW50
-aW1lX2FjdGl2ZV90aW1lCj4+Pj4+IGFuZCBydW50aW1lX3N1c3BlbmRlZF90aW1lIHdpdGgga3Rp
-bWUgYmFzZSBhY2NvdW50aW5nLiBUaGlzIG1ha2VzIHRoZQo+Pj4+PiBydW50aW1lIGRlYnVnIGNv
-dW50ZXJzIGlubGluZSB3aXRoIGdlbnBkIGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPj4+
-Pj4gdXNlcyBrdGltZSBiYXNlZCBhY2NvdW50aW5nLgo+Pj4+Pgo+Pj4+PiB0aW1la2VlcGluZyBp
-cyBpbml0aWFsaXplZCBiZWZvcmUgcG1fcnVudGltZV9pbml0KCkgc28ga3RpbWVfZ2V0KCkgd2ls
-bAo+Pj4+PiBiZSByZWFkeSBiZWZvcmUgZmlyc3QgY2FsbC4gSW4gZmFjdCwgdGltZWtlZXBpbmdf
-aW5pdCgpIGlzIGNhbGxlZCBlYXJseQo+Pj4+PiBpbiBzdGFydF9rZXJuZWwoKSB3aGljaCBpcyB3
-YXkgYmVmb3JlIGRyaXZlcl9pbml0KCkgKGFuZCB0aGF0J3Mgd2hlbgo+Pj4+PiBkZXZpY2VzIGNh
-biBzdGFydCB0byBiZSBpbml0aWFsaXplZCkgY2FsbGVkIGZyb20gcmVzdF9pbml0KCkgdmlhCj4+
-Pj4+IGtlcm5lbF9pbml0X2ZyZWVhYmxlKCkgYW5kIGRvX2Jhc2ljX3NldHVwKCkuCj4+Pj4+Cj4+
-Pj4gVGhpcyBpcyBub3QgKGFsd2F5cykgY29ycmVjdC4gTXkgcWVtdSAiY29sbGllIiBib290IHRl
-c3QgZmFpbHMgd2l0aCB0aGlzCj4+Pj4gcGF0Y2ggYXBwbGllZC4gUmV2ZXJ0aW5nIHRoZSBwYXRj
-aCBmaXhlcyB0aGUgcHJvYmxlbS4gQmlzZWN0IGxvZyBhdHRhY2hlZC4KPj4+Pgo+Pj4KPj4+IENh
-biB5b3UgdHJ5IHRoZSBwYXRjaCBiZWxvdyA/Cj4+PiBrdGltZV9nZXRfbW9ub19mYXN0X25zKCkg
-aGFzIHRoZSBhZHZhbnRhZ2Ugb2YgYmVpbmcgaW5pdCB3aXRoIGR1bW15IGNsb2NrIHNvCj4+PiBp
-dCBjYW4gYmUgdXNlZCBhdCBlYXJseV9pbml0Lgo+Pgo+PiBBbm90aGVyIHBvc3NpYmlsaXR5IHdv
-dWxkIGJlIGRlbGF5IHRoZSBpbml0IG9mIHRoZSBncGlvY2hpcAo+IAo+IFdlbGwsIHJpZ2h0Lgo+
-IAo+IEluaXRpYWxpemluZyBkZXZpY2VzIGJlZm9yZSB0aW1la2VlcGluZyBkb2Vzbid0IGZlZWwg
-cGFydGljdWxhcmx5Cj4gcm9idXN0IGZyb20gdGhlIGRlc2lnbiBwZXJzcGVjdGl2ZS4KPiAKPiBI
-b3cgZXhhY3RseSBkb2VzIHRoYXQgaGFwcGVuPwo+IAoKV2l0aCBhbiBhZGRlZCAnaW5pdGlhbGl6
-ZWQnIGZsYWcgYW5kIGJhY2t0cmFjZSBpbnRvIHRoZSB0aW1la2VlcGluZyBjb2RlLAp3aXRoIHRo
-ZSBjaGFuZ2Ugc3VnZ2VzdGVkIGVhcmxpZXIgYXBwbGllZDoKCi0tLS0tLS0tLS0tLVsgY3V0IGhl
-cmUgXS0tLS0tLS0tLS0tLQpXQVJOSU5HOiBDUFU6IDAgUElEOiAwIGF0IGtlcm5lbC90aW1lL3Rp
-bWVrZWVwaW5nLmM6NDUzIGt0aW1lX2dldF9tb25vX2Zhc3RfbnMrMHgxMTQvMHgxMmMKVGltZWtl
-ZXBpbmcgbm90IGluaXRpYWxpemVkCkNQVTogMCBQSUQ6IDAgQ29tbTogc3dhcHBlciBOb3QgdGFp
-bnRlZCA1LjAuMC1yYzItbmV4dC0yMDE5MDExNy1kaXJ0eSAjMgpIYXJkd2FyZSBuYW1lOiBTaGFy
-cC1Db2xsaWUKQmFja3RyYWNlOgpbPGMwMDBkY2U4Pl0gKGR1bXBfYmFja3RyYWNlKSBmcm9tIFs8
-YzAwMGRmNzg+XSAoc2hvd19zdGFjaysweDE4LzB4MWMpCiAgcjc6MDAwMDAwMDkgcjY6MDAwMDAw
-MDAgcjU6YzA2NWJhOTAgcjQ6YzA2ZDNlNTQKWzxjMDAwZGY2MD5dIChzaG93X3N0YWNrKSBmcm9t
-IFs8YzA1ODg5MzA+XSAoZHVtcF9zdGFjaysweDIwLzB4MjgpCls8YzA1ODg5MTA+XSAoZHVtcF9z
-dGFjaykgZnJvbSBbPGMwMDE4YWU4Pl0gKF9fd2FybisweGNjLzB4ZjQpCls8YzAwMThhMWM+XSAo
-X193YXJuKSBmcm9tIFs8YzAwMThiNWM+XSAod2Fybl9zbG93cGF0aF9mbXQrMHg0Yy8weDZjKQog
-IHI4OmRmNDA3YjA4IHI3OjAwMDAwMDAwIHI2OmMwYzAxNTUwIHI1OmMwNjViYWQ4IHI0OmMwNmRk
-MDI4Cls8YzAwMThiMTQ+XSAod2Fybl9zbG93cGF0aF9mbXQpIGZyb20gWzxjMDA2OWUyYz5dIChr
-dGltZV9nZXRfbW9ub19mYXN0X25zKzB4MTE0LzB4MTJjKQogIHIzOjAwMDAwMDAwIHIyOmMwNjVi
-YWQ4CiAgcjU6MDAwMDAwMDAgcjQ6ZGY0MDdiMDgKWzxjMDA2OWQxOD5dIChrdGltZV9nZXRfbW9u
-b19mYXN0X25zKSBmcm9tIFs8YzAzYzc4MTA+XSAocG1fcnVudGltZV9pbml0KzB4MzgvMHhiOCkK
-ICByOTpjMDZjOWE1YyByODpkZjQwN2IwOCByNzowMDAwMDAwMCByNjpjMGMwMTU1MCByNTowMDAw
-MDAwMCByNDpkZjQwN2IwOApbPGMwM2M3N2Q4Pl0gKHBtX3J1bnRpbWVfaW5pdCkgZnJvbSBbPGMw
-M2I2YTM0Pl0gKGRldmljZV9pbml0aWFsaXplKzB4YjAvMHhlYykKICByNzowMDAwMDAwMCByNjpj
-MGMwMTU1MCByNTowMDAwMDAwMCByNDpkZjQwN2IwOApbPGMwM2I2OTg0Pl0gKGRldmljZV9pbml0
-aWFsaXplKSBmcm9tIFs8YzAzNjZkMzA+XSAoZ3Bpb2NoaXBfYWRkX2RhdGFfd2l0aF9rZXkrMHg5
-Yy8weDg4NCkKICByNzowMDAwMDAwMCByNjpjMDZmY2EzNCByNTowMDAwMDAwMCByNDowMDAwMDAw
-MApbPGMwMzY2Yzk0Pl0gKGdwaW9jaGlwX2FkZF9kYXRhX3dpdGhfa2V5KSBmcm9tIFs8YzA2Yjk3
-MDg+XSAoc2ExMTAwX2luaXRfZ3BpbysweDQwLzB4OTgpCiAgcjEwOmRmZmZjZDYwIHI5OmMwNmM5
-YTVjIHI4OmMwNmRkMDIwIHI3OmMwNmRkMDI4IHI2OmZmZmZmZmZmIHI1OjAwMDAwMDAwCiAgcjQ6
-YzA2ZmNhMzQKWzxjMDZiOTZjOD5dIChzYTExMDBfaW5pdF9ncGlvKSBmcm9tIFs8YzA2YWU1OGM+
-XSAoc2ExMTAwX2luaXRfaXJxKzB4MmMvMHgzYykKICByNzpjMDZkZDAyOCByNjpmZmZmZmZmZiBy
-NTpjMDcxMzMwMCByNDpjMDZlMTA3MApbPGMwNmFlNTYwPl0gKHNhMTEwMF9pbml0X2lycSkgZnJv
-bSBbPGMwNmFhYjFjPl0gKGluaXRfSVJRKzB4MjAvMHgyOCkKICByNTpjMDcxMzMwMCByNDowMDAw
-MDAwMApbPGMwNmFhYWZjPl0gKGluaXRfSVJRKSBmcm9tIFs8YzA2YTdjZDA+XSAoc3RhcnRfa2Vy
-bmVsKzB4MjU0LzB4NGNjKQpbPGMwNmE3YTdjPl0gKHN0YXJ0X2tlcm5lbCkgZnJvbSBbPDAwMDAw
-MDAwPl0gKCAgKG51bGwpKQogIHIxMDowMDAwNzE3ZiByOTo2OTAxYjExOSByODpjMDAwMDEwMCBy
-NzowMDAwMDA5MiByNjowMDAwMzEzZCByNTowMDAwMDA1MwogIHI0OmMwNmE3MzMwCi0tLVsgZW5k
-IHRyYWNlIDkxZTFiZDAwZGQ3Y2NlMzIgXS0tLQoKR3VlbnRlcgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVs
-LWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+Hi,
+
+On 18/01/19 10:34, Quentin Perret wrote:
+> Hi Rafael,
+> 
+> On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
+> > On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > >
+> > > Hi Juri,
+> > >
+> > > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
+> > > > On 10/01/19 11:05, Quentin Perret wrote:
+> > > [...]
+> > > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
+> > > > > +implications of its decisions rather than blindly applying energy-saving
+> > > > > +techniques that may have positive effects only on some platforms. At the same
+> > > > > +time, the EM must be as simple as possible to minimize the scheduler latency
+> > > > > +impact.
+> > > > > +
+> > > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+> > > >
+> > > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
+> > > > only ATM.
+> > >
+> > > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
+> > 
+> > But it won't hurt to mention that it may cover other scheduling
+> > classes in the future.  IOW, the scope limit is not fundamental.
+> 
+> Agreed, I can do that.
+
+Oh, sorry, bad phrasing from my side. I meant that we should probably
+state clearly somewhere that EAS deals with CFS only ATM, but extending
+it to other classes (DEADLINE in particular) makes certainly sense and
+people are welcome to experiment with that.
+
+So, yeah, I agree with both of you. :-)
