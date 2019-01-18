@@ -1,145 +1,306 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Thu, 17 Jan 2019 23:43:17 +0100
-Message-ID: <9799191.llZRU5SJY5@aspire.rjw.lan>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <20190117172625.wr6gwgooowdjl5kq@e5254000004ec.dyn.armlinux.org.uk>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 1/3] drivers: base: Add frequency constraint
+ infrastructure
+Date: Thu, 17 Jan 2019 17:03:05 -0800
+Message-ID: <20190118010305.GX261387@google.com>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <f3980beb6f2c02427d892a4bc4a04989544a3952.1547197612.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20190117172625.wr6gwgooowdjl5kq@e5254000004ec.dyn.armlinux.org.uk>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, DRI Development <dri-devel@lists.freedesktop.org>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <f3980beb6f2c02427d892a4bc4a04989544a3952.1547197612.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1cnNkYXksIEphbnVhcnkgMTcsIDIwMTkgNjoyNjoyNSBQTSBDRVQgUnVzc2VsbCBLaW5n
-IC0gQVJNIExpbnV4IGFkbWluIHdyb3RlOgo+IE9uIFR1ZSwgSmFuIDE1LCAyMDE5IGF0IDExOjQ3
-OjAwUE0gKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4gRnJvbTogUmFmYWVsIEou
-IFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPgo+ID4gU3ViamVjdDogW1BBVENI
-XSBkcml2ZXIgY29yZTogRml4IGFkZGluZyBkZXZpY2UgbGlua3MgdG8gcHJvYmluZyBzdXBwbGll
-cnMKPiA+IAo+ID4gQ3VycmVudGx5LCBpdCBpcyBub3QgdmFsaWQgdG8gYWRkIGEgZGV2aWNlIGxp
-bmsgZnJvbSBhIGNvbnN1bWVyCj4gPiBkcml2ZXIgLT5wcm9iZSgpIGNhbGxiYWNrIHRvIGEgc3Vw
-cGxpZXIgdGhhdCBpcyBzdGlsbCBwcm9iaW5nIHRvbywgYnV0Cj4gPiBnZW5lcmFsbHkgdGhpcyBp
-cyBhIHZhbGlkIHVzZSBjYXNlLiAgRm9yIGV4YW1wbGUsIGlmIHRoZSBjb25zdW1lciBoYXMKPiA+
-IGp1c3QgYWNxdWlyZWQgYSByZXNvdXJjZSB0aGF0IGNhbiBvbmx5IGJlIGF2YWlsYWJsZSB3aGVu
-IHRoZSBzdXBwbGllcgo+ID4gaXMgZnVuY3Rpb25hbCwgYWRkaW5nIGEgZGV2aWNlIGxpbmsgdG8g
-dGhhdCBzdXBwbGllciByaWdodCBhd2F5Cj4gPiBzaG91bGQgYmUgc2FmZSAoYW5kIGV2ZW4gZGVz
-aXJhYmxlIGFyZ3VhYmx5KSwgYnV0IGRldmljZV9saW5rX2FkZCgpCj4gPiBkb2Vzbid0IGhhbmRs
-ZSB0aGF0IGNhc2UgY29ycmVjdGx5IGFuZCB0aGUgaW5pdGlhbCBzdGF0ZSBvZiB0aGUgbGluawo+
-ID4gY3JlYXRlZCBieSBpdCBpcyB3cm9uZyB0aGVuLgo+ID4gCj4gPiBUbyBhZGRyZXNzIHRoaXMg
-cHJvYmxlbSwgY2hhbmdlIHRoZSBpbml0aWFsIHN0YXRlIG9mIGRldmljZSBsaW5rcwo+ID4gYWRk
-ZWQgYmV0d2VlbiBhIHByb2Jpbmcgc3VwcGxpZXIgYW5kIGEgcHJvYmluZyBjb25zdW1lciB0bwo+
-ID4gRExfU1RBVEVfQ09OU1VNRVJfUFJPQkUgYW5kIHVwZGF0ZSBkZXZpY2VfbGlua3NfZHJpdmVy
-X2JvdW5kKCkgdG8KPiA+IHNraXAgc3VjaCBsaW5rcyBvbiB0aGUgc3VwcGxpZXIgc2lkZS4KPiA+
-IAo+ID4gV2l0aCB0aGlzIGNoYW5nZSwgaWYgdGhlIHN1cHBsaWVyIHByb2JlIGNvbXBsZXRlcyBm
-aXJzdCwKPiA+IGRldmljZV9saW5rc19kcml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwg
-c2tpcCB0aGUgbGluayBzdGF0ZQo+ID4gdXBkYXRlIGFuZCB3aGVuIGl0IGlzIGNhbGxlZCBmb3Ig
-dGhlIGNvbnN1bWVyLCB0aGUgbGluayBzdGF0ZSB3aWxsCj4gPiBiZSB1cGRhdGVkIHRvICJhY3Rp
-dmUiLiAgSW4gdHVybiwgaWYgdGhlIGNvbnN1bWVyIHByb2JlIGNvbXBsZXRlcwo+ID4gZmlyc3Qs
-IGRldmljZV9saW5rc19kcml2ZXJfYm91bmQoKSBjYWxsZWQgZm9yIGl0IHdpbGwgY2hhbmdlIHRo
-ZQo+ID4gc3RhdGUgb2YgdGhlIGxpbmsgdG8gImFjdGl2ZSIgYW5kIHdoZW4gaXQgaXMgY2FsbGVk
-IGZvciB0aGUKPiA+IHN1cHBsaWVyLCB0aGUgbGluayBzdGF0dXMgdXBkYXRlIHdpbGwgYmUgc2tp
-cHBlZC4KPiA+IAo+ID4gSG93ZXZlciwgaW4gcHJpbmNpcGxlIHRoZSBzdXBwbGllciBvciBjb25z
-dW1lciBwcm9iZSBtYXkgc3RpbGwgZmFpbAo+ID4gYWZ0ZXIgdGhlIGxpbmsgaGFzIGJlZW4gYWRk
-ZWQsIHNvIG1vZGlmeSBkZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkgdG8KPiA+IGNoYW5nZSBkZXZp
-Y2UgbGlua3MgaW4gdGhlICJhY3RpdmUiIG9yICJjb25zdW1lciBwcm9iZSIgc3RhdGUgdG8KPiA+
-ICJkb3JtYW50IiBvbiB0aGUgc3VwcGxpZXIgc2lkZSBhbmQgdXBkYXRlIF9fZGV2aWNlX2xpbmtz
-X25vX2RyaXZlcigpCj4gPiB0byBjaGFuZ2UgdGhlIGxpbmsgc3RhdGUgdG8gImF2YWlsYWJsZSIg
-b25seSBpZiBpdCBpcyAiY29uc3VtZXIKPiA+IHByb2JlIiBvciAiYWN0aXZlIi4KPiA+IAo+ID4g
-VGhlbiwgaWYgdGhlIHN1cHBsaWVyIHByb2JlIGZhaWxzIGZpcnN0LCB0aGUgbGVmdG92ZXIgbGlu
-ayB0byB0aGUKPiA+IHByb2JpbmcgY29uc3VtZXIgd2lsbCBiZWNvbWUgImRvcm1hbnQiIGFuZCBk
-ZXZpY2VfbGlua3Nfbm9fZHJpdmVyKCkKPiA+IGNhbGxlZCBmb3IgdGhlIGNvbnN1bWVyICh3aGVu
-IGl0cyBwcm9iZSBmYWlscykgd2lsbCBjbGVhbiBpdCB1cC4KPiA+IEluIHR1cm4sIGlmIHRoZSBj
-b25zdW1lciBwcm9iZSBmYWlscyBmaXJzdCwgaXQgd2lsbCBlaXRoZXIgZHJvcCB0aGUKPiA+IGxp
-bmssIG9yIGNoYW5nZSBpdHMgc3RhdGUgdG8gImF2YWlsYWJsZSIgYW5kLCBpbiB0aGUgbGF0dGVy
-IGNhc2UsCj4gPiB3aGVuIGRldmljZV9saW5rc19ub19kcml2ZXIoKSBpcyBjYWxsZWQgZm9yIHRo
-ZSBzdXBwbGllciwgaXQgd2lsbAo+ID4gdXBkYXRlIHRoZSBsaW5rIHN0YXRlIHRvICJkb3JtYW50
-Ii4gIFtJZiB0aGUgc3VwcGxpZXIgcHJvYmUgZmFpbHMsCj4gPiBidXQgdGhlIGNvbnN1bWVyIHBy
-b2JlIHN1Y2NlZWRzLCB3aGljaCBzaG91bGQgbm90IGhhcHBlbiBhcyBsb25nIGFzCj4gPiB0aGUg
-Y29uc3VtZXIgZHJpdmVyIGlzIGNvcnJlY3QsIHRoZSBsaW5rIHN0aWxsIHdpbGwgYmUgYXJvdW5k
-LCBidXQKPiA+IGl0IHdpbGwgYmUgImRvcm1hbnQiIHVudGlsIHRoZSBzdXBwbGllciBpcyBwcm9i
-ZWQgYWdhaW4uXQo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFm
-YWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4gCj4gSGkgUmFmYWVsLAoKSGksCgo+IEkndmUgdHJp
-ZWQgdGhpcyB3aXRoIEFybWFkYSBEUk0gd2l0aG91dCB1c2luZyB0aGUgY29tcG9uZW50IGhlbHBl
-ciBmb3IKPiBicmlkZ2VzLCBhbmQgaXQgc2VlbXMgdG8gd29yayB1cCB0byBhIHBvaW50IChJIGhh
-dmUgYSB2Z2EgYnJpZGdlIGhlcmUKPiB0byBhbGxvdyBmdXJ0aGVyIHRlc3RpbmcpOgo+IAo+IFsg
-ICAgMi4zMjM0NDFdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IGFzc2lnbmVkIHJlc2Vy
-dmVkIG1lbW9yeSBub2RlIGZyYW1lYnVmZmVyCj4gWyAgICAyLjMzMjAwMV0gYXJtYWRhLWRybSBk
-aXNwbGF5LXN1YnN5c3RlbTogYm91bmQgZjE4MjAwMDAubGNkLWNvbnRyb2xsZXIgKG9wcyBhcm1h
-ZGFfbGNkX29wcykKPiBbICAgIDIuMzQwNzkwXSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vic3lzdGVt
-OiBib3VuZCBmMTgxMDAwMC5sY2QtY29udHJvbGxlciAob3BzIGFybWFkYV9sY2Rfb3BzKQo+IFsg
-ICAgMi4zNDkzNDVdIGFybWFkYS1kcm0gZGlzcGxheS1zdWJzeXN0ZW06IG5vZGU9L2kyYy1tdXgv
-aTJjQDAvaGRtaS1lbmNvZGVyQDcwCj4gWyAgICAyLjM1NjcxOV0gYXJtYWRhLWRybSBkaXNwbGF5
-LXN1YnN5c3RlbTogcGFuZWw9ZmZmZmZkZmIgYnJpZGdlPSAgKG51bGwpIHJldD0wCj4gWyAgICAy
-LjM2NDAzOF0gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogTGlua2VkIGFzIGEgY29uc3Vt
-ZXIgdG8gMS0wMDcwCj4gWyAgICAyLjM3MDgxOF0gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5c3Rl
-bTogYnJpZGdlPWVlOGNkYTJjIHJldD0wCj4gWyAgICAyLjM3Njg5NF0gYXJtYWRhLWRybSBkaXNw
-bGF5LXN1YnN5c3RlbTogbm9kZT0vdmdhLWJyaWRnZQo+IFsgICAgMi4zODI0NTNdIGFybWFkYS1k
-cm0gZGlzcGxheS1zdWJzeXN0ZW06IHBhbmVsPWZmZmZmZGZiIGJyaWRnZT0obnVsbCkgcmV0PTAK
-PiBbICAgIDIuMzg5NzYyXSBhcm1hZGEtZHJtIGRpc3BsYXktc3Vic3lzdGVtOiBMaW5rZWQgYXMg
-YSBjb25zdW1lciB0byB2Z2EtYnJpZGdlCj4gWyAgICAyLjM5Njg4M10gYXJtYWRhLWRybSBkaXNw
-bGF5LXN1YnN5c3RlbTogYnJpZGdlPWVmM2JlYzQwIHJldD0wCj4gCj4gV2hlbiBJIHJlbW92ZSB0
-aGUgSERNSSBlbmNvZGVyOgo+IAo+IHJvb3RAY3Vib3g6L3N5cy9idXMvaTJjL2RyaXZlcnMvdGRh
-OTk4eCMgZWNobyAxLTAwNzAgPiB1bmJpbmQKPiAKPiB0aGVuIEkgZ2V0Ogo+IAo+IFsgMTAxMy44
-MjQ4NjBdIENvbnNvbGU6IHN3aXRjaGluZyB0byBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDMwCj4g
-WyAxMDEzLjg2Njc4NV0gYXJtYWRhLWRybSBkaXNwbGF5LXN1YnN5c3RlbTogRHJvcHBpbmcgdGhl
-IGxpbmsgdG8KPiB2Z2EtYnJpZGdlCj4gWyAxMDEzLjg2NzEyNl0gYXJtYWRhLWRybSBkaXNwbGF5
-LXN1YnN5c3RlbTogRHJvcHBpbmcgdGhlIGxpbmsgdG8gMS0wMDcwCj4gCj4gd2hpY2ggbG9va3Mg
-bGlrZSBpdCBkaWQgd2hhdCB3YXMgZXhwZWN0ZWQgLSB0aGUgRFJNIGRldmljZSBpcyBpbmRlZWQK
-PiB1bmJvdW5kLCB0aGUgbm9kZXMgaW4gL2Rldi9kcmkgYXJlIGdvbmUuCgpPSywgdGhhbmtzIQoK
-VGhpcyB0ZWxscyBtZSB0aGF0IHRoZSBwYXRjaCBpcyBhbiBpbXByb3ZlbWVudCwgc28gSSdtIGdv
-aW5nIHRvIG1vdmUgb24gdG8KaW50ZWdyYXRlIGl0LgoKPiBXaGVuIHJlYmluZGluZyB0aGUgSERN
-SSBlbmNvZGVyOgo+IAo+IFsgMTAxNS44NjQ3MDNdIHRkYTk5OHggMS0wMDcwOiBmb3VuZCBUREEx
-OTk4OAo+IFsgMTAxNS44OTgwNzhdIHRkYTk5NTAgMS0wMDM0OiBUREE5OTUwIENFQyBpbnRlcmZh
-Y2UsIGhhcmR3YXJlIHZlcnNpb24gMy4zCj4gWyAxMDE1Ljk0MTM3NF0gUmVnaXN0ZXJlZCBJUiBr
-ZXltYXAgcmMtY2VjCj4gWyAxMDE1Ljk0MTY4NF0gcmMgcmMwOiB0ZGE5OTUwIGFzIC9kZXZpY2Vz
-L3BsYXRmb3JtL21idXMvbWJ1czppbnRlcm5hbC1yZWdzL2YxMDExMDAwLmkyYy9pMmMtMC9pMmMt
-MS8xLTAwNzAvcmMvcmMwCj4gWyAxMDE1Ljk0MjQzOV0gaW5wdXQ6IHRkYTk5NTAgYXMgL2Rldmlj
-ZXMvcGxhdGZvcm0vbWJ1cy9tYnVzOmludGVybmFsLXJlZ3MvZjEwMTEwMDAuaTJjL2kyYy0wL2ky
-Yy0xLzEtMDA3MC9yYy9yYzAvaW5wdXQyCj4gWyAxMDE2Ljk4MjkyMV0gYWxsb2NfY29udGlnX3Jh
-bmdlOiBbMTAzOTAsIDEwNDkwKSBQRk5zIGJ1c3kKPiBbIDEwMTYuOTg3NDAwXSBraXJrd29vZC1z
-cGRpZi1hdWRpbyBhdWRpby1zdWJzeXN0ZW06IHNuZC1zb2MtZHVtbXktZGFpIDwtPiBraXJrd29v
-ZC1mZSBtYXBwaW5nIG9rCj4gWyAxMDE2Ljk4NzU5MV0ga2lya3dvb2Qtc3BkaWYtYXVkaW8gYXVk
-aW8tc3Vic3lzdGVtOiBtdWx0aWNvZGVjIDwtPiBraXJrd29vZC1zcGRpZiBtYXBwaW5nIG9rCj4g
-Cj4gYnV0IHRoZSBEUk0gc3R1ZmYgZG9lc24ndCBjb21lIGJhY2sgLSB0aGlzIGlzIHdoYXQgRGFu
-aWVsIHdhcyB0YWxraW5nCj4gYWJvdXQgZnVydGhlciBkb3duIHRoaXMgdGhyZWFkLgoKUmlnaHQs
-IGl0J3MgdGhhdCBjYXNlIEFGQUlDUy4KCj4gSSBndWVzcyB0aGUga2VybmVsIGNhbid0IGtub3cg
-dGhhdCBpdCBzaG91bGQgY29tZSBiYWNrIGJlY2F1c2UgdGhlCj4gZGV2aWNlIGxpbmtzIHdlcmUg
-ZHJvcHBlZCBhdCB0aGUgdW5iaW5kIHN0YWdlLCB3aGljaCBtZWFucyB0aGUga2VybmVsCj4gaGFz
-IGxvc3QgdGhlIGluZm9ybWF0aW9uIG5lY2Vzc2FyeSB0byBrbm93IHRoYXQgdGhlIGRpc3BsYXkg
-c3Vic3lzdGVtCj4gaXMgZGVwZW5kZW50IG9uIHRoZSBwcmVzZW5jZSBvZiB0aGUgSERNSSBlbmNv
-ZGVyLiAgSSBkb24ndCBzZWUgYW4gZWFzeQo+IHdheSBhcm91bmQgdGhhdC4KCklmIHRoZSBsaW5r
-IGlzIGRlZmluZWQgYXMgInBlcnNpc3RlbnQiLCBpdCB3aWxsIHN1cnZpdmUgdGhlIHJlbW92YWwK
-b2YgZHJpdmVycywgYnV0IGl0IHdpbGwgYmVjb21lICJkb3JtYW50Ii4KCkN1cnJlbnRseSwgaWYg
-c3VjaCBhIGxpbmsgaXMgcHJlc2VudCwgdGhlIGNvbnN1bWVyIHByb2JlIGZpbGwgZmFpbAp3aXRo
-IC1FUFJPQkVfREVGRVIsIGJ1dCBpdCBtaWdodCBhbHNvIHRyaWdnZXIgZGV2aWNlX2F0dGFjaCgp
-IG9uCnRoZSBzdXBwbGllci4gIEl0IHdvdWxkIG1ha2Ugc2Vuc2UgdG8gZG8gdGhhdCBhbnl3YXkg
-SU1PLgoKPiBJZiB3ZSBrZWVwIHRoZSBkZXZpY2UgbGlua3MgYWZ0ZXIgYW4gdW5iaW5kIGV2ZW50
-LCB0aGVuLCBiZWNhdXNlIHdlCj4gY3JlYXRlIHRoZW0gZHVyaW5nIHByb2JlLCB3ZSdsbCBiZSBh
-dHRlbXB0aW5nIHRvIHJlY3JlYXRlIHRoZSBsaW5rCj4gd2hlbiB3ZSByZWF0dGFjaCB0aGUgc3Vw
-cGxpZXIgdG8gdGhlIGNvbnN1bWVyLiAgSWYgd2Ugb25seSBhbGxvdyBvbmUKPiBpbnN0YW5jZSwg
-dGhlbiB3aGF0IGRvZXMgZGV2aWNlX2xpbmtfYWRkKCkgcmV0dXJuLgoKSXQgcmV0dXJucyB0aGUg
-ZXhpc3RpbmcgbGluaywgYnV0IGl0IHdpbGwgcmVmZXJlbmNlLWNvdW50IGl0IHRvby4KCkhvd2V2
-ZXIsIHRoYXQgYXJndWFibHkgaXMgYW4gb3Zlcmxvb2tlZCB1c2UgY2FzZSB0b28sIGJlY2F1c2Ug
-InBlcnNpc3RlbnQiCmxpbmtzIGNyZWF0ZWQgZHVyaW5nIGNvbnN1bWVyIG9yIHN1cHBsaWVyIHBy
-b2JlIHNob3VsZCBub3QgYmUgcmVmZXJlbmNlCmNvdW50ZWQgaWYgdGhlIHNhbWUgcHJvYmUgcnVu
-cyBhZ2Fpbi4gIEV4dHJhIGZsYWdzIG1heSBiZSBuZWVkZWQgdG8KaGFuZGxlIHRoYXQsIHRob3Vn
-aC4KCj4gTWF5YmUgaXQgaXMgZ29pbmcgdG8gYmUgbGVzcyBwYWluZnVsIHRvIHB1c2ggZXZlcnl0
-aGluZyBicmlkZ2UtcmVsYXRlZAo+IHRvIHVzZSB0aGUgY29tcG9uZW50IGhlbHBlciBhZnRlciBh
-bGwuICBEdW5uby4gIFByb2JsZW1zIGVpdGhlciB3YXkuCgpXZWxsLCB0aGlzIGlzIGEgZmFpcmx5
-IGNvbXBsaWNhdGVkIHVzZSBjYXNlIGFuZCBJJ20gZ2xhZCB0aGF0IHdlIGhhdmUgaXQsCmJlY2F1
-c2UgaXQgc2hvd3Mgd2hhdCdzIG1pc3NpbmcuCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0
-cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9kcmktZGV2ZWwK
+Hi Viresh,
+
+Thanks for your work on this!
+
+Not a complete review, more a first pass.
+
+On Fri, Jan 11, 2019 at 02:48:34PM +0530, Viresh Kumar wrote:
+> This commit introduces the frequency constraint infrastructure, which
+> provides a generic interface for parts of the kernel to constraint the
+> working frequency range of a device.
+> 
+> The primary users of this are the cpufreq and devfreq frameworks. The
+> cpufreq framework already implements such constraints with help of
+> notifier chains (for thermal and other constraints) and some local code
+> (for user-space constraints). The devfreq framework developers have also
+> shown interest in such a framework, which may use it at a later point of
+> time.
+> 
+> The idea here is to provide a generic interface and get rid of the
+> notifier based mechanism.
+> 
+> Frameworks like cpufreq and devfreq need to provide a callback, which
+> the freq-constraint core will call on updates to the constraints, with
+> the help of freq_constraint_{set|remove}_dev_callback() OR
+> freq_constraint_{set|remove}_cpumask_callback() helpers.
+> 
+> Individual constraints can be managed by any part of the kernel with the
+> help of freq_constraint_{add|remove|update}() helpers.
+> 
+> Whenever a device constraint is added, removed or updated, the
+> freq-constraint core re-calculates the aggregated constraints on the
+> device and calls the callback if the min-max range has changed.
+> 
+> The current constraints on a device can be read using
+> freq_constraints_get().
+> 
+> Co-developed-by: Matthias Kaehlcke <mka@chromium.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  MAINTAINERS                     |   8 +
+>  drivers/base/Kconfig            |   5 +
+>  drivers/base/Makefile           |   1 +
+>  drivers/base/freq_constraint.c  | 633 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/freq_constraint.h |  45 +++
+>  5 files changed, 692 insertions(+)
+>  create mode 100644 drivers/base/freq_constraint.c
+>  create mode 100644 include/linux/freq_constraint.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index f6fc1b9dc00b..5b0ad4956d31 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -6176,6 +6176,14 @@ F:	Documentation/power/freezing-of-tasks.txt
+>  F:	include/linux/freezer.h
+>  F:	kernel/freezer.c
+>  
+> +FREQUENCY CONSTRAINTS
+> +M:	Viresh Kumar <vireshk@kernel.org>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git
+> +F:	drivers/base/freq_constraint.c
+> +F:	include/linux/freq_constraint.h
+> +
+>  FRONTSWAP API
+>  M:	Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+>  L:	linux-kernel@vger.kernel.org
+> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+> index 3e63a900b330..d53eb18ab732 100644
+> --- a/drivers/base/Kconfig
+> +++ b/drivers/base/Kconfig
+> @@ -26,6 +26,11 @@ config UEVENT_HELPER_PATH
+>  	  via /proc/sys/kernel/hotplug or via /sys/kernel/uevent_helper
+>  	  later at runtime.
+>  
+> +config DEVICE_FREQ_CONSTRAINT
+> +	bool
+> +	help
+> +	  Enable support for device frequency constraints.
+> +
+>  config DEVTMPFS
+>  	bool "Maintain a devtmpfs filesystem to mount at /dev"
+>  	help
+> diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+> index 157452080f3d..7530cbfd3cf8 100644
+> --- a/drivers/base/Makefile
+> +++ b/drivers/base/Makefile
+> @@ -23,6 +23,7 @@ obj-$(CONFIG_PINCTRL) += pinctrl.o
+>  obj-$(CONFIG_DEV_COREDUMP) += devcoredump.o
+>  obj-$(CONFIG_GENERIC_MSI_IRQ_DOMAIN) += platform-msi.o
+>  obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
+> +obj-$(CONFIG_DEVICE_FREQ_CONSTRAINT) += freq_constraint.o
+>  
+>  obj-y			+= test/
+>  
+> diff --git a/drivers/base/freq_constraint.c b/drivers/base/freq_constraint.c
+> new file mode 100644
+> index 000000000000..91356bae1af8
+> --- /dev/null
+> +++ b/drivers/base/freq_constraint.c
+>
+> ...
+>
+> +static void fcs_update(struct freq_constraints *fcs, struct freq_pair *freq,
+> +		       enum fc_event event)
+> +{
+> +	mutex_lock(&fcs->lock);
+> +
+> +	if (_fcs_update(fcs, freq, event)) {
+> +		if (fcs->callback)
+> +			schedule_work(&fcs->work);
+
+IIUC the constraints aren't applied until the callback is executed. I
+wonder if a dedicated workqueue should be used instead of the system
+one, to avoid longer delays from other kernel entities that might
+'misbehave'. Especially for thermal constraints we want a quick
+response.
+
+> +void freq_constraint_remove(struct device *dev,
+> +			    struct freq_constraint *constraint)
+> +{
+> +	struct freq_constraints *fcs;
+> +	struct freq_pair freq = constraint->freq;
+> +
+> +	fcs = find_fcs(dev);
+> +	if (IS_ERR(fcs)) {
+> +		dev_err(dev, "Failed to find freq-constraint\n");
+
+"freq-constraint: device not registered\n" as in other functions?
+
+> +		return;
+> +	}
+> +
+> +	free_constraint(fcs, constraint);
+> +	fcs_update(fcs, &freq, REMOVE);
+> +
+> +	/*
+> +	 * Put the reference twice, once for the freed constraint and one for
+
+s/one/once/
+
+> +int freq_constraint_update(struct device *dev,
+> +			   struct freq_constraint *constraint,
+> +			   unsigned long min_freq,
+> +			   unsigned long max_freq)
+> +{
+> +	struct freq_constraints *fcs;
+> +
+> +	if (!max_freq || min_freq > max_freq) {
+> +		dev_err(dev, "freq-constraints: Invalid min/max frequency\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	fcs = find_fcs(dev);
+> +	if (IS_ERR(fcs)) {
+> +		dev_err(dev, "Failed to find freq-constraint\n");
+
+same as above
+
+> +int freq_constraint_set_dev_callback(struct device *dev,
+> +				     void (*callback)(void *param),
+> +				     void *callback_param)
+> +{
+> +	struct freq_constraints *fcs;
+> +	int ret;
+> +
+> +	if (WARN_ON(!callback))
+> +		return -ENODEV;
+
+Wouldn't that be rather -EINVAL?
+
+> +/* Caller must call put_fcs() after using it */
+> +static struct freq_constraints *remove_callback(struct device *dev)
+> +{
+> +	struct freq_constraints *fcs;
+> +
+> +	fcs = find_fcs(dev);
+> +	if (IS_ERR(fcs)) {
+> +		dev_err(dev, "freq-constraint: device not registered\n");
+> +		return fcs;
+> +	}
+> +
+> +	mutex_lock(&fcs->lock);
+> +
+> +	cancel_work_sync(&fcs->work);
+> +
+> +	if (fcs->callback) {
+> +		fcs->callback = NULL;
+> +		fcs->callback_param = NULL;
+> +	} else {
+> +		dev_err(dev, "freq-constraint: Call back not registered for device\n");
+
+s/Call back/callback/ (for consistency with other messages)
+
+or "no callback registered ..."
+
+> +void freq_constraint_remove_dev_callback(struct device *dev)
+> +{
+> +	struct freq_constraints *fcs;
+> +
+> +	fcs = remove_callback(dev);
+> +	if (IS_ERR(fcs))
+> +		return;
+> +
+> +	/*
+> +	 * Put the reference twice, once for the callback removal and one for
+
+s/one/once/
+
+> +int freq_constraint_set_cpumask_callback(const struct cpumask *cpumask,
+> +					 void (*callback)(void *param),
+> +					 void *callback_param)
+> +{
+> +	struct freq_constraints *fcs = ERR_PTR(-ENODEV);
+> +	struct device *cpu_dev, *first_cpu_dev = NULL;
+> +	struct freq_constraint_dev *fcdev;
+> +	int cpu, ret;
+> +
+> +	if (WARN_ON(cpumask_empty(cpumask) || !callback))
+> +		return -ENODEV;
+
+-EINVAL?
+
+> +
+> +	/* Find a CPU for which fcs already exists */
+> +	for_each_cpu(cpu, cpumask) {
+> +		cpu_dev = get_cpu_device(cpu);
+> +		if (unlikely(!cpu_dev))
+> +			continue;
+> +
+> +		if (unlikely(!first_cpu_dev))
+> +			first_cpu_dev = cpu_dev;
+
+I'd expect setting the callback to be a one time/rare operation. Is
+there really any gain from cluttering this code with 'unlikely's?
+
+There are other functions where it could be removed if the outcome is
+that it isn't needed/desirable in code that only runs sporadically.
+
+> +
+> +		fcs = find_fcs(cpu_dev);
+> +		if (!IS_ERR(fcs))
+> +			break;
+> +	}
+> +
+> +	/* Allocate fcs if it wasn't already present */
+> +	if (IS_ERR(fcs)) {
+> +		if (unlikely(!first_cpu_dev)) {
+> +			pr_err("device structure not available for any CPU\n");
+> +			return -ENODEV;
+> +		}
+> +
+> +		fcs = alloc_fcs(first_cpu_dev);
+> +		if (IS_ERR(fcs))
+> +			return PTR_ERR(fcs);
+> +	}
+> +
+> +	for_each_cpu(cpu, cpumask) {
+> +		cpu_dev = get_cpu_device(cpu);
+> +		if (unlikely(!cpu_dev))
+> +			continue;
+> +
+> +		if (!find_fcdev(cpu_dev, fcs)) {
+> +			fcdev = alloc_fcdev(cpu_dev, fcs);
+> +			if (IS_ERR(fcdev)) {
+> +				remove_cpumask_fcs(fcs, cpumask, cpu);
+> +				put_fcs(fcs);
+> +				return PTR_ERR(fcdev);
+> +			}
+> +		}
+> +
+> +		kref_get(&fcs->kref);
+> +	}
+> +
+> +	mutex_lock(&fcs->lock);
+> +	ret = set_fcs_callback(first_cpu_dev, fcs, callback, callback_param);
+> +	mutex_unlock(&fcs->lock);
+> +
+> +	if (ret)
+> +		remove_cpumask_fcs(fcs, cpumask, cpu);
+
+I think it would be clearer to pass -1 instead of 'cpu', as in
+freq_constraint_remove_cpumask_callback(), no need to backtrack and
+'confirm' that the above for loop always stops at the last CPU in the
+cpumask (unless the function returns due to an error).
+
+Cheers
+
+Matthia
