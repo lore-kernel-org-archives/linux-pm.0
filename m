@@ -1,59 +1,70 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
-Date: Fri, 18 Jan 2019 10:57:08 +0100
-Message-ID: <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
-References: <20190110110546.8101-1-quentin.perret@arm.com> <20190110110546.8101-3-quentin.perret@arm.com>
- <20190117155117.GG14385@localhost.localdomain> <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] drivers: base: Add frequency constraint
+ infrastructure
+Date: Fri, 18 Jan 2019 15:32:34 +0530
+Message-ID: <20190118100234.kq37hc4ldujqvvrb@vireshk-i7>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <f3980beb6f2c02427d892a4bc4a04989544a3952.1547197612.git.viresh.kumar@linaro.org>
+ <20190118010305.GX261387@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+Content-Disposition: inline
+In-Reply-To: <20190118010305.GX261387@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
->
-> Hi Juri,
->
-> On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
-> > On 10/01/19 11:05, Quentin Perret wrote:
-> [...]
-> > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
-> > > +implications of its decisions rather than blindly applying energy-saving
-> > > +techniques that may have positive effects only on some platforms. At the same
-> > > +time, the EM must be as simple as possible to minimize the scheduler latency
-> > > +impact.
-> > > +
-> > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
-> >
-> > Not sure if we want to remark the fact that EAS is looking at CFS tasks
-> > only ATM.
->
-> Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
+On 17-01-19, 17:03, Matthias Kaehlcke wrote:
+> On Fri, Jan 11, 2019 at 02:48:34PM +0530, Viresh Kumar wrote:
+> > +static void fcs_update(struct freq_constraints *fcs, struct freq_pair *freq,
+> > +		       enum fc_event event)
+> > +{
+> > +	mutex_lock(&fcs->lock);
+> > +
+> > +	if (_fcs_update(fcs, freq, event)) {
+> > +		if (fcs->callback)
+> > +			schedule_work(&fcs->work);
+> 
+> IIUC the constraints aren't applied until the callback is executed. I
+> wonder if a dedicated workqueue should be used instead of the system
+> one, to avoid longer delays from other kernel entities that might
+> 'misbehave'. Especially for thermal constraints we want a quick
+> response.
 
-But it won't hurt to mention that it may cover other scheduling
-classes in the future.  IOW, the scope limit is not fundamental.
+I thought the system workqueue should be fast enough, it contains
+multiple threads which can all run in parallel and service this work.
 
-> > > +for the scheduler to decide where a task should run (during wake-up), the EM
-> > > +is used to break the tie between several good CPU candidates and pick the one
-> > > +that is predicted to yield the best energy consumption without harming the
-> > > +system's throughput. The predictions made by EAS rely on specific elements of
-> > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
-> >
-> > Add a reference to DT bindings docs defining 'capacity' (or define it
-> > somewhere)?
->
-> Right, I can mention this is defined in the next section. But are you
-> sure about the reference to the DT bindings ? They're arm-specific right ?
-> Maybe I can give that as an example or something ...
+> > +
+> > +	/* Find a CPU for which fcs already exists */
+> > +	for_each_cpu(cpu, cpumask) {
+> > +		cpu_dev = get_cpu_device(cpu);
+> > +		if (unlikely(!cpu_dev))
+> > +			continue;
+> > +
+> > +		if (unlikely(!first_cpu_dev))
+> > +			first_cpu_dev = cpu_dev;
+> 
+> I'd expect setting the callback to be a one time/rare operation. Is
+> there really any gain from cluttering this code with 'unlikely's?
+> 
+> There are other functions where it could be removed if the outcome is
+> that it isn't needed/desirable in code that only runs sporadically.
 
-Example sounds right.
+I was looking to make the code as fast as possible and the use of
+unlikely doesn't look that bad to me. Lets see what others have to say
+on such a policy.
 
-You also can point to the section below from here.
+> > +	if (ret)
+> > +		remove_cpumask_fcs(fcs, cpumask, cpu);
+> 
+> I think it would be clearer to pass -1 instead of 'cpu', as in
+> freq_constraint_remove_cpumask_callback(), no need to backtrack and
+> 'confirm' that the above for loop always stops at the last CPU in the
+> cpumask (unless the function returns due to an error).
 
-Side note: If the doc is in the .rst format (which Peter won't like
-I'm sure :-)), you can actually use cross-references in it and you get
-a translation to an HTML doc (hosted at kernel.org) for free and the
-cross-references become clickable links in that.
+Okay.
+
+-- 
+viresh
