@@ -1,104 +1,33 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Fri, 18 Jan 2019 12:17:52 +0100
-Message-ID: <CAJZ5v0hWaSgzrh1eYXy5yfq65f_zdqY+rUDPbtsa2qRB8ZLmOw@mail.gmail.com>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
- <4051825.HNqyo8zv3N@aspire.rjw.lan>
- <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
- <1547804218.2626.7.camel@pengutronix.de>
- <CAJZ5v0iteL55yjxw=NFkKJ+4=gCJ36jviruLTsyFDU+Oj+j-og@mail.gmail.com>
- <CAKMK7uHHhFt8kUwuUc6v1UkXQ3CPtoFAh5W_bvSuYYbSTuFnZg@mail.gmail.com>
+From: Pintu Agarwal <pintu.ping@gmail.com>
+Subject: Re: Need help: how to locate failure from irq_chip subsystem
+Date: Fri, 18 Jan 2019 16:50:10 +0530
+Message-ID: <CAOuPNLjjd67FnjaHbJj_auD-EWnbc+6sc+hcT_HE6fjeKhEQrw@mail.gmail.com>
+References: <CAOuPNLj4QzNDt0npZn2LhZTFgDNJ1CsWPw3=wvUuxnGtQW308g@mail.gmail.com>
+ <bceb32be-d508-c2a4-fa81-ab8b90323d3f@codeaurora.org> <CAOuPNLiNtPFksCuZF_vL6+YuLG0i0umzQhMCyEN69h9tySn2Vw@mail.gmail.com>
+ <57ff3437-47b5-fe92-d576-084ce26aa5d8@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKMK7uHHhFt8kUwuUc6v1UkXQ3CPtoFAh5W_bvSuYYbSTuFnZg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Lubomir Rintel <lkundrak@v3.sk>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <57ff3437-47b5-fe92-d576-084ce26aa5d8@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>
+Cc: open list <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Russell King - ARM Linux <linux@armlinux.org.uk>, linux-mm@kvack.org, linux-pm@vger.kernel.org, kernelnewbies@kernelnewbies.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MDYgUE0gRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZm
-d2xsLmNoPiB3cm90ZToKPgo+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDExOjAzIEFNIFJhZmFl
-bCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz4gd3JvdGU6Cj4gPgo+ID4gT24gRnJpLCBK
-YW4gMTgsIDIwMTkgYXQgMTA6MzcgQU0gTHVjYXMgU3RhY2ggPGwuc3RhY2hAcGVuZ3V0cm9uaXgu
-ZGU+IHdyb3RlOgo+ID4gPgo+ID4gPiBBbSBEb25uZXJzdGFnLCBkZW4gMTcuMDEuMjAxOSwgMTM6
-MjAgKzAxMDAgc2NocmllYiBEYW5pZWwgVmV0dGVyOgo+ID4gPiBbLi4uXQo+ID4gPiA+Cj4gPiA+
-ID4gPiBJIGRvbid0IHRoaW5rIGl0IGlzIGFkZHJlc3NlZCBoZXJlLgo+ID4gPiA+ID4KPiA+ID4g
-PiA+IENhbiBhbnlvbmUgcGxlYXNlIGV4cGxhaW4gdG8gbWUgd2hhdCBoYXBwZW5zIGluIG1vcmUg
-ZGV0YWlsPwo+ID4gPiA+Cj4gPiA+ID4gTXkgdW5kZXJzdGFuZGluZyAoYW5kIHRoaXMgbWlnaHQg
-YmUgd3JvbmcsIFJ1c3NlbGwsIEFuZHJ6ZWosIC4uLiBwbHMKPiA+ID4gPiBjb3JyZWN0KSBpcyB0
-aGF0IHRoZSBmb2xsb3dpbmcgc2VxdWVuY2UgZ29lcyB3cm9uZzoKPiA+ID4gPgo+ID4gPiA+IC0g
-Y29tcG9uZW50aXplZCBkcml2ZXIgKGJvdGggcHJvZHVjZXIgYW5kIGNvbnN1bWVyKSBmdWxseSBs
-b2FkZWQmd29ya2luZwo+ID4gPiA+IC0geW91IHVuYmluZCB0aGUgcHJvZHVjZXIvb25lIG9mIHRo
-ZSBjb21wb25lbnRzCj4gPiA+ID4gLSBjb21wb25lbnQgZnJhbWV3b3JrIG9yIGRyaXZlciBjb3Jl
-IHRocm91Z2ggZGV2aWNlX2xpbmsgYWxzbyB1bmJpbmRzCj4gPiA+ID4gdGhlIG1hc3Rlci9jb25z
-dW1lcgo+ID4gPiA+IC0geW91IHJlbG9hZC9yZWJpbmQgdGhlIGNvbXBvbmVudAo+ID4gPiA+IC0g
-d2l0aCB0aGUgY29tcG9uZW50IGZyYW1ld29yayB0aGlzIHJlc3VsdHMgaW4gdGhlIG1hc3RlciBi
-ZWluZwo+ID4gPiA+IHJlYm91bmQsIGFuZCB0aGUgb3ZlcmFsbCBkcml2ZXIgd29ya2luZyBhZ2Fp
-bi4gV2l0aCBkZXZpY2VfbGlua3MKPiA+ID4gPiBub3RoaW5nIGhhcHBlbnMuCj4gPiA+ID4KPiA+
-ID4gPiBJIHRoaW5rIHRoZXJlIHdhcyBhIHBhdGNoIGZsb2F0aW5nIGFyb3VuZCBvbmNlIHRvIHB1
-dCBkcml2ZXJzIHVuYm91bmQKPiA+ID4gPiBkdWUgdG8gZGV2aWNlX2xpbmtzIG9udG8gdGhlIGRl
-ZmVycmVkIHByb2JlIGxpc3QsIHNvIHRoYXQgdGhlIG5leHQKPiA+ID4gPiB0aW1lIHNvbWV0aGlu
-ZyBpcyBib3VuZCB0aGV5IGhhdmUgYSBjaGFuY2UgdG8gcmViaW5kLiBCdXQgSSBjYW4ndCBmaW5k
-Cj4gPiA+ID4gdGhhdCBwYXRjaCBhbnltb3JlLCBtYXliZSBzb21lb25lIGVsc2UgaGFzIHRoZSBs
-aW5rIHN0aWxsPwo+ID4gPgo+ID4gPiBodHRwczovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xpbnV4
-LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNnMTM0ODAyMy5odG1sCj4gPiA+IGh0dHBzOi8vd3d3
-Lm1haWwtYXJjaGl2ZS5jb20vbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZy9tc2cxMzU1MjQz
-Lmh0bWwKPgo+IFRoYW5rcyBmb3IgZGlnZ2luZyBpdCBvdXQsIHRob3NlIGFyZSB0aGUgcGF0Y2hl
-cyBJIGhhZCBpbiBtaW5kLgo+Cj4gPiA+IEkgY2FuIHJlcG9zdCBpZiB0aGlzIGlzIGZpbmFsbHkg
-ZGVlbWVkIGEgZ29vZCBpZGVhLgo+ID4KPiA+IEkgZG9uJ3QgdGhpbmsgdGhpcyB3aWxsIGhlbHAu
-Cj4gPgo+ID4gVHdvIHRoaW5ncyBhcHBlYXIgdG8gYmUgbmVlZGVkIGhlcmU6IG1pc3Npbmcgc3Vw
-cGxpZXJzIG5lZWQgdG8gYmUKPiA+IHByb2JlZCBhdXRvbWF0aWNhbGx5IGF0IGEgY29uc3VtZXIg
-cHJvYmUgdGltZSBhbmQgInBlcnNpc3RlbnQiIGxpbmtzCj4gPiBjcmVhdGVkIGJ5IC0+cHJvYmUo
-KSBjYWxsYmFja3Mgc2hvdWxkIG5vdCBiZSByZWZlcmVuY2UtY291bnRlZCB3aGVuCj4gPiB0aG9z
-ZSBjYWxsYmFja3MgcnVuIGFnYWluLiAgSSdtIGdvaW5nIHRvIGN1dCBhIHBhdGNoIHRvIGRvIHRo
-YXQgKGVhcmx5Cj4gPiBuZXh0IHdlZWsgaWYgYWxsIGdvZXMgd2VsbCkuCj4KPiBJIHRob3VnaHQg
-dGhpcyBzaG91bGQgd29yaywgc2luY2UgaXQgbWFrZXMgYW4gdW5iaW5kIG9mIGEgY29uc3VtZXIg
-YWN0Cj4gdGhlIHNhbWUgd2F5IGFzIGlmIHRoYXQgY29uc3VtZXIncyBiaW5kIGZ1bmN0aW9uIGhh
-cyBoaXQgYW4KPiBFUFJPQkVfREVGRVIuIEV4YW1wbGU6Cj4KPiAxLiBjb25zdW1lcidzIGJpbmQg
-aXMgY2FsbGVkLCByZWFsaXplcyAodGhyb3VnaCBhIHN1YnN5c3RlbSBmdW5jdGlvbgo+IGxpa2Ug
-b2ZfZHJtX2ZpbmRfcGFuZWwpIHRoYXQgdGhlIHByb2R1Y2VyIGlzbid0IHRoZXJlIHlldCwgZmFp
-bHMgd2l0aAo+IEVQUk9CRSBERUZFUi4KPgo+IDIuIGRyaXZlciBjb3JlIHB1dHMgdGhlIGNvbnN1
-bWVyIG9udG8gdGhlIGRlZmVycmVkIHByb2JlIGxpc3QuCj4KPiAzLiBwcm9kdWNlciBnZXRzIGxv
-YWRlZCwgcmVnaXN0ZXJzIHRoZSBwYW5lbAo+Cj4gNC4gZHJpdmVyIGNvcmUgcmUtcnVucyB0aGUg
-Y29uc3VtZXIncyBiaW5kIGZ1bmN0aW9uCj4KPiA1LiBjb25zdW1lcidzIGJpbmQgZnVuY3Rpb24g
-ZmluZHMgdGhlIHByb2R1Y2VkIGFuZCBzZXRzIHVwIHRoZSBkZXZpY2UgbGluay4KPgo+IE5vdyBm
-b3IgdGhlIHVuYmluZCBjYXNlOgo+Cj4gMS4gcHJvZHVjZXIgaXMgdW5ib3VuZCwgZHJpdmVyIGNv
-cmUgdW5iaW5kcyBjb25zdW1lciBkdWUgdG8gdGhlIGRldmljZV9saW5rCj4KPiAyLiAoT25seSB3
-aXRoIEx1Y2FzJyBwYXRjaCkgZHJpdmVyIGNvcmUgcHV0cyB0aGUgY29uc3VtZXIgb250byB0aGUK
-PiBkZWZlcnJlZCBwcm9iZSBsaXN0Lgo+Cj4gMy4gRGV2ZWxvcGVyICh0aGlzIHJlYWxseSBpcyB1
-c2VmdWwgZm9yIGRldmVsb3BtZW50KSByZWJpbmRzL3JlbG9hZHMKPiBwcm9kdWNlciBkcml2ZXIs
-IHdoaWNoIHJlLXJlZ2lzdGVycyB0aGUgcGFuZWwKPgo+IDQgJiA1IHdvcmsgZXhhY3RseSB0aGUg
-c2FtZSBhcyB3aXRoIHRoZSBpbml0aWFsIGxvYWQgc2VxdWVuY2UuCgpJIG1pc3VuZGVyc3Rvb2Qg
-dGhlIFJ1c3NlbGwncyBkZXNjcmlwdGlvbiwgc29ycnkuCgpNeSB1bmRlcnN0YW5kaW5nIHdhcyB0
-aGF0IHRoZSBjb25zdW1lciBkcml2ZXIgd291bGQgYmUgcmVib3VuZCBhdCB0aGlzCnBvaW50IGFu
-ZCB0aGF0IHRoZSAobWlzc2luZykgcHJvZHVjZXIgd2FzIGV4cGVjdGVkIHRvIHJlYmluZCBhcyB3
-ZWxsCmluIHJlc3BvbnNlLgoKPiBXaXRoIHRoaXMgaW5pdGlhbCBsb2FkaW5nIGFuZCByZWxvYWRp
-bmcgd291bGQgYmUgdmVyeSBzaW1pbGFyLCBhbmQgSQo+IHRoaW5rIHRoYXQncyBhIGdvb2QgdGhp
-bmcuIEl0IGFsc28gc29sdmVzIHRoZSBkZXZpY2VfbGluawo+IGxpZmV0aW1lL3JlZmNvdW50aW5n
-IGlzc3VlLCBzaW5jZSB0aGUgZGV2aWNlX2xpbmsgZ2V0cyB0b3JuIGRvd24KPiBpbi9yZXN0b3Jl
-ZCBjb21wbGV0ZWx5LCBhbmQgcmVsb2FkaW5nIGlzbid0IGEgc3BlY2lhbCBjYXNlIGxpa2UgaW4K
-PiB5b3VyIHByb3Bvc2VkIHNvbHV0aW9uIC0gdGhlcmUncyBubyBkZXZpY2VfbGluayBsZWZ0IG92
-ZXIgZnJvbSBhCj4gcHJldmlvdXMgbG9hZGluZyBvZiB0aGUgZHJpdmVyLCB0aGUgZGVwZW5kZW5j
-eSBpcyBvbmx5IGhhbmRsZWQgYnkKPiBwdXR0aW5nIHRoZSBjb25zdW1lciAoYmFjaykgIG9udG8g
-dGhlIGRlZmVycmVkIHByb2JlIGxpc3QuCgpNeSBpZGVhIHdhcyBiYXNlZCBvbiBpbmNvcnJlY3Qg
-dW5kZXJzdGFuZGluZyBvZiB0aGUgcHJvYmxlbSwgc28gc2NyYXRjaCBpdC4gOi0pCgpUaGUgTHVr
-YXMnIHBhdGNoIHdvdWxkIGluZGVlZCB3b3JrIGhlcmUsIGJ1dCBJJ20gbm90IHN1cmUgaWYgZG9p
-bmcKdGhhdCBmb3IgYWxsIGxpbmtzIHVuY29uZGl0aW9uYWxseSBpcyBhIGdvb2QgaWRlYS4KCkkn
-ZCByYXRoZXIgaGF2ZSBhIGxpbmsgZmxhZyB0byBpbmRpY2F0ZSB0aGF0IHRoaXMgYmVoYXZpb3Ig
-aXMgZGVzaXJhYmxlLgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5v
-cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2
-ZWwK
+> >> Could you please tell which QCOM SoC this board is based on?
+> >>
+> >
+> > Snapdragon 845 with kernel 4.9.x
+> > I want to know from which subsystem it is triggered:drivers/soc/qcom/
+> >
+>
+> Irqchip driver is "drivers/irqchip/irq-gic-v3.c". The kernel you are
+> using is msm-4.9 I suppose or some other kernel?
+>
+Yes, I am using customized version of msm-4.9 kernel based on Android.
+And yes the irqchip driver is: irq-gic-v3, which I can see from config.
+
+But, what I wanted to know is, how to find out which driver module
+(hopefully under: /drivers/soc/qcom/) that register with this
+irq_chip, is getting triggered at the time of crash ?
+So, that I can implement irq_hold function for it, which is the cause of crash.
