@@ -1,69 +1,134 @@
-From: Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
-Date: Fri, 18 Jan 2019 13:39:00 +0100
-Message-ID: <20190118123900.GJ14385@localhost.localdomain>
-References: <cover.1547197612.git.viresh.kumar@linaro.org>
- <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
- <20190117131631.GA14385@localhost.localdomain>
- <CAJZ5v0jFqXGf_G2v1VNXSxyiDzgeFY8OKUFu2tQ8Wso3dBS+_w@mail.gmail.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Subject: Re: Armada DRM: bridge with componentized devices
+Date: Fri, 18 Jan 2019 13:57:47 +0100
+Message-ID: <CAKMK7uEf5tOq4+igmNeUX3SGJabcN8DuMd2juxFjbHDzoMJ1hg@mail.gmail.com>
+References: <20190108132150.GT11171@n2100.armlinux.org.uk>
+ <515889972.533tA6DaoZ@aspire.rjw.lan>
+ <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
+ <4051825.HNqyo8zv3N@aspire.rjw.lan>
+ <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
+ <1547804218.2626.7.camel@pengutronix.de>
+ <CAJZ5v0iteL55yjxw=NFkKJ+4=gCJ36jviruLTsyFDU+Oj+j-og@mail.gmail.com>
+ <CAKMK7uHHhFt8kUwuUc6v1UkXQ3CPtoFAh5W_bvSuYYbSTuFnZg@mail.gmail.com>
+ <CAJZ5v0hWaSgzrh1eYXy5yfq65f_zdqY+rUDPbtsa2qRB8ZLmOw@mail.gmail.com>
+ <CAJZ5v0hwCrZTVveri-ogLwqg9cP8fn2R76szDh5RwJ2nfpoT1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jFqXGf_G2v1VNXSxyiDzgeFY8OKUFu2tQ8Wso3dBS+_w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAJZ5v0hwCrZTVveri-ogLwqg9cP8fn2R76szDh5RwJ2nfpoT1A@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Lubomir Rintel <lkundrak@v3.sk>, "Sarvela,
+ Tomi P" <tomi.p.sarvela@intel.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
 List-Id: linux-pm@vger.kernel.org
 
-On 17/01/19 15:55, Rafael J. Wysocki wrote:
-> On Thu, Jan 17, 2019 at 2:16 PM Juri Lelli <juri.lelli@gmail.com> wrote:
-> >
-> > On 11/01/19 10:47, Rafael J. Wysocki wrote:
-> > > On Fri, Jan 11, 2019 at 10:18 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > >
-> > > > Hi,
-> > > >
-> > > > This commit introduces the frequency constraint infrastructure, which
-> > > > provides a generic interface for parts of the kernel to constraint the
-> > > > working frequency range of a device.
-> > > >
-> > > > The primary users of this are the cpufreq and devfreq frameworks. The
-> > > > cpufreq framework already implements such constraints with help of
-> > > > notifier chains (for thermal and other constraints) and some local code
-> > > > (for user-space constraints). The devfreq framework developers have also
-> > > > shown interest [1] in such a framework, which may use it at a later
-> > > > point of time.
-> > > >
-> > > > The idea here is to provide a generic interface and get rid of the
-> > > > notifier based mechanism.
-> > > >
-> > > > Only one constraint is added for now for the cpufreq framework and the
-> > > > rest will follow after this stuff is merged.
-> > > >
-> > > > Matthias Kaehlcke was involved in the preparation of the first draft of
-> > > > this work and so I have added him as Co-author to the first patch.
-> > > > Thanks Matthias.
-> > > >
-> > > > FWIW, This doesn't have anything to do with the boot-constraints
-> > > > framework [2] I was trying to upstream earlier :)
-> > >
-> > > This is quite a bit of code to review, so it will take some time.
-> > >
-> > > One immediate observation is that it seems to do quite a bit of what
-> > > is done in the PM QoS framework, so maybe there is an opportunity for
-> > > some consolidation in there.
-> >
-> > Right, had the same impression. :-)
-> >
-> > I was also wondering how this new framework is dealing with
-> > constraints/request imposed/generated by the scheduler and related
-> > interfaces (thinking about schedutil and Patrick's util_clamp).
-> 
-> My understanding is that it is orthogonal to them, like adding extra
-> constraints on top of them etc.
-
-Mmm, ok. But, if that is indeed the case, I now wonder why and how
-existing (or hopefully to be added soon) interfaces are not sufficient.
-I'm not against this proposal, just trying to understand if this might
-create unwanted, hard to manage, overlap.
+T24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MzggUE0gUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
+bEBrZXJuZWwub3JnPiB3cm90ZToKPgo+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDEyOjE3IFBN
+IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz4gd3JvdGU6Cj4gPgo+ID4gT24g
+RnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MDYgUE0gRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xs
+LmNoPiB3cm90ZToKPiA+ID4KPiA+ID4gT24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTE6MDMgQU0g
+UmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPiA+ID4gPgo+ID4g
+PiA+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDEwOjM3IEFNIEx1Y2FzIFN0YWNoIDxsLnN0YWNo
+QHBlbmd1dHJvbml4LmRlPiB3cm90ZToKPiA+ID4gPiA+Cj4gPiA+ID4gPiBBbSBEb25uZXJzdGFn
+LCBkZW4gMTcuMDEuMjAxOSwgMTM6MjAgKzAxMDAgc2NocmllYiBEYW5pZWwgVmV0dGVyOgo+ID4g
+PiA+ID4gWy4uLl0KPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gPiBJIGRvbid0IHRoaW5rIGl0IGlz
+IGFkZHJlc3NlZCBoZXJlLgo+ID4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ID4gQ2FuIGFueW9uZSBw
+bGVhc2UgZXhwbGFpbiB0byBtZSB3aGF0IGhhcHBlbnMgaW4gbW9yZSBkZXRhaWw/Cj4gPiA+ID4g
+PiA+Cj4gPiA+ID4gPiA+IE15IHVuZGVyc3RhbmRpbmcgKGFuZCB0aGlzIG1pZ2h0IGJlIHdyb25n
+LCBSdXNzZWxsLCBBbmRyemVqLCAuLi4gcGxzCj4gPiA+ID4gPiA+IGNvcnJlY3QpIGlzIHRoYXQg
+dGhlIGZvbGxvd2luZyBzZXF1ZW5jZSBnb2VzIHdyb25nOgo+ID4gPiA+ID4gPgo+ID4gPiA+ID4g
+PiAtIGNvbXBvbmVudGl6ZWQgZHJpdmVyIChib3RoIHByb2R1Y2VyIGFuZCBjb25zdW1lcikgZnVs
+bHkgbG9hZGVkJndvcmtpbmcKPiA+ID4gPiA+ID4gLSB5b3UgdW5iaW5kIHRoZSBwcm9kdWNlci9v
+bmUgb2YgdGhlIGNvbXBvbmVudHMKPiA+ID4gPiA+ID4gLSBjb21wb25lbnQgZnJhbWV3b3JrIG9y
+IGRyaXZlciBjb3JlIHRocm91Z2ggZGV2aWNlX2xpbmsgYWxzbyB1bmJpbmRzCj4gPiA+ID4gPiA+
+IHRoZSBtYXN0ZXIvY29uc3VtZXIKPiA+ID4gPiA+ID4gLSB5b3UgcmVsb2FkL3JlYmluZCB0aGUg
+Y29tcG9uZW50Cj4gPiA+ID4gPiA+IC0gd2l0aCB0aGUgY29tcG9uZW50IGZyYW1ld29yayB0aGlz
+IHJlc3VsdHMgaW4gdGhlIG1hc3RlciBiZWluZwo+ID4gPiA+ID4gPiByZWJvdW5kLCBhbmQgdGhl
+IG92ZXJhbGwgZHJpdmVyIHdvcmtpbmcgYWdhaW4uIFdpdGggZGV2aWNlX2xpbmtzCj4gPiA+ID4g
+PiA+IG5vdGhpbmcgaGFwcGVucy4KPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gSSB0aGluayB0aGVy
+ZSB3YXMgYSBwYXRjaCBmbG9hdGluZyBhcm91bmQgb25jZSB0byBwdXQgZHJpdmVycyB1bmJvdW5k
+Cj4gPiA+ID4gPiA+IGR1ZSB0byBkZXZpY2VfbGlua3Mgb250byB0aGUgZGVmZXJyZWQgcHJvYmUg
+bGlzdCwgc28gdGhhdCB0aGUgbmV4dAo+ID4gPiA+ID4gPiB0aW1lIHNvbWV0aGluZyBpcyBib3Vu
+ZCB0aGV5IGhhdmUgYSBjaGFuY2UgdG8gcmViaW5kLiBCdXQgSSBjYW4ndCBmaW5kCj4gPiA+ID4g
+PiA+IHRoYXQgcGF0Y2ggYW55bW9yZSwgbWF5YmUgc29tZW9uZSBlbHNlIGhhcyB0aGUgbGluayBz
+dGlsbD8KPiA+ID4gPiA+Cj4gPiA+ID4gPiBodHRwczovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xp
+bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNnMTM0ODAyMy5odG1sCj4gPiA+ID4gPiBodHRw
+czovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNn
+MTM1NTI0My5odG1sCj4gPiA+Cj4gPiA+IFRoYW5rcyBmb3IgZGlnZ2luZyBpdCBvdXQsIHRob3Nl
+IGFyZSB0aGUgcGF0Y2hlcyBJIGhhZCBpbiBtaW5kLgo+ID4gPgo+ID4gPiA+ID4gSSBjYW4gcmVw
+b3N0IGlmIHRoaXMgaXMgZmluYWxseSBkZWVtZWQgYSBnb29kIGlkZWEuCj4gPiA+ID4KPiA+ID4g
+PiBJIGRvbid0IHRoaW5rIHRoaXMgd2lsbCBoZWxwLgo+ID4gPiA+Cj4gPiA+ID4gVHdvIHRoaW5n
+cyBhcHBlYXIgdG8gYmUgbmVlZGVkIGhlcmU6IG1pc3Npbmcgc3VwcGxpZXJzIG5lZWQgdG8gYmUK
+PiA+ID4gPiBwcm9iZWQgYXV0b21hdGljYWxseSBhdCBhIGNvbnN1bWVyIHByb2JlIHRpbWUgYW5k
+ICJwZXJzaXN0ZW50IiBsaW5rcwo+ID4gPiA+IGNyZWF0ZWQgYnkgLT5wcm9iZSgpIGNhbGxiYWNr
+cyBzaG91bGQgbm90IGJlIHJlZmVyZW5jZS1jb3VudGVkIHdoZW4KPiA+ID4gPiB0aG9zZSBjYWxs
+YmFja3MgcnVuIGFnYWluLiAgSSdtIGdvaW5nIHRvIGN1dCBhIHBhdGNoIHRvIGRvIHRoYXQgKGVh
+cmx5Cj4gPiA+ID4gbmV4dCB3ZWVrIGlmIGFsbCBnb2VzIHdlbGwpLgo+ID4gPgo+ID4gPiBJIHRo
+b3VnaHQgdGhpcyBzaG91bGQgd29yaywgc2luY2UgaXQgbWFrZXMgYW4gdW5iaW5kIG9mIGEgY29u
+c3VtZXIgYWN0Cj4gPiA+IHRoZSBzYW1lIHdheSBhcyBpZiB0aGF0IGNvbnN1bWVyJ3MgYmluZCBm
+dW5jdGlvbiBoYXMgaGl0IGFuCj4gPiA+IEVQUk9CRV9ERUZFUi4gRXhhbXBsZToKPiA+ID4KPiA+
+ID4gMS4gY29uc3VtZXIncyBiaW5kIGlzIGNhbGxlZCwgcmVhbGl6ZXMgKHRocm91Z2ggYSBzdWJz
+eXN0ZW0gZnVuY3Rpb24KPiA+ID4gbGlrZSBvZl9kcm1fZmluZF9wYW5lbCkgdGhhdCB0aGUgcHJv
+ZHVjZXIgaXNuJ3QgdGhlcmUgeWV0LCBmYWlscyB3aXRoCj4gPiA+IEVQUk9CRSBERUZFUi4KPiA+
+ID4KPiA+ID4gMi4gZHJpdmVyIGNvcmUgcHV0cyB0aGUgY29uc3VtZXIgb250byB0aGUgZGVmZXJy
+ZWQgcHJvYmUgbGlzdC4KPiA+ID4KPiA+ID4gMy4gcHJvZHVjZXIgZ2V0cyBsb2FkZWQsIHJlZ2lz
+dGVycyB0aGUgcGFuZWwKPiA+ID4KPiA+ID4gNC4gZHJpdmVyIGNvcmUgcmUtcnVucyB0aGUgY29u
+c3VtZXIncyBiaW5kIGZ1bmN0aW9uCj4gPiA+Cj4gPiA+IDUuIGNvbnN1bWVyJ3MgYmluZCBmdW5j
+dGlvbiBmaW5kcyB0aGUgcHJvZHVjZWQgYW5kIHNldHMgdXAgdGhlIGRldmljZSBsaW5rLgo+ID4g
+Pgo+ID4gPiBOb3cgZm9yIHRoZSB1bmJpbmQgY2FzZToKPiA+ID4KPiA+ID4gMS4gcHJvZHVjZXIg
+aXMgdW5ib3VuZCwgZHJpdmVyIGNvcmUgdW5iaW5kcyBjb25zdW1lciBkdWUgdG8gdGhlIGRldmlj
+ZV9saW5rCj4gPiA+Cj4gPiA+IDIuIChPbmx5IHdpdGggTHVjYXMnIHBhdGNoKSBkcml2ZXIgY29y
+ZSBwdXRzIHRoZSBjb25zdW1lciBvbnRvIHRoZQo+ID4gPiBkZWZlcnJlZCBwcm9iZSBsaXN0Lgo+
+ID4gPgo+ID4gPiAzLiBEZXZlbG9wZXIgKHRoaXMgcmVhbGx5IGlzIHVzZWZ1bCBmb3IgZGV2ZWxv
+cG1lbnQpIHJlYmluZHMvcmVsb2Fkcwo+ID4gPiBwcm9kdWNlciBkcml2ZXIsIHdoaWNoIHJlLXJl
+Z2lzdGVycyB0aGUgcGFuZWwKPiA+ID4KPiA+ID4gNCAmIDUgd29yayBleGFjdGx5IHRoZSBzYW1l
+IGFzIHdpdGggdGhlIGluaXRpYWwgbG9hZCBzZXF1ZW5jZS4KPiA+Cj4gPiBJIG1pc3VuZGVyc3Rv
+b2QgdGhlIFJ1c3NlbGwncyBkZXNjcmlwdGlvbiwgc29ycnkuCj4gPgo+ID4gTXkgdW5kZXJzdGFu
+ZGluZyB3YXMgdGhhdCB0aGUgY29uc3VtZXIgZHJpdmVyIHdvdWxkIGJlIHJlYm91bmQgYXQgdGhp
+cwo+ID4gcG9pbnQgYW5kIHRoYXQgdGhlIChtaXNzaW5nKSBwcm9kdWNlciB3YXMgZXhwZWN0ZWQg
+dG8gcmViaW5kIGFzIHdlbGwKPiA+IGluIHJlc3BvbnNlLgo+ID4KPiA+ID4gV2l0aCB0aGlzIGlu
+aXRpYWwgbG9hZGluZyBhbmQgcmVsb2FkaW5nIHdvdWxkIGJlIHZlcnkgc2ltaWxhciwgYW5kIEkK
+PiA+ID4gdGhpbmsgdGhhdCdzIGEgZ29vZCB0aGluZy4gSXQgYWxzbyBzb2x2ZXMgdGhlIGRldmlj
+ZV9saW5rCj4gPiA+IGxpZmV0aW1lL3JlZmNvdW50aW5nIGlzc3VlLCBzaW5jZSB0aGUgZGV2aWNl
+X2xpbmsgZ2V0cyB0b3JuIGRvd24KPiA+ID4gaW4vcmVzdG9yZWQgY29tcGxldGVseSwgYW5kIHJl
+bG9hZGluZyBpc24ndCBhIHNwZWNpYWwgY2FzZSBsaWtlIGluCj4gPiA+IHlvdXIgcHJvcG9zZWQg
+c29sdXRpb24gLSB0aGVyZSdzIG5vIGRldmljZV9saW5rIGxlZnQgb3ZlciBmcm9tIGEKPiA+ID4g
+cHJldmlvdXMgbG9hZGluZyBvZiB0aGUgZHJpdmVyLCB0aGUgZGVwZW5kZW5jeSBpcyBvbmx5IGhh
+bmRsZWQgYnkKPiA+ID4gcHV0dGluZyB0aGUgY29uc3VtZXIgKGJhY2spICBvbnRvIHRoZSBkZWZl
+cnJlZCBwcm9iZSBsaXN0Lgo+ID4KPiA+IE15IGlkZWEgd2FzIGJhc2VkIG9uIGluY29ycmVjdCB1
+bmRlcnN0YW5kaW5nIG9mIHRoZSBwcm9ibGVtLCBzbyBzY3JhdGNoIGl0LiA6LSkKPiA+Cj4gPiBU
+aGUgTHVrYXMnIHBhdGNoIHdvdWxkIGluZGVlZCB3b3JrIGhlcmUsIGJ1dCBJJ20gbm90IHN1cmUg
+aWYgZG9pbmcKPiA+IHRoYXQgZm9yIGFsbCBsaW5rcyB1bmNvbmRpdGlvbmFsbHkgaXMgYSBnb29k
+IGlkZWEuCj4gPgo+ID4gSSdkIHJhdGhlciBoYXZlIGEgbGluayBmbGFnIHRvIGluZGljYXRlIHRo
+YXQgdGhpcyBiZWhhdmlvciBpcyBkZXNpcmFibGUuCj4KPiBUaGF0IHNhaWQsIHRoZSBjcmVhdGlv
+biBvZiBhIGRldmljZSBsaW5rIGlzIGEgaGVhdnktd2VpZ2h0IG9wZXJhdGlvbgo+IGluIGdlbmVy
+YWwgYXMgaXQgdHJpZ2dlcnMgYSBsaXN0IHJlb3JkZXJpbmcgdGhhdCBtYXkgdHVybiBvdXQgdG8g
+YmUKPiByZWN1cnNpdmUgZXRjLiwgc28gSSdkIHJhdGhlciBhdm9pZCBkb2luZyB0b28gbXVjaCBv
+ZiB0aGF0Lgo+Cj4gTW9yZW92ZXIsIGNyZWF0aW5nIGEgbGluayBiZXR3ZWVuIHR3byBkZXZpY2Vz
+IG9uY2Ugc2hvdWxkIGJlCj4gc3VmZmljaWVudCwgc28gSSdkIHByZWZlciAicGVyc2lzdGVudCIg
+bGlua3MgdG8gYmUgdXNlZCBpbiB0aGF0IGNhc2UsCj4gYnV0IHRoZXkgbmVlZCB0byBiZSBmaXhl
+ZCB0byBhdm9pZCB0aGUgZXh0cmEgcmVmZXJlbmNlIGNvdW50aW5nLiAgVGhhdAo+IGFuZCBhIG5l
+dyBsaW5rIGZsYWcgdG8gaW5kaWNhdGUgdGhhdCB0aGUgY29uc3VtZXIgc2hvdWxkIGJlIHByb2Jl
+ZAo+IGF1dG9tYXRpY2FsbHkgYWZ0ZXIgYmluZGluZyB0aGUgc3VwcGxpZXIgZHJpdmVyLgoKWWVh
+aCBpZiBwZXJzaXN0ZW50IGxpbmtzIG1ha2UgbW9yZSBzZW5zZSBmcm9tIGFuIGltcGxlbWVudGF0
+aW9uIHBvdgp0aGVuIHRoYXQncyBhbGwgZmluZSwgYXMgbG9uZyBhcyBpdCByZXN1bHRzIGluIHRo
+ZSBzYW1lIGJlaGF2aW91ciBmb3IKZnJvbSB0aGUgcG92IG9mIGFsbCB0aGUgaW52b2x2ZWQgYmlu
+ZCBmdW5jdGlvbnMuIFNvIGlmIHRoZSBjb3JlCmhhbmRsZXMgYWxsIHRoZSByZWZjb3VudCB0cmlj
+a2VyeSwgdGhhdCdzIGdvb2QuCgpBbHNvIGFuIGV4cGxpY2l0IGZsYWcgc291bmRzIGxpa2UgYSBn
+b29kIGlkZWEsIHNpbmNlIGZvciBzb21lIG90aGVyCnByb2JsZW1zIHdlIHdhbnQgdG8gbWFrZSB0
+aGUgZGV2aWNlX2xpbmsgb3B0LWluLiBUaGVyZSdzIG90aGVyd2lzZQpzb21lIGxvb3BzIGluIHNv
+bWUgY2FzZXMgYXBwYXJlbnRseS4KLURhbmllbAotLSAKRGFuaWVsIFZldHRlcgpTb2Z0d2FyZSBF
+bmdpbmVlciwgSW50ZWwgQ29ycG9yYXRpb24KKzQxICgwKSA3OSAzNjUgNTcgNDggLSBodHRwOi8v
+YmxvZy5mZndsbC5jaApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5v
+cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2
+ZWwK
