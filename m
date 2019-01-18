@@ -1,95 +1,80 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
- ktime based accounting
-Date: Fri, 18 Jan 2019 11:54:18 +0100
-Message-ID: <CAJZ5v0gC-v=3etOE_PuBvvVCbiqwk6J4+2ZkssdGjJG0BkBk6A@mail.gmail.com>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org> <20190117221628.GA21979@roeck-us.net>
+Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
+Date: Fri, 18 Jan 2019 11:58:20 +0100
+Message-ID: <CAJZ5v0jHq8pgB=XPydTyiqpUpX4ZdA5DVbk=Lqh=aUDBr-QOQQ@mail.gmail.com>
+References: <20190110110546.8101-1-quentin.perret@arm.com> <20190110110546.8101-3-quentin.perret@arm.com>
+ <20190117155117.GG14385@localhost.localdomain> <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+ <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com> <20190118103359.jqctbopx25h3zvqs@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190117221628.GA21979@roeck-us.net>
+In-Reply-To: <20190118103359.jqctbopx25h3zvqs@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 17, 2019 at 11:16 PM Guenter Roeck <linux@roeck-us.net> wrote:
+On Fri, Jan 18, 2019 at 11:34 AM Quentin Perret <quentin.perret@arm.com> wrote:
 >
-> On Fri, Dec 21, 2018 at 11:33:56AM +0100, Vincent Guittot wrote:
-> > From: Thara Gopinath <thara.gopinath@linaro.org>
+> Hi Rafael,
+>
+> On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
+> > On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > >
+> > > Hi Juri,
+> > >
+> > > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
+> > > > On 10/01/19 11:05, Quentin Perret wrote:
+> > > [...]
+> > > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
+> > > > > +implications of its decisions rather than blindly applying energy-saving
+> > > > > +techniques that may have positive effects only on some platforms. At the same
+> > > > > +time, the EM must be as simple as possible to minimize the scheduler latency
+> > > > > +impact.
+> > > > > +
+> > > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+> > > >
+> > > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
+> > > > only ATM.
+> > >
+> > > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
 > >
-> > This patch replaces jiffies based accounting for runtime_active_time
-> > and runtime_suspended_time with ktime base accounting. This makes the
-> > runtime debug counters inline with genpd and other pm subsytems which
-> > uses ktime based accounting.
+> > But it won't hurt to mention that it may cover other scheduling
+> > classes in the future.  IOW, the scope limit is not fundamental.
+>
+> Agreed, I can do that.
+>
+> > > > > +for the scheduler to decide where a task should run (during wake-up), the EM
+> > > > > +is used to break the tie between several good CPU candidates and pick the one
+> > > > > +that is predicted to yield the best energy consumption without harming the
+> > > > > +system's throughput. The predictions made by EAS rely on specific elements of
+> > > > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
+> > > >
+> > > > Add a reference to DT bindings docs defining 'capacity' (or define it
+> > > > somewhere)?
+> > >
+> > > Right, I can mention this is defined in the next section. But are you
+> > > sure about the reference to the DT bindings ? They're arm-specific right ?
+> > > Maybe I can give that as an example or something ...
 > >
-> > timekeeping is initialized before pm_runtime_init() so ktime_get() will
-> > be ready before first call. In fact, timekeeping_init() is called early
-> > in start_kernel() which is way before driver_init() (and that's when
-> > devices can start to be initialized) called from rest_init() via
-> > kernel_init_freeable() and do_basic_setup().
+> > Example sounds right.
 > >
-> This is not (always) correct. My qemu "collie" boot test fails with this
-> patch applied. Reverting the patch fixes the problem. Bisect log attached.
+> > You also can point to the section below from here.
 >
-> With some added debugging:
+> Sounds good.
 >
-> ...
-> IRQS: 16, nr_irqs: 65, preallocated irqs: 65
-> irq: Cannot allocate irq_descs @ IRQ1, assuming pre-allocated
-> gpio gpiochip0: ############### pm_runtime_init() ############
-> irq: Cannot allocate irq_descs @ IRQ33, assuming pre-allocated
-> ############## timekeeping_init() ####################
-> sched_clock: 32 bits at 3686kHz, resolution 271ns, wraps every 582542222200ns^M
-> ...
+> > Side note: If the doc is in the .rst format (which Peter won't like
+> > I'm sure :-)), you can actually use cross-references in it and you get
+> > a translation to an HTML doc (hosted at kernel.org) for free and the
+> > cross-references become clickable links in that.
 >
-> This is with:
->
-> void pm_runtime_init(struct device *dev)
-> {
-> +       dev_info(dev, "############### pm_runtime_init() ############\n");
-> +
-> ...
-> @@ -1526,6 +1526,8 @@ void __init timekeeping_init(void)
->         struct clocksource *clock;
->         unsigned long flags;
->
-> +       pr_info("############## timekeeping_init() ####################\n");
-> +
->
-> Guenter
->
-> ---
-> # bad: [a37d50ca3b837c19a297f349365d11a20c1087d0] Add linux-next specific files for 20190117
-> # good: [1c7fc5cbc33980acd13d668f1c8f0313d6ae9fd8] Linux 5.0-rc2
-> git bisect start 'HEAD' 'v5.0-rc2'
-> # bad: [4edb817d29fdf19fb5d52784bb3c29c40e00f586] Merge remote-tracking branch 'pm/linux-next'
-> git bisect bad 4edb817d29fdf19fb5d52784bb3c29c40e00f586
-> # good: [6d95886720d306a1914a7c9a8aeb0bcbc7aef018] Merge remote-tracking branch 'omap/for-next'
-> git bisect good 6d95886720d306a1914a7c9a8aeb0bcbc7aef018
-> # good: [975b5cdd74430bc8a04f832d65a47cdb95b73fec] Merge remote-tracking branch 'fuse/for-next'
-> git bisect good 975b5cdd74430bc8a04f832d65a47cdb95b73fec
-> # good: [112386d2189fc54b979c3a8bf64b2908df91e123] Merge remote-tracking branch 'i2c/i2c/for-next'
-> git bisect good 112386d2189fc54b979c3a8bf64b2908df91e123
-> # good: [3943f059823b6e15884387f31618b84826e924b3] media: coda: Add control for h.264 chroma qp index offset
-> git bisect good 3943f059823b6e15884387f31618b84826e924b3
-> # good: [44970bbbbb5079ee100875b06e45db5d6e91a16e] Merge remote-tracking branch 'v4l-dvb/master'
-> git bisect good 44970bbbbb5079ee100875b06e45db5d6e91a16e
-> # bad: [599170c2b860aca3364574f833bb9cc801c9668d] Merge branch 'pm-core' into linux-next
-> git bisect bad 599170c2b860aca3364574f833bb9cc801c9668d
-> # good: [347d570919ca9a3a3653ce9cbb7399c7c0ba8248] Merge branch 'acpi-pci' into linux-next
-> git bisect good 347d570919ca9a3a3653ce9cbb7399c7c0ba8248
-> # good: [e0a9fde86ba1bc26dd754c733b32e70cd8f1c187] Merge branches 'acpi-tables' and 'acpi-apei' into linux-next
-> git bisect good e0a9fde86ba1bc26dd754c733b32e70cd8f1c187
-> # good: [3b4ed2e2eb5583774a1ed4aa4596a5a3c55f2567] drm/i915: Move on the new pm runtime interface
-> git bisect good 3b4ed2e2eb5583774a1ed4aa4596a5a3c55f2567
-> # bad: [c75c303933a68c547f3352d1d708843f9449d3f4] PM: clock_ops: fix missing clk_prepare() return value check
-> git bisect bad c75c303933a68c547f3352d1d708843f9449d3f4
-> # bad: [3982ab9ce433efc72ca31eb9ddc85d9355966444] PM-runtime: Replace jiffies based accounting with ktime-based accounting
-> git bisect bad 3982ab9ce433efc72ca31eb9ddc85d9355966444
-> # first bad commit: [3982ab9ce433efc72ca31eb9ddc85d9355966444] PM-runtime: Replace jiffies based accounting with ktime-based accounting
+> Right, I personally don't mind the .rst format, but the existing files
+> in Documentation/power/ and Documentation/scheduler/ are good old txt
+> files so I just wanted to keep things consistent.
 
-OK, dropping this one for now, we need a working replacement.
+In fact, Documentation/power/ is under a slow on-going transition to
+.rst (due to the benefits mentioned above).
 
-Thanks!
+> I don't mind converting to rst if necessary :-)
+
+It is not necessary, but maybe worth considering.
