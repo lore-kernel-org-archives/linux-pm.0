@@ -1,78 +1,120 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
-Date: Fri, 18 Jan 2019 10:34:01 +0000
-Message-ID: <20190118103359.jqctbopx25h3zvqs@queper01-lin>
-References: <20190110110546.8101-1-quentin.perret@arm.com>
- <20190110110546.8101-3-quentin.perret@arm.com>
- <20190117155117.GG14385@localhost.localdomain>
- <20190118091652.xn6iw52tccwh6vap@queper01-lin>
- <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
+ ktime based accounting
+Date: Fri, 18 Jan 2019 11:42:15 +0100
+Message-ID: <20190118104215.GA13168@linaro.org>
+References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+ <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
+ <20190117221628.GA21979@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20190117221628.GA21979@roeck-us.net>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: ulf.hansson@linaro.org, dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, airlied@linux.ie, intel-gfx@lists.freedesktop.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, thara.gopinath@linaro.org, rodrigo.vivi@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
-> On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
-> >
-> > Hi Juri,
-> >
-> > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
-> > > On 10/01/19 11:05, Quentin Perret wrote:
-> > [...]
-> > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
-> > > > +implications of its decisions rather than blindly applying energy-saving
-> > > > +techniques that may have positive effects only on some platforms. At the same
-> > > > +time, the EM must be as simple as possible to minimize the scheduler latency
-> > > > +impact.
-> > > > +
-> > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
-> > >
-> > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
-> > > only ATM.
-> >
-> > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
-> 
-> But it won't hurt to mention that it may cover other scheduling
-> classes in the future.  IOW, the scope limit is not fundamental.
-
-Agreed, I can do that.
-
-> > > > +for the scheduler to decide where a task should run (during wake-up), the EM
-> > > > +is used to break the tie between several good CPU candidates and pick the one
-> > > > +that is predicted to yield the best energy consumption without harming the
-> > > > +system's throughput. The predictions made by EAS rely on specific elements of
-> > > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
-> > >
-> > > Add a reference to DT bindings docs defining 'capacity' (or define it
-> > > somewhere)?
-> >
-> > Right, I can mention this is defined in the next section. But are you
-> > sure about the reference to the DT bindings ? They're arm-specific right ?
-> > Maybe I can give that as an example or something ...
-> 
-> Example sounds right.
-> 
-> You also can point to the section below from here.
-
-Sounds good.
-
-> Side note: If the doc is in the .rst format (which Peter won't like
-> I'm sure :-)), you can actually use cross-references in it and you get
-> a translation to an HTML doc (hosted at kernel.org) for free and the
-> cross-references become clickable links in that.
-
-Right, I personally don't mind the .rst format, but the existing files
-in Documentation/power/ and Documentation/scheduler/ are good old txt
-files so I just wanted to keep things consistent. I don't mind
-converting to rst if necessary :-)
-
-Thanks,
-Quentin
+SGkgR3VlbnRlciwKCkxlIFRodXJzZGF5IDE3IEphbiAyMDE5IMOgIDE0OjE2OjI4ICgtMDgwMCks
+IEd1ZW50ZXIgUm9lY2sgYSDDqWNyaXQgOgo+IE9uIEZyaSwgRGVjIDIxLCAyMDE4IGF0IDExOjMz
+OjU2QU0gKzAxMDAsIFZpbmNlbnQgR3VpdHRvdCB3cm90ZToKPiA+IEZyb206IFRoYXJhIEdvcGlu
+YXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8ub3JnPgo+ID4gCj4gPiBUaGlzIHBhdGNoIHJlcGxh
+Y2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3RpdmVfdGltZQo+ID4g
+YW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBiYXNlIGFjY291bnRpbmcuIFRo
+aXMgbWFrZXMgdGhlCj4gPiBydW50aW1lIGRlYnVnIGNvdW50ZXJzIGlubGluZSB3aXRoIGdlbnBk
+IGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+IHVzZXMga3RpbWUgYmFzZWQgYWNjb3Vu
+dGluZy4KPiA+IAo+ID4gdGltZWtlZXBpbmcgaXMgaW5pdGlhbGl6ZWQgYmVmb3JlIHBtX3J1bnRp
+bWVfaW5pdCgpIHNvIGt0aW1lX2dldCgpIHdpbGwKPiA+IGJlIHJlYWR5IGJlZm9yZSBmaXJzdCBj
+YWxsLiBJbiBmYWN0LCB0aW1la2VlcGluZ19pbml0KCkgaXMgY2FsbGVkIGVhcmx5Cj4gPiBpbiBz
+dGFydF9rZXJuZWwoKSB3aGljaCBpcyB3YXkgYmVmb3JlIGRyaXZlcl9pbml0KCkgKGFuZCB0aGF0
+J3Mgd2hlbgo+ID4gZGV2aWNlcyBjYW4gc3RhcnQgdG8gYmUgaW5pdGlhbGl6ZWQpIGNhbGxlZCBm
+cm9tIHJlc3RfaW5pdCgpIHZpYQo+ID4ga2VybmVsX2luaXRfZnJlZWFibGUoKSBhbmQgZG9fYmFz
+aWNfc2V0dXAoKS4KPiA+IAo+IFRoaXMgaXMgbm90IChhbHdheXMpIGNvcnJlY3QuIE15IHFlbXUg
+ImNvbGxpZSIgYm9vdCB0ZXN0IGZhaWxzIHdpdGggdGhpcwo+IHBhdGNoIGFwcGxpZWQuIFJldmVy
+dGluZyB0aGUgcGF0Y2ggZml4ZXMgdGhlIHByb2JsZW0uIEJpc2VjdCBsb2cgYXR0YWNoZWQuCj4g
+CgpDYW4geW91IHRyeSB0aGUgcGF0Y2ggYmVsb3cgPwprdGltZV9nZXRfbW9ub19mYXN0X25zKCkg
+aGFzIHRoZSBhZHZhbnRhZ2Ugb2YgYmVpbmcgaW5pdCB3aXRoIGR1bW15IGNsb2NrIHNvCml0IGNh
+biBiZSB1c2VkIGF0IGVhcmx5X2luaXQuCgotLS0KIGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
+LmMgfCA0ICsrLS0KIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
+KC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyBiL2RyaXZlcnMv
+YmFzZS9wb3dlci9ydW50aW1lLmMKaW5kZXggYWUxYzcyOC4uMTE4YzdmNiAxMDA2NDQKLS0tIGEv
+ZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYworKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
+dGltZS5jCkBAIC02Niw3ICs2Niw3IEBAIHN0YXRpYyBpbnQgcnBtX3N1c3BlbmQoc3RydWN0IGRl
+dmljZSAqZGV2LCBpbnQgcnBtZmxhZ3MpOwogICovCiB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2Fj
+Y291bnRpbmcoc3RydWN0IGRldmljZSAqZGV2KQogewotCXU2NCBub3cgPSBrdGltZV90b19ucyhr
+dGltZV9nZXQoKSk7CisJdTY0IG5vdyA9IGt0aW1lX2dldF9tb25vX2Zhc3RfbnMoKTsKIAl1NjQg
+ZGVsdGE7CiAKIAlkZWx0YSA9IG5vdyAtIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXA7
+CkBAIC0xNTA3LDcgKzE1MDcsNyBAQCB2b2lkIHBtX3J1bnRpbWVfaW5pdChzdHJ1Y3QgZGV2aWNl
+ICpkZXYpCiAJZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKIAlkZXYtPnBvd2Vy
+LnJlcXVlc3QgPSBSUE1fUkVRX05PTkU7CiAJZGV2LT5wb3dlci5kZWZlcnJlZF9yZXN1bWUgPSBm
+YWxzZTsKLQlkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0ga3RpbWVfdG9fbnMoa3Rp
+bWVfZ2V0KCkpOworCWRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAgPSBrdGltZV9nZXRf
+bW9ub19mYXN0X25zKCk7CiAJSU5JVF9XT1JLKCZkZXYtPnBvd2VyLndvcmssIHBtX3J1bnRpbWVf
+d29yayk7CiAKIAlkZXYtPnBvd2VyLnRpbWVyX2V4cGlyZXMgPSAwOwotLSAKMi43LjQKCgo+IFdp
+dGggc29tZSBhZGRlZCBkZWJ1Z2dpbmc6Cj4gCj4gLi4uCj4gSVJRUzogMTYsIG5yX2lycXM6IDY1
+LCBwcmVhbGxvY2F0ZWQgaXJxczogNjUKPiBpcnE6IENhbm5vdCBhbGxvY2F0ZSBpcnFfZGVzY3Mg
+QCBJUlExLCBhc3N1bWluZyBwcmUtYWxsb2NhdGVkCj4gZ3BpbyBncGlvY2hpcDA6ICMjIyMjIyMj
+IyMjIyMjIyBwbV9ydW50aW1lX2luaXQoKSAjIyMjIyMjIyMjIyMKPiBpcnE6IENhbm5vdCBhbGxv
+Y2F0ZSBpcnFfZGVzY3MgQCBJUlEzMywgYXNzdW1pbmcgcHJlLWFsbG9jYXRlZAo+ICMjIyMjIyMj
+IyMjIyMjIHRpbWVrZWVwaW5nX2luaXQoKSAjIyMjIyMjIyMjIyMjIyMjIyMjIwo+IHNjaGVkX2Ns
+b2NrOiAzMiBiaXRzIGF0IDM2ODZrSHosIHJlc29sdXRpb24gMjcxbnMsIHdyYXBzIGV2ZXJ5IDU4
+MjU0MjIyMjIwMG5zXk0KPiAuLi4KPiAKPiBUaGlzIGlzIHdpdGg6Cj4gCj4gdm9pZCBwbV9ydW50
+aW1lX2luaXQoc3RydWN0IGRldmljZSAqZGV2KQo+IHsKPiArICAgICAgIGRldl9pbmZvKGRldiwg
+IiMjIyMjIyMjIyMjIyMjIyBwbV9ydW50aW1lX2luaXQoKSAjIyMjIyMjIyMjIyNcbiIpOwo+ICsK
+PiAuLi4KPiBAQCAtMTUyNiw2ICsxNTI2LDggQEAgdm9pZCBfX2luaXQgdGltZWtlZXBpbmdfaW5p
+dCh2b2lkKQo+IAlzdHJ1Y3QgY2xvY2tzb3VyY2UgKmNsb2NrOwo+IAl1bnNpZ25lZCBsb25nIGZs
+YWdzOwo+IAkJIAo+ICsgICAgICAgcHJfaW5mbygiIyMjIyMjIyMjIyMjIyMgdGltZWtlZXBpbmdf
+aW5pdCgpICMjIyMjIyMjIyMjIyMjIyMjIyMjXG4iKTsKPiArCj4gCj4gR3VlbnRlcgo+IAo+IC0t
+LQo+ICMgYmFkOiBbYTM3ZDUwY2EzYjgzN2MxOWEyOTdmMzQ5MzY1ZDExYTIwYzEwODdkMF0gQWRk
+IGxpbnV4LW5leHQgc3BlY2lmaWMgZmlsZXMgZm9yIDIwMTkwMTE3Cj4gIyBnb29kOiBbMWM3ZmM1
+Y2JjMzM5ODBhY2QxM2Q2NjhmMWM4ZjAzMTNkNmFlOWZkOF0gTGludXggNS4wLXJjMgo+IGdpdCBi
+aXNlY3Qgc3RhcnQgJ0hFQUQnICd2NS4wLXJjMicKPiAjIGJhZDogWzRlZGI4MTdkMjlmZGYxOWZi
+NWQ1Mjc4NGJiM2MyOWM0MGUwMGY1ODZdIE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ3Bt
+L2xpbnV4LW5leHQnCj4gZ2l0IGJpc2VjdCBiYWQgNGVkYjgxN2QyOWZkZjE5ZmI1ZDUyNzg0YmIz
+YzI5YzQwZTAwZjU4Ngo+ICMgZ29vZDogWzZkOTU4ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNi
+YzdhZWYwMThdIE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ29tYXAvZm9yLW5leHQnCj4g
+Z2l0IGJpc2VjdCBnb29kIDZkOTU4ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNiYzdhZWYwMTgK
+PiAjIGdvb2Q6IFs5NzViNWNkZDc0NDMwYmM4YTA0ZjgzMmQ2NWE0N2NkYjk1YjczZmVjXSBNZXJn
+ZSByZW1vdGUtdHJhY2tpbmcgYnJhbmNoICdmdXNlL2Zvci1uZXh0Jwo+IGdpdCBiaXNlY3QgZ29v
+ZCA5NzViNWNkZDc0NDMwYmM4YTA0ZjgzMmQ2NWE0N2NkYjk1YjczZmVjCj4gIyBnb29kOiBbMTEy
+Mzg2ZDIxODlmYzU0Yjk3OWMzYThiZjY0YjI5MDhkZjkxZTEyM10gTWVyZ2UgcmVtb3RlLXRyYWNr
+aW5nIGJyYW5jaCAnaTJjL2kyYy9mb3ItbmV4dCcKPiBnaXQgYmlzZWN0IGdvb2QgMTEyMzg2ZDIx
+ODlmYzU0Yjk3OWMzYThiZjY0YjI5MDhkZjkxZTEyMwo+ICMgZ29vZDogWzM5NDNmMDU5ODIzYjZl
+MTU4ODQzODdmMzE2MThiODQ4MjZlOTI0YjNdIG1lZGlhOiBjb2RhOiBBZGQgY29udHJvbCBmb3Ig
+aC4yNjQgY2hyb21hIHFwIGluZGV4IG9mZnNldAo+IGdpdCBiaXNlY3QgZ29vZCAzOTQzZjA1OTgy
+M2I2ZTE1ODg0Mzg3ZjMxNjE4Yjg0ODI2ZTkyNGIzCj4gIyBnb29kOiBbNDQ5NzBiYmJiYjUwNzll
+ZTEwMDg3NWIwNmU0NWRiNWQ2ZTkxYTE2ZV0gTWVyZ2UgcmVtb3RlLXRyYWNraW5nIGJyYW5jaCAn
+djRsLWR2Yi9tYXN0ZXInCj4gZ2l0IGJpc2VjdCBnb29kIDQ0OTcwYmJiYmI1MDc5ZWUxMDA4NzVi
+MDZlNDVkYjVkNmU5MWExNmUKPiAjIGJhZDogWzU5OTE3MGMyYjg2MGFjYTMzNjQ1NzRmODMzYmI5
+Y2M4MDFjOTY2OGRdIE1lcmdlIGJyYW5jaCAncG0tY29yZScgaW50byBsaW51eC1uZXh0Cj4gZ2l0
+IGJpc2VjdCBiYWQgNTk5MTcwYzJiODYwYWNhMzM2NDU3NGY4MzNiYjljYzgwMWM5NjY4ZAo+ICMg
+Z29vZDogWzM0N2Q1NzA5MTljYTlhM2EzNjUzY2U5Y2JiNzM5OWM3YzBiYTgyNDhdIE1lcmdlIGJy
+YW5jaCAnYWNwaS1wY2knIGludG8gbGludXgtbmV4dAo+IGdpdCBiaXNlY3QgZ29vZCAzNDdkNTcw
+OTE5Y2E5YTNhMzY1M2NlOWNiYjczOTljN2MwYmE4MjQ4Cj4gIyBnb29kOiBbZTBhOWZkZTg2YmEx
+YmMyNmRkNzU0YzczM2IzMmU3MGNkOGYxYzE4N10gTWVyZ2UgYnJhbmNoZXMgJ2FjcGktdGFibGVz
+JyBhbmQgJ2FjcGktYXBlaScgaW50byBsaW51eC1uZXh0Cj4gZ2l0IGJpc2VjdCBnb29kIGUwYTlm
+ZGU4NmJhMWJjMjZkZDc1NGM3MzNiMzJlNzBjZDhmMWMxODcKPiAjIGdvb2Q6IFszYjRlZDJlMmVi
+NTU4Mzc3NGExZWQ0YWE0NTk2YTVhM2M1NWYyNTY3XSBkcm0vaTkxNTogTW92ZSBvbiB0aGUgbmV3
+IHBtIHJ1bnRpbWUgaW50ZXJmYWNlCj4gZ2l0IGJpc2VjdCBnb29kIDNiNGVkMmUyZWI1NTgzNzc0
+YTFlZDRhYTQ1OTZhNWEzYzU1ZjI1NjcKPiAjIGJhZDogW2M3NWMzMDM5MzNhNjhjNTQ3ZjMzNTJk
+MWQ3MDg4NDNmOTQ0OWQzZjRdIFBNOiBjbG9ja19vcHM6IGZpeCBtaXNzaW5nIGNsa19wcmVwYXJl
+KCkgcmV0dXJuIHZhbHVlIGNoZWNrCj4gZ2l0IGJpc2VjdCBiYWQgYzc1YzMwMzkzM2E2OGM1NDdm
+MzM1MmQxZDcwODg0M2Y5NDQ5ZDNmNAo+ICMgYmFkOiBbMzk4MmFiOWNlNDMzZWZjNzJjYTMxZWI5
+ZGRjODVkOTM1NTk2NjQ0NF0gUE0tcnVudGltZTogUmVwbGFjZSBqaWZmaWVzIGJhc2VkIGFjY291
+bnRpbmcgd2l0aCBrdGltZS1iYXNlZCBhY2NvdW50aW5nCj4gZ2l0IGJpc2VjdCBiYWQgMzk4MmFi
+OWNlNDMzZWZjNzJjYTMxZWI5ZGRjODVkOTM1NTk2NjQ0NAo+ICMgZmlyc3QgYmFkIGNvbW1pdDog
+WzM5ODJhYjljZTQzM2VmYzcyY2EzMWViOWRkYzg1ZDkzNTU5NjY0NDRdIFBNLXJ1bnRpbWU6IFJl
+cGxhY2UgamlmZmllcyBiYXNlZCBhY2NvdW50aW5nIHdpdGgga3RpbWUtYmFzZWQgYWNjb3VudGlu
+ZwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2
+ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9s
+aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
