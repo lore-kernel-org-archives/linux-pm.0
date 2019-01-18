@@ -1,61 +1,92 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: [PATCH 01/13] dt-bindings: mfd: add DT bindings for max77650
-Date: Fri, 18 Jan 2019 14:42:32 +0100
-Message-ID: <20190118134244.22253-2-brgl@bgdev.pl>
-References: <20190118134244.22253-1-brgl@bgdev.pl>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH v5 0/2] Add cpufreq support for Armada 8K
+Date: Fri, 18 Jan 2019 15:11:38 +0100
+Message-ID: <20190118141140.30352-1-gregory.clement@bootlin.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190118134244.22253-1-brgl@bgdev.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Hi,
 
-Add a DT binding document for max77650 ultra-low power PMIC. This
-describes the core mfd device.
+this is the fifth version of a the series adding the cpufreq support
+for the Marvell Armada 8K SoCs.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- .../devicetree/bindings/mfd/max77650.txt      | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
+Gregory
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
-new file mode 100644
-index 000000000000..84631d3b1e14
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77650.txt
-@@ -0,0 +1,28 @@
-+MAX77650 ultra low-power PMIC from Maxim Integrated.
-+
-+Required properties:
-+-------------------
-+- compatible:		Must be "maxim,max77650"
-+- reg:			I2C device address.
-+- interrupts:		The interrupt on the parent the controller is
-+			connected to.
-+- interrupt-parent:	phandle of the parent interrupt controller.
-+- interrupt-controller: Marks the device node as an interrupt controller.
-+- #interrupt-cells:	Must be <2>.
-+
-+For device-tree bindings of sub-modules (regulator, power supply, GPIO, LEDs
-+and onkey) refer to the binding documents under the respective sub-system
-+directories.
-+
-+Example:
-+--------
-+
-+	pmic: max77650@48 {
-+		compatible = "maxim,max77650";
-+		reg = <0x48>;
-+
-+		interrupt-controller;
-+		interrupt-parent = <&gpio2>;
-+		#interrupt-cells = <2>;
-+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+	};
+Changelog:
+v4 -> v5:
+
+ - Rebased onto v5.0-rc1
+
+ - Rewrite the clk_get part in armada_8k_get_sharing_cpus()
+
+ - Reverse the call function order in armada_8k_cpufreq_exit()
+
+v3 -> v4:
+
+ - Remove most of the global variable and use the private data of the
+   platfrom device to store the freq_tables struct.
+
+ - Remove the clk pointer of the freq_table struct which is no more
+   needed with the new way to register the opp
+
+ - Check the get_cpu_device() return.
+
+ - Balance the clk_get() calls.
+
+ - No more use the devm_ function.
+
+ - Base the registration of the opp on the cpu mask updated after each
+   iteration to find the shared cpus.
+
+ - Base the free on the NULL or 0 value of the freq_table struct
+   members, it allows to remove the global index.
+
+v2 -> v3
+
+ - Make the driver really modular (modprobe;modprobe -r;modprobe; is working)
+
+ - Don't use anymore 100MHz as minimal frequency, but only max frequency/4
+
+ - Fix remaining warning reported by checkpatch
+
+ - Rework the registering of the opp
+
+v1 -> v2:
+
+ - Fix typos in MAINTAINERS (reported by Baruch Siach) and in
+   armada-8k-cpufreq.c (reported by Thomas Petazzoni)
+
+ - Fix indentation in Kconfig.arm  (reported by Thomas Petazzoni)
+
+ - Use const for opps_div  (reported by Thomas Petazzoni)
+
+ - Fix memory leak of opps_array  (reported by Thomas Petazzoni)
+
+
+Gregory CLEMENT (2):
+  MAINTAINERS: add new entries for Armada 8K cpufreq driver
+  cpufreq: ap806: add cpufreq driver for Armada 8K
+
+ MAINTAINERS                         |   1 +
+ drivers/cpufreq/Kconfig.arm         |  11 ++
+ drivers/cpufreq/Makefile            |   1 +
+ drivers/cpufreq/armada-8k-cpufreq.c | 203 ++++++++++++++++++++++++++++
+ 4 files changed, 216 insertions(+)
+ create mode 100644 drivers/cpufreq/armada-8k-cpufreq.c
+
 -- 
-2.19.1
+2.20.1
