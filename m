@@ -1,57 +1,69 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
-Date: Fri, 18 Jan 2019 13:34:09 +0100
-Message-ID: <20190118123409.GI14385@localhost.localdomain>
-References: <20190110110546.8101-1-quentin.perret@arm.com>
- <20190110110546.8101-3-quentin.perret@arm.com>
- <20190117155117.GG14385@localhost.localdomain>
- <20190118091652.xn6iw52tccwh6vap@queper01-lin>
- <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
- <20190118103359.jqctbopx25h3zvqs@queper01-lin>
+From: Juri Lelli <juri.lelli@gmail.com>
+Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Fri, 18 Jan 2019 13:39:00 +0100
+Message-ID: <20190118123900.GJ14385@localhost.localdomain>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+ <20190117131631.GA14385@localhost.localdomain>
+ <CAJZ5v0jFqXGf_G2v1VNXSxyiDzgeFY8OKUFu2tQ8Wso3dBS+_w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190118103359.jqctbopx25h3zvqs@queper01-lin>
+In-Reply-To: <CAJZ5v0jFqXGf_G2v1VNXSxyiDzgeFY8OKUFu2tQ8Wso3dBS+_w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 18/01/19 10:34, Quentin Perret wrote:
-> Hi Rafael,
-> 
-> On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
-> > On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
-> > >
-> > > Hi Juri,
-> > >
-> > > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
-> > > > On 10/01/19 11:05, Quentin Perret wrote:
-> > > [...]
-> > > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
-> > > > > +implications of its decisions rather than blindly applying energy-saving
-> > > > > +techniques that may have positive effects only on some platforms. At the same
-> > > > > +time, the EM must be as simple as possible to minimize the scheduler latency
-> > > > > +impact.
-> > > > > +
-> > > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+On 17/01/19 15:55, Rafael J. Wysocki wrote:
+> On Thu, Jan 17, 2019 at 2:16 PM Juri Lelli <juri.lelli@gmail.com> wrote:
+> >
+> > On 11/01/19 10:47, Rafael J. Wysocki wrote:
+> > > On Fri, Jan 11, 2019 at 10:18 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > > > >
-> > > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
-> > > > only ATM.
+> > > > Hi,
+> > > >
+> > > > This commit introduces the frequency constraint infrastructure, which
+> > > > provides a generic interface for parts of the kernel to constraint the
+> > > > working frequency range of a device.
+> > > >
+> > > > The primary users of this are the cpufreq and devfreq frameworks. The
+> > > > cpufreq framework already implements such constraints with help of
+> > > > notifier chains (for thermal and other constraints) and some local code
+> > > > (for user-space constraints). The devfreq framework developers have also
+> > > > shown interest [1] in such a framework, which may use it at a later
+> > > > point of time.
+> > > >
+> > > > The idea here is to provide a generic interface and get rid of the
+> > > > notifier based mechanism.
+> > > >
+> > > > Only one constraint is added for now for the cpufreq framework and the
+> > > > rest will follow after this stuff is merged.
+> > > >
+> > > > Matthias Kaehlcke was involved in the preparation of the first draft of
+> > > > this work and so I have added him as Co-author to the first patch.
+> > > > Thanks Matthias.
+> > > >
+> > > > FWIW, This doesn't have anything to do with the boot-constraints
+> > > > framework [2] I was trying to upstream earlier :)
 > > >
-> > > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
-> > 
-> > But it won't hurt to mention that it may cover other scheduling
-> > classes in the future.  IOW, the scope limit is not fundamental.
+> > > This is quite a bit of code to review, so it will take some time.
+> > >
+> > > One immediate observation is that it seems to do quite a bit of what
+> > > is done in the PM QoS framework, so maybe there is an opportunity for
+> > > some consolidation in there.
+> >
+> > Right, had the same impression. :-)
+> >
+> > I was also wondering how this new framework is dealing with
+> > constraints/request imposed/generated by the scheduler and related
+> > interfaces (thinking about schedutil and Patrick's util_clamp).
 > 
-> Agreed, I can do that.
+> My understanding is that it is orthogonal to them, like adding extra
+> constraints on top of them etc.
 
-Oh, sorry, bad phrasing from my side. I meant that we should probably
-state clearly somewhere that EAS deals with CFS only ATM, but extending
-it to other classes (DEADLINE in particular) makes certainly sense and
-people are welcome to experiment with that.
-
-So, yeah, I agree with both of you. :-)
+Mmm, ok. But, if that is indeed the case, I now wonder why and how
+existing (or hopefully to be added soon) interfaces are not sufficient.
+I'm not against this proposal, just trying to understand if this might
+create unwanted, hard to manage, overlap.
