@@ -1,33 +1,98 @@
-From: Pintu Agarwal <pintu.ping@gmail.com>
-Subject: Re: Need help: how to locate failure from irq_chip subsystem
-Date: Fri, 18 Jan 2019 16:50:10 +0530
-Message-ID: <CAOuPNLjjd67FnjaHbJj_auD-EWnbc+6sc+hcT_HE6fjeKhEQrw@mail.gmail.com>
-References: <CAOuPNLj4QzNDt0npZn2LhZTFgDNJ1CsWPw3=wvUuxnGtQW308g@mail.gmail.com>
- <bceb32be-d508-c2a4-fa81-ab8b90323d3f@codeaurora.org> <CAOuPNLiNtPFksCuZF_vL6+YuLG0i0umzQhMCyEN69h9tySn2Vw@mail.gmail.com>
- <57ff3437-47b5-fe92-d576-084ce26aa5d8@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
+Date: Fri, 18 Jan 2019 12:20:57 +0100
+Message-ID: <CAJZ5v0iJFs00knKqn+M-sO=tMbAxdu3wk6GTAWt+d0bhDFJhww@mail.gmail.com>
+References: <20190110110546.8101-1-quentin.perret@arm.com> <20190110110546.8101-3-quentin.perret@arm.com>
+ <20190117155117.GG14385@localhost.localdomain> <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+ <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
+ <20190118103359.jqctbopx25h3zvqs@queper01-lin> <CAJZ5v0jHq8pgB=XPydTyiqpUpX4ZdA5DVbk=Lqh=aUDBr-QOQQ@mail.gmail.com>
+ <CAJZ5v0h24RZf1vF7zV5_2yqrVif_y5W4sBrBWC0Hdf3q5rArNQ@mail.gmail.com> <20190118111114.dytdk7oq63illgkg@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <57ff3437-47b5-fe92-d576-084ce26aa5d8@codeaurora.org>
+In-Reply-To: <20190118111114.dytdk7oq63illgkg@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>
-Cc: open list <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Russell King - ARM Linux <linux@armlinux.org.uk>, linux-mm@kvack.org, linux-pm@vger.kernel.org, kernelnewbies@kernelnewbies.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> >> Could you please tell which QCOM SoC this board is based on?
-> >>
-> >
-> > Snapdragon 845 with kernel 4.9.x
-> > I want to know from which subsystem it is triggered:drivers/soc/qcom/
-> >
+On Fri, Jan 18, 2019 at 12:11 PM Quentin Perret <quentin.perret@arm.com> wrote:
 >
-> Irqchip driver is "drivers/irqchip/irq-gic-v3.c". The kernel you are
-> using is msm-4.9 I suppose or some other kernel?
+> On Friday 18 Jan 2019 at 12:01:35 (+0100), Rafael J. Wysocki wrote:
+> > On Fri, Jan 18, 2019 at 11:58 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > On Fri, Jan 18, 2019 at 11:34 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > > >
+> > > > Hi Rafael,
+> > > >
+> > > > On Friday 18 Jan 2019 at 10:57:08 (+0100), Rafael J. Wysocki wrote:
+> > > > > On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> > > > > >
+> > > > > > Hi Juri,
+> > > > > >
+> > > > > > On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
+> > > > > > > On 10/01/19 11:05, Quentin Perret wrote:
+> > > > > > [...]
+> > > > > > > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
+> > > > > > > > +implications of its decisions rather than blindly applying energy-saving
+> > > > > > > > +techniques that may have positive effects only on some platforms. At the same
+> > > > > > > > +time, the EM must be as simple as possible to minimize the scheduler latency
+> > > > > > > > +impact.
+> > > > > > > > +
+> > > > > > > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+> > > > > > >
+> > > > > > > Not sure if we want to remark the fact that EAS is looking at CFS tasks
+> > > > > > > only ATM.
+> > > > > >
+> > > > > > Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
+> > > > >
+> > > > > But it won't hurt to mention that it may cover other scheduling
+> > > > > classes in the future.  IOW, the scope limit is not fundamental.
+> > > >
+> > > > Agreed, I can do that.
+> > > >
+> > > > > > > > +for the scheduler to decide where a task should run (during wake-up), the EM
+> > > > > > > > +is used to break the tie between several good CPU candidates and pick the one
+> > > > > > > > +that is predicted to yield the best energy consumption without harming the
+> > > > > > > > +system's throughput. The predictions made by EAS rely on specific elements of
+> > > > > > > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
+> > > > > > >
+> > > > > > > Add a reference to DT bindings docs defining 'capacity' (or define it
+> > > > > > > somewhere)?
+> > > > > >
+> > > > > > Right, I can mention this is defined in the next section. But are you
+> > > > > > sure about the reference to the DT bindings ? They're arm-specific right ?
+> > > > > > Maybe I can give that as an example or something ...
+> > > > >
+> > > > > Example sounds right.
+> > > > >
+> > > > > You also can point to the section below from here.
+> > > >
+> > > > Sounds good.
+> > > >
+> > > > > Side note: If the doc is in the .rst format (which Peter won't like
+> > > > > I'm sure :-)), you can actually use cross-references in it and you get
+> > > > > a translation to an HTML doc (hosted at kernel.org) for free and the
+> > > > > cross-references become clickable links in that.
+> > > >
+> > > > Right, I personally don't mind the .rst format, but the existing files
+> > > > in Documentation/power/ and Documentation/scheduler/ are good old txt
+> > > > files so I just wanted to keep things consistent.
+> > >
+> > > In fact, Documentation/power/ is under a slow on-going transition to
+> > > .rst (due to the benefits mentioned above).
+> > >
+> > > > I don't mind converting to rst if necessary :-)
+> > >
+> > > It is not necessary, but maybe worth considering.
+> >
+> > That said, as this is targeted at Documentation/scheduler/, being
+> > consistent with the other material in there is probably more
+> > important.
 >
-Yes, I am using customized version of msm-4.9 kernel based on Android.
-And yes the irqchip driver is: irq-gic-v3, which I can see from config.
+> Right. Patch 01/02 is targeted at Documentation/power/ though. So if
+> that makes your life easier I can turn that one into a .rst file, no
+> problem at all.
 
-But, what I wanted to know is, how to find out which driver module
-(hopefully under: /drivers/soc/qcom/) that register with this
-irq_chip, is getting triggered at the time of crash ?
-So, that I can implement irq_hold function for it, which is the cause of crash.
+Yes, I'd prefer it that way.  And please put it into
+Documentation/driver-api/pm/.
