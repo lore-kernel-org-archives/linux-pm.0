@@ -1,120 +1,62 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
- ktime based accounting
-Date: Fri, 18 Jan 2019 11:42:15 +0100
-Message-ID: <20190118104215.GA13168@linaro.org>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net>
+From: Pintu Agarwal <pintu.ping@gmail.com>
+Subject: Re: Need help: how to locate failure from irq_chip subsystem
+Date: Fri, 18 Jan 2019 16:18:32 +0530
+Message-ID: <CAOuPNLiNtPFksCuZF_vL6+YuLG0i0umzQhMCyEN69h9tySn2Vw@mail.gmail.com>
+References: <CAOuPNLj4QzNDt0npZn2LhZTFgDNJ1CsWPw3=wvUuxnGtQW308g@mail.gmail.com>
+ <bceb32be-d508-c2a4-fa81-ab8b90323d3f@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20190117221628.GA21979@roeck-us.net>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: ulf.hansson@linaro.org, dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org, airlied@linux.ie, intel-gfx@lists.freedesktop.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, thara.gopinath@linaro.org, rodrigo.vivi@intel.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <bceb32be-d508-c2a4-fa81-ab8b90323d3f@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>
+Cc: open list <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Russell King - ARM Linux <linux@armlinux.org.uk>, linux-mm@kvack.org, linux-pm@vger.kernel.org, kernelnewbies@kernelnewbies.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgR3VlbnRlciwKCkxlIFRodXJzZGF5IDE3IEphbiAyMDE5IMOgIDE0OjE2OjI4ICgtMDgwMCks
-IEd1ZW50ZXIgUm9lY2sgYSDDqWNyaXQgOgo+IE9uIEZyaSwgRGVjIDIxLCAyMDE4IGF0IDExOjMz
-OjU2QU0gKzAxMDAsIFZpbmNlbnQgR3VpdHRvdCB3cm90ZToKPiA+IEZyb206IFRoYXJhIEdvcGlu
-YXRoIDx0aGFyYS5nb3BpbmF0aEBsaW5hcm8ub3JnPgo+ID4gCj4gPiBUaGlzIHBhdGNoIHJlcGxh
-Y2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3RpdmVfdGltZQo+ID4g
-YW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBiYXNlIGFjY291bnRpbmcuIFRo
-aXMgbWFrZXMgdGhlCj4gPiBydW50aW1lIGRlYnVnIGNvdW50ZXJzIGlubGluZSB3aXRoIGdlbnBk
-IGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+IHVzZXMga3RpbWUgYmFzZWQgYWNjb3Vu
-dGluZy4KPiA+IAo+ID4gdGltZWtlZXBpbmcgaXMgaW5pdGlhbGl6ZWQgYmVmb3JlIHBtX3J1bnRp
-bWVfaW5pdCgpIHNvIGt0aW1lX2dldCgpIHdpbGwKPiA+IGJlIHJlYWR5IGJlZm9yZSBmaXJzdCBj
-YWxsLiBJbiBmYWN0LCB0aW1la2VlcGluZ19pbml0KCkgaXMgY2FsbGVkIGVhcmx5Cj4gPiBpbiBz
-dGFydF9rZXJuZWwoKSB3aGljaCBpcyB3YXkgYmVmb3JlIGRyaXZlcl9pbml0KCkgKGFuZCB0aGF0
-J3Mgd2hlbgo+ID4gZGV2aWNlcyBjYW4gc3RhcnQgdG8gYmUgaW5pdGlhbGl6ZWQpIGNhbGxlZCBm
-cm9tIHJlc3RfaW5pdCgpIHZpYQo+ID4ga2VybmVsX2luaXRfZnJlZWFibGUoKSBhbmQgZG9fYmFz
-aWNfc2V0dXAoKS4KPiA+IAo+IFRoaXMgaXMgbm90IChhbHdheXMpIGNvcnJlY3QuIE15IHFlbXUg
-ImNvbGxpZSIgYm9vdCB0ZXN0IGZhaWxzIHdpdGggdGhpcwo+IHBhdGNoIGFwcGxpZWQuIFJldmVy
-dGluZyB0aGUgcGF0Y2ggZml4ZXMgdGhlIHByb2JsZW0uIEJpc2VjdCBsb2cgYXR0YWNoZWQuCj4g
-CgpDYW4geW91IHRyeSB0aGUgcGF0Y2ggYmVsb3cgPwprdGltZV9nZXRfbW9ub19mYXN0X25zKCkg
-aGFzIHRoZSBhZHZhbnRhZ2Ugb2YgYmVpbmcgaW5pdCB3aXRoIGR1bW15IGNsb2NrIHNvCml0IGNh
-biBiZSB1c2VkIGF0IGVhcmx5X2luaXQuCgotLS0KIGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
-LmMgfCA0ICsrLS0KIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
-KC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYyBiL2RyaXZlcnMv
-YmFzZS9wb3dlci9ydW50aW1lLmMKaW5kZXggYWUxYzcyOC4uMTE4YzdmNiAxMDA2NDQKLS0tIGEv
-ZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYworKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVu
-dGltZS5jCkBAIC02Niw3ICs2Niw3IEBAIHN0YXRpYyBpbnQgcnBtX3N1c3BlbmQoc3RydWN0IGRl
-dmljZSAqZGV2LCBpbnQgcnBtZmxhZ3MpOwogICovCiB2b2lkIHVwZGF0ZV9wbV9ydW50aW1lX2Fj
-Y291bnRpbmcoc3RydWN0IGRldmljZSAqZGV2KQogewotCXU2NCBub3cgPSBrdGltZV90b19ucyhr
-dGltZV9nZXQoKSk7CisJdTY0IG5vdyA9IGt0aW1lX2dldF9tb25vX2Zhc3RfbnMoKTsKIAl1NjQg
-ZGVsdGE7CiAKIAlkZWx0YSA9IG5vdyAtIGRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXA7
-CkBAIC0xNTA3LDcgKzE1MDcsNyBAQCB2b2lkIHBtX3J1bnRpbWVfaW5pdChzdHJ1Y3QgZGV2aWNl
-ICpkZXYpCiAJZGV2LT5wb3dlci5yZXF1ZXN0X3BlbmRpbmcgPSBmYWxzZTsKIAlkZXYtPnBvd2Vy
-LnJlcXVlc3QgPSBSUE1fUkVRX05PTkU7CiAJZGV2LT5wb3dlci5kZWZlcnJlZF9yZXN1bWUgPSBm
-YWxzZTsKLQlkZXYtPnBvd2VyLmFjY291bnRpbmdfdGltZXN0YW1wID0ga3RpbWVfdG9fbnMoa3Rp
-bWVfZ2V0KCkpOworCWRldi0+cG93ZXIuYWNjb3VudGluZ190aW1lc3RhbXAgPSBrdGltZV9nZXRf
-bW9ub19mYXN0X25zKCk7CiAJSU5JVF9XT1JLKCZkZXYtPnBvd2VyLndvcmssIHBtX3J1bnRpbWVf
-d29yayk7CiAKIAlkZXYtPnBvd2VyLnRpbWVyX2V4cGlyZXMgPSAwOwotLSAKMi43LjQKCgo+IFdp
-dGggc29tZSBhZGRlZCBkZWJ1Z2dpbmc6Cj4gCj4gLi4uCj4gSVJRUzogMTYsIG5yX2lycXM6IDY1
-LCBwcmVhbGxvY2F0ZWQgaXJxczogNjUKPiBpcnE6IENhbm5vdCBhbGxvY2F0ZSBpcnFfZGVzY3Mg
-QCBJUlExLCBhc3N1bWluZyBwcmUtYWxsb2NhdGVkCj4gZ3BpbyBncGlvY2hpcDA6ICMjIyMjIyMj
-IyMjIyMjIyBwbV9ydW50aW1lX2luaXQoKSAjIyMjIyMjIyMjIyMKPiBpcnE6IENhbm5vdCBhbGxv
-Y2F0ZSBpcnFfZGVzY3MgQCBJUlEzMywgYXNzdW1pbmcgcHJlLWFsbG9jYXRlZAo+ICMjIyMjIyMj
-IyMjIyMjIHRpbWVrZWVwaW5nX2luaXQoKSAjIyMjIyMjIyMjIyMjIyMjIyMjIwo+IHNjaGVkX2Ns
-b2NrOiAzMiBiaXRzIGF0IDM2ODZrSHosIHJlc29sdXRpb24gMjcxbnMsIHdyYXBzIGV2ZXJ5IDU4
-MjU0MjIyMjIwMG5zXk0KPiAuLi4KPiAKPiBUaGlzIGlzIHdpdGg6Cj4gCj4gdm9pZCBwbV9ydW50
-aW1lX2luaXQoc3RydWN0IGRldmljZSAqZGV2KQo+IHsKPiArICAgICAgIGRldl9pbmZvKGRldiwg
-IiMjIyMjIyMjIyMjIyMjIyBwbV9ydW50aW1lX2luaXQoKSAjIyMjIyMjIyMjIyNcbiIpOwo+ICsK
-PiAuLi4KPiBAQCAtMTUyNiw2ICsxNTI2LDggQEAgdm9pZCBfX2luaXQgdGltZWtlZXBpbmdfaW5p
-dCh2b2lkKQo+IAlzdHJ1Y3QgY2xvY2tzb3VyY2UgKmNsb2NrOwo+IAl1bnNpZ25lZCBsb25nIGZs
-YWdzOwo+IAkJIAo+ICsgICAgICAgcHJfaW5mbygiIyMjIyMjIyMjIyMjIyMgdGltZWtlZXBpbmdf
-aW5pdCgpICMjIyMjIyMjIyMjIyMjIyMjIyMjXG4iKTsKPiArCj4gCj4gR3VlbnRlcgo+IAo+IC0t
-LQo+ICMgYmFkOiBbYTM3ZDUwY2EzYjgzN2MxOWEyOTdmMzQ5MzY1ZDExYTIwYzEwODdkMF0gQWRk
-IGxpbnV4LW5leHQgc3BlY2lmaWMgZmlsZXMgZm9yIDIwMTkwMTE3Cj4gIyBnb29kOiBbMWM3ZmM1
-Y2JjMzM5ODBhY2QxM2Q2NjhmMWM4ZjAzMTNkNmFlOWZkOF0gTGludXggNS4wLXJjMgo+IGdpdCBi
-aXNlY3Qgc3RhcnQgJ0hFQUQnICd2NS4wLXJjMicKPiAjIGJhZDogWzRlZGI4MTdkMjlmZGYxOWZi
-NWQ1Mjc4NGJiM2MyOWM0MGUwMGY1ODZdIE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ3Bt
-L2xpbnV4LW5leHQnCj4gZ2l0IGJpc2VjdCBiYWQgNGVkYjgxN2QyOWZkZjE5ZmI1ZDUyNzg0YmIz
-YzI5YzQwZTAwZjU4Ngo+ICMgZ29vZDogWzZkOTU4ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNi
-YzdhZWYwMThdIE1lcmdlIHJlbW90ZS10cmFja2luZyBicmFuY2ggJ29tYXAvZm9yLW5leHQnCj4g
-Z2l0IGJpc2VjdCBnb29kIDZkOTU4ODY3MjBkMzA2YTE5MTRhN2M5YThhZWIwYmNiYzdhZWYwMTgK
-PiAjIGdvb2Q6IFs5NzViNWNkZDc0NDMwYmM4YTA0ZjgzMmQ2NWE0N2NkYjk1YjczZmVjXSBNZXJn
-ZSByZW1vdGUtdHJhY2tpbmcgYnJhbmNoICdmdXNlL2Zvci1uZXh0Jwo+IGdpdCBiaXNlY3QgZ29v
-ZCA5NzViNWNkZDc0NDMwYmM4YTA0ZjgzMmQ2NWE0N2NkYjk1YjczZmVjCj4gIyBnb29kOiBbMTEy
-Mzg2ZDIxODlmYzU0Yjk3OWMzYThiZjY0YjI5MDhkZjkxZTEyM10gTWVyZ2UgcmVtb3RlLXRyYWNr
-aW5nIGJyYW5jaCAnaTJjL2kyYy9mb3ItbmV4dCcKPiBnaXQgYmlzZWN0IGdvb2QgMTEyMzg2ZDIx
-ODlmYzU0Yjk3OWMzYThiZjY0YjI5MDhkZjkxZTEyMwo+ICMgZ29vZDogWzM5NDNmMDU5ODIzYjZl
-MTU4ODQzODdmMzE2MThiODQ4MjZlOTI0YjNdIG1lZGlhOiBjb2RhOiBBZGQgY29udHJvbCBmb3Ig
-aC4yNjQgY2hyb21hIHFwIGluZGV4IG9mZnNldAo+IGdpdCBiaXNlY3QgZ29vZCAzOTQzZjA1OTgy
-M2I2ZTE1ODg0Mzg3ZjMxNjE4Yjg0ODI2ZTkyNGIzCj4gIyBnb29kOiBbNDQ5NzBiYmJiYjUwNzll
-ZTEwMDg3NWIwNmU0NWRiNWQ2ZTkxYTE2ZV0gTWVyZ2UgcmVtb3RlLXRyYWNraW5nIGJyYW5jaCAn
-djRsLWR2Yi9tYXN0ZXInCj4gZ2l0IGJpc2VjdCBnb29kIDQ0OTcwYmJiYmI1MDc5ZWUxMDA4NzVi
-MDZlNDVkYjVkNmU5MWExNmUKPiAjIGJhZDogWzU5OTE3MGMyYjg2MGFjYTMzNjQ1NzRmODMzYmI5
-Y2M4MDFjOTY2OGRdIE1lcmdlIGJyYW5jaCAncG0tY29yZScgaW50byBsaW51eC1uZXh0Cj4gZ2l0
-IGJpc2VjdCBiYWQgNTk5MTcwYzJiODYwYWNhMzM2NDU3NGY4MzNiYjljYzgwMWM5NjY4ZAo+ICMg
-Z29vZDogWzM0N2Q1NzA5MTljYTlhM2EzNjUzY2U5Y2JiNzM5OWM3YzBiYTgyNDhdIE1lcmdlIGJy
-YW5jaCAnYWNwaS1wY2knIGludG8gbGludXgtbmV4dAo+IGdpdCBiaXNlY3QgZ29vZCAzNDdkNTcw
-OTE5Y2E5YTNhMzY1M2NlOWNiYjczOTljN2MwYmE4MjQ4Cj4gIyBnb29kOiBbZTBhOWZkZTg2YmEx
-YmMyNmRkNzU0YzczM2IzMmU3MGNkOGYxYzE4N10gTWVyZ2UgYnJhbmNoZXMgJ2FjcGktdGFibGVz
-JyBhbmQgJ2FjcGktYXBlaScgaW50byBsaW51eC1uZXh0Cj4gZ2l0IGJpc2VjdCBnb29kIGUwYTlm
-ZGU4NmJhMWJjMjZkZDc1NGM3MzNiMzJlNzBjZDhmMWMxODcKPiAjIGdvb2Q6IFszYjRlZDJlMmVi
-NTU4Mzc3NGExZWQ0YWE0NTk2YTVhM2M1NWYyNTY3XSBkcm0vaTkxNTogTW92ZSBvbiB0aGUgbmV3
-IHBtIHJ1bnRpbWUgaW50ZXJmYWNlCj4gZ2l0IGJpc2VjdCBnb29kIDNiNGVkMmUyZWI1NTgzNzc0
-YTFlZDRhYTQ1OTZhNWEzYzU1ZjI1NjcKPiAjIGJhZDogW2M3NWMzMDM5MzNhNjhjNTQ3ZjMzNTJk
-MWQ3MDg4NDNmOTQ0OWQzZjRdIFBNOiBjbG9ja19vcHM6IGZpeCBtaXNzaW5nIGNsa19wcmVwYXJl
-KCkgcmV0dXJuIHZhbHVlIGNoZWNrCj4gZ2l0IGJpc2VjdCBiYWQgYzc1YzMwMzkzM2E2OGM1NDdm
-MzM1MmQxZDcwODg0M2Y5NDQ5ZDNmNAo+ICMgYmFkOiBbMzk4MmFiOWNlNDMzZWZjNzJjYTMxZWI5
-ZGRjODVkOTM1NTk2NjQ0NF0gUE0tcnVudGltZTogUmVwbGFjZSBqaWZmaWVzIGJhc2VkIGFjY291
-bnRpbmcgd2l0aCBrdGltZS1iYXNlZCBhY2NvdW50aW5nCj4gZ2l0IGJpc2VjdCBiYWQgMzk4MmFi
-OWNlNDMzZWZjNzJjYTMxZWI5ZGRjODVkOTM1NTk2NjQ0NAo+ICMgZmlyc3QgYmFkIGNvbW1pdDog
-WzM5ODJhYjljZTQzM2VmYzcyY2EzMWViOWRkYzg1ZDkzNTU5NjY0NDRdIFBNLXJ1bnRpbWU6IFJl
-cGxhY2UgamlmZmllcyBiYXNlZCBhY2NvdW50aW5nIHdpdGgga3RpbWUtYmFzZWQgYWNjb3VudGlu
-ZwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2
-ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9s
-aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+On Fri, Jan 18, 2019 at 3:54 PM Sai Prakash Ranjan
+<saiprakash.ranjan@codeaurora.org> wrote:
+>
+> Hi Pintu-san,
+>
+> On 1/18/2019 3:38 PM, Pintu Agarwal wrote:
+> > Hi All,
+> >
+> > Currently, I am trying to debug a boot up crash on some qualcomm
+> > snapdragon arm64 board with kernel 4.9.
+> > I could find the cause of the failure, but I am unable to locate from
+> > which subsystem/drivers this is getting triggered.
+> > If you have any ideas or suggestions to locate the issue, please let me know.
+> >
+> > This is the snapshot of crash logs:
+> > [    6.907065] Unable to handle kernel NULL pointer dereference at
+> > virtual address 00000000
+> > [    6.973938] PC is at 0x0
+> > [    6.976503] LR is at __ipipe_ack_fasteoi_irq+0x28/0x38
+> > [    7.151078] Process qmp_aop (pid: 24, stack limit = 0xfffffffbedc18000)
+> > [    7.242668] [<          (null)>]           (null)
+> > [    7.247416] [<ffffff9469f8d2e0>] __ipipe_dispatch_irq+0x78/0x340
+> > [    7.253469] [<ffffff9469e81564>] __ipipe_grab_irq+0x5c/0xd0
+> > [    7.341538] [<ffffff9469e81d68>] gic_handle_irq+0xc0/0x154
+> >
+> > [    6.288581] [PINTU]: __ipipe_ack_fasteoi_irq - called
+> > [    6.293698] [PINTU]: __ipipe_ack_fasteoi_irq:
+> > desc->irq_data.chip->irq_hold is NULL
+> >
+> > When I check, I found that the irq_hold implementation is missing in
+> > one of the irq_chip driver (expected by ipipe), which I am supposed to
+> > implement.
+> >
+> > But I am unable to locate which irq_chip driver.
+> > If there are any good techniques to locate this in kernel, please help.
+> >
+>
+> Could you please tell which QCOM SoC this board is based on?
+>
+
+Snapdragon 845 with kernel 4.9.x
+I want to know from which subsystem it is triggered:drivers/soc/qcom/
+
+>
+> --
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> of Code Aurora Forum, hosted by The Linux Foundation
