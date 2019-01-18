@@ -1,134 +1,82 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Fri, 18 Jan 2019 13:57:47 +0100
-Message-ID: <CAKMK7uEf5tOq4+igmNeUX3SGJabcN8DuMd2juxFjbHDzoMJ1hg@mail.gmail.com>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
- <4051825.HNqyo8zv3N@aspire.rjw.lan>
- <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
- <1547804218.2626.7.camel@pengutronix.de>
- <CAJZ5v0iteL55yjxw=NFkKJ+4=gCJ36jviruLTsyFDU+Oj+j-og@mail.gmail.com>
- <CAKMK7uHHhFt8kUwuUc6v1UkXQ3CPtoFAh5W_bvSuYYbSTuFnZg@mail.gmail.com>
- <CAJZ5v0hWaSgzrh1eYXy5yfq65f_zdqY+rUDPbtsa2qRB8ZLmOw@mail.gmail.com>
- <CAJZ5v0hwCrZTVveri-ogLwqg9cP8fn2R76szDh5RwJ2nfpoT1A@mail.gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: [PATCH 00/13] mfd: add support for max77650 PMIC
+Date: Fri, 18 Jan 2019 14:42:31 +0100
+Message-ID: <20190118134244.22253-1-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0hwCrZTVveri-ogLwqg9cP8fn2R76szDh5RwJ2nfpoT1A@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MzggUE0gUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
-bEBrZXJuZWwub3JnPiB3cm90ZToKPgo+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDEyOjE3IFBN
-IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz4gd3JvdGU6Cj4gPgo+ID4gT24g
-RnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MDYgUE0gRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xs
-LmNoPiB3cm90ZToKPiA+ID4KPiA+ID4gT24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTE6MDMgQU0g
-UmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPiA+ID4gPgo+ID4g
-PiA+IE9uIEZyaSwgSmFuIDE4LCAyMDE5IGF0IDEwOjM3IEFNIEx1Y2FzIFN0YWNoIDxsLnN0YWNo
-QHBlbmd1dHJvbml4LmRlPiB3cm90ZToKPiA+ID4gPiA+Cj4gPiA+ID4gPiBBbSBEb25uZXJzdGFn
-LCBkZW4gMTcuMDEuMjAxOSwgMTM6MjAgKzAxMDAgc2NocmllYiBEYW5pZWwgVmV0dGVyOgo+ID4g
-PiA+ID4gWy4uLl0KPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gPiBJIGRvbid0IHRoaW5rIGl0IGlz
-IGFkZHJlc3NlZCBoZXJlLgo+ID4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ID4gQ2FuIGFueW9uZSBw
-bGVhc2UgZXhwbGFpbiB0byBtZSB3aGF0IGhhcHBlbnMgaW4gbW9yZSBkZXRhaWw/Cj4gPiA+ID4g
-PiA+Cj4gPiA+ID4gPiA+IE15IHVuZGVyc3RhbmRpbmcgKGFuZCB0aGlzIG1pZ2h0IGJlIHdyb25n
-LCBSdXNzZWxsLCBBbmRyemVqLCAuLi4gcGxzCj4gPiA+ID4gPiA+IGNvcnJlY3QpIGlzIHRoYXQg
-dGhlIGZvbGxvd2luZyBzZXF1ZW5jZSBnb2VzIHdyb25nOgo+ID4gPiA+ID4gPgo+ID4gPiA+ID4g
-PiAtIGNvbXBvbmVudGl6ZWQgZHJpdmVyIChib3RoIHByb2R1Y2VyIGFuZCBjb25zdW1lcikgZnVs
-bHkgbG9hZGVkJndvcmtpbmcKPiA+ID4gPiA+ID4gLSB5b3UgdW5iaW5kIHRoZSBwcm9kdWNlci9v
-bmUgb2YgdGhlIGNvbXBvbmVudHMKPiA+ID4gPiA+ID4gLSBjb21wb25lbnQgZnJhbWV3b3JrIG9y
-IGRyaXZlciBjb3JlIHRocm91Z2ggZGV2aWNlX2xpbmsgYWxzbyB1bmJpbmRzCj4gPiA+ID4gPiA+
-IHRoZSBtYXN0ZXIvY29uc3VtZXIKPiA+ID4gPiA+ID4gLSB5b3UgcmVsb2FkL3JlYmluZCB0aGUg
-Y29tcG9uZW50Cj4gPiA+ID4gPiA+IC0gd2l0aCB0aGUgY29tcG9uZW50IGZyYW1ld29yayB0aGlz
-IHJlc3VsdHMgaW4gdGhlIG1hc3RlciBiZWluZwo+ID4gPiA+ID4gPiByZWJvdW5kLCBhbmQgdGhl
-IG92ZXJhbGwgZHJpdmVyIHdvcmtpbmcgYWdhaW4uIFdpdGggZGV2aWNlX2xpbmtzCj4gPiA+ID4g
-PiA+IG5vdGhpbmcgaGFwcGVucy4KPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gSSB0aGluayB0aGVy
-ZSB3YXMgYSBwYXRjaCBmbG9hdGluZyBhcm91bmQgb25jZSB0byBwdXQgZHJpdmVycyB1bmJvdW5k
-Cj4gPiA+ID4gPiA+IGR1ZSB0byBkZXZpY2VfbGlua3Mgb250byB0aGUgZGVmZXJyZWQgcHJvYmUg
-bGlzdCwgc28gdGhhdCB0aGUgbmV4dAo+ID4gPiA+ID4gPiB0aW1lIHNvbWV0aGluZyBpcyBib3Vu
-ZCB0aGV5IGhhdmUgYSBjaGFuY2UgdG8gcmViaW5kLiBCdXQgSSBjYW4ndCBmaW5kCj4gPiA+ID4g
-PiA+IHRoYXQgcGF0Y2ggYW55bW9yZSwgbWF5YmUgc29tZW9uZSBlbHNlIGhhcyB0aGUgbGluayBz
-dGlsbD8KPiA+ID4gPiA+Cj4gPiA+ID4gPiBodHRwczovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNnMTM0ODAyMy5odG1sCj4gPiA+ID4gPiBodHRw
-czovL3d3dy5tYWlsLWFyY2hpdmUuY29tL2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNn
-MTM1NTI0My5odG1sCj4gPiA+Cj4gPiA+IFRoYW5rcyBmb3IgZGlnZ2luZyBpdCBvdXQsIHRob3Nl
-IGFyZSB0aGUgcGF0Y2hlcyBJIGhhZCBpbiBtaW5kLgo+ID4gPgo+ID4gPiA+ID4gSSBjYW4gcmVw
-b3N0IGlmIHRoaXMgaXMgZmluYWxseSBkZWVtZWQgYSBnb29kIGlkZWEuCj4gPiA+ID4KPiA+ID4g
-PiBJIGRvbid0IHRoaW5rIHRoaXMgd2lsbCBoZWxwLgo+ID4gPiA+Cj4gPiA+ID4gVHdvIHRoaW5n
-cyBhcHBlYXIgdG8gYmUgbmVlZGVkIGhlcmU6IG1pc3Npbmcgc3VwcGxpZXJzIG5lZWQgdG8gYmUK
-PiA+ID4gPiBwcm9iZWQgYXV0b21hdGljYWxseSBhdCBhIGNvbnN1bWVyIHByb2JlIHRpbWUgYW5k
-ICJwZXJzaXN0ZW50IiBsaW5rcwo+ID4gPiA+IGNyZWF0ZWQgYnkgLT5wcm9iZSgpIGNhbGxiYWNr
-cyBzaG91bGQgbm90IGJlIHJlZmVyZW5jZS1jb3VudGVkIHdoZW4KPiA+ID4gPiB0aG9zZSBjYWxs
-YmFja3MgcnVuIGFnYWluLiAgSSdtIGdvaW5nIHRvIGN1dCBhIHBhdGNoIHRvIGRvIHRoYXQgKGVh
-cmx5Cj4gPiA+ID4gbmV4dCB3ZWVrIGlmIGFsbCBnb2VzIHdlbGwpLgo+ID4gPgo+ID4gPiBJIHRo
-b3VnaHQgdGhpcyBzaG91bGQgd29yaywgc2luY2UgaXQgbWFrZXMgYW4gdW5iaW5kIG9mIGEgY29u
-c3VtZXIgYWN0Cj4gPiA+IHRoZSBzYW1lIHdheSBhcyBpZiB0aGF0IGNvbnN1bWVyJ3MgYmluZCBm
-dW5jdGlvbiBoYXMgaGl0IGFuCj4gPiA+IEVQUk9CRV9ERUZFUi4gRXhhbXBsZToKPiA+ID4KPiA+
-ID4gMS4gY29uc3VtZXIncyBiaW5kIGlzIGNhbGxlZCwgcmVhbGl6ZXMgKHRocm91Z2ggYSBzdWJz
-eXN0ZW0gZnVuY3Rpb24KPiA+ID4gbGlrZSBvZl9kcm1fZmluZF9wYW5lbCkgdGhhdCB0aGUgcHJv
-ZHVjZXIgaXNuJ3QgdGhlcmUgeWV0LCBmYWlscyB3aXRoCj4gPiA+IEVQUk9CRSBERUZFUi4KPiA+
-ID4KPiA+ID4gMi4gZHJpdmVyIGNvcmUgcHV0cyB0aGUgY29uc3VtZXIgb250byB0aGUgZGVmZXJy
-ZWQgcHJvYmUgbGlzdC4KPiA+ID4KPiA+ID4gMy4gcHJvZHVjZXIgZ2V0cyBsb2FkZWQsIHJlZ2lz
-dGVycyB0aGUgcGFuZWwKPiA+ID4KPiA+ID4gNC4gZHJpdmVyIGNvcmUgcmUtcnVucyB0aGUgY29u
-c3VtZXIncyBiaW5kIGZ1bmN0aW9uCj4gPiA+Cj4gPiA+IDUuIGNvbnN1bWVyJ3MgYmluZCBmdW5j
-dGlvbiBmaW5kcyB0aGUgcHJvZHVjZWQgYW5kIHNldHMgdXAgdGhlIGRldmljZSBsaW5rLgo+ID4g
-Pgo+ID4gPiBOb3cgZm9yIHRoZSB1bmJpbmQgY2FzZToKPiA+ID4KPiA+ID4gMS4gcHJvZHVjZXIg
-aXMgdW5ib3VuZCwgZHJpdmVyIGNvcmUgdW5iaW5kcyBjb25zdW1lciBkdWUgdG8gdGhlIGRldmlj
-ZV9saW5rCj4gPiA+Cj4gPiA+IDIuIChPbmx5IHdpdGggTHVjYXMnIHBhdGNoKSBkcml2ZXIgY29y
-ZSBwdXRzIHRoZSBjb25zdW1lciBvbnRvIHRoZQo+ID4gPiBkZWZlcnJlZCBwcm9iZSBsaXN0Lgo+
-ID4gPgo+ID4gPiAzLiBEZXZlbG9wZXIgKHRoaXMgcmVhbGx5IGlzIHVzZWZ1bCBmb3IgZGV2ZWxv
-cG1lbnQpIHJlYmluZHMvcmVsb2Fkcwo+ID4gPiBwcm9kdWNlciBkcml2ZXIsIHdoaWNoIHJlLXJl
-Z2lzdGVycyB0aGUgcGFuZWwKPiA+ID4KPiA+ID4gNCAmIDUgd29yayBleGFjdGx5IHRoZSBzYW1l
-IGFzIHdpdGggdGhlIGluaXRpYWwgbG9hZCBzZXF1ZW5jZS4KPiA+Cj4gPiBJIG1pc3VuZGVyc3Rv
-b2QgdGhlIFJ1c3NlbGwncyBkZXNjcmlwdGlvbiwgc29ycnkuCj4gPgo+ID4gTXkgdW5kZXJzdGFu
-ZGluZyB3YXMgdGhhdCB0aGUgY29uc3VtZXIgZHJpdmVyIHdvdWxkIGJlIHJlYm91bmQgYXQgdGhp
-cwo+ID4gcG9pbnQgYW5kIHRoYXQgdGhlIChtaXNzaW5nKSBwcm9kdWNlciB3YXMgZXhwZWN0ZWQg
-dG8gcmViaW5kIGFzIHdlbGwKPiA+IGluIHJlc3BvbnNlLgo+ID4KPiA+ID4gV2l0aCB0aGlzIGlu
-aXRpYWwgbG9hZGluZyBhbmQgcmVsb2FkaW5nIHdvdWxkIGJlIHZlcnkgc2ltaWxhciwgYW5kIEkK
-PiA+ID4gdGhpbmsgdGhhdCdzIGEgZ29vZCB0aGluZy4gSXQgYWxzbyBzb2x2ZXMgdGhlIGRldmlj
-ZV9saW5rCj4gPiA+IGxpZmV0aW1lL3JlZmNvdW50aW5nIGlzc3VlLCBzaW5jZSB0aGUgZGV2aWNl
-X2xpbmsgZ2V0cyB0b3JuIGRvd24KPiA+ID4gaW4vcmVzdG9yZWQgY29tcGxldGVseSwgYW5kIHJl
-bG9hZGluZyBpc24ndCBhIHNwZWNpYWwgY2FzZSBsaWtlIGluCj4gPiA+IHlvdXIgcHJvcG9zZWQg
-c29sdXRpb24gLSB0aGVyZSdzIG5vIGRldmljZV9saW5rIGxlZnQgb3ZlciBmcm9tIGEKPiA+ID4g
-cHJldmlvdXMgbG9hZGluZyBvZiB0aGUgZHJpdmVyLCB0aGUgZGVwZW5kZW5jeSBpcyBvbmx5IGhh
-bmRsZWQgYnkKPiA+ID4gcHV0dGluZyB0aGUgY29uc3VtZXIgKGJhY2spICBvbnRvIHRoZSBkZWZl
-cnJlZCBwcm9iZSBsaXN0Lgo+ID4KPiA+IE15IGlkZWEgd2FzIGJhc2VkIG9uIGluY29ycmVjdCB1
-bmRlcnN0YW5kaW5nIG9mIHRoZSBwcm9ibGVtLCBzbyBzY3JhdGNoIGl0LiA6LSkKPiA+Cj4gPiBU
-aGUgTHVrYXMnIHBhdGNoIHdvdWxkIGluZGVlZCB3b3JrIGhlcmUsIGJ1dCBJJ20gbm90IHN1cmUg
-aWYgZG9pbmcKPiA+IHRoYXQgZm9yIGFsbCBsaW5rcyB1bmNvbmRpdGlvbmFsbHkgaXMgYSBnb29k
-IGlkZWEuCj4gPgo+ID4gSSdkIHJhdGhlciBoYXZlIGEgbGluayBmbGFnIHRvIGluZGljYXRlIHRo
-YXQgdGhpcyBiZWhhdmlvciBpcyBkZXNpcmFibGUuCj4KPiBUaGF0IHNhaWQsIHRoZSBjcmVhdGlv
-biBvZiBhIGRldmljZSBsaW5rIGlzIGEgaGVhdnktd2VpZ2h0IG9wZXJhdGlvbgo+IGluIGdlbmVy
-YWwgYXMgaXQgdHJpZ2dlcnMgYSBsaXN0IHJlb3JkZXJpbmcgdGhhdCBtYXkgdHVybiBvdXQgdG8g
-YmUKPiByZWN1cnNpdmUgZXRjLiwgc28gSSdkIHJhdGhlciBhdm9pZCBkb2luZyB0b28gbXVjaCBv
-ZiB0aGF0Lgo+Cj4gTW9yZW92ZXIsIGNyZWF0aW5nIGEgbGluayBiZXR3ZWVuIHR3byBkZXZpY2Vz
-IG9uY2Ugc2hvdWxkIGJlCj4gc3VmZmljaWVudCwgc28gSSdkIHByZWZlciAicGVyc2lzdGVudCIg
-bGlua3MgdG8gYmUgdXNlZCBpbiB0aGF0IGNhc2UsCj4gYnV0IHRoZXkgbmVlZCB0byBiZSBmaXhl
-ZCB0byBhdm9pZCB0aGUgZXh0cmEgcmVmZXJlbmNlIGNvdW50aW5nLiAgVGhhdAo+IGFuZCBhIG5l
-dyBsaW5rIGZsYWcgdG8gaW5kaWNhdGUgdGhhdCB0aGUgY29uc3VtZXIgc2hvdWxkIGJlIHByb2Jl
-ZAo+IGF1dG9tYXRpY2FsbHkgYWZ0ZXIgYmluZGluZyB0aGUgc3VwcGxpZXIgZHJpdmVyLgoKWWVh
-aCBpZiBwZXJzaXN0ZW50IGxpbmtzIG1ha2UgbW9yZSBzZW5zZSBmcm9tIGFuIGltcGxlbWVudGF0
-aW9uIHBvdgp0aGVuIHRoYXQncyBhbGwgZmluZSwgYXMgbG9uZyBhcyBpdCByZXN1bHRzIGluIHRo
-ZSBzYW1lIGJlaGF2aW91ciBmb3IKZnJvbSB0aGUgcG92IG9mIGFsbCB0aGUgaW52b2x2ZWQgYmlu
-ZCBmdW5jdGlvbnMuIFNvIGlmIHRoZSBjb3JlCmhhbmRsZXMgYWxsIHRoZSByZWZjb3VudCB0cmlj
-a2VyeSwgdGhhdCdzIGdvb2QuCgpBbHNvIGFuIGV4cGxpY2l0IGZsYWcgc291bmRzIGxpa2UgYSBn
-b29kIGlkZWEsIHNpbmNlIGZvciBzb21lIG90aGVyCnByb2JsZW1zIHdlIHdhbnQgdG8gbWFrZSB0
-aGUgZGV2aWNlX2xpbmsgb3B0LWluLiBUaGVyZSdzIG90aGVyd2lzZQpzb21lIGxvb3BzIGluIHNv
-bWUgY2FzZXMgYXBwYXJlbnRseS4KLURhbmllbAotLSAKRGFuaWVsIFZldHRlcgpTb2Z0d2FyZSBF
-bmdpbmVlciwgSW50ZWwgQ29ycG9yYXRpb24KKzQxICgwKSA3OSAzNjUgNTcgNDggLSBodHRwOi8v
-YmxvZy5mZndsbC5jaApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5v
-cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2
-ZWwK
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+
+This series adds support for max77650 ultra low-power PMIC. It provides
+the core mfd driver and a set of five sub-drivers for the regulator,
+power supply, gpio, leds and input subsystems.
+
+Patches 1-6 add the DT binding documents. Patches 7-12 add all drivers.
+Last patch adds a MAINTAINERS entry for this device.
+
+Note that patch 8/13 depends on commit 03c87b95ac04 ("regulator: provide
+rdev_get_regmap()") which was picked up by Mark Brown for v5.1.
+
+Bartosz Golaszewski (13):
+  dt-bindings: mfd: add DT bindings for max77650
+  dt-bindings: regulator: add DT bindings for max77650
+  dt-bindings: power: supply: add DT bindings for max77650
+  dt-bindings: gpio: add DT bindings for max77650
+  dt-bindings: leds: add DT bindings for max77650
+  dt-bindings: input: add DT bindings for max77650
+  mfd: max77650: new core mfd driver
+  regulator: max77650: add regulator support
+  power: supply: max77650: add support for battery charger
+  gpio: max77650: add GPIO support
+  leds: max77650: add LEDs support
+  input: max77650: add onkey support
+  MAINTAINERS: add an entry for max77650 mfd driver
+
+ .../bindings/gpio/gpio-max77650.txt           |  34 ++
+ .../bindings/input/max77650-onkey.txt         |  26 +
+ .../bindings/leds/leds-max77650.txt           |  57 ++
+ .../devicetree/bindings/mfd/max77650.txt      |  28 +
+ .../power/supply/max77650-charger.txt         |  27 +
+ .../bindings/regulator/max77650-regulator.txt |  41 ++
+ MAINTAINERS                                   |  14 +
+ drivers/gpio/Kconfig                          |   7 +
+ drivers/gpio/Makefile                         |   1 +
+ drivers/gpio/gpio-max77650.c                  | 189 ++++++
+ drivers/input/misc/Kconfig                    |   9 +
+ drivers/input/misc/Makefile                   |   1 +
+ drivers/input/misc/max77650-onkey.c           | 135 +++++
+ drivers/leds/Kconfig                          |   6 +
+ drivers/leds/Makefile                         |   1 +
+ drivers/leds/leds-max77650.c                  | 162 ++++++
+ drivers/mfd/Kconfig                           |  11 +
+ drivers/mfd/Makefile                          |   1 +
+ drivers/mfd/max77650.c                        | 212 +++++++
+ drivers/power/supply/Kconfig                  |   7 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/max77650-charger.c       | 347 +++++++++++
+ drivers/regulator/Kconfig                     |   8 +
+ drivers/regulator/Makefile                    |   1 +
+ drivers/regulator/max77650-regulator.c        | 537 ++++++++++++++++++
+ include/linux/mfd/max77650.h                  |  73 +++
+ 26 files changed, 1936 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpio/gpio-max77650.txt
+ create mode 100644 Documentation/devicetree/bindings/input/max77650-onkey.txt
+ create mode 100644 Documentation/devicetree/bindings/leds/leds-max77650.txt
+ create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+ create mode 100644 Documentation/devicetree/bindings/regulator/max77650-regulator.txt
+ create mode 100644 drivers/gpio/gpio-max77650.c
+ create mode 100644 drivers/input/misc/max77650-onkey.c
+ create mode 100644 drivers/leds/leds-max77650.c
+ create mode 100644 drivers/mfd/max77650.c
+ create mode 100644 drivers/power/supply/max77650-charger.c
+ create mode 100644 drivers/regulator/max77650-regulator.c
+ create mode 100644 include/linux/mfd/max77650.h
+
+-- 
+2.19.1
