@@ -1,53 +1,59 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Fri, 18 Jan 2019 10:36:58 +0100
-Message-ID: <1547804218.2626.7.camel@pengutronix.de>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <515889972.533tA6DaoZ@aspire.rjw.lan>
- <CAKMK7uGY7oQVn4jjN58k0-6YL201xwMp2sfnS8P+SNbaETPgAg@mail.gmail.com>
- <4051825.HNqyo8zv3N@aspire.rjw.lan>
- <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2] sched: Document Energy Aware Scheduling
+Date: Fri, 18 Jan 2019 10:57:08 +0100
+Message-ID: <CAJZ5v0jw0BgmkwrtjuiC7YKO6A+k2eFfFDGtGsSWymW8PSTscA@mail.gmail.com>
+References: <20190110110546.8101-1-quentin.perret@arm.com> <20190110110546.8101-3-quentin.perret@arm.com>
+ <20190117155117.GG14385@localhost.localdomain> <20190118091652.xn6iw52tccwh6vap@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKMK7uHV=8Jpb1z_iRK-WBWW+oA6dYO7-Yj6tHkf7Be98_Xitg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Daniel Vetter <daniel@ffwll.ch>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190118091652.xn6iw52tccwh6vap@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, qais.yousef@arm.com, Patrick Bellasi <patrick.bellasi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-QW0gRG9ubmVyc3RhZywgZGVuIDE3LjAxLjIwMTksIDEzOjIwICswMTAwIHNjaHJpZWIgRGFuaWVs
-IFZldHRlcjoKWy4uLl0KPiAKPiA+IEkgZG9uJ3QgdGhpbmsgaXQgaXMgYWRkcmVzc2VkIGhlcmUu
-Cj4gPiAKPiA+IENhbiBhbnlvbmUgcGxlYXNlIGV4cGxhaW4gdG8gbWUgd2hhdCBoYXBwZW5zIGlu
-IG1vcmUgZGV0YWlsPwo+IAo+IE15IHVuZGVyc3RhbmRpbmcgKGFuZCB0aGlzIG1pZ2h0IGJlIHdy
-b25nLCBSdXNzZWxsLCBBbmRyemVqLCAuLi4gcGxzCj4gY29ycmVjdCkgaXMgdGhhdCB0aGUgZm9s
-bG93aW5nIHNlcXVlbmNlIGdvZXMgd3Jvbmc6Cj4gCj4gLSBjb21wb25lbnRpemVkIGRyaXZlciAo
-Ym90aCBwcm9kdWNlciBhbmQgY29uc3VtZXIpIGZ1bGx5IGxvYWRlZCZ3b3JraW5nCj4gLSB5b3Ug
-dW5iaW5kIHRoZSBwcm9kdWNlci9vbmUgb2YgdGhlIGNvbXBvbmVudHMKPiAtIGNvbXBvbmVudCBm
-cmFtZXdvcmsgb3IgZHJpdmVyIGNvcmUgdGhyb3VnaCBkZXZpY2VfbGluayBhbHNvIHVuYmluZHMK
-PiB0aGUgbWFzdGVyL2NvbnN1bWVyCj4gLSB5b3UgcmVsb2FkL3JlYmluZCB0aGUgY29tcG9uZW50
-Cj4gLSB3aXRoIHRoZSBjb21wb25lbnQgZnJhbWV3b3JrIHRoaXMgcmVzdWx0cyBpbiB0aGUgbWFz
-dGVyIGJlaW5nCj4gcmVib3VuZCwgYW5kIHRoZSBvdmVyYWxsIGRyaXZlciB3b3JraW5nIGFnYWlu
-LiBXaXRoIGRldmljZV9saW5rcwo+IG5vdGhpbmcgaGFwcGVucy4KPiAKPiBJIHRoaW5rIHRoZXJl
-IHdhcyBhIHBhdGNoIGZsb2F0aW5nIGFyb3VuZCBvbmNlIHRvIHB1dCBkcml2ZXJzIHVuYm91bmQK
-PiBkdWUgdG8gZGV2aWNlX2xpbmtzIG9udG8gdGhlIGRlZmVycmVkIHByb2JlIGxpc3QsIHNvIHRo
-YXQgdGhlIG5leHQKPiB0aW1lIHNvbWV0aGluZyBpcyBib3VuZCB0aGV5IGhhdmUgYSBjaGFuY2Ug
-dG8gcmViaW5kLiBCdXQgSSBjYW4ndCBmaW5kCj4gdGhhdCBwYXRjaCBhbnltb3JlLCBtYXliZSBz
-b21lb25lIGVsc2UgaGFzIHRoZSBsaW5rIHN0aWxsPwoKaHR0cHM6Ly93d3cubWFpbC1hcmNoaXZl
-LmNvbS9saW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnL21zZzEzNDgwMjMuaHRtbApodHRwczov
-L3d3dy5tYWlsLWFyY2hpdmUuY29tL2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcvbXNnMTM1
-NTI0My5odG1sCgpJIGNhbiByZXBvc3QgaWYgdGhpcyBpcyBmaW5hbGx5IGRlZW1lZCBhIGdvb2Qg
-aWRlYS4KClJlZ2FyZHMsCkx1Y2FzCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9kcmktZGV2ZWwK
+On Fri, Jan 18, 2019 at 10:16 AM Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Hi Juri,
+>
+> On Thursday 17 Jan 2019 at 16:51:17 (+0100), Juri Lelli wrote:
+> > On 10/01/19 11:05, Quentin Perret wrote:
+> [...]
+> > > +The idea behind introducing an EM is to allow the scheduler to evaluate the
+> > > +implications of its decisions rather than blindly applying energy-saving
+> > > +techniques that may have positive effects only on some platforms. At the same
+> > > +time, the EM must be as simple as possible to minimize the scheduler latency
+> > > +impact.
+> > > +
+> > > +In short, EAS changes the way CFS tasks are assigned to CPUs. When it is time
+> >
+> > Not sure if we want to remark the fact that EAS is looking at CFS tasks
+> > only ATM.
+>
+> Oh, what's wrong about mentioning it ? I mean, it is a fact ATM ...
+
+But it won't hurt to mention that it may cover other scheduling
+classes in the future.  IOW, the scope limit is not fundamental.
+
+> > > +for the scheduler to decide where a task should run (during wake-up), the EM
+> > > +is used to break the tie between several good CPU candidates and pick the one
+> > > +that is predicted to yield the best energy consumption without harming the
+> > > +system's throughput. The predictions made by EAS rely on specific elements of
+> > > +knowledge about the platform's topology, which include the 'capacity' of CPUs,
+> >
+> > Add a reference to DT bindings docs defining 'capacity' (or define it
+> > somewhere)?
+>
+> Right, I can mention this is defined in the next section. But are you
+> sure about the reference to the DT bindings ? They're arm-specific right ?
+> Maybe I can give that as an example or something ...
+
+Example sounds right.
+
+You also can point to the section below from here.
+
+Side note: If the doc is in the .rst format (which Peter won't like
+I'm sure :-)), you can actually use cross-references in it and you get
+a translation to an HTML doc (hosted at kernel.org) for free and the
+cross-references become clickable links in that.
