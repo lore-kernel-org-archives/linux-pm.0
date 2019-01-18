@@ -1,294 +1,76 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH v5 2/2] cpufreq: ap806: add cpufreq driver for Armada 8K
-Date: Fri, 18 Jan 2019 15:51:01 +0100
-Message-ID: <20190118145101.31115-1-gregory.clement@bootlin.com>
-References: <20190118141140.30352-3-gregory.clement@bootlin.com>
+From: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Subject: Re: [driver-core PATCH v9 1/9] driver core: Establish order of
+ operations for device_add and device_del via bitflag
+Date: Fri, 18 Jan 2019 16:50:42 +0100
+Message-ID: <20190118155042.GA5009@kroah.com>
+References: <154466182249.9126.3905559325944768059.stgit@ahduyck-desk1.jf.intel.com>
+ <154466189880.9126.10737761541647369077.stgit@ahduyck-desk1.jf.intel.com>
+ <CAJZ5v0hSWOb4b7FWJmfi86mYY+T1kedtC=ydS8VMUvpH4ctzbw@mail.gmail.com>
+ <20181220152844.GA27498@kroah.com>
+ <0a72b8db91f9151ecc7f215b465ec8e69adc239c.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190118141140.30352-3-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <0a72b8db91f9151ecc7f215b465ec8e69adc239c.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, "linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org" <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lai Jiangshan <jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add cpufreq driver for Marvell AP-806 found on Aramda 8K.
-The AP-806 has DFS (Dynamic Frequency Scaling) with coupled
-clock domain for two clusters, so this driver will directly
-use generic cpufreq-dt driver as backend.
+On Thu, Jan 10, 2019 at 09:37:32AM -0800, Alexander Duyck wrote:
+> On Thu, 2018-12-20 at 16:28 +0100, Greg Kroah-Hartman wrote:
+> > On Wed, Dec 19, 2018 at 03:27:48PM +0100, Rafael J. Wysocki wrote:
+> > > On Thu, Dec 13, 2018 at 1:45 AM Alexander Duyck
+> > > <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+> > > > 
+> > > > Add an additional bit flag to the device struct named "dead".
+> > > > 
+> > > > This additional flag provides a guarantee that when a device_del is
+> > > > executed on a given interface an async worker will not attempt to attach
+> > > > the driver following the earlier device_del call. Previously this
+> > > > guarantee was not present and could result in the device_del call
+> > > > attempting to remove a driver from an interface only to have the async
+> > > > worker attempt to probe the driver later when it finally completes the
+> > > > asynchronous probe call.
+> > > > 
+> > > > One additional change added was that I pulled the check for dev->driver
+> > > > out of the __device_attach_driver call and instead placed it in the
+> > > > __device_attach_async_helper call. This was motivated by the fact that the
+> > > > only other caller of this, __device_attach, had already taken the
+> > > > device_lock() and checked for dev->driver. Instead of testing for this
+> > > > twice in this path it makes more sense to just consolidate the dev->dead
+> > > > and dev->driver checks together into one set of checks.
+> > > > 
+> > > > Reviewed-by: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> > > > Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> > > 
+> > > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> > 
+> > It's too late for 4.21-rc1 as my tree should be closed by now.
+> > 
+> > So I'll hold on to these in my queue until 4.21-rc1 is out and then
+> > queue them up and see what breaks in linux-next :)
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> I just wanted to check on on this patch set in terms of workflow. Since
+> it looks like we now have 5.0-rc1 out I was wondering what the ETA for
+> this patch set being pulled was, or if I need to resubmit the set.
 
-Based on the work of Omri Itach <omrii@marvell.com>.
+I'm reviewing it now, no need to resend...
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
-Hi,
+thanks,
 
-This one is the correct version, in the previous one the change were
-not merged.
-
-Sorry for the noise,
-
-Gregory
-
-
- drivers/cpufreq/Kconfig.arm         |  11 ++
- drivers/cpufreq/Makefile            |   1 +
- drivers/cpufreq/armada-8k-cpufreq.c | 204 ++++++++++++++++++++++++++++
- 3 files changed, 216 insertions(+)
- create mode 100644 drivers/cpufreq/armada-8k-cpufreq.c
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 688f10227793..10bc5c798d17 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -25,6 +25,17 @@ config ARM_ARMADA_37XX_CPUFREQ
- 	  This adds the CPUFreq driver support for Marvell Armada 37xx SoCs.
- 	  The Armada 37xx PMU supports 4 frequency and VDD levels.
- 
-+config ARM_ARMADA_8K_CPUFREQ
-+	tristate "Armada 8K CPUFreq driver"
-+	depends on ARCH_MVEBU && CPUFREQ_DT
-+	help
-+	  This enables the CPUFreq driver support for Marvell
-+	  Armada8k SOCs.
-+	  Armada8K device has the AP806 which supports scaling
-+	  to any full integer divider.
-+
-+	  If in doubt, say N.
-+
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 08c071be2491..689b26c6f949 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -50,6 +50,7 @@ obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
- obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
- 
- obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
-+obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
- obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
-diff --git a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
-new file mode 100644
-index 000000000000..8a5ddb93fc58
---- /dev/null
-+++ b/drivers/cpufreq/armada-8k-cpufreq.c
-@@ -0,0 +1,204 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * CPUFreq support for Armada 8K
-+ *
-+ * Copyright (C) 2018 Marvell
-+ *
-+ * Omri Itach <omrii@marvell.com>
-+ * Gregory Clement <gregory.clement@bootlin.com>
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/clk.h>
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+
-+/*
-+ * Setup the opps list with the divider for the max frequency, that
-+ * will be filled at runtime.
-+ */
-+static const int opps_div[] __initconst = {1, 2, 3, 4};
-+
-+static struct platform_device *armada_8k_pdev;
-+
-+struct freq_table {
-+	struct device *cpu_dev;
-+	unsigned int freq[ARRAY_SIZE(opps_div)];
-+};
-+
-+/* If the CPUs share the same clock, then they are in the same cluster. */
-+static void __init armada_8k_get_sharing_cpus(struct clk *cur_clk,
-+					      struct cpumask *cpumask)
-+{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev;
-+		struct clk *clk;
-+
-+		cpu_dev = get_cpu_device(cpu);
-+		if (!cpu_dev) {
-+			pr_warn("Failed to get cpu%d device\n", cpu);
-+			continue;
-+		}
-+
-+		clk = clk_get(cpu_dev, 0);
-+		if (IS_ERR(clk)) {
-+			pr_warn("Cannot get clock for CPU %d\n", cpu);
-+		} else {
-+			if (clk_is_match(clk, cur_clk))
-+				cpumask_set_cpu(cpu, cpumask);
-+
-+			clk_put(clk);
-+		}
-+	}
-+}
-+
-+static int __init armada_8k_add_opp(struct clk *clk, struct device *cpu_dev,
-+				    struct freq_table *freq_tables,
-+				    int opps_index)
-+{
-+	unsigned int cur_frequency;
-+	unsigned int freq;
-+	int i, ret;
-+
-+	/* Get nominal (current) CPU frequency. */
-+	cur_frequency = clk_get_rate(clk);
-+	if (!cur_frequency) {
-+		dev_err(cpu_dev, "Failed to get clock rate for this CPU\n");
-+		return -EINVAL;
-+	}
-+
-+	freq_tables[opps_index].cpu_dev = cpu_dev;
-+
-+	for (i = 0; i < ARRAY_SIZE(opps_div); i++) {
-+		freq = cur_frequency / opps_div[i];
-+
-+		ret = dev_pm_opp_add(cpu_dev, freq, 0);
-+		if (ret)
-+			return ret;
-+
-+		freq_tables[opps_index].freq[i] = freq;
-+	}
-+
-+	return 0;
-+}
-+
-+static void armada_8k_cpufreq_free_table(struct freq_table *freq_tables)
-+{
-+	int opps_index, nb_cpus = num_possible_cpus();
-+
-+	for (opps_index = 0 ; opps_index <= nb_cpus; opps_index++) {
-+		int i;
-+
-+		/* If cpu_dev is NULL then we reached the end of the array */
-+		if (!freq_tables[opps_index].cpu_dev)
-+			break;
-+
-+		for (i = 0; i < ARRAY_SIZE(opps_div); i++) {
-+			/*
-+			 * A 0Hz frequency is not valid, this meant
-+			 * that it was not yet initialized so there is
-+			 * no more opp to free
-+			 */
-+			if (freq_tables[opps_index].freq[i] == 0)
-+				break;
-+
-+			dev_pm_opp_remove(freq_tables[opps_index].cpu_dev,
-+					  freq_tables[opps_index].freq[i]);
-+		}
-+	}
-+
-+	kfree(freq_tables);
-+}
-+
-+static int __init armada_8k_cpufreq_init(void)
-+{
-+	int ret = 0, opps_index = 0, cpu, nb_cpus;
-+	struct freq_table *freq_tables;
-+	struct device_node *node;
-+	struct cpumask cpus;
-+
-+	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
-+	if (!node || !of_device_is_available(node))
-+		return -ENODEV;
-+
-+	nb_cpus = num_possible_cpus();
-+	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
-+	cpumask_copy(&cpus, cpu_possible_mask);
-+
-+	/*
-+	 * For each CPU, this loop registers the operating points
-+	 * supported (which are the nominal CPU frequency and full integer
-+	 * divisions of it).
-+	 */
-+	for_each_cpu(cpu, &cpus) {
-+		struct cpumask shared_cpus;
-+		struct device *cpu_dev;
-+		struct clk *clk;
-+
-+		cpu_dev = get_cpu_device(cpu);
-+
-+		if (!cpu_dev) {
-+			pr_err("Cannot get CPU %d\n", cpu);
-+			continue;
-+		}
-+
-+		clk = clk_get(cpu_dev, 0);
-+
-+		if (IS_ERR(clk)) {
-+			pr_err("Cannot get clock for CPU %d\n", cpu);
-+			ret = PTR_ERR(clk);
-+			goto remove_opp;
-+		}
-+
-+		ret = armada_8k_add_opp(clk, cpu_dev, freq_tables, opps_index);
-+		if (ret) {
-+			clk_put(clk);
-+			goto remove_opp;
-+		}
-+
-+		opps_index++;
-+		cpumask_clear(&shared_cpus);
-+		armada_8k_get_sharing_cpus(clk, &shared_cpus);
-+		dev_pm_opp_set_sharing_cpus(cpu_dev, &shared_cpus);
-+		cpumask_andnot(&cpus, &cpus, &shared_cpus);
-+		clk_put(clk);
-+	}
-+
-+	armada_8k_pdev = platform_device_register_simple("cpufreq-dt", -1,
-+							 NULL, 0);
-+	ret = PTR_ERR_OR_ZERO(armada_8k_pdev);
-+	if (ret)
-+		goto remove_opp;
-+
-+	platform_set_drvdata(armada_8k_pdev, freq_tables);
-+
-+	return 0;
-+
-+remove_opp:
-+	armada_8k_cpufreq_free_table(freq_tables);
-+	return ret;
-+}
-+module_init(armada_8k_cpufreq_init);
-+
-+static void __exit armada_8k_cpufreq_exit(void)
-+{
-+	struct freq_table *freq_tables = platform_get_drvdata(armada_8k_pdev);
-+
-+	platform_device_unregister(armada_8k_pdev);
-+	armada_8k_cpufreq_free_table(freq_tables);
-+}
-+module_exit(armada_8k_cpufreq_exit);
-+
-+MODULE_AUTHOR("Gregory Clement <gregory.clement@bootlin.com>");
-+MODULE_DESCRIPTION("Armada 8K cpufreq driver");
-+MODULE_LICENSE("GPL");
--- 
-2.20.1
+greg k-h
