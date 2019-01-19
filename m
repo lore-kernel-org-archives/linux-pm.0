@@ -1,50 +1,82 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 1/3] drivers: base: Add frequency constraint
- infrastructure
-Date: Fri, 18 Jan 2019 14:45:34 -0800
-Message-ID: <20190118224534.GC261387@google.com>
-References: <cover.1547197612.git.viresh.kumar@linaro.org>
- <f3980beb6f2c02427d892a4bc4a04989544a3952.1547197612.git.viresh.kumar@linaro.org>
- <20190118010305.GX261387@google.com>
- <20190118100234.kq37hc4ldujqvvrb@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] PM / devfreq: fix mem leak and missing check of return value in devfreq_add_device()
+Date: Sat, 19 Jan 2019 00:02:56 -0500
+Message-ID: <20190119050256.22520-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190118100234.kq37hc4ldujqvvrb@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 18, 2019 at 03:32:34PM +0530, Viresh Kumar wrote:
-> On 17-01-19, 17:03, Matthias Kaehlcke wrote:
-> > On Fri, Jan 11, 2019 at 02:48:34PM +0530, Viresh Kumar wrote:
-> > > +static void fcs_update(struct freq_constraints *fcs, struct freq_pair *freq,
-> > > +		       enum fc_event event)
-> > > +{
-> > > +	mutex_lock(&fcs->lock);
-> > > +
-> > > +	if (_fcs_update(fcs, freq, event)) {
-> > > +		if (fcs->callback)
-> > > +			schedule_work(&fcs->work);
-> > 
-> > IIUC the constraints aren't applied until the callback is executed. I
-> > wonder if a dedicated workqueue should be used instead of the system
-> > one, to avoid longer delays from other kernel entities that might
-> > 'misbehave'. Especially for thermal constraints we want a quick
-> > response.
-> 
-> I thought the system workqueue should be fast enough, it contains
-> multiple threads which can all run in parallel and service this work.
+'devfreq' is malloced in devfreq_add_device() and should be freed in
+the error handling cases, otherwise it will cause memory leak.
 
-Ok, I was still stuck at the old one thread per CPU model, where a
-slow work would block other items in the same workqueue until it
-finishes execution. After reading a bit through
-Documentation/core-api/workqueue.rst I agree that a system workqueue
-is probably fast enough. It might be warranted though to use
-system_highpri_wq here.
+devm_kzalloc() could fail, so insert a check of its return value. And
+if it fails, returns -ENOMEM.
 
-Cheers
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/devfreq/devfreq.c | 33 ++++++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
 
-Matthias
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 0ae3de76833b..fe6c157cb7e0 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -651,7 +651,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_unlock(&devfreq->lock);
+ 		err = set_freq_table(devfreq);
+ 		if (err < 0)
+-			goto err_out;
++			goto err_dev;
+ 		mutex_lock(&devfreq->lock);
+ 	}
+ 
+@@ -683,16 +683,27 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_out;
+ 	}
+ 
+-	devfreq->trans_table =
+-		devm_kzalloc(&devfreq->dev,
+-			     array3_size(sizeof(unsigned int),
+-					 devfreq->profile->max_state,
+-					 devfreq->profile->max_state),
+-			     GFP_KERNEL);
++	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
++					    array3_size(sizeof(unsigned int),
++					    devfreq->profile->max_state,
++					    devfreq->profile->max_state),
++					    GFP_KERNEL);
++	if (!devfreq->trans_table) {
++		mutex_unlock(&devfreq->lock);
++		err = -ENOMEM;
++		goto err_devfreq;
++	}
++
+ 	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
+-						devfreq->profile->max_state,
+-						sizeof(unsigned long),
+-						GFP_KERNEL);
++					      devfreq->profile->max_state,
++					      sizeof(unsigned long),
++					      GFP_KERNEL);
++	if (!devfreq->time_in_state) {
++		mutex_unlock(&devfreq->lock);
++		err = -ENOMEM;
++		goto err_devfreq;
++	}
++
+ 	devfreq->last_stat_updated = jiffies;
+ 
+ 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
+@@ -726,7 +737,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 
+ err_init:
+ 	mutex_unlock(&devfreq_list_lock);
+-
++err_devfreq:
+ 	devfreq_remove_device(devfreq);
+ 	devfreq = NULL;
+ err_dev:
+-- 
+2.17.0
