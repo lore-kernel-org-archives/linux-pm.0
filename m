@@ -1,47 +1,79 @@
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Subject: [PATCH] thermal/intel_powerclamp: fix __percpu declaration of worker_data
-Date: Sat, 19 Jan 2019 17:15:23 +0100
-Message-ID: <20190119161523.87999-1-luc.vanoostenryck@gmail.com>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Subject: Re: [PATCH 1/5 v2] PM / hibernate: Create snapshot keys handler
+Date: Sun, 20 Jan 2019 18:02:04 +0200
+Message-ID: <20190120160204.GA30478@linux.intel.com>
+References: <4499700.LRS4F2YjjC@tauon.chronox.de>
+ <20190108050358.llsox32hggn2jioe@gondor.apana.org.au>
+ <1565399.7ulKdI1fm5@tauon.chronox.de>
+ <D70458DE-712B-4767-8143-7DC9107689C3@amacapital.net>
+ <1546994671.6077.10.camel@HansenPartnership.com>
+ <CALCETrWTAYpWv73MgAz=NUfvJSLq965fWMYvJnDepJoRBsgt6Q@mail.gmail.com>
+ <20190111140226.GA6448@linux.intel.com>
+ <1547220538.2793.6.camel@HansenPartnership.com>
+ <20190118143348.GB4080@linux.intel.com>
+ <1547845146.2794.69.camel@HansenPartnership.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1547845146.2794.69.camel@HansenPartnership.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Petr Mladek <pmladek@suse.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Stephan Mueller <smueller@chronox.de>, Herbert Xu <herbert@gondor.apana.org.au>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-This variable is declared as:
-	static struct powerclamp_worker_data * __percpu worker_data;
-In other words, a percpu pointer to struct ...
+On Fri, Jan 18, 2019 at 12:59:06PM -0800, James Bottomley wrote:
+> On Fri, 2019-01-18 at 16:33 +0200, Jarkko Sakkinen wrote:
+> > On Fri, Jan 11, 2019 at 07:28:58AM -0800, James Bottomley wrote:
+> > > On Fri, 2019-01-11 at 16:02 +0200, Jarkko Sakkinen wrote:
+> > > > On Tue, Jan 08, 2019 at 05:43:53PM -0800, Andy Lutomirski wrote:
+> > > > > (Also, do we have a sensible story of how the TPM interacts
+> > > > > with hibernation at all?  Presumably we should at least try to
+> > > > > replay the PCR operations that have occurred so that we can
+> > > > > massage the PCRs into the same state post-hibernation.  Also,
+> > > > > do we have any way for the kernel to sign something with the
+> > > > > TPM along with an attestation that the signature was requested
+> > > > > *by the kernel*?  Something like a sub-hierarchy of keys that
+> > > > > the kernel explicitly prevents userspace from accessing?)
+> > > > 
+> > > > Kernel can keep it is own key hierarchy in memory as TPM2 chips
+> > > > allow to offload data in encrypted form and load it to TPM when
+> > > > it needs to use it.
+> > > > 
+> > > > The in-kernel resource manager that I initiated couple years ago
+> > > > provides this type of functionality.
+> > > 
+> > > Actually, the resource manager only keeps volatile objects
+> > > separated when in use not when offloaded.  The problem here is that
+> > > the object needs to be persisted across reboots, so either it gets
+> > > written to the NV area, bypassing the resource manager and making
+> > > it globally visible or it has to get stored in TPM form in the
+> > > hibernation image, meaning anyone with access to the TPM who can
+> > > read the image can extract and load it. Further: anyone with access
+> > > to the TPM can create a bogus sealed key and encrypt a malicious
+> > > hibernation image with it.  So there are two additional problems
+> > > 
+> > >    1. Given that the attacker may have access to the binary form of
+> > > the
+> > >       key, can we make sure only the kernel can get it released?
+> > >    2. How do we prevent an attacker with access to the TPM from
+> > > creating a
+> > >       bogus sealed key?
+> > > 
+> > > This is why I was thinking localities.
+> > 
+> > Why you would want to go for localities and not seal to PCRs?
+> 
+> Because the requested functionality was a key that would be accessible
+> to the kernel and not to user space and also guaranteed created by the
+> kernel.  The only discriminator we have to enforce that is the locality
+> (assuming we reserve a locality as accessible to the kernel but
+> inaccessible to userspace).  PCRs alone can't restrict where the key is
+> accessed or created from.
 
-But this variable not used like so but as a pointer to a percpu
-struct powerclamp_worker_data.
+OK, locality would probably make sense, assuming that the key is stored
+in nvram.
 
-So fix the declaration as:
-	static struct powerclamp_worker_data __percpu *worker_data;
+/Jarkko
 
-This also quiets Sparse's warnings from __verify_pcpu_ptr(), like:
-  494:49: warning: incorrect type in initializer (different address spaces)
-  494:49:    expected void const [noderef] <asn:3> *__vpp_verify
-  494:49:    got struct powerclamp_worker_data *
-
-Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
----
- drivers/thermal/intel/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-index 7571f7c2e..c7cba20bd 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -101,7 +101,7 @@ struct powerclamp_worker_data {
- 	bool clamping;
- };
- 
--static struct powerclamp_worker_data * __percpu worker_data;
-+static struct powerclamp_worker_data __percpu * worker_data;
- static struct thermal_cooling_device *cooling_dev;
- static unsigned long *cpu_clamping_mask;  /* bit map for tracking per cpu
- 					   * clamping kthread worker
--- 
-2.20.0
+/Jarkko
