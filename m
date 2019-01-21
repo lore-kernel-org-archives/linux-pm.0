@@ -1,54 +1,54 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 0/9] cpufreq: Add flag to auto-register as cooling
-Date: Mon, 21 Jan 2019 21:10:25 +0530
-Message-ID: <cover.1548084260.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 1/9] thermal: cpu_cooling: Require thermal core to be compiled in
+Date: Mon, 21 Jan 2019 21:10:26 +0530
+Message-ID: <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
+References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
+References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC
-        support" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, "moderated list:ARM/Mediatek SoC
-        support" <linux-mediatek@lists.infradead.org>
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a flag to be used by cpufreq drivers to tell cpufreq core to
-auto-register themselves as a thermal cooling device.
+The CPU cooling driver (cpu_cooling.c) allows the platform's cpufreq
+driver to register as a cooling device and cool down the platform by
+throttling the CPU frequency. In order to be able to auto-register a
+cpufreq driver as a cooling device from the cpufreq core, we need access
+to code inside cpu_cooling.c which, in turn, accesses code inside
+thermal core.
 
-There series converts over all the drivers except arm_big_little.c.
-Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
-others.
+CPU_FREQ is a bool while THERMAL is tristate.  In some configurations
+(e.g. allmodconfig), CONFIG_THERMAL ends up as a module while
+CONFIG_CPU_FREQ is compiled in. This leads to following error:
 
-Things needing fixing (but not a blocker for the series):
- - Look at how to detect that we're not in IKS mode in arm_big_little's
-   .ready callback.
+drivers/cpufreq/cpufreq.o: In function `cpufreq_offline':
+cpufreq.c:(.text+0x407c): undefined reference to `cpufreq_cooling_unregister'
+drivers/cpufreq/cpufreq.o: In function `cpufreq_online':
+cpufreq.c:(.text+0x70c0): undefined reference to `of_cpufreq_cooling_register'
 
-Changes since v1:
-- Fix compilation failures with allmodconfig
-- Get rid of #ifdef in cpufreq.c
-- Removed miscellaneous patches and sent them separately
-- Merged patches 1 and 2 from v1
+Given that platforms using CPU_THERMAL usually want it compiled-in so it
+is available early in boot, make CPU_THERMAL depend on THERMAL being
+compiled-in instead of allowing it to be a module.
 
-Amit Kucheria (9):
-  thermal: cpu_cooling: Require thermal core to be compiled in
-  cpufreq: Auto-register the driver as a thermal cooling device if asked
-  cpufreq: qcom-hw: Register as a cpufreq cooling device
-  cpufreq: imx6q: Use auto-registration of thermal cooling device
-  cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
-  cpufreq: mediatek: Use auto-registration of thermal cooling device
-  cpufreq: qoriq: Use auto-registration of thermal cooling device
-  cpufreq: scmi: Use auto-registration of thermal cooling device
-  cpufreq: scpi: Use auto-registration of thermal cooling device
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/thermal/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/cpufreq/cpufreq-dt.c       | 14 ++------------
- drivers/cpufreq/cpufreq.c          |  6 ++++++
- drivers/cpufreq/imx6q-cpufreq.c    | 24 ++----------------------
- drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
- drivers/cpufreq/qcom-cpufreq-hw.c  |  3 ++-
- drivers/cpufreq/qoriq-cpufreq.c    | 15 ++-------------
- drivers/cpufreq/scmi-cpufreq.c     | 14 ++------------
- drivers/cpufreq/scpi-cpufreq.c     | 14 ++------------
- drivers/thermal/Kconfig            |  1 +
- include/linux/cpufreq.h            | 25 +++++++++++++++++++++++++
- 10 files changed, 46 insertions(+), 84 deletions(-)
-
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 30323426902e..58bb7d72dc2b 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -152,6 +152,7 @@ config CPU_THERMAL
+ 	bool "generic cpu cooling support"
+ 	depends on CPU_FREQ
+ 	depends on THERMAL_OF
++	depends on THERMAL=y
+ 	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+ 	  reduction. An ACPI version of this already exists
 -- 
 2.17.1
