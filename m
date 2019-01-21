@@ -1,159 +1,82 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH] PM / devfreq: consistent indentation
-Date: Mon, 21 Jan 2019 11:19:40 +0900
-Message-ID: <20190121021940epcms1p57620581b960dba9805dfddee903ccd6c@epcms1p5>
-References: <CGME20190121021940epcms1p57620581b960dba9805dfddee903ccd6c@epcms1p5>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH] cpufreq: Replace open-coded << with BIT()
+Date: Mon, 21 Jan 2019 14:17:37 +0530
+Message-ID: <2501c48872e5fa9c26f06216c19955d70b263a85.1548060067.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "tiny.windzz@gmail.com" <tiny.windzz@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Following up with complaints on inconsistent indentation from
-Yangtao Li, this fixes indentation inconsistency.
+Minor clean-up to use BIT() and keep checkpatch happy. Clean up the
+comment formatting while we're at it to make it easier to read.
 
-In principle, this tries to put arguments aligned to the left
-including the first argument except for in the case where
-the first argument is on the far-right side.
-
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
 ---
- drivers/devfreq/devfreq.c | 49 +++++++++++++++++++++++------------------------
- 1 file changed, 24 insertions(+), 25 deletions(-)
+ include/linux/cpufreq.h | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4af608a..428a1de 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -528,7 +528,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
- 		mutex_lock(&devfreq->lock);
- 		if (!devfreq->stop_polling)
- 			queue_delayed_work(devfreq_wq, &devfreq->work,
--			      msecs_to_jiffies(devfreq->profile->polling_ms));
-+				msecs_to_jiffies(devfreq->profile->polling_ms));
- 	}
- out:
- 	mutex_unlock(&devfreq->lock);
-@@ -537,7 +537,7 @@ EXPORT_SYMBOL(devfreq_interval_update);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c86d6d8bdfed..bd7fbd6a4478 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -346,14 +346,15 @@ struct cpufreq_driver {
+ };
  
- /**
-  * devfreq_notifier_call() - Notify that the device frequency requirements
-- *			   has been changed out of devfreq framework.
-+ *			     has been changed out of devfreq framework.
-  * @nb:		the notifier_block (supposed to be devfreq->nb)
-  * @type:	not used
-  * @devp:	not used
-@@ -683,12 +683,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_out;
- 	}
+ /* flags */
+-#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
+-						   all ->init() calls failed */
+-#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
+-						   kernel "constants" aren't
+-						   affected by frequency
+-						   transitions */
+-#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
+-						   speed mismatches */
++
++/* driver isn't removed even if all ->init() calls failed */
++#define CPUFREQ_STICKY				BIT(0)
++
++/* loops_per_jiffy or other kernel "constants" aren't affected by frequency transitions */
++#define CPUFREQ_CONST_LOOPS			BIT(1)
++
++/* don't warn on suspend/resume speed mismatches */
++#define CPUFREQ_PM_NO_WARN			BIT(2)
  
--	devfreq->trans_table =
--		devm_kzalloc(&devfreq->dev,
--			     array3_size(sizeof(unsigned int),
--					 devfreq->profile->max_state,
--					 devfreq->profile->max_state),
--			     GFP_KERNEL);
-+	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
-+			array3_size(sizeof(unsigned int),
-+				    devfreq->profile->max_state,
-+				    devfreq->profile->max_state),
-+			GFP_KERNEL);
- 	if (!devfreq->trans_table) {
- 		mutex_unlock(&devfreq->lock);
- 		err = -ENOMEM;
-@@ -696,9 +695,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	}
- 
- 	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
--						devfreq->profile->max_state,
--						sizeof(unsigned long),
--						GFP_KERNEL);
-+			devfreq->profile->max_state,
-+			sizeof(unsigned long),
-+			GFP_KERNEL);
- 	if (!devfreq->time_in_state) {
- 		mutex_unlock(&devfreq->lock);
- 		err = -ENOMEM;
-@@ -1184,7 +1183,7 @@ static ssize_t available_governors_show(struct device *d,
- 	 */
- 	if (df->governor->immutable) {
- 		count = scnprintf(&buf[count], DEVFREQ_NAME_LEN,
--				   "%s ", df->governor_name);
-+				  "%s ", df->governor_name);
- 	/*
- 	 * The devfreq device shows the registered governor except for
- 	 * immutable governors such as passive governor .
-@@ -1497,8 +1496,8 @@ EXPORT_SYMBOL(devfreq_recommended_opp);
- 
- /**
-  * devfreq_register_opp_notifier() - Helper function to get devfreq notified
-- *				   for any changes in the OPP availability
-- *				   changes
-+ *				     for any changes in the OPP availability
-+ *				     changes
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
+ /*
+  * This should be set by platforms having multiple clock-domains, i.e.
+@@ -361,14 +362,14 @@ struct cpufreq_driver {
+  * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
+  * governor with different tunables for different clusters.
   */
-@@ -1510,8 +1509,8 @@ EXPORT_SYMBOL(devfreq_register_opp_notifier);
+-#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
++#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY	BIT(3)
  
- /**
-  * devfreq_unregister_opp_notifier() - Helper function to stop getting devfreq
-- *				     notified for any changes in the OPP
-- *				     availability changes anymore.
-+ *				       notified for any changes in the OPP
-+ *				       availability changes anymore.
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
-  *
-@@ -1530,8 +1529,8 @@ static void devm_devfreq_opp_release(struct device *dev, void *res)
- }
+ /*
+  * Driver will do POSTCHANGE notifications from outside of their ->target()
+  * routine and so must set cpufreq_driver->flags with this flag, so that core
+  * can handle them specially.
+  */
+-#define CPUFREQ_ASYNC_NOTIFICATION  (1 << 4)
++#define CPUFREQ_ASYNC_NOTIFICATION		BIT(4)
  
- /**
-- * devm_ devfreq_register_opp_notifier()
-- *		- Resource-managed devfreq_register_opp_notifier()
-+ * devm_devfreq_register_opp_notifier() - Resource-managed
-+ *					  devfreq_register_opp_notifier()
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
+ /*
+  * Set by drivers which want cpufreq core to check if CPU is running at a
+@@ -377,13 +378,13 @@ struct cpufreq_driver {
+  * from the table. And if that fails, we will stop further boot process by
+  * issuing a BUG_ON().
   */
-@@ -1559,8 +1558,8 @@ int devm_devfreq_register_opp_notifier(struct device *dev,
- EXPORT_SYMBOL(devm_devfreq_register_opp_notifier);
+-#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
++#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	BIT(5)
  
- /**
-- * devm_devfreq_unregister_opp_notifier()
-- *		- Resource-managed devfreq_unregister_opp_notifier()
-+ * devm_devfreq_unregister_opp_notifier() - Resource-managed
-+ *					    devfreq_unregister_opp_notifier()
-  * @dev:	The devfreq user device. (parent of devfreq)
-  * @devfreq:	The devfreq object.
+ /*
+  * Set by drivers to disallow use of governors with "dynamic_switching" flag
+  * set.
   */
-@@ -1579,8 +1578,8 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
-  * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-  */
- int devfreq_register_notifier(struct devfreq *devfreq,
--				struct notifier_block *nb,
--				unsigned int list)
-+			      struct notifier_block *nb,
-+			      unsigned int list)
- {
- 	int ret = 0;
+-#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
++#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
  
-@@ -1686,9 +1685,9 @@ EXPORT_SYMBOL(devm_devfreq_register_notifier);
-  * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-  */
- void devm_devfreq_unregister_notifier(struct device *dev,
--				struct devfreq *devfreq,
--				struct notifier_block *nb,
--				unsigned int list)
-+				      struct devfreq *devfreq,
-+				      struct notifier_block *nb,
-+				      unsigned int list)
- {
- 	WARN_ON(devres_release(dev, devm_devfreq_notifier_release,
- 			       devm_devfreq_dev_match, devfreq));
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
 -- 
-2.7.4
+2.17.1
