@@ -1,88 +1,73 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 04/16] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Mon, 21 Jan 2019 15:54:07 +0000
-Message-ID: <20190121155407.gv4cxpg2njqmdlj5@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-5-patrick.bellasi@arm.com>
- <20190121151717.GK27931@hirez.programming.kicks-ass.net>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH 1/3] dt-bindings: fsl: scu: add fallback compatible string
+ for power domain
+Date: Mon, 21 Jan 2019 10:31:00 -0600
+Message-ID: <CAL_Jsq+v+TpgwMhhboo7UKA7bbPNT66QqO10of43gqR--pY4aQ@mail.gmail.com>
+References: <1545148524-658-1-git-send-email-aisheng.dong@nxp.com>
+ <1545148524-658-2-git-send-email-aisheng.dong@nxp.com>
+ <20190111090009.GG32649@dragon> <20190111090653.GH32649@dragon>
+ <AM0PR04MB42119B411244F0B1BB829D9F80850@AM0PR04MB4211.eurprd04.prod.outlook.com>
+ <20190111130311.GA3599@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190121151717.GK27931@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190111130311.GA3599@dragon>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Jan 16:17, Peter Zijlstra wrote:
-> On Tue, Jan 15, 2019 at 10:15:01AM +0000, Patrick Bellasi wrote:
-> > +#ifdef CONFIG_UCLAMP_TASK
-> 
-> > +struct uclamp_bucket {
-> > +	unsigned long value : bits_per(SCHED_CAPACITY_SCALE);
-> > +	unsigned long tasks : BITS_PER_LONG - bits_per(SCHED_CAPACITY_SCALE);
-> > +};
-> 
-> > +struct uclamp_cpu {
-> > +	unsigned int value;
-> 
-> 	/* 4 byte hole */
-> 
-> > +	struct uclamp_bucket bucket[UCLAMP_BUCKETS];
-> > +};
-> 
-> With the default of 5, this UCLAMP_BUCKETS := 6, so struct uclamp_cpu
-> ends up being 7 'unsigned long's, or 56 bytes on 64bit (with a 4 byte
-> hole).
+On Fri, Jan 11, 2019 at 7:03 AM Shawn Guo <shawnguo@kernel.org> wrote:
+>
+> On Fri, Jan 11, 2019 at 10:48:21AM +0000, Aisheng Dong wrote:
+> > Hi Shawn,
+> >
+> > > -----Original Message-----
+> > > From: Shawn Guo [mailto:shawnguo@kernel.org]
+> > > Sent: Friday, January 11, 2019 5:07 PM
+> > >
+> > > On Fri, Jan 11, 2019 at 05:00:11PM +0800, Shawn Guo wrote:
+> > > > On Tue, Dec 18, 2018 at 04:01:20PM +0000, Aisheng Dong wrote:
+> > > > > SCU power domain can be used in the same way by IMX8QXP and
+> > > IMX8QM SoCs.
+> > > > > Let's add a "fsl,scu-pd" fallback compatible string to allow other
+> > > > > SoCs to reuse the common part.
+> > > >
+> > > > This is not the practice we used to match devices with
+> > > > compatibilities, i.e. coding the compatible string with the SoC name
+> > > > that firstly introduces the device, and use the compatible as fallback for new
+> > > SoCs.
+> > >
+> >
+> > This is suggested by Rob that if the future SoCs are likely to be compatible.
+> > Then we can use a general fallback compatible string like "fsl,scu-pd".
+> > https://patchwork.kernel.org/patch/10644815/
+> >
+> > From SCU HW protocol point of view, they're indeed compatible.
+> > Just varies a bit on the domains numbers.
+> > That's why we introduce "fsl,scu-pd".
+> > But still keep SoC specific compatible string in case any special tricks
+> > to ensure the ABI stability.
+> >
+> > How do you think?
+>
+> Unless Rob is against the practice we have been used for long time on
+> i.MX, I would keep using it for i.MX8, i.e. instead of introducing a
+> generic compatible for fallback, simply falling on the compatible SoC
+> specified IP block.
 
-Yes, that's dimensioned and configured to fit into a single cache line
-for all the possible 5 (by default) clamp values of a clamp index
-(i.e. min or max util).
+That is certainly my preference and the traditional way to do
+compatible in DT, but some reason folks don't like having old SoC
+names in their shiny new SoC DT. So either way is fine. But I'd follow
+what you do for the rest of i.MX which I guess is what Shawn suggests.
 
-> 
-> > +#endif /* CONFIG_UCLAMP_TASK */
-> > +
-> >  /*
-> >   * This is the main, per-CPU runqueue data structure.
-> >   *
-> > @@ -835,6 +879,11 @@ struct rq {
-> >  	unsigned long		nr_load_updates;
-> >  	u64			nr_switches;
-> >  
-> > +#ifdef CONFIG_UCLAMP_TASK
-> > +	/* Utilization clamp values based on CPU's RUNNABLE tasks */
-> > +	struct uclamp_cpu	uclamp[UCLAMP_CNT] ____cacheline_aligned;
-> 
-> Which makes this 112 bytes with 8 bytes in 2 holes, which is short of 2
-> 64 byte cachelines.
-
-Right, we have 2 cache lines where:
-- the first $L tracks 5 different util_min values
-- the second $L tracks 5 different util_max values
-
-> Is that the best layout?
-
-It changed few times and that's what I found more reasonable for both
-for fitting the default configuration and also for code readability.
-Notice that we access RQ and SE clamp values with the same patter,
-for example:
-
-   {rq|p}->uclamp[clamp_idx].value
-
-Are you worried about the holes or something else specific ?
-
-> > +#endif
-> > +
-> >  	struct cfs_rq		cfs;
-> >  	struct rt_rq		rt;
-> >  	struct dl_rq		dl;
-> > -- 
-> > 2.19.2
-> > 
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Rob
