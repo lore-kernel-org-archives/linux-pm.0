@@ -1,115 +1,138 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
- ktime based accounting
-Date: Mon, 21 Jan 2019 07:24:20 -0800
-Message-ID: <43334acb-230c-c3e3-6b67-0813467c891f@roeck-us.net>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
- <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
- <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com>
- <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
- <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 03/16] sched/core: uclamp: Map TASK's clamp values
+ into CPU's clamp buckets
+Date: Mon, 21 Jan 2019 15:34:32 +0000
+Message-ID: <20190121153432.vlhgxvd2otvu24st@e110439-lin>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-4-patrick.bellasi@arm.com>
+ <20190121150507.GJ27931@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190121150507.GJ27931@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 1/21/19 7:17 AM, Vincent Guittot wrote:
-> On Fri, 18 Jan 2019 at 13:08, Guenter Roeck <linux@roeck-us.net> wrote:
->>
->> On 1/18/19 3:05 AM, Rafael J. Wysocki wrote:
->>> On Fri, Jan 18, 2019 at 11:53 AM Vincent Guittot
->>> <vincent.guittot@linaro.org> wrote:
->>>>
->>>> On Fri, 18 Jan 2019 at 11:42, Vincent Guittot
->>>> <vincent.guittot@linaro.org> wrote:
->>>>>
->>>>> Hi Guenter,
->>>>>
->>>>> Le Thursday 17 Jan 2019 à 14:16:28 (-0800), Guenter Roeck a écrit :
->>>>>> On Fri, Dec 21, 2018 at 11:33:56AM +0100, Vincent Guittot wrote:
->>>>>>> From: Thara Gopinath <thara.gopinath@linaro.org>
->>>>>>>
->>>>>>> This patch replaces jiffies based accounting for runtime_active_time
->>>>>>> and runtime_suspended_time with ktime base accounting. This makes the
->>>>>>> runtime debug counters inline with genpd and other pm subsytems which
->>>>>>> uses ktime based accounting.
->>>>>>>
->>>>>>> timekeeping is initialized before pm_runtime_init() so ktime_get() will
->>>>>>> be ready before first call. In fact, timekeeping_init() is called early
->>>>>>> in start_kernel() which is way before driver_init() (and that's when
->>>>>>> devices can start to be initialized) called from rest_init() via
->>>>>>> kernel_init_freeable() and do_basic_setup().
->>>>>>>
->>>>>> This is not (always) correct. My qemu "collie" boot test fails with this
->>>>>> patch applied. Reverting the patch fixes the problem. Bisect log attached.
->>>>>>
->>>>>
->>>>> Can you try the patch below ?
->>>>> ktime_get_mono_fast_ns() has the advantage of being init with dummy clock so
->>>>> it can be used at early_init.
->>>>
->>>> Another possibility would be delay the init of the gpiochip
->>>
->>> Well, right.
->>>
->>> Initializing devices before timekeeping doesn't feel particularly
->>> robust from the design perspective.
->>>
->>> How exactly does that happen?
->>>
->>
->> With an added 'initialized' flag and backtrace into the timekeeping code,
->> with the change suggested earlier applied:
->>
->> ------------[ cut here ]------------
->> WARNING: CPU: 0 PID: 0 at kernel/time/timekeeping.c:453 ktime_get_mono_fast_ns+0x114/0x12c
->> Timekeeping not initialized
->> CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc2-next-20190117-dirty #2
->> Hardware name: Sharp-Collie
->> Backtrace:
->> [<c000dce8>] (dump_backtrace) from [<c000df78>] (show_stack+0x18/0x1c)
->>    r7:00000009 r6:00000000 r5:c065ba90 r4:c06d3e54
->> [<c000df60>] (show_stack) from [<c0588930>] (dump_stack+0x20/0x28)
->> [<c0588910>] (dump_stack) from [<c0018ae8>] (__warn+0xcc/0xf4)
->> [<c0018a1c>] (__warn) from [<c0018b5c>] (warn_slowpath_fmt+0x4c/0x6c)
->>    r8:df407b08 r7:00000000 r6:c0c01550 r5:c065bad8 r4:c06dd028
->> [<c0018b14>] (warn_slowpath_fmt) from [<c0069e2c>] (ktime_get_mono_fast_ns+0x114/0x12c)
->>    r3:00000000 r2:c065bad8
->>    r5:00000000 r4:df407b08
->> [<c0069d18>] (ktime_get_mono_fast_ns) from [<c03c7810>] (pm_runtime_init+0x38/0xb8)
->>    r9:c06c9a5c r8:df407b08 r7:00000000 r6:c0c01550 r5:00000000 r4:df407b08
->> [<c03c77d8>] (pm_runtime_init) from [<c03b6a34>] (device_initialize+0xb0/0xec)
->>    r7:00000000 r6:c0c01550 r5:00000000 r4:df407b08
->> [<c03b6984>] (device_initialize) from [<c0366d30>] (gpiochip_add_data_with_key+0x9c/0x884)
->>    r7:00000000 r6:c06fca34 r5:00000000 r4:00000000
->> [<c0366c94>] (gpiochip_add_data_with_key) from [<c06b9708>] (sa1100_init_gpio+0x40/0x98)
->>    r10:dfffcd60 r9:c06c9a5c r8:c06dd020 r7:c06dd028 r6:ffffffff r5:00000000
->>    r4:c06fca34
->> [<c06b96c8>] (sa1100_init_gpio) from [<c06ae58c>] (sa1100_init_irq+0x2c/0x3c)
->>    r7:c06dd028 r6:ffffffff r5:c0713300 r4:c06e1070
->> [<c06ae560>] (sa1100_init_irq) from [<c06aab1c>] (init_IRQ+0x20/0x28)
->>    r5:c0713300 r4:00000000
->> [<c06aaafc>] (init_IRQ) from [<c06a7cd0>] (start_kernel+0x254/0x4cc)
->> [<c06a7a7c>] (start_kernel) from [<00000000>] (  (null))
->>    r10:0000717f r9:6901b119 r8:c0000100 r7:00000092 r6:0000313d r5:00000053
->>    r4:c06a7330
->> ---[ end trace 91e1bd00dd7cce32 ]---
+On 21-Jan 16:05, Peter Zijlstra wrote:
+> On Tue, Jan 15, 2019 at 10:15:00AM +0000, Patrick Bellasi wrote:
+> > +static inline unsigned int uclamp_bucket_value(unsigned int clamp_value)
+> > +{
+> > +#define UCLAMP_BUCKET_DELTA (SCHED_CAPACITY_SCALE / CONFIG_UCLAMP_BUCKETS_COUNT)
+> > +#define UCLAMP_BUCKET_UPPER (UCLAMP_BUCKET_DELTA * CONFIG_UCLAMP_BUCKETS_COUNT)
+> > +
+> > +	if (clamp_value >= UCLAMP_BUCKET_UPPER)
+> > +		return SCHED_CAPACITY_SCALE;
+> > +
+> > +	return UCLAMP_BUCKET_DELTA * (clamp_value / UCLAMP_BUCKET_DELTA);
+> > +}
 > 
-> Does it means that only the pm_runtime_init is done before
-> timekeeping_init() but no update_pm_runtime_accounting() ?
-> In this case, we can keep using ktimeçget in
-> update_pm_runtime_accounting() and find a solution to deal with
-> early_call of pm_runtime_init()
+> > +static void uclamp_bucket_inc(struct uclamp_se *uc_se, unsigned int clamp_id,
+> > +			      unsigned int clamp_value)
+> > +{
+> > +	union uclamp_map *uc_maps = &uclamp_maps[clamp_id][0];
+> > +	unsigned int prev_bucket_id = uc_se->bucket_id;
+> > +	union uclamp_map uc_map_old, uc_map_new;
+> > +	unsigned int free_bucket_id;
+> > +	unsigned int bucket_value;
+> > +	unsigned int bucket_id;
+> > +
+> > +	bucket_value = uclamp_bucket_value(clamp_value);
 > 
+> Aahh!!
+> 
+> So why don't you do:
+> 
+> 	bucket_id = clamp_value / UCLAMP_BUCKET_DELTA;
+> 	bucket_value = bucket_id * UCLAMP_BUCKET_DELTA;
 
-For this platform that is correct. I can't answer for the generic case.
+The mapping done here is meant to keep at the beginning of the cache
+line all and only the buckets we use. Let say we have configured the
+system to track 20 buckets, to have a 5% clamping resolution, but then
+we use only two values at run-time, e.g. 13% and 87%.
 
-Guenter
+With the mapping done here the per-CPU variables will have to consider
+only 2 buckets:
+
+ bucket_#00: clamp value: 10% (mapped)
+ bucket_#01: clamp value: 85% (mapped)
+ bucket_#02: (free)
+ ...
+ bucket_#20: (free)
+
+While without the mapping we will have:
+
+ bucket_#00: (free)
+ bucket_#01: clamp value: 10 (mapped)
+ bucket_#02: (free)
+ ... big hole crossing a cache line ....
+ bucket_#16: (free)
+ bucket_#17: clamp value: 85 (mapped)
+ bucket_#18: (free)
+ ...
+ bucket_#20: (free)
+
+Addressing is simple without mapping but we can have performance
+issues in the hot-path, since sometimes we need to scan all the
+buckets to figure out the new max.
+
+The mapping done here is meant to keep all the used slots at the very
+beginning of a cache line to speed up that max computation when
+required.
+
+> 
+> > +	do {
+> > +		/* Find the bucket_id of an already mapped clamp bucket... */
+> > +		free_bucket_id = UCLAMP_BUCKETS;
+> > +		for (bucket_id = 0; bucket_id < UCLAMP_BUCKETS; ++bucket_id) {
+> > +			uc_map_old.data = atomic_long_read(&uc_maps[bucket_id].adata);
+> > +			if (free_bucket_id == UCLAMP_BUCKETS && !uc_map_old.se_count)
+> > +				free_bucket_id = bucket_id;
+> > +			if (uc_map_old.value == bucket_value)
+> > +				break;
+> > +		}
+> > +
+> > +		/* ... or allocate a new clamp bucket */
+> > +		if (bucket_id >= UCLAMP_BUCKETS) {
+> > +			/*
+> > +			 * A valid clamp bucket must always be available.
+> > +			 * If we cannot find one: refcounting is broken and we
+> > +			 * warn once. The sched_entity will be tracked in the
+> > +			 * fast-path using its previous clamp bucket, or not
+> > +			 * tracked at all if not yet mapped (i.e. it's new).
+> > +			 */
+> > +			if (unlikely(free_bucket_id == UCLAMP_BUCKETS)) {
+> > +				SCHED_WARN_ON(free_bucket_id == UCLAMP_BUCKETS);
+> > +				return;
+> > +			}
+> > +			bucket_id = free_bucket_id;
+> > +			uc_map_old.data = atomic_long_read(&uc_maps[bucket_id].adata);
+> > +		}
+> 
+> And then skip all this?
+> > +
+> > +		uc_map_new.se_count = uc_map_old.se_count + 1;
+> > +		uc_map_new.value = bucket_value;
+> > +
+> > +	} while (!atomic_long_try_cmpxchg(&uc_maps[bucket_id].adata,
+> > +					  &uc_map_old.data, uc_map_new.data));
+> > +
+> > +	uc_se->value = clamp_value;
+> > +	uc_se->bucket_id = bucket_id;
+> > +
+> > +	if (uc_se->mapped)
+> > +		uclamp_bucket_dec(clamp_id, prev_bucket_id);
+> > +
+> > +	/*
+> > +	 * Task's sched_entity are refcounted in the fast-path only when they
+> > +	 * have got a valid clamp_bucket assigned.
+> > +	 */
+> > +	uc_se->mapped = true;
+> > +}
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
