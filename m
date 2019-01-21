@@ -1,218 +1,159 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: isp1704: switch to gpiod API
-Date: Sun, 20 Jan 2019 22:25:23 +0100
-Message-ID: <20190120212523.5f4zovssz6vihxsf@earth.universe>
-References: <20181213013858.23996-1-sebastian.reichel@collabora.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: consistent indentation
+Date: Mon, 21 Jan 2019 11:19:40 +0900
+Message-ID: <20190121021940epcms1p57620581b960dba9805dfddee903ccd6c@epcms1p5>
+References: <CGME20190121021940epcms1p57620581b960dba9805dfddee903ccd6c@epcms1p5>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="esxcvnyauucu4vms"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181213013858.23996-1-sebastian.reichel@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "tiny.windzz@gmail.com" <tiny.windzz@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Following up with complaints on inconsistent indentation from
+Yangtao Li, this fixes indentation inconsistency.
 
---esxcvnyauucu4vms
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In principle, this tries to put arguments aligned to the left
+including the first argument except for in the case where
+the first argument is on the far-right side.
 
-Hi,
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ drivers/devfreq/devfreq.c | 49 +++++++++++++++++++++++------------------------
+ 1 file changed, 24 insertions(+), 25 deletions(-)
 
-On Thu, Dec 13, 2018 at 02:38:58AM +0100, Sebastian Reichel wrote:
-> This migrates isp1704 driver from old GPIO API to new descriptor
-> based GPIO API and drops useless platform data as a side-effect.
->=20
-> Migration is simple, since all mainline users are DT based and
-> DT API does not change. Out of tree users of the platform data
-> need to migrate to gpiod_lookup_table as described here:
->=20
-> Documentation/driver-api/gpio/board.rst
->=20
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> ---
-> Patch has been tested on Nokia N900.
-> ---
-
-Queued to power-supply-next.
-
--- Sebastian
-
->  drivers/power/supply/isp1704_charger.c | 60 ++++++--------------------
->  include/linux/power/isp1704_charger.h  | 30 -------------
->  2 files changed, 12 insertions(+), 78 deletions(-)
->  delete mode 100644 include/linux/power/isp1704_charger.h
->=20
-> diff --git a/drivers/power/supply/isp1704_charger.c b/drivers/power/suppl=
-y/isp1704_charger.c
-> index 95af5f305838..a63cb5dcfa08 100644
-> --- a/drivers/power/supply/isp1704_charger.c
-> +++ b/drivers/power/supply/isp1704_charger.c
-> @@ -30,13 +30,12 @@
->  #include <linux/power_supply.h>
->  #include <linux/delay.h>
->  #include <linux/of.h>
-> -#include <linux/of_gpio.h>
-> =20
-> +#include <linux/gpio/consumer.h>
->  #include <linux/usb/otg.h>
->  #include <linux/usb/ulpi.h>
->  #include <linux/usb/ch9.h>
->  #include <linux/usb/gadget.h>
-> -#include <linux/power/isp1704_charger.h>
-> =20
->  /* Vendor specific Power Control register */
->  #define ISP1704_PWR_CTRL		0x3d
-> @@ -60,6 +59,7 @@ struct isp1704_charger {
->  	struct device			*dev;
->  	struct power_supply		*psy;
->  	struct power_supply_desc	psy_desc;
-> +	struct gpio_desc		*enable_gpio;
->  	struct usb_phy			*phy;
->  	struct notifier_block		nb;
->  	struct work_struct		work;
-> @@ -81,18 +81,9 @@ static inline int isp1704_write(struct isp1704_charger=
- *isp, u32 reg, u32 val)
->  	return usb_phy_io_write(isp->phy, val, reg);
->  }
-> =20
-> -/*
-> - * Disable/enable the power from the isp1704 if a function for it
-> - * has been provided with platform data.
-> - */
->  static void isp1704_charger_set_power(struct isp1704_charger *isp, bool =
-on)
->  {
-> -	struct isp1704_charger_data	*board =3D isp->dev->platform_data;
-> -
-> -	if (board && board->set_power)
-> -		board->set_power(on);
-> -	else if (board)
-> -		gpio_set_value(board->enable_gpio, on);
-> +	gpiod_set_value(isp->enable_gpio, on);
->  }
-> =20
->  /*
-> @@ -405,46 +396,19 @@ static int isp1704_charger_probe(struct platform_de=
-vice *pdev)
->  	int			ret =3D -ENODEV;
->  	struct power_supply_config psy_cfg =3D {};
-> =20
-> -	struct isp1704_charger_data *pdata =3D dev_get_platdata(&pdev->dev);
-> -	struct device_node *np =3D pdev->dev.of_node;
-> -
-> -	if (np) {
-> -		int gpio =3D of_get_named_gpio(np, "nxp,enable-gpio", 0);
-> -
-> -		if (gpio < 0) {
-> -			dev_err(&pdev->dev, "missing DT GPIO nxp,enable-gpio\n");
-> -			return gpio;
-> -		}
-> -
-> -		pdata =3D devm_kzalloc(&pdev->dev,
-> -			sizeof(struct isp1704_charger_data), GFP_KERNEL);
-> -		if (!pdata) {
-> -			ret =3D -ENOMEM;
-> -			goto fail0;
-> -		}
-> -		pdata->enable_gpio =3D gpio;
-> -
-> -		dev_info(&pdev->dev, "init gpio %d\n", pdata->enable_gpio);
-> -
-> -		ret =3D devm_gpio_request_one(&pdev->dev, pdata->enable_gpio,
-> -					GPIOF_OUT_INIT_HIGH, "isp1704_reset");
-> -		if (ret) {
-> -			dev_err(&pdev->dev, "gpio request failed\n");
-> -			goto fail0;
-> -		}
-> -	}
-> -
-> -	if (!pdata) {
-> -		dev_err(&pdev->dev, "missing platform data!\n");
-> -		return -ENODEV;
-> -	}
-> -
-> -
->  	isp =3D devm_kzalloc(&pdev->dev, sizeof(*isp), GFP_KERNEL);
->  	if (!isp)
->  		return -ENOMEM;
-> =20
-> -	if (np)
-> +	isp->enable_gpio =3D devm_gpiod_get(&pdev->dev, "nxp,enable",
-> +					  GPIOD_OUT_HIGH);
-> +	if (IS_ERR(isp->enable_gpio)) {
-> +		ret =3D PTR_ERR(isp->enable_gpio);
-> +		dev_err(&pdev->dev, "Could not get reset gpio: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	if (pdev->dev.of_node)
->  		isp->phy =3D devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
->  	else
->  		isp->phy =3D devm_usb_get_phy(&pdev->dev, USB_PHY_TYPE_USB2);
-> diff --git a/include/linux/power/isp1704_charger.h b/include/linux/power/=
-isp1704_charger.h
-> deleted file mode 100644
-> index 0105d9e7af85..000000000000
-> --- a/include/linux/power/isp1704_charger.h
-> +++ /dev/null
-> @@ -1,30 +0,0 @@
-> -/*
-> - * ISP1704 USB Charger Detection driver
-> - *
-> - * Copyright (C) 2011 Nokia Corporation
-> - *
-> - * This program is free software; you can redistribute it and/or modify
-> - * it under the terms of the GNU General Public License as published by
-> - * the Free Software Foundation; either version 2 of the License, or
-> - * (at your option) any later version.
-> - *
-> - * This program is distributed in the hope that it will be useful,
-> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> - * GNU General Public License for more details.
-> - *
-> - * You should have received a copy of the GNU General Public License
-> - * along with this program; if not, write to the Free Software
-> - * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 U=
-SA
-> - */
-> -
-> -
-> -#ifndef __ISP1704_CHARGER_H
-> -#define __ISP1704_CHARGER_H
-> -
-> -struct isp1704_charger_data {
-> -	void		(*set_power)(bool on);
-> -	int		enable_gpio;
-> -};
-> -
-> -#endif
-> --=20
-> 2.19.2
->=20
-
---esxcvnyauucu4vms
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxE50MACgkQ2O7X88g7
-+po4pQ//e7qYawTJsbwZB3WKbzbyGC//u56PvmGvU5awFJU4142TTZDh0ABBCBEJ
-2yxrQ1WvND1s0IoLfxgni1M6hI+FZKPjunoFDvCR1WrubATnRLwp+BN7l9CPJ/um
-LPDeNd60JsQg/p+Lp7t80by+aD8D3XJZ6ZSHuf2gY084FwKuJKiG203FHyvRrfBa
-m+ofyg4EdIkbuVQfEXM80F2X9W1emHLNN5faY3lBv4G5YoKh3egt53b5B5yUOh83
-1/zzseS67GVMrFMpflRkiJDitT1J59ILuZWM03RyMV6OdYRdejFIzbr7dqNrhRY6
-EevsB4IdwNvu0eGOo7lN2F9vm0nUSUJOeRrkr9i6vMF2mHVC1rdOc86RuOXU2Rbv
-EPk/duhN7xdj9LWIznPf+aGVr1/n3jEyZUZnoB5U6dl9LSrTxZuVme1NMwsRR4+T
-DIwx2a0/KDPiD72SynVLIhqnSr5ucoTcHRLSnbEdL5N7GGVu7PNQAstS//XEFBox
-FR4kh5AlhszgmhVj0O0lvmq2xoBByDeyjzL5aEcR3/4EjMiGvS2pSreZ0Teulzly
-xbi+N+E7JGmI4tjkQRSe0xeFtr5MIFbdrGwwDIc9QCdCPakcGuwnyjwm0rWzTkfp
-uhrRmSSOjdSjr5zD+pbK8YXvcwlI5KXOLDI8v2g51IubBz2FAwY=
-=X9W9
------END PGP SIGNATURE-----
-
---esxcvnyauucu4vms--
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 4af608a..428a1de 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -528,7 +528,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
+ 		mutex_lock(&devfreq->lock);
+ 		if (!devfreq->stop_polling)
+ 			queue_delayed_work(devfreq_wq, &devfreq->work,
+-			      msecs_to_jiffies(devfreq->profile->polling_ms));
++				msecs_to_jiffies(devfreq->profile->polling_ms));
+ 	}
+ out:
+ 	mutex_unlock(&devfreq->lock);
+@@ -537,7 +537,7 @@ EXPORT_SYMBOL(devfreq_interval_update);
+ 
+ /**
+  * devfreq_notifier_call() - Notify that the device frequency requirements
+- *			   has been changed out of devfreq framework.
++ *			     has been changed out of devfreq framework.
+  * @nb:		the notifier_block (supposed to be devfreq->nb)
+  * @type:	not used
+  * @devp:	not used
+@@ -683,12 +683,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_out;
+ 	}
+ 
+-	devfreq->trans_table =
+-		devm_kzalloc(&devfreq->dev,
+-			     array3_size(sizeof(unsigned int),
+-					 devfreq->profile->max_state,
+-					 devfreq->profile->max_state),
+-			     GFP_KERNEL);
++	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
++			array3_size(sizeof(unsigned int),
++				    devfreq->profile->max_state,
++				    devfreq->profile->max_state),
++			GFP_KERNEL);
+ 	if (!devfreq->trans_table) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -ENOMEM;
+@@ -696,9 +695,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	}
+ 
+ 	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
+-						devfreq->profile->max_state,
+-						sizeof(unsigned long),
+-						GFP_KERNEL);
++			devfreq->profile->max_state,
++			sizeof(unsigned long),
++			GFP_KERNEL);
+ 	if (!devfreq->time_in_state) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -ENOMEM;
+@@ -1184,7 +1183,7 @@ static ssize_t available_governors_show(struct device *d,
+ 	 */
+ 	if (df->governor->immutable) {
+ 		count = scnprintf(&buf[count], DEVFREQ_NAME_LEN,
+-				   "%s ", df->governor_name);
++				  "%s ", df->governor_name);
+ 	/*
+ 	 * The devfreq device shows the registered governor except for
+ 	 * immutable governors such as passive governor .
+@@ -1497,8 +1496,8 @@ EXPORT_SYMBOL(devfreq_recommended_opp);
+ 
+ /**
+  * devfreq_register_opp_notifier() - Helper function to get devfreq notified
+- *				   for any changes in the OPP availability
+- *				   changes
++ *				     for any changes in the OPP availability
++ *				     changes
+  * @dev:	The devfreq user device. (parent of devfreq)
+  * @devfreq:	The devfreq object.
+  */
+@@ -1510,8 +1509,8 @@ EXPORT_SYMBOL(devfreq_register_opp_notifier);
+ 
+ /**
+  * devfreq_unregister_opp_notifier() - Helper function to stop getting devfreq
+- *				     notified for any changes in the OPP
+- *				     availability changes anymore.
++ *				       notified for any changes in the OPP
++ *				       availability changes anymore.
+  * @dev:	The devfreq user device. (parent of devfreq)
+  * @devfreq:	The devfreq object.
+  *
+@@ -1530,8 +1529,8 @@ static void devm_devfreq_opp_release(struct device *dev, void *res)
+ }
+ 
+ /**
+- * devm_ devfreq_register_opp_notifier()
+- *		- Resource-managed devfreq_register_opp_notifier()
++ * devm_devfreq_register_opp_notifier() - Resource-managed
++ *					  devfreq_register_opp_notifier()
+  * @dev:	The devfreq user device. (parent of devfreq)
+  * @devfreq:	The devfreq object.
+  */
+@@ -1559,8 +1558,8 @@ int devm_devfreq_register_opp_notifier(struct device *dev,
+ EXPORT_SYMBOL(devm_devfreq_register_opp_notifier);
+ 
+ /**
+- * devm_devfreq_unregister_opp_notifier()
+- *		- Resource-managed devfreq_unregister_opp_notifier()
++ * devm_devfreq_unregister_opp_notifier() - Resource-managed
++ *					    devfreq_unregister_opp_notifier()
+  * @dev:	The devfreq user device. (parent of devfreq)
+  * @devfreq:	The devfreq object.
+  */
+@@ -1579,8 +1578,8 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
+  * @list:	DEVFREQ_TRANSITION_NOTIFIER.
+  */
+ int devfreq_register_notifier(struct devfreq *devfreq,
+-				struct notifier_block *nb,
+-				unsigned int list)
++			      struct notifier_block *nb,
++			      unsigned int list)
+ {
+ 	int ret = 0;
+ 
+@@ -1686,9 +1685,9 @@ EXPORT_SYMBOL(devm_devfreq_register_notifier);
+  * @list:	DEVFREQ_TRANSITION_NOTIFIER.
+  */
+ void devm_devfreq_unregister_notifier(struct device *dev,
+-				struct devfreq *devfreq,
+-				struct notifier_block *nb,
+-				unsigned int list)
++				      struct devfreq *devfreq,
++				      struct notifier_block *nb,
++				      unsigned int list)
+ {
+ 	WARN_ON(devres_release(dev, devm_devfreq_notifier_release,
+ 			       devm_devfreq_dev_match, devfreq));
+-- 
+2.7.4
