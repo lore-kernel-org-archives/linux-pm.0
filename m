@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 2/9] cpufreq: Auto-register the driver as a thermal cooling device if asked
-Date: Mon, 21 Jan 2019 21:10:27 +0530
-Message-ID: <0036de796308b8919eac74a9a910f0d7b9c0cbf8.1548084260.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 6/9] cpufreq: mediatek: Use auto-registration of thermal cooling device
+Date: Mon, 21 Jan 2019 21:10:31 +0530
+Message-ID: <4253d7a24e9c85ca24cceef599ab8da8682e0bee.1548084260.git.amit.kucheria@linaro.org>
 References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
@@ -9,108 +9,76 @@ In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
 References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Tao Wang <kevin.wangtao@hisilicon.com>, linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Sean Wang <sean.wang@mediatek.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-All cpufreq drivers do similar things to register as a cooling device.
-Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-to register the cooling device on their behalf. This allows us to get
-rid of duplicated code in the drivers.
+Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
+automatically register as a thermal cooling device.
 
-In order to allow this, we add a struct thermal_cooling_device pointer
-to struct cpufreq_policy so that drivers don't need to store it in a
-private data structure.
+This allows removal of boiler plate code from the driver.
 
-Suggested-by: Stephen Boyd <swboyd@chromium.org>
-Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/cpufreq/cpufreq.c |  6 ++++++
- include/linux/cpufreq.h   | 25 +++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e35a886e00bc..cf1be057caf4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1318,6 +1318,9 @@ static int cpufreq_online(unsigned int cpu)
- 	if (cpufreq_driver->ready)
- 		cpufreq_driver->ready(policy);
- 
-+	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
-+		register_cooling_device(policy);
-+
- 	pr_debug("initialization complete\n");
- 
- 	return 0;
-@@ -1405,6 +1408,9 @@ static int cpufreq_offline(unsigned int cpu)
- 		goto unlock;
- 	}
- 
-+	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
-+		unregister_cooling_device(policy);
-+
- 	if (cpufreq_driver->stop_cpu)
- 		cpufreq_driver->stop_cpu(policy);
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index bd7fbd6a4478..02fc9f210aee 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -13,6 +13,7 @@
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index eb8920d39818..9a937f4c63e7 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -14,7 +14,6 @@
  
  #include <linux/clk.h>
+ #include <linux/cpu.h>
+-#include <linux/cpu_cooling.h>
+ #include <linux/cpufreq.h>
  #include <linux/cpumask.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/completion.h>
- #include <linux/kobject.h>
- #include <linux/notifier.h>
-@@ -151,6 +152,11 @@ struct cpufreq_policy {
+ #include <linux/module.h>
+@@ -48,7 +47,6 @@ struct mtk_cpu_dvfs_info {
+ 	struct regulator *sram_reg;
+ 	struct clk *cpu_clk;
+ 	struct clk *inter_clk;
+-	struct thermal_cooling_device *cdev;
+ 	struct list_head list_head;
+ 	int intermediate_voltage;
+ 	bool need_voltage_tracking;
+@@ -307,13 +305,6 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
  
- 	/* For cpufreq driver's internal use */
- 	void			*driver_data;
-+
-+#ifdef CONFIG_CPU_THERMAL
-+	/* Pointer to the cooling device if used for thermal mitigation */
-+	struct thermal_cooling_device *cdev;
-+#endif
+ #define DYNAMIC_POWER "dynamic-power-coefficient"
+ 
+-static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+-{
+-	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+-
+-	info->cdev = of_cpufreq_cooling_register(policy);
+-}
+-
+ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+ {
+ 	struct device *cpu_dev;
+@@ -472,7 +463,6 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+ 
+-	cpufreq_cooling_unregister(info->cdev);
+ 	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
+ 
+ 	return 0;
+@@ -480,13 +470,13 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+ 
+ static struct cpufreq_driver mtk_cpufreq_driver = {
+ 	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+-		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
++		 CPUFREQ_AUTO_REGISTER_COOLING_DEV,
+ 	.verify = cpufreq_generic_frequency_table_verify,
+ 	.target_index = mtk_cpufreq_set_target,
+ 	.get = cpufreq_generic_get,
+ 	.init = mtk_cpufreq_init,
+ 	.exit = mtk_cpufreq_exit,
+-	.ready = mtk_cpufreq_ready,
+ 	.name = "mtk-cpufreq",
+ 	.attr = cpufreq_generic_attr,
  };
- 
- /* Only for ACPI */
-@@ -386,6 +392,12 @@ struct cpufreq_driver {
-  */
- #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
- 
-+/*
-+ * Set by drivers that want the core to automatically register the cpufreq
-+ * driver as a thermal cooling device.
-+ */
-+#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
-+
- int cpufreq_register_driver(struct cpufreq_driver *driver_data);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
- 
-@@ -415,6 +427,19 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
- 			policy->cpuinfo.max_freq);
- }
- 
-+#ifdef CONFIG_CPU_THERMAL
-+static inline void register_cooling_device(struct cpufreq_policy *policy) {
-+	policy->cdev = of_cpufreq_cooling_register(policy);
-+}
-+
-+static inline void unregister_cooling_device(struct cpufreq_policy *policy) {
-+	cpufreq_cooling_unregister(policy->cdev);
-+	policy->cdev = NULL;
-+}
-+#else
-+static inline void register_cooling_device(struct cpufreq_policy *policy) {}
-+static inline void unregister_cooling_device(struct cpufreq_policy *policy) {}
-+#endif
- #ifdef CONFIG_CPU_FREQ
- void cpufreq_suspend(void);
- void cpufreq_resume(void);
 -- 
 2.17.1
