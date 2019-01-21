@@ -1,96 +1,116 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
- clamp changes
-Date: Mon, 21 Jan 2019 15:44:12 +0000
-Message-ID: <20190121154412.fak2t2iquj3aixtu@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-6-patrick.bellasi@arm.com>
- <20190121153308.GL27931@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 2/9] cpufreq: Auto-register the driver as a thermal cooling device if asked
+Date: Mon, 21 Jan 2019 21:10:27 +0530
+Message-ID: <0036de796308b8919eac74a9a910f0d7b9c0cbf8.1548084260.git.amit.kucheria@linaro.org>
+References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190121153308.GL27931@hirez.programming.kicks-ass.net>
+In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
+References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Tao Wang <kevin.wangtao@hisilicon.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Jan 16:33, Peter Zijlstra wrote:
-> On Tue, Jan 15, 2019 at 10:15:02AM +0000, Patrick Bellasi wrote:
-> 
-> > +static inline void
-> > +uclamp_task_update_active(struct task_struct *p, unsigned int clamp_id)
-> > +{
-> > +	struct rq_flags rf;
-> > +	struct rq *rq;
-> > +
-> > +	/*
-> > +	 * Lock the task and the CPU where the task is (or was) queued.
-> > +	 *
-> > +	 * We might lock the (previous) rq of a !RUNNABLE task, but that's the
-> > +	 * price to pay to safely serialize util_{min,max} updates with
-> > +	 * enqueues, dequeues and migration operations.
-> > +	 * This is the same locking schema used by __set_cpus_allowed_ptr().
-> > +	 */
-> > +	rq = task_rq_lock(p, &rf);
-> > +
-> > +	/*
-> > +	 * Setting the clamp bucket is serialized by task_rq_lock().
-> > +	 * If the task is not yet RUNNABLE and its task_struct is not
-> > +	 * affecting a valid clamp bucket, the next time it's enqueued,
-> > +	 * it will already see the updated clamp bucket value.
-> > +	 */
-> > +	if (!p->uclamp[clamp_id].active)
-> > +		goto done;
-> > +
-> > +	uclamp_cpu_dec_id(p, rq, clamp_id);
-> > +	uclamp_cpu_inc_id(p, rq, clamp_id);
-> > +
-> > +done:
-> > +	task_rq_unlock(rq, p, &rf);
-> > +}
-> 
-> > @@ -1008,11 +1043,11 @@ static int __setscheduler_uclamp(struct task_struct *p,
-> >  
-> >  	mutex_lock(&uclamp_mutex);
-> >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MIN],
-> > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MIN],
-> >  				  UCLAMP_MIN, lower_bound);
-> >  	}
-> >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MAX],
-> > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MAX],
-> >  				  UCLAMP_MAX, upper_bound);
-> >  	}
-> >  	mutex_unlock(&uclamp_mutex);
-> 
-> 
-> But.... __sched_setscheduler() actually does the whole dequeue + enqueue
-> thing already ?!? See where it does __setscheduler().
+All cpufreq drivers do similar things to register as a cooling device.
+Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+to register the cooling device on their behalf. This allows us to get
+rid of duplicated code in the drivers.
 
-This is slow-path accounting, not fast path.
+In order to allow this, we add a struct thermal_cooling_device pointer
+to struct cpufreq_policy so that drivers don't need to store it in a
+private data structure.
 
-There are two refcounting going on here:
+Suggested-by: Stephen Boyd <swboyd@chromium.org>
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/cpufreq/cpufreq.c |  6 ++++++
+ include/linux/cpufreq.h   | 25 +++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-  1) mapped buckets:
-
-     clamp_value <--(M1)--> bucket_id
-
-  2) RUNNABLE tasks:
-
-     bucket_id <--(M2)--> RUNNABLE tasks in a bucket
-
-What we fix here is the refcounting for the buckets mapping. If a task
-does not have a task specific clamp value it does not refcount any
-bucket. The moment we assign a task specific clamp value, we need to
-refcount the task in the bucket corresponding to that clamp value.
-
-This will keep the bucket in use at least as long as the task will
-need that clamp value.
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e35a886e00bc..cf1be057caf4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1318,6 +1318,9 @@ static int cpufreq_online(unsigned int cpu)
+ 	if (cpufreq_driver->ready)
+ 		cpufreq_driver->ready(policy);
+ 
++	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
++		register_cooling_device(policy);
++
+ 	pr_debug("initialization complete\n");
+ 
+ 	return 0;
+@@ -1405,6 +1408,9 @@ static int cpufreq_offline(unsigned int cpu)
+ 		goto unlock;
+ 	}
+ 
++	if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
++		unregister_cooling_device(policy);
++
+ 	if (cpufreq_driver->stop_cpu)
+ 		cpufreq_driver->stop_cpu(policy);
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bd7fbd6a4478..02fc9f210aee 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpumask.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/completion.h>
+ #include <linux/kobject.h>
+ #include <linux/notifier.h>
+@@ -151,6 +152,11 @@ struct cpufreq_policy {
+ 
+ 	/* For cpufreq driver's internal use */
+ 	void			*driver_data;
++
++#ifdef CONFIG_CPU_THERMAL
++	/* Pointer to the cooling device if used for thermal mitigation */
++	struct thermal_cooling_device *cdev;
++#endif
+ };
+ 
+ /* Only for ACPI */
+@@ -386,6 +392,12 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
+ 
++/*
++ * Set by drivers that want the core to automatically register the cpufreq
++ * driver as a thermal cooling device.
++ */
++#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
+@@ -415,6 +427,19 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
+ 			policy->cpuinfo.max_freq);
+ }
+ 
++#ifdef CONFIG_CPU_THERMAL
++static inline void register_cooling_device(struct cpufreq_policy *policy) {
++	policy->cdev = of_cpufreq_cooling_register(policy);
++}
++
++static inline void unregister_cooling_device(struct cpufreq_policy *policy) {
++	cpufreq_cooling_unregister(policy->cdev);
++	policy->cdev = NULL;
++}
++#else
++static inline void register_cooling_device(struct cpufreq_policy *policy) {}
++static inline void unregister_cooling_device(struct cpufreq_policy *policy) {}
++#endif
+ #ifdef CONFIG_CPU_FREQ
+ void cpufreq_suspend(void);
+ void cpufreq_resume(void);
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.17.1
