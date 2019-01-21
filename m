@@ -1,56 +1,83 @@
-From: Pintu Agarwal <pintu.ping@gmail.com>
-Subject: Re: Need help: how to locate failure from irq_chip subsystem
-Date: Mon, 21 Jan 2019 18:05:03 +0530
-Message-ID: <CAOuPNLgM-aV51_L4WzwSGPQ4daVqWBgs8mQ8Gdw-f4Kdmadx1Q@mail.gmail.com>
-References: <CAOuPNLj4QzNDt0npZn2LhZTFgDNJ1CsWPw3=wvUuxnGtQW308g@mail.gmail.com>
- <bceb32be-d508-c2a4-fa81-ab8b90323d3f@codeaurora.org> <CAOuPNLiNtPFksCuZF_vL6+YuLG0i0umzQhMCyEN69h9tySn2Vw@mail.gmail.com>
- <57ff3437-47b5-fe92-d576-084ce26aa5d8@codeaurora.org> <CAOuPNLjjd67FnjaHbJj_auD-EWnbc+6sc+hcT_HE6fjeKhEQrw@mail.gmail.com>
- <1ffe2b68-c87b-aa19-08af-b811063b3310@codeaurora.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 03/16] sched/core: uclamp: Map TASK's clamp values
+ into CPU's clamp buckets
+Date: Mon, 21 Jan 2019 13:51:20 +0100
+Message-ID: <20190121125120.GB17749@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-4-patrick.bellasi@arm.com>
+ <20190121101508.GH27931@hirez.programming.kicks-ass.net>
+ <20190121122659.if6f4ubw2wgblxwi@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1ffe2b68-c87b-aa19-08af-b811063b3310@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20190121122659.if6f4ubw2wgblxwi@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sai Prakash Ranjan <saiprakash.ranjan@codeaurora.org>
-Cc: open list <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Russell King - ARM Linux <linux@armlinux.org.uk>, linux-mm@kvack.org, linux-pm@vger.kernel.org, kernelnewbies@kernelnewbies.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 18, 2019 at 5:23 PM Sai Prakash Ranjan
-<saiprakash.ranjan@codeaurora.org> wrote:
->
-> On 1/18/2019 4:50 PM, Pintu Agarwal wrote:
-> >>>> Could you please tell which QCOM SoC this board is based on?
-> >>>>
-> >>>
-> >>> Snapdragon 845 with kernel 4.9.x
-> >>> I want to know from which subsystem it is triggered:drivers/soc/qcom/
-> >>>
-> >>
-> >> Irqchip driver is "drivers/irqchip/irq-gic-v3.c". The kernel you are
-> >> using is msm-4.9 I suppose or some other kernel?
-> >>
-> > Yes, I am using customized version of msm-4.9 kernel based on Android.
-> > And yes the irqchip driver is: irq-gic-v3, which I can see from config.
-> >
-> > But, what I wanted to know is, how to find out which driver module
-> > (hopefully under: /drivers/soc/qcom/) that register with this
-> > irq_chip, is getting triggered at the time of crash ?
-> > So, that I can implement irq_hold function for it, which is the cause of crash.
-> >
->
-> Hmm, since this is a bootup crash, *initcall_debug* should help.
-> Add "initcall_debug ignore_loglevel" to kernel commandline and
-> check the last log before crash.
->
+On Mon, Jan 21, 2019 at 12:27:10PM +0000, Patrick Bellasi wrote:
+> On 21-Jan 11:15, Peter Zijlstra wrote:
+> > On Tue, Jan 15, 2019 at 10:15:00AM +0000, Patrick Bellasi wrote:
+> > > +/*
+> > > + * Number of utilization clamp buckets.
+> > > + *
+> > > + * The first clamp bucket (bucket_id=0) is used to track non clamped tasks, i.e.
+> > > + * util_{min,max} (0,SCHED_CAPACITY_SCALE). Thus we allocate one more bucket in
+> > > + * addition to the compile time configured number.
+> > > + */
+> > > +#define UCLAMP_BUCKETS (CONFIG_UCLAMP_BUCKETS_COUNT + 1)
+> > > +
+> > > +/*
+> > > + * Utilization clamp bucket
+> > > + * @value:		clamp value tracked by a clamp bucket
+> > > + * @bucket_id:		the bucket index used by the fast-path
+> > > + * @mapped:		the bucket index is valid
+> > > + *
+> > > + * A utilization clamp bucket maps a:
+> > > + *   clamp value (value), i.e.
+> > > + *   util_{min,max} value requested from userspace
+> > > + * to a:
+> > > + *   clamp bucket index (bucket_id), i.e.
+> > > + *   index of the per-cpu RUNNABLE tasks refcounting array
+> > > + *
+> > > + * The mapped bit is set whenever a task has been mapped on a clamp bucket for
+> > > + * the first time. When this bit is set, any:
+> > > + *   uclamp_bucket_inc() - for a new clamp value
+> > > + * is matched by a:
+> > > + *   uclamp_bucket_dec() - for the old clamp value
+> > > + */
+> > > +struct uclamp_se {
+> > > +	unsigned int value		: bits_per(SCHED_CAPACITY_SCALE);
+> > > +	unsigned int bucket_id		: bits_per(UCLAMP_BUCKETS);
+> > > +	unsigned int mapped		: 1;
+> > > +};
+> > 
+> > Do we want something like:
+> > 
+> > 	BUILD_BUG_ON(sizeof(struct uclamp_se) == sizeof(unsigned int));
+> 
+> Mmm... isn't "!=" what you mean ?
 
-OK thanks Sai, for your suggestions.
-Yes, I already tried that, but it did not help much.
+Quite.
 
-Anyways, I could finally find the culprit driver, from where null
-reference is coming.
-So, that issue is fixed.
-But, now I am looking into another issue.
-If required, I will post further...
+> We cannot use less then an unsigned int for the fields above... am I
+> missing something?
 
-Thanks,
-Pintu
+I wanted to ensure we don't accidentally use more.
+
+> > And/or put a limit on CONFIG_UCLAMP_BUCKETS_COUNT that guarantees that ?
+> 
+> The number of buckets is currently KConfig limited to a max of 20, which gives:
+> 
+>    UCLAMP_BUCKETS: 21 => 5bits
+> 
+> Thus, even on 32 bit targets and assuming 21bits for an "extended"
+> SCHED_CAPACITY_SCALE range we should always fit into an unsigned int
+> and have at least 6 bits for flags.
+> 
+> Are you afraid of some compiler magic related to bitfields packing ?
+
+Nah, I missed the Kconfig limit and was afraid that some weird configs
+would end up with massively huge structures.
