@@ -1,82 +1,135 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 10/13] gpio: max77650: add GPIO support
-Date: Mon, 21 Jan 2019 15:20:13 +0100
-Message-ID: <CACRpkdZhy7yBZrGLxhRGaac7v5jZhgUSz9gZAhFXbevJbKjpZw@mail.gmail.com>
-References: <20190118134244.22253-1-brgl@bgdev.pl> <20190118134244.22253-11-brgl@bgdev.pl>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v1 02/10] cpufreq: Add a flag to auto-register a cooling device
+Date: Mon, 21 Jan 2019 19:53:12 +0530
+Message-ID: <CAHLCerPFcxX1LeeY0kRp5_4ayKtzzWkQUv6p8pjJ1ELxKt1LhA@mail.gmail.com>
+References: <cover.1547481320.git.amit.kucheria@linaro.org>
+ <c1e460c49ad2f16b15ace909514a770c9753d1b1.1547481320.git.amit.kucheria@linaro.org>
+ <15792961.Mmjk2FNQN5@aspire.rjw.lan> <20190117044246.jcwhb5bxb6he33lp@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190118134244.22253-11-brgl@bgdev.pl>
+In-Reply-To: <20190117044246.jcwhb5bxb6he33lp@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Brian Masney <masneyb@onstation.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylib>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bartosz,
-
-thanks for the patch!
-
-On Fri, Jan 18, 2019 at 2:43 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
-
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Thu, Jan 17, 2019 at 10:12 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> Add GPIO support for max77650 mfd device. This PMIC exposes a single
-> GPIO line.
+> On 17-01-19, 00:03, Rafael J. Wysocki wrote:
+> > On Monday, January 14, 2019 5:34:54 PM CET Amit Kucheria wrote:
+> > > All cpufreq drivers do similar things to register as a cooling device.
+> > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > > to register the cooling device on their behalf. This allows us to get
+> > > rid of duplicated code in the drivers.
+> > >
+> > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > > ---
+> > >  drivers/cpufreq/cpufreq.c | 17 +++++++++++++++++
+> > >  include/linux/cpufreq.h   |  6 ++++++
+> > >  2 files changed, 23 insertions(+)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index 6f23ebb395f1..cd6e750d3d82 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -30,6 +30,7 @@
+> > >  #include <linux/syscore_ops.h>
+> > >  #include <linux/tick.h>
+> > >  #include <trace/events/power.h>
+> > > +#include <linux/cpu_cooling.h>
+> > >
+> > >  static LIST_HEAD(cpufreq_policy_list);
+> > >
+> > > @@ -1318,6 +1319,14 @@ static int cpufreq_online(unsigned int cpu)
+> > >     if (cpufreq_driver->ready)
+> > >             cpufreq_driver->ready(policy);
+> > >
+> > > +#ifdef CONFIG_CPU_THERMAL
+> > > +   if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
+> > > +           struct thermal_cooling_device **cdev = &policy->cooldev;
 >
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> We use cdev for the cooling device everywhere in the kernel, so please
+> do s/cooldev/cdev/ in your patches.
 
-Overall you know for sure what you're doing so not much to
-say about the GPIO chip etc. The .set_config() is nice and
-helpful (maybe you will be able to also add pull up/down
-using Thomas Petazzoni's new config interfaces!)
+Fixed
 
-However enlighten me on this:
+> > > +
+> > > +           *cdev = of_cpufreq_cooling_register(policy);
+> >
+> > What would be wrong with
+> >
+> >               policy->cooldev = of_cpufreq_cooling_register(policy);
+> >
+> > > +   }
+> > > +#endif
+> >
+> > Please remove the #ifdefs from cpufreq_online() and cpufreq_offline().
+> >
+> > Use wrappers that would become empty stubs for CONFIG_CPU_THERMAL unset.
+> >
+> > > +
+> > >     pr_debug("initialization complete\n");
+> > >
+> > >     return 0;
+> > > @@ -1411,6 +1420,14 @@ static int cpufreq_offline(unsigned int cpu)
+> > >     if (has_target())
+> > >             cpufreq_exit_governor(policy);
+> > >
+> > > +#ifdef CONFIG_CPU_THERMAL
+> > > +   if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
+> > > +           struct thermal_cooling_device **cdev = &policy->cooldev;
+> > > +
+> > > +           cpufreq_cooling_unregister(*cdev);
+> >
+> > Again, why don't you simply pass policy->cooldev here?
+>
+> I also had the same comments when I looked at your patch :)
+>
+> I also think we must do the unregistering before calling stop_cpu()
+> callback.
 
-> +static int max77650_gpio_to_irq(struct gpio_chip *gc, unsigned int offset)
-> +{
-> +       struct max77650_gpio_chip *chip = gpiochip_get_data(gc);
-> +
-> +       return regmap_irq_get_virq(chip->irq_chip_data, MAX77650_INT_GPI);
-> +}
+Fixed.
 
-I know this may be opening the gates to a lot of coding, but
-isn't this IRQ hierarchical? I.e. that irqchip is not in the
-node of the GPIO chip but in the node of the MFD top
-device, with a 1:1 mapping between some of the IRQs
-and a certain GPIO line.
+> > Also, would it make sense to clear policy->cooldev at this point?  It points
+> > to freed memory after cpufreq_cooling_unregister().
+>
+> Since the core doesn't refer to this field at all and uses it only
+> while registering/unregistering as a cooling device, there is no
+> technical issue that we will have today. If someone uses the dangling
+> pointer later on in future, it will be a bug. So I wouldn't care much
+> about resetting it here.
+>
+> > > +   }
+> > > +#endif
+> > > +
+> > >     /*
+> > >      * Perform the ->exit() even during light-weight tear-down,
+> > >      * since this is a core component, and is essential for the
+> > > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > > index 7d0cf54125fa..70ad02088825 100644
+> > > --- a/include/linux/cpufreq.h
+> > > +++ b/include/linux/cpufreq.h
+> > > @@ -390,6 +390,12 @@ struct cpufreq_driver {
+> > >   */
+> > >  #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
+> > >
+> > > +/*
+> > > + * Set by drivers that want the core to automatically register the cpufreq
+> > > + * driver as a thermal cooling device
+>
+> Add a full-stop here please.
 
-Using regmap IRQ makes it confusing for me so I do not
-know for sure if that is the case.
+Fixed
 
-I am worried that you are recreating a problem (present in many
-drivers, including some written by me, mea culpa) that Brian Masney
-has been trying to solve for the gpiochip inside the SPMI
-GPIO (drivers/pinctrl/qcom/pinctrl-spmi-gpio.c).
+Thanks for the review.
 
-I have queued Brians refactoring and solution here:
-https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio.git/log/?h=ib-qcom-spmi
 
-And the overall description on what he's trying to achieve is
-here:
-https://marc.info/?l=linux-gpio&m=154793071511130&w=2
-
-My problem description (which I fear will apply also to this
-driver):
-https://www.spinics.net/lists/linux-gpio/msg34655.html
-
-I plan to merge Brians patches soon-ish to devel and then from
-there try to construct more helpers in the gpiolib core,
-and if possible fix some of the old drivers who rely on
-.to_irq().
-
-We will certainly fix ssbi-gpio as well, and that is a good start
-since the Qualdcomm platforms are so pervasive in the
-market.
-
-But maybe this doesn't apply here? I am not the smartest...
-Just want to make sure that it is possible to refer an
-interrupt directly to this DT node, as it is indeed marked
-as interrupt-controller.
-
-Yours,
-Linus Walleij
+> > > + */
+> > > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV (1 << 7)
+> > > +
+> > >  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+> > >  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> > >
