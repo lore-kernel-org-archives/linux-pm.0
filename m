@@ -1,15 +1,15 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 3/3] PM / devfreq: fix mem leak in devfreq_add_device()
-Date: Mon, 21 Jan 2019 10:42:00 +0900
-Message-ID: <0ae2e104-4ff0-888a-c6ce-12b40a76e14d@samsung.com>
-References: <20190119160454.23151-1-tiny.windzz@gmail.com>
-        <CGME20190119183020epcas1p4c0ce7cf4c2ed02da5d6ffb7bbadfd8b8@epcas1p4.samsung.com>
-        <20190119160454.23151-3-tiny.windzz@gmail.com>
+Subject: Re: [PATCH 1/3] PM / devfreq: fix indentation in
+ devfreq_add_device()
+Date: Mon, 21 Jan 2019 10:58:44 +0900
+Message-ID: <e45d38da-1dc4-c1ca-83d4-0efeb64acef1@samsung.com>
+References: <CGME20190119183407epcas1p4958e4526d07c36605307c49b0c0e2e2c@epcas1p4.samsung.com>
+        <20190119160454.23151-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190119160454.23151-3-tiny.windzz@gmail.com>
+In-Reply-To: <20190119160454.23151-1-tiny.windzz@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org
@@ -19,27 +19,42 @@ List-Id: linux-pm@vger.kernel.org
 Hi,
 
 On 19. 1. 20. 오전 1:04, Yangtao Li wrote:
-> 'devfreq' is malloced in devfreq_add_device() and should be freed in
-> the error handling cases, otherwise it will cause memory leak.
+> To beautify the code format.
 > 
 > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/devfreq/devfreq.c | 17 ++++++++---------
+>  1 file changed, 8 insertions(+), 9 deletions(-)
 > 
 > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 923889229a0b..fe6c157cb7e0 100644
+> index 0ae3de76833b..076b1c2f40a4 100644
 > --- a/drivers/devfreq/devfreq.c
 > +++ b/drivers/devfreq/devfreq.c
-> @@ -651,7 +651,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  		mutex_unlock(&devfreq->lock);
->  		err = set_freq_table(devfreq);
->  		if (err < 0)
-> -			goto err_out;
-> +			goto err_dev;
->  		mutex_lock(&devfreq->lock);
+> @@ -683,16 +683,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  		goto err_out;
 >  	}
 >  
+> -	devfreq->trans_table =
+> -		devm_kzalloc(&devfreq->dev,
+> -			     array3_size(sizeof(unsigned int),
+> -					 devfreq->profile->max_state,
+> -					 devfreq->profile->max_state),
+> -			     GFP_KERNEL);
+> +	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
+> +					    array3_size(sizeof(unsigned int),
+> +					    devfreq->profile->max_state,
+> +					    devfreq->profile->max_state),
+> +					    GFP_KERNEL);
+>  	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
+> -						devfreq->profile->max_state,
+> -						sizeof(unsigned long),
+> -						GFP_KERNEL);
+> +					      devfreq->profile->max_state,
+> +					      sizeof(unsigned long),
+> +					      GFP_KERNEL);
+>  	devfreq->last_stat_updated = jiffies;
+>  
+>  	srcu_init_notifier_head(&devfreq->transition_notifier_list);
 > 
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
