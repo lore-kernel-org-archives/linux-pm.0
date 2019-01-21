@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 7/9] cpufreq: qoriq: Use auto-registration of thermal cooling device
-Date: Mon, 21 Jan 2019 21:10:32 +0530
-Message-ID: <1c0f7a96c926e313569e0baf10d6d730f7ee1b23.1548084260.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 9/9] cpufreq: scpi: Use auto-registration of thermal cooling device
+Date: Mon, 21 Jan 2019 21:10:34 +0530
+Message-ID: <95506c9919bee528838016dd2c857ebb28e19152.1548084260.git.amit.kucheria@linaro.org>
 References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
 References: <cover.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Elfring <elfring@users.sourceforge.net>, linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wei Yongjun <weiyongjun1@huawei.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
@@ -18,62 +18,63 @@ automatically register as a thermal cooling device.
 This allows removal of boiler plate code from the driver.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/qoriq-cpufreq.c | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+ drivers/cpufreq/scpi-cpufreq.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 3d773f64b4df..b206e6cb55f0 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -13,7 +13,6 @@
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
+diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+index 99449738faa4..82420e8e5f0d 100644
+--- a/drivers/cpufreq/scpi-cpufreq.c
++++ b/drivers/cpufreq/scpi-cpufreq.c
+@@ -22,7 +22,6 @@
+ #include <linux/cpu.h>
  #include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
 -#include <linux/cpu_cooling.h>
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -31,7 +30,6 @@
- struct cpu_data {
- 	struct clk **pclk;
- 	struct cpufreq_frequency_table *table;
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
+@@ -34,7 +33,6 @@
+ struct scpi_data {
+ 	struct clk *clk;
+ 	struct device *cpu_dev;
 -	struct thermal_cooling_device *cdev;
  };
  
- /*
-@@ -239,7 +237,6 @@ static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ static struct scpi_ops *scpi_ops;
+@@ -186,7 +184,6 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
  {
- 	struct cpu_data *data = policy->driver_data;
+ 	struct scpi_data *priv = policy->driver_data;
  
--	cpufreq_cooling_unregister(data->cdev);
- 	kfree(data->pclk);
- 	kfree(data->table);
- 	kfree(data);
-@@ -258,23 +255,15 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
- 	return clk_set_parent(policy->clk, parent);
+-	cpufreq_cooling_unregister(priv->cdev);
+ 	clk_put(priv->clk);
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	kfree(priv);
+@@ -195,23 +192,16 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
+ 	return 0;
  }
  
--
--static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
+-static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
 -{
--	struct cpu_data *cpud = policy->driver_data;
+-	struct scpi_data *priv = policy->driver_data;
 -
--	cpud->cdev = of_cpufreq_cooling_register(policy);
+-	priv->cdev = of_cpufreq_cooling_register(policy);
 -}
 -
- static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.name		= "qoriq_cpufreq",
--	.flags		= CPUFREQ_CONST_LOOPS,
-+	.flags		= CPUFREQ_CONST_LOOPS |
-+			  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
- 	.init		= qoriq_cpufreq_cpu_init,
- 	.exit		= qoriq_cpufreq_cpu_exit,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= qoriq_cpufreq_target,
- 	.get		= cpufreq_generic_get,
--	.ready		= qoriq_cpufreq_ready,
- 	.attr		= cpufreq_generic_attr,
+ static struct cpufreq_driver scpi_cpufreq_driver = {
+ 	.name	= "scpi-cpufreq",
+ 	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
+-		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
++		  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.attr	= cpufreq_generic_attr,
+ 	.get	= scpi_cpufreq_get_rate,
+ 	.init	= scpi_cpufreq_init,
+ 	.exit	= scpi_cpufreq_exit,
+-	.ready	= scpi_cpufreq_ready,
+ 	.target_index	= scpi_cpufreq_set_target,
  };
  
 -- 
