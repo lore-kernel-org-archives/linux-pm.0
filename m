@@ -1,129 +1,121 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based accounting with
- ktime based accounting
-Date: Mon, 21 Jan 2019 16:17:00 +0100
-Message-ID: <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
- <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
- <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com> <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 04/16] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Mon, 21 Jan 2019 15:23:11 +0000
+Message-ID: <20190121152311.7u7bwbjopuptnzcy@e110439-lin>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-5-patrick.bellasi@arm.com>
+ <20190121145929.GI27931@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
+Content-Disposition: inline
+In-Reply-To: <20190121145929.GI27931@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, rodrigo.vivi@intel.com, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 18 Jan 2019 at 13:08, Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On 1/18/19 3:05 AM, Rafael J. Wysocki wrote:
-> > On Fri, Jan 18, 2019 at 11:53 AM Vincent Guittot
-> > <vincent.guittot@linaro.org> wrote:
-> >>
-> >> On Fri, 18 Jan 2019 at 11:42, Vincent Guittot
-> >> <vincent.guittot@linaro.org> wrote:
-> >>>
-> >>> Hi Guenter,
-> >>>
-> >>> Le Thursday 17 Jan 2019 =C3=A0 14:16:28 (-0800), Guenter Roeck a =C3=
-=A9crit :
-> >>>> On Fri, Dec 21, 2018 at 11:33:56AM +0100, Vincent Guittot wrote:
-> >>>>> From: Thara Gopinath <thara.gopinath@linaro.org>
-> >>>>>
-> >>>>> This patch replaces jiffies based accounting for runtime_active_tim=
-e
-> >>>>> and runtime_suspended_time with ktime base accounting. This makes t=
-he
-> >>>>> runtime debug counters inline with genpd and other pm subsytems whi=
-ch
-> >>>>> uses ktime based accounting.
-> >>>>>
-> >>>>> timekeeping is initialized before pm_runtime_init() so ktime_get() =
-will
-> >>>>> be ready before first call. In fact, timekeeping_init() is called e=
-arly
-> >>>>> in start_kernel() which is way before driver_init() (and that's whe=
-n
-> >>>>> devices can start to be initialized) called from rest_init() via
-> >>>>> kernel_init_freeable() and do_basic_setup().
-> >>>>>
-> >>>> This is not (always) correct. My qemu "collie" boot test fails with =
-this
-> >>>> patch applied. Reverting the patch fixes the problem. Bisect log att=
-ached.
-> >>>>
-> >>>
-> >>> Can you try the patch below ?
-> >>> ktime_get_mono_fast_ns() has the advantage of being init with dummy c=
-lock so
-> >>> it can be used at early_init.
-> >>
-> >> Another possibility would be delay the init of the gpiochip
-> >
-> > Well, right.
-> >
-> > Initializing devices before timekeeping doesn't feel particularly
-> > robust from the design perspective.
-> >
-> > How exactly does that happen?
-> >
->
-> With an added 'initialized' flag and backtrace into the timekeeping code,
-> with the change suggested earlier applied:
->
-> ------------[ cut here ]------------
-> WARNING: CPU: 0 PID: 0 at kernel/time/timekeeping.c:453 ktime_get_mono_fa=
-st_ns+0x114/0x12c
-> Timekeeping not initialized
-> CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc2-next-20190117-dirty #2
-> Hardware name: Sharp-Collie
-> Backtrace:
-> [<c000dce8>] (dump_backtrace) from [<c000df78>] (show_stack+0x18/0x1c)
->   r7:00000009 r6:00000000 r5:c065ba90 r4:c06d3e54
-> [<c000df60>] (show_stack) from [<c0588930>] (dump_stack+0x20/0x28)
-> [<c0588910>] (dump_stack) from [<c0018ae8>] (__warn+0xcc/0xf4)
-> [<c0018a1c>] (__warn) from [<c0018b5c>] (warn_slowpath_fmt+0x4c/0x6c)
->   r8:df407b08 r7:00000000 r6:c0c01550 r5:c065bad8 r4:c06dd028
-> [<c0018b14>] (warn_slowpath_fmt) from [<c0069e2c>] (ktime_get_mono_fast_n=
-s+0x114/0x12c)
->   r3:00000000 r2:c065bad8
->   r5:00000000 r4:df407b08
-> [<c0069d18>] (ktime_get_mono_fast_ns) from [<c03c7810>] (pm_runtime_init+=
-0x38/0xb8)
->   r9:c06c9a5c r8:df407b08 r7:00000000 r6:c0c01550 r5:00000000 r4:df407b08
-> [<c03c77d8>] (pm_runtime_init) from [<c03b6a34>] (device_initialize+0xb0/=
-0xec)
->   r7:00000000 r6:c0c01550 r5:00000000 r4:df407b08
-> [<c03b6984>] (device_initialize) from [<c0366d30>] (gpiochip_add_data_wit=
-h_key+0x9c/0x884)
->   r7:00000000 r6:c06fca34 r5:00000000 r4:00000000
-> [<c0366c94>] (gpiochip_add_data_with_key) from [<c06b9708>] (sa1100_init_=
-gpio+0x40/0x98)
->   r10:dfffcd60 r9:c06c9a5c r8:c06dd020 r7:c06dd028 r6:ffffffff r5:0000000=
-0
->   r4:c06fca34
-> [<c06b96c8>] (sa1100_init_gpio) from [<c06ae58c>] (sa1100_init_irq+0x2c/0=
-x3c)
->   r7:c06dd028 r6:ffffffff r5:c0713300 r4:c06e1070
-> [<c06ae560>] (sa1100_init_irq) from [<c06aab1c>] (init_IRQ+0x20/0x28)
->   r5:c0713300 r4:00000000
-> [<c06aaafc>] (init_IRQ) from [<c06a7cd0>] (start_kernel+0x254/0x4cc)
-> [<c06a7a7c>] (start_kernel) from [<00000000>] (  (null))
->   r10:0000717f r9:6901b119 r8:c0000100 r7:00000092 r6:0000313d r5:0000005=
-3
->   r4:c06a7330
-> ---[ end trace 91e1bd00dd7cce32 ]---
+On 21-Jan 15:59, Peter Zijlstra wrote:
+> On Tue, Jan 15, 2019 at 10:15:01AM +0000, Patrick Bellasi wrote:
+> > @@ -835,6 +954,28 @@ static void uclamp_bucket_inc(struct uclamp_se *uc_se, unsigned int clamp_id,
+> >  	} while (!atomic_long_try_cmpxchg(&uc_maps[bucket_id].adata,
+> >  					  &uc_map_old.data, uc_map_new.data));
+> >  
+> > +	/*
+> > +	 * Ensure each CPU tracks the correct value for this clamp bucket.
+> > +	 * This initialization of per-CPU variables is required only when a
+> > +	 * clamp value is requested for the first time from a slow-path.
+> > +	 */
+> 
+> I'm confused; why is this needed?
 
-Does it means that only the pm_runtime_init is done before
-timekeeping_init() but no update_pm_runtime_accounting() ?
-In this case, we can keep using ktime=C3=A7get in
-update_pm_runtime_accounting() and find a solution to deal with
-early_call of pm_runtime_init()
+That's a lazy initialization of the per-CPU uclamp data for a given
+bucket, i.e. the clamp value assigned to a bucket, which happens only
+when new clamp values are requested... usually only at system
+boot/configuration time.
 
-Vincent
->
-> Guenter
+For example, let say we have these buckets mapped to given clamp
+values:
+
+ bucket_#0: clamp value: 10% (mapped)
+ bucket_#1: clamp value: 20% (mapped)
+ bucket_#2: clamp value: 30% (mapped)
+
+and then let's assume all the users of bucket_#1 are "destroyed", i.e.
+there are no more tasks, system defaults or cgroups asking for a
+20% clamp value. The corresponding bucket will become free:
+
+ bucket_#0: clamp value: 10% (mapped)
+ bucket_#1: clamp value: 20% (free)
+ bucket_#2: clamp value: 30% (mapped)
+
+If, in the future, we ask for a new clamp value, let say a task ask
+for a 40% clamp value, then we need to map that value into a bucket.
+Since bucket_#1 is free we can use it to fill up the hold and keep all
+the buckets in use at the beginning of a cache line.
+
+However, since now bucket_#1 tracks a different clamp value (40
+instead of 20) we need to walk all the CPUs and updated the cached
+value:
+
+ bucket_#0: clamp value: 10% (mapped)
+ bucket_#1: clamp value: 40% (mapped)
+ bucket_#2: clamp value: 30% (mapped)
+
+Is that more clear ?
+
+
+In the following code:
+
+> 
+> > +	if (unlikely(!uc_map_old.se_count)) {
+
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This condition is matched by clamp buckets which needs the
+initialization described above. These are buckets without a client so
+fare and that have been selected to map/track a new clamp value.
+That's why we have an unlikely... quite likely tasks/cgroups will keep
+asking for the same (limited number of) clamp values and thus we find
+a bucket already properly initialized for them.
+
+
+> > +		for_each_possible_cpu(cpu) {
+> > +			struct uclamp_cpu *uc_cpu =
+> > +				&cpu_rq(cpu)->uclamp[clamp_id];
+> > +
+> > +			/* CPU's tasks count must be 0 for free buckets */
+> > +			SCHED_WARN_ON(uc_cpu->bucket[bucket_id].tasks);
+> > +			if (unlikely(uc_cpu->bucket[bucket_id].tasks))
+> > +				uc_cpu->bucket[bucket_id].tasks = 0;
+
+That's a safety check, we expect that (free) buckets do not refcount
+any task. That's one of the conditions for a bucket to be considered
+free. Here we do just a sanity check, that's because we use unlikely.
+If the check matches there is a data corruption, which is reported by
+the previous SCHED_WARN_ON and "fixed" by the if branch.
+
+In my tests I have s/SCHED_WARN_ON/BUG_ON/ and never hit that bug...
+thus the refcounting code should be ok and this check is there just to
+be more on the safe side for future changes.
+
+> > +
+> > +			/* Minimize cache lines invalidation */
+> > +			if (uc_cpu->bucket[bucket_id].value == bucket_value)
+> > +				continue;
+
+If by any chance we get a request for a new clamp value which happened
+to be already used before... we can skip the initialization to avoid.
+
+> > +			uc_cpu->bucket[bucket_id].value = bucket_value;
+> > +		}
+> > +	}
+> > +
+> >  	uc_se->value = clamp_value;
+> >  	uc_se->bucket_id = bucket_id;
+> >  
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
