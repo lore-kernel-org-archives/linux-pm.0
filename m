@@ -1,52 +1,57 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 9/9] thermal: cpu_cooling: Clarify error message
-Date: Mon, 21 Jan 2019 15:13:52 +0530
-Message-ID: <CAHLCerNZuJ3+s+gNMURVJAk+fgfhfmTKH58kyCDPwpcm+Q7W3A@mail.gmail.com>
-References: <cover.1547458732.git.amit.kucheria@linaro.org>
- <2de2d178380525191d99d6c3619ad8c45efdbab4.1547458732.git.amit.kucheria@linaro.org>
- <20190117055730.7hxe37ngcubo6htw@vireshk-i7> <CAJZ5v0j2-RPckRigk+gjo4ffiB+04VE_v6Dnw90E-Q7X2knpvA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 03/16] sched/core: uclamp: Map TASK's clamp values
+ into CPU's clamp buckets
+Date: Mon, 21 Jan 2019 11:15:08 +0100
+Message-ID: <20190121101508.GH27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-4-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j2-RPckRigk+gjo4ffiB+04VE_v6Dnw90E-Q7X2knpvA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190115101513.2822-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Andy Gross <andy.gross@linaro.org>, Taniya Das <tdas@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 17, 2019 at 4:04 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Jan 17, 2019 at 6:57 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 14-01-19, 15:51, Amit Kucheria wrote:
-> > > Make it clear that it is a failure if the cpufreq driver was unable to
-> > > register as a cooling device. Makes it easier to find in logs and
-> > > grepping for words like fail, err, warn.
-> > >
-> > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > > ---
-> > >  drivers/thermal/cpu_cooling.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> > > index dfd23245f778..6fff16113628 100644
-> > > --- a/drivers/thermal/cpu_cooling.c
-> > > +++ b/drivers/thermal/cpu_cooling.c
-> > > @@ -774,7 +774,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
-> > >
-> > >               cdev = __cpufreq_cooling_register(np, policy, capacitance);
-> > >               if (IS_ERR(cdev)) {
-> > > -                     pr_err("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
-> > > +                     pr_err("cpu_cooling: cpu%d failed to register as cooling device: %ld\n",
-> > >                              policy->cpu, PTR_ERR(cdev));
-> > >                       cdev = NULL;
-> > >               }
-> >
-> > Always keep such cleanup patches at the top, so the maintainers can
-> > pick them up easily even if the entire series doesn't get in.
->
-> Actually, if nothing in the series depends on this change and this
-> change doesn't depend on anything in the series, why is it part of the
-> series at all?
+On Tue, Jan 15, 2019 at 10:15:00AM +0000, Patrick Bellasi wrote:
+> +/*
+> + * Number of utilization clamp buckets.
+> + *
+> + * The first clamp bucket (bucket_id=0) is used to track non clamped tasks, i.e.
+> + * util_{min,max} (0,SCHED_CAPACITY_SCALE). Thus we allocate one more bucket in
+> + * addition to the compile time configured number.
+> + */
+> +#define UCLAMP_BUCKETS (CONFIG_UCLAMP_BUCKETS_COUNT + 1)
+> +
+> +/*
+> + * Utilization clamp bucket
+> + * @value:		clamp value tracked by a clamp bucket
+> + * @bucket_id:		the bucket index used by the fast-path
+> + * @mapped:		the bucket index is valid
+> + *
+> + * A utilization clamp bucket maps a:
+> + *   clamp value (value), i.e.
+> + *   util_{min,max} value requested from userspace
+> + * to a:
+> + *   clamp bucket index (bucket_id), i.e.
+> + *   index of the per-cpu RUNNABLE tasks refcounting array
+> + *
+> + * The mapped bit is set whenever a task has been mapped on a clamp bucket for
+> + * the first time. When this bit is set, any:
+> + *   uclamp_bucket_inc() - for a new clamp value
+> + * is matched by a:
+> + *   uclamp_bucket_dec() - for the old clamp value
+> + */
+> +struct uclamp_se {
+> +	unsigned int value		: bits_per(SCHED_CAPACITY_SCALE);
+> +	unsigned int bucket_id		: bits_per(UCLAMP_BUCKETS);
+> +	unsigned int mapped		: 1;
+> +};
 
-Indeed, I should've separated this from the series. Done now.
+Do we want something like:
+
+	BUILD_BUG_ON(sizeof(struct uclamp_se) == sizeof(unsigned int));
+
+And/or put a limit on CONFIG_UCLAMP_BUCKETS_COUNT that guarantees that ?
