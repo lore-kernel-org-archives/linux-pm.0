@@ -1,83 +1,88 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 8/9] cpufreq: scmi: Use auto-registration of thermal cooling device
-Date: Mon, 21 Jan 2019 21:10:33 +0530
-Message-ID: <c2fe27f06a87d80e4909610a37441e90076434b3.1548084260.git.amit.kucheria@linaro.org>
-References: <cover.1548084260.git.amit.kucheria@linaro.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 04/16] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Mon, 21 Jan 2019 15:54:07 +0000
+Message-ID: <20190121155407.gv4cxpg2njqmdlj5@e110439-lin>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-5-patrick.bellasi@arm.com>
+ <20190121151717.GK27931@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1548084260.git.amit.kucheria@linaro.org>
-References: <cover.1548084260.git.amit.kucheria@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20190121151717.GK27931@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wei Yongjun <weiyongjun1@huawei.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-automatically register as a thermal cooling device.
+On 21-Jan 16:17, Peter Zijlstra wrote:
+> On Tue, Jan 15, 2019 at 10:15:01AM +0000, Patrick Bellasi wrote:
+> > +#ifdef CONFIG_UCLAMP_TASK
+> 
+> > +struct uclamp_bucket {
+> > +	unsigned long value : bits_per(SCHED_CAPACITY_SCALE);
+> > +	unsigned long tasks : BITS_PER_LONG - bits_per(SCHED_CAPACITY_SCALE);
+> > +};
+> 
+> > +struct uclamp_cpu {
+> > +	unsigned int value;
+> 
+> 	/* 4 byte hole */
+> 
+> > +	struct uclamp_bucket bucket[UCLAMP_BUCKETS];
+> > +};
+> 
+> With the default of 5, this UCLAMP_BUCKETS := 6, so struct uclamp_cpu
+> ends up being 7 'unsigned long's, or 56 bytes on 64bit (with a 4 byte
+> hole).
 
-This allows removal of boiler plate code from the driver.
+Yes, that's dimensioned and configured to fit into a single cache line
+for all the possible 5 (by default) clamp values of a clamp index
+(i.e. min or max util).
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/scmi-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+> 
+> > +#endif /* CONFIG_UCLAMP_TASK */
+> > +
+> >  /*
+> >   * This is the main, per-CPU runqueue data structure.
+> >   *
+> > @@ -835,6 +879,11 @@ struct rq {
+> >  	unsigned long		nr_load_updates;
+> >  	u64			nr_switches;
+> >  
+> > +#ifdef CONFIG_UCLAMP_TASK
+> > +	/* Utilization clamp values based on CPU's RUNNABLE tasks */
+> > +	struct uclamp_cpu	uclamp[UCLAMP_CNT] ____cacheline_aligned;
+> 
+> Which makes this 112 bytes with 8 bytes in 2 holes, which is short of 2
+> 64 byte cachelines.
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index 242c3370544e..b19e9d129f8f 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -11,7 +11,6 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
--#include <linux/cpu_cooling.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/pm_opp.h>
-@@ -22,7 +21,6 @@
- struct scmi_data {
- 	int domain_id;
- 	struct device *cpu_dev;
--	struct thermal_cooling_device *cdev;
- };
- 
- static const struct scmi_handle *handle;
-@@ -185,7 +183,6 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct scmi_data *priv = policy->driver_data;
- 
--	cpufreq_cooling_unregister(priv->cdev);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	kfree(priv);
- 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
-@@ -193,17 +190,11 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static void scmi_cpufreq_ready(struct cpufreq_policy *policy)
--{
--	struct scmi_data *priv = policy->driver_data;
--
--	priv->cdev = of_cpufreq_cooling_register(policy);
--}
--
- static struct cpufreq_driver scmi_cpufreq_driver = {
- 	.name	= "scmi",
- 	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
--		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+		  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
- 	.verify	= cpufreq_generic_frequency_table_verify,
- 	.attr	= cpufreq_generic_attr,
- 	.target_index	= scmi_cpufreq_set_target,
-@@ -211,7 +202,6 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
- 	.get	= scmi_cpufreq_get_rate,
- 	.init	= scmi_cpufreq_init,
- 	.exit	= scmi_cpufreq_exit,
--	.ready	= scmi_cpufreq_ready,
- };
- 
- static int scmi_cpufreq_probe(struct scmi_device *sdev)
+Right, we have 2 cache lines where:
+- the first $L tracks 5 different util_min values
+- the second $L tracks 5 different util_max values
+
+> Is that the best layout?
+
+It changed few times and that's what I found more reasonable for both
+for fitting the default configuration and also for code readability.
+Notice that we access RQ and SE clamp values with the same patter,
+for example:
+
+   {rq|p}->uclamp[clamp_idx].value
+
+Are you worried about the holes or something else specific ?
+
+> > +#endif
+> > +
+> >  	struct cfs_rq		cfs;
+> >  	struct rt_rq		rt;
+> >  	struct dl_rq		dl;
+> > -- 
+> > 2.19.2
+> > 
+
 -- 
-2.17.1
+#include <best/regards.h>
+
+Patrick Bellasi
