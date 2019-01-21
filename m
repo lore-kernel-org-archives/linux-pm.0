@@ -1,60 +1,96 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v1 01/10] cpufreq: Add thermal_cooling_device pointer to
- struct cpufreq_policy
-Date: Mon, 21 Jan 2019 21:05:45 +0530
-Message-ID: <CAHLCerOLXwdMmRci9wSr8+LjVf4m3CdLd85WWjd1Q3VriQy_MA@mail.gmail.com>
-References: <cover.1547481320.git.amit.kucheria@linaro.org>
- <168294311714f269b1050bcbf5d3324eae0808f2.1547481320.git.amit.kucheria@linaro.org>
- <1718046.8NPD0iV1Wv@aspire.rjw.lan>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
+ clamp changes
+Date: Mon, 21 Jan 2019 15:44:12 +0000
+Message-ID: <20190121154412.fak2t2iquj3aixtu@e110439-lin>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-6-patrick.bellasi@arm.com>
+ <20190121153308.GL27931@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1718046.8NPD0iV1Wv@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20190121153308.GL27931@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 17, 2019 at 4:27 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Monday, January 14, 2019 5:34:53 PM CET Amit Kucheria wrote:
-> > Several cpufreq drivers register themselves as thermal cooling devices.
-> > Adding a pointer to struct cpufreq_policy removes the need for them to
-> > store this pointer in a private data structure.
-> >
-> > We can then auto-register the cpufreq driver as a thermal cooling device
-> > from cpufreq core code.
-> >
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > ---
-> >  include/linux/cpufreq.h | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index c86d6d8bdfed..7d0cf54125fa 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -95,6 +95,11 @@ struct cpufreq_policy {
-> >       struct cpufreq_frequency_table  *freq_table;
-> >       enum cpufreq_table_sorting freq_table_sorted;
-> >
-> > +#ifdef CONFIG_CPU_THERMAL
-> > +     /* Pointer to the cooling device if used for thermal mitigation */
-> > +     struct thermal_cooling_device *cooldev;
-> > +#endif
+On 21-Jan 16:33, Peter Zijlstra wrote:
+> On Tue, Jan 15, 2019 at 10:15:02AM +0000, Patrick Bellasi wrote:
+> 
+> > +static inline void
+> > +uclamp_task_update_active(struct task_struct *p, unsigned int clamp_id)
+> > +{
+> > +	struct rq_flags rf;
+> > +	struct rq *rq;
 > > +
->
-> Why here and not at the end of the struct?
+> > +	/*
+> > +	 * Lock the task and the CPU where the task is (or was) queued.
+> > +	 *
+> > +	 * We might lock the (previous) rq of a !RUNNABLE task, but that's the
+> > +	 * price to pay to safely serialize util_{min,max} updates with
+> > +	 * enqueues, dequeues and migration operations.
+> > +	 * This is the same locking schema used by __set_cpus_allowed_ptr().
+> > +	 */
+> > +	rq = task_rq_lock(p, &rf);
+> > +
+> > +	/*
+> > +	 * Setting the clamp bucket is serialized by task_rq_lock().
+> > +	 * If the task is not yet RUNNABLE and its task_struct is not
+> > +	 * affecting a valid clamp bucket, the next time it's enqueued,
+> > +	 * it will already see the updated clamp bucket value.
+> > +	 */
+> > +	if (!p->uclamp[clamp_id].active)
+> > +		goto done;
+> > +
+> > +	uclamp_cpu_dec_id(p, rq, clamp_id);
+> > +	uclamp_cpu_inc_id(p, rq, clamp_id);
+> > +
+> > +done:
+> > +	task_rq_unlock(rq, p, &rf);
+> > +}
+> 
+> > @@ -1008,11 +1043,11 @@ static int __setscheduler_uclamp(struct task_struct *p,
+> >  
+> >  	mutex_lock(&uclamp_mutex);
+> >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MIN],
+> > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MIN],
+> >  				  UCLAMP_MIN, lower_bound);
+> >  	}
+> >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MAX],
+> > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MAX],
+> >  				  UCLAMP_MAX, upper_bound);
+> >  	}
+> >  	mutex_unlock(&uclamp_mutex);
+> 
+> 
+> But.... __sched_setscheduler() actually does the whole dequeue + enqueue
+> thing already ?!? See where it does __setscheduler().
 
-Fixed
+This is slow-path accounting, not fast path.
 
-> >       struct list_head        policy_list;
-> >       struct kobject          kobj;
-> >       struct completion       kobj_unregister;
-> >
->
-> Also, I would suggest combining this one with patch [02/10].
+There are two refcounting going on here:
 
-Will do.
+  1) mapped buckets:
 
-Thanks for the review.
+     clamp_value <--(M1)--> bucket_id
+
+  2) RUNNABLE tasks:
+
+     bucket_id <--(M2)--> RUNNABLE tasks in a bucket
+
+What we fix here is the refcounting for the buckets mapping. If a task
+does not have a task specific clamp value it does not refcount any
+bucket. The moment we assign a task specific clamp value, we need to
+refcount the task in the bucket corresponding to that clamp value.
+
+This will keep the bucket in use at least as long as the task will
+need that clamp value.
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
