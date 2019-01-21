@@ -1,112 +1,531 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH 10/13] gpio: max77650: add GPIO support
-Date: Mon, 21 Jan 2019 18:07:24 +0100
-Message-ID: <CAMRc=Me6OSKDk7bN4++M68DjoeArd+gZx16o0oQBXfRoCWBt2A@mail.gmail.com>
-References: <20190118134244.22253-1-brgl@bgdev.pl> <20190118134244.22253-11-brgl@bgdev.pl>
- <CACRpkdZhy7yBZrGLxhRGaac7v5jZhgUSz9gZAhFXbevJbKjpZw@mail.gmail.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC PATCH 1/2] Add support of imx7ulp to interconnect framework
+Date: Mon, 21 Jan 2019 19:41:56 +0200
+Message-ID: <3691c453-b2cb-df6f-d029-e82ac98733c7@linaro.org>
+References: <20181117111905.29091-1-abailon@baylibre.com>
+ <20181117111905.29091-2-abailon@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdZhy7yBZrGLxhRGaac7v5jZhgUSz9gZAhFXbevJbKjpZw@mail.gmail.com>
+In-Reply-To: <20181117111905.29091-2-abailon@baylibre.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Brian Masney <masneyb@onstation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: abailon@baylibre.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-pon., 21 sty 2019 o 15:20 Linus Walleij <linus.walleij@linaro.org> napisa=
-=C5=82(a):
->
-> Hi Bartosz,
->
-> thanks for the patch!
->
-> On Fri, Jan 18, 2019 at 2:43 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote=
-:
->
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > Add GPIO support for max77650 mfd device. This PMIC exposes a single
-> > GPIO line.
-> >
-> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->
-> Overall you know for sure what you're doing so not much to
-> say about the GPIO chip etc. The .set_config() is nice and
-> helpful (maybe you will be able to also add pull up/down
-> using Thomas Petazzoni's new config interfaces!)
->
-> However enlighten me on this:
->
-> > +static int max77650_gpio_to_irq(struct gpio_chip *gc, unsigned int off=
-set)
-> > +{
-> > +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> > +
-> > +       return regmap_irq_get_virq(chip->irq_chip_data, MAX77650_INT_GP=
-I);
-> > +}
->
-> I know this may be opening the gates to a lot of coding, but
-> isn't this IRQ hierarchical? I.e. that irqchip is not in the
-> node of the GPIO chip but in the node of the MFD top
-> device, with a 1:1 mapping between some of the IRQs
-> and a certain GPIO line.
->
-> Using regmap IRQ makes it confusing for me so I do not
-> know for sure if that is the case.
->
-> I am worried that you are recreating a problem (present in many
-> drivers, including some written by me, mea culpa) that Brian Masney
-> has been trying to solve for the gpiochip inside the SPMI
-> GPIO (drivers/pinctrl/qcom/pinctrl-spmi-gpio.c).
->
-> I have queued Brians refactoring and solution here:
-> https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio.git/log=
-/?h=3Dib-qcom-spmi
->
-> And the overall description on what he's trying to achieve is
-> here:
-> https://marc.info/?l=3Dlinux-gpio&m=3D154793071511130&w=3D2
->
-> My problem description (which I fear will apply also to this
-> driver):
-> https://www.spinics.net/lists/linux-gpio/msg34655.html
->
-> I plan to merge Brians patches soon-ish to devel and then from
-> there try to construct more helpers in the gpiolib core,
-> and if possible fix some of the old drivers who rely on
-> .to_irq().
->
-> We will certainly fix ssbi-gpio as well, and that is a good start
-> since the Qualdcomm platforms are so pervasive in the
-> market.
->
-> But maybe this doesn't apply here? I am not the smartest...
-> Just want to make sure that it is possible to refer an
-> interrupt directly to this DT node, as it is indeed marked
-> as interrupt-controller.
->
+Hi Alexandre,
 
-Hi Linus,
+Thanks for submitting this patchset!
 
-Thank you for your review. While I think you're right about the issue
-being present in this driver, I'm not sure it's really a problem. Do
-we actually require every gpio-controller to also be a stand-alone
-interrupt-controller? The binding document for the GPIO module doesn't
-mention this - it only requires the gpio-controller property. Without
-the "interrupt-controller" property dtc will bail-out if anyone uses
-this node as the interrupt parent.
+On 11/17/18 13:19, abailon@baylibre.com wrote:
+> From: Alexandre Bailon <abailon@baylibre.com>
+> 
+> This is a PoC of interconnect driver for the imx7ulp.
+> This scales the clock of nic0 and nic1 (the two interconnects).
+> In order too solve some issue with clocks (I will give more details
 
-If I'm wrong and we do require it, then I think we need to update
-Documentation/devicetree/bindings/gpio/gpio.txt.
+s/too/to/
 
-Best regards,
-Bartosz Golaszewski
+> later in code), the bus topology described in the driver differ a little
+> from the one in the datasheet.
 
-PS: FYI since this submission I dropped the virtual irq number lookup
-in sub-drivers in favor of resources setup by the parent driver[1] as
-suggested by Dmitry in his review of the input module driver.
+Is there a public datasheet available?
 
-[1] https://github.com/brgl/linux/blob/topic/max77650_mfd_driver/drivers/gp=
-io/gpio-max77650.c#L158
+> In addition, the driver manages nic0 and nic1 as an unique
+> interconnect. It would have been better to manage them separately but
+> it was harder to do it because of the clocks (again).
+> Later, I will add third clock for the MMDC endpoint, which is the
+> DDR controller. This will be used to scale the DDR in addition of
+> interconnect.
+> 
+> Signed-off-by: Alexandre Bailon <abailon@baylibre.com.com>
+
+s/.com.com/.com/
+
+> ---
+>  drivers/interconnect/Kconfig       |   1 +
+>  drivers/interconnect/Makefile      |   1 +
+>  drivers/interconnect/imx/Kconfig   |   9 +
+>  drivers/interconnect/imx/Makefile  |   1 +
+>  drivers/interconnect/imx/imx7ulp.c | 369 +++++++++++++++++++++++++++++
+>  5 files changed, 381 insertions(+)
+>  create mode 100644 drivers/interconnect/imx/Kconfig
+>  create mode 100644 drivers/interconnect/imx/Makefile
+>  create mode 100644 drivers/interconnect/imx/imx7ulp.c
+> 
+> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
+> index 07a8276fa35a..99955906bea8 100644
+> --- a/drivers/interconnect/Kconfig
+> +++ b/drivers/interconnect/Kconfig
+> @@ -11,5 +11,6 @@ menuconfig INTERCONNECT
+>  if INTERCONNECT
+>  
+>  source "drivers/interconnect/qcom/Kconfig"
+> +source "drivers/interconnect/imx/Kconfig"
+>  
+>  endif
+> diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+> index 7944cbca0527..4c8814fc2b4b 100644
+> --- a/drivers/interconnect/Makefile
+> +++ b/drivers/interconnect/Makefile
+> @@ -1,3 +1,4 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  obj-$(CONFIG_INTERCONNECT)		+= core.o
+>  obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
+> +obj-$(CONFIG_INTERCONNECT_IMX)		+= imx/
+> diff --git a/drivers/interconnect/imx/Kconfig b/drivers/interconnect/imx/Kconfig
+> new file mode 100644
+> index 000000000000..5eb88eafc1fd
+> --- /dev/null
+> +++ b/drivers/interconnect/imx/Kconfig
+> @@ -0,0 +1,9 @@
+> +config INTERCONNECT_IMX
+> +	bool "IMX Network-on-Chip interconnect drivers"
+
+I was wondering if this can be a module?
+
+> +	depends on INTERCONNECT
+
+The above is redundant.
+
+> +	depends on ARCH_MXC
+
+It would be nice if we can support COMPILE_TEST.
+
+> +	default y
+> +
+> +config INTERCONNECT_IMX7ULP
+> +	tristate "i.MX7ULP NIC-301 interconnect driver"
+> +	depends on INTERCONNECT_IMX
+> diff --git a/drivers/interconnect/imx/Makefile b/drivers/interconnect/imx/Makefile
+> new file mode 100644
+> index 000000000000..61d994b8fe2c
+> --- /dev/null
+> +++ b/drivers/interconnect/imx/Makefile
+> @@ -0,0 +1 @@
+> +obj-$(CONFIG_INTERCONNECT_IMX7ULP) += imx7ulp.o
+> diff --git a/drivers/interconnect/imx/imx7ulp.c b/drivers/interconnect/imx/imx7ulp.c
+> new file mode 100644
+> index 000000000000..7715198ad151
+> --- /dev/null
+> +++ b/drivers/interconnect/imx/imx7ulp.c
+> @@ -0,0 +1,369 @@
+
+Missing SPDX?
+
+> +#include <linux/clk.h>
+> +#include <linux/device.h>
+> +#include <linux/io.h>
+> +#include <linux/interconnect-provider.h>
+
+Please move this above io.h to keep it sorted.
+
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +
+> +#define IMX7ULP_MAX_LINKS	32
+> +
+> +/**
+> + * Clock property of node
+
+The format should be:
+struct my_struct - short description
+
+> + * @name: The name of the clock
+> + * @clk: A pointer to the clock
+> + * @rate: The rate to use, when the clock frequency is updated
+> + */
+> +struct imx7ulp_bus_clock {
+> +	char *name;
+> +	struct clk *clk;
+> +	u64 rate;
+> +};
+> +
+> +/**
+> + * IMX7ULP specific interconnect nodes
+
+Ditto.
+
+> + * @name: the node name used in debugfs
+> + * @id: a unique node identifier
+> + * @links: an array of nodes where we can go next while traversing
+> + * @num_links: the total number of @links
+> + * @buswidth: width (in bit) of the interconnect between a node and the bus
+> + * @bus_clk: If not NULL, define clock properties of the node
+> + * @ep: true if the node is an end point. Used to scale the frequency
+> + */
+> +struct imx7ulp_icc_node {
+> +	char *name;
+> +	u16 id;
+> +	u16 links[IMX7ULP_MAX_LINKS];
+> +	u16 num_links;
+> +	u16 buswidth;
+> +	struct imx7ulp_bus_clock *bus_clk;
+> +	bool ep;
+> +};
+> +
+> +/**
+
+Ditto.
+
+> + * @dev: device pointer for the overall interconnect
+> + *       Although there are 2 interconnects, they are represented using one
+> + *       device.
+> + * @nodes: Array of nodes
+> + * @num_nodes: The total number of nodes
+> + * @nic0: Clock properties for nic0 interconnect
+> + * @nic1: Clock properties for nic1 interconnect
+> + */
+> +struct imx7ulp_icc_desc {
+> +	struct device *dev;
+> +	struct imx7ulp_icc_node *nodes;
+> +	size_t num_nodes;
+> +	struct imx7ulp_bus_clock *nic0;
+> +	struct imx7ulp_bus_clock *nic1;
+> +};
+
+I assume that we can be only change the rate of the interconnect clocks
+and there are no other knobs? Is this correct? If that's the case, i
+don't see a problem to represent it as a single device.
+
+> +
+> +#define DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, _ep, _clk,	\
+> +				_numlinks, ...)				\
+> +	{								\
+> +		.id = _id,						\
+> +		.name = #_name,						\
+> +		.buswidth = (_buswidth * 4),				\
+
+Please put parenthesis around _buswidth or avoid potential precedence
+issues.
+
+> +		.num_links = _numlinks,					\
+> +		.links = { __VA_ARGS__ },				\
+> +		.ep = _ep,						\
+> +		.bus_clk = _clk,					\
+> +	}
+> +
+> +#define DEFINE_AXI_MASTER(_name, _id, _buswidth, dest_id)		\
+> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, false, NULL,	\
+> +				1, dest_id)
+> +
+> +#define DEFINE_AXI_SLAVE(_name, _id, _buswidth, _numlinks, ...)		\
+> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, false, NULL,	\
+> +				_numlinks, __VA_ARGS__)
+> +
+> +#define DEFINE_AXI_SLAVE_EP(_name, _id, _buswidth)			\
+> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, true, NULL, 0, 0)
+> +
+> +#define DEFINE_AHB_SLAVE_EP(_name, _id)					\
+> +	DEFINE_AXI_SLAVE_EP(_name, _id, 4)
+> +
+> +static struct imx7ulp_bus_clock nic0_clock = {
+> +	.name = "nic0_div",
+> +};
+> +
+> +static struct imx7ulp_bus_clock nic1_clock = {
+> +	.name = "nic1_div",
+> +};
+> +
+> +static struct imx7ulp_icc_node imx7ulp_nodes[] = {
+> +	/* NIC0 Masters */
+> +	DEFINE_AXI_MASTER(a7, 2000, 16, 1000),
+> +	DEFINE_AXI_MASTER(nic1_s1, 2001, 8, 1000),
+> +	DEFINE_AXI_MASTER(dsi, 2002, 4, 1000),
+> +	DEFINE_AXI_MASTER(gpu3d, 2003, 8, 1000),
+> +	DEFINE_AXI_MASTER(gpu2d, 2004, 16, 1000),
+> +
+> +	/* NIC0 Slaves */
+> +	DEFINE_AXI_SLAVE_EP(mmdc, 2005, 16),
+> +	DEFINE_AXI_SLAVE_EP(sram0, 2006, 8),
+> +
+> +	/* NIC0 */
+> +	DEFINE_AXI_INTERCONNECT(nic0_m, 1000, 8, false, &nic0_clock, 1, 1001),
+> +	DEFINE_AXI_INTERCONNECT(nic0_s, 1001, 8, false, NULL, 3,
+> +				2005, 2006, 1008),
+> +
+> +	/* NIC1 Masters */
+> +	DEFINE_AXI_MASTER(dma1_m, 2011, 8, 1008),
+> +	DEFINE_AXI_MASTER(caam_m, 2013, 4, 1008),
+> +	DEFINE_AXI_MASTER(usbotg_m, 2014, 4, 1008),
+> +	DEFINE_AXI_MASTER(viu_m, 2015, 8, 1008),
+> +	DEFINE_AXI_MASTER(usdhc0_m, 2016, 4, 1008),
+> +	DEFINE_AXI_MASTER(usdhc1_m, 2017, 4, 1008),
+> +
+> +	/* NIC1 Slaves */
+> +	DEFINE_AXI_SLAVE_EP(sram1, 2018, 8),
+> +	DEFINE_AXI_SLAVE_EP(secure_ram, 2020, 4),
+> +	DEFINE_AXI_SLAVE_EP(rom, 2023, 4), /* Also flexbus, gpu 2d and 3d */
+> +	DEFINE_AXI_SLAVE_EP(m4xbar, 2024, 4),
+> +
+> +	/* AHB0 */
+> +	DEFINE_AHB_SLAVE_EP(dma1, 8),
+> +	DEFINE_AHB_SLAVE_EP(dmadesc1, 9),
+> +	DEFINE_AHB_SLAVE_EP(rgpio2p, 15),
+> +	DEFINE_AHB_SLAVE_EP(flexbus, 16),
+> +	DEFINE_AHB_SLAVE_EP(sema42_1, 27),
+> +	DEFINE_AHB_SLAVE_EP(dmamux1, 33),
+> +	DEFINE_AHB_SLAVE_EP(mu_b, 34),
+> +	DEFINE_AHB_SLAVE_EP(caam, 36),
+> +	DEFINE_AHB_SLAVE_EP(tpm4, 37),
+> +	DEFINE_AHB_SLAVE_EP(tpm5, 38),
+> +	DEFINE_AHB_SLAVE_EP(lpit1, 39),
+> +	DEFINE_AHB_SLAVE_EP(lpspi2, 41),
+> +	DEFINE_AHB_SLAVE_EP(lpspi3, 42),
+> +	DEFINE_AHB_SLAVE_EP(lpi2c4, 43),
+> +	DEFINE_AHB_SLAVE_EP(lpi2c5, 44),
+> +	DEFINE_AHB_SLAVE_EP(lpuart4, 45),
+> +	DEFINE_AHB_SLAVE_EP(lpuart5, 46),
+> +	DEFINE_AHB_SLAVE_EP(flexio1, 49),
+> +	DEFINE_AHB_SLAVE_EP(usbotg1, 51),
+> +	DEFINE_AHB_SLAVE_EP(usbotg2, 52),
+> +	DEFINE_AHB_SLAVE_EP(usbphy, 53),
+> +	DEFINE_AHB_SLAVE_EP(usbpl301, 54),
+> +	DEFINE_AHB_SLAVE_EP(usdhc0, 55),
+> +	DEFINE_AHB_SLAVE_EP(usdhc1, 56),
+> +	DEFINE_AHB_SLAVE_EP(trgmux1, 59),
+> +	DEFINE_AHB_SLAVE_EP(wdog1, 61),
+> +	DEFINE_AHB_SLAVE_EP(scg1, 62),
+> +	DEFINE_AHB_SLAVE_EP(pcc2, 63),
+> +	DEFINE_AHB_SLAVE_EP(pmc1, 64),
+> +	DEFINE_AHB_SLAVE_EP(cmc1, 65),
+> +	DEFINE_AHB_SLAVE_EP(wdog2, 67),
+> +
+> +	DEFINE_AXI_SLAVE(ahb0, 2021, 4, 32,
+> +			 8, 9, 15, 16, 27, 33, 34, 35, 36, 37, 38, 39, 41, 42,
+> +			 43, 44, 45, 46, 49, 51, 52, 53, 54, 55, 56, 59, 61, 62,
+> +			 63, 64, 65, 67),
+> +
+> +	/* AHB1 */
+> +	DEFINE_AHB_SLAVE_EP(romc1, 116),
+> +	DEFINE_AHB_SLAVE_EP(tpm6, 133),
+> +	DEFINE_AHB_SLAVE_EP(tpm7, 134),
+> +	DEFINE_AHB_SLAVE_EP(lpi2c6, 136),
+> +	DEFINE_AHB_SLAVE_EP(lpi2c7, 137),
+> +	DEFINE_AHB_SLAVE_EP(lpuart6, 138),
+> +	DEFINE_AHB_SLAVE_EP(lpuart7, 139),
+> +	DEFINE_AHB_SLAVE_EP(viu, 140),
+> +	DEFINE_AHB_SLAVE_EP(dsi, 141),
+> +	DEFINE_AHB_SLAVE_EP(lcdif, 142),
+> +	DEFINE_AHB_SLAVE_EP(mmdc, 143),
+> +	DEFINE_AHB_SLAVE_EP(iomuxc1, 144),
+> +	DEFINE_AHB_SLAVE_EP(iomuxc_ddr, 145),
+> +	DEFINE_AHB_SLAVE_EP(pctlc, 146),
+> +	DEFINE_AHB_SLAVE_EP(pctld, 147),
+> +	DEFINE_AHB_SLAVE_EP(pctle, 148),
+> +	DEFINE_AHB_SLAVE_EP(pctlf, 149),
+> +	DEFINE_AHB_SLAVE_EP(pcc3, 151),
+> +
+> +	DEFINE_AXI_SLAVE(ahb1, 2022, 4, 19,
+> +			 116, 133, 134, 136, 137, 138, 139, 140, 141,
+> +			 142, 143, 144, 145, 146, 147, 148, 149, 151),
+> +
+> +	/* NIC1 */
+> +	DEFINE_AXI_INTERCONNECT(nic1_m, 1008, 8, false, &nic1_clock, 1, 1009),
+> +	DEFINE_AXI_INTERCONNECT(nic1_s, 1009, 8, false, NULL, 7,
+> +				2018, 1000, 2020, 2021, 2022, 2023, 2024),> +};
+> +
+> +static struct imx7ulp_icc_desc icc_desc = {
+> +	.nodes = (struct imx7ulp_icc_node *)&imx7ulp_nodes,
+> +	.num_nodes = ARRAY_SIZE(imx7ulp_nodes),
+> +};
+> +
+> +static int imx7ulp_icc_aggregate(struct icc_node *node, u32 avg_bw,
+> +				  u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
+> +{
+> +	*agg_avg += avg_bw;
+> +	*agg_peak = max(*agg_peak, peak_bw);
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx7ulp_icc_set(struct icc_node *src, struct icc_node *dst)
+> +{
+> +	int ret;
+> +	struct imx7ulp_icc_node *node;
+> +	struct imx7ulp_icc_desc *desc = src->provider->data;
+> +
+> +	/* If node has a clock, compute the new rate */
+> +	node = src->data;
+> +	if (node->bus_clk) {
+> +		u64 rate;
+> +		struct imx7ulp_bus_clock *bus_clk = node->bus_clk;
+> +
+> +		rate = (src->peak_bw / node->buswidth) * 1000;
+
+Maybe use do_div().
+
+> +		rate = clk_round_rate(bus_clk->clk, rate);
+> +		if (rate != bus_clk->rate) {
+> +			dev_dbg(desc->dev, "%s: new rate = %llu\n",
+> +				bus_clk->name, rate);
+> +			bus_clk->rate = rate;
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * If the node is an endpoint, update the clock rate of nic0 and nic1
+> +	 * nodes. nic1 clock derives from nic0, so we usually have to update
+> +	 * both of them even if bandwidth changed only for one of the
+> +	 * interconnect.
+> +	 */
+> +	node = dst->data;
+> +	if (node->ep) {
+> +		struct imx7ulp_bus_clock *nic0_clk = desc->nic0;
+> +		struct imx7ulp_bus_clock *nic1_clk = desc->nic1;
+> +
+> +		if (nic1_clk->rate > nic0_clk->rate)
+> +			nic0_clk->rate = nic1_clk->rate;
+> +
+> +		if (clk_get_rate(nic0_clk->clk) != nic0_clk->rate) {
+> +			dev_dbg(desc->dev, "%s: apply rate = %llu\n",
+> +				nic0_clk->name, nic0_clk->rate);
+> +			ret = clk_set_rate(nic0_clk->clk, nic0_clk->rate);
+> +			if (ret)
+> +				dev_err(desc->dev, "Failed to set clock: %d\n",
+> +					ret);
+> +		}
+> +
+> +		if (clk_get_rate(nic1_clk->clk) != nic1_clk->rate) {
+> +			dev_dbg(desc->dev, "%s: apply rate = %llu\n",
+> +				nic1_clk->name, nic1_clk->rate);
+> +			ret = clk_set_rate(nic1_clk->clk, nic1_clk->rate);
+> +			if (ret)
+> +				dev_err(desc->dev, "Failed to set clock: %d\n",
+> +					ret);
+> +		}
+> +	}
+> +
+> +	return 0;
+
+Just f.y.i, i recently introduced another patch that reverts to the
+settings to the previous configuration if any of the requests fail, so
+you can also return errors here (if it makes sense to do so on this
+platform).
+
+> +}
+> +
+> +static int imx7ulp_probe(struct platform_device *pdev)
+> +{
+> +	struct imx7ulp_icc_desc *desc = &icc_desc;
+> +	struct icc_provider *provider;
+> +	size_t i;
+> +	int ret;
+> +
+> +	desc->dev = &pdev->dev;
+> +	desc->nic0 = &nic0_clock;
+> +	desc->nic1 = &nic1_clock;
+> +
+> +	provider = devm_kzalloc(&pdev->dev, sizeof(*provider), GFP_KERNEL);
+> +	provider->set = imx7ulp_icc_set;
+> +	provider->aggregate = imx7ulp_icc_aggregate;
+
+If you want to use DT, you will need to put the endpoint IDs in some
+header file and implement the xlate() function or use the generic
+of_icc_xlate_onecell().
+
+> +	INIT_LIST_HEAD(&provider->nodes);
+> +	provider->data = desc;
+> +
+> +	ret = icc_provider_add(provider);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "error adding interconnect provider\n");
+> +		return ret;
+> +	}
+> +
+> +	for (i = 0; i < desc->num_nodes; i++) {
+> +		struct icc_node *node;
+> +		int ret;
+> +		size_t j;
+> +
+> +		if (desc->nodes[i].bus_clk) {
+> +			struct imx7ulp_bus_clock *bus_clk;
+> +
+> +			bus_clk = desc->nodes[i].bus_clk;
+> +			bus_clk->clk = devm_clk_get(&pdev->dev, bus_clk->name);
+> +			if (IS_ERR(bus_clk->clk)) {
+> +				dev_err(&pdev->dev,
+> +					"Failed to get clock %s: %d\n",
+> +					bus_clk->name, PTR_ERR(bus_clk->clk));
+> +				ret = PTR_ERR(bus_clk->clk);
+> +				goto err;
+> +			}
+> +
+> +			ret = clk_prepare_enable(bus_clk->clk);
+> +			if (ret) {
+> +				dev_err(&pdev->dev,
+> +					"error enabling clock: %s %d\n",
+> +					bus_clk->name, ret);
+> +				goto err;
+> +			}
+> +		}
+> +
+> +		node = icc_node_create(desc->nodes[i].id);
+> +		if (IS_ERR(node)) {
+> +			ret = PTR_ERR(node);
+> +			dev_err(&pdev->dev, "Failed to create node %s\n",
+> +				desc->nodes[i].name);
+> +			goto err;
+> +		}
+> +
+> +		node->name = desc->nodes[i].name;
+> +		node->data = &desc->nodes[i];
+> +		icc_node_add(node, provider);
+> +
+> +		dev_dbg(&pdev->dev, "registered node %p %s %d\n", node,
+> +			desc->nodes[i].name, node->id);
+> +
+> +		for (j = 0; j < desc->nodes[i].num_links; j++)
+> +			if (desc->nodes[i].links[j])
+> +				icc_link_create(node, desc->nodes[i].links[j]);
+> +	}
+> +
+> +	platform_set_drvdata(pdev, provider);
+> +
+> +	return 0;
+> +err:
+> +	icc_provider_del(provider);
+
+First delete the nodes (if any) and then the provider.
+
+> +	return ret;
+> +}
+> +
+> +static int imx7ulp_remove(struct platform_device *pdev)
+> +{
+> +	struct icc_provider *provider = platform_get_drvdata(pdev);
+> +
+> +	icc_provider_del(provider);
+
+Ditto.
+
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id imx7ulp_of_match[] = {
+> +	{ .compatible = "fsl,imx7ulp-icc" },
+> +	{ },
+> +};
+> +MODULE_DEVICE_TABLE(of, imx7ulp_of_match);
+> +
+> +static struct platform_driver imx7ulp_driver = {
+> +	.probe = imx7ulp_probe,
+> +	.remove = imx7ulp_remove,
+> +	.driver = {
+> +		.name = "imx7ulp-icc",
+> +		.of_match_table = imx7ulp_of_match,
+> +	},
+> +};
+> +module_platform_driver(imx7ulp_driver);
+
+Please use builtin_platform_driver if it can't be a module.
+
+Thank you for working on this! I am expecting the next version.
+
+BR,
+Georgi
