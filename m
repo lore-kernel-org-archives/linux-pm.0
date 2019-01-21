@@ -1,54 +1,50 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 1/3] PM / devfreq: fix indentation in
- devfreq_add_device()
-Date: Mon, 21 Jan 2019 08:39:20 -0800
-Message-ID: <a6b96055a16da89a3cc20c145b65beb61c55f0a1.camel@perches.com>
-References: <CGME20190119183407epcas1p4958e4526d07c36605307c49b0c0e2e2c@epcas1p4.samsung.com>
-         <20190119160454.23151-1-tiny.windzz@gmail.com>
-         <e45d38da-1dc4-c1ca-83d4-0efeb64acef1@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 04/16] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Mon, 21 Jan 2019 15:59:29 +0100
+Message-ID: <20190121145929.GI27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-5-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e45d38da-1dc4-c1ca-83d4-0efeb64acef1@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20190115101513.2822-5-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2019-01-21 at 10:58 +0900, Chanwoo Choi wrote:
-> On 19. 1. 20. 오전 1:04, Yangtao Li wrote:
-> > To beautify the code format.
+On Tue, Jan 15, 2019 at 10:15:01AM +0000, Patrick Bellasi wrote:
+> @@ -835,6 +954,28 @@ static void uclamp_bucket_inc(struct uclamp_se *uc_se, unsigned int clamp_id,
+>  	} while (!atomic_long_try_cmpxchg(&uc_maps[bucket_id].adata,
+>  					  &uc_map_old.data, uc_map_new.data));
+>  
+> +	/*
+> +	 * Ensure each CPU tracks the correct value for this clamp bucket.
+> +	 * This initialization of per-CPU variables is required only when a
+> +	 * clamp value is requested for the first time from a slow-path.
+> +	 */
 
-I believe half of the changes are actually _less_ beautiful.
+I'm confused; why is this needed?
 
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-[]
-> > @@ -683,16 +683,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
-> >  		goto err_out;
-> >  	}
-> >  
-> > -	devfreq->trans_table =
-> > -		devm_kzalloc(&devfreq->dev,
-> > -			     array3_size(sizeof(unsigned int),
-> > -					 devfreq->profile->max_state,
-> > -					 devfreq->profile->max_state),
-> > -			     GFP_KERNEL);
-> > +	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
-> > +					    array3_size(sizeof(unsigned int),
-> > +					    devfreq->profile->max_state,
-> > +					    devfreq->profile->max_state),
-> > +					    GFP_KERNEL);
-
-I think this bit is worse because the array3_size arguments
-are no longer aligned.
-
-> >  	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
-> > -						devfreq->profile->max_state,
-> > -						sizeof(unsigned long),
-> > -						GFP_KERNEL);
-> > +					      devfreq->profile->max_state,
-> > +					      sizeof(unsigned long),
-> > +					      GFP_KERNEL);
-
-and this bit is better.
+> +	if (unlikely(!uc_map_old.se_count)) {
+> +		for_each_possible_cpu(cpu) {
+> +			struct uclamp_cpu *uc_cpu =
+> +				&cpu_rq(cpu)->uclamp[clamp_id];
+> +
+> +			/* CPU's tasks count must be 0 for free buckets */
+> +			SCHED_WARN_ON(uc_cpu->bucket[bucket_id].tasks);
+> +			if (unlikely(uc_cpu->bucket[bucket_id].tasks))
+> +				uc_cpu->bucket[bucket_id].tasks = 0;
+> +
+> +			/* Minimize cache lines invalidation */
+> +			if (uc_cpu->bucket[bucket_id].value == bucket_value)
+> +				continue;
+> +			uc_cpu->bucket[bucket_id].value = bucket_value;
+> +		}
+> +	}
+> +
+>  	uc_se->value = clamp_value;
+>  	uc_se->bucket_id = bucket_id;
+>  
