@@ -1,531 +1,123 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [RFC PATCH 1/2] Add support of imx7ulp to interconnect framework
-Date: Mon, 21 Jan 2019 19:41:56 +0200
-Message-ID: <3691c453-b2cb-df6f-d029-e82ac98733c7@linaro.org>
-References: <20181117111905.29091-1-abailon@baylibre.com>
- <20181117111905.29091-2-abailon@baylibre.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based
+ accounting with ktime based accounting
+Date: Mon, 21 Jan 2019 23:52:46 +0100
+Message-ID: <CAJZ5v0j+Tp5xeBXsrYRn65QDYZgemWbhqm4maCqJuyNGVJ1drQ@mail.gmail.com>
+References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
+ <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
+ <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
+ <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
+ <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com>
+ <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
+ <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181117111905.29091-2-abailon@baylibre.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: abailon@baylibre.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexandre,
-
-Thanks for submitting this patchset!
-
-On 11/17/18 13:19, abailon@baylibre.com wrote:
-> From: Alexandre Bailon <abailon@baylibre.com>
-> 
-> This is a PoC of interconnect driver for the imx7ulp.
-> This scales the clock of nic0 and nic1 (the two interconnects).
-> In order too solve some issue with clocks (I will give more details
-
-s/too/to/
-
-> later in code), the bus topology described in the driver differ a little
-> from the one in the datasheet.
-
-Is there a public datasheet available?
-
-> In addition, the driver manages nic0 and nic1 as an unique
-> interconnect. It would have been better to manage them separately but
-> it was harder to do it because of the clocks (again).
-> Later, I will add third clock for the MMDC endpoint, which is the
-> DDR controller. This will be used to scale the DDR in addition of
-> interconnect.
-> 
-> Signed-off-by: Alexandre Bailon <abailon@baylibre.com.com>
-
-s/.com.com/.com/
-
-> ---
->  drivers/interconnect/Kconfig       |   1 +
->  drivers/interconnect/Makefile      |   1 +
->  drivers/interconnect/imx/Kconfig   |   9 +
->  drivers/interconnect/imx/Makefile  |   1 +
->  drivers/interconnect/imx/imx7ulp.c | 369 +++++++++++++++++++++++++++++
->  5 files changed, 381 insertions(+)
->  create mode 100644 drivers/interconnect/imx/Kconfig
->  create mode 100644 drivers/interconnect/imx/Makefile
->  create mode 100644 drivers/interconnect/imx/imx7ulp.c
-> 
-> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-> index 07a8276fa35a..99955906bea8 100644
-> --- a/drivers/interconnect/Kconfig
-> +++ b/drivers/interconnect/Kconfig
-> @@ -11,5 +11,6 @@ menuconfig INTERCONNECT
->  if INTERCONNECT
->  
->  source "drivers/interconnect/qcom/Kconfig"
-> +source "drivers/interconnect/imx/Kconfig"
->  
->  endif
-> diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
-> index 7944cbca0527..4c8814fc2b4b 100644
-> --- a/drivers/interconnect/Makefile
-> +++ b/drivers/interconnect/Makefile
-> @@ -1,3 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0
->  obj-$(CONFIG_INTERCONNECT)		+= core.o
->  obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
-> +obj-$(CONFIG_INTERCONNECT_IMX)		+= imx/
-> diff --git a/drivers/interconnect/imx/Kconfig b/drivers/interconnect/imx/Kconfig
-> new file mode 100644
-> index 000000000000..5eb88eafc1fd
-> --- /dev/null
-> +++ b/drivers/interconnect/imx/Kconfig
-> @@ -0,0 +1,9 @@
-> +config INTERCONNECT_IMX
-> +	bool "IMX Network-on-Chip interconnect drivers"
-
-I was wondering if this can be a module?
-
-> +	depends on INTERCONNECT
-
-The above is redundant.
-
-> +	depends on ARCH_MXC
-
-It would be nice if we can support COMPILE_TEST.
-
-> +	default y
-> +
-> +config INTERCONNECT_IMX7ULP
-> +	tristate "i.MX7ULP NIC-301 interconnect driver"
-> +	depends on INTERCONNECT_IMX
-> diff --git a/drivers/interconnect/imx/Makefile b/drivers/interconnect/imx/Makefile
-> new file mode 100644
-> index 000000000000..61d994b8fe2c
-> --- /dev/null
-> +++ b/drivers/interconnect/imx/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_INTERCONNECT_IMX7ULP) += imx7ulp.o
-> diff --git a/drivers/interconnect/imx/imx7ulp.c b/drivers/interconnect/imx/imx7ulp.c
-> new file mode 100644
-> index 000000000000..7715198ad151
-> --- /dev/null
-> +++ b/drivers/interconnect/imx/imx7ulp.c
-> @@ -0,0 +1,369 @@
-
-Missing SPDX?
-
-> +#include <linux/clk.h>
-> +#include <linux/device.h>
-> +#include <linux/io.h>
-> +#include <linux/interconnect-provider.h>
-
-Please move this above io.h to keep it sorted.
-
-> +#include <linux/module.h>
-> +#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +
-> +#define IMX7ULP_MAX_LINKS	32
-> +
-> +/**
-> + * Clock property of node
-
-The format should be:
-struct my_struct - short description
-
-> + * @name: The name of the clock
-> + * @clk: A pointer to the clock
-> + * @rate: The rate to use, when the clock frequency is updated
-> + */
-> +struct imx7ulp_bus_clock {
-> +	char *name;
-> +	struct clk *clk;
-> +	u64 rate;
-> +};
-> +
-> +/**
-> + * IMX7ULP specific interconnect nodes
-
-Ditto.
-
-> + * @name: the node name used in debugfs
-> + * @id: a unique node identifier
-> + * @links: an array of nodes where we can go next while traversing
-> + * @num_links: the total number of @links
-> + * @buswidth: width (in bit) of the interconnect between a node and the bus
-> + * @bus_clk: If not NULL, define clock properties of the node
-> + * @ep: true if the node is an end point. Used to scale the frequency
-> + */
-> +struct imx7ulp_icc_node {
-> +	char *name;
-> +	u16 id;
-> +	u16 links[IMX7ULP_MAX_LINKS];
-> +	u16 num_links;
-> +	u16 buswidth;
-> +	struct imx7ulp_bus_clock *bus_clk;
-> +	bool ep;
-> +};
-> +
-> +/**
-
-Ditto.
-
-> + * @dev: device pointer for the overall interconnect
-> + *       Although there are 2 interconnects, they are represented using one
-> + *       device.
-> + * @nodes: Array of nodes
-> + * @num_nodes: The total number of nodes
-> + * @nic0: Clock properties for nic0 interconnect
-> + * @nic1: Clock properties for nic1 interconnect
-> + */
-> +struct imx7ulp_icc_desc {
-> +	struct device *dev;
-> +	struct imx7ulp_icc_node *nodes;
-> +	size_t num_nodes;
-> +	struct imx7ulp_bus_clock *nic0;
-> +	struct imx7ulp_bus_clock *nic1;
-> +};
-
-I assume that we can be only change the rate of the interconnect clocks
-and there are no other knobs? Is this correct? If that's the case, i
-don't see a problem to represent it as a single device.
-
-> +
-> +#define DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, _ep, _clk,	\
-> +				_numlinks, ...)				\
-> +	{								\
-> +		.id = _id,						\
-> +		.name = #_name,						\
-> +		.buswidth = (_buswidth * 4),				\
-
-Please put parenthesis around _buswidth or avoid potential precedence
-issues.
-
-> +		.num_links = _numlinks,					\
-> +		.links = { __VA_ARGS__ },				\
-> +		.ep = _ep,						\
-> +		.bus_clk = _clk,					\
-> +	}
-> +
-> +#define DEFINE_AXI_MASTER(_name, _id, _buswidth, dest_id)		\
-> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, false, NULL,	\
-> +				1, dest_id)
-> +
-> +#define DEFINE_AXI_SLAVE(_name, _id, _buswidth, _numlinks, ...)		\
-> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, false, NULL,	\
-> +				_numlinks, __VA_ARGS__)
-> +
-> +#define DEFINE_AXI_SLAVE_EP(_name, _id, _buswidth)			\
-> +	DEFINE_AXI_INTERCONNECT(_name, _id, _buswidth, true, NULL, 0, 0)
-> +
-> +#define DEFINE_AHB_SLAVE_EP(_name, _id)					\
-> +	DEFINE_AXI_SLAVE_EP(_name, _id, 4)
-> +
-> +static struct imx7ulp_bus_clock nic0_clock = {
-> +	.name = "nic0_div",
-> +};
-> +
-> +static struct imx7ulp_bus_clock nic1_clock = {
-> +	.name = "nic1_div",
-> +};
-> +
-> +static struct imx7ulp_icc_node imx7ulp_nodes[] = {
-> +	/* NIC0 Masters */
-> +	DEFINE_AXI_MASTER(a7, 2000, 16, 1000),
-> +	DEFINE_AXI_MASTER(nic1_s1, 2001, 8, 1000),
-> +	DEFINE_AXI_MASTER(dsi, 2002, 4, 1000),
-> +	DEFINE_AXI_MASTER(gpu3d, 2003, 8, 1000),
-> +	DEFINE_AXI_MASTER(gpu2d, 2004, 16, 1000),
-> +
-> +	/* NIC0 Slaves */
-> +	DEFINE_AXI_SLAVE_EP(mmdc, 2005, 16),
-> +	DEFINE_AXI_SLAVE_EP(sram0, 2006, 8),
-> +
-> +	/* NIC0 */
-> +	DEFINE_AXI_INTERCONNECT(nic0_m, 1000, 8, false, &nic0_clock, 1, 1001),
-> +	DEFINE_AXI_INTERCONNECT(nic0_s, 1001, 8, false, NULL, 3,
-> +				2005, 2006, 1008),
-> +
-> +	/* NIC1 Masters */
-> +	DEFINE_AXI_MASTER(dma1_m, 2011, 8, 1008),
-> +	DEFINE_AXI_MASTER(caam_m, 2013, 4, 1008),
-> +	DEFINE_AXI_MASTER(usbotg_m, 2014, 4, 1008),
-> +	DEFINE_AXI_MASTER(viu_m, 2015, 8, 1008),
-> +	DEFINE_AXI_MASTER(usdhc0_m, 2016, 4, 1008),
-> +	DEFINE_AXI_MASTER(usdhc1_m, 2017, 4, 1008),
-> +
-> +	/* NIC1 Slaves */
-> +	DEFINE_AXI_SLAVE_EP(sram1, 2018, 8),
-> +	DEFINE_AXI_SLAVE_EP(secure_ram, 2020, 4),
-> +	DEFINE_AXI_SLAVE_EP(rom, 2023, 4), /* Also flexbus, gpu 2d and 3d */
-> +	DEFINE_AXI_SLAVE_EP(m4xbar, 2024, 4),
-> +
-> +	/* AHB0 */
-> +	DEFINE_AHB_SLAVE_EP(dma1, 8),
-> +	DEFINE_AHB_SLAVE_EP(dmadesc1, 9),
-> +	DEFINE_AHB_SLAVE_EP(rgpio2p, 15),
-> +	DEFINE_AHB_SLAVE_EP(flexbus, 16),
-> +	DEFINE_AHB_SLAVE_EP(sema42_1, 27),
-> +	DEFINE_AHB_SLAVE_EP(dmamux1, 33),
-> +	DEFINE_AHB_SLAVE_EP(mu_b, 34),
-> +	DEFINE_AHB_SLAVE_EP(caam, 36),
-> +	DEFINE_AHB_SLAVE_EP(tpm4, 37),
-> +	DEFINE_AHB_SLAVE_EP(tpm5, 38),
-> +	DEFINE_AHB_SLAVE_EP(lpit1, 39),
-> +	DEFINE_AHB_SLAVE_EP(lpspi2, 41),
-> +	DEFINE_AHB_SLAVE_EP(lpspi3, 42),
-> +	DEFINE_AHB_SLAVE_EP(lpi2c4, 43),
-> +	DEFINE_AHB_SLAVE_EP(lpi2c5, 44),
-> +	DEFINE_AHB_SLAVE_EP(lpuart4, 45),
-> +	DEFINE_AHB_SLAVE_EP(lpuart5, 46),
-> +	DEFINE_AHB_SLAVE_EP(flexio1, 49),
-> +	DEFINE_AHB_SLAVE_EP(usbotg1, 51),
-> +	DEFINE_AHB_SLAVE_EP(usbotg2, 52),
-> +	DEFINE_AHB_SLAVE_EP(usbphy, 53),
-> +	DEFINE_AHB_SLAVE_EP(usbpl301, 54),
-> +	DEFINE_AHB_SLAVE_EP(usdhc0, 55),
-> +	DEFINE_AHB_SLAVE_EP(usdhc1, 56),
-> +	DEFINE_AHB_SLAVE_EP(trgmux1, 59),
-> +	DEFINE_AHB_SLAVE_EP(wdog1, 61),
-> +	DEFINE_AHB_SLAVE_EP(scg1, 62),
-> +	DEFINE_AHB_SLAVE_EP(pcc2, 63),
-> +	DEFINE_AHB_SLAVE_EP(pmc1, 64),
-> +	DEFINE_AHB_SLAVE_EP(cmc1, 65),
-> +	DEFINE_AHB_SLAVE_EP(wdog2, 67),
-> +
-> +	DEFINE_AXI_SLAVE(ahb0, 2021, 4, 32,
-> +			 8, 9, 15, 16, 27, 33, 34, 35, 36, 37, 38, 39, 41, 42,
-> +			 43, 44, 45, 46, 49, 51, 52, 53, 54, 55, 56, 59, 61, 62,
-> +			 63, 64, 65, 67),
-> +
-> +	/* AHB1 */
-> +	DEFINE_AHB_SLAVE_EP(romc1, 116),
-> +	DEFINE_AHB_SLAVE_EP(tpm6, 133),
-> +	DEFINE_AHB_SLAVE_EP(tpm7, 134),
-> +	DEFINE_AHB_SLAVE_EP(lpi2c6, 136),
-> +	DEFINE_AHB_SLAVE_EP(lpi2c7, 137),
-> +	DEFINE_AHB_SLAVE_EP(lpuart6, 138),
-> +	DEFINE_AHB_SLAVE_EP(lpuart7, 139),
-> +	DEFINE_AHB_SLAVE_EP(viu, 140),
-> +	DEFINE_AHB_SLAVE_EP(dsi, 141),
-> +	DEFINE_AHB_SLAVE_EP(lcdif, 142),
-> +	DEFINE_AHB_SLAVE_EP(mmdc, 143),
-> +	DEFINE_AHB_SLAVE_EP(iomuxc1, 144),
-> +	DEFINE_AHB_SLAVE_EP(iomuxc_ddr, 145),
-> +	DEFINE_AHB_SLAVE_EP(pctlc, 146),
-> +	DEFINE_AHB_SLAVE_EP(pctld, 147),
-> +	DEFINE_AHB_SLAVE_EP(pctle, 148),
-> +	DEFINE_AHB_SLAVE_EP(pctlf, 149),
-> +	DEFINE_AHB_SLAVE_EP(pcc3, 151),
-> +
-> +	DEFINE_AXI_SLAVE(ahb1, 2022, 4, 19,
-> +			 116, 133, 134, 136, 137, 138, 139, 140, 141,
-> +			 142, 143, 144, 145, 146, 147, 148, 149, 151),
-> +
-> +	/* NIC1 */
-> +	DEFINE_AXI_INTERCONNECT(nic1_m, 1008, 8, false, &nic1_clock, 1, 1009),
-> +	DEFINE_AXI_INTERCONNECT(nic1_s, 1009, 8, false, NULL, 7,
-> +				2018, 1000, 2020, 2021, 2022, 2023, 2024),> +};
-> +
-> +static struct imx7ulp_icc_desc icc_desc = {
-> +	.nodes = (struct imx7ulp_icc_node *)&imx7ulp_nodes,
-> +	.num_nodes = ARRAY_SIZE(imx7ulp_nodes),
-> +};
-> +
-> +static int imx7ulp_icc_aggregate(struct icc_node *node, u32 avg_bw,
-> +				  u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
-> +{
-> +	*agg_avg += avg_bw;
-> +	*agg_peak = max(*agg_peak, peak_bw);
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx7ulp_icc_set(struct icc_node *src, struct icc_node *dst)
-> +{
-> +	int ret;
-> +	struct imx7ulp_icc_node *node;
-> +	struct imx7ulp_icc_desc *desc = src->provider->data;
-> +
-> +	/* If node has a clock, compute the new rate */
-> +	node = src->data;
-> +	if (node->bus_clk) {
-> +		u64 rate;
-> +		struct imx7ulp_bus_clock *bus_clk = node->bus_clk;
-> +
-> +		rate = (src->peak_bw / node->buswidth) * 1000;
-
-Maybe use do_div().
-
-> +		rate = clk_round_rate(bus_clk->clk, rate);
-> +		if (rate != bus_clk->rate) {
-> +			dev_dbg(desc->dev, "%s: new rate = %llu\n",
-> +				bus_clk->name, rate);
-> +			bus_clk->rate = rate;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * If the node is an endpoint, update the clock rate of nic0 and nic1
-> +	 * nodes. nic1 clock derives from nic0, so we usually have to update
-> +	 * both of them even if bandwidth changed only for one of the
-> +	 * interconnect.
-> +	 */
-> +	node = dst->data;
-> +	if (node->ep) {
-> +		struct imx7ulp_bus_clock *nic0_clk = desc->nic0;
-> +		struct imx7ulp_bus_clock *nic1_clk = desc->nic1;
-> +
-> +		if (nic1_clk->rate > nic0_clk->rate)
-> +			nic0_clk->rate = nic1_clk->rate;
-> +
-> +		if (clk_get_rate(nic0_clk->clk) != nic0_clk->rate) {
-> +			dev_dbg(desc->dev, "%s: apply rate = %llu\n",
-> +				nic0_clk->name, nic0_clk->rate);
-> +			ret = clk_set_rate(nic0_clk->clk, nic0_clk->rate);
-> +			if (ret)
-> +				dev_err(desc->dev, "Failed to set clock: %d\n",
-> +					ret);
-> +		}
-> +
-> +		if (clk_get_rate(nic1_clk->clk) != nic1_clk->rate) {
-> +			dev_dbg(desc->dev, "%s: apply rate = %llu\n",
-> +				nic1_clk->name, nic1_clk->rate);
-> +			ret = clk_set_rate(nic1_clk->clk, nic1_clk->rate);
-> +			if (ret)
-> +				dev_err(desc->dev, "Failed to set clock: %d\n",
-> +					ret);
-> +		}
-> +	}
-> +
-> +	return 0;
-
-Just f.y.i, i recently introduced another patch that reverts to the
-settings to the previous configuration if any of the requests fail, so
-you can also return errors here (if it makes sense to do so on this
-platform).
-
-> +}
-> +
-> +static int imx7ulp_probe(struct platform_device *pdev)
-> +{
-> +	struct imx7ulp_icc_desc *desc = &icc_desc;
-> +	struct icc_provider *provider;
-> +	size_t i;
-> +	int ret;
-> +
-> +	desc->dev = &pdev->dev;
-> +	desc->nic0 = &nic0_clock;
-> +	desc->nic1 = &nic1_clock;
-> +
-> +	provider = devm_kzalloc(&pdev->dev, sizeof(*provider), GFP_KERNEL);
-> +	provider->set = imx7ulp_icc_set;
-> +	provider->aggregate = imx7ulp_icc_aggregate;
-
-If you want to use DT, you will need to put the endpoint IDs in some
-header file and implement the xlate() function or use the generic
-of_icc_xlate_onecell().
-
-> +	INIT_LIST_HEAD(&provider->nodes);
-> +	provider->data = desc;
-> +
-> +	ret = icc_provider_add(provider);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error adding interconnect provider\n");
-> +		return ret;
-> +	}
-> +
-> +	for (i = 0; i < desc->num_nodes; i++) {
-> +		struct icc_node *node;
-> +		int ret;
-> +		size_t j;
-> +
-> +		if (desc->nodes[i].bus_clk) {
-> +			struct imx7ulp_bus_clock *bus_clk;
-> +
-> +			bus_clk = desc->nodes[i].bus_clk;
-> +			bus_clk->clk = devm_clk_get(&pdev->dev, bus_clk->name);
-> +			if (IS_ERR(bus_clk->clk)) {
-> +				dev_err(&pdev->dev,
-> +					"Failed to get clock %s: %d\n",
-> +					bus_clk->name, PTR_ERR(bus_clk->clk));
-> +				ret = PTR_ERR(bus_clk->clk);
-> +				goto err;
-> +			}
-> +
-> +			ret = clk_prepare_enable(bus_clk->clk);
-> +			if (ret) {
-> +				dev_err(&pdev->dev,
-> +					"error enabling clock: %s %d\n",
-> +					bus_clk->name, ret);
-> +				goto err;
-> +			}
-> +		}
-> +
-> +		node = icc_node_create(desc->nodes[i].id);
-> +		if (IS_ERR(node)) {
-> +			ret = PTR_ERR(node);
-> +			dev_err(&pdev->dev, "Failed to create node %s\n",
-> +				desc->nodes[i].name);
-> +			goto err;
-> +		}
-> +
-> +		node->name = desc->nodes[i].name;
-> +		node->data = &desc->nodes[i];
-> +		icc_node_add(node, provider);
-> +
-> +		dev_dbg(&pdev->dev, "registered node %p %s %d\n", node,
-> +			desc->nodes[i].name, node->id);
-> +
-> +		for (j = 0; j < desc->nodes[i].num_links; j++)
-> +			if (desc->nodes[i].links[j])
-> +				icc_link_create(node, desc->nodes[i].links[j]);
-> +	}
-> +
-> +	platform_set_drvdata(pdev, provider);
-> +
-> +	return 0;
-> +err:
-> +	icc_provider_del(provider);
-
-First delete the nodes (if any) and then the provider.
-
-> +	return ret;
-> +}
-> +
-> +static int imx7ulp_remove(struct platform_device *pdev)
-> +{
-> +	struct icc_provider *provider = platform_get_drvdata(pdev);
-> +
-> +	icc_provider_del(provider);
-
-Ditto.
-
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id imx7ulp_of_match[] = {
-> +	{ .compatible = "fsl,imx7ulp-icc" },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, imx7ulp_of_match);
-> +
-> +static struct platform_driver imx7ulp_driver = {
-> +	.probe = imx7ulp_probe,
-> +	.remove = imx7ulp_remove,
-> +	.driver = {
-> +		.name = "imx7ulp-icc",
-> +		.of_match_table = imx7ulp_of_match,
-> +	},
-> +};
-> +module_platform_driver(imx7ulp_driver);
-
-Please use builtin_platform_driver if it can't be a module.
-
-Thank you for working on this! I am expecting the next version.
-
-BR,
-Georgi
+T24gTW9uLCBKYW4gMjEsIDIwMTkgYXQgNDoxNyBQTSBWaW5jZW50IEd1aXR0b3QKPHZpbmNlbnQu
+Z3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPgo+IE9uIEZyaSwgMTggSmFuIDIwMTkgYXQgMTM6
+MDgsIEd1ZW50ZXIgUm9lY2sgPGxpbnV4QHJvZWNrLXVzLm5ldD4gd3JvdGU6Cj4gPgo+ID4gT24g
+MS8xOC8xOSAzOjA1IEFNLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+ID4gT24gRnJpLCBK
+YW4gMTgsIDIwMTkgYXQgMTE6NTMgQU0gVmluY2VudCBHdWl0dG90Cj4gPiA+IDx2aW5jZW50Lmd1
+aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4gPiA+Pgo+ID4gPj4gT24gRnJpLCAxOCBKYW4gMjAx
+OSBhdCAxMTo0MiwgVmluY2VudCBHdWl0dG90Cj4gPiA+PiA8dmluY2VudC5ndWl0dG90QGxpbmFy
+by5vcmc+IHdyb3RlOgo+ID4gPj4+Cj4gPiA+Pj4gSGkgR3VlbnRlciwKPiA+ID4+Pgo+ID4gPj4+
+IExlIFRodXJzZGF5IDE3IEphbiAyMDE5IMOgIDE0OjE2OjI4ICgtMDgwMCksIEd1ZW50ZXIgUm9l
+Y2sgYSDDqWNyaXQgOgo+ID4gPj4+PiBPbiBGcmksIERlYyAyMSwgMjAxOCBhdCAxMTozMzo1NkFN
+ICswMTAwLCBWaW5jZW50IEd1aXR0b3Qgd3JvdGU6Cj4gPiA+Pj4+PiBGcm9tOiBUaGFyYSBHb3Bp
+bmF0aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+ID4+Pj4+Cj4gPiA+Pj4+PiBUaGlz
+IHBhdGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3Rp
+dmVfdGltZQo+ID4gPj4+Pj4gYW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBi
+YXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gPiA+Pj4+PiBydW50aW1lIGRlYnVnIGNv
+dW50ZXJzIGlubGluZSB3aXRoIGdlbnBkIGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+
+ID4+Pj4+IHVzZXMga3RpbWUgYmFzZWQgYWNjb3VudGluZy4KPiA+ID4+Pj4+Cj4gPiA+Pj4+PiB0
+aW1la2VlcGluZyBpcyBpbml0aWFsaXplZCBiZWZvcmUgcG1fcnVudGltZV9pbml0KCkgc28ga3Rp
+bWVfZ2V0KCkgd2lsbAo+ID4gPj4+Pj4gYmUgcmVhZHkgYmVmb3JlIGZpcnN0IGNhbGwuIEluIGZh
+Y3QsIHRpbWVrZWVwaW5nX2luaXQoKSBpcyBjYWxsZWQgZWFybHkKPiA+ID4+Pj4+IGluIHN0YXJ0
+X2tlcm5lbCgpIHdoaWNoIGlzIHdheSBiZWZvcmUgZHJpdmVyX2luaXQoKSAoYW5kIHRoYXQncyB3
+aGVuCj4gPiA+Pj4+PiBkZXZpY2VzIGNhbiBzdGFydCB0byBiZSBpbml0aWFsaXplZCkgY2FsbGVk
+IGZyb20gcmVzdF9pbml0KCkgdmlhCj4gPiA+Pj4+PiBrZXJuZWxfaW5pdF9mcmVlYWJsZSgpIGFu
+ZCBkb19iYXNpY19zZXR1cCgpLgo+ID4gPj4+Pj4KPiA+ID4+Pj4gVGhpcyBpcyBub3QgKGFsd2F5
+cykgY29ycmVjdC4gTXkgcWVtdSAiY29sbGllIiBib290IHRlc3QgZmFpbHMgd2l0aCB0aGlzCj4g
+PiA+Pj4+IHBhdGNoIGFwcGxpZWQuIFJldmVydGluZyB0aGUgcGF0Y2ggZml4ZXMgdGhlIHByb2Js
+ZW0uIEJpc2VjdCBsb2cgYXR0YWNoZWQuCj4gPiA+Pj4+Cj4gPiA+Pj4KPiA+ID4+PiBDYW4geW91
+IHRyeSB0aGUgcGF0Y2ggYmVsb3cgPwo+ID4gPj4+IGt0aW1lX2dldF9tb25vX2Zhc3RfbnMoKSBo
+YXMgdGhlIGFkdmFudGFnZSBvZiBiZWluZyBpbml0IHdpdGggZHVtbXkgY2xvY2sgc28KPiA+ID4+
+PiBpdCBjYW4gYmUgdXNlZCBhdCBlYXJseV9pbml0Lgo+ID4gPj4KPiA+ID4+IEFub3RoZXIgcG9z
+c2liaWxpdHkgd291bGQgYmUgZGVsYXkgdGhlIGluaXQgb2YgdGhlIGdwaW9jaGlwCj4gPiA+Cj4g
+PiA+IFdlbGwsIHJpZ2h0Lgo+ID4gPgo+ID4gPiBJbml0aWFsaXppbmcgZGV2aWNlcyBiZWZvcmUg
+dGltZWtlZXBpbmcgZG9lc24ndCBmZWVsIHBhcnRpY3VsYXJseQo+ID4gPiByb2J1c3QgZnJvbSB0
+aGUgZGVzaWduIHBlcnNwZWN0aXZlLgo+ID4gPgo+ID4gPiBIb3cgZXhhY3RseSBkb2VzIHRoYXQg
+aGFwcGVuPwo+ID4gPgo+ID4KPiA+IFdpdGggYW4gYWRkZWQgJ2luaXRpYWxpemVkJyBmbGFnIGFu
+ZCBiYWNrdHJhY2UgaW50byB0aGUgdGltZWtlZXBpbmcgY29kZSwKPiA+IHdpdGggdGhlIGNoYW5n
+ZSBzdWdnZXN0ZWQgZWFybGllciBhcHBsaWVkOgo+ID4KPiA+IC0tLS0tLS0tLS0tLVsgY3V0IGhl
+cmUgXS0tLS0tLS0tLS0tLQo+ID4gV0FSTklORzogQ1BVOiAwIFBJRDogMCBhdCBrZXJuZWwvdGlt
+ZS90aW1la2VlcGluZy5jOjQ1MyBrdGltZV9nZXRfbW9ub19mYXN0X25zKzB4MTE0LzB4MTJjCj4g
+PiBUaW1la2VlcGluZyBub3QgaW5pdGlhbGl6ZWQKPiA+IENQVTogMCBQSUQ6IDAgQ29tbTogc3dh
+cHBlciBOb3QgdGFpbnRlZCA1LjAuMC1yYzItbmV4dC0yMDE5MDExNy1kaXJ0eSAjMgo+ID4gSGFy
+ZHdhcmUgbmFtZTogU2hhcnAtQ29sbGllCj4gPiBCYWNrdHJhY2U6Cj4gPiBbPGMwMDBkY2U4Pl0g
+KGR1bXBfYmFja3RyYWNlKSBmcm9tIFs8YzAwMGRmNzg+XSAoc2hvd19zdGFjaysweDE4LzB4MWMp
+Cj4gPiAgIHI3OjAwMDAwMDA5IHI2OjAwMDAwMDAwIHI1OmMwNjViYTkwIHI0OmMwNmQzZTU0Cj4g
+PiBbPGMwMDBkZjYwPl0gKHNob3dfc3RhY2spIGZyb20gWzxjMDU4ODkzMD5dIChkdW1wX3N0YWNr
+KzB4MjAvMHgyOCkKPiA+IFs8YzA1ODg5MTA+XSAoZHVtcF9zdGFjaykgZnJvbSBbPGMwMDE4YWU4
+Pl0gKF9fd2FybisweGNjLzB4ZjQpCj4gPiBbPGMwMDE4YTFjPl0gKF9fd2FybikgZnJvbSBbPGMw
+MDE4YjVjPl0gKHdhcm5fc2xvd3BhdGhfZm10KzB4NGMvMHg2YykKPiA+ICAgcjg6ZGY0MDdiMDgg
+cjc6MDAwMDAwMDAgcjY6YzBjMDE1NTAgcjU6YzA2NWJhZDggcjQ6YzA2ZGQwMjgKPiA+IFs8YzAw
+MThiMTQ+XSAod2Fybl9zbG93cGF0aF9mbXQpIGZyb20gWzxjMDA2OWUyYz5dIChrdGltZV9nZXRf
+bW9ub19mYXN0X25zKzB4MTE0LzB4MTJjKQo+ID4gICByMzowMDAwMDAwMCByMjpjMDY1YmFkOAo+
+ID4gICByNTowMDAwMDAwMCByNDpkZjQwN2IwOAo+ID4gWzxjMDA2OWQxOD5dIChrdGltZV9nZXRf
+bW9ub19mYXN0X25zKSBmcm9tIFs8YzAzYzc4MTA+XSAocG1fcnVudGltZV9pbml0KzB4MzgvMHhi
+OCkKPiA+ICAgcjk6YzA2YzlhNWMgcjg6ZGY0MDdiMDggcjc6MDAwMDAwMDAgcjY6YzBjMDE1NTAg
+cjU6MDAwMDAwMDAgcjQ6ZGY0MDdiMDgKPiA+IFs8YzAzYzc3ZDg+XSAocG1fcnVudGltZV9pbml0
+KSBmcm9tIFs8YzAzYjZhMzQ+XSAoZGV2aWNlX2luaXRpYWxpemUrMHhiMC8weGVjKQo+ID4gICBy
+NzowMDAwMDAwMCByNjpjMGMwMTU1MCByNTowMDAwMDAwMCByNDpkZjQwN2IwOAo+ID4gWzxjMDNi
+Njk4ND5dIChkZXZpY2VfaW5pdGlhbGl6ZSkgZnJvbSBbPGMwMzY2ZDMwPl0gKGdwaW9jaGlwX2Fk
+ZF9kYXRhX3dpdGhfa2V5KzB4OWMvMHg4ODQpCj4gPiAgIHI3OjAwMDAwMDAwIHI2OmMwNmZjYTM0
+IHI1OjAwMDAwMDAwIHI0OjAwMDAwMDAwCj4gPiBbPGMwMzY2Yzk0Pl0gKGdwaW9jaGlwX2FkZF9k
+YXRhX3dpdGhfa2V5KSBmcm9tIFs8YzA2Yjk3MDg+XSAoc2ExMTAwX2luaXRfZ3BpbysweDQwLzB4
+OTgpCj4gPiAgIHIxMDpkZmZmY2Q2MCByOTpjMDZjOWE1YyByODpjMDZkZDAyMCByNzpjMDZkZDAy
+OCByNjpmZmZmZmZmZiByNTowMDAwMDAwMAo+ID4gICByNDpjMDZmY2EzNAo+ID4gWzxjMDZiOTZj
+OD5dIChzYTExMDBfaW5pdF9ncGlvKSBmcm9tIFs8YzA2YWU1OGM+XSAoc2ExMTAwX2luaXRfaXJx
+KzB4MmMvMHgzYykKPiA+ICAgcjc6YzA2ZGQwMjggcjY6ZmZmZmZmZmYgcjU6YzA3MTMzMDAgcjQ6
+YzA2ZTEwNzAKPiA+IFs8YzA2YWU1NjA+XSAoc2ExMTAwX2luaXRfaXJxKSBmcm9tIFs8YzA2YWFi
+MWM+XSAoaW5pdF9JUlErMHgyMC8weDI4KQo+ID4gICByNTpjMDcxMzMwMCByNDowMDAwMDAwMAo+
+ID4gWzxjMDZhYWFmYz5dIChpbml0X0lSUSkgZnJvbSBbPGMwNmE3Y2QwPl0gKHN0YXJ0X2tlcm5l
+bCsweDI1NC8weDRjYykKPiA+IFs8YzA2YTdhN2M+XSAoc3RhcnRfa2VybmVsKSBmcm9tIFs8MDAw
+MDAwMDA+XSAoICAobnVsbCkpCj4gPiAgIHIxMDowMDAwNzE3ZiByOTo2OTAxYjExOSByODpjMDAw
+MDEwMCByNzowMDAwMDA5MiByNjowMDAwMzEzZCByNTowMDAwMDA1Mwo+ID4gICByNDpjMDZhNzMz
+MAo+ID4gLS0tWyBlbmQgdHJhY2UgOTFlMWJkMDBkZDdjY2UzMiBdLS0tCj4KPiBEb2VzIGl0IG1l
+YW5zIHRoYXQgb25seSB0aGUgcG1fcnVudGltZV9pbml0IGlzIGRvbmUgYmVmb3JlCj4gdGltZWtl
+ZXBpbmdfaW5pdCgpIGJ1dCBubyB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKCkgPwoKVGhp
+cyBwbGF0Zm9ybSBjYWxscyBkZXZpY2VfaW5pdGlhbGl6ZSgpLCB2aWEgc2ExMTAwX2luaXRfaXJx
+KCksIGZyb20KaW5pdF9JUlEoKSB3aGljaCBpcyBpbiB0aGUgc3RhcnRfa2VybmVsKCkgY29kZSBw
+YXRoIGJlZm9yZQp0aW1la2VlcGluZ19pbml0KCkuICBUaGF0J3MgdGhlIGluaXRpYWxpemF0aW9u
+IG9mIHN0cnVjdHVyZSBmaWVsZHMKYWxvbmUuCgpSdW50aW1lIFBNIHJlYWxseSBjYW5ub3QgYmUg
+dXNlZCBsZWdpdGltYXRlbHkgYmVmb3JlIGRyaXZlcl9pbml0KCksCmJlY2F1c2UgaXQgbmVlZHMg
+YnVzIHR5cGVzIHRvIGJlIHRoZXJlIGF0IGxlYXN0LgoKPiBJbiB0aGlzIGNhc2UsIHdlIGNhbiBr
+ZWVwIHVzaW5nIGt0aW1lw6dnZXQgaW4KPiB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKCkg
+YW5kIGZpbmQgYSBzb2x1dGlvbiB0byBkZWFsIHdpdGgKPiBlYXJseV9jYWxsIG9mIHBtX3J1bnRp
+bWVfaW5pdCgpCgpHaXZlbiB0aGUgYWJvdmUsIEkgdGhpbmsgdGhhdCBpbml0aWFsaXppbmcgYWNj
+b3VudGluZ190aW1lc3RhbXAgaW4KcG1fcnVudGltZV9pbml0KCkgdG8gYW55dGhpbmcgZGlmZmVy
+ZW50IGZyb20gMCBpcyBhIG1pc3Rha2UuCgpOb3RlIHRoYXQgdXBkYXRlX3BtX3J1bnRpbWVfYWNj
+b3VudGluZygpIGlnbm9yZXMgdGhlIGRlbHRhIHZhbHVlIGlmCnBvd2VyLmRpc2FibGVfZGVwdGgg
+aXMgbm90IHplcm8gYW55d2F5LCBzbyBpdCByZWFsbHkgc2hvdWxkIGJlCnN1ZmZpY2llbnQgdG8g
+dXBkYXRlIGFjY291bnRpbmdfdGltZXN0YW1wIHdoZW4gZW5hYmxpbmcgcnVudGltZSBQTSAtCmFu
+ZCBJJ20gbm90IHN1cmUgd2h5IGl0IGlzIG5vdCB1cGRhdGVkIGluIHBtX3J1bnRpbWVfZW5hYmxl
+KCkgZm9yIHRoYXQKbWF0dGVyICh0aGF0IGxvb2tzIGxpa2UgYSBidWcgdG8gbWUpLgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGlu
+ZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
+ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
