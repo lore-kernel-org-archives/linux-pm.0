@@ -1,83 +1,27 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 03/16] sched/core: uclamp: Map TASK's clamp values
- into CPU's clamp buckets
-Date: Mon, 21 Jan 2019 13:51:20 +0100
-Message-ID: <20190121125120.GB17749@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-4-patrick.bellasi@arm.com>
- <20190121101508.GH27931@hirez.programming.kicks-ass.net>
- <20190121122659.if6f4ubw2wgblxwi@e110439-lin>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 04/13] dt-bindings: gpio: add DT bindings for max77650
+Date: Mon, 21 Jan 2019 15:04:51 +0100
+Message-ID: <CACRpkdYkX2XK2G0WmjjJSdAWGJsBndtYJsdNPS+hWwpqaH8Z1A@mail.gmail.com>
+References: <20190118134244.22253-1-brgl@bgdev.pl> <20190118134244.22253-5-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190121122659.if6f4ubw2wgblxwi@e110439-lin>
+In-Reply-To: <20190118134244.22253-5-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylib>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 21, 2019 at 12:27:10PM +0000, Patrick Bellasi wrote:
-> On 21-Jan 11:15, Peter Zijlstra wrote:
-> > On Tue, Jan 15, 2019 at 10:15:00AM +0000, Patrick Bellasi wrote:
-> > > +/*
-> > > + * Number of utilization clamp buckets.
-> > > + *
-> > > + * The first clamp bucket (bucket_id=0) is used to track non clamped tasks, i.e.
-> > > + * util_{min,max} (0,SCHED_CAPACITY_SCALE). Thus we allocate one more bucket in
-> > > + * addition to the compile time configured number.
-> > > + */
-> > > +#define UCLAMP_BUCKETS (CONFIG_UCLAMP_BUCKETS_COUNT + 1)
-> > > +
-> > > +/*
-> > > + * Utilization clamp bucket
-> > > + * @value:		clamp value tracked by a clamp bucket
-> > > + * @bucket_id:		the bucket index used by the fast-path
-> > > + * @mapped:		the bucket index is valid
-> > > + *
-> > > + * A utilization clamp bucket maps a:
-> > > + *   clamp value (value), i.e.
-> > > + *   util_{min,max} value requested from userspace
-> > > + * to a:
-> > > + *   clamp bucket index (bucket_id), i.e.
-> > > + *   index of the per-cpu RUNNABLE tasks refcounting array
-> > > + *
-> > > + * The mapped bit is set whenever a task has been mapped on a clamp bucket for
-> > > + * the first time. When this bit is set, any:
-> > > + *   uclamp_bucket_inc() - for a new clamp value
-> > > + * is matched by a:
-> > > + *   uclamp_bucket_dec() - for the old clamp value
-> > > + */
-> > > +struct uclamp_se {
-> > > +	unsigned int value		: bits_per(SCHED_CAPACITY_SCALE);
-> > > +	unsigned int bucket_id		: bits_per(UCLAMP_BUCKETS);
-> > > +	unsigned int mapped		: 1;
-> > > +};
-> > 
-> > Do we want something like:
-> > 
-> > 	BUILD_BUG_ON(sizeof(struct uclamp_se) == sizeof(unsigned int));
-> 
-> Mmm... isn't "!=" what you mean ?
+On Fri, Jan 18, 2019 at 2:43 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
 
-Quite.
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> Add the DT binding document for the GPIO module of max77650.
+>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-> We cannot use less then an unsigned int for the fields above... am I
-> missing something?
+Very simple so not much to complain about :)
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-I wanted to ensure we don't accidentally use more.
-
-> > And/or put a limit on CONFIG_UCLAMP_BUCKETS_COUNT that guarantees that ?
-> 
-> The number of buckets is currently KConfig limited to a max of 20, which gives:
-> 
->    UCLAMP_BUCKETS: 21 => 5bits
-> 
-> Thus, even on 32 bit targets and assuming 21bits for an "extended"
-> SCHED_CAPACITY_SCALE range we should always fit into an unsigned int
-> and have at least 6 bits for flags.
-> 
-> Are you afraid of some compiler magic related to bitfields packing ?
-
-Nah, I missed the Kconfig limit and was afraid that some weird configs
-would end up with massively huge structures.
+Yours,
+Linus Walleij
