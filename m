@@ -1,54 +1,108 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 4/8] net/macb: bindings doc/trivial: fix documentation for
- sama5d3 10/100 interface
-Date: Tue, 22 Jan 2019 07:41:02 -0600
-Message-ID: <CAL_Jsq+31C2KXNy_GeVU9g7mZ_aSw3yqdjU-V5mV2Xdc200TuA@mail.gmail.com>
-References: <cover.1547629763.git.nicolas.ferre@microchip.com>
- <0005c2ef28b985c663e0cd058bbc6d3856e05ec2.1547629763.git.nicolas.ferre@microchip.com>
- <20190122011014.GA25211@bogus> <be8ba0bf-993e-d38c-61e8-af422ff3c636@microchip.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 07/16] sched/core: uclamp: Add system default clamps
+Date: Tue, 22 Jan 2019 14:56:44 +0100
+Message-ID: <20190122135644.GP27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-8-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <be8ba0bf-993e-d38c-61e8-af422ff3c636@microchip.com>
+Content-Disposition: inline
+In-Reply-To: <20190115101513.2822-8-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas Ferre <Nicolas.Ferre@microchip.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <Ludovic.Desroches@microchip.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>, Linux USB List <linux-usb@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 3:09 AM <Nicolas.Ferre@microchip.com> wrote:
->
-> Hi Rob,
->
-> On 22/01/2019 at 02:10, Rob Herring wrote:
-> > On Wed, Jan 16, 2019 at 10:57:40AM +0100, Nicolas Ferre wrote:
-> >> This removes a line left while adding the correct compatibility string for
-> >> sama5d3 10/100 interface. Now use the "atmel,sama5d3-macb" string.
-> >>
-> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> >> ---
-> >>   Documentation/devicetree/bindings/net/macb.txt | 3 +--
-> >>   1 file changed, 1 insertion(+), 2 deletions(-)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/net/macb.txt b/Documentation/devicetree/bindings/net/macb.txt
-> >> index 3e17ac1d5d58..f5c414b10e27 100644
-> >> --- a/Documentation/devicetree/bindings/net/macb.txt
-> >> +++ b/Documentation/devicetree/bindings/net/macb.txt
-> >> @@ -3,8 +3,7 @@
-> >>   Required properties:
-> >>   - compatible: Should be "cdns,[<chip>-]{macb|gem}"
-> >>     Use "cdns,at91rm9200-emac" Atmel at91rm9200 SoC.
-> >> -  Use "cdns,at91sam9260-macb" for Atmel at91sam9 SoCs or the 10/100Mbit IP
-> >> -  available on sama5d3 SoCs.
-> >> +  Use "cdns,at91sam9260-macb" for Atmel at91sam9 SoCs.
-> >
-> > Where is "atmel,sama5d3-macb"?
->
-> It's actually a couple of line below: line 13 of the resulting macb.txt
-> file. It was already in the file when I removed the leftovers.
->
-> Do you advice to try to better sort entries in this file? Is there a
-> common pattern?
+On Tue, Jan 15, 2019 at 10:15:04AM +0000, Patrick Bellasi wrote:
 
-Okay, it's fine.
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 84294925d006..c8f391d1cdc5 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -625,6 +625,11 @@ struct uclamp_se {
+>  	unsigned int bucket_id		: bits_per(UCLAMP_BUCKETS);
+>  	unsigned int mapped		: 1;
+>  	unsigned int active		: 1;
+> +	/* Clamp bucket and value actually used by a RUNNABLE task */
+> +	struct {
+> +		unsigned int value	: bits_per(SCHED_CAPACITY_SCALE);
+> +		unsigned int bucket_id	: bits_per(UCLAMP_BUCKETS);
+> +	} effective;
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+I am confuzled by this thing..  so uclamp_se already has a value,bucket,
+which per the prior code is the effective one.
+
+Now; I think I see why you want another value; you need the second to
+store the original value for when the system limits change and we must
+re-evaluate.
+
+So why are you not adding something like:
+
+	unsigned int orig_value : bits_per(SCHED_CAPACITY_SCALE);
+
+> +unsigned int sysctl_sched_uclamp_util_min;
+
+> +unsigned int sysctl_sched_uclamp_util_max = SCHED_CAPACITY_SCALE;
+
+> +static inline void
+> +uclamp_effective_get(struct task_struct *p, unsigned int clamp_id,
+> +		     unsigned int *clamp_value, unsigned int *bucket_id)
+> +{
+> +	/* Task specific clamp value */
+> +	*clamp_value = p->uclamp[clamp_id].value;
+> +	*bucket_id = p->uclamp[clamp_id].bucket_id;
+> +
+> +	/* System default restriction */
+> +	if (unlikely(*clamp_value < uclamp_default[UCLAMP_MIN].value ||
+> +		     *clamp_value > uclamp_default[UCLAMP_MAX].value)) {
+> +		/* Keep it simple: unconditionally enforce system defaults */
+> +		*clamp_value = uclamp_default[clamp_id].value;
+> +		*bucket_id = uclamp_default[clamp_id].bucket_id;
+> +	}
+> +}
+
+That would then turn into something like:
+
+	unsigned int high = READ_ONCE(sysctl_sched_uclamp_util_max);
+	unsigned int low  = READ_ONCE(sysctl_sched_uclamp_util_min);
+
+	uclamp_se->orig_value = value;
+	uclamp_se->value = clamp(value, low, high);
+
+And then determine bucket_id based on value.
+
+> +int sched_uclamp_handler(struct ctl_table *table, int write,
+> +			 void __user *buffer, size_t *lenp,
+> +			 loff_t *ppos)
+> +{
+> +	int old_min, old_max;
+> +	int result = 0;
+> +
+> +	mutex_lock(&uclamp_mutex);
+> +
+> +	old_min = sysctl_sched_uclamp_util_min;
+> +	old_max = sysctl_sched_uclamp_util_max;
+> +
+> +	result = proc_dointvec(table, write, buffer, lenp, ppos);
+> +	if (result)
+> +		goto undo;
+> +	if (!write)
+> +		goto done;
+> +
+> +	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max ||
+> +	    sysctl_sched_uclamp_util_max > SCHED_CAPACITY_SCALE) {
+> +		result = -EINVAL;
+> +		goto undo;
+> +	}
+> +
+> +	if (old_min != sysctl_sched_uclamp_util_min) {
+> +		uclamp_bucket_inc(NULL, &uclamp_default[UCLAMP_MIN],
+> +				  UCLAMP_MIN, sysctl_sched_uclamp_util_min);
+> +	}
+> +	if (old_max != sysctl_sched_uclamp_util_max) {
+> +		uclamp_bucket_inc(NULL, &uclamp_default[UCLAMP_MAX],
+> +				  UCLAMP_MAX, sysctl_sched_uclamp_util_max);
+> +	}
+
+Should you not update all tasks?
