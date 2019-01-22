@@ -1,91 +1,99 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 1/2] PCI: imx: Fix probe failure without power domain
-Date: Tue, 22 Jan 2019 09:17:22 +0000
-Message-ID: <VI1PR04MB5533DE236150B01461555A5BEE980@VI1PR04MB5533.eurprd04.prod.outlook.com>
-References: <cover.1548110502.git.leonard.crestez@nxp.com>
- <375a852ae9170a5f8f53fdd364a7fb7ea642e89c.1548110502.git.leonard.crestez@nxp.com>
- <20190122071251.tgdwnunxksa45n5q@pengutronix.de>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
+ clamp changes
+Date: Tue, 22 Jan 2019 10:37:04 +0100
+Message-ID: <20190122093704.GM27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-6-patrick.bellasi@arm.com>
+ <20190121153308.GL27931@hirez.programming.kicks-ass.net>
+ <20190121154412.fak2t2iquj3aixtu@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?iso-8859-1?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Richard Zhu <hongxing.zhu@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Lukas F . Hartmann" <lukas@mntmn.com>, Jon Hunter <jonathanh@nvidia.com>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190121154412.fak2t2iquj3aixtu@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 1/22/2019 9:12 AM, Uwe Kleine-K=F6nig wrote:
-> On Mon, Jan 21, 2019 at 10:50:04PM +0000, Leonard Crestez wrote:
->> On chips without a separate power domain for PCI (such as 6q/6qp) the
->> imx6_pcie_attach_pd function incorrectly returns an error.
->>
->> Fix by returning 0 if dev_pm_domain_attach_by_name doesn't find
->> anything.
->>
->> Fixes: 3f7cceeab895 ("PCI: imx: Add multi-pd support")
->>
->> diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/control=
-ler/dwc/pci-imx6.c
->> @@ -308,10 +308,13 @@ static int imx6_pcie_attach_pd(struct device *dev)
->>   		return 0;
->>   =
+On Mon, Jan 21, 2019 at 03:44:12PM +0000, Patrick Bellasi wrote:
+> On 21-Jan 16:33, Peter Zijlstra wrote:
+> > On Tue, Jan 15, 2019 at 10:15:02AM +0000, Patrick Bellasi wrote:
+> > 
+> > > +static inline void
+> > > +uclamp_task_update_active(struct task_struct *p, unsigned int clamp_id)
+> > > +{
+> > > +	struct rq_flags rf;
+> > > +	struct rq *rq;
+> > > +
+> > > +	/*
+> > > +	 * Lock the task and the CPU where the task is (or was) queued.
+> > > +	 *
+> > > +	 * We might lock the (previous) rq of a !RUNNABLE task, but that's the
+> > > +	 * price to pay to safely serialize util_{min,max} updates with
+> > > +	 * enqueues, dequeues and migration operations.
+> > > +	 * This is the same locking schema used by __set_cpus_allowed_ptr().
+> > > +	 */
+> > > +	rq = task_rq_lock(p, &rf);
+> > > +
+> > > +	/*
+> > > +	 * Setting the clamp bucket is serialized by task_rq_lock().
+> > > +	 * If the task is not yet RUNNABLE and its task_struct is not
+> > > +	 * affecting a valid clamp bucket, the next time it's enqueued,
+> > > +	 * it will already see the updated clamp bucket value.
+> > > +	 */
+> > > +	if (!p->uclamp[clamp_id].active)
+> > > +		goto done;
+> > > +
+> > > +	uclamp_cpu_dec_id(p, rq, clamp_id);
+> > > +	uclamp_cpu_inc_id(p, rq, clamp_id);
+> > > +
+> > > +done:
+> > > +	task_rq_unlock(rq, p, &rf);
+> > > +}
+> > 
+> > > @@ -1008,11 +1043,11 @@ static int __setscheduler_uclamp(struct task_struct *p,
+> > >  
+> > >  	mutex_lock(&uclamp_mutex);
+> > >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> > > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MIN],
+> > > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MIN],
+> > >  				  UCLAMP_MIN, lower_bound);
+> > >  	}
+> > >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> > > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MAX],
+> > > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MAX],
+> > >  				  UCLAMP_MAX, upper_bound);
+> > >  	}
+> > >  	mutex_unlock(&uclamp_mutex);
+> > 
+> > 
+> > But.... __sched_setscheduler() actually does the whole dequeue + enqueue
+> > thing already ?!? See where it does __setscheduler().
+> 
+> This is slow-path accounting, not fast path.
 
->>   	imx6_pcie->pd_pcie =3D dev_pm_domain_attach_by_name(dev, "pcie");
->>   	if (IS_ERR(imx6_pcie->pd_pcie))
->>   		return PTR_ERR(imx6_pcie->pd_pcie);
->> +	/* Do nothing when power domain missing */
->> +	if (!imx6_pcie->pd_pcie)
->> +		return 0;
-> =
+Sure; but that's still no reason for duplicate or unneeded code.
 
-> As I said in the mail that proposed this patch for testing: I think it
-> would be better to change dev_pm_domain_attach_by_name to not return an
-> error indication by returning NULL or an ERR_PTR value. (Or change
-> device_link_add to accept NULL if NULL is a dummy value.)
-> =
+> There are two refcounting going on here:
+> 
+>   1) mapped buckets:
+> 
+>      clamp_value <--(M1)--> bucket_id
+> 
+>   2) RUNNABLE tasks:
+> 
+>      bucket_id <--(M2)--> RUNNABLE tasks in a bucket
+> 
+> What we fix here is the refcounting for the buckets mapping. If a task
+> does not have a task specific clamp value it does not refcount any
+> bucket. The moment we assign a task specific clamp value, we need to
+> refcount the task in the bucket corresponding to that clamp value.
+> 
+> This will keep the bucket in use at least as long as the task will
+> need that clamp value.
 
-> Just repeating it here to have it near the actual patch.
-
-Link to that previous discussion: =
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2019-January/626859.h=
-tml
-
-I'm not sure what you mean. Should dev_pm_domain_attach_by_name return =
-
-ERR_PTR(-ENOENT) for name not found? It would still require special =
-
-handling for callers.
-
-The device_link_add function already returns NULL if the consumer or =
-
-supplier is NULL but that's also the only way it signals failure. Maybe =
-
-that function should be adjusted to return ERR_PTR instead?
-
-Changing core API for a driver bug seems inappropriate.
-
-The current imx6_pcie_attach_pd code is complicated because it tries to =
-
-distinguish between "multi pd" and "no pd / single pd". I wish there was =
-
-a way for these PM_RUNTIME device_links to be setup automatically in =
-
-core and have multi-PD behave the same as a single PD.
-
-There aren't many multi-PD users but commit 6494a9ad86de ("usb: xhci: =
-
-tegra: Add genpd support") seems to do pretty much the same thing.
-
---
-Regards,
-Leonard
+Sure, I get that. What I don't get is why you're adding that (2) here.
+Like said, __sched_setscheduler() already does a dequeue/enqueue under
+rq->lock, which should already take care of that.
