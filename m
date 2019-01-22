@@ -1,46 +1,53 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 08/16] sched/cpufreq: uclamp: Add utilization clamping
- for FAIR tasks
-Date: Tue, 22 Jan 2019 16:21:32 +0100
-Message-ID: <20190122152132.GR27931@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-9-patrick.bellasi@arm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH] power: domain: no need to check return value of debugfs_create functions
+Date: Tue, 22 Jan 2019 16:21:05 +0100
+Message-ID: <20190122152151.16139-6-gregkh@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190115101513.2822-9-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 15, 2019 at 10:15:05AM +0000, Patrick Bellasi wrote:
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -218,8 +218,15 @@ unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
->  	 * CFS tasks and we use the same metric to track the effective
->  	 * utilization (PELT windows are synchronized) we can directly add them
->  	 * to obtain the CPU's actual utilization.
-> +	 *
-> +	 * CFS utilization can be boosted or capped, depending on utilization
-> +	 * clamp constraints requested by currently RUNNABLE tasks.
-> +	 * When there are no CFS RUNNABLE tasks, clamps are released and
-> +	 * frequency will be gracefully reduced with the utilization decay.
->  	 */
-> -	util = util_cfs;
-> +	util = (type == ENERGY_UTIL)
-> +		? util_cfs
-> +		: uclamp_util(rq, util_cfs);
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
-That's pretty horrible; what's wrong with:
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/base/power/domain.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-	util = util_cfs;
-	if (type == FREQUENCY_UTIL)
-		util = uclamp_util(rq, util);
-
-That should generate the same code, but is (IMO) far easier to read.
-
->  	util += cpu_util_rt(rq);
->  
->  	dl_util = cpu_util_dl(rq);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 500de1dee967..45eafe8cf7dd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2948,18 +2948,11 @@ static int __init genpd_debug_init(void)
+ 
+ 	genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
+ 
+-	if (!genpd_debugfs_dir)
+-		return -ENOMEM;
+-
+-	d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
+-			genpd_debugfs_dir, NULL, &summary_fops);
+-	if (!d)
+-		return -ENOMEM;
++	debugfs_create_file("pm_genpd_summary", S_IRUGO, genpd_debugfs_dir,
++			    NULL, &summary_fops);
+ 
+ 	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+ 		d = debugfs_create_dir(genpd->name, genpd_debugfs_dir);
+-		if (!d)
+-			return -ENOMEM;
+ 
+ 		debugfs_create_file("current_state", 0444,
+ 				d, genpd, &status_fops);
+-- 
+2.20.1
