@@ -1,26 +1,27 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/4] dt-bindings: power: sc27xx: Add one IIO channel to
- read charge voltage
-Date: Mon, 21 Jan 2019 18:50:09 -0600
-Message-ID: <20190122005009.GA28344@bogus>
-References: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
+Subject: Re: [PATCH 1/8] dt-bindings: arm: atmel: add missing samx7 to reset
+ controller
+Date: Mon, 21 Jan 2019 19:05:28 -0600
+Message-ID: <20190122010528.GA20975@bogus>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
+ <b073b46ab85e9c855640e674f12f2a0801876140.1547629763.git.nicolas.ferre@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
+In-Reply-To: <b073b46ab85e9c855640e674f12f2a0801876140.1547629763.git.nicolas.ferre@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, zhang.lyra@gmail.com, orsonzhai@gmail.com
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, linux-usb@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 15 Jan 2019 18:32:34 +0800, Baolin Wang wrote:
-> Add one IIO channel named "charge_vol" to read the charge voltage for
-> the SC27XX fuel gauge controller.
+On Wed, 16 Jan 2019 10:57:37 +0100, Nicolas Ferre wrote:
+> Add this missing compatibility string to the Reset Controller
+> compatible string chip list.
 > 
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 > ---
->  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 
 Reviewed-by: Rob Herring <robh@kernel.org>
