@@ -1,60 +1,71 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] PM / EM: Expose the Energy Model in debugfs
-Date: Tue, 22 Jan 2019 16:54:55 +0100
-Message-ID: <20190122155455.GA20697@kroah.com>
-References: <20190107122608.21913-1-quentin.perret@arm.com>
- <20190122153412.zuehulqwb7ung43u@queper01-lin>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
+Date: Tue, 22 Jan 2019 17:01:31 +0100
+Message-ID: <CAKfTPtBfbUpnGOWJsDp06PeQSyOBreX31=3iRvkR1sdFOv29Mg@mail.gmail.com>
+References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
+ <1548167070-421-2-git-send-email-vincent.guittot@linaro.org> <CAJZ5v0gxYvDQZVrkQZ-eQgoQDhwRYR1x+SC_q7uxxbko0R03=w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122153412.zuehulqwb7ung43u@queper01-lin>
+In-Reply-To: <CAJZ5v0gxYvDQZVrkQZ-eQgoQDhwRYR1x+SC_q7uxxbko0R03=w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 03:34:14PM +0000, Quentin Perret wrote:
-> On Monday 07 Jan 2019 at 12:26:08 (+0000), Quentin Perret wrote:
-> > diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> > index d9dc2c38764a..8ef48daa62ff 100644
-> > --- a/kernel/power/energy_model.c
-> > +++ b/kernel/power/energy_model.c
-> > @@ -10,6 +10,7 @@
-> >  
-> >  #include <linux/cpu.h>
-> >  #include <linux/cpumask.h>
-> > +#include <linux/debugfs.h>
-> >  #include <linux/energy_model.h>
-> >  #include <linux/sched/topology.h>
-> >  #include <linux/slab.h>
-> > @@ -23,6 +24,88 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
-> >   */
-> >  static DEFINE_MUTEX(em_pd_mutex);
-> >  
-> > +#ifdef CONFIG_DEBUG_FS
-> > +static struct dentry *rootdir;
-> > +
-> > +static int em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
-> > +{
-> > +	struct dentry *d;
-> > +	char name[24];
-> > +
-> > +	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
-> > +
-> > +	d = debugfs_create_dir(name, pd);
-> > +	if (!d)
-> > +		return -ENOMEM;
-> > +
-> > +	if (!debugfs_create_ulong("frequency", 0444, d, &cs->frequency))
-> > +		return -ENOMEM;
-> 
-> Looking at the patches Greg just sent I assume all this is wrong.
+On Tue, 22 Jan 2019 at 16:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Tue, Jan 22, 2019 at 3:24 PM Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
+> >
+> > Initializing accounting_timestamp to something different from 0 during
+> > pm_runtime_init() doesn't make sense and put useless ordering constraint between
+> > timekeeping_init() and pm_runtime_init().
+> > PM runtime should start accounting time only when it is enable and discard
+> > the period when disabled.
+> > Set accounting_timestamp to now when enabling PM runtime.
+> >
+> > Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > ---
+> >  drivers/base/power/runtime.c | 6 +++++-
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index fb5e2b6..7df1d05 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -1306,6 +1306,10 @@ void pm_runtime_enable(struct device *dev)
+> >
+> >         spin_lock_irqsave(&dev->power.lock, flags);
+> >
+> > +       /* About to enable runtime pm, set accounting_timestamp to now */
+> > +       if (dev->power.disable_depth == 1)
+> > +               dev->power.accounting_timestamp = jiffies;
+>
+> I would do this in the dev->power.disable_depth > 0 branch below.
+> Just check if disable_depth is zero after decrementing it and update
+> accounting_timestamp if so.
 
-Yes it is :)
+My goal was to prevent nested "if" which is sometime difficult to read.
+I'm going to change that and send a new version
 
-> I'll send a v2 without the 'if' all over.
+Vincent
 
-That would be wonderful, thanks.
-
-greg k-h
+>
+> > +
+> >         if (dev->power.disable_depth > 0)
+> >                 dev->power.disable_depth--;
+> >         else
+> > @@ -1506,7 +1510,7 @@ void pm_runtime_init(struct device *dev)
+> >         dev->power.request_pending = false;
+> >         dev->power.request = RPM_REQ_NONE;
+> >         dev->power.deferred_resume = false;
+> > -       dev->power.accounting_timestamp = jiffies;
+> > +       dev->power.accounting_timestamp = 0;
+> >         INIT_WORK(&dev->power.work, pm_runtime_work);
+> >
+> >         dev->power.timer_expires = 0;
+> > --
+> > 2.7.4
+> >
