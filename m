@@ -1,51 +1,55 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
-Date: Tue, 22 Jan 2019 15:24:29 +0100
-Message-ID: <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
-References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
+Subject: [PATCH v6 0/3] Move pm_runtime accounted time to raw nsec
+Date: Tue, 22 Jan 2019 15:24:28 +0100
+Message-ID: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, thara.gopinath@linaro.org, linux@roeck-us.net
 Cc: ulf.hansson@linaro.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Initializing accounting_timestamp to something different from 0 during
-pm_runtime_init() doesn't make sense and put useless ordering constraint between
-timekeeping_init() and pm_runtime_init().
-PM runtime should start accounting time only when it is enable and discard
-the period when disabled.
-Set accounting_timestamp to now when enabling PM runtime.
+Move pm_runtime accounted time to raw nsec. The subject of the patchset
+has changed as the 1st patch of the previous versions has been queued by
+Rafael.
 
-Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/base/power/runtime.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Patch 1 set accounting_timestamp to 0 in pm_runtime_init and update it when enable. So
+we remove ordering constraint between timekeeping_init and pm_runtime_init
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index fb5e2b6..7df1d05 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1306,6 +1306,10 @@ void pm_runtime_enable(struct device *dev)
- 
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 
-+	/* About to enable runtime pm, set accounting_timestamp to now */
-+	if (dev->power.disable_depth == 1)
-+		dev->power.accounting_timestamp = jiffies;
-+
- 	if (dev->power.disable_depth > 0)
- 		dev->power.disable_depth--;
- 	else
-@@ -1506,7 +1510,7 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.request_pending = false;
- 	dev->power.request = RPM_REQ_NONE;
- 	dev->power.deferred_resume = false;
--	dev->power.accounting_timestamp = jiffies;
-+	dev->power.accounting_timestamp = 0;
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
- 	dev->power.timer_expires = 0;
+Patch 2 moves time accounting on raw ns. This patch initially used
+ktime instead of raw ns but it was easier to move i915 driver on raw ns
+than on ktime.
+
+Changes since v5:
+- removed patches already queued.
+- set accounting_timestamp to 0 in pm_runtime_init and update it when enable
+
+Changes since v4:
+-Update commit message
+
+Changes since v3:
+- Rebase on v4.20-rc7 without patch that has been queued by Rafael
+- Simplify the new interface pm_runtime_suspended_time()
+
+Changes since v2:
+- remove patch1 that has been queued by rafael
+- add new interface in pm_runtime to get accounted time
+- reorder patchset to prevent compilation error
+
+Changes since v1:
+- updated commit message of patch 1
+- Added patches 2 & 3 to move runtime_pm accounting on raw ns
+  
+Thara Gopinath (1):
+  PM-runtime: Replace jiffies based accounting with ktime-based
+    accounting
+
+Vincent Guittot (1):
+  PM-runtime: update accounting_timestamp only when enable
+
+ drivers/base/power/runtime.c | 21 +++++++++++++--------
+ drivers/base/power/sysfs.c   | 11 ++++++++---
+ include/linux/pm.h           |  6 +++---
+ 3 files changed, 24 insertions(+), 14 deletions(-)
+
 -- 
 2.7.4
