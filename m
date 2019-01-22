@@ -1,59 +1,271 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 08/16] sched/cpufreq: uclamp: Add utilization clamping
- for FAIR tasks
-Date: Tue, 22 Jan 2019 15:45:24 +0000
-Message-ID: <20190122154524.64c6yawmutig35zo@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-9-patrick.bellasi@arm.com>
- <20190122152132.GR27931@hirez.programming.kicks-ass.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH v1 13/13] watchdog: bd70528: Initial support for ROHM
+ BD70528 watchdog block
+Date: Tue, 22 Jan 2019 07:47:50 -0800
+Message-ID: <20190122154750.GB1705@roeck-us.net>
+References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+ <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190122152132.GR27931@hirez.programming.kicks-ass.net>
+In-Reply-To: <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
 List-Id: linux-pm@vger.kernel.org
 
-On 22-Jan 16:21, Peter Zijlstra wrote:
-> On Tue, Jan 15, 2019 at 10:15:05AM +0000, Patrick Bellasi wrote:
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -218,8 +218,15 @@ unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-> >  	 * CFS tasks and we use the same metric to track the effective
-> >  	 * utilization (PELT windows are synchronized) we can directly add them
-> >  	 * to obtain the CPU's actual utilization.
-> > +	 *
-> > +	 * CFS utilization can be boosted or capped, depending on utilization
-> > +	 * clamp constraints requested by currently RUNNABLE tasks.
-> > +	 * When there are no CFS RUNNABLE tasks, clamps are released and
-> > +	 * frequency will be gracefully reduced with the utilization decay.
-> >  	 */
-> > -	util = util_cfs;
-> > +	util = (type == ENERGY_UTIL)
-> > +		? util_cfs
-> > +		: uclamp_util(rq, util_cfs);
+On Tue, Jan 22, 2019 at 11:48:36AM +0200, Matti Vaittinen wrote:
+> Initial support for watchdog block included in ROHM BD70528
+> power management IC.
 > 
-> That's pretty horrible; what's wrong with:
+> Configurations for low power states are still to be checked.
 > 
-> 	util = util_cfs;
-> 	if (type == FREQUENCY_UTIL)
-> 		util = uclamp_util(rq, util);
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
+>  drivers/watchdog/Kconfig       |  12 +++
+>  drivers/watchdog/Makefile      |   1 +
+>  drivers/watchdog/bd70528_wdt.c | 161 +++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 174 insertions(+)
+>  create mode 100644 drivers/watchdog/bd70528_wdt.c
 > 
-> That should generate the same code, but is (IMO) far easier to read.
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index 57f017d74a97..f30e3a3e886e 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
+>  	  watchdog. Be aware that governors might affect the watchdog because it
+>  	  is purely software, e.g. the panic governor will stall it!
+>  
+> +config BD70528_WATCHDOG
+> +	tristate "ROHM BD70528 PMIC Watchdog"
+> +	depends on MFD_ROHM_BD70528
+> +	select WATCHDOG_CORE
+> +	help
+> +	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
+> +	  cause system reset.
+> +
+> +	  Say Y here to include support for the ROHM BD70528 watchdog.
+> +	  Alternatively say M to compile the driver as a module,
+> +	  which will be called bd70528_wdt.
+> +
+>  config DA9052_WATCHDOG
+>  	tristate "Dialog DA9052 Watchdog"
+>  	depends on PMIC_DA9052 || COMPILE_TEST
+> diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+> index a0917ef28e07..1ce87a3b1172 100644
+> --- a/drivers/watchdog/Makefile
+> +++ b/drivers/watchdog/Makefile
+> @@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
+>  obj-$(CONFIG_XEN_WDT) += xen_wdt.o
+>  
+>  # Architecture Independent
+> +obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
+>  obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
+>  obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
+>  obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
+> diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
+> new file mode 100644
+> index 000000000000..e9a32566f595
+> --- /dev/null
+> +++ b/drivers/watchdog/bd70528_wdt.c
+> @@ -0,0 +1,161 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (C) 2018 ROHM Semiconductors
+> +// ROHM BD70528MWV watchdog driver
+> +
+> +#include <linux/bcd.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/rohm-bd70528.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/watchdog.h>
+> +
+> +static int bd70528_wdt_set(struct bd70528 *bd70528, int enable)
+> +{
+> +	int ret;
+> +
+> +	if (bd70528->rtc_timer_lock)
+> +		mutex_lock(bd70528->rtc_timer_lock);
 
-Yes, right... and that's also the pattern we end up with the
-following patch on RT integration.
+This looks awkward. I don't think the if() is necessary.
 
-However, as suggested by Rafael, I'll squash these two patches
-together and we will get rid of the above for free ;)
+> +
+> +	ret = bd70528->wdt_set(bd70528, enable, NULL);
+> +
+> +	if (bd70528->rtc_timer_lock)
+> +		mutex_unlock(bd70528->rtc_timer_lock);
+> +	return ret;
+> +}
+> +
+> +static int bd70528_wdt_start(struct watchdog_device *wdt)
+> +{
+> +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> +
+> +	return bd70528_wdt_set(bd70528, 1);
+> +}
+> +
+> +static int bd70528_wdt_stop(struct watchdog_device *wdt)
+> +{
+> +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> +
+> +	return bd70528_wdt_set(bd70528, 0);
+> +}
+> +
+> +static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
+> +				    unsigned int timeout)
+> +{
+> +	unsigned int hours;
+> +	unsigned int minutes;
+> +	unsigned int seconds;
+> +	int ret;
+> +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> +
+> +	seconds = timeout;
+> +	hours = timeout / (60 * 60);
+> +	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
+> +	if (hours)
+> +		seconds -= (60 * 60);
+> +	minutes = seconds / 60;
+> +	seconds = seconds % 60;
+> +
+> +	if (bd70528->rtc_timer_lock)
+> +		mutex_lock(bd70528->rtc_timer_lock);
+> +
+> +	ret = bd70528->wdt_set(bd70528, 0, NULL);
+> +	if (ret)
+> +		goto out_unlock;
+> +
+> +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_HOUR,
+> +				 BD70528_MASK_WDT_HOUR, hours);
+> +	if (ret) {
+> +		dev_err(bd70528->chip.dev, "Failed to set WDT hours\n");
+> +		goto out_en_unlock;
+> +	}
+> +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_MINUTE,
+> +				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
+> +	if (ret) {
+> +		dev_err(bd70528->chip.dev, "Failed to set WDT minutes\n");
+> +		goto out_en_unlock;
+> +	}
+> +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_SEC,
+> +				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
+> +	if (ret) {
+> +		dev_err(bd70528->chip.dev, "Failed to set WDT seconds\n");
+> +		goto out_en_unlock;
 
-> >  	util += cpu_util_rt(rq);
-> >  
-> >  	dl_util = cpu_util_dl(rq);
+Unnecessary goto.
 
--- 
-#include <best/regards.h>
+> +	}
+> +
+> +out_en_unlock:
+> +	ret = bd70528->wdt_set(bd70528, 1, NULL);
+> +out_unlock:
+> +	if (bd70528->rtc_timer_lock)
+> +		mutex_lock(bd70528->rtc_timer_lock);
 
-Patrick Bellasi
+I don't think this code was ever tested.
+
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct watchdog_info bd70528_wdt_info = {
+> +	.identity = "bd70528-wdt",
+> +	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
+> +};
+> +
+> +static const struct watchdog_ops bd70528_wdt_ops = {
+> +	.start		= bd70528_wdt_start,
+> +	.stop		= bd70528_wdt_stop,
+> +	/*
+> +	 *  bd70528 WDT ping is same as enable. Eg, writing 'enable' to enabled
+> +	 * WDT will restart the timeout
+> +	 */
+Unnecessary comment.
+
+> +	.ping		= bd70528_wdt_start,
+> +	.set_timeout	= bd70528_wdt_set_timeout,
+> +};
+> +
+> +/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
+> +#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
+> +/* Minimum time is 1 second */
+> +#define WDT_MIN_MS 1000
+> +static struct watchdog_device bd70528_wd = {
+> +	.info = &bd70528_wdt_info,
+> +	.ops =  &bd70528_wdt_ops,
+> +	.min_hw_heartbeat_ms = WDT_MIN_MS,
+> +	.max_hw_heartbeat_ms = WDT_MAX_MS,
+> +};
+> +
+> +static int bd70528_wdt_probe(struct platform_device *pdev)
+> +{
+> +	struct bd70528 *tmp;
+> +	struct bd70528 *bd70528;
+> +	int ret;
+> +
+> +	tmp = dev_get_drvdata(pdev->dev.parent);
+> +	if (!tmp) {
+> +		dev_err(&pdev->dev, "No MFD driver data\n");
+> +		return -EINVAL;
+> +	}
+> +	bd70528 = devm_kzalloc(&pdev->dev, sizeof(*bd70528), GFP_KERNEL);
+> +	if (!bd70528)
+> +		return -ENOMEM;
+> +
+> +	*bd70528 = *tmp;
+> +	bd70528->chip.dev = &pdev->dev;
+
+This is wrong.
+You should not copy the parent's driver data but have local driver
+data as needed which then points to the parent's driver data if
+needed. I assume this is why the mutex is a pointer, but that
+just shows that the whole approach is wrong.
+
+> +
+> +	/*
+> +	 * TODO: Set the initial state and timeout.
+
+Confused. Why don't you just do it ?
+
+> +	 * See whether the low power states require special handling
+> +	 */
+> +	watchdog_set_drvdata(&bd70528_wd, bd70528);
+
+At least in theory there can be more than one of those devices
+in the system, since it is an i2c device. With that in mind, bd70528_wd
+should be locally allocated.
+
+Also, bd70528_wd should be fully initialized. For example, the parent
+device is not set.
+
+> +	ret = devm_watchdog_register_device(&pdev->dev, &bd70528_wd);
+> +	if (ret < 0)
+> +		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
+> +
+> +	return ret;
+> +}
+> +static struct platform_driver bd70528_wdt = {
+> +	.driver = {
+> +		.name = "bd70528-wdt"
+> +	},
+> +	.probe = bd70528_wdt_probe,
+> +};
+> +
+> +module_platform_driver(bd70528_wdt);
+> +
+> +MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
+> +MODULE_DESCRIPTION("BD70528 watchdog driver");
+> +MODULE_LICENSE("GPL");
+> -- 
+> 2.14.3
+> 
+> 
+> -- 
+> Matti Vaittinen
+> ROHM Semiconductors
+> 
+> ~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
