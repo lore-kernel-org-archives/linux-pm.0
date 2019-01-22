@@ -1,123 +1,26 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 3/3] PM/runtime:Replace jiffies based
- accounting with ktime based accounting
-Date: Mon, 21 Jan 2019 23:52:46 +0100
-Message-ID: <CAJZ5v0j+Tp5xeBXsrYRn65QDYZgemWbhqm4maCqJuyNGVJ1drQ@mail.gmail.com>
-References: <1545388436-7489-1-git-send-email-vincent.guittot@linaro.org>
- <1545388436-7489-4-git-send-email-vincent.guittot@linaro.org>
- <20190117221628.GA21979@roeck-us.net> <20190118104215.GA13168@linaro.org>
- <CAKfTPtD9fu06sw8=MvjwfQfJoQHb0kT3un9=kdw+WZj+rbVUZg@mail.gmail.com>
- <CAJZ5v0gFpK3Kqyf=RM+160A3RAQYPs3c3EgxmNH7ZceEaujEUw@mail.gmail.com>
- <9ff86048-fca5-11b9-174c-f0a9338dd231@roeck-us.net>
- <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/4] dt-bindings: power: sc27xx: Add one IIO channel to
+ read charge voltage
+Date: Mon, 21 Jan 2019 18:50:09 -0600
+Message-ID: <20190122005009.GA28344@bogus>
+References: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKfTPtA_xfTt9KUAR+P=XAhXXyTdQn5ASm8GRcgnYxFFZT5ADg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, zhang.lyra@gmail.com, orsonzhai@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBKYW4gMjEsIDIwMTkgYXQgNDoxNyBQTSBWaW5jZW50IEd1aXR0b3QKPHZpbmNlbnQu
-Z3VpdHRvdEBsaW5hcm8ub3JnPiB3cm90ZToKPgo+IE9uIEZyaSwgMTggSmFuIDIwMTkgYXQgMTM6
-MDgsIEd1ZW50ZXIgUm9lY2sgPGxpbnV4QHJvZWNrLXVzLm5ldD4gd3JvdGU6Cj4gPgo+ID4gT24g
-MS8xOC8xOSAzOjA1IEFNLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPiA+ID4gT24gRnJpLCBK
-YW4gMTgsIDIwMTkgYXQgMTE6NTMgQU0gVmluY2VudCBHdWl0dG90Cj4gPiA+IDx2aW5jZW50Lmd1
-aXR0b3RAbGluYXJvLm9yZz4gd3JvdGU6Cj4gPiA+Pgo+ID4gPj4gT24gRnJpLCAxOCBKYW4gMjAx
-OSBhdCAxMTo0MiwgVmluY2VudCBHdWl0dG90Cj4gPiA+PiA8dmluY2VudC5ndWl0dG90QGxpbmFy
-by5vcmc+IHdyb3RlOgo+ID4gPj4+Cj4gPiA+Pj4gSGkgR3VlbnRlciwKPiA+ID4+Pgo+ID4gPj4+
-IExlIFRodXJzZGF5IDE3IEphbiAyMDE5IMOgIDE0OjE2OjI4ICgtMDgwMCksIEd1ZW50ZXIgUm9l
-Y2sgYSDDqWNyaXQgOgo+ID4gPj4+PiBPbiBGcmksIERlYyAyMSwgMjAxOCBhdCAxMTozMzo1NkFN
-ICswMTAwLCBWaW5jZW50IEd1aXR0b3Qgd3JvdGU6Cj4gPiA+Pj4+PiBGcm9tOiBUaGFyYSBHb3Bp
-bmF0aCA8dGhhcmEuZ29waW5hdGhAbGluYXJvLm9yZz4KPiA+ID4+Pj4+Cj4gPiA+Pj4+PiBUaGlz
-IHBhdGNoIHJlcGxhY2VzIGppZmZpZXMgYmFzZWQgYWNjb3VudGluZyBmb3IgcnVudGltZV9hY3Rp
-dmVfdGltZQo+ID4gPj4+Pj4gYW5kIHJ1bnRpbWVfc3VzcGVuZGVkX3RpbWUgd2l0aCBrdGltZSBi
-YXNlIGFjY291bnRpbmcuIFRoaXMgbWFrZXMgdGhlCj4gPiA+Pj4+PiBydW50aW1lIGRlYnVnIGNv
-dW50ZXJzIGlubGluZSB3aXRoIGdlbnBkIGFuZCBvdGhlciBwbSBzdWJzeXRlbXMgd2hpY2gKPiA+
-ID4+Pj4+IHVzZXMga3RpbWUgYmFzZWQgYWNjb3VudGluZy4KPiA+ID4+Pj4+Cj4gPiA+Pj4+PiB0
-aW1la2VlcGluZyBpcyBpbml0aWFsaXplZCBiZWZvcmUgcG1fcnVudGltZV9pbml0KCkgc28ga3Rp
-bWVfZ2V0KCkgd2lsbAo+ID4gPj4+Pj4gYmUgcmVhZHkgYmVmb3JlIGZpcnN0IGNhbGwuIEluIGZh
-Y3QsIHRpbWVrZWVwaW5nX2luaXQoKSBpcyBjYWxsZWQgZWFybHkKPiA+ID4+Pj4+IGluIHN0YXJ0
-X2tlcm5lbCgpIHdoaWNoIGlzIHdheSBiZWZvcmUgZHJpdmVyX2luaXQoKSAoYW5kIHRoYXQncyB3
-aGVuCj4gPiA+Pj4+PiBkZXZpY2VzIGNhbiBzdGFydCB0byBiZSBpbml0aWFsaXplZCkgY2FsbGVk
-IGZyb20gcmVzdF9pbml0KCkgdmlhCj4gPiA+Pj4+PiBrZXJuZWxfaW5pdF9mcmVlYWJsZSgpIGFu
-ZCBkb19iYXNpY19zZXR1cCgpLgo+ID4gPj4+Pj4KPiA+ID4+Pj4gVGhpcyBpcyBub3QgKGFsd2F5
-cykgY29ycmVjdC4gTXkgcWVtdSAiY29sbGllIiBib290IHRlc3QgZmFpbHMgd2l0aCB0aGlzCj4g
-PiA+Pj4+IHBhdGNoIGFwcGxpZWQuIFJldmVydGluZyB0aGUgcGF0Y2ggZml4ZXMgdGhlIHByb2Js
-ZW0uIEJpc2VjdCBsb2cgYXR0YWNoZWQuCj4gPiA+Pj4+Cj4gPiA+Pj4KPiA+ID4+PiBDYW4geW91
-IHRyeSB0aGUgcGF0Y2ggYmVsb3cgPwo+ID4gPj4+IGt0aW1lX2dldF9tb25vX2Zhc3RfbnMoKSBo
-YXMgdGhlIGFkdmFudGFnZSBvZiBiZWluZyBpbml0IHdpdGggZHVtbXkgY2xvY2sgc28KPiA+ID4+
-PiBpdCBjYW4gYmUgdXNlZCBhdCBlYXJseV9pbml0Lgo+ID4gPj4KPiA+ID4+IEFub3RoZXIgcG9z
-c2liaWxpdHkgd291bGQgYmUgZGVsYXkgdGhlIGluaXQgb2YgdGhlIGdwaW9jaGlwCj4gPiA+Cj4g
-PiA+IFdlbGwsIHJpZ2h0Lgo+ID4gPgo+ID4gPiBJbml0aWFsaXppbmcgZGV2aWNlcyBiZWZvcmUg
-dGltZWtlZXBpbmcgZG9lc24ndCBmZWVsIHBhcnRpY3VsYXJseQo+ID4gPiByb2J1c3QgZnJvbSB0
-aGUgZGVzaWduIHBlcnNwZWN0aXZlLgo+ID4gPgo+ID4gPiBIb3cgZXhhY3RseSBkb2VzIHRoYXQg
-aGFwcGVuPwo+ID4gPgo+ID4KPiA+IFdpdGggYW4gYWRkZWQgJ2luaXRpYWxpemVkJyBmbGFnIGFu
-ZCBiYWNrdHJhY2UgaW50byB0aGUgdGltZWtlZXBpbmcgY29kZSwKPiA+IHdpdGggdGhlIGNoYW5n
-ZSBzdWdnZXN0ZWQgZWFybGllciBhcHBsaWVkOgo+ID4KPiA+IC0tLS0tLS0tLS0tLVsgY3V0IGhl
-cmUgXS0tLS0tLS0tLS0tLQo+ID4gV0FSTklORzogQ1BVOiAwIFBJRDogMCBhdCBrZXJuZWwvdGlt
-ZS90aW1la2VlcGluZy5jOjQ1MyBrdGltZV9nZXRfbW9ub19mYXN0X25zKzB4MTE0LzB4MTJjCj4g
-PiBUaW1la2VlcGluZyBub3QgaW5pdGlhbGl6ZWQKPiA+IENQVTogMCBQSUQ6IDAgQ29tbTogc3dh
-cHBlciBOb3QgdGFpbnRlZCA1LjAuMC1yYzItbmV4dC0yMDE5MDExNy1kaXJ0eSAjMgo+ID4gSGFy
-ZHdhcmUgbmFtZTogU2hhcnAtQ29sbGllCj4gPiBCYWNrdHJhY2U6Cj4gPiBbPGMwMDBkY2U4Pl0g
-KGR1bXBfYmFja3RyYWNlKSBmcm9tIFs8YzAwMGRmNzg+XSAoc2hvd19zdGFjaysweDE4LzB4MWMp
-Cj4gPiAgIHI3OjAwMDAwMDA5IHI2OjAwMDAwMDAwIHI1OmMwNjViYTkwIHI0OmMwNmQzZTU0Cj4g
-PiBbPGMwMDBkZjYwPl0gKHNob3dfc3RhY2spIGZyb20gWzxjMDU4ODkzMD5dIChkdW1wX3N0YWNr
-KzB4MjAvMHgyOCkKPiA+IFs8YzA1ODg5MTA+XSAoZHVtcF9zdGFjaykgZnJvbSBbPGMwMDE4YWU4
-Pl0gKF9fd2FybisweGNjLzB4ZjQpCj4gPiBbPGMwMDE4YTFjPl0gKF9fd2FybikgZnJvbSBbPGMw
-MDE4YjVjPl0gKHdhcm5fc2xvd3BhdGhfZm10KzB4NGMvMHg2YykKPiA+ICAgcjg6ZGY0MDdiMDgg
-cjc6MDAwMDAwMDAgcjY6YzBjMDE1NTAgcjU6YzA2NWJhZDggcjQ6YzA2ZGQwMjgKPiA+IFs8YzAw
-MThiMTQ+XSAod2Fybl9zbG93cGF0aF9mbXQpIGZyb20gWzxjMDA2OWUyYz5dIChrdGltZV9nZXRf
-bW9ub19mYXN0X25zKzB4MTE0LzB4MTJjKQo+ID4gICByMzowMDAwMDAwMCByMjpjMDY1YmFkOAo+
-ID4gICByNTowMDAwMDAwMCByNDpkZjQwN2IwOAo+ID4gWzxjMDA2OWQxOD5dIChrdGltZV9nZXRf
-bW9ub19mYXN0X25zKSBmcm9tIFs8YzAzYzc4MTA+XSAocG1fcnVudGltZV9pbml0KzB4MzgvMHhi
-OCkKPiA+ICAgcjk6YzA2YzlhNWMgcjg6ZGY0MDdiMDggcjc6MDAwMDAwMDAgcjY6YzBjMDE1NTAg
-cjU6MDAwMDAwMDAgcjQ6ZGY0MDdiMDgKPiA+IFs8YzAzYzc3ZDg+XSAocG1fcnVudGltZV9pbml0
-KSBmcm9tIFs8YzAzYjZhMzQ+XSAoZGV2aWNlX2luaXRpYWxpemUrMHhiMC8weGVjKQo+ID4gICBy
-NzowMDAwMDAwMCByNjpjMGMwMTU1MCByNTowMDAwMDAwMCByNDpkZjQwN2IwOAo+ID4gWzxjMDNi
-Njk4ND5dIChkZXZpY2VfaW5pdGlhbGl6ZSkgZnJvbSBbPGMwMzY2ZDMwPl0gKGdwaW9jaGlwX2Fk
-ZF9kYXRhX3dpdGhfa2V5KzB4OWMvMHg4ODQpCj4gPiAgIHI3OjAwMDAwMDAwIHI2OmMwNmZjYTM0
-IHI1OjAwMDAwMDAwIHI0OjAwMDAwMDAwCj4gPiBbPGMwMzY2Yzk0Pl0gKGdwaW9jaGlwX2FkZF9k
-YXRhX3dpdGhfa2V5KSBmcm9tIFs8YzA2Yjk3MDg+XSAoc2ExMTAwX2luaXRfZ3BpbysweDQwLzB4
-OTgpCj4gPiAgIHIxMDpkZmZmY2Q2MCByOTpjMDZjOWE1YyByODpjMDZkZDAyMCByNzpjMDZkZDAy
-OCByNjpmZmZmZmZmZiByNTowMDAwMDAwMAo+ID4gICByNDpjMDZmY2EzNAo+ID4gWzxjMDZiOTZj
-OD5dIChzYTExMDBfaW5pdF9ncGlvKSBmcm9tIFs8YzA2YWU1OGM+XSAoc2ExMTAwX2luaXRfaXJx
-KzB4MmMvMHgzYykKPiA+ICAgcjc6YzA2ZGQwMjggcjY6ZmZmZmZmZmYgcjU6YzA3MTMzMDAgcjQ6
-YzA2ZTEwNzAKPiA+IFs8YzA2YWU1NjA+XSAoc2ExMTAwX2luaXRfaXJxKSBmcm9tIFs8YzA2YWFi
-MWM+XSAoaW5pdF9JUlErMHgyMC8weDI4KQo+ID4gICByNTpjMDcxMzMwMCByNDowMDAwMDAwMAo+
-ID4gWzxjMDZhYWFmYz5dIChpbml0X0lSUSkgZnJvbSBbPGMwNmE3Y2QwPl0gKHN0YXJ0X2tlcm5l
-bCsweDI1NC8weDRjYykKPiA+IFs8YzA2YTdhN2M+XSAoc3RhcnRfa2VybmVsKSBmcm9tIFs8MDAw
-MDAwMDA+XSAoICAobnVsbCkpCj4gPiAgIHIxMDowMDAwNzE3ZiByOTo2OTAxYjExOSByODpjMDAw
-MDEwMCByNzowMDAwMDA5MiByNjowMDAwMzEzZCByNTowMDAwMDA1Mwo+ID4gICByNDpjMDZhNzMz
-MAo+ID4gLS0tWyBlbmQgdHJhY2UgOTFlMWJkMDBkZDdjY2UzMiBdLS0tCj4KPiBEb2VzIGl0IG1l
-YW5zIHRoYXQgb25seSB0aGUgcG1fcnVudGltZV9pbml0IGlzIGRvbmUgYmVmb3JlCj4gdGltZWtl
-ZXBpbmdfaW5pdCgpIGJ1dCBubyB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKCkgPwoKVGhp
-cyBwbGF0Zm9ybSBjYWxscyBkZXZpY2VfaW5pdGlhbGl6ZSgpLCB2aWEgc2ExMTAwX2luaXRfaXJx
-KCksIGZyb20KaW5pdF9JUlEoKSB3aGljaCBpcyBpbiB0aGUgc3RhcnRfa2VybmVsKCkgY29kZSBw
-YXRoIGJlZm9yZQp0aW1la2VlcGluZ19pbml0KCkuICBUaGF0J3MgdGhlIGluaXRpYWxpemF0aW9u
-IG9mIHN0cnVjdHVyZSBmaWVsZHMKYWxvbmUuCgpSdW50aW1lIFBNIHJlYWxseSBjYW5ub3QgYmUg
-dXNlZCBsZWdpdGltYXRlbHkgYmVmb3JlIGRyaXZlcl9pbml0KCksCmJlY2F1c2UgaXQgbmVlZHMg
-YnVzIHR5cGVzIHRvIGJlIHRoZXJlIGF0IGxlYXN0LgoKPiBJbiB0aGlzIGNhc2UsIHdlIGNhbiBr
-ZWVwIHVzaW5nIGt0aW1lw6dnZXQgaW4KPiB1cGRhdGVfcG1fcnVudGltZV9hY2NvdW50aW5nKCkg
-YW5kIGZpbmQgYSBzb2x1dGlvbiB0byBkZWFsIHdpdGgKPiBlYXJseV9jYWxsIG9mIHBtX3J1bnRp
-bWVfaW5pdCgpCgpHaXZlbiB0aGUgYWJvdmUsIEkgdGhpbmsgdGhhdCBpbml0aWFsaXppbmcgYWNj
-b3VudGluZ190aW1lc3RhbXAgaW4KcG1fcnVudGltZV9pbml0KCkgdG8gYW55dGhpbmcgZGlmZmVy
-ZW50IGZyb20gMCBpcyBhIG1pc3Rha2UuCgpOb3RlIHRoYXQgdXBkYXRlX3BtX3J1bnRpbWVfYWNj
-b3VudGluZygpIGlnbm9yZXMgdGhlIGRlbHRhIHZhbHVlIGlmCnBvd2VyLmRpc2FibGVfZGVwdGgg
-aXMgbm90IHplcm8gYW55d2F5LCBzbyBpdCByZWFsbHkgc2hvdWxkIGJlCnN1ZmZpY2llbnQgdG8g
-dXBkYXRlIGFjY291bnRpbmdfdGltZXN0YW1wIHdoZW4gZW5hYmxpbmcgcnVudGltZSBQTSAtCmFu
-ZCBJJ20gbm90IHN1cmUgd2h5IGl0IGlzIG5vdCB1cGRhdGVkIGluIHBtX3J1bnRpbWVfZW5hYmxl
-KCkgZm9yIHRoYXQKbWF0dGVyICh0aGF0IGxvb2tzIGxpa2UgYSBidWcgdG8gbWUpLgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGlu
-ZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
-ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+On Tue, 15 Jan 2019 18:32:34 +0800, Baolin Wang wrote:
+> Add one IIO channel named "charge_vol" to read the charge voltage for
+> the SC27XX fuel gauge controller.
+> 
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> ---
+>  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+
+Reviewed-by: Rob Herring <robh@kernel.org>
