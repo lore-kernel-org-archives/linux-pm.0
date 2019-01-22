@@ -1,99 +1,164 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
- clamp changes
-Date: Tue, 22 Jan 2019 10:37:04 +0100
-Message-ID: <20190122093704.GM27931@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-6-patrick.bellasi@arm.com>
- <20190121153308.GL27931@hirez.programming.kicks-ass.net>
- <20190121154412.fak2t2iquj3aixtu@e110439-lin>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: [RFC PATCH v1 00/13] support ROHM BD70528 PMIC
+Date: Tue, 22 Jan 2019 11:41:53 +0200
+Message-ID: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190121154412.fak2t2iquj3aixtu@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: matti.vaittinen@fi.rohmeurope.com, mazziesaccount@gmail.com
+Cc: lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 21, 2019 at 03:44:12PM +0000, Patrick Bellasi wrote:
-> On 21-Jan 16:33, Peter Zijlstra wrote:
-> > On Tue, Jan 15, 2019 at 10:15:02AM +0000, Patrick Bellasi wrote:
-> > 
-> > > +static inline void
-> > > +uclamp_task_update_active(struct task_struct *p, unsigned int clamp_id)
-> > > +{
-> > > +	struct rq_flags rf;
-> > > +	struct rq *rq;
-> > > +
-> > > +	/*
-> > > +	 * Lock the task and the CPU where the task is (or was) queued.
-> > > +	 *
-> > > +	 * We might lock the (previous) rq of a !RUNNABLE task, but that's the
-> > > +	 * price to pay to safely serialize util_{min,max} updates with
-> > > +	 * enqueues, dequeues and migration operations.
-> > > +	 * This is the same locking schema used by __set_cpus_allowed_ptr().
-> > > +	 */
-> > > +	rq = task_rq_lock(p, &rf);
-> > > +
-> > > +	/*
-> > > +	 * Setting the clamp bucket is serialized by task_rq_lock().
-> > > +	 * If the task is not yet RUNNABLE and its task_struct is not
-> > > +	 * affecting a valid clamp bucket, the next time it's enqueued,
-> > > +	 * it will already see the updated clamp bucket value.
-> > > +	 */
-> > > +	if (!p->uclamp[clamp_id].active)
-> > > +		goto done;
-> > > +
-> > > +	uclamp_cpu_dec_id(p, rq, clamp_id);
-> > > +	uclamp_cpu_inc_id(p, rq, clamp_id);
-> > > +
-> > > +done:
-> > > +	task_rq_unlock(rq, p, &rf);
-> > > +}
-> > 
-> > > @@ -1008,11 +1043,11 @@ static int __setscheduler_uclamp(struct task_struct *p,
-> > >  
-> > >  	mutex_lock(&uclamp_mutex);
-> > >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> > > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MIN],
-> > > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MIN],
-> > >  				  UCLAMP_MIN, lower_bound);
-> > >  	}
-> > >  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> > > -		uclamp_bucket_inc(&p->uclamp[UCLAMP_MAX],
-> > > +		uclamp_bucket_inc(p, &p->uclamp[UCLAMP_MAX],
-> > >  				  UCLAMP_MAX, upper_bound);
-> > >  	}
-> > >  	mutex_unlock(&uclamp_mutex);
-> > 
-> > 
-> > But.... __sched_setscheduler() actually does the whole dequeue + enqueue
-> > thing already ?!? See where it does __setscheduler().
-> 
-> This is slow-path accounting, not fast path.
+Patch series introducing support for ROHM BD70528 PMIC
 
-Sure; but that's still no reason for duplicate or unneeded code.
+Please note that patch 2 breaks compilation without patches 3 and 4
 
-> There are two refcounting going on here:
-> 
->   1) mapped buckets:
-> 
->      clamp_value <--(M1)--> bucket_id
-> 
->   2) RUNNABLE tasks:
-> 
->      bucket_id <--(M2)--> RUNNABLE tasks in a bucket
-> 
-> What we fix here is the refcounting for the buckets mapping. If a task
-> does not have a task specific clamp value it does not refcount any
-> bucket. The moment we assign a task specific clamp value, we need to
-> refcount the task in the bucket corresponding to that clamp value.
-> 
-> This will keep the bucket in use at least as long as the task will
-> need that clamp value.
+ROHM BD70528 is a programmable Power Management IC for battery
+powered 'ultra low power' systems like the pre-announced NXP
+i.MX7 ULP. This patch series introduces support for the PMIC.
 
-Sure, I get that. What I don't get is why you're adding that (2) here.
-Like said, __sched_setscheduler() already does a dequeue/enqueue under
-rq->lock, which should already take care of that.
+I send this a RFC now as I would like to receive comments from
+Lee, Mark and Stephen regarding splitting the existing
+include/linux/mfd/bd718x7.h into ROHM generic and chip specific
+portions. Benefit is that for example the clk sub-driver does
+not need to be aware of chip specific structure(s) (struct
+bd718x7 and struct bd70528) as it only needs to derefernce the
+generic struct rohm_regmap_dev. Thus same clk subdriver can
+support both the bd718x7 and bd70528 as long as MFD driver
+data has this generic structure in the beginning of allocated
+data. But knowing the bd718x7 driver is already in upstream,
+it might be good if this change went through single tree, right?
+
+Another 'RFC' item is 'main register support' for regmap-irq.
+This has been initially discussed with Mark in these mail threads
+
+Option 1
+https://lore.kernel.org/lkml/20181217185014.GH27909@sirena.org.uk/
+
+Option 2
+https://lore.kernel.org/lkml/20181218085803.GD2477@localhost.localdomain/
+
+But I think it is Ok to show it to wider audience with this real
+usage example.
+
+RTC block of the bd70528 can support 'wake' irq which wakes PMIC
+from standby state. Wake irq's can be armed to wake up system up
+to 24 hours from arming. bd70528 can also generate alarm interrupts
+which can be armed to occur years after triggering. The RTC driver
+does always arm both the waker and alarm irqs and does not utilize
+longer period of alarm interrupts. All the RTC timers are limited
+to occur within the next 24 hours. Any suggestions on more elegant
+timer support are welcome =)
+
+GPIO portion of bd70528 driver adds I/O support for driving GPIO
+pins or reading the state. The interrupt functionality is provided
+by regmap-irq. Current GPIO driver is not aware of whether the pin(s)
+are used for I/O or interrupts and it is up-to driver user to
+ensure there is no misconfiguration or "double use".
+
+Currently only MFD core, clk, RTC and regulator portions are
+somehow tested. The RFC series also include initial gpio, power-supply
+and watchdog patches in order to provide better overview on chip
+and to collect initial feedback. Reset and ADC are not supported by
+this series.
+
+Patch 1:
+	regmap-irq, 'main status register support'. See discussion
+	https://lore.kernel.org/lkml/20181217185014.GH27909@sirena.org.uk/
+Patch 2:
+	split the bd718x7.h to generic and chip specific portions.
+	(breaks compilation without patch 3 and 4)
+Patch 3:
+	adapt bd718x7.h changes to bd718x7 regulator driver
+Patch 4:
+	adapt bd718x7.h changes to bd718x7 clk driver
+Patch 5:
+	add MFD core support for bd70528
+Patch 6:
+	support bd70528 clk using bd718x7 clk driver
+Patch 7:
+	document DT bindings for BD70528
+Patch 8:
+	support bd70528 regulators
+Patch 9:
+	document regulator DT bindings for BD70528
+Patch 10:
+	support BD70528 GPIO block
+Patch 11:
+	support BD70528 RTC
+Patch 12:
+	support BD70528 battery charger
+Patch 13:
+	support BD70528 watchdog
+
+This patch series is based on Mark's regulator/for-next branch
+
+---
+
+Matti Vaittinen (13):
+  regmap: regmap-irq: Add main status register support
+  mfd: bd718x7.h split to ROHM common and bd718x7 specific parts
+  regulator: bd718x7 use chip specific and generic data structs
+  clk: bd718x7: use chip specific and generic data structs
+  mfd: bd70528: Support ROHM bd70528 PMIC - core
+  clk: bd718x7: Support ROHM BD70528 clk block
+  devicetree: bindings: Document first ROHM BD70528 bindings
+  regulator: bd70528: Support ROHM BD70528 regulator block
+  devicetree: bindings: ROHM bd70528 regulator bindings
+  gpio: Initial support for ROHM bd70528 GPIO block
+  rtc: bd70528: Initial support for ROHM bd70528 RTC
+  power: supply: Initial support for ROHM BD70528 PMIC charger block
+  watchdog: bd70528: Initial support for ROHM BD70528 watchdog block
+
+ .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 104 ++++
+ .../bindings/regulator/rohm,bd70528-regulator.txt  |  68 +++
+ drivers/base/regmap/regmap-irq.c                   |  99 ++-
+ drivers/clk/Kconfig                                |   6 +-
+ drivers/clk/clk-bd718x7.c                          |  25 +-
+ drivers/gpio/Kconfig                               |  11 +
+ drivers/gpio/Makefile                              |   1 +
+ drivers/gpio/gpio-bd70528.c                        | 192 ++++++
+ drivers/mfd/Kconfig                                |  17 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/rohm-bd70528.c                         | 409 +++++++++++++
+ drivers/mfd/rohm-bd718x7.c                         |  23 +-
+ drivers/power/supply/Kconfig                       |   9 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/bd70528-charger.c             | 670 +++++++++++++++++++++
+ drivers/regulator/Kconfig                          |  11 +
+ drivers/regulator/Makefile                         |   1 +
+ drivers/regulator/bd70528-regulator.c              | 290 +++++++++
+ drivers/regulator/bd718x7-regulator.c              |  22 +-
+ drivers/rtc/Kconfig                                |   8 +
+ drivers/rtc/Makefile                               |   1 +
+ drivers/rtc/rtc-bd70528.c                          | 439 ++++++++++++++
+ drivers/watchdog/Kconfig                           |  12 +
+ drivers/watchdog/Makefile                          |   1 +
+ drivers/watchdog/bd70528_wdt.c                     | 161 +++++
+ include/linux/mfd/rohm-bd70528.h                   | 392 ++++++++++++
+ include/linux/mfd/rohm-bd718x7.h                   |  22 +-
+ include/linux/mfd/rohm-generic.h                   |  20 +
+ include/linux/regmap.h                             |  31 +
+ 29 files changed, 2998 insertions(+), 49 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+ create mode 100644 Documentation/devicetree/bindings/regulator/rohm,bd70528-regulator.txt
+ create mode 100644 drivers/gpio/gpio-bd70528.c
+ create mode 100644 drivers/mfd/rohm-bd70528.c
+ create mode 100644 drivers/power/supply/bd70528-charger.c
+ create mode 100644 drivers/regulator/bd70528-regulator.c
+ create mode 100644 drivers/rtc/rtc-bd70528.c
+ create mode 100644 drivers/watchdog/bd70528_wdt.c
+ create mode 100644 include/linux/mfd/rohm-bd70528.h
+ create mode 100644 include/linux/mfd/rohm-generic.h
+
+-- 
+2.14.3
+
+
+-- 
+Matti Vaittinen
+ROHM Semiconductors
+
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
