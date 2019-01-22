@@ -1,168 +1,137 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
- clamp changes
-Date: Tue, 22 Jan 2019 15:33:15 +0000
-Message-ID: <20190122153315.dhjl67sgpu74hmqv@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-6-patrick.bellasi@arm.com>
- <20190121153308.GL27931@hirez.programming.kicks-ass.net>
- <20190121154412.fak2t2iquj3aixtu@e110439-lin>
- <20190122093704.GM27931@hirez.programming.kicks-ass.net>
- <20190122104305.6vjx37muqsxm536t@e110439-lin>
- <20190122132817.GG13777@hirez.programming.kicks-ass.net>
- <20190122140115.twtx646vewm757ca@e110439-lin>
- <20190122145742.GQ27931@hirez.programming.kicks-ass.net>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH] PM / EM: Expose the Energy Model in debugfs
+Date: Tue, 22 Jan 2019 15:34:14 +0000
+Message-ID: <20190122153412.zuehulqwb7ung43u@queper01-lin>
+References: <20190107122608.21913-1-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190122145742.GQ27931@hirez.programming.kicks-ass.net>
+In-Reply-To: <20190107122608.21913-1-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, gregkh@linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22-Jan 15:57, Peter Zijlstra wrote:
-> On Tue, Jan 22, 2019 at 02:01:15PM +0000, Patrick Bellasi wrote:
-> > On 22-Jan 14:28, Peter Zijlstra wrote:
-> > > On Tue, Jan 22, 2019 at 10:43:05AM +0000, Patrick Bellasi wrote:
-> > > > On 22-Jan 10:37, Peter Zijlstra wrote:
-> > > 
-> > > > > Sure, I get that. What I don't get is why you're adding that (2) here.
-> > > > > Like said, __sched_setscheduler() already does a dequeue/enqueue under
-> > > > > rq->lock, which should already take care of that.
-> > > > 
-> > > > Oh, ok... got it what you mean now.
-> > > > 
-> > > > With:
-> > > > 
-> > > >    [PATCH v6 01/16] sched/core: Allow sched_setattr() to use the current policy
-> > > >    <20190115101513.2822-2-patrick.bellasi@arm.com>
-> > > > 
-> > > > we can call __sched_setscheduler() with:
-> > > > 
-> > > >    attr->sched_flags & SCHED_FLAG_KEEP_POLICY
-> > > > 
-> > > > whenever we want just to change the clamp values of a task without
-> > > > changing its class. Thus, we can end up returning from
-> > > > __sched_setscheduler() without doing an actual dequeue/enqueue.
-> > > 
-> > > I don't see that happening.. when KEEP_POLICY we set attr.sched_policy =
-> > > SETPARAM_POLICY. That is then checked again in __setscheduler_param(),
-> > > which is in the middle of that dequeue/enqueue.
-> > 
-> > Yes, I think I've forgot a check before we actually dequeue the task.
-> > 
-> > The current code does:
-> > 
-> > ---8<---
-> >    SYSCALL_DEFINE3(sched_setattr)
-> > 
-> >         // A) request to keep the same policy
-> >         if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY)
-> >             attr.sched_policy = SETPARAM_POLICY;
-> > 
-> >         sched_setattr()
-> >             // B) actually enforce the same policy
-> >             if (policy < 0)
-> >                 policy = oldpolicy = p->policy;
-> > 
-> >             // C) tune the clamp values
-> >             if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
-> >                 retval = __setscheduler_uclamp(p, attr);
-> > 
-> >             // D) tune attributes if policy is the same
-> >             if (unlikely(policy == p->policy))
-> >                 if (fair_policy(policy) && attr->sched_nice != task_nice(p))
-> >                     goto change;
-> >                 if (rt_policy(policy) && attr->sched_priority != p->rt_priority)
-> >                     goto change;
-> >                 if (dl_policy(policy) && dl_param_changed(p, attr))
-> >                     goto change;
+On Monday 07 Jan 2019 at 12:26:08 (+0000), Quentin Perret wrote:
+> diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> index d9dc2c38764a..8ef48daa62ff 100644
+> --- a/kernel/power/energy_model.c
+> +++ b/kernel/power/energy_model.c
+> @@ -10,6 +10,7 @@
+>  
+>  #include <linux/cpu.h>
+>  #include <linux/cpumask.h>
+> +#include <linux/debugfs.h>
+>  #include <linux/energy_model.h>
+>  #include <linux/sched/topology.h>
+>  #include <linux/slab.h>
+> @@ -23,6 +24,88 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
+>   */
+>  static DEFINE_MUTEX(em_pd_mutex);
+>  
+> +#ifdef CONFIG_DEBUG_FS
+> +static struct dentry *rootdir;
+> +
+> +static int em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
+> +{
+> +	struct dentry *d;
+> +	char name[24];
+> +
+> +	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
+> +
+> +	d = debugfs_create_dir(name, pd);
+> +	if (!d)
+> +		return -ENOMEM;
+> +
+> +	if (!debugfs_create_ulong("frequency", 0444, d, &cs->frequency))
+> +		return -ENOMEM;
+
+Looking at the patches Greg just sent I assume all this is wrong.
+I'll send a v2 without the 'if' all over.
+
+Thanks,
+Quentin
+
+> +
+> +	if (!debugfs_create_ulong("power", 0444, d, &cs->power))
+> +		return -ENOMEM;
+> +
+> +	if (!debugfs_create_ulong("cost", 0444, d, &cs->cost))
+> +		return -ENOMEM;
+> +
+> +	return 0;
+> +}
+> +
+> +static int em_debug_cpus_show(struct seq_file *s, void *unused)
+> +{
+> +	seq_printf(s, "%*pbl\n", cpumask_pr_args(to_cpumask(s->private)));
+> +
+> +	return 0;
+> +}
+> +DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
+> +
+> +static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
+> +{
+> +	struct dentry *d;
+> +	char name[16];
+> +	int i;
+> +
+> +	if (!rootdir)
+> +		return -EINVAL;
+> +
+> +	snprintf(name, sizeof(name), "pd%d", cpu);
+> +
+> +	/* Create the directory of the performance domain */
+> +	d = debugfs_create_dir(name, rootdir);
+> +	if (!d)
+> +		return -ENOMEM;
+> +
+> +	/* Create one file per pd to expose the related CPUs */
+> +	if (!debugfs_create_file("cpus", 0444, d, pd->cpus,
+> +							&em_debug_cpus_fops))
+> +		return -ENOMEM;
+> +
+> +	/* Create a sub-directory for each capacity state */
+> +	for (i = 0; i < pd->nr_cap_states; i++) {
+> +		if (em_debug_create_cs(&pd->table[i], d))
+> +			return -ENOMEM;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __init em_debug_init(void)
+> +{
+> +	/* Create /sys/kernel/debug/energy_model directory */
+> +	rootdir = debugfs_create_dir("energy_model", NULL);
+> +	if (!rootdir) {
+> +		pr_err("%s: Failed to create root directory\n", __func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return 0;
+> +}
+> +core_initcall(em_debug_init);
+> +#else /* CONFIG_DEBUG_FS */
+> +static int em_debug_create_pd(struct em_perf_domain *pd, int cpu)
+> +{
+> +	return 0;
+> +}
+> +#endif
+>  static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
+>  						struct em_data_callback *cb)
+>  {
+> @@ -102,6 +185,9 @@ static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
+>  	pd->nr_cap_states = nr_states;
+>  	cpumask_copy(to_cpumask(pd->cpus), span);
+>  
+> +	if (em_debug_create_pd(pd, cpu))
+> +		pr_err("Failed to create debugfs for pd%d\n", cpu);
+> +
+>  	return pd;
+>  
+>  free_cs_table:
+> -- 
+> 2.20.1
 > 
-> 		  if (util_changed)
-> 		      goto change;
-> 
-> ?
-> 
-> >                 return 0;
-> >         change:
-> > 
-> >             // E) dequeue/enqueue task
-> > ---8<---
-> > 
-> > So, probably in D) I've missed a check on SCHED_FLAG_KEEP_POLICY to
-> > enforce a return in that case...
-> > 
-> > > Also, and this might be 'broken', SETPARAM_POLICY _does_ reset all the
-> > > other attributes, it only preserves policy, but it will (re)set nice
-> > > level for example (see that same function).
-> > 
-> > Mmm... right... my bad! :/
-> > 
-> > > So maybe we want to introduce another (few?) FLAG_KEEP flag(s) that
-> > > preserve the other bits; I'm thinking at least KEEP_PARAM and KEEP_UTIL
-> > > or something.
-> > 
-> > Yes, I would say we have two options:
-> > 
-> >  1) SCHED_FLAG_KEEP_POLICY enforces all the scheduling class specific
-> >     attributes, but cross class attributes (e.g. uclamp)
-> >
-> >  2) add SCHED_KEEP_NICE, SCHED_KEEP_PRIO, and SCED_KEEP_PARAMS
-> >     and use them in the if conditions in D)
-> 
-> So the current KEEP_POLICY basically provides sched_setparam(), and
-
-But it's not exposed user-space.
-
-> given we have that as a syscall, that is supposedly a useful
-> functionality.
-
-For uclamp is definitively useful to change clamps without the need to
-read beforehand the current policy params and use them in a following
-set syscall... which is racy pattern.
-
-> Also, NICE/PRIO/DL* is all the same thing and depends on the policy,
-> KEEP_PARAM should cover the lot
-
-Right, that makes sense.
-
-> And I suppose the UTIL_CLAMP is !KEEP_UTIL; we could go either way
-> around with that flag.
-
-What about getting rid of the racy case above by exposing userspace
-only the new UTIL_CLAMP and, on:
-
-  sched_setscheduler(flags: UTIL_CLAMP)
-
-we enforce the other two flags from the syscall:
-
----8<---
-        SYSCALL_DEFINE3(sched_setattr)
-            if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY) {
-                attr.sched_policy = SETPARAM_POLICY;
-                attr.sched_flags |= (KEEP_POLICY|KEEP_PARAMS);
-            }
----8<---
-
-This will not make possible to change class and set flags in one go,
-but honestly that's likely a very limited use-case, isn't it ?
-
-> > In both cases the goal should be to return from code block D).
-> 
-> I don't think so; we really do want to 'goto change' for util changes
-> too I think. Why duplicate part of that logic?
-
-But that will force a dequeue/enqueue... isn't too much overhead just
-to change a clamp value? Perhaps we can also end up with some wired
-side-effects like the task being preempted ?
-
-Consider also that the uclamp_task_update_active() added by this patch
-not only has lower overhead but it will be use also by cgroups where
-we want to force update all the tasks on a cgroup's clamp change.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
