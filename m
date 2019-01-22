@@ -1,103 +1,122 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 08/16] sched/cpufreq: uclamp: Add utilization clamping
- for FAIR tasks
-Date: Tue, 22 Jan 2019 18:18:31 +0000
-Message-ID: <20190122181831.a4w65qcivx4hua6d@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-9-patrick.bellasi@arm.com>
- <20190122171314.GS27931@hirez.programming.kicks-ass.net>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: [driver-core PATCH v10 0/9] Add NUMA aware async_schedule calls
+Date: Tue, 22 Jan 2019 10:39:05 -0800
+Message-ID: <154818223154.18753.12374915684623789884.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122171314.GS27931@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: mcgrof@kernel.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On 22-Jan 18:13, Peter Zijlstra wrote:
-> On Tue, Jan 15, 2019 at 10:15:05AM +0000, Patrick Bellasi wrote:
-> > @@ -342,11 +350,24 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-> >  		return;
-> >  	sg_cpu->iowait_boost_pending = true;
-> >  
-> > +	/*
-> > +	 * Boost FAIR tasks only up to the CPU clamped utilization.
-> > +	 *
-> > +	 * Since DL tasks have a much more advanced bandwidth control, it's
-> > +	 * safe to assume that IO boost does not apply to those tasks.
-> 
-> I'm not buying that argument. IO-boost isn't related to b/w management.
-> 
-> IO-boot is more about compensating for hidden dependencies, and those
-> don't get less hidden for using a different scheduling class.
-> 
-> Now, arguably DL should not be doing IO in the first place, but that's a
-> whole different discussion.
+This patch set provides functionality that will help to improve the
+locality of the async_schedule calls used to provide deferred
+initialization.
 
-My understanding is that IOBoost is there to help tasks doing many
-and _frequent_ IO operations, which are relatively _not so much_
-computational intensive on the CPU.
+This patch set originally started out focused on just the one call to
+async_schedule_domain in the nvdimm tree that was being used to defer the
+device_add call however after doing some digging I realized the scope of
+this was much broader than I had originally planned. As such I went
+through and reworked the underlying infrastructure down to replacing the
+queue_work call itself with a function of my own and opted to try and
+provide a NUMA aware solution that would work for a broader audience.
 
-Those tasks generate a small utilization and, without IOBoost, will be
-executed at a lower frequency and will add undesired latency on
-triggering the next IO operation.
+In addition I have added several tweaks and/or clean-ups to the front of the
+patch set. Patches 1 through 3 address a number of issues that actually were
+causing the existing async_schedule calls to not show the performance that
+they could due to either not scaling on a per device basis, or due to issues
+that could result in a potential race. For example, patch 3 addresses the
+fact that we were calling async_schedule once per driver instead of once
+per device, and as a result we would have still ended up with devices
+being probed on a non-local node without addressing this first.
 
-Isn't mainly that the reason for it?
+I have also updated the kernel module used to test async driver probing so
+that it can expose the original issue I was attempting to address.
+It will fail on a system of asynchronous work either takes longer than it
+takes to load a single device and a single driver with a device already
+added. It will also fail if the NUMA node that the driver is loaded on does
+not match the NUMA node the device is associated with.
 
-IO operations have also to be _frequent_ since we don't got to max OPP
-at the very first wakeup from IO. We double frequency and get to max
-only if we have a stable stream of IO operations.
+RFC->v1:
+    Dropped nvdimm patch to submit later.
+        It relies on code in libnvdimm development tree.
+    Simplified queue_work_near to just convert node into a CPU.
+    Split up drivers core and PM core patches.
+v1->v2:
+    Renamed queue_work_near to queue_work_node
+    Added WARN_ON_ONCE if we use queue_work_node with per-cpu workqueue
+v2->v3:
+    Added Acked-by for queue_work_node patch
+    Continued rename from _near to _node to be consistent with queue_work_node
+        Renamed async_schedule_near_domain to async_schedule_node_domain
+        Renamed async_schedule_near to async_schedule_node
+    Added kerneldoc for new async_schedule_XXX functions
+    Updated patch description for patch 4 to include data on potential gains
+v3->v4
+    Added patch to consolidate use of need_parent_lock
+    Make asynchronous driver probing explicit about use of drvdata
+v4->v5
+    Added patch to move async_synchronize_full to address deadlock
+    Added bit async_probe to act as mutex for probe/remove calls
+    Added back nvdimm patch as code it relies on is now in Linus's tree
+    Incorporated review comments on parent & device locking consolidation
+    Rebased on latest linux-next
+v5->v6:
+    Drop the "This patch" or "This change" from start of patch descriptions.
+    Drop unnecessary parenthesis in first patch
+    Use same wording for "selecting a CPU" in comments added in first patch
+    Added kernel documentation for async_probe member of device
+    Fixed up comments for async_schedule calls in patch 2
+    Moved code related setting async driver out of device.h and into dd.c
+    Added Reviewed-by for several patches
+v6->v7:
+    Fixed typo which had kernel doc refer to "lock" when I meant "unlock"
+    Dropped "bool X:1" to "u8 X:1" from patch description
+    Added async_driver to device_private structure to store driver
+    Dropped unecessary code shuffle from async_probe patch
+    Reordered patches to move fixes up to front
+    Added Reviewed-by for several patches
+    Updated cover page and patch descriptions throughout the set
+v7->v8:
+    Replaced async_probe value with dead, only apply dead in device_del
+    Dropped Reviewed-by from patch 2 due to significant changes
+    Added Reviewed-by for patches reviewed by Luis Chamberlain
+v8->v9:
+    Dropped patch 1 as it was applied, shifted remaining patches by 1
+    Added new patch 9 that adds test framework for NUMA and sequential init
+    Tweaked what is now patch 1, and added Reviewed-by from Dan Williams
+v9->v10:
+    Moved "dead" from device struct to device_private struct
+    Added Reviewed-by from Rafael to patch 1
+    Rebased on latest linux-next
 
-IMHO, it makes perfectly sense to use DL for these kind of operations
-but I would expect that, since you care about latency we should come
-up with a proper description of the required bandwidth... eventually
-accounting for an additional headroom to compensate for "hidden
-dependencies"... without relaying on a quite dummy policy like
-IOBoost to get our DL tasks working.
+---
 
-At the end, DL is now quite good in driving the freq as high has it
-needs... and by closing userspace feedback loops it can also
-compensate for all sort of fluctuations and noise... as demonstrated
-by Alessio during last OSPM:
+Alexander Duyck (9):
+      driver core: Establish order of operations for device_add and device_del via bitflag
+      device core: Consolidate locking and unlocking of parent and device
+      driver core: Probe devices asynchronously instead of the driver
+      workqueue: Provide queue_work_node to queue work near a given NUMA node
+      async: Add support for queueing on specific NUMA node
+      driver core: Attach devices on CPU local to device node
+      PM core: Use new async_schedule_dev command
+      libnvdimm: Schedule device registration on node local to the device
+      driver core: Rewrite test_async_driver_probe to cover serialization and NUMA affinity
 
-   http://retis.sssup.it/luca/ospm-summit/2018/Downloads/OSPM_deadline_audio.pdf
 
-> > +	 * Instead, since RT tasks are not utilization clamped, we don't want
-> > +	 * to apply clamping on IO boost while there is blocked RT
-> > +	 * utilization.
-> > +	 */
-> > +	max_boost = sg_cpu->iowait_boost_max;
-> > +	if (!cpu_util_rt(cpu_rq(sg_cpu->cpu)))
-> > +		max_boost = uclamp_util(cpu_rq(sg_cpu->cpu), max_boost);
-> > +
-> >  	/* Double the boost at each request */
-> >  	if (sg_cpu->iowait_boost) {
-> >  		sg_cpu->iowait_boost <<= 1;
-> > -		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
-> > -			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-> > +		if (sg_cpu->iowait_boost > max_boost)
-> > +			sg_cpu->iowait_boost = max_boost;
-> >  		return;
-> >  	}
-> 
-> Hurmph...  so I'm not sold on this bit.
+ drivers/base/base.h                         |    8 +
+ drivers/base/bus.c                          |   46 +----
+ drivers/base/core.c                         |   11 +
+ drivers/base/dd.c                           |  160 +++++++++++++----
+ drivers/base/power/main.c                   |   12 +
+ drivers/base/test/test_async_driver_probe.c |  261 +++++++++++++++++++++------
+ drivers/nvdimm/bus.c                        |   11 +
+ include/linux/async.h                       |   82 ++++++++
+ include/linux/workqueue.h                   |    2 
+ kernel/async.c                              |   53 +++--
+ kernel/workqueue.c                          |   84 +++++++++
+ 11 files changed, 564 insertions(+), 166 deletions(-)
 
-If a task is not clamped we execute it at its required utilization or
-even max frequency in case of wakeup from IO.
-
-When a task is util_max clamped instead, we are saying that we don't
-care to run it above the specified clamp value and, if possible, we
-should run it below that capacity level.
-
-If that's the case, why this clamping hints should not be enforced on
-IO wakeups too?
-
-At the end it's still a user-space decision, we basically allow
-userspace to defined what's the max IO boost they like to get.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--
