@@ -1,71 +1,56 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 11/16] sched/fair: Add uclamp support to
- energy_compute()
-Date: Tue, 22 Jan 2019 13:29:46 +0000
-Message-ID: <20190122132944.sfxlnpc3xeft4rqd@queper01-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-12-patrick.bellasi@arm.com>
- <20190122121321.r6mv23ao57uut3t7@queper01-lin>
- <20190122124546.njrpmykzbjpztd6u@e110439-lin>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 2/8] dt-bindings: arm: atmel: add new sam9x60 reset
+ controller binding
+Date: Tue, 22 Jan 2019 07:40:26 -0600
+Message-ID: <CAL_JsqLb3W=UG5VRFheGd2CfS+8rb5pJpHmHNq2bb1zrR3mEwA@mail.gmail.com>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
+ <ed46005be5beff6efc47d40cea304185efa2bcc0.1547629763.git.nicolas.ferre@microchip.com>
+ <20190122010733.GA21139@bogus> <24a53365-1a8c-51cd-dcd4-db4a69d5256a@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122124546.njrpmykzbjpztd6u@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <24a53365-1a8c-51cd-dcd4-db4a69d5256a@microchip.com>
+Sender: netdev-owner@vger.kernel.org
+To: Nicolas Ferre <Nicolas.Ferre@microchip.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <Ludovic.Desroches@microchip.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>, Linux USB List <linux-usb@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 22 Jan 2019 at 12:45:46 (+0000), Patrick Bellasi wrote:
-> On 22-Jan 12:13, Quentin Perret wrote:
-> > On Tuesday 15 Jan 2019 at 10:15:08 (+0000), Patrick Bellasi wrote:
-> > > The Energy Aware Scheduler (AES) estimates the energy impact of waking
-> 
-> [...]
-> 
-> > > +		for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
-> > > +			cfs_util = cpu_util_next(cpu, p, dst_cpu);
-> > > +
-> > > +			/*
-> > > +			 * Busy time computation: utilization clamping is not
-> > > +			 * required since the ratio (sum_util / cpu_capacity)
-> > > +			 * is already enough to scale the EM reported power
-> > > +			 * consumption at the (eventually clamped) cpu_capacity.
-> > > +			 */
-> > 
-> > Right.
-> > 
-> > > +			sum_util += schedutil_cpu_util(cpu, cfs_util, cpu_cap,
-> > > +						       ENERGY_UTIL, NULL);
-> > > +
-> > > +			/*
-> > > +			 * Performance domain frequency: utilization clamping
-> > > +			 * must be considered since it affects the selection
-> > > +			 * of the performance domain frequency.
-> > > +			 */
-> > 
-> > So that actually affects the way we deal with RT I think. I assume the
-> > idea is to say if you don't want to reflect the RT-go-to-max-freq thing
-> > in EAS (which is what we do now) you should set the min cap for RT to 0.
-> > Is that correct ?
-> 
-> By default configuration, RT tasks still go to max when uclamp is
-> enabled, since they get a util_min=1024.
-> 
-> If we want to save power on RT tasks, we can set a smaller util_min...
-> but not necessarily 0. A util_min=0 for RT tasks means to use just
-> cpu_util_rt() for that class.
+On Tue, Jan 22, 2019 at 3:00 AM <Nicolas.Ferre@microchip.com> wrote:
+>
+> Hi Rob,
+>
+> On 22/01/2019 at 02:07, Rob Herring wrote:
+> > On Wed, Jan 16, 2019 at 10:57:38AM +0100, Nicolas Ferre wrote:
+> >> Update the Reset Controller's binding to add new SoC compatibility string.
+> >>
+> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+> >> ---
+> >>   Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 1 +
+> >>   1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+> >> index 36952cc39993..badce6ef3ab3 100644
+> >> --- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+> >> +++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+> >> @@ -22,6 +22,7 @@ Its subnodes can be:
+> >>   RSTC Reset Controller required properties:
+> >>   - compatible: Should be "atmel,<chip>-rstc".
+> >>     <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
+> >> +  it also can be "microchip,sam9x60-rstc"
+> >
+> > How is this related to at91sam9260-rstc?
+>
+> at91sam9260 and sam9x60 are completely different products (they share
+> the same core though...). I know the naming could be misleading but it
+> is like it is...
+>
+> > The 'x' is a wildcard? We generally avoid wildcards.
+>
+> Here, the 'x' is definitively not a wildcard nor a kind of "family"
+> name, it's included in the (upcoming) single product's name.
+>
+> I hope it clarifies.
 
-Ah, sorry, I guess my message was misleading. I'm saying this is
-changing the way _EAS_ deals with RT tasks. Right now we don't actually
-consider the RT-go-to-max thing at all in the EAS prediction. Your
-patch is changing that AFAICT. It actually changes the way EAS sees RT
-tasks even without uclamp ...
+Yes, thanks.
 
-But I'm not hostile to the idea since it's possible to enable uclamp and
-set the min cap to 0 for RT if you want. So there is a story there.
-However, I think this needs be documented somewhere, at the very least.
-
-Thanks,
-Quentin
+Reviewed-by: Rob Herring <robh@kernel.org>
