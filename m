@@ -1,166 +1,293 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v2] PM / EM: Expose the Energy Model in debugfs
-Date: Tue, 22 Jan 2019 16:42:47 +0000
-Message-ID: <20190122164247.19439-1-quentin.perret@arm.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [RFC PATCH v1 13/13] watchdog: bd70528: Initial support for ROHM
+ BD70528 watchdog block
+Date: Tue, 22 Jan 2019 19:10:23 +0200
+Message-ID: <20190122171023.GC2559@localhost.localdomain>
+References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+ <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190122154750.GB1705@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190122154750.GB1705@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, gregkh@linuxfoundation.org, quentin.perret@arm.com
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
 List-Id: linux-pm@vger.kernel.org
 
-The recently introduced Energy Model (EM) framework manages power cost
-tables of CPUs. These tables are currently only visible from kernel
-space. However, in order to debug the behaviour of subsystems that use
-the EM (EAS for example), it is often required to know what the power
-costs are from userspace.
+On Tue, Jan 22, 2019 at 07:47:50AM -0800, Guenter Roeck wrote:
+> On Tue, Jan 22, 2019 at 11:48:36AM +0200, Matti Vaittinen wrote:
+> > Initial support for watchdog block included in ROHM BD70528
+> > power management IC.
+> > 
+> > Configurations for low power states are still to be checked.
+> > 
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> > ---
+> >  drivers/watchdog/Kconfig       |  12 +++
+> >  drivers/watchdog/Makefile      |   1 +
+> >  drivers/watchdog/bd70528_wdt.c | 161 +++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 174 insertions(+)
+> >  create mode 100644 drivers/watchdog/bd70528_wdt.c
+> > 
+> > diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> > index 57f017d74a97..f30e3a3e886e 100644
+> > --- a/drivers/watchdog/Kconfig
+> > +++ b/drivers/watchdog/Kconfig
+> > @@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
+> >  	  watchdog. Be aware that governors might affect the watchdog because it
+> >  	  is purely software, e.g. the panic governor will stall it!
+> >  
+> > +config BD70528_WATCHDOG
+> > +	tristate "ROHM BD70528 PMIC Watchdog"
+> > +	depends on MFD_ROHM_BD70528
+> > +	select WATCHDOG_CORE
+> > +	help
+> > +	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
+> > +	  cause system reset.
+> > +
+> > +	  Say Y here to include support for the ROHM BD70528 watchdog.
+> > +	  Alternatively say M to compile the driver as a module,
+> > +	  which will be called bd70528_wdt.
+> > +
+> >  config DA9052_WATCHDOG
+> >  	tristate "Dialog DA9052 Watchdog"
+> >  	depends on PMIC_DA9052 || COMPILE_TEST
+> > diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+> > index a0917ef28e07..1ce87a3b1172 100644
+> > --- a/drivers/watchdog/Makefile
+> > +++ b/drivers/watchdog/Makefile
+> > @@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
+> >  obj-$(CONFIG_XEN_WDT) += xen_wdt.o
+> >  
+> >  # Architecture Independent
+> > +obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
+> >  obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
+> >  obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
+> >  obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
+> > diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
+> > new file mode 100644
+> > index 000000000000..e9a32566f595
+> > --- /dev/null
+> > +++ b/drivers/watchdog/bd70528_wdt.c
+> > @@ -0,0 +1,161 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +// Copyright (C) 2018 ROHM Semiconductors
+> > +// ROHM BD70528MWV watchdog driver
+> > +
+> > +#include <linux/bcd.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/mfd/rohm-bd70528.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/regmap.h>
+> > +#include <linux/watchdog.h>
+> > +
+> > +static int bd70528_wdt_set(struct bd70528 *bd70528, int enable)
+> > +{
+> > +	int ret;
+> > +
+> > +	if (bd70528->rtc_timer_lock)
+> > +		mutex_lock(bd70528->rtc_timer_lock);
+> 
+> This looks awkward. I don't think the if() is necessary.
 
-For this reason, introduce under /sys/kernel/debug/energy_model a set of
-directories representing the performance domains of the system. Each
-performance domain contains a set of sub-directories representing the
-different capacity states (cs) and their attributes, as well as a file
-exposing the related CPUs.
+Right. Now when only bd70528 MFD driver uses this WDT this if is not
+required.
 
-The resulting hierarchy is as follows on Arm juno r0 for example:
+> > +
+> > +	ret = bd70528->wdt_set(bd70528, enable, NULL);
+> > +
+> > +	if (bd70528->rtc_timer_lock)
+> > +		mutex_unlock(bd70528->rtc_timer_lock);
+> > +	return ret;
+> > +}
+> > +
+> > +static int bd70528_wdt_start(struct watchdog_device *wdt)
+> > +{
+> > +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> > +
+> > +	return bd70528_wdt_set(bd70528, 1);
+> > +}
+> > +
+> > +static int bd70528_wdt_stop(struct watchdog_device *wdt)
+> > +{
+> > +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> > +
+> > +	return bd70528_wdt_set(bd70528, 0);
+> > +}
+> > +
+> > +static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
+> > +				    unsigned int timeout)
+> > +{
+> > +	unsigned int hours;
+> > +	unsigned int minutes;
+> > +	unsigned int seconds;
+> > +	int ret;
+> > +	struct bd70528 *bd70528 = watchdog_get_drvdata(wdt);
+> > +
+> > +	seconds = timeout;
+> > +	hours = timeout / (60 * 60);
+> > +	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
+> > +	if (hours)
+> > +		seconds -= (60 * 60);
+> > +	minutes = seconds / 60;
+> > +	seconds = seconds % 60;
+> > +
+> > +	if (bd70528->rtc_timer_lock)
+> > +		mutex_lock(bd70528->rtc_timer_lock);
+> > +
+> > +	ret = bd70528->wdt_set(bd70528, 0, NULL);
+> > +	if (ret)
+> > +		goto out_unlock;
+> > +
+> > +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_HOUR,
+> > +				 BD70528_MASK_WDT_HOUR, hours);
+> > +	if (ret) {
+> > +		dev_err(bd70528->chip.dev, "Failed to set WDT hours\n");
+> > +		goto out_en_unlock;
+> > +	}
+> > +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_MINUTE,
+> > +				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
+> > +	if (ret) {
+> > +		dev_err(bd70528->chip.dev, "Failed to set WDT minutes\n");
+> > +		goto out_en_unlock;
+> > +	}
+> > +	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_SEC,
+> > +				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
+> > +	if (ret) {
+> > +		dev_err(bd70528->chip.dev, "Failed to set WDT seconds\n");
+> > +		goto out_en_unlock;
+> 
+> Unnecessary goto.
 
-    /sys/kernel/debug/energy_model
-    ├── pd0
-    │   ├── cpus
-    │   ├── cs:450000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:575000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:700000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   ├── cs:775000
-    │   │   ├── cost
-    │   │   ├── frequency
-    │   │   └── power
-    │   └── cs:850000
-    │       ├── cost
-    │       ├── frequency
-    │       └── power
-    └── pd1
-        ├── cpus
-        ├── cs:1100000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:450000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:625000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        ├── cs:800000
-        │   ├── cost
-        │   ├── frequency
-        │   └── power
-        └── cs:950000
-            ├── cost
-            ├── frequency
-            └── power
+True. I'll drop this.
 
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> 
+> > +	}
+> > +
+> > +out_en_unlock:
+> > +	ret = bd70528->wdt_set(bd70528, 1, NULL);
+> > +out_unlock:
+> > +	if (bd70528->rtc_timer_lock)
+> > +		mutex_lock(bd70528->rtc_timer_lock);
+> 
+> I don't think this code was ever tested.
 
----
+Yep. This should be unlock. What comes to testingI'll quote the
+cover-sheet for the patch set:
 
-V2: removed check on return value of debugfs_create_* (Greg KH)
----
- kernel/power/energy_model.c | 57 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+> Currently only MFD core, clk, RTC and regulator portions are
+> somehow tested. The RFC series also include initial gpio, power-supply
+> and watchdog patches in order to provide better overview on chip
+> and to collect initial feedback. Reset and ADC are not supported by
+> this series.
 
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index d9dc2c38764a..7d66ee68aaaf 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -10,6 +10,7 @@
- 
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
-+#include <linux/debugfs.h>
- #include <linux/energy_model.h>
- #include <linux/sched/topology.h>
- #include <linux/slab.h>
-@@ -23,6 +24,60 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
-  */
- static DEFINE_MUTEX(em_pd_mutex);
- 
-+#ifdef CONFIG_DEBUG_FS
-+static struct dentry *rootdir;
-+
-+static void em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
-+{
-+	struct dentry *d;
-+	char name[24];
-+
-+	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
-+
-+	/* Create per-cs directory */
-+	d = debugfs_create_dir(name, pd);
-+	debugfs_create_ulong("frequency", 0444, d, &cs->frequency);
-+	debugfs_create_ulong("power", 0444, d, &cs->power);
-+	debugfs_create_ulong("cost", 0444, d, &cs->cost);
-+}
-+
-+static int em_debug_cpus_show(struct seq_file *s, void *unused)
-+{
-+	seq_printf(s, "%*pbl\n", cpumask_pr_args(to_cpumask(s->private)));
-+
-+	return 0;
-+}
-+DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
-+
-+static void em_debug_create_pd(struct em_perf_domain *pd, int cpu)
-+{
-+	struct dentry *d;
-+	char name[8];
-+	int i;
-+
-+	snprintf(name, sizeof(name), "pd%d", cpu);
-+
-+	/* Create the directory of the performance domain */
-+	d = debugfs_create_dir(name, rootdir);
-+
-+	debugfs_create_file("cpus", 0444, d, pd->cpus, &em_debug_cpus_fops);
-+
-+	/* Create a sub-directory for each capacity state */
-+	for (i = 0; i < pd->nr_cap_states; i++)
-+		em_debug_create_cs(&pd->table[i], d);
-+}
-+
-+static int __init em_debug_init(void)
-+{
-+	/* Create /sys/kernel/debug/energy_model directory */
-+	rootdir = debugfs_create_dir("energy_model", NULL);
-+
-+	return 0;
-+}
-+core_initcall(em_debug_init);
-+#else /* CONFIG_DEBUG_FS */
-+static void em_debug_create_pd(struct em_perf_domain *pd, int cpu) {}
-+#endif
- static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
- 						struct em_data_callback *cb)
- {
-@@ -102,6 +157,8 @@ static struct em_perf_domain *em_create_pd(cpumask_t *span, int nr_states,
- 	pd->nr_cap_states = nr_states;
- 	cpumask_copy(to_cpumask(pd->cpus), span);
- 
-+	em_debug_create_pd(pd, cpu);
-+
- 	return pd;
- 
- free_cs_table:
+I think having the wdt_set and rtc_timer_lock in MFD would have been
+completely mysterious if watchdog draft was not included =)
+
+> > +static const struct watchdog_info bd70528_wdt_info = {
+> > +	.identity = "bd70528-wdt",
+> > +	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
+> > +};
+> > +
+> > +static const struct watchdog_ops bd70528_wdt_ops = {
+> > +	.start		= bd70528_wdt_start,
+> > +	.stop		= bd70528_wdt_stop,
+> > +	/*
+> > +	 *  bd70528 WDT ping is same as enable. Eg, writing 'enable' to enabled
+> > +	 * WDT will restart the timeout
+> > +	 */
+> Unnecessary comment.
+> 
+
+Ok. I will remove the comment if this is obvious to others. For me it
+was not obvious. I was first writing a separate ping and start functions
+untill I realized that it is the same operation. But this was my first
+WDT driver so I don't know if this is a normal for all WDTs.
+
+> > +	.ping		= bd70528_wdt_start,
+> > +	.set_timeout	= bd70528_wdt_set_timeout,
+> > +};
+> > +
+> > +/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
+> > +#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
+> > +/* Minimum time is 1 second */
+> > +#define WDT_MIN_MS 1000
+> > +static struct watchdog_device bd70528_wd = {
+> > +	.info = &bd70528_wdt_info,
+> > +	.ops =  &bd70528_wdt_ops,
+> > +	.min_hw_heartbeat_ms = WDT_MIN_MS,
+> > +	.max_hw_heartbeat_ms = WDT_MAX_MS,
+> > +};
+> > +
+> > +static int bd70528_wdt_probe(struct platform_device *pdev)
+> > +{
+> > +	struct bd70528 *tmp;
+> > +	struct bd70528 *bd70528;
+> > +	int ret;
+> > +
+> > +	tmp = dev_get_drvdata(pdev->dev.parent);
+> > +	if (!tmp) {
+> > +		dev_err(&pdev->dev, "No MFD driver data\n");
+> > +		return -EINVAL;
+> > +	}
+> > +	bd70528 = devm_kzalloc(&pdev->dev, sizeof(*bd70528), GFP_KERNEL);
+> > +	if (!bd70528)
+> > +		return -ENOMEM;
+> > +
+> > +	*bd70528 = *tmp;
+> > +	bd70528->chip.dev = &pdev->dev;
+> 
+> This is wrong.
+> You should not copy the parent's driver data but have local driver
+> data as needed which then points to the parent's driver data if
+> needed. I assume this is why the mutex is a pointer, but that
+> just shows that the whole approach is wrong.
+
+Mutex is a pointer because we want to use same mutex from WDT and RTC.
+We can sure point to parent data but then we still need our own dev
+pointer. So we can have a struct with pointer to parent data and dev
+pointer - but I'm not at all sure it is any clearer.
+> 
+> > +
+> > +	/*
+> > +	 * TODO: Set the initial state and timeout.
+> 
+> Confused. Why don't you just do it ?
+
+I will. But it's not ready yet. I still wanted to include the WDT for
+this RFC. And I hope I could get the MFD core part included in Lee's
+tree at early phase so that the include/linux/mfd/rohm-bd70528.h would
+be in other sub trees when they're finalized for upstreaming.
+
+> 
+> > +	 * See whether the low power states require special handling
+> > +	 */
+> > +	watchdog_set_drvdata(&bd70528_wd, bd70528);
+> 
+> At least in theory there can be more than one of those devices
+> in the system, since it is an i2c device. With that in mind, bd70528_wd
+> should be locally allocated.
+
+Point taken, thanks.
+
+> Also, bd70528_wd should be fully initialized. For example, the parent
+> device is not set.
+
+Thanks for this point too =) I will see what are all the missing
+initializations before sending out the final version.
+
+I do really appreciate that you see the trouble of doing the review and
+giving me the push to right direction!
+
+Br,
+	Matti Vaittinen
+
 -- 
-2.20.1
+Matti Vaittinen
+ROHM Semiconductors
+
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
