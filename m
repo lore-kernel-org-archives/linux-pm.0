@@ -1,87 +1,28 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2] PM / EM: Expose the Energy Model in debugfs
-Date: Tue, 22 Jan 2019 19:41:36 +0100
-Message-ID: <20190122184136.GD31777@kroah.com>
-References: <20190122164247.19439-1-quentin.perret@arm.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH] opp: no need to check return value of debugfs_create functions
+Date: Tue, 22 Jan 2019 11:27:51 -0800
+Message-ID: <154818527190.20280.13288000379723139256@swboyd.mtv.corp.google.com>
+References: <20190122152151.16139-18-gregkh@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122164247.19439-1-quentin.perret@arm.com>
+In-Reply-To: <20190122152151.16139-18-gregkh@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 04:42:47PM +0000, Quentin Perret wrote:
-> The recently introduced Energy Model (EM) framework manages power cost
-> tables of CPUs. These tables are currently only visible from kernel
-> space. However, in order to debug the behaviour of subsystems that use
-> the EM (EAS for example), it is often required to know what the power
-> costs are from userspace.
-> 
-> For this reason, introduce under /sys/kernel/debug/energy_model a set of
-> directories representing the performance domains of the system. Each
-> performance domain contains a set of sub-directories representing the
-> different capacity states (cs) and their attributes, as well as a file
-> exposing the related CPUs.
-> 
-> The resulting hierarchy is as follows on Arm juno r0 for example:
-> 
->     /sys/kernel/debug/energy_model
->     ├── pd0
->     │   ├── cpus
->     │   ├── cs:450000
->     │   │   ├── cost
->     │   │   ├── frequency
->     │   │   └── power
->     │   ├── cs:575000
->     │   │   ├── cost
->     │   │   ├── frequency
->     │   │   └── power
->     │   ├── cs:700000
->     │   │   ├── cost
->     │   │   ├── frequency
->     │   │   └── power
->     │   ├── cs:775000
->     │   │   ├── cost
->     │   │   ├── frequency
->     │   │   └── power
->     │   └── cs:850000
->     │       ├── cost
->     │       ├── frequency
->     │       └── power
->     └── pd1
->         ├── cpus
->         ├── cs:1100000
->         │   ├── cost
->         │   ├── frequency
->         │   └── power
->         ├── cs:450000
->         │   ├── cost
->         │   ├── frequency
->         │   └── power
->         ├── cs:625000
->         │   ├── cost
->         │   ├── frequency
->         │   └── power
->         ├── cs:800000
->         │   ├── cost
->         │   ├── frequency
->         │   └── power
->         └── cs:950000
->             ├── cost
->             ├── frequency
->             └── power
-> 
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> 
+Quoting Greg Kroah-Hartman (2019-01-22 07:21:17)
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic should
+> never do something different based on this.
+>=20
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > ---
-> 
-> V2: removed check on return value of debugfs_create_* (Greg KH)
-> ---
->  kernel/power/energy_model.c | 57 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 57 insertions(+)
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
