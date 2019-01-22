@@ -1,94 +1,89 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 04/16] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Tue, 22 Jan 2019 10:31:07 +0000
-Message-ID: <20190122103107.vulmhrucl3vtjiop@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-5-patrick.bellasi@arm.com>
- <20190121145929.GI27931@hirez.programming.kicks-ass.net>
- <20190121152311.7u7bwbjopuptnzcy@e110439-lin>
- <20190121161237.GB13777@hirez.programming.kicks-ass.net>
- <20190121163337.6l7hkggicndtpzjs@e110439-lin>
- <20190122094507.GN27931@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Replace open-coded << with BIT()
+Date: Tue, 22 Jan 2019 11:35:26 +0100
+Message-ID: <3475847.8TT7FkP2ce@aspire.rjw.lan>
+References: <2501c48872e5fa9c26f06216c19955d70b263a85.1548060067.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122094507.GN27931@hirez.programming.kicks-ass.net>
+In-Reply-To: <2501c48872e5fa9c26f06216c19955d70b263a85.1548060067.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22-Jan 10:45, Peter Zijlstra wrote:
-> On Mon, Jan 21, 2019 at 04:33:38PM +0000, Patrick Bellasi wrote:
-> > On 21-Jan 17:12, Peter Zijlstra wrote:
-> > > On Mon, Jan 21, 2019 at 03:23:11PM +0000, Patrick Bellasi wrote:
+On Monday, January 21, 2019 9:47:37 AM CET Amit Kucheria wrote:
+> Minor clean-up to use BIT() and keep checkpatch happy. Clean up the
+> comment formatting while we're at it to make it easier to read.
 > 
-> > > > and keep all
-> > > > the buckets in use at the beginning of a cache line.
-> > > 
-> > > That; is that the rationale for all this? Note that per the defaults
-> > > everything is in a single line already.
-> > 
-> > Yes, that's because of the loop in:
-> > 
-> >    dequeue_task()
-> >      uclamp_cpu_dec()
-> >        uclamp_cpu_dec_id()
-> >          uclamp_cpu_update()
-> > 
-> > where buckets needs sometimes to be scanned to find a new max.
-> > 
-> > Consider also that, with mapping, we can more easily increase the
-> > buckets count to 20 in order to have a finer clamping granularity if
-> > needed without warring too much about performance impact especially
-> > when we use anyway few different clamp values.
-> > 
-> > So, I agree that mapping adds (code) complexity but it can also save
-> > few cycles in the fast path... do you think it's not worth the added
-> > complexity?
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Reviewed-by: Stephen Boyd <swboyd@chromium.org>
+> ---
+>  include/linux/cpufreq.h | 25 +++++++++++++------------
+>  1 file changed, 13 insertions(+), 12 deletions(-)
 > 
-> Then maybe split this out in a separate patch? Do the trivial linear
-> bucket thing first and then do this smarty pants thing on top.
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index c86d6d8bdfed..bd7fbd6a4478 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -346,14 +346,15 @@ struct cpufreq_driver {
+>  };
+>  
+>  /* flags */
+> -#define CPUFREQ_STICKY		(1 << 0)	/* driver isn't removed even if
+> -						   all ->init() calls failed */
+> -#define CPUFREQ_CONST_LOOPS	(1 << 1)	/* loops_per_jiffy or other
+> -						   kernel "constants" aren't
+> -						   affected by frequency
+> -						   transitions */
+> -#define CPUFREQ_PM_NO_WARN	(1 << 2)	/* don't warn on suspend/resume
+> -						   speed mismatches */
+> +
+> +/* driver isn't removed even if all ->init() calls failed */
+> +#define CPUFREQ_STICKY				BIT(0)
+> +
+> +/* loops_per_jiffy or other kernel "constants" aren't affected by frequency transitions */
+> +#define CPUFREQ_CONST_LOOPS			BIT(1)
+> +
+> +/* don't warn on suspend/resume speed mismatches */
+> +#define CPUFREQ_PM_NO_WARN			BIT(2)
+>  
+>  /*
+>   * This should be set by platforms having multiple clock-domains, i.e.
+> @@ -361,14 +362,14 @@ struct cpufreq_driver {
+>   * be created in cpu/cpu<num>/cpufreq/ directory and so they can use the same
+>   * governor with different tunables for different clusters.
+>   */
+> -#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY (1 << 3)
+> +#define CPUFREQ_HAVE_GOVERNOR_PER_POLICY	BIT(3)
+>  
+>  /*
+>   * Driver will do POSTCHANGE notifications from outside of their ->target()
+>   * routine and so must set cpufreq_driver->flags with this flag, so that core
+>   * can handle them specially.
+>   */
+> -#define CPUFREQ_ASYNC_NOTIFICATION  (1 << 4)
+> +#define CPUFREQ_ASYNC_NOTIFICATION		BIT(4)
+>  
+>  /*
+>   * Set by drivers which want cpufreq core to check if CPU is running at a
+> @@ -377,13 +378,13 @@ struct cpufreq_driver {
+>   * from the table. And if that fails, we will stop further boot process by
+>   * issuing a BUG_ON().
+>   */
+> -#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
+> +#define CPUFREQ_NEED_INITIAL_FREQ_CHECK	BIT(5)
+>  
+>  /*
+>   * Set by drivers to disallow use of governors with "dynamic_switching" flag
+>   * set.
+>   */
+> -#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
+> +#define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
+>  
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
 > 
-> One problem with the scheme is that it doesn't defrag; so if you get a
-> peak usage, you can still end up with only two active buckets in
-> different lines.
 
-You right, that was saved for a later optimization. :/
-
-Mainly in consideration of the fact that, at least for the main usage
-we have in mind on Android, we will likely configure all the required
-clamps once for all at boot time.
-
-> Also; if it is it's own patch, you get a much better view of the
-> additional complexity and a chance to justify it ;-)
-
-What about ditching the mapping for the time being and see if we
-get a real overhead hit in the future ?
-
-At that point we will revamp the mapping patch with also a proper
-defrag support.
-
-> Also; would it make sense to do s/cpu/rq/ on much of this? All this
-> uclamp_cpu_*() stuff really is per rq and takes rq arguments, so why
-> does it have cpu in the name... no strong feelings, just noticed it and
-> thought is a tad inconsistent.
-
-The idea behind using "cpu" instead of "rq" was that we use those only at
-root rq level and the clamps are aggregated per-CPU.
-
-I remember one of the first versions used "cpu" instead of "rq" as a
-parameter name and you proposed to change it as an optimization since
-we call it from dequeue_task() where we already have a *rq.
-
-... but, since we have those uclamp data within struct rq, I think you
-are right: it makes more sense to rename the functions.
-
-Will do it in v7, thanks.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Applied, thanks!
