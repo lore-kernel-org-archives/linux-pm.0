@@ -1,39 +1,60 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] power: qos: no need to check return value of
- debugfs_create functions
-Date: Tue, 22 Jan 2019 16:53:14 +0100
-Message-ID: <20190122155314.GB20142@kroah.com>
-References: <20190122152151.16139-48-gregkh@linuxfoundation.org>
- <CAJZ5v0jLeZfsmX12g6r0zXCt9dTjD0TnJ03+Sntt6i2f-PxsGw@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM / EM: Expose the Energy Model in debugfs
+Date: Tue, 22 Jan 2019 16:54:55 +0100
+Message-ID: <20190122155455.GA20697@kroah.com>
+References: <20190107122608.21913-1-quentin.perret@arm.com>
+ <20190122153412.zuehulqwb7ung43u@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jLeZfsmX12g6r0zXCt9dTjD0TnJ03+Sntt6i2f-PxsGw@mail.gmail.com>
+In-Reply-To: <20190122153412.zuehulqwb7ung43u@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 04:30:38PM +0100, Rafael J. Wysocki wrote:
-> On Tue, Jan 22, 2019 at 4:25 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > When calling debugfs functions, there is no need to ever check the
-> > return value.  The function can work or not, but the code logic should
-> > never do something different based on this.
-> >
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+On Tue, Jan 22, 2019 at 03:34:14PM +0000, Quentin Perret wrote:
+> On Monday 07 Jan 2019 at 12:26:08 (+0000), Quentin Perret wrote:
+> > diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+> > index d9dc2c38764a..8ef48daa62ff 100644
+> > --- a/kernel/power/energy_model.c
+> > +++ b/kernel/power/energy_model.c
+> > @@ -10,6 +10,7 @@
+> >  
+> >  #include <linux/cpu.h>
+> >  #include <linux/cpumask.h>
+> > +#include <linux/debugfs.h>
+> >  #include <linux/energy_model.h>
+> >  #include <linux/sched/topology.h>
+> >  #include <linux/slab.h>
+> > @@ -23,6 +24,88 @@ static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
+> >   */
+> >  static DEFINE_MUTEX(em_pd_mutex);
+> >  
+> > +#ifdef CONFIG_DEBUG_FS
+> > +static struct dentry *rootdir;
+> > +
+> > +static int em_debug_create_cs(struct em_cap_state *cs, struct dentry *pd)
+> > +{
+> > +	struct dentry *d;
+> > +	char name[24];
+> > +
+> > +	snprintf(name, sizeof(name), "cs:%lu", cs->frequency);
+> > +
+> > +	d = debugfs_create_dir(name, pd);
+> > +	if (!d)
+> > +		return -ENOMEM;
+> > +
+> > +	if (!debugfs_create_ulong("frequency", 0444, d, &cs->frequency))
+> > +		return -ENOMEM;
 > 
-> All of these changes are fine by me and I can take the patches
-> touching the code maintained by me, so please let me know.
+> Looking at the patches Greg just sent I assume all this is wrong.
 
-Please take them!
+Yes it is :)
 
-thanks,
+> I'll send a v2 without the 'if' all over.
+
+That would be wonderful, thanks.
 
 greg k-h
