@@ -1,62 +1,55 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
-Date: Tue, 22 Jan 2019 16:13:51 +0100
-Message-ID: <CAJZ5v0gxYvDQZVrkQZ-eQgoQDhwRYR1x+SC_q7uxxbko0R03=w@mail.gmail.com>
-References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org> <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 11/16] sched/fair: Add uclamp support to
+ energy_compute()
+Date: Tue, 22 Jan 2019 15:14:06 +0000
+Message-ID: <20190122151404.5rtosic6puixado3@queper01-lin>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-12-patrick.bellasi@arm.com>
+ <20190122121321.r6mv23ao57uut3t7@queper01-lin>
+ <20190122124546.njrpmykzbjpztd6u@e110439-lin>
+ <20190122132944.sfxlnpc3xeft4rqd@queper01-lin>
+ <20190122142606.gc5hnc5pzefblegw@e110439-lin>
+ <20190122143909.pmlqyhcjshyomrbw@queper01-lin>
+ <20190122150137.fp4g4kdng2qpy6qx@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20190122150137.fp4g4kdng2qpy6qx@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 3:24 PM Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
-> Initializing accounting_timestamp to something different from 0 during
-> pm_runtime_init() doesn't make sense and put useless ordering constraint between
-> timekeeping_init() and pm_runtime_init().
-> PM runtime should start accounting time only when it is enable and discard
-> the period when disabled.
-> Set accounting_timestamp to now when enabling PM runtime.
->
-> Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  drivers/base/power/runtime.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index fb5e2b6..7df1d05 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -1306,6 +1306,10 @@ void pm_runtime_enable(struct device *dev)
->
->         spin_lock_irqsave(&dev->power.lock, flags);
->
-> +       /* About to enable runtime pm, set accounting_timestamp to now */
-> +       if (dev->power.disable_depth == 1)
-> +               dev->power.accounting_timestamp = jiffies;
+On Tuesday 22 Jan 2019 at 15:01:37 (+0000), Patrick Bellasi wrote:
+> > I'm not saying it's useful, I'm saying userspace can decide to do that
+> > if it thinks it is a good idea. The default should be min_cap = 1024 for
+> > RT, no questions. But you _can_ change it at runtime if you want to.
+> > That's my point. And doing that basically provides the same behaviour as
+> > what we have right now in terms of EAS calculation (but it changes the
+> > freq selection obviously) which is why I'm not fundamentally opposed to
+> > your patch.
+> 
+> Well, I think it's tricky to say whether the current or new approach
+> is better... it probably depends on the use-case.
 
-I would do this in the dev->power.disable_depth > 0 branch below.
-Just check if disable_depth is zero after decrementing it and update
-accounting_timestamp if so.
+Agreed.
 
-> +
->         if (dev->power.disable_depth > 0)
->                 dev->power.disable_depth--;
->         else
-> @@ -1506,7 +1510,7 @@ void pm_runtime_init(struct device *dev)
->         dev->power.request_pending = false;
->         dev->power.request = RPM_REQ_NONE;
->         dev->power.deferred_resume = false;
-> -       dev->power.accounting_timestamp = jiffies;
-> +       dev->power.accounting_timestamp = 0;
->         INIT_WORK(&dev->power.work, pm_runtime_work);
->
->         dev->power.timer_expires = 0;
-> --
-> 2.7.4
->
+> > So in short, I'm fine with the behavioural change, but please at least
+> > mention it somewhere :-)
+> 
+> Anyway... agree, it's just that to add some documentation I need to
+> get what you are pointing out ;)
+> 
+> Will come up with some additional text to be added to the changelog
+
+Sounds good.
+
+> Maybe we can add a more detailed explanation of the different
+> behaviors you can get in the EAS documentation which is coming to
+> mainline ?
+
+Yeah, if you feel like it, I guess that won't hurt :-)
+
+Thanks,
+Quentin
