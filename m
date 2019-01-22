@@ -1,62 +1,62 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 07/16] sched/core: uclamp: Add system default clamps
-Date: Tue, 22 Jan 2019 16:13:17 +0100
-Message-ID: <20190122151317.GH13777@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-8-patrick.bellasi@arm.com>
- <20190122135644.GP27931@hirez.programming.kicks-ass.net>
- <20190122144329.ziimv6fejwvky7yb@e110439-lin>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
+Date: Tue, 22 Jan 2019 16:13:51 +0100
+Message-ID: <CAJZ5v0gxYvDQZVrkQZ-eQgoQDhwRYR1x+SC_q7uxxbko0R03=w@mail.gmail.com>
+References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org> <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190122144329.ziimv6fejwvky7yb@e110439-lin>
+In-Reply-To: <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 02:43:29PM +0000, Patrick Bellasi wrote:
-> On 22-Jan 14:56, Peter Zijlstra wrote:
-> > On Tue, Jan 15, 2019 at 10:15:04AM +0000, Patrick Bellasi wrote:
-> > 
-> > > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > > index 84294925d006..c8f391d1cdc5 100644
-> > > --- a/include/linux/sched.h
-> > > +++ b/include/linux/sched.h
-> > > @@ -625,6 +625,11 @@ struct uclamp_se {
-> > >  	unsigned int bucket_id		: bits_per(UCLAMP_BUCKETS);
-> > >  	unsigned int mapped		: 1;
-> > >  	unsigned int active		: 1;
-> > > +	/* Clamp bucket and value actually used by a RUNNABLE task */
-> > > +	struct {
-> > > +		unsigned int value	: bits_per(SCHED_CAPACITY_SCALE);
-> > > +		unsigned int bucket_id	: bits_per(UCLAMP_BUCKETS);
-> > > +	} effective;
-> > 
-> > I am confuzled by this thing..  so uclamp_se already has a value,bucket,
-> > which per the prior code is the effective one.
-> > 
-> > Now; I think I see why you want another value; you need the second to
-> > store the original value for when the system limits change and we must
-> > re-evaluate.
-> 
-> Yes, that's one reason, the other one being to properly support
-> CGroup when we add them in the following patches.
-> 
-> Effective will always track the value/bucket in which the task has
-> been refcounted at enqueue time and it depends on the aggregated
-> value.
+On Tue, Jan 22, 2019 at 3:24 PM Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+>
+> Initializing accounting_timestamp to something different from 0 during
+> pm_runtime_init() doesn't make sense and put useless ordering constraint between
+> timekeeping_init() and pm_runtime_init().
+> PM runtime should start accounting time only when it is enable and discard
+> the period when disabled.
+> Set accounting_timestamp to now when enabling PM runtime.
+>
+> Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  drivers/base/power/runtime.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index fb5e2b6..7df1d05 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1306,6 +1306,10 @@ void pm_runtime_enable(struct device *dev)
+>
+>         spin_lock_irqsave(&dev->power.lock, flags);
+>
+> +       /* About to enable runtime pm, set accounting_timestamp to now */
+> +       if (dev->power.disable_depth == 1)
+> +               dev->power.accounting_timestamp = jiffies;
 
-> > Should you not update all tasks?
-> 
-> That's true, but that's also an expensive operation, that's why now
-> I'm doing only lazy updates at next enqueue time.
+I would do this in the dev->power.disable_depth > 0 branch below.
+Just check if disable_depth is zero after decrementing it and update
+accounting_timestamp if so.
 
-Aaah, so you refcount on the original value, which allows you to skip
-fixing up all tasks. I missed that bit.
-
-
-> Do you think that could be acceptable?
-
-Think so, it's a sysctl poke, 'nobody' ever does that.
+> +
+>         if (dev->power.disable_depth > 0)
+>                 dev->power.disable_depth--;
+>         else
+> @@ -1506,7 +1510,7 @@ void pm_runtime_init(struct device *dev)
+>         dev->power.request_pending = false;
+>         dev->power.request = RPM_REQ_NONE;
+>         dev->power.deferred_resume = false;
+> -       dev->power.accounting_timestamp = jiffies;
+> +       dev->power.accounting_timestamp = 0;
+>         INIT_WORK(&dev->power.work, pm_runtime_work);
+>
+>         dev->power.timer_expires = 0;
+> --
+> 2.7.4
+>
