@@ -1,56 +1,54 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/8] dt-bindings: arm: atmel: add new sam9x60 reset
- controller binding
-Date: Tue, 22 Jan 2019 07:40:26 -0600
-Message-ID: <CAL_JsqLb3W=UG5VRFheGd2CfS+8rb5pJpHmHNq2bb1zrR3mEwA@mail.gmail.com>
+Subject: Re: [PATCH 4/8] net/macb: bindings doc/trivial: fix documentation for
+ sama5d3 10/100 interface
+Date: Tue, 22 Jan 2019 07:41:02 -0600
+Message-ID: <CAL_Jsq+31C2KXNy_GeVU9g7mZ_aSw3yqdjU-V5mV2Xdc200TuA@mail.gmail.com>
 References: <cover.1547629763.git.nicolas.ferre@microchip.com>
- <ed46005be5beff6efc47d40cea304185efa2bcc0.1547629763.git.nicolas.ferre@microchip.com>
- <20190122010733.GA21139@bogus> <24a53365-1a8c-51cd-dcd4-db4a69d5256a@microchip.com>
+ <0005c2ef28b985c663e0cd058bbc6d3856e05ec2.1547629763.git.nicolas.ferre@microchip.com>
+ <20190122011014.GA25211@bogus> <be8ba0bf-993e-d38c-61e8-af422ff3c636@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <24a53365-1a8c-51cd-dcd4-db4a69d5256a@microchip.com>
-Sender: netdev-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <be8ba0bf-993e-d38c-61e8-af422ff3c636@microchip.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Nicolas Ferre <Nicolas.Ferre@microchip.com>
 Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <Ludovic.Desroches@microchip.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>, Linux USB List <linux-usb@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 3:00 AM <Nicolas.Ferre@microchip.com> wrote:
+On Tue, Jan 22, 2019 at 3:09 AM <Nicolas.Ferre@microchip.com> wrote:
 >
 > Hi Rob,
 >
-> On 22/01/2019 at 02:07, Rob Herring wrote:
-> > On Wed, Jan 16, 2019 at 10:57:38AM +0100, Nicolas Ferre wrote:
-> >> Update the Reset Controller's binding to add new SoC compatibility string.
+> On 22/01/2019 at 02:10, Rob Herring wrote:
+> > On Wed, Jan 16, 2019 at 10:57:40AM +0100, Nicolas Ferre wrote:
+> >> This removes a line left while adding the correct compatibility string for
+> >> sama5d3 10/100 interface. Now use the "atmel,sama5d3-macb" string.
 > >>
 > >> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 > >> ---
-> >>   Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 1 +
-> >>   1 file changed, 1 insertion(+)
+> >>   Documentation/devicetree/bindings/net/macb.txt | 3 +--
+> >>   1 file changed, 1 insertion(+), 2 deletions(-)
 > >>
-> >> diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> >> index 36952cc39993..badce6ef3ab3 100644
-> >> --- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> >> +++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> >> @@ -22,6 +22,7 @@ Its subnodes can be:
-> >>   RSTC Reset Controller required properties:
-> >>   - compatible: Should be "atmel,<chip>-rstc".
-> >>     <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
-> >> +  it also can be "microchip,sam9x60-rstc"
+> >> diff --git a/Documentation/devicetree/bindings/net/macb.txt b/Documentation/devicetree/bindings/net/macb.txt
+> >> index 3e17ac1d5d58..f5c414b10e27 100644
+> >> --- a/Documentation/devicetree/bindings/net/macb.txt
+> >> +++ b/Documentation/devicetree/bindings/net/macb.txt
+> >> @@ -3,8 +3,7 @@
+> >>   Required properties:
+> >>   - compatible: Should be "cdns,[<chip>-]{macb|gem}"
+> >>     Use "cdns,at91rm9200-emac" Atmel at91rm9200 SoC.
+> >> -  Use "cdns,at91sam9260-macb" for Atmel at91sam9 SoCs or the 10/100Mbit IP
+> >> -  available on sama5d3 SoCs.
+> >> +  Use "cdns,at91sam9260-macb" for Atmel at91sam9 SoCs.
 > >
-> > How is this related to at91sam9260-rstc?
+> > Where is "atmel,sama5d3-macb"?
 >
-> at91sam9260 and sam9x60 are completely different products (they share
-> the same core though...). I know the naming could be misleading but it
-> is like it is...
+> It's actually a couple of line below: line 13 of the resulting macb.txt
+> file. It was already in the file when I removed the leftovers.
 >
-> > The 'x' is a wildcard? We generally avoid wildcards.
->
-> Here, the 'x' is definitively not a wildcard nor a kind of "family"
-> name, it's included in the (upcoming) single product's name.
->
-> I hope it clarifies.
+> Do you advice to try to better sort entries in this file? Is there a
+> common pattern?
 
-Yes, thanks.
+Okay, it's fine.
 
 Reviewed-by: Rob Herring <robh@kernel.org>
