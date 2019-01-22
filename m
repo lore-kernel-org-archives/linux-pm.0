@@ -1,8 +1,8 @@
 From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [driver-core PATCH v10 1/9] driver core: Establish order of
- operations for device_add and device_del via bitflag
-Date: Tue, 22 Jan 2019 10:39:10 -0800
-Message-ID: <154818235081.18753.1278409711806099880.stgit@ahduyck-desk1.amr.corp.intel.com>
+Subject: [driver-core PATCH v10 3/9] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Tue, 22 Jan 2019 10:39:21 -0800
+Message-ID: <154818236120.18753.12206175244667700878.stgit@ahduyck-desk1.amr.corp.intel.com>
 References: <154818223154.18753.12374915684623789884.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,128 +14,154 @@ To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: mcgrof@kernel.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Add an additional bit flag to the device_private struct named "dead".
+Probe devices asynchronously instead of the driver. This results in us
+seeing the same behavior if the device is registered before the driver or
+after. This way we can avoid serializing the initialization should the
+driver not be loaded until after the devices have already been added.
 
-This additional flag provides a guarantee that when a device_del is
-executed on a given interface an async worker will not attempt to attach
-the driver following the earlier device_del call. Previously this
-guarantee was not present and could result in the device_del call
-attempting to remove a driver from an interface only to have the async
-worker attempt to probe the driver later when it finally completes the
-asynchronous probe call.
+The motivation behind this is that if we have a set of devices that
+take a significant amount of time to load we can greatly reduce the time to
+load by processing them in parallel instead of one at a time. In addition,
+each device can exist on a different node so placing a single thread on one
+CPU to initialize all of the devices for a given driver can result in poor
+performance on a system with multiple nodes.
 
-One additional change added was that I pulled the check for dev->driver
-out of the __device_attach_driver call and instead placed it in the
-__device_attach_async_helper call. This was motivated by the fact that the
-only other caller of this, __device_attach, had already taken the
-device_lock() and checked for dev->driver. Instead of testing for this
-twice in this path it makes more sense to just consolidate the dev->dead
-and dev->driver checks together into one set of checks.
+This approach can reduce the time needed to scan SCSI LUNs significantly.
+The only way to realize that speedup is by enabling more concurrency which
+is what is achieved with this patch.
 
+To achieve this it was necessary to add a new member "async_driver" to the
+device_private structure to store the driver pointer while we wait on the
+deferred probe call.
+
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
 Reviewed-by: Dan Williams <dan.j.williams@intel.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
- drivers/base/base.h |    4 ++++
- drivers/base/core.c |   11 +++++++++++
- drivers/base/dd.c   |   22 +++++++++++-----------
- 3 files changed, 26 insertions(+), 11 deletions(-)
+ drivers/base/base.h |    2 ++
+ drivers/base/bus.c  |   23 +++--------------------
+ drivers/base/dd.c   |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 48 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 37329a668935..7ca475af8953 100644
+index b6966511b0ca..b405436ee28e 100644
 --- a/drivers/base/base.h
 +++ b/drivers/base/base.h
-@@ -67,6 +67,9 @@ struct driver_private {
+@@ -65,6 +65,7 @@ struct driver_private {
+  *	binding of drivers which were unable to get all the resources needed by
+  *	the device; typically because it depends on another driver getting
   *	probed first.
++ * @async_driver - pointer to device driver awaiting probe via async_probe
   * @device - pointer back to the struct device that this structure is
   * associated with.
-+ * @dead - This device is currently either in the process of or has been
-+ *	removed from the system. Any asynchronous events scheduled for this
-+ *	device should exit without taking any action.
-  *
-  * Nothing outside of the driver core should ever touch these fields.
-  */
-@@ -78,6 +81,7 @@ struct device_private {
+  * @dead - This device is currently either in the process of or has been
+@@ -80,6 +81,7 @@ struct device_private {
+ 	struct klist_node knode_bus;
  	struct klist_node knode_class;
  	struct list_head deferred_probe;
++	struct device_driver *async_driver;
  	struct device *device;
-+	u8 dead:1;
+ 	u8 dead:1;
  };
- #define to_device_private_parent(obj)	\
- 	container_of(obj, struct device_private, knode_parent)
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 4a4b6f8cbc4f..c9a82e367480 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -2080,6 +2080,17 @@ void device_del(struct device *dev)
- 	struct kobject *glue_dir = NULL;
- 	struct class_interface *class_intf;
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index cfa5b63b5582..0a58e969f8b7 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -610,17 +610,6 @@ static ssize_t uevent_store(struct device_driver *drv, const char *buf,
+ }
+ static DRIVER_ATTR_WO(uevent);
  
-+	/*
-+	 * Hold the device lock and set the "dead" flag to guarantee that
-+	 * the update behavior is consistent with the other bitfields near
-+	 * it and that we cannot have an asynchronous probe routine trying
-+	 * to run while we are tearing out the bus/class/sysfs from
-+	 * underneath the device.
-+	 */
-+	device_lock(dev);
-+	dev->p->dead = true;
-+	device_unlock(dev);
-+
- 	/* Notify clients of device removal.  This call must come
- 	 * before dpm_sysfs_remove().
- 	 */
+-static void driver_attach_async(void *_drv, async_cookie_t cookie)
+-{
+-	struct device_driver *drv = _drv;
+-	int ret;
+-
+-	ret = driver_attach(drv);
+-
+-	pr_debug("bus: '%s': driver %s async attach completed: %d\n",
+-		 drv->bus->name, drv->name, ret);
+-}
+-
+ /**
+  * bus_add_driver - Add a driver to the bus.
+  * @drv: driver.
+@@ -653,15 +642,9 @@ int bus_add_driver(struct device_driver *drv)
+ 
+ 	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
+ 	if (drv->bus->p->drivers_autoprobe) {
+-		if (driver_allows_async_probing(drv)) {
+-			pr_debug("bus: '%s': probing driver %s asynchronously\n",
+-				drv->bus->name, drv->name);
+-			async_schedule(driver_attach_async, drv);
+-		} else {
+-			error = driver_attach(drv);
+-			if (error)
+-				goto out_unregister;
+-		}
++		error = driver_attach(drv);
++		if (error)
++			goto out_unregister;
+ 	}
+ 	module_add_driver(drv->owner, drv);
+ 
 diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 8ac10af17c00..636cd16b1b62 100644
+index 34556359c7da..627ad05064e0 100644
 --- a/drivers/base/dd.c
 +++ b/drivers/base/dd.c
-@@ -731,15 +731,6 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
- 	bool async_allowed;
- 	int ret;
+@@ -925,6 +925,30 @@ int device_driver_attach(struct device_driver *drv, struct device *dev)
+ 	return ret;
+ }
  
--	/*
--	 * Check if device has already been claimed. This may
--	 * happen with driver loading, device discovery/registration,
--	 * and deferred probe processing happens all at once with
--	 * multiple threads.
--	 */
--	if (dev->driver)
--		return -EBUSY;
--
- 	ret = driver_match_device(drv, dev);
- 	if (ret == 0) {
- 		/* no match */
-@@ -774,6 +765,15 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
- 
- 	device_lock(dev);
- 
-+	/*
-+	 * Check if device has already been removed or claimed. This may
-+	 * happen with driver loading, device discovery/registration,
-+	 * and deferred probe processing happens all at once with
-+	 * multiple threads.
-+	 */
-+	if (dev->p->dead || dev->driver)
-+		goto out_unlock;
++static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
++{
++	struct device *dev = _dev;
++	struct device_driver *drv;
++	int ret = 0;
 +
- 	if (dev->parent)
- 		pm_runtime_get_sync(dev->parent);
- 
-@@ -784,7 +784,7 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
- 
- 	if (dev->parent)
- 		pm_runtime_put(dev->parent);
--
-+out_unlock:
- 	device_unlock(dev);
- 
- 	put_device(dev);
-@@ -897,7 +897,7 @@ static int __driver_attach(struct device *dev, void *data)
- 	if (dev->parent && dev->bus->need_parent_lock)
- 		device_lock(dev->parent);
- 	device_lock(dev);
--	if (!dev->driver)
++	__device_driver_lock(dev, dev->parent);
++
++	drv = dev->p->async_driver;
++
++	/*
++	 * If device has been removed or someone has already successfully
++	 * bound a driver before us just skip the driver probe call.
++	 */
 +	if (!dev->p->dead && !dev->driver)
- 		driver_probe_device(drv, dev);
- 	device_unlock(dev);
- 	if (dev->parent && dev->bus->need_parent_lock)
++		ret = driver_probe_device(drv, dev);
++
++	__device_driver_unlock(dev, dev->parent);
++
++	dev_dbg(dev, "driver %s async attach completed: %d\n", drv->name, ret);
++
++	put_device(dev);
++}
++
+ static int __driver_attach(struct device *dev, void *data)
+ {
+ 	struct device_driver *drv = data;
+@@ -952,6 +976,25 @@ static int __driver_attach(struct device *dev, void *data)
+ 		return ret;
+ 	} /* ret > 0 means positive match */
+ 
++	if (driver_allows_async_probing(drv)) {
++		/*
++		 * Instead of probing the device synchronously we will
++		 * probe it asynchronously to allow for more parallelism.
++		 *
++		 * We only take the device lock here in order to guarantee
++		 * that the dev->driver and async_driver fields are protected
++		 */
++		dev_dbg(dev, "probing driver %s asynchronously\n", drv->name);
++		device_lock(dev);
++		if (!dev->driver) {
++			get_device(dev);
++			dev->p->async_driver = drv;
++			async_schedule(__driver_attach_async_helper, dev);
++		}
++		device_unlock(dev);
++		return 0;
++	}
++
+ 	device_driver_attach(drv, dev);
+ 
+ 	return 0;
