@@ -1,108 +1,115 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
-Date: Wed, 23 Jan 2019 09:50:37 +0100
-Message-ID: <CAKfTPtDxWK-W-jP7Ak3Nk_zksCbVrY0CHT+OnWZgt1t17AYjFw@mail.gmail.com>
-References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
- <1548167070-421-2-git-send-email-vincent.guittot@linaro.org> <CAPDyKFqeo1Yxso-iYF4Co-eRYXKDRmiFHi9i5wiZSCXGtgSdkQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
+ clamp changes
+Date: Wed, 23 Jan 2019 10:16:34 +0100
+Message-ID: <20190123091634.GT27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-6-patrick.bellasi@arm.com>
+ <20190121153308.GL27931@hirez.programming.kicks-ass.net>
+ <20190121154412.fak2t2iquj3aixtu@e110439-lin>
+ <20190122093704.GM27931@hirez.programming.kicks-ass.net>
+ <20190122104305.6vjx37muqsxm536t@e110439-lin>
+ <20190122132817.GG13777@hirez.programming.kicks-ass.net>
+ <20190122140115.twtx646vewm757ca@e110439-lin>
+ <20190122145742.GQ27931@hirez.programming.kicks-ass.net>
+ <20190122153315.dhjl67sgpu74hmqv@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqeo1Yxso-iYF4Co-eRYXKDRmiFHi9i5wiZSCXGtgSdkQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190122153315.dhjl67sgpu74hmqv@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Jan 2019 at 09:14, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Tue, 22 Jan 2019 at 15:24, Vincent Guittot
-> <vincent.guittot@linaro.org> wrote:
-> >
-> > Initializing accounting_timestamp to something different from 0 during
-> > pm_runtime_init() doesn't make sense and put useless ordering constraint between
-> > timekeeping_init() and pm_runtime_init().
-> > PM runtime should start accounting time only when it is enable and discard
-> > the period when disabled.
-> > Set accounting_timestamp to now when enabling PM runtime.
->
-> Hmm, my first impression is that this sounds like a reasonable thing
-> to do. However, there are couple of more things to consider.
->
-> 1) update_pm_runtime_accounting() is setting a new value of
-> dev->power.accounting_timestamp, no matter of whether runtime PM has
-> been enabled. That's seems wrong to me, at least from the perspective
-> of what we are trying to change here. So you probably needs to fix
-> that too.
+On Tue, Jan 22, 2019 at 03:33:15PM +0000, Patrick Bellasi wrote:
+> On 22-Jan 15:57, Peter Zijlstra wrote:
+> > On Tue, Jan 22, 2019 at 02:01:15PM +0000, Patrick Bellasi wrote:
 
-note that whatever is done before enabling pm runtime, this will be
-overwritten during the enablement.
-I can add a clean up patch but this behavior is already there with jiffies.
+> > > Yes, I would say we have two options:
+> > > 
+> > >  1) SCHED_FLAG_KEEP_POLICY enforces all the scheduling class specific
+> > >     attributes, but cross class attributes (e.g. uclamp)
+> > >
+> > >  2) add SCHED_KEEP_NICE, SCHED_KEEP_PRIO, and SCED_KEEP_PARAMS
+> > >     and use them in the if conditions in D)
+> > 
+> > So the current KEEP_POLICY basically provides sched_setparam(), and
+> 
+> But it's not exposed user-space.
 
-Or do you think that update_pm_runtime_accounting can be called before
-timekeeping_init() ?
+Correct; not until your first patch indeed.
 
->
-> 2) I don't think you explicitly need to set
-> dev->power.accounting_timestamp to zero at pm_runtime_init(). Just
-> leave it uninitialized, as we are anyways going to initialize it
-> before we make use of it.
+> > given we have that as a syscall, that is supposedly a useful
+> > functionality.
+> 
+> For uclamp is definitively useful to change clamps without the need to
+> read beforehand the current policy params and use them in a following
+> set syscall... which is racy pattern.
 
-yes probably
+Right; but my argument was mostly that if sched_setparam() is a useful
+interface, a 'pure' KEEP_POLICY would be too and your (1) looses that.
 
->
-> 3) How will this change affect accounting while being system
-> suspended? As you know, the PM core disables and re-enables runtime PM
+> > And I suppose the UTIL_CLAMP is !KEEP_UTIL; we could go either way
+> > around with that flag.
+> 
+> What about getting rid of the racy case above by exposing userspace
+> only the new UTIL_CLAMP and, on:
+> 
+>   sched_setscheduler(flags: UTIL_CLAMP)
+> 
+> we enforce the other two flags from the syscall:
+> 
+> ---8<---
+>         SYSCALL_DEFINE3(sched_setattr)
+>             if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY) {
+>                 attr.sched_policy = SETPARAM_POLICY;
+>                 attr.sched_flags |= (KEEP_POLICY|KEEP_PARAMS);
+>             }
+> ---8<---
+> 
+> This will not make possible to change class and set flags in one go,
+> but honestly that's likely a very limited use-case, isn't it ?
 
-So the time in system suspended will not be accounted
+So I must admit to not seeing much use for sched_setparam() (and its
+equivalents) myself, but given it is an existing interface, I also think
+it would be nice to cover that functionality in the sched_setattr()
+call.
 
-> during a system suspend/resume sequence. It looks to me, that you
-> actually need to call update_pm_runtime_accounting() from
-> pm_runtime_enable|disable(), or something along those lines, as to get
-> the accounting correct, no?
+That is; I know of userspace priority-ceiling implementations using
+sched_setparam(), but I don't see any reason why that wouldn't also work
+with sched_setscheduler() (IOW always also set the policy).
 
-I thought that everything was already done for jiffies too. As soon as
-pm runtime is disable, we can't really account this time to
-suspended_time or active_time because we don't have control anymore
+> > > In both cases the goal should be to return from code block D).
+> > 
+> > I don't think so; we really do want to 'goto change' for util changes
+> > too I think. Why duplicate part of that logic?
+> 
+> But that will force a dequeue/enqueue... isn't too much overhead just
+> to change a clamp value?
 
-I think that we don't need any additional changes for
-pm_runtime_enable because we just init the accounting_timestamp and
-there is no active or suspend runtime to account yet
-For pm_runtime_disable(), I thought that everything was already there
-otherwise it means that we already didn't account the time correctly.
-I will have a deeper look at that
+These syscalls aren't what I consider fast paths anyway. However, there
+are people that rely on the scheduler syscalls not to schedule
+themselves, or rather be non-blocking (see for example that prio-ceiling
+implementation).
 
->
-> >
-> > Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >  drivers/base/power/runtime.c | 6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > index fb5e2b6..7df1d05 100644
-> > --- a/drivers/base/power/runtime.c
-> > +++ b/drivers/base/power/runtime.c
-> > @@ -1306,6 +1306,10 @@ void pm_runtime_enable(struct device *dev)
-> >
-> >         spin_lock_irqsave(&dev->power.lock, flags);
-> >
-> > +       /* About to enable runtime pm, set accounting_timestamp to now */
-> > +       if (dev->power.disable_depth == 1)
-> > +               dev->power.accounting_timestamp = jiffies;
-> > +
-> >         if (dev->power.disable_depth > 0)
-> >                 dev->power.disable_depth--;
-> >         else
-> > @@ -1506,7 +1510,7 @@ void pm_runtime_init(struct device *dev)
-> >         dev->power.request_pending = false;
-> >         dev->power.request = RPM_REQ_NONE;
-> >         dev->power.deferred_resume = false;
-> > -       dev->power.accounting_timestamp = jiffies;
-> > +       dev->power.accounting_timestamp = 0;
-> >         INIT_WORK(&dev->power.work, pm_runtime_work);
-> >
-> >         dev->power.timer_expires = 0;
-> > --
-> > 2.7.4
-> >
+And in that respect the newly introduced uclamp_mutex does appear to be
+a problem.
+
+Also; do you expect these clamp values to be changed often?
+
+> Perhaps we can also end up with some wired
+
+s/wired/weird/, right?
+
+> side-effects like the task being preempted ?
+
+Nothing worse than any other random reschedule would cause.
+
+> Consider also that the uclamp_task_update_active() added by this patch
+> not only has lower overhead but it will be use also by cgroups where
+> we want to force update all the tasks on a cgroup's clamp change.
+
+I haven't gotten that far; but I would prefer not to have two different
+'change' paths in __sched_setscheduler().
