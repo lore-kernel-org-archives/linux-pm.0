@@ -1,67 +1,168 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/9] thermal: cpu_cooling: Require thermal core to be
- compiled in
-Date: Wed, 23 Jan 2019 11:54:15 +0100
-Message-ID: <CAJZ5v0hhjDpSgizMazsbXiOyEhycyVihdMmsT_i7eAQ7K6vqAA@mail.gmail.com>
-References: <cover.1548084260.git.amit.kucheria@linaro.org>
- <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
- <20190123103451.ap5vws3kj2ch4uba@vireshk-i7> <CAP245DWTyaOFhS3SYwAmLGpczQo9JR+gsDbGdHAnoxpTWayjgg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Taniya Das <tdas@codeaurora.org>
+Subject: [PATCH v5] cpufreq: qcom: Read voltage LUT and populate OPP
+Date: Wed, 23 Jan 2019 16:52:00 +0530
+Message-ID: <1548242520-13773-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAP245DWTyaOFhS3SYwAmLGpczQo9JR+gsDbGdHAnoxpTWayjgg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 23, 2019 at 11:53 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
->
-> On Wed, Jan 23, 2019 at 4:04 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 21-01-19, 21:10, Amit Kucheria wrote:
-> > > The CPU cooling driver (cpu_cooling.c) allows the platform's cpufreq
-> > > driver to register as a cooling device and cool down the platform by
-> > > throttling the CPU frequency. In order to be able to auto-register a
-> > > cpufreq driver as a cooling device from the cpufreq core, we need access
-> > > to code inside cpu_cooling.c which, in turn, accesses code inside
-> > > thermal core.
-> > >
-> > > CPU_FREQ is a bool while THERMAL is tristate.  In some configurations
-> > > (e.g. allmodconfig), CONFIG_THERMAL ends up as a module while
-> > > CONFIG_CPU_FREQ is compiled in. This leads to following error:
-> > >
-> > > drivers/cpufreq/cpufreq.o: In function `cpufreq_offline':
-> > > cpufreq.c:(.text+0x407c): undefined reference to `cpufreq_cooling_unregister'
-> > > drivers/cpufreq/cpufreq.o: In function `cpufreq_online':
-> > > cpufreq.c:(.text+0x70c0): undefined reference to `of_cpufreq_cooling_register'
-> > >
-> > > Given that platforms using CPU_THERMAL usually want it compiled-in so it
-> > > is available early in boot, make CPU_THERMAL depend on THERMAL being
-> > > compiled-in instead of allowing it to be a module.
-> > >
-> > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > > ---
-> > >  drivers/thermal/Kconfig | 1 +
-> > >  1 file changed, 1 insertion(+)
-> > >
-> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > index 30323426902e..58bb7d72dc2b 100644
-> > > --- a/drivers/thermal/Kconfig
-> > > +++ b/drivers/thermal/Kconfig
-> > > @@ -152,6 +152,7 @@ config CPU_THERMAL
-> > >       bool "generic cpu cooling support"
-> > >       depends on CPU_FREQ
-> > >       depends on THERMAL_OF
-> > > +     depends on THERMAL=y
-> > >       help
-> > >         This implements the generic cpu cooling mechanism through frequency
-> > >         reduction. An ACPI version of this already exists
-> >
-> > Please remove all Kconfig crap, which gets fixed with this, as well in
-> > this patch itself. Like:
->
-> OK, I planned to if/when this series was accepted. Will send out a patch.
+Add support to read the voltage look up table and populate OPP for all
+corresponding CPUS for consumers like the energy model could use the
+frequency and voltage from the OPP tables. Also update the logic to not add
+duplicate OPPs.
 
-You can make it part of this series, though.
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Taniya Das <tdas@codeaurora.org>
+---
+ drivers/cpufreq/qcom-cpufreq-hw.c | 46 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 37 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index d83939a..402ce81 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -10,18 +10,21 @@
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
++#include <linux/pm_opp.h>
+ #include <linux/slab.h>
+
+ #define LUT_MAX_ENTRIES			40U
+ #define LUT_SRC				GENMASK(31, 30)
+ #define LUT_L_VAL			GENMASK(7, 0)
+ #define LUT_CORE_COUNT			GENMASK(18, 16)
++#define LUT_VOLT			GENMASK(11, 0)
+ #define LUT_ROW_SIZE			32
+ #define CLK_HW_DIV			2
+
+ /* Register offsets */
+ #define REG_ENABLE			0x0
+-#define REG_LUT_TABLE			0x110
++#define REG_FREQ_LUT			0x110
++#define REG_VOLT_LUT			0x114
+ #define REG_PERF_STATE			0x920
+
+ static unsigned long cpu_hw_rate, xo_rate;
+@@ -70,11 +73,12 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+ 	return policy->freq_table[index].frequency;
+ }
+
+-static int qcom_cpufreq_hw_read_lut(struct device *dev,
++static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 				    struct cpufreq_policy *policy,
+ 				    void __iomem *base)
+ {
+ 	u32 data, src, lval, i, core_count, prev_cc = 0, prev_freq = 0, freq;
++	u32 volt;
+ 	unsigned int max_cores = cpumask_weight(policy->cpus);
+ 	struct cpufreq_frequency_table	*table;
+
+@@ -83,23 +87,28 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+ 		return -ENOMEM;
+
+ 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+-		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
++		data = readl_relaxed(base + REG_FREQ_LUT +
++				      i * LUT_ROW_SIZE);
+ 		src = FIELD_GET(LUT_SRC, data);
+ 		lval = FIELD_GET(LUT_L_VAL, data);
+ 		core_count = FIELD_GET(LUT_CORE_COUNT, data);
+
++		data = readl_relaxed(base + REG_VOLT_LUT +
++				      i * LUT_ROW_SIZE);
++		volt = FIELD_GET(LUT_VOLT, data) * 1000;
++
+ 		if (src)
+ 			freq = xo_rate * lval / 1000;
+ 		else
+ 			freq = cpu_hw_rate / 1000;
+
+-		/* Ignore boosts in the middle of the table */
+-		if (core_count != max_cores) {
+-			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+-		} else {
++		if (freq != prev_freq && core_count == max_cores) {
+ 			table[i].frequency = freq;
+-			dev_dbg(dev, "index=%d freq=%d, core_count %d\n", i,
++			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
++			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
+ 				freq, core_count);
++		} else {
++			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+ 		}
+
+ 		/*
+@@ -116,6 +125,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+ 			if (prev_cc != max_cores) {
+ 				prev->frequency = prev_freq;
+ 				prev->flags = CPUFREQ_BOOST_FREQ;
++				dev_pm_opp_add(cpu_dev,	prev_freq * 1000, volt);
+ 			}
+
+ 			break;
+@@ -127,6 +137,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *dev,
+
+ 	table[i].frequency = CPUFREQ_TABLE_END;
+ 	policy->freq_table = table;
++	dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+
+ 	return 0;
+ }
+@@ -159,10 +170,18 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+ 	struct device *dev = &global_pdev->dev;
+ 	struct of_phandle_args args;
+ 	struct device_node *cpu_np;
++	struct device *cpu_dev;
+ 	struct resource *res;
+ 	void __iomem *base;
+ 	int ret, index;
+
++	cpu_dev = get_cpu_device(policy->cpu);
++	if (!cpu_dev) {
++		pr_err("%s: failed to get cpu%d device\n", __func__,
++		       policy->cpu);
++		return -ENODEV;
++	}
++
+ 	cpu_np = of_cpu_device_node_get(policy->cpu);
+ 	if (!cpu_np)
+ 		return -EINVAL;
+@@ -199,12 +218,19 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+
+ 	policy->driver_data = base + REG_PERF_STATE;
+
+-	ret = qcom_cpufreq_hw_read_lut(dev, policy, base);
++	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy, base);
+ 	if (ret) {
+ 		dev_err(dev, "Domain-%d failed to read LUT\n", index);
+ 		goto error;
+ 	}
+
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		dev_err(cpu_dev, "Failed to add OPPs\n");
++		ret = -EINVAL;
++		goto error;
++	}
++
+ 	policy->fast_switch_possible = true;
+
+ 	return 0;
+@@ -215,8 +241,10 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+
+ static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
+ {
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
+ 	void __iomem *base = policy->driver_data - REG_PERF_STATE;
+
++	dev_pm_opp_remove_all_dynamic(cpu_dev);
+ 	kfree(policy->freq_table);
+ 	devm_iounmap(&global_pdev->dev, base);
+
+--
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
