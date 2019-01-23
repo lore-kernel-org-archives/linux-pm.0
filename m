@@ -1,119 +1,93 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 3/7] power: supply: olpc_battery: Use DT to get
- battery version
-Date: Wed, 23 Jan 2019 21:38:05 +0100
-Message-ID: <20190123203805.qhmilqqozkgrchoy@earth.universe>
-References: <20190110174005.1202564-1-lkundrak@v3.sk>
- <20190110174005.1202564-4-lkundrak@v3.sk>
+Subject: Re: [PATCH 1/4] dt-bindings: power: sc27xx: Add one IIO channel to
+ read charge voltage
+Date: Wed, 23 Jan 2019 21:27:38 +0100
+Message-ID: <20190123202738.m6btovysy73i6i3o@earth.universe>
+References: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6h6uhi6mqvm2kbpb"
+        protocol="application/pgp-signature"; boundary="ppg2kqqkzwzvt4n3"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190110174005.1202564-4-lkundrak@v3.sk>
+In-Reply-To: <76a12fe5d0cc670266100b0587b047714c9a8a83.1547544142.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Shevchenko <andy.shevchenko@gmail.com>, Pavel Machek <pavel@ucw.cz>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, zhang.lyra@gmail.com, orsonzhai@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
 
---6h6uhi6mqvm2kbpb
+--ppg2kqqkzwzvt4n3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Jan 10, 2019 at 06:40:01PM +0100, Lubomir Rintel wrote:
-> Avoid using the x86 OLPC platform specific call to get the board
-> version. That wouldn't work on FDT-based ARM MMP2 platform.
+On Tue, Jan 15, 2019 at 06:32:34PM +0800, Baolin Wang wrote:
+> Add one IIO channel named "charge_vol" to read the charge voltage for
+> the SC27XX fuel gauge controller.
 >=20
-> Add the XO 1.5 compatible string too. This is actually not completely
-> necessary as the battery nodes on XO 1.5 claim to be compatible with
-> "olpc,xo1-battery", but there are, in fact, differencies.
->=20
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
->=20
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 > ---
-> Changes since v2:
-> - Clarify the XO 1 compatibility in the commit message.
->=20
-> Changes since v1:
-> - Sort the new include a bit higher
->=20
->  drivers/power/supply/olpc_battery.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-> index 5a97e42a3547..5323987d9284 100644
-> --- a/drivers/power/supply/olpc_battery.c
-> +++ b/drivers/power/supply/olpc_battery.c
-> @@ -14,6 +14,7 @@
->  #include <linux/types.h>
->  #include <linux/err.h>
->  #include <linux/device.h>
-> +#include <linux/of.h>
->  #include <linux/platform_device.h>
->  #include <linux/power_supply.h>
->  #include <linux/jiffies.h>
-> @@ -622,11 +623,13 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
->  	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
->  	if (IS_ERR(olpc_ac))
->  		return PTR_ERR(olpc_ac);
-> -
-> -	if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5 */
-> +	if (of_property_match_string(pdev->dev.of_node, "compatible",
-> +					"olpc,xo1.5-battery") >=3D 0) {
 
-of_device_is_compatible(...)
+Thanks, patchset is queued to power-supply-next.
 
 -- Sebastian
 
-> +		/* XO-1.5 */
->  		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
->  		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo15_bat_props);
-> -	} else { /* XO-1 */
-> +	} else {
-> +		/* XO-1 */
->  		olpc_bat_desc.properties =3D olpc_xo1_bat_props;
->  		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
->  	}
-> @@ -672,6 +675,7 @@ static int olpc_battery_remove(struct platform_device=
- *pdev)
-> =20
->  static const struct of_device_id olpc_battery_ids[] =3D {
->  	{ .compatible =3D "olpc,xo1-battery" },
-> +	{ .compatible =3D "olpc,xo1.5-battery" },
->  	{}
->  };
->  MODULE_DEVICE_TABLE(of, olpc_battery_ids);
+>  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt=
+ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+> index fc35ac5..0a5705b 100644
+> --- a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+> @@ -9,8 +9,8 @@ Required properties:
+>    "sprd,sc2731-fgu".
+>  - reg: The address offset of fuel gauge unit.
+>  - battery-detect-gpios: GPIO for battery detection.
+> -- io-channels: Specify the IIO ADC channel to get temperature.
+> -- io-channel-names: Should be "bat-temp".
+> +- io-channels: Specify the IIO ADC channels to get temperature and charg=
+e voltage.
+> +- io-channel-names: Should be "bat-temp" or "charge-vol".
+>  - nvmem-cells: A phandle to the calibration cells provided by eFuse devi=
+ce.
+>  - nvmem-cell-names: Should be "fgu_calib".
+>  - monitored-battery: Phandle of battery characteristics devicetree node.
+> @@ -47,8 +47,8 @@ Example:
+>  			compatible =3D "sprd,sc2731-fgu";
+>  			reg =3D <0xa00>;
+>  			battery-detect-gpios =3D <&pmic_eic 9 GPIO_ACTIVE_HIGH>;
+> -			io-channels =3D <&pmic_adc 5>;
+> -			io-channel-names =3D "bat-temp";
+> +			io-channels =3D <&pmic_adc 5>, <&pmic_adc 14>;
+> +			io-channel-names =3D "bat-temp", "charge-vol";
+>  			nvmem-cells =3D <&fgu_calib>;
+>  			nvmem-cell-names =3D "fgu_calib";
+>  			monitored-battery =3D <&bat>;
 > --=20
-> 2.20.1
+> 1.7.9.5
 >=20
 
---6h6uhi6mqvm2kbpb
+--ppg2kqqkzwzvt4n3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxI0KoACgkQ2O7X88g7
-+pqb9g//Sl82KeYO3saUbSr7qshHZkKLWKj+rS928qqwf3eBjclKlSPzV1gHHJAD
-P5Y3IOSNKyMT5do0rSeDJYF82z9cOQbJnC3IGz6tHC8Lak6aC1eEVBBAPRf098e3
-ihrzgbF9OLINhCh5I8J1Zz7DaEv9bZpbxEWKnAO8zJaI37UhhYKA/LVoMIM9/3pT
-3+06zdmL5GdrOvC2xak45En0Lst+pmUpn2OtXoakzZ4SgMMvDInj0PIlg078pURp
-tjQhSlMZLFns7Wvf1AJxzTCtSNVp3Mz1wDa38u1smn0dB4EyFwC5ccv2FaiE7yp1
-iuTM2G1x7pTBzdjBqr7SY6qhfBji9Pr2lvrLywdVdTHc5krGSqIAiMxF18iIIzT+
-z9lqm5i6sNenGdOjDoS1ho1j7ttYKnyxaTVgCO+zLajaPjwOTzO+bPcEtwIKeooZ
-sdpa86bf9dfitMHafwpE0JdN0OOx6WiQx4N2YYUIPt4sxQcICWQmjkm6SqyfmM9h
-Xaht1qnBX6nYaDheRrsnKQeKsUu6K1lV0xCHDhJlxRaC9SwhtVfovawsZhJB0LE0
-mPVzPOaNQcU7gGAQIPwZ3quA4oNbWaobnm2K5wByIfZu54I+nXbxDqoucvdI8wmm
-LpWQW73C7pB5b7/wrjW+kD2qUpIsLjZOG108LEegWcZT3pFx3kE=
-=vWen
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxIzjcACgkQ2O7X88g7
++poiSQ//eTUsDovorLNfFNZcdVJl45prcoKfrhJhyu4db1FoCB5UjB3X3mErrTmq
+ut2vwv4fY7C/LgLqj+rZA2MyqfWtmHGbRqGP+1TJzRoLgMywCBmCSgwaVM4ZZiKC
+woqyp1dRPof9fWCED/SPHs6SQmNF7tkob2qxaE4QioXVq/hhufwGjPrH/Bd7Z7YW
++LCgjnEMVr/fpEAI8hzzuAb1M4JMzFvrOCm6ZP82jdyqxhnGWESRF195Z2tARFab
+4xMTHZMH34mGIINsWnvxZXqNsYUMe6/JIIIDKDswK7PE9J+tW4KH1nJth5FCxCEs
+dZgMw6nXVY99D3lFqKwdv6/4+/QAV+OB/+Wwko/0zRvWHPagb+Ve2VwRknnHni+b
+7ZzXRH2WcJ3Zuu5tXVQIScoXaURB3PDwnKS+9t+MoaTEeEJpCKimfIBU2qxiBhUs
+i0Y8Q2Muy8FWa6e8CKw3CpuTHgLx3TMQEJcw0auhIPHH1B5jTMrbnLuHHHqPomC2
+PN58Eb3KZm6V+paI/21Lds0O1VVs7nHQbVwR2bgAE3zjFKT6eGc4bqDa/53caW1Z
+DE5ClrcPYfqXkVU/uU6r2ugQIxT6wx3l72Bk4kTwiKpKo3xLk4UXQzVnXfyQ7+Gu
+FKmstQ4INfKxVopgcxqltjdVqPEQvASQWZdIde/gbYCAtNzKgu8=
+=jsuy
 -----END PGP SIGNATURE-----
 
---6h6uhi6mqvm2kbpb--
+--ppg2kqqkzwzvt4n3--
