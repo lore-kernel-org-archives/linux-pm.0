@@ -1,34 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/2] Add cpufreq support for Armada 8K
-Date: Wed, 23 Jan 2019 15:38:35 +0530
-Message-ID: <20190123100835.2oyldqvhsygoxzzo@vireshk-i7>
-References: <20190118141140.30352-1-gregory.clement@bootlin.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
+ for RT tasks
+Date: Wed, 23 Jan 2019 11:28:21 +0100
+Message-ID: <20190123102821.GW27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-10-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190118141140.30352-1-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+In-Reply-To: <20190115101513.2822-10-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 18-01-19, 15:11, Gregory CLEMENT wrote:
-> Hi,
-> 
-> this is the fifth version of a the series adding the cpufreq support
-> for the Marvell Armada 8K SoCs.
+On Tue, Jan 15, 2019 at 10:15:06AM +0000, Patrick Bellasi wrote:
+> -	util = (type == ENERGY_UTIL)
+> -		? util_cfs
+> -		: uclamp_util(rq, util_cfs);
+> -	util += cpu_util_rt(rq);
+> +	util = cpu_util_rt(rq);
+> +	if (type == FREQUENCY_UTIL) {
+> +		util += cpu_util_cfs(rq);
+> +		util  = uclamp_util(rq, util);
+> +	} else {
+> +		util += util_cfs;
+> +	}
 
-Applied. Thanks.
+Or the combined thing:
 
--- 
-viresh
+-       util = util_cfs;
+-       util += cpu_util_rt(rq);
++       util = cpu_util_rt(rq);
++       if (type == FREQUENCY_UTIL) {
++               util += cpu_util_cfs(rq);
++               util  = uclamp_util(rq, util);
++       } else {
++               util += util_cfs;
++       }
+
+
+Leaves me confused.
+
+When type == FREQ, util_cfs should already be cpu_util_cfs(), per
+sugov_get_util().
+
+So should that not end up like:
+
+	util = util_cfs;
+	util += cpu_util_rt(rq);
++	if (type == FREQUENCY_UTIL)
++		util = uclamp_util(rq, util);
+
+instead?
