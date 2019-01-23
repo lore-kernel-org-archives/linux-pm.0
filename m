@@ -1,56 +1,57 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
- for RT tasks
-Date: Wed, 23 Jan 2019 11:28:21 +0100
-Message-ID: <20190123102821.GW27931@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-10-patrick.bellasi@arm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] power: domain: no need to check return value of
+ debugfs_create functions
+Date: Wed, 23 Jan 2019 11:33:21 +0100
+Message-ID: <20190123103321.GA17640@kroah.com>
+References: <20190122152151.16139-6-gregkh@linuxfoundation.org>
+ <CAPDyKFo=6NCiAzwF2mvfuvfCApiegBBnJdPM1EypK8xO38h_DA@mail.gmail.com>
+ <20190123075956.GA7597@kroah.com>
+ <CAPDyKFpZCTG-f+ejqL6v98JCfEU6zmXpVOv+cnBgM6RkHr-Etw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190115101513.2822-10-patrick.bellasi@arm.com>
+In-Reply-To: <CAPDyKFpZCTG-f+ejqL6v98JCfEU6zmXpVOv+cnBgM6RkHr-Etw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 15, 2019 at 10:15:06AM +0000, Patrick Bellasi wrote:
-> -	util = (type == ENERGY_UTIL)
-> -		? util_cfs
-> -		: uclamp_util(rq, util_cfs);
-> -	util += cpu_util_rt(rq);
-> +	util = cpu_util_rt(rq);
-> +	if (type == FREQUENCY_UTIL) {
-> +		util += cpu_util_cfs(rq);
-> +		util  = uclamp_util(rq, util);
-> +	} else {
-> +		util += util_cfs;
-> +	}
+On Wed, Jan 23, 2019 at 09:20:05AM +0100, Ulf Hansson wrote:
+> On Wed, 23 Jan 2019 at 08:59, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Wed, Jan 23, 2019 at 08:44:36AM +0100, Ulf Hansson wrote:
+> > > On Tue, 22 Jan 2019 at 16:23, Greg Kroah-Hartman
+> > > <gregkh@linuxfoundation.org> wrote:
+> > > >
+> > > > When calling debugfs functions, there is no need to ever check the
+> > > > return value.  The function can work or not, but the code logic should
+> > > > never do something different based on this.
+> > >
+> > > Doesn't this boils done to whether we want to care to check if memory
+> > > allocation failed?
+> >
+> > You should not care.
+> 
+> Okay.
+> 
+> >
+> > > Somewhere down the call chain from debugfs_create_dir(), we end up in
+> > > alloc_inode() and it looks like that can fail, no?
+> >
+> > Yes it can, right now it will return NULL, I'll go change that to return
+> > ENOMEM, but even then, your really do not care what happens as none of
+> > your other code flow should ever care about what debugfs does, or does
+> > not, do.
+> 
+> In that case, why don't we convert the debugfs_create_dir() and
+> friends, to becomes "void" functions? Or maybe that's your plan going
+> forward?
 
-Or the combined thing:
+I can't, as sometimes you actually care about using the return value in
+another debugfs call.
 
--       util = util_cfs;
--       util += cpu_util_rt(rq);
-+       util = cpu_util_rt(rq);
-+       if (type == FREQUENCY_UTIL) {
-+               util += cpu_util_cfs(rq);
-+               util  = uclamp_util(rq, util);
-+       } else {
-+               util += util_cfs;
-+       }
+thanks,
 
-
-Leaves me confused.
-
-When type == FREQ, util_cfs should already be cpu_util_cfs(), per
-sugov_get_util().
-
-So should that not end up like:
-
-	util = util_cfs;
-	util += cpu_util_rt(rq);
-+	if (type == FREQUENCY_UTIL)
-+		util = uclamp_util(rq, util);
-
-instead?
+greg k-h
