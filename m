@@ -1,36 +1,92 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 07/16] sched/core: uclamp: Add system default clamps
-Date: Wed, 23 Jan 2019 10:22:10 +0100
-Message-ID: <20190123092210.GU27931@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-8-patrick.bellasi@arm.com>
- <20190122135644.GP27931@hirez.programming.kicks-ass.net>
- <20190122144329.ziimv6fejwvky7yb@e110439-lin>
- <20190122151317.GH13777@hirez.programming.kicks-ass.net>
- <20190122154129.mxnpgaoxnccbjbch@e110439-lin>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v2] PM / EM: Expose the Energy Model in debugfs
+Date: Wed, 23 Jan 2019 09:28:36 +0000
+Message-ID: <20190123092834.hj5v6lup4422wrmf@queper01-lin>
+References: <20190122164247.19439-1-quentin.perret@arm.com>
+ <20190122184136.GD31777@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190122154129.mxnpgaoxnccbjbch@e110439-lin>
+In-Reply-To: <20190122184136.GD31777@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: rafael@kernel.org, peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 03:41:29PM +0000, Patrick Bellasi wrote:
-> On 22-Jan 16:13, Peter Zijlstra wrote:
-> > On Tue, Jan 22, 2019 at 02:43:29PM +0000, Patrick Bellasi wrote:
-
-> > > Do you think that could be acceptable?
+On Tuesday 22 Jan 2019 at 19:41:36 (+0100), Greg KH wrote:
+> On Tue, Jan 22, 2019 at 04:42:47PM +0000, Quentin Perret wrote:
+> > The recently introduced Energy Model (EM) framework manages power cost
+> > tables of CPUs. These tables are currently only visible from kernel
+> > space. However, in order to debug the behaviour of subsystems that use
+> > the EM (EAS for example), it is often required to know what the power
+> > costs are from userspace.
 > > 
-> > Think so, it's a sysctl poke, 'nobody' ever does that.
+> > For this reason, introduce under /sys/kernel/debug/energy_model a set of
+> > directories representing the performance domains of the system. Each
+> > performance domain contains a set of sub-directories representing the
+> > different capacity states (cs) and their attributes, as well as a file
+> > exposing the related CPUs.
+> > 
+> > The resulting hierarchy is as follows on Arm juno r0 for example:
+> > 
+> >     /sys/kernel/debug/energy_model
+> >     ├── pd0
+> >     │   ├── cpus
+> >     │   ├── cs:450000
+> >     │   │   ├── cost
+> >     │   │   ├── frequency
+> >     │   │   └── power
+> >     │   ├── cs:575000
+> >     │   │   ├── cost
+> >     │   │   ├── frequency
+> >     │   │   └── power
+> >     │   ├── cs:700000
+> >     │   │   ├── cost
+> >     │   │   ├── frequency
+> >     │   │   └── power
+> >     │   ├── cs:775000
+> >     │   │   ├── cost
+> >     │   │   ├── frequency
+> >     │   │   └── power
+> >     │   └── cs:850000
+> >     │       ├── cost
+> >     │       ├── frequency
+> >     │       └── power
+> >     └── pd1
+> >         ├── cpus
+> >         ├── cs:1100000
+> >         │   ├── cost
+> >         │   ├── frequency
+> >         │   └── power
+> >         ├── cs:450000
+> >         │   ├── cost
+> >         │   ├── frequency
+> >         │   └── power
+> >         ├── cs:625000
+> >         │   ├── cost
+> >         │   ├── frequency
+> >         │   └── power
+> >         ├── cs:800000
+> >         │   ├── cost
+> >         │   ├── frequency
+> >         │   └── power
+> >         └── cs:950000
+> >             ├── cost
+> >             ├── frequency
+> >             └── power
+> > 
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > 
+> > ---
+> > 
+> > V2: removed check on return value of debugfs_create_* (Greg KH)
+> > ---
+> >  kernel/power/energy_model.c | 57 +++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 57 insertions(+)
 > 
-> Cool, so... I'll keep lazy update for system default.
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Ah, I think I misunderstood. I meant to say that since nobody ever pokes
-at sysctl's it doesn't matter if its a little more expensive and iterate
-everything.
-
-Also; if you always keep everything up-to-date, you can avoid doing that
-duplicate accounting.
+Thanks !
+Quentin
