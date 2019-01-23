@@ -1,99 +1,62 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal/int340x_thermal: Add additional UUIDs
-Date: Wed, 23 Jan 2019 13:58:34 +0800
-Message-ID: <1548223114.4006.45.camel@intel.com>
-References: <20181010083007.239938-1-matthewgarrett@google.com>
-         <20181010083007.239938-2-matthewgarrett@google.com>
-         <1543849707.2841.9.camel@intel.com>
-         <CACPK8Xdb0fEjU3kf_ZETtYE+D42QF-fNQacaHjVsLeE4MU0qFw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] opp: no need to check return value of debugfs_create
+ functions
+Date: Wed, 23 Jan 2019 12:46:14 +0530
+Message-ID: <20190123071614.nyzopisx4yhojgw3@vireshk-i7>
+References: <20190122152151.16139-18-gregkh@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CACPK8Xdb0fEjU3kf_ZETtYE+D42QF-fNQacaHjVsLeE4MU0qFw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190122152151.16139-18-gregkh@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Stanley <joel@jms.id.au>
-Cc: Matthew Garrett <matthewgarrett@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Matthew Garrett <mjg59@google.com>, Nisha Aram <nisha.aram@intel.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 三, 2019-01-23 at 11:44 +1100, Joel Stanley wrote:
-> Hello Rui,
+On 22-01-19, 16:21, Greg Kroah-Hartman wrote:
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic should
+> never do something different based on this.
 > 
-> On Tue, 4 Dec 2018 at 02:12, Zhang Rui <rui.zhang@intel.com> wrote:
-> > 
-> > On 三, 2018-10-10 at 01:30 -0700, Matthew Garrett wrote:
-> > > 
-> > > Platforms support more DPTF policies than the driver currently
-> > > exposes.
-> > > Add them. This effectively reverts
-> > > 31908f45a583e8f21db37f402b6e8d5739945afd which removed several
-> > > UUIDs
-> > > without explaining why.
-> > > 
-> > I'm going to apply this patch series, just with two minor changes,
-> > 1. 31908f45a583e8f21db37f402b6e8d5739945afd does not follow the git
-> > commit description style 'commit <12+ chars of sha1> ("<title
-> > line>")'
-> > 2. the UUIDs were removed previously because these policies were
-> > not
-> > used.
-> Which tree did this series get applied to?
-> 
-it is in my next branch, and I will queue it for 5.1.
-https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/log/?h
-=next
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
+>  drivers/opp/core.c    |  10 +---
+>  drivers/opp/debugfs.c | 109 +++++++++++-------------------------------
+>  drivers/opp/opp.h     |  15 +++---
+>  3 files changed, 37 insertions(+), 97 deletions(-)
 
-thanks,
-rui
-> Cheers,
-> 
-> Joel
-> 
-> > 
-> > 
-> > thanks,
-> > rui
-> > 
-> > > 
-> > > Signed-off-by: Matthew Garrett <mjg59@google.com>
-> > > Cc: Zhang Rui <rui.zhang@intel.com>
-> > > Cc: Nisha Aram <nisha.aram@intel.com>
-> > > ---
-> > >  drivers/thermal/int340x_thermal/int3400_thermal.c | 14
-> > > ++++++++++++++
-> > >  1 file changed, 14 insertions(+)
-> > > 
-> > > diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> > > b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> > > index e26b01c05e82..51c9097eaf7a 100644
-> > > --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> > > +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> > > @@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
-> > >       INT3400_THERMAL_PASSIVE_1,
-> > >       INT3400_THERMAL_ACTIVE,
-> > >       INT3400_THERMAL_CRITICAL,
-> > > +     INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
-> > > +     INT3400_THERMAL_EMERGENCY_CALL_MODE,
-> > > +     INT3400_THERMAL_PASSIVE_2,
-> > > +     INT3400_THERMAL_POWER_BOSS,
-> > > +     INT3400_THERMAL_VIRTUAL_SENSOR,
-> > > +     INT3400_THERMAL_COOLING_MODE,
-> > > +     INT3400_THERMAL_HARDWARE_DUTY_CYCLING,
-> > >       INT3400_THERMAL_MAXIMUM_UUID,
-> > >  };
-> > > 
-> > > @@ -29,6 +36,13 @@ static char
-> > > *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
-> > >       "42A441D6-AE6A-462b-A84B-4A8CE79027D3",
-> > >       "3A95C389-E4B8-4629-A526-C52C88626BAE",
-> > >       "97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
-> > > +     "63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
-> > > +     "5349962F-71E6-431D-9AE8-0A635B710AEE",
-> > > +     "9E04115A-AE87-4D1C-9500-0F3E340BFE75",
-> > > +     "F5A35014-C209-46A4-993A-EB56DE7530A1",
-> > > +     "6ED722A7-9240-48A5-B479-31EEF723D7CF",
-> > > +     "16CAF1B7-DD38-40ED-B1C1-1B8A1913D531",
-> > > +     "BE84BABF-C4D4-403D-B495-3128FD44dAC1",
-> > >  };
-> > > 
-> > >  struct int3400_thermal_priv {
+Applied with following changes. Thanks Greg.
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 91d15c58eae1..d455b84cce5a 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -793,7 +793,6 @@ static struct opp_device *_add_opp_dev_unlocked(const struct device *dev,
+                                                struct opp_table *opp_table)
+ {
+        struct opp_device *opp_dev;
+-       int ret;
+ 
+        opp_dev = kzalloc(sizeof(*opp_dev), GFP_KERNEL);
+        if (!opp_dev)
+diff --git a/drivers/opp/debugfs.c b/drivers/opp/debugfs.c
+index baac1ae33c55..a1c57fe14de4 100644
+--- a/drivers/opp/debugfs.c
++++ b/drivers/opp/debugfs.c
+@@ -93,7 +93,8 @@ void opp_debug_create_one(struct dev_pm_opp *opp, struct opp_table *opp_table)
+        debugfs_create_bool("suspend", S_IRUGO, d, &opp->suspend);
+        debugfs_create_u32("performance_state", S_IRUGO, d, &opp->pstate);
+        debugfs_create_ulong("rate_hz", S_IRUGO, d, &opp->rate);
+-       debugfs_create_ulong("clock_latency_ns", S_IRUGO, d, &opp->clock_latency_ns);
++       debugfs_create_ulong("clock_latency_ns", S_IRUGO, d,
++                            &opp->clock_latency_ns);
+ 
+        opp_debug_create_supplies(opp, opp_table, d);
+
+-- 
+viresh
