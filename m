@@ -1,117 +1,142 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v6 1/2] PM-runtime: update accounting_timestamp only when enable
-Date: Wed, 23 Jan 2019 10:35:08 +0100
-Message-ID: <CAPDyKFqwXckw7CaSwA2WTxHMG6H0Bh5dnsZsvRUngHavB-+vfw@mail.gmail.com>
-References: <1548167070-421-1-git-send-email-vincent.guittot@linaro.org>
- <1548167070-421-2-git-send-email-vincent.guittot@linaro.org>
- <CAPDyKFqeo1Yxso-iYF4Co-eRYXKDRmiFHi9i5wiZSCXGtgSdkQ@mail.gmail.com> <CAKfTPtDxWK-W-jP7Ak3Nk_zksCbVrY0CHT+OnWZgt1t17AYjFw@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 08/16] sched/cpufreq: uclamp: Add utilization clamping
+ for FAIR tasks
+Date: Wed, 23 Jan 2019 10:52:19 +0100
+Message-ID: <20190123095219.GV27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-9-patrick.bellasi@arm.com>
+ <20190122171314.GS27931@hirez.programming.kicks-ass.net>
+ <20190122181831.a4w65qcivx4hua6d@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtDxWK-W-jP7Ak3Nk_zksCbVrY0CHT+OnWZgt1t17AYjFw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190122181831.a4w65qcivx4hua6d@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Jan 2019 at 09:50, Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
-> On Wed, 23 Jan 2019 at 09:14, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Tue, 22 Jan 2019 at 15:24, Vincent Guittot
-> > <vincent.guittot@linaro.org> wrote:
-> > >
-> > > Initializing accounting_timestamp to something different from 0 during
-> > > pm_runtime_init() doesn't make sense and put useless ordering constraint between
-> > > timekeeping_init() and pm_runtime_init().
-> > > PM runtime should start accounting time only when it is enable and discard
-> > > the period when disabled.
-> > > Set accounting_timestamp to now when enabling PM runtime.
-> >
-> > Hmm, my first impression is that this sounds like a reasonable thing
-> > to do. However, there are couple of more things to consider.
-> >
-> > 1) update_pm_runtime_accounting() is setting a new value of
-> > dev->power.accounting_timestamp, no matter of whether runtime PM has
-> > been enabled. That's seems wrong to me, at least from the perspective
-> > of what we are trying to change here. So you probably needs to fix
-> > that too.
->
-> note that whatever is done before enabling pm runtime, this will be
-> overwritten during the enablement.
+On Tue, Jan 22, 2019 at 06:18:31PM +0000, Patrick Bellasi wrote:
+> On 22-Jan 18:13, Peter Zijlstra wrote:
+> > On Tue, Jan 15, 2019 at 10:15:05AM +0000, Patrick Bellasi wrote:
+> > > @@ -342,11 +350,24 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
+> > >  		return;
+> > >  	sg_cpu->iowait_boost_pending = true;
+> > >  
+> > > +	/*
+> > > +	 * Boost FAIR tasks only up to the CPU clamped utilization.
+> > > +	 *
+> > > +	 * Since DL tasks have a much more advanced bandwidth control, it's
+> > > +	 * safe to assume that IO boost does not apply to those tasks.
+> > 
+> > I'm not buying that argument. IO-boost isn't related to b/w management.
+> > 
+> > IO-boot is more about compensating for hidden dependencies, and those
+> > don't get less hidden for using a different scheduling class.
+> > 
+> > Now, arguably DL should not be doing IO in the first place, but that's a
+> > whole different discussion.
+> 
+> My understanding is that IOBoost is there to help tasks doing many
+> and _frequent_ IO operations, which are relatively _not so much_
+> computational intensive on the CPU.
+> 
+> Those tasks generate a small utilization and, without IOBoost, will be
+> executed at a lower frequency and will add undesired latency on
+> triggering the next IO operation.
+> 
+> Isn't mainly that the reason for it?
 
-Right. After this patch, but the original code seems wrong, doesn't it?
+  http://lkml.kernel.org/r/20170522082154.f57cqovterd2qajv@hirez.programming.kicks-ass.net
 
-> I can add a clean up patch but this behavior is already there with jiffies.
+Using a lower frequency will allow the IO device to go idle while we try
+and get the next request going.
 
-That would be great, to get this sorted out.
+The connection between IO device and task/freq selection is hidden/lost.
+We could potentially do better here, but fundamentally a completion
+doesn't have an 'owner', there can be multiple waiters etc.
 
->
-> Or do you think that update_pm_runtime_accounting can be called before
-> timekeeping_init() ?
+We loose (through our software architecture, and this we could possibly
+improve, although it would be fairly invasive) the device busy state,
+and it would be the device that raises the CPU frequency (to the point
+where request submission is no longer the bottle neck to staying busy).
 
-No.
+Currently all we do is mark a task as sleeping on IO and loose any
+and all device relations/metrics.
 
->
-> >
-> > 2) I don't think you explicitly need to set
-> > dev->power.accounting_timestamp to zero at pm_runtime_init(). Just
-> > leave it uninitialized, as we are anyways going to initialize it
-> > before we make use of it.
->
-> yes probably
->
-> >
-> > 3) How will this change affect accounting while being system
-> > suspended? As you know, the PM core disables and re-enables runtime PM
->
-> So the time in system suspended will not be accounted
+So I don't think the task clamping should affect the IO boosting, as
+that is meant to represent the device state, not the task utilization.
 
-Right. But, I am not sure the accounting is correctly done.
+> IMHO, it makes perfectly sense to use DL for these kind of operations
+> but I would expect that, since you care about latency we should come
+> up with a proper description of the required bandwidth... eventually
+> accounting for an additional headroom to compensate for "hidden
+> dependencies"... without relaying on a quite dummy policy like
+> IOBoost to get our DL tasks working.
 
->
-> > during a system suspend/resume sequence. It looks to me, that you
-> > actually need to call update_pm_runtime_accounting() from
-> > pm_runtime_enable|disable(), or something along those lines, as to get
-> > the accounting correct, no?
->
-> I thought that everything was already done for jiffies too. As soon as
-> pm runtime is disable, we can't really account this time to
-> suspended_time or active_time because we don't have control anymore
+Deadline is about determinsm, (file/disk) IO is typically the
+anti-thesis of that.
 
-Correct.
+> At the end, DL is now quite good in driving the freq as high has it
+> needs... and by closing userspace feedback loops it can also
+> compensate for all sort of fluctuations and noise... as demonstrated
+> by Alessio during last OSPM:
+> 
+>    http://retis.sssup.it/luca/ospm-summit/2018/Downloads/OSPM_deadline_audio.pdf
 
-However, my point is that during system suspend, sooner or later we
-end up disabling runtime PM. Up until that point, we should account
-for, but it seems like we don't do that correctly. As instead, we just
-keep the old accounting timestamp during system suspend (until someone
-changes the runtime PM status, but there is now guarantee that
-happens).
+Audio is a special in that it is indeed a deterministic device, also, I
+don't think ALSA touches the IO-wait code, that is typically all
+filesystem stuff.
 
->
-> I think that we don't need any additional changes for
-> pm_runtime_enable because we just init the accounting_timestamp and
-> there is no active or suspend runtime to account yet
+> > > +	 * Instead, since RT tasks are not utilization clamped, we don't want
+> > > +	 * to apply clamping on IO boost while there is blocked RT
+> > > +	 * utilization.
+> > > +	 */
+> > > +	max_boost = sg_cpu->iowait_boost_max;
+> > > +	if (!cpu_util_rt(cpu_rq(sg_cpu->cpu)))
+> > > +		max_boost = uclamp_util(cpu_rq(sg_cpu->cpu), max_boost);
+> > > +
+> > >  	/* Double the boost at each request */
+> > >  	if (sg_cpu->iowait_boost) {
+> > >  		sg_cpu->iowait_boost <<= 1;
+> > > -		if (sg_cpu->iowait_boost > sg_cpu->iowait_boost_max)
+> > > -			sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
+> > > +		if (sg_cpu->iowait_boost > max_boost)
+> > > +			sg_cpu->iowait_boost = max_boost;
+> > >  		return;
+> > >  	}
+> > 
+> > Hurmph...  so I'm not sold on this bit.
+> 
+> If a task is not clamped we execute it at its required utilization or
+> even max frequency in case of wakeup from IO.
+> 
+> When a task is util_max clamped instead, we are saying that we don't
+> care to run it above the specified clamp value and, if possible, we
+> should run it below that capacity level.
+> 
+> If that's the case, why this clamping hints should not be enforced on
+> IO wakeups too?
+> 
+> At the end it's still a user-space decision, we basically allow
+> userspace to defined what's the max IO boost they like to get.
 
-Right, after a second thought, this makes sense.
+Because it is the wrong knob for it.
 
-> For pm_runtime_disable(), I thought that everything was already there
-> otherwise it means that we already didn't account the time correctly.
-> I will have a deeper look at that
+Ideally we'd extend the IO-wait state to include the device-busy state
+at the time of sleep. At the very least double state io_schedule() state
+space from 1 to 2 bits, where we not only indicate: yes this is an
+IO-sleep, but also can indicate device saturation. When the device is
+saturated, we don't need to boost further.
 
-Great!
+(this binary state will ofcourse cause oscilations where we drop the
+freq, drop device saturation, then ramp the freq, regain device
+saturation etc..)
 
-I think the accounting is simply based upon that the "time" is stopped
-during system suspend and thus also the accounting.
+However, doing this is going to require fairly massive surgery on our
+whole IO stack.
 
-Although, as the header of $subject patch indicates, we want to move
-to a well defined situation. Therefore it sounds to me that we need to
-care about accounting while disabling runtime PM.
-
-Anyway, let's see what you find out from your deeper look. :-)
-
-[...]
-
-Kind regards
-Uffe
+Also; how big of a problem is 'supriouos' boosting really? Joel tried to
+introduce a boost_max tunable, but the grandual boosting thing was good
+enough at the time.
