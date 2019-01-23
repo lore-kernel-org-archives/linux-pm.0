@@ -1,57 +1,76 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] power: domain: no need to check return value of
- debugfs_create functions
-Date: Wed, 23 Jan 2019 11:33:21 +0100
-Message-ID: <20190123103321.GA17640@kroah.com>
-References: <20190122152151.16139-6-gregkh@linuxfoundation.org>
- <CAPDyKFo=6NCiAzwF2mvfuvfCApiegBBnJdPM1EypK8xO38h_DA@mail.gmail.com>
- <20190123075956.GA7597@kroah.com>
- <CAPDyKFpZCTG-f+ejqL6v98JCfEU6zmXpVOv+cnBgM6RkHr-Etw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/9] thermal: cpu_cooling: Require thermal core to be
+ compiled in
+Date: Wed, 23 Jan 2019 16:04:51 +0530
+Message-ID: <20190123103451.ap5vws3kj2ch4uba@vireshk-i7>
+References: <cover.1548084260.git.amit.kucheria@linaro.org>
+ <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFpZCTG-f+ejqL6v98JCfEU6zmXpVOv+cnBgM6RkHr-Etw@mail.gmail.com>
+In-Reply-To: <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 23, 2019 at 09:20:05AM +0100, Ulf Hansson wrote:
-> On Wed, 23 Jan 2019 at 08:59, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Wed, Jan 23, 2019 at 08:44:36AM +0100, Ulf Hansson wrote:
-> > > On Tue, 22 Jan 2019 at 16:23, Greg Kroah-Hartman
-> > > <gregkh@linuxfoundation.org> wrote:
-> > > >
-> > > > When calling debugfs functions, there is no need to ever check the
-> > > > return value.  The function can work or not, but the code logic should
-> > > > never do something different based on this.
-> > >
-> > > Doesn't this boils done to whether we want to care to check if memory
-> > > allocation failed?
-> >
-> > You should not care.
+On 21-01-19, 21:10, Amit Kucheria wrote:
+> The CPU cooling driver (cpu_cooling.c) allows the platform's cpufreq
+> driver to register as a cooling device and cool down the platform by
+> throttling the CPU frequency. In order to be able to auto-register a
+> cpufreq driver as a cooling device from the cpufreq core, we need access
+> to code inside cpu_cooling.c which, in turn, accesses code inside
+> thermal core.
 > 
-> Okay.
+> CPU_FREQ is a bool while THERMAL is tristate.  In some configurations
+> (e.g. allmodconfig), CONFIG_THERMAL ends up as a module while
+> CONFIG_CPU_FREQ is compiled in. This leads to following error:
 > 
-> >
-> > > Somewhere down the call chain from debugfs_create_dir(), we end up in
-> > > alloc_inode() and it looks like that can fail, no?
-> >
-> > Yes it can, right now it will return NULL, I'll go change that to return
-> > ENOMEM, but even then, your really do not care what happens as none of
-> > your other code flow should ever care about what debugfs does, or does
-> > not, do.
+> drivers/cpufreq/cpufreq.o: In function `cpufreq_offline':
+> cpufreq.c:(.text+0x407c): undefined reference to `cpufreq_cooling_unregister'
+> drivers/cpufreq/cpufreq.o: In function `cpufreq_online':
+> cpufreq.c:(.text+0x70c0): undefined reference to `of_cpufreq_cooling_register'
 > 
-> In that case, why don't we convert the debugfs_create_dir() and
-> friends, to becomes "void" functions? Or maybe that's your plan going
-> forward?
+> Given that platforms using CPU_THERMAL usually want it compiled-in so it
+> is available early in boot, make CPU_THERMAL depend on THERMAL being
+> compiled-in instead of allowing it to be a module.
+> 
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  drivers/thermal/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 30323426902e..58bb7d72dc2b 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -152,6 +152,7 @@ config CPU_THERMAL
+>  	bool "generic cpu cooling support"
+>  	depends on CPU_FREQ
+>  	depends on THERMAL_OF
+> +	depends on THERMAL=y
+>  	help
+>  	  This implements the generic cpu cooling mechanism through frequency
+>  	  reduction. An ACPI version of this already exists
 
-I can't, as sometimes you actually care about using the return value in
-another debugfs call.
+Please remove all Kconfig crap, which gets fixed with this, as well in
+this patch itself. Like:
 
-thanks,
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 10bc5c798d17..40f8cc323996 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -40,8 +40,6 @@ config ARM_ARMADA_8K_CPUFREQ
+ config ARM_BIG_LITTLE_CPUFREQ
+        tristate "Generic ARM big LITTLE CPUfreq driver"
+        depends on ARM_CPU_TOPOLOGY && HAVE_CLK
+-       # if CPU_THERMAL is on and THERMAL=m, ARM_BIT_LITTLE_CPUFREQ cannot be =y
+-       depends on !CPU_THERMAL || THERMAL
+        select PM_OPP
+        help
+          This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
 
-greg k-h
+-- 
+viresh
