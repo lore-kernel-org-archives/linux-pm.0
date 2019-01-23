@@ -1,76 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/9] thermal: cpu_cooling: Require thermal core to be
- compiled in
-Date: Wed, 23 Jan 2019 16:04:51 +0530
-Message-ID: <20190123103451.ap5vws3kj2ch4uba@vireshk-i7>
+Subject: Re: [PATCH v2 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Wed, 23 Jan 2019 16:06:24 +0530
+Message-ID: <20190123103624.t4b2ij3bfvpezgjf@vireshk-i7>
 References: <cover.1548084260.git.amit.kucheria@linaro.org>
- <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
+ <0036de796308b8919eac74a9a910f0d7b9c0cbf8.1548084260.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3f3e38e55c2de4b730fd7c6aa30c125f3a6a8704.1548084260.git.amit.kucheria@linaro.org>
+In-Reply-To: <0036de796308b8919eac74a9a910f0d7b9c0cbf8.1548084260.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Tao Wang <kevin.wangtao@hisilicon.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On 21-01-19, 21:10, Amit Kucheria wrote:
-> The CPU cooling driver (cpu_cooling.c) allows the platform's cpufreq
-> driver to register as a cooling device and cool down the platform by
-> throttling the CPU frequency. In order to be able to auto-register a
-> cpufreq driver as a cooling device from the cpufreq core, we need access
-> to code inside cpu_cooling.c which, in turn, accesses code inside
-> thermal core.
-> 
-> CPU_FREQ is a bool while THERMAL is tristate.  In some configurations
-> (e.g. allmodconfig), CONFIG_THERMAL ends up as a module while
-> CONFIG_CPU_FREQ is compiled in. This leads to following error:
-> 
-> drivers/cpufreq/cpufreq.o: In function `cpufreq_offline':
-> cpufreq.c:(.text+0x407c): undefined reference to `cpufreq_cooling_unregister'
-> drivers/cpufreq/cpufreq.o: In function `cpufreq_online':
-> cpufreq.c:(.text+0x70c0): undefined reference to `of_cpufreq_cooling_register'
-> 
-> Given that platforms using CPU_THERMAL usually want it compiled-in so it
-> is available early in boot, make CPU_THERMAL depend on THERMAL being
-> compiled-in instead of allowing it to be a module.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/thermal/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 30323426902e..58bb7d72dc2b 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -152,6 +152,7 @@ config CPU_THERMAL
->  	bool "generic cpu cooling support"
->  	depends on CPU_FREQ
->  	depends on THERMAL_OF
-> +	depends on THERMAL=y
->  	help
->  	  This implements the generic cpu cooling mechanism through frequency
->  	  reduction. An ACPI version of this already exists
+> @@ -151,6 +152,11 @@ struct cpufreq_policy {
+>  
+>  	/* For cpufreq driver's internal use */
+>  	void			*driver_data;
+> +
+> +#ifdef CONFIG_CPU_THERMAL
+> +	/* Pointer to the cooling device if used for thermal mitigation */
+> +	struct thermal_cooling_device *cdev;
+> +#endif
+>  };
+>  
+>  /* Only for ACPI */
+> @@ -386,6 +392,12 @@ struct cpufreq_driver {
+>   */
+>  #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
+>  
+> +/*
+> + * Set by drivers that want the core to automatically register the cpufreq
+> + * driver as a thermal cooling device.
+> + */
+> +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
+> +
+>  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+>  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+>  
+> @@ -415,6 +427,19 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
+>  			policy->cpuinfo.max_freq);
+>  }
+>  
+> +#ifdef CONFIG_CPU_THERMAL
+> +static inline void register_cooling_device(struct cpufreq_policy *policy) {
+> +	policy->cdev = of_cpufreq_cooling_register(policy);
+> +}
+> +
+> +static inline void unregister_cooling_device(struct cpufreq_policy *policy) {
+> +	cpufreq_cooling_unregister(policy->cdev);
+> +	policy->cdev = NULL;
+> +}
+> +#else
+> +static inline void register_cooling_device(struct cpufreq_policy *policy) {}
+> +static inline void unregister_cooling_device(struct cpufreq_policy *policy) {}
+> +#endif
 
-Please remove all Kconfig crap, which gets fixed with this, as well in
-this patch itself. Like:
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 10bc5c798d17..40f8cc323996 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -40,8 +40,6 @@ config ARM_ARMADA_8K_CPUFREQ
- config ARM_BIG_LITTLE_CPUFREQ
-        tristate "Generic ARM big LITTLE CPUfreq driver"
-        depends on ARM_CPU_TOPOLOGY && HAVE_CLK
--       # if CPU_THERMAL is on and THERMAL=m, ARM_BIT_LITTLE_CPUFREQ cannot be =y
--       depends on !CPU_THERMAL || THERMAL
-        select PM_OPP
-        help
-          This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+The whole ifdef hackery here saves space for a pointer per policy.
+Just get rid of it, it isn't worth it.
 
 -- 
 viresh
