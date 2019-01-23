@@ -1,66 +1,39 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] power: domain: no need to check return value of
- debugfs_create functions
-Date: Wed, 23 Jan 2019 13:49:00 +0100
-Message-ID: <CAPDyKFrLn=gTz80sw5f4W=0W86p9Ktj3Zo1b+4R-YZd-sbRNzA@mail.gmail.com>
-References: <20190122152151.16139-6-gregkh@linuxfoundation.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 10/16] sched/core: Add uclamp_util_with()
+Date: Wed, 23 Jan 2019 14:33:24 +0100
+Message-ID: <20190123133324.GY27931@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-11-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190122152151.16139-6-gregkh@linuxfoundation.org>
+Content-Disposition: inline
+In-Reply-To: <20190115101513.2822-11-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 22 Jan 2019 at 16:23, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> When calling debugfs functions, there is no need to ever check the
-> return value.  The function can work or not, but the code logic should
-> never do something different based on this.
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+On Tue, Jan 15, 2019 at 10:15:07AM +0000, Patrick Bellasi wrote:
+> +static __always_inline
+> +unsigned int uclamp_util_with(struct rq *rq, unsigned int util,
+> +			      struct task_struct *p)
+>  {
+>  	unsigned int min_util = READ_ONCE(rq->uclamp[UCLAMP_MIN].value);
+>  	unsigned int max_util = READ_ONCE(rq->uclamp[UCLAMP_MAX].value);
+>  
+> +	if (p) {
+> +		min_util = max(min_util, uclamp_effective_value(p, UCLAMP_MIN));
+> +		max_util = max(max_util, uclamp_effective_value(p, UCLAMP_MAX));
+> +	}
+> +
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Like I think you mentioned earlier; this doesn't look right at all.
 
-Kind regards
-Uffe
+Should that not be something like:
 
-> ---
->  drivers/base/power/domain.c | 11 ++---------
->  1 file changed, 2 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 500de1dee967..45eafe8cf7dd 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2948,18 +2948,11 @@ static int __init genpd_debug_init(void)
->
->         genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
->
-> -       if (!genpd_debugfs_dir)
-> -               return -ENOMEM;
-> -
-> -       d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
-> -                       genpd_debugfs_dir, NULL, &summary_fops);
-> -       if (!d)
-> -               return -ENOMEM;
-> +       debugfs_create_file("pm_genpd_summary", S_IRUGO, genpd_debugfs_dir,
-> +                           NULL, &summary_fops);
->
->         list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
->                 d = debugfs_create_dir(genpd->name, genpd_debugfs_dir);
-> -               if (!d)
-> -                       return -ENOMEM;
->
->                 debugfs_create_file("current_state", 0444,
->                                 d, genpd, &status_fops);
-> --
-> 2.20.1
->
+	lo = READ_ONCE(rq->uclamp[UCLAMP_MIN].value);
+	hi = READ_ONCE(rq->uclamp[UCLAMP_MAX].value);
+
+	min_util = clamp(uclamp_effective(p, UCLAMP_MIN), lo, hi);
+	max_util = clamp(uclamp_effective(p, UCLAMP_MAX), lo, hi);
