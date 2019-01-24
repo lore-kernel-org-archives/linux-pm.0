@@ -1,33 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] power: domain: no need to check return value of debugfs_create functions
-Date: Thu, 24 Jan 2019 11:42:20 +0100
-Message-ID: <4998515.YAP7gzz4HU@aspire.rjw.lan>
-References: <20190122152151.16139-6-gregkh@linuxfoundation.org> <CAPDyKFrLn=gTz80sw5f4W=0W86p9Ktj3Zo1b+4R-YZd-sbRNzA@mail.gmail.com>
+Subject: Re: [PATCH] power: qos: no need to check return value of debugfs_create functions
+Date: Thu, 24 Jan 2019 11:42:45 +0100
+Message-ID: <7412175.ooW4tQdR9c@aspire.rjw.lan>
+References: <20190122152151.16139-48-gregkh@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrLn=gTz80sw5f4W=0W86p9Ktj3Zo1b+4R-YZd-sbRNzA@mail.gmail.com>
+In-Reply-To: <20190122152151.16139-48-gregkh@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 23, 2019 1:49:00 PM CET Ulf Hansson wrote:
-> On Tue, 22 Jan 2019 at 16:23, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > When calling debugfs functions, there is no need to ever check the
-> > return value.  The function can work or not, but the code logic should
-> > never do something different based on this.
-> >
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Kevin Hilman <khilman@kernel.org>
-> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+On Tuesday, January 22, 2019 4:21:47 PM CET Greg Kroah-Hartman wrote:
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic should
+> never do something different based on this.
 > 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> ---
+>  kernel/power/qos.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index b7a82502857a..9d22131afc1e 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -582,10 +582,8 @@ static int register_pm_qos_misc(struct pm_qos_object *qos, struct dentry *d)
+>  	qos->pm_qos_power_miscdev.name = qos->name;
+>  	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
+>  
+> -	if (d) {
+> -		(void)debugfs_create_file(qos->name, S_IRUGO, d,
+> -					  (void *)qos, &pm_qos_debug_fops);
+> -	}
+> +	debugfs_create_file(qos->name, S_IRUGO, d, (void *)qos,
+> +			    &pm_qos_debug_fops);
+>  
+>  	return misc_register(&qos->pm_qos_power_miscdev);
+>  }
+> @@ -685,8 +683,6 @@ static int __init pm_qos_power_init(void)
+>  	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+>  
+>  	d = debugfs_create_dir("pm_qos", NULL);
+> -	if (IS_ERR_OR_NULL(d))
+> -		d = NULL;
+>  
+>  	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
+>  		ret = register_pm_qos_misc(pm_qos_array[i], d);
+> 
 
-Patch applied, thanks!
+Applied, thanks!
