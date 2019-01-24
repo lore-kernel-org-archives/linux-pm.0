@@ -1,114 +1,107 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
- for RT tasks
-Date: Thu, 24 Jan 2019 16:14:43 +0000
-Message-ID: <20190124161443.lv2pw5fsspyelckq@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-10-patrick.bellasi@arm.com>
- <20190123104944.GX27931@hirez.programming.kicks-ass.net>
- <20190123144011.iid3avb63r5v4r2c@e110439-lin>
- <20190123201146.GH17749@hirez.programming.kicks-ass.net>
- <20190124123009.2yulcf25ld66popd@e110439-lin>
- <20190124153106.GQ13777@hirez.programming.kicks-ass.net>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 6/8] power: reset: at91-reset: add support for sam9x60 SoC
+Date: Thu, 24 Jan 2019 18:11:58 +0100
+Message-ID: <20190124171158.bi74cnxngsjcawwn@earth.universe>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
+ <7e68a0298b8802edaead1f9c011f9c2e191ecf6a.1547629763.git.nicolas.ferre@microchip.com>
+ <20190123183443.ppxdfstmau2xtodi@earth.universe>
+ <a74956fc-6085-eec2-c1b8-ed116b2297d8@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="3hmt5rtfj35e5bjm"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190124153106.GQ13777@hirez.programming.kicks-ass.net>
+In-Reply-To: <a74956fc-6085-eec2-c1b8-ed116b2297d8@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Nicolas.Ferre@microchip.com
+Cc: alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net, linux-usb@vger.kernel.org, stern@rowland.harvard.edu, gregkh@linuxfoundation.org, robh+dt@kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 24-Jan 16:31, Peter Zijlstra wrote:
-> On Thu, Jan 24, 2019 at 12:30:09PM +0000, Patrick Bellasi wrote:
-> > > So I'll have to go over the code again, but I'm wondering why you're
-> > > changing uclamp_se::bucket_id on a runnable task.
-> > 
-> > We change only the "requested" value, not the "effective" one.
-> > 
-> > > Ideally you keep bucket_id invariant between enqueue and dequeue; then
-> > > dequeue knows where we put it.
-> > 
-> > Right, that's what we do for the "effective" value.
-> 
-> So the problem I have is that you first introduce uclamp_se::value and
-> use that all over the code, and then introduce effective and change all
-> the usage sites.
 
-Right, because the moment we introduce the combination/aggregation mechanism
-is the moment "effective" value makes sense to have. That's when the
-code show that:
+--3hmt5rtfj35e5bjm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-   a task cannot always get what it "request", an "effective" value is
-   computed by aggregation and that's the value we use now for actual
-   clamp enforcing.
+Hi,
 
-> That seems daft. Why not keep all the code as-is and add orig_value.
+On Thu, Jan 24, 2019 at 10:34:50AM +0000, Nicolas.Ferre@microchip.com wrote:
+> Hi Sebastian,
+>=20
+> On 23/01/2019 at 19:34, Sebastian Reichel wrote:
+> > Hi,
+> >=20
+> > On Wed, Jan 16, 2019 at 10:57:42AM +0100, Nicolas Ferre wrote:
+> >> Add support for additional reset causes and the proper compatibility
+> >> string for sam9x60 SoC. The restart function is the same as the samx7.
+> >>
+> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+> >> ---
+> >>   drivers/power/reset/at91-reset.c | 13 +++++++++++++
+> >>   1 file changed, 13 insertions(+)
+> >>
+> >> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at=
+91-reset.c
+> >> index f44a9ffcc2ab..44ca983a49a1 100644
+> >> --- a/drivers/power/reset/at91-reset.c
+> >> +++ b/drivers/power/reset/at91-reset.c
+> >> @@ -44,6 +44,9 @@ enum reset_type {
+> >>   	RESET_TYPE_WATCHDOG	=3D 2,
+> >>   	RESET_TYPE_SOFTWARE	=3D 3,
+> >>   	RESET_TYPE_USER		=3D 4,
+> >> +	RESET_TYPE_CPU_FAIL	=3D 6,
+> >> +	RESET_TYPE_XTAL_FAIL	=3D 7,
+> >> +	RESET_TYPE_ULP2		=3D 8,
+> >=20
+> > what happened to 5? :)
+>=20
+> That a good question ;-)
+>=20
+> It's marked as "Reserved"... which opens up a whole new field of=20
+> speculation :-)
 
-If you prefer, I can use effective values since the beginning and then
-add the "requested" values later... but I fear the patchset will not
-be more clear to parse.
+Ok :)
 
+> [..]
+>=20
+> >>   	{ .compatible =3D "atmel,samx7-rstc", .data =3D samx7_restart },
+> >> +	{ .compatible =3D "microchip,sam9x60-rstc", .data =3D samx7_restart =
+},
+> >>   	{ /* sentinel */ }
+> >>   };
+> >>   MODULE_DEVICE_TABLE(of, at91_reset_of_match);
+> >=20
+> > Patch looks fine to me. But I will wait a bit with merging, so that
+> > Alexandre or Ludovic have a chance to provide feedback.
+>=20
+> What about merging this patch with the whole series through the at91=20
+> then arm-soc trees?
 
-> > > Now I suppose actually determining bucket_id is 'expensive' (it
-> > > certainly is with the whole mapping scheme, but even that integer
-> > > division is not nice), so we'd like to precompute the bucket_id.
-> > 
-> > Yes, although the complexity is mostly in the composition logic
-> > described above not on mapping at all. We have "mapping" overheads
-> > only when we change a "request" value and that's from slow-paths.
-> 
-> It's weird though. Esp. when combined with that mapping logic, because
-> then you get to use additional maps that are not in fact ever used.
+It seems to be possible to merge this standalone, but merging
+through at91/arm-soc is also fine with me.
 
-Mmm... don't get this point...
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-AFAICS "mapping" and "effective" are two different concepts, that's
-why I can probably get rid of the first by I would prefer to keep the
-second.
+-- Sebastian
 
-> > > We can update uclamp_se::value and set uclamp_se::changed, and then the
-> > > next enqueue will (unlikely) test-and-clear changed and recompute the
-> > > bucket_id.
-> > 
-> > This mean will lazy update the "requested" bucket_id by deferring its
-> > computation at enqueue time. Which saves us a copy of the bucket_id,
-> > i.e. we will have only the "effective" value updated at enqueue time.
-> > 
-> > But...
-> > 
-> > > Would that not be simpler?
-> > 
-> > ... although being simpler it does not fully exploit the slow-path,
-> > a syscall which is usually running from a different process context
-> > (system management software).
-> > 
-> > It also fits better for lazy updates but, in the cgroup case, where we
-> > wanna enforce an update ASAP for RUNNABLE tasks, we will still have to
-> > do the updates from the slow-path.
-> > 
-> > Will look better into this simplification while working on v7, perhaps
-> > the linear mapping can really help in that too.
-> 
-> OK. So mostly my complaint is that it seems to do things odd for ill
-> explained reasons.
+--3hmt5rtfj35e5bjm
+Content-Type: application/pgp-signature; name="signature.asc"
 
-:( I'm really sorry I'm not able to convey the overall design idea.
+-----BEGIN PGP SIGNATURE-----
 
-TBH however, despite being a quite "limited" feature it has many
-different viewpoints: task-specific, cgroups and system defaults.
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxJ8d4ACgkQ2O7X88g7
++prYRw//eRpCrw2o9rSRDF1wuaqVT8k3sgEoM3G9V+hWk243agZ5b+ahgAG70hrw
+I9eV6psmHguTnxDgmCowpaKc0r+Ep/g3wOSOJCD7Qnp9dtlyVJyPPUYfaIULKasN
+MlAJp7zHydM+7o7H9hHpVDmq+X7LLX6ZXye5hbCOFjzFwfq3CAehZknRHPnOTMtZ
+Mym/E+sqKemS49cBUyGxK+WDe2zQ/ZjTldaVvJ72zzwJTCqSevPZHs687uNYa0YE
+K7fH1y3AtO6IDQC63nL/aZd2z/r00/2/7u9QdkgdAHI35+LtKfscyuUUxE64AERB
+XXAvksjAYbEsIyMcxsFSDTrGzqg6PVxSTbXgGt08vosBaOTOhSCmxbb3THvWHWmG
+uZBTHr6TSyDdti/epp0+PYocWcn5CxY2HhwqJIxFYO75o8K3jFtYefuRP8KgTccX
+uiSwxWovPWj8cs3m5o87QL1kVAtsCn+Rib5pyZf8vdbmun4B3Rb01iCS1aam03oH
+jvb0PQedQ/PpO5RsBOZtxihWeXhVjDPzTp4JAc8e8TAaeVVwCvCDQOW2Kcy2q9IU
+fjEbQE0tFSUE6JcWriI1ZEszCLOWUdbxXv/eaxMjmAwALGYHv54WJQUMo1rlMRsu
+1UMuorDWmoN6PBTMmmJR4+yWI9VSAdO8TTApCYTafu/byJh/pig=
+=OZfk
+-----END PGP SIGNATURE-----
 
-I've really tried my best to come up with something reasonable but I
-understand that, looking at the single patches, the overall design
-could be difficult to grasp... without considering that optimizations
-are always possible of course.
-
-If you like better, I can try to give a respin by just removing the
-mapping part and then we go back and see if the reaming bits makes
-more sense ?
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--3hmt5rtfj35e5bjm--
