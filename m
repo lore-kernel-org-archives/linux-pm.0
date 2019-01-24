@@ -1,47 +1,25 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [RFC PATCH v1 03/13] regulator: bd718x7 use chip specific and
- generic data structs
-Date: Thu, 24 Jan 2019 09:16:35 +0200
-Message-ID: <20190124071635.GE2559@localhost.localdomain>
-References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <3fb3eab3a8a2767404588d0a0a531273fddfc659.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <20190123155121.GB7503@sirena.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC cpufreq
+Date: Thu, 24 Jan 2019 10:43:56 +0100
+Message-ID: <CAJZ5v0i-DP=ZYBBhqAGZB2btnQnqfXhGyQ4D=CqY6GFXMwK2Pw@mail.gmail.com>
+References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com> <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190123155121.GB7503@sirena.org.uk>
+In-Reply-To: <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiongfeng Wang <wangxiongfeng2@huawei.com>, George Cherian <george.cherian@cavium.com>, Prashanth Prakash <pprakash@codeaurora.org>, Robert Moore <robert.moore@intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Mark,
+On Thu, Jan 24, 2019 at 7:56 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> +George/Prashanth.
+>
+> Guys please see if you have any objections to this patch. I am not
+> very familiar with this stuff and it would be good to get some
+> feedback from you guys.
+>
+> @Rafael: Do you have any comments on this ?
 
-Thanks again for looking through my changes =)
-
-On Wed, Jan 23, 2019 at 03:51:21PM +0000, Mark Brown wrote:
-> On Tue, Jan 22, 2019 at 11:43:28AM +0200, Matti Vaittinen wrote:
-> > Header rohm-bd718x7.h was split to generic and component specific
-> > parts. This changed the struct bd718x7. Adapt the regulator driver to
-> > these changes.
-> 
-> Acked-by: Mark Brown <broonie@kernel.org>
-> 
-> Does this need to be squashed into the earlier commit for bisection?
-
-Yes. If we don't want to break the compilation between commits then
-the patches 2, 3 and 4 should be squashed into one. I sent them as
-separare changes for easier review. I can squash them and send them
-squashed if they are Ok to Lee and Stephen. Please just let me know
-whose tree I should use as the basis so I can do rebasing if needed.
-(Or is there some better way to do changes like this?)
-
-Br,
-	Matti Vaittinen 
-
--- 
-Matti Vaittinen
-ROHM Semiconductors
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+Not yet, give me some time to noodle on it, please.
