@@ -1,119 +1,211 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
- for RT tasks
-Date: Wed, 23 Jan 2019 21:11:46 +0100
-Message-ID: <20190123201146.GH17749@hirez.programming.kicks-ass.net>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-10-patrick.bellasi@arm.com>
- <20190123104944.GX27931@hirez.programming.kicks-ass.net>
- <20190123144011.iid3avb63r5v4r2c@e110439-lin>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC
+ cpufreq
+Date: Thu, 24 Jan 2019 12:26:14 +0530
+Message-ID: <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
+References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190123144011.iid3avb63r5v4r2c@e110439-lin>
+In-Reply-To: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>, George Cherian <george.cherian@cavium.com>, Prashanth Prakash <pprakash@codeaurora.org>
+Cc: robert.moore@intel.com, lenb@kernel.org, rjw@rjwysocki.net, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 23, 2019 at 02:40:11PM +0000, Patrick Bellasi wrote:
-> On 23-Jan 11:49, Peter Zijlstra wrote:
-> > On Tue, Jan 15, 2019 at 10:15:06AM +0000, Patrick Bellasi wrote:
-> > > @@ -858,16 +859,23 @@ static inline void
-> > >  uclamp_effective_get(struct task_struct *p, unsigned int clamp_id,
-> > >  		     unsigned int *clamp_value, unsigned int *bucket_id)
-> > >  {
-> > > +	struct uclamp_se *default_clamp;
-> > > +
-> > >  	/* Task specific clamp value */
-> > >  	*clamp_value = p->uclamp[clamp_id].value;
-> > >  	*bucket_id = p->uclamp[clamp_id].bucket_id;
-> > >  
-> > > +	/* RT tasks have different default values */
-> > > +	default_clamp = task_has_rt_policy(p)
-> > > +		? uclamp_default_perf
-> > > +		: uclamp_default;
-> > > +
-> > >  	/* System default restriction */
-> > > -	if (unlikely(*clamp_value < uclamp_default[UCLAMP_MIN].value ||
-> > > -		     *clamp_value > uclamp_default[UCLAMP_MAX].value)) {
-> > > +	if (unlikely(*clamp_value < default_clamp[UCLAMP_MIN].value ||
-> > > +		     *clamp_value > default_clamp[UCLAMP_MAX].value)) {
-> > >  		/* Keep it simple: unconditionally enforce system defaults */
-> > > -		*clamp_value = uclamp_default[clamp_id].value;
-> > > -		*bucket_id = uclamp_default[clamp_id].bucket_id;
-> > > +		*clamp_value = default_clamp[clamp_id].value;
-> > > +		*bucket_id = default_clamp[clamp_id].bucket_id;
-> > >  	}
-> > >  }
-> > 
-> > So I still don't much like the whole effective thing;
++George/Prashanth.
+
+Guys please see if you have any objections to this patch. I am not
+very familiar with this stuff and it would be good to get some
+feedback from you guys.
+
+@Rafael: Do you have any comments on this ?
+
+On 17-01-19, 19:00, Xiongfeng Wang wrote:
+> Hisilicon chips do not support delivered performance counter register
+> and reference performance counter register. But the platform can
+> calculate the real performance using its own method. This patch provide
+> a workaround for this problem, and other platforms can also use this
+> workaround framework. We reuse the desired performance register to
+> store the real performance calculated by the platform. After the
+> platform finished the frequency adjust, it gets the real performance and
+> writes it into desired performance register. OS can use it to calculate
+> the real frequency.
 > 
-> :/
+> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+> ---
+>  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
+>  drivers/cpufreq/Kconfig.arm    |  7 +++++
+>  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
+>  include/acpi/cppc_acpi.h       |  4 +++
+>  4 files changed, 102 insertions(+)
 > 
-> I find back-annotation useful in many cases since we have different
-> sources for possible clamp values:
-> 
->  1. task specific
->  2. cgroup defined
->  3. system defaults
->  4. system power default
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 217a782..0cdaf7e 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+>  	return ret_val;
+>  }
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +/*
+> + * We reuse the desired performance register to store the real performance
+> + * calculated by the platform.
+> + */
+> +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
+> +{
+> +	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+> +	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> +	struct cpc_register_resource *desired_reg;
+> +	u64 desired_perf;
+> +	int ret;
+> +
+> +	/*
+> +	 * Make sure the platform has finished the frequency adjust
+> +	 * and wrote the real performance in desired performance register
+> +	 */
+> +	ret = check_pcc_chan(pcc_ss_id, false);
+> +	if (ret)
+> +		return 0;
+> +
+> +	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+> +	cpc_read(cpunum, desired_reg, &desired_perf);
+> +
+> +	return desired_perf;
+> +}
+> +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
+> +#endif
+> +
+>  /**
+>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
+>   * @cpunum: CPU from which to get capabilities info.
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 688f102..236bd07 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
+>  
+>  	  If in doubt, say N.
+>  
+> +config HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +	bool "Workaround for Hisilicon CPPC Cpufreq"
+> +	default y
+> +	depends on ACPI_CPPC_CPUFREQ && ARM64
+> +	help
+> +	  This option enables a workaround for Hisilicon CPPC Cpufreq.
+> +
+>  config ARM_ARMADA_37XX_CPUFREQ
+>  	tristate "Armada 37xx CPUFreq support"
+>  	depends on ARCH_MVEBU && CPUFREQ_DT
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index fd25c21c..b910e84 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -33,6 +33,13 @@
+>  /* Offest in the DMI processor structure for the max frequency */
+>  #define DMI_PROCESSOR_MAX_SPEED  0x14
+>  
+> +struct cppc_get_rate_workaround_info {
+> +	char oem_id[ACPI_OEM_ID_SIZE +1];
+> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
+> +	u32 oem_revision;
+> +	unsigned int (*get)(unsigned int cpu);
+> +};
+> +
+>  /*
+>   * These structs contain information parsed from per CPU
+>   * ACPI _CPC structures.
+> @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
+>  	.name = "cppc_cpufreq",
+>  };
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +/*
+> + * When the platform does not support delivered performance counter or
+> + * reference performance counter, it can calculate the performance using the
+> + * platform specific mechanism. We reuse the desired performance register to
+> + * store the real performance calculated by the platform.
+> + */
+> +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
+> +{
+> +	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
+> +	u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
+> +
+> +	return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
+> +}
+> +#endif
+> +
+> +static struct cppc_get_rate_workaround_info wa_info[] = {
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +	{
+> +		.oem_id		= "HISI  ",
+> +		.oem_table_id	= "HIP07   ",
+> +		.oem_revision	= 0,
+> +		.get = hisi_cppc_cpufreq_get_rate,
+> +	},
+> +	{
 
-(I'm not sure I've seen 4 happen yet, what's that?)
+This should be:
 
-Anyway, once you get range composition defined; that should be something
-like:
+        }, {
 
-	R_p \Compose_g R_g
+> +		.oem_id		= "HISI  ",
+> +		.oem_table_id	= "HIP08   ",
+> +		.oem_revision	= 0,
+> +		.get = hisi_cppc_cpufreq_get_rate,
+> +	},
+> +#endif
+> +	{},
+> +};
+> +
+> +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
+> +{
+> +	struct acpi_table_header *tbl;
+> +	acpi_status status = AE_OK;
+> +	int i;
+> +
+> +	status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
+> +	if (ACPI_FAILURE(status) || !tbl)
+> +		return;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
+> +		if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
+> +		    !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+> +		    wa_info[i].oem_revision == tbl->oem_revision) {
+> +			cppc_cpufreq_driver->get = wa_info[i].get;
+> +			return;
+> +		}
+> +	}
+> +}
+>  static int __init cppc_cpufreq_init(void)
+>  {
+>  	int i, ret = 0;
+> @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
+>  		goto out;
+>  	}
+>  
+> +	cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
+> +
+>  	ret = cpufreq_register_driver(&cppc_cpufreq_driver);
+>  	if (ret)
+>  		goto out;
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 4f34734..be7400b 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -146,4 +146,8 @@ struct cppc_cpudata {
+>  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+>  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
+> +#endif
+> +
+>  #endif /* _CPPC_ACPI_H*/
+> -- 
+> 1.7.12.4
 
-Where R_p is the range of task-p, and R_g is the range of the g'th
-cgroup of p (where you can make an identity between the root cgroup and
-the system default).
-
-Now; as per the other email; I think the straight forward composition:
-
-struct range compose(struct range a, struct range b)
-{
-	return (range){.min = clamp(a.min, b.min, b.max),
-	               .max = clamp(a.max, b.min, b.max), };
-}
-
-(note that this is non-commutative, so we have to pay attention to
-get the order 'right')
-
-Works in this case; unlike the cpu/rq conposition where we resort to a
-pure max function for non-interference.
-
-> I don't think we can avoid to somehow back annotate on which bucket a
-> task has been refcounted... it makes dequeue so much easier, it helps
-> in ensuring that the refcouning is consistent and enable lazy updates.
-
-So I'll have to go over the code again, but I'm wondering why you're
-changing uclamp_se::bucket_id on a runnable task.
-
-Ideally you keep bucket_id invariant between enqueue and dequeue; then
-dequeue knows where we put it.
-
-Now I suppose actually determining bucket_id is 'expensive' (it
-certainly is with the whole mapping scheme, but even that integer
-division is not nice), so we'd like to precompute the bucket_id.
-
-This then leads to the problem of how to change uclamp_se::value while
-runnable (since per the other thread you don't want to always update all
-runnable tasks).
-
-So far so right?
-
-I'm thikning that if we haz a single bit, say:
-
-  struct uclamp_se {
-	...
-	unsigned int	changed : 1;
-  };
-
-We can update uclamp_se::value and set uclamp_se::changed, and then the
-next enqueue will (unlikely) test-and-clear changed and recompute the
-bucket_id.
-
-Would that not be simpler?
+-- 
+viresh
