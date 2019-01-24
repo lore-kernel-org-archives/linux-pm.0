@@ -1,107 +1,72 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 6/8] power: reset: at91-reset: add support for sam9x60 SoC
-Date: Thu, 24 Jan 2019 18:11:58 +0100
-Message-ID: <20190124171158.bi74cnxngsjcawwn@earth.universe>
-References: <cover.1547629763.git.nicolas.ferre@microchip.com>
- <7e68a0298b8802edaead1f9c011f9c2e191ecf6a.1547629763.git.nicolas.ferre@microchip.com>
- <20190123183443.ppxdfstmau2xtodi@earth.universe>
- <a74956fc-6085-eec2-c1b8-ed116b2297d8@microchip.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: Re: [PATCH] cpufreq: e_powersaver: Use struct_size() in kzalloc()
+Date: Thu, 24 Jan 2019 11:33:52 -0600
+Message-ID: <cc4d5cb2-8e37-2b97-240b-96d712373ed2@embeddedor.com>
+References: <20190107173343.GA4258@embeddedor>
+ <20190108050056.quckhd2d5ah4ywax@vireshk-i7>
+ <1645829.9I2fkU6ktd@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="3hmt5rtfj35e5bjm"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <a74956fc-6085-eec2-c1b8-ed116b2297d8@microchip.com>
+In-Reply-To: <1645829.9I2fkU6ktd@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas.Ferre@microchip.com
-Cc: alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net, linux-usb@vger.kernel.org, stern@rowland.harvard.edu, gregkh@linuxfoundation.org, robh+dt@kernel.org, devicetree@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---3hmt5rtfj35e5bjm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On 1/24/19 4:34 AM, Rafael J. Wysocki wrote:
+> On Tuesday, January 8, 2019 6:00:56 AM CET Viresh Kumar wrote:
+>> On 07-01-19, 11:33, Gustavo A. R. Silva wrote:
+>>> One of the more common cases of allocation size calculations is finding the
+>>> size of a structure that has a zero-sized array at the end, along with memory
+>>> for some number of elements for that array. For example:
+>>>
+>>> struct foo {
+>>>     int stuff;
+>>>     void *entry[];
+>>> };
+>>>
+>>> instance = kzalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
+>>>
+>>> Instead of leaving these open-coded and prone to type mistakes, we can now
+>>> use the new struct_size() helper:
+>>>
+>>> instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL);
+>>>
+>>> This code was detected with the help of Coccinelle.
+>>>
+>>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>>> ---
+>>>  drivers/cpufreq/e_powersaver.c | 5 ++---
+>>>  1 file changed, 2 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+>>> index 60bea302abbe..2d3ef208dd70 100644
+>>> --- a/drivers/cpufreq/e_powersaver.c
+>>> +++ b/drivers/cpufreq/e_powersaver.c
+>>> @@ -323,9 +323,8 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+>>>  		states = 2;
+>>>  
+>>>  	/* Allocate private data and frequency table for current cpu */
+>>> -	centaur = kzalloc(sizeof(*centaur)
+>>> -		    + (states + 1) * sizeof(struct cpufreq_frequency_table),
+>>> -		    GFP_KERNEL);
+>>> +	centaur = kzalloc(struct_size(centaur, freq_table, states + 1),
+>>> +			  GFP_KERNEL);
+>>>  	if (!centaur)
+>>>  		return -ENOMEM;
+>>>  	eps_cpu[0] = centaur;
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Patch applied, thanks!
+> 
 
-On Thu, Jan 24, 2019 at 10:34:50AM +0000, Nicolas.Ferre@microchip.com wrote:
-> Hi Sebastian,
->=20
-> On 23/01/2019 at 19:34, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > On Wed, Jan 16, 2019 at 10:57:42AM +0100, Nicolas Ferre wrote:
-> >> Add support for additional reset causes and the proper compatibility
-> >> string for sam9x60 SoC. The restart function is the same as the samx7.
-> >>
-> >> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> >> ---
-> >>   drivers/power/reset/at91-reset.c | 13 +++++++++++++
-> >>   1 file changed, 13 insertions(+)
-> >>
-> >> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at=
-91-reset.c
-> >> index f44a9ffcc2ab..44ca983a49a1 100644
-> >> --- a/drivers/power/reset/at91-reset.c
-> >> +++ b/drivers/power/reset/at91-reset.c
-> >> @@ -44,6 +44,9 @@ enum reset_type {
-> >>   	RESET_TYPE_WATCHDOG	=3D 2,
-> >>   	RESET_TYPE_SOFTWARE	=3D 3,
-> >>   	RESET_TYPE_USER		=3D 4,
-> >> +	RESET_TYPE_CPU_FAIL	=3D 6,
-> >> +	RESET_TYPE_XTAL_FAIL	=3D 7,
-> >> +	RESET_TYPE_ULP2		=3D 8,
-> >=20
-> > what happened to 5? :)
->=20
-> That a good question ;-)
->=20
-> It's marked as "Reserved"... which opens up a whole new field of=20
-> speculation :-)
+Thank you both, Viresh and Rafael.
 
-Ok :)
-
-> [..]
->=20
-> >>   	{ .compatible =3D "atmel,samx7-rstc", .data =3D samx7_restart },
-> >> +	{ .compatible =3D "microchip,sam9x60-rstc", .data =3D samx7_restart =
-},
-> >>   	{ /* sentinel */ }
-> >>   };
-> >>   MODULE_DEVICE_TABLE(of, at91_reset_of_match);
-> >=20
-> > Patch looks fine to me. But I will wait a bit with merging, so that
-> > Alexandre or Ludovic have a chance to provide feedback.
->=20
-> What about merging this patch with the whole series through the at91=20
-> then arm-soc trees?
-
-It seems to be possible to merge this standalone, but merging
-through at91/arm-soc is also fine with me.
-
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
--- Sebastian
-
---3hmt5rtfj35e5bjm
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxJ8d4ACgkQ2O7X88g7
-+prYRw//eRpCrw2o9rSRDF1wuaqVT8k3sgEoM3G9V+hWk243agZ5b+ahgAG70hrw
-I9eV6psmHguTnxDgmCowpaKc0r+Ep/g3wOSOJCD7Qnp9dtlyVJyPPUYfaIULKasN
-MlAJp7zHydM+7o7H9hHpVDmq+X7LLX6ZXye5hbCOFjzFwfq3CAehZknRHPnOTMtZ
-Mym/E+sqKemS49cBUyGxK+WDe2zQ/ZjTldaVvJ72zzwJTCqSevPZHs687uNYa0YE
-K7fH1y3AtO6IDQC63nL/aZd2z/r00/2/7u9QdkgdAHI35+LtKfscyuUUxE64AERB
-XXAvksjAYbEsIyMcxsFSDTrGzqg6PVxSTbXgGt08vosBaOTOhSCmxbb3THvWHWmG
-uZBTHr6TSyDdti/epp0+PYocWcn5CxY2HhwqJIxFYO75o8K3jFtYefuRP8KgTccX
-uiSwxWovPWj8cs3m5o87QL1kVAtsCn+Rib5pyZf8vdbmun4B3Rb01iCS1aam03oH
-jvb0PQedQ/PpO5RsBOZtxihWeXhVjDPzTp4JAc8e8TAaeVVwCvCDQOW2Kcy2q9IU
-fjEbQE0tFSUE6JcWriI1ZEszCLOWUdbxXv/eaxMjmAwALGYHv54WJQUMo1rlMRsu
-1UMuorDWmoN6PBTMmmJR4+yWI9VSAdO8TTApCYTafu/byJh/pig=
-=OZfk
------END PGP SIGNATURE-----
-
---3hmt5rtfj35e5bjm--
+--
+Gustavo
