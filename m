@@ -1,101 +1,50 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC PATCH v1 13/13] watchdog: bd70528: Initial support for ROHM
- BD70528 watchdog block
-Date: Thu, 24 Jan 2019 06:37:47 -0800
-Message-ID: <20190124143747.GA29002@roeck-us.net>
-References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <20190122154750.GB1705@roeck-us.net>
- <20190122171023.GC2559@localhost.localdomain>
- <20190122174056.GB4964@roeck-us.net>
- <20190122180309.GD2559@localhost.localdomain>
- <20190123174728.uu7zhno5xea2bga7@earth.universe>
- <20190124104434.GF2559@localhost.localdomain>
+From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
+Subject: Re: [PATCH 0/6] driver core: Fix some issues related to device links
+Date: Thu, 24 Jan 2019 14:58:35 +0000
+Message-ID: <20190124145835.2oy2tniepzpeekl2@e5254000004ec.dyn.armlinux.org.uk>
+References: <2493187.oiOpCWJBV7@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190124104434.GF2559@localhost.localdomain>
+In-Reply-To: <2493187.oiOpCWJBV7@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: Sebastian Reichel <sre@kernel.org>, mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 24, 2019 at 12:44:35PM +0200, Matti Vaittinen wrote:
-> On Wed, Jan 23, 2019 at 06:47:28PM +0100, Sebastian Reichel wrote:
-> > Hi,
-> > 
-> > On Tue, Jan 22, 2019 at 08:03:09PM +0200, Matti Vaittinen wrote:
-> > > On Tue, Jan 22, 2019 at 09:40:56AM -0800, Guenter Roeck wrote:
-> > > > On Tue, Jan 22, 2019 at 07:10:23PM +0200, Matti Vaittinen wrote:
-> > > > > On Tue, Jan 22, 2019 at 07:47:50AM -0800, Guenter Roeck wrote:
-> > > > > > On Tue, Jan 22, 2019 at 11:48:36AM +0200, Matti Vaittinen wrote:
-> > > > > > > +static int bd70528_wdt_probe(struct platform_device *pdev)
-> > > > > > > +{
-> > > > > > > +	struct bd70528 *tmp;
-> > > > > > > +	struct bd70528 *bd70528;
-> > > > > > > +	int ret;
-> > > > > > > +
-> > > > > > > +	tmp = dev_get_drvdata(pdev->dev.parent);
-> > > > > > > +	if (!tmp) {
-> > > > > > > +		dev_err(&pdev->dev, "No MFD driver data\n");
-> > > > > > > +		return -EINVAL;
-> > > > > > > +	}
-> > > > > > > +	bd70528 = devm_kzalloc(&pdev->dev, sizeof(*bd70528), GFP_KERNEL);
-> > > > > > > +	if (!bd70528)
-> > > > > > > +		return -ENOMEM;
-> > > > > > > +
-> > > > > > > +	*bd70528 = *tmp;
-> > > > > > > +	bd70528->chip.dev = &pdev->dev;
-> > > > > > 
-> > > > > > This is wrong.
-> > > > > > You should not copy the parent's driver data but have local driver
-> > > > > > data as needed which then points to the parent's driver data if
-> > > > > > needed. I assume this is why the mutex is a pointer, but that
-> > > > > > just shows that the whole approach is wrong.
-> > > > > 
-> > > > > Mutex is a pointer because we want to use same mutex from WDT and RTC.
-> > > > > We can sure point to parent data but then we still need our own dev
-> > > > > pointer. So we can have a struct with pointer to parent data and dev
-> > > > > pointer - but I'm not at all sure it is any clearer.
-> > > > 
-> > > > As I said, that is wrong. To say it in plaintext, I won't accept
-> > > > the driver if it copies the parent's driver data. The driver should
-> > > > have and use its own driver data, and only maintain a pointer to
-> > > > its parent's driver data. And most definitely you don't want to
-> > > > copy and use any device data structure from the parent.
-> > > 
-> > > Allright. At the moment the WDT driver only needs regmap pointer from
-> > > parent. I'm not sure if it will later need DT or "chip type" - but I
-> > > will change this.
-> > 
-> > You probably want to use this:
-> > 
-> > dev_get_regmap(pdev->dev.parent, NULL);
+On Thu, Jan 24, 2019 at 12:13:06PM +0100, Rafael J. Wysocki wrote:
+> Hi Greg at al,
 > 
-> Thanks a bunch Sebastian. All help is highly appreciated!! =)
+> Recently I have been looking at the device links code because of the
+> recent discussion on possibly using them in the DRM subsystem (see for
+> example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
+> found a few issues in that code which should be addressed by this patch
+> series.  Please refer to the patch changelogs for details.
 > 
-> Unfortunately I forgot to mention the key thing - the RTC mutex. We also
-> need that because RTC needs to stop WDT when RTC is adjusted as the WDT
-> uses RTC as counter - and jumping the RTC WDT enabled might trigger WDT
-> or have other consequences.
+> None of the problems addressed here should be manifesting themselves in
+> mainline kernel today, but if there are more device links users in the
+> future, they most likely will be encountered sooner or later.  Also they
+> need to be fixed for the DRM use case to be supported IMO.
 > 
-> Se even if we used dev_get_regmap (which is slightly heavier than
-> accessing direct pointer) - we would still need at least the mutex from
-> parent data, possibly also the chip type and if we want to avoid code
-> dublication - then also the WDT start/stop function.
-> 
-> Thus I guess we can as well keep the regmap in parent data because we
-> need the parent data anyways, right?
-> 
+> This series does not fix all issues in device links that have become
+> apparent (generally speaking, the idea of returning an existing link
+> in case there is one already for the given consumer-supplier pair
+> doesn't play well with stateful links and their flags), so there will
+> be a follow-up series of patches to clean that up.  Still, I don't see
+> a reason to sit on these fixes while working on the other patches, so
+> here they go.
 
-You are free to _use_ the parent data. Just not copy it.
+Hi Rafael,
 
-Another possibility would be for the parent to provide platform
-data for the rtc driver to use, and that platform data would
-include pointers to the regmap and to the rtc mutex.
+I've just given these a quick boot, unbind and rebind test with my
+DRM case, and nothing seems to have regressed on the face of it.
 
-However, again, the one thing you can _not_ do is to copy the parent's
-driver data.
+Tested-by: Russell King <rmk+kernel@armlinux.org.uk>
 
-Guenter
+Thanks.
+
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
+According to speedtest.net: 11.9Mbps down 500kbps up
