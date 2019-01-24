@@ -1,96 +1,68 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [RFC PATCH v1 13/13] watchdog: bd70528: Initial support for ROHM
- BD70528 watchdog block
-Date: Thu, 24 Jan 2019 12:44:35 +0200
-Message-ID: <20190124104434.GF2559@localhost.localdomain>
-References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <20190122154750.GB1705@roeck-us.net>
- <20190122171023.GC2559@localhost.localdomain>
- <20190122174056.GB4964@roeck-us.net>
- <20190122180309.GD2559@localhost.localdomain>
- <20190123174728.uu7zhno5xea2bga7@earth.universe>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / EM: Expose the Energy Model in debugfs
+Date: Thu, 24 Jan 2019 11:45:56 +0100
+Message-ID: <3845915.x0TneKyrcv@aspire.rjw.lan>
+References: <20190122164247.19439-1-quentin.perret@arm.com> <20190122184136.GD31777@kroah.com> <20190123092834.hj5v6lup4422wrmf@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190123174728.uu7zhno5xea2bga7@earth.universe>
+In-Reply-To: <20190123092834.hj5v6lup4422wrmf@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, rafael@kernel.org, peterz@infradead.org, mingo@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 23, 2019 at 06:47:28PM +0100, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Tue, Jan 22, 2019 at 08:03:09PM +0200, Matti Vaittinen wrote:
-> > On Tue, Jan 22, 2019 at 09:40:56AM -0800, Guenter Roeck wrote:
-> > > On Tue, Jan 22, 2019 at 07:10:23PM +0200, Matti Vaittinen wrote:
-> > > > On Tue, Jan 22, 2019 at 07:47:50AM -0800, Guenter Roeck wrote:
-> > > > > On Tue, Jan 22, 2019 at 11:48:36AM +0200, Matti Vaittinen wrote:
-> > > > > > +static int bd70528_wdt_probe(struct platform_device *pdev)
-> > > > > > +{
-> > > > > > +	struct bd70528 *tmp;
-> > > > > > +	struct bd70528 *bd70528;
-> > > > > > +	int ret;
-> > > > > > +
-> > > > > > +	tmp = dev_get_drvdata(pdev->dev.parent);
-> > > > > > +	if (!tmp) {
-> > > > > > +		dev_err(&pdev->dev, "No MFD driver data\n");
-> > > > > > +		return -EINVAL;
-> > > > > > +	}
-> > > > > > +	bd70528 = devm_kzalloc(&pdev->dev, sizeof(*bd70528), GFP_KERNEL);
-> > > > > > +	if (!bd70528)
-> > > > > > +		return -ENOMEM;
-> > > > > > +
-> > > > > > +	*bd70528 = *tmp;
-> > > > > > +	bd70528->chip.dev = &pdev->dev;
-> > > > > 
-> > > > > This is wrong.
-> > > > > You should not copy the parent's driver data but have local driver
-> > > > > data as needed which then points to the parent's driver data if
-> > > > > needed. I assume this is why the mutex is a pointer, but that
-> > > > > just shows that the whole approach is wrong.
-> > > > 
-> > > > Mutex is a pointer because we want to use same mutex from WDT and RTC.
-> > > > We can sure point to parent data but then we still need our own dev
-> > > > pointer. So we can have a struct with pointer to parent data and dev
-> > > > pointer - but I'm not at all sure it is any clearer.
-> > > 
-> > > As I said, that is wrong. To say it in plaintext, I won't accept
-> > > the driver if it copies the parent's driver data. The driver should
-> > > have and use its own driver data, and only maintain a pointer to
-> > > its parent's driver data. And most definitely you don't want to
-> > > copy and use any device data structure from the parent.
-> > 
-> > Allright. At the moment the WDT driver only needs regmap pointer from
-> > parent. I'm not sure if it will later need DT or "chip type" - but I
-> > will change this.
-> 
-> You probably want to use this:
-> 
-> dev_get_regmap(pdev->dev.parent, NULL);
-
-Thanks a bunch Sebastian. All help is highly appreciated!! =)
-
-Unfortunately I forgot to mention the key thing - the RTC mutex. We also
-need that because RTC needs to stop WDT when RTC is adjusted as the WDT
-uses RTC as counter - and jumping the RTC WDT enabled might trigger WDT
-or have other consequences.
-
-Se even if we used dev_get_regmap (which is slightly heavier than
-accessing direct pointer) - we would still need at least the mutex from
-parent data, possibly also the chip type and if we want to avoid code
-dublication - then also the WDT start/stop function.
-
-Thus I guess we can as well keep the regmap in parent data because we
-need the parent data anyways, right?
-
-Br
-	Matti Vaittinen
-
--- 
-Matti Vaittinen
-ROHM Semiconductors
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+T24gV2VkbmVzZGF5LCBKYW51YXJ5IDIzLCAyMDE5IDEwOjI4OjM2IEFNIENFVCBRdWVudGluIFBl
+cnJldCB3cm90ZToKPiBPbiBUdWVzZGF5IDIyIEphbiAyMDE5IGF0IDE5OjQxOjM2ICgrMDEwMCks
+IEdyZWcgS0ggd3JvdGU6Cj4gPiBPbiBUdWUsIEphbiAyMiwgMjAxOSBhdCAwNDo0Mjo0N1BNICsw
+MDAwLCBRdWVudGluIFBlcnJldCB3cm90ZToKPiA+ID4gVGhlIHJlY2VudGx5IGludHJvZHVjZWQg
+RW5lcmd5IE1vZGVsIChFTSkgZnJhbWV3b3JrIG1hbmFnZXMgcG93ZXIgY29zdAo+ID4gPiB0YWJs
+ZXMgb2YgQ1BVcy4gVGhlc2UgdGFibGVzIGFyZSBjdXJyZW50bHkgb25seSB2aXNpYmxlIGZyb20g
+a2VybmVsCj4gPiA+IHNwYWNlLiBIb3dldmVyLCBpbiBvcmRlciB0byBkZWJ1ZyB0aGUgYmVoYXZp
+b3VyIG9mIHN1YnN5c3RlbXMgdGhhdCB1c2UKPiA+ID4gdGhlIEVNIChFQVMgZm9yIGV4YW1wbGUp
+LCBpdCBpcyBvZnRlbiByZXF1aXJlZCB0byBrbm93IHdoYXQgdGhlIHBvd2VyCj4gPiA+IGNvc3Rz
+IGFyZSBmcm9tIHVzZXJzcGFjZS4KPiA+ID4gCj4gPiA+IEZvciB0aGlzIHJlYXNvbiwgaW50cm9k
+dWNlIHVuZGVyIC9zeXMva2VybmVsL2RlYnVnL2VuZXJneV9tb2RlbCBhIHNldCBvZgo+ID4gPiBk
+aXJlY3RvcmllcyByZXByZXNlbnRpbmcgdGhlIHBlcmZvcm1hbmNlIGRvbWFpbnMgb2YgdGhlIHN5
+c3RlbS4gRWFjaAo+ID4gPiBwZXJmb3JtYW5jZSBkb21haW4gY29udGFpbnMgYSBzZXQgb2Ygc3Vi
+LWRpcmVjdG9yaWVzIHJlcHJlc2VudGluZyB0aGUKPiA+ID4gZGlmZmVyZW50IGNhcGFjaXR5IHN0
+YXRlcyAoY3MpIGFuZCB0aGVpciBhdHRyaWJ1dGVzLCBhcyB3ZWxsIGFzIGEgZmlsZQo+ID4gPiBl
+eHBvc2luZyB0aGUgcmVsYXRlZCBDUFVzLgo+ID4gPiAKPiA+ID4gVGhlIHJlc3VsdGluZyBoaWVy
+YXJjaHkgaXMgYXMgZm9sbG93cyBvbiBBcm0ganVubyByMCBmb3IgZXhhbXBsZToKPiA+ID4gCj4g
+PiA+ICAgICAvc3lzL2tlcm5lbC9kZWJ1Zy9lbmVyZ3lfbW9kZWwKPiA+ID4gICAgIOKUnOKUgOKU
+gCBwZDAKPiA+ID4gICAgIOKUgiAgIOKUnOKUgOKUgCBjcHVzCj4gPiA+ICAgICDilIIgICDilJzi
+lIDilIAgY3M6NDUwMDAwCj4gPiA+ICAgICDilIIgICDilIIgICDilJzilIDilIAgY29zdAo+ID4g
+PiAgICAg4pSCICAg4pSCICAg4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4gPiAgICAg4pSCICAg4pSC
+ICAg4pSU4pSA4pSAIHBvd2VyCj4gPiA+ICAgICDilIIgICDilJzilIDilIAgY3M6NTc1MDAwCj4g
+PiA+ICAgICDilIIgICDilIIgICDilJzilIDilIAgY29zdAo+ID4gPiAgICAg4pSCICAg4pSCICAg
+4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4gPiAgICAg4pSCICAg4pSCICAg4pSU4pSA4pSAIHBvd2Vy
+Cj4gPiA+ICAgICDilIIgICDilJzilIDilIAgY3M6NzAwMDAwCj4gPiA+ICAgICDilIIgICDilIIg
+ICDilJzilIDilIAgY29zdAo+ID4gPiAgICAg4pSCICAg4pSCICAg4pSc4pSA4pSAIGZyZXF1ZW5j
+eQo+ID4gPiAgICAg4pSCICAg4pSCICAg4pSU4pSA4pSAIHBvd2VyCj4gPiA+ICAgICDilIIgICDi
+lJzilIDilIAgY3M6Nzc1MDAwCj4gPiA+ICAgICDilIIgICDilIIgICDilJzilIDilIAgY29zdAo+
+ID4gPiAgICAg4pSCICAg4pSCICAg4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4gPiAgICAg4pSCICAg
+4pSCICAg4pSU4pSA4pSAIHBvd2VyCj4gPiA+ICAgICDilIIgICDilJTilIDilIAgY3M6ODUwMDAw
+Cj4gPiA+ICAgICDilIIgICAgICAg4pSc4pSA4pSAIGNvc3QKPiA+ID4gICAgIOKUgiAgICAgICDi
+lJzilIDilIAgZnJlcXVlbmN5Cj4gPiA+ICAgICDilIIgICAgICAg4pSU4pSA4pSAIHBvd2VyCj4g
+PiA+ICAgICDilJTilIDilIAgcGQxCj4gPiA+ICAgICAgICAg4pSc4pSA4pSAIGNwdXMKPiA+ID4g
+ICAgICAgICDilJzilIDilIAgY3M6MTEwMDAwMAo+ID4gPiAgICAgICAgIOKUgiAgIOKUnOKUgOKU
+gCBjb3N0Cj4gPiA+ICAgICAgICAg4pSCICAg4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4gPiAgICAg
+ICAgIOKUgiAgIOKUlOKUgOKUgCBwb3dlcgo+ID4gPiAgICAgICAgIOKUnOKUgOKUgCBjczo0NTAw
+MDAKPiA+ID4gICAgICAgICDilIIgICDilJzilIDilIAgY29zdAo+ID4gPiAgICAgICAgIOKUgiAg
+IOKUnOKUgOKUgCBmcmVxdWVuY3kKPiA+ID4gICAgICAgICDilIIgICDilJTilIDilIAgcG93ZXIK
+PiA+ID4gICAgICAgICDilJzilIDilIAgY3M6NjI1MDAwCj4gPiA+ICAgICAgICAg4pSCICAg4pSc
+4pSA4pSAIGNvc3QKPiA+ID4gICAgICAgICDilIIgICDilJzilIDilIAgZnJlcXVlbmN5Cj4gPiA+
+ICAgICAgICAg4pSCICAg4pSU4pSA4pSAIHBvd2VyCj4gPiA+ICAgICAgICAg4pSc4pSA4pSAIGNz
+OjgwMDAwMAo+ID4gPiAgICAgICAgIOKUgiAgIOKUnOKUgOKUgCBjb3N0Cj4gPiA+ICAgICAgICAg
+4pSCICAg4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4gPiAgICAgICAgIOKUgiAgIOKUlOKUgOKUgCBw
+b3dlcgo+ID4gPiAgICAgICAgIOKUlOKUgOKUgCBjczo5NTAwMDAKPiA+ID4gICAgICAgICAgICAg
+4pSc4pSA4pSAIGNvc3QKPiA+ID4gICAgICAgICAgICAg4pSc4pSA4pSAIGZyZXF1ZW5jeQo+ID4g
+PiAgICAgICAgICAgICDilJTilIDilIAgcG93ZXIKPiA+ID4gCj4gPiA+IFNpZ25lZC1vZmYtYnk6
+IFF1ZW50aW4gUGVycmV0IDxxdWVudGluLnBlcnJldEBhcm0uY29tPgo+ID4gPiAKPiA+ID4gLS0t
+Cj4gPiA+IAo+ID4gPiBWMjogcmVtb3ZlZCBjaGVjayBvbiByZXR1cm4gdmFsdWUgb2YgZGVidWdm
+c19jcmVhdGVfKiAoR3JlZyBLSCkKPiA+ID4gLS0tCj4gPiA+ICBrZXJuZWwvcG93ZXIvZW5lcmd5
+X21vZGVsLmMgfCA1NyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4gPiA+
+ICAxIGZpbGUgY2hhbmdlZCwgNTcgaW5zZXJ0aW9ucygrKQo+ID4gCj4gPiBSZXZpZXdlZC1ieTog
+R3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz4KCkFwcGxpZWQs
+IHRoYW5rcyEK
