@@ -1,134 +1,124 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Armada DRM: bridge with componentized devices
-Date: Thu, 24 Jan 2019 12:00:48 +0100
-Message-ID: <3270428.Ws1vFqJIdW@aspire.rjw.lan>
-References: <20190108132150.GT11171@n2100.armlinux.org.uk>
- <CAJZ5v0hwCrZTVveri-ogLwqg9cP8fn2R76szDh5RwJ2nfpoT1A@mail.gmail.com>
- <CAKMK7uEf5tOq4+igmNeUX3SGJabcN8DuMd2juxFjbHDzoMJ1hg@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 05/16] sched/core: uclamp: Update CPU's refcount on
+ clamp changes
+Date: Thu, 24 Jan 2019 11:21:53 +0000
+Message-ID: <20190124112153.pwdsbxjynq6chmvl@e110439-lin>
+References: <20190121154412.fak2t2iquj3aixtu@e110439-lin>
+ <20190122093704.GM27931@hirez.programming.kicks-ass.net>
+ <20190122104305.6vjx37muqsxm536t@e110439-lin>
+ <20190122132817.GG13777@hirez.programming.kicks-ass.net>
+ <20190122140115.twtx646vewm757ca@e110439-lin>
+ <20190122145742.GQ27931@hirez.programming.kicks-ass.net>
+ <20190122153315.dhjl67sgpu74hmqv@e110439-lin>
+ <20190123091634.GT27931@hirez.programming.kicks-ass.net>
+ <20190123141426.5samtr4hl6okdypu@e110439-lin>
+ <20190123185940.GF17749@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAKMK7uEf5tOq4+igmNeUX3SGJabcN8DuMd2juxFjbHDzoMJ1hg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Sarvela,
- Tomi P" <tomi.p.sarvela@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, DRI Development <dri-devel@lists.freedesktop.org>, Lubomir Rintel <lkundrak@v3.sk>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sean Paul <sean@poorly.run>, Peter Rosin <peda@axentia.se>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190123185940.GF17749@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5LCBKYW51YXJ5IDE4LCAyMDE5IDE6NTc6NDcgUE0gQ0VUIERhbmllbCBWZXR0ZXIg
-d3JvdGU6Cj4gT24gRnJpLCBKYW4gMTgsIDIwMTkgYXQgMTI6MzggUE0gUmFmYWVsIEouIFd5c29j
-a2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPiA+Cj4gPiBPbiBGcmksIEphbiAxOCwgMjAx
-OSBhdCAxMjoxNyBQTSBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+IHdyb3Rl
-Ogo+ID4gPgo+ID4gPiBPbiBGcmksIEphbiAxOCwgMjAxOSBhdCAxMjowNiBQTSBEYW5pZWwgVmV0
-dGVyIDxkYW5pZWxAZmZ3bGwuY2g+IHdyb3RlOgo+ID4gPiA+Cj4gPiA+ID4gT24gRnJpLCBKYW4g
-MTgsIDIwMTkgYXQgMTE6MDMgQU0gUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3Jn
-PiB3cm90ZToKPiA+ID4gPiA+Cj4gPiA+ID4gPiBPbiBGcmksIEphbiAxOCwgMjAxOSBhdCAxMDoz
-NyBBTSBMdWNhcyBTdGFjaCA8bC5zdGFjaEBwZW5ndXRyb25peC5kZT4gd3JvdGU6Cj4gPiA+ID4g
-PiA+Cj4gPiA+ID4gPiA+IEFtIERvbm5lcnN0YWcsIGRlbiAxNy4wMS4yMDE5LCAxMzoyMCArMDEw
-MCBzY2hyaWViIERhbmllbCBWZXR0ZXI6Cj4gPiA+ID4gPiA+IFsuLi5dCj4gPiA+ID4gPiA+ID4K
-PiA+ID4gPiA+ID4gPiA+IEkgZG9uJ3QgdGhpbmsgaXQgaXMgYWRkcmVzc2VkIGhlcmUuCj4gPiA+
-ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiA+ID4gQ2FuIGFueW9uZSBwbGVhc2UgZXhwbGFpbiB0byBt
-ZSB3aGF0IGhhcHBlbnMgaW4gbW9yZSBkZXRhaWw/Cj4gPiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4g
-PiBNeSB1bmRlcnN0YW5kaW5nIChhbmQgdGhpcyBtaWdodCBiZSB3cm9uZywgUnVzc2VsbCwgQW5k
-cnplaiwgLi4uIHBscwo+ID4gPiA+ID4gPiA+IGNvcnJlY3QpIGlzIHRoYXQgdGhlIGZvbGxvd2lu
-ZyBzZXF1ZW5jZSBnb2VzIHdyb25nOgo+ID4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+ID4gLSBjb21w
-b25lbnRpemVkIGRyaXZlciAoYm90aCBwcm9kdWNlciBhbmQgY29uc3VtZXIpIGZ1bGx5IGxvYWRl
-ZCZ3b3JraW5nCj4gPiA+ID4gPiA+ID4gLSB5b3UgdW5iaW5kIHRoZSBwcm9kdWNlci9vbmUgb2Yg
-dGhlIGNvbXBvbmVudHMKPiA+ID4gPiA+ID4gPiAtIGNvbXBvbmVudCBmcmFtZXdvcmsgb3IgZHJp
-dmVyIGNvcmUgdGhyb3VnaCBkZXZpY2VfbGluayBhbHNvIHVuYmluZHMKPiA+ID4gPiA+ID4gPiB0
-aGUgbWFzdGVyL2NvbnN1bWVyCj4gPiA+ID4gPiA+ID4gLSB5b3UgcmVsb2FkL3JlYmluZCB0aGUg
-Y29tcG9uZW50Cj4gPiA+ID4gPiA+ID4gLSB3aXRoIHRoZSBjb21wb25lbnQgZnJhbWV3b3JrIHRo
-aXMgcmVzdWx0cyBpbiB0aGUgbWFzdGVyIGJlaW5nCj4gPiA+ID4gPiA+ID4gcmVib3VuZCwgYW5k
-IHRoZSBvdmVyYWxsIGRyaXZlciB3b3JraW5nIGFnYWluLiBXaXRoIGRldmljZV9saW5rcwo+ID4g
-PiA+ID4gPiA+IG5vdGhpbmcgaGFwcGVucy4KPiA+ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiA+IEkg
-dGhpbmsgdGhlcmUgd2FzIGEgcGF0Y2ggZmxvYXRpbmcgYXJvdW5kIG9uY2UgdG8gcHV0IGRyaXZl
-cnMgdW5ib3VuZAo+ID4gPiA+ID4gPiA+IGR1ZSB0byBkZXZpY2VfbGlua3Mgb250byB0aGUgZGVm
-ZXJyZWQgcHJvYmUgbGlzdCwgc28gdGhhdCB0aGUgbmV4dAo+ID4gPiA+ID4gPiA+IHRpbWUgc29t
-ZXRoaW5nIGlzIGJvdW5kIHRoZXkgaGF2ZSBhIGNoYW5jZSB0byByZWJpbmQuIEJ1dCBJIGNhbid0
-IGZpbmQKPiA+ID4gPiA+ID4gPiB0aGF0IHBhdGNoIGFueW1vcmUsIG1heWJlIHNvbWVvbmUgZWxz
-ZSBoYXMgdGhlIGxpbmsgc3RpbGw/Cj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+IGh0dHBzOi8vd3d3
-Lm1haWwtYXJjaGl2ZS5jb20vbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZy9tc2cxMzQ4MDIz
-Lmh0bWwKPiA+ID4gPiA+ID4gaHR0cHM6Ly93d3cubWFpbC1hcmNoaXZlLmNvbS9saW51eC1rZXJu
-ZWxAdmdlci5rZXJuZWwub3JnL21zZzEzNTUyNDMuaHRtbAo+ID4gPiA+Cj4gPiA+ID4gVGhhbmtz
-IGZvciBkaWdnaW5nIGl0IG91dCwgdGhvc2UgYXJlIHRoZSBwYXRjaGVzIEkgaGFkIGluIG1pbmQu
-Cj4gPiA+ID4KPiA+ID4gPiA+ID4gSSBjYW4gcmVwb3N0IGlmIHRoaXMgaXMgZmluYWxseSBkZWVt
-ZWQgYSBnb29kIGlkZWEuCj4gPiA+ID4gPgo+ID4gPiA+ID4gSSBkb24ndCB0aGluayB0aGlzIHdp
-bGwgaGVscC4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBUd28gdGhpbmdzIGFwcGVhciB0byBiZSBuZWVk
-ZWQgaGVyZTogbWlzc2luZyBzdXBwbGllcnMgbmVlZCB0byBiZQo+ID4gPiA+ID4gcHJvYmVkIGF1
-dG9tYXRpY2FsbHkgYXQgYSBjb25zdW1lciBwcm9iZSB0aW1lIGFuZCAicGVyc2lzdGVudCIgbGlu
-a3MKPiA+ID4gPiA+IGNyZWF0ZWQgYnkgLT5wcm9iZSgpIGNhbGxiYWNrcyBzaG91bGQgbm90IGJl
-IHJlZmVyZW5jZS1jb3VudGVkIHdoZW4KPiA+ID4gPiA+IHRob3NlIGNhbGxiYWNrcyBydW4gYWdh
-aW4uICBJJ20gZ29pbmcgdG8gY3V0IGEgcGF0Y2ggdG8gZG8gdGhhdCAoZWFybHkKPiA+ID4gPiA+
-IG5leHQgd2VlayBpZiBhbGwgZ29lcyB3ZWxsKS4KPiA+ID4gPgo+ID4gPiA+IEkgdGhvdWdodCB0
-aGlzIHNob3VsZCB3b3JrLCBzaW5jZSBpdCBtYWtlcyBhbiB1bmJpbmQgb2YgYSBjb25zdW1lciBh
-Y3QKPiA+ID4gPiB0aGUgc2FtZSB3YXkgYXMgaWYgdGhhdCBjb25zdW1lcidzIGJpbmQgZnVuY3Rp
-b24gaGFzIGhpdCBhbgo+ID4gPiA+IEVQUk9CRV9ERUZFUi4gRXhhbXBsZToKPiA+ID4gPgo+ID4g
-PiA+IDEuIGNvbnN1bWVyJ3MgYmluZCBpcyBjYWxsZWQsIHJlYWxpemVzICh0aHJvdWdoIGEgc3Vi
-c3lzdGVtIGZ1bmN0aW9uCj4gPiA+ID4gbGlrZSBvZl9kcm1fZmluZF9wYW5lbCkgdGhhdCB0aGUg
-cHJvZHVjZXIgaXNuJ3QgdGhlcmUgeWV0LCBmYWlscyB3aXRoCj4gPiA+ID4gRVBST0JFIERFRkVS
-Lgo+ID4gPiA+Cj4gPiA+ID4gMi4gZHJpdmVyIGNvcmUgcHV0cyB0aGUgY29uc3VtZXIgb250byB0
-aGUgZGVmZXJyZWQgcHJvYmUgbGlzdC4KPiA+ID4gPgo+ID4gPiA+IDMuIHByb2R1Y2VyIGdldHMg
-bG9hZGVkLCByZWdpc3RlcnMgdGhlIHBhbmVsCj4gPiA+ID4KPiA+ID4gPiA0LiBkcml2ZXIgY29y
-ZSByZS1ydW5zIHRoZSBjb25zdW1lcidzIGJpbmQgZnVuY3Rpb24KPiA+ID4gPgo+ID4gPiA+IDUu
-IGNvbnN1bWVyJ3MgYmluZCBmdW5jdGlvbiBmaW5kcyB0aGUgcHJvZHVjZWQgYW5kIHNldHMgdXAg
-dGhlIGRldmljZSBsaW5rLgo+ID4gPiA+Cj4gPiA+ID4gTm93IGZvciB0aGUgdW5iaW5kIGNhc2U6
-Cj4gPiA+ID4KPiA+ID4gPiAxLiBwcm9kdWNlciBpcyB1bmJvdW5kLCBkcml2ZXIgY29yZSB1bmJp
-bmRzIGNvbnN1bWVyIGR1ZSB0byB0aGUgZGV2aWNlX2xpbmsKPiA+ID4gPgo+ID4gPiA+IDIuIChP
-bmx5IHdpdGggTHVjYXMnIHBhdGNoKSBkcml2ZXIgY29yZSBwdXRzIHRoZSBjb25zdW1lciBvbnRv
-IHRoZQo+ID4gPiA+IGRlZmVycmVkIHByb2JlIGxpc3QuCj4gPiA+ID4KPiA+ID4gPiAzLiBEZXZl
-bG9wZXIgKHRoaXMgcmVhbGx5IGlzIHVzZWZ1bCBmb3IgZGV2ZWxvcG1lbnQpIHJlYmluZHMvcmVs
-b2Fkcwo+ID4gPiA+IHByb2R1Y2VyIGRyaXZlciwgd2hpY2ggcmUtcmVnaXN0ZXJzIHRoZSBwYW5l
-bAo+ID4gPiA+Cj4gPiA+ID4gNCAmIDUgd29yayBleGFjdGx5IHRoZSBzYW1lIGFzIHdpdGggdGhl
-IGluaXRpYWwgbG9hZCBzZXF1ZW5jZS4KPiA+ID4KPiA+ID4gSSBtaXN1bmRlcnN0b29kIHRoZSBS
-dXNzZWxsJ3MgZGVzY3JpcHRpb24sIHNvcnJ5Lgo+ID4gPgo+ID4gPiBNeSB1bmRlcnN0YW5kaW5n
-IHdhcyB0aGF0IHRoZSBjb25zdW1lciBkcml2ZXIgd291bGQgYmUgcmVib3VuZCBhdCB0aGlzCj4g
-PiA+IHBvaW50IGFuZCB0aGF0IHRoZSAobWlzc2luZykgcHJvZHVjZXIgd2FzIGV4cGVjdGVkIHRv
-IHJlYmluZCBhcyB3ZWxsCj4gPiA+IGluIHJlc3BvbnNlLgo+ID4gPgo+ID4gPiA+IFdpdGggdGhp
-cyBpbml0aWFsIGxvYWRpbmcgYW5kIHJlbG9hZGluZyB3b3VsZCBiZSB2ZXJ5IHNpbWlsYXIsIGFu
-ZCBJCj4gPiA+ID4gdGhpbmsgdGhhdCdzIGEgZ29vZCB0aGluZy4gSXQgYWxzbyBzb2x2ZXMgdGhl
-IGRldmljZV9saW5rCj4gPiA+ID4gbGlmZXRpbWUvcmVmY291bnRpbmcgaXNzdWUsIHNpbmNlIHRo
-ZSBkZXZpY2VfbGluayBnZXRzIHRvcm4gZG93bgo+ID4gPiA+IGluL3Jlc3RvcmVkIGNvbXBsZXRl
-bHksIGFuZCByZWxvYWRpbmcgaXNuJ3QgYSBzcGVjaWFsIGNhc2UgbGlrZSBpbgo+ID4gPiA+IHlv
-dXIgcHJvcG9zZWQgc29sdXRpb24gLSB0aGVyZSdzIG5vIGRldmljZV9saW5rIGxlZnQgb3ZlciBm
-cm9tIGEKPiA+ID4gPiBwcmV2aW91cyBsb2FkaW5nIG9mIHRoZSBkcml2ZXIsIHRoZSBkZXBlbmRl
-bmN5IGlzIG9ubHkgaGFuZGxlZCBieQo+ID4gPiA+IHB1dHRpbmcgdGhlIGNvbnN1bWVyIChiYWNr
-KSAgb250byB0aGUgZGVmZXJyZWQgcHJvYmUgbGlzdC4KPiA+ID4KPiA+ID4gTXkgaWRlYSB3YXMg
-YmFzZWQgb24gaW5jb3JyZWN0IHVuZGVyc3RhbmRpbmcgb2YgdGhlIHByb2JsZW0sIHNvIHNjcmF0
-Y2ggaXQuIDotKQo+ID4gPgo+ID4gPiBUaGUgTHVrYXMnIHBhdGNoIHdvdWxkIGluZGVlZCB3b3Jr
-IGhlcmUsIGJ1dCBJJ20gbm90IHN1cmUgaWYgZG9pbmcKPiA+ID4gdGhhdCBmb3IgYWxsIGxpbmtz
-IHVuY29uZGl0aW9uYWxseSBpcyBhIGdvb2QgaWRlYS4KPiA+ID4KPiA+ID4gSSdkIHJhdGhlciBo
-YXZlIGEgbGluayBmbGFnIHRvIGluZGljYXRlIHRoYXQgdGhpcyBiZWhhdmlvciBpcyBkZXNpcmFi
-bGUuCj4gPgo+ID4gVGhhdCBzYWlkLCB0aGUgY3JlYXRpb24gb2YgYSBkZXZpY2UgbGluayBpcyBh
-IGhlYXZ5LXdlaWdodCBvcGVyYXRpb24KPiA+IGluIGdlbmVyYWwgYXMgaXQgdHJpZ2dlcnMgYSBs
-aXN0IHJlb3JkZXJpbmcgdGhhdCBtYXkgdHVybiBvdXQgdG8gYmUKPiA+IHJlY3Vyc2l2ZSBldGMu
-LCBzbyBJJ2QgcmF0aGVyIGF2b2lkIGRvaW5nIHRvbyBtdWNoIG9mIHRoYXQuCj4gPgo+ID4gTW9y
-ZW92ZXIsIGNyZWF0aW5nIGEgbGluayBiZXR3ZWVuIHR3byBkZXZpY2VzIG9uY2Ugc2hvdWxkIGJl
-Cj4gPiBzdWZmaWNpZW50LCBzbyBJJ2QgcHJlZmVyICJwZXJzaXN0ZW50IiBsaW5rcyB0byBiZSB1
-c2VkIGluIHRoYXQgY2FzZSwKPiA+IGJ1dCB0aGV5IG5lZWQgdG8gYmUgZml4ZWQgdG8gYXZvaWQg
-dGhlIGV4dHJhIHJlZmVyZW5jZSBjb3VudGluZy4gIFRoYXQKPiA+IGFuZCBhIG5ldyBsaW5rIGZs
-YWcgdG8gaW5kaWNhdGUgdGhhdCB0aGUgY29uc3VtZXIgc2hvdWxkIGJlIHByb2JlZAo+ID4gYXV0
-b21hdGljYWxseSBhZnRlciBiaW5kaW5nIHRoZSBzdXBwbGllciBkcml2ZXIuCj4gCj4gWWVhaCBp
-ZiBwZXJzaXN0ZW50IGxpbmtzIG1ha2UgbW9yZSBzZW5zZSBmcm9tIGFuIGltcGxlbWVudGF0aW9u
-IHBvdgo+IHRoZW4gdGhhdCdzIGFsbCBmaW5lLCBhcyBsb25nIGFzIGl0IHJlc3VsdHMgaW4gdGhl
-IHNhbWUgYmVoYXZpb3VyIGZvcgo+IGZyb20gdGhlIHBvdiBvZiBhbGwgdGhlIGludm9sdmVkIGJp
-bmQgZnVuY3Rpb25zLiBTbyBpZiB0aGUgY29yZQo+IGhhbmRsZXMgYWxsIHRoZSByZWZjb3VudCB0
-cmlja2VyeSwgdGhhdCdzIGdvb2QuCj4gCj4gQWxzbyBhbiBleHBsaWNpdCBmbGFnIHNvdW5kcyBs
-aWtlIGEgZ29vZCBpZGVhLCBzaW5jZSBmb3Igc29tZSBvdGhlcgo+IHByb2JsZW1zIHdlIHdhbnQg
-dG8gbWFrZSB0aGUgZGV2aWNlX2xpbmsgb3B0LWluLiBUaGVyZSdzIG90aGVyd2lzZQo+IHNvbWUg
-bG9vcHMgaW4gc29tZSBjYXNlcyBhcHBhcmVudGx5LgoKT0ssIEkgdGhpbmsgSSBrbm93IGhvdyB0
-byBtYWtlIGRldmljZSBsaW5rcyBzdXBwb3J0IHRoaXMgdXNlIGNhc2UsIGJ1dAp0aGF0IHdpbGwg
-cmVxdWlyZSBzb21lIHJld29yayBvZiB0aGUgZnJhbWV3b3JrLCBtb3N0bHkgY29uc2lzdGluZyBv
-ZgpmaXhlcyBhbmQgY2xlYW51cHMuCgpJJ2xsIHNlbmQgdGhlIGZpcnN0IHBhcnQgb2YgaXQgaW4g
-YSBtaW51dGUuCgpDaGVlcnMsClJhZmFlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
-dGluZm8vZHJpLWRldmVsCg==
+On 23-Jan 19:59, Peter Zijlstra wrote:
+> On Wed, Jan 23, 2019 at 02:14:26PM +0000, Patrick Bellasi wrote:
+> 
+> > > > Consider also that the uclamp_task_update_active() added by this patch
+> > > > not only has lower overhead but it will be use also by cgroups where
+> > > > we want to force update all the tasks on a cgroup's clamp change.
+> > > 
+> > > I haven't gotten that far; but I would prefer not to have two different
+> > > 'change' paths in __sched_setscheduler().
+> > 
+> > Yes, I agree that two paths in __sched_setscheduler() could be
+> > confusing. Still we have to consider that here we are adding
+> > "not class specific" attributes.
+> 
+> But that change thing is not class specific; the whole:
+> 
+> 
+> 	rq = task_rq_lock(p, &rf);
+> 	queued = task_on_rq_queued(p);
+> 	running = task_current(rq, p);
+> 	if (queued)
+> 		dequeue_task(rq, p, queue_flags);
+> 	if (running)
+> 		put_prev_task(rq, p);
+> 
+> 
+> 	/* @p is in it's invariant state; frob it's state */
+> 
+> 
+> 	if (queued)
+> 		enqueue_task(rq, p, queue_flags);
+> 	if (running)
+> 		set_curr_task(rq, p);
+> 	task_rq_unlock(rq, p, &rf);
+> 
+> 
+> pattern is all over the place; it is just because C sucks that that
+
+Yes, understand, don't want to enter a language war :)
+
+> isn't more explicitly shared (do_set_cpus_allowed(), rt_mutex_setprio(),
+> set_user_nice(), __sched_setscheduler(), sched_setnuma(),
+> sched_move_task()).
+> 
+> This is _the_ pattern for changing state and is not class specific at
+> all.
+
+Right, that pattern is not "class specific" true and I should have not
+used that term to begin with.
+
+What I was trying to point out is that all the calls above directly
+affect the current scheduling decision and "requires" a
+dequeue/enqueue pattern.
+
+When a task-specific uclamp value is changed for a task, instead, a
+dequeue/enqueue is not needed. As long as we are doing a lazy update,
+that sounds just like not necessary overhead.
+
+However, there could still be value in keeping code consistent and if
+you prefer it this way what should I do?
+
+---8<---
+    __sched_setscheduler()
+        ...
+        if (policy < 0)
+            policy = oldpolicy = p->policy;
+        ...
+        if (unlikely(policy == p->policy)) {
+            ...
+            if (uclamp_changed())         // Force dequeue/enqueue
+                goto change;
+        }
+    change:
+        ...
+
+        if (queued)
+	    dequeue_task(rq, p, queue_flags);
+	if (running)
+	    put_prev_task(rq, p);
+
+        __setscheduler_uclamp();
+	__setscheduler(rq, p, attr, pi);
+
+	if (queued)
+	    enqueue_task(rq, p, queue_flags);
+	if (running)
+	    set_curr_task(rq, p);
+        ...
+---8<---
+
+Could be something like that ok with you?
+
+Not sure about side-effects on p->prio(): for CFS seems to be reset to
+NORMAL in this case :/
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
