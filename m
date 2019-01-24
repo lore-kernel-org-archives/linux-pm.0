@@ -1,50 +1,78 @@
-From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Subject: Re: [PATCH 0/6] driver core: Fix some issues related to device links
-Date: Thu, 24 Jan 2019 14:58:35 +0000
-Message-ID: <20190124145835.2oy2tniepzpeekl2@e5254000004ec.dyn.armlinux.org.uk>
-References: <2493187.oiOpCWJBV7@aspire.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
+ for RT tasks
+Date: Thu, 24 Jan 2019 16:12:12 +0100
+Message-ID: <20190124151212.GO13777@hirez.programming.kicks-ass.net>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-10-patrick.bellasi@arm.com>
+ <20190123104944.GX27931@hirez.programming.kicks-ass.net>
+ <20190123144011.iid3avb63r5v4r2c@e110439-lin>
+ <20190123201146.GH17749@hirez.programming.kicks-ass.net>
+ <20190124123009.2yulcf25ld66popd@e110439-lin>
+ <20190124123835.nliwk2onvrhe5aqf@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2493187.oiOpCWJBV7@aspire.rjw.lan>
+In-Reply-To: <20190124123835.nliwk2onvrhe5aqf@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 24, 2019 at 12:13:06PM +0100, Rafael J. Wysocki wrote:
-> Hi Greg at al,
+On Thu, Jan 24, 2019 at 12:38:35PM +0000, Patrick Bellasi wrote:
+> On 24-Jan 12:30, Patrick Bellasi wrote:
+> > On 23-Jan 21:11, Peter Zijlstra wrote:
+> > > On Wed, Jan 23, 2019 at 02:40:11PM +0000, Patrick Bellasi wrote:
+> > > > On 23-Jan 11:49, Peter Zijlstra wrote:
+> > > > > On Tue, Jan 15, 2019 at 10:15:06AM +0000, Patrick Bellasi wrote:
 > 
-> Recently I have been looking at the device links code because of the
-> recent discussion on possibly using them in the DRM subsystem (see for
-> example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
-> found a few issues in that code which should be addressed by this patch
-> series.  Please refer to the patch changelogs for details.
+> [...]
 > 
-> None of the problems addressed here should be manifesting themselves in
-> mainline kernel today, but if there are more device links users in the
-> future, they most likely will be encountered sooner or later.  Also they
-> need to be fixed for the DRM use case to be supported IMO.
+> > > I'm thikning that if we haz a single bit, say:
+> > > 
+> > >   struct uclamp_se {
+> > > 	...
+> > > 	unsigned int	changed : 1;
+> > >   };
+> > > 
+> > > We can update uclamp_se::value and set uclamp_se::changed, and then the
+> > > next enqueue will (unlikely) test-and-clear changed and recompute the
+> > > bucket_id.
+> > 
+> > This mean will lazy update the "requested" bucket_id by deferring its
+> > computation at enqueue time. Which saves us a copy of the bucket_id,
+> > i.e. we will have only the "effective" value updated at enqueue time.
+> > 
+> > But...
+> > 
+> > > Would that not be simpler?
+> > 
+> > ... although being simpler it does not fully exploit the slow-path,
+> > a syscall which is usually running from a different process context
+> > (system management software).
+> > 
+> > It also fits better for lazy updates but, in the cgroup case, where we
+> > wanna enforce an update ASAP for RUNNABLE tasks, we will still have to
+> > do the updates from the slow-path.
+> > 
+> > Will look better into this simplification while working on v7, perhaps
+> > the linear mapping can really help in that too.
 > 
-> This series does not fix all issues in device links that have become
-> apparent (generally speaking, the idea of returning an existing link
-> in case there is one already for the given consumer-supplier pair
-> doesn't play well with stateful links and their flags), so there will
-> be a follow-up series of patches to clean that up.  Still, I don't see
-> a reason to sit on these fixes while working on the other patches, so
-> here they go.
+> Actually, I forgot to mention that:
+> 
+>     uclamp_se::effective::{
+>         value, bucket_id
+>     }
+> 
+> will be still required to proper support the cgroup delegation model,
+> where a child group could be restricted by the parent but we want to
+> keep track of the original "requested" value for when the parent
+> should relax the restriction.
+> 
+> Thus, since effective values are already there, why not using them
+> also to pre-compute the new requested bucket_id from the slow path?
 
-Hi Rafael,
-
-I've just given these a quick boot, unbind and rebind test with my
-DRM case, and nothing seems to have regressed on the face of it.
-
-Tested-by: Russell King <rmk+kernel@armlinux.org.uk>
-
-Thanks.
-
--- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-According to speedtest.net: 11.9Mbps down 500kbps up
+Well, we need the orig_value; but I'm still not sure why you need more
+bucket_id's. Also, retaining orig_value is already required for the
+system limits, there's nothing cgroup-y about this afaict.
