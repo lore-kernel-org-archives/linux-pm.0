@@ -1,77 +1,101 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 09/16] sched/cpufreq: uclamp: Add utilization clamping
- for RT tasks
-Date: Thu, 24 Jan 2019 12:38:35 +0000
-Message-ID: <20190124123835.nliwk2onvrhe5aqf@e110439-lin>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-10-patrick.bellasi@arm.com>
- <20190123104944.GX27931@hirez.programming.kicks-ass.net>
- <20190123144011.iid3avb63r5v4r2c@e110439-lin>
- <20190123201146.GH17749@hirez.programming.kicks-ass.net>
- <20190124123009.2yulcf25ld66popd@e110439-lin>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH v1 13/13] watchdog: bd70528: Initial support for ROHM
+ BD70528 watchdog block
+Date: Thu, 24 Jan 2019 06:37:47 -0800
+Message-ID: <20190124143747.GA29002@roeck-us.net>
+References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+ <ec70833179d1953dbc91e01901b79d3319ff013d.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190122154750.GB1705@roeck-us.net>
+ <20190122171023.GC2559@localhost.localdomain>
+ <20190122174056.GB4964@roeck-us.net>
+ <20190122180309.GD2559@localhost.localdomain>
+ <20190123174728.uu7zhno5xea2bga7@earth.universe>
+ <20190124104434.GF2559@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190124123009.2yulcf25ld66popd@e110439-lin>
+In-Reply-To: <20190124104434.GF2559@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Sebastian Reichel <sre@kernel.org>, mazziesaccount@gmail.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
 List-Id: linux-pm@vger.kernel.org
 
-On 24-Jan 12:30, Patrick Bellasi wrote:
-> On 23-Jan 21:11, Peter Zijlstra wrote:
-> > On Wed, Jan 23, 2019 at 02:40:11PM +0000, Patrick Bellasi wrote:
-> > > On 23-Jan 11:49, Peter Zijlstra wrote:
-> > > > On Tue, Jan 15, 2019 at 10:15:06AM +0000, Patrick Bellasi wrote:
-
-[...]
-
-> > I'm thikning that if we haz a single bit, say:
+On Thu, Jan 24, 2019 at 12:44:35PM +0200, Matti Vaittinen wrote:
+> On Wed, Jan 23, 2019 at 06:47:28PM +0100, Sebastian Reichel wrote:
+> > Hi,
 > > 
-> >   struct uclamp_se {
-> > 	...
-> > 	unsigned int	changed : 1;
-> >   };
+> > On Tue, Jan 22, 2019 at 08:03:09PM +0200, Matti Vaittinen wrote:
+> > > On Tue, Jan 22, 2019 at 09:40:56AM -0800, Guenter Roeck wrote:
+> > > > On Tue, Jan 22, 2019 at 07:10:23PM +0200, Matti Vaittinen wrote:
+> > > > > On Tue, Jan 22, 2019 at 07:47:50AM -0800, Guenter Roeck wrote:
+> > > > > > On Tue, Jan 22, 2019 at 11:48:36AM +0200, Matti Vaittinen wrote:
+> > > > > > > +static int bd70528_wdt_probe(struct platform_device *pdev)
+> > > > > > > +{
+> > > > > > > +	struct bd70528 *tmp;
+> > > > > > > +	struct bd70528 *bd70528;
+> > > > > > > +	int ret;
+> > > > > > > +
+> > > > > > > +	tmp = dev_get_drvdata(pdev->dev.parent);
+> > > > > > > +	if (!tmp) {
+> > > > > > > +		dev_err(&pdev->dev, "No MFD driver data\n");
+> > > > > > > +		return -EINVAL;
+> > > > > > > +	}
+> > > > > > > +	bd70528 = devm_kzalloc(&pdev->dev, sizeof(*bd70528), GFP_KERNEL);
+> > > > > > > +	if (!bd70528)
+> > > > > > > +		return -ENOMEM;
+> > > > > > > +
+> > > > > > > +	*bd70528 = *tmp;
+> > > > > > > +	bd70528->chip.dev = &pdev->dev;
+> > > > > > 
+> > > > > > This is wrong.
+> > > > > > You should not copy the parent's driver data but have local driver
+> > > > > > data as needed which then points to the parent's driver data if
+> > > > > > needed. I assume this is why the mutex is a pointer, but that
+> > > > > > just shows that the whole approach is wrong.
+> > > > > 
+> > > > > Mutex is a pointer because we want to use same mutex from WDT and RTC.
+> > > > > We can sure point to parent data but then we still need our own dev
+> > > > > pointer. So we can have a struct with pointer to parent data and dev
+> > > > > pointer - but I'm not at all sure it is any clearer.
+> > > > 
+> > > > As I said, that is wrong. To say it in plaintext, I won't accept
+> > > > the driver if it copies the parent's driver data. The driver should
+> > > > have and use its own driver data, and only maintain a pointer to
+> > > > its parent's driver data. And most definitely you don't want to
+> > > > copy and use any device data structure from the parent.
+> > > 
+> > > Allright. At the moment the WDT driver only needs regmap pointer from
+> > > parent. I'm not sure if it will later need DT or "chip type" - but I
+> > > will change this.
 > > 
-> > We can update uclamp_se::value and set uclamp_se::changed, and then the
-> > next enqueue will (unlikely) test-and-clear changed and recompute the
-> > bucket_id.
+> > You probably want to use this:
+> > 
+> > dev_get_regmap(pdev->dev.parent, NULL);
 > 
-> This mean will lazy update the "requested" bucket_id by deferring its
-> computation at enqueue time. Which saves us a copy of the bucket_id,
-> i.e. we will have only the "effective" value updated at enqueue time.
+> Thanks a bunch Sebastian. All help is highly appreciated!! =)
 > 
-> But...
+> Unfortunately I forgot to mention the key thing - the RTC mutex. We also
+> need that because RTC needs to stop WDT when RTC is adjusted as the WDT
+> uses RTC as counter - and jumping the RTC WDT enabled might trigger WDT
+> or have other consequences.
 > 
-> > Would that not be simpler?
+> Se even if we used dev_get_regmap (which is slightly heavier than
+> accessing direct pointer) - we would still need at least the mutex from
+> parent data, possibly also the chip type and if we want to avoid code
+> dublication - then also the WDT start/stop function.
 > 
-> ... although being simpler it does not fully exploit the slow-path,
-> a syscall which is usually running from a different process context
-> (system management software).
+> Thus I guess we can as well keep the regmap in parent data because we
+> need the parent data anyways, right?
 > 
-> It also fits better for lazy updates but, in the cgroup case, where we
-> wanna enforce an update ASAP for RUNNABLE tasks, we will still have to
-> do the updates from the slow-path.
-> 
-> Will look better into this simplification while working on v7, perhaps
-> the linear mapping can really help in that too.
 
-Actually, I forgot to mention that:
+You are free to _use_ the parent data. Just not copy it.
 
-    uclamp_se::effective::{
-        value, bucket_id
-    }
+Another possibility would be for the parent to provide platform
+data for the rtc driver to use, and that platform data would
+include pointers to the regmap and to the rtc mutex.
 
-will be still required to proper support the cgroup delegation model,
-where a child group could be restricted by the parent but we want to
-keep track of the original "requested" value for when the parent
-should relax the restriction.
+However, again, the one thing you can _not_ do is to copy the parent's
+driver data.
 
-Thus, since effective values are already there, why not using them
-also to pre-compute the new requested bucket_id from the slow path?
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Guenter
