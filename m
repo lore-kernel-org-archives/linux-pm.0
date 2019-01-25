@@ -1,8 +1,8 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Amit Kucheria <amit.kucheria@linaro.org>
 Subject: Re: [PATCHv3 2/9] cpufreq: Auto-register the driver as a thermal
  cooling device if asked
-Date: Fri, 25 Jan 2019 12:45:17 +0100
-Message-ID: <CAJZ5v0gA07-MKvXKH690wRF0cE3AAP3kLHtLRJpiT1Dmrs_beA@mail.gmail.com>
+Date: Fri, 25 Jan 2019 17:48:08 +0530
+Message-ID: <CAP245DWMXSC+omrdrhy1_ZCXqY490kQ9jr1BnbpHXFrujW34YQ@mail.gmail.com>
 References: <cover.1548398851.git.amit.kucheria@linaro.org>
  <73e091e2d56d9fa6eb94feaed9fc2be30bf6da20.1548398851.git.amit.kucheria@linaro.org>
  <20190125103152.7svjfmowgigznipm@vireshk-i7>
@@ -12,10 +12,10 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190125103152.7svjfmowgigznipm@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 25, 2019 at 11:32 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Fri, Jan 25, 2019 at 4:01 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
 > On 25-01-19, 12:32, Amit Kucheria wrote:
 > > All cpufreq drivers do similar things to register as a cooling device.
@@ -115,4 +115,11 @@ On Fri, Jan 25, 2019 at 11:32 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > wrapper routines. How do you see these getting used ? I will suggest
 > that this should be open coded in the core itself.
 
-Agreed.
+Aah, I understood your earlier comment and the chat to mean that we
+could get rid of the #ifdefs. I didn't catch on to the fact you wanted
+to get rid of the wrapper routines itself. My bad.
+
+Will respin.
+
+Regards,
+Amit
