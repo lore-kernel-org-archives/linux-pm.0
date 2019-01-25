@@ -1,112 +1,112 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [RFC PATCH] drivers core: cpu: add hotplug callback to update cpu_dev state to resumed
-Date: Fri, 25 Jan 2019 15:09:06 +0000
-Message-ID: <20190125150906.27614-1-sudeep.holla@arm.com>
-References: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [BUG] cpufreq/armada-37xx: Parent clock issues after boot
+Date: Fri, 25 Jan 2019 18:54:21 +0100
+Message-ID: <87imychbci.fsf@FE-laptop>
+References: <20190124103052.dvkg43uwieejoupo@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190124103052.dvkg43uwieejoupo@vireshk-i7> (Viresh Kumar's
+ message of "Thu, 24 Jan 2019 16:00:52 +0530")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, Ilias Apalodimas <ilias.apalodimas@linaro.org>, rjw@rjwysocki.net, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The sysfs for the cpu caches are managed by adding devices with cpu
-as the parent in cpu_device_create() when secondary cpu is brought
-onlin. Generally when the secondary CPUs are hotplugged back is as part
-of resume from suspend-to-ram, we call cpu_device_create() from the cpu
-hotplug state machine while the cpu device associated with that CPU is
-not yet ready to be resumed as the device_resume() call happens bit later.
-It's not really needed to set the flag is_prepared for cpu devices are
-they are mostly pseudo device and hotplug framework deals with state
-machine and not managed through the cpu device.
+Hi Viresh,
+ 
+ On jeu., janv. 24 2019, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-This often results in annoying warning when resuming:
-Enabling non-boot CPUs ...
-CPU1: Booted secondary processor
- cache: parent cpu1 should not be sleeping
-CPU1 is up
-CPU2: Booted secondary processor
- cache: parent cpu2 should not be sleeping
-CPU2 is up
-.... and so on.
+> Hi Gregory,
+>
+> Ilias has an espressobin board and he reported performance regression
+> while playing with cpufreq governors.
+>
+> I have tried to track it down in the last couple of days with Ilias
+> testing the kernel with my suggestions. We strongly believe that there
+> is something wrong with parent clock selection in the clk driver.
+>
+> Simple way to reproduce the issue:
+>
+> - configure kernel with performance and powersave governors, make
+>   performance governor default and boot the kernel.
+>
+> - Run "sysbench --test=cpu run" and note down performance numbers.
+> - Do following to force a freq change by kernel:
+>   echo powersave > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+>   echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+>
+> - Run sysbench again and you will see 20% drop in performance.
+>
+> The problem happens as soon as the kernel changes the frequency for
+> the very first time. Probably because that's when we change the
+> clk-parent for the very first time.
+>
+> Few more things I noticed:
+>
+> - During boot when the kernel adds the CPU clk to clk-framework, we
+>   read the registers from the non-DVFS set as DVFS wasn't enabled yet.
+>   So both parent and clock rate are read from there.
+>
+> - But cpufreq starts working with the other set of registers which are
+>   available only after DVFS is enabled.
+>
+> - We call clk_get_parent() followed by clk_set_parent() in
+>   armada37xx_cpufreq_dvfs_setup(). I am not sure what you wanted to do
+>   here as these two statements may not have any affect as you pass the
+>   return value of clk_get_parent() to clk_set_parent(). Because the
+>   clk framework will match the new parent with cached value of old
+>   one, it wouldn't change anything at all at hardware level. Over
 
-Just fix the warning by updating the device state quite early.
+This is exactly where the issue is come from. My intent was to use the
+same parent that was used at boot time. And the trick was that when we
+set the clock parent actually it only set the DVFS case. But I didn't
+realized that it didn't match at all what it is done in clock framework.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Reported-by: Jisheng Zhang <jszhang@marvell.com>
-Reported-by: Steve Longerbeam <slongerbeam@gmail.com>
-Reported-by: Eugeniu Rosca <erosca@de.adit-jv.com>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/base/cpu.c         | 20 +++++++++++++++++++-
- include/linux/cpuhotplug.h |  1 +
- 2 files changed, 20 insertions(+), 1 deletion(-)
+>   that, this all is done before enabling DVFS specific bits, which
+>   will make us play with non-DVFS registers and we don't want that,
+>   isn't it ?
 
-Hi Rafael,
+Well the idea was to modify the DVFS register before we enable
+DVFS. Indeed modifying the parent clock of a CPU while we use it could
+be a little tricky.
 
-This is getting reported for quite some time. Let me know if you have
-better solution to fix this harmless yet annoying warnings during system
-resume.
+I have some ideas to fix this issue: I won't use anymore
+get_parent/set_parent in the cpufreq driver and I will set the DVFS
+parent clock during the initialization at the clock driver level. I need
+to do some tests to be sure of the implementation and once it was done I
+will CC you with the patch for the fix.
 
-Regards,
-Sudeep
+Gregory
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index eb9443d5bae1..ae0403528bff 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -80,6 +80,8 @@ void unregister_cpu(struct cpu *cpu)
+>
+> - We checked the divider values right from the registers before moving
+>   to powersave and after moving back to performance. We are at
+>   load_level 0, which means parent clock gets passed as is. So the
+>   divider should be fine, only thing left is parent clock.
+>
+> I am attaching two files here, one of them is the debug patch I wrote
+> to test this and the second one shows those debug prints during
+> different phase of testing.
+>
+> Thanks in advance for helping out.
+>
+> -- 
+> viresh
+>
+>
+>
 
- 	device_unregister(&cpu->dev);
- 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
-+
-+	cpuhp_remove_state_nocalls(CPUHP_CPUDEV_PM_PREPARE);
- 	return;
- }
-
-@@ -355,6 +357,20 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
- }
- #endif
-
-+static int cpu_dev_pm_unset_is_prepared(unsigned int cpu)
-+{
-+	struct device *cpu_dev = get_cpu_device(cpu);
-+
-+	/*
-+	 * device_resume sets this for cpu_dev bit later but the child
-+	 * devices are resumes in the cpu hotplug state machine much
-+	 * before device_resume is called.
-+	 */
-+	if (cpu_dev)
-+		cpu_dev->power.is_prepared = false;
-+
-+	return 0;
-+}
- /*
-  * register_cpu - Setup a sysfs device for a CPU.
-  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-@@ -392,7 +408,9 @@ int register_cpu(struct cpu *cpu, int num)
- 	dev_pm_qos_expose_latency_limit(&cpu->dev,
- 					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
-
--	return 0;
-+	return cpuhp_setup_state_nocalls(CPUHP_CPUDEV_PM_PREPARE,
-+					 "base/cpu/dev_pm:prepare",
-+					 cpu_dev_pm_unset_is_prepared, NULL);
- }
-
- struct device *get_cpu_device(unsigned cpu)
-diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index fd586d0301e7..2ecb4c9370ce 100644
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -69,6 +69,7 @@ enum cpuhp_state {
- 	CPUHP_SLAB_PREPARE,
- 	CPUHP_MD_RAID5_PREPARE,
- 	CPUHP_RCUTREE_PREP,
-+	CPUHP_CPUDEV_PM_PREPARE,
- 	CPUHP_CPUIDLE_COUPLED_PREPARE,
- 	CPUHP_POWERPC_PMAC_PREPARE,
- 	CPUHP_POWERPC_MMU_CTX_PREPARE,
---
-2.17.1
+-- 
+Gregory Clement, Bootlin
+Embedded Linux and Kernel engineering
+http://bootlin.com
