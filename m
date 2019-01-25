@@ -1,260 +1,250 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [RFC PATCH v2 10/10] watchdog: bd70528: Initial support for ROHM
- BD70528 watchdog block
-Date: Fri, 25 Jan 2019 13:06:25 +0200
-Message-ID: <20190125110625.GA29348@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2 5/6] driver core: Fix handling of runtime PM flags in device_link_add()
+Date: Fri, 25 Jan 2019 12:18:03 +0100
+Message-ID: <2208291.Uxpfu9YhsE@aspire.rjw.lan>
+References: <2493187.oiOpCWJBV7@aspire.rjw.lan> <1665211.FOmLsISsVf@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <1665211.FOmLsISsVf@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
-Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 List-Id: linux-pm@vger.kernel.org
 
-Initial support for watchdog block included in ROHM BD70528
-power management IC.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Configurations for low power states are still to be checked.
+After commit ead18c23c263 ("driver core: Introduce device links
+reference counting"), if if there is a link between the given supplier
+and the given consumer already, device_link_add() will refcount it
+and return it unconditionally without updating its flags.  It is
+possible, however, that the second (or any subsequent) caller of
+device_link_add() for the same consumer-supplier pair will pass
+DL_FLAG_PM_RUNTIME, possibly along with DL_FLAG_RPM_ACTIVE, in flags
+to it and the existing link may not behave as expected then.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+First, if DL_FLAG_PM_RUNTIME is not set in the existing link's flags
+at all, it needs to be set like during the original initialization of
+the link.
+
+Second, if DL_FLAG_RPM_ACTIVE is passed to device_link_add() in flags
+(in addition to DL_FLAG_PM_RUNTIME), the existing link should to be
+updated to reflect the "active" runtime PM configuration of the
+consumer-supplier pair and extra care must be taken here to avoid
+possible destructive races with runtime PM of the consumer.
+
+To that end, redefine the rpm_active field in struct device_link
+as a refcount, initialize it to 1 and make rpm_resume() (for the
+consumer) and device_link_add() increment it whenever they acquire
+a runtime PM reference on the supplier device.  Accordingly, make
+rpm_suspend() (for the consumer) and pm_runtime_clean_up_links()
+decrement it and drop runtime PM references to the supplier
+device in a loop until rpm_active becones 1 again.
+
+Fixes: ead18c23c263 ("driver core: Introduce device links reference counting")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/watchdog/Kconfig       |  12 +++
- drivers/watchdog/Makefile      |   1 +
- drivers/watchdog/bd70528_wdt.c | 183 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 196 insertions(+)
- create mode 100644 drivers/watchdog/bd70528_wdt.c
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 57f017d74a97..f30e3a3e886e 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
- 	  watchdog. Be aware that governors might affect the watchdog because it
- 	  is purely software, e.g. the panic governor will stall it!
+I have overlooked the fact that rpm_put_suppliers() doesn't even look
+at the DL_FLAG_PM_RUNTIME link flag and only checks rpm_active for each
+link in the list, so updating rpm_active for existing links from
+device_link_add() is unsafe, regardless of whether or not DL_FLAG_PM_RUNTIME
+is set in their flags.  Of course, this means that the previous version of
+this patch was incorrect.
+
+I also was kind of unhappy with returning NULL to the callers of
+device_link_add() who passed DL_FLAG_RPM_ACTIVE in flags, but the link
+(with DL_FLAG_PM_RUNTIME set) had been there already.
+
+So, here's a v2 of just this patch (the other patches in the series don't
+change).
+
+-> v2:
+  * Redefine rpm_active in struct device_link as a refcount.
+  * Rework the code to use the refcount instead of the bool properly.
+  * Make device_link_add() increment rpm_active for existing links.
+
+Admittedly, turning rpm_active into a refcount theoretically increases the
+overhead of using device links in runtime PM, so it is a concession of sorts,
+but I didn't see any other way to make this work.
+
+---
+ drivers/base/core.c          |   45 ++++++++++++++++++++++++++++---------------
+ drivers/base/power/runtime.c |   26 ++++++++++--------------
+ include/linux/device.h       |    2 -
+ 3 files changed, 42 insertions(+), 31 deletions(-)
+
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -165,6 +165,19 @@ void device_pm_move_to_tail(struct devic
+ 	device_links_read_unlock(idx);
+ }
  
-+config BD70528_WATCHDOG
-+	tristate "ROHM BD70528 PMIC Watchdog"
-+	depends on MFD_ROHM_BD70528
-+	select WATCHDOG_CORE
-+	help
-+	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
-+	  cause system reset.
++static void device_link_rpm_prepare(struct device *consumer,
++				    struct device *supplier)
++{
++	pm_runtime_new_link(consumer);
++	/*
++	 * If the link is being added by the consumer driver at probe time,
++	 * balance the decrementation of the supplier's runtime PM usage counter
++	 * after consumer probe in driver_probe_device().
++	 */
++	if (consumer->links.status == DL_DEV_PROBING)
++		pm_runtime_get_noresume(supplier);
++}
 +
-+	  Say Y here to include support for the ROHM BD70528 watchdog.
-+	  Alternatively say M to compile the driver as a module,
-+	  which will be called bd70528_wdt.
-+
- config DA9052_WATCHDOG
- 	tristate "Dialog DA9052 Watchdog"
- 	depends on PMIC_DA9052 || COMPILE_TEST
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index a0917ef28e07..1ce87a3b1172 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
- obj-$(CONFIG_XEN_WDT) += xen_wdt.o
+ /**
+  * device_link_add - Create a link between two devices.
+  * @consumer: Consumer end of the link.
+@@ -202,7 +215,6 @@ struct device_link *device_link_add(stru
+ 				    struct device *supplier, u32 flags)
+ {
+ 	struct device_link *link;
+-	bool rpm_put_supplier = false;
  
- # Architecture Independent
-+obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
- obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
- obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
- obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
-diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
-new file mode 100644
-index 000000000000..347339683cb9
---- /dev/null
-+++ b/drivers/watchdog/bd70528_wdt.c
-@@ -0,0 +1,183 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 ROHM Semiconductors
-+// ROHM BD70528MWV watchdog driver
+ 	if (!consumer || !supplier ||
+ 	    (flags & DL_FLAG_STATELESS &&
+@@ -214,7 +226,6 @@ struct device_link *device_link_add(stru
+ 			pm_runtime_put_noidle(supplier);
+ 			return NULL;
+ 		}
+-		rpm_put_supplier = true;
+ 	}
+ 
+ 	device_links_write_lock();
+@@ -250,6 +261,15 @@ struct device_link *device_link_add(stru
+ 		if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
+ 			link->flags |= DL_FLAG_AUTOREMOVE_SUPPLIER;
+ 
++		if (flags & DL_FLAG_PM_RUNTIME) {
++			if (!(link->flags & DL_FLAG_PM_RUNTIME)) {
++				device_link_rpm_prepare(consumer, supplier);
++				link->flags |= DL_FLAG_PM_RUNTIME;
++			}
++			if (flags & DL_FLAG_RPM_ACTIVE)
++				refcount_inc(&link->rpm_active);
++		}
 +
-+#include <linux/bcd.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/rohm-bd70528.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/watchdog.h>
+ 		kref_get(&link->kref);
+ 		goto out;
+ 	}
+@@ -258,20 +278,15 @@ struct device_link *device_link_add(stru
+ 	if (!link)
+ 		goto out;
+ 
++	refcount_set(&link->rpm_active, 1);
 +
-+struct wdtbd70528 {
-+	struct bd70528 *bd;
-+	struct device *dev;
-+};
+ 	if (flags & DL_FLAG_PM_RUNTIME) {
+-		if (flags & DL_FLAG_RPM_ACTIVE) {
+-			link->rpm_active = true;
+-			rpm_put_supplier = false;
+-		}
+-		pm_runtime_new_link(consumer);
+-		/*
+-		 * If the link is being added by the consumer driver at probe
+-		 * time, balance the decrementation of the supplier's runtime PM
+-		 * usage counter after consumer probe in driver_probe_device().
+-		 */
+-		if (consumer->links.status == DL_DEV_PROBING)
+-			pm_runtime_get_noresume(supplier);
++		if (flags & DL_FLAG_RPM_ACTIVE)
++			refcount_inc(&link->rpm_active);
 +
-+static int bd70528_wdt_set(struct bd70528 *bd70528, int enable)
-+{
-+	int ret;
++		device_link_rpm_prepare(consumer, supplier);
+ 	}
 +
-+	mutex_lock(&bd70528->rtc_timer_lock);
-+	ret = bd70528->wdt_set(bd70528, enable, NULL);
-+	mutex_unlock(&bd70528->rtc_timer_lock);
+ 	get_device(supplier);
+ 	link->supplier = supplier;
+ 	INIT_LIST_HEAD(&link->s_node);
+@@ -334,7 +349,7 @@ struct device_link *device_link_add(stru
+ 	device_pm_unlock();
+ 	device_links_write_unlock();
+ 
+-	if (rpm_put_supplier)
++	if ((flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) && !link)
+ 		pm_runtime_put(supplier);
+ 
+ 	return link;
+Index: linux-pm/include/linux/device.h
+===================================================================
+--- linux-pm.orig/include/linux/device.h
++++ linux-pm/include/linux/device.h
+@@ -853,7 +853,7 @@ struct device_link {
+ 	struct list_head c_node;
+ 	enum device_link_state status;
+ 	u32 flags;
+-	bool rpm_active;
++	refcount_t rpm_active;
+ 	struct kref kref;
+ #ifdef CONFIG_SRCU
+ 	struct rcu_head rcu_head;
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -271,11 +271,8 @@ static int rpm_get_suppliers(struct devi
+ 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
+ 		int retval;
+ 
+-		if (!(link->flags & DL_FLAG_PM_RUNTIME))
+-			continue;
+-
+-		if (READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND ||
+-		    link->rpm_active)
++		if (!(link->flags & DL_FLAG_PM_RUNTIME) ||
++		    READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND)
+ 			continue;
+ 
+ 		retval = pm_runtime_get_sync(link->supplier);
+@@ -284,7 +281,7 @@ static int rpm_get_suppliers(struct devi
+ 			pm_runtime_put_noidle(link->supplier);
+ 			return retval;
+ 		}
+-		link->rpm_active = true;
++		refcount_inc(&link->rpm_active);
+ 	}
+ 	return 0;
+ }
+@@ -293,12 +290,13 @@ static void rpm_put_suppliers(struct dev
+ {
+ 	struct device_link *link;
+ 
+-	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+-		if (link->rpm_active &&
+-		    READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
++	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
++		if (READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND)
++			continue;
 +
-+	return ret;
-+}
-+
-+static int bd70528_wdt_start(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	dev_dbg(w->dev, "WDT ping...\n");
-+	return bd70528_wdt_set(w->bd, 1);
-+}
-+
-+static int bd70528_wdt_stop(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	dev_dbg(w->dev, "WDT stopping...\n");
-+	return bd70528_wdt_set(w->bd, 0);
-+}
-+
-+static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
-+				    unsigned int timeout)
-+{
-+	unsigned int hours;
-+	unsigned int minutes;
-+	unsigned int seconds;
-+	int ret;
-+	struct bd70528 *bd70528;
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	bd70528 = w->bd;
-+	seconds = timeout;
-+	hours = timeout / (60 * 60);
-+	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
-+	if (hours)
-+		seconds -= (60 * 60);
-+	minutes = seconds / 60;
-+	seconds = seconds % 60;
-+
-+	mutex_lock(&bd70528->rtc_timer_lock);
-+
-+	ret = bd70528->wdt_set(bd70528, 0, NULL);
-+	if (ret)
-+		goto out_unlock;
-+
-+	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_HOUR,
-+				 BD70528_MASK_WDT_HOUR, hours);
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT hours\n");
-+		goto out_en_unlock;
++		while (refcount_dec_not_one(&link->rpm_active))
+ 			pm_runtime_put(link->supplier);
+-			link->rpm_active = false;
+-		}
 +	}
-+	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_MINUTE,
-+				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT minutes\n");
-+		goto out_en_unlock;
-+	}
-+	ret = regmap_update_bits(bd70528->chip.regmap, BD70528_REG_WDT_SEC,
-+				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
-+	if (ret)
-+		dev_err(w->dev, "Failed to set WDT seconds\n");
-+	else
-+		dev_dbg(w->dev, "WDT tmo set to %u\n", timeout);
-+
-+out_en_unlock:
-+	ret = bd70528->wdt_set(bd70528, 1, NULL);
-+out_unlock:
-+	mutex_unlock(&bd70528->rtc_timer_lock);
-+
-+	return ret;
-+}
-+
-+static const struct watchdog_info bd70528_wdt_info = {
-+	.identity = "bd70528-wdt",
-+	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
-+};
-+
-+static const struct watchdog_ops bd70528_wdt_ops = {
-+	.start		= bd70528_wdt_start,
-+	.stop		= bd70528_wdt_stop,
-+	.set_timeout	= bd70528_wdt_set_timeout,
-+};
-+
-+/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
-+#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
-+/* Minimum time is 1 second */
-+#define WDT_MIN_MS 1000
-+#define DEFAULT_TIMEOUT 60
-+
-+static int bd70528_wdt_probe(struct platform_device *pdev)
-+{
-+	struct bd70528 *bd70528;
-+	struct wdtbd70528 *w;
-+	int ret;
-+	unsigned int reg;
-+	struct watchdog_device *wdt;
-+
-+	bd70528 = dev_get_drvdata(pdev->dev.parent);
-+	if (!bd70528) {
-+		dev_err(&pdev->dev, "No MFD driver data\n");
-+		return -EINVAL;
-+	}
-+	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
-+	if (!w)
-+		return -ENOMEM;
-+	w->bd = bd70528;
-+	w->dev = &pdev->dev;
-+
-+	wdt = devm_kzalloc(&pdev->dev, sizeof(*wdt), GFP_KERNEL);
-+	if (!wdt)
-+		return -ENOMEM;
-+
-+	wdt->info = &bd70528_wdt_info;
-+	wdt->ops =  &bd70528_wdt_ops;
-+	wdt->min_hw_heartbeat_ms = WDT_MIN_MS;
-+	wdt->max_hw_heartbeat_ms = WDT_MAX_MS;
-+	wdt->parent = pdev->dev.parent;
-+	wdt->timeout = DEFAULT_TIMEOUT;
-+	watchdog_set_drvdata(wdt, w);
-+	watchdog_init_timeout(wdt, 0, pdev->dev.parent);
-+
-+	ret = bd70528_wdt_set_timeout(wdt, wdt->timeout);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
-+		return ret;
-+	}
-+
-+	mutex_lock(&bd70528->rtc_timer_lock);
-+	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WDT_CTRL, &reg);
-+	mutex_unlock(&bd70528->rtc_timer_lock);
-+
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to get the watchdog state\n");
-+		return ret;
-+	}
-+	if (reg & BD70528_MASK_WDT_EN) {
-+		dev_dbg(&pdev->dev, "watchdog was running during probe\n");
-+		set_bit(WDOG_HW_RUNNING, &wdt->status);
-+	}
-+
-+	ret = devm_watchdog_register_device(&pdev->dev, wdt);
-+	if (ret < 0)
-+		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
-+
-+	return ret;
-+}
-+static struct platform_driver bd70528_wdt = {
-+	.driver = {
-+		.name = "bd70528-wdt"
-+	},
-+	.probe = bd70528_wdt_probe,
-+};
-+
-+module_platform_driver(bd70528_wdt);
-+
-+MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
-+MODULE_DESCRIPTION("BD70528 watchdog driver");
-+MODULE_LICENSE("GPL");
--- 
-2.14.3
-
-
--- 
-Matti Vaittinen
-ROHM Semiconductors
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+ }
+ 
+ /**
+@@ -1551,7 +1549,7 @@ void pm_runtime_remove(struct device *de
+  *
+  * Check links from this device to any consumers and if any of them have active
+  * runtime PM references to the device, drop the usage counter of the device
+- * (once per link).
++ * (as many times as needed).
+  *
+  * Links with the DL_FLAG_STATELESS flag set are ignored.
+  *
+@@ -1573,10 +1571,8 @@ void pm_runtime_clean_up_links(struct de
+ 		if (link->flags & DL_FLAG_STATELESS)
+ 			continue;
+ 
+-		if (link->rpm_active) {
++		while (refcount_dec_not_one(&link->rpm_active))
+ 			pm_runtime_put_noidle(dev);
+-			link->rpm_active = false;
+-		}
+ 	}
+ 
+ 	device_links_read_unlock(idx);
