@@ -1,7 +1,8 @@
 From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [RFC PATCH v2 00/10] support ROHM BD70528 PMIC
-Date: Fri, 25 Jan 2019 13:01:10 +0200
-Message-ID: <20190125110110.GA29171@localhost.localdomain>
+Subject: [RFC PATCH v2 01/10] mfd: bd718x7.h split to ROHM common and bd718x7
+ specific parts
+Date: Fri, 25 Jan 2019 13:01:47 +0200
+Message-ID: <20190125110147.GA29213@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,135 +12,162 @@ To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
 Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Patch series introducing support for ROHM BD70528 PMIC
+Split the bd718x7.h to ROHM common and bd718x7 specific parts
+so that we do not need to add same things in every new ROHM
+PMIC header. Please note that this change requires changes also
+in bd718x7 sub-device drivers for regulators and clk.
 
-Please note that patch 1 breaks compilation without patches 2 and 3
-
-ROHM BD70528 is a programmable Power Management IC for battery
-powered 'ultra low power' systems like the pre-announced NXP
-i.MX7 ULP. This patch series introduces support for the PMIC.
-
-I send this a RFC now as I would like to receive comments from
-Lee, Mark and Stephen regarding splitting the existing
-include/linux/mfd/bd718x7.h into ROHM generic and chip specific
-portions. Benefit is that for example the clk sub-driver does
-not need to be aware of chip specific structure(s) (struct
-bd718x7 and struct bd70528) as it only needs to derefernce the
-generic struct rohm_regmap_dev. Thus same clk subdriver can
-support both the bd718x7 and bd70528 as long as MFD driver
-data has this generic structure in the beginning of allocated
-data. But knowing the bd718x7 driver is already in upstream,
-it might be good if this change went through single tree, right?
-
-RTC block of the bd70528 can support 'wake' irq which wakes PMIC
-from standby state. Wake irq's can be armed to wake up system up
-to 24 hours from arming. bd70528 can also generate alarm interrupts
-which can be armed to occur years after triggering. The RTC driver
-does always arm both the waker and alarm irqs and does not utilize
-longer period of alarm interrupts. All the RTC timers are limited
-to occur within the next 24 hours. Any suggestions on more elegant
-timer support are welcome =)
-
-GPIO portion of bd70528 driver adds I/O support for driving GPIO
-pins or reading the state. The interrupt functionality is provided
-by regmap-irq. Current GPIO driver is not aware of whether the pin(s)
-are used for I/O or interrupts and it is up-to driver user to
-ensure there is no misconfiguration or "double use".
-
-Currently only MFD core, clk, RTC and regulator portions are
-somehow tested. The RFC series also include initial gpio, power-supply
-and watchdog patches in order to provide better overview on chip
-and to collect initial feedback. Reset and ADC are not supported by
-this series.
-
-Changelog v2: Mainly feedback from Guenter Roeck:
-- patches 1, 2, 3, 5, 7, 9 are unchanged.
-- mfd: own mutex for each bd70528 instance - embed in struct bd70528
-- watchdog: do not copy parent device data
-- watchdog: fix deadlock caused by double locked mutex
-- watchdog: set initial timeouts and WDT parent information
-- watchdog: remove unnecessary ping function from ops
-- watchdog: and the comment regarding it
-- watchdog: allocate watchdog struct in order to allow multiple WDG
-  instances
-- rtc: bd70528 fix the order of mutex unlock and re-enabling RTC based
-  timers
-- rtc: fix the irq mask register address
-- power: fix the irq mask register address
-- regulator/regmap-irq: Drop the patches 1, 8 and 9 from original series
-  as those were already applied by Mark 
-
-Patch 1:
-	split the bd718x7.h to generic and chip specific portions.
-	(breaks compilation without patch 2 and 3)
-Patch 2:
-	adapt bd718x7.h changes to bd718x7 regulator driver
-Patch 3:
-	adapt bd718x7.h changes to bd718x7 clk driver
-Patch 4:
-	add MFD core support for bd70528
-Patch 5:
-	support bd70528 clk using bd718x7 clk driver
-Patch 6:
-	document DT bindings for BD70528
-Patch 7:
-	support BD70528 GPIO block
-Patch 8:
-	support BD70528 RTC
-Patch 9:
-	support BD70528 battery charger
-Patch 10:
-	support BD70528 watchdog
-
-This patch series is based on Mark's regulator/for-next branch
-
+Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 ---
-
-Matti Vaittinen (10):
-  mfd: bd718x7.h split to ROHM common and bd718x7 specific parts
-  regulator: bd718x7 use chip specific and generic data structs
-  clk: bd718x7: use chip specific and generic data structs
-  mfd: bd70528: Support ROHM bd70528 PMIC - core
-  clk: bd718x7: Support ROHM BD70528 clk block
-  devicetree: bindings: Document first ROHM BD70528 bindings
-  gpio: Initial support for ROHM bd70528 GPIO block
-  rtc: bd70528: Initial support for ROHM bd70528 RTC
-  power: supply: Initial support for ROHM BD70528 PMIC charger block
-  watchdog: bd70528: Initial support for ROHM BD70528 watchdog block
-
- .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 104 ++++
- drivers/clk/Kconfig                                |   6 +-
- drivers/clk/clk-bd718x7.c                          |  25 +-
- drivers/gpio/Kconfig                               |  11 +
- drivers/gpio/Makefile                              |   1 +
- drivers/gpio/gpio-bd70528.c                        | 192 ++++++
- drivers/mfd/Kconfig                                |  17 +
- drivers/mfd/Makefile                               |   1 +
- drivers/mfd/rohm-bd70528.c                         | 410 +++++++++++++
- drivers/mfd/rohm-bd718x7.c                         |  23 +-
- drivers/power/supply/Kconfig                       |   9 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/bd70528-charger.c             | 670 +++++++++++++++++++++
- drivers/regulator/bd718x7-regulator.c              |  22 +-
- drivers/rtc/Kconfig                                |   8 +
- drivers/rtc/Makefile                               |   1 +
- drivers/rtc/rtc-bd70528.c                          | 451 ++++++++++++++
- drivers/watchdog/Kconfig                           |  12 +
- drivers/watchdog/Makefile                          |   1 +
- drivers/watchdog/bd70528_wdt.c                     | 183 ++++++
- include/linux/mfd/rohm-bd70528.h                   | 392 ++++++++++++
- include/linux/mfd/rohm-bd718x7.h                   |  22 +-
- include/linux/mfd/rohm-generic.h                   |  20 +
- 23 files changed, 2537 insertions(+), 45 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
- create mode 100644 drivers/gpio/gpio-bd70528.c
- create mode 100644 drivers/mfd/rohm-bd70528.c
- create mode 100644 drivers/power/supply/bd70528-charger.c
- create mode 100644 drivers/rtc/rtc-bd70528.c
- create mode 100644 drivers/watchdog/bd70528_wdt.c
- create mode 100644 include/linux/mfd/rohm-bd70528.h
+ drivers/mfd/rohm-bd718x7.c       | 23 ++++++++++++-----------
+ include/linux/mfd/rohm-bd718x7.h | 22 ++++++++--------------
+ include/linux/mfd/rohm-generic.h | 20 ++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 25 deletions(-)
  create mode 100644 include/linux/mfd/rohm-generic.h
 
+diff --git a/drivers/mfd/rohm-bd718x7.c b/drivers/mfd/rohm-bd718x7.c
+index a29d529a96f4..7beb444a57cb 100644
+--- a/drivers/mfd/rohm-bd718x7.c
++++ b/drivers/mfd/rohm-bd718x7.c
+@@ -98,18 +98,19 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ 		return -ENOMEM;
+ 
+ 	bd718xx->chip_irq = i2c->irq;
+-	bd718xx->chip_type = (unsigned int)(uintptr_t)
++	bd718xx->chip.chip_type = (unsigned int)(uintptr_t)
+ 				of_device_get_match_data(&i2c->dev);
+-	bd718xx->dev = &i2c->dev;
++	bd718xx->chip.dev = &i2c->dev;
+ 	dev_set_drvdata(&i2c->dev, bd718xx);
+ 
+-	bd718xx->regmap = devm_regmap_init_i2c(i2c, &bd718xx_regmap_config);
+-	if (IS_ERR(bd718xx->regmap)) {
++	bd718xx->chip.regmap = devm_regmap_init_i2c(i2c,
++						    &bd718xx_regmap_config);
++	if (IS_ERR(bd718xx->chip.regmap)) {
+ 		dev_err(&i2c->dev, "regmap initialization failed\n");
+-		return PTR_ERR(bd718xx->regmap);
++		return PTR_ERR(bd718xx->chip.regmap);
+ 	}
+ 
+-	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->regmap,
++	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->chip.regmap,
+ 				       bd718xx->chip_irq, IRQF_ONESHOT, 0,
+ 				       &bd718xx_irq_chip, &bd718xx->irq_data);
+ 	if (ret) {
+@@ -118,7 +119,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ 	}
+ 
+ 	/* Configure short press to 10 milliseconds */
+-	ret = regmap_update_bits(bd718xx->regmap,
++	ret = regmap_update_bits(bd718xx->chip.regmap,
+ 				 BD718XX_REG_PWRONCONFIG0,
+ 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
+ 				 BD718XX_PWRBTN_SHORT_PRESS_10MS);
+@@ -129,7 +130,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ 	}
+ 
+ 	/* Configure long press to 10 seconds */
+-	ret = regmap_update_bits(bd718xx->regmap,
++	ret = regmap_update_bits(bd718xx->chip.regmap,
+ 				 BD718XX_REG_PWRONCONFIG1,
+ 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
+ 				 BD718XX_PWRBTN_LONG_PRESS_10S);
+@@ -149,7 +150,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ 
+ 	button.irq = ret;
+ 
+-	ret = devm_mfd_add_devices(bd718xx->dev, PLATFORM_DEVID_AUTO,
++	ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
+ 				   bd718xx_mfd_cells,
+ 				   ARRAY_SIZE(bd718xx_mfd_cells), NULL, 0,
+ 				   regmap_irq_get_domain(bd718xx->irq_data));
+@@ -162,11 +163,11 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ static const struct of_device_id bd718xx_of_match[] = {
+ 	{
+ 		.compatible = "rohm,bd71837",
+-		.data = (void *)BD718XX_TYPE_BD71837,
++		.data = (void *)ROHM_CHIP_TYPE_BD71837,
+ 	},
+ 	{
+ 		.compatible = "rohm,bd71847",
+-		.data = (void *)BD718XX_TYPE_BD71847,
++		.data = (void *)ROHM_CHIP_TYPE_BD71847,
+ 	},
+ 	{ }
+ };
+diff --git a/include/linux/mfd/rohm-bd718x7.h b/include/linux/mfd/rohm-bd718x7.h
+index fd194bfc836f..7f2dbde402a1 100644
+--- a/include/linux/mfd/rohm-bd718x7.h
++++ b/include/linux/mfd/rohm-bd718x7.h
+@@ -4,14 +4,9 @@
+ #ifndef __LINUX_MFD_BD718XX_H__
+ #define __LINUX_MFD_BD718XX_H__
+ 
++#include <linux/mfd/rohm-generic.h>
+ #include <linux/regmap.h>
+ 
+-enum {
+-	BD718XX_TYPE_BD71837 = 0,
+-	BD718XX_TYPE_BD71847,
+-	BD718XX_TYPE_AMOUNT
+-};
+-
+ enum {
+ 	BD718XX_BUCK1 = 0,
+ 	BD718XX_BUCK2,
+@@ -321,18 +316,17 @@ enum {
+ 	BD718XX_PWRBTN_LONG_PRESS_15S
+ };
+ 
+-struct bd718xx_clk;
+-
+ struct bd718xx {
+-	unsigned int chip_type;
+-	struct device *dev;
+-	struct regmap *regmap;
+-	unsigned long int id;
++	/*
++	 * Please keep this as the first member here as some
++	 * drivers (clk) supporting more than one chip may only know this
++	 * generic struct 'struct rohm_regmap_dev' and assume it is
++	 * the first chunk of parent device's private data.
++	 */
++	struct rohm_regmap_dev chip;
+ 
+ 	int chip_irq;
+ 	struct regmap_irq_chip_data *irq_data;
+-
+-	struct bd718xx_clk *clk;
+ };
+ 
+ #endif /* __LINUX_MFD_BD718XX_H__ */
+diff --git a/include/linux/mfd/rohm-generic.h b/include/linux/mfd/rohm-generic.h
+new file mode 100644
+index 000000000000..bff15ac26f2c
+--- /dev/null
++++ b/include/linux/mfd/rohm-generic.h
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* Copyright (C) 2018 ROHM Semiconductors */
++
++#ifndef __LINUX_MFD_ROHM_H__
++#define __LINUX_MFD_ROHM_H__
++
++enum {
++	ROHM_CHIP_TYPE_BD71837 = 0,
++	ROHM_CHIP_TYPE_BD71847,
++	ROHM_CHIP_TYPE_BD70528,
++	ROHM_CHIP_TYPE_AMOUNT
++};
++
++struct rohm_regmap_dev {
++	unsigned int chip_type;
++	struct device *dev;
++	struct regmap *regmap;
++};
++
++#endif
 -- 
 2.14.3
 
