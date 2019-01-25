@@ -1,47 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/6] driver core: Fix some issues related to device links
-Date: Fri, 25 Jan 2019 00:08:01 +0100
-Message-ID: <CAJZ5v0ihp8pFib6YCoSq47H0srRh57Kj_00VPby6zVuxLswRuQ@mail.gmail.com>
-References: <2493187.oiOpCWJBV7@aspire.rjw.lan> <20190124145835.2oy2tniepzpeekl2@e5254000004ec.dyn.armlinux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCHv3 0/9] cpufreq: Add flag to auto-register as cooling device
+Date: Fri, 25 Jan 2019 12:32:20 +0530
+Message-ID: <cover.1548398851.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190124145835.2oy2tniepzpeekl2@e5254000004ec.dyn.armlinux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC
+        support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC
+        support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 24, 2019 at 3:58 PM Russell King - ARM Linux admin
-<linux@armlinux.org.uk> wrote:
->
-> On Thu, Jan 24, 2019 at 12:13:06PM +0100, Rafael J. Wysocki wrote:
-> > Hi Greg at al,
-> >
-> > Recently I have been looking at the device links code because of the
-> > recent discussion on possibly using them in the DRM subsystem (see for
-> > example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
-> > found a few issues in that code which should be addressed by this patch
-> > series.  Please refer to the patch changelogs for details.
-> >
-> > None of the problems addressed here should be manifesting themselves in
-> > mainline kernel today, but if there are more device links users in the
-> > future, they most likely will be encountered sooner or later.  Also they
-> > need to be fixed for the DRM use case to be supported IMO.
-> >
-> > This series does not fix all issues in device links that have become
-> > apparent (generally speaking, the idea of returning an existing link
-> > in case there is one already for the given consumer-supplier pair
-> > doesn't play well with stateful links and their flags), so there will
-> > be a follow-up series of patches to clean that up.  Still, I don't see
-> > a reason to sit on these fixes while working on the other patches, so
-> > here they go.
->
-> Hi Rafael,
->
-> I've just given these a quick boot, unbind and rebind test with my
-> DRM case, and nothing seems to have regressed on the face of it.
->
-> Tested-by: Russell King <rmk+kernel@armlinux.org.uk>
+Add a flag for cpufreq drivers to tell cpufreq core to auto-register
+themselves as a thermal cooling device.
 
-Thank you!
+There series converts over all the drivers except arm_big_little.c.
+Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
+others.
+
+Things needing fixing (but not a blocker for the series):
+ - Look at how to detect that we're not in IKS mode in arm_big_little's
+   .ready callback.
+
+Changes since v2:
+ - Get rid of #ifdef'ery and let the pointer exist in all cases
+ - Get rid of (!CPU_THERMAL || THERMAL) dependency in all cpufreq drivers'
+   Kconfig
+
+Changes since v1:
+- Fix compilation failures with allmodconfig
+- Get rid of #ifdef in cpufreq.c
+- Removed miscellaneous patches and sent them separately
+- Merged patches 1 and 2 from v1
+
+Amit Kucheria (9):
+  thermal: cpu_cooling: Require thermal core to be compiled in
+  cpufreq: Auto-register the driver as a thermal cooling device if asked
+  cpufreq: qcom-hw: Register as a cpufreq cooling device
+  cpufreq: imx6q: Use auto-registration of thermal cooling device
+  cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
+  cpufreq: mediatek: Use auto-registration of thermal cooling device
+  cpufreq: qoriq: Use auto-registration of thermal cooling device
+  cpufreq: scmi: Use auto-registration of thermal cooling device
+  cpufreq: scpi: Use auto-registration of thermal cooling device
+
+ drivers/cpufreq/Kconfig            |  3 ---
+ drivers/cpufreq/Kconfig.arm        |  5 -----
+ drivers/cpufreq/cpufreq-dt.c       | 14 ++------------
+ drivers/cpufreq/cpufreq.c          |  6 ++++++
+ drivers/cpufreq/imx6q-cpufreq.c    | 24 ++----------------------
+ drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
+ drivers/cpufreq/qcom-cpufreq-hw.c  |  3 ++-
+ drivers/cpufreq/qoriq-cpufreq.c    | 15 ++-------------
+ drivers/cpufreq/scmi-cpufreq.c     | 14 ++------------
+ drivers/cpufreq/scpi-cpufreq.c     | 14 ++------------
+ drivers/thermal/Kconfig            |  1 +
+ include/linux/cpufreq.h            | 21 +++++++++++++++++++++
+ 12 files changed, 42 insertions(+), 92 deletions(-)
+
+-- 
+2.17.1
