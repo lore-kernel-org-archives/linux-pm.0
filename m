@@ -1,81 +1,229 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 9/9] cpufreq: scpi: Use auto-registration of thermal cooling device
-Date: Fri, 25 Jan 2019 12:32:29 +0530
-Message-ID: <94d264be0f980396cf4d2b94ba31e55ef1bc304b.1548398851.git.amit.kucheria@linaro.org>
-References: <cover.1548398851.git.amit.kucheria@linaro.org>
+From: George Cherian <gcherianv@gmail.com>
+Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC cpufreq
+Date: Fri, 25 Jan 2019 12:37:34 +0530
+Message-ID: <CABYS093CQdhNBb8KqfV+3FfNCGcgW7DE+KsQ=DAJnRFQq74Piw@mail.gmail.com>
+References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com> <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1548398851.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1548398851.git.amit.kucheria@linaro.org>
-References: <cover.1548398851.git.amit.kucheria@linaro.org>
+In-Reply-To: <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiongfeng Wang <wangxiongfeng2@huawei.com>, George Cherian <george.cherian@cavium.com>, Prashanth Prakash <pprakash@codeaurora.org>, robert.moore@intel.com, lenb@kernel.org, rjw@rjwysocki.net, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
 List-Id: linux-pm@vger.kernel.org
 
-Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-automatically register as a thermal cooling device.
+Hi Wang,
 
-This allows removal of boiler plate code from the driver.
-
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/scpi-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 99449738faa4..82420e8e5f0d 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -22,7 +22,6 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
--#include <linux/cpu_cooling.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
-@@ -34,7 +33,6 @@
- struct scpi_data {
- 	struct clk *clk;
- 	struct device *cpu_dev;
--	struct thermal_cooling_device *cdev;
- };
- 
- static struct scpi_ops *scpi_ops;
-@@ -186,7 +184,6 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct scpi_data *priv = policy->driver_data;
- 
--	cpufreq_cooling_unregister(priv->cdev);
- 	clk_put(priv->clk);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	kfree(priv);
-@@ -195,23 +192,16 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
--{
--	struct scpi_data *priv = policy->driver_data;
--
--	priv->cdev = of_cpufreq_cooling_register(policy);
--}
--
- static struct cpufreq_driver scpi_cpufreq_driver = {
- 	.name	= "scpi-cpufreq",
- 	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
--		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+		  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
- 	.verify	= cpufreq_generic_frequency_table_verify,
- 	.attr	= cpufreq_generic_attr,
- 	.get	= scpi_cpufreq_get_rate,
- 	.init	= scpi_cpufreq_init,
- 	.exit	= scpi_cpufreq_exit,
--	.ready	= scpi_cpufreq_ready,
- 	.target_index	= scpi_cpufreq_set_target,
- };
- 
--- 
-2.17.1
+On Thu, Jan 24, 2019 at 12:27 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> +George/Prashanth.
+>
+> Guys please see if you have any objections to this patch. I am not
+> very familiar with this stuff and it would be good to get some
+> feedback from you guys.
+>
+> @Rafael: Do you have any comments on this ?
+>
+> On 17-01-19, 19:00, Xiongfeng Wang wrote:
+> > Hisilicon chips do not support delivered performance counter register
+> > and reference performance counter register. But the platform can
+> > calculate the real performance using its own method. This patch provide
+> > a workaround for this problem, and other platforms can also use this
+> > workaround framework. We reuse the desired performance register to
+> > store the real performance calculated by the platform. After the
+> > platform finished the frequency adjust, it gets the real performance and
+> > writes it into desired performance register. OS can use it to calculate
+> > the real frequency.
+Does your platform support Autonomous Selection mode?
+This register is not valid when autonomous mode is enabled. In such case
+how are you calculating the frequency?
+> >
+> > Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+> > ---
+> >  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
+> >  drivers/cpufreq/Kconfig.arm    |  7 +++++
+> >  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
+> >  include/acpi/cppc_acpi.h       |  4 +++
+> >  4 files changed, 102 insertions(+)
+> >
+> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> > index 217a782..0cdaf7e 100644
+> > --- a/drivers/acpi/cppc_acpi.c
+> > +++ b/drivers/acpi/cppc_acpi.c
+> > @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+> >       return ret_val;
+> >  }
+> >
+> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> > +/*
+> > + * We reuse the desired performance register to store the real performance
+> > + * calculated by the platform.
+> > + */
+> > +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
+> > +{
+> > +     int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+> > +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> > +     struct cpc_register_resource *desired_reg;
+> > +     u64 desired_perf;
+> > +     int ret;
+> > +
+> > +     /*
+> > +      * Make sure the platform has finished the frequency adjust
+> > +      * and wrote the real performance in desired performance register
+> > +      */
+> > +     ret = check_pcc_chan(pcc_ss_id, false);
+> > +     if (ret)
+> > +             return 0;
+If there is a pending command in the channel then returning zero
+will give bogus frequency value. You may return the previous written value.
+> > +
+> > +     desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+> > +     cpc_read(cpunum, desired_reg, &desired_perf);
+> > +
+> > +     return desired_perf;
+> > +}
+> > +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
+> > +#endif
+> > +
+> >  /**
+> >   * cppc_get_perf_caps - Get a CPUs performance capabilities.
+> >   * @cpunum: CPU from which to get capabilities info.
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index 688f102..236bd07 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
+> >
+> >         If in doubt, say N.
+> >
+> > +config HISILICON_CPPC_CPUFREQ_WORKAROUND
+> > +     bool "Workaround for Hisilicon CPPC Cpufreq"
+> > +     default y
+> > +     depends on ACPI_CPPC_CPUFREQ && ARM64
+Do you really want this to be applied to all ARM64? or just only
+for affected HISI platforms?
+> > +     help
+> > +       This option enables a workaround for Hisilicon CPPC Cpufreq.
+> > +
+> >  config ARM_ARMADA_37XX_CPUFREQ
+> >       tristate "Armada 37xx CPUFreq support"
+> >       depends on ARCH_MVEBU && CPUFREQ_DT
+> > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> > index fd25c21c..b910e84 100644
+> > --- a/drivers/cpufreq/cppc_cpufreq.c
+> > +++ b/drivers/cpufreq/cppc_cpufreq.c
+> > @@ -33,6 +33,13 @@
+> >  /* Offest in the DMI processor structure for the max frequency */
+> >  #define DMI_PROCESSOR_MAX_SPEED  0x14
+> >
+> > +struct cppc_get_rate_workaround_info {
+If your intention is to make a generic framework for future extensions
+then you might need to name it differently. Something like
+struct cppc_workaround_info, so that you can extend the same for any
+future workarounds.
+> > +     char oem_id[ACPI_OEM_ID_SIZE +1];
+> > +     char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
+> > +     u32 oem_revision;
+> > +     unsigned int (*get)(unsigned int cpu);
+This can be  unsigned int (*get_rate)(unsigned int cpu);
+> > +};
+> > +
+> >  /*
+> >   * These structs contain information parsed from per CPU
+> >   * ACPI _CPC structures.
+> > @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
+> >       .name = "cppc_cpufreq",
+> >  };
+> >
+> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> > +/*
+> > + * When the platform does not support delivered performance counter or
+> > + * reference performance counter, it can calculate the performance using the
+> > + * platform specific mechanism. We reuse the desired performance register to
+> > + * store the real performance calculated by the platform.
+> > + */
+> > +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
+> > +{
+> > +     struct cppc_cpudata *cpu = all_cpu_data[cpunum];
+> > +     u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
+> > +
+> > +     return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
+> > +}
+> > +#endif
+> > +
+> > +static struct cppc_get_rate_workaround_info wa_info[] = {
+> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> > +     {
+> > +             .oem_id         = "HISI  ",
+> > +             .oem_table_id   = "HIP07   ",
+> > +             .oem_revision   = 0,
+> > +             .get = hisi_cppc_cpufreq_get_rate,
+> > +     },
+> > +     {
+>
+> This should be:
+>
+>         }, {
+>
+> > +             .oem_id         = "HISI  ",
+> > +             .oem_table_id   = "HIP08   ",
+> > +             .oem_revision   = 0,
+> > +             .get = hisi_cppc_cpufreq_get_rate,
+> > +     },
+> > +#endif
+> > +     {},
+> > +};
+> > +
+> > +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
+This function can be renamed to cppc_check_workaround to make it
+generic also can have a
+proper return value so that the caller can validate.
+> > +{
+> > +     struct acpi_table_header *tbl;
+> > +     acpi_status status = AE_OK;
+> > +     int i;
+> > +
+> > +     status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
+> > +     if (ACPI_FAILURE(status) || !tbl)
+> > +             return;
+> > +
+> > +     for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
+> > +             if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
+> > +                 !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+> > +                 wa_info[i].oem_revision == tbl->oem_revision) {
+> > +                     cppc_cpufreq_driver->get = wa_info[i].get;
+> > +                     return;
+> > +             }
+> > +     }
+> > +}
+> >  static int __init cppc_cpufreq_init(void)
+> >  {
+> >       int i, ret = 0;
+> > @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
+> >               goto out;
+> >       }
+> >
+> > +     cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
+> > +
+> >       ret = cpufreq_register_driver(&cppc_cpufreq_driver);
+> >       if (ret)
+> >               goto out;
+> > diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> > index 4f34734..be7400b 100644
+> > --- a/include/acpi/cppc_acpi.h
+> > +++ b/include/acpi/cppc_acpi.h
+> > @@ -146,4 +146,8 @@ struct cppc_cpudata {
+> >  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+> >  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+> >
+> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> > +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
+> > +#endif
+> > +
+> >  #endif /* _CPPC_ACPI_H*/
+> > --
+> > 1.7.12.4
+>
+> --
+> viresh
+-George
