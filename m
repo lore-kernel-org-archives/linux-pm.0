@@ -1,125 +1,45 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCHv3 2/9] cpufreq: Auto-register the driver as a thermal
- cooling device if asked
-Date: Fri, 25 Jan 2019 17:48:08 +0530
-Message-ID: <CAP245DWMXSC+omrdrhy1_ZCXqY490kQ9jr1BnbpHXFrujW34YQ@mail.gmail.com>
-References: <cover.1548398851.git.amit.kucheria@linaro.org>
- <73e091e2d56d9fa6eb94feaed9fc2be30bf6da20.1548398851.git.amit.kucheria@linaro.org>
- <20190125103152.7svjfmowgigznipm@vireshk-i7>
+From: Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: How to remove warn msg "cache: parent cpui should not be
+ sleeping" i=1, 2, 3...
+Date: Fri, 25 Jan 2019 14:07:01 +0100
+Message-ID: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
+References: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
+ <20181002170754.GA10240@vmlxhi-102.adit-jv.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190125103152.7svjfmowgigznipm@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20181002170754.GA10240@vmlxhi-102.adit-jv.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-pm@vger.kernel.org, Eugeniu Rosca <roscaeugeniu@gmail.com>, "Rafael
+ J. Wysocki" <rjw@rjwysocki.net>, Eugeniu Rosca <erosca@de.adit-jv.com>, linux-arm-kernel@lists.infradead.org, Joshua Frkuska <joshua_frkuska@mentor.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 25, 2019 at 4:01 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 25-01-19, 12:32, Amit Kucheria wrote:
-> > All cpufreq drivers do similar things to register as a cooling device.
-> > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> > to register the cooling device on their behalf. This allows us to get
-> > rid of duplicated code in the drivers.
-> >
-> > In order to allow this, we add a struct thermal_cooling_device pointer
-> > to struct cpufreq_policy so that drivers don't need to store it in a
-> > private data structure.
-> >
-> > Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> >  drivers/cpufreq/cpufreq.c |  6 ++++++
-> >  include/linux/cpufreq.h   | 21 +++++++++++++++++++++
-> >  2 files changed, 27 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index e35a886e00bc..cf1be057caf4 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1318,6 +1318,9 @@ static int cpufreq_online(unsigned int cpu)
-> >       if (cpufreq_driver->ready)
-> >               cpufreq_driver->ready(policy);
-> >
-> > +     if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
-> > +             register_cooling_device(policy);
-> > +
-> >       pr_debug("initialization complete\n");
-> >
-> >       return 0;
-> > @@ -1405,6 +1408,9 @@ static int cpufreq_offline(unsigned int cpu)
-> >               goto unlock;
-> >       }
-> >
-> > +     if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
-> > +             unregister_cooling_device(policy);
-> > +
-> >       if (cpufreq_driver->stop_cpu)
-> >               cpufreq_driver->stop_cpu(policy);
-> >
-> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > index bd7fbd6a4478..c7eb59b8ce94 100644
-> > --- a/include/linux/cpufreq.h
-> > +++ b/include/linux/cpufreq.h
-> > @@ -13,6 +13,7 @@
-> >
-> >  #include <linux/clk.h>
-> >  #include <linux/cpumask.h>
-> > +#include <linux/cpu_cooling.h>
-> >  #include <linux/completion.h>
-> >  #include <linux/kobject.h>
-> >  #include <linux/notifier.h>
-> > @@ -151,6 +152,9 @@ struct cpufreq_policy {
-> >
-> >       /* For cpufreq driver's internal use */
-> >       void                    *driver_data;
-> > +
-> > +     /* Pointer to the cooling device if used for thermal mitigation */
-> > +     struct thermal_cooling_device *cdev;
-> >  };
-> >
-> >  /* Only for ACPI */
-> > @@ -386,6 +390,12 @@ struct cpufreq_driver {
-> >   */
-> >  #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING    BIT(6)
-> >
-> > +/*
-> > + * Set by drivers that want the core to automatically register the cpufreq
-> > + * driver as a thermal cooling device.
-> > + */
-> > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV    BIT(7)
-> > +
-> >  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
-> >  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
-> >
-> > @@ -415,6 +425,17 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
-> >                       policy->cpuinfo.max_freq);
-> >  }
-> >
-> > +static inline void register_cooling_device(struct cpufreq_policy *policy)
-> > +{
-> > +     policy->cdev = of_cpufreq_cooling_register(policy);
-> > +}
-> > +
-> > +static inline void unregister_cooling_device(struct cpufreq_policy *policy)
-> > +{
-> > +     cpufreq_cooling_unregister(policy->cdev);
-> > +     policy->cdev = NULL;
-> > +}
->
-> I thought that we discussed over chat that you wouldn't add any
-> wrapper routines. How do you see these getting used ? I will suggest
-> that this should be open coded in the core itself.
+Hi Sudeep,
 
-Aah, I understood your earlier comment and the chat to mean that we
-could get rid of the #ifdefs. I didn't catch on to the fact you wanted
-to get rid of the wrapper routines itself. My bad.
+On Tue, Oct 02, 2018 at 07:07:54PM +0200, Eugeniu Rosca wrote:
+> Hello Sudeep,
+> 
+> I too experience the "cache: parent cpuN should not be sleeping" and
+> confirm these are healed with your patch. Would it be possible to have
+> the patch submitted for review?
 
-Will respin.
+Doing some s2ram testing on R-Car H3 Salvator-X using
+v5.0-rc3-130-gd73aba1115cf, I am still able to reproduce these warnings.
 
-Regards,
-Amit
+Is there any chance you push the patch to the mailing list? If not, can
+it be taken with a different authorship by mentioning this discussion
+thread as source of inspiration?
+
+> Thank you very much,
+> Eugeniu.
