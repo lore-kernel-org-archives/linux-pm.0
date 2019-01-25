@@ -1,250 +1,118 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 5/6] driver core: Fix handling of runtime PM flags in device_link_add()
-Date: Fri, 25 Jan 2019 12:18:03 +0100
-Message-ID: <2208291.Uxpfu9YhsE@aspire.rjw.lan>
-References: <2493187.oiOpCWJBV7@aspire.rjw.lan> <1665211.FOmLsISsVf@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCHv3 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Fri, 25 Jan 2019 12:45:17 +0100
+Message-ID: <CAJZ5v0gA07-MKvXKH690wRF0cE3AAP3kLHtLRJpiT1Dmrs_beA@mail.gmail.com>
+References: <cover.1548398851.git.amit.kucheria@linaro.org>
+ <73e091e2d56d9fa6eb94feaed9fc2be30bf6da20.1548398851.git.amit.kucheria@linaro.org>
+ <20190125103152.7svjfmowgigznipm@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1665211.FOmLsISsVf@aspire.rjw.lan>
+In-Reply-To: <20190125103152.7svjfmowgigznipm@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Jan 25, 2019 at 11:32 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 25-01-19, 12:32, Amit Kucheria wrote:
+> > All cpufreq drivers do similar things to register as a cooling device.
+> > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > to register the cooling device on their behalf. This allows us to get
+> > rid of duplicated code in the drivers.
+> >
+> > In order to allow this, we add a struct thermal_cooling_device pointer
+> > to struct cpufreq_policy so that drivers don't need to store it in a
+> > private data structure.
+> >
+> > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> >  drivers/cpufreq/cpufreq.c |  6 ++++++
+> >  include/linux/cpufreq.h   | 21 +++++++++++++++++++++
+> >  2 files changed, 27 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index e35a886e00bc..cf1be057caf4 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -1318,6 +1318,9 @@ static int cpufreq_online(unsigned int cpu)
+> >       if (cpufreq_driver->ready)
+> >               cpufreq_driver->ready(policy);
+> >
+> > +     if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
+> > +             register_cooling_device(policy);
+> > +
+> >       pr_debug("initialization complete\n");
+> >
+> >       return 0;
+> > @@ -1405,6 +1408,9 @@ static int cpufreq_offline(unsigned int cpu)
+> >               goto unlock;
+> >       }
+> >
+> > +     if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
+> > +             unregister_cooling_device(policy);
+> > +
+> >       if (cpufreq_driver->stop_cpu)
+> >               cpufreq_driver->stop_cpu(policy);
+> >
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index bd7fbd6a4478..c7eb59b8ce94 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -13,6 +13,7 @@
+> >
+> >  #include <linux/clk.h>
+> >  #include <linux/cpumask.h>
+> > +#include <linux/cpu_cooling.h>
+> >  #include <linux/completion.h>
+> >  #include <linux/kobject.h>
+> >  #include <linux/notifier.h>
+> > @@ -151,6 +152,9 @@ struct cpufreq_policy {
+> >
+> >       /* For cpufreq driver's internal use */
+> >       void                    *driver_data;
+> > +
+> > +     /* Pointer to the cooling device if used for thermal mitigation */
+> > +     struct thermal_cooling_device *cdev;
+> >  };
+> >
+> >  /* Only for ACPI */
+> > @@ -386,6 +390,12 @@ struct cpufreq_driver {
+> >   */
+> >  #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING    BIT(6)
+> >
+> > +/*
+> > + * Set by drivers that want the core to automatically register the cpufreq
+> > + * driver as a thermal cooling device.
+> > + */
+> > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV    BIT(7)
+> > +
+> >  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+> >  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> >
+> > @@ -415,6 +425,17 @@ cpufreq_verify_within_cpu_limits(struct cpufreq_policy *policy)
+> >                       policy->cpuinfo.max_freq);
+> >  }
+> >
+> > +static inline void register_cooling_device(struct cpufreq_policy *policy)
+> > +{
+> > +     policy->cdev = of_cpufreq_cooling_register(policy);
+> > +}
+> > +
+> > +static inline void unregister_cooling_device(struct cpufreq_policy *policy)
+> > +{
+> > +     cpufreq_cooling_unregister(policy->cdev);
+> > +     policy->cdev = NULL;
+> > +}
+>
+> I thought that we discussed over chat that you wouldn't add any
+> wrapper routines. How do you see these getting used ? I will suggest
+> that this should be open coded in the core itself.
 
-After commit ead18c23c263 ("driver core: Introduce device links
-reference counting"), if if there is a link between the given supplier
-and the given consumer already, device_link_add() will refcount it
-and return it unconditionally without updating its flags.  It is
-possible, however, that the second (or any subsequent) caller of
-device_link_add() for the same consumer-supplier pair will pass
-DL_FLAG_PM_RUNTIME, possibly along with DL_FLAG_RPM_ACTIVE, in flags
-to it and the existing link may not behave as expected then.
-
-First, if DL_FLAG_PM_RUNTIME is not set in the existing link's flags
-at all, it needs to be set like during the original initialization of
-the link.
-
-Second, if DL_FLAG_RPM_ACTIVE is passed to device_link_add() in flags
-(in addition to DL_FLAG_PM_RUNTIME), the existing link should to be
-updated to reflect the "active" runtime PM configuration of the
-consumer-supplier pair and extra care must be taken here to avoid
-possible destructive races with runtime PM of the consumer.
-
-To that end, redefine the rpm_active field in struct device_link
-as a refcount, initialize it to 1 and make rpm_resume() (for the
-consumer) and device_link_add() increment it whenever they acquire
-a runtime PM reference on the supplier device.  Accordingly, make
-rpm_suspend() (for the consumer) and pm_runtime_clean_up_links()
-decrement it and drop runtime PM references to the supplier
-device in a loop until rpm_active becones 1 again.
-
-Fixes: ead18c23c263 ("driver core: Introduce device links reference counting")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-I have overlooked the fact that rpm_put_suppliers() doesn't even look
-at the DL_FLAG_PM_RUNTIME link flag and only checks rpm_active for each
-link in the list, so updating rpm_active for existing links from
-device_link_add() is unsafe, regardless of whether or not DL_FLAG_PM_RUNTIME
-is set in their flags.  Of course, this means that the previous version of
-this patch was incorrect.
-
-I also was kind of unhappy with returning NULL to the callers of
-device_link_add() who passed DL_FLAG_RPM_ACTIVE in flags, but the link
-(with DL_FLAG_PM_RUNTIME set) had been there already.
-
-So, here's a v2 of just this patch (the other patches in the series don't
-change).
-
--> v2:
-  * Redefine rpm_active in struct device_link as a refcount.
-  * Rework the code to use the refcount instead of the bool properly.
-  * Make device_link_add() increment rpm_active for existing links.
-
-Admittedly, turning rpm_active into a refcount theoretically increases the
-overhead of using device links in runtime PM, so it is a concession of sorts,
-but I didn't see any other way to make this work.
-
----
- drivers/base/core.c          |   45 ++++++++++++++++++++++++++++---------------
- drivers/base/power/runtime.c |   26 ++++++++++--------------
- include/linux/device.h       |    2 -
- 3 files changed, 42 insertions(+), 31 deletions(-)
-
-Index: linux-pm/drivers/base/core.c
-===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -165,6 +165,19 @@ void device_pm_move_to_tail(struct devic
- 	device_links_read_unlock(idx);
- }
- 
-+static void device_link_rpm_prepare(struct device *consumer,
-+				    struct device *supplier)
-+{
-+	pm_runtime_new_link(consumer);
-+	/*
-+	 * If the link is being added by the consumer driver at probe time,
-+	 * balance the decrementation of the supplier's runtime PM usage counter
-+	 * after consumer probe in driver_probe_device().
-+	 */
-+	if (consumer->links.status == DL_DEV_PROBING)
-+		pm_runtime_get_noresume(supplier);
-+}
-+
- /**
-  * device_link_add - Create a link between two devices.
-  * @consumer: Consumer end of the link.
-@@ -202,7 +215,6 @@ struct device_link *device_link_add(stru
- 				    struct device *supplier, u32 flags)
- {
- 	struct device_link *link;
--	bool rpm_put_supplier = false;
- 
- 	if (!consumer || !supplier ||
- 	    (flags & DL_FLAG_STATELESS &&
-@@ -214,7 +226,6 @@ struct device_link *device_link_add(stru
- 			pm_runtime_put_noidle(supplier);
- 			return NULL;
- 		}
--		rpm_put_supplier = true;
- 	}
- 
- 	device_links_write_lock();
-@@ -250,6 +261,15 @@ struct device_link *device_link_add(stru
- 		if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
- 			link->flags |= DL_FLAG_AUTOREMOVE_SUPPLIER;
- 
-+		if (flags & DL_FLAG_PM_RUNTIME) {
-+			if (!(link->flags & DL_FLAG_PM_RUNTIME)) {
-+				device_link_rpm_prepare(consumer, supplier);
-+				link->flags |= DL_FLAG_PM_RUNTIME;
-+			}
-+			if (flags & DL_FLAG_RPM_ACTIVE)
-+				refcount_inc(&link->rpm_active);
-+		}
-+
- 		kref_get(&link->kref);
- 		goto out;
- 	}
-@@ -258,20 +278,15 @@ struct device_link *device_link_add(stru
- 	if (!link)
- 		goto out;
- 
-+	refcount_set(&link->rpm_active, 1);
-+
- 	if (flags & DL_FLAG_PM_RUNTIME) {
--		if (flags & DL_FLAG_RPM_ACTIVE) {
--			link->rpm_active = true;
--			rpm_put_supplier = false;
--		}
--		pm_runtime_new_link(consumer);
--		/*
--		 * If the link is being added by the consumer driver at probe
--		 * time, balance the decrementation of the supplier's runtime PM
--		 * usage counter after consumer probe in driver_probe_device().
--		 */
--		if (consumer->links.status == DL_DEV_PROBING)
--			pm_runtime_get_noresume(supplier);
-+		if (flags & DL_FLAG_RPM_ACTIVE)
-+			refcount_inc(&link->rpm_active);
-+
-+		device_link_rpm_prepare(consumer, supplier);
- 	}
-+
- 	get_device(supplier);
- 	link->supplier = supplier;
- 	INIT_LIST_HEAD(&link->s_node);
-@@ -334,7 +349,7 @@ struct device_link *device_link_add(stru
- 	device_pm_unlock();
- 	device_links_write_unlock();
- 
--	if (rpm_put_supplier)
-+	if ((flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) && !link)
- 		pm_runtime_put(supplier);
- 
- 	return link;
-Index: linux-pm/include/linux/device.h
-===================================================================
---- linux-pm.orig/include/linux/device.h
-+++ linux-pm/include/linux/device.h
-@@ -853,7 +853,7 @@ struct device_link {
- 	struct list_head c_node;
- 	enum device_link_state status;
- 	u32 flags;
--	bool rpm_active;
-+	refcount_t rpm_active;
- 	struct kref kref;
- #ifdef CONFIG_SRCU
- 	struct rcu_head rcu_head;
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -271,11 +271,8 @@ static int rpm_get_suppliers(struct devi
- 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
- 		int retval;
- 
--		if (!(link->flags & DL_FLAG_PM_RUNTIME))
--			continue;
--
--		if (READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND ||
--		    link->rpm_active)
-+		if (!(link->flags & DL_FLAG_PM_RUNTIME) ||
-+		    READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND)
- 			continue;
- 
- 		retval = pm_runtime_get_sync(link->supplier);
-@@ -284,7 +281,7 @@ static int rpm_get_suppliers(struct devi
- 			pm_runtime_put_noidle(link->supplier);
- 			return retval;
- 		}
--		link->rpm_active = true;
-+		refcount_inc(&link->rpm_active);
- 	}
- 	return 0;
- }
-@@ -293,12 +290,13 @@ static void rpm_put_suppliers(struct dev
- {
- 	struct device_link *link;
- 
--	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
--		if (link->rpm_active &&
--		    READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
-+		if (READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND)
-+			continue;
-+
-+		while (refcount_dec_not_one(&link->rpm_active))
- 			pm_runtime_put(link->supplier);
--			link->rpm_active = false;
--		}
-+	}
- }
- 
- /**
-@@ -1551,7 +1549,7 @@ void pm_runtime_remove(struct device *de
-  *
-  * Check links from this device to any consumers and if any of them have active
-  * runtime PM references to the device, drop the usage counter of the device
-- * (once per link).
-+ * (as many times as needed).
-  *
-  * Links with the DL_FLAG_STATELESS flag set are ignored.
-  *
-@@ -1573,10 +1571,8 @@ void pm_runtime_clean_up_links(struct de
- 		if (link->flags & DL_FLAG_STATELESS)
- 			continue;
- 
--		if (link->rpm_active) {
-+		while (refcount_dec_not_one(&link->rpm_active))
- 			pm_runtime_put_noidle(dev);
--			link->rpm_active = false;
--		}
- 	}
- 
- 	device_links_read_unlock(idx);
+Agreed.
