@@ -1,59 +1,64 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH] devfreq: Suspend all devices on system shutdown
-Date: Fri, 25 Jan 2019 14:54:03 +0100
-Message-ID: <20190125135403.10228-1-m.szyprowski@samsung.com>
-References: <CGME20190125135414eucas1p2ffc71c63f1a27f67d076dec889954b40@eucas1p2.samsung.com>
+From: Alessio Balsini <balsini@android.com>
+Subject: Re: [PATCH v6 01/16] sched/core: Allow sched_setattr() to use the
+ current policy
+Date: Fri, 25 Jan 2019 13:56:46 +0000
+Message-ID: <20190125135646.j4j2onitam4mwvcw@google.com>
+References: <20190115101513.2822-1-patrick.bellasi@arm.com>
+ <20190115101513.2822-2-patrick.bellasi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190115101513.2822-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Luba <l.luba@partner.samsung.com>, Markus Reichl <m.reichl@fivetechno.de>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-This way devfreq core ensures that all its devices will be set to safe
-operation points before reboot operation. There are board on which some
-aggressive power saving operation points are behind the capabilities of
-the bootloader to properly reset the hardware and boot the board. This
-way one can avoid board crash early after reboot.
+Hello Patrick,
 
-Similar pattern is used in CPUfreq subsystem.
+What do you think about the following minor changes:
 
-Reported-by: Markus Reichl <m.reichl@fivetechno.de>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- drivers/devfreq/devfreq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+On Tue, Jan 15, 2019 at 10:14:58AM +0000, Patrick Bellasi wrote:
+>  /* SCHED_ISO: reserved but not implemented yet */
+>  #define SCHED_IDLE		5
+>  #define SCHED_DEADLINE		6
+> +/* Must be the last entry: used to sanity check attr.policy values */
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0ae3de76833b..f6aba8344c56 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -23,6 +23,7 @@
- #include <linux/devfreq.h>
- #include <linux/workqueue.h>
- #include <linux/platform_device.h>
-+#include <linux/syscore_ops.h>
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-@@ -1422,6 +1423,10 @@ static struct attribute *devfreq_attrs[] = {
- };
- ATTRIBUTE_GROUPS(devfreq);
- 
-+static struct syscore_ops devfreq_syscore_ops = {
-+	.shutdown = devfreq_suspend,
-+};
-+
- static int __init devfreq_init(void)
- {
- 	devfreq_class = class_create(THIS_MODULE, "devfreq");
-@@ -1438,6 +1443,8 @@ static int __init devfreq_init(void)
- 	}
- 	devfreq_class->dev_groups = devfreq_groups;
- 
-+	register_syscore_ops(&devfreq_syscore_ops);
-+
- 	return 0;
- }
- subsys_initcall(devfreq_init);
--- 
-2.17.1
+I would remove this comment:
+- the meaning of SCHED_POLICY_MAX is evident, and
+- should we hint on how the value is used? That comment will be removed
+  the next time SCHED_POLICY_MAX is used for something else.
+  This is what should also happen to the comment of SETPARAM_POLICY:
+  now sched_setparam() is no more the only code path accessing
+  SETPARAM_POLICY.
+
+> +#define SCHED_POLICY_MAX	7
+
++#define SCHED_POLICY_MAX    SCHED_DEADLINE
+
+This would make it compliant with the definition of MAX.
+
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -4560,8 +4560,17 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
+>  	if (retval)
+>  		return retval;
+>  
+> -	if ((int)attr.sched_policy < 0)
+> +	/*
+> +	 * A valid policy is always required from userspace, unless
+> +	 * SCHED_FLAG_KEEP_POLICY is set and the current policy
+> +	 * is enforced for this call.
+> +	 */
+> +	if (attr.sched_policy >= SCHED_POLICY_MAX &&
+
++	if (attr.sched_policy > SCHED_POLICY_MAX &&
+
+In line with the previous update.
+
+> +	    !(attr.sched_flags & SCHED_FLAG_KEEP_POLICY)) {
+>  		return -EINVAL;
+
+Thanks,
+Alessio
