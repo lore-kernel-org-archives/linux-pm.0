@@ -1,229 +1,192 @@
-From: George Cherian <gcherianv@gmail.com>
-Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC cpufreq
-Date: Fri, 25 Jan 2019 12:37:34 +0530
-Message-ID: <CABYS093CQdhNBb8KqfV+3FfNCGcgW7DE+KsQ=DAJnRFQq74Piw@mail.gmail.com>
-References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com> <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Use struct kobj_attribute instead of struct global_attr
+Date: Fri, 25 Jan 2019 12:53:07 +0530
+Message-ID: <3a0a3ec5b36380deb59797f7189dbd0548828cf8.1548400979.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Xiongfeng Wang <wangxiongfeng2@huawei.com>, George Cherian <george.cherian@cavium.com>, Prashanth Prakash <pprakash@codeaurora.org>, robert.moore@intel.com, lenb@kernel.org, rjw@rjwysocki.net, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
+To: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Donghee Han <dh.han@samsung.com>, Sangkyu Kim <skwith.kim@samsung.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wang,
+The cpufreq_global_kobject is created using kobject_create_and_add()
+helper, which assigns the kobj_type as dynamic_kobj_ktype and show/store
+routines are set to kobj_attr_show() and kobj_attr_store().
 
-On Thu, Jan 24, 2019 at 12:27 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> +George/Prashanth.
->
-> Guys please see if you have any objections to this patch. I am not
-> very familiar with this stuff and it would be good to get some
-> feedback from you guys.
->
-> @Rafael: Do you have any comments on this ?
->
-> On 17-01-19, 19:00, Xiongfeng Wang wrote:
-> > Hisilicon chips do not support delivered performance counter register
-> > and reference performance counter register. But the platform can
-> > calculate the real performance using its own method. This patch provide
-> > a workaround for this problem, and other platforms can also use this
-> > workaround framework. We reuse the desired performance register to
-> > store the real performance calculated by the platform. After the
-> > platform finished the frequency adjust, it gets the real performance and
-> > writes it into desired performance register. OS can use it to calculate
-> > the real frequency.
-Does your platform support Autonomous Selection mode?
-This register is not valid when autonomous mode is enabled. In such case
-how are you calculating the frequency?
-> >
-> > Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-> > ---
-> >  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
-> >  drivers/cpufreq/Kconfig.arm    |  7 +++++
-> >  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
-> >  include/acpi/cppc_acpi.h       |  4 +++
-> >  4 files changed, 102 insertions(+)
-> >
-> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> > index 217a782..0cdaf7e 100644
-> > --- a/drivers/acpi/cppc_acpi.c
-> > +++ b/drivers/acpi/cppc_acpi.c
-> > @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
-> >       return ret_val;
-> >  }
-> >
-> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> > +/*
-> > + * We reuse the desired performance register to store the real performance
-> > + * calculated by the platform.
-> > + */
-> > +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
-> > +{
-> > +     int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
-> > +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-> > +     struct cpc_register_resource *desired_reg;
-> > +     u64 desired_perf;
-> > +     int ret;
-> > +
-> > +     /*
-> > +      * Make sure the platform has finished the frequency adjust
-> > +      * and wrote the real performance in desired performance register
-> > +      */
-> > +     ret = check_pcc_chan(pcc_ss_id, false);
-> > +     if (ret)
-> > +             return 0;
-If there is a pending command in the channel then returning zero
-will give bogus frequency value. You may return the previous written value.
-> > +
-> > +     desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
-> > +     cpc_read(cpunum, desired_reg, &desired_perf);
-> > +
-> > +     return desired_perf;
-> > +}
-> > +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
-> > +#endif
-> > +
-> >  /**
-> >   * cppc_get_perf_caps - Get a CPUs performance capabilities.
-> >   * @cpunum: CPU from which to get capabilities info.
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index 688f102..236bd07 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
-> >
-> >         If in doubt, say N.
-> >
-> > +config HISILICON_CPPC_CPUFREQ_WORKAROUND
-> > +     bool "Workaround for Hisilicon CPPC Cpufreq"
-> > +     default y
-> > +     depends on ACPI_CPPC_CPUFREQ && ARM64
-Do you really want this to be applied to all ARM64? or just only
-for affected HISI platforms?
-> > +     help
-> > +       This option enables a workaround for Hisilicon CPPC Cpufreq.
-> > +
-> >  config ARM_ARMADA_37XX_CPUFREQ
-> >       tristate "Armada 37xx CPUFreq support"
-> >       depends on ARCH_MVEBU && CPUFREQ_DT
-> > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> > index fd25c21c..b910e84 100644
-> > --- a/drivers/cpufreq/cppc_cpufreq.c
-> > +++ b/drivers/cpufreq/cppc_cpufreq.c
-> > @@ -33,6 +33,13 @@
-> >  /* Offest in the DMI processor structure for the max frequency */
-> >  #define DMI_PROCESSOR_MAX_SPEED  0x14
-> >
-> > +struct cppc_get_rate_workaround_info {
-If your intention is to make a generic framework for future extensions
-then you might need to name it differently. Something like
-struct cppc_workaround_info, so that you can extend the same for any
-future workarounds.
-> > +     char oem_id[ACPI_OEM_ID_SIZE +1];
-> > +     char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
-> > +     u32 oem_revision;
-> > +     unsigned int (*get)(unsigned int cpu);
-This can be  unsigned int (*get_rate)(unsigned int cpu);
-> > +};
-> > +
-> >  /*
-> >   * These structs contain information parsed from per CPU
-> >   * ACPI _CPC structures.
-> > @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
-> >       .name = "cppc_cpufreq",
-> >  };
-> >
-> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> > +/*
-> > + * When the platform does not support delivered performance counter or
-> > + * reference performance counter, it can calculate the performance using the
-> > + * platform specific mechanism. We reuse the desired performance register to
-> > + * store the real performance calculated by the platform.
-> > + */
-> > +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
-> > +{
-> > +     struct cppc_cpudata *cpu = all_cpu_data[cpunum];
-> > +     u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
-> > +
-> > +     return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
-> > +}
-> > +#endif
-> > +
-> > +static struct cppc_get_rate_workaround_info wa_info[] = {
-> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> > +     {
-> > +             .oem_id         = "HISI  ",
-> > +             .oem_table_id   = "HIP07   ",
-> > +             .oem_revision   = 0,
-> > +             .get = hisi_cppc_cpufreq_get_rate,
-> > +     },
-> > +     {
->
-> This should be:
->
->         }, {
->
-> > +             .oem_id         = "HISI  ",
-> > +             .oem_table_id   = "HIP08   ",
-> > +             .oem_revision   = 0,
-> > +             .get = hisi_cppc_cpufreq_get_rate,
-> > +     },
-> > +#endif
-> > +     {},
-> > +};
-> > +
-> > +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
-This function can be renamed to cppc_check_workaround to make it
-generic also can have a
-proper return value so that the caller can validate.
-> > +{
-> > +     struct acpi_table_header *tbl;
-> > +     acpi_status status = AE_OK;
-> > +     int i;
-> > +
-> > +     status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
-> > +     if (ACPI_FAILURE(status) || !tbl)
-> > +             return;
-> > +
-> > +     for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
-> > +             if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
-> > +                 !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
-> > +                 wa_info[i].oem_revision == tbl->oem_revision) {
-> > +                     cppc_cpufreq_driver->get = wa_info[i].get;
-> > +                     return;
-> > +             }
-> > +     }
-> > +}
-> >  static int __init cppc_cpufreq_init(void)
-> >  {
-> >       int i, ret = 0;
-> > @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
-> >               goto out;
-> >       }
-> >
-> > +     cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
-> > +
-> >       ret = cpufreq_register_driver(&cppc_cpufreq_driver);
-> >       if (ret)
-> >               goto out;
-> > diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> > index 4f34734..be7400b 100644
-> > --- a/include/acpi/cppc_acpi.h
-> > +++ b/include/acpi/cppc_acpi.h
-> > @@ -146,4 +146,8 @@ struct cppc_cpudata {
-> >  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
-> >  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
-> >
-> > +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> > +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
-> > +#endif
-> > +
-> >  #endif /* _CPPC_ACPI_H*/
-> > --
-> > 1.7.12.4
->
-> --
-> viresh
--George
+These routines pass struct kobj_attribute as an argument to the
+show/store callbacks. But all the cpufreq files created using the
+cpufreq_global_kobject expect the argument to be of type struct
+attribute. Things work fine currently as no one accesses the "attr"
+argument. We may not see issues even if the argument is used, as struct
+kobj_attribute has struct attribute as its first element and so they
+will both get same address.
+
+But this is logically incorrect and we should rather use struct
+kobj_attribute instead of struct global_attr in the cpufreq core and
+drivers and the show/store callbacks should take struct kobj_attribute
+as argument instead.
+
+This bug is caught using CFI CLANG builds in android kernel which
+catches mismatch in function prototypes for such callbacks.
+
+Reported-by: Donghee Han <dh.han@samsung.com>
+Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c      |  6 +++---
+ drivers/cpufreq/intel_pstate.c | 23 ++++++++++++-----------
+ include/linux/cpufreq.h        | 12 ++----------
+ 3 files changed, 17 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e35a886e00bc..ef0e33e21b98 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -545,13 +545,13 @@ EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
+  *                          SYSFS INTERFACE                          *
+  *********************************************************************/
+ static ssize_t show_boost(struct kobject *kobj,
+-				 struct attribute *attr, char *buf)
++			  struct kobj_attribute *attr, char *buf)
+ {
+ 	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
+ }
+ 
+-static ssize_t store_boost(struct kobject *kobj, struct attribute *attr,
+-				  const char *buf, size_t count)
++static ssize_t store_boost(struct kobject *kobj, struct kobj_attribute *attr,
++			   const char *buf, size_t count)
+ {
+ 	int ret, enable;
+ 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index dd66decf2087..5ab6a4fe93aa 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -895,7 +895,7 @@ static void intel_pstate_update_policies(void)
+ /************************** sysfs begin ************************/
+ #define show_one(file_name, object)					\
+ 	static ssize_t show_##file_name					\
+-	(struct kobject *kobj, struct attribute *attr, char *buf)	\
++	(struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
+ 	{								\
+ 		return sprintf(buf, "%u\n", global.object);		\
+ 	}
+@@ -904,7 +904,7 @@ static ssize_t intel_pstate_show_status(char *buf);
+ static int intel_pstate_update_status(const char *buf, size_t size);
+ 
+ static ssize_t show_status(struct kobject *kobj,
+-			   struct attribute *attr, char *buf)
++			   struct kobj_attribute *attr, char *buf)
+ {
+ 	ssize_t ret;
+ 
+@@ -915,7 +915,7 @@ static ssize_t show_status(struct kobject *kobj,
+ 	return ret;
+ }
+ 
+-static ssize_t store_status(struct kobject *a, struct attribute *b,
++static ssize_t store_status(struct kobject *a, struct kobj_attribute *b,
+ 			    const char *buf, size_t count)
+ {
+ 	char *p = memchr(buf, '\n', count);
+@@ -929,7 +929,7 @@ static ssize_t store_status(struct kobject *a, struct attribute *b,
+ }
+ 
+ static ssize_t show_turbo_pct(struct kobject *kobj,
+-				struct attribute *attr, char *buf)
++				struct kobj_attribute *attr, char *buf)
+ {
+ 	struct cpudata *cpu;
+ 	int total, no_turbo, turbo_pct;
+@@ -955,7 +955,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
+ }
+ 
+ static ssize_t show_num_pstates(struct kobject *kobj,
+-				struct attribute *attr, char *buf)
++				struct kobj_attribute *attr, char *buf)
+ {
+ 	struct cpudata *cpu;
+ 	int total;
+@@ -976,7 +976,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
+ }
+ 
+ static ssize_t show_no_turbo(struct kobject *kobj,
+-			     struct attribute *attr, char *buf)
++			     struct kobj_attribute *attr, char *buf)
+ {
+ 	ssize_t ret;
+ 
+@@ -998,7 +998,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
+ 	return ret;
+ }
+ 
+-static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
++static ssize_t store_no_turbo(struct kobject *a, struct kobj_attribute *b,
+ 			      const char *buf, size_t count)
+ {
+ 	unsigned int input;
+@@ -1045,7 +1045,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
+-static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
++static ssize_t store_max_perf_pct(struct kobject *a, struct kobj_attribute *b,
+ 				  const char *buf, size_t count)
+ {
+ 	unsigned int input;
+@@ -1075,7 +1075,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
+-static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
++static ssize_t store_min_perf_pct(struct kobject *a, struct kobj_attribute *b,
+ 				  const char *buf, size_t count)
+ {
+ 	unsigned int input;
+@@ -1107,12 +1107,13 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ }
+ 
+ static ssize_t show_hwp_dynamic_boost(struct kobject *kobj,
+-				struct attribute *attr, char *buf)
++				struct kobj_attribute *attr, char *buf)
+ {
+ 	return sprintf(buf, "%u\n", hwp_boost);
+ }
+ 
+-static ssize_t store_hwp_dynamic_boost(struct kobject *a, struct attribute *b,
++static ssize_t store_hwp_dynamic_boost(struct kobject *a,
++				       struct kobj_attribute *b,
+ 				       const char *buf, size_t count)
+ {
+ 	unsigned int input;
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c86d6d8bdfed..0b427d5df0fe 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -254,20 +254,12 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
+ static struct freq_attr _name =			\
+ __ATTR(_name, 0200, NULL, store_##_name)
+ 
+-struct global_attr {
+-	struct attribute attr;
+-	ssize_t (*show)(struct kobject *kobj,
+-			struct attribute *attr, char *buf);
+-	ssize_t (*store)(struct kobject *a, struct attribute *b,
+-			 const char *c, size_t count);
+-};
+-
+ #define define_one_global_ro(_name)		\
+-static struct global_attr _name =		\
++static struct kobj_attribute _name =		\
+ __ATTR(_name, 0444, show_##_name, NULL)
+ 
+ #define define_one_global_rw(_name)		\
+-static struct global_attr _name =		\
++static struct kobj_attribute _name =		\
+ __ATTR(_name, 0644, show_##_name, store_##_name)
+ 
+ 
+-- 
+2.20.1.321.g9e740568ce00
