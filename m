@@ -1,192 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Use struct kobj_attribute instead of struct global_attr
-Date: Fri, 25 Jan 2019 12:53:07 +0530
-Message-ID: <3a0a3ec5b36380deb59797f7189dbd0548828cf8.1548400979.git.viresh.kumar@linaro.org>
+From: <Nicolas.Ferre@microchip.com>
+Subject: Re: [PATCH 8/8] net: macb: add sam9x60-macb compatibility string
+Date: Fri, 25 Jan 2019 09:16:30 +0000
+Message-ID: <2f8d3a0b-fa06-2157-db4b-fc0d6e8d9016@microchip.com>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
+ <dfc7db7606e0898fbedc1f45ed9637379595f9cb.1547629763.git.nicolas.ferre@microchip.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <dfc7db7606e0898fbedc1f45ed9637379595f9cb.1547629763.git.nicolas.ferre@microchip.com>
+Content-Language: en-US
+Content-ID: <E4A375AA93587C48B64E20C9290C4942@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Donghee Han <dh.han@samsung.com>, Sangkyu Kim <skwith.kim@samsung.com>, linux-kernel@vger.kernel.org
+To: netdev@vger.kernel.org, davem@davemloft.net
+Cc: alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sre@kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, stern@rowland.harvard.edu, gregkh@linuxfoundation.org, robh+dt@kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq_global_kobject is created using kobject_create_and_add()
-helper, which assigns the kobj_type as dynamic_kobj_ktype and show/store
-routines are set to kobj_attr_show() and kobj_attr_store().
-
-These routines pass struct kobj_attribute as an argument to the
-show/store callbacks. But all the cpufreq files created using the
-cpufreq_global_kobject expect the argument to be of type struct
-attribute. Things work fine currently as no one accesses the "attr"
-argument. We may not see issues even if the argument is used, as struct
-kobj_attribute has struct attribute as its first element and so they
-will both get same address.
-
-But this is logically incorrect and we should rather use struct
-kobj_attribute instead of struct global_attr in the cpufreq core and
-drivers and the show/store callbacks should take struct kobj_attribute
-as argument instead.
-
-This bug is caught using CFI CLANG builds in android kernel which
-catches mismatch in function prototypes for such callbacks.
-
-Reported-by: Donghee Han <dh.han@samsung.com>
-Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c      |  6 +++---
- drivers/cpufreq/intel_pstate.c | 23 ++++++++++++-----------
- include/linux/cpufreq.h        | 12 ++----------
- 3 files changed, 17 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e35a886e00bc..ef0e33e21b98 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -545,13 +545,13 @@ EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
-  *                          SYSFS INTERFACE                          *
-  *********************************************************************/
- static ssize_t show_boost(struct kobject *kobj,
--				 struct attribute *attr, char *buf)
-+			  struct kobj_attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%d\n", cpufreq_driver->boost_enabled);
- }
- 
--static ssize_t store_boost(struct kobject *kobj, struct attribute *attr,
--				  const char *buf, size_t count)
-+static ssize_t store_boost(struct kobject *kobj, struct kobj_attribute *attr,
-+			   const char *buf, size_t count)
- {
- 	int ret, enable;
- 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dd66decf2087..5ab6a4fe93aa 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -895,7 +895,7 @@ static void intel_pstate_update_policies(void)
- /************************** sysfs begin ************************/
- #define show_one(file_name, object)					\
- 	static ssize_t show_##file_name					\
--	(struct kobject *kobj, struct attribute *attr, char *buf)	\
-+	(struct kobject *kobj, struct kobj_attribute *attr, char *buf)	\
- 	{								\
- 		return sprintf(buf, "%u\n", global.object);		\
- 	}
-@@ -904,7 +904,7 @@ static ssize_t intel_pstate_show_status(char *buf);
- static int intel_pstate_update_status(const char *buf, size_t size);
- 
- static ssize_t show_status(struct kobject *kobj,
--			   struct attribute *attr, char *buf)
-+			   struct kobj_attribute *attr, char *buf)
- {
- 	ssize_t ret;
- 
-@@ -915,7 +915,7 @@ static ssize_t show_status(struct kobject *kobj,
- 	return ret;
- }
- 
--static ssize_t store_status(struct kobject *a, struct attribute *b,
-+static ssize_t store_status(struct kobject *a, struct kobj_attribute *b,
- 			    const char *buf, size_t count)
- {
- 	char *p = memchr(buf, '\n', count);
-@@ -929,7 +929,7 @@ static ssize_t store_status(struct kobject *a, struct attribute *b,
- }
- 
- static ssize_t show_turbo_pct(struct kobject *kobj,
--				struct attribute *attr, char *buf)
-+				struct kobj_attribute *attr, char *buf)
- {
- 	struct cpudata *cpu;
- 	int total, no_turbo, turbo_pct;
-@@ -955,7 +955,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
- }
- 
- static ssize_t show_num_pstates(struct kobject *kobj,
--				struct attribute *attr, char *buf)
-+				struct kobj_attribute *attr, char *buf)
- {
- 	struct cpudata *cpu;
- 	int total;
-@@ -976,7 +976,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
- }
- 
- static ssize_t show_no_turbo(struct kobject *kobj,
--			     struct attribute *attr, char *buf)
-+			     struct kobj_attribute *attr, char *buf)
- {
- 	ssize_t ret;
- 
-@@ -998,7 +998,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
- 	return ret;
- }
- 
--static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
-+static ssize_t store_no_turbo(struct kobject *a, struct kobj_attribute *b,
- 			      const char *buf, size_t count)
- {
- 	unsigned int input;
-@@ -1045,7 +1045,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 	return count;
- }
- 
--static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
-+static ssize_t store_max_perf_pct(struct kobject *a, struct kobj_attribute *b,
- 				  const char *buf, size_t count)
- {
- 	unsigned int input;
-@@ -1075,7 +1075,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 	return count;
- }
- 
--static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
-+static ssize_t store_min_perf_pct(struct kobject *a, struct kobj_attribute *b,
- 				  const char *buf, size_t count)
- {
- 	unsigned int input;
-@@ -1107,12 +1107,13 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- }
- 
- static ssize_t show_hwp_dynamic_boost(struct kobject *kobj,
--				struct attribute *attr, char *buf)
-+				struct kobj_attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%u\n", hwp_boost);
- }
- 
--static ssize_t store_hwp_dynamic_boost(struct kobject *a, struct attribute *b,
-+static ssize_t store_hwp_dynamic_boost(struct kobject *a,
-+				       struct kobj_attribute *b,
- 				       const char *buf, size_t count)
- {
- 	unsigned int input;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index c86d6d8bdfed..0b427d5df0fe 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -254,20 +254,12 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
- static struct freq_attr _name =			\
- __ATTR(_name, 0200, NULL, store_##_name)
- 
--struct global_attr {
--	struct attribute attr;
--	ssize_t (*show)(struct kobject *kobj,
--			struct attribute *attr, char *buf);
--	ssize_t (*store)(struct kobject *a, struct attribute *b,
--			 const char *c, size_t count);
--};
--
- #define define_one_global_ro(_name)		\
--static struct global_attr _name =		\
-+static struct kobj_attribute _name =		\
- __ATTR(_name, 0444, show_##_name, NULL)
- 
- #define define_one_global_rw(_name)		\
--static struct global_attr _name =		\
-+static struct kobj_attribute _name =		\
- __ATTR(_name, 0644, show_##_name, store_##_name)
- 
- 
--- 
-2.20.1.321.g9e740568ce00
+SGkgRGF2aWQsDQoNCk9uIDE2LzAxLzIwMTkgYXQgMTA6NTcsIE5pY29sYXMgRmVycmUgd3JvdGU6
+DQo+IEFkZCBhIG5ldyBjb21wYXRpYmlsaXR5IHN0cmluZyBmb3IgdGhpcyBwcm9kdWN0LiBJdCdz
+IHVzaW5nDQo+IGF0OTFzYW05MjYwLW1hY2IgbGF5b3V0IGJ1dCBoYXMgYSBuZXdlciBoYXJkd2Fy
+ZSByZXZpc2lvbjogaXQncyBzYWZlcg0KPiB0byB1c2UgaXRzIG93biBzdHJpbmcuDQo+IA0KPiBT
+aWduZWQtb2ZmLWJ5OiBOaWNvbGFzIEZlcnJlIDxuaWNvbGFzLmZlcnJlQG1pY3JvY2hpcC5jb20+
+DQoNCkknbSB0aGlua2luZyBvZiBwdXNoaW5nIHRoaXMgcGF0Y2ggd2l0aCB0aGUgb3RoZXJzIG9m
+IHRoZSBzZXJpZXMgdGhyb3VnaCANCmFybS1zb2MgdHJlZS4gQ2FuIEkgaGF2ZSB5b3VyICJBY2tl
+ZC1ieSIgdGFnIHRoZW4/DQoNCkJlc3QgcmVnYXJkcywNCiAgIE5pY29sYXMNCg0KDQo+IC0tLQ0K
+PiAgIGRyaXZlcnMvbmV0L2V0aGVybmV0L2NhZGVuY2UvbWFjYl9tYWluLmMgfCAxICsNCj4gICAx
+IGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJz
+L25ldC9ldGhlcm5ldC9jYWRlbmNlL21hY2JfbWFpbi5jIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQv
+Y2FkZW5jZS9tYWNiX21haW4uYw0KPiBpbmRleCA2NmNjNzkyNzA2MWEuLmEwODg5ZWYxMDdhMSAx
+MDA2NDQNCj4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvY2FkZW5jZS9tYWNiX21haW4uYw0K
+PiArKysgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9jYWRlbmNlL21hY2JfbWFpbi5jDQo+IEBAIC0z
+OTQxLDYgKzM5NDEsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBtYWNiX2R0
+X2lkc1tdID0gew0KPiAgIAl7IC5jb21wYXRpYmxlID0gImNkbnMsbnA0LW1hY2IiLCAuZGF0YSA9
+ICZucDRfY29uZmlnIH0sDQo+ICAgCXsgLmNvbXBhdGlibGUgPSAiY2RucyxwYzMwMi1nZW0iLCAu
+ZGF0YSA9ICZwYzMwMmdlbV9jb25maWcgfSwNCj4gICAJeyAuY29tcGF0aWJsZSA9ICJjZG5zLGdl
+bSIsIC5kYXRhID0gJnBjMzAyZ2VtX2NvbmZpZyB9LA0KPiArCXsgLmNvbXBhdGlibGUgPSAiY2Ru
+cyxzYW05eDYwLW1hY2IiLCAuZGF0YSA9ICZhdDkxc2FtOTI2MF9jb25maWcgfSwNCj4gICAJeyAu
+Y29tcGF0aWJsZSA9ICJhdG1lbCxzYW1hNWQyLWdlbSIsIC5kYXRhID0gJnNhbWE1ZDJfY29uZmln
+IH0sDQo+ICAgCXsgLmNvbXBhdGlibGUgPSAiYXRtZWwsc2FtYTVkMy1nZW0iLCAuZGF0YSA9ICZz
+YW1hNWQzX2NvbmZpZyB9LA0KPiAgIAl7IC5jb21wYXRpYmxlID0gImF0bWVsLHNhbWE1ZDMtbWFj
+YiIsIC5kYXRhID0gJnNhbWE1ZDNtYWNiX2NvbmZpZyB9LA0KPiANCg0KDQotLSANCk5pY29sYXMg
+RmVycmUNCg==
