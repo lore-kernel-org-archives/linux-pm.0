@@ -1,64 +1,112 @@
-From: Alessio Balsini <balsini@android.com>
-Subject: Re: [PATCH v6 01/16] sched/core: Allow sched_setattr() to use the
- current policy
-Date: Fri, 25 Jan 2019 13:56:46 +0000
-Message-ID: <20190125135646.j4j2onitam4mwvcw@google.com>
-References: <20190115101513.2822-1-patrick.bellasi@arm.com>
- <20190115101513.2822-2-patrick.bellasi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [RFC PATCH] drivers core: cpu: add hotplug callback to update cpu_dev state to resumed
+Date: Fri, 25 Jan 2019 15:09:06 +0000
+Message-ID: <20190125150906.27614-1-sudeep.holla@arm.com>
+References: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190115101513.2822-2-patrick.bellasi@arm.com>
+In-Reply-To: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Patrick,
+The sysfs for the cpu caches are managed by adding devices with cpu
+as the parent in cpu_device_create() when secondary cpu is brought
+onlin. Generally when the secondary CPUs are hotplugged back is as part
+of resume from suspend-to-ram, we call cpu_device_create() from the cpu
+hotplug state machine while the cpu device associated with that CPU is
+not yet ready to be resumed as the device_resume() call happens bit later.
+It's not really needed to set the flag is_prepared for cpu devices are
+they are mostly pseudo device and hotplug framework deals with state
+machine and not managed through the cpu device.
 
-What do you think about the following minor changes:
+This often results in annoying warning when resuming:
+Enabling non-boot CPUs ...
+CPU1: Booted secondary processor
+ cache: parent cpu1 should not be sleeping
+CPU1 is up
+CPU2: Booted secondary processor
+ cache: parent cpu2 should not be sleeping
+CPU2 is up
+.... and so on.
 
-On Tue, Jan 15, 2019 at 10:14:58AM +0000, Patrick Bellasi wrote:
->  /* SCHED_ISO: reserved but not implemented yet */
->  #define SCHED_IDLE		5
->  #define SCHED_DEADLINE		6
-> +/* Must be the last entry: used to sanity check attr.policy values */
+Just fix the warning by updating the device state quite early.
 
-I would remove this comment:
-- the meaning of SCHED_POLICY_MAX is evident, and
-- should we hint on how the value is used? That comment will be removed
-  the next time SCHED_POLICY_MAX is used for something else.
-  This is what should also happen to the comment of SETPARAM_POLICY:
-  now sched_setparam() is no more the only code path accessing
-  SETPARAM_POLICY.
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Reported-by: Jisheng Zhang <jszhang@marvell.com>
+Reported-by: Steve Longerbeam <slongerbeam@gmail.com>
+Reported-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/base/cpu.c         | 20 +++++++++++++++++++-
+ include/linux/cpuhotplug.h |  1 +
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-> +#define SCHED_POLICY_MAX	7
+Hi Rafael,
 
-+#define SCHED_POLICY_MAX    SCHED_DEADLINE
+This is getting reported for quite some time. Let me know if you have
+better solution to fix this harmless yet annoying warnings during system
+resume.
 
-This would make it compliant with the definition of MAX.
+Regards,
+Sudeep
 
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -4560,8 +4560,17 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
->  	if (retval)
->  		return retval;
->  
-> -	if ((int)attr.sched_policy < 0)
-> +	/*
-> +	 * A valid policy is always required from userspace, unless
-> +	 * SCHED_FLAG_KEEP_POLICY is set and the current policy
-> +	 * is enforced for this call.
-> +	 */
-> +	if (attr.sched_policy >= SCHED_POLICY_MAX &&
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index eb9443d5bae1..ae0403528bff 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -80,6 +80,8 @@ void unregister_cpu(struct cpu *cpu)
 
-+	if (attr.sched_policy > SCHED_POLICY_MAX &&
+ 	device_unregister(&cpu->dev);
+ 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
++
++	cpuhp_remove_state_nocalls(CPUHP_CPUDEV_PM_PREPARE);
+ 	return;
+ }
 
-In line with the previous update.
+@@ -355,6 +357,20 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
+ }
+ #endif
 
-> +	    !(attr.sched_flags & SCHED_FLAG_KEEP_POLICY)) {
->  		return -EINVAL;
++static int cpu_dev_pm_unset_is_prepared(unsigned int cpu)
++{
++	struct device *cpu_dev = get_cpu_device(cpu);
++
++	/*
++	 * device_resume sets this for cpu_dev bit later but the child
++	 * devices are resumes in the cpu hotplug state machine much
++	 * before device_resume is called.
++	 */
++	if (cpu_dev)
++		cpu_dev->power.is_prepared = false;
++
++	return 0;
++}
+ /*
+  * register_cpu - Setup a sysfs device for a CPU.
+  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
+@@ -392,7 +408,9 @@ int register_cpu(struct cpu *cpu, int num)
+ 	dev_pm_qos_expose_latency_limit(&cpu->dev,
+ 					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
 
-Thanks,
-Alessio
+-	return 0;
++	return cpuhp_setup_state_nocalls(CPUHP_CPUDEV_PM_PREPARE,
++					 "base/cpu/dev_pm:prepare",
++					 cpu_dev_pm_unset_is_prepared, NULL);
+ }
+
+ struct device *get_cpu_device(unsigned cpu)
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index fd586d0301e7..2ecb4c9370ce 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -69,6 +69,7 @@ enum cpuhp_state {
+ 	CPUHP_SLAB_PREPARE,
+ 	CPUHP_MD_RAID5_PREPARE,
+ 	CPUHP_RCUTREE_PREP,
++	CPUHP_CPUDEV_PM_PREPARE,
+ 	CPUHP_CPUIDLE_COUPLED_PREPARE,
+ 	CPUHP_POWERPC_PMAC_PREPARE,
+ 	CPUHP_POWERPC_MMU_CTX_PREPARE,
+--
+2.17.1
