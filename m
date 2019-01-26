@@ -1,266 +1,554 @@
-From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC
- cpufreq
-Date: Sat, 26 Jan 2019 17:44:53 +0800
-Message-ID: <930bc3a8-2076-0923-7968-81001c90db8a@huawei.com>
-References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
- <20190124065614.gnnwd6lhbyjiph2e@vireshk-i7>
- <CABYS093CQdhNBb8KqfV+3FfNCGcgW7DE+KsQ=DAJnRFQq74Piw@mail.gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH v2 08/10] rtc: bd70528: Initial support for ROHM
+ bd70528 RTC
+Date: Sat, 26 Jan 2019 08:30:24 -0800
+Message-ID: <35bbc5b9-5f8c-ec80-3eaa-bb2c0e2812c9@roeck-us.net>
+References: <20190125110536.GA29321@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CABYS093CQdhNBb8KqfV+3FfNCGcgW7DE+KsQ=DAJnRFQq74Piw@mail.gmail.com>
+In-Reply-To: <20190125110536.GA29321@localhost.localdomain>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: George Cherian <gcherianv@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: George Cherian <george.cherian@cavium.com>, Prashanth Prakash <pprakash@codeaurora.org>, robert.moore@intel.com, lenb@kernel.org, rjw@rjwysocki.net, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, mazziesaccount@gmail.com
+Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi George,
-
-Thanks for your reply !
-
-On 2019/1/25 15:07, George Cherian wrote:
-> Hi Wang,
+On 1/25/19 3:05 AM, Matti Vaittinen wrote:
+> Support RTC block in ROHM bd70528 power management IC. Support
+> getting and setting the time and date as well as arming an alarm
+> which can also be used to wake the PMIC from standby state.
 > 
-> On Thu, Jan 24, 2019 at 12:27 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>
->> +George/Prashanth.
->>
->> Guys please see if you have any objections to this patch. I am not
->> very familiar with this stuff and it would be good to get some
->> feedback from you guys.
->>
->> @Rafael: Do you have any comments on this ?
->>
->> On 17-01-19, 19:00, Xiongfeng Wang wrote:
->>> Hisilicon chips do not support delivered performance counter register
->>> and reference performance counter register. But the platform can
->>> calculate the real performance using its own method. This patch provide
->>> a workaround for this problem, and other platforms can also use this
->>> workaround framework. We reuse the desired performance register to
->>> store the real performance calculated by the platform. After the
->>> platform finished the frequency adjust, it gets the real performance and
->>> writes it into desired performance register. OS can use it to calculate
->>> the real frequency.
-> Does your platform support Autonomous Selection mode?
-> This register is not valid when autonomous mode is enabled. In such case
-> how are you calculating the frequency?
-
-Our platform does not support Autonomous Selection mode.
-When it's enabled, this method won't work. But I think the current doesn't support
-Autonomous Selection mode. I only found a defition 'AUTO_SEL_ENABLE' in enum cppc_regs
-and there is no one using it.
-
->>>
->>> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
->>> ---
->>>  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
->>>  drivers/cpufreq/Kconfig.arm    |  7 +++++
->>>  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
->>>  include/acpi/cppc_acpi.h       |  4 +++
->>>  4 files changed, 102 insertions(+)
->>>
->>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->>> index 217a782..0cdaf7e 100644
->>> --- a/drivers/acpi/cppc_acpi.c
->>> +++ b/drivers/acpi/cppc_acpi.c
->>> @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
->>>       return ret_val;
->>>  }
->>>
->>> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->>> +/*
->>> + * We reuse the desired performance register to store the real performance
->>> + * calculated by the platform.
->>> + */
->>> +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
->>> +{
->>> +     int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
->>> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->>> +     struct cpc_register_resource *desired_reg;
->>> +     u64 desired_perf;
->>> +     int ret;
->>> +
->>> +     /*
->>> +      * Make sure the platform has finished the frequency adjust
->>> +      * and wrote the real performance in desired performance register
->>> +      */
->>> +     ret = check_pcc_chan(pcc_ss_id, false);
->>> +     if (ret)
->>> +             return 0;
-> If there is a pending command in the channel then returning zero
-> will give bogus frequency value. You may return the previous written value.
-
-How about returning a error code here ?
-In current kernel, when 'cppc_cpufreq_get_rate' returns -EFAULT, 'cpuinfo_cur_freq'
-shows a very big value. I was thinking about writing a patch to fix it.
-
->>> +
->>> +     desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
->>> +     cpc_read(cpunum, desired_reg, &desired_perf);
->>> +
->>> +     return desired_perf;
->>> +}
->>> +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
->>> +#endif
->>> +
->>>  /**
->>>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
->>>   * @cpunum: CPU from which to get capabilities info.
->>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->>> index 688f102..236bd07 100644
->>> --- a/drivers/cpufreq/Kconfig.arm
->>> +++ b/drivers/cpufreq/Kconfig.arm
->>> @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
->>>
->>>         If in doubt, say N.
->>>
->>> +config HISILICON_CPPC_CPUFREQ_WORKAROUND
->>> +     bool "Workaround for Hisilicon CPPC Cpufreq"
->>> +     default y
->>> +     depends on ACPI_CPPC_CPUFREQ && ARM64
-> Do you really want this to be applied to all ARM64? or just only
-> for affected HISI platforms?
-
-I was thinking about applying the framwork to all ARM64.
-CONF_HISILICON_CPPC_CPUFREQ_WORKAROUND adds the OEM ID for HISI.
-
->>> +     help
->>> +       This option enables a workaround for Hisilicon CPPC Cpufreq.
->>> +
->>>  config ARM_ARMADA_37XX_CPUFREQ
->>>       tristate "Armada 37xx CPUFreq support"
->>>       depends on ARCH_MVEBU && CPUFREQ_DT
->>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->>> index fd25c21c..b910e84 100644
->>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>> @@ -33,6 +33,13 @@
->>>  /* Offest in the DMI processor structure for the max frequency */
->>>  #define DMI_PROCESSOR_MAX_SPEED  0x14
->>>
->>> +struct cppc_get_rate_workaround_info {
-> If your intention is to make a generic framework for future extensions
-> then you might need to name it differently. Something like
-> struct cppc_workaround_info, so that you can extend the same for any
-> future workarounds.
-
-Thanks for your advice. I will change it in the next version.
-
->>> +     char oem_id[ACPI_OEM_ID_SIZE +1];
->>> +     char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
->>> +     u32 oem_revision;
->>> +     unsigned int (*get)(unsigned int cpu);
-> This can be  unsigned int (*get_rate)(unsigned int cpu);
->>> +};
->>> +
->>>  /*
->>>   * These structs contain information parsed from per CPU
->>>   * ACPI _CPC structures.
->>> @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
->>>       .name = "cppc_cpufreq",
->>>  };
->>>
->>> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->>> +/*
->>> + * When the platform does not support delivered performance counter or
->>> + * reference performance counter, it can calculate the performance using the
->>> + * platform specific mechanism. We reuse the desired performance register to
->>> + * store the real performance calculated by the platform.
->>> + */
->>> +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
->>> +{
->>> +     struct cppc_cpudata *cpu = all_cpu_data[cpunum];
->>> +     u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
->>> +
->>> +     return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
->>> +}
->>> +#endif
->>> +
->>> +static struct cppc_get_rate_workaround_info wa_info[] = {
->>> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->>> +     {
->>> +             .oem_id         = "HISI  ",
->>> +             .oem_table_id   = "HIP07   ",
->>> +             .oem_revision   = 0,
->>> +             .get = hisi_cppc_cpufreq_get_rate,
->>> +     },
->>> +     {
->>
->> This should be:
->>
->>         }, {
->>
->>> +             .oem_id         = "HISI  ",
->>> +             .oem_table_id   = "HIP08   ",
->>> +             .oem_revision   = 0,
->>> +             .get = hisi_cppc_cpufreq_get_rate,
->>> +     },
->>> +#endif
->>> +     {},
->>> +};
->>> +
->>> +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
-> This function can be renamed to cppc_check_workaround to make it
-> generic also can have a
-> proper return value so that the caller can validate.
-
-Thanks, I will change it and all above.
-If I want to apply it to ARM64, I think I will need a CONFIG_ARM64 here.
-
->>> +{
->>> +     struct acpi_table_header *tbl;
->>> +     acpi_status status = AE_OK;
->>> +     int i;
->>> +
->>> +     status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
->>> +     if (ACPI_FAILURE(status) || !tbl)
->>> +             return;
->>> +
->>> +     for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
->>> +             if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
->>> +                 !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
->>> +                 wa_info[i].oem_revision == tbl->oem_revision) {
->>> +                     cppc_cpufreq_driver->get = wa_info[i].get;
->>> +                     return;
->>> +             }
->>> +     }
->>> +}
->>>  static int __init cppc_cpufreq_init(void)
->>>  {
->>>       int i, ret = 0;
->>> @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
->>>               goto out;
->>>       }
->>>
->>> +     cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
->>> +
->>>       ret = cpufreq_register_driver(&cppc_cpufreq_driver);
->>>       if (ret)
->>>               goto out;
->>> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->>> index 4f34734..be7400b 100644
->>> --- a/include/acpi/cppc_acpi.h
->>> +++ b/include/acpi/cppc_acpi.h
->>> @@ -146,4 +146,8 @@ struct cppc_cpudata {
->>>  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
->>>  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
->>>
->>> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->>> +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
->>> +#endif
->>> +
->>>  #endif /* _CPPC_ACPI_H*/
->>> --
->>> 1.7.12.4
->>
->> --
->> viresh
-> -George
+> HW supports wake interrupt only for the next 24 hours (sec, minute
+> and hour information only) so we limit also the alarm interrupt to
+> this 24 hours for the sake of consistency.
 > 
-> .
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
+>   drivers/rtc/Kconfig       |   8 +
+>   drivers/rtc/Makefile      |   1 +
+>   drivers/rtc/rtc-bd70528.c | 451 ++++++++++++++++++++++++++++++++++++++++++++++
+>   3 files changed, 460 insertions(+)
+>   create mode 100644 drivers/rtc/rtc-bd70528.c
 > 
-Thanks,
-Xiongfeng
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 225b0b8516f3..df6211cbd83f 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -487,6 +487,14 @@ config RTC_DRV_M41T80_WDT
+>   	help
+>   	  If you say Y here you will get support for the
+>   	  watchdog timer in the ST M41T60 and M41T80 RTC chips series.
+> +config RTC_DRV_BD70528
+> +	tristate "ROHM BD70528 PMIC RTC"
+> +	help
+> +	  If you say Y here you will get support for the RTC
+> +	  on ROHM BD70528 Power Management IC.
+> +
+> +	  This driver can also be built as a module. If so, the module
+> +	  will be called rtc-bd70528.
+>   
+>   config RTC_DRV_BQ32K
+>   	tristate "TI BQ32000"
+> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+> index df022d820bee..740b13840913 100644
+> --- a/drivers/rtc/Makefile
+> +++ b/drivers/rtc/Makefile
+> @@ -36,6 +36,7 @@ obj-$(CONFIG_RTC_DRV_ASM9260)	+= rtc-asm9260.o
+>   obj-$(CONFIG_RTC_DRV_AT91RM9200)+= rtc-at91rm9200.o
+>   obj-$(CONFIG_RTC_DRV_AT91SAM9)	+= rtc-at91sam9.o
+>   obj-$(CONFIG_RTC_DRV_AU1XXX)	+= rtc-au1xxx.o
+> +obj-$(CONFIG_RTC_DRV_BD70528)	+= rtc-bd70528.o
+>   obj-$(CONFIG_RTC_DRV_BQ32K)	+= rtc-bq32k.o
+>   obj-$(CONFIG_RTC_DRV_BQ4802)	+= rtc-bq4802.o
+>   obj-$(CONFIG_RTC_DRV_BRCMSTB)	+= rtc-brcmstb-waketimer.o
+> diff --git a/drivers/rtc/rtc-bd70528.c b/drivers/rtc/rtc-bd70528.c
+> new file mode 100644
+> index 000000000000..250fb218c784
+> --- /dev/null
+> +++ b/drivers/rtc/rtc-bd70528.c
+> @@ -0,0 +1,451 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +//
+> +// Copyright (C) 2018 ROHM Semiconductors
+> +//
+> +// RTC driver for ROHM BD70528 PMIC
+> +
+> +#include <linux/bcd.h>
+> +#include <linux/mfd/rohm-bd70528.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/rtc.h>
+> +
+> +/*
+> + * We read regs RTC_SEC => RTC_YEAR
+> + * this struct is ordered according to chip registers.
+> + * Keep it u8 only to avoid padding issues.
+> + */
+> +struct bd70528_rtc_day {
+> +	u8 sec;
+> +	u8 min;
+> +	u8 hour;
+> +};
+> +
+> +struct bd70528_rtc_data {
+> +	struct bd70528_rtc_day time;
+> +	u8 week;
+> +	u8 day;
+> +	u8 month;
+> +	u8 year;
+> +};
+> +
+> +struct bd70528_rtc_wake {
+> +	struct bd70528_rtc_day time;
+> +	u8 ctrl;
+> +};
+> +
+> +struct bd70528_rtc_alm {
+> +	struct bd70528_rtc_data data;
+> +	u8 alm_mask;
+> +	u8 alm_repeat;
+> +};
+
+At least some of the above are directly associated with chip registers.
+I don't think this will work for all architectures without explicit packed
+attribute.
+
+> +
+> +struct bd70528_rtc {
+> +	struct bd70528 *mfd;
+> +	struct device *dev;
+> +};
+> +
+> +static int bd70528_set_wake(struct bd70528 *bd70528,
+> +			    int enable, int *old_state)
+> +{
+> +	int ret;
+> +	unsigned int ctrl_reg;
+> +
+> +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WAKE_EN, &ctrl_reg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (old_state) {
+> +		if (ctrl_reg & BD70528_MASK_WAKE_EN)
+> +			*old_state |= BD70528_WAKE_STATE_BIT;
+> +		else
+> +			*old_state &= ~BD70528_WAKE_STATE_BIT;
+> +
+> +		if ((!enable) == (!(*old_state & BD70528_WAKE_STATE_BIT)))
+> +			return 0;
+
+I think
+		if (enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
+would be much better readable. Even if not, there are way too many ()
+in the above conditional.
+
+
+> +	}
+> +
+> +	if (enable)
+> +		ctrl_reg |= BD70528_MASK_WAKE_EN;
+> +	else
+> +		ctrl_reg &= ~BD70528_MASK_WAKE_EN;
+> +
+> +	return regmap_write(bd70528->chip.regmap, BD70528_REG_WAKE_EN,
+> +			    ctrl_reg);
+> +}
+> +
+> +static int bd70528_set_elapsed_tmr(struct bd70528 *bd70528,
+> +				   int enable, int *old_state)
+> +{
+> +	int ret;
+> +	unsigned int ctrl_reg;
+> +
+> +	/*
+> +	 * TBD
+> +	 * What is the purpose of elapsed timer ?
+> +	 * Is the timeout registers counting down, or is the disable - re-enable
+> +	 * going to restart the elapsed-time counting? If counting is restarted
+> +	 * the timeout should be decreased by the amount of time that has
+> +	 * elapsed since starting the timer. Maybe we should store the monotonic
+> +	 * clock value when timer is started so that if RTC is set while timer
+> +	 * is armed we could do the compensation. This is a hack if RTC/system
+> +	 * clk are drifting. OTOH, RTC controlled via I2C is in any case
+> +	 * inaccurate...
+> +	 */
+> +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_ELAPSED_TIMER_EN,
+> +			  &ctrl_reg);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (old_state) {
+> +		if (ctrl_reg & BD70528_MASK_ELAPSED_TIMER_EN)
+> +			*old_state |= BD70528_ELAPSED_STATE_BIT;
+> +		else
+> +			*old_state &= ~BD70528_ELAPSED_STATE_BIT;
+> +
+> +		if ((!enable) == (!(*old_state & BD70528_ELAPSED_STATE_BIT)))
+> +			return 0;
+> +	}
+> +
+> +	if (enable)
+> +		ctrl_reg |= BD70528_MASK_ELAPSED_TIMER_EN;
+> +	else
+> +		ctrl_reg &= ~BD70528_MASK_ELAPSED_TIMER_EN;
+> +
+> +	return regmap_write(bd70528->chip.regmap, BD70528_REG_ELAPSED_TIMER_EN,
+> +			    ctrl_reg);
+> +}
+> +
+> +static int bd70528_set_rtc_based_timers(struct bd70528_rtc *r, int new_state,
+> +							int *old_state)
+> +{
+> +	int ret;
+> +
+> +	ret = r->mfd->wdt_set(r->mfd, new_state & BD70528_WDT_STATE_BIT,
+> +			       old_state);
+> +	if (ret) {
+> +		dev_err(r->dev,
+> +			"Failed to disable WDG for RTC setting (%d)\n", ret);
+> +		return ret;
+> +	}
+> +	ret = bd70528_set_elapsed_tmr(r->mfd,
+> +				      new_state & BD70528_ELAPSED_STATE_BIT,
+> +				      old_state);
+> +	if (ret) {
+> +		dev_err(r->dev,
+> +			"Failed to disable 'elapsed timer' for RTC setting\n");
+> +		return ret;
+> +	}
+> +	ret = bd70528_set_wake(r->mfd, new_state & BD70528_WAKE_STATE_BIT,
+> +			       old_state);
+> +	if (ret) {
+> +		dev_err(r->dev,
+> +			"Failed to disable 'wake timer' for RTC setting\n");
+> +		return ret;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int bd70528_re_enable_rtc_based_timers(struct bd70528_rtc *r,
+> +							int old_state)
+> +{
+> +	int ret;
+> +
+> +	ret = bd70528_set_rtc_based_timers(r, old_state, NULL);
+> +	mutex_unlock(&r->mfd->rtc_timer_lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static int bd70528_disable_rtc_based_timers(struct bd70528_rtc *r,
+> +							int *old_state)
+> +{
+> +	mutex_lock(&r->mfd->rtc_timer_lock);
+> +
+> +	return bd70528_set_rtc_based_timers(r, 0, old_state);
+> +}
+> +
+> +static inline void tmday2rtc(struct rtc_time *t, struct bd70528_rtc_day *d)
+> +{
+> +	d->sec &= ~BD70528_MASK_RTC_SEC;
+> +	d->min &= ~BD70528_MASK_RTC_MINUTE;
+> +	d->hour &= ~BD70528_MASK_RTC_HOUR;
+> +	d->sec |= bin2bcd(t->tm_sec);
+> +	d->min |= bin2bcd(t->tm_min);
+> +	d->hour |= bin2bcd(t->tm_hour);
+> +}
+> +
+> +static inline void tm2rtc(struct rtc_time *t, struct bd70528_rtc_data *r)
+> +{
+> +	r->day &= ~BD70528_MASK_RTC_DAY;
+> +	r->week &= ~BD70528_MASK_RTC_WEEK;
+> +	r->month &= ~BD70528_MASK_RTC_MONTH;
+> +	/*
+> +	 * PM and 24H bits are not used by Wake - thus we clear them
+> +	 * here and not in tmday2rtc() which is also used by wake.
+> +	 */
+> +	r->time.hour &= ~(BD70528_MASK_RTC_HOUR_PM | BD70528_MASK_RTC_HOUR_24H);
+> +
+> +	tmday2rtc(t, &r->time);
+> +	/*
+> +	 * We do always set time in 24H mode.
+> +	 */
+> +	r->time.hour |= BD70528_MASK_RTC_HOUR_24H;
+> +	r->day |= bin2bcd(t->tm_mday);
+> +	r->week |= bin2bcd(t->tm_wday);
+> +	r->month |= bin2bcd(t->tm_mon + 1);
+> +	r->year = bin2bcd(t->tm_year-100);
+> +}
+> +
+> +static inline void rtc2tm(struct bd70528_rtc_data *r, struct rtc_time *t)
+> +{
+> +	t->tm_sec = bcd2bin(r->time.sec & BD70528_MASK_RTC_SEC);
+> +	t->tm_min = bcd2bin(r->time.min & BD70528_MASK_RTC_MINUTE);
+> +	t->tm_hour = bcd2bin(r->time.hour & BD70528_MASK_RTC_HOUR);
+> +	/*
+> +	 * If RTC is in 12H mode, then bit BD70528_MASK_RTC_HOUR_PM
+> +	 * is not BCD value but tells whether it is AM or PM
+> +	 */
+> +	if (!(r->time.hour & BD70528_MASK_RTC_HOUR_24H)) {
+> +		t->tm_hour %= 12;
+> +		if (r->time.hour & BD70528_MASK_RTC_HOUR_PM)
+> +			t->tm_hour += 12;
+> +	}
+> +	t->tm_mday = bcd2bin(r->day & BD70528_MASK_RTC_DAY);
+> +	t->tm_mon = bcd2bin(r->month & BD70528_MASK_RTC_MONTH) - 1;
+> +	t->tm_year = 100 + bcd2bin(r->year & BD70528_MASK_RTC_YEAR);
+> +	t->tm_wday = bcd2bin(r->week & BD70528_MASK_RTC_WEEK);
+> +}
+> +
+> +static int bd70528_set_alarm(struct device *dev, struct rtc_wkalrm *a)
+> +{
+> +	struct bd70528_rtc_wake wake;
+> +	struct bd70528_rtc_alm alm;
+> +	int ret;
+> +	struct bd70528_rtc *r = dev_get_drvdata(dev);
+> +	struct bd70528 *bd70528 = r->mfd;
+> +
+> +	ret = regmap_bulk_read(bd70528->chip.regmap, BD70528_REG_RTC_WAKE_START,
+> +			       &wake, sizeof(wake));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read wake regs\n");
+> +		return ret;
+> +	}
+> +
+> +	ret = regmap_bulk_read(bd70528->chip.regmap, BD70528_REG_RTC_ALM_START,
+> +			       &alm, sizeof(alm));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read alarm regs\n");
+> +		return ret;
+> +	}
+> +
+> +	tm2rtc(&a->time, &alm.data);
+> +	tmday2rtc(&a->time, &wake.time);
+> +
+> +	if (a->enabled) {
+> +		alm.alm_mask &= ~BD70528_MASK_ALM_EN;
+> +		wake.ctrl |= BD70528_MASK_WAKE_EN;
+> +	} else {
+> +		alm.alm_mask |= BD70528_MASK_ALM_EN;
+> +		wake.ctrl &= ~BD70528_MASK_WAKE_EN;
+> +	}
+> +
+> +	ret = regmap_bulk_write(bd70528->chip.regmap,
+> +				BD70528_REG_RTC_WAKE_START, &wake,
+> +				sizeof(wake));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to set wake time\n");
+> +		return ret;
+> +	}
+> +	ret = regmap_bulk_write(bd70528->chip.regmap, BD70528_REG_RTC_ALM_START,
+> +				&alm, sizeof(alm));
+> +	if (ret)
+> +		dev_err(dev, "Failed to set alarm time\n");
+> +
+> +	return ret;
+> +}
+> +
+> +static int bd70528_read_alarm(struct device *dev, struct rtc_wkalrm *a)
+> +{
+> +	struct bd70528_rtc_alm alm;
+> +	int ret;
+> +	struct bd70528_rtc *r = dev_get_drvdata(dev);
+> +	struct bd70528 *bd70528 = r->mfd;
+> +
+> +	ret = regmap_bulk_read(bd70528->chip.regmap, BD70528_REG_RTC_ALM_START,
+> +			  &alm, sizeof(alm));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read alarm regs\n");
+> +		return ret;
+> +	}
+> +
+> +	rtc2tm(&alm.data, &a->time);
+> +	a->time.tm_mday = -1;
+> +	a->time.tm_mon = -1;
+> +	a->time.tm_year = -1;
+> +	if (alm.alm_mask & BD70528_MASK_ALM_EN)
+> +		a->enabled = 0;
+> +	else
+> +		a->enabled = 1;
+> +
+Without conditional:
+	a->enabled = !(alm.alm_mask & BD70528_MASK_ALM_EN);
+
+> +	a->pending = 0;
+> +
+> +	return 0;
+> +}
+> +
+> +static int bd70528_set_time(struct device *dev, struct rtc_time *t)
+> +{
+> +	int ret, old_states;
+> +	struct bd70528_rtc_data rtc_data;
+> +	struct bd70528_rtc *r = dev_get_drvdata(dev);
+> +	struct bd70528 *bd70528 = r->mfd;
+> +
+> +	ret = bd70528_disable_rtc_based_timers(r, &old_states);
+> +
+
+AFAICS the disable/enable functions are only called once. Since they
+also apply set / clear a mutex, I find that a bit confusing. I think
+it would be better to fold the code into this function. If anything,
+I could imagine something like
+
+	mutex_lock();
+	ret = bd70528_set_time_locked();
+	mutex_unlock()
+
+to simplify error handling.
+
+
+> +	ret = regmap_bulk_read(bd70528->chip.regmap,
+> +			       BD70528_REG_RTC_START, &rtc_data,
+> +			       sizeof(rtc_data));
+> +
+> +	tm2rtc(t, &rtc_data);
+> +
+> +	ret = regmap_bulk_write(bd70528->chip.regmap,
+> +				BD70528_REG_RTC_START, &rtc_data,
+> +				sizeof(rtc_data));
+> +
+> +	ret = bd70528_re_enable_rtc_based_timers(r, old_states);
+> +
+
+Kind of off that all the error returns are ignored here.
+
+> +	return 0;
+> +}
+> +static int bd70528_get_time(struct device *dev, struct rtc_time *t)
+> +{
+> +	struct bd70528_rtc *r = dev_get_drvdata(dev);
+> +	struct bd70528 *bd70528 = r->mfd;
+> +	struct bd70528_rtc_data rtc_data;
+> +	int ret;
+> +
+> +	/* read the RTC date and time registers all at once */
+> +	ret = regmap_bulk_read(bd70528->chip.regmap,
+> +			       BD70528_REG_RTC_START, &rtc_data,
+> +			       sizeof(rtc_data));
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read RTC time (err %d)\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	rtc2tm(&rtc_data, t);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct rtc_class_ops bd70528_rtc_ops = {
+> +	.read_time	= bd70528_get_time,
+> +	.set_time	= bd70528_set_time,
+> +	.read_alarm	= bd70528_read_alarm,
+> +	.set_alarm	= bd70528_set_alarm,
+> +};
+> +
+> +static irqreturn_t alm_hndlr(int irq, void *data)
+> +{
+> +	struct rtc_device *rtc = data;
+> +
+> +	rtc_update_irq(rtc, 1, RTC_IRQF | RTC_AF | RTC_PF);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int bd70528_probe(struct platform_device *pdev)
+> +{
+> +	struct bd70528_rtc *bd_rtc;
+> +	struct bd70528 *mfd;
+> +	int ret;
+> +	struct rtc_device *rtc;
+> +	int irq;
+> +	unsigned int hr;
+> +
+> +	mfd = dev_get_drvdata(pdev->dev.parent);
+> +	if (!mfd) {
+> +		dev_err(&pdev->dev, "No MFD driver data\n");
+> +		return -EINVAL;
+> +	}
+> +	bd_rtc = devm_kzalloc(&pdev->dev, sizeof(*bd_rtc), GFP_KERNEL);
+> +	if (!bd_rtc)
+> +		return -ENOMEM;
+> +
+> +	bd_rtc->mfd = mfd;
+> +	bd_rtc->dev = &pdev->dev;
+> +
+> +	irq = platform_get_irq_byname(pdev, "bd70528-rtc-alm");
+> +
+> +	if (irq < 0) {
+> +		dev_err(&pdev->dev, "Failed to get irq\n");
+> +		return irq;
+> +	}
+> +
+> +	platform_set_drvdata(pdev, bd_rtc);
+> +
+> +	ret = regmap_read(mfd->chip.regmap, BD70528_REG_RTC_HOUR, &hr);
+> +
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Failed to reag RTC clock\n");
+> +		return ret;
+> +	}
+> +
+> +	if (!(hr & BD70528_MASK_RTC_HOUR_24H)) {
+> +		struct rtc_time t;
+> +
+> +		ret = bd70528_get_time(&pdev->dev, &t);
+> +		if (ret)
+> +			return ret;
+> +
+> +		ret = bd70528_set_time(&pdev->dev, &t);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Setting 24H clock for RTC failed\n");
+> +		return ret;
+> +	}
+> +
+> +	device_set_wakeup_capable(&pdev->dev, true);
+> +	device_wakeup_enable(&pdev->dev);
+> +	rtc = devm_rtc_device_register(&pdev->dev, "bd70528-rtc",
+> +				       &bd70528_rtc_ops, THIS_MODULE);
+> +	if (IS_ERR(rtc)) {
+> +		dev_err(&pdev->dev, "Registering RTC failed\n");
+> +		return PTR_ERR(rtc);
+> +	}
+> +
+> +	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, &alm_hndlr,
+> +					IRQF_ONESHOT, "bd70528-rtc", rtc);
+> +
+> +	/*
+> +	 *  BD70528 irq controller is not touching the main mask register.
+> +	 *  So enable the RTC block interrupts at main level. We can just
+> +	 *  leave them enabled as irq-controller should disable irqs
+> +	 *  from sub-registers when IRQ is disabled or freed.
+> +	 */
+> +	ret = regmap_update_bits(mfd->chip.regmap,
+> +				 BD70528_REG_INT_MAIN_MASK,
+> +				 BD70528_INT_RTC_MASK, 0);
+> +
+> +	if (ret)
+> +		dev_err(&pdev->dev, "Failed to enable RTC interrupts\n");
+> +
+> +	return ret;
+> +}
+> +
+> +static struct platform_driver bd70528_rtc = {
+> +	.driver = {
+> +		.name = "bd70528-rtc"
+> +	},
+> +	.probe = bd70528_probe,
+> +};
+> +
+> +module_platform_driver(bd70528_rtc);
+> +
+> +MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
+> +MODULE_DESCRIPTION("BD70528 RTC driver");
+> +MODULE_LICENSE("GPL");
+> 
