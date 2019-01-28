@@ -1,73 +1,68 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 162/170] thermal: generic-adc: Fix adc to temp interpolation
-Date: Mon, 28 Jan 2019 11:11:52 -0500
-Message-ID: <20190128161200.55107-162-sashal@kernel.org>
-References: <20190128161200.55107-1-sashal@kernel.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH 0/7] Register an Energy Model for Arm reference platforms
+Date: Mon, 28 Jan 2019 16:55:15 +0000
+Message-ID: <20190128165522.31749-1-quentin.perret@arm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, mka@chromium.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
+The Energy Model (EM) framework feeds interested subsystems (the
+scheduler/EAS as of now) with power costs provided by drivers. Yet, no
+driver is actually doing that upstream yet. This series updates a set of
+CPUFreq drivers and DT files in order to register power costs in the EM
+framework for some of the Arm reference platforms for EAS: Hikey960,
+Juno and TC2.
 
-[ Upstream commit 9d216211fded20fff301d0317af3238d8383634c ]
+The series is split as follows:
 
-First correct the edge case to return the last element if we're
-outside the range, rather than at the last element, so that
-interpolation is not omitted for points between the two last entries in
-the table.
+ * Patch 01 introduces in PM_OPP a helper function which estimates the
+   CPU power using the P=CV²f equation also used by IPA. It should be
+   noted that this introduces duplicate code with IPA, which will
+   eventually be fixed by migrating IPA to using PM_EM. The ideal plan
+   would be to do so later, in a separate patch series. I would indeed
+   prefer to keep the thermal and CPUFreq discussion separate at this
+   stage, if deemed acceptable.
 
-Then correct the formula to perform linear interpolation based the two
-points surrounding the read ADC value. The indices for temp are kept as
-"hi" and "lo" to pair with the adc indices, but there's no requirement
-that the temperature is provided in descendent order. mult_frac() is
-used to prevent issues with overflowing the int.
+ * Patches 02-04 make use of that PM_OPP helper function from the
+   following CPUFreq drivers: cpufreq-dt, scpi-cpufreq and
+   arm_big_little.
 
-Cc: Laxman Dewangan <ldewangan@nvidia.com>
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ * Patch 05 modifies the SCMI cpufreq driver to pass the power costs
+   obtained from firmware to PM_EM.
 
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index 73f55d6a1721..ad601e5b4175 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -26,7 +26,7 @@ struct gadc_thermal_info {
- 
- static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- {
--	int temp, adc_hi, adc_lo;
-+	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
- 	int i;
- 
- 	for (i = 0; i < gti->nlookup_table; i++) {
-@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- 
- 	if (i == 0) {
- 		temp = gti->lookup_table[0];
--	} else if (i >= (gti->nlookup_table - 1)) {
-+	} else if (i >= gti->nlookup_table) {
- 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
- 	} else {
- 		adc_hi = gti->lookup_table[2 * i - 1];
- 		adc_lo = gti->lookup_table[2 * i + 1];
--		temp = gti->lookup_table[2 * i];
--		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
-+
-+		temp_hi = gti->lookup_table[2 * i - 2];
-+		temp_lo = gti->lookup_table[2 * i];
-+
-+		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
-+					   adc_lo - adc_hi);
- 	}
- 
- 	return temp;
+ * Patches 06-07 provide the dynamic-power-coefficient values for Juno
+   and TC2.
+
+Thanks,
+Quentin
+
+Dietmar Eggemann (3):
+  cpufreq: arm_big_little: Register an Energy Model
+  arm64: dts: juno: Add cpu dynamic-power-coefficient information
+  arm: dts: vexpress-v2p-ca15_a7: Add cpu dynamic-power-coefficient
+    information
+
+Quentin Perret (4):
+  PM / OPP: Introduce a power estimation helper
+  cpufreq: dt: Register an Energy Model
+  cpufreq: scpi: Register an Energy Model
+  cpufreq: scmi: Register an Energy Model
+
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts |  5 ++
+ arch/arm64/boot/dts/arm/juno-r2.dts        |  6 +++
+ arch/arm64/boot/dts/arm/juno.dts           |  6 +++
+ drivers/cpufreq/arm_big_little.c           | 10 ++++
+ drivers/cpufreq/cpufreq-dt.c               |  7 ++-
+ drivers/cpufreq/scmi-cpufreq.c             | 36 ++++++++++++-
+ drivers/cpufreq/scpi-cpufreq.c             |  8 ++-
+ drivers/opp/of.c                           | 60 ++++++++++++++++++++++
+ include/linux/pm_opp.h                     |  5 ++
+ 9 files changed, 140 insertions(+), 3 deletions(-)
+
 -- 
-2.19.1
+2.20.1
