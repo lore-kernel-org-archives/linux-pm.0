@@ -1,10 +1,9 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH 6/7] arm64: dts: juno: Add cpu dynamic-power-coefficient information
-Date: Mon, 28 Jan 2019 16:55:21 +0000
-Message-ID: <20190128165522.31749-7-quentin.perret@arm.com>
+Subject: [PATCH 4/7] cpufreq: arm_big_little: Register an Energy Model
+Date: Mon, 28 Jan 2019 16:55:19 +0000
+Message-ID: <20190128165522.31749-5-quentin.perret@arm.com>
 References: <20190128165522.31749-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190128165522.31749-1-quentin.perret@arm.com>
@@ -15,145 +14,52 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-A CPUfreq driver, like the scpi driver used on Juno boards, which
-provide the Energy Model with power cost information via the PM_OPP
-of_dev_pm_opp_get_cpu_power() function, do need the
-dynamic-power-coefficient (C) in the device tree.
-
-Method used to obtain the C value:
-C is computed by measuring energy (E) consumption of a frequency domain
-(FD) over a 10s runtime (t) sysbench workload running at each Operating
-Performance Point (OPP) affine to 1 or 2 CPUs of that FD while the other
-CPUs of the system are hotplugged out.
-By definition all CPUs of a FD have the the same micro-architecture. An
-OPP is characterized by a certain frequency (f) and voltage (V) value.
-The corresponding power values (P) are calculated by dividing the delta
-of the E values between the runs with 2 and 1 CPUs by t.
-
-With n data tuples (P, f, V), n equal to number of OPPs for this
-frequency domain, we can solve C by:
-
-P = Pstat + Pdyn
-
-P = Pstat + CV²f
-
-Cx = (Px - P1)/(Vx²fx - V1²f1) with x = {2, ..., n}
-
-The C value is the arithmetic mean out of {C2, ..., Cn}.
-
-Since DVFS is broken on Juno r1, no dynamic-power-coefficient
-information has been added to its dts file.
+Now that PM_OPP provides a helper function to estimate the power
+consumed by CPUs, make sure to try and register an Energy Model (EM)
+from the arm_big_little CPUFreq driver, hence ensuring interested
+subsystems (the task scheduler, for example) can make use of that
+information when available.
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
- arch/arm64/boot/dts/arm/juno-r2.dts | 6 ++++++
- arch/arm64/boot/dts/arm/juno.dts    | 6 ++++++
- 2 files changed, 12 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/arm/juno-r2.dts b/arch/arm64/boot/dts/arm/juno-r2.dts
-index ab77adb4f3c2..66f0ec79c864 100644
---- a/arch/arm64/boot/dts/arm/juno-r2.dts
-+++ b/arch/arm64/boot/dts/arm/juno-r2.dts
-@@ -99,6 +99,7 @@
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <1024>;
-+			dynamic-power-coefficient = <450>;
- 		};
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index cf62a1f64dd7..803d41c629c3 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -24,6 +24,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_cooling.h>
++#include <linux/energy_model.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+@@ -456,6 +457,7 @@ static int get_cluster_clk_and_freq_table(struct device *cpu_dev,
+ /* Per-CPU initialization */
+ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ {
++	struct em_data_callback em_cb = EM_DATA_CB(of_dev_pm_opp_get_cpu_power);
+ 	u32 cur_cluster = cpu_to_cluster(policy->cpu);
+ 	struct device *cpu_dev;
+ 	int ret;
+@@ -487,6 +489,14 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency =
+ 				arm_bL_ops->get_transition_latency(cpu_dev);
  
- 		A72_1: cpu@1 {
-@@ -116,6 +117,7 @@
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <1024>;
-+			dynamic-power-coefficient = <450>;
- 		};
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
++		return -EPROBE_DEFER;
++	}
++
++	em_register_perf_domain(policy->cpus, ret, &em_cb);
++
+ 	if (is_bL_switching_enabled())
+ 		per_cpu(cpu_last_req_freq, policy->cpu) = clk_get_cpu_rate(policy->cpu);
  
- 		A53_0: cpu@100 {
-@@ -133,6 +135,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <485>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_1: cpu@101 {
-@@ -150,6 +153,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <485>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_2: cpu@102 {
-@@ -167,6 +171,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <485>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_3: cpu@103 {
-@@ -184,6 +189,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <485>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A72_L2: l2-cache0 {
-diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
-index 08d4ba1716c3..9890afdda77b 100644
---- a/arch/arm64/boot/dts/arm/juno.dts
-+++ b/arch/arm64/boot/dts/arm/juno.dts
-@@ -98,6 +98,7 @@
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <1024>;
-+			dynamic-power-coefficient = <530>;
- 		};
- 
- 		A57_1: cpu@1 {
-@@ -115,6 +116,7 @@
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <1024>;
-+			dynamic-power-coefficient = <530>;
- 		};
- 
- 		A53_0: cpu@100 {
-@@ -132,6 +134,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <578>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_1: cpu@101 {
-@@ -149,6 +152,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <578>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_2: cpu@102 {
-@@ -166,6 +170,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <578>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A53_3: cpu@103 {
-@@ -183,6 +188,7 @@
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 			capacity-dmips-mhz = <578>;
-+			dynamic-power-coefficient = <140>;
- 		};
- 
- 		A57_L2: l2-cache0 {
 -- 
 2.20.1
