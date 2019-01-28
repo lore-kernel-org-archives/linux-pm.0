@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 052/107] cpuidle: big.LITTLE: fix refcount leak
-Date: Mon, 28 Jan 2019 11:18:52 -0500
-Message-ID: <20190128161947.57405-52-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 101/107] thermal: generic-adc: Fix adc to temp interpolation
+Date: Mon, 28 Jan 2019 11:19:41 -0500
+Message-ID: <20190128161947.57405-101-sashal@kernel.org>
 References: <20190128161947.57405-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -9,49 +9,65 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Yangtao Li <tiny.windzz@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Yangtao Li <tiny.windzz@gmail.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-[ Upstream commit 9456823c842f346c74265fcd98d008d87a7eb6f5 ]
+[ Upstream commit 9d216211fded20fff301d0317af3238d8383634c ]
 
-of_find_node_by_path() acquires a reference to the node
-returned by it and that reference needs to be dropped by its caller.
-bl_idle_init() doesn't do that, so fix it.
+First correct the edge case to return the last element if we're
+outside the range, rather than at the last element, so that
+interpolation is not omitted for points between the two last entries in
+the table.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Then correct the formula to perform linear interpolation based the two
+points surrounding the read ADC value. The indices for temp are kept as
+"hi" and "lo" to pair with the adc indices, but there's no requirement
+that the temperature is provided in descendent order. mult_frac() is
+used to prevent issues with overflowing the int.
+
+Cc: Laxman Dewangan <ldewangan@nvidia.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpuidle/cpuidle-big_little.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index db2ede565f1a..b44476a1b7ad 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -167,6 +167,7 @@ static int __init bl_idle_init(void)
+diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
+index 73f55d6a1721..ad601e5b4175 100644
+--- a/drivers/thermal/thermal-generic-adc.c
++++ b/drivers/thermal/thermal-generic-adc.c
+@@ -26,7 +26,7 @@ struct gadc_thermal_info {
+ 
+ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
  {
- 	int ret;
- 	struct device_node *root = of_find_node_by_path("/");
-+	const struct of_device_id *match_id;
+-	int temp, adc_hi, adc_lo;
++	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
+ 	int i;
  
- 	if (!root)
- 		return -ENODEV;
-@@ -174,7 +175,11 @@ static int __init bl_idle_init(void)
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_match_node(compatible_machine_match, root))
-+	match_id = of_match_node(compatible_machine_match, root);
-+
-+	of_node_put(root);
-+
-+	if (!match_id)
- 		return -ENODEV;
+ 	for (i = 0; i < gti->nlookup_table; i++) {
+@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
  
- 	if (!mcpm_is_available())
+ 	if (i == 0) {
+ 		temp = gti->lookup_table[0];
+-	} else if (i >= (gti->nlookup_table - 1)) {
++	} else if (i >= gti->nlookup_table) {
+ 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
+ 	} else {
+ 		adc_hi = gti->lookup_table[2 * i - 1];
+ 		adc_lo = gti->lookup_table[2 * i + 1];
+-		temp = gti->lookup_table[2 * i];
+-		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
++
++		temp_hi = gti->lookup_table[2 * i - 2];
++		temp_lo = gti->lookup_table[2 * i];
++
++		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
++					   adc_lo - adc_hi);
+ 	}
+ 
+ 	return temp;
 -- 
 2.19.1
