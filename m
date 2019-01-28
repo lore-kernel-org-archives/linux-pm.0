@@ -1,75 +1,66 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 135/258] OPP: Use opp_table->regulators to verify no regulator case
-Date: Mon, 28 Jan 2019 10:57:21 -0500
-Message-ID: <20190128155924.51521-135-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 134/258] cpuidle: big.LITTLE: fix refcount leak
+Date: Mon, 28 Jan 2019 10:57:20 -0500
+Message-ID: <20190128155924.51521-134-sashal@kernel.org>
 References: <20190128155924.51521-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Yangtao Li <tiny.windzz@gmail.com>, Sasha Levin <sashal@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Yangtao Li <tiny.windzz@gmail.com>
 
-[ Upstream commit 90e3577b5feb42bac1269e16bb3d2bdd8f6df40f ]
+[ Upstream commit 9456823c842f346c74265fcd98d008d87a7eb6f5 ]
 
-The value of opp_table->regulator_count is not very consistent right now
-and it may end up being 0 while we do have a "opp-microvolt" property in
-the OPP table. It was kept that way as we used to check if any
-regulators are set with the OPP core for a device or not using value of
-regulator_count.
+of_find_node_by_path() acquires a reference to the node
+returned by it and that reference needs to be dropped by its caller.
+bl_idle_init() doesn't do that, so fix it.
 
-Lets use opp_table->regulators for that purpose as the meaning of
-regulator_count is going to change in the later patches.
-
-Reported-by: Quentin Perret <quentin.perret@arm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/opp/core.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle-big_little.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 31ff03dbeb83..f3433bf47b10 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -191,12 +191,12 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- 	if (IS_ERR(opp_table))
- 		return 0;
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index db2ede565f1a..b44476a1b7ad 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -167,6 +167,7 @@ static int __init bl_idle_init(void)
+ {
+ 	int ret;
+ 	struct device_node *root = of_find_node_by_path("/");
++	const struct of_device_id *match_id;
  
--	count = opp_table->regulator_count;
--
- 	/* Regulator may not be required for the device */
--	if (!count)
-+	if (!opp_table->regulators)
- 		goto put_opp_table;
- 
-+	count = opp_table->regulator_count;
+ 	if (!root)
+ 		return -ENODEV;
+@@ -174,7 +175,11 @@ static int __init bl_idle_init(void)
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_match_node(compatible_machine_match, root))
++	match_id = of_match_node(compatible_machine_match, root);
 +
- 	uV = kmalloc_array(count, sizeof(*uV), GFP_KERNEL);
- 	if (!uV)
- 		goto put_opp_table;
-@@ -976,6 +976,9 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	struct regulator *reg;
- 	int i;
- 
-+	if (!opp_table->regulators)
-+		return true;
++	of_node_put(root);
 +
- 	for (i = 0; i < opp_table->regulator_count; i++) {
- 		reg = opp_table->regulators[i];
++	if (!match_id)
+ 		return -ENODEV;
  
-@@ -1263,7 +1266,7 @@ static int _allocate_set_opp_data(struct opp_table *opp_table)
- 	struct dev_pm_set_opp_data *data;
- 	int len, count = opp_table->regulator_count;
- 
--	if (WARN_ON(!count))
-+	if (WARN_ON(!opp_table->regulators))
- 		return -EINVAL;
- 
- 	/* space for set_opp_data */
+ 	if (!mcpm_is_available())
 -- 
 2.19.1
