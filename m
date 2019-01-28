@@ -1,49 +1,119 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 2/9] cpufreq: Auto-register the driver as a thermal cooling device if asked
-Date: Mon, 28 Jan 2019 13:03:20 +0100
-Message-ID: <12294707.IXbBkGfcfl@aspire.rjw.lan>
-References: <cover.1548654899.git.amit.kucheria@linaro.org> <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org> <3afd5b04-5caf-053d-48c9-f719eec58da0@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [RFC PATCH v2 09/10] power: supply: Initial support for ROHM
+ BD70528 PMIC charger block
+Date: Mon, 28 Jan 2019 13:49:04 +0100
+Message-ID: <CACRpkdYTCgXo8FeitEfRujeWdshnsR3Kn57cKUZsA3CsZ5Cnrw@mail.gmail.com>
+References: <20190125110600.GA29332@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3afd5b04-5caf-053d-48c9-f719eec58da0@linaro.org>
+In-Reply-To: <20190125110600.GA29332@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Tao Wang <kevin.wangtao@hisilicon.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, Baolin Wang <baolin.wang@linaro.org>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, January 28, 2019 9:32:44 AM CET Daniel Lezcano wrote:
-> On 28/01/2019 07:41, Amit Kucheria wrote:
-> > All cpufreq drivers do similar things to register as a cooling device.
-> > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> > to register the cooling device on their behalf. This allows us to get
-> > rid of duplicated code in the drivers.
-> > 
-> > In order to allow this, we add a struct thermal_cooling_device pointer
-> > to struct cpufreq_policy so that drivers don't need to store it in a
-> > private data structure.
-> > 
-> > Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> 
-> [ ... ]
-> 
-> > +/*
-> > + * Set by drivers that want the core to automatically register the cpufreq
-> > + * driver as a thermal cooling device.
-> > + */
-> > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
-> > +
-> 
-> Isn't the CPUFREQ_IS_COOLING_DEV more appropriate? We define a property
-> of the cpufreq driver and the resulting action is to auto-register, no?
+Hi Matti!
 
-Yes.
+Thanks for your patch.
 
-Cheers,
-Rafael
+We are going to have a problem with the power subsystem.
+
+These charging drivers are growing wild. This is starting to get out
+of hand, we need some more framework for properly handling charging
+state machines the kernel. Not specifically your problem, but
+when working on the driver try to keep generic support in mind.
+
+On Fri, Jan 25, 2019 at 12:06 PM Matti Vaittinen
+<matti.vaittinen@fi.rohmeurope.com> wrote:
+
+> +#define CHG_STAT_SUSPEND       0x0
+> +#define CHG_STAT_TRICKLE       0x1
+> +#define CHG_STAT_FAST          0x3
+> +#define CHG_STAT_TOPOFF                0xe
+> +#define CHG_STAT_DONE          0xf
+> +#define CHG_STAT_OTP_TRICKLE   0x10
+> +#define CHG_STAT_OTP_FAST      0x11
+> +#define CHG_STAT_OTP_DONE      0x12
+> +#define CHG_STAT_TSD_TRICKLE   0x20
+> +#define CHG_STAT_TSD_FAST      0x21
+> +#define CHG_STAT_TSD_TOPOFF    0x22
+> +#define CHG_STAT_BAT_ERR       0x7f
+
+So what I am seeing is that these states are starting to turn up in more
+and more drivers, so we really need to think about a central management
+component for charging state machines. I do not think they are all
+that different after all.
+
+> +BD_ERR_IRQ_HND(BAT_OV_DET, "Battery overvoltage detected\n");
+> +BD_ERR_IRQ_HND(DBAT_DET, "Dead battery detected\n");
+> +BD_ERR_IRQ_HND(COLD_DET, "Battery cold\n");
+> +BD_ERR_IRQ_HND(HOT_DET, "Battery hot\n");
+> +BD_ERR_IRQ_HND(CHG_TSD, "Charger thermal shutdown\n");
+> +BD_ERR_IRQ_HND(DCIN2_OV_DET, "DCIN2 overvoltage detected\n");
+> +
+> +BD_INFO_IRQ_HND(BAT_OV_RES, "Battery voltage back to normal\n");
+> +BD_INFO_IRQ_HND(COLD_RES, "Battery temperature back to normal\n");
+> +BD_INFO_IRQ_HND(HOT_RES, "Battery temperature back to normal\n");
+> +BD_INFO_IRQ_HND(BAT_RMV, "Battery removed\n");
+> +BD_INFO_IRQ_HND(BAT_DET, "Battery detected\n");
+> +BD_INFO_IRQ_HND(DCIN2_OV_RES, "DCIN2 voltage back to normal\n");
+> +BD_INFO_IRQ_HND(DCIN2_RMV, "DCIN2 removed\n");
+> +BD_INFO_IRQ_HND(DCIN2_DET, "DCIN2 detected\n");
+> +BD_INFO_IRQ_HND(DCIN1_RMV, "DCIN1 removed\n");
+> +BD_INFO_IRQ_HND(DCIN1_DET, "DCIN1 detected\n");
+
+So we have states and events, and these events form edges
+between the states, right?
+
+I am certain you must have a graphical picture of this state
+machine somewhere, it seems to be how charging hardware people
+do their thinking.
+
+> +/*
+> + * For BD70528 voltage/current limits we happily accept any value which
+> + * belongs the range. We could check if value matching the selector is
+> + * desired by computing the range min + (sel - sel_low) * range step - but
+> + * I guess it is enough if we use voltage/current which is closest (below)
+> + * the requested?
+> + */
+> +static int find_selector_for_value_low(struct linear_range *r, int selectors,
+> +                                      unsigned int val, unsigned int *sel,
+> +                                      bool *found)
+> +{
+> +       int i;
+> +       int ret = -EINVAL;
+> +
+> +       *found = false;
+> +       for (i = 0; i < selectors; i++) {
+> +               if (r[i].min <= val) {
+> +                       if (r[i].min + r[i].step * r[i].vals >= val) {
+> +                               *found = true;
+> +                               *sel = r[i].low_sel + (val - r[i].min) /
+> +                                      r[i].step;
+> +                               ret = 0;
+> +                               break;
+> +                       }
+> +                       /*
+> +                        * If the range max is smaller than requested
+> +                        * we can set the max supported value from range
+> +                        */
+> +                       *sel = r[i].low_sel + r[i].vals;
+> +                       ret = 0;
+> +               }
+> +       }
+> +       return ret;
+> +}
+
+If I'm not mistaken this is yet another instance of linear interpolation
+from a table?
+
+We really need to think about abstracting this. Last time this
+duplication appeared I suggested adding linear interpolation
+primitives to:
+include/linux/fixp-arith.h
+
+I don't know what others say though?
+
+Yours,
+Linus Walleij
