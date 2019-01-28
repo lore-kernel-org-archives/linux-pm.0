@@ -1,75 +1,65 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: Suspend all devices on system shutdown
-Date: Mon, 28 Jan 2019 10:17:17 +0900
-Message-ID: <9fbfc35c-9448-f1ae-6e47-7d5f6bba22de@samsung.com>
-References: <CGME20190125135414eucas1p2ffc71c63f1a27f67d076dec889954b40@eucas1p2.samsung.com>
-        <20190125135403.10228-1-m.szyprowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v4 0/9] cpufreq: Add flag to auto-register as cooling device
+Date: Mon, 28 Jan 2019 12:11:25 +0530
+Message-ID: <cover.1548654899.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190125135403.10228-1-m.szyprowski@samsung.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Luba <l.luba@partner.samsung.com>, Markus Reichl <m.reichl@fivetechno.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC
+        support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC
+        support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add a flag for cpufreq drivers to tell cpufreq core to auto-register
+themselves as a thermal cooling device.
 
-On 19. 1. 25. 오후 10:54, Marek Szyprowski wrote:
-> This way devfreq core ensures that all its devices will be set to safe
-> operation points before reboot operation. There are board on which some
-> aggressive power saving operation points are behind the capabilities of
-> the bootloader to properly reset the hardware and boot the board. This
-> way one can avoid board crash early after reboot.
-> 
-> Similar pattern is used in CPUfreq subsystem.
-> 
-> Reported-by: Markus Reichl <m.reichl@fivetechno.de>
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de76833b..f6aba8344c56 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -23,6 +23,7 @@
->  #include <linux/devfreq.h>
->  #include <linux/workqueue.h>
->  #include <linux/platform_device.h>
-> +#include <linux/syscore_ops.h>
->  #include <linux/list.h>
->  #include <linux/printk.h>
->  #include <linux/hrtimer.h>
-> @@ -1422,6 +1423,10 @@ static struct attribute *devfreq_attrs[] = {
->  };
->  ATTRIBUTE_GROUPS(devfreq);
->  
-> +static struct syscore_ops devfreq_syscore_ops = {
-> +	.shutdown = devfreq_suspend,
-> +};
-> +
->  static int __init devfreq_init(void)
->  {
->  	devfreq_class = class_create(THIS_MODULE, "devfreq");
-> @@ -1438,6 +1443,8 @@ static int __init devfreq_init(void)
->  	}
->  	devfreq_class->dev_groups = devfreq_groups;
->  
-> +	register_syscore_ops(&devfreq_syscore_ops);
-> +
->  	return 0;
->  }
->  subsys_initcall(devfreq_init);
-> 
+There series converts over all the drivers except arm_big_little.c.
+Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
+others.
 
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Things needing fixing (but not a blocker for the series):
+ - Look at how to detect that we're not in IKS mode in arm_big_little's
+   .ready callback.
+
+Chnages since v3:
+ - Got rid of wrapper function to register/unregister cooling devices.
+   Directly call the function in cpufreq.c
+
+Changes since v2:
+ - Get rid of #ifdef'ery and let the pointer exist in all cases
+ - Get rid of (!CPU_THERMAL || THERMAL) dependency in all cpufreq drivers'
+   Kconfig
+
+Changes since v1:
+- Fix compilation failures with allmodconfig
+- Get rid of #ifdef in cpufreq.c
+- Removed miscellaneous patches and sent them separately
+- Merged patches 1 and 2 from v1
+
+Amit Kucheria (9):
+  thermal: cpu_cooling: Require thermal core to be compiled in
+  cpufreq: Auto-register the driver as a thermal cooling device if asked
+  cpufreq: qcom-hw: Register as a cpufreq cooling device
+  cpufreq: imx6q: Use auto-registration of thermal cooling device
+  cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
+  cpufreq: mediatek: Use auto-registration of thermal cooling device
+  cpufreq: qoriq: Use auto-registration of thermal cooling device
+  cpufreq: scmi: Use auto-registration of thermal cooling device
+  cpufreq: scpi: Use auto-registration of thermal cooling device
+
+ drivers/cpufreq/Kconfig            |  3 ---
+ drivers/cpufreq/Kconfig.arm        |  5 -----
+ drivers/cpufreq/cpufreq-dt.c       | 14 ++------------
+ drivers/cpufreq/cpufreq.c          |  9 +++++++++
+ drivers/cpufreq/imx6q-cpufreq.c    | 24 ++----------------------
+ drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
+ drivers/cpufreq/qcom-cpufreq-hw.c  |  3 ++-
+ drivers/cpufreq/qoriq-cpufreq.c    | 15 ++-------------
+ drivers/cpufreq/scmi-cpufreq.c     | 14 ++------------
+ drivers/cpufreq/scpi-cpufreq.c     | 14 ++------------
+ drivers/thermal/Kconfig            |  1 +
+ include/linux/cpufreq.h            |  9 +++++++++
+ 12 files changed, 33 insertions(+), 92 deletions(-)
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.17.1
