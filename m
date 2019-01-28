@@ -1,36 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 0/9] cpufreq: Add flag to auto-register as cooling
- device
-Date: Mon, 28 Jan 2019 12:17:01 +0530
-Message-ID: <20190128064701.r25ffs5ixzkcd5r6@vireshk-i7>
-References: <cover.1548654899.git.amit.kucheria@linaro.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [RFC PATCH v2 00/10] support ROHM BD70528 PMIC
+Date: Mon, 28 Jan 2019 07:19:36 +0000
+Message-ID: <20190128071936.GD4678@dell>
+References: <20190125110110.GA29171@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <cover.1548654899.git.amit.kucheria@linaro.org>
+In-Reply-To: <20190125110110.GA29171@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28-01-19, 12:11, Amit Kucheria wrote:
-> Add a flag for cpufreq drivers to tell cpufreq core to auto-register
-> themselves as a thermal cooling device.
-> 
-> There series converts over all the drivers except arm_big_little.c.
-> Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
-> others.
-> 
-> Things needing fixing (but not a blocker for the series):
->  - Look at how to detect that we're not in IKS mode in arm_big_little's
->    .ready callback.
-> 
-> Chnages since v3:
->  - Got rid of wrapper function to register/unregister cooling devices.
->    Directly call the function in cpufreq.c
+On Fri, 25 Jan 2019, Matti Vaittinen wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Patch series introducing support for ROHM BD70528 PMIC
+> 
+> Please note that patch 1 breaks compilation without patches 2 and 3
+> 
+> ROHM BD70528 is a programmable Power Management IC for battery
+> powered 'ultra low power' systems like the pre-announced NXP
+> i.MX7 ULP. This patch series introduces support for the PMIC.
+
+It looks like you've sent this set un-threaded, which means as people
+reply to the patches, they are going to be spread out into the four
+winds (in Inbox terms).
 
 -- 
-viresh
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
