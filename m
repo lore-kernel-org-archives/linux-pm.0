@@ -1,212 +1,98 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V4 00/20] Tegra210 DFLL support
-Date: Mon, 28 Jan 2019 08:54:42 +0100
-Message-ID: <20190128075442.GA18124@ulmo>
-References: <20190104030702.8684-1-josephl@nvidia.com>
- <20190125134617.GE22565@ulmo>
- <0a7abeee-1b78-4f90-e94f-43c19eddb9b1@nvidia.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [RFC PATCH v2 10/10] watchdog: bd70528: Initial support for ROHM
+ BD70528 watchdog block
+Date: Mon, 28 Jan 2019 10:00:35 +0200
+Message-ID: <20190128080035.GC2030@localhost.localdomain>
+References: <20190125110625.GA29348@localhost.localdomain>
+ <1d05ec19-daf6-f1d9-f80c-57fc92906d22@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8459993079152616582=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <0a7abeee-1b78-4f90-e94f-43c19eddb9b1@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Joseph Lo <josephl@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: linux-pm@vger.kernel.org, Peter De Schrijver <pdeschrijver@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1d05ec19-daf6-f1d9-f80c-57fc92906d22@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Sat, Jan 26, 2019 at 08:36:14AM -0800, Guenter Roeck wrote:
+> On 1/25/19 3:06 AM, Matti Vaittinen wrote:
+> > +/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
+> > +#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
+> > +/* Minimum time is 1 second */
+> > +#define WDT_MIN_MS 1000
+> > +#define DEFAULT_TIMEOUT 60
+> > +
+> > +static int bd70528_wdt_probe(struct platform_device *pdev)
+> > +{
+> > +	struct bd70528 *bd70528;
+> > +	struct wdtbd70528 *w;
+> > +	int ret;
+> > +	unsigned int reg;
+> > +	struct watchdog_device *wdt;
+> > +
+> > +	bd70528 = dev_get_drvdata(pdev->dev.parent);
+> > +	if (!bd70528) {
+> > +		dev_err(&pdev->dev, "No MFD driver data\n");
+> > +		return -EINVAL;
+> > +	}
+> > +	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
+> > +	if (!w)
+> > +		return -ENOMEM;
+> > +	w->bd = bd70528;
+> 
+> Unless I am missing something, only the mutex and the regmap pointer
+> are used from struct bd70528. With that in mind, it might be desirable
+> to copy those pointers to struct wdtbd70528 to avoid the additional
+> dereferencing at runtime.
 
---===============8459993079152616582==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
-Content-Disposition: inline
+You are not missing anyting. If we ever add support for another PMIC
+variant we will probably be using also the chip_type. Untill then only
+the mutex and regmap. (And maybe the of_node if we have any RTC
+properties in DT). So at this point we just use regmap and mutex. I will
+change this.
 
+> > +	w->dev = &pdev->dev;
+> > +
+> > +	wdt = devm_kzalloc(&pdev->dev, sizeof(*wdt), GFP_KERNEL);
+> > +	if (!wdt)
+> > +		return -ENOMEM;
+> > +
+> 
+> struct watchdog_device can be part of struct wdtbd70528. Two separate allocations
+> are not necessary.
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Correct. Thanks for pointing that out. I'll simplify this.
 
-On Mon, Jan 28, 2019 at 09:43:00AM +0800, Joseph Lo wrote:
-> On 1/25/19 9:46 PM, Thierry Reding wrote:
-> > On Fri, Jan 04, 2019 at 11:06:42AM +0800, Joseph Lo wrote:
-> > > This series introduces support for the DFLL as a CPU clock source
-> > > on Tegra210. As Jetson TX1 uses a PWM controlled regulator IC which
-> > > is driven directly by the DFLLs PWM output, we also introduce support
-> > > for PWM regulators next to I2C controlled regulators. The DFLL output
-> > > frequency is directly controlled by the regulator voltage. The regist=
-ers
-> > > for controlling the PWM are part of the DFLL IP block, so there's no
-> > > separate linux regulator object involved because the regulator IC only
-> > > supplies the rail powering the CPUs. It doesn't have any other contro=
-ls.
-> > >=20
-> > > The patch 1~4 are the patches of DT bindings update for DFLL clock and
-> > > Tegra124 cpufreq, which add PWM and Tegra210 support for DFLL clock a=
-nd
-> > > remove deprecate properties for Tegra124 cpufreq bindings.
-> > >=20
-> > > The patch 5~10 are the patches for DFLL clock driver update for PWM-m=
-ode
-> > > DFLL support.
-> > >=20
-> > > The patch 11~13 are the Tegra124 cpufreq driver update to make it
-> > > work with Tegra210.
-> > >=20
-> > > The patch 14~19 are the devicetree files update for Tegra210 SoC and
-> > > platforms. Two platforms are updated here for different DFLL mode usa=
-ge.
-> > > The Tegra210-p2371-2180 (a.k.a. Jetson Tx1) uses DFLL-PWM and the
-> > > Tegra210-smaug (a.k.a. Pixel C) uses DFLL-I2C. So two different modes
-> > > are verified with this series.
-> > >=20
-> > > The patch 20 is the patch for enabling the CPU regulator for Smaug
-> > > board.
-> > >=20
-> > > * Update in V4:
-> > >   - s/nvidia,pwm-period/nvidia,pwm-period-nanoseconds/ in patch 1 for
-> > >   DFLL DT bindings update.
-> > >   - remove parenthesis in Kconfig of DFLL driver
-> > >   - add more ack and RB tags
-> > >=20
-> > > * Update in V3:
-> > >   - Squash patch 9 in previous series into patch 7 (ref. [0])
-> > >   - minor fixes in patch 6 for geting alignment data
-> > >   - more variable type fixes in patch 7
-> > >   - fix the error handling in patch 8
-> > >   - collect more ack tags
-> > >=20
-> > > * Update in V2:
-> > >   - Add two patches that suggested from comments in V1. See patch 9 a=
-nd
-> > >   14.
-> > >   - Update DT binding for DFLL-PWM mode in patch 1.
-> > >   - Update the code for how to get regulator data from DT or regulator
-> > >   API in patch 6.
-> > >   - Update to use lut_uv table for LUT lookup in patch 7. That makes =
-the
-> > >   generic lut table to work with both I2C and PWM mode.
-> > >   - not allow Tegra124 cpufreq driver to be built as a module and rem=
-ove
-> > >   the removal function in patch 12.
-> > >=20
-> > > [0]: http://patchwork.ozlabs.org/project/linux-tegra/list/?series=3D8=
-1595
-> > >=20
-> > > Joseph Lo (17):
-> > >    dt-bindings: clock: tegra124-dfll: add Tegra210 support
-> > >    dt-bindings: cpufreq: tegra124: remove vdd-cpu-supply from required
-> > >      properties
-> > >    dt-bindings: cpufreq: tegra124: remove cpu_lp clock from required
-> > >      properties
-> > >    clk: tegra: dfll: CVB calculation alignment with the regulator
-> > >    clk: tegra: dfll: support PWM regulator control
-> > >    clk: tegra: dfll: round down voltages based on alignment
-> > >    clk: tegra: dfll: add CVB tables for Tegra210
-> > >    cpufreq: tegra124: do not handle the CPU rail
-> > >    cpufreq: tegra124: extend to support Tegra210
-> > >    cpufreq: dt-platdev: add Tegra210 to blacklist
-> > >    arm64: dts: tegra210: add DFLL clock
-> > >    arm64: dts: tegra210: add CPU clocks
-> > >    arm64: dts: tegra210-p2597: add pinmux for PWM-based DFLL support
-> > >    arm64: dts: tegra210-p2371-2180: enable DFLL clock
-> > >    arm64: dts: tegra210-smaug: add CPU power rail regulator
-> > >    arm64: dts: tegra210-smaug: enable DFLL clock
-> > >    arm64: defconfig: Enable MAX8973 regulator
-> > >=20
-> > > Peter De Schrijver (3):
-> > >    dt-bindings: clock: tegra124-dfll: Update DFLL binding for PWM
-> > >      regulator
-> > >    clk: tegra: dfll: registration for multiple SoCs
-> > >    clk: tegra: dfll: build clk-dfll.c for Tegra124 and Tegra210
-> >=20
-> > Joseph,
-> >=20
-> > can you detail the dependencies between the various patches. From a
-> > brief look the CPU frequency driver changes are completely separate
-> > bits and it should be possible to apply them to the cpufreq tree.
-> >=20
-> > The clock changes also seem independent of the rest.
-> >=20
-> > Are there any dependencies at all that we need to be mindful about?
-> > Or can individual maintainers just pick up the subseries directly?
-> >=20
->=20
-> Yes, no dependence with each other. We can apply them separately.
-> Please let me know if I need to inform cpufreq or clk maintainer to pick
-> them up.
+> > +	wdt->info = &bd70528_wdt_info;
+> > +	wdt->ops =  &bd70528_wdt_ops;
+> > +	wdt->min_hw_heartbeat_ms = WDT_MIN_MS;
+> > +	wdt->max_hw_heartbeat_ms = WDT_MAX_MS;
+> > +	wdt->parent = pdev->dev.parent;
+> > +	wdt->timeout = DEFAULT_TIMEOUT;
+> > +	watchdog_set_drvdata(wdt, w);
+> > +	watchdog_init_timeout(wdt, 0, pdev->dev.parent);
+> > +
+> > +	ret = bd70528_wdt_set_timeout(wdt, wdt->timeout);
+> > +	if (ret) {
+> > +		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
+> > +		return ret;
+> > +	}
+> > +
+> > +	mutex_lock(&bd70528->rtc_timer_lock);
+> > +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WDT_CTRL, &reg);
+> > +	mutex_unlock(&bd70528->rtc_timer_lock);
+> > +
+> 
+> I don't see the point for the above mutex locks. This is just reading a
+> single register. regmap itself provides locking for that already.
 
-Rafael,
-
-the three CPU frequency patches in this series were acked by Viresh
-already, but unfortunately you don't seem to be Cc'ed on these. Are
-you okay with me picking these up into the Tegra tree and send you
-a pull request in a couple of days? That way we can get the whole
-set tested a bit in linux-next. If you'd prefer to pick these up in
-the PM tree, here are the corresponding patchwork links:
-
-	https://patchwork.kernel.org/patch/10747943/
-	https://patchwork.kernel.org/patch/10747947/
-	https://patchwork.kernel.org/patch/10747953/
-
-I'll go and give my Acked-by on these patches if the latter is the
-way you prefer.
-
-
-Stephen, Mike,
-
-the same applies for clk patches. Stephen's acked all of them and I
-think all of the series is good to go. How about if I pick up these
-up in the Tegra tree and let this all cook in linux-next for a week
-or so and then send you a pull request with these? Stephen already
-picked up a couple of fixes for clk/tegra, but I don't think any of
-those would conflict with this series.
-
-All of that said, Joseph confirmed that there are no dependencies
-between these subsystem subseries, so if you'd prefer to pick up the
-patches into your respective trees, I have no objections to that.
-
-Thierry
-
---LQksG6bCIzRHxTLp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlxOtT8ACgkQ3SOs138+
-s6HBcRAApHy2CW/WZBXKOmNovh29XJrNWIDxMREUrfkdrCI0oa8ugHPZ2Zhp75Sz
-zFYnM2PgMF0uyfLz4a7zbEVEVZgt6LWOKU1AYtTjHSPpMcfo6A0CD1gOutT8CsVu
-uIBKaTGECl3bJjMq6ohwWw/nTOW3IaObe+3yWfUbtsEhFRRjzxEQ4D1MPqF8o3U4
-xWsDgRiZ8rZt7r7mZIUSJnp4ZTPF+5xIpMu2uUbgZPnQCCfzvHcFyp2P/QCN65u/
-FyoqPV9ISZYQDGYCemdJJi0fN3ZYgaqjmFAGW62EPowsnZGqpqAp++AtEcU476n3
-KH+9PwVKokOdBQFFGPwjyyhm8AD7eAltXhzd0yPL0x4da3pfyFzZPZ2KQQTm21Uu
-SF1j7IuuPSQg9ML8riKD2hYERrcR1cpL1RPsrej3uyqFRVpLxC3potKVTqi7gKtX
-Y/JqdXfPeocivOYHUUth3PYLNWguODNoZYVVn07Pm0GijaP5xg6o8eGyC/or/NiZ
-phoiK4LOFC8S+rDhhqEb8sooWW4vNbFupK0rxfWGpDWTBb3iu0o5K58UqHU2ZHDw
-Xv9ifwCkQS36MrmfVmT0W0fZlfTYf33NoqkmXH6XV+70zbD55NsnpJWxMlE2p71o
-n32O9QM2UZPV4o3cPbKzSxgxAFgY31G1bUnnZWEqvVBryi66h38=
-=kzjf
------END PGP SIGNATURE-----
-
---LQksG6bCIzRHxTLp--
-
-
---===============8459993079152616582==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============8459993079152616582==--
+It has a purpose here - but I'd better add a comment. We want to get the
+initial state of WDG here. If the probe is executed when RTC time is being
+set we may read the state just when RTC is (temporarily) disabling WDT -
+and we might tell the WDT core that WDT is disabled - even if it is
+actually enabled. The mutex prevents us from reading the WDT state when
+RTC is being set.
+ 
+Br,
+	Matti Vaittinen
