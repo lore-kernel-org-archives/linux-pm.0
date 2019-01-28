@@ -1,78 +1,153 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.20 100/304] Thermal: do not clear passive state during system sleep
-Date: Mon, 28 Jan 2019 10:40:17 -0500
-Message-ID: <20190128154341.47195-100-sashal@kernel.org>
-References: <20190128154341.47195-1-sashal@kernel.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 1/7] PM / OPP: Introduce a power estimation helper
+Date: Mon, 28 Jan 2019 11:02:51 -0800
+Message-ID: <20190128190251.GH81583@google.com>
+References: <20190128165522.31749-1-quentin.perret@arm.com>
+ <20190128165522.31749-2-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190128165522.31749-2-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Wei Wang <wvw@google.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Wei Wang <wvw@google.com>
+rHi Quentin,
 
-[ Upstream commit 964f4843a455d2ffb199512b08be8d5f077c4cac ]
+On Mon, Jan 28, 2019 at 04:55:16PM +0000, Quentin Perret wrote:
+> The Energy Model (EM) framework provides an API to let drivers register
+> the active power of CPUs. The drivers are expected to provide a callback
+> method which estimates the power consumed by a CPU at each available
+> performance levels. How exactly this should be implemented, however,
+> depends on the platform.
+> 
+> On some systems, PM_OPP knows the voltage and frequency at which CPUs
+> can run. When coupled with the CPU 'capacitance' (as provided by the
+> 'dynamic-power-coefficient' devicetree binding), it is possible to
+> estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
+> C its capacitance and V and f respectively the voltage and frequency of
+> the OPP. The Intelligent Power Allocator (IPA) thermal governor already
+> implements that estimation method, in the thermal framework.
+> 
+> However, this power estimation method can be applied to any platform
+> where all the parameters are known (C, V and f), and not only those
+> suffering thermal issues. As such, the code implementing this feature
+> can be re-used to also populate the EM framework now used by EAS.
+> 
+> As a first step, introduce in PM_OPP a helper function which CPUFreq
+> drivers can use to register into the EM framework. This duplicates the
+> power estimation done in IPA until it can be migrated to using the EM
+> framework. This will be done later, once the EM framework has support
+> for at least all platforms currently supported by IPA.
+> 
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  drivers/opp/of.c       | 60 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  5 ++++
+>  2 files changed, 65 insertions(+)
+> 
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index 06f0f632ec47..7572a2eb2fd4 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -1047,3 +1047,63 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  	return of_node_get(opp->np);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
+> +
+> +/**
+> + * of_dev_pm_opp_get_cpu_power() - Estimates the power of a CPU
+> + * @mW:		pointer to the power estimate in milli-watts
+> + * @KHz:	pointer to the OPP's frequency, in kilo-hertz
 
-commit ff140fea847e ("Thermal: handle thermal zone device properly
-during system sleep") added PM hook to call thermal zone reset during
-sleep. However resetting thermal zone will also clear the passive state
-and thus cancel the polling queue which leads the passive cooling device
-state not being cleared properly after sleep.
+nit: should be kHz
 
-thermal_pm_notify => thermal_zone_device_reset set passive to 0
-thermal_zone_trip_update will skip update passive as `old_target ==
-instance->target'.
-monitor_thermal_zone => thermal_zone_device_set_polling will cancel
-tz->poll_queue, so the cooling device state will not be changed
-afterwards.
+> + * @cpu:	CPU for which power needs to be estimated
+> + *
+> + * Computes the power estimated by @CPU at the first OPP above @KHz (ceil),
+> + * and updates @KHz and @mW accordingly.
+> + *
+> + * The power is estimated as P = C * V^2 * f, with C the CPU's capacitance
+> + * (read from the 'dynamic-power-coefficient' devicetree binding) and V and f
+> + * respectively the voltage and frequency of the OPP.
+> + *
+> + * Return: -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> + * calculation failed because of missing parameters, 0 otherwise.
+> + */
+> +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 
-Reported-by: Kame Wang <kamewang@google.com>
-Signed-off-by: Wei Wang <wvw@google.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/thermal/thermal_core.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+I think it is more common to put the input parameters first, then the
+output ones, i.e. cpu, kHz, mW.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d6ebc1cf6aa9..3a014cd8daf0 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -453,16 +453,20 @@ static void update_temperature(struct thermal_zone_device *tz)
- 			tz->last_temperature, tz->temperature);
- }
- 
--static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+static void thermal_zone_device_init(struct thermal_zone_device *tz)
- {
- 	struct thermal_instance *pos;
--
- 	tz->temperature = THERMAL_TEMP_INVALID;
--	tz->passive = 0;
- 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
- 		pos->initialized = false;
- }
- 
-+static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+{
-+	tz->passive = 0;
-+	thermal_zone_device_init(tz);
-+}
-+
- void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
-@@ -1504,7 +1508,7 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 	case PM_POST_SUSPEND:
- 		atomic_set(&in_suspend, 0);
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
--			thermal_zone_device_reset(tz);
-+			thermal_zone_device_init(tz);
- 			thermal_zone_device_update(tz,
- 						   THERMAL_EVENT_UNSPECIFIED);
- 		}
--- 
-2.19.1
+> +{
+> +	unsigned long mV, Hz, MHz;
+> +	struct device *cpu_dev;
+> +	struct dev_pm_opp *opp;
+> +	struct device_node *np;
+> +	u32 cap;
+> +	u64 tmp;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return -EINVAL;
+> +
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	Hz = *KHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> +	dev_pm_opp_put(opp);
+> +	if (!mV)
+> +		return -EINVAL;
+> +
+> +	MHz = Hz / 1000000;
+> +	tmp = (u64)cap * mV * mV * MHz;
+> +	do_div(tmp, 1000000000);
+> +
+> +	*mW = (unsigned long)tmp;
+> +	*KHz = Hz / 1000;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(of_dev_pm_opp_get_cpu_power);
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 0a2a88e5a383..fedde14f5187 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -322,6 +322,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+>  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+>  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
+>  int of_get_required_opp_performance_state(struct device_node *np, int index);
+> +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu);
+>  #else
+>  static inline int dev_pm_opp_of_add_table(struct device *dev)
+>  {
+> @@ -364,6 +365,10 @@ static inline int of_get_required_opp_performance_state(struct device_node *np,
+>  {
+>  	return -ENOTSUPP;
+>  }
+> +static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
+> +{
+> +	return -ENOTSUPP;
+> +}
+>  #endif
+>  
+>  #endif		/* __LINUX_OPP_H__ */
+
+Besides the nits above:
+
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
