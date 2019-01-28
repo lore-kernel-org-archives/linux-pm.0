@@ -1,81 +1,36 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v4 9/9] cpufreq: scpi: Use auto-registration of thermal cooling device
-Date: Mon, 28 Jan 2019 12:11:34 +0530
-Message-ID: <d8626e4c69e7b33a49c1545a9b97eadc7c2b0c2e.1548654899.git.amit.kucheria@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 0/9] cpufreq: Add flag to auto-register as cooling
+ device
+Date: Mon, 28 Jan 2019 12:17:01 +0530
+Message-ID: <20190128064701.r25ffs5ixzkcd5r6@vireshk-i7>
 References: <cover.1548654899.git.amit.kucheria@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <cover.1548654899.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1548654899.git.amit.kucheria@linaro.org>
-References: <cover.1548654899.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-automatically register as a thermal cooling device.
+On 28-01-19, 12:11, Amit Kucheria wrote:
+> Add a flag for cpufreq drivers to tell cpufreq core to auto-register
+> themselves as a thermal cooling device.
+> 
+> There series converts over all the drivers except arm_big_little.c.
+> Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
+> others.
+> 
+> Things needing fixing (but not a blocker for the series):
+>  - Look at how to detect that we're not in IKS mode in arm_big_little's
+>    .ready callback.
+> 
+> Chnages since v3:
+>  - Got rid of wrapper function to register/unregister cooling devices.
+>    Directly call the function in cpufreq.c
 
-This allows removal of boiler plate code from the driver.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/scpi-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 99449738faa4..82420e8e5f0d 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -22,7 +22,6 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
--#include <linux/cpu_cooling.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/of_platform.h>
-@@ -34,7 +33,6 @@
- struct scpi_data {
- 	struct clk *clk;
- 	struct device *cpu_dev;
--	struct thermal_cooling_device *cdev;
- };
- 
- static struct scpi_ops *scpi_ops;
-@@ -186,7 +184,6 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct scpi_data *priv = policy->driver_data;
- 
--	cpufreq_cooling_unregister(priv->cdev);
- 	clk_put(priv->clk);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	kfree(priv);
-@@ -195,23 +192,16 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
--{
--	struct scpi_data *priv = policy->driver_data;
--
--	priv->cdev = of_cpufreq_cooling_register(policy);
--}
--
- static struct cpufreq_driver scpi_cpufreq_driver = {
- 	.name	= "scpi-cpufreq",
- 	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
--		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+		  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
- 	.verify	= cpufreq_generic_frequency_table_verify,
- 	.attr	= cpufreq_generic_attr,
- 	.get	= scpi_cpufreq_get_rate,
- 	.init	= scpi_cpufreq_init,
- 	.exit	= scpi_cpufreq_exit,
--	.ready	= scpi_cpufreq_ready,
- 	.target_index	= scpi_cpufreq_set_target,
- };
- 
 -- 
-2.17.1
+viresh
