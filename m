@@ -1,78 +1,57 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 056/170] Thermal: do not clear passive state during system sleep
-Date: Mon, 28 Jan 2019 11:10:06 -0500
-Message-ID: <20190128161200.55107-56-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 088/170] cpuidle: big.LITTLE: fix refcount leak
+Date: Mon, 28 Jan 2019 11:10:38 -0500
+Message-ID: <20190128161200.55107-88-sashal@kernel.org>
 References: <20190128161200.55107-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Wei Wang <wvw@google.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Yangtao Li <tiny.windzz@gmail.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Wei Wang <wvw@google.com>
+From: Yangtao Li <tiny.windzz@gmail.com>
 
-[ Upstream commit 964f4843a455d2ffb199512b08be8d5f077c4cac ]
+[ Upstream commit 9456823c842f346c74265fcd98d008d87a7eb6f5 ]
 
-commit ff140fea847e ("Thermal: handle thermal zone device properly
-during system sleep") added PM hook to call thermal zone reset during
-sleep. However resetting thermal zone will also clear the passive state
-and thus cancel the polling queue which leads the passive cooling device
-state not being cleared properly after sleep.
+of_find_node_by_path() acquires a reference to the node
+returned by it and that reference needs to be dropped by its caller.
+bl_idle_init() doesn't do that, so fix it.
 
-thermal_pm_notify => thermal_zone_device_reset set passive to 0
-thermal_zone_trip_update will skip update passive as `old_target ==
-instance->target'.
-monitor_thermal_zone => thermal_zone_device_set_polling will cancel
-tz->poll_queue, so the cooling device state will not be changed
-afterwards.
-
-Reported-by: Kame Wang <kamewang@google.com>
-Signed-off-by: Wei Wang <wvw@google.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/thermal_core.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle-big_little.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 2b1b0ba393a4..17d6079c7642 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -454,16 +454,20 @@ static void update_temperature(struct thermal_zone_device *tz)
- 			tz->last_temperature, tz->temperature);
- }
- 
--static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+static void thermal_zone_device_init(struct thermal_zone_device *tz)
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index db2ede565f1a..b44476a1b7ad 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -167,6 +167,7 @@ static int __init bl_idle_init(void)
  {
- 	struct thermal_instance *pos;
--
- 	tz->temperature = THERMAL_TEMP_INVALID;
--	tz->passive = 0;
- 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
- 		pos->initialized = false;
- }
+ 	int ret;
+ 	struct device_node *root = of_find_node_by_path("/");
++	const struct of_device_id *match_id;
  
-+static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+{
-+	tz->passive = 0;
-+	thermal_zone_device_init(tz);
-+}
+ 	if (!root)
+ 		return -ENODEV;
+@@ -174,7 +175,11 @@ static int __init bl_idle_init(void)
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_match_node(compatible_machine_match, root))
++	match_id = of_match_node(compatible_machine_match, root);
 +
- void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
-@@ -1503,7 +1507,7 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 	case PM_POST_SUSPEND:
- 		atomic_set(&in_suspend, 0);
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
--			thermal_zone_device_reset(tz);
-+			thermal_zone_device_init(tz);
- 			thermal_zone_device_update(tz,
- 						   THERMAL_EVENT_UNSPECIFIED);
- 		}
++	of_node_put(root);
++
++	if (!match_id)
+ 		return -ENODEV;
+ 
+ 	if (!mcpm_is_available())
 -- 
 2.19.1
