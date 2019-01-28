@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.20 287/304] thermal: bcm2835: enable hwmon explicitly
-Date: Mon, 28 Jan 2019 10:43:24 -0500
-Message-ID: <20190128154341.47195-287-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 292/304] thermal: generic-adc: Fix adc to temp interpolation
+Date: Mon, 28 Jan 2019 10:43:29 -0500
+Message-ID: <20190128154341.47195-292-sashal@kernel.org>
 References: <20190128154341.47195-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -9,53 +9,65 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Matthias Brugger <mbrugger@suse.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthias Brugger <mbrugger@suse.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
 
-[ Upstream commit d56c19d07e0bc3ceff366a49b7d7a2440c967b1b ]
+[ Upstream commit 9d216211fded20fff301d0317af3238d8383634c ]
 
-By defaul of-based thermal driver do not enable hwmon.
-This patch does this explicitly, so that the temperature can be read
-through the common hwmon sysfs.
+First correct the edge case to return the last element if we're
+outside the range, rather than at the last element, so that
+interpolation is not omitted for points between the two last entries in
+the table.
 
-Signed-off-by: Matthias Brugger <mbrugger@suse.com>
-Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+Then correct the formula to perform linear interpolation based the two
+points surrounding the read ADC value. The indices for temp are kept as
+"hi" and "lo" to pair with the adc indices, but there's no requirement
+that the temperature is provided in descendent order. mult_frac() is
+used to prevent issues with overflowing the int.
+
+Cc: Laxman Dewangan <ldewangan@nvidia.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/broadcom/bcm2835_thermal.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index b9d90f0ed504..720760cd493f 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -18,6 +18,8 @@
- #include <linux/platform_device.h>
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
+index bf1c628d4a7a..e22fc60ad36d 100644
+--- a/drivers/thermal/thermal-generic-adc.c
++++ b/drivers/thermal/thermal-generic-adc.c
+@@ -26,7 +26,7 @@ struct gadc_thermal_info {
  
-+#include "../thermal_hwmon.h"
+ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
+ {
+-	int temp, adc_hi, adc_lo;
++	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
+ 	int i;
+ 
+ 	for (i = 0; i < gti->nlookup_table; i++) {
+@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
+ 
+ 	if (i == 0) {
+ 		temp = gti->lookup_table[0];
+-	} else if (i >= (gti->nlookup_table - 1)) {
++	} else if (i >= gti->nlookup_table) {
+ 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
+ 	} else {
+ 		adc_hi = gti->lookup_table[2 * i - 1];
+ 		adc_lo = gti->lookup_table[2 * i + 1];
+-		temp = gti->lookup_table[2 * i];
+-		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
 +
- #define BCM2835_TS_TSENSCTL			0x00
- #define BCM2835_TS_TSENSSTAT			0x04
- 
-@@ -266,6 +268,15 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, tz);
- 
-+	/*
-+	 * Thermal_zone doesn't enable hwmon as default,
-+	 * enable it here
-+	 */
-+	tz->tzp->no_hwmon = false;
-+	err = thermal_add_hwmon_sysfs(tz);
-+	if (err)
-+		goto err_tz;
++		temp_hi = gti->lookup_table[2 * i - 2];
++		temp_lo = gti->lookup_table[2 * i];
 +
- 	bcm2835_thermal_debugfs(pdev);
++		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
++					   adc_lo - adc_hi);
+ 	}
  
- 	return 0;
+ 	return temp;
 -- 
 2.19.1
