@@ -1,135 +1,103 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC PATCH v2 08/10] rtc: bd70528: Initial support for ROHM
- bd70528 RTC
-Date: Mon, 28 Jan 2019 06:02:47 -0800
-Message-ID: <11ff93bf-c71f-7489-841f-09bf757a8ba7@roeck-us.net>
-References: <20190125110536.GA29321@localhost.localdomain>
- <35bbc5b9-5f8c-ec80-3eaa-bb2c0e2812c9@roeck-us.net>
- <20190128074849.GB2030@localhost.localdomain>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [RFC PATCH v2 07/10] gpio: Initial support for ROHM bd70528 GPIO
+ block
+Date: Mon, 28 Jan 2019 16:04:45 +0200
+Message-ID: <20190128140445.GB4156@localhost.localdomain>
+References: <20190125110509.GA29310@localhost.localdomain>
+ <CACRpkdYTUB8vPiCF=s5-TARhv=DsPDQHVyCwP7fMc27gyDvKSg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128074849.GB2030@localhost.localdomain>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CACRpkdYTUB8vPiCF=s5-TARhv=DsPDQHVyCwP7fMc27gyDvKSg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 List-Id: linux-pm@vger.kernel.org
 
-On 1/27/19 11:48 PM, Matti Vaittinen wrote:
-> Thanks again Guenter,
+On Mon, Jan 28, 2019 at 01:55:48PM +0100, Linus Walleij wrote:
+> Hi Matti!
 > 
-> On Sat, Jan 26, 2019 at 08:30:24AM -0800, Guenter Roeck wrote:
->> On 1/25/19 3:05 AM, Matti Vaittinen wrote:
->>> +/*
->>> + * We read regs RTC_SEC => RTC_YEAR
->>> + * this struct is ordered according to chip registers.
->>> + * Keep it u8 only to avoid padding issues.
->>> + */
->>> +struct bd70528_rtc_day {
->>> +	u8 sec;
->>> +	u8 min;
->>> +	u8 hour;
->>> +};
->>> +
->>> +struct bd70528_rtc_data {
->>> +	struct bd70528_rtc_day time;
->>> +	u8 week;
->>> +	u8 day;
->>> +	u8 month;
->>> +	u8 year;
->>> +};
->>> +
->>> +struct bd70528_rtc_wake {
->>> +	struct bd70528_rtc_day time;
->>> +	u8 ctrl;
->>> +};
->>> +
->>> +struct bd70528_rtc_alm {
->>> +	struct bd70528_rtc_data data;
->>> +	u8 alm_mask;
->>> +	u8 alm_repeat;
->>> +};
->>
->> At least some of the above are directly associated with chip registers.
->> I don't think this will work for all architectures without explicit packed
->> attribute.
-> 
-> Allright. I was thinking of that but thought that most of the
-> architectures using this PMIC would handle alignments fine if I used
-> only u8 members. I did consider using __attribute__((packed)) - but I'm
-> not sure if we hit into troubles with that too. I guess some people
-> would like to compile kernel with other compiler(s) but gcc - although
-> I'm not sure if this should be taken into account. I'll try doing some
-> study on this - unless someone replies to this and just tells how this
-> should be done. (I am pretty sure I can find the answer from mail
-> archives though). I'll try adding some packing hint for compiler at v3.
-> 
+> Thanks for your patch!
 
-Use __packed ?
+No, thank you for the review =)
 
->>> +		if ((!enable) == (!(*old_state & BD70528_WAKE_STATE_BIT)))
->>> +			return 0;
->>
->> I think
->> 		if (enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
->> would be much better readable. Even if not, there are way too many ()
->> in the above conditional.
+> On Fri, Jan 25, 2019 at 12:05 PM Matti Vaittinen
+> <matti.vaittinen@fi.rohmeurope.com> wrote:
 > 
-> Allright. I'll fix this
->   
->>> +	if (alm.alm_mask & BD70528_MASK_ALM_EN)
->>> +		a->enabled = 0;
->>> +	else
->>> +		a->enabled = 1;
->>> +
->> Without conditional:
->> 	a->enabled = !(alm.alm_mask & BD70528_MASK_ALM_EN);
->>
+> > ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
+> > controlled by GPIO framework.
+> >
+> > IRQs are handled by regmap-irq and GPIO driver is not
+> > aware of the irq usage.
+> >
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 > 
-> Right. Much nicer, thanks! I'll change this.
+> This is overall a very nicely written driver.
 > 
->>> +static int bd70528_set_time(struct device *dev, struct rtc_time *t)
->>> +{
->>> +	int ret, old_states;
->>> +	struct bd70528_rtc_data rtc_data;
->>> +	struct bd70528_rtc *r = dev_get_drvdata(dev);
->>> +	struct bd70528 *bd70528 = r->mfd;
->>> +
->>> +	ret = bd70528_disable_rtc_based_timers(r, &old_states);
->>> +
->>
->> AFAICS the disable/enable functions are only called once. Since they
->> also apply set / clear a mutex, I find that a bit confusing. I think
->> it would be better to fold the code into this function. If anything,
->> I could imagine something like
->>
->> 	mutex_lock();
->> 	ret = bd70528_set_time_locked();
->> 	mutex_unlock()
->>
->> to simplify error handling.
+> Just small comments:
 > 
-> Yep. Makes sense. I'll tidy this.
+> > +#include <linux/gpio/driver.h>
+> > +#include <linux/interrupt.h>
 > 
->>> +	ret = regmap_bulk_read(bd70528->chip.regmap,
->>> +			       BD70528_REG_RTC_START, &rtc_data,
->>> +			       sizeof(rtc_data));
->>> +
->>> +	tm2rtc(t, &rtc_data);
->>> +
->>> +	ret = regmap_bulk_write(bd70528->chip.regmap,
->>> +				BD70528_REG_RTC_START, &rtc_data,
->>> +				sizeof(rtc_data));
->>> +
->>> +	ret = bd70528_re_enable_rtc_based_timers(r, old_states);
->>> +
->>
->> Kind of off that all the error returns are ignored here.
+> Why interrupt? You do not use it.
+
+Right, I'd better to drop it.
+
 > 
-> And I'll fix this too.
+> > +static int bd70528_get_direction(struct gpio_chip *chip, unsigned int offset)
+> > +{
+> > +       struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
+> > +       int val, ret;
+> > +
+> > +       /* Do we need to do something to IRQs here? */
 > 
-> Br,
-> 	Matti Vaittinen
+> Well you don't support IRQs yet so no problem as long as they're masked?
+
+I may have not worded this correctly. These pins can be used for IRQs.
+HW supports it and I added the irq registers in regmap-irq controller
+(please see the MFD part). It's just that this GPIO driver is currently not
+aware of that. This comment here is a reminder for me to figure out if
+we should look whether the pin is used for I/O or for irqs here - and
+what should we return if pin is configured to be used for IRQs.
+
+> > +       ret = regmap_read(bdgpio->chip.regmap, GPIO_OUT_REG(offset), &val);
+> > +       if (ret) {
+> > +               dev_err(bdgpio->chip.dev, "Could not read gpio direction\n");
+> > +               return ret;
+> > +       }
+> > +
+> > +       return !(val & BD70528_GPIO_OUT_EN_MASK);
+> > +}
+> > +
+> > +static int bd70528_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
+> > +                                  unsigned long config)
 > 
+> This is very nice. With Thomas Petazzoni's ongoing work you will be
+> able to also support pull up/down if you need it.
+> 
+> > +static int bd70528_direction_input(struct gpio_chip *chip, unsigned int offset)
+> > +{
+> > +       struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
+> > +
+> > +       /* Do we need to do something to IRQs here? */
+> 
+> Hmmm?
+
+Same thing as with the get_direction. Should we allow setting the
+direction if pin is already configured as an irq source? Should we
+somehow try to warn user if it seems the pin is tried to be used for
+both irqs and I/O?
+
+> 
+> Apart from that it looks good. Feel free to add:
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> on the next iteration.
+
+I will need to do some further testing on this before submitting next
+version. I will gladly maintain your Reviewed-by if I don't do any
+bigger changes to the driver - but if I do I'll drop your tag and ask
+for re-review :)
+
+Br,
+	Matti Vaittinen
