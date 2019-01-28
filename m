@@ -1,55 +1,49 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] devfreq: Suspend all devices on system shutdown
-Date: Mon, 28 Jan 2019 12:57:25 +0100
-Message-ID: <d5506b03-e035-aca9-5e01-e642c2bc5111@samsung.com>
-References: <20190125135403.10228-1-m.szyprowski@samsung.com>
-        <CGME20190125135414eucas1p2ffc71c63f1a27f67d076dec889954b40@epcms1p4>
-        <20190128080535epcms1p44636143629448c4e24a6628e87a72bf2@epcms1p4>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 2/9] cpufreq: Auto-register the driver as a thermal cooling device if asked
+Date: Mon, 28 Jan 2019 13:03:20 +0100
+Message-ID: <12294707.IXbBkGfcfl@aspire.rjw.lan>
+References: <cover.1548654899.git.amit.kucheria@linaro.org> <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org> <3afd5b04-5caf-053d-48c9-f719eec58da0@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128080535epcms1p44636143629448c4e24a6628e87a72bf2@epcms1p4>
-Content-Language: en-US
+In-Reply-To: <3afd5b04-5caf-053d-48c9-f719eec58da0@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Luba <l.luba@partner.samsung.com>, Markus Reichl <m.reichl@fivetechno.de>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Tao Wang <kevin.wangtao@hisilicon.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi MyungJoo,
+On Monday, January 28, 2019 9:32:44 AM CET Daniel Lezcano wrote:
+> On 28/01/2019 07:41, Amit Kucheria wrote:
+> > All cpufreq drivers do similar things to register as a cooling device.
+> > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > to register the cooling device on their behalf. This allows us to get
+> > rid of duplicated code in the drivers.
+> > 
+> > In order to allow this, we add a struct thermal_cooling_device pointer
+> > to struct cpufreq_policy so that drivers don't need to store it in a
+> > private data structure.
+> > 
+> > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> 
+> [ ... ]
+> 
+> > +/*
+> > + * Set by drivers that want the core to automatically register the cpufreq
+> > + * driver as a thermal cooling device.
+> > + */
+> > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV	BIT(7)
+> > +
+> 
+> Isn't the CPUFREQ_IS_COOLING_DEV more appropriate? We define a property
+> of the cpufreq driver and the resulting action is to auto-register, no?
 
-On 2019-01-28 09:05, MyungJoo Ham wrote:
->> This way devfreq core ensures that all its devices will be set to safe
->> operation points before reboot operation. There are board on which some
->> aggressive power saving operation points are behind the capabilities of
->> the bootloader to properly reset the hardware and boot the board. This
->> way one can avoid board crash early after reboot.
->>
->> Similar pattern is used in CPUfreq subsystem.
->>
->> Reported-by: Markus Reichl <m.reichl@fivetechno.de>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
-> You are invoking ALL devfreq suspend callbacks at shutdown
-> with this commit.
->
-> Can you make it invoke only devices explicitly saying their needs
-> to handle "SHUTDOWN" event?
->
-> For example, we can add a flag at struct devfreq_dev_profile:
-> "uint32_t requirement"
-> , where
-> 0x1: need to operate at the initial frequency for suspend
-> 0x2: need to operate at the initial frequency for shutdown
-> 0x4: it forgets its status at resume, reconfigure frequency at resume.
-> (or reverse 0x1's semantics for the backward compatibility)
+Yes.
 
-Frankly speaking this looks like an over-engineering. Switching to safe
-frequency during reboot shouldn't have any negative side-effects. IMHO
-such flags can be always added later, once there will be a real use case
-for them.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Cheers,
+Rafael
