@@ -1,73 +1,68 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 247/258] thermal: generic-adc: Fix adc to temp interpolation
-Date: Mon, 28 Jan 2019 10:59:13 -0500
-Message-ID: <20190128155924.51521-247-sashal@kernel.org>
-References: <20190128155924.51521-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 289/304] thermal: tsens: qcom: do not create duplicate regmap debugfs entries
+Date: Mon, 28 Jan 2019 10:43:26 -0500
+Message-ID: <20190128154341.47195-289-sashal@kernel.org>
+References: <20190128154341.47195-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
 
-[ Upstream commit 9d216211fded20fff301d0317af3238d8383634c ]
+[ Upstream commit 4ab248b3b10a58e379e2d32333fff99ea5ca256c ]
 
-First correct the edge case to return the last element if we're
-outside the range, rather than at the last element, so that
-interpolation is not omitted for points between the two last entries in
-the table.
+Regmap would use device name to create debugfs entries. If the device
+has multiple regmaps it is recommended to use name field in regmap_config.
+Fix this by providing name to the regmap configs correctly.
 
-Then correct the formula to perform linear interpolation based the two
-points surrounding the read ADC value. The indices for temp are kept as
-"hi" and "lo" to pair with the adc indices, but there's no requirement
-that the temperature is provided in descendent order. mult_frac() is
-used to prevent issues with overflowing the int.
+Without this patch we would see below error on DB820c.
 
-Cc: Laxman Dewangan <ldewangan@nvidia.com>
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+qcom-tsens 4a9000.thermal-sensor: Failed to create 4a9000.thermal-sensor
+debugfs directory
+
+Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+Tested-by: Amit Kucheria <amit.kucheria@linaro.org>
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/thermal-generic-adc.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/thermal/qcom/tsens-common.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index bf1c628d4a7a..e22fc60ad36d 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -26,7 +26,7 @@ struct gadc_thermal_info {
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index 3be4be2e0465..78652cac7f3d 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -114,6 +114,14 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+ }
  
- static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- {
--	int temp, adc_hi, adc_lo;
-+	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
- 	int i;
- 
- 	for (i = 0; i < gti->nlookup_table; i++) {
-@@ -36,13 +36,17 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- 
- 	if (i == 0) {
- 		temp = gti->lookup_table[0];
--	} else if (i >= (gti->nlookup_table - 1)) {
-+	} else if (i >= gti->nlookup_table) {
- 		temp = gti->lookup_table[2 * (gti->nlookup_table - 1)];
- 	} else {
- 		adc_hi = gti->lookup_table[2 * i - 1];
- 		adc_lo = gti->lookup_table[2 * i + 1];
--		temp = gti->lookup_table[2 * i];
--		temp -= ((val - adc_lo) * 1000) / (adc_hi - adc_lo);
+ static const struct regmap_config tsens_config = {
++	.name		= "tm",
++	.reg_bits	= 32,
++	.val_bits	= 32,
++	.reg_stride	= 4,
++};
 +
-+		temp_hi = gti->lookup_table[2 * i - 2];
-+		temp_lo = gti->lookup_table[2 * i];
-+
-+		temp = temp_hi + mult_frac(temp_lo - temp_hi, val - adc_hi,
-+					   adc_lo - adc_hi);
- 	}
++static const struct regmap_config tsens_srot_config = {
++	.name		= "srot",
+ 	.reg_bits	= 32,
+ 	.val_bits	= 32,
+ 	.reg_stride	= 4,
+@@ -139,8 +147,8 @@ int __init init_common(struct tsens_device *tmdev)
+ 		if (IS_ERR(srot_base))
+ 			return PTR_ERR(srot_base);
  
- 	return temp;
+-		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
+-							srot_base, &tsens_config);
++		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev, srot_base,
++							&tsens_srot_config);
+ 		if (IS_ERR(tmdev->srot_map))
+ 			return PTR_ERR(tmdev->srot_map);
+ 
 -- 
 2.19.1
