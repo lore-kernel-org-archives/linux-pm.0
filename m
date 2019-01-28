@@ -1,97 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 9/9] cpufreq: scpi: Use auto-registration of thermal
- cooling device
-Date: Mon, 28 Jan 2019 09:40:38 +0100
-Message-ID: <5e1d4915-3c87-ea02-7acf-35b4f1ad3644@linaro.org>
-References: <cover.1548654899.git.amit.kucheria@linaro.org>
- <d8626e4c69e7b33a49c1545a9b97eadc7c2b0c2e.1548654899.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Mon, 28 Jan 2019 10:03:19 +0100
+Message-ID: <CAJZ5v0huESFqOADqyym-ci-XcWpL4tbcd9a-jxe_KArXKpHFyw@mail.gmail.com>
+References: <cover.1548654899.git.amit.kucheria@linaro.org> <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d8626e4c69e7b33a49c1545a9b97eadc7c2b0c2e.1548654899.git.amit.kucheria@linaro.org>
-Content-Language: en-US
+In-Reply-To: <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, viresh.kumar@linaro.org, edubezval@gmail.com, swboyd@chromium.org, dianders@chromium.org, mka@chromium.org, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Tao Wang <kevin.wangtao@hisilicon.com>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/01/2019 07:41, Amit Kucheria wrote:
-> Use the CPUFREQ_AUTO_REGISTER_COOLING_DEV flag to allow cpufreq core to
-> automatically register as a thermal cooling device.
-> 
-> This allows removal of boiler plate code from the driver.
-> 
+On Mon, Jan 28, 2019 at 7:44 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>
+> All cpufreq drivers do similar things to register as a cooling device.
+> Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> to register the cooling device on their behalf. This allows us to get
+> rid of duplicated code in the drivers.
+>
+> In order to allow this, we add a struct thermal_cooling_device pointer
+> to struct cpufreq_policy so that drivers don't need to store it in a
+> private data structure.
+>
+> Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
 > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
 > ---
->  drivers/cpufreq/scpi-cpufreq.c | 14 ++------------
->  1 file changed, 2 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-> index 99449738faa4..82420e8e5f0d 100644
-> --- a/drivers/cpufreq/scpi-cpufreq.c
-> +++ b/drivers/cpufreq/scpi-cpufreq.c
-> @@ -22,7 +22,6 @@
+>  drivers/cpufreq/cpufreq.c | 9 +++++++++
+>  include/linux/cpufreq.h   | 9 +++++++++
+>  2 files changed, 18 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e35a886e00bc..29ed78b0b77b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -19,6 +19,7 @@
+>
 >  #include <linux/cpu.h>
 >  #include <linux/cpufreq.h>
->  #include <linux/cpumask.h>
-> -#include <linux/cpu_cooling.h>
->  #include <linux/export.h>
->  #include <linux/module.h>
->  #include <linux/of_platform.h>
-> @@ -34,7 +33,6 @@
->  struct scpi_data {
->  	struct clk *clk;
->  	struct device *cpu_dev;
-> -	struct thermal_cooling_device *cdev;
->  };
->  
->  static struct scpi_ops *scpi_ops;
-> @@ -186,7 +184,6 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct scpi_data *priv = policy->driver_data;
->  
-> -	cpufreq_cooling_unregister(priv->cdev);
->  	clk_put(priv->clk);
->  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->  	kfree(priv);
-> @@ -195,23 +192,16 @@ static int scpi_cpufreq_exit(struct cpufreq_policy *policy)
->  	return 0;
->  }
->  
-> -static void scpi_cpufreq_ready(struct cpufreq_policy *policy)
-> -{
-> -	struct scpi_data *priv = policy->driver_data;
-> -
-> -	priv->cdev = of_cpufreq_cooling_register(policy);
-> -}
-> -
->  static struct cpufreq_driver scpi_cpufreq_driver = {
->  	.name	= "scpi-cpufreq",
->  	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-> -		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-> +		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-> +		  CPUFREQ_AUTO_REGISTER_COOLING_DEV,
->  	.verify	= cpufreq_generic_frequency_table_verify,
->  	.attr	= cpufreq_generic_attr,
->  	.get	= scpi_cpufreq_get_rate,
->  	.init	= scpi_cpufreq_init,
->  	.exit	= scpi_cpufreq_exit,
-> -	.ready	= scpi_cpufreq_ready,
->  	.target_index	= scpi_cpufreq_set_target,
->  };
->  
-> 
+> +#include <linux/cpu_cooling.h>
+>  #include <linux/delay.h>
+>  #include <linux/device.h>
+>  #include <linux/init.h>
+> @@ -1318,6 +1319,9 @@ static int cpufreq_online(unsigned int cpu)
+>         if (cpufreq_driver->ready)
+>                 cpufreq_driver->ready(policy);
+>
+> +       if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
 
+It would be good to use IS_ENABLED(CONFIG_CPU_THERMAL) here and below
+as a hint for the compiler.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> +               policy->cdev = of_cpufreq_cooling_register(policy);
+> +
+>         pr_debug("initialization complete\n");
+>
+>         return 0;
+> @@ -1405,6 +1409,11 @@ static int cpufreq_offline(unsigned int cpu)
+>                 goto unlock;
+>         }
+>
+> +       if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
+> +               cpufreq_cooling_unregister(policy->cdev);
+> +               policy->cdev = NULL;
+> +       }
+> +
+>         if (cpufreq_driver->stop_cpu)
+>                 cpufreq_driver->stop_cpu(policy);
+>
