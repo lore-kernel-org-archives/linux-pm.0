@@ -1,66 +1,37 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 3.18 28/61] cpuidle: big.LITTLE: fix refcount leak
-Date: Mon, 28 Jan 2019 11:25:50 -0500
-Message-ID: <20190128162623.59854-28-sashal@kernel.org>
-References: <20190128162623.59854-1-sashal@kernel.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: linux-5.0-rc3, ti-soc-thermal: unmet dependencies Kconfig warning
+Date: Mon, 28 Jan 2019 08:34:33 -0800
+Message-ID: <20190128163433.GY5720@atomide.com>
+References: <8baafd04-eda0-778d-84d2-7ccc1d07db6b@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190128162623.59854-1-sashal@kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Yangtao Li <tiny.windzz@gmail.com>, Sasha Levin <sashal@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8baafd04-eda0-778d-84d2-7ccc1d07db6b@infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Randy Dunlap <rdunlap@infradead.org>, Keerthy <j-keerthy@ti.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Yangtao Li <tiny.windzz@gmail.com>
+Hi,
 
-[ Upstream commit 9456823c842f346c74265fcd98d008d87a7eb6f5 ]
+* Randy Dunlap <rdunlap@infradead.org> [190126 06:54]:
+> Hi,
+> 
+> FYI, I'm seeing this Kconfig warning in 5.0-rc3:
 
-of_find_node_by_path() acquires a reference to the node
-returned by it and that reference needs to be dropped by its caller.
-bl_idle_init() doesn't do that, so fix it.
+Thanks for reporting it.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpuidle/cpuidle-big_little.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+> WARNING: unmet direct dependencies detected for TI_SOC_THERMAL
+>   Depends on [n]: THERMAL [=y] && (ARCH_HAS_BANDGAP || COMPILE_TEST [=n]) && HAS_IOMEM [=y]
+>   Selected by [m]:
+>   - MMC_SDHCI_OMAP [=m] && MMC [=m] && MMC_SDHCI_PLTFM [=m] && OF [=y]
+> 
+> 
+> Maybe there is already a patch for this?
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index fbc00a1d3c48..355dc3d9cb35 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -175,6 +175,7 @@ static int __init bl_idle_init(void)
- {
- 	int ret;
- 	struct device_node *root = of_find_node_by_path("/");
-+	const struct of_device_id *match_id;
- 
- 	if (!root)
- 		return -ENODEV;
-@@ -182,7 +183,11 @@ static int __init bl_idle_init(void)
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_match_node(compatible_machine_match, root))
-+	match_id = of_match_node(compatible_machine_match, root);
-+
-+	of_node_put(root);
-+
-+	if (!match_id)
- 		return -ENODEV;
- 	/*
- 	 * For now the differentiation between little and big cores
--- 
-2.19.1
+Keerthy can you please take a look at this issue?
+
+Regards,
+
+Tony
