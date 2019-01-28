@@ -1,73 +1,47 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: Re: [PATCH v2 0/3] add support for power off check in suspend
-Date: Mon, 28 Jan 2019 09:50:23 +0000
-Message-ID: <5f0cf9d1-9a6a-4c97-8f56-6c5ae8af1564@microchip.com>
-References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+From: Stephan Mueller <smueller@chronox.de>
+Subject: Re: [PATCH v2 0/6] General Key Derivation Function Support
+Date: Mon, 28 Jan 2019 11:07:28 +0100
+Message-ID: <5418064.ltLFQScYi2@tauon.chronox.de>
+References: <20190103143227.9138-1-jlee@suse.com> <9733066.Vrs4h5eWcW@positron.chronox.de> <2082192.jPI8ve1O8G@positron.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
-Content-Language: en-US
-Content-ID: <5F04E4E280C7C1419279A256779218F9@namprd11.prod.outlook.com>
+In-Reply-To: <2082192.jPI8ve1O8G@positron.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, broonie@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUGF2ZWwsIFJhZmFlbCwNCg0KRG8geW91IGhhdmUgc29tZSBvdGhlciBoaW50cyBJIGNvdWxk
-IGZvbGxvdyBpbiBvcmRlciB0byBzb2x2ZSB0aGUNCnNjZW5hcmlvIEkgdHJpZWQgdG8gY292ZXIg
-d2l0aCB0aGVzZSBwYXRjaGVzLCBpZiB0aGVzZSBhcmUgbm90DQphIHByb3BlciBmaXQgZm9yIHRo
-ZSBjdXJyZW50IGNvZGU/DQoNClRoYW5rIHlvdSwNCkNsYXVkaXUgQmV6bmVhDQoNCk9uIDA4LjAx
-LjIwMTkgMTI6NTYsIENsYXVkaXUgQmV6bmVhIC0gTTE4MDYzIHdyb3RlOg0KPiBGcm9tOiBDbGF1
-ZGl1IEJlem5lYSA8Y2xhdWRpdS5iZXpuZWFAbWljcm9jaGlwLmNvbT4NCj4gDQo+IEhpLA0KPiAN
-Cj4gQVQ5MSBwbGF0Zm9ybXMgc3VwcG9ydCBhIHBvd2VyIHNhdmluZyBtb2RlIHdoZXJlIFNvQydz
-IHBvd2VyIGlzIGN1dCBvZmYgKHdlIGNhbGwNCj4gaXQgYmFja3VwIG1vZGUpLiBUaGUgcmVzdW1l
-IGlzIGRvbmUgd2l0aCB0aGUgaGVscCBvZiBib290bG9hZGVycy4gVG8gYmUgYWJsZSB0bw0KPiBz
-dXNwZW5kL3Jlc3VtZSBMaW51eCB0by9mcm9tIHRoaXMgbW9kZSBhbGwgdGhlIGRyaXZlcnMgc3Vz
-cGVuZC9yZXN1bWUgY2FsbGJhY2tzDQo+IHNob3VsZCBzYXZlL3Jlc3RvcmUgdGhlIGNvbnRlbnQg
-b2YgYWxsIHRoZSBhY3RpdmUgcmVnaXN0ZXJzLiBXZSBoYXZlIDIgcHJvYmxlbXMNCj4gd2UgYXJl
-IHRyeWluZyB0byBzb2x2ZToNCj4gLSBzb21lIG9mIHRoZXNlIGRyaXZlcnMgYXJlIHNoYXJlZCB3
-aXRoIG90aGVyIG5vbiBNaWNyb2NoaXAgU29DcyAoZS5nLiBtYWNiDQo+ICAgZHJpdmVyKSBhbmQg
-d2UgZG9uJ3Qgd2FudCB0byBkaXN0dXJiZSBvdGhlciB1c2VycyBvZiBjb3JyZXNwb25kaW5nIElQ
-cyB3aXRoDQo+ICAgYWxsIHRoZSByZWdpc3RlciBzYXZlL3Jlc3RvcmUgb3BlcmF0aW9uczsNCj4g
-LSB0aGUgc3VzcGVuZC9yZXN1bWUgdGltZSBmb3IgdGhlIHJlc3Qgb2YgdGhlIHBvd2VyIHNhdmlu
-ZyBtb2RlIHdlIGFyZSB1c2luZw0KPiAgIGNvdWxkIGJlIGltcHJvdmVkIGlmIHdlIHdvdWxkIGtu
-b3cgaW4gZHJpdmVycyB0aGUgc3VzcGVuZCBtb2RlIHRoZSBwbGF0Zm9ybQ0KPiAgIGlzIHN3aXRj
-aGVkIHRvLg0KPiANCj4gQSBzb2x1dGlvbiB0aGF0IHdvdWxkIGhhdmUgYmVlbiBzb2x2ZSBvdXIg
-cHJvYmxlbXMgd2FzIHByb3Bvc2VkIGluIFsxXSBidXQgaW4NCj4gdGhlIGVuZCBpdCB3YXNuJ3Qg
-YWNjZXB0ZWQuIEl0IGVuZGVkIHVwIHdpdGggdGhlIGludHJvZHVjdGlvbiBvZg0KPiBwbV9zdXNw
-ZW5kX3RhcmdldF9zdGF0ZSB2YXJpYWJsZSB0aGF0IGNvdWxkIGJlIHVzZWQgYWxvbmcgd2l0aCB0
-aGUgY2hhbmdlcyBpbg0KPiB0aGlzIHNlcmllcy4NCj4gDQo+IFdoaWxlIHRoZSBkaXNjdXNzaW9u
-IG9mIFsxXSBwcm9ncmVzc2VkIGl0IGhhcyBiZWVuIHByb3Bvc2VkIChpbiBbMl0pIHRvDQo+IGlt
-cGxlbWVudCBhIGZ1bmN0aW9uIHRoYXQgd291bGQgdGVsbCBpZiB0aGUgcGxhdGZvcm0ncyBwb3dl
-ciB3b3VsZCBiZSBjdXQgb2ZmDQo+IGF0IHRoZSBlbmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJl
-Lg0KPiANCj4gVGhlIHBhdGNoZXMgaW4gdGhpcyBzZXJpZXMgZG9lcyBhcyBmb2xsb3dzOg0KPiAx
-LzMgLSBhZGQgYSBuZXcgbWVtYmVyIHRvIHBsYXRmb3JtX3N1c3BlbmRfb3BzIHRoYXQgd2lsbCB0
-ZWxsIGlmIHBsYXRmb3JtJ3MNCj4gICAgICAgcG93ZXIgd2lsbCBiZSBjdXQgb2ZmIGF0IHRoZSBl
-bmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJlOyBkcml2ZXJzIGNvdWxkDQo+ICAgICAgIHVzZSBp
-dCB2aWEgcGxhdGZvcm1fb2ZmX2luX3N1c3BlbmQoKQ0KPiAyLzMgLSBhZGQgYSBuZXcgZnVuY3Rp
-b24gdG8gcmVndWxhdG9yJ3MgY29yZSB0aGF0IGNvdWxkIGJlIHVzZWQgdG8gY2hlY2sgaWYgYQ0K
-PiAgICAgICBwcm9wZXIgcmVndWxhdG9yIGhhcyBiZWVuIGNvbmZpZ3VyZWQgKHZpYSBEVCkgdG8g
-YmUgcG93ZXJlZCBvZmYgaW4NCj4gICAgICAgc3VzcGVuZC4gVGhpcyBpcyB1c2VkIG9uIHRoaXMg
-c2VyaWVzIHRvIGNoZWNrIHRoZSBDUFUncyByZWd1bGF0b3IgaXMNCj4gICAgICAgcHJvcGVybHkg
-Y29uZmlndXJlZCBpbiBEVCB0byBiZSB0dXJuZWQgb2ZmIGluIHN1c3BlbmQuDQo+IDMvMyAtIGZp
-bGwgLm9mZl9pbl9zdXNwZW5kIG1lbWJlciBvZiBhdDkxX3BtX29wczsgdGhlIGZ1bmN0aW9uYWxp
-dHkgaW4gcGF0Y2ggMi8zDQo+ICAgICAgIGlzIHVzZWQgdG8gZG91YmxlIGNoZWNrIENQVSdzIHJl
-Z3VsYXRvciB3b3VsZCBiZSB0dXJuZWQgb2ZmIGluIHN1c3BlbmQuDQo+IA0KPiBUaGFuayB5b3Us
-DQo+IENsYXVkaXUgQmV6bmVhDQo+IA0KPiBbMV0gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTcv
-Ni8yMi85MzgNCj4gWzJdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE3LzcvMTYvNDU3DQo+IA0K
-PiBDaGFuZ2VzIGluIHYyOg0KPiAtIHJlbW92ZSAhISBpbnN0cnVjdGlvbiBpbiByZWd1bGF0b3Jf
-aXNfZGlzYWJsZWRfaW5fc3VzcGVuZCgpIGFuZA0KPiAgIGF0OTFfcG1fc3RhdGVfYWxsb3dlZCgp
-DQo+IC0gcy93ZWF0aGVyL3dldGhlciBpbiBwYXRjaCAxLzENCj4gDQo+IENsYXVkaXUgQmV6bmVh
-ICgzKToNCj4gICBQTSAvIFN1c3BlbmQ6IEFkZCBzdXBwb3J0IHRvIGNoZWNrIGlmIHBsYXRmb3Jt
-J3MgcG93ZXIgaXMgb2ZmIGluDQo+ICAgICBzdXNwZW5kDQo+ICAgcmVndWxhdG9yOiBjb3JlOiBh
-ZGQgaGVscGVyIHRvIGNoZWNrIGlmIHJlZ3VsYXRvciBpcyBkaXNhYmxlZCBpbg0KPiAgICAgc3Vz
-cGVuZA0KPiAgIEFSTTogYXQ5MTogcG06IGFkZCBzdXBwb3J0IGZvciAub2ZmX2luX3N1c3BlbmQN
-Cj4gDQo+ICBhcmNoL2FybS9tYWNoLWF0OTEvcG0uYyAgICAgICAgICAgIHwgNjEgKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKystLS0NCj4gIGRyaXZlcnMvcmVndWxhdG9yL2NvcmUu
-YyAgICAgICAgICAgfCAxNyArKysrKysrKysrKw0KPiAgaW5jbHVkZS9saW51eC9yZWd1bGF0b3Iv
-Y29uc3VtZXIuaCB8ICA3ICsrKysrDQo+ICBpbmNsdWRlL2xpbnV4L3N1c3BlbmQuaCAgICAgICAg
-ICAgIHwgIDYgKysrKw0KPiAga2VybmVsL3Bvd2VyL3N1c3BlbmQuYyAgICAgICAgICAgICB8IDEz
-ICsrKysrKysrDQo+ICA1IGZpbGVzIGNoYW5nZWQsIDEwMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0
-aW9ucygtKQ0KPiANCg==
+Am Mittwoch, 16. Januar 2019, 12:06:54 CET schrieb Stephan M=FCller:
+
+Hi Herbert,
+
+> Changes v2:
+> * Incorporation of all comments from Eric Biggers
+>=20
+> Stephan Mueller (6):
+>   crypto: add template handling for RNGs
+>   crypto: kdf - SP800-108 Key Derivation Function
+>   crypto: kdf - add known answer tests
+>   crypto: hkdf - HMAC-based Extract-and-Expand KDF
+>   crypto: hkdf - add known answer tests
+>   crypto: tcrypt - add KDF test invocation
+>=20
+>  crypto/Kconfig                |  13 +
+>  crypto/Makefile               |   2 +
+>  crypto/hkdf.c                 | 272 +++++++++++++++++++
+>  crypto/kdf_sp800108.c         | 491 ++++++++++++++++++++++++++++++++++
+>  crypto/rng.c                  |  44 +++
+>  crypto/tcrypt.c               |   8 +
+>  crypto/testmgr.c              | 245 +++++++++++++++++
+>  crypto/testmgr.h              | 198 ++++++++++++++
+>  include/crypto/internal/rng.h |  26 ++
+>  9 files changed, 1299 insertions(+)
+>  create mode 100644 crypto/hkdf.c
+>  create mode 100644 crypto/kdf_sp800108.c
+
+Do you happen to have any comments on this patch set?
+
+Ciao
+Stephan
