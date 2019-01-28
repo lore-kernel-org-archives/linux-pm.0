@@ -1,74 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 2/9] cpufreq: Auto-register the driver as a thermal
- cooling device if asked
-Date: Mon, 28 Jan 2019 10:03:19 +0100
-Message-ID: <CAJZ5v0huESFqOADqyym-ci-XcWpL4tbcd9a-jxe_KArXKpHFyw@mail.gmail.com>
-References: <cover.1548654899.git.amit.kucheria@linaro.org> <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH v2 0/3] add support for power off check in suspend
+Date: Mon, 28 Jan 2019 09:50:23 +0000
+Message-ID: <5f0cf9d1-9a6a-4c97-8f56-6c5ae8af1564@microchip.com>
+References: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org>
+In-Reply-To: <1546944944-13911-1-git-send-email-claudiu.beznea@microchip.com>
+Content-Language: en-US
+Content-ID: <5F04E4E280C7C1419279A256779218F9@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Tao Wang <kevin.wangtao@hisilicon.com>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux@armlinux.org.uk, lgirdwood@gmail.com, broonie@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 28, 2019 at 7:44 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
->
-> All cpufreq drivers do similar things to register as a cooling device.
-> Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> to register the cooling device on their behalf. This allows us to get
-> rid of duplicated code in the drivers.
->
-> In order to allow this, we add a struct thermal_cooling_device pointer
-> to struct cpufreq_policy so that drivers don't need to store it in a
-> private data structure.
->
-> Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 9 +++++++++
->  include/linux/cpufreq.h   | 9 +++++++++
->  2 files changed, 18 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e35a886e00bc..29ed78b0b77b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -19,6 +19,7 @@
->
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/delay.h>
->  #include <linux/device.h>
->  #include <linux/init.h>
-> @@ -1318,6 +1319,9 @@ static int cpufreq_online(unsigned int cpu)
->         if (cpufreq_driver->ready)
->                 cpufreq_driver->ready(policy);
->
-> +       if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV)
-
-It would be good to use IS_ENABLED(CONFIG_CPU_THERMAL) here and below
-as a hint for the compiler.
-
-> +               policy->cdev = of_cpufreq_cooling_register(policy);
-> +
->         pr_debug("initialization complete\n");
->
->         return 0;
-> @@ -1405,6 +1409,11 @@ static int cpufreq_offline(unsigned int cpu)
->                 goto unlock;
->         }
->
-> +       if (cpufreq_driver->flags & CPUFREQ_AUTO_REGISTER_COOLING_DEV) {
-> +               cpufreq_cooling_unregister(policy->cdev);
-> +               policy->cdev = NULL;
-> +       }
-> +
->         if (cpufreq_driver->stop_cpu)
->                 cpufreq_driver->stop_cpu(policy);
->
+SGkgUGF2ZWwsIFJhZmFlbCwNCg0KRG8geW91IGhhdmUgc29tZSBvdGhlciBoaW50cyBJIGNvdWxk
+IGZvbGxvdyBpbiBvcmRlciB0byBzb2x2ZSB0aGUNCnNjZW5hcmlvIEkgdHJpZWQgdG8gY292ZXIg
+d2l0aCB0aGVzZSBwYXRjaGVzLCBpZiB0aGVzZSBhcmUgbm90DQphIHByb3BlciBmaXQgZm9yIHRo
+ZSBjdXJyZW50IGNvZGU/DQoNClRoYW5rIHlvdSwNCkNsYXVkaXUgQmV6bmVhDQoNCk9uIDA4LjAx
+LjIwMTkgMTI6NTYsIENsYXVkaXUgQmV6bmVhIC0gTTE4MDYzIHdyb3RlOg0KPiBGcm9tOiBDbGF1
+ZGl1IEJlem5lYSA8Y2xhdWRpdS5iZXpuZWFAbWljcm9jaGlwLmNvbT4NCj4gDQo+IEhpLA0KPiAN
+Cj4gQVQ5MSBwbGF0Zm9ybXMgc3VwcG9ydCBhIHBvd2VyIHNhdmluZyBtb2RlIHdoZXJlIFNvQydz
+IHBvd2VyIGlzIGN1dCBvZmYgKHdlIGNhbGwNCj4gaXQgYmFja3VwIG1vZGUpLiBUaGUgcmVzdW1l
+IGlzIGRvbmUgd2l0aCB0aGUgaGVscCBvZiBib290bG9hZGVycy4gVG8gYmUgYWJsZSB0bw0KPiBz
+dXNwZW5kL3Jlc3VtZSBMaW51eCB0by9mcm9tIHRoaXMgbW9kZSBhbGwgdGhlIGRyaXZlcnMgc3Vz
+cGVuZC9yZXN1bWUgY2FsbGJhY2tzDQo+IHNob3VsZCBzYXZlL3Jlc3RvcmUgdGhlIGNvbnRlbnQg
+b2YgYWxsIHRoZSBhY3RpdmUgcmVnaXN0ZXJzLiBXZSBoYXZlIDIgcHJvYmxlbXMNCj4gd2UgYXJl
+IHRyeWluZyB0byBzb2x2ZToNCj4gLSBzb21lIG9mIHRoZXNlIGRyaXZlcnMgYXJlIHNoYXJlZCB3
+aXRoIG90aGVyIG5vbiBNaWNyb2NoaXAgU29DcyAoZS5nLiBtYWNiDQo+ICAgZHJpdmVyKSBhbmQg
+d2UgZG9uJ3Qgd2FudCB0byBkaXN0dXJiZSBvdGhlciB1c2VycyBvZiBjb3JyZXNwb25kaW5nIElQ
+cyB3aXRoDQo+ICAgYWxsIHRoZSByZWdpc3RlciBzYXZlL3Jlc3RvcmUgb3BlcmF0aW9uczsNCj4g
+LSB0aGUgc3VzcGVuZC9yZXN1bWUgdGltZSBmb3IgdGhlIHJlc3Qgb2YgdGhlIHBvd2VyIHNhdmlu
+ZyBtb2RlIHdlIGFyZSB1c2luZw0KPiAgIGNvdWxkIGJlIGltcHJvdmVkIGlmIHdlIHdvdWxkIGtu
+b3cgaW4gZHJpdmVycyB0aGUgc3VzcGVuZCBtb2RlIHRoZSBwbGF0Zm9ybQ0KPiAgIGlzIHN3aXRj
+aGVkIHRvLg0KPiANCj4gQSBzb2x1dGlvbiB0aGF0IHdvdWxkIGhhdmUgYmVlbiBzb2x2ZSBvdXIg
+cHJvYmxlbXMgd2FzIHByb3Bvc2VkIGluIFsxXSBidXQgaW4NCj4gdGhlIGVuZCBpdCB3YXNuJ3Qg
+YWNjZXB0ZWQuIEl0IGVuZGVkIHVwIHdpdGggdGhlIGludHJvZHVjdGlvbiBvZg0KPiBwbV9zdXNw
+ZW5kX3RhcmdldF9zdGF0ZSB2YXJpYWJsZSB0aGF0IGNvdWxkIGJlIHVzZWQgYWxvbmcgd2l0aCB0
+aGUgY2hhbmdlcyBpbg0KPiB0aGlzIHNlcmllcy4NCj4gDQo+IFdoaWxlIHRoZSBkaXNjdXNzaW9u
+IG9mIFsxXSBwcm9ncmVzc2VkIGl0IGhhcyBiZWVuIHByb3Bvc2VkIChpbiBbMl0pIHRvDQo+IGlt
+cGxlbWVudCBhIGZ1bmN0aW9uIHRoYXQgd291bGQgdGVsbCBpZiB0aGUgcGxhdGZvcm0ncyBwb3dl
+ciB3b3VsZCBiZSBjdXQgb2ZmDQo+IGF0IHRoZSBlbmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJl
+Lg0KPiANCj4gVGhlIHBhdGNoZXMgaW4gdGhpcyBzZXJpZXMgZG9lcyBhcyBmb2xsb3dzOg0KPiAx
+LzMgLSBhZGQgYSBuZXcgbWVtYmVyIHRvIHBsYXRmb3JtX3N1c3BlbmRfb3BzIHRoYXQgd2lsbCB0
+ZWxsIGlmIHBsYXRmb3JtJ3MNCj4gICAgICAgcG93ZXIgd2lsbCBiZSBjdXQgb2ZmIGF0IHRoZSBl
+bmQgb2YgdGhlIHN1c3BlbmQgcHJvY2VkdXJlOyBkcml2ZXJzIGNvdWxkDQo+ICAgICAgIHVzZSBp
+dCB2aWEgcGxhdGZvcm1fb2ZmX2luX3N1c3BlbmQoKQ0KPiAyLzMgLSBhZGQgYSBuZXcgZnVuY3Rp
+b24gdG8gcmVndWxhdG9yJ3MgY29yZSB0aGF0IGNvdWxkIGJlIHVzZWQgdG8gY2hlY2sgaWYgYQ0K
+PiAgICAgICBwcm9wZXIgcmVndWxhdG9yIGhhcyBiZWVuIGNvbmZpZ3VyZWQgKHZpYSBEVCkgdG8g
+YmUgcG93ZXJlZCBvZmYgaW4NCj4gICAgICAgc3VzcGVuZC4gVGhpcyBpcyB1c2VkIG9uIHRoaXMg
+c2VyaWVzIHRvIGNoZWNrIHRoZSBDUFUncyByZWd1bGF0b3IgaXMNCj4gICAgICAgcHJvcGVybHkg
+Y29uZmlndXJlZCBpbiBEVCB0byBiZSB0dXJuZWQgb2ZmIGluIHN1c3BlbmQuDQo+IDMvMyAtIGZp
+bGwgLm9mZl9pbl9zdXNwZW5kIG1lbWJlciBvZiBhdDkxX3BtX29wczsgdGhlIGZ1bmN0aW9uYWxp
+dHkgaW4gcGF0Y2ggMi8zDQo+ICAgICAgIGlzIHVzZWQgdG8gZG91YmxlIGNoZWNrIENQVSdzIHJl
+Z3VsYXRvciB3b3VsZCBiZSB0dXJuZWQgb2ZmIGluIHN1c3BlbmQuDQo+IA0KPiBUaGFuayB5b3Us
+DQo+IENsYXVkaXUgQmV6bmVhDQo+IA0KPiBbMV0gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTcv
+Ni8yMi85MzgNCj4gWzJdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE3LzcvMTYvNDU3DQo+IA0K
+PiBDaGFuZ2VzIGluIHYyOg0KPiAtIHJlbW92ZSAhISBpbnN0cnVjdGlvbiBpbiByZWd1bGF0b3Jf
+aXNfZGlzYWJsZWRfaW5fc3VzcGVuZCgpIGFuZA0KPiAgIGF0OTFfcG1fc3RhdGVfYWxsb3dlZCgp
+DQo+IC0gcy93ZWF0aGVyL3dldGhlciBpbiBwYXRjaCAxLzENCj4gDQo+IENsYXVkaXUgQmV6bmVh
+ICgzKToNCj4gICBQTSAvIFN1c3BlbmQ6IEFkZCBzdXBwb3J0IHRvIGNoZWNrIGlmIHBsYXRmb3Jt
+J3MgcG93ZXIgaXMgb2ZmIGluDQo+ICAgICBzdXNwZW5kDQo+ICAgcmVndWxhdG9yOiBjb3JlOiBh
+ZGQgaGVscGVyIHRvIGNoZWNrIGlmIHJlZ3VsYXRvciBpcyBkaXNhYmxlZCBpbg0KPiAgICAgc3Vz
+cGVuZA0KPiAgIEFSTTogYXQ5MTogcG06IGFkZCBzdXBwb3J0IGZvciAub2ZmX2luX3N1c3BlbmQN
+Cj4gDQo+ICBhcmNoL2FybS9tYWNoLWF0OTEvcG0uYyAgICAgICAgICAgIHwgNjEgKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKystLS0NCj4gIGRyaXZlcnMvcmVndWxhdG9yL2NvcmUu
+YyAgICAgICAgICAgfCAxNyArKysrKysrKysrKw0KPiAgaW5jbHVkZS9saW51eC9yZWd1bGF0b3Iv
+Y29uc3VtZXIuaCB8ICA3ICsrKysrDQo+ICBpbmNsdWRlL2xpbnV4L3N1c3BlbmQuaCAgICAgICAg
+ICAgIHwgIDYgKysrKw0KPiAga2VybmVsL3Bvd2VyL3N1c3BlbmQuYyAgICAgICAgICAgICB8IDEz
+ICsrKysrKysrDQo+ICA1IGZpbGVzIGNoYW5nZWQsIDEwMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0
+aW9ucygtKQ0KPiANCg==
