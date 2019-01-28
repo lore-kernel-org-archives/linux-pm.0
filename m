@@ -1,13 +1,13 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.4 38/80] cpuidle: big.LITTLE: fix refcount leak
-Date: Mon, 28 Jan 2019 11:23:19 -0500
-Message-ID: <20190128162401.58841-38-sashal@kernel.org>
-References: <20190128162401.58841-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 3.18 28/61] cpuidle: big.LITTLE: fix refcount leak
+Date: Mon, 28 Jan 2019 11:25:50 -0500
+Message-ID: <20190128162623.59854-28-sashal@kernel.org>
+References: <20190128162623.59854-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190128162401.58841-1-sashal@kernel.org>
+In-Reply-To: <20190128162623.59854-1-sashal@kernel.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -38,10 +38,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index db2ede565f1a..b44476a1b7ad 100644
+index fbc00a1d3c48..355dc3d9cb35 100644
 --- a/drivers/cpuidle/cpuidle-big_little.c
 +++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -167,6 +167,7 @@ static int __init bl_idle_init(void)
+@@ -175,6 +175,7 @@ static int __init bl_idle_init(void)
  {
  	int ret;
  	struct device_node *root = of_find_node_by_path("/");
@@ -49,7 +49,7 @@ index db2ede565f1a..b44476a1b7ad 100644
  
  	if (!root)
  		return -ENODEV;
-@@ -174,7 +175,11 @@ static int __init bl_idle_init(void)
+@@ -182,7 +183,11 @@ static int __init bl_idle_init(void)
  	/*
  	 * Initialize the driver just for a compliant set of machines
  	 */
@@ -60,7 +60,7 @@ index db2ede565f1a..b44476a1b7ad 100644
 +
 +	if (!match_id)
  		return -ENODEV;
- 
- 	if (!mcpm_is_available())
+ 	/*
+ 	 * For now the differentiation between little and big cores
 -- 
 2.19.1
