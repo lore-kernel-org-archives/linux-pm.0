@@ -1,103 +1,110 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [RFC PATCH v2 07/10] gpio: Initial support for ROHM bd70528 GPIO
- block
-Date: Mon, 28 Jan 2019 16:04:45 +0200
-Message-ID: <20190128140445.GB4156@localhost.localdomain>
-References: <20190125110509.GA29310@localhost.localdomain>
- <CACRpkdYTUB8vPiCF=s5-TARhv=DsPDQHVyCwP7fMc27gyDvKSg@mail.gmail.com>
+From: Qais Yousef <Qais.Yousef@arm.com>
+Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Mon, 28 Jan 2019 14:04:42 +0000
+Message-ID: <20190128140441.yetyx7hgtdoyk4mn@e107158-lin.cambridge.arm.com>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+ <20190117131631.GA14385@localhost.localdomain>
+ <CAJZ5v0jFqXGf_G2v1VNXSxyiDzgeFY8OKUFu2tQ8Wso3dBS+_w@mail.gmail.com>
+ <20190118123900.GJ14385@localhost.localdomain>
+ <CAJZ5v0gtjq9Nh0WHbMzY+3Z3o5NWiWhP=QEXxzjVe3ta32z7=Q@mail.gmail.com>
+ <CA+mqd+7EqERei8eekAsVxa_bJUYETyO3T76L8Q_sV=C9rwiy3g@mail.gmail.com>
+Reply-To: "CAJZ5v0gtjq9Nh0WHbMzY+3Z3o5NWiWhP=QEXxzjVe3ta32z7=Q@mail.gmail.com"
+          <CAJZ5v0gtjq9Nh0WHbMzY+3Z3o5NWiWhP=QEXxzjVe3ta32z7=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CACRpkdYTUB8vPiCF=s5-TARhv=DsPDQHVyCwP7fMc27gyDvKSg@mail.gmail.com>
+In-Reply-To: <CA+mqd+7EqERei8eekAsVxa_bJUYETyO3T76L8Q_sV=C9rwiy3g@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <2A8FE7A5F49D1E4EBE68DCF52829E318@eurprd08.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Juri Lelli <juri.lelli@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 28, 2019 at 01:55:48PM +0100, Linus Walleij wrote:
-> Hi Matti!
-> 
-> Thanks for your patch!
-
-No, thank you for the review =)
-
-> On Fri, Jan 25, 2019 at 12:05 PM Matti Vaittinen
-> <matti.vaittinen@fi.rohmeurope.com> wrote:
-> 
-> > ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
-> > controlled by GPIO framework.
-> >
-> > IRQs are handled by regmap-irq and GPIO driver is not
-> > aware of the irq usage.
-> >
-> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> 
-> This is overall a very nicely written driver.
-> 
-> Just small comments:
-> 
-> > +#include <linux/gpio/driver.h>
-> > +#include <linux/interrupt.h>
-> 
-> Why interrupt? You do not use it.
-
-Right, I'd better to drop it.
-
-> 
-> > +static int bd70528_get_direction(struct gpio_chip *chip, unsigned int offset)
-> > +{
-> > +       struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-> > +       int val, ret;
-> > +
-> > +       /* Do we need to do something to IRQs here? */
-> 
-> Well you don't support IRQs yet so no problem as long as they're masked?
-
-I may have not worded this correctly. These pins can be used for IRQs.
-HW supports it and I added the irq registers in regmap-irq controller
-(please see the MFD part). It's just that this GPIO driver is currently not
-aware of that. This comment here is a reminder for me to figure out if
-we should look whether the pin is used for I/O or for irqs here - and
-what should we return if pin is configured to be used for IRQs.
-
-> > +       ret = regmap_read(bdgpio->chip.regmap, GPIO_OUT_REG(offset), &val);
-> > +       if (ret) {
-> > +               dev_err(bdgpio->chip.dev, "Could not read gpio direction\n");
-> > +               return ret;
-> > +       }
-> > +
-> > +       return !(val & BD70528_GPIO_OUT_EN_MASK);
-> > +}
-> > +
-> > +static int bd70528_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
-> > +                                  unsigned long config)
-> 
-> This is very nice. With Thomas Petazzoni's ongoing work you will be
-> able to also support pull up/down if you need it.
-> 
-> > +static int bd70528_direction_input(struct gpio_chip *chip, unsigned int offset)
-> > +{
-> > +       struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-> > +
-> > +       /* Do we need to do something to IRQs here? */
-> 
-> Hmmm?
-
-Same thing as with the get_direction. Should we allow setting the
-direction if pin is already configured as an irq source? Should we
-somehow try to warn user if it seems the pin is tried to be used for
-both irqs and I/O?
-
-> 
-> Apart from that it looks good. Feel free to add:
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> on the next iteration.
-
-I will need to do some further testing on this before submitting next
-version. I will gladly maintain your Reviewed-by if I don't do any
-bigger changes to the driver - but if I do I'll drop your tag and ask
-for re-review :)
-
-Br,
-	Matti Vaittinen
+PiBPbiBGcmksIEphbiAxOCwgMjAxOSBhdCAxOjM5IFBNIEp1cmkgTGVsbGkgPGp1cmkubGVsbGlA
+Z21haWwuY29tPiB3cm90ZToNCj4gPg0KPiA+IE9uIDE3LzAxLzE5IDE1OjU1LCBSYWZhZWwgSi4g
+V3lzb2NraSB3cm90ZToNCj4gPiA+IE9uIFRodSwgSmFuIDE3LCAyMDE5IGF0IDI6MTYgUE0gSnVy
+aSBMZWxsaSA8anVyaS5sZWxsaUBnbWFpbC5jb20+IHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiBP
+biAxMS8wMS8xOSAxMDo0NywgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+ID4gPiA+ID4gT24g
+RnJpLCBKYW4gMTEsIDIwMTkgYXQgMTA6MTggQU0gVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJA
+bGluYXJvLm9yZz4gd3JvdGU6DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gSGksDQo+ID4gPiA+
+ID4gPg0KPiA+ID4gPiA+ID4gVGhpcyBjb21taXQgaW50cm9kdWNlcyB0aGUgZnJlcXVlbmN5IGNv
+bnN0cmFpbnQgaW5mcmFzdHJ1Y3R1cmUsIHdoaWNoDQo+ID4gPiA+ID4gPiBwcm92aWRlcyBhIGdl
+bmVyaWMgaW50ZXJmYWNlIGZvciBwYXJ0cyBvZiB0aGUga2VybmVsIHRvIGNvbnN0cmFpbnQgdGhl
+DQo+ID4gPiA+ID4gPiB3b3JraW5nIGZyZXF1ZW5jeSByYW5nZSBvZiBhIGRldmljZS4NCj4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiBUaGUgcHJpbWFyeSB1c2VycyBvZiB0aGlzIGFyZSB0aGUgY3B1
+ZnJlcSBhbmQgZGV2ZnJlcSBmcmFtZXdvcmtzLiBUaGUNCj4gPiA+ID4gPiA+IGNwdWZyZXEgZnJh
+bWV3b3JrIGFscmVhZHkgaW1wbGVtZW50cyBzdWNoIGNvbnN0cmFpbnRzIHdpdGggaGVscCBvZg0K
+PiA+ID4gPiA+ID4gbm90aWZpZXIgY2hhaW5zIChmb3IgdGhlcm1hbCBhbmQgb3RoZXIgY29uc3Ry
+YWludHMpIGFuZCBzb21lIGxvY2FsIGNvZGUNCj4gPiA+ID4gPiA+IChmb3IgdXNlci1zcGFjZSBj
+b25zdHJhaW50cykuIFRoZSBkZXZmcmVxIGZyYW1ld29yayBkZXZlbG9wZXJzIGhhdmUgYWxzbw0K
+PiA+ID4gPiA+ID4gc2hvd24gaW50ZXJlc3QgWzFdIGluIHN1Y2ggYSBmcmFtZXdvcmssIHdoaWNo
+IG1heSB1c2UgaXQgYXQgYSBsYXRlcg0KPiA+ID4gPiA+ID4gcG9pbnQgb2YgdGltZS4NCj4gPiA+
+ID4gPiA+DQo+ID4gPiA+ID4gPiBUaGUgaWRlYSBoZXJlIGlzIHRvIHByb3ZpZGUgYSBnZW5lcmlj
+IGludGVyZmFjZSBhbmQgZ2V0IHJpZCBvZiB0aGUNCj4gPiA+ID4gPiA+IG5vdGlmaWVyIGJhc2Vk
+IG1lY2hhbmlzbS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBPbmx5IG9uZSBjb25zdHJhaW50
+IGlzIGFkZGVkIGZvciBub3cgZm9yIHRoZSBjcHVmcmVxIGZyYW1ld29yayBhbmQgdGhlDQo+ID4g
+PiA+ID4gPiByZXN0IHdpbGwgZm9sbG93IGFmdGVyIHRoaXMgc3R1ZmYgaXMgbWVyZ2VkLg0KPiA+
+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE1hdHRoaWFzIEthZWhsY2tlIHdhcyBpbnZvbHZlZCBpbiB0
+aGUgcHJlcGFyYXRpb24gb2YgdGhlIGZpcnN0IGRyYWZ0IG9mDQo+ID4gPiA+ID4gPiB0aGlzIHdv
+cmsgYW5kIHNvIEkgaGF2ZSBhZGRlZCBoaW0gYXMgQ28tYXV0aG9yIHRvIHRoZSBmaXJzdCBwYXRj
+aC4NCj4gPiA+ID4gPiA+IFRoYW5rcyBNYXR0aGlhcy4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiBGV0lXLCBUaGlzIGRvZXNuJ3QgaGF2ZSBhbnl0aGluZyB0byBkbyB3aXRoIHRoZSBib290LWNv
+bnN0cmFpbnRzDQo+ID4gPiA+ID4gPiBmcmFtZXdvcmsgWzJdIEkgd2FzIHRyeWluZyB0byB1cHN0
+cmVhbSBlYXJsaWVyIDopDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBUaGlzIGlzIHF1aXRlIGEgYml0
+IG9mIGNvZGUgdG8gcmV2aWV3LCBzbyBpdCB3aWxsIHRha2Ugc29tZSB0aW1lLg0KPiA+ID4gPiA+
+DQo+ID4gPiA+ID4gT25lIGltbWVkaWF0ZSBvYnNlcnZhdGlvbiBpcyB0aGF0IGl0IHNlZW1zIHRv
+IGRvIHF1aXRlIGEgYml0IG9mIHdoYXQNCj4gPiA+ID4gPiBpcyBkb25lIGluIHRoZSBQTSBRb1Mg
+ZnJhbWV3b3JrLCBzbyBtYXliZSB0aGVyZSBpcyBhbiBvcHBvcnR1bml0eSBmb3INCj4gPiA+ID4g
+PiBzb21lIGNvbnNvbGlkYXRpb24gaW4gdGhlcmUuDQo+ID4gPiA+DQo+ID4gPiA+IFJpZ2h0LCBo
+YWQgdGhlIHNhbWUgaW1wcmVzc2lvbi4gOi0pDQo+ID4gPiA+DQo+ID4gPiA+IEkgd2FzIGFsc28g
+d29uZGVyaW5nIGhvdyB0aGlzIG5ldyBmcmFtZXdvcmsgaXMgZGVhbGluZyB3aXRoDQo+ID4gPiA+
+IGNvbnN0cmFpbnRzL3JlcXVlc3QgaW1wb3NlZC9nZW5lcmF0ZWQgYnkgdGhlIHNjaGVkdWxlciBh
+bmQgcmVsYXRlZA0KPiA+ID4gPiBpbnRlcmZhY2VzICh0aGlua2luZyBhYm91dCBzY2hlZHV0aWwg
+YW5kIFBhdHJpY2sncyB1dGlsX2NsYW1wKS4NCj4gPiA+DQo+ID4gPiBNeSB1bmRlcnN0YW5kaW5n
+IGlzIHRoYXQgaXQgaXMgb3J0aG9nb25hbCB0byB0aGVtLCBsaWtlIGFkZGluZyBleHRyYQ0KPiA+
+ID4gY29uc3RyYWludHMgb24gdG9wIG9mIHRoZW0gZXRjLg0KPiA+DQo+ID4gTW1tLCBvay4gQnV0
+LCBpZiB0aGF0IGlzIGluZGVlZCB0aGUgY2FzZSwgSSBub3cgd29uZGVyIHdoeSBhbmQgaG93DQo+
+ID4gZXhpc3RpbmcgKG9yIGhvcGVmdWxseSB0byBiZSBhZGRlZCBzb29uKSBpbnRlcmZhY2VzIGFy
+ZSBub3Qgc3VmZmljaWVudC4NCj4gPiBJJ20gbm90IGFnYWluc3QgdGhpcyBwcm9wb3NhbCwganVz
+dCB0cnlpbmcgdG8gdW5kZXJzdGFuZCBpZiB0aGlzIG1pZ2h0DQo+ID4gY3JlYXRlIHVud2FudGVk
+LCBoYXJkIHRvIG1hbmFnZSwgb3ZlcmxhcC4NCg0KSSBlY2hvIHRoZXNlIGNvbmNlcm5zIGFzIHdl
+bGwuDQoNCj4NCj4gVGhhdCBpcyBhIHZhbGlkIGNvbmNlcm4gSU1PLiAgRXNwZWNpYWxseSB0aGUg
+dXRpbGl6YXRpb24gY2xhbXBpbmcgYW5kDQo+IHRoZSBpbnRlcmNvbm5lY3QgZnJhbWV3b3JrIHNl
+ZW0gdG8gYXBwcm9hY2ggdGhlIHNhbWUgcHJvYmxlbSBzcGFjZQ0KPiBmcm9tIGRpZmZlcmVudCBk
+aXJlY3Rpb25zLg0KPg0KPiBGb3IgY3B1ZnJlcSB0aGlzIHdvcmsgY2FuIGJlIHJlZ2FyZGVkIGFz
+IGEgcmVwbGFjZW1lbnQgZm9yIG5vdGlmaWVycw0KPiB3aGljaCBhcmUgYSBiYW5kYWlkIG9mIHNv
+cnRzIGFuZCBpdCB3b3VsZCBiZSBnb29kIHRvIGdldCByaWQgb2YgdGhlbS4NCj4gVGhleSBhcmUg
+bW9zdGx5IHVzZWQgZm9yIHRoZXJtYWwgbWFuYWdlbWVudCBhbmQgSSBndWVzcyB0aGF0IGRldmZy
+ZXENCj4gdXNlcnMgYWxzbyBtYXkgd2FudCB0byByZWR1Y2UgZnJlcXVlbmN5IGZvciB0aGVybWFs
+IHJlYXNvbnMgYW5kIEknZA0KPiByYXRoZXIgbm90IGFkZCBub3RpZmllcnMgdG8gdGhhdCBmcmFt
+ZXdvcmsgZm9yIHRoaXMgcHVycG9zZS4NCj4NCj4gSG93ZXZlciwgYXMgc3RhdGVkIHByZXZpb3Vz
+bHksIHRoaXMgcmVzZW1ibGVzIHRoZSBQTSBRb1MgZnJhbWV3b3JrDQo+IHF1aXRlIGEgYml0IHRv
+IG1lIGFuZCB3aGF0ZXZlciB0aGVybWFsIGVudGl0eSwgc2F5LCBzZXRzIHRoZXNlDQo+IGNvbnN0
+cmFpbnRzLCBpdCBzaG91bGQgbm90IHdvcmsgYWdhaW5zdCBzY2hlZHV0aWwgYW5kIHNpbWlsYXIu
+ICBJbg0KDQpCdXQgd2UgaGF2ZSBubyB3YXkgdG8gZW5mb3JjZSB0aGlzLCBubz8gSSdtIHRoaW5r
+aW5nIGlmIGZyZXF1ZW5jeSBjYW4gYmUNCmNvbnN0cmFpbmVkIGluIFBNIFFvUyBmcmFtZXdvcmss
+IHRoZW4gd2Ugd2lsbCBlbmQgdXAgd2l0aCBzb21lIGRyaXZlcnMgdGhhdA0KdGhpbmsgaXQncyBh
+IGdvb2QgaWRlYSB0byB1c2UgaXQgYW5kIHBvdGVudGlhbGx5IGVuZCB1cCBicmVha2luZyB0aGlz
+ICJzaG91bGQNCm5vdCB3b3JrIGFnYWluc3Qgc2NoZWR1dGlsIGFuZCBzaW1pbGFyIi4NCg0KT3Ig
+ZGlkIEkgbWlzcyBzb21ldGhpbmc/DQoNCk15IHBvaW50IGlzIHRoYXQgaWYgd2UgaW50cm9kdWNl
+IHNvbWV0aGluZyB0b28gZ2VuZXJpYyB3ZSBtaWdodCBlbmQgdXANCmVuY291cmFnaW5nIG1vcmUg
+dXNlcnMgYW5kIGVuZCB1cCB3aXRoIGEgY29tcGxleCBzZXQgb2YgcnVsZXMvaW50ZXJhY3Rpb25z
+IGFuZA0KbG9zZSBzb21lIGRldGVybWluaXNtLiBCdXQgSSBjb3VsZCBiZSByZWFkaW5nIHRvbyBt
+dWNoIGludG8gaXQgOi0pDQoNCkNoZWVycw0KDQotLQ0KUWFpcyBZb3VzZWYNCg0KPiBzb21lIHNp
+dHVhdGlvbnMgc2V0dGluZyBhIG1heCBmcmVxdWVuY3kgbGltaXQgdG8gY29udHJvbCB0aGVybWFs
+cyBpcw0KPiBub3QgdGhlIG1vc3QgZWZmaWNpZW50IHdheSB0byBnbyBhcyBpdCBlZmZlY3RpdmVs
+eSB0dXJucyBpbnRvDQo+IHRocm90dGxpbmcgYW5kIG1ha2VzIHBlcmZvcm1hbmNlIGdvIHNvdXRo
+LiAgRm9yIGV4YW1wbGUsIGl0IG1heSBjYXVzZQ0KPiB0aGluZ3MgdG8gcnVuIGF0IHRoZSBsaW1p
+dCBmcmVxdWVuY3kgYWxsIHRoZSB0aW1lIHdoaWNoIG1heSBiZSB0b28NCj4gc2xvdyBhbmQgaXQg
+bWF5IGJlIG1vcmUgZWZmaWNpZW50IHRvIGFsbG93IGhpZ2hlciBmcmVxdWVuY2llcyB0byBiZQ0K
+PiB1c2VkLCBidXQgaW5zdGVhZCBjb250cm9sIGhvdyBtdWNoIG9mIHRoZSB0aW1lIHRoZXkgY2Fu
+IGJlIHVzZWQuICBTbw0KPiB3ZSBuZWVkIHRvIGJlIGNhcmVmdWwgaGVyZS4NCklNUE9SVEFOVCBO
+T1RJQ0U6IFRoZSBjb250ZW50cyBvZiB0aGlzIGVtYWlsIGFuZCBhbnkgYXR0YWNobWVudHMgYXJl
+IGNvbmZpZGVudGlhbCBhbmQgbWF5IGFsc28gYmUgcHJpdmlsZWdlZC4gSWYgeW91IGFyZSBub3Qg
+dGhlIGludGVuZGVkIHJlY2lwaWVudCwgcGxlYXNlIG5vdGlmeSB0aGUgc2VuZGVyIGltbWVkaWF0
+ZWx5IGFuZCBkbyBub3QgZGlzY2xvc2UgdGhlIGNvbnRlbnRzIHRvIGFueSBvdGhlciBwZXJzb24s
+IHVzZSBpdCBmb3IgYW55IHB1cnBvc2UsIG9yIHN0b3JlIG9yIGNvcHkgdGhlIGluZm9ybWF0aW9u
+IGluIGFueSBtZWRpdW0uIFRoYW5rIHlvdS4NCg==
