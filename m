@@ -1,66 +1,61 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 134/258] cpuidle: big.LITTLE: fix refcount leak
-Date: Mon, 28 Jan 2019 10:57:20 -0500
-Message-ID: <20190128155924.51521-134-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 244/258] thermal: bcm2835: enable hwmon explicitly
+Date: Mon, 28 Jan 2019 10:59:10 -0500
+Message-ID: <20190128155924.51521-244-sashal@kernel.org>
 References: <20190128155924.51521-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Yangtao Li <tiny.windzz@gmail.com>, Sasha Levin <sashal@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Matthias Brugger <mbrugger@suse.com>, Eduardo Valentin <edubezval@gmail.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Yangtao Li <tiny.windzz@gmail.com>
+From: Matthias Brugger <mbrugger@suse.com>
 
-[ Upstream commit 9456823c842f346c74265fcd98d008d87a7eb6f5 ]
+[ Upstream commit d56c19d07e0bc3ceff366a49b7d7a2440c967b1b ]
 
-of_find_node_by_path() acquires a reference to the node
-returned by it and that reference needs to be dropped by its caller.
-bl_idle_init() doesn't do that, so fix it.
+By defaul of-based thermal driver do not enable hwmon.
+This patch does this explicitly, so that the temperature can be read
+through the common hwmon sysfs.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpuidle/cpuidle-big_little.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/thermal/broadcom/bcm2835_thermal.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index db2ede565f1a..b44476a1b7ad 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -167,6 +167,7 @@ static int __init bl_idle_init(void)
- {
- 	int ret;
- 	struct device_node *root = of_find_node_by_path("/");
-+	const struct of_device_id *match_id;
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 23ad4f9f2143..24b006a95142 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -27,6 +27,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/thermal.h>
  
- 	if (!root)
- 		return -ENODEV;
-@@ -174,7 +175,11 @@ static int __init bl_idle_init(void)
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_match_node(compatible_machine_match, root))
-+	match_id = of_match_node(compatible_machine_match, root);
++#include "../thermal_hwmon.h"
 +
-+	of_node_put(root);
-+
-+	if (!match_id)
- 		return -ENODEV;
+ #define BCM2835_TS_TSENSCTL			0x00
+ #define BCM2835_TS_TSENSSTAT			0x04
  
- 	if (!mcpm_is_available())
+@@ -275,6 +277,15 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, tz);
+ 
++	/*
++	 * Thermal_zone doesn't enable hwmon as default,
++	 * enable it here
++	 */
++	tz->tzp->no_hwmon = false;
++	err = thermal_add_hwmon_sysfs(tz);
++	if (err)
++		goto err_tz;
++
+ 	bcm2835_thermal_debugfs(pdev);
+ 
+ 	return 0;
 -- 
 2.19.1
