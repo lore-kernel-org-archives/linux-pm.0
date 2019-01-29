@@ -1,122 +1,91 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 1/7] PM / OPP: Introduce a power estimation helper
-Date: Tue, 29 Jan 2019 09:09:50 +0000
-Message-ID: <20190129090948.3yomjtpbdsar576w@queper01-lin>
+Subject: Re: [PATCH 2/7] cpufreq: dt: Register an Energy Model
+Date: Tue, 29 Jan 2019 09:10:43 +0000
+Message-ID: <20190129091041.et46clxo3lci34xf@queper01-lin>
 References: <20190128165522.31749-1-quentin.perret@arm.com>
- <20190128165522.31749-2-quentin.perret@arm.com>
- <20190129051030.gu5nhr6vmcd35bzk@vireshk-i7>
+ <20190128165522.31749-3-quentin.perret@arm.com>
+ <20190129053041.ymyhfusj6eimpxfu@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190129051030.gu5nhr6vmcd35bzk@vireshk-i7>
+In-Reply-To: <20190129053041.ymyhfusj6eimpxfu@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-On Tuesday 29 Jan 2019 at 10:40:30 (+0530), Viresh Kumar wrote:
-> > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
-> 
-> I would suggest to change the return type to unsigned long and return 0 for
-> errors and positive values for mW.
-
-Well, I can't really do that -- this must match the API of PM_EM:
-
-https://elixir.bootlin.com/linux/v5.0-rc4/source/include/linux/energy_model.h#L62
-
-I'll make sure to make that explicit in the commit message for v2.
-
-> 
-> > +{
-> > +	unsigned long mV, Hz, MHz;
-> 
-> MHz is used only once, I think you can get rid of it just open code the division
-> by 1000000. Maybe remove Hz as well and directly use kHz.
-
-I would expect/hope the compiler will optimize things like that for me
-but yes, I can try to reduce a bit the temp variables if you prefer.
-
-> 
-> > +	struct device *cpu_dev;
-> > +	struct dev_pm_opp *opp;
-> > +	struct device_node *np;
-> > +	u32 cap;
-> > +	u64 tmp;
-> 
-> Name this mW with the above changes.
-
-So that doesn't really work given what I mentioned above.
-
-> > +	int ret;
-> > +
-> > +	cpu_dev = get_cpu_device(cpu);
-> > +	if (!cpu_dev)
-> > +		return -ENODEV;
-> > +
-> > +	np = of_node_get(cpu_dev->of_node);
-> > +	if (!np)
-> > +		return -EINVAL;
-> > +
-> > +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-> > +	of_node_put(np);
-> > +	if (ret)
-> > +		return -EINVAL;
-> > +
-> > +	Hz = *KHz * 1000;
-> > +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> > +	if (IS_ERR(opp))
-> > +		return -EINVAL;
-> > +
-> > +	mV = dev_pm_opp_get_voltage(opp) / 1000;
-> > +	dev_pm_opp_put(opp);
-> > +	if (!mV)
-> > +		return -EINVAL;
-> > +
-> > +	MHz = Hz / 1000000;
-> > +	tmp = (u64)cap * mV * mV * MHz;
-> > +	do_div(tmp, 1000000000);
-> > +
-> > +	*mW = (unsigned long)tmp;
-> > +	*KHz = Hz / 1000;
-> > +
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(of_dev_pm_opp_get_cpu_power);
-> > diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> > index 0a2a88e5a383..fedde14f5187 100644
-> > --- a/include/linux/pm_opp.h
-> > +++ b/include/linux/pm_opp.h
-> > @@ -322,6 +322,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
-> >  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
-> >  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
-> >  int of_get_required_opp_performance_state(struct device_node *np, int index);
-> > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu);
-> >  #else
-> >  static inline int dev_pm_opp_of_add_table(struct device *dev)
-> >  {
-> > @@ -364,6 +365,10 @@ static inline int of_get_required_opp_performance_state(struct device_node *np,
-> >  {
-> >  	return -ENOTSUPP;
-> >  }
-> 
-> Add a blank line here. We missed adding the same before
-> of_get_required_opp_performance_state() earlier, maybe add the new routine
-> before of_get_required_opp_performance_state() and add blank line before and
-> after it :)
-
-Sounds good !
-
-> 
-> > +static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
-> > +{
-> > +	return -ENOTSUPP;
-> > +}
-> >  #endif
+On Tuesday 29 Jan 2019 at 11:00:41 (+0530), Viresh Kumar wrote:
+> On 28-01-19, 16:55, Quentin Perret wrote:
+> > Now that PM_OPP provides a helper function to estimate the power
+> > consumed by CPUs, make sure to try and register an Energy Model (EM)
+> > from cpufreq-dt, hence ensuring interested subsystems (the task
+> > scheduler, for example) can make use of that information when available.
+> > 
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt.c | 7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> > index e58bfcb1169e..7556e07e7a9f 100644
+> > --- a/drivers/cpufreq/cpufreq-dt.c
+> > +++ b/drivers/cpufreq/cpufreq-dt.c
+> > @@ -16,6 +16,7 @@
+> >  #include <linux/cpu_cooling.h>
+> >  #include <linux/cpufreq.h>
+> >  #include <linux/cpumask.h>
+> > +#include <linux/energy_model.h>
+> >  #include <linux/err.h>
+> >  #include <linux/module.h>
+> >  #include <linux/of.h>
+> > @@ -152,6 +153,7 @@ static int resources_available(void)
 > >  
-> >  #endif		/* __LINUX_OPP_H__ */
+> >  static int cpufreq_init(struct cpufreq_policy *policy)
+> >  {
+> > +	struct em_data_callback em_cb = EM_DATA_CB(of_dev_pm_opp_get_cpu_power);
+> 
+> Hmm, so all the earlier comments regarding prototype of this routine are invalid
+> because of this.
+
+Right.
+
+> 
+> >  	struct cpufreq_frequency_table *freq_table;
+> >  	struct opp_table *opp_table = NULL;
+> >  	struct private_data *priv;
+> > @@ -160,7 +162,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	unsigned int transition_latency;
+> >  	bool fallback = false;
+> >  	const char *name;
+> > -	int ret;
+> > +	int ret, nr_opp;
+> >  
+> >  	cpu_dev = get_cpu_device(policy->cpu);
+> >  	if (!cpu_dev) {
+> > @@ -237,6 +239,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  		ret = -EPROBE_DEFER;
+> >  		goto out_free_opp;
+> >  	}
+> > +	nr_opp = ret;
+> 
+> Instead use nr_opp instead of ret while calling dev_pm_opp_get_opp_count().
+
+Will do.
+
+> 
+> >  
+> >  	if (fallback) {
+> >  		cpumask_setall(policy->cpus);
+> > @@ -280,6 +283,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency = transition_latency;
+> >  	policy->dvfs_possible_from_any_cpu = true;
+> >  
+> > +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
+> > +
+> >  	return 0;
+> >  
+> >  out_free_cpufreq_table:
 > > -- 
 > > 2.20.1
 > 
