@@ -1,96 +1,59 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 2/7] cpufreq: dt: Register an Energy Model
-Date: Tue, 29 Jan 2019 09:10:43 +0000
-Message-ID: <20190129091041.et46clxo3lci34xf@queper01-lin>
-References: <20190128165522.31749-1-quentin.perret@arm.com>
- <20190128165522.31749-3-quentin.perret@arm.com>
- <20190129053041.ymyhfusj6eimpxfu@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Phil Elwell <phil@raspberrypi.org>
+Subject: [PATCH] thermal: bcm2835: Fix crash in bcm2835_thermal_debugfs
+Date: Tue, 29 Jan 2019 09:10:48 +0000
+Message-ID: <1548753048-78735-1-git-send-email-phil@raspberrypi.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190129053041.ymyhfusj6eimpxfu@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, mka@chromium.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Florian Fainelli <f.fainelli@gmail.com>, bcm-kernel-feedback-list@broadcom.com, Geert Uytterhoeven <geert+renesas@glider.be>, Phil Elwell <phil@raspberrypi.org>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 29 Jan 2019 at 11:00:41 (+0530), Viresh Kumar wrote:
-> On 28-01-19, 16:55, Quentin Perret wrote:
-> > Now that PM_OPP provides a helper function to estimate the power
-> > consumed by CPUs, make sure to try and register an Energy Model (EM)
-> > from cpufreq-dt, hence ensuring interested subsystems (the task
-> > scheduler, for example) can make use of that information when available.
-> > 
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt.c | 7 ++++++-
-> >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> > index e58bfcb1169e..7556e07e7a9f 100644
-> > --- a/drivers/cpufreq/cpufreq-dt.c
-> > +++ b/drivers/cpufreq/cpufreq-dt.c
-> > @@ -16,6 +16,7 @@
-> >  #include <linux/cpu_cooling.h>
-> >  #include <linux/cpufreq.h>
-> >  #include <linux/cpumask.h>
-> > +#include <linux/energy_model.h>
-> >  #include <linux/err.h>
-> >  #include <linux/module.h>
-> >  #include <linux/of.h>
-> > @@ -152,6 +153,7 @@ static int resources_available(void)
-> >  
-> >  static int cpufreq_init(struct cpufreq_policy *policy)
-> >  {
-> > +	struct em_data_callback em_cb = EM_DATA_CB(of_dev_pm_opp_get_cpu_power);
-> 
-> Hmm, so all the earlier comments regarding prototype of this routine are invalid
-> because of this.
+"cat /sys/kernel/debug/bcm2835_thermal/regset" causes a NULL pointer
+dereference in bcm2835_thermal_debugfs. The driver makes use of the
+implementation details of the thermal framework to retrieve a pointer
+to its private data from a struct thermal_zone_device, and gets it
+wrong - leading to the crash. Instead, store its private data as the
+drvdata and retrieve the thermal_zone_device pointer from it.
 
-Right.
+Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 SoC")
 
-> 
-> >  	struct cpufreq_frequency_table *freq_table;
-> >  	struct opp_table *opp_table = NULL;
-> >  	struct private_data *priv;
-> > @@ -160,7 +162,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	unsigned int transition_latency;
-> >  	bool fallback = false;
-> >  	const char *name;
-> > -	int ret;
-> > +	int ret, nr_opp;
-> >  
-> >  	cpu_dev = get_cpu_device(policy->cpu);
-> >  	if (!cpu_dev) {
-> > @@ -237,6 +239,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  		ret = -EPROBE_DEFER;
-> >  		goto out_free_opp;
-> >  	}
-> > +	nr_opp = ret;
-> 
-> Instead use nr_opp instead of ret while calling dev_pm_opp_get_opp_count().
+Signed-off-by: Phil Elwell <phil@raspberrypi.org>
+---
+ drivers/thermal/broadcom/bcm2835_thermal.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Will do.
-
-> 
-> >  
-> >  	if (fallback) {
-> >  		cpumask_setall(policy->cpus);
-> > @@ -280,6 +283,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	policy->cpuinfo.transition_latency = transition_latency;
-> >  	policy->dvfs_possible_from_any_cpu = true;
-> >  
-> > +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
-> > +
-> >  	return 0;
-> >  
-> >  out_free_cpufreq_table:
-> > -- 
-> > 2.20.1
-> 
-> -- 
-> viresh
-
-Thanks,
-Quentin
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 720760c..ba39647 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -119,8 +119,7 @@ static const struct debugfs_reg32 bcm2835_thermal_regs[] = {
+ 
+ static void bcm2835_thermal_debugfs(struct platform_device *pdev)
+ {
+-	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
+-	struct bcm2835_thermal_data *data = tz->devdata;
++	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
+ 	struct debugfs_regset32 *regset;
+ 
+ 	data->debugfsdir = debugfs_create_dir("bcm2835_thermal", NULL);
+@@ -266,7 +265,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 
+ 	data->tz = tz;
+ 
+-	platform_set_drvdata(pdev, tz);
++	platform_set_drvdata(pdev, data);
+ 
+ 	/*
+ 	 * Thermal_zone doesn't enable hwmon as default,
+@@ -290,8 +289,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 
+ static int bcm2835_thermal_remove(struct platform_device *pdev)
+ {
+-	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
+-	struct bcm2835_thermal_data *data = tz->devdata;
++	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
++	struct thermal_zone_device *tz = data->tz;
+ 
+ 	debugfs_remove_recursive(data->debugfsdir);
+ 	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
+-- 
+2.7.4
