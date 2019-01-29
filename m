@@ -1,46 +1,54 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: linux-5.0-rc3, ti-soc-thermal: unmet dependencies Kconfig warning
-Date: Tue, 29 Jan 2019 09:09:45 +0530
-Message-ID: <6c970fca-35ea-f327-3f77-9b61c37554d5@ti.com>
-References: <8baafd04-eda0-778d-84d2-7ccc1d07db6b@infradead.org>
- <20190128163433.GY5720@atomide.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v4 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Tue, 29 Jan 2019 09:51:21 +0530
+Message-ID: <CAP245DUBUYybm0efnczhEbSrCEfdBb0pX9t-Xw6vnaVN8_3hLg@mail.gmail.com>
+References: <cover.1548654899.git.amit.kucheria@linaro.org>
+ <f6f09e5af6fe78fc27cbdc53a8dc688c6b4124b7.1548654899.git.amit.kucheria@linaro.org>
+ <3afd5b04-5caf-053d-48c9-f719eec58da0@linaro.org> <12294707.IXbBkGfcfl@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190128163433.GY5720@atomide.com>
-Content-Language: en-US
+In-Reply-To: <12294707.IXbBkGfcfl@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, Randy Dunlap <rdunlap@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Stephen Boyd <swboyd@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Tao Wang <kevin.wangtao@hisilicon.com>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/01/19 10:04 PM, Tony Lindgren wrote:
-> Hi,
-> 
-> * Randy Dunlap <rdunlap@infradead.org> [190126 06:54]:
->> Hi,
->>
->> FYI, I'm seeing this Kconfig warning in 5.0-rc3:
-> 
-> Thanks for reporting it.
-> 
->> WARNING: unmet direct dependencies detected for TI_SOC_THERMAL
->>   Depends on [n]: THERMAL [=y] && (ARCH_HAS_BANDGAP || COMPILE_TEST [=n]) && HAS_IOMEM [=y]
->>   Selected by [m]:
->>   - MMC_SDHCI_OMAP [=m] && MMC [=m] && MMC_SDHCI_PLTFM [=m] && OF [=y]
->>
->>
->> Maybe there is already a patch for this?
-> 
-> Keerthy can you please take a look at this issue?
+On Mon, Jan 28, 2019 at 5:34 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Monday, January 28, 2019 9:32:44 AM CET Daniel Lezcano wrote:
+> > On 28/01/2019 07:41, Amit Kucheria wrote:
+> > > All cpufreq drivers do similar things to register as a cooling device.
+> > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > > to register the cooling device on their behalf. This allows us to get
+> > > rid of duplicated code in the drivers.
+> > >
+> > > In order to allow this, we add a struct thermal_cooling_device pointer
+> > > to struct cpufreq_policy so that drivers don't need to store it in a
+> > > private data structure.
+> > >
+> > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> > > ---
+> >
+> > [ ... ]
+> >
+> > > +/*
+> > > + * Set by drivers that want the core to automatically register the cpufreq
+> > > + * driver as a thermal cooling device.
+> > > + */
+> > > +#define CPUFREQ_AUTO_REGISTER_COOLING_DEV  BIT(7)
+> > > +
+> >
+> > Isn't the CPUFREQ_IS_COOLING_DEV more appropriate? We define a property
+> > of the cpufreq driver and the resulting action is to auto-register, no?
+>
+> Yes.
 
-https://lore.kernel.org/patchwork/patch/1030366/
+OK, will send out another series with this change and the IS_ENABLED guards.
 
-This is fixed. It is in the linux-next already.
-
-> 
-> Regards,
-> 
-> Tony
-> 
+Thank you everyone for the review.
