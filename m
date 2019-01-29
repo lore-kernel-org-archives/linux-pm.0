@@ -1,37 +1,84 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH 3/3] devfreq: add mediatek cci devfreq
-Date: Tue, 29 Jan 2019 17:17:50 +0900
-Message-ID: <20190129081750epcms1p41e46de569005622ad3d90f9aaa75f545@epcms1p4>
-References: <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
-        <1548743704-16821-1-git-send-email-andrew-sh.cheng@mediatek.com>
-        <CGME20190129063600epcas2p255b062c64f22555692ff895634ea4eb0@epcms1p4>
-Reply-To: myungjoo.ham@samsung.com
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/4] IOMMU: Make dwo drivers use stateless device links
+Date: Tue, 29 Jan 2019 09:55:52 +0100
+Message-ID: <f6d582d6-0bfc-d732-3f68-b850e4b17f99@samsung.com>
+References: <2405639.4es7pRLqn0@aspire.rjw.lan>
+        <CGME20190128231505epcas3p195bf340a9bd6195028051b2a91c977e3@epcas3p1.samsung.com>
+        <3532356.d9GMSSLOvP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
+In-Reply-To: <3532356.d9GMSSLOvP@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srv_heupstream@mediatek.com" <srv_heupstream@mediatek.com>, "fan.chen@mediatek.com" <fan.chen@mediatek.com>, "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joerg Roedel <jroedel@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jeffy Chen <jeffy.chen@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
->From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
->
->For big/little cpu cluster architecture,
->not only CPU frequency, but CCI frequency will also affect performance.
->
->Little cores and cci share the same buck in Mediatek mt8183 IC,
->so we add a CCI devfreq which will get notification when buck voltage
->is changed, then CCI devfreq can set cci frequency as high as possible.
->
->Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+Hi Rafael,
 
-Please correct the coding style first in the .c file.
+On 2019-01-29 00:05, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The device links used by rockchip-iommu and exynos-iommu are
+> completely managed by these drivers within the IOMMU framework,
+> so there is no reason to involve the driver core in the management
+> of these links.
+>
+> For this reason, make rockchip-iommu and exynos-iommu pass
+> DL_FLAG_STATELESS in flags to device_link_add(), so that the device
+> links used by them are stateless.
+>
+> [Note that this change is requisite for a subsequent one that will
+>  rework the management of stateful device links in the driver core
+>  and it will not be compatible with the two drivers in question any
+>  more.]
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-- empty last line?
-- inconsistent indentation (line26? match the first lines for all variable declarations OR don't match them at all)
-- Need proper boilerplate and try to comply with C89.
+Indeed there is no need to use driver-state tracking feature of device
+links in this case.
 
-Cheers,
-MyungJoo
+For the Exynos IOMMU driver:
+
+Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+> ---
+>  drivers/iommu/exynos-iommu.c   |    1 +
+>  drivers/iommu/rockchip-iommu.c |    3 ++-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/iommu/rockchip-iommu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/iommu/rockchip-iommu.c
+> +++ linux-pm/drivers/iommu/rockchip-iommu.c
+> @@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
+>  	iommu_group_put(group);
+>  
+>  	iommu_device_link(&iommu->iommu, dev);
+> -	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
+> +	data->link = device_link_add(dev, iommu->dev,
+> +				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
+>  
+>  	return 0;
+>  }
+> Index: linux-pm/drivers/iommu/exynos-iommu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/iommu/exynos-iommu.c
+> +++ linux-pm/drivers/iommu/exynos-iommu.c
+> @@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
+>  		 * direct calls to pm_runtime_get/put in this driver.
+>  		 */
+>  		data->link = device_link_add(dev, data->sysmmu,
+> +					     DL_FLAG_STATELESS |
+>  					     DL_FLAG_PM_RUNTIME);
+>  	}
+>  	iommu_group_put(group);
+>
+>
+>
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
