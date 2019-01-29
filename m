@@ -1,84 +1,129 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 1/4] IOMMU: Make dwo drivers use stateless device links
-Date: Tue, 29 Jan 2019 09:55:52 +0100
-Message-ID: <f6d582d6-0bfc-d732-3f68-b850e4b17f99@samsung.com>
-References: <2405639.4es7pRLqn0@aspire.rjw.lan>
-        <CGME20190128231505epcas3p195bf340a9bd6195028051b2a91c977e3@epcas3p1.samsung.com>
-        <3532356.d9GMSSLOvP@aspire.rjw.lan>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH 1/7] PM / OPP: Introduce a power estimation helper
+Date: Tue, 29 Jan 2019 09:03:34 +0000
+Message-ID: <20190129090331.fgygq3dsaoqvegsl@queper01-lin>
+References: <20190128165522.31749-1-quentin.perret@arm.com>
+ <20190128165522.31749-2-quentin.perret@arm.com>
+ <20190128190251.GH81583@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3532356.d9GMSSLOvP@aspire.rjw.lan>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190128190251.GH81583@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Joerg Roedel <jroedel@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Jeffy Chen <jeffy.chen@rock-chips.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Hi Matthias,
 
-On 2019-01-29 00:05, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The device links used by rockchip-iommu and exynos-iommu are
-> completely managed by these drivers within the IOMMU framework,
-> so there is no reason to involve the driver core in the management
-> of these links.
->
-> For this reason, make rockchip-iommu and exynos-iommu pass
-> DL_FLAG_STATELESS in flags to device_link_add(), so that the device
-> links used by them are stateless.
->
-> [Note that this change is requisite for a subsequent one that will
->  rework the management of stateful device links in the driver core
->  and it will not be compatible with the two drivers in question any
->  more.]
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday 28 Jan 2019 at 11:02:51 (-0800), Matthias Kaehlcke wrote:
+> > +/**
+> > + * of_dev_pm_opp_get_cpu_power() - Estimates the power of a CPU
+> > + * @mW:		pointer to the power estimate in milli-watts
+> > + * @KHz:	pointer to the OPP's frequency, in kilo-hertz
+> 
+> nit: should be kHz
 
-Indeed there is no need to use driver-state tracking feature of device
-links in this case.
+Right, I can change that :-)
 
-For the Exynos IOMMU driver:
+> 
+> > + * @cpu:	CPU for which power needs to be estimated
+> > + *
+> > + * Computes the power estimated by @CPU at the first OPP above @KHz (ceil),
+> > + * and updates @KHz and @mW accordingly.
+> > + *
+> > + * The power is estimated as P = C * V^2 * f, with C the CPU's capacitance
+> > + * (read from the 'dynamic-power-coefficient' devicetree binding) and V and f
+> > + * respectively the voltage and frequency of the OPP.
+> > + *
+> > + * Return: -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> > + * calculation failed because of missing parameters, 0 otherwise.
+> > + */
+> > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
+> 
+> I think it is more common to put the input parameters first, then the
+> output ones, i.e. cpu, kHz, mW.
 
-Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Hmm, the issue is this must match the expectations of the EM framework:
 
-> ---
->  drivers/iommu/exynos-iommu.c   |    1 +
->  drivers/iommu/rockchip-iommu.c |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/iommu/rockchip-iommu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iommu/rockchip-iommu.c
-> +++ linux-pm/drivers/iommu/rockchip-iommu.c
-> @@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
->  	iommu_group_put(group);
->  
->  	iommu_device_link(&iommu->iommu, dev);
-> -	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
-> +	data->link = device_link_add(dev, iommu->dev,
-> +				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
->  
->  	return 0;
->  }
-> Index: linux-pm/drivers/iommu/exynos-iommu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iommu/exynos-iommu.c
-> +++ linux-pm/drivers/iommu/exynos-iommu.c
-> @@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
->  		 * direct calls to pm_runtime_get/put in this driver.
->  		 */
->  		data->link = device_link_add(dev, data->sysmmu,
-> +					     DL_FLAG_STATELESS |
->  					     DL_FLAG_PM_RUNTIME);
->  	}
->  	iommu_group_put(group);
->
->
->
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+https://elixir.bootlin.com/linux/v5.0-rc4/source/include/linux/energy_model.h#L62
+
+So, I don't really have a choice. Or we can change the core code if this
+_really_ is a problem -- we don't have users yet so now is the best time
+to do so I guess ...
+
+> 
+> > +{
+> > +	unsigned long mV, Hz, MHz;
+> > +	struct device *cpu_dev;
+> > +	struct dev_pm_opp *opp;
+> > +	struct device_node *np;
+> > +	u32 cap;
+> > +	u64 tmp;
+> > +	int ret;
+> > +
+> > +	cpu_dev = get_cpu_device(cpu);
+> > +	if (!cpu_dev)
+> > +		return -ENODEV;
+> > +
+> > +	np = of_node_get(cpu_dev->of_node);
+> > +	if (!np)
+> > +		return -EINVAL;
+> > +
+> > +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> > +	of_node_put(np);
+> > +	if (ret)
+> > +		return -EINVAL;
+> > +
+> > +	Hz = *KHz * 1000;
+> > +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> > +	if (IS_ERR(opp))
+> > +		return -EINVAL;
+> > +
+> > +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> > +	dev_pm_opp_put(opp);
+> > +	if (!mV)
+> > +		return -EINVAL;
+> > +
+> > +	MHz = Hz / 1000000;
+> > +	tmp = (u64)cap * mV * mV * MHz;
+> > +	do_div(tmp, 1000000000);
+> > +
+> > +	*mW = (unsigned long)tmp;
+> > +	*KHz = Hz / 1000;
+> > +
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(of_dev_pm_opp_get_cpu_power);
+> > diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> > index 0a2a88e5a383..fedde14f5187 100644
+> > --- a/include/linux/pm_opp.h
+> > +++ b/include/linux/pm_opp.h
+> > @@ -322,6 +322,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+> >  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+> >  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
+> >  int of_get_required_opp_performance_state(struct device_node *np, int index);
+> > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu);
+> >  #else
+> >  static inline int dev_pm_opp_of_add_table(struct device *dev)
+> >  {
+> > @@ -364,6 +365,10 @@ static inline int of_get_required_opp_performance_state(struct device_node *np,
+> >  {
+> >  	return -ENOTSUPP;
+> >  }
+> > +static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
+> > +{
+> > +	return -ENOTSUPP;
+> > +}
+> >  #endif
+> >  
+> >  #endif		/* __LINUX_OPP_H__ */
+> 
+> Besides the nits above:
+> 
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+
+Thank you !
+Quentin
