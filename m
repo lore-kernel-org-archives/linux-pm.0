@@ -1,259 +1,180 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH] gpio fixup domain
-Date: Tue, 29 Jan 2019 14:39:27 +0100
-Message-ID: <CAMRc=Md4iTPi_i3EO5QT2SW1S2__8mMe22+9tcO7VUE2_hPNiw@mail.gmail.com>
-References: <20190129133545.1931-1-brgl@bgdev.pl> <20190129133545.1931-3-brgl@bgdev.pl>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 4/8] dt-bindings: devfreq: add DMC device description
+Date: Tue, 29 Jan 2019 15:47:32 +0100
+Message-ID: <CAJKOXPd2g6rtZpK20emJ0tqHhq0D01=BWbU_9MP30313XHvPHg@mail.gmail.com>
+References: <CGME20190128192153eucas1p2d7a796cb89e68c1789069562e91296be@eucas1p2.samsung.com>
+ <1548703299-15806-1-git-send-email-l.luba@partner.samsung.com> <1548703299-15806-5-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190129133545.1931-3-brgl@bgdev.pl>
+In-Reply-To: <1548703299-15806-5-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree@vger.kernel.org, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-wt., 29 sty 2019 o 14:35 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(a=
-):
+On Mon, 28 Jan 2019 at 20:21, Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> The patch adds description for DT binding for a new Exynos5 Dynamic Memory
+> Controller device.
+> It also contains needed MAINTAINERS file updates.
 >
+> CC: MyungJoo Ham <myungjoo.ham@samsung.com>
+> CC: Kyungmin Park <kyungmin.park@samsung.com>
+> CC: Chanwoo Choi <cw00.choi@samsung.com>
+> CC: Rob Herring <robh+dt@kernel.org>
+> CC: Mark Rutland <mark.rutland@arm.com>
+> CC: Kukjin Kim <kgene@kernel.org>
+> CC: Krzysztof Kozlowski <krzk@kernel.org>
+> CC: linux-pm@vger.kernel.org
+> CC: linux-samsung-soc@vger.kernel.org
+> CC: devicetree@vger.kernel.org
+> CC: linux-arm-kernel@lists.infradead.org
+> CC: linux-kernel@vger.kernel.org
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->  arch/arm/boot/dts/am335x-bone-common.dtsi |   4 +
->  drivers/gpio/gpio-max77650.c              | 138 +++++++++++++++++++++-
->  2 files changed, 136 insertions(+), 6 deletions(-)
+>  .../devicetree/bindings/devfreq/exynos5-dmc.txt    | 108 +++++++++++++++++++++
+>  MAINTAINERS                                        |   7 ++
+>  2 files changed, 115 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
 >
-> diff --git a/arch/arm/boot/dts/am335x-bone-common.dtsi b/arch/arm/boot/dt=
-s/am335x-bone-common.dtsi
-> index 62f7f2ac191c..320b4c21fdf3 100644
-> --- a/arch/arm/boot/dts/am335x-bone-common.dtsi
-> +++ b/arch/arm/boot/dts/am335x-bone-common.dtsi
-> @@ -276,6 +276,10 @@
->
->                         gpio-controller;
->                         #gpio-cells =3D <2>;
+> diff --git a/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
+> new file mode 100644
+> index 0000000..914bd85
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
+> @@ -0,0 +1,108 @@
+> +* Exynos5 frequency and voltage scaling for Dynamic Memory Controller device
 > +
-> +                       interrupt-parent =3D <&pmic>;
-> +                       interrupts =3D <0 IRQ_TYPE_LEVEL_LOW>;
-> +                       interrupt-names =3D "GPI";
->                 };
->
->                 leds {
-> diff --git a/drivers/gpio/gpio-max77650.c b/drivers/gpio/gpio-max77650.c
-> index 3f03f4e8956c..03a5a2ed07f8 100644
-> --- a/drivers/gpio/gpio-max77650.c
-> +++ b/drivers/gpio/gpio-max77650.c
-> @@ -9,6 +9,7 @@
->  #include <linux/i2c.h>
->  #include <linux/mfd/max77650.h>
->  #include <linux/module.h>
-> +#include <linux/of_irq.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
->
-> @@ -34,7 +35,8 @@
->  struct max77650_gpio_chip {
->         struct regmap *map;
->         struct gpio_chip gc;
-> -       int irq;
-> +       struct fwnode_handle *fwnode;
-> +       struct irq_domain *domain;
->  };
->
->  static int max77650_gpio_direction_input(struct gpio_chip *gc,
-> @@ -130,20 +132,114 @@ static int max77650_gpio_set_config(struct gpio_ch=
-ip *gc,
->         }
->  }
->
-> +static struct irq_chip max77650_gpio_irq_chip =3D {
-> +       .name =3D "max77650-gpio",
-> +       .irq_ack =3D irq_chip_ack_parent,
-> +       .irq_mask =3D irq_chip_mask_parent,
-> +       .irq_unmask =3D irq_chip_unmask_parent,
-> +       .irq_set_type =3D irq_chip_set_type_parent,
-> +};
+> +The Samsung Exynos5 SoC has DMC (Dynamic Memory Controller) to which the DRAM
+> +memory chips are connected. The driver is to monitor the controller in runtime
+> +and switch frequency and voltage. To monitor the usage of the controller in
+> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
+> +is able to measure the current load of the memory.
+> +When 'userspace' governor is used for the driver, an application is able to
+> +switch the DMC frequency.
 > +
-> +static int max77650_gpio_irq_domain_activate(struct irq_domain *domain,
-> +                                            struct irq_data *data,
-> +                                            bool reserve)
-> +{
-> +       struct max77650_gpio_chip *chip =3D domain->host_data;
+> +Required properties for DMC device for Exynos5422:
+> +- compatible: Should be "samsung,exynos5422-bus".
+> +- clock-names : the name of clock used by the bus, "bus".
+> +- clocks : phandles for clock specified in "clock-names" property.
+> +- devfreq-events : phandles for PPMU devices connected to this DMC.
 > +
-> +       return gpiochip_lock_as_irq(&chip->gc, data->hwirq);
-> +}
+> +The example definition of a DMC and PPMU devices declared in DT is shown below:
 > +
-> +static void max77650_gpio_irq_domain_deactivate(struct irq_domain *domai=
-n,
-> +                                               struct irq_data *data)
-> +{
-> +       struct max77650_gpio_chip *chip =3D domain->host_data;
+> +       ppmu_dmc0_0: ppmu_dmc0_0@10d00000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d00000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
+> +                               event-name = "ppmu-event3-dmc0_0";
+> +                       };
+> +               };
+> +       };
 > +
-> +       return gpiochip_unlock_as_irq(&chip->gc, data->hwirq);
-> +}
 > +
-> +static int max77650_gpio_domain_translate(struct irq_domain *domain,
-> +                                         struct irq_fwspec *fwspec,
-> +                                         unsigned long *hwirq,
-> +                                         unsigned int *type)
-> +{
-> +       struct max77650_gpio_chip *chip =3D domain->host_data;
+> +       ppmu_dmc0_1: ppmu_dmc0_1@10d10000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d10000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
+> +                               event-name = "ppmu-event3-dmc0_1";
+> +                       };
+> +               };
+> +       };
 > +
-> +       if (fwspec->param_count !=3D 2 || fwspec->param[0] >=3D chip->gc.=
-ngpio)
-> +               return -EINVAL;
+> +       ppmu_dmc1_0: ppmu_dmc1_0@10d10000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d60000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
+> +                               event-name = "ppmu-event3-dmc1_0";
+> +                       };
+> +               };
+> +       };
 > +
-> +       *hwirq =3D fwspec->param[0];
-> +       *type =3D fwspec->param[1];
+> +       ppmu_dmc1_1: ppmu_dmc1_1@10d70000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d70000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
+> +                               event-name = "ppmu-event3-dmc1_1";
+> +                       };
+> +               };
+> +       };
 > +
-> +       return 0;
-> +}
-> +
-> +static int max77650_gpio_domain_alloc(struct irq_domain *domain,
-> +                                     unsigned int virq,
-> +                                     unsigned int nr_irqs, void *data)
-> +{
-> +       struct max77650_gpio_chip *chip =3D domain->host_data;
-> +       struct irq_fwspec *fwspec =3D data;
-> +       struct irq_fwspec parent_fwspec;
-> +       irq_hw_number_t hwirq;
-> +       unsigned int type;
-> +       int ret;
-> +
-> +       if (nr_irqs !=3D 1)
-> +               return -EINVAL;
-> +
-> +       ret =3D max77650_gpio_domain_translate(domain, fwspec, &hwirq, &t=
-ype);
-> +       if (ret)
-> +               return ret;
-> +
-> +       irq_domain_set_info(domain, virq, hwirq,
-> +                           &max77650_gpio_irq_chip, chip,
-> +                           handle_level_irq, NULL, NULL);
-> +
-> +       parent_fwspec.fwnode =3D domain->parent->fwnode;
-> +       parent_fwspec.param_count =3D 4;
-> +       parent_fwspec.param[0] =3D 0;
-> +       parent_fwspec.param[1] =3D hwirq;
-> +       parent_fwspec.param[2] =3D 0;
-> +       parent_fwspec.param[3] =3D fwspec->param[1];
-> +
-> +       return irq_domain_alloc_irqs_parent(domain, virq, nr_irqs,
-> +                                           &parent_fwspec);
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct irq_domain_ops max77650_gpio_irq_domain_ops =3D {
-> +       .activate =3D max77650_gpio_irq_domain_activate,
-> +       .deactivate =3D max77650_gpio_irq_domain_deactivate,
-> +       .alloc =3D max77650_gpio_domain_alloc,
-> +       .free =3D irq_domain_free_irqs_common,
-> +       .translate =3D max77650_gpio_domain_translate,
-> +};
-> +
->  static int max77650_gpio_to_irq(struct gpio_chip *gc, unsigned int offse=
-t)
->  {
->         struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +       struct irq_fwspec fwspec;
-> +
-> +       fwspec.fwnode =3D chip->fwnode;
-> +       fwspec.param_count =3D 2;
-> +       fwspec.param[0] =3D 0;
-> +       fwspec.param[1] =3D IRQ_TYPE_LEVEL_LOW;
->
-> -       return chip->irq;
-> +       return irq_create_fwspec_mapping(&fwspec);
->  }
->
->  static int max77650_gpio_probe(struct platform_device *pdev)
->  {
-> +       struct device_node *of_node, *parent_node;
-> +       struct irq_domain *parent_domain;
->         struct max77650_gpio_chip *chip;
->         struct device *dev, *parent;
->         struct i2c_client *i2c;
-> +       int rv;
->
->         dev =3D &pdev->dev;
-> +       of_node =3D dev->of_node;
->         parent =3D dev->parent;
->         i2c =3D to_i2c_client(parent);
->
-> @@ -151,13 +247,29 @@ static int max77650_gpio_probe(struct platform_devi=
-ce *pdev)
->         if (!chip)
->                 return -ENOMEM;
->
-> +       chip->fwnode =3D dev->fwnode;
-> +       platform_set_drvdata(pdev, chip);
-> +
->         chip->map =3D dev_get_regmap(parent, NULL);
->         if (!chip->map)
->                 return -ENODEV;
->
-> -       chip->irq =3D platform_get_irq_byname(pdev, "GPI");
-> -       if (chip->irq < 0)
-> -               return chip->irq;
-> +       parent_node =3D of_irq_find_parent(of_node);
-> +       if (!parent_node)
-> +               return -ENXIO;
-> +
-> +       parent_domain =3D irq_find_host(parent_node);
-> +       of_node_put(parent_node);
-> +       if (!parent_domain)
-> +               return -ENXIO;
-> +
-> +       chip->fwnode =3D of_node_to_fwnode(of_node);
-> +       chip->domain =3D irq_domain_create_hierarchy(parent_domain, 0, 1,
-> +                                               chip->fwnode,
-> +                                               &max77650_gpio_irq_domain=
-_ops,
-> +                                               chip);
-> +       if (!chip->domain)
-> +               return -ENODEV;
->
->         chip->gc.base =3D -1;
->         chip->gc.ngpio =3D 1;
-> @@ -174,7 +286,20 @@ static int max77650_gpio_probe(struct platform_devic=
-e *pdev)
->         chip->gc.set_config =3D max77650_gpio_set_config;
->         chip->gc.to_irq =3D max77650_gpio_to_irq;
->
-> -       return devm_gpiochip_add_data(dev, &chip->gc, chip);
-> +       rv =3D devm_gpiochip_add_data(dev, &chip->gc, chip);
-> +       if (rv)
-> +               irq_domain_remove(chip->domain);
-> +
-> +       return rv;
-> +}
-> +
-> +static int max77650_gpio_remove(struct platform_device *pdev)
-> +{
-> +       struct max77650_gpio_chip *chip =3D platform_get_drvdata(pdev);
-> +
-> +       irq_domain_remove(chip->domain);
-> +
-> +       return 0;
->  }
->
->  static struct platform_driver max77650_gpio_driver =3D {
-> @@ -182,6 +307,7 @@ static struct platform_driver max77650_gpio_driver =
-=3D {
->                 .name =3D "max77650-gpio",
->         },
->         .probe =3D max77650_gpio_probe,
-> +       .remove =3D max77650_gpio_remove,
->  };
->  module_platform_driver(max77650_gpio_driver);
->
-> --
-> 2.20.1
->
+> +       dmc: dmc@10c20000 {
+> +               compatible = "samsung,exynos5422-dmc";
+> +               reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
+> +                       <0x10030000 0x1000>, <0x10000000 0x1000>;
+> +               clocks =        <&clock CLK_FOUT_SPLL>,
+> +                               <&clock CLK_MOUT_SCLK_SPLL>,
+> +                               <&clock CLK_FF_DOUT_SPLL2>,
+> +                               <&clock CLK_FOUT_BPLL>,
+> +                               <&clock CLK_MOUT_BPLL>,
+> +                               <&clock CLK_SCLK_BPLL>,
+> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE>,
+> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
+> +                               <&clock CLK_MOUT_MCLK_CDREX>,
+> +                               <&clock CLK_DOUT_CLK2X_PHY0>,
+> +                               <&clock CLK_CLKM_PHY0>,
+> +                               <&clock CLK_CLKM_PHY1>
+> +                       ;
 
-Please ignore this one, it got lost on the way. It was just experimentation=
-.
+Join with previous line.
 
-Bart
+> +               clock-names =   "fout_spll",
+> +                               "mout_sclk_spll",
+> +                               "ff_dout_spll2",
+> +                               "fout_bpll",
+> +                               "mout_bpll",
+> +                               "sclk_bpll",
+> +                               "mout_mx_mspll_ccore",
+> +                               "mout_mx_mspll_ccore_phy",
+> +                               "mout_mclk_cdrex",
+> +                               "dout_clk2x_phy0",
+> +                               "clkm_phy0",
+> +                               "clkm_phy1"
+> +                               ;
+
+Ditto.
+
+> +
+> +               status = "okay";
+> +               devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
+> +                               <&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
+> +       };
+> +
+> +
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 9f64f8d..3581807 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3310,6 +3310,13 @@ S:       Maintained
+>  F:     drivers/devfreq/exynos-bus.c
+>  F:     Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+>
+> +DMC FREQUENCY DRIVER FOR SAMSUNG EXYNOS5
+> +M:     Lukasz Luba <l.luba@partner.samsung.com>
+> +L:     linux-pm@vger.kernel.org
+> +L:     linux-samsung-soc@vger.kernel.org
+> +S:     Maintained
+> +F:     Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
+
+Maintainers change should go with the next change, I think. It looks
+unusual to add an entry for driver... without the driver.
+
+Best regards,
+Krzysztof
