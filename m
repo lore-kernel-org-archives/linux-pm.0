@@ -1,51 +1,65 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 7/8] drivers: devfreq: events: add Exynos PPMU new events
-Date: Tue, 29 Jan 2019 18:55:13 +0100
-Message-ID: <1548784514-26649-8-git-send-email-l.luba@partner.samsung.com>
-References: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190129175527eucas1p291cb41ad401d4513d65a81c0a2edff88@eucas1p2.samsung.com>
+Subject: [PATCH v2 0/8] Exynos5 Dynamic Memory Controller driver
+Date: Tue, 29 Jan 2019 18:55:06 +0100
+Message-ID: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190129175522eucas1p121e453739de195625b1f4b04a0b4f298@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Define new performance events supported by Exynos5422 SoC counters.
-The counters are built-in in Dynamic Memory Controller and provide
-information regarding memory utilization.
+Hi all,
 
-CC: Chanwoo Choi <cw00.choi@samsung.com>
-CC: MyungJoo Ham <myungjoo.ham@samsung.com>
-CC: Kyungmin Park <kyungmin.park@samsung.com>
-CC: Kukjin Kim <kgene@kernel.org>
-CC: Krzysztof Kozlowski <krzk@kernel.org>
-CC: linux-pm@vger.kernel.org
-CC: linux-arm-kernel@lists.infradead.org
-CC: linux-samsung-soc@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/devfreq/event/exynos-ppmu.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+This is v2 of the patch set which adds support of Dynamic Memory Controller
+for Exynos5422 SoC.
+The driver supports Dynamic Voltage and Frequency Scalling
+for the DMC and DRAM. It also provides needed timings for different
+speed operations of the DRAM memory.
+The patch set is based on tag: v5.0-rc4
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index c61de0b..67d6674 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -89,6 +89,12 @@ static struct __exynos_ppmu_events {
- 	PPMU_EVENT(d1-cpu),
- 	PPMU_EVENT(d1-general),
- 	PPMU_EVENT(d1-rt),
-+
-+	/* For Exynos5422 SoC */
-+	PPMU_EVENT(dmc0_0),
-+	PPMU_EVENT(dmc0_1),
-+	PPMU_EVENT(dmc1_0),
-+	PPMU_EVENT(dmc1_1),
- };
- 
- static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
+changes:
+v1->v2:
+- changed file name exynos5-dmc.c -> exynos5422-dmc.c
+  and related entries in other files
+- changed dt-binding file name
+- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
+- removed sysfs and print info messages (print only one line)
+- removed function exynos5_read_chip_info and compact code
+- changed dt-binding patch and move it up in the patch set
+- new entries in MAINTAINERS are added with the driver c code
+- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
+  entries moved to suggested location (before nocp nodes or after),
+  moved according to alfabetical order, compacted clocks names with right indent.
+
+Regards,
+Lukasz Luba
+
+Lukasz Luba (8):
+  clk: samsung: add needed IDs for DMC clocks in Exynos5420
+  clk: samsung: add new clocks for DMC for Exynos5422 SoC
+  clk: samsung: add BPLL rate table for Exynos 5422 SoC
+  drivers: devfreq: add DMC driver for Exynos5422
+  dt-bindings: devfreq: add Exynos5422 DMC device description
+  DT: arm: exynos: add DMC device for exynos5422
+  drivers: devfreq: events: add Exynos PPMU new events
+  ARM: exynos_defconfig: enable DMC driver
+
+ .../devicetree/bindings/devfreq/exynos5422-dmc.txt |  106 ++
+ MAINTAINERS                                        |    8 +
+ arch/arm/boot/dts/exynos5420.dtsi                  |   69 ++
+ arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |   22 +
+ arch/arm/configs/exynos_defconfig                  |    1 +
+ drivers/clk/samsung/clk-exynos5420.c               |   63 +-
+ drivers/devfreq/Kconfig                            |   13 +
+ drivers/devfreq/Makefile                           |    1 +
+ drivers/devfreq/event/exynos-ppmu.c                |    6 +
+ drivers/devfreq/exynos5422-dmc.c                   | 1274 ++++++++++++++++++++
+ include/dt-bindings/clock/exynos5420.h             |   18 +-
+ 11 files changed, 1575 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+ create mode 100644 drivers/devfreq/exynos5422-dmc.c
+
 -- 
 2.7.4
