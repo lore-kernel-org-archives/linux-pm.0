@@ -1,69 +1,86 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 1/7] PM / OPP: Introduce a power estimation helper
-Date: Tue, 29 Jan 2019 09:52:15 -0800
-Message-ID: <20190129175215.GK81583@google.com>
-References: <20190128165522.31749-1-quentin.perret@arm.com>
- <20190128165522.31749-2-quentin.perret@arm.com>
- <20190128190251.GH81583@google.com>
- <20190129090331.fgygq3dsaoqvegsl@queper01-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v2 1/8] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Tue, 29 Jan 2019 18:55:07 +0100
+Message-ID: <1548784514-26649-2-git-send-email-l.luba@partner.samsung.com>
+References: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190129175523eucas1p29b8c5355878356e50d8b234fc20ddf39@eucas1p2.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190129090331.fgygq3dsaoqvegsl@queper01-lin>
+In-Reply-To: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
+Define new IDs for clocks used by Dynamic Memory Controller in
+Exynos5422 SoC.
 
-On Tue, Jan 29, 2019 at 09:03:34AM +0000, Quentin Perret wrote:
-> Hi Matthias,
-> 
-> On Monday 28 Jan 2019 at 11:02:51 (-0800), Matthias Kaehlcke wrote:
-> > > +/**
-> > > + * of_dev_pm_opp_get_cpu_power() - Estimates the power of a CPU
-> > > + * @mW:		pointer to the power estimate in milli-watts
-> > > + * @KHz:	pointer to the OPP's frequency, in kilo-hertz
-> > 
-> > nit: should be kHz
-> 
-> Right, I can change that :-)
-> 
-> > 
-> > > + * @cpu:	CPU for which power needs to be estimated
-> > > + *
-> > > + * Computes the power estimated by @CPU at the first OPP above @KHz (ceil),
-> > > + * and updates @KHz and @mW accordingly.
-> > > + *
-> > > + * The power is estimated as P = C * V^2 * f, with C the CPU's capacitance
-> > > + * (read from the 'dynamic-power-coefficient' devicetree binding) and V and f
-> > > + * respectively the voltage and frequency of the OPP.
-> > > + *
-> > > + * Return: -ENODEV if the CPU device cannot be found, -EINVAL if the power
-> > > + * calculation failed because of missing parameters, 0 otherwise.
-> > > + */
-> > > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
-> > 
-> > I think it is more common to put the input parameters first, then the
-> > output ones, i.e. cpu, kHz, mW.
-> 
-> Hmm, the issue is this must match the expectations of the EM framework:
-> 
-> https://elixir.bootlin.com/linux/v5.0-rc4/source/include/linux/energy_model.h#L62
-> 
-> So, I don't really have a choice. Or we can change the core code if this
-> _really_ is a problem -- we don't have users yet so now is the best time
-> to do so I guess ...
+CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
+CC: Chanwoo Choi <cw00.choi@samsung.com>
+CC: Rob Herring <robh+dt@kernel.org>
+CC: Mark Rutland <mark.rutland@arm.com>
+CC: Kukjin Kim <kgene@kernel.org>
+CC: Krzysztof Kozlowski <krzk@kernel.org>
+CC: linux-samsung-soc@vger.kernel.org
+CC: devicetree@vger.kernel.org
+CC: linux-arm-kernel@lists.infradead.org
+CC: linux-kernel@vger.kernel.org
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-I see.
-
-I think it would be preferable to follow the common scheme, but it's
-also not a major issue, up to you whether you want to change the
-definition of the callback. It's certainly true that now would be the
-best time for a change.
-
-Cheers
-
-Matthias
+diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
+index 355f469..1827a64 100644
+--- a/include/dt-bindings/clock/exynos5420.h
++++ b/include/dt-bindings/clock/exynos5420.h
+@@ -60,6 +60,7 @@
+ #define CLK_MAU_EPLL		159
+ #define CLK_SCLK_HSIC_12M	160
+ #define CLK_SCLK_MPHY_IXTAL24	161
++#define CLK_SCLK_BPLL		162
+ 
+ /* gate clocks */
+ #define CLK_UART0		257
+@@ -195,6 +196,16 @@
+ #define CLK_ACLK432_CAM		518
+ #define CLK_ACLK_FL1550_CAM	519
+ #define CLK_ACLK550_CAM		520
++#define CLK_CLKM_PHY0		521
++#define CLK_CLKM_PHY1		522
++#define CLK_ACLK_PPMU_DREX0_0	523
++#define CLK_ACLK_PPMU_DREX0_1	524
++#define CLK_ACLK_PPMU_DREX1_0	525
++#define CLK_ACLK_PPMU_DREX1_1	526
++#define CLK_PCLK_PPMU_DREX0_0	527
++#define CLK_PCLK_PPMU_DREX0_1	528
++#define CLK_PCLK_PPMU_DREX1_0	529
++#define CLK_PCLK_PPMU_DREX1_1	530
+ 
+ /* mux clocks */
+ #define CLK_MOUT_HDMI		640
+@@ -217,6 +228,10 @@
+ #define CLK_MOUT_EPLL		657
+ #define CLK_MOUT_MAU_EPLL	658
+ #define CLK_MOUT_USER_MAU_EPLL	659
++#define CLK_MOUT_DPLL		660
++#define CLK_MOUT_ACLK_G3D	661
++#define CLK_MOUT_SCLK_SPLL	662
++#define CLK_MOUT_MX_MSPLL_CCORE_PHY	663
+ 
+ /* divider clocks */
+ #define CLK_DOUT_PIXEL		768
+@@ -248,8 +263,9 @@
+ #define CLK_DOUT_CCLK_DREX0	794
+ #define CLK_DOUT_CLK2X_PHY0	795
+ #define CLK_DOUT_PCLK_CORE_MEM	796
++#define CLK_FF_DOUT_SPLL2	797
+ 
+ /* must be greater than maximal clock id */
+-#define CLK_NR_CLKS		797
++#define CLK_NR_CLKS		798
+ 
+ #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
+-- 
+2.7.4
