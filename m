@@ -1,164 +1,77 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 5/8] dt-bindings: devfreq: add Exynos5422 DMC device
- description
-Date: Tue, 29 Jan 2019 18:55:11 +0100
-Message-ID: <1548784514-26649-6-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v2 3/8] clk: samsung: add BPLL rate table for Exynos 5422 SoC
+Date: Tue, 29 Jan 2019 18:55:09 +0100
+Message-ID: <1548784514-26649-4-git-send-email-l.luba@partner.samsung.com>
 References: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190129175526eucas1p197f5db6208ee52e25fecd58fe7c608e4@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+ <CGME20190129175524eucas1p1ead98a852f002461984b9b99c5b5b7e4@eucas1p1.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, krzk@kernel.org, Lukasz Luba <l.luba@partner.samsung.com>, cw00.choi@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, myungjoo.ham@samsung.com, s.nawrocki@samsung.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, m.szyprowski@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds description for DT binding for a new Exynos5422 Dynamic
-Memory Controller device.
-It also contains needed MAINTAINERS file update.
+Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
+Controller frequencies for driver's DRAM timings.
 
-CC: MyungJoo Ham <myungjoo.ham@samsung.com>
-CC: Kyungmin Park <kyungmin.park@samsung.com>
+CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
 CC: Chanwoo Choi <cw00.choi@samsung.com>
-CC: Rob Herring <robh+dt@kernel.org>
-CC: Mark Rutland <mark.rutland@arm.com>
+CC: Michael Turquette <mturquette@baylibre.com>
+CC: Stephen Boyd <sboyd@kernel.org>
 CC: Kukjin Kim <kgene@kernel.org>
 CC: Krzysztof Kozlowski <krzk@kernel.org>
-CC: linux-pm@vger.kernel.org
 CC: linux-samsung-soc@vger.kernel.org
-CC: devicetree@vger.kernel.org
+CC: linux-clk@vger.kernel.org
 CC: linux-arm-kernel@lists.infradead.org
 CC: linux-kernel@vger.kernel.org
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos5422-dmc.txt | 106 +++++++++++++++++++++
- MAINTAINERS                                        |   1 +
- 2 files changed, 107 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+ drivers/clk/samsung/clk-exynos5420.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
-new file mode 100644
-index 0000000..229efba
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
-@@ -0,0 +1,106 @@
-+* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
-+
-+The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-+memory chips are connected. The driver is to monitor the controller in runtime
-+and switch frequency and voltage. To monitor the usage of the controller in
-+runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of the memory.
-+When 'userspace' governor is used for the driver, an application is able to
-+switch the DMC frequency.
-+
-+Required properties for DMC device for Exynos5422:
-+- compatible: Should be "samsung,exynos5422-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- devfreq-events : phandles for PPMU devices connected to this DMC.
-+
-+The example definition of a DMC and PPMU devices declared in DT is shown below:
-+
-+	ppmu_dmc0_0: ppmu@10d00000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d00000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-+		clock-names = "ppmu";
-+		status = "okay";
-+		events {
-+			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-+				event-name = "ppmu-event3-dmc0_0";
-+			};
-+		};
-+	};
-+
-+
-+	ppmu_dmc0_1: ppmu@10d10000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d10000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
-+		clock-names = "ppmu";
-+		status = "okay";
-+		events {
-+			ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
-+				event-name = "ppmu-event3-dmc0_1";
-+			};
-+		};
-+	};
-+
-+	ppmu_dmc1_0: ppmu@10d10000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d60000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
-+		clock-names = "ppmu";
-+		status = "okay";
-+		events {
-+			ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
-+				event-name = "ppmu-event3-dmc1_0";
-+			};
-+		};
-+	};
-+
-+	ppmu_dmc1_1: ppmu@10d70000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d70000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
-+		clock-names = "ppmu";
-+		status = "okay";
-+		events {
-+			ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
-+				event-name = "ppmu-event3-dmc1_1";
-+			};
-+		};
-+	};
-+
-+	dmc: memory-controller@10c20000 {
-+		compatible = "samsung,exynos5422-dmc";
-+		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-+			<0x10030000 0x1000>, <0x10000000 0x1000>;
-+		clocks = 	<&clock CLK_FOUT_SPLL>,
-+				<&clock CLK_MOUT_SCLK_SPLL>,
-+				<&clock CLK_FF_DOUT_SPLL2>,
-+				<&clock CLK_FOUT_BPLL>,
-+				<&clock CLK_MOUT_BPLL>,
-+				<&clock CLK_SCLK_BPLL>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-+				<&clock CLK_MOUT_MCLK_CDREX>,
-+				<&clock CLK_DOUT_CLK2X_PHY0>,
-+				<&clock CLK_CLKM_PHY0>,
-+				<&clock CLK_CLKM_PHY1>;
-+		clock-names =	"fout_spll",
-+				"mout_sclk_spll",
-+				"ff_dout_spll2",
-+				"fout_bpll",
-+				"mout_bpll",
-+				"sclk_bpll",
-+				"mout_mx_mspll_ccore",
-+				"mout_mx_mspll_ccore_phy",
-+				"mout_mclk_cdrex",
-+				"dout_clk2x_phy0",
-+				"clkm_phy0",
-+				"clkm_phy1";
-+
-+		status = "okay";
-+		devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
-+				<&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
-+	};
-+
-+
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e81dfbf..ab0d8a5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3316,6 +3316,7 @@ L:	linux-pm@vger.kernel.org
- L:	linux-samsung-soc@vger.kernel.org
- S:	Maintained
- F:	drivers/devfreq/exynos5422-dmc.c
-+F:	Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+index 3e87421..8bf9579 100644
+--- a/drivers/clk/samsung/clk-exynos5420.c
++++ b/drivers/clk/samsung/clk-exynos5420.c
+@@ -1325,6 +1325,19 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
+ 	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
+ };
  
- BUSLOGIC SCSI DRIVER
- M:	Khalid Aziz <khalid@gonehiking.org>
++static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
++	PLL_35XX_RATE(24 * MHZ, 933000000, 311, 4, 1),
++	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
++	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
++	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
++	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
++	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
++	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
++	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
++	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
++	PLL_35XX_RATE(24 * MHZ, 138000000, 184, 2, 4),
++};
++
+ static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
+ 	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
+ 	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
+@@ -1467,7 +1480,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
+ 		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
+ 		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
+ 		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
+-		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
++		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
+ 	}
+ 
+ 	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
 -- 
 2.7.4
