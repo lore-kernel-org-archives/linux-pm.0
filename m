@@ -1,90 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 2/9] cpufreq: Auto-register the driver as a thermal
- cooling device if asked
-Date: Tue, 29 Jan 2019 10:16:15 +0100
-Message-ID: <CAJZ5v0iXv3yLtGqti1OLbh-7LF1hZyvW+HTTG5mVFmEJ8a1SAA@mail.gmail.com>
-References: <cover.1548737236.git.amit.kucheria@linaro.org>
- <6077cb33d7e078bb0e85776bad99fdb476f16d0c.1548737236.git.amit.kucheria@linaro.org>
- <20190129053618.laa6nscfvlmhhkb5@vireshk-i7> <CAP245DVk+Bbkqh5xzNnL+RG3zZDJJR+ZLJqmEhSWjjSK1FH8rw@mail.gmail.com>
- <CAHLCerMAY8ZZRap4RQictmPkjhmk8gjKxRoS4o2ObP9jdv+FAQ@mail.gmail.com> <20190129070938.lqhejdu4ilra65ow@vireshk-i7>
+From: Joerg Roedel <jroedel@suse.de>
+Subject: Re: [PATCH 1/4] IOMMU: Make dwo drivers use stateless device links
+Date: Tue, 29 Jan 2019 10:17:33 +0100
+Message-ID: <20190129091733.3ue6ifr3tpwu237j@suse.de>
+References: <2405639.4es7pRLqn0@aspire.rjw.lan>
+ <3532356.d9GMSSLOvP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190129070938.lqhejdu4ilra65ow@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <3532356.d9GMSSLOvP@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jeffy Chen <jeffy.chen@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 29, 2019 at 8:09 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 29-01-19, 11:50, Amit Kucheria wrote:
-> > On Tue, Jan 29, 2019 at 11:16 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> > >
-> > > On Tue, Jan 29, 2019 at 11:06 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > >
-> > > > On 29-01-19, 10:25, Amit Kucheria wrote:
-> > > > > All cpufreq drivers do similar things to register as a cooling device.
-> > > > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> > > > > to register the cooling device on their behalf. This allows us to get
-> > > > > rid of duplicated code in the drivers.
-> > > > >
-> > > > > In order to allow this, we add a struct thermal_cooling_device pointer
-> > > > > to struct cpufreq_policy so that drivers don't need to store it in a
-> > > > > private data structure.
-> > > > >
-> > > > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> > > > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > > > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > > ---
-> > > > >  drivers/cpufreq/cpufreq.c | 13 +++++++++++++
-> > > > >  include/linux/cpufreq.h   |  9 +++++++++
-> > > > >  2 files changed, 22 insertions(+)
-> > > > >
-> > > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > > > index e35a886e00bc..0f9b50d3ee91 100644
-> > > > > --- a/drivers/cpufreq/cpufreq.c
-> > > > > +++ b/drivers/cpufreq/cpufreq.c
-> > > > > @@ -19,6 +19,7 @@
-> > > > >
-> > > > >  #include <linux/cpu.h>
-> > > > >  #include <linux/cpufreq.h>
-> > > > > +#include <linux/cpu_cooling.h>
-> > > > >  #include <linux/delay.h>
-> > > > >  #include <linux/device.h>
-> > > > >  #include <linux/init.h>
-> > > > > @@ -1318,6 +1319,11 @@ static int cpufreq_online(unsigned int cpu)
-> > > > >       if (cpufreq_driver->ready)
-> > > > >               cpufreq_driver->ready(policy);
-> > > > >
-> > > > > +#if IS_ENABLED(CONFIG_CPU_THERMAL)
-> > > > > +     if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
-> > > > > +             policy->cdev = of_cpufreq_cooling_register(policy);
-> > > > > +#endif
-> > > >
-> > > > I am not sure if Rafael wanted it this way but maybe something like this:
-> > > >
-> > > >         if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
-> > > >             cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV))
-> > > >                 policy->cdev = of_cpufreq_cooling_register(policy);
-> > > >
-> > > > We never wanted ifdef hackery to be in there :)
-> > >
-> > > OK, that makes more sense. Should I just send out a fixup patch or the
-> > > entire series?
->
-> Single patch should be fine I believe.
->
-> > FWIW, I checked drivers/cpufreq and drivers/thermal before converting
-> > over and there is a mixed use of #if IS_ENABLED and if(IS_ENABLED).
-> >
-> > Perhaps we should clean it up?
->
-> No objections from me on that.
+On Tue, Jan 29, 2019 at 12:05:21AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The device links used by rockchip-iommu and exynos-iommu are
+> completely managed by these drivers within the IOMMU framework,
+> so there is no reason to involve the driver core in the management
+> of these links.
+> 
+> For this reason, make rockchip-iommu and exynos-iommu pass
+> DL_FLAG_STATELESS in flags to device_link_add(), so that the device
+> links used by them are stateless.
+> 
+> [Note that this change is requisite for a subsequent one that will
+>  rework the management of stateful device links in the driver core
+>  and it will not be compatible with the two drivers in question any
+>  more.]
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/iommu/exynos-iommu.c   |    1 +
+>  drivers/iommu/rockchip-iommu.c |    3 ++-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 
-Generally speaking, though, "if (IS_ENABLED(SYMBOL))" can only be used
-if all of the symbols in the conditional branch are defined regardless
-of whether or not SYMBOL itself is defined, so careful there.
+Acked-by: Joerg Roedel <jroedel@suse.de>
+
+> 
+> Index: linux-pm/drivers/iommu/rockchip-iommu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/iommu/rockchip-iommu.c
+> +++ linux-pm/drivers/iommu/rockchip-iommu.c
+> @@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
+>  	iommu_group_put(group);
+>  
+>  	iommu_device_link(&iommu->iommu, dev);
+> -	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
+> +	data->link = device_link_add(dev, iommu->dev,
+> +				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
+>  
+>  	return 0;
+>  }
+> Index: linux-pm/drivers/iommu/exynos-iommu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/iommu/exynos-iommu.c
+> +++ linux-pm/drivers/iommu/exynos-iommu.c
+> @@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
+>  		 * direct calls to pm_runtime_get/put in this driver.
+>  		 */
+>  		data->link = device_link_add(dev, data->sysmmu,
+> +					     DL_FLAG_STATELESS |
+>  					     DL_FLAG_PM_RUNTIME);
+>  	}
+>  	iommu_group_put(group);
