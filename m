@@ -1,77 +1,68 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 3/8] clk: samsung: add BPLL rate table for Exynos 5422 SoC
-Date: Tue, 29 Jan 2019 18:55:09 +0100
-Message-ID: <1548784514-26649-4-git-send-email-l.luba@partner.samsung.com>
-References: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20190129175524eucas1p1ead98a852f002461984b9b99c5b5b7e4@eucas1p1.samsung.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH] thermal: of-thermal: support to select governor in dts
+ for thermal zone
+Date: Tue, 29 Jan 2019 11:14:24 -0800
+Message-ID: <20190129191424.GL81583@google.com>
+References: <1546873479-20415-1-git-send-email-yizeng@asrmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, krzk@kernel.org, Lukasz Luba <l.luba@partner.samsung.com>, cw00.choi@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, myungjoo.ham@samsung.com, s.nawrocki@samsung.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, m.szyprowski@samsung.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1546873479-20415-1-git-send-email-yizeng@asrmicro.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yi Zeng <yizeng@asrmicro.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
-Controller frequencies for driver's DRAM timings.
+On Mon, Jan 07, 2019 at 11:04:39PM +0800, Yi Zeng wrote:
+> Add the governor property parsing that defined in thermal zone node
+> in dts. If define the governor property for one thermal zone, for
+> example, governor = "step_wise", then parse and register the thermal
+> zone will find and set the right governor, except the only choice
+> of default governor.
+> 
+> Signed-off-by: Yi Zeng <yizeng@asrmicro.com>
+> ---
+>  drivers/thermal/of-thermal.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 4bfdb4a..f9368f4 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -1024,6 +1024,7 @@ int __init of_parse_thermal_zones(void)
+>  		struct thermal_zone_params *tzp;
+>  		int i, mask = 0;
+>  		u32 prop;
+> +		const char *name;
+>  
+>  		tz = thermal_of_build_thermal_zone(child);
+>  		if (IS_ERR(tz)) {
+> @@ -1049,6 +1050,10 @@ int __init of_parse_thermal_zones(void)
+>  		if (!of_property_read_u32(child, "sustainable-power", &prop))
+>  			tzp->sustainable_power = prop;
+>  
+> +		if (!of_property_read_string(child, "governor", &name))
+> +			strncpy(tzp->governor_name, name,
+> +				THERMAL_NAME_LENGTH);
+> +
+>  		for (i = 0; i < tz->ntrips; i++)
+>  			mask |= 1 << i;
 
-CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
-CC: Chanwoo Choi <cw00.choi@samsung.com>
-CC: Michael Turquette <mturquette@baylibre.com>
-CC: Stephen Boyd <sboyd@kernel.org>
-CC: Kukjin Kim <kgene@kernel.org>
-CC: Krzysztof Kozlowski <krzk@kernel.org>
-CC: linux-samsung-soc@vger.kernel.org
-CC: linux-clk@vger.kernel.org
-CC: linux-arm-kernel@lists.infradead.org
-CC: linux-kernel@vger.kernel.org
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/clk/samsung/clk-exynos5420.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+For reference, the discussion of a similar patch about a year ago:
+https://patchwork.kernel.org/patch/10259487/
 
-diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
-index 3e87421..8bf9579 100644
---- a/drivers/clk/samsung/clk-exynos5420.c
-+++ b/drivers/clk/samsung/clk-exynos5420.c
-@@ -1325,6 +1325,19 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
- 	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
- };
- 
-+static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
-+	PLL_35XX_RATE(24 * MHZ, 933000000, 311, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
-+	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
-+	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
-+	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
-+	PLL_35XX_RATE(24 * MHZ, 138000000, 184, 2, 4),
-+};
-+
- static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
- 	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
- 	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
-@@ -1467,7 +1480,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
- 		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
- 		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
- 		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
--		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-+		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
- 	}
- 
- 	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
--- 
-2.7.4
+>From a board developer POV I can see why you would want this, but
+maintainers seem(ed) to think that it could cause more problems
+than it solves.
+
+Some arguments that were brought up against configuring the governor
+in the DT:
+
+- the DT should describe the hardware, not policy
+- the specified governor might not exist / be enabled
+- sysfs is more flexible than the DT
+
+Cheers
+
+Matthias
