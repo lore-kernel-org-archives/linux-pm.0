@@ -1,9 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 6/8] DT: arm: exynos: add DMC device for exynos5422
-Date: Tue, 29 Jan 2019 18:55:12 +0100
-Message-ID: <1548784514-26649-7-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v2 5/8] dt-bindings: devfreq: add Exynos5422 DMC device
+ description
+Date: Tue, 29 Jan 2019 18:55:11 +0100
+Message-ID: <1548784514-26649-6-git-send-email-l.luba@partner.samsung.com>
 References: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190129175526eucas1p253dc2e8a0d64b34d95c84d585fb0fac0@eucas1p2.samsung.com>
+        <CGME20190129175526eucas1p197f5db6208ee52e25fecd58fe7c608e4@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1548784514-26649-1-git-send-email-l.luba@partner.samsung.com>
@@ -12,149 +13,152 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add description of Dynamic Memory Controller and PPMU counters.
-They are used by exynos5422-dmc driver.
+The patch adds description for DT binding for a new Exynos5422 Dynamic
+Memory Controller device.
+It also contains needed MAINTAINERS file update.
 
+CC: MyungJoo Ham <myungjoo.ham@samsung.com>
+CC: Kyungmin Park <kyungmin.park@samsung.com>
+CC: Chanwoo Choi <cw00.choi@samsung.com>
 CC: Rob Herring <robh+dt@kernel.org>
 CC: Mark Rutland <mark.rutland@arm.com>
 CC: Kukjin Kim <kgene@kernel.org>
 CC: Krzysztof Kozlowski <krzk@kernel.org>
+CC: linux-pm@vger.kernel.org
+CC: linux-samsung-soc@vger.kernel.org
 CC: devicetree@vger.kernel.org
 CC: linux-arm-kernel@lists.infradead.org
-CC: linux-samsung-soc@vger.kernel.org
 CC: linux-kernel@vger.kernel.org
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- arch/arm/boot/dts/exynos5420.dtsi             | 69 +++++++++++++++++++++++++++
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 22 +++++++++
- 2 files changed, 91 insertions(+)
+ .../devicetree/bindings/devfreq/exynos5422-dmc.txt | 106 +++++++++++++++++++++
+ MAINTAINERS                                        |   1 +
+ 2 files changed, 107 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
 
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index aaff158..4d76335 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -235,6 +235,27 @@
- 			status = "disabled";
- 		};
- 
-+		dmc: memory-controller@10c20000 {
-+			compatible = "samsung,exynos5422-dmc";
-+			reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-+				<0x10030000 0x1000>, <0x10000000 0x1000>;
-+			clocks = <&clock CLK_FOUT_SPLL>,
+diff --git a/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+new file mode 100644
+index 0000000..229efba
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+@@ -0,0 +1,106 @@
++* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
++
++The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
++memory chips are connected. The driver is to monitor the controller in runtime
++and switch frequency and voltage. To monitor the usage of the controller in
++runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
++is able to measure the current load of the memory.
++When 'userspace' governor is used for the driver, an application is able to
++switch the DMC frequency.
++
++Required properties for DMC device for Exynos5422:
++- compatible: Should be "samsung,exynos5422-bus".
++- clock-names : the name of clock used by the bus, "bus".
++- clocks : phandles for clock specified in "clock-names" property.
++- devfreq-events : phandles for PPMU devices connected to this DMC.
++
++The example definition of a DMC and PPMU devices declared in DT is shown below:
++
++	ppmu_dmc0_0: ppmu@10d00000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x10d00000 0x2000>;
++		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
++		clock-names = "ppmu";
++		status = "okay";
++		events {
++			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
++				event-name = "ppmu-event3-dmc0_0";
++			};
++		};
++	};
++
++
++	ppmu_dmc0_1: ppmu@10d10000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x10d10000 0x2000>;
++		clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
++		clock-names = "ppmu";
++		status = "okay";
++		events {
++			ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
++				event-name = "ppmu-event3-dmc0_1";
++			};
++		};
++	};
++
++	ppmu_dmc1_0: ppmu@10d10000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x10d60000 0x2000>;
++		clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
++		clock-names = "ppmu";
++		status = "okay";
++		events {
++			ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
++				event-name = "ppmu-event3-dmc1_0";
++			};
++		};
++	};
++
++	ppmu_dmc1_1: ppmu@10d70000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x10d70000 0x2000>;
++		clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
++		clock-names = "ppmu";
++		status = "okay";
++		events {
++			ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
++				event-name = "ppmu-event3-dmc1_1";
++			};
++		};
++	};
++
++	dmc: memory-controller@10c20000 {
++		compatible = "samsung,exynos5422-dmc";
++		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
++			<0x10030000 0x1000>, <0x10000000 0x1000>;
++		clocks = 	<&clock CLK_FOUT_SPLL>,
 +				<&clock CLK_MOUT_SCLK_SPLL>,
 +				<&clock CLK_FF_DOUT_SPLL2>,
-+				<&clock CLK_FOUT_BPLL>,	<&clock CLK_MOUT_BPLL>,
++				<&clock CLK_FOUT_BPLL>,
++				<&clock CLK_MOUT_BPLL>,
 +				<&clock CLK_SCLK_BPLL>,
 +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
 +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
 +				<&clock CLK_MOUT_MCLK_CDREX>,
 +				<&clock CLK_DOUT_CLK2X_PHY0>,
-+				<&clock CLK_CLKM_PHY0>,	<&clock CLK_CLKM_PHY1>;
-+			clock-names = "fout_spll", "mout_sclk_spll",
-+				"ff_dout_spll2", "fout_bpll", "mout_bpll",
-+				"sclk_bpll", "mout_mx_mspll_ccore",
-+				"mout_mx_mspll_ccore_phy", "mout_mclk_cdrex",
-+				"dout_clk2x_phy0", "clkm_phy0", "clkm_phy1";
-+		};
++				<&clock CLK_CLKM_PHY0>,
++				<&clock CLK_CLKM_PHY1>;
++		clock-names =	"fout_spll",
++				"mout_sclk_spll",
++				"ff_dout_spll2",
++				"fout_bpll",
++				"mout_bpll",
++				"sclk_bpll",
++				"mout_mx_mspll_ccore",
++				"mout_mx_mspll_ccore_phy",
++				"mout_mclk_cdrex",
++				"dout_clk2x_phy0",
++				"clkm_phy0",
++				"clkm_phy1";
 +
- 		nocp_mem0_0: nocp@10ca1000 {
- 			compatible = "samsung,exynos5420-nocp";
- 			reg = <0x10CA1000 0x200>;
-@@ -271,6 +292,54 @@
- 			status = "disabled";
- 		};
++		status = "okay";
++		devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
++				<&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
++	};
++
++
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e81dfbf..ab0d8a5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3316,6 +3316,7 @@ L:	linux-pm@vger.kernel.org
+ L:	linux-samsung-soc@vger.kernel.org
+ S:	Maintained
+ F:	drivers/devfreq/exynos5422-dmc.c
++F:	Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
  
-+		ppmu_dmc0_0: ppmu@10d00000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x10d00000 0x2000>;
-+			clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-+			clock-names = "ppmu";
-+			events {
-+				ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-+					event-name = "ppmu-event3-dmc0_0";
-+				};
-+			};
-+		};
-+
-+		ppmu_dmc0_1: ppmu@10d10000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x10d10000 0x2000>;
-+			clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
-+			clock-names = "ppmu";
-+			events {
-+				ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
-+					event-name = "ppmu-event3-dmc0_1";
-+				};
-+			};
-+		};
-+
-+		ppmu_dmc1_0: ppmu@10d10000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x10d60000 0x2000>;
-+			clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
-+			clock-names = "ppmu";
-+			events {
-+				ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
-+					event-name = "ppmu-event3-dmc1_0";
-+				};
-+			};
-+		};
-+
-+		ppmu_dmc1_1: ppmu@10d70000 {
-+			compatible = "samsung,exynos-ppmu";
-+			reg = <0x10d70000 0x2000>;
-+			clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
-+			clock-names = "ppmu";
-+			events {
-+				ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
-+					event-name = "ppmu-event3-dmc1_1";
-+				};
-+			};
-+		};
-+
- 		gsc_pd: power-domain@10044000 {
- 			compatible = "samsung,exynos4210-pd";
- 			reg = <0x10044000 0x20>;
-diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-index bf09eab..e2b59e9 100644
---- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-+++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-@@ -127,6 +127,12 @@
- 	cpu-supply = <&buck2_reg>;
- };
- 
-+&dmc {
-+	devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
-+			<&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
-+	status = "okay";
-+};
-+
- &hsi2c_4 {
- 	status = "okay";
- 
-@@ -535,6 +541,22 @@
- 	};
- };
- 
-+&ppmu_dmc0_0 {
-+	status = "okay";
-+};
-+
-+&ppmu_dmc0_1 {
-+	status = "okay";
-+};
-+
-+&ppmu_dmc1_0 {
-+	status = "okay";
-+};
-+
-+&ppmu_dmc1_1 {
-+	status = "okay";
-+};
-+
- &tmu_cpu0 {
- 	vtmu-supply = <&ldo7_reg>;
- };
+ BUSLOGIC SCSI DRIVER
+ M:	Khalid Aziz <khalid@gonehiking.org>
 -- 
 2.7.4
