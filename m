@@ -1,68 +1,84 @@
-From: Joerg Roedel <jroedel@suse.de>
-Subject: Re: [PATCH 1/4] IOMMU: Make dwo drivers use stateless device links
-Date: Tue, 29 Jan 2019 10:17:33 +0100
-Message-ID: <20190129091733.3ue6ifr3tpwu237j@suse.de>
-References: <2405639.4es7pRLqn0@aspire.rjw.lan>
- <3532356.d9GMSSLOvP@aspire.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: bcm2835: Fix crash in bcm2835_thermal_debugfs
+Date: Tue, 29 Jan 2019 10:52:56 +0100
+Message-ID: <d4a3e7b3-ed86-ca74-0e46-9b3b5f9cbef7@linaro.org>
+References: <1548753048-78735-1-git-send-email-phil@raspberrypi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3532356.d9GMSSLOvP@aspire.rjw.lan>
+In-Reply-To: <1548753048-78735-1-git-send-email-phil@raspberrypi.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jeffy Chen <jeffy.chen@rock-chips.com>
+To: Phil Elwell <phil@raspberrypi.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Florian Fainelli <f.fainelli@gmail.com>, bcm-kernel-feedback-list@broadcom.com, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 29, 2019 at 12:05:21AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 29/01/2019 10:10, Phil Elwell wrote:
+> "cat /sys/kernel/debug/bcm2835_thermal/regset" causes a NULL pointer
+> dereference in bcm2835_thermal_debugfs. The driver makes use of the
+> implementation details of the thermal framework to retrieve a pointer
+> to its private data from a struct thermal_zone_device, and gets it
+> wrong - leading to the crash. Instead, store its private data as the
+> drvdata and retrieve the thermal_zone_device pointer from it.
 > 
-> The device links used by rockchip-iommu and exynos-iommu are
-> completely managed by these drivers within the IOMMU framework,
-> so there is no reason to involve the driver core in the management
-> of these links.
+> Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 SoC")
 > 
-> For this reason, make rockchip-iommu and exynos-iommu pass
-> DL_FLAG_STATELESS in flags to device_link_add(), so that the device
-> links used by them are stateless.
-> 
-> [Note that this change is requisite for a subsequent one that will
->  rework the management of stateful device links in the driver core
->  and it will not be compatible with the two drivers in question any
->  more.]
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Phil Elwell <phil@raspberrypi.org>
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+One question: do you really want the thermal driver to be loaded as a
+module ? Don't you want to have it operational as soon as possible
+instead of waiting the OS to boot and load the kernel module?
+
+If a module format is not needed, then the thermal_zone field won't be
+needed anymore because the 'remove' ops can be removed and the need of
+the tz field to unregister it disappears.
+
 > ---
->  drivers/iommu/exynos-iommu.c   |    1 +
->  drivers/iommu/rockchip-iommu.c |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletion(-)
-
-Acked-by: Joerg Roedel <jroedel@suse.de>
-
+>  drivers/thermal/broadcom/bcm2835_thermal.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 > 
-> Index: linux-pm/drivers/iommu/rockchip-iommu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iommu/rockchip-iommu.c
-> +++ linux-pm/drivers/iommu/rockchip-iommu.c
-> @@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
->  	iommu_group_put(group);
+> diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+> index 720760c..ba39647 100644
+> --- a/drivers/thermal/broadcom/bcm2835_thermal.c
+> +++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+> @@ -119,8 +119,7 @@ static const struct debugfs_reg32 bcm2835_thermal_regs[] = {
 >  
->  	iommu_device_link(&iommu->iommu, dev);
-> -	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
-> +	data->link = device_link_add(dev, iommu->dev,
-> +				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
+>  static void bcm2835_thermal_debugfs(struct platform_device *pdev)
+>  {
+> -	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
+> -	struct bcm2835_thermal_data *data = tz->devdata;
+> +	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
+>  	struct debugfs_regset32 *regset;
 >  
->  	return 0;
->  }
-> Index: linux-pm/drivers/iommu/exynos-iommu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/iommu/exynos-iommu.c
-> +++ linux-pm/drivers/iommu/exynos-iommu.c
-> @@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
->  		 * direct calls to pm_runtime_get/put in this driver.
->  		 */
->  		data->link = device_link_add(dev, data->sysmmu,
-> +					     DL_FLAG_STATELESS |
->  					     DL_FLAG_PM_RUNTIME);
->  	}
->  	iommu_group_put(group);
+>  	data->debugfsdir = debugfs_create_dir("bcm2835_thermal", NULL);
+> @@ -266,7 +265,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+>  
+>  	data->tz = tz;
+>  
+> -	platform_set_drvdata(pdev, tz);
+> +	platform_set_drvdata(pdev, data);
+>  
+>  	/*
+>  	 * Thermal_zone doesn't enable hwmon as default,
+> @@ -290,8 +289,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+>  
+>  static int bcm2835_thermal_remove(struct platform_device *pdev)
+>  {
+> -	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
+> -	struct bcm2835_thermal_data *data = tz->devdata;
+> +	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
+> +	struct thermal_zone_device *tz = data->tz;
+>  
+>  	debugfs_remove_recursive(data->debugfsdir);
+>  	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
