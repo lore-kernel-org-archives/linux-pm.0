@@ -1,65 +1,46 @@
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: [RFC/PATCH 2/5] OPP: Make dev_pm_opp_set_rate() with freq=0 as valid
-Date: Mon, 28 Jan 2019 17:55:44 -0800
-Message-ID: <20190129015547.213276-3-swboyd@chromium.org>
-References: <20190129015547.213276-1-swboyd@chromium.org>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: linux-5.0-rc3, ti-soc-thermal: unmet dependencies Kconfig warning
+Date: Tue, 29 Jan 2019 09:09:45 +0530
+Message-ID: <6c970fca-35ea-f327-3f77-9b61c37554d5@ti.com>
+References: <8baafd04-eda0-778d-84d2-7ccc1d07db6b@infradead.org>
+ <20190128163433.GY5720@atomide.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190129015547.213276-1-swboyd@chromium.org>
+In-Reply-To: <20190128163433.GY5720@atomide.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Anderson <dianders@chromium.org>
+To: Tony Lindgren <tony@atomide.com>, Randy Dunlap <rdunlap@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rajendra Nayak <rnayak@codeaurora.org>
+On 28/01/19 10:04 PM, Tony Lindgren wrote:
+> Hi,
+> 
+> * Randy Dunlap <rdunlap@infradead.org> [190126 06:54]:
+>> Hi,
+>>
+>> FYI, I'm seeing this Kconfig warning in 5.0-rc3:
+> 
+> Thanks for reporting it.
+> 
+>> WARNING: unmet direct dependencies detected for TI_SOC_THERMAL
+>>   Depends on [n]: THERMAL [=y] && (ARCH_HAS_BANDGAP || COMPILE_TEST [=n]) && HAS_IOMEM [=y]
+>>   Selected by [m]:
+>>   - MMC_SDHCI_OMAP [=m] && MMC [=m] && MMC_SDHCI_PLTFM [=m] && OF [=y]
+>>
+>>
+>> Maybe there is already a patch for this?
+> 
+> Keerthy can you please take a look at this issue?
 
-For devices with performance state, we use dev_pm_opp_set_rate()
-to set the appropriate clk rate and the performance state.
-We do need a way to *remove* the performance state vote when
-we idle the device and turn the clocks off. Use dev_pm_opp_set_rate()
-with freq=0 to achieve this.
+https://lore.kernel.org/patchwork/patch/1030366/
 
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Stephen Boyd <swboyd@chromium.org>
----
- drivers/opp/core.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+This is fixed. It is in the linux-next already.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index b6516d623c5a..ac5099c237de 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -709,18 +709,24 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	struct clk *clk;
- 	int ret;
- 
--	if (unlikely(!target_freq)) {
--		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
--			target_freq);
--		return -EINVAL;
--	}
--
- 	opp_table = _find_opp_table(dev);
- 	if (IS_ERR(opp_table)) {
- 		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
- 		return PTR_ERR(opp_table);
- 	}
- 
-+	if (unlikely(!target_freq)) {
-+		if (opp_table->required_opp_tables) {
-+			/* drop the performance state vote */
-+			dev_pm_genpd_set_performance_state(dev, 0);
-+			return 0;
-+		} else {
-+			dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
-+				target_freq);
-+			return -EINVAL;
-+		}
-+	}
-+
- 	clk = opp_table->clk;
- 	if (IS_ERR(clk)) {
- 		dev_err(dev, "%s: No clock available for the device\n",
--- 
-Sent by a computer through tubes
+> 
+> Regards,
+> 
+> Tony
+> 
