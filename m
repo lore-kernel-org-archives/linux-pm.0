@@ -1,89 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 2/9] cpufreq: Auto-register the driver as a thermal
- cooling device if asked
-Date: Tue, 29 Jan 2019 12:39:39 +0530
-Message-ID: <20190129070938.lqhejdu4ilra65ow@vireshk-i7>
-References: <cover.1548737236.git.amit.kucheria@linaro.org>
- <6077cb33d7e078bb0e85776bad99fdb476f16d0c.1548737236.git.amit.kucheria@linaro.org>
- <20190129053618.laa6nscfvlmhhkb5@vireshk-i7>
- <CAP245DVk+Bbkqh5xzNnL+RG3zZDJJR+ZLJqmEhSWjjSK1FH8rw@mail.gmail.com>
- <CAHLCerMAY8ZZRap4RQictmPkjhmk8gjKxRoS4o2ObP9jdv+FAQ@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 3/3] devfreq: add mediatek cci devfreq
+Date: Tue, 29 Jan 2019 17:17:50 +0900
+Message-ID: <20190129081750epcms1p41e46de569005622ad3d90f9aaa75f545@epcms1p4>
+References: <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
+        <1548743704-16821-1-git-send-email-andrew-sh.cheng@mediatek.com>
+        <CGME20190129063600epcas2p255b062c64f22555692ff895634ea4eb0@epcms1p4>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAHLCerMAY8ZZRap4RQictmPkjhmk8gjKxRoS4o2ObP9jdv+FAQ@mail.gmail.com>
+In-Reply-To: <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "srv_heupstream@mediatek.com" <srv_heupstream@mediatek.com>, "fan.chen@mediatek.com" <fan.chen@mediatek.com>, "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 29-01-19, 11:50, Amit Kucheria wrote:
-> On Tue, Jan 29, 2019 at 11:16 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> >
-> > On Tue, Jan 29, 2019 at 11:06 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > >
-> > > On 29-01-19, 10:25, Amit Kucheria wrote:
-> > > > All cpufreq drivers do similar things to register as a cooling device.
-> > > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
-> > > > to register the cooling device on their behalf. This allows us to get
-> > > > rid of duplicated code in the drivers.
-> > > >
-> > > > In order to allow this, we add a struct thermal_cooling_device pointer
-> > > > to struct cpufreq_policy so that drivers don't need to store it in a
-> > > > private data structure.
-> > > >
-> > > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
-> > > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > ---
-> > > >  drivers/cpufreq/cpufreq.c | 13 +++++++++++++
-> > > >  include/linux/cpufreq.h   |  9 +++++++++
-> > > >  2 files changed, 22 insertions(+)
-> > > >
-> > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > > index e35a886e00bc..0f9b50d3ee91 100644
-> > > > --- a/drivers/cpufreq/cpufreq.c
-> > > > +++ b/drivers/cpufreq/cpufreq.c
-> > > > @@ -19,6 +19,7 @@
-> > > >
-> > > >  #include <linux/cpu.h>
-> > > >  #include <linux/cpufreq.h>
-> > > > +#include <linux/cpu_cooling.h>
-> > > >  #include <linux/delay.h>
-> > > >  #include <linux/device.h>
-> > > >  #include <linux/init.h>
-> > > > @@ -1318,6 +1319,11 @@ static int cpufreq_online(unsigned int cpu)
-> > > >       if (cpufreq_driver->ready)
-> > > >               cpufreq_driver->ready(policy);
-> > > >
-> > > > +#if IS_ENABLED(CONFIG_CPU_THERMAL)
-> > > > +     if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
-> > > > +             policy->cdev = of_cpufreq_cooling_register(policy);
-> > > > +#endif
-> > >
-> > > I am not sure if Rafael wanted it this way but maybe something like this:
-> > >
-> > >         if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
-> > >             cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV))
-> > >                 policy->cdev = of_cpufreq_cooling_register(policy);
-> > >
-> > > We never wanted ifdef hackery to be in there :)
-> >
-> > OK, that makes more sense. Should I just send out a fixup patch or the
-> > entire series?
+>From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
+>
+>For big/little cpu cluster architecture,
+>not only CPU frequency, but CCI frequency will also affect performance.
+>
+>Little cores and cci share the same buck in Mediatek mt8183 IC,
+>so we add a CCI devfreq which will get notification when buck voltage
+>is changed, then CCI devfreq can set cci frequency as high as possible.
+>
+>Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
 
-Single patch should be fine I believe.
+Please correct the coding style first in the .c file.
 
-> FWIW, I checked drivers/cpufreq and drivers/thermal before converting
-> over and there is a mixed use of #if IS_ENABLED and if(IS_ENABLED).
-> 
-> Perhaps we should clean it up?
+- empty last line?
+- inconsistent indentation (line26? match the first lines for all variable declarations OR don't match them at all)
+- Need proper boilerplate and try to comply with C89.
 
-No objections from me on that.
-
--- 
-viresh
+Cheers,
+MyungJoo
