@@ -1,180 +1,45 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 4/8] dt-bindings: devfreq: add DMC device description
-Date: Tue, 29 Jan 2019 15:47:32 +0100
-Message-ID: <CAJKOXPd2g6rtZpK20emJ0tqHhq0D01=BWbU_9MP30313XHvPHg@mail.gmail.com>
-References: <CGME20190128192153eucas1p2d7a796cb89e68c1789069562e91296be@eucas1p2.samsung.com>
- <1548703299-15806-1-git-send-email-l.luba@partner.samsung.com> <1548703299-15806-5-git-send-email-l.luba@partner.samsung.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: linux-5.0-rc3, ti-soc-thermal: unmet dependencies Kconfig warning
+Date: Tue, 29 Jan 2019 06:48:36 -0800
+Message-ID: <20190129144835.GZ5720@atomide.com>
+References: <8baafd04-eda0-778d-84d2-7ccc1d07db6b@infradead.org>
+ <20190128163433.GY5720@atomide.com>
+ <6c970fca-35ea-f327-3f77-9b61c37554d5@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548703299-15806-5-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <6c970fca-35ea-f327-3f77-9b61c37554d5@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: devicetree@vger.kernel.org, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 28 Jan 2019 at 20:21, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->
-> The patch adds description for DT binding for a new Exynos5 Dynamic Memory
-> Controller device.
-> It also contains needed MAINTAINERS file updates.
->
-> CC: MyungJoo Ham <myungjoo.ham@samsung.com>
-> CC: Kyungmin Park <kyungmin.park@samsung.com>
-> CC: Chanwoo Choi <cw00.choi@samsung.com>
-> CC: Rob Herring <robh+dt@kernel.org>
-> CC: Mark Rutland <mark.rutland@arm.com>
-> CC: Kukjin Kim <kgene@kernel.org>
-> CC: Krzysztof Kozlowski <krzk@kernel.org>
-> CC: linux-pm@vger.kernel.org
-> CC: linux-samsung-soc@vger.kernel.org
-> CC: devicetree@vger.kernel.org
-> CC: linux-arm-kernel@lists.infradead.org
-> CC: linux-kernel@vger.kernel.org
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  .../devicetree/bindings/devfreq/exynos5-dmc.txt    | 108 +++++++++++++++++++++
->  MAINTAINERS                                        |   7 ++
->  2 files changed, 115 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
->
-> diff --git a/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> new file mode 100644
-> index 0000000..914bd85
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> @@ -0,0 +1,108 @@
-> +* Exynos5 frequency and voltage scaling for Dynamic Memory Controller device
-> +
-> +The Samsung Exynos5 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-> +memory chips are connected. The driver is to monitor the controller in runtime
-> +and switch frequency and voltage. To monitor the usage of the controller in
-> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-> +is able to measure the current load of the memory.
-> +When 'userspace' governor is used for the driver, an application is able to
-> +switch the DMC frequency.
-> +
-> +Required properties for DMC device for Exynos5422:
-> +- compatible: Should be "samsung,exynos5422-bus".
-> +- clock-names : the name of clock used by the bus, "bus".
-> +- clocks : phandles for clock specified in "clock-names" property.
-> +- devfreq-events : phandles for PPMU devices connected to this DMC.
-> +
-> +The example definition of a DMC and PPMU devices declared in DT is shown below:
-> +
-> +       ppmu_dmc0_0: ppmu_dmc0_0@10d00000 {
-> +               compatible = "samsung,exynos-ppmu";
-> +               reg = <0x10d00000 0x2000>;
-> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-> +               clock-names = "ppmu";
-> +               status = "okay";
-> +               events {
-> +                       ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-> +                               event-name = "ppmu-event3-dmc0_0";
-> +                       };
-> +               };
-> +       };
-> +
-> +
-> +       ppmu_dmc0_1: ppmu_dmc0_1@10d10000 {
-> +               compatible = "samsung,exynos-ppmu";
-> +               reg = <0x10d10000 0x2000>;
-> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
-> +               clock-names = "ppmu";
-> +               status = "okay";
-> +               events {
-> +                       ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
-> +                               event-name = "ppmu-event3-dmc0_1";
-> +                       };
-> +               };
-> +       };
-> +
-> +       ppmu_dmc1_0: ppmu_dmc1_0@10d10000 {
-> +               compatible = "samsung,exynos-ppmu";
-> +               reg = <0x10d60000 0x2000>;
-> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
-> +               clock-names = "ppmu";
-> +               status = "okay";
-> +               events {
-> +                       ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
-> +                               event-name = "ppmu-event3-dmc1_0";
-> +                       };
-> +               };
-> +       };
-> +
-> +       ppmu_dmc1_1: ppmu_dmc1_1@10d70000 {
-> +               compatible = "samsung,exynos-ppmu";
-> +               reg = <0x10d70000 0x2000>;
-> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
-> +               clock-names = "ppmu";
-> +               status = "okay";
-> +               events {
-> +                       ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
-> +                               event-name = "ppmu-event3-dmc1_1";
-> +                       };
-> +               };
-> +       };
-> +
-> +       dmc: dmc@10c20000 {
-> +               compatible = "samsung,exynos5422-dmc";
-> +               reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-> +                       <0x10030000 0x1000>, <0x10000000 0x1000>;
-> +               clocks =        <&clock CLK_FOUT_SPLL>,
-> +                               <&clock CLK_MOUT_SCLK_SPLL>,
-> +                               <&clock CLK_FF_DOUT_SPLL2>,
-> +                               <&clock CLK_FOUT_BPLL>,
-> +                               <&clock CLK_MOUT_BPLL>,
-> +                               <&clock CLK_SCLK_BPLL>,
-> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE>,
-> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-> +                               <&clock CLK_MOUT_MCLK_CDREX>,
-> +                               <&clock CLK_DOUT_CLK2X_PHY0>,
-> +                               <&clock CLK_CLKM_PHY0>,
-> +                               <&clock CLK_CLKM_PHY1>
-> +                       ;
+* Keerthy <j-keerthy@ti.com> [190129 03:39]:
+> On 28/01/19 10:04 PM, Tony Lindgren wrote:
+> > Hi,
+> > 
+> > * Randy Dunlap <rdunlap@infradead.org> [190126 06:54]:
+> >> Hi,
+> >>
+> >> FYI, I'm seeing this Kconfig warning in 5.0-rc3:
+> > 
+> > Thanks for reporting it.
+> > 
+> >> WARNING: unmet direct dependencies detected for TI_SOC_THERMAL
+> >>   Depends on [n]: THERMAL [=y] && (ARCH_HAS_BANDGAP || COMPILE_TEST [=n]) && HAS_IOMEM [=y]
+> >>   Selected by [m]:
+> >>   - MMC_SDHCI_OMAP [=m] && MMC [=m] && MMC_SDHCI_PLTFM [=m] && OF [=y]
+> >>
+> >>
+> >> Maybe there is already a patch for this?
+> > 
+> > Keerthy can you please take a look at this issue?
+> 
+> https://lore.kernel.org/patchwork/patch/1030366/
+> 
+> This is fixed. It is in the linux-next already.
 
-Join with previous line.
+OK good to hear thanks!
 
-> +               clock-names =   "fout_spll",
-> +                               "mout_sclk_spll",
-> +                               "ff_dout_spll2",
-> +                               "fout_bpll",
-> +                               "mout_bpll",
-> +                               "sclk_bpll",
-> +                               "mout_mx_mspll_ccore",
-> +                               "mout_mx_mspll_ccore_phy",
-> +                               "mout_mclk_cdrex",
-> +                               "dout_clk2x_phy0",
-> +                               "clkm_phy0",
-> +                               "clkm_phy1"
-> +                               ;
-
-Ditto.
-
-> +
-> +               status = "okay";
-> +               devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
-> +                               <&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
-> +       };
-> +
-> +
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9f64f8d..3581807 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3310,6 +3310,13 @@ S:       Maintained
->  F:     drivers/devfreq/exynos-bus.c
->  F:     Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->
-> +DMC FREQUENCY DRIVER FOR SAMSUNG EXYNOS5
-> +M:     Lukasz Luba <l.luba@partner.samsung.com>
-> +L:     linux-pm@vger.kernel.org
-> +L:     linux-samsung-soc@vger.kernel.org
-> +S:     Maintained
-> +F:     Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-
-Maintainers change should go with the next change, I think. It looks
-unusual to add an entry for driver... without the driver.
-
-Best regards,
-Krzysztof
+Tony
