@@ -1,66 +1,55 @@
 From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [PATCH 1/7] PM / OPP: Introduce a power estimation helper
-Date: Tue, 29 Jan 2019 09:03:34 +0000
-Message-ID: <20190129090331.fgygq3dsaoqvegsl@queper01-lin>
+Date: Tue, 29 Jan 2019 09:09:50 +0000
+Message-ID: <20190129090948.3yomjtpbdsar576w@queper01-lin>
 References: <20190128165522.31749-1-quentin.perret@arm.com>
  <20190128165522.31749-2-quentin.perret@arm.com>
- <20190128190251.GH81583@google.com>
+ <20190129051030.gu5nhr6vmcd35bzk@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190128190251.GH81583@google.com>
+In-Reply-To: <20190129051030.gu5nhr6vmcd35bzk@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Hi Viresh,
 
-On Monday 28 Jan 2019 at 11:02:51 (-0800), Matthias Kaehlcke wrote:
-> > +/**
-> > + * of_dev_pm_opp_get_cpu_power() - Estimates the power of a CPU
-> > + * @mW:		pointer to the power estimate in milli-watts
-> > + * @KHz:	pointer to the OPP's frequency, in kilo-hertz
-> 
-> nit: should be kHz
-
-Right, I can change that :-)
-
-> 
-> > + * @cpu:	CPU for which power needs to be estimated
-> > + *
-> > + * Computes the power estimated by @CPU at the first OPP above @KHz (ceil),
-> > + * and updates @KHz and @mW accordingly.
-> > + *
-> > + * The power is estimated as P = C * V^2 * f, with C the CPU's capacitance
-> > + * (read from the 'dynamic-power-coefficient' devicetree binding) and V and f
-> > + * respectively the voltage and frequency of the OPP.
-> > + *
-> > + * Return: -ENODEV if the CPU device cannot be found, -EINVAL if the power
-> > + * calculation failed because of missing parameters, 0 otherwise.
-> > + */
+On Tuesday 29 Jan 2019 at 10:40:30 (+0530), Viresh Kumar wrote:
 > > +int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 > 
-> I think it is more common to put the input parameters first, then the
-> output ones, i.e. cpu, kHz, mW.
+> I would suggest to change the return type to unsigned long and return 0 for
+> errors and positive values for mW.
 
-Hmm, the issue is this must match the expectations of the EM framework:
+Well, I can't really do that -- this must match the API of PM_EM:
 
 https://elixir.bootlin.com/linux/v5.0-rc4/source/include/linux/energy_model.h#L62
 
-So, I don't really have a choice. Or we can change the core code if this
-_really_ is a problem -- we don't have users yet so now is the best time
-to do so I guess ...
+I'll make sure to make that explicit in the commit message for v2.
 
 > 
 > > +{
 > > +	unsigned long mV, Hz, MHz;
+> 
+> MHz is used only once, I think you can get rid of it just open code the division
+> by 1000000. Maybe remove Hz as well and directly use kHz.
+
+I would expect/hope the compiler will optimize things like that for me
+but yes, I can try to reduce a bit the temp variables if you prefer.
+
+> 
 > > +	struct device *cpu_dev;
 > > +	struct dev_pm_opp *opp;
 > > +	struct device_node *np;
 > > +	u32 cap;
 > > +	u64 tmp;
+> 
+> Name this mW with the above changes.
+
+So that doesn't really work given what I mentioned above.
+
 > > +	int ret;
 > > +
 > > +	cpu_dev = get_cpu_device(cpu);
@@ -112,6 +101,15 @@ to do so I guess ...
 > >  {
 > >  	return -ENOTSUPP;
 > >  }
+> 
+> Add a blank line here. We missed adding the same before
+> of_get_required_opp_performance_state() earlier, maybe add the new routine
+> before of_get_required_opp_performance_state() and add blank line before and
+> after it :)
+
+Sounds good !
+
+> 
 > > +static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 > > +{
 > > +	return -ENOTSUPP;
@@ -119,11 +117,11 @@ to do so I guess ...
 > >  #endif
 > >  
 > >  #endif		/* __LINUX_OPP_H__ */
+> > -- 
+> > 2.20.1
 > 
-> Besides the nits above:
-> 
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> -- 
+> viresh
 
-Thank you !
+Thanks,
 Quentin
