@@ -1,59 +1,89 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [RFC PATCH v2 08/10] rtc: bd70528: Initial support for ROHM
- bd70528 RTC
-Date: Tue, 29 Jan 2019 09:01:03 +0200
-Message-ID: <20190129070103.GA2551@localhost.localdomain>
-References: <20190125110536.GA29321@localhost.localdomain>
- <35bbc5b9-5f8c-ec80-3eaa-bb2c0e2812c9@roeck-us.net>
- <20190128202656.GA17466@anatevka>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Tue, 29 Jan 2019 12:39:39 +0530
+Message-ID: <20190129070938.lqhejdu4ilra65ow@vireshk-i7>
+References: <cover.1548737236.git.amit.kucheria@linaro.org>
+ <6077cb33d7e078bb0e85776bad99fdb476f16d0c.1548737236.git.amit.kucheria@linaro.org>
+ <20190129053618.laa6nscfvlmhhkb5@vireshk-i7>
+ <CAP245DVk+Bbkqh5xzNnL+RG3zZDJJR+ZLJqmEhSWjjSK1FH8rw@mail.gmail.com>
+ <CAHLCerMAY8ZZRap4RQictmPkjhmk8gjKxRoS4o2ObP9jdv+FAQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190128202656.GA17466@anatevka>
+In-Reply-To: <CAHLCerMAY8ZZRap4RQictmPkjhmk8gjKxRoS4o2ObP9jdv+FAQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jerry Hoemann <jerry.hoemann@hpe.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 28, 2019 at 01:26:56PM -0700, Jerry Hoemann wrote:
-> On Sat, Jan 26, 2019 at 08:30:24AM -0800, Guenter Roeck wrote:
-> > On 1/25/19 3:05 AM, Matti Vaittinen wrote:
-> > > +static int bd70528_set_wake(struct bd70528 *bd70528,
-> > > +			    int enable, int *old_state)
-> > > +{
-> > > +	int ret;
-> > > +	unsigned int ctrl_reg;
-> > > +
-> > > +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WAKE_EN, &ctrl_reg);
-> > > +	if (ret)
-> > > +		return ret;
-> > > +
-> > > +	if (old_state) {
-> > > +		if (ctrl_reg & BD70528_MASK_WAKE_EN)
-> > > +			*old_state |= BD70528_WAKE_STATE_BIT;
-> > > +		else
-> > > +			*old_state &= ~BD70528_WAKE_STATE_BIT;
-> > > +
-> > > +		if ((!enable) == (!(*old_state & BD70528_WAKE_STATE_BIT)))
-> > > +			return 0;
-> > 
-> > I think
-> > 		if (enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
-> > would be much better readable. Even if not, there are way too many ()
-> > in the above conditional.
-> > 
+On 29-01-19, 11:50, Amit Kucheria wrote:
+> On Tue, Jan 29, 2019 at 11:16 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> >
+> > On Tue, Jan 29, 2019 at 11:06 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > >
+> > > On 29-01-19, 10:25, Amit Kucheria wrote:
+> > > > All cpufreq drivers do similar things to register as a cooling device.
+> > > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > > > to register the cooling device on their behalf. This allows us to get
+> > > > rid of duplicated code in the drivers.
+> > > >
+> > > > In order to allow this, we add a struct thermal_cooling_device pointer
+> > > > to struct cpufreq_policy so that drivers don't need to store it in a
+> > > > private data structure.
+> > > >
+> > > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > ---
+> > > >  drivers/cpufreq/cpufreq.c | 13 +++++++++++++
+> > > >  include/linux/cpufreq.h   |  9 +++++++++
+> > > >  2 files changed, 22 insertions(+)
+> > > >
+> > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > > index e35a886e00bc..0f9b50d3ee91 100644
+> > > > --- a/drivers/cpufreq/cpufreq.c
+> > > > +++ b/drivers/cpufreq/cpufreq.c
+> > > > @@ -19,6 +19,7 @@
+> > > >
+> > > >  #include <linux/cpu.h>
+> > > >  #include <linux/cpufreq.h>
+> > > > +#include <linux/cpu_cooling.h>
+> > > >  #include <linux/delay.h>
+> > > >  #include <linux/device.h>
+> > > >  #include <linux/init.h>
+> > > > @@ -1318,6 +1319,11 @@ static int cpufreq_online(unsigned int cpu)
+> > > >       if (cpufreq_driver->ready)
+> > > >               cpufreq_driver->ready(policy);
+> > > >
+> > > > +#if IS_ENABLED(CONFIG_CPU_THERMAL)
+> > > > +     if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
+> > > > +             policy->cdev = of_cpufreq_cooling_register(policy);
+> > > > +#endif
+> > >
+> > > I am not sure if Rafael wanted it this way but maybe something like this:
+> > >
+> > >         if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
+> > >             cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV))
+> > >                 policy->cdev = of_cpufreq_cooling_register(policy);
+> > >
+> > > We never wanted ifdef hackery to be in there :)
+> >
+> > OK, that makes more sense. Should I just send out a fixup patch or the
+> > entire series?
+
+Single patch should be fine I believe.
+
+> FWIW, I checked drivers/cpufreq and drivers/thermal before converting
+> over and there is a mixed use of #if IS_ENABLED and if(IS_ENABLED).
 > 
-> The substitution is not equivalent to original.  I think you mean:
-> 
->  		if (!!enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
+> Perhaps we should clean it up?
 
-Thanks Jerry! Good catch! I originally wanted that all non-zero values
-of 'enable' would be 'true'. So maybe I just use the original approach
-but get rid of extra parenthesis which were pointed out by Guenter.
+No objections from me on that.
 
-		if (!enable == !(*old_state & BD70528_WAKE_STATE_BIT))
-should do it just fine, right?
-
-Br,
-	Matti
+-- 
+viresh
