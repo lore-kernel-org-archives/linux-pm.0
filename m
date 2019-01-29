@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v5 6/9] cpufreq: mediatek: Use auto-registration of thermal cooling device
-Date: Tue, 29 Jan 2019 10:25:12 +0530
-Message-ID: <36eb429112e84263bdbd26d8ea3027f71eeb862e.1548737236.git.amit.kucheria@linaro.org>
+Subject: [PATCH v5 7/9] cpufreq: qoriq: Use auto-registration of thermal cooling device
+Date: Tue, 29 Jan 2019 10:25:13 +0530
+Message-ID: <3c0f9702f2d68f684b16c4ab5dbb3222d64127e7.1548737236.git.amit.kucheria@linaro.org>
 References: <cover.1548737236.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1548737236.git.amit.kucheria@linaro.org>
@@ -9,7 +9,7 @@ In-Reply-To: <cover.1548737236.git.amit.kucheria@linaro.org>
 References: <cover.1548737236.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sean Wang <sean.wang@mediatek.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Markus Elfring <elfring@users.sourceforge.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Use the CPUFREQ_IS_COOLING_DEV flag to allow cpufreq core to
@@ -21,66 +21,62 @@ Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/cpufreq/qoriq-cpufreq.c | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index eb8920d39818..4229fcc31310 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -14,7 +14,6 @@
- 
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 3d773f64b4df..4295e5476264 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -13,7 +13,6 @@
  #include <linux/clk.h>
- #include <linux/cpu.h>
--#include <linux/cpu_cooling.h>
+ #include <linux/clk-provider.h>
  #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/module.h>
-@@ -48,7 +47,6 @@ struct mtk_cpu_dvfs_info {
- 	struct regulator *sram_reg;
- 	struct clk *cpu_clk;
- 	struct clk *inter_clk;
+-#include <linux/cpu_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -31,7 +30,6 @@
+ struct cpu_data {
+ 	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
 -	struct thermal_cooling_device *cdev;
- 	struct list_head list_head;
- 	int intermediate_voltage;
- 	bool need_voltage_tracking;
-@@ -307,13 +305,6 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ };
  
- #define DYNAMIC_POWER "dynamic-power-coefficient"
+ /*
+@@ -239,7 +237,6 @@ static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	struct cpu_data *data = policy->driver_data;
  
--static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
--{
--	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+-	cpufreq_cooling_unregister(data->cdev);
+ 	kfree(data->pclk);
+ 	kfree(data->table);
+ 	kfree(data);
+@@ -258,23 +255,15 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
 -
--	info->cdev = of_cpufreq_cooling_register(policy);
+-static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
+-{
+-	struct cpu_data *cpud = policy->driver_data;
+-
+-	cpud->cdev = of_cpufreq_cooling_register(policy);
 -}
 -
- static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- {
- 	struct device *cpu_dev;
-@@ -472,7 +463,6 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
- 
--	cpufreq_cooling_unregister(info->cdev);
- 	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
- 
- 	return 0;
-@@ -480,13 +470,13 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
- 
- static struct cpufreq_driver mtk_cpufreq_driver = {
- 	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
--		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-+		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-+		 CPUFREQ_IS_COOLING_DEV,
- 	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = mtk_cpufreq_set_target,
- 	.get = cpufreq_generic_get,
- 	.init = mtk_cpufreq_init,
- 	.exit = mtk_cpufreq_exit,
--	.ready = mtk_cpufreq_ready,
- 	.name = "mtk-cpufreq",
- 	.attr = cpufreq_generic_attr,
+ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.name		= "qoriq_cpufreq",
+-	.flags		= CPUFREQ_CONST_LOOPS,
++	.flags		= CPUFREQ_CONST_LOOPS |
++			  CPUFREQ_IS_COOLING_DEV,
+ 	.init		= qoriq_cpufreq_cpu_init,
+ 	.exit		= qoriq_cpufreq_cpu_exit,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qoriq_cpufreq_target,
+ 	.get		= cpufreq_generic_get,
+-	.ready		= qoriq_cpufreq_ready,
+ 	.attr		= cpufreq_generic_attr,
  };
+ 
 -- 
 2.17.1
