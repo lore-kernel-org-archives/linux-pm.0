@@ -1,59 +1,75 @@
-From: Phil Elwell <phil@raspberrypi.org>
-Subject: [PATCH] thermal: bcm2835: Fix crash in bcm2835_thermal_debugfs
-Date: Tue, 29 Jan 2019 09:10:48 +0000
-Message-ID: <1548753048-78735-1-git-send-email-phil@raspberrypi.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v5 2/9] cpufreq: Auto-register the driver as a thermal
+ cooling device if asked
+Date: Tue, 29 Jan 2019 10:13:15 +0100
+Message-ID: <CAJZ5v0hs2Af9DJoxiyMmFt7R5nYbGOCqgG5cvPOL8yrQXN-ZUw@mail.gmail.com>
+References: <cover.1548737236.git.amit.kucheria@linaro.org>
+ <6077cb33d7e078bb0e85776bad99fdb476f16d0c.1548737236.git.amit.kucheria@linaro.org>
+ <20190129053618.laa6nscfvlmhhkb5@vireshk-i7> <CAP245DVk+Bbkqh5xzNnL+RG3zZDJJR+ZLJqmEhSWjjSK1FH8rw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAP245DVk+Bbkqh5xzNnL+RG3zZDJJR+ZLJqmEhSWjjSK1FH8rw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Florian Fainelli <f.fainelli@gmail.com>, bcm-kernel-feedback-list@broadcom.com, Geert Uytterhoeven <geert+renesas@glider.be>, Phil Elwell <phil@raspberrypi.org>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-"cat /sys/kernel/debug/bcm2835_thermal/regset" causes a NULL pointer
-dereference in bcm2835_thermal_debugfs. The driver makes use of the
-implementation details of the thermal framework to retrieve a pointer
-to its private data from a struct thermal_zone_device, and gets it
-wrong - leading to the crash. Instead, store its private data as the
-drvdata and retrieve the thermal_zone_device pointer from it.
+On Tue, Jan 29, 2019 at 6:46 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>
+> On Tue, Jan 29, 2019 at 11:06 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 29-01-19, 10:25, Amit Kucheria wrote:
+> > > All cpufreq drivers do similar things to register as a cooling device.
+> > > Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> > > to register the cooling device on their behalf. This allows us to get
+> > > rid of duplicated code in the drivers.
+> > >
+> > > In order to allow this, we add a struct thermal_cooling_device pointer
+> > > to struct cpufreq_policy so that drivers don't need to store it in a
+> > > private data structure.
+> > >
+> > > Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> > > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > >  drivers/cpufreq/cpufreq.c | 13 +++++++++++++
+> > >  include/linux/cpufreq.h   |  9 +++++++++
+> > >  2 files changed, 22 insertions(+)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index e35a886e00bc..0f9b50d3ee91 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -19,6 +19,7 @@
+> > >
+> > >  #include <linux/cpu.h>
+> > >  #include <linux/cpufreq.h>
+> > > +#include <linux/cpu_cooling.h>
+> > >  #include <linux/delay.h>
+> > >  #include <linux/device.h>
+> > >  #include <linux/init.h>
+> > > @@ -1318,6 +1319,11 @@ static int cpufreq_online(unsigned int cpu)
+> > >       if (cpufreq_driver->ready)
+> > >               cpufreq_driver->ready(policy);
+> > >
+> > > +#if IS_ENABLED(CONFIG_CPU_THERMAL)
+> > > +     if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
+> > > +             policy->cdev = of_cpufreq_cooling_register(policy);
+> > > +#endif
+> >
+> > I am not sure if Rafael wanted it this way but maybe something like this:
+> >
+> >         if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
+> >             cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV))
+> >                 policy->cdev = of_cpufreq_cooling_register(policy);
+> >
+> > We never wanted ifdef hackery to be in there :)
+>
+> OK, that makes more sense. Should I just send out a fixup patch or the
+> entire series?
 
-Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 SoC")
-
-Signed-off-by: Phil Elwell <phil@raspberrypi.org>
----
- drivers/thermal/broadcom/bcm2835_thermal.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-index 720760c..ba39647 100644
---- a/drivers/thermal/broadcom/bcm2835_thermal.c
-+++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-@@ -119,8 +119,7 @@ static const struct debugfs_reg32 bcm2835_thermal_regs[] = {
- 
- static void bcm2835_thermal_debugfs(struct platform_device *pdev)
- {
--	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
--	struct bcm2835_thermal_data *data = tz->devdata;
-+	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
- 	struct debugfs_regset32 *regset;
- 
- 	data->debugfsdir = debugfs_create_dir("bcm2835_thermal", NULL);
-@@ -266,7 +265,7 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 
- 	data->tz = tz;
- 
--	platform_set_drvdata(pdev, tz);
-+	platform_set_drvdata(pdev, data);
- 
- 	/*
- 	 * Thermal_zone doesn't enable hwmon as default,
-@@ -290,8 +289,8 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
- 
- static int bcm2835_thermal_remove(struct platform_device *pdev)
- {
--	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
--	struct bcm2835_thermal_data *data = tz->devdata;
-+	struct bcm2835_thermal_data *data = platform_get_drvdata(pdev);
-+	struct thermal_zone_device *tz = data->tz;
- 
- 	debugfs_remove_recursive(data->debugfsdir);
- 	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
--- 
-2.7.4
+Just a fixup patch, please.
