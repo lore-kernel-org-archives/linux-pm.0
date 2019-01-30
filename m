@@ -1,123 +1,63 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] drivers core: cpu: add hotplug callback to update cpu_dev state to resumed
-Date: Thu, 31 Jan 2019 00:48:49 +0100
-Message-ID: <2397404.eE4apdlqQK@aspire.rjw.lan>
-References: <20190125130701.GA855@vmlxhi-102.adit-jv.com> <20190125150906.27614-1-sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 0/3] Move pm_runtime accounted time to raw nsec
+Date: Thu, 31 Jan 2019 00:50:44 +0100
+Message-ID: <2577730.BvIW2u5g9k@aspire.rjw.lan>
+References: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190125150906.27614-1-sudeep.holla@arm.com>
+In-Reply-To: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, thara.gopinath@linaro.org, linux@roeck-us.net, ulf.hansson@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 25, 2019 4:09:06 PM CET Sudeep Holla wrote:
-> The sysfs for the cpu caches are managed by adding devices with cpu
-> as the parent in cpu_device_create() when secondary cpu is brought
-> onlin. Generally when the secondary CPUs are hotplugged back is as part
-> of resume from suspend-to-ram, we call cpu_device_create() from the cpu
-> hotplug state machine while the cpu device associated with that CPU is
-> not yet ready to be resumed as the device_resume() call happens bit later.
-> It's not really needed to set the flag is_prepared for cpu devices are
-> they are mostly pseudo device and hotplug framework deals with state
-> machine and not managed through the cpu device.
+On Wednesday, January 23, 2019 8:50:12 AM CET Vincent Guittot wrote:
+> Move pm_runtime accounted time to raw nsec. The subject of the patchset
+> has changed as 1st patch o the previous versions has been queued by
+> Rafael.
 > 
-> This often results in annoying warning when resuming:
-> Enabling non-boot CPUs ...
-> CPU1: Booted secondary processor
->  cache: parent cpu1 should not be sleeping
-> CPU1 is up
-> CPU2: Booted secondary processor
->  cache: parent cpu2 should not be sleeping
-> CPU2 is up
-> .... and so on.
+> Patch 1 set accounting_timestamp to 0 in pm_runtime_init and update it when enable.
+> So we remove ordering constraint between timekeeping_init and pm_runtime_init
 > 
-> Just fix the warning by updating the device state quite early.
+> Patch 2 moves time accounting on raw ns. This patch initially used
+> ktime instead of raw ns but it was easier to move i915 driver on raw ns
+> than on ktime.
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Reported-by: Jisheng Zhang <jszhang@marvell.com>
-> Reported-by: Steve Longerbeam <slongerbeam@gmail.com>
-> Reported-by: Eugeniu Rosca <erosca@de.adit-jv.com>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/base/cpu.c         | 20 +++++++++++++++++++-
->  include/linux/cpuhotplug.h |  1 +
->  2 files changed, 20 insertions(+), 1 deletion(-)
+> Change since v6:
+> - move code that set accounting_timestamp in pm_runtime_enable
 > 
-> Hi Rafael,
+> Changes since v5:
+> - removed patches already queued.
+> - set accounting_timestamp to 0 in pm_runtime_init and update it when enable
 > 
-> This is getting reported for quite some time. Let me know if you have
-> better solution to fix this harmless yet annoying warnings during system
-> resume.
+> Changes since v4:
+> -Update commit message
+> 
+> Changes since v3:
+> - Rebase on v4.20-rc7 without patch that has been queued by Rafael
+> - Simplify the new interface pm_runtime_suspended_time()
+> 
+> Changes since v2:
+> - remove patch1 that has been queued by rafael
+> - add new interface in pm_runtime to get accounted time
+> - reorder patchset to prevent compilation error
+> 
+> Changes since v1:
+> - updated commit message of patch 1
+> - Added patches 2 & 3 to move runtime_pm accounting on raw ns
+>   
+> Thara Gopinath (1):
+>   PM-runtime: Replace jiffies based accounting with ktime-based
+>     accounting
+> 
+> Vincent Guittot (1):
+>   PM-runtime: update accounting_timestamp only when enable
+> 
+>  drivers/base/power/runtime.c | 26 ++++++++++++++++----------
+>  drivers/base/power/sysfs.c   | 11 ++++++++---
+>  include/linux/pm.h           |  6 +++---
+>  3 files changed, 27 insertions(+), 16 deletions(-)
 
-I'd rather have a flag in struct dev_pm_info that will cause the message to
-be suppressed if set.
-
-It could be used for other purposes too then in princple (like skipping the
-creation of empty "power" attr groups in sysfs for devices that don't
-need them etc.).
-
-
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index eb9443d5bae1..ae0403528bff 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -80,6 +80,8 @@ void unregister_cpu(struct cpu *cpu)
-> 
->  	device_unregister(&cpu->dev);
->  	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
-> +
-> +	cpuhp_remove_state_nocalls(CPUHP_CPUDEV_PM_PREPARE);
->  	return;
->  }
-> 
-> @@ -355,6 +357,20 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
->  }
->  #endif
-> 
-> +static int cpu_dev_pm_unset_is_prepared(unsigned int cpu)
-> +{
-> +	struct device *cpu_dev = get_cpu_device(cpu);
-> +
-> +	/*
-> +	 * device_resume sets this for cpu_dev bit later but the child
-> +	 * devices are resumes in the cpu hotplug state machine much
-> +	 * before device_resume is called.
-> +	 */
-> +	if (cpu_dev)
-> +		cpu_dev->power.is_prepared = false;
-> +
-> +	return 0;
-> +}
->  /*
->   * register_cpu - Setup a sysfs device for a CPU.
->   * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-> @@ -392,7 +408,9 @@ int register_cpu(struct cpu *cpu, int num)
->  	dev_pm_qos_expose_latency_limit(&cpu->dev,
->  					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
-> 
-> -	return 0;
-> +	return cpuhp_setup_state_nocalls(CPUHP_CPUDEV_PM_PREPARE,
-> +					 "base/cpu/dev_pm:prepare",
-> +					 cpu_dev_pm_unset_is_prepared, NULL);
->  }
-> 
->  struct device *get_cpu_device(unsigned cpu)
-> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> index fd586d0301e7..2ecb4c9370ce 100644
-> --- a/include/linux/cpuhotplug.h
-> +++ b/include/linux/cpuhotplug.h
-> @@ -69,6 +69,7 @@ enum cpuhp_state {
->  	CPUHP_SLAB_PREPARE,
->  	CPUHP_MD_RAID5_PREPARE,
->  	CPUHP_RCUTREE_PREP,
-> +	CPUHP_CPUDEV_PM_PREPARE,
->  	CPUHP_CPUIDLE_COUPLED_PREPARE,
->  	CPUHP_POWERPC_PMAC_PREPARE,
->  	CPUHP_POWERPC_MMU_CTX_PREPARE,
-> --
-> 2.17.1
-> 
-> 
+Both patches applied, thanks!
