@@ -1,63 +1,66 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: fix __percpu declaration of
- worker_data
-Date: Wed, 30 Jan 2019 21:37:56 +0800
-Message-ID: <1548855476.2161.2.camel@intel.com>
-References: <20190119161523.87999-1-luc.vanoostenryck@gmail.com>
-         <20190130095917.7uxdxrjvtaeydcol@pathway.suse.cz>
+Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
+Date: Wed, 30 Jan 2019 21:38:40 +0800
+Message-ID: <1548855520.2161.3.camel@intel.com>
+References: <20190109055724.184692-1-pihsun@chromium.org>
+         <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
+         <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
+         <CANdKZ0eDwTgKoFsAOboCz=q+nsUWepecXA7wmR=jGhkWEzLvnA@mail.gmail.com>
+         <49dbd0af-975e-cafb-d1b9-4e491a6c9383@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190130095917.7uxdxrjvtaeydcol@pathway.suse.cz>
+In-Reply-To: <49dbd0af-975e-cafb-d1b9-4e491a6c9383@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>, Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Pi-Hsun Shih <pihsun@chromium.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com
 List-Id: linux-pm@vger.kernel.org
 
-On 三, 2019-01-30 at 10:59 +0100, Petr Mladek wrote:
-> On Sat 2019-01-19 17:15:23, Luc Van Oostenryck wrote:
+On 三, 2019-01-30 at 11:04 +0100, Daniel Lezcano wrote:
+> On 30/01/2019 10:25, Pi-Hsun Shih wrote:
 > > 
-> > This variable is declared as:
-> > 	static struct powerclamp_worker_data * __percpu worker_data;
-> > In other words, a percpu pointer to struct ...
+> > On Wed, Jan 30, 2019 at 3:44 PM Daniel Lezcano
+> > <daniel.lezcano@linaro.org> wrote:
+> > > 
+> > > 
+> > > On 30/01/2019 07:04, Peter Shih wrote:
+> > > > 
+> > > > Adding Michael Kao to cc list.
+> > > > 
+> > > > On Wed, Jan 9, 2019 at 1:57 PM Pi-Hsun Shih <pihsun@chromium.or
+> > > > g> wrote:
+> > > > > 
+> > > > > 
+> > > > > The mtk_thermal struct contains a 'struct mtk_thermal_bank
+> > > > > banks[];',
+> > > > > but the allocation only allocates sizeof(struct mtk_thermal)
+> > > > > bytes,
+> > > > > which cause out of bound access with the ->banks[] member.
+> > > > > Change it to
+> > > > > a fixed size array instead.
+> > > Even if the fix is correct, it pushes back the bug later in time
+> > > if a
+> > > new board containing more than MAX_NUM_ZONES is introduced. I
+> > > suggest to
+> > > dynamically allocate the array with the 'num_banks' value.
+> > > 
+> > For the current code structure, those mtk_thermal_data are
+> > statically declared,
+> > so if there's new board containing more than MAX_NUM_ZONES of
+> > bank_data, it
+> > would actually be a compile error.
 > > 
-> > But this variable not used like so but as a pointer to a percpu
-> > struct powerclamp_worker_data.
-> > 
-> > So fix the declaration as:
-> > 	static struct powerclamp_worker_data __percpu *worker_data;
-> > 
-> > This also quiets Sparse's warnings from __verify_pcpu_ptr(), like:
-> >   494:49: warning: incorrect type in initializer (different address
-> > spaces)
-> >   494:49:    expected void const [noderef] <asn:3> *__vpp_verify
-> >   494:49:    got struct powerclamp_worker_data *
-> > 
-> > Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-> > ---
-> >  drivers/thermal/intel/intel_powerclamp.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/thermal/intel/intel_powerclamp.c
-> > b/drivers/thermal/intel/intel_powerclamp.c
-> > index 7571f7c2e..c7cba20bd 100644
-> > --- a/drivers/thermal/intel/intel_powerclamp.c
-> > +++ b/drivers/thermal/intel/intel_powerclamp.c
-> > @@ -101,7 +101,7 @@ struct powerclamp_worker_data {
-> >  	bool clamping;
-> >  };
-> >  
-> > -static struct powerclamp_worker_data * __percpu worker_data;
-> > +static struct powerclamp_worker_data __percpu * worker_data;
-> Makes perfect sense. I wonder why I wrote it in the wrong order.
+> > I'm fine with either way, but feel like that this is simpler than
+> > manually
+> > calculating the size needed for allocation.
+> Right, I missed it can be caught at compile time.
 > 
-> Reviewed-by: Petr Mladek <pmladek@suse.com>
+> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-applied and queued for next -rc.
+As this is a bugfix, I will take it and queue it for next -rc.
 
 thanks,
 rui
-
-> Best Regards,
-> Petr
+> 
+> 
