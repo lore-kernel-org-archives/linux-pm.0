@@ -1,161 +1,204 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH v3 06/10] devicetree: bindings: Document first ROHM
- BD70528 bindings
-Date: Wed, 30 Jan 2019 12:53:44 -0600
-Message-ID: <20190130185344.GA14789@bogus>
-References: <cover.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
- <eb5d03f3adc72db580a10f95ff6cb07aefce5b47.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v2 1/5] PM / OPP: Introduce a power estimation helper
+Date: Wed, 30 Jan 2019 11:07:03 -0800
+Message-ID: <20190130190703.GM81583@google.com>
+References: <20190130170506.20450-1-quentin.perret@arm.com>
+ <20190130170506.20450-2-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <eb5d03f3adc72db580a10f95ff6cb07aefce5b47.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <20190130170506.20450-2-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 30, 2019 at 11:09:55AM +0200, Matti Vaittinen wrote:
-> Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
-> drivers) and 4 GPIO pins which can be configured for I/O or
-> as interrupt sources withe configurable trigger levels.
+Hi Quentin,
+
+On Wed, Jan 30, 2019 at 05:05:02PM +0000, Quentin Perret wrote:
+> The Energy Model (EM) framework provides an API to let drivers register
+> the active power of CPUs. The drivers are expected to provide a callback
+> method which estimates the power consumed by a CPU at each available
+> performance levels. How exactly this should be implemented, however,
+> depends on the platform.
 > 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> On some systems, PM_OPP knows the voltage and frequency at which CPUs
+> can run. When coupled with the CPU 'capacitance' (as provided by the
+> 'dynamic-power-coefficient' devicetree binding), it is possible to
+> estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
+> C its capacitance and V and f respectively the voltage and frequency of
+> the OPP. The Intelligent Power Allocator (IPA) thermal governor already
+> implements that estimation method, in the thermal framework.
+> 
+> However, this power estimation method can be applied to any platform
+> where all the parameters are known (C, V and f), and not only those
+> suffering thermal issues. As such, the code implementing this feature
+> can be re-used to also populate the EM framework now used by EAS.
+> 
+> As a first step, introduce in PM_OPP a helper function which CPUFreq
+> drivers can use to register into the EM framework. This duplicates the
+> power estimation done in IPA until it can be migrated to using the EM
+> framework. This will be done later, once the EM framework has support
+> for at least all platforms currently supported by IPA.
+> 
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> 
 > ---
->  .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 104 +++++++++++++++++++++
->  1 file changed, 104 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> new file mode 100644
-> index 000000000000..21801440a53a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> @@ -0,0 +1,104 @@
-> +* ROHM BD70528 Power Management Integrated Circuit bindings
-> +
-> +BD70528MWV is an ultra-low Iq general purpose single-chip power management IC
-> +for battery-powered portable devices. The IC integrates 3 ultra-low current
-> +consumption buck converters, 3 LDOs and 2 LED Drivers. Also included are 4
-> +GPIOs, a real-time clock (RTC), a 32kHz clock gate, high-accuracy VREF
-> +for use with an external ADC, flexible dual-input power path, 10 bits SAR ADC
-> +for battery temperature monitor and 1S battery charger with scalable charge
-> +currents.
-> +
-> +Required properties:
-> + - compatible		: Should be "rohm,bd70528"
-> + - reg			: I2C slave address.
-> + - interrupt-parent	: Phandle to the parent interrupt controller.
-
-Don't document this. It is implied and could be in a parent node.
-
-> + - interrupts		: The interrupt line the device is connected to.
-> + - interrupt-controller	: To indicate bd70528 acts as an interrupt controller.
-> + - #interrupt-cells	: Should be 2. usage is compliant to the 2 cells
-> +			  variant of ../interrupt-controller/interrupts.txt
-> + - gpio-controller	: To indicate bd70528 acts as a gpio controller.
-> + - #gpio-cells		: Should be 2. The first cell is the pin number and
-> +			  the second cell is used to specify flags. See
-> +			  ../gpio/gpio.txt for more information.
-> + - clock-frequency	: Should be 32768
-
-Forget to drop this?
-
-> + - #clock-cells		: Should be 0.
-> + - regulators:		: List of child nodes that specify the regulators.
-> +			  Please see ../regulator/rohm,bd70528-regulator.txt
-> +
-> +Optional properties:
-> + - clock-output-names	: Should contain name for output clock.
-> +
-> +Example:
-> +/* external oscillator */
-> +osc: oscillator {
-> +	compatible = "fixed-clock";
-> +	#clock-cells = <1>;
-> +	clock-frequency  = <32768>;
-> +	clock-output-names = "osc";
-> +};
-> +
-> +pmic: bd70528@4b {
-
-pmic@4b
-
-Node names should be generic.
-
-> +	compatible = "rohm,bd70528";
-> +	reg = <0x4b>;
-> +	interrupt-parent = <&gpio1>;
-> +	interrupts = <29 GPIO_ACTIVE_LOW>;
-> +	clocks = <&osc 0>;
-> +	#clock-cells = <0>;
-> +	clock-output-names = "bd70528-32k-out";
-> +	#gpio-cells = <2>;
-> +	gpio-controller;
-> +	interrupt-controller;
-> +	#interrupt-cells = <2>;
-> +
-> +	regulators {
-> +		buck1: BUCK1 {
-> +			regulator-name = "buck1";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3400000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck2: BUCK2 {
-> +			regulator-name = "buck2";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck3: BUCK3 {
-> +			regulator-name = "buck3";
-> +			regulator-min-microvolt = <800000>;
-> +			regulator-max-microvolt = <1800000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <250>;
-> +		};
-> +		ldo1: LDO1 {
-> +			regulator-name = "ldo1";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +		ldo2: LDO2 {
-> +			regulator-name = "ldo2";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +
-> +		ldo3: LDO3 {
-> +			regulator-name = "ldo3";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +		};
-> +		led_ldo1: LED_LDO1 {
-> +			regulator-name = "led_ldo1";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +		led_ldo2: LED_LDO2 {
-> +			regulator-name = "led_ldo2";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +	};
-> +};
-> -- 
-> 2.14.3
+> Matthias: Given this patch changed a bit I dropped your Reviewed-by and
+> Tested-by, but let me know if you think they still hold.
+> ---
+>  drivers/opp/of.c       | 88 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  6 +++
+>  2 files changed, 94 insertions(+)
 > 
-> 
-> -- 
-> Matti Vaittinen
-> ROHM Semiconductors Finland SWDC
-> Kiviharjunlenkki 1E
-> 90220 OULU
-> FINLAND
-> 
-> ~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index 06f0f632ec47..4c8bf172e9ed 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/pm_domain.h>
+>  #include <linux/slab.h>
+>  #include <linux/export.h>
+> +#include <linux/energy_model.h>
+
+nit: AFAIK typically alphabetical order is used for includes, though
+this file doesn't exactly adhere to it.
+
+>  #include "opp.h"
+>  
+> @@ -1047,3 +1048,90 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  	return of_node_get(opp->np);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
+> +
+> +/*
+> + * Callback function provided to the Energy Model framework upon registration.
+> + * This computes the power estimated by @CPU at the first OPP above @kHz (ceil),
+
+that's not entirely correct, it could be the OPP at @kHz.
+
+> + * and updates @kHz and @mW accordingly. The power is estimated as
+> + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
+> + * the voltage and frequency of the OPP.
+> + *
+> + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> + * calculation failed because of missing parameters, 0 otherwise.
+> + */
+> +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
+> +					 int cpu)
+
+why __maybe_unused?
+
+> +{
+> +	struct device *cpu_dev;
+> +	struct dev_pm_opp *opp;
+> +	struct device_node *np;
+> +	unsigned long mV, Hz;
+> +	u32 cap;
+> +	u64 tmp;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return -EINVAL;
+> +
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	Hz = *kHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> +	dev_pm_opp_put(opp);
+> +	if (!mV)
+> +		return -EINVAL;
+> +
+> +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
+> +	do_div(tmp, 1000000000);
+> +
+> +	*mW = (unsigned long)tmp;
+> +	*kHz = Hz / 1000;
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
+> + * @cpus	: CPUs for which an Energy Model has to be registered
+> + * @nr_opp	: Number of OPPs to register in the Energy Model
+> + *
+> + * This checks whether the "dynamic-power-coefficient" devicetree binding has
+
+s/binding/property/ ?
+
+> + * been specified, and tries to register an Energy Model with it if it has.
+> + */
+> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+
+Is the nr_opp parameter really needed? The function looks up the CPU
+device and hence could determine the OPP count itself with
+dev_pm_opp_get_opp_count(). I see most cpufreq drivers call
+dev_pm_opp_get_opp_count() anyway, so passing the count as parameter
+can be considered a small optimization, not sure how relevant it is
+though, since dev_pm_opp_of_register_em() isn't called frequently.
+
+> +{
+> +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
+> +	int ret, cpu = cpumask_first(cpus);
+> +	struct device *cpu_dev;
+> +	struct device_node *np;
+> +	u32 cap;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return;
+> +
+> +	/* Don't register an EM without the right DT binding */
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret || !cap)
+> +		return;
+> +
+> +	em_register_perf_domain(cpus, nr_opp, &em_cb);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index b895f4e79868..58ae08b024bd 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+>  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+>  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
+>  int of_get_required_opp_performance_state(struct device_node *np, int index);
+> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp);
+>  #else
+>  static inline int dev_pm_opp_of_add_table(struct device *dev)
+>  {
+> @@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  {
+>  	return NULL;
+>  }
+> +
+> +static inline void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+> +{
+> +}
+> +
+>  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
+>  {
+>  	return -ENOTSUPP;
+
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
