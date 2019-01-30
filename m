@@ -1,279 +1,74 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [RFC PATCH v3 10/10] watchdog: bd70528: Initial support for ROHM
- BD70528 watchdog block
-Date: Wed, 30 Jan 2019 11:22:50 +0200
-Message-ID: <b8d625a56d206dd6458c8f9495be4fdef0d10ebe.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
+From: Pi-Hsun Shih <pihsun@chromium.org>
+Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
+Date: Wed, 30 Jan 2019 17:25:27 +0800
+Message-ID: <CANdKZ0eDwTgKoFsAOboCz=q+nsUWepecXA7wmR=jGhkWEzLvnA@mail.gmail.com>
+References: <20190109055724.184692-1-pihsun@chromium.org>
+ <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
+ <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
-Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com, Eduardo Valentin <edubezval@gmail.com>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Initial support for watchdog block included in ROHM BD70528
-power management IC.
-
-Configurations for low power states are still to be checked.
-
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
----
-
-I decided to see how it looks if I don't include the MFD data
-pointer to struct wdtbd70528 and if I just use lock pointer
-and offset_of() when I need the struct bd70528.
-
-By the way, the WDG provides an IRQ - would it be nice to
-get a print spilled out if the dog barks? There's some small
-delay after interrupt before the power goes down, so the print
-_might_ make it to the log (depending on system of course).
-
- drivers/watchdog/Kconfig       |  12 +++
- drivers/watchdog/Makefile      |   1 +
- drivers/watchdog/bd70528_wdt.c | 187 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 200 insertions(+)
- create mode 100644 drivers/watchdog/bd70528_wdt.c
-
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 57f017d74a97..f30e3a3e886e 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
- 	  watchdog. Be aware that governors might affect the watchdog because it
- 	  is purely software, e.g. the panic governor will stall it!
- 
-+config BD70528_WATCHDOG
-+	tristate "ROHM BD70528 PMIC Watchdog"
-+	depends on MFD_ROHM_BD70528
-+	select WATCHDOG_CORE
-+	help
-+	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
-+	  cause system reset.
-+
-+	  Say Y here to include support for the ROHM BD70528 watchdog.
-+	  Alternatively say M to compile the driver as a module,
-+	  which will be called bd70528_wdt.
-+
- config DA9052_WATCHDOG
- 	tristate "Dialog DA9052 Watchdog"
- 	depends on PMIC_DA9052 || COMPILE_TEST
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index a0917ef28e07..1ce87a3b1172 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
- obj-$(CONFIG_XEN_WDT) += xen_wdt.o
- 
- # Architecture Independent
-+obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
- obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
- obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
- obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
-diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
-new file mode 100644
-index 000000000000..c24d4cce5e9c
---- /dev/null
-+++ b/drivers/watchdog/bd70528_wdt.c
-@@ -0,0 +1,187 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 ROHM Semiconductors
-+// ROHM BD70528MWV watchdog driver
-+
-+#include <linux/bcd.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/rohm-bd70528.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/watchdog.h>
-+
-+struct wdtbd70528 {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct mutex *rtc_lock;
-+	struct watchdog_device wdt;
-+};
-+
-+static int bd70528_wdt_set_locked(struct wdtbd70528 *w, int enable)
-+{
-+	struct bd70528 *bd70528;
-+
-+	bd70528 = container_of(w->rtc_lock, struct bd70528, rtc_timer_lock);
-+	return bd70528->wdt_set(bd70528, enable, NULL);
-+}
-+static int bd70528_wdt_set(struct wdtbd70528 *w, int enable)
-+{
-+	int ret;
-+
-+	mutex_lock(w->rtc_lock);
-+	ret = bd70528_wdt_set_locked(w, enable);
-+	mutex_unlock(w->rtc_lock);
-+
-+	return ret;
-+}
-+
-+static int bd70528_wdt_start(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	dev_dbg(w->dev, "WDT ping...\n");
-+	return bd70528_wdt_set(w, 1);
-+}
-+
-+static int bd70528_wdt_stop(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	dev_dbg(w->dev, "WDT stopping...\n");
-+	return bd70528_wdt_set(w, 0);
-+}
-+
-+static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
-+				    unsigned int timeout)
-+{
-+	unsigned int hours;
-+	unsigned int minutes;
-+	unsigned int seconds;
-+	int ret;
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	seconds = timeout;
-+	hours = timeout / (60 * 60);
-+	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
-+	if (hours)
-+		seconds -= (60 * 60);
-+	minutes = seconds / 60;
-+	seconds = seconds % 60;
-+
-+	mutex_lock(w->rtc_lock);
-+
-+	ret = bd70528_wdt_set_locked(w, 0);
-+	if (ret)
-+		goto out_unlock;
-+
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_HOUR,
-+				 BD70528_MASK_WDT_HOUR, hours);
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT hours\n");
-+		goto out_en_unlock;
-+	}
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_MINUTE,
-+				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT minutes\n");
-+		goto out_en_unlock;
-+	}
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_SEC,
-+				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
-+	if (ret)
-+		dev_err(w->dev, "Failed to set WDT seconds\n");
-+	else
-+		dev_dbg(w->dev, "WDT tmo set to %u\n", timeout);
-+
-+out_en_unlock:
-+	ret = bd70528_wdt_set_locked(w, 1);
-+out_unlock:
-+	mutex_unlock(w->rtc_lock);
-+
-+	return ret;
-+}
-+
-+static const struct watchdog_info bd70528_wdt_info = {
-+	.identity = "bd70528-wdt",
-+	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
-+};
-+
-+static const struct watchdog_ops bd70528_wdt_ops = {
-+	.start		= bd70528_wdt_start,
-+	.stop		= bd70528_wdt_stop,
-+	.set_timeout	= bd70528_wdt_set_timeout,
-+};
-+
-+/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
-+#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
-+/* Minimum time is 1 second */
-+#define WDT_MIN_MS 1000
-+#define DEFAULT_TIMEOUT 60
-+
-+static int bd70528_wdt_probe(struct platform_device *pdev)
-+{
-+	struct bd70528 *bd70528;
-+	struct wdtbd70528 *w;
-+	int ret;
-+	unsigned int reg;
-+
-+	bd70528 = dev_get_drvdata(pdev->dev.parent);
-+	if (!bd70528) {
-+		dev_err(&pdev->dev, "No MFD driver data\n");
-+		return -EINVAL;
-+	}
-+	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
-+	if (!w)
-+		return -ENOMEM;
-+
-+	w->regmap = bd70528->chip.regmap;
-+	w->rtc_lock = &bd70528->rtc_timer_lock;
-+	w->dev = &pdev->dev;
-+
-+	w->wdt.info = &bd70528_wdt_info;
-+	w->wdt.ops =  &bd70528_wdt_ops;
-+	w->wdt.min_hw_heartbeat_ms = WDT_MIN_MS;
-+	w->wdt.max_hw_heartbeat_ms = WDT_MAX_MS;
-+	w->wdt.parent = pdev->dev.parent;
-+	w->wdt.timeout = DEFAULT_TIMEOUT;
-+	watchdog_set_drvdata(&w->wdt, w);
-+	watchdog_init_timeout(&w->wdt, 0, pdev->dev.parent);
-+
-+	ret = bd70528_wdt_set_timeout(&w->wdt, w->wdt.timeout);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
-+		return ret;
-+	}
-+
-+	mutex_lock(w->rtc_lock);
-+	ret = regmap_read(w->regmap, BD70528_REG_WDT_CTRL, &reg);
-+	mutex_unlock(w->rtc_lock);
-+
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to get the watchdog state\n");
-+		return ret;
-+	}
-+	if (reg & BD70528_MASK_WDT_EN) {
-+		dev_dbg(&pdev->dev, "watchdog was running during probe\n");
-+		set_bit(WDOG_HW_RUNNING, &w->wdt.status);
-+	}
-+
-+	ret = devm_watchdog_register_device(&pdev->dev, &w->wdt);
-+	if (ret < 0)
-+		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
-+
-+	return ret;
-+}
-+static struct platform_driver bd70528_wdt = {
-+	.driver = {
-+		.name = "bd70528-wdt"
-+	},
-+	.probe = bd70528_wdt_probe,
-+};
-+
-+module_platform_driver(bd70528_wdt);
-+
-+MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
-+MODULE_DESCRIPTION("BD70528 watchdog driver");
-+MODULE_LICENSE("GPL");
--- 
-2.14.3
-
-
--- 
-Matti Vaittinen
-ROHM Semiconductors Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+T24gV2VkLCBKYW4gMzAsIDIwMTkgYXQgMzo0NCBQTSBEYW5pZWwgTGV6Y2Fubwo8ZGFuaWVsLmxl
+emNhbm9AbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBPbiAzMC8wMS8yMDE5IDA3OjA0LCBQZXRlciBT
+aGloIHdyb3RlOgo+ID4gQWRkaW5nIE1pY2hhZWwgS2FvIHRvIGNjIGxpc3QuCj4gPgo+ID4gT24g
+V2VkLCBKYW4gOSwgMjAxOSBhdCAxOjU3IFBNIFBpLUhzdW4gU2hpaCA8cGloc3VuQGNocm9taXVt
+Lm9yZz4gd3JvdGU6Cj4gPj4KPiA+PiBUaGUgbXRrX3RoZXJtYWwgc3RydWN0IGNvbnRhaW5zIGEg
+J3N0cnVjdCBtdGtfdGhlcm1hbF9iYW5rIGJhbmtzW107JywKPiA+PiBidXQgdGhlIGFsbG9jYXRp
+b24gb25seSBhbGxvY2F0ZXMgc2l6ZW9mKHN0cnVjdCBtdGtfdGhlcm1hbCkgYnl0ZXMsCj4gPj4g
+d2hpY2ggY2F1c2Ugb3V0IG9mIGJvdW5kIGFjY2VzcyB3aXRoIHRoZSAtPmJhbmtzW10gbWVtYmVy
+LiBDaGFuZ2UgaXQgdG8KPiA+PiBhIGZpeGVkIHNpemUgYXJyYXkgaW5zdGVhZC4KPgo+IEV2ZW4g
+aWYgdGhlIGZpeCBpcyBjb3JyZWN0LCBpdCBwdXNoZXMgYmFjayB0aGUgYnVnIGxhdGVyIGluIHRp
+bWUgaWYgYQo+IG5ldyBib2FyZCBjb250YWluaW5nIG1vcmUgdGhhbiBNQVhfTlVNX1pPTkVTIGlz
+IGludHJvZHVjZWQuIEkgc3VnZ2VzdCB0bwo+IGR5bmFtaWNhbGx5IGFsbG9jYXRlIHRoZSBhcnJh
+eSB3aXRoIHRoZSAnbnVtX2JhbmtzJyB2YWx1ZS4KPgoKRm9yIHRoZSBjdXJyZW50IGNvZGUgc3Ry
+dWN0dXJlLCB0aG9zZSBtdGtfdGhlcm1hbF9kYXRhIGFyZSBzdGF0aWNhbGx5IGRlY2xhcmVkLApz
+byBpZiB0aGVyZSdzIG5ldyBib2FyZCBjb250YWluaW5nIG1vcmUgdGhhbiBNQVhfTlVNX1pPTkVT
+IG9mIGJhbmtfZGF0YSwgaXQKd291bGQgYWN0dWFsbHkgYmUgYSBjb21waWxlIGVycm9yLgoKSSdt
+IGZpbmUgd2l0aCBlaXRoZXIgd2F5LCBidXQgZmVlbCBsaWtlIHRoYXQgdGhpcyBpcyBzaW1wbGVy
+IHRoYW4gbWFudWFsbHkKY2FsY3VsYXRpbmcgdGhlIHNpemUgbmVlZGVkIGZvciBhbGxvY2F0aW9u
+LgoKPgo+ID4+IFNpZ25lZC1vZmYtYnk6IFBpLUhzdW4gU2hpaCA8cGloc3VuQGNocm9taXVtLm9y
+Zz4KPiA+PiAtLS0KPiA+PiAgZHJpdmVycy90aGVybWFsL210a190aGVybWFsLmMgfCA3ICsrKysr
+LS0KPiA+PiAgMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkK
+PiA+Pgo+ID4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvbXRrX3RoZXJtYWwuYyBiL2Ry
+aXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1hbC5jCj4gPj4gaW5kZXggMDY5MWYyNjBmNmVhYmUuLmVh
+MTFlZGIzZmNjZWQ2IDEwMDY0NAo+ID4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1h
+bC5jCj4gPj4gKysrIGIvZHJpdmVycy90aGVybWFsL210a190aGVybWFsLmMKPiA+PiBAQCAtMTU5
+LDYgKzE1OSw5IEBACj4gPj4gICNkZWZpbmUgTVQ3NjIyX05VTV9TRU5TT1JTX1BFUl9aT05FICAg
+IDEKPiA+PiAgI2RlZmluZSBNVDc2MjJfVFMxICAgICAwCj4gPj4KPiA+PiArLyogVGhlIG1heGlt
+dW0gbnVtYmVyIG9mIGJhbmtzICovCj4gPj4gKyNkZWZpbmUgTUFYX05VTV9aT05FUyAgICAgICAg
+ICA4Cj4gPj4gKwo+ID4+ICBzdHJ1Y3QgbXRrX3RoZXJtYWw7Cj4gPj4KPiA+PiAgc3RydWN0IHRo
+ZXJtYWxfYmFua19jZmcgewo+ID4+IEBAIC0xNzgsNyArMTgxLDcgQEAgc3RydWN0IG10a190aGVy
+bWFsX2RhdGEgewo+ID4+ICAgICAgICAgY29uc3QgaW50ICpzZW5zb3JfbXV4X3ZhbHVlczsKPiA+
+PiAgICAgICAgIGNvbnN0IGludCAqbXNyOwo+ID4+ICAgICAgICAgY29uc3QgaW50ICphZGNwbnA7
+Cj4gPj4gLSAgICAgICBzdHJ1Y3QgdGhlcm1hbF9iYW5rX2NmZyBiYW5rX2RhdGFbXTsKPiA+PiAr
+ICAgICAgIHN0cnVjdCB0aGVybWFsX2JhbmtfY2ZnIGJhbmtfZGF0YVtNQVhfTlVNX1pPTkVTXTsK
+PiA+PiAgfTsKPiA+Pgo+ID4+ICBzdHJ1Y3QgbXRrX3RoZXJtYWwgewo+ID4+IEBAIC0xOTcsNyAr
+MjAwLDcgQEAgc3RydWN0IG10a190aGVybWFsIHsKPiA+PiAgICAgICAgIHMzMiB2dHNbTVQ4MTcz
+X05VTV9TRU5TT1JTXTsKPiA+Pgo+ID4+ICAgICAgICAgY29uc3Qgc3RydWN0IG10a190aGVybWFs
+X2RhdGEgKmNvbmY7Cj4gPj4gLSAgICAgICBzdHJ1Y3QgbXRrX3RoZXJtYWxfYmFuayBiYW5rc1td
+Owo+ID4+ICsgICAgICAgc3RydWN0IG10a190aGVybWFsX2JhbmsgYmFua3NbTUFYX05VTV9aT05F
+U107Cj4gPj4gIH07Cj4gPj4KPiA+PiAgLyogTVQ4MTczIHRoZXJtYWwgc2Vuc29yIGRhdGEgKi8K
+PiA+PiAtLQo+ID4+IDIuMjAuMS45Ny5nODExODhkOTNjMy1nb29nCj4gPj4KPgo+Cj4gLS0KPiAg
+PGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3
+YXJlIGZvciBBUk0gU29Dcwo+Cj4gRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29r
+LmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xp
+bmFyb29yZz4gVHdpdHRlciB8Cj4gPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+
+IEJsb2cKPgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
+YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
+dXgtYXJtLWtlcm5lbAo=
