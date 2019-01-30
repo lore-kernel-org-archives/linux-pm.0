@@ -1,73 +1,49 @@
-From: Jerry Hoemann <jerry.hoemann@hpe.com>
-Subject: Re: [RFC PATCH v2 08/10] rtc: bd70528: Initial support for ROHM
- bd70528 RTC
-Date: Tue, 29 Jan 2019 17:24:04 -0700
-Message-ID: <20190130002404.GA19729@anatevka>
-References: <20190125110536.GA29321@localhost.localdomain>
- <35bbc5b9-5f8c-ec80-3eaa-bb2c0e2812c9@roeck-us.net>
- <20190128202656.GA17466@anatevka>
- <20190129070103.GA2551@localhost.localdomain>
-Reply-To: Jerry.Hoemann@hpe.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/7] cpufreq: dt: Register an Energy Model
+Date: Wed, 30 Jan 2019 10:48:06 +0530
+Message-ID: <20190130051806.fdsos27jaekkwgbs@vireshk-i7>
+References: <20190128165522.31749-1-quentin.perret@arm.com>
+ <20190128165522.31749-3-quentin.perret@arm.com>
+ <20190128193656.GI81583@google.com>
+ <20190129052144.plicqu4vozh3l3ss@vireshk-i7>
+ <20190129091546.tfh3lo4w4sosfuba@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190129070103.GA2551@localhost.localdomain>
+In-Reply-To: <20190129091546.tfh3lo4w4sosfuba@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Matthias Kaehlcke <mka@chromium.org>, rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 29, 2019 at 09:01:03AM +0200, Matti Vaittinen wrote:
-> On Mon, Jan 28, 2019 at 01:26:56PM -0700, Jerry Hoemann wrote:
-> > On Sat, Jan 26, 2019 at 08:30:24AM -0800, Guenter Roeck wrote:
-> > > On 1/25/19 3:05 AM, Matti Vaittinen wrote:
-> > > > +static int bd70528_set_wake(struct bd70528 *bd70528,
-> > > > +			    int enable, int *old_state)
-> > > > +{
-> > > > +	int ret;
-> > > > +	unsigned int ctrl_reg;
-> > > > +
-> > > > +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WAKE_EN, &ctrl_reg);
-> > > > +	if (ret)
-> > > > +		return ret;
-> > > > +
-> > > > +	if (old_state) {
-> > > > +		if (ctrl_reg & BD70528_MASK_WAKE_EN)
-> > > > +			*old_state |= BD70528_WAKE_STATE_BIT;
-> > > > +		else
-> > > > +			*old_state &= ~BD70528_WAKE_STATE_BIT;
-> > > > +
-> > > > +		if ((!enable) == (!(*old_state & BD70528_WAKE_STATE_BIT)))
-> > > > +			return 0;
-> > > 
-> > > I think
-> > > 		if (enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
-> > > would be much better readable. Even if not, there are way too many ()
-> > > in the above conditional.
-> > > 
+On 29-01-19, 09:15, Quentin Perret wrote:
+> On Tuesday 29 Jan 2019 at 10:51:44 (+0530), Viresh Kumar wrote:
+> > On 28-01-19, 11:36, Matthias Kaehlcke wrote:
+> > > I think this patch will result in error messages at registration on
+> > > platforms that use the cpufreq-dt driver and don't specify
+> > > 'dynamic-power-coefficient' for the CPUs in the DT. Not sure if that's
+> > > a problem as long as the cpufreq initialization succeeds regardless,
+> > > it could be seen as a not-so-gentle nudge to add the values.
 > > 
-> > The substitution is not equivalent to original.  I think you mean:
-> > 
-> >  		if (!!enable == !!(*old_state & BD70528_WAKE_STATE_BIT))
+> > That wouldn't be acceptable.
 > 
-> Thanks Jerry! Good catch! I originally wanted that all non-zero values
-> of 'enable' would be 'true'. So maybe I just use the original approach
-> but get rid of extra parenthesis which were pointed out by Guenter.
-> 
-> 		if (!enable == !(*old_state & BD70528_WAKE_STATE_BIT))
-> should do it just fine, right?
-> 
+> Fair enough. What I can propose in this case is to have in PM_OPP a
+> helper called 'dev_pm_opp_of_register_em()' or something like this. This
+> function will check all prerequisites are present (we have the right
+> values in DT, and so on) and then call (or not) em_register_perf_domain().
+> Then we can make the CPUFreq drivers use that instead of calling
+> em_register_perf_domain() directly.
 
-The use of "!!" to turn an int into one of two Boolean values (0 | 1)
-is used extensively in Linux and as such might make the intent of
-the code a bit clearer which I take as checking to see the states
-match.
+That should be fine.
 
-But, I will defer to you and Guenter on the question.
+> That would also make it easy to implement Matthias' suggestion to not
+> call em_register_perf_domain() if an EM is already present.
+
+So you will track registration state within the OPP core for that ?
+Sorry but that doesn't sound right. What's wrong with having an
+unregister helper in energy-model to keep proper code flow everywhere
+?
 
 -- 
-
------------------------------------------------------------------------------
-Jerry Hoemann                  Software Engineer   Hewlett Packard Enterprise
------------------------------------------------------------------------------
+viresh
