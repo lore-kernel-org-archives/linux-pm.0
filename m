@@ -1,48 +1,210 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: poll_state: Fix default time limit.
-Date: Wed, 30 Jan 2019 22:59:08 +0100
-Message-ID: <CAJZ5v0iXNfn9Bn7V-XApb6A3D43hsmir0m7zCyG5Rky=qAbZmA@mail.gmail.com>
-References: <1548865702-3524-1-git-send-email-dsmythies@telus.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC cpufreq
+Date: Thu, 31 Jan 2019 00:42:41 +0100
+Message-ID: <5822895.TaUaiHzPlI@aspire.rjw.lan>
+References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548865702-3524-1-git-send-email-dsmythies@telus.net>
+In-Reply-To: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <doug.smythies@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Cc: viresh.kumar@linaro.org, robert.moore@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 30, 2019 at 5:29 PM Doug Smythies <doug.smythies@gmail.com> wrote:
->
-> The default time is declared in units of microsecnds,
-> but is used as nano seconds, resulting in significant
-> accounting errors for idle state 0 time when all idle
-> states deeper than 0 are disabled.
->
-> Under these unusual conditions, we don't really care
-> about the poll time limit anyhow.
->
-> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+On Thursday, January 17, 2019 12:00:11 PM CET Xiongfeng Wang wrote:
+> Hisilicon chips do not support delivered performance counter register
+> and reference performance counter register. But the platform can
+> calculate the real performance using its own method. This patch provide
+> a workaround for this problem, and other platforms can also use this
+> workaround framework. We reuse the desired performance register to
+> store the real performance calculated by the platform. After the
+> platform finished the frequency adjust, it gets the real performance and
+> writes it into desired performance register. OS can use it to calculate
+> the real frequency.
+> 
+> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+
+Overall, I would do it differently.
+
 > ---
->  drivers/cpuidle/poll_state.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-> index b17d153..23a1b27 100644
-> --- a/drivers/cpuidle/poll_state.c
-> +++ b/drivers/cpuidle/poll_state.c
-> @@ -21,7 +21,7 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
->         local_irq_enable();
->         if (!current_set_polling_and_test()) {
->                 unsigned int loop_count = 0;
-> -               u64 limit = TICK_USEC;
-> +               u64 limit = TICK_NSEC;
+>  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
+>  drivers/cpufreq/Kconfig.arm    |  7 +++++
+>  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
+>  include/acpi/cppc_acpi.h       |  4 +++
+>  4 files changed, 102 insertions(+)
+> 
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 217a782..0cdaf7e 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
+>  	return ret_val;
+>  }
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +/*
+> + * We reuse the desired performance register to store the real performance
+> + * calculated by the platform.
+> + */
+> +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
+> +{
+> +	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+> +	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> +	struct cpc_register_resource *desired_reg;
+> +	u64 desired_perf;
+> +	int ret;
+> +
+> +	/*
+> +	 * Make sure the platform has finished the frequency adjust
+> +	 * and wrote the real performance in desired performance register
+> +	 */
+> +	ret = check_pcc_chan(pcc_ss_id, false);
+> +	if (ret)
+> +		return 0;
+> +
+> +	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
+> +	cpc_read(cpunum, desired_reg, &desired_perf);
+> +
+> +	return desired_perf;
+> +}
+> +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
+> +#endif
 
-Good catch!
+I would provide library routine to read desired_perf and it doesn't
+need to have anything to do with HiSi at this level.  Also, it doesn't
+need to be compiled conditionally.  Just call it cppc_get_desired_perf()
+or similar.
 
->                 int i;
->
->                 for (i = 1; i < drv->state_count; i++) {
-> --
+Then, you can use it to implement the quirk in the cpufreq driver.
 
-Applied, thanks!
+> +
+>  /**
+>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
+>   * @cpunum: CPU from which to get capabilities info.
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 688f102..236bd07 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
+>  
+>  	  If in doubt, say N.
+>  
+> +config HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +	bool "Workaround for Hisilicon CPPC Cpufreq"
+
+What is the reason for this to be a user-selectable option?
+
+> +	default y
+> +	depends on ACPI_CPPC_CPUFREQ && ARM64
+> +	help
+> +	  This option enables a workaround for Hisilicon CPPC Cpufreq.
+> +
+>  config ARM_ARMADA_37XX_CPUFREQ
+>  	tristate "Armada 37xx CPUFreq support"
+>  	depends on ARCH_MVEBU && CPUFREQ_DT
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index fd25c21c..b910e84 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -33,6 +33,13 @@
+>  /* Offest in the DMI processor structure for the max frequency */
+>  #define DMI_PROCESSOR_MAX_SPEED  0x14
+>  
+> +struct cppc_get_rate_workaround_info {
+> +	char oem_id[ACPI_OEM_ID_SIZE +1];
+> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
+> +	u32 oem_revision;
+> +	unsigned int (*get)(unsigned int cpu);
+> +};
+> +
+>  /*
+>   * These structs contain information parsed from per CPU
+>   * ACPI _CPC structures.
+> @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
+>  	.name = "cppc_cpufreq",
+>  };
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +/*
+> + * When the platform does not support delivered performance counter or
+> + * reference performance counter, it can calculate the performance using the
+> + * platform specific mechanism. We reuse the desired performance register to
+> + * store the real performance calculated by the platform.
+> + */
+> +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
+> +{
+> +	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
+> +	u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
+> +
+> +	return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
+> +}
+> +#endif
+> +
+> +static struct cppc_get_rate_workaround_info wa_info[] = {
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +	{
+> +		.oem_id		= "HISI  ",
+> +		.oem_table_id	= "HIP07   ",
+> +		.oem_revision	= 0,
+> +		.get = hisi_cppc_cpufreq_get_rate,
+> +	},
+> +	{
+> +		.oem_id		= "HISI  ",
+> +		.oem_table_id	= "HIP08   ",
+> +		.oem_revision	= 0,
+> +		.get = hisi_cppc_cpufreq_get_rate,
+> +	},
+> +#endif
+
+Is this #ifdef really necessary?
+
+> +	{},
+> +};
+> +
+> +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
+> +{
+> +	struct acpi_table_header *tbl;
+> +	acpi_status status = AE_OK;
+> +	int i;
+> +
+> +	status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
+> +	if (ACPI_FAILURE(status) || !tbl)
+> +		return;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
+> +		if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
+> +		    !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
+> +		    wa_info[i].oem_revision == tbl->oem_revision) {
+> +			cppc_cpufreq_driver->get = wa_info[i].get;
+> +			return;
+> +		}
+> +	}
+> +}
+>  static int __init cppc_cpufreq_init(void)
+>  {
+>  	int i, ret = 0;
+> @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
+>  		goto out;
+>  	}
+>  
+> +	cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
+> +
+>  	ret = cpufreq_register_driver(&cppc_cpufreq_driver);
+>  	if (ret)
+>  		goto out;
+> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> index 4f34734..be7400b 100644
+> --- a/include/acpi/cppc_acpi.h
+> +++ b/include/acpi/cppc_acpi.h
+> @@ -146,4 +146,8 @@ struct cppc_cpudata {
+>  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
+>  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+>  
+> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
+> +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
+> +#endif
+> +
+>  #endif /* _CPPC_ACPI_H*/
+> 
