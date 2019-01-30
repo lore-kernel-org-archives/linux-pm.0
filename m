@@ -1,60 +1,59 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 2/7] cpufreq: dt: Register an Energy Model
-Date: Wed, 30 Jan 2019 10:20:45 +0000
-Message-ID: <20190130102042.uwxpsep5vmeq4h62@queper01-lin>
+Subject: Re: [PATCH 6/7] arm64: dts: juno: Add cpu dynamic-power-coefficient
+ information
+Date: Wed, 30 Jan 2019 10:23:13 +0000
+Message-ID: <20190130102311.6ayym7bbo4lvlezl@queper01-lin>
 References: <20190128165522.31749-1-quentin.perret@arm.com>
- <20190128165522.31749-3-quentin.perret@arm.com>
- <20190128193656.GI81583@google.com>
- <20190129052144.plicqu4vozh3l3ss@vireshk-i7>
- <20190129091546.tfh3lo4w4sosfuba@queper01-lin>
- <20190130051806.fdsos27jaekkwgbs@vireshk-i7>
- <20190130091055.zjj2jrjvi2n3ht66@queper01-lin>
- <20190130101715.nz2bpqnust7gv4at@vireshk-i7>
+ <20190128165522.31749-7-quentin.perret@arm.com>
+ <20190129152735.GA24772@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190130101715.nz2bpqnust7gv4at@vireshk-i7>
+In-Reply-To: <20190129152735.GA24772@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 30 Jan 2019 at 15:47:15 (+0530), Viresh Kumar wrote:
-> On 30-01-19, 09:12, Quentin Perret wrote:
-> > What I had in mind is something as simple as:
-> > 
-> > 	void of_dev_pm_opp_register_em(struct cpumask *cpus)
-> > 	{
-> > 		/* Bail out if an EM is there */
-> > 		if (em_cpu_get(cpumask_first(cpus)))
-> > 			return;
-> > 
-> > 		/* Check prerequisites: dpc coeff in DT, ... */
-> > 		...
-> > 
-> > 		em_register_perf_domain(...);
-> > 	}
-> > 
-> > IIUC, Matthias' point was that if the EM is already registered, there is
-> > no good reason to call em_register_perf_domain() again. Now, that should
-> > in fact be harmless because em_register_perf_domain() already does that
-> > check. It's just cleaner and easier to understand from a conceptual
-> > standpoint to not call that function several times for no reason I
-> > assume.
+On Tuesday 29 Jan 2019 at 15:27:35 (+0000), Sudeep Holla wrote:
+> On Mon, Jan 28, 2019 at 04:55:21PM +0000, Quentin Perret wrote:
+> > From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> >
+> > A CPUfreq driver, like the scpi driver used on Juno boards, which
+> > provide the Energy Model with power cost information via the PM_OPP
+> > of_dev_pm_opp_get_cpu_power() function, do need the
+> > dynamic-power-coefficient (C) in the device tree.
+> >
+> > Method used to obtain the C value:
+> > C is computed by measuring energy (E) consumption of a frequency domain
+> > (FD) over a 10s runtime (t) sysbench workload running at each Operating
+> > Performance Point (OPP) affine to 1 or 2 CPUs of that FD while the other
+> > CPUs of the system are hotplugged out.
+> > By definition all CPUs of a FD have the the same micro-architecture. An
+> > OPP is characterized by a certain frequency (f) and voltage (V) value.
+> > The corresponding power values (P) are calculated by dividing the delta
+> > of the E values between the runs with 2 and 1 CPUs by t.
+> >
+> > With n data tuples (P, f, V), n equal to number of OPPs for this
+> > frequency domain, we can solve C by:
+> >
+> > P = Pstat + Pdyn
+> >
+> > P = Pstat + CV²f
+> >
+> > Cx = (Px - P1)/(Vx²fx - V1²f1) with x = {2, ..., n}
+> >
+> > The C value is the arithmetic mean out of {C2, ..., Cn}.
+> >
+> > Since DVFS is broken on Juno r1, no dynamic-power-coefficient
+> > information has been added to its dts file.
+> >
 > 
-> If there is no good reason to call em_register_perf_domain() several
-> times, then the same applies to of_dev_pm_opp_register_em() as well,
-> isn't it ?
+> Since the binding for "dynamic-power-coefficient" property already exist,
+> and I don't see any dependency for this and the next patch(TC2) on this
+> series, I will apply them. Please shout if for any reason that's not true.
 
-Hrmpf, that is true ... :-)
-
-> This is init code anyway isn't going to run a lot, so I wouldn't
-> suggest adding any such (duplicate) checks in
-> of_dev_pm_opp_register_em().
-
-Fair enough, I'll post a v2 w/o the check and we'll see if others have
-complaints.
-
-Thanks,
+Thanks Sudeep !
 Quentin
