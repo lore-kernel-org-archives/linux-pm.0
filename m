@@ -1,80 +1,28 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: fix __percpu declaration of
- worker_data
-Date: Wed, 30 Jan 2019 21:42:18 +0800
-Message-ID: <1548855738.2161.5.camel@intel.com>
-References: <20190119161523.87999-1-luc.vanoostenryck@gmail.com>
-         <20190130095917.7uxdxrjvtaeydcol@pathway.suse.cz>
-         <1548855476.2161.2.camel@intel.com>
+From: Stephan Mueller <smueller@chronox.de>
+Subject: Re: [PATCH v2 0/6] General Key Derivation Function Support
+Date: Wed, 30 Jan 2019 15:39:10 +0100
+Message-ID: <12103603.N4N57GesWC@tauon.chronox.de>
+References: <20190103143227.9138-1-jlee@suse.com> <5418064.ltLFQScYi2@tauon.chronox.de> <20190130100854.iey2mbmz6777pn2n@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548855476.2161.2.camel@intel.com>
+In-Reply-To: <20190130100854.iey2mbmz6777pn2n@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>, Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 三, 2019-01-30 at 21:37 +0800, Zhang Rui wrote:
-> On 三, 2019-01-30 at 10:59 +0100, Petr Mladek wrote:
-> > 
-> > On Sat 2019-01-19 17:15:23, Luc Van Oostenryck wrote:
-> > > 
-> > > 
-> > > This variable is declared as:
-> > > 	static struct powerclamp_worker_data * __percpu worker_data;
-> > > In other words, a percpu pointer to struct ...
-> > > 
-> > > But this variable not used like so but as a pointer to a percpu
-> > > struct powerclamp_worker_data.
-> > > 
-> > > So fix the declaration as:
-> > > 	static struct powerclamp_worker_data __percpu *worker_data;
-> > > 
-> > > This also quiets Sparse's warnings from __verify_pcpu_ptr(),
-> > > like:
-> > >   494:49: warning: incorrect type in initializer (different
-> > > address
-> > > spaces)
-> > >   494:49:    expected void const [noderef] <asn:3> *__vpp_verify
-> > >   494:49:    got struct powerclamp_worker_data *
-> > > 
-> > > Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-> > > ---
-> > >  drivers/thermal/intel/intel_powerclamp.c | 2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/thermal/intel/intel_powerclamp.c
-> > > b/drivers/thermal/intel/intel_powerclamp.c
-> > > index 7571f7c2e..c7cba20bd 100644
-> > > --- a/drivers/thermal/intel/intel_powerclamp.c
-> > > +++ b/drivers/thermal/intel/intel_powerclamp.c
-> > > @@ -101,7 +101,7 @@ struct powerclamp_worker_data {
-> > >  	bool clamping;
-> > >  };
-> > >  
-> > > -static struct powerclamp_worker_data * __percpu worker_data;
-> > > +static struct powerclamp_worker_data __percpu * worker_data;
-> > Makes perfect sense. I wonder why I wrote it in the wrong order.
-> > 
-> > Reviewed-by: Petr Mladek <pmladek@suse.com>
-> > 
-> applied and queued for next -rc.
-> 
-well, just with a minor change to get rid of checkpatch warning.
+Am Mittwoch, 30. Januar 2019, 11:08:54 CET schrieb Herbert Xu:
 
-ERROR: "foo * bar" should be "foo *bar"
-#121: FILE: drivers/thermal/intel/intel_powerclamp.c:104:
-+static struct powerclamp_worker_data __percpu * worker_data;
+Hi Herbert,
 
-total: 1 errors, 0 warnings, 8 lines checked
+> I'm still not convinced why this needs to go into the crypto API
+> instead of being hosted in a helper which should achieve pretty
+> much the same result.
 
-thanks,
-rui
-> thanks,
-> rui
-> 
-> > 
-> > Best Regards,
-> > Petr
+How do you propose to handle the FIPS 140-2 related requirements of enforcing 
+the integrity test result and the known-answer self tests?
+
+Thanks
+Stephan
