@@ -1,63 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v7 0/3] Move pm_runtime accounted time to raw nsec
-Date: Thu, 31 Jan 2019 00:50:44 +0100
-Message-ID: <2577730.BvIW2u5g9k@aspire.rjw.lan>
-References: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org>
+Subject: Re: [PATCH] PM / wakeup: fix comment of pm_wakeup_dev_event()
+Date: Thu, 31 Jan 2019 00:51:40 +0100
+Message-ID: <2581955.zbx2OOVCpv@aspire.rjw.lan>
+References: <20190123162201.26366-1-tiny.windzz@gmail.com> <20190124122633.GA24847@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org>
+In-Reply-To: <20190124122633.GA24847@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, thara.gopinath@linaro.org, linux@roeck-us.net, ulf.hansson@linaro.org
+To: Pavel Machek <pavel@ucw.cz>, Yangtao Li <tiny.windzz@gmail.com>
+Cc: len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 23, 2019 8:50:12 AM CET Vincent Guittot wrote:
-> Move pm_runtime accounted time to raw nsec. The subject of the patchset
-> has changed as 1st patch o the previous versions has been queued by
-> Rafael.
+On Thursday, January 24, 2019 1:26:33 PM CET Pavel Machek wrote:
 > 
-> Patch 1 set accounting_timestamp to 0 in pm_runtime_init and update it when enable.
-> So we remove ordering constraint between timekeeping_init and pm_runtime_init
+> --tThc/1wpZn/ma/RB
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
 > 
-> Patch 2 moves time accounting on raw ns. This patch initially used
-> ktime instead of raw ns but it was easier to move i915 driver on raw ns
-> than on ktime.
+> On Wed 2019-01-23 11:22:01, Yangtao Li wrote:
+> > This brings the kernel doc in line with the function signature.
+> >=20
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > 
-> Change since v6:
-> - move code that set accounting_timestamp in pm_runtime_enable
-> 
-> Changes since v5:
-> - removed patches already queued.
-> - set accounting_timestamp to 0 in pm_runtime_init and update it when enable
-> 
-> Changes since v4:
-> -Update commit message
-> 
-> Changes since v3:
-> - Rebase on v4.20-rc7 without patch that has been queued by Rafael
-> - Simplify the new interface pm_runtime_suspended_time()
-> 
-> Changes since v2:
-> - remove patch1 that has been queued by rafael
-> - add new interface in pm_runtime to get accounted time
-> - reorder patchset to prevent compilation error
-> 
-> Changes since v1:
-> - updated commit message of patch 1
-> - Added patches 2 & 3 to move runtime_pm accounting on raw ns
->   
-> Thara Gopinath (1):
->   PM-runtime: Replace jiffies based accounting with ktime-based
->     accounting
-> 
-> Vincent Guittot (1):
->   PM-runtime: update accounting_timestamp only when enable
-> 
->  drivers/base/power/runtime.c | 26 ++++++++++++++++----------
->  drivers/base/power/sysfs.c   | 11 ++++++++---
->  include/linux/pm.h           |  6 +++---
->  3 files changed, 27 insertions(+), 16 deletions(-)
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Both patches applied, thanks!
+Patch applied, thanks!
