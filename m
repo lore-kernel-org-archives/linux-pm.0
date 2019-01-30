@@ -1,57 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
-Date: Wed, 30 Jan 2019 11:04:53 +0100
-Message-ID: <49dbd0af-975e-cafb-d1b9-4e491a6c9383@linaro.org>
-References: <20190109055724.184692-1-pihsun@chromium.org>
- <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
- <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
- <CANdKZ0eDwTgKoFsAOboCz=q+nsUWepecXA7wmR=jGhkWEzLvnA@mail.gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2 0/6] General Key Derivation Function Support
+Date: Wed, 30 Jan 2019 18:08:54 +0800
+Message-ID: <20190130100854.iey2mbmz6777pn2n@gondor.apana.org.au>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <9733066.Vrs4h5eWcW@positron.chronox.de>
+ <2082192.jPI8ve1O8G@positron.chronox.de>
+ <5418064.ltLFQScYi2@tauon.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANdKZ0eDwTgKoFsAOboCz=q+nsUWepecXA7wmR=jGhkWEzLvnA@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <5418064.ltLFQScYi2@tauon.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pi-Hsun Shih <pihsun@chromium.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com
+To: Stephan Mueller <smueller@chronox.de>
+Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30/01/2019 10:25, Pi-Hsun Shih wrote:
-> On Wed, Jan 30, 2019 at 3:44 PM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 30/01/2019 07:04, Peter Shih wrote:
->>> Adding Michael Kao to cc list.
->>>
->>> On Wed, Jan 9, 2019 at 1:57 PM Pi-Hsun Shih <pihsun@chromium.org> wrote:
->>>>
->>>> The mtk_thermal struct contains a 'struct mtk_thermal_bank banks[];',
->>>> but the allocation only allocates sizeof(struct mtk_thermal) bytes,
->>>> which cause out of bound access with the ->banks[] member. Change it to
->>>> a fixed size array instead.
->>
->> Even if the fix is correct, it pushes back the bug later in time if a
->> new board containing more than MAX_NUM_ZONES is introduced. I suggest to
->> dynamically allocate the array with the 'num_banks' value.
->>
+On Mon, Jan 28, 2019 at 11:07:28AM +0100, Stephan Mueller wrote:
+> Am Mittwoch, 16. Januar 2019, 12:06:54 CET schrieb Stephan Müller:
 > 
-> For the current code structure, those mtk_thermal_data are statically declared,
-> so if there's new board containing more than MAX_NUM_ZONES of bank_data, it
-> would actually be a compile error.
+> Hi Herbert,
 > 
-> I'm fine with either way, but feel like that this is simpler than manually
-> calculating the size needed for allocation.
+> > Changes v2:
+> > * Incorporation of all comments from Eric Biggers
+> > 
+> > Stephan Mueller (6):
+> >   crypto: add template handling for RNGs
+> >   crypto: kdf - SP800-108 Key Derivation Function
+> >   crypto: kdf - add known answer tests
+> >   crypto: hkdf - HMAC-based Extract-and-Expand KDF
+> >   crypto: hkdf - add known answer tests
+> >   crypto: tcrypt - add KDF test invocation
+> > 
+> >  crypto/Kconfig                |  13 +
+> >  crypto/Makefile               |   2 +
+> >  crypto/hkdf.c                 | 272 +++++++++++++++++++
+> >  crypto/kdf_sp800108.c         | 491 ++++++++++++++++++++++++++++++++++
+> >  crypto/rng.c                  |  44 +++
+> >  crypto/tcrypt.c               |   8 +
+> >  crypto/testmgr.c              | 245 +++++++++++++++++
+> >  crypto/testmgr.h              | 198 ++++++++++++++
+> >  include/crypto/internal/rng.h |  26 ++
+> >  9 files changed, 1299 insertions(+)
+> >  create mode 100644 crypto/hkdf.c
+> >  create mode 100644 crypto/kdf_sp800108.c
+> 
+> Do you happen to have any comments on this patch set?
 
-Right, I missed it can be caught at compile time.
+I'm still not convinced why this needs to go into the crypto API
+instead of being hosted in a helper which should achieve pretty
+much the same result.
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-
-
+Thanks,
 -- 
- <http://www.linaro.org/> Linaro.org â”‚ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
