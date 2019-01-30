@@ -1,234 +1,134 @@
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Subject: Re: [PATCH v2 11/13] leds: max77650: add LEDs support
-Date: Wed, 30 Jan 2019 20:59:45 +0100
-Message-ID: <3cf54618-90f7-03f9-88e0-03df1c15d0bd@gmail.com>
-References: <20190129133545.1931-1-brgl@bgdev.pl>
- <20190129133545.1931-13-brgl@bgdev.pl>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: [PATCH v2 ] PM-runtime: fix deadlock with ktime
+Date: Wed, 30 Jan 2019 22:32:33 +0100
+Message-ID: <20190130213233.GA20881@lenoch>
+References: <1548846984-2044-1-git-send-email-vincent.guittot@linaro.org>
+ <CAJZ5v0gunbCHp_9mDTmtwW1i-_GcXPcjTP48NdV2zv-B6UrD4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190129133545.1931-13-brgl@bgdev.pl>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gunbCHp_9mDTmtwW1i-_GcXPcjTP48NdV2zv-B6UrD4g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Biju Das <biju.das@bp.renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bartosz,
-
-Thank you for the update.
-
-One more thing drew my attention, please refer below.
-
-On 1/29/19 2:35 PM, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Wed, Jan 30, 2019 at 02:06:07PM +0100, Rafael J. Wysocki wrote:
+> On Wed, Jan 30, 2019 at 12:16 PM Vincent Guittot
+> <vincent.guittot@linaro.org> wrote:
+> >
+> > A deadlock has been seen when swicthing clocksources which use PM runtime.
+> > The call path is:
+> > change_clocksource
+> >     ...
+> >     write_seqcount_begin
+> >     ...
+> >     timekeeping_update
+> >         ...
+> >         sh_cmt_clocksource_enable
+> >             ...
+> >             rpm_resume
+> >                 pm_runtime_mark_last_busy
+> >                     ktime_get
+> >                         do
+> >                             read_seqcount_begin
+> >                         while read_seqcount_retry
+> >     ....
+> >     write_seqcount_end
+> >
+> > Although we should be safe because we haven't yet changed the clocksource
+> > at that time, we can't because of seqcount protection.
+> >
+> > Use ktime_get_mono_fast_ns() instead which is lock safe for such case
+> >
+> > With ktime_get_mono_fast_ns, the timestamp is not guaranteed to be
+> > monotonic across an update and as a result can goes backward. According to
+> > update_fast_timekeeper() description: "In the worst case, this can
+> > result is a slightly wrong timestamp (a few nanoseconds)". For
+> > PM runtime autosuspend, this means only that the suspend decision can
+> > be slightly sub optimal.
+> >
+> > Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using hrtimers")
+> > Reported-by: Biju Das <biju.das@bp.renesas.com>
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 > 
-> This adds basic support for LEDs for the max77650 PMIC. The device has
-> three current sinks for driving LEDs.
+> I've queued this one up as a fix for 5.0, but unfortunately it clashes
+> with the patch from Ladislav Michl at
+> https://patchwork.kernel.org/patch/10755477/ which has been dropped
+> now.
 > 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->   drivers/leds/Kconfig         |   6 ++
->   drivers/leds/Makefile        |   1 +
->   drivers/leds/leds-max77650.c | 152 +++++++++++++++++++++++++++++++++++
->   3 files changed, 159 insertions(+)
->   create mode 100644 drivers/leds/leds-max77650.c
+> Can you or Ladislav please rebase that patch on top of this one and repost?
 > 
-> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-> index a72f97fca57b..6e7a8f51eccc 100644
-> --- a/drivers/leds/Kconfig
-> +++ b/drivers/leds/Kconfig
-> @@ -608,6 +608,12 @@ config LEDS_TLC591XX
->   	  This option enables support for Texas Instruments TLC59108
->   	  and TLC59116 LED controllers.
->   
-> +config LEDS_MAX77650
-> +	tristate "LED support for Maxim MAX77650 PMIC"
-> +	depends on MFD_MAX77650
-> +	help
-> +	  LEDs driver for MAX77650 family of PMICs from Maxim Integrated."
-> +
->   config LEDS_MAX77693
->   	tristate "LED support for MAX77693 Flash"
->   	depends on LEDS_CLASS_FLASH
-> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-> index 4c1b0054f379..f48b2404dbb7 100644
-> --- a/drivers/leds/Makefile
-> +++ b/drivers/leds/Makefile
-> @@ -61,6 +61,7 @@ obj-$(CONFIG_LEDS_MC13783)		+= leds-mc13783.o
->   obj-$(CONFIG_LEDS_NS2)			+= leds-ns2.o
->   obj-$(CONFIG_LEDS_NETXBIG)		+= leds-netxbig.o
->   obj-$(CONFIG_LEDS_ASIC3)		+= leds-asic3.o
-> +obj-$(CONFIG_LEDS_MAX77650)		+= leds-max77650.o
->   obj-$(CONFIG_LEDS_MAX77693)		+= leds-max77693.o
->   obj-$(CONFIG_LEDS_MAX8997)		+= leds-max8997.o
->   obj-$(CONFIG_LEDS_LM355x)		+= leds-lm355x.o
-> diff --git a/drivers/leds/leds-max77650.c b/drivers/leds/leds-max77650.c
-> new file mode 100644
-> index 000000000000..e3a3c0e79b7a
-> --- /dev/null
-> +++ b/drivers/leds/leds-max77650.c
-> @@ -0,0 +1,152 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +//
-> +// Copyright (C) 2018 BayLibre SAS
-> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> +//
-> +// LED driver for MAXIM 77650/77651 charger/power-supply.
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/leds.h>
-> +#include <linux/mfd/max77650.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +
-> +#define MAX77650_NUM_LEDS		3
-> +
-> +#define MAX77650_LED_A_BASE		0x40
-> +#define MAX77650_LED_B_BASE		0x43
-> +
-> +#define MAX77650_LED_BR_MASK		GENMASK(4, 0)
-> +#define MAX77650_LED_EN_MASK		GENMASK(7, 6)
-> +
-> +/* Enable EN_LED_MSTR. */
-> +#define MAX77650_LED_TOP_DEFAULT	BIT(0)
-> +
-> +#define MAX77650_LED_ENABLE		GENMASK(7, 6)
-> +#define MAX77650_LED_DISABLE		0x00
-> +
-> +#define MAX77650_LED_A_DEFAULT		MAX77650_LED_DISABLE
-> +/* 100% on duty */
-> +#define MAX77650_LED_B_DEFAULT		GENMASK(3, 0)
-> +
-> +struct max77650_led {
-> +	struct led_classdev cdev;
-> +	struct regmap *map;
-> +	unsigned int regA;
-> +	unsigned int regB;
-> +};
-> +
-> +static struct max77650_led *max77650_to_led(struct led_classdev *cdev)
-> +{
-> +	return container_of(cdev, struct max77650_led, cdev);
-> +}
-> +
-> +static int max77650_led_brightness_set(struct led_classdev *cdev,
-> +				       enum led_brightness brightness)
-> +{
-> +	struct max77650_led *led = max77650_to_led(cdev);
-> +	int val, mask;
-> +
-> +	mask = MAX77650_LED_BR_MASK | MAX77650_LED_EN_MASK;
-> +
-> +	if (brightness == LED_OFF) {
-> +		val = MAX77650_LED_DISABLE;
-> +	} else {
-> +		val = MAX77650_LED_ENABLE;
-> +		/*
-> +		 * We can set the brightness with 5-bit resolution.
-> +		 *
-> +		 * For brightness == 1, the bits we're writing will be 0, but
-> +		 * since we keep LED_FS0 set to 12.8mA full-scale range, the
-> +		 * LED will be lit slightly.
-> +		 */
-> +		val |= brightness / 8;
+> > ---
+> >
+> > - v2: Updated commit message to explain the impact of using
+> >   ktime_get_mono_fast_ns()
+> >
+> >  drivers/base/power/runtime.c | 10 +++++-----
+> >  include/linux/pm_runtime.h   |  2 +-
+> >  2 files changed, 6 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 457be03..708a13f 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -130,7 +130,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+> >  {
+> >         int autosuspend_delay;
+> >         u64 last_busy, expires = 0;
+> > -       u64 now = ktime_to_ns(ktime_get());
+> > +       u64 now = ktime_get_mono_fast_ns();
+> >
+> >         if (!dev->power.use_autosuspend)
+> >                 goto out;
+> > @@ -909,7 +909,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+> >          * If 'expires' is after the current time, we've been called
+> >          * too early.
+> >          */
+> > -       if (expires > 0 && expires < ktime_to_ns(ktime_get())) {
+> > +       if (expires > 0 && expires < ktime_get_mono_fast_ns()) {
+> >                 dev->power.timer_expires = 0;
+> >                 rpm_suspend(dev, dev->power.timer_autosuspends ?
+> >                     (RPM_ASYNC | RPM_AUTO) : RPM_ASYNC);
+> > @@ -928,7 +928,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+> >  int pm_schedule_suspend(struct device *dev, unsigned int delay)
+> >  {
+> >         unsigned long flags;
+> > -       ktime_t expires;
+> > +       u64 expires;
+> >         int retval;
+> >
+> >         spin_lock_irqsave(&dev->power.lock, flags);
+> > @@ -945,8 +945,8 @@ int pm_schedule_suspend(struct device *dev, unsigned int delay)
+> >         /* Other scheduled or pending requests need to be canceled. */
+> >         pm_runtime_cancel_pending(dev);
+> >
+> > -       expires = ktime_add(ktime_get(), ms_to_ktime(delay));
+> > -       dev->power.timer_expires = ktime_to_ns(expires);
+> > +       expires = ktime_get_mono_fast_ns() + (u64)delay * NSEC_PER_MSEC);
 
-We have max_brightness property and you seem not to use it.
-With 5-bit brightness resolution it should be initialized
-to 32 and then we will be able to avoid the division here.
+Just FYI, this one does not compile                                        ^
+I'm going to send updated optimization patch anyway as fixing this one will not
+break it :)
 
-> +	}
-> +
-> +	return regmap_update_bits(led->map, led->regA, mask, val);
-> +}
-> +
-> +static int max77650_led_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *of_node, *child;
-> +	struct max77650_led *leds, *led;
-> +	struct device *parent;
-> +	struct device *dev;
-> +	struct regmap *map;
-> +	const char *label;
-> +	int rv, num_leds;
-> +	u32 reg;
-> +
-> +	dev = &pdev->dev;
-> +	parent = dev->parent;
-> +	of_node = dev->of_node;
-> +
-> +	if (!of_node)
-> +		return -ENODEV;
-> +
-> +	leds = devm_kcalloc(dev, sizeof(*leds), MAX77650_NUM_LEDS, GFP_KERNEL);
-> +	if (!leds)
-> +		return -ENOMEM;
-> +
-> +	map = dev_get_regmap(dev->parent, NULL);
-> +	if (!map)
-> +		return -ENODEV;
-> +
-> +	num_leds = of_get_child_count(of_node);
-> +	if (!num_leds || num_leds > MAX77650_NUM_LEDS)
-> +		return -ENODEV;
-> +
-> +	for_each_child_of_node(of_node, child) {
-> +		rv = of_property_read_u32(child, "reg", &reg);
-> +		if (rv || reg >= MAX77650_NUM_LEDS)
-> +			return -EINVAL;
-> +
-> +		led = &leds[reg];
-> +		led->map = map;
-> +		led->regA = MAX77650_LED_A_BASE + reg;
-> +		led->regB = MAX77650_LED_B_BASE + reg;
-> +		led->cdev.brightness_set_blocking = max77650_led_brightness_set;
-> +
-> +		label = of_get_property(child, "label", NULL);
-> +		if (!label) {
-> +			led->cdev.name = "max77650::";
-> +		} else {
-> +			led->cdev.name = devm_kasprintf(dev, GFP_KERNEL,
-> +							"max77650:%s", label);
-> +			if (!led->cdev.name)
-> +				return -ENOMEM;
-> +		}
-> +
-> +		of_property_read_string(child, "linux,default-trigger",
-> +					&led->cdev.default_trigger);
-> +
-> +		rv = devm_of_led_classdev_register(dev, child, &led->cdev);
-> +		if (rv)
-> +			return rv;
-> +
-> +		rv = regmap_write(map, led->regA, MAX77650_LED_A_DEFAULT);
-> +		if (rv)
-> +			return rv;
-> +
-> +		rv = regmap_write(map, led->regB, MAX77650_LED_B_DEFAULT);
-> +		if (rv)
-> +			return rv;
-> +	}
-> +
-> +	return regmap_write(map,
-> +			    MAX77650_REG_CNFG_LED_TOP,
-> +			    MAX77650_LED_TOP_DEFAULT);
-> +}
-> +
-> +static struct platform_driver max77650_led_driver = {
-> +	.driver = {
-> +		.name = "max77650-led",
-> +	},
-> +	.probe = max77650_led_probe,
-> +};
-> +module_platform_driver(max77650_led_driver);
-> +
-> +MODULE_DESCRIPTION("MAXIM 77650/77651 LED driver");
-> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
-> +MODULE_LICENSE("GPL v2");
-> 
-
--- 
-Best regards,
-Jacek Anaszewski
+> > +       dev->power.timer_expires = expires;
+> >         dev->power.timer_autosuspends = 0;
+> >         hrtimer_start(&dev->power.suspend_timer, expires, HRTIMER_MODE_ABS);
+> >
+> > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> > index 54af4ee..fed5be7 100644
+> > --- a/include/linux/pm_runtime.h
+> > +++ b/include/linux/pm_runtime.h
+> > @@ -105,7 +105,7 @@ static inline bool pm_runtime_callbacks_present(struct device *dev)
+> >
+> >  static inline void pm_runtime_mark_last_busy(struct device *dev)
+> >  {
+> > -       WRITE_ONCE(dev->power.last_busy, ktime_to_ns(ktime_get()));
+> > +       WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
+> >  }
+> >
+> >  static inline bool pm_runtime_is_irq_safe(struct device *dev)
+> > --
+> > 2.7.4
+> >
