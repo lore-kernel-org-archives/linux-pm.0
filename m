@@ -1,74 +1,97 @@
-From: Pi-Hsun Shih <pihsun@chromium.org>
-Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
-Date: Wed, 30 Jan 2019 17:25:27 +0800
-Message-ID: <CANdKZ0eDwTgKoFsAOboCz=q+nsUWepecXA7wmR=jGhkWEzLvnA@mail.gmail.com>
-References: <20190109055724.184692-1-pihsun@chromium.org>
- <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
- <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM-runtime: fix deadlock with ktime
+Date: Wed, 30 Jan 2019 10:39:30 +0100
+Message-ID: <CAJZ5v0jLJ8Tu7Gpt-4bhW59Q3=PX4wyb2rFBWuPKMFHcFXBxAA@mail.gmail.com>
+References: <1548836194-15264-1-git-send-email-vincent.guittot@linaro.org>
+ <CAMuHMdWYV-tDD2osdvs4yhD-mu2n8-JSC7rV8Zt5vW4kr8hdWQ@mail.gmail.com> <CAKfTPtBiWunvVHv=tpq7CPqAX+54d_dyPt6BME_m1_Wz+qPaTA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com, Eduardo Valentin <edubezval@gmail.com>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKfTPtBiWunvVHv=tpq7CPqAX+54d_dyPt6BME_m1_Wz+qPaTA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:TI ETHERNET SWITCH DRIVER (CPSW)" <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Biju Das <biju.das@bp.renesas.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKYW4gMzAsIDIwMTkgYXQgMzo0NCBQTSBEYW5pZWwgTGV6Y2Fubwo8ZGFuaWVsLmxl
-emNhbm9AbGluYXJvLm9yZz4gd3JvdGU6Cj4KPiBPbiAzMC8wMS8yMDE5IDA3OjA0LCBQZXRlciBT
-aGloIHdyb3RlOgo+ID4gQWRkaW5nIE1pY2hhZWwgS2FvIHRvIGNjIGxpc3QuCj4gPgo+ID4gT24g
-V2VkLCBKYW4gOSwgMjAxOSBhdCAxOjU3IFBNIFBpLUhzdW4gU2hpaCA8cGloc3VuQGNocm9taXVt
-Lm9yZz4gd3JvdGU6Cj4gPj4KPiA+PiBUaGUgbXRrX3RoZXJtYWwgc3RydWN0IGNvbnRhaW5zIGEg
-J3N0cnVjdCBtdGtfdGhlcm1hbF9iYW5rIGJhbmtzW107JywKPiA+PiBidXQgdGhlIGFsbG9jYXRp
-b24gb25seSBhbGxvY2F0ZXMgc2l6ZW9mKHN0cnVjdCBtdGtfdGhlcm1hbCkgYnl0ZXMsCj4gPj4g
-d2hpY2ggY2F1c2Ugb3V0IG9mIGJvdW5kIGFjY2VzcyB3aXRoIHRoZSAtPmJhbmtzW10gbWVtYmVy
-LiBDaGFuZ2UgaXQgdG8KPiA+PiBhIGZpeGVkIHNpemUgYXJyYXkgaW5zdGVhZC4KPgo+IEV2ZW4g
-aWYgdGhlIGZpeCBpcyBjb3JyZWN0LCBpdCBwdXNoZXMgYmFjayB0aGUgYnVnIGxhdGVyIGluIHRp
-bWUgaWYgYQo+IG5ldyBib2FyZCBjb250YWluaW5nIG1vcmUgdGhhbiBNQVhfTlVNX1pPTkVTIGlz
-IGludHJvZHVjZWQuIEkgc3VnZ2VzdCB0bwo+IGR5bmFtaWNhbGx5IGFsbG9jYXRlIHRoZSBhcnJh
-eSB3aXRoIHRoZSAnbnVtX2JhbmtzJyB2YWx1ZS4KPgoKRm9yIHRoZSBjdXJyZW50IGNvZGUgc3Ry
-dWN0dXJlLCB0aG9zZSBtdGtfdGhlcm1hbF9kYXRhIGFyZSBzdGF0aWNhbGx5IGRlY2xhcmVkLApz
-byBpZiB0aGVyZSdzIG5ldyBib2FyZCBjb250YWluaW5nIG1vcmUgdGhhbiBNQVhfTlVNX1pPTkVT
-IG9mIGJhbmtfZGF0YSwgaXQKd291bGQgYWN0dWFsbHkgYmUgYSBjb21waWxlIGVycm9yLgoKSSdt
-IGZpbmUgd2l0aCBlaXRoZXIgd2F5LCBidXQgZmVlbCBsaWtlIHRoYXQgdGhpcyBpcyBzaW1wbGVy
-IHRoYW4gbWFudWFsbHkKY2FsY3VsYXRpbmcgdGhlIHNpemUgbmVlZGVkIGZvciBhbGxvY2F0aW9u
-LgoKPgo+ID4+IFNpZ25lZC1vZmYtYnk6IFBpLUhzdW4gU2hpaCA8cGloc3VuQGNocm9taXVtLm9y
-Zz4KPiA+PiAtLS0KPiA+PiAgZHJpdmVycy90aGVybWFsL210a190aGVybWFsLmMgfCA3ICsrKysr
-LS0KPiA+PiAgMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkK
-PiA+Pgo+ID4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvbXRrX3RoZXJtYWwuYyBiL2Ry
-aXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1hbC5jCj4gPj4gaW5kZXggMDY5MWYyNjBmNmVhYmUuLmVh
-MTFlZGIzZmNjZWQ2IDEwMDY0NAo+ID4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1h
-bC5jCj4gPj4gKysrIGIvZHJpdmVycy90aGVybWFsL210a190aGVybWFsLmMKPiA+PiBAQCAtMTU5
-LDYgKzE1OSw5IEBACj4gPj4gICNkZWZpbmUgTVQ3NjIyX05VTV9TRU5TT1JTX1BFUl9aT05FICAg
-IDEKPiA+PiAgI2RlZmluZSBNVDc2MjJfVFMxICAgICAwCj4gPj4KPiA+PiArLyogVGhlIG1heGlt
-dW0gbnVtYmVyIG9mIGJhbmtzICovCj4gPj4gKyNkZWZpbmUgTUFYX05VTV9aT05FUyAgICAgICAg
-ICA4Cj4gPj4gKwo+ID4+ICBzdHJ1Y3QgbXRrX3RoZXJtYWw7Cj4gPj4KPiA+PiAgc3RydWN0IHRo
-ZXJtYWxfYmFua19jZmcgewo+ID4+IEBAIC0xNzgsNyArMTgxLDcgQEAgc3RydWN0IG10a190aGVy
-bWFsX2RhdGEgewo+ID4+ICAgICAgICAgY29uc3QgaW50ICpzZW5zb3JfbXV4X3ZhbHVlczsKPiA+
-PiAgICAgICAgIGNvbnN0IGludCAqbXNyOwo+ID4+ICAgICAgICAgY29uc3QgaW50ICphZGNwbnA7
-Cj4gPj4gLSAgICAgICBzdHJ1Y3QgdGhlcm1hbF9iYW5rX2NmZyBiYW5rX2RhdGFbXTsKPiA+PiAr
-ICAgICAgIHN0cnVjdCB0aGVybWFsX2JhbmtfY2ZnIGJhbmtfZGF0YVtNQVhfTlVNX1pPTkVTXTsK
-PiA+PiAgfTsKPiA+Pgo+ID4+ICBzdHJ1Y3QgbXRrX3RoZXJtYWwgewo+ID4+IEBAIC0xOTcsNyAr
-MjAwLDcgQEAgc3RydWN0IG10a190aGVybWFsIHsKPiA+PiAgICAgICAgIHMzMiB2dHNbTVQ4MTcz
-X05VTV9TRU5TT1JTXTsKPiA+Pgo+ID4+ICAgICAgICAgY29uc3Qgc3RydWN0IG10a190aGVybWFs
-X2RhdGEgKmNvbmY7Cj4gPj4gLSAgICAgICBzdHJ1Y3QgbXRrX3RoZXJtYWxfYmFuayBiYW5rc1td
-Owo+ID4+ICsgICAgICAgc3RydWN0IG10a190aGVybWFsX2JhbmsgYmFua3NbTUFYX05VTV9aT05F
-U107Cj4gPj4gIH07Cj4gPj4KPiA+PiAgLyogTVQ4MTczIHRoZXJtYWwgc2Vuc29yIGRhdGEgKi8K
-PiA+PiAtLQo+ID4+IDIuMjAuMS45Ny5nODExODhkOTNjMy1nb29nCj4gPj4KPgo+Cj4gLS0KPiAg
-PGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3
-YXJlIGZvciBBUk0gU29Dcwo+Cj4gRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29r
-LmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xp
-bmFyb29yZz4gVHdpdHRlciB8Cj4gPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+
-IEJsb2cKPgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
-dXgtYXJtLWtlcm5lbAo=
+On Wed, Jan 30, 2019 at 10:14 AM Vincent Guittot
+<vincent.guittot@linaro.org> wrote:
+>
+> Hi Geert,
+>
+> On Wed, 30 Jan 2019 at 09:21, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> >
+> > Hi Vincent,
+> >
+> > On Wed, Jan 30, 2019 at 9:16 AM Vincent Guittot
+> > <vincent.guittot@linaro.org> wrote:
+> > > A deadlock has been seen when swicthing clocksources which use PM runtime.
+> > > The call path is:
+> > > change_clocksource
+> > >     ...
+> > >     write_seqcount_begin
+> > >     ...
+> > >     timekeeping_update
+> > >         ...
+> > >         sh_cmt_clocksource_enable
+> > >             ...
+> > >             rpm_resume
+> > >                 pm_runtime_mark_last_busy
+> > >                     ktime_get
+> > >                         do
+> > >                             read_seqcount_begin
+> > >                         while read_seqcount_retry
+> > >     ....
+> > >     write_seqcount_end
+> > >
+> > > Although we should be safe because we haven't yet changed the clocksource
+> > > at that time, we can't because of seqcount protection.
+> > >
+> > > Use ktime_get_mono_fast_ns instead which is lock safe for such case
+> > >
+> > > Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using hrtimers")
+> > > Reported-by: Biju Das <biju.das@bp.renesas.com>
+> > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> >
+> > Thanks for your patch!
+> >
+> > /**
+> >  * ktime_get_mono_fast_ns - Fast NMI safe access to clock monotonic
+> >  *
+> >  * This timestamp is not guaranteed to be monotonic across an update.
+> >  * The timestamp is calculated by:
+> >  *
+> >  *      now = base_mono + clock_delta * slope
+> >  *
+> >  * So if the update lowers the slope, readers who are forced to the
+> >  * not yet updated second array are still using the old steeper slope.
+> >  *
+> >  * tmono
+> >  * ^
+> >  * |    o  n
+> >  * |   o n
+> >  * |  u
+> >  * | o
+> >  * |o
+> >  * |12345678---> reader order
+> >  *
+> >  * o = old slope
+> >  * u = update
+> >  * n = new slope
+> >  *
+> >  * So reader 6 will observe time going backwards versus reader 5.
+> >  *
+> >  * While other CPUs are likely to be able observe that, the only way
+> >  * for a CPU local observation is when an NMI hits in the middle of
+> >  * the update. Timestamps taken from that NMI context might be ahead
+> >  * of the following timestamps. Callers need to be aware of that and
+> >  * deal with it.
+> >  */
+> >
+> > As this function is not guaranteed to be monotonic, have you checked how
+> > the Runtime PM code behaves if time goes backwards? Does it just make
+> > a suboptimal decision or does it crash?
+>
+> As a worst case this will generate a suboptimal decision around the update
+
+So that should be explained in the changelog of the patch.  In detail,
+if poss, please.
