@@ -1,49 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/7] cpufreq: dt: Register an Energy Model
-Date: Wed, 30 Jan 2019 10:48:06 +0530
-Message-ID: <20190130051806.fdsos27jaekkwgbs@vireshk-i7>
-References: <20190128165522.31749-1-quentin.perret@arm.com>
- <20190128165522.31749-3-quentin.perret@arm.com>
- <20190128193656.GI81583@google.com>
- <20190129052144.plicqu4vozh3l3ss@vireshk-i7>
- <20190129091546.tfh3lo4w4sosfuba@queper01-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH] cpufreq: Auto-register the driver as a thermal cooling device if asked
+Date: Wed, 30 Jan 2019 10:52:01 +0530
+Message-ID: <fdff26d908c5338df44574085701ed93a64af079.1548825443.git.amit.kucheria@linaro.org>
+References: <CAJZ5v0iwq15mwoa-LBN07fgNNurtBGodG6urgfnvMbGWj8vyAw@mail.gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190129091546.tfh3lo4w4sosfuba@queper01-lin>
+In-Reply-To: <CAJZ5v0iwq15mwoa-LBN07fgNNurtBGodG6urgfnvMbGWj8vyAw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Matthias Kaehlcke <mka@chromium.org>, rjw@rjwysocki.net, sudeep.holla@arm.com, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, robh+dt@kernel.org, mark.rutland@arm.com, nm@ti.com, sboyd@kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dietmar.eggemann@arm.com
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29-01-19, 09:15, Quentin Perret wrote:
-> On Tuesday 29 Jan 2019 at 10:51:44 (+0530), Viresh Kumar wrote:
-> > On 28-01-19, 11:36, Matthias Kaehlcke wrote:
-> > > I think this patch will result in error messages at registration on
-> > > platforms that use the cpufreq-dt driver and don't specify
-> > > 'dynamic-power-coefficient' for the CPUs in the DT. Not sure if that's
-> > > a problem as long as the cpufreq initialization succeeds regardless,
-> > > it could be seen as a not-so-gentle nudge to add the values.
-> > 
-> > That wouldn't be acceptable.
-> 
-> Fair enough. What I can propose in this case is to have in PM_OPP a
-> helper called 'dev_pm_opp_of_register_em()' or something like this. This
-> function will check all prerequisites are present (we have the right
-> values in DT, and so on) and then call (or not) em_register_perf_domain().
-> Then we can make the CPUFreq drivers use that instead of calling
-> em_register_perf_domain() directly.
+All cpufreq drivers do similar things to register as a cooling device.
+Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+to register the cooling device on their behalf. This allows us to get
+rid of duplicated code in the drivers.
 
-That should be fine.
+In order to allow this, we add a struct thermal_cooling_device pointer
+to struct cpufreq_policy so that drivers don't need to store it in a
+private data structure.
 
-> That would also make it easy to implement Matthias' suggestion to not
-> call em_register_perf_domain() if an EM is already present.
+Suggested-by: Stephen Boyd <swboyd@chromium.org>
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 11 +++++++++++
+ include/linux/cpufreq.h   |  9 +++++++++
+ 2 files changed, 20 insertions(+)
 
-So you will track registration state within the OPP core for that ?
-Sorry but that doesn't sound right. What's wrong with having an
-unregister helper in energy-model to keep proper code flow everywhere
-?
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a8fa684f5f90..cae730264bc0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -19,6 +19,7 @@
+ 
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+@@ -1316,6 +1317,10 @@ static int cpufreq_online(unsigned int cpu)
+ 	if (cpufreq_driver->ready)
+ 		cpufreq_driver->ready(policy);
+ 
++	if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
++	    cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
++		policy->cdev = of_cpufreq_cooling_register(policy);
++
+ 	pr_debug("initialization complete\n");
+ 
+ 	return 0;
+@@ -1403,6 +1408,12 @@ static int cpufreq_offline(unsigned int cpu)
+ 		goto unlock;
+ 	}
+ 
++	if (IS_ENABLED(CONFIG_CPU_THERMAL) &&
++	    cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV) {
++		cpufreq_cooling_unregister(policy->cdev);
++		policy->cdev = NULL;
++	}
++
+ 	if (cpufreq_driver->stop_cpu)
+ 		cpufreq_driver->stop_cpu(policy);
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bd7fbd6a4478..6078eb07a7e4 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -151,6 +151,9 @@ struct cpufreq_policy {
+ 
+ 	/* For cpufreq driver's internal use */
+ 	void			*driver_data;
++
++	/* Pointer to the cooling device if used for thermal mitigation */
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /* Only for ACPI */
+@@ -386,6 +389,12 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING	BIT(6)
+ 
++/*
++ * Set by drivers that want the core to automatically register the cpufreq
++ * driver as a thermal cooling device.
++ */
++#define CPUFREQ_IS_COOLING_DEV			BIT(7)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
 -- 
-viresh
+2.17.1
