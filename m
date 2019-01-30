@@ -1,204 +1,150 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v2 1/5] PM / OPP: Introduce a power estimation helper
-Date: Wed, 30 Jan 2019 11:07:03 -0800
-Message-ID: <20190130190703.GM81583@google.com>
-References: <20190130170506.20450-1-quentin.perret@arm.com>
- <20190130170506.20450-2-quentin.perret@arm.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: [PATCH v2 ] PM-runtime: fix deadlock with ktime
+Date: Wed, 30 Jan 2019 20:39:25 +0100
+Message-ID: <20190130193925.GA11090@lenoch>
+References: <1548846984-2044-1-git-send-email-vincent.guittot@linaro.org>
+ <CAJZ5v0gunbCHp_9mDTmtwW1i-_GcXPcjTP48NdV2zv-B6UrD4g@mail.gmail.com>
+ <CAKfTPtAO--5rkKAwExbKoKDz9pM7MApbEqe0R9pS1-1avv2Gzw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190130170506.20450-2-quentin.perret@arm.com>
+In-Reply-To: <CAKfTPtAO--5rkKAwExbKoKDz9pM7MApbEqe0R9pS1-1avv2Gzw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Biju Das <biju.das@bp.renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
-
-On Wed, Jan 30, 2019 at 05:05:02PM +0000, Quentin Perret wrote:
-> The Energy Model (EM) framework provides an API to let drivers register
-> the active power of CPUs. The drivers are expected to provide a callback
-> method which estimates the power consumed by a CPU at each available
-> performance levels. How exactly this should be implemented, however,
-> depends on the platform.
+On Wed, Jan 30, 2019 at 02:18:49PM +0100, Vincent Guittot wrote:
+> On Wed, 30 Jan 2019 at 14:06, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Wed, Jan 30, 2019 at 12:16 PM Vincent Guittot
+> > <vincent.guittot@linaro.org> wrote:
+> > >
+> > > A deadlock has been seen when swicthing clocksources which use PM runtime.
+> > > The call path is:
+> > > change_clocksource
+> > >     ...
+> > >     write_seqcount_begin
+> > >     ...
+> > >     timekeeping_update
+> > >         ...
+> > >         sh_cmt_clocksource_enable
+> > >             ...
+> > >             rpm_resume
+> > >                 pm_runtime_mark_last_busy
+> > >                     ktime_get
+> > >                         do
+> > >                             read_seqcount_begin
+> > >                         while read_seqcount_retry
+> > >     ....
+> > >     write_seqcount_end
+> > >
+> > > Although we should be safe because we haven't yet changed the clocksource
+> > > at that time, we can't because of seqcount protection.
+> > >
+> > > Use ktime_get_mono_fast_ns() instead which is lock safe for such case
+> > >
+> > > With ktime_get_mono_fast_ns, the timestamp is not guaranteed to be
+> > > monotonic across an update and as a result can goes backward. According to
+> > > update_fast_timekeeper() description: "In the worst case, this can
+> > > result is a slightly wrong timestamp (a few nanoseconds)". For
+> > > PM runtime autosuspend, this means only that the suspend decision can
+> > > be slightly sub optimal.
+> > >
+> > > Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using hrtimers")
+> > > Reported-by: Biju Das <biju.das@bp.renesas.com>
+> > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> >
+> > I've queued this one up as a fix for 5.0, but unfortunately it clashes
+> > with the patch from Ladislav Michl at
+> > https://patchwork.kernel.org/patch/10755477/ which has been dropped
+> > now.
 > 
-> On some systems, PM_OPP knows the voltage and frequency at which CPUs
-> can run. When coupled with the CPU 'capacitance' (as provided by the
-> 'dynamic-power-coefficient' devicetree binding), it is possible to
-> estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
-> C its capacitance and V and f respectively the voltage and frequency of
-> the OPP. The Intelligent Power Allocator (IPA) thermal governor already
-> implements that estimation method, in the thermal framework.
+> Thanks for adding Ladislav in this thread.
+> I'm sorry I forgot to add him in the loop.
 > 
-> However, this power estimation method can be applied to any platform
-> where all the parameters are known (C, V and f), and not only those
-> suffering thermal issues. As such, the code implementing this feature
-> can be re-used to also populate the EM framework now used by EAS.
+> >
+> > Can you or Ladislav please rebase that patch on top of this one and repost?
 > 
-> As a first step, introduce in PM_OPP a helper function which CPUFreq
-> drivers can use to register into the EM framework. This duplicates the
-> power estimation done in IPA until it can be migrated to using the EM
-> framework. This will be done later, once the EM framework has support
-> for at least all platforms currently supported by IPA.
+> Ladislav,
 > 
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> Let me know if you prefer to rebase and repost your patch of if you
+> want me to do.
+
+I'll rebase it on top of Rafael's bleeding-edge branch.
+
+Best regards,
+	ladis
+
+> Regards,
+> Vincent
 > 
-> ---
-> 
-> Matthias: Given this patch changed a bit I dropped your Reviewed-by and
-> Tested-by, but let me know if you think they still hold.
-> ---
->  drivers/opp/of.c       | 88 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h |  6 +++
->  2 files changed, 94 insertions(+)
-> 
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 06f0f632ec47..4c8bf172e9ed 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -20,6 +20,7 @@
->  #include <linux/pm_domain.h>
->  #include <linux/slab.h>
->  #include <linux/export.h>
-> +#include <linux/energy_model.h>
-
-nit: AFAIK typically alphabetical order is used for includes, though
-this file doesn't exactly adhere to it.
-
->  #include "opp.h"
->  
-> @@ -1047,3 +1048,90 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
->  	return of_node_get(opp->np);
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
-> +
-> +/*
-> + * Callback function provided to the Energy Model framework upon registration.
-> + * This computes the power estimated by @CPU at the first OPP above @kHz (ceil),
-
-that's not entirely correct, it could be the OPP at @kHz.
-
-> + * and updates @kHz and @mW accordingly. The power is estimated as
-> + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
-> + * the voltage and frequency of the OPP.
-> + *
-> + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
-> + * calculation failed because of missing parameters, 0 otherwise.
-> + */
-> +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
-> +					 int cpu)
-
-why __maybe_unused?
-
-> +{
-> +	struct device *cpu_dev;
-> +	struct dev_pm_opp *opp;
-> +	struct device_node *np;
-> +	unsigned long mV, Hz;
-> +	u32 cap;
-> +	u64 tmp;
-> +	int ret;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np)
-> +		return -EINVAL;
-> +
-> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-> +	of_node_put(np);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	Hz = *kHz * 1000;
-> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> +	if (IS_ERR(opp))
-> +		return -EINVAL;
-> +
-> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
-> +	dev_pm_opp_put(opp);
-> +	if (!mV)
-> +		return -EINVAL;
-> +
-> +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
-> +	do_div(tmp, 1000000000);
-> +
-> +	*mW = (unsigned long)tmp;
-> +	*kHz = Hz / 1000;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
-> + * @cpus	: CPUs for which an Energy Model has to be registered
-> + * @nr_opp	: Number of OPPs to register in the Energy Model
-> + *
-> + * This checks whether the "dynamic-power-coefficient" devicetree binding has
-
-s/binding/property/ ?
-
-> + * been specified, and tries to register an Energy Model with it if it has.
-> + */
-> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-
-Is the nr_opp parameter really needed? The function looks up the CPU
-device and hence could determine the OPP count itself with
-dev_pm_opp_get_opp_count(). I see most cpufreq drivers call
-dev_pm_opp_get_opp_count() anyway, so passing the count as parameter
-can be considered a small optimization, not sure how relevant it is
-though, since dev_pm_opp_of_register_em() isn't called frequently.
-
-> +{
-> +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
-> +	int ret, cpu = cpumask_first(cpus);
-> +	struct device *cpu_dev;
-> +	struct device_node *np;
-> +	u32 cap;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev)
-> +		return;
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np)
-> +		return;
-> +
-> +	/* Don't register an EM without the right DT binding */
-> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-> +	of_node_put(np);
-> +	if (ret || !cap)
-> +		return;
-> +
-> +	em_register_perf_domain(cpus, nr_opp, &em_cb);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index b895f4e79868..58ae08b024bd 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
->  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
->  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
->  int of_get_required_opp_performance_state(struct device_node *np, int index);
-> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp);
->  #else
->  static inline int dev_pm_opp_of_add_table(struct device *dev)
->  {
-> @@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
->  {
->  	return NULL;
->  }
-> +
-> +static inline void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-> +{
-> +}
-> +
->  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
->  {
->  	return -ENOTSUPP;
-
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> >
+> > > ---
+> > >
+> > > - v2: Updated commit message to explain the impact of using
+> > >   ktime_get_mono_fast_ns()
+> > >
+> > >  drivers/base/power/runtime.c | 10 +++++-----
+> > >  include/linux/pm_runtime.h   |  2 +-
+> > >  2 files changed, 6 insertions(+), 6 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 457be03..708a13f 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -130,7 +130,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+> > >  {
+> > >         int autosuspend_delay;
+> > >         u64 last_busy, expires = 0;
+> > > -       u64 now = ktime_to_ns(ktime_get());
+> > > +       u64 now = ktime_get_mono_fast_ns();
+> > >
+> > >         if (!dev->power.use_autosuspend)
+> > >                 goto out;
+> > > @@ -909,7 +909,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+> > >          * If 'expires' is after the current time, we've been called
+> > >          * too early.
+> > >          */
+> > > -       if (expires > 0 && expires < ktime_to_ns(ktime_get())) {
+> > > +       if (expires > 0 && expires < ktime_get_mono_fast_ns()) {
+> > >                 dev->power.timer_expires = 0;
+> > >                 rpm_suspend(dev, dev->power.timer_autosuspends ?
+> > >                     (RPM_ASYNC | RPM_AUTO) : RPM_ASYNC);
+> > > @@ -928,7 +928,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+> > >  int pm_schedule_suspend(struct device *dev, unsigned int delay)
+> > >  {
+> > >         unsigned long flags;
+> > > -       ktime_t expires;
+> > > +       u64 expires;
+> > >         int retval;
+> > >
+> > >         spin_lock_irqsave(&dev->power.lock, flags);
+> > > @@ -945,8 +945,8 @@ int pm_schedule_suspend(struct device *dev, unsigned int delay)
+> > >         /* Other scheduled or pending requests need to be canceled. */
+> > >         pm_runtime_cancel_pending(dev);
+> > >
+> > > -       expires = ktime_add(ktime_get(), ms_to_ktime(delay));
+> > > -       dev->power.timer_expires = ktime_to_ns(expires);
+> > > +       expires = ktime_get_mono_fast_ns() + (u64)delay * NSEC_PER_MSEC);
+> > > +       dev->power.timer_expires = expires;
+> > >         dev->power.timer_autosuspends = 0;
+> > >         hrtimer_start(&dev->power.suspend_timer, expires, HRTIMER_MODE_ABS);
+> > >
+> > > diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> > > index 54af4ee..fed5be7 100644
+> > > --- a/include/linux/pm_runtime.h
+> > > +++ b/include/linux/pm_runtime.h
+> > > @@ -105,7 +105,7 @@ static inline bool pm_runtime_callbacks_present(struct device *dev)
+> > >
+> > >  static inline void pm_runtime_mark_last_busy(struct device *dev)
+> > >  {
+> > > -       WRITE_ONCE(dev->power.last_busy, ktime_to_ns(ktime_get()));
+> > > +       WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
+> > >  }
+> > >
+> > >  static inline bool pm_runtime_is_irq_safe(struct device *dev)
+> > > --
+> > > 2.7.4
+> > >
