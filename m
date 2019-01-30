@@ -1,62 +1,42 @@
-From: Peter Shih <pihsun@chromium.org>
-Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
-Date: Wed, 30 Jan 2019 14:04:40 +0800
-Message-ID: <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
-References: <20190109055724.184692-1-pihsun@chromium.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Auto-register the driver as a thermal cooling
+ device if asked
+Date: Wed, 30 Jan 2019 12:04:55 +0530
+Message-ID: <20190130063455.f7wuv27zias5k5kp@vireshk-i7>
+References: <CAJZ5v0iwq15mwoa-LBN07fgNNurtBGodG6urgfnvMbGWj8vyAw@mail.gmail.com>
+ <fdff26d908c5338df44574085701ed93a64af079.1548825443.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190109055724.184692-1-pihsun@chromium.org>
+Content-Disposition: inline
+In-Reply-To: <fdff26d908c5338df44574085701ed93a64af079.1548825443.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Adding Michael Kao to cc list.
-
-On Wed, Jan 9, 2019 at 1:57 PM Pi-Hsun Shih <pihsun@chromium.org> wrote:
->
-> The mtk_thermal struct contains a 'struct mtk_thermal_bank banks[];',
-> but the allocation only allocates sizeof(struct mtk_thermal) bytes,
-> which cause out of bound access with the ->banks[] member. Change it to
-> a fixed size array instead.
->
-> Signed-off-by: Pi-Hsun Shih <pihsun@chromium.org>
+On 30-01-19, 10:52, Amit Kucheria wrote:
+> All cpufreq drivers do similar things to register as a cooling device.
+> Provide a cpufreq driver flag so drivers can just ask the cpufreq core
+> to register the cooling device on their behalf. This allows us to get
+> rid of duplicated code in the drivers.
+> 
+> In order to allow this, we add a struct thermal_cooling_device pointer
+> to struct cpufreq_policy so that drivers don't need to store it in a
+> private data structure.
+> 
+> Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/thermal/mtk_thermal.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-> index 0691f260f6eabe..ea11edb3fcced6 100644
-> --- a/drivers/thermal/mtk_thermal.c
-> +++ b/drivers/thermal/mtk_thermal.c
-> @@ -159,6 +159,9 @@
->  #define MT7622_NUM_SENSORS_PER_ZONE    1
->  #define MT7622_TS1     0
->
-> +/* The maximum number of banks */
-> +#define MAX_NUM_ZONES          8
-> +
->  struct mtk_thermal;
->
->  struct thermal_bank_cfg {
-> @@ -178,7 +181,7 @@ struct mtk_thermal_data {
->         const int *sensor_mux_values;
->         const int *msr;
->         const int *adcpnp;
-> -       struct thermal_bank_cfg bank_data[];
-> +       struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
->  };
->
->  struct mtk_thermal {
-> @@ -197,7 +200,7 @@ struct mtk_thermal {
->         s32 vts[MT8173_NUM_SENSORS];
->
->         const struct mtk_thermal_data *conf;
-> -       struct mtk_thermal_bank banks[];
-> +       struct mtk_thermal_bank banks[MAX_NUM_ZONES];
->  };
->
->  /* MT8173 thermal sensor data */
-> --
-> 2.20.1.97.g81188d93c3-goog
->
+>  drivers/cpufreq/cpufreq.c | 11 +++++++++++
+>  include/linux/cpufreq.h   |  9 +++++++++
+>  2 files changed, 20 insertions(+)
+
+Thanks for the rework. This looks good now.
+
+-- 
+viresh
