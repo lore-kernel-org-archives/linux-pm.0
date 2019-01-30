@@ -1,80 +1,99 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: mtk: Allocate enough space for mtk_thermal.
-Date: Wed, 30 Jan 2019 08:44:31 +0100
-Message-ID: <81115ad5-521e-557b-d229-1effb92068a4@linaro.org>
-References: <20190109055724.184692-1-pihsun@chromium.org>
- <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH] PM-runtime: fix deadlock with ktime
+Date: Wed, 30 Jan 2019 09:16:34 +0100
+Message-ID: <1548836194-15264-1-git-send-email-vincent.guittot@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANdKZ0fRckMSUwHyChgBw162cVQe9_mnd_G9vwt=+CV+Y0WFfw@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Shih <pihsun@chromium.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, Michael.Kao@mediatek.com
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, biju.das@bp.renesas.com
+Cc: geert@linux-m68k.org, linux-renesas-soc@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30/01/2019 07:04, Peter Shih wrote:
-> Adding Michael Kao to cc list.
-> 
-> On Wed, Jan 9, 2019 at 1:57 PM Pi-Hsun Shih <pihsun@chromium.org> wrote:
->>
->> The mtk_thermal struct contains a 'struct mtk_thermal_bank banks[];',
->> but the allocation only allocates sizeof(struct mtk_thermal) bytes,
->> which cause out of bound access with the ->banks[] member. Change it to
->> a fixed size array instead.
+A deadlock has been seen when swicthing clocksources which use PM runtime.
+The call path is:
+change_clocksource
+    ...
+    write_seqcount_begin
+    ...
+    timekeeping_update
+        ...
+        sh_cmt_clocksource_enable
+            ...
+            rpm_resume
+                pm_runtime_mark_last_busy
+                    ktime_get
+                        do
+                            read_seqcount_begin
+                        while read_seqcount_retry
+    ....
+    write_seqcount_end
 
-Even if the fix is correct, it pushes back the bug later in time if a
-new board containing more than MAX_NUM_ZONES is introduced. I suggest to
-dynamically allocate the array with the 'num_banks' value.
+Although we should be safe because we haven't yet changed the clocksource
+at that time, we can't because of seqcount protection.
 
+Use ktime_get_mono_fast_ns instead which is lock safe for such case
 
->> Signed-off-by: Pi-Hsun Shih <pihsun@chromium.org>
->> ---
->>  drivers/thermal/mtk_thermal.c | 7 +++++--
->>  1 file changed, 5 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
->> index 0691f260f6eabe..ea11edb3fcced6 100644
->> --- a/drivers/thermal/mtk_thermal.c
->> +++ b/drivers/thermal/mtk_thermal.c
->> @@ -159,6 +159,9 @@
->>  #define MT7622_NUM_SENSORS_PER_ZONE    1
->>  #define MT7622_TS1     0
->>
->> +/* The maximum number of banks */
->> +#define MAX_NUM_ZONES          8
->> +
->>  struct mtk_thermal;
->>
->>  struct thermal_bank_cfg {
->> @@ -178,7 +181,7 @@ struct mtk_thermal_data {
->>         const int *sensor_mux_values;
->>         const int *msr;
->>         const int *adcpnp;
->> -       struct thermal_bank_cfg bank_data[];
->> +       struct thermal_bank_cfg bank_data[MAX_NUM_ZONES];
->>  };
->>
->>  struct mtk_thermal {
->> @@ -197,7 +200,7 @@ struct mtk_thermal {
->>         s32 vts[MT8173_NUM_SENSORS];
->>
->>         const struct mtk_thermal_data *conf;
->> -       struct mtk_thermal_bank banks[];
->> +       struct mtk_thermal_bank banks[MAX_NUM_ZONES];
->>  };
->>
->>  /* MT8173 thermal sensor data */
->> --
->> 2.20.1.97.g81188d93c3-goog
->>
+Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using hrtimers")
+Reported-by: Biju Das <biju.das@bp.renesas.com>
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ drivers/base/power/runtime.c | 10 +++++-----
+ include/linux/pm_runtime.h   |  2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 457be03..708a13f 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -130,7 +130,7 @@ u64 pm_runtime_autosuspend_expiration(struct device *dev)
+ {
+ 	int autosuspend_delay;
+ 	u64 last_busy, expires = 0;
+-	u64 now = ktime_to_ns(ktime_get());
++	u64 now = ktime_get_mono_fast_ns();
+ 
+ 	if (!dev->power.use_autosuspend)
+ 		goto out;
+@@ -909,7 +909,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+ 	 * If 'expires' is after the current time, we've been called
+ 	 * too early.
+ 	 */
+-	if (expires > 0 && expires < ktime_to_ns(ktime_get())) {
++	if (expires > 0 && expires < ktime_get_mono_fast_ns()) {
+ 		dev->power.timer_expires = 0;
+ 		rpm_suspend(dev, dev->power.timer_autosuspends ?
+ 		    (RPM_ASYNC | RPM_AUTO) : RPM_ASYNC);
+@@ -928,7 +928,7 @@ static enum hrtimer_restart  pm_suspend_timer_fn(struct hrtimer *timer)
+ int pm_schedule_suspend(struct device *dev, unsigned int delay)
+ {
+ 	unsigned long flags;
+-	ktime_t expires;
++	u64 expires;
+ 	int retval;
+ 
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+@@ -945,8 +945,8 @@ int pm_schedule_suspend(struct device *dev, unsigned int delay)
+ 	/* Other scheduled or pending requests need to be canceled. */
+ 	pm_runtime_cancel_pending(dev);
+ 
+-	expires = ktime_add(ktime_get(), ms_to_ktime(delay));
+-	dev->power.timer_expires = ktime_to_ns(expires);
++	expires = ktime_get_mono_fast_ns() + (u64)delay * NSEC_PER_MSEC);
++	dev->power.timer_expires = expires;
+ 	dev->power.timer_autosuspends = 0;
+ 	hrtimer_start(&dev->power.suspend_timer, expires, HRTIMER_MODE_ABS);
+ 
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index 54af4ee..fed5be7 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -105,7 +105,7 @@ static inline bool pm_runtime_callbacks_present(struct device *dev)
+ 
+ static inline void pm_runtime_mark_last_busy(struct device *dev)
+ {
+-	WRITE_ONCE(dev->power.last_busy, ktime_to_ns(ktime_get()));
++	WRITE_ONCE(dev->power.last_busy, ktime_get_mono_fast_ns());
+ }
+ 
+ static inline bool pm_runtime_is_irq_safe(struct device *dev)
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.7.4
