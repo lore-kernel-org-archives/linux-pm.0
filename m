@@ -1,210 +1,172 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC cpufreq
-Date: Thu, 31 Jan 2019 00:42:41 +0100
-Message-ID: <5822895.TaUaiHzPlI@aspire.rjw.lan>
-References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
+Subject: Re: [driver-core PATCH v10 3/9] driver core: Probe devices asynchronously instead of the driver
+Date: Thu, 31 Jan 2019 00:44:55 +0100
+Message-ID: <5979079.r7hYkyMCOG@aspire.rjw.lan>
+References: <154818223154.18753.12374915684623789884.stgit@ahduyck-desk1.amr.corp.intel.com> <154818236120.18753.12206175244667700878.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
+In-Reply-To: <154818236120.18753.12206175244667700878.stgit@ahduyck-desk1.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Cc: viresh.kumar@linaro.org, robert.moore@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
+To: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, mcgrof@kernel.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 17, 2019 12:00:11 PM CET Xiongfeng Wang wrote:
-> Hisilicon chips do not support delivered performance counter register
-> and reference performance counter register. But the platform can
-> calculate the real performance using its own method. This patch provide
-> a workaround for this problem, and other platforms can also use this
-> workaround framework. We reuse the desired performance register to
-> store the real performance calculated by the platform. After the
-> platform finished the frequency adjust, it gets the real performance and
-> writes it into desired performance register. OS can use it to calculate
-> the real frequency.
+On Tuesday, January 22, 2019 7:39:21 PM CET Alexander Duyck wrote:
+> Probe devices asynchronously instead of the driver. This results in us
+> seeing the same behavior if the device is registered before the driver or
+> after. This way we can avoid serializing the initialization should the
+> driver not be loaded until after the devices have already been added.
 > 
-> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+> The motivation behind this is that if we have a set of devices that
+> take a significant amount of time to load we can greatly reduce the time to
+> load by processing them in parallel instead of one at a time. In addition,
+> each device can exist on a different node so placing a single thread on one
+> CPU to initialize all of the devices for a given driver can result in poor
+> performance on a system with multiple nodes.
+> 
+> This approach can reduce the time needed to scan SCSI LUNs significantly.
+> The only way to realize that speedup is by enabling more concurrency which
+> is what is achieved with this patch.
+> 
+> To achieve this it was necessary to add a new member "async_driver" to the
+> device_private structure to store the driver pointer while we wait on the
+> deferred probe call.
+> 
+> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+> Reviewed-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 
-Overall, I would do it differently.
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 > ---
->  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
->  drivers/cpufreq/Kconfig.arm    |  7 +++++
->  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
->  include/acpi/cppc_acpi.h       |  4 +++
->  4 files changed, 102 insertions(+)
+>  drivers/base/base.h |    2 ++
+>  drivers/base/bus.c  |   23 +++--------------------
+>  drivers/base/dd.c   |   43 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 48 insertions(+), 20 deletions(-)
 > 
-> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-> index 217a782..0cdaf7e 100644
-> --- a/drivers/acpi/cppc_acpi.c
-> +++ b/drivers/acpi/cppc_acpi.c
-> @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
->  	return ret_val;
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index b6966511b0ca..b405436ee28e 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -65,6 +65,7 @@ struct driver_private {
+>   *	binding of drivers which were unable to get all the resources needed by
+>   *	the device; typically because it depends on another driver getting
+>   *	probed first.
+> + * @async_driver - pointer to device driver awaiting probe via async_probe
+>   * @device - pointer back to the struct device that this structure is
+>   * associated with.
+>   * @dead - This device is currently either in the process of or has been
+> @@ -80,6 +81,7 @@ struct device_private {
+>  	struct klist_node knode_bus;
+>  	struct klist_node knode_class;
+>  	struct list_head deferred_probe;
+> +	struct device_driver *async_driver;
+>  	struct device *device;
+>  	u8 dead:1;
+>  };
+> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+> index cfa5b63b5582..0a58e969f8b7 100644
+> --- a/drivers/base/bus.c
+> +++ b/drivers/base/bus.c
+> @@ -610,17 +610,6 @@ static ssize_t uevent_store(struct device_driver *drv, const char *buf,
+>  }
+>  static DRIVER_ATTR_WO(uevent);
+>  
+> -static void driver_attach_async(void *_drv, async_cookie_t cookie)
+> -{
+> -	struct device_driver *drv = _drv;
+> -	int ret;
+> -
+> -	ret = driver_attach(drv);
+> -
+> -	pr_debug("bus: '%s': driver %s async attach completed: %d\n",
+> -		 drv->bus->name, drv->name, ret);
+> -}
+> -
+>  /**
+>   * bus_add_driver - Add a driver to the bus.
+>   * @drv: driver.
+> @@ -653,15 +642,9 @@ int bus_add_driver(struct device_driver *drv)
+>  
+>  	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
+>  	if (drv->bus->p->drivers_autoprobe) {
+> -		if (driver_allows_async_probing(drv)) {
+> -			pr_debug("bus: '%s': probing driver %s asynchronously\n",
+> -				drv->bus->name, drv->name);
+> -			async_schedule(driver_attach_async, drv);
+> -		} else {
+> -			error = driver_attach(drv);
+> -			if (error)
+> -				goto out_unregister;
+> -		}
+> +		error = driver_attach(drv);
+> +		if (error)
+> +			goto out_unregister;
+>  	}
+>  	module_add_driver(drv->owner, drv);
+>  
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 34556359c7da..627ad05064e0 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -925,6 +925,30 @@ int device_driver_attach(struct device_driver *drv, struct device *dev)
+>  	return ret;
 >  }
 >  
-> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> +/*
-> + * We reuse the desired performance register to store the real performance
-> + * calculated by the platform.
-> + */
-> +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
+> +static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 > +{
-> +	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
-> +	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-> +	struct cpc_register_resource *desired_reg;
-> +	u64 desired_perf;
-> +	int ret;
+> +	struct device *dev = _dev;
+> +	struct device_driver *drv;
+> +	int ret = 0;
+> +
+> +	__device_driver_lock(dev, dev->parent);
+> +
+> +	drv = dev->p->async_driver;
 > +
 > +	/*
-> +	 * Make sure the platform has finished the frequency adjust
-> +	 * and wrote the real performance in desired performance register
+> +	 * If device has been removed or someone has already successfully
+> +	 * bound a driver before us just skip the driver probe call.
 > +	 */
-> +	ret = check_pcc_chan(pcc_ss_id, false);
-> +	if (ret)
-> +		return 0;
+> +	if (!dev->p->dead && !dev->driver)
+> +		ret = driver_probe_device(drv, dev);
 > +
-> +	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
-> +	cpc_read(cpunum, desired_reg, &desired_perf);
+> +	__device_driver_unlock(dev, dev->parent);
 > +
-> +	return desired_perf;
+> +	dev_dbg(dev, "driver %s async attach completed: %d\n", drv->name, ret);
+> +
+> +	put_device(dev);
 > +}
-> +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
-> +#endif
-
-I would provide library routine to read desired_perf and it doesn't
-need to have anything to do with HiSi at this level.  Also, it doesn't
-need to be compiled conditionally.  Just call it cppc_get_desired_perf()
-or similar.
-
-Then, you can use it to implement the quirk in the cpufreq driver.
-
 > +
->  /**
->   * cppc_get_perf_caps - Get a CPUs performance capabilities.
->   * @cpunum: CPU from which to get capabilities info.
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 688f102..236bd07 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
->  
->  	  If in doubt, say N.
->  
-> +config HISILICON_CPPC_CPUFREQ_WORKAROUND
-> +	bool "Workaround for Hisilicon CPPC Cpufreq"
-
-What is the reason for this to be a user-selectable option?
-
-> +	default y
-> +	depends on ACPI_CPPC_CPUFREQ && ARM64
-> +	help
-> +	  This option enables a workaround for Hisilicon CPPC Cpufreq.
-> +
->  config ARM_ARMADA_37XX_CPUFREQ
->  	tristate "Armada 37xx CPUFreq support"
->  	depends on ARCH_MVEBU && CPUFREQ_DT
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index fd25c21c..b910e84 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -33,6 +33,13 @@
->  /* Offest in the DMI processor structure for the max frequency */
->  #define DMI_PROCESSOR_MAX_SPEED  0x14
->  
-> +struct cppc_get_rate_workaround_info {
-> +	char oem_id[ACPI_OEM_ID_SIZE +1];
-> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
-> +	u32 oem_revision;
-> +	unsigned int (*get)(unsigned int cpu);
-> +};
-> +
->  /*
->   * These structs contain information parsed from per CPU
->   * ACPI _CPC structures.
-> @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
->  	.name = "cppc_cpufreq",
->  };
->  
-> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> +/*
-> + * When the platform does not support delivered performance counter or
-> + * reference performance counter, it can calculate the performance using the
-> + * platform specific mechanism. We reuse the desired performance register to
-> + * store the real performance calculated by the platform.
-> + */
-> +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
-> +{
-> +	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
-> +	u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
-> +
-> +	return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
-> +}
-> +#endif
-> +
-> +static struct cppc_get_rate_workaround_info wa_info[] = {
-> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> +	{
-> +		.oem_id		= "HISI  ",
-> +		.oem_table_id	= "HIP07   ",
-> +		.oem_revision	= 0,
-> +		.get = hisi_cppc_cpufreq_get_rate,
-> +	},
-> +	{
-> +		.oem_id		= "HISI  ",
-> +		.oem_table_id	= "HIP08   ",
-> +		.oem_revision	= 0,
-> +		.get = hisi_cppc_cpufreq_get_rate,
-> +	},
-> +#endif
-
-Is this #ifdef really necessary?
-
-> +	{},
-> +};
-> +
-> +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
-> +{
-> +	struct acpi_table_header *tbl;
-> +	acpi_status status = AE_OK;
-> +	int i;
-> +
-> +	status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
-> +	if (ACPI_FAILURE(status) || !tbl)
-> +		return;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
-> +		if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
-> +		    !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
-> +		    wa_info[i].oem_revision == tbl->oem_revision) {
-> +			cppc_cpufreq_driver->get = wa_info[i].get;
-> +			return;
-> +		}
-> +	}
-> +}
->  static int __init cppc_cpufreq_init(void)
+>  static int __driver_attach(struct device *dev, void *data)
 >  {
->  	int i, ret = 0;
-> @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
->  		goto out;
->  	}
+>  	struct device_driver *drv = data;
+> @@ -952,6 +976,25 @@ static int __driver_attach(struct device *dev, void *data)
+>  		return ret;
+>  	} /* ret > 0 means positive match */
 >  
-> +	cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
+> +	if (driver_allows_async_probing(drv)) {
+> +		/*
+> +		 * Instead of probing the device synchronously we will
+> +		 * probe it asynchronously to allow for more parallelism.
+> +		 *
+> +		 * We only take the device lock here in order to guarantee
+> +		 * that the dev->driver and async_driver fields are protected
+> +		 */
+> +		dev_dbg(dev, "probing driver %s asynchronously\n", drv->name);
+> +		device_lock(dev);
+> +		if (!dev->driver) {
+> +			get_device(dev);
+> +			dev->p->async_driver = drv;
+> +			async_schedule(__driver_attach_async_helper, dev);
+> +		}
+> +		device_unlock(dev);
+> +		return 0;
+> +	}
 > +
->  	ret = cpufreq_register_driver(&cppc_cpufreq_driver);
->  	if (ret)
->  		goto out;
-> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-> index 4f34734..be7400b 100644
-> --- a/include/acpi/cppc_acpi.h
-> +++ b/include/acpi/cppc_acpi.h
-> @@ -146,4 +146,8 @@ struct cppc_cpudata {
->  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
->  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
+>  	device_driver_attach(drv, dev);
 >  
-> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
-> +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
-> +#endif
-> +
->  #endif /* _CPPC_ACPI_H*/
+>  	return 0;
+> 
 > 
