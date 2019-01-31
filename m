@@ -1,82 +1,43 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v7 0/3] Move pm_runtime accounted time to raw nsec
-Date: Thu, 31 Jan 2019 09:06:48 +0100
-Message-ID: <CAKfTPtBo745LS1hy7PHLOUG3cp_bWxaRXnq0EKDJeLptUuwH9A@mail.gmail.com>
-References: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org>
- <2577730.BvIW2u5g9k@aspire.rjw.lan> <CAPDyKFpNqANViRhmZXLTbwvP-Gn7Xt1JxKS4noyBH08h7Y0CcA@mail.gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: Re: [PATCH v2 12/13] input: max77650: add onkey support
+Date: Thu, 31 Jan 2019 09:15:01 +0100
+Message-ID: <CAMRc=McaqqmU6S_Yz35ZMvhWtWO4hTASA0fmL5CT4JizbYgu4Q@mail.gmail.com>
+References: <20190129133545.1931-1-brgl@bgdev.pl> <20190129133545.1931-14-brgl@bgdev.pl>
+ <20190130185328.GA149208@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpNqANViRhmZXLTbwvP-Gn7Xt1JxKS4noyBH08h7Y0CcA@mail.gmail.com>
+In-Reply-To: <20190130185328.GA149208@dtor-ws>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 31 Jan 2019 at 08:44, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+=C5=9Br., 30 sty 2019 o 19:53 Dmitry Torokhov <dmitry.torokhov@gmail.com> n=
+apisa=C5=82(a):
 >
-> On Thu, 31 Jan 2019 at 00:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tue, Jan 29, 2019 at 02:35:44PM +0100, Bartosz Golaszewski wrote:
+> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > >
-> > On Wednesday, January 23, 2019 8:50:12 AM CET Vincent Guittot wrote:
-> > > Move pm_runtime accounted time to raw nsec. The subject of the patchset
-> > > has changed as 1st patch o the previous versions has been queued by
-> > > Rafael.
-> > >
-> > > Patch 1 set accounting_timestamp to 0 in pm_runtime_init and update it when enable.
-> > > So we remove ordering constraint between timekeeping_init and pm_runtime_init
-> > >
-> > > Patch 2 moves time accounting on raw ns. This patch initially used
-> > > ktime instead of raw ns but it was easier to move i915 driver on raw ns
-> > > than on ktime.
-> > >
-> > > Change since v6:
-> > > - move code that set accounting_timestamp in pm_runtime_enable
-> > >
-> > > Changes since v5:
-> > > - removed patches already queued.
-> > > - set accounting_timestamp to 0 in pm_runtime_init and update it when enable
-> > >
-> > > Changes since v4:
-> > > -Update commit message
-> > >
-> > > Changes since v3:
-> > > - Rebase on v4.20-rc7 without patch that has been queued by Rafael
-> > > - Simplify the new interface pm_runtime_suspended_time()
-> > >
-> > > Changes since v2:
-> > > - remove patch1 that has been queued by rafael
-> > > - add new interface in pm_runtime to get accounted time
-> > > - reorder patchset to prevent compilation error
-> > >
-> > > Changes since v1:
-> > > - updated commit message of patch 1
-> > > - Added patches 2 & 3 to move runtime_pm accounting on raw ns
-> > >
-> > > Thara Gopinath (1):
-> > >   PM-runtime: Replace jiffies based accounting with ktime-based
-> > >     accounting
-> > >
-> > > Vincent Guittot (1):
-> > >   PM-runtime: update accounting_timestamp only when enable
-> > >
-> > >  drivers/base/power/runtime.c | 26 ++++++++++++++++----------
-> > >  drivers/base/power/sysfs.c   | 11 ++++++++---
-> > >  include/linux/pm.h           |  6 +++---
-> > >  3 files changed, 27 insertions(+), 16 deletions(-)
+> > Add support for the push- and slide-button events for max77650.
 > >
-> > Both patches applied, thanks!
-> >
+> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 >
-> I had some comment on v6, none that needs to prevent this from being
-> applied and that can't be addressed as improvements on top.
+> Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+>
+> Please feel free to merge with other patches (MFD tree I suppose?).
+>
 
-I had put this on hold until fixing regression with hrtimer but i'm
-going to restart these improvements
+Hi Dmitry,
 
->
-> Feel free to add (if not too late) my:
->
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Kind regards
-> Uffe
+I'm not sure what the policy is on merging MFD drivers, but I'm seeing
+that Mark Brown has already picked up the regulator part into his tree
+(including the binding document). I think you can just pick up the
+input patches and it will simply not show up in Kconfig until the core
+mfd module is upstream.
+
+@Mark: could you please confirm it?
+
+Best regards,
+Bartosz Golaszewski
