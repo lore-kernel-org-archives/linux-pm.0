@@ -1,45 +1,193 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [PATCH v2 1/5] PM / OPP: Introduce a power estimation helper
-Date: Thu, 31 Jan 2019 15:07:04 +0530
-Message-ID: <20190131093704.43wzrwshscvdtoj2@vireshk-i7>
+Date: Thu, 31 Jan 2019 09:42:15 +0000
+Message-ID: <20190131094212.rjel77xcfvqj6tkr@queper01-lin>
 References: <20190130170506.20450-1-quentin.perret@arm.com>
  <20190130170506.20450-2-quentin.perret@arm.com>
  <20190130190703.GM81583@google.com>
- <20190131072209.nhbgid3cystvr2p5@vireshk-i7>
- <20190131093418.umsbh4eevgod42sh@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190131093418.umsbh4eevgod42sh@queper01-lin>
+In-Reply-To: <20190130190703.GM81583@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Matthias Kaehlcke <mka@chromium.org>, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 31-01-19, 09:34, Quentin Perret wrote:
-> On Thursday 31 Jan 2019 at 12:52:09 (+0530), Viresh Kumar wrote:
-> > On 30-01-19, 11:07, Matthias Kaehlcke wrote:
-> > > On Wed, Jan 30, 2019 at 05:05:02PM +0000, Quentin Perret wrote:
-> > > > +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
-> > > > +					 int cpu)
-> > > 
-> > > why __maybe_unused?
-> > 
-> > Yeah, it isn't required I think. He probably added it for the case
-> > where CONFIG_ENERGY_MODEL=n, but even then an inline routine is
-> > defined which will accept it as argument and wouldn't do anything with
-> > it. Had it been a macro, we would have required __maybe_unused but not
-> > now.
-> 
-> The thing is, the EM_DATA_CB() macro _is_ stubbed for
-> CONFIG_ENERGY_MODEL=n:
-> 
-> https://elixir.bootlin.com/linux/v5.0-rc4/source/include/linux/energy_model.h#L165
-> 
-> So, without __maybe_unused you get do get a compiler warning.
+Hi Matthias,
 
-Yeah, I almost got to it and still missed it :)
+On Wednesday 30 Jan 2019 at 11:07:03 (-0800), Matthias Kaehlcke wrote:
+> > diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> > index 06f0f632ec47..4c8bf172e9ed 100644
+> > --- a/drivers/opp/of.c
+> > +++ b/drivers/opp/of.c
+> > @@ -20,6 +20,7 @@
+> >  #include <linux/pm_domain.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/export.h>
+> > +#include <linux/energy_model.h>
+> 
+> nit: AFAIK typically alphabetical order is used for includes, though
+> this file doesn't exactly adhere to it.
 
--- 
-viresh
+Yeah that's what I was thinking too. Since nothing is in order here I
+figured there wasn't a best place to put it so I just stick it there. I
+happy to re-order all of them if necessary.
+
+> 
+> >  #include "opp.h"
+> >  
+> > @@ -1047,3 +1048,90 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+> >  	return of_node_get(opp->np);
+> >  }
+> >  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
+> > +
+> > +/*
+> > + * Callback function provided to the Energy Model framework upon registration.
+> > + * This computes the power estimated by @CPU at the first OPP above @kHz (ceil),
+> 
+> that's not entirely correct, it could be the OPP at @kHz.
+
+Right, I'll update that.
+
+> 
+> > + * and updates @kHz and @mW accordingly. The power is estimated as
+> > + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
+> > + * the voltage and frequency of the OPP.
+> > + *
+> > + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> > + * calculation failed because of missing parameters, 0 otherwise.
+> > + */
+> > +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
+> > +					 int cpu)
+> 
+> why __maybe_unused?
+
+To avoid compiler warnings with CONFIG_ENERGY_MODEL=n, see my other
+email ;-)
+
+> > +{
+> > +	struct device *cpu_dev;
+> > +	struct dev_pm_opp *opp;
+> > +	struct device_node *np;
+> > +	unsigned long mV, Hz;
+> > +	u32 cap;
+> > +	u64 tmp;
+> > +	int ret;
+> > +
+> > +	cpu_dev = get_cpu_device(cpu);
+> > +	if (!cpu_dev)
+> > +		return -ENODEV;
+> > +
+> > +	np = of_node_get(cpu_dev->of_node);
+> > +	if (!np)
+> > +		return -EINVAL;
+> > +
+> > +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> > +	of_node_put(np);
+> > +	if (ret)
+> > +		return -EINVAL;
+> > +
+> > +	Hz = *kHz * 1000;
+> > +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> > +	if (IS_ERR(opp))
+> > +		return -EINVAL;
+> > +
+> > +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> > +	dev_pm_opp_put(opp);
+> > +	if (!mV)
+> > +		return -EINVAL;
+> > +
+> > +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
+> > +	do_div(tmp, 1000000000);
+> > +
+> > +	*mW = (unsigned long)tmp;
+> > +	*kHz = Hz / 1000;
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +/**
+> > + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
+> > + * @cpus	: CPUs for which an Energy Model has to be registered
+> > + * @nr_opp	: Number of OPPs to register in the Energy Model
+> > + *
+> > + * This checks whether the "dynamic-power-coefficient" devicetree binding has
+> 
+> s/binding/property/ ?
+
+Sounds good.
+
+> 
+> > + * been specified, and tries to register an Energy Model with it if it has.
+> > + */
+> > +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+> 
+> Is the nr_opp parameter really needed? The function looks up the CPU
+> device and hence could determine the OPP count itself with
+> dev_pm_opp_get_opp_count(). I see most cpufreq drivers call
+> dev_pm_opp_get_opp_count() anyway, so passing the count as parameter
+> can be considered a small optimization, not sure how relevant it is
+> though, since dev_pm_opp_of_register_em() isn't called frequently.
+
+Yeah, I figured since most callers of dev_pm_opp_of_register_em()
+already counted the OPPs, I could as well use the data instead of
+counting again. I mean, dev_pm_opp_get_count() has to traverse the whole
+list every time, so there is no point in doing that twice. Not a huge
+deal I guess.
+
+> 
+> > +{
+> > +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
+> > +	int ret, cpu = cpumask_first(cpus);
+> > +	struct device *cpu_dev;
+> > +	struct device_node *np;
+> > +	u32 cap;
+> > +
+> > +	cpu_dev = get_cpu_device(cpu);
+> > +	if (!cpu_dev)
+> > +		return;
+> > +
+> > +	np = of_node_get(cpu_dev->of_node);
+> > +	if (!np)
+> > +		return;
+> > +
+> > +	/* Don't register an EM without the right DT binding */
+> > +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> > +	of_node_put(np);
+> > +	if (ret || !cap)
+> > +		return;
+> > +
+> > +	em_register_perf_domain(cpus, nr_opp, &em_cb);
+> > +}
+> > +EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
+> > diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> > index b895f4e79868..58ae08b024bd 100644
+> > --- a/include/linux/pm_opp.h
+> > +++ b/include/linux/pm_opp.h
+> > @@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+> >  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+> >  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
+> >  int of_get_required_opp_performance_state(struct device_node *np, int index);
+> > +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp);
+> >  #else
+> >  static inline int dev_pm_opp_of_add_table(struct device *dev)
+> >  {
+> > @@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+> >  {
+> >  	return NULL;
+> >  }
+> > +
+> > +static inline void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+> > +{
+> > +}
+> > +
+> >  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
+> >  {
+> >  	return -ENOTSUPP;
+> 
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+
+Thank you very much !
+Quentin
