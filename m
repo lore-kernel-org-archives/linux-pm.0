@@ -1,199 +1,109 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during probe
-Date: Thu, 31 Jan 2019 15:30:24 +0100
-Message-ID: <20190131143024.GO23438@ulmo>
-References: <1548414418-5785-1-git-send-email-spujar@nvidia.com>
- <b631310f-93fa-ef4b-7014-d97fcfb2dcdf@nvidia.com>
- <s5ha7jicd4l.wl-tiwai@suse.de>
- <20190131110530.GA23438@ulmo>
- <s5htvhpax8s.wl-tiwai@suse.de>
- <CAJZ5v0i_G36Cw3ZvDxyU2F+pBpiw9i=3_wfQ3tDh3_JgOAb3zw@mail.gmail.com>
- <s5hh8dpavhw.wl-tiwai@suse.de>
- <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
+From: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Subject: Re: [driver-core PATCH v10 0/9] Add NUMA aware async_schedule calls
+Date: Thu, 31 Jan 2019 16:17:31 +0100
+Message-ID: <20190131151731.GA19261@kroah.com>
+References: <154818223154.18753.12374915684623789884.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="Pk/CTwBz1VvfPIDp"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jon Hunter <jonathanh@nvidia.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Sameer Pujar <spujar@nvidia.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
+In-Reply-To: <154818223154.18753.12374915684623789884.stgit-+uVpp3jiz/SWyQ3uPIV3rPooFf0ArEBIu+b9c/7xato@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Jan 22, 2019 at 10:39:05AM -0800, Alexander Duyck wrote:
+> This patch set provides functionality that will help to improve the
+> locality of the async_schedule calls used to provide deferred
+> initialization.
+> 
+> This patch set originally started out focused on just the one call to
+> async_schedule_domain in the nvdimm tree that was being used to defer the
+> device_add call however after doing some digging I realized the scope of
+> this was much broader than I had originally planned. As such I went
+> through and reworked the underlying infrastructure down to replacing the
+> queue_work call itself with a function of my own and opted to try and
+> provide a NUMA aware solution that would work for a broader audience.
+> 
+> In addition I have added several tweaks and/or clean-ups to the front of the
+> patch set. Patches 1 through 3 address a number of issues that actually were
+> causing the existing async_schedule calls to not show the performance that
+> they could due to either not scaling on a per device basis, or due to issues
+> that could result in a potential race. For example, patch 3 addresses the
+> fact that we were calling async_schedule once per driver instead of once
+> per device, and as a result we would have still ended up with devices
+> being probed on a non-local node without addressing this first.
+> 
+> I have also updated the kernel module used to test async driver probing so
+> that it can expose the original issue I was attempting to address.
+> It will fail on a system of asynchronous work either takes longer than it
+> takes to load a single device and a single driver with a device already
+> added. It will also fail if the NUMA node that the driver is loaded on does
+> not match the NUMA node the device is associated with.
+> 
+> RFC->v1:
+>     Dropped nvdimm patch to submit later.
+>         It relies on code in libnvdimm development tree.
+>     Simplified queue_work_near to just convert node into a CPU.
+>     Split up drivers core and PM core patches.
+> v1->v2:
+>     Renamed queue_work_near to queue_work_node
+>     Added WARN_ON_ONCE if we use queue_work_node with per-cpu workqueue
+> v2->v3:
+>     Added Acked-by for queue_work_node patch
+>     Continued rename from _near to _node to be consistent with queue_work_node
+>         Renamed async_schedule_near_domain to async_schedule_node_domain
+>         Renamed async_schedule_near to async_schedule_node
+>     Added kerneldoc for new async_schedule_XXX functions
+>     Updated patch description for patch 4 to include data on potential gains
+> v3->v4
+>     Added patch to consolidate use of need_parent_lock
+>     Make asynchronous driver probing explicit about use of drvdata
+> v4->v5
+>     Added patch to move async_synchronize_full to address deadlock
+>     Added bit async_probe to act as mutex for probe/remove calls
+>     Added back nvdimm patch as code it relies on is now in Linus's tree
+>     Incorporated review comments on parent & device locking consolidation
+>     Rebased on latest linux-next
+> v5->v6:
+>     Drop the "This patch" or "This change" from start of patch descriptions.
+>     Drop unnecessary parenthesis in first patch
+>     Use same wording for "selecting a CPU" in comments added in first patch
+>     Added kernel documentation for async_probe member of device
+>     Fixed up comments for async_schedule calls in patch 2
+>     Moved code related setting async driver out of device.h and into dd.c
+>     Added Reviewed-by for several patches
+> v6->v7:
+>     Fixed typo which had kernel doc refer to "lock" when I meant "unlock"
+>     Dropped "bool X:1" to "u8 X:1" from patch description
+>     Added async_driver to device_private structure to store driver
+>     Dropped unecessary code shuffle from async_probe patch
+>     Reordered patches to move fixes up to front
+>     Added Reviewed-by for several patches
+>     Updated cover page and patch descriptions throughout the set
+> v7->v8:
+>     Replaced async_probe value with dead, only apply dead in device_del
+>     Dropped Reviewed-by from patch 2 due to significant changes
+>     Added Reviewed-by for patches reviewed by Luis Chamberlain
+> v8->v9:
+>     Dropped patch 1 as it was applied, shifted remaining patches by 1
+>     Added new patch 9 that adds test framework for NUMA and sequential init
+>     Tweaked what is now patch 1, and added Reviewed-by from Dan Williams
+> v9->v10:
+>     Moved "dead" from device struct to device_private struct
+>     Added Reviewed-by from Rafael to patch 1
+>     Rebased on latest linux-next
 
---Pk/CTwBz1VvfPIDp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for sticking with this, now all queued up.
 
-On Thu, Jan 31, 2019 at 01:10:01PM +0100, Rafael J. Wysocki wrote:
-> On Thu, Jan 31, 2019 at 12:59 PM Takashi Iwai <tiwai@suse.de> wrote:
-> >
-> > On Thu, 31 Jan 2019 12:46:54 +0100,
-> > Rafael J. Wysocki wrote:
-> > >
-> > > On Thu, Jan 31, 2019 at 12:21 PM Takashi Iwai <tiwai@suse.de> wrote:
-> > > >
-> > > > On Thu, 31 Jan 2019 12:05:30 +0100,
-> > > > Thierry Reding wrote:
-> > > > >
-> > > > > On Wed, Jan 30, 2019 at 05:40:42PM +0100, Takashi Iwai wrote:
-> > >
-> > > [cut]
-> > >
-> > > > > > If I understand correctly the code, the pm domain is already ac=
-tivated
-> > > > > > at calling driver's probe callback.
-> > > > >
-> > > > > As far as I can tell, the domain will also be powered off again a=
-fter
-> > > > > probe finished, unless the device grabs a runtime PM reference. T=
-his is
-> > > > > what happens via the dev->pm_domain->sync() call after successful=
- probe
-> > > > > of a driver.
-> > > >
-> > > > Ah, a good point.  This can be a problem with a probe work like this
-> > > > case.
-> > > >
-> > > > > It seems to me like it's not a very well defined case what to do =
-when a
-> > > > > device needs to be powered up but runtime PM is not enabled.
-> > > > >
-> > > > > Adding Rafael and linux-pm, maybe they can provide some guidance =
-on what
-> > > > > to do in these situations.
-> > > > >
-> > > > > To summarize, what we're debating here is how to handle powering =
-up a
-> > > > > device if the pm_runtime infrastructure doesn't take care of it. =
-Jon's
-> > > > > proposal here was, and we use this elsewhere, to do something lik=
-e this:
-> > > > >
-> > > > >       pm_runtime_enable(dev);
-> > > > >       if (!pm_runtime_enabled(dev)) {
-> > > > >               err =3D foo_runtime_resume(dev);
-> > > > >               if (err < 0)
-> > > > >                       goto fail;
-> > > > >       }
-> > > > >
-> > > > > So basically when runtime PM is not available, we explicitly "res=
-ume"
-> > > > > the device to power it up.
-> > > > >
-> > > > > It seems to me like that's a fairly common problem, so I'm wonder=
-ing if
-> > > > > there's something that the runtime PM core could do to help with =
-this.
-> > > > > Or perhaps there's already a way to achieve this that we're all
-> > > > > overlooking?
-> > > > >
-> > > > > Rafael, any suggestions?
-> > > >
-> > > > If any, a common helper would be appreciated, indeed.
-> > >
-> > > I'm not sure that I understand the problem correctly, so let me
-> > > restate it the way I understand it.
-> > >
-> > > What we're talking about is a driver ->probe() callback.  Runtime PM
-> > > is disabled initially and the device is off.  It needs to be powered
-> > > up, but the way to do that depends on some configuration of the board
-> > > etc., so ideally
-> > >
-> > > pm_runtime_enable(dev);
-> > > ret =3D pm_runtime_resume(dev);
-> > >
-> > > should just work, but the question is what to do if runtime PM doesn't
-> > > work as expected.  That is, CONFIG_PM_RUNTIME is unset?  Or something
-> > > else?
-> >
-> > Yes, the question is how to write the code for both with and without
-> > CONFIG_PM (or CONFIG_PM_RUNTIME).
->=20
-> This basically is about setup, because after that point all should
-> just work in both cases.
->=20
-> Personally, I would do
->=20
-> if (IS_ENABLED(CONFIG_PM)) {
->   do setup based on pm-runtime
-> } else {
->   do manual setup
-> }
->=20
-> > Right now, we have a code like below, pushing the initialization in an
-> > async work and let the probe returning quickly.
-> >
-> >         hda_tegra_probe() {
-> >                 ....
->=20
-> So why don't you do
->=20
-> if (!IS_ENABLED(CONFIG_PM)) {
->   do manual clock setup
-> }
->=20
-> here?
-
-I think that's exactly what Jon and Sameer were proposing, although the
-discussion started primarily because of the way it was done.
-
-So basically the idea was to do:
-
-	pm_runtime_enable()
-	if (!pm_runtime_enabled())  /* basically !IS_ENABLED(CONFIG_PM) */
-		hda_runtime_resume()
-
-So we're not calling pm_runtime_resume() but rather the driver's
-implementation of it. This is to avoid duplicating the code, which under
-some circumstances can be fairly long. Duplicating is also error prone
-because both instances may not always be in sync.
-
-My understanding is that Takashi had reservations about using this kind
-of construct because, well, frankly, it looks a little weird. We'd also
-likely want to have a similar construct again in the ->remove() callback
-to make sure we properly power off the device when it is no longer
-needed. I'm just wondering if perhaps there should be a mechanism in the
-core to take care of this, because this is basically something that we'd
-need to do for every single driver.
-
-For example, if !CONFIG_PM couldn't the pm_runtime_enable() function be
-modified to do the above? This would be somewhat tricky because drivers
-usually use SET_RUNTIME_PM_OPS to populate the struct dev_pm_ops and
-that would result in an empty structure if !CONFIG_PM, but we could
-probably work around that by adding a __SET_RUNTIME_PM_OPS that would
-never be compiled out for this kind of case. Or such drivers could even
-manually set .runtime_suspend and .runtime_resume to make sure they're
-always populated.
-
-Another way out of this would be to make sure we never run into the case
-where runtime PM is disabled. If we always "select PM" on Tegra, then PM
-should always be available. But is it guaranteed that runtime PM for the
-devices is functional in that case? From a cursory look at the code it
-would seem that way.
-
-Thierry
-
---Pk/CTwBz1VvfPIDp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlxTBn4ACgkQ3SOs138+
-s6G4XA/+LliVo6vuvnFmCZ1Afg8ldDBnoTyh5vSoDAOAnpFTyPBGeIzbLz7nTKJ1
-xanF3oFKTYkpQcrJ1mndXpt60MsUul33ZfOGfMNzL7GrBzNLpWS+qBfliPnsXNIv
-tnqgk7LXgaHhqtIABpqcdoAvMVh+HdC1V6WrYYmnfLP/PiJsLL+wYBcwVcNzpkCv
-iEq9XvbCotjuMiWEK1r5WcM20pl6Prspw2gfiOYj1DXaELWEpb6Ky6xTEM9NYMv+
-L7hHO4uwvYBoUB1gz8zbpZeaPFWwFzva1/YUBXidthKmSHh/0IO85Ab7izcwTtq+
-f4O0svexTB/my3lia+MHWkLnwKTowb7oi/owliXtPU4HIE3YCUzROtnCC9Dz8toO
-HWu6xH9IjVgU/0Jb7gDWA2k9drw2kNlvZPrGL8Me+IwmWZJZGzMMCL/IeqJuKOMl
-fI6gOoM3iWX8kUN0wiIuMTKUUoaR5guIyfdSa77X4ThqGdFm5oaRw0YbHNcyPiFZ
-/xWnlnlwHsArCi1rC9NaJpOV3PmAZwRjrZlB9CV9YtbdDOgfkF356c2W3IfPdWPq
-mORoFoqU0EoPbhrDcdprcNgDH80LqRZ5S6+D7SxuFjJ2SrkFmlazkyrYrZZIOBn+
-wfdq3iZa1uhAGnhScfcMPO06TZjU/zDhrmPaTZbrNPC9QWQR/mw=
-=zXax
------END PGP SIGNATURE-----
-
---Pk/CTwBz1VvfPIDp--
+greg k-h
