@@ -1,86 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Record stats when fast switching is enabled
-Date: Thu, 31 Jan 2019 14:00:04 +0530
-Message-ID: <20190131083004.rkxehycu4pbbx52s@vireshk-i7>
-References: <20190131015139.126890-1-mka@chromium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v3 0/8] Exynos5 Dynamic Memory Controller driver
+Date: Thu, 31 Jan 2019 09:49:46 +0100
+Message-ID: <1548924594-19084-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190131085005eucas1p1b218446d0112714bd784e54dd0167155@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190131015139.126890-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-01-19, 17:51, Matthias Kaehlcke wrote:
-> When fast switching is enabled currently no cpufreq stats are
-> recorded and the corresponding sysfs attributes appear empty (see
-> also commit 1aefc75b2449 ("cpufreq: stats: Make the stats code
-> non-modular")).
-> 
-> Record the stats after a successful fast switch and re-enable access
-> through sysfs when fast switching is enabled. Since
-> cpufreq_stats_update() can now be called in interrupt context (during
-> a fast switch) disable local IRQs while holding the stats spinlock.
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
-> The change is so simple that I wonder if I'm missing some important
-> reason why the stats can't/shouldn't be updated during/after a fast
-> switch ...
-> 
-> I would expect that holding the stats spinlock briefly in
-> cpufreq_stats_update() shouldn't be a problem. In theory it would
-> also be an option to have a per stats lock, though it seems overkill
-> from my (possibly ignorant) point of view.
-> ---
->  drivers/cpufreq/cpufreq.c       |  8 +++++++-
->  drivers/cpufreq/cpufreq_stats.c | 11 +++--------
->  2 files changed, 10 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e35a886e00bcf..63aadb0bbddfe 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1857,9 +1857,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
->  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
->  					unsigned int target_freq)
->  {
-> +	unsigned int freq;
-> +
->  	target_freq = clamp_val(target_freq, policy->min, policy->max);
->  
-> -	return cpufreq_driver->fast_switch(policy, target_freq);
-> +	freq = cpufreq_driver->fast_switch(policy, target_freq);
-> +	if (freq)
-> +		cpufreq_stats_record_transition(policy, freq);
-> +
-> +	return freq;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
->  
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index 1572129844a5b..21b919bfaeccf 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -30,11 +30,12 @@ struct cpufreq_stats {
->  static void cpufreq_stats_update(struct cpufreq_stats *stats)
->  {
->  	unsigned long long cur_time = get_jiffies_64();
-> +	unsigned long flags;
->  
-> -	spin_lock(&cpufreq_stats_lock);
-> +	spin_lock_irqsave(&cpufreq_stats_lock, flags);
->  	stats->time_in_state[stats->last_index] += cur_time - stats->last_time;
->  	stats->last_time = cur_time;
-> -	spin_unlock(&cpufreq_stats_lock);
-> +	spin_unlock_irqrestore(&cpufreq_stats_lock, flags);
->  }
+Hi all,
 
-The only problem that I can think of (or recall) is that this routine
-also gets called when time_in_state sysfs file is read and that can
-end up taking lock which the scheduler's hotpath will wait for.
+This is v3 of the patch set which adds support of Dynamic Memory Controller
+for Exynos5422 SoC.
+The driver supports Dynamic Voltage and Frequency Scaling
+for the DMC and DRAM. It also provides needed timings for different
+speed operations of the DRAM memory.
+The patch set is based on tag: v5.0-rc4
+
+Changes:
+v3:
+- in DTS align to proper indent the clocks and clock-names entries
+v2:
+- changed file name exynos5-dmc.c -> exynos5422-dmc.c
+  and related entries in other files
+- changed dt-binding file name
+- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
+- removed sysfs and print info messages (print only one line)
+- removed function exynos5_read_chip_info and compact code
+- changed dt-binding patch and move it up in the patch set
+- new entries in MAINTAINERS are added with the driver c code
+- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
+  entries moved to suggested location (before nocp nodes or after),
+  moved according to alphabetical order, compacted clocks names with right indent.
+
+Regards,
+Lukasz Luba
+
+Lukasz Luba (8):
+  clk: samsung: add needed IDs for DMC clocks in Exynos5420
+  clk: samsung: add new clocks for DMC for Exynos5422 SoC
+  clk: samsung: add BPLL rate table for Exynos 5422 SoC
+  drivers: devfreq: add DMC driver for Exynos5422
+  dt-bindings: devfreq: add Exynos5422 DMC device description
+  DT: arm: exynos: add DMC device for exynos5422
+  drivers: devfreq: events: add Exynos PPMU new events
+  ARM: exynos_defconfig: enable DMC driver
+
+ .../devicetree/bindings/devfreq/exynos5422-dmc.txt |  106 ++
+ MAINTAINERS                                        |    8 +
+ arch/arm/boot/dts/exynos5420.dtsi                  |   78 ++
+ arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |   22 +
+ arch/arm/configs/exynos_defconfig                  |    1 +
+ drivers/clk/samsung/clk-exynos5420.c               |   63 +-
+ drivers/devfreq/Kconfig                            |   13 +
+ drivers/devfreq/Makefile                           |    1 +
+ drivers/devfreq/event/exynos-ppmu.c                |    6 +
+ drivers/devfreq/exynos5422-dmc.c                   | 1274 ++++++++++++++++++++
+ include/dt-bindings/clock/exynos5420.h             |   18 +-
+ 11 files changed, 1584 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+ create mode 100644 drivers/devfreq/exynos5422-dmc.c
 
 -- 
-viresh
+2.7.4
