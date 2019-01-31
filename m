@@ -1,55 +1,75 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: [PATCH] cpuidle: dt: bail out if the idle-state DT node is not
- compatible
-Date: Thu, 31 Jan 2019 10:27:49 +0800
-Message-ID: <20190131022749.19046-1-josephl@nvidia.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [RFC PATCH v3 06/10] devicetree: bindings: Document first ROHM
+ BD70528 bindings
+Date: Thu, 31 Jan 2019 08:40:51 +0200
+Message-ID: <20190131064050.GC23791@localhost.localdomain>
+References: <cover.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
+ <eb5d03f3adc72db580a10f95ff6cb07aefce5b47.1548838724.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190130185344.GA14789@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-tegra@vger.kernel.org, Joseph Lo <josephl@nvidia.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190130185344.GA14789@bogus>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: mazziesaccount@gmail.com, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently, the DT of the idle states will be parsed first whether it's
-compatible or not. This could cause a warning message that comes from if
-the CPU doesn't support identical idle states. E.g. Tegra186 can run
-with 2 Cortex-A57 and 2 Denver cores with different idle states on
-different types of these cores.
+Hello Rob,
 
-We fix it to check the compatible string before the parsing procedures.
-So it can make sure it only goes through the idle states that the CPU
-supported.
+Thanks for taking the carefull look once again =)
 
-Signed-off-by: Joseph Lo <josephl@nvidia.com>
----
- drivers/cpuidle/dt_idle_states.c | 5 +++++
- 1 file changed, 5 insertions(+)
+On Wed, Jan 30, 2019 at 12:53:44PM -0600, Rob Herring wrote:
+> On Wed, Jan 30, 2019 at 11:09:55AM +0200, Matti Vaittinen wrote:
+> > Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
+> > drivers) and 4 GPIO pins which can be configured for I/O or
+> > as interrupt sources withe configurable trigger levels.
+> > 
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> > ---
+> >  .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 104 +++++++++++++++++++++
 
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-index 53342b7f1010..4a528908abb3 100644
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -180,6 +180,11 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
- 		if (!state_node)
- 			break;
- 
-+		if (!of_device_is_compatible(state_node, matches->compatible)) {
-+			err = -EINVAL;
-+			break;
-+		}
-+
- 		if (!of_device_is_available(state_node)) {
- 			of_node_put(state_node);
- 			continue;
+snip
+
+> > + - interrupt-parent	: Phandle to the parent interrupt controller.
+> 
+> Don't document this. It is implied and could be in a parent node.
+
+Allright. I'll remove this then.
+
+> > + - clock-frequency	: Should be 32768
+> 
+> Forget to drop this?
+
+Well spotted. The rate should come from parent clock. I'll drop this
+too.
+
+> > +Example:
+> > +/* external oscillator */
+> > +osc: oscillator {
+> > +	compatible = "fixed-clock";
+> > +	#clock-cells = <1>;
+> > +	clock-frequency  = <32768>;
+> > +	clock-output-names = "osc";
+> > +};
+> > +
+> > +pmic: bd70528@4b {
+> 
+> pmic@4b
+> 
+> Node names should be generic.
+
+Ok. I will change this.
+
+Br,
+	Matti
+
 -- 
-2.20.1
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
+
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
