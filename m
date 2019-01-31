@@ -1,121 +1,111 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 1/9] thermal: cpu_cooling: Require thermal core to be compiled in
-Date: Thu, 31 Jan 2019 00:53:19 +0100
-Message-ID: <4397205.6VUyJNULaB@aspire.rjw.lan>
-References: <cover.1548737236.git.amit.kucheria@linaro.org> <0d63ca44cff5f47ef0102b2c86b4fe9eca9b658b.1548737236.git.amit.kucheria@linaro.org>
+Subject: [PATCH] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
+Date: Thu, 31 Jan 2019 01:04:36 +0100
+Message-ID: <2038590.kmssd2ZIyd@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0d63ca44cff5f47ef0102b2c86b4fe9eca9b658b.1548737236.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Taniya Das <tdas@codeaurora.org>, Anson Huang <anson.huang@nxp.com>, linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 29, 2019 5:55:07 AM CET Amit Kucheria wrote:
-> The CPU cooling driver (cpu_cooling.c) allows the platform's cpufreq
-> driver to register as a cooling device and cool down the platform by
-> throttling the CPU frequency. In order to be able to auto-register a
-> cpufreq driver as a cooling device from the cpufreq core, we need access
-> to code inside cpu_cooling.c which, in turn, accesses code inside
-> thermal core.
-> 
-> CPU_FREQ is a bool while THERMAL is tristate.  In some configurations
-> (e.g. allmodconfig), CONFIG_THERMAL ends up as a module while
-> CONFIG_CPU_FREQ is compiled in. This leads to following error:
-> 
-> drivers/cpufreq/cpufreq.o: In function `cpufreq_offline':
-> cpufreq.c:(.text+0x407c): undefined reference to `cpufreq_cooling_unregister'
-> drivers/cpufreq/cpufreq.o: In function `cpufreq_online':
-> cpufreq.c:(.text+0x70c0): undefined reference to `of_cpufreq_cooling_register'
-> 
-> Given that platforms using CPU_THERMAL usually want it compiled-in so it
-> is available early in boot, make CPU_THERMAL depend on THERMAL being
-> compiled-in instead of allowing it to be a module.
-> 
-> As a result of this change, get rid of the ugly (!CPU_THERMAL ||
-> THERMAL) dependency in all cpufreq drivers using CPU_THERMAL.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig     | 3 ---
->  drivers/cpufreq/Kconfig.arm | 5 -----
->  drivers/thermal/Kconfig     | 1 +
->  3 files changed, 1 insertion(+), 8 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 608af20a3494..b22e6bba71f1 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -207,8 +207,6 @@ comment "CPU frequency scaling drivers"
->  config CPUFREQ_DT
->  	tristate "Generic DT based cpufreq driver"
->  	depends on HAVE_CLK && OF
-> -	# if CPU_THERMAL is on and THERMAL=m, CPUFREQ_DT cannot be =y:
-> -	depends on !CPU_THERMAL || THERMAL
->  	select CPUFREQ_DT_PLATDEV
->  	select PM_OPP
->  	help
-> @@ -327,7 +325,6 @@ endif
->  config QORIQ_CPUFREQ
->  	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
->  	depends on OF && COMMON_CLK && (PPC_E500MC || ARM || ARM64)
-> -	depends on !CPU_THERMAL || THERMAL
->  	select CLK_QORIQ
->  	help
->  	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 688f10227793..ca8567c3152c 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -29,8 +29,6 @@ config ARM_ARMADA_37XX_CPUFREQ
->  config ARM_BIG_LITTLE_CPUFREQ
->  	tristate "Generic ARM big LITTLE CPUfreq driver"
->  	depends on ARM_CPU_TOPOLOGY && HAVE_CLK
-> -	# if CPU_THERMAL is on and THERMAL=m, ARM_BIT_LITTLE_CPUFREQ cannot be =y
-> -	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
->  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
-> @@ -38,7 +36,6 @@ config ARM_BIG_LITTLE_CPUFREQ
->  config ARM_SCPI_CPUFREQ
->  	tristate "SCPI based CPUfreq driver"
->  	depends on ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-> -	depends on !CPU_THERMAL || THERMAL
->  	help
->  	  This adds the CPUfreq driver support for ARM platforms using SCPI
->  	  protocol for CPU power management.
-> @@ -93,7 +90,6 @@ config ARM_KIRKWOOD_CPUFREQ
->  config ARM_MEDIATEK_CPUFREQ
->  	tristate "CPU Frequency scaling support for MediaTek SoCs"
->  	depends on ARCH_MEDIATEK && REGULATOR
-> -	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
->  	  This adds the CPUFreq driver support for MediaTek SoCs.
-> @@ -233,7 +229,6 @@ config ARM_SA1110_CPUFREQ
->  config ARM_SCMI_CPUFREQ
->  	tristate "SCMI based CPUfreq driver"
->  	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST
-> -	depends on !CPU_THERMAL || THERMAL
->  	select PM_OPP
->  	help
->  	  This adds the CPUfreq driver support for ARM platforms using SCMI
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 30323426902e..58bb7d72dc2b 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -152,6 +152,7 @@ config CPU_THERMAL
->  	bool "generic cpu cooling support"
->  	depends on CPU_FREQ
->  	depends on THERMAL_OF
-> +	depends on THERMAL=y
->  	help
->  	  This implements the generic cpu cooling mechanism through frequency
->  	  reduction. An ACPI version of this already exists
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Applied, thanks!
+The current iowait boosting mechanism in intel_pstate_update_util()
+is quite aggressive, as it goes to the maximum P-state right away,
+and may cause excessive amounts of energy to be used, which is not
+desirable and arguably isn't necessary too.
+
+Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
+more energy efficient") that reworked the analogous iowait boost
+mechanism in the schedutil governor and make the iowait boosting
+in intel_pstate_update_util() work along the same lines.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   46 +++++++++++++++++++++++++----------------
+ 1 file changed, 29 insertions(+), 17 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -50,6 +50,8 @@
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+ #define fp_toint(X) ((X) >> FRAC_BITS)
+ 
++#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
++
+ #define EXT_BITS 6
+ #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
+ #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
+@@ -1678,17 +1680,14 @@ static inline int32_t get_avg_pstate(str
+ static inline int32_t get_target_pstate(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+-	int32_t busy_frac, boost;
++	int32_t busy_frac;
+ 	int target, avg_pstate;
+ 
+ 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
+ 			   sample->tsc);
+ 
+-	boost = cpu->iowait_boost;
+-	cpu->iowait_boost >>= 1;
+-
+-	if (busy_frac < boost)
+-		busy_frac = boost;
++	if (busy_frac < cpu->iowait_boost)
++		busy_frac = cpu->iowait_boost;
+ 
+ 	sample->busy_scaled = busy_frac * 100;
+ 
+@@ -1767,22 +1766,35 @@ static void intel_pstate_update_util(str
+ 	if (smp_processor_id() != cpu->cpu)
+ 		return;
+ 
++	delta_ns = time - cpu->last_update;
+ 	if (flags & SCHED_CPUFREQ_IOWAIT) {
+-		cpu->iowait_boost = int_tofp(1);
+-		cpu->last_update = time;
+-		/*
+-		 * The last time the busy was 100% so P-state was max anyway
+-		 * so avoid overhead of computation.
+-		 */
+-		if (fp_toint(cpu->sample.busy_scaled) == 100)
+-			return;
+-
+-		goto set_pstate;
++		/* Start over if the CPU may have been idle. */
++		if (delta_ns > TICK_NSEC) {
++			cpu->iowait_boost = ONE_EIGHTH_FP;
++		} else if (cpu->iowait_boost) {
++			cpu->iowait_boost <<= 1;
++			if (cpu->iowait_boost >= int_tofp(1)) {
++				cpu->iowait_boost = int_tofp(1);
++				cpu->last_update = time;
++				/*
++				 * The last time the busy was 100% so P-state
++				 * was max anyway, so avoid the overhead of
++				 * computation.
++				 */
++				if (fp_toint(cpu->sample.busy_scaled) == 100)
++					return;
++
++				goto set_pstate;
++			}
++		} else {
++			cpu->iowait_boost = ONE_EIGHTH_FP;
++		}
+ 	} else if (cpu->iowait_boost) {
+ 		/* Clear iowait_boost if the CPU may have been idle. */
+-		delta_ns = time - cpu->last_update;
+ 		if (delta_ns > TICK_NSEC)
+ 			cpu->iowait_boost = 0;
++		else
++			cpu->iowait_boost >>= 1;
+ 	}
+ 	cpu->last_update = time;
+ 	delta_ns = time - cpu->sample.time;
