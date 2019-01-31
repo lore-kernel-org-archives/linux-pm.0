@@ -1,320 +1,158 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [RFC PATCH v4 07/10] gpio: Initial support for ROHM bd70528 GPIO
- block
-Date: Thu, 31 Jan 2019 14:08:44 +0200
-Message-ID: <5f63684b62c7a320c514088bcf9091ed7efbd2cc.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during
+	probe
+Date: Thu, 31 Jan 2019 13:10:01 +0100
+Message-ID: <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
+References: <1548414418-5785-1-git-send-email-spujar@nvidia.com>
+ <b631310f-93fa-ef4b-7014-d97fcfb2dcdf@nvidia.com>
+ <s5ha7jicd4l.wl-tiwai@suse.de>
+ <20190131110530.GA23438@ulmo> <s5htvhpax8s.wl-tiwai@suse.de>
+ <CAJZ5v0i_G36Cw3ZvDxyU2F+pBpiw9i=3_wfQ3tDh3_JgOAb3zw@mail.gmail.com>
+ <s5hh8dpavhw.wl-tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
-Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+In-Reply-To: <s5hh8dpavhw.wl-tiwai@suse.de>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sameer Pujar <spujar@nvidia.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Jon Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, sharadg@nvidia.com, rlokhande@nvidia.com, mkumard@nvidia.com
 List-Id: linux-pm@vger.kernel.org
 
-ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
-controlled by GPIO framework.
+On Thu, Jan 31, 2019 at 12:59 PM Takashi Iwai <tiwai@suse.de> wrote:
+>
+> On Thu, 31 Jan 2019 12:46:54 +0100,
+> Rafael J. Wysocki wrote:
+> >
+> > On Thu, Jan 31, 2019 at 12:21 PM Takashi Iwai <tiwai@suse.de> wrote:
+> > >
+> > > On Thu, 31 Jan 2019 12:05:30 +0100,
+> > > Thierry Reding wrote:
+> > > >
+> > > > On Wed, Jan 30, 2019 at 05:40:42PM +0100, Takashi Iwai wrote:
+> >
+> > [cut]
+> >
+> > > > > If I understand correctly the code, the pm domain is already activated
+> > > > > at calling driver's probe callback.
+> > > >
+> > > > As far as I can tell, the domain will also be powered off again after
+> > > > probe finished, unless the device grabs a runtime PM reference. This is
+> > > > what happens via the dev->pm_domain->sync() call after successful probe
+> > > > of a driver.
+> > >
+> > > Ah, a good point.  This can be a problem with a probe work like this
+> > > case.
+> > >
+> > > > It seems to me like it's not a very well defined case what to do when a
+> > > > device needs to be powered up but runtime PM is not enabled.
+> > > >
+> > > > Adding Rafael and linux-pm, maybe they can provide some guidance on what
+> > > > to do in these situations.
+> > > >
+> > > > To summarize, what we're debating here is how to handle powering up a
+> > > > device if the pm_runtime infrastructure doesn't take care of it. Jon's
+> > > > proposal here was, and we use this elsewhere, to do something like this:
+> > > >
+> > > >       pm_runtime_enable(dev);
+> > > >       if (!pm_runtime_enabled(dev)) {
+> > > >               err = foo_runtime_resume(dev);
+> > > >               if (err < 0)
+> > > >                       goto fail;
+> > > >       }
+> > > >
+> > > > So basically when runtime PM is not available, we explicitly "resume"
+> > > > the device to power it up.
+> > > >
+> > > > It seems to me like that's a fairly common problem, so I'm wondering if
+> > > > there's something that the runtime PM core could do to help with this.
+> > > > Or perhaps there's already a way to achieve this that we're all
+> > > > overlooking?
+> > > >
+> > > > Rafael, any suggestions?
+> > >
+> > > If any, a common helper would be appreciated, indeed.
+> >
+> > I'm not sure that I understand the problem correctly, so let me
+> > restate it the way I understand it.
+> >
+> > What we're talking about is a driver ->probe() callback.  Runtime PM
+> > is disabled initially and the device is off.  It needs to be powered
+> > up, but the way to do that depends on some configuration of the board
+> > etc., so ideally
+> >
+> > pm_runtime_enable(dev);
+> > ret = pm_runtime_resume(dev);
+> >
+> > should just work, but the question is what to do if runtime PM doesn't
+> > work as expected.  That is, CONFIG_PM_RUNTIME is unset?  Or something
+> > else?
+>
+> Yes, the question is how to write the code for both with and without
+> CONFIG_PM (or CONFIG_PM_RUNTIME).
 
-IRQs are handled by regmap-irq and GPIO driver is not
-aware of the irq usage.
+This basically is about setup, because after that point all should
+just work in both cases.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
----
+Personally, I would do
 
-I dropped the review-by from Linus Walleij because I would like to
-get a comment on if locking is required when we check the direction
-in order to detect the correct register for getting the pin state.
+if (IS_ENABLED(CONFIG_PM)) {
+  do setup based on pm-runtime
+} else {
+  do manual setup
+}
 
-My initial feeling is that locking makes no sense. If there is a race,
-then it is pointless to ask state just when someone is toggling the
-direction. State will be depening on the direction toggling anyways.
-I would still like to point out this change.
+> Right now, we have a code like below, pushing the initialization in an
+> async work and let the probe returning quickly.
+>
+>         hda_tegra_probe() {
+>                 ....
 
- drivers/gpio/Kconfig        |  11 +++
- drivers/gpio/Makefile       |   1 +
- drivers/gpio/gpio-bd70528.c | 228 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 240 insertions(+)
- create mode 100644 drivers/gpio/gpio-bd70528.c
+So why don't you do
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index b5a2845347ec..c82187648630 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -962,6 +962,17 @@ config GPIO_ARIZONA
- 	help
- 	  Support for GPIOs on Wolfson Arizona class devices.
- 
-+config GPIO_BD70528
-+	tristate "ROHM BD70528 GPIO support"
-+	depends on MFD_ROHM_BD70528
-+	help
-+	  Support for GPIOs on ROHM BD70528 PMIC. There are four GPIOs
-+	  available on the ROHM PMIC in total. The GPIOs can also
-+	  generate interrupts.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called gpio-bd70528.
-+
- config GPIO_BD9571MWV
- 	tristate "ROHM BD9571 GPIO support"
- 	depends on MFD_BD9571MWV
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 37628f8dbf70..6f12c83598fc 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -34,6 +34,7 @@ obj-$(CONFIG_GPIO_ATH79)	+= gpio-ath79.o
- obj-$(CONFIG_GPIO_ASPEED)	+= gpio-aspeed.o
- obj-$(CONFIG_GPIO_RASPBERRYPI_EXP)	+= gpio-raspberrypi-exp.o
- obj-$(CONFIG_GPIO_BCM_KONA)	+= gpio-bcm-kona.o
-+obj-$(CONFIG_GPIO_BD70528) 	+= gpio-bd70528.o
- obj-$(CONFIG_GPIO_BD9571MWV)	+= gpio-bd9571mwv.o
- obj-$(CONFIG_GPIO_BRCMSTB)	+= gpio-brcmstb.o
- obj-$(CONFIG_GPIO_BT8XX)	+= gpio-bt8xx.o
-diff --git a/drivers/gpio/gpio-bd70528.c b/drivers/gpio/gpio-bd70528.c
-new file mode 100644
-index 000000000000..c88475fcf089
---- /dev/null
-+++ b/drivers/gpio/gpio-bd70528.c
-@@ -0,0 +1,228 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 ROHM Semiconductors
-+// gpio-bd70528.c ROHM BD70528MWV gpio driver
-+
-+#include <linux/gpio/driver.h>
-+#include <linux/gpio.h>
-+#include <linux/mfd/rohm-bd70528.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#define GPIO_IN_REG(offset) (BD70528_REG_GPIO1_IN + offset*2)
-+#define GPIO_OUT_REG(offset) (BD70528_REG_GPIO1_OUT + offset*2)
-+
-+struct bd70528_gpio {
-+	struct rohm_regmap_dev chip;
-+	struct gpio_chip gpio;
-+};
-+
-+static int bd70528_set_debounce(struct bd70528_gpio *bdgpio,
-+				unsigned int offset, unsigned int debounce)
-+{
-+	u8 val;
-+
-+	switch (debounce) {
-+	case 0:
-+		val = BD70528_DEBOUNCE_DISABLE;
-+		break;
-+	case 1 ... 15:
-+		val = BD70528_DEBOUNCE_15MS;
-+		break;
-+	case 16 ... 30:
-+		val = BD70528_DEBOUNCE_30MS;
-+		break;
-+	case 31 ... 50:
-+		val = BD70528_DEBOUNCE_50MS;
-+		break;
-+	default:
-+		dev_err(bdgpio->chip.dev,
-+			"Invalid debouce value %u\n", debounce);
-+		return -EINVAL;
-+	}
-+	return regmap_update_bits(bdgpio->chip.regmap, GPIO_IN_REG(offset),
-+				 BD70528_DEBOUNCE_MASK, val);
-+}
-+
-+static int bd70528_get_direction(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+	int val, ret;
-+
-+	/* Do we need to do something to IRQs here? */
-+	ret = regmap_read(bdgpio->chip.regmap, GPIO_OUT_REG(offset), &val);
-+	if (ret) {
-+		dev_err(bdgpio->chip.dev, "Could not read gpio direction\n");
-+		return ret;
-+	}
-+
-+	return !(val & BD70528_GPIO_OUT_EN_MASK);
-+}
-+
-+static int bd70528_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
-+				   unsigned long config)
-+{
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+
-+	switch (pinconf_to_config_param(config)) {
-+	case PIN_CONFIG_DRIVE_OPEN_DRAIN:
-+		return regmap_update_bits(bdgpio->chip.regmap,
-+					  GPIO_OUT_REG(offset),
-+					  BD70528_GPIO_DRIVE_MASK,
-+					  BD70528_GPIO_OPEN_DRAIN);
-+		break;
-+	case PIN_CONFIG_DRIVE_PUSH_PULL:
-+		return regmap_update_bits(bdgpio->chip.regmap,
-+					  GPIO_OUT_REG(offset),
-+					  BD70528_GPIO_DRIVE_MASK,
-+					  BD70528_GPIO_PUSH_PULL);
-+		break;
-+	case PIN_CONFIG_INPUT_DEBOUNCE:
-+		return bd70528_set_debounce(bdgpio, offset,
-+					    pinconf_to_config_argument(config));
-+		break;
-+	default:
-+		break;
-+	}
-+	return -ENOTSUPP;
-+}
-+
-+static int bd70528_direction_input(struct gpio_chip *chip, unsigned int offset)
-+{
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+
-+	/* Do we need to do something to IRQs here? */
-+	return regmap_update_bits(bdgpio->chip.regmap, GPIO_OUT_REG(offset),
-+				 BD70528_GPIO_OUT_EN_MASK,
-+				 BD70528_GPIO_OUT_DISABLE);
-+}
-+static void bd70528_gpio_set(struct gpio_chip *chip, unsigned int offset,
-+			     int value)
-+{
-+	int ret;
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+	u8 val = (value) ? BD70528_GPIO_OUT_HI : BD70528_GPIO_OUT_LO;
-+
-+	ret = regmap_update_bits(bdgpio->chip.regmap, GPIO_OUT_REG(offset),
-+				  BD70528_GPIO_OUT_MASK, val);
-+	if (ret)
-+		dev_err(bdgpio->chip.dev, "Could not set gpio to %d\n", value);
-+}
-+
-+static int bd70528_direction_output(struct gpio_chip *chip, unsigned int offset,
-+				    int value)
-+{
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+
-+	bd70528_gpio_set(chip, offset, value);
-+	return regmap_update_bits(bdgpio->chip.regmap, GPIO_OUT_REG(offset),
-+				 BD70528_GPIO_OUT_EN_MASK,
-+				 BD70528_GPIO_OUT_ENABLE);
-+}
-+
-+#define GPIO_IN_STATE_MASK(offset) (BD70528_GPIO_IN_STATE_BASE << offset)
-+
-+static int bd70528_gpio_get_o(struct bd70528_gpio *bdgpio, unsigned int offset)
-+{
-+	int ret;
-+	unsigned int val;
-+
-+	ret = regmap_read(bdgpio->chip.regmap, GPIO_OUT_REG(offset), &val);
-+	if (!ret)
-+		ret = !!(val & BD70528_GPIO_OUT_MASK);
-+	else
-+		dev_err(bdgpio->chip.dev, "GPIO (out) state read failed\n");
-+
-+	return ret;
-+}
-+
-+static int bd70528_gpio_get_i(struct bd70528_gpio *bdgpio, unsigned int offset)
-+{
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(bdgpio->chip.regmap, BD70528_REG_GPIO_STATE, &val);
-+
-+	if (!ret)
-+		ret = !(val & GPIO_IN_STATE_MASK(offset));
-+	else
-+		dev_err(bdgpio->chip.dev, "GPIO (in) state read failed\n");
-+
-+	return ret;
-+}
-+
-+static int bd70528_gpio_get(struct gpio_chip *chip, unsigned int offset)
-+{
-+	int ret = -EINVAL;
-+	struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
-+
-+	/*
-+	 * Do we need a lock here or does the GPIO framework
-+	 * already guarantee that no one is changing the direction while
-+	 * value is being read?
-+	 */
-+	ret = bd70528_get_direction(chip, offset);
-+	if (ret == GPIOF_DIR_OUT)
-+		ret = bd70528_gpio_get_o(bdgpio, offset);
-+	else if (ret == GPIOF_DIR_IN)
-+		ret = bd70528_gpio_get_i(bdgpio, offset);
-+	else
-+		dev_err(bdgpio->chip.dev, "failed to read GPIO direction\n");
-+
-+	return ret;
-+}
-+
-+static int bd70528_probe(struct platform_device *pdev)
-+{
-+	struct bd70528_gpio *bdgpio;
-+	struct bd70528 *bd70528;
-+	int ret;
-+
-+	bd70528 = dev_get_drvdata(pdev->dev.parent);
-+	if (!bd70528) {
-+		dev_err(&pdev->dev, "No MFD driver data\n");
-+		return -EINVAL;
-+	}
-+
-+	bdgpio = devm_kzalloc(&pdev->dev, sizeof(*bdgpio),
-+				    GFP_KERNEL);
-+	if (!bdgpio)
-+		return -ENOMEM;
-+	bdgpio->chip.dev = &pdev->dev;
-+	bdgpio->gpio.parent = pdev->dev.parent;
-+	bdgpio->gpio.label = "bd70528-gpio";
-+	bdgpio->gpio.owner = THIS_MODULE;
-+	bdgpio->gpio.get_direction = &bd70528_get_direction;
-+	bdgpio->gpio.direction_input = &bd70528_direction_input;
-+	bdgpio->gpio.direction_output = &bd70528_direction_output;
-+	bdgpio->gpio.set_config = &bd70528_gpio_set_config;
-+	bdgpio->gpio.can_sleep = true;
-+	bdgpio->gpio.get = &bd70528_gpio_get;
-+	bdgpio->gpio.set = &bd70528_gpio_set;
-+	bdgpio->gpio.ngpio = 4;
-+	bdgpio->gpio.base = -1;
-+#ifdef CONFIG_OF_GPIO
-+	bdgpio->gpio.of_node = pdev->dev.parent->of_node;
-+#endif
-+	bdgpio->chip.regmap = bd70528->chip.regmap;
-+
-+	ret = devm_gpiochip_add_data(&pdev->dev, &bdgpio->gpio,
-+				     bdgpio);
-+	if (ret)
-+		dev_err(&pdev->dev, "gpio_init: Failed to add bd70528-gpio\n");
-+
-+	return ret;
-+}
-+
-+static struct platform_driver bd70528_gpio = {
-+	.driver = {
-+		.name = "bd70528-gpio"
-+	},
-+	.probe = bd70528_probe,
-+};
-+
-+module_platform_driver(bd70528_gpio);
-+
-+MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
-+MODULE_DESCRIPTION("BD70528 voltage regulator driver");
-+MODULE_LICENSE("GPL");
--- 
-2.14.3
+if (!IS_ENABLED(CONFIG_PM)) {
+  do manual clock setup
+}
 
+here?
 
--- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
+>                 pm_runtime_enable();
+>                 schedule_work();
+>                 return;
+>         }
+>
+>         hda_tegra_probe_work() {
+>                 pm_runtime_get_sync();
+>                 ....
+>                 pm_runtime_put_sync();
+>         }
+>
+> Then it truned outhis code lacks of the clock initialization when
+> runtime PM isn't enabled.  Normally it's done via runtime resume
+>
+>         hda_tegra_runtime_resume() {
+>                 hda_tegra_enable_clocks();
+>                 ....
+>         }
+>
+> And now the question is what is the standard idiom in such a case.
+>
+> IMO, calling pm_runtime_resume() inside the probe function looks
+> weird, and my preference was to initialize the clocks explicitly, then
+> enable runtime PM.  But if using pm_runtime_resume() in the proc
+> should be seen as a standard procedure, I'm fine with that.
 
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+Well, people do pm_runtime_resume() in ->probe() too, but
+pm_runtime_resume() returns 1 for CONFIG_PM unset, so that won't give
+you what you want anyway. :-)
+
+Cheers,
+Rafael
