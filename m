@@ -1,135 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/5] PM / OPP: Introduce a power estimation helper
-Date: Thu, 31 Jan 2019 12:56:33 +0530
-Message-ID: <20190131072633.bcqc75s6jmyt7fgx@vireshk-i7>
-References: <20190130170506.20450-1-quentin.perret@arm.com>
- <20190130170506.20450-2-quentin.perret@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 0/3] Move pm_runtime accounted time to raw nsec
+Date: Thu, 31 Jan 2019 08:43:36 +0100
+Message-ID: <CAPDyKFpNqANViRhmZXLTbwvP-Gn7Xt1JxKS4noyBH08h7Y0CcA@mail.gmail.com>
+References: <1548229814-24913-1-git-send-email-vincent.guittot@linaro.org> <2577730.BvIW2u5g9k@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190130170506.20450-2-quentin.perret@arm.com>
+In-Reply-To: <2577730.BvIW2u5g9k@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-01-19, 17:05, Quentin Perret wrote:
-> +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
-> +					 int cpu)
-> +{
-> +	struct device *cpu_dev;
-> +	struct dev_pm_opp *opp;
-> +	struct device_node *np;
-> +	unsigned long mV, Hz;
-> +	u32 cap;
-> +	u64 tmp;
-> +	int ret;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np)
-> +		return -EINVAL;
-> +
-> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-> +	of_node_put(np);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	Hz = *kHz * 1000;
-> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> +	if (IS_ERR(opp))
-> +		return -EINVAL;
-> +
-> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+On Thu, 31 Jan 2019 at 00:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Wednesday, January 23, 2019 8:50:12 AM CET Vincent Guittot wrote:
+> > Move pm_runtime accounted time to raw nsec. The subject of the patchset
+> > has changed as 1st patch o the previous versions has been queued by
+> > Rafael.
+> >
+> > Patch 1 set accounting_timestamp to 0 in pm_runtime_init and update it when enable.
+> > So we remove ordering constraint between timekeeping_init and pm_runtime_init
+> >
+> > Patch 2 moves time accounting on raw ns. This patch initially used
+> > ktime instead of raw ns but it was easier to move i915 driver on raw ns
+> > than on ktime.
+> >
+> > Change since v6:
+> > - move code that set accounting_timestamp in pm_runtime_enable
+> >
+> > Changes since v5:
+> > - removed patches already queued.
+> > - set accounting_timestamp to 0 in pm_runtime_init and update it when enable
+> >
+> > Changes since v4:
+> > -Update commit message
+> >
+> > Changes since v3:
+> > - Rebase on v4.20-rc7 without patch that has been queued by Rafael
+> > - Simplify the new interface pm_runtime_suspended_time()
+> >
+> > Changes since v2:
+> > - remove patch1 that has been queued by rafael
+> > - add new interface in pm_runtime to get accounted time
+> > - reorder patchset to prevent compilation error
+> >
+> > Changes since v1:
+> > - updated commit message of patch 1
+> > - Added patches 2 & 3 to move runtime_pm accounting on raw ns
+> >
+> > Thara Gopinath (1):
+> >   PM-runtime: Replace jiffies based accounting with ktime-based
+> >     accounting
+> >
+> > Vincent Guittot (1):
+> >   PM-runtime: update accounting_timestamp only when enable
+> >
+> >  drivers/base/power/runtime.c | 26 ++++++++++++++++----------
+> >  drivers/base/power/sysfs.c   | 11 ++++++++---
+> >  include/linux/pm.h           |  6 +++---
+> >  3 files changed, 27 insertions(+), 16 deletions(-)
+>
+> Both patches applied, thanks!
+>
 
-The voltage is also stored as triplet now a days and we must consider
-the higher value for these calculations. Also what about the case of
-multiple regulators here or performance-states ?
+I had some comment on v6, none that needs to prevent this from being
+applied and that can't be addressed as improvements on top.
 
-> +	dev_pm_opp_put(opp);
-> +	if (!mV)
-> +		return -EINVAL;
-> +
-> +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
-> +	do_div(tmp, 1000000000);
-> +
-> +	*mW = (unsigned long)tmp;
+Feel free to add (if not too late) my:
 
-I was thinking will it be better if we just save this information in
-opp->power field during init, so we can just read a value here
-instead. But I am still not sure :(
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-> +	*kHz = Hz / 1000;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
-> + * @cpus	: CPUs for which an Energy Model has to be registered
-> + * @nr_opp	: Number of OPPs to register in the Energy Model
-> + *
-> + * This checks whether the "dynamic-power-coefficient" devicetree binding has
-> + * been specified, and tries to register an Energy Model with it if it has.
-> + */
-> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-> +{
-> +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
-> +	int ret, cpu = cpumask_first(cpus);
-> +	struct device *cpu_dev;
-> +	struct device_node *np;
-> +	u32 cap;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev)
-> +		return;
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np)
-> +		return;
-> +
-> +	/* Don't register an EM without the right DT binding */
-> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-> +	of_node_put(np);
-> +	if (ret || !cap)
-> +		return;
-
-What if no voltage is supplied in DT ?
-
-> +
-> +	em_register_perf_domain(cpus, nr_opp, &em_cb);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index b895f4e79868..58ae08b024bd 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
->  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
->  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
->  int of_get_required_opp_performance_state(struct device_node *np, int index);
-> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp);
->  #else
->  static inline int dev_pm_opp_of_add_table(struct device *dev)
->  {
-> @@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
->  {
->  	return NULL;
->  }
-> +
-> +static inline void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-> +{
-> +}
-> +
->  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
->  {
->  	return -ENOTSUPP;
-> -- 
-> 2.20.1
-
--- 
-viresh
+Kind regards
+Uffe
