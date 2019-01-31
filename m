@@ -1,61 +1,66 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
-Date: Thu, 31 Jan 2019 10:58:26 +0100
-Message-ID: <CAJZ5v0jY5Zjg0R7uC6ewJT5Pi-15Mohotj=im9k8w4THJSM0Dw@mail.gmail.com>
-References: <20190129015547.213276-1-swboyd@chromium.org> <20190131092349.fksfqemm23qddkhw@vireshk-i7>
+Subject: Re: [PATCH] cpufreq: Record stats when fast switching is enabled
+Date: Thu, 31 Jan 2019 11:02:12 +0100
+Message-ID: <CAJZ5v0gJUx0MWtjJMK03dqgfotpDZ-TqOKi8=6Pg4dv=wV-5cg@mail.gmail.com>
+References: <20190131015139.126890-1-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190131092349.fksfqemm23qddkhw@vireshk-i7>
+In-Reply-To: <20190131015139.126890-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <swboyd@chromium.org>, Michael Turquette <mturquette@baylibre.com>, grahamr@codeaurora.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi <linux-spi@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Doug Anderson <dianders@chromium.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 31, 2019 at 10:23 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Thu, Jan 31, 2019 at 2:51 AM Matthias Kaehlcke <mka@chromium.org> wrote:
 >
-> Adding few folks to the thread who might be interested in this stuff.
+> When fast switching is enabled currently no cpufreq stats are
+> recorded and the corresponding sysfs attributes appear empty (see
+> also commit 1aefc75b2449 ("cpufreq: stats: Make the stats code
+> non-modular")).
 >
-> On 28-01-19, 17:55, Stephen Boyd wrote:
-> > This patch series is an RFC around how we can implement DVFS for devices
-> > that aren't your typical OPPish device (i.e. GPU/CPU). They don't have a
-> > strict set of frequencies that they have been tested at to derive some
-> > operating performance point. Instead they have a coarser set of
-> > frequency max or 'fmax' OPPs that describe the maiximum frequency the
-> > device can operate at with a given voltage.
-> >
-> > The approach we take is to let the devm_pm_opp_set_rate() API accept 0
-> > as a valid frequency indicating the frequency isn't required anymore and
-> > to make the same API use the clk framework to round the frequency passed
-> > in instead of relying on the OPP table to specify each frequency that
-> > can be used. Once we have these two patches in place, we can use the OPP
-> > API to change clk rates instead of clk_set_rate() and use all the recent
-> > OPP enhancements that have been made around required-opps and genpd
-> > performance states to do DVFS for all devices.
+> Record the stats after a successful fast switch and re-enable access
+> through sysfs when fast switching is enabled. Since
+> cpufreq_stats_update() can now be called in interrupt context (during
+> a fast switch) disable local IRQs while holding the stats spinlock.
 >
-> Generally speaking I am fine with such an approach but I am not sure
-> about what others would say on this as they had objections to using
-> OPP core for setting the rate itself.
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> The change is so simple that I wonder if I'm missing some important
+> reason why the stats can't/shouldn't be updated during/after a fast
+> switch ...
 >
-> FWIW, I suggested exactly this solution sometime back [1]
+> I would expect that holding the stats spinlock briefly in
+> cpufreq_stats_update() shouldn't be a problem. In theory it would
+> also be an option to have a per stats lock, though it seems overkill
+> from my (possibly ignorant) point of view.
+> ---
+>  drivers/cpufreq/cpufreq.c       |  8 +++++++-
+>  drivers/cpufreq/cpufreq_stats.c | 11 +++--------
+>  2 files changed, 10 insertions(+), 9 deletions(-)
 >
-> - Drivers need to use two API sets to change clock rate (OPP helpers)
->   and enable/disable them (CLK framework helpers) and this leads us to
->   exactly that combination. Is that acceptable ? It doesn't look great
->   to me as well..
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e35a886e00bcf..63aadb0bbddfe 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1857,9 +1857,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+>  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>                                         unsigned int target_freq)
+>  {
+> +       unsigned int freq;
+> +
+>         target_freq = clamp_val(target_freq, policy->min, policy->max);
+>
+> -       return cpufreq_driver->fast_switch(policy, target_freq);
+> +       freq = cpufreq_driver->fast_switch(policy, target_freq);
+> +       if (freq)
+> +               cpufreq_stats_record_transition(policy, freq);
 
-I agree here.
+No extra locking in the fast switch path, pretty please.
 
-> - Do we expect the callers will disable clk before calling
->   opp-set-rate with 0 ? We should remove the regulator requirements as
->   well along with perf-state.
+This runs in the scheduler context and it adds enough overhead in there already.
 
-Well, disabling clk affects HW in general, doesn't it?
-
-> - What about enabling/disabling clock as well from OPP framework. We
->   can enable it on the very first call to opp-set-rate and disable
->   when freq is 0. That will simplify the drivers as well.
-
-That sounds compelling, but I guess there are cases in which you can
-gate the clock regardless of the frequency setting.  How would that
-work then?
+> +
+> +       return freq;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
