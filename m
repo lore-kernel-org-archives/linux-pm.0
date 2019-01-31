@@ -1,7 +1,7 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH 0/6] driver core: Fix some issues related to device links
-Date: Thu, 31 Jan 2019 17:02:05 +0100
-Message-ID: <CAJZ5v0geMbgNKBFT104o4Jf38q7yo46ha+qFbd+9Mbr+P8n--A@mail.gmail.com>
+Date: Thu, 31 Jan 2019 17:03:11 +0100
+Message-ID: <CAPDyKFr6gehF1iXq6BnUmfg3duDmCtXpQg97euAvH_dyJ785gg@mail.gmail.com>
 References: <2493187.oiOpCWJBV7@aspire.rjw.lan> <CAJZ5v0hsBNYZ7mu6SrhBY+LiOQZKz2K_3OtsCb9Jt8QR1YRhOA@mail.gmail.com>
  <20190131132247.GA6837@kroah.com> <20190131132409.GA16084@kroah.com>
 Mime-Version: 1.0
@@ -9,11 +9,11 @@ Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190131132409.GA16084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 31, 2019 at 2:24 PM Greg Kroah-Hartman
+On Thu, 31 Jan 2019 at 14:24, Greg Kroah-Hartman
 <gregkh@linuxfoundation.org> wrote:
 >
 > On Thu, Jan 31, 2019 at 02:22:47PM +0100, Greg Kroah-Hartman wrote:
@@ -60,7 +60,12 @@ On Thu, Jan 31, 2019 at 2:24 PM Greg Kroah-Hartman
 >
 > To make this clearer, I have no objection to take this through my tree
 > now, along with your second set of patches.  Is that ok?
+>
 
-Yes, it is, AFAICS.  Thank you!
+Greg, Rafael,
 
-Do you need me to resend all of this as one series?
+FWIW, I intend to review these patches during tomorrow, or at latest
+on Monday as I have been a bit busy lately.
+
+Kind regards
+Uffe
