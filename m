@@ -1,86 +1,129 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 1/8] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date: Thu, 31 Jan 2019 09:49:47 +0100
-Message-ID: <1548924594-19084-2-git-send-email-l.luba@partner.samsung.com>
-References: <1548924594-19084-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190131085006eucas1p2e4ba3f69e039c394e7cd42389ac8bfa7@eucas1p2.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
+Date: Thu, 31 Jan 2019 14:53:49 +0530
+Message-ID: <20190131092349.fksfqemm23qddkhw@vireshk-i7>
+References: <20190129015547.213276-1-swboyd@chromium.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548924594-19084-1-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20190129015547.213276-1-swboyd@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
+To: Stephen Boyd <swboyd@chromium.org>, mturquette@baylibre.com, grahamr@codeaurora.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Doug Anderson <dianders@chromium.org>, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Define new IDs for clocks used by Dynamic Memory Controller in
-Exynos5422 SoC.
+Adding few folks to the thread who might be interested in this stuff.
 
-CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
-CC: Chanwoo Choi <cw00.choi@samsung.com>
-CC: Rob Herring <robh+dt@kernel.org>
-CC: Mark Rutland <mark.rutland@arm.com>
-CC: Kukjin Kim <kgene@kernel.org>
-CC: Krzysztof Kozlowski <krzk@kernel.org>
-CC: linux-samsung-soc@vger.kernel.org
-CC: devicetree@vger.kernel.org
-CC: linux-arm-kernel@lists.infradead.org
-CC: linux-kernel@vger.kernel.org
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+On 28-01-19, 17:55, Stephen Boyd wrote:
+> This patch series is an RFC around how we can implement DVFS for devices
+> that aren't your typical OPPish device (i.e. GPU/CPU). They don't have a
+> strict set of frequencies that they have been tested at to derive some
+> operating performance point. Instead they have a coarser set of
+> frequency max or 'fmax' OPPs that describe the maiximum frequency the
+> device can operate at with a given voltage.
+> 
+> The approach we take is to let the devm_pm_opp_set_rate() API accept 0
+> as a valid frequency indicating the frequency isn't required anymore and
+> to make the same API use the clk framework to round the frequency passed
+> in instead of relying on the OPP table to specify each frequency that
+> can be used. Once we have these two patches in place, we can use the OPP
+> API to change clk rates instead of clk_set_rate() and use all the recent
+> OPP enhancements that have been made around required-opps and genpd
+> performance states to do DVFS for all devices.
 
-diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
-index 355f469..1827a64 100644
---- a/include/dt-bindings/clock/exynos5420.h
-+++ b/include/dt-bindings/clock/exynos5420.h
-@@ -60,6 +60,7 @@
- #define CLK_MAU_EPLL		159
- #define CLK_SCLK_HSIC_12M	160
- #define CLK_SCLK_MPHY_IXTAL24	161
-+#define CLK_SCLK_BPLL		162
- 
- /* gate clocks */
- #define CLK_UART0		257
-@@ -195,6 +196,16 @@
- #define CLK_ACLK432_CAM		518
- #define CLK_ACLK_FL1550_CAM	519
- #define CLK_ACLK550_CAM		520
-+#define CLK_CLKM_PHY0		521
-+#define CLK_CLKM_PHY1		522
-+#define CLK_ACLK_PPMU_DREX0_0	523
-+#define CLK_ACLK_PPMU_DREX0_1	524
-+#define CLK_ACLK_PPMU_DREX1_0	525
-+#define CLK_ACLK_PPMU_DREX1_1	526
-+#define CLK_PCLK_PPMU_DREX0_0	527
-+#define CLK_PCLK_PPMU_DREX0_1	528
-+#define CLK_PCLK_PPMU_DREX1_0	529
-+#define CLK_PCLK_PPMU_DREX1_1	530
- 
- /* mux clocks */
- #define CLK_MOUT_HDMI		640
-@@ -217,6 +228,10 @@
- #define CLK_MOUT_EPLL		657
- #define CLK_MOUT_MAU_EPLL	658
- #define CLK_MOUT_USER_MAU_EPLL	659
-+#define CLK_MOUT_DPLL		660
-+#define CLK_MOUT_ACLK_G3D	661
-+#define CLK_MOUT_SCLK_SPLL	662
-+#define CLK_MOUT_MX_MSPLL_CCORE_PHY	663
- 
- /* divider clocks */
- #define CLK_DOUT_PIXEL		768
-@@ -248,8 +263,9 @@
- #define CLK_DOUT_CCLK_DREX0	794
- #define CLK_DOUT_CLK2X_PHY0	795
- #define CLK_DOUT_PCLK_CORE_MEM	796
-+#define CLK_FF_DOUT_SPLL2	797
- 
- /* must be greater than maximal clock id */
--#define CLK_NR_CLKS		797
-+#define CLK_NR_CLKS		798
- 
- #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
+Generally speaking I am fine with such an approach but I am not sure
+about what others would say on this as they had objections to using
+OPP core for setting the rate itself.
+
+FWIW, I suggested exactly this solution sometime back [1]
+
+- Drivers need to use two API sets to change clock rate (OPP helpers)
+  and enable/disable them (CLK framework helpers) and this leads us to
+  exactly that combination. Is that acceptable ? It doesn't look great
+  to me as well..
+
+- Do we expect the callers will disable clk before calling
+  opp-set-rate with 0 ? We should remove the regulator requirements as
+  well along with perf-state.
+
+- What about enabling/disabling clock as well from OPP framework. We
+  can enable it on the very first call to opp-set-rate and disable
+  when freq is 0. That will simplify the drivers as well.
+
+> One nice feature of this approach is that we don't need to change the
+> OPP binding to support this. We can specify only the max frequencies and
+> the voltage requirements in DT with the existing binding and slightly
+> tweak the OPP code to achieve these results. 
+> 
+> This series includes a conversion of the uart and spi drivers on
+> qcom sdm845 where these patches are being developed. It shows how a
+> driver is converted from the clk APIs to the OPP APIs and how
+> enable/disable state of the clk is communicated to the OPP layer.
+> 
+> Some open topics and initial points for discussion are:
+> 
+> 1) The dev_pm_opp_set_rate() API changes may break something that's 
+> relying on the rate rounding that OPP provides. If those exist,
+> we may need to implement another API that is more explicit about using
+> the clk API instead of the OPP tables.
+> 
+> 2) dev_pm_opp_set_rate(0) is an interesting solution to the problem of
+> dropping the rate requirement. Is there anything better than this?
+> 
+> 3) How do we handle devices that already have power-domains specified in
+> DT? The opp binding for required-opps doesn't let us specify the power
+> domain to target, instead it assumes that whatever power domain is
+> attached to a device is the one that OPP needs to use to change the
+> genpd performance state. Do we need a
+> dev_pm_opp_set_required_opps_name() or something to be explicit about
+> this? Can we have some way for the power domain that required-opps
+> correspond to be expressed in the OPP tables themselves?
+> 
+> 4) How do we achieve the "full constraint" state? i.e. what do we do
+> about some devices being active and others being inactive during boot
+> and making sure that the voltage for the shared power domains doesn't
+> drop until all devices requiring it have informed OPP about their
+> power requirements?
+> 
+> Rajendra Nayak (4):
+>   OPP: Make dev_pm_opp_set_rate() with freq=0 as valid
+>   tty: serial: qcom_geni_serial: Use OPP API to set clk/perf state
+>   spi: spi-geni-qcom: Use OPP API to set clk/perf state
+>   arm64: dts: sdm845: Add OPP table for all qup devices
+> 
+> Stephen Boyd (1):
+>   OPP: Don't overwrite rounded clk rate
+> 
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi  | 115 ++++++++++++++++++++++++++
+>  drivers/opp/core.c                    |  26 ++++--
+>  drivers/spi/spi-geni-qcom.c           |  12 ++-
+>  drivers/tty/serial/qcom_geni_serial.c |  15 +++-
+>  4 files changed, 155 insertions(+), 13 deletions(-)
+> 
+> For the interested, these patches are located here:
+> 
+>    https://github.com/rrnayak/linux/ v5.0-rc3/opp-corners-wip
+> 
+> I've generated these patches by cutting off the top of that tree and
+> massaging the commit text a bit for the first patch.
+> 
+> base-commit: 49a57857aeea06ca831043acbb0fa5e0f50602fd
+> prerequisite-patch-id: 9c3ee728603596b8b0ba06ffd66084bdc21b1271
+> prerequisite-patch-id: f160e050bcd74f5de6fad66329381853869a6a97
+> prerequisite-patch-id: aa23548d2b486c29489b4304d85799d08762254e
+> prerequisite-patch-id: 40dd117c45fecb4308298352346546612db94b64
+> prerequisite-patch-id: cd102fa42bab19897c2295e8b990b2156626054a
+> prerequisite-patch-id: 3b9e5c8ed65ee96cc0f1c50166cf6bbb597ef582
+> prerequisite-patch-id: 7e71b957b90ad51d0619944d5ebc859380e8e3e4
+> prerequisite-patch-id: 5abd2bd6b3ae3e91551e2b8f9295169019ba82c7
+> prerequisite-patch-id: 68bb3e44cf4e5dbd363a1a1750e4d378971ed393
+> prerequisite-patch-id: 882b14ef9527b15d22cfddbb5fa2b9d43df1ff04
+> prerequisite-patch-id: 6fc14ddeb074fb0826f1f40031e9d161f1361666
+> -- 
+> Sent by a computer through tubes
+
 -- 
-2.7.4
+viresh
+
+[1] https://lore.kernel.org/linux-clk/20180704065522.p4qpfnpayeobaok3@vireshk-i7/
