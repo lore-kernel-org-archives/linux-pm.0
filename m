@@ -1,72 +1,33 @@
 From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [PATCH v2 1/5] PM / OPP: Introduce a power estimation helper
-Date: Thu, 31 Jan 2019 09:42:15 +0000
-Message-ID: <20190131094212.rjel77xcfvqj6tkr@queper01-lin>
+Date: Thu, 31 Jan 2019 09:51:04 +0000
+Message-ID: <20190131095101.g64h32wxqa5rhbqh@queper01-lin>
 References: <20190130170506.20450-1-quentin.perret@arm.com>
  <20190130170506.20450-2-quentin.perret@arm.com>
- <20190130190703.GM81583@google.com>
+ <20190131072633.bcqc75s6jmyt7fgx@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20190130190703.GM81583@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
+In-Reply-To: <20190131072633.bcqc75s6jmyt7fgx@vireshk-i7>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: nm@ti.com, linux-pm@vger.kernel.org, sboyd@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, mka@chromium.org, sudeep.holla@arm.com, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
-
-On Wednesday 30 Jan 2019 at 11:07:03 (-0800), Matthias Kaehlcke wrote:
-> > diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> > index 06f0f632ec47..4c8bf172e9ed 100644
-> > --- a/drivers/opp/of.c
-> > +++ b/drivers/opp/of.c
-> > @@ -20,6 +20,7 @@
-> >  #include <linux/pm_domain.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/export.h>
-> > +#include <linux/energy_model.h>
-> 
-> nit: AFAIK typically alphabetical order is used for includes, though
-> this file doesn't exactly adhere to it.
-
-Yeah that's what I was thinking too. Since nothing is in order here I
-figured there wasn't a best place to put it so I just stick it there. I
-happy to re-order all of them if necessary.
-
-> 
-> >  #include "opp.h"
-> >  
-> > @@ -1047,3 +1048,90 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
-> >  	return of_node_get(opp->np);
-> >  }
-> >  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
-> > +
-> > +/*
-> > + * Callback function provided to the Energy Model framework upon registration.
-> > + * This computes the power estimated by @CPU at the first OPP above @kHz (ceil),
-> 
-> that's not entirely correct, it could be the OPP at @kHz.
-
-Right, I'll update that.
-
-> 
-> > + * and updates @kHz and @mW accordingly. The power is estimated as
-> > + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
-> > + * the voltage and frequency of the OPP.
-> > + *
-> > + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
-> > + * calculation failed because of missing parameters, 0 otherwise.
-> > + */
+On Thursday 31 Jan 2019 at 12:56:33 (+0530), Viresh Kumar wrote:
+> On 30-01-19, 17:05, Quentin Perret wrote:
 > > +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
 > > +					 int cpu)
-> 
-> why __maybe_unused?
-
-To avoid compiler warnings with CONFIG_ENERGY_MODEL=n, see my other
-email ;-)
-
 > > +{
 > > +	struct device *cpu_dev;
 > > +	struct dev_pm_opp *opp;
@@ -95,6 +56,19 @@ email ;-)
 > > +		return -EINVAL;
 > > +
 > > +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> 
+> The voltage is also stored as triplet now a days and we must consider
+> the higher value for these calculations. Also what about the case of
+> multiple regulators here or performance-states ?
+
+Well at least this is not worst than what we already do for IPA :-)
+
+https://elixir.bootlin.com/linux/latest/source/drivers/thermal/cpu_cooling.c#L245
+
+In the case of multiple regulators, then maybe that should be dealt with
+at the dev_pm_op_get_voltage() ? Not sure.
+
+> 
 > > +	dev_pm_opp_put(opp);
 > > +	if (!mV)
 > > +		return -EINVAL;
@@ -103,6 +77,21 @@ email ;-)
 > > +	do_div(tmp, 1000000000);
 > > +
 > > +	*mW = (unsigned long)tmp;
+> 
+> I was thinking will it be better if we just save this information in
+> opp->power field during init, so we can just read a value here
+> instead. But I am still not sure :(
+
+Yeah, I had the exact same question. But, then I thought, we're only
+gonna use that once, so it's not clear we need to cache the value. And I
+don't think we want other subsystems to ask PM_OPP for power values
+directly. Those subsystems should ask the EM framework instead (which
+exists for that very reason). So we're probably not gonna expose a
+dev_pm_opp_get_power() accessor or so, I think.
+
+That's why I went that way.
+
+> 
 > > +	*kHz = Hz / 1000;
 > > +
 > > +	return 0;
@@ -114,30 +103,9 @@ email ;-)
 > > + * @nr_opp	: Number of OPPs to register in the Energy Model
 > > + *
 > > + * This checks whether the "dynamic-power-coefficient" devicetree binding has
-> 
-> s/binding/property/ ?
-
-Sounds good.
-
-> 
 > > + * been specified, and tries to register an Energy Model with it if it has.
 > > + */
 > > +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-> 
-> Is the nr_opp parameter really needed? The function looks up the CPU
-> device and hence could determine the OPP count itself with
-> dev_pm_opp_get_opp_count(). I see most cpufreq drivers call
-> dev_pm_opp_get_opp_count() anyway, so passing the count as parameter
-> can be considered a small optimization, not sure how relevant it is
-> though, since dev_pm_opp_of_register_em() isn't called frequently.
-
-Yeah, I figured since most callers of dev_pm_opp_of_register_em()
-already counted the OPPs, I could as well use the data instead of
-counting again. I mean, dev_pm_opp_get_count() has to traverse the whole
-list every time, so there is no point in doing that twice. Not a huge
-deal I guess.
-
-> 
 > > +{
 > > +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
 > > +	int ret, cpu = cpumask_first(cpus);
@@ -158,6 +126,16 @@ deal I guess.
 > > +	of_node_put(np);
 > > +	if (ret || !cap)
 > > +		return;
+> 
+> What if no voltage is supplied in DT ?
+
+Then don't provide 'dynamic-power-coefficient' ? There is nothing you
+can do with that without voltages I think.
+
+With this implementation you'll get an error message at some point,
+which is probably sane.
+
+> 
 > > +
 > > +	em_register_perf_domain(cpus, nr_opp, &em_cb);
 > > +}
@@ -186,8 +164,11 @@ deal I guess.
 > >  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
 > >  {
 > >  	return -ENOTSUPP;
+> > -- 
+> > 2.20.1
 > 
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> -- 
+> viresh
 
-Thank you very much !
+Thanks,
 Quentin
