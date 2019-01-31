@@ -1,111 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
-Date: Thu, 31 Jan 2019 01:04:36 +0100
-Message-ID: <2038590.kmssd2ZIyd@aspire.rjw.lan>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] cpufreq: Record stats when fast switching is enabled
+Date: Wed, 30 Jan 2019 17:51:39 -0800
+Message-ID: <20190131015139.126890-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+When fast switching is enabled currently no cpufreq stats are
+recorded and the corresponding sysfs attributes appear empty (see
+also commit 1aefc75b2449 ("cpufreq: stats: Make the stats code
+non-modular")).
 
-The current iowait boosting mechanism in intel_pstate_update_util()
-is quite aggressive, as it goes to the maximum P-state right away,
-and may cause excessive amounts of energy to be used, which is not
-desirable and arguably isn't necessary too.
+Record the stats after a successful fast switch and re-enable access
+through sysfs when fast switching is enabled. Since
+cpufreq_stats_update() can now be called in interrupt context (during
+a fast switch) disable local IRQs while holding the stats spinlock.
 
-Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
-more energy efficient") that reworked the analogous iowait boost
-mechanism in the schedutil governor and make the iowait boosting
-in intel_pstate_update_util() work along the same lines.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/cpufreq/intel_pstate.c |   46 +++++++++++++++++++++++++----------------
- 1 file changed, 29 insertions(+), 17 deletions(-)
+The change is so simple that I wonder if I'm missing some important
+reason why the stats can't/shouldn't be updated during/after a fast
+switch ...
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -50,6 +50,8 @@
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
- 
-+#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
-+
- #define EXT_BITS 6
- #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
- #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
-@@ -1678,17 +1680,14 @@ static inline int32_t get_avg_pstate(str
- static inline int32_t get_target_pstate(struct cpudata *cpu)
+I would expect that holding the stats spinlock briefly in
+cpufreq_stats_update() shouldn't be a problem. In theory it would
+also be an option to have a per stats lock, though it seems overkill
+from my (possibly ignorant) point of view.
+---
+ drivers/cpufreq/cpufreq.c       |  8 +++++++-
+ drivers/cpufreq/cpufreq_stats.c | 11 +++--------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e35a886e00bcf..63aadb0bbddfe 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1857,9 +1857,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+ 					unsigned int target_freq)
  {
- 	struct sample *sample = &cpu->sample;
--	int32_t busy_frac, boost;
-+	int32_t busy_frac;
- 	int target, avg_pstate;
- 
- 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
- 			   sample->tsc);
- 
--	boost = cpu->iowait_boost;
--	cpu->iowait_boost >>= 1;
--
--	if (busy_frac < boost)
--		busy_frac = boost;
-+	if (busy_frac < cpu->iowait_boost)
-+		busy_frac = cpu->iowait_boost;
- 
- 	sample->busy_scaled = busy_frac * 100;
- 
-@@ -1767,22 +1766,35 @@ static void intel_pstate_update_util(str
- 	if (smp_processor_id() != cpu->cpu)
- 		return;
- 
-+	delta_ns = time - cpu->last_update;
- 	if (flags & SCHED_CPUFREQ_IOWAIT) {
--		cpu->iowait_boost = int_tofp(1);
--		cpu->last_update = time;
--		/*
--		 * The last time the busy was 100% so P-state was max anyway
--		 * so avoid overhead of computation.
--		 */
--		if (fp_toint(cpu->sample.busy_scaled) == 100)
--			return;
--
--		goto set_pstate;
-+		/* Start over if the CPU may have been idle. */
-+		if (delta_ns > TICK_NSEC) {
-+			cpu->iowait_boost = ONE_EIGHTH_FP;
-+		} else if (cpu->iowait_boost) {
-+			cpu->iowait_boost <<= 1;
-+			if (cpu->iowait_boost >= int_tofp(1)) {
-+				cpu->iowait_boost = int_tofp(1);
-+				cpu->last_update = time;
-+				/*
-+				 * The last time the busy was 100% so P-state
-+				 * was max anyway, so avoid the overhead of
-+				 * computation.
-+				 */
-+				if (fp_toint(cpu->sample.busy_scaled) == 100)
-+					return;
++	unsigned int freq;
 +
-+				goto set_pstate;
-+			}
-+		} else {
-+			cpu->iowait_boost = ONE_EIGHTH_FP;
-+		}
- 	} else if (cpu->iowait_boost) {
- 		/* Clear iowait_boost if the CPU may have been idle. */
--		delta_ns = time - cpu->last_update;
- 		if (delta_ns > TICK_NSEC)
- 			cpu->iowait_boost = 0;
-+		else
-+			cpu->iowait_boost >>= 1;
- 	}
- 	cpu->last_update = time;
- 	delta_ns = time - cpu->sample.time;
+ 	target_freq = clamp_val(target_freq, policy->min, policy->max);
+ 
+-	return cpufreq_driver->fast_switch(policy, target_freq);
++	freq = cpufreq_driver->fast_switch(policy, target_freq);
++	if (freq)
++		cpufreq_stats_record_transition(policy, freq);
++
++	return freq;
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
+ 
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 1572129844a5b..21b919bfaeccf 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -30,11 +30,12 @@ struct cpufreq_stats {
+ static void cpufreq_stats_update(struct cpufreq_stats *stats)
+ {
+ 	unsigned long long cur_time = get_jiffies_64();
++	unsigned long flags;
+ 
+-	spin_lock(&cpufreq_stats_lock);
++	spin_lock_irqsave(&cpufreq_stats_lock, flags);
+ 	stats->time_in_state[stats->last_index] += cur_time - stats->last_time;
+ 	stats->last_time = cur_time;
+-	spin_unlock(&cpufreq_stats_lock);
++	spin_unlock_irqrestore(&cpufreq_stats_lock, flags);
+ }
+ 
+ static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
+@@ -58,9 +59,6 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+ 	ssize_t len = 0;
+ 	int i;
+ 
+-	if (policy->fast_switch_enabled)
+-		return 0;
+-
+ 	cpufreq_stats_update(stats);
+ 	for (i = 0; i < stats->state_num; i++) {
+ 		len += sprintf(buf + len, "%u %llu\n", stats->freq_table[i],
+@@ -84,9 +82,6 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	ssize_t len = 0;
+ 	int i, j;
+ 
+-	if (policy->fast_switch_enabled)
+-		return 0;
+-
+ 	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
+ 	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
+ 	for (i = 0; i < stats->state_num; i++) {
+-- 
+2.20.1.495.gaa96b0ce6b-goog
