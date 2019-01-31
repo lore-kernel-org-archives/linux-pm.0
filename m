@@ -1,199 +1,125 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during probe
-Date: Fri, 01 Feb 2019 00:24:31 +0100
-Message-ID: <2034694.JE9CgBysmF@aspire.rjw.lan>
-References: <1548414418-5785-1-git-send-email-spujar@nvidia.com> <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com> <20190131143024.GO23438@ulmo>
+Subject: Re: [PATCH] cpufreq: Record stats when fast switching is enabled
+Date: Fri, 01 Feb 2019 00:34:32 +0100
+Message-ID: <3268787.3OZuCagV1k@aspire.rjw.lan>
+References: <20190131015139.126890-1-mka@chromium.org> <CAJZ5v0gp2tqMR1vOvzakhMRmG15OqMZ=ndKoAkmxLbzohn8VbA@mail.gmail.com> <20190131183730.GN81583@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190131143024.GO23438@ulmo>
+In-Reply-To: <20190131183730.GN81583@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Jon Hunter <jonathanh@nvidia.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Sameer Pujar <spujar@nvidia.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 31, 2019 3:30:24 PM CET Thierry Reding wrote:
-> 
-> --Pk/CTwBz1VvfPIDp
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
-> 
-> On Thu, Jan 31, 2019 at 01:10:01PM +0100, Rafael J. Wysocki wrote:
-> > On Thu, Jan 31, 2019 at 12:59 PM Takashi Iwai <tiwai@suse.de> wrote:
+On Thursday, January 31, 2019 7:37:30 PM CET Matthias Kaehlcke wrote:
+> On Thu, Jan 31, 2019 at 11:14:03AM +0100, Rafael J. Wysocki wrote:
+> > On Thu, Jan 31, 2019 at 11:07 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > > >
-> > > On Thu, 31 Jan 2019 12:46:54 +0100,
-> > > Rafael J. Wysocki wrote:
-> > > >
-> > > > On Thu, Jan 31, 2019 at 12:21 PM Takashi Iwai <tiwai@suse.de> wrote:
+> > > On 31-01-19, 11:03, Rafael J. Wysocki wrote:
+> > > > On Thu, Jan 31, 2019 at 9:30 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > > > > >
-> > > > > On Thu, 31 Jan 2019 12:05:30 +0100,
-> > > > > Thierry Reding wrote:
+> > > > > On 30-01-19, 17:51, Matthias Kaehlcke wrote:
+> > > > > > When fast switching is enabled currently no cpufreq stats are
+> > > > > > recorded and the corresponding sysfs attributes appear empty (see
+> > > > > > also commit 1aefc75b2449 ("cpufreq: stats: Make the stats code
+> > > > > > non-modular")).
 > > > > > >
-> > > > > > On Wed, Jan 30, 2019 at 05:40:42PM +0100, Takashi Iwai wrote:
-> > > >
-> > > > [cut]
-> > > >
-> > > > > > > If I understand correctly the code, the pm domain is already ac=
-> tivated
-> > > > > > > at calling driver's probe callback.
+> > > > > > Record the stats after a successful fast switch and re-enable access
+> > > > > > through sysfs when fast switching is enabled. Since
+> > > > > > cpufreq_stats_update() can now be called in interrupt context (during
+> > > > > > a fast switch) disable local IRQs while holding the stats spinlock.
 > > > > > >
-> > > > > > As far as I can tell, the domain will also be powered off again a=
-> fter
-> > > > > > probe finished, unless the device grabs a runtime PM reference. T=
-> his is
-> > > > > > what happens via the dev->pm_domain->sync() call after successful=
->  probe
-> > > > > > of a driver.
+> > > > > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > > > > > ---
+> > > > > > The change is so simple that I wonder if I'm missing some important
+> > > > > > reason why the stats can't/shouldn't be updated during/after a fast
+> > > > > > switch ...
+> > > > > >
+> > > > > > I would expect that holding the stats spinlock briefly in
+> > > > > > cpufreq_stats_update() shouldn't be a problem. In theory it would
+> > > > > > also be an option to have a per stats lock, though it seems overkill
+> > > > > > from my (possibly ignorant) point of view.
+> > > > > > ---
+> > > > > >  drivers/cpufreq/cpufreq.c       |  8 +++++++-
+> > > > > >  drivers/cpufreq/cpufreq_stats.c | 11 +++--------
+> > > > > >  2 files changed, 10 insertions(+), 9 deletions(-)
+> > > > > >
+> > > > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > > > > index e35a886e00bcf..63aadb0bbddfe 100644
+> > > > > > --- a/drivers/cpufreq/cpufreq.c
+> > > > > > +++ b/drivers/cpufreq/cpufreq.c
+> > > > > > @@ -1857,9 +1857,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+> > > > > >  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+> > > > > >                                       unsigned int target_freq)
+> > > > > >  {
+> > > > > > +     unsigned int freq;
+> > > > > > +
+> > > > > >       target_freq = clamp_val(target_freq, policy->min, policy->max);
+> > > > > >
+> > > > > > -     return cpufreq_driver->fast_switch(policy, target_freq);
+> > > > > > +     freq = cpufreq_driver->fast_switch(policy, target_freq);
+> > > > > > +     if (freq)
+> > > > > > +             cpufreq_stats_record_transition(policy, freq);
+> > > > > > +
+> > > > > > +     return freq;
+> > > > > >  }
+> > > > > >  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
+> > > > > >
+> > > > > > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> > > > > > index 1572129844a5b..21b919bfaeccf 100644
+> > > > > > --- a/drivers/cpufreq/cpufreq_stats.c
+> > > > > > +++ b/drivers/cpufreq/cpufreq_stats.c
+> > > > > > @@ -30,11 +30,12 @@ struct cpufreq_stats {
+> > > > > >  static void cpufreq_stats_update(struct cpufreq_stats *stats)
+> > > > > >  {
+> > > > > >       unsigned long long cur_time = get_jiffies_64();
+> > > > > > +     unsigned long flags;
+> > > > > >
+> > > > > > -     spin_lock(&cpufreq_stats_lock);
+> > > > > > +     spin_lock_irqsave(&cpufreq_stats_lock, flags);
+> > > > > >       stats->time_in_state[stats->last_index] += cur_time - stats->last_time;
+> > > > > >       stats->last_time = cur_time;
+> > > > > > -     spin_unlock(&cpufreq_stats_lock);
+> > > > > > +     spin_unlock_irqrestore(&cpufreq_stats_lock, flags);
+> > > > > >  }
 > > > > >
-> > > > > Ah, a good point.  This can be a problem with a probe work like this
-> > > > > case.
-> > > > >
-> > > > > > It seems to me like it's not a very well defined case what to do =
-> when a
-> > > > > > device needs to be powered up but runtime PM is not enabled.
-> > > > > >
-> > > > > > Adding Rafael and linux-pm, maybe they can provide some guidance =
-> on what
-> > > > > > to do in these situations.
-> > > > > >
-> > > > > > To summarize, what we're debating here is how to handle powering =
-> up a
-> > > > > > device if the pm_runtime infrastructure doesn't take care of it. =
-> Jon's
-> > > > > > proposal here was, and we use this elsewhere, to do something lik=
-> e this:
-> > > > > >
-> > > > > >       pm_runtime_enable(dev);
-> > > > > >       if (!pm_runtime_enabled(dev)) {
-> > > > > >               err =3D foo_runtime_resume(dev);
-> > > > > >               if (err < 0)
-> > > > > >                       goto fail;
-> > > > > >       }
-> > > > > >
-> > > > > > So basically when runtime PM is not available, we explicitly "res=
-> ume"
-> > > > > > the device to power it up.
-> > > > > >
-> > > > > > It seems to me like that's a fairly common problem, so I'm wonder=
-> ing if
-> > > > > > there's something that the runtime PM core could do to help with =
-> this.
-> > > > > > Or perhaps there's already a way to achieve this that we're all
-> > > > > > overlooking?
-> > > > > >
-> > > > > > Rafael, any suggestions?
-> > > > >
-> > > > > If any, a common helper would be appreciated, indeed.
+> > > > > The only problem that I can think of (or recall) is that this routine
+> > > > > also gets called when time_in_state sysfs file is read and that can
+> > > > > end up taking lock which the scheduler's hotpath will wait for.
 > > > >
-> > > > I'm not sure that I understand the problem correctly, so let me
-> > > > restate it the way I understand it.
-> > > >
-> > > > What we're talking about is a driver ->probe() callback.  Runtime PM
-> > > > is disabled initially and the device is off.  It needs to be powered
-> > > > up, but the way to do that depends on some configuration of the board
-> > > > etc., so ideally
-> > > >
-> > > > pm_runtime_enable(dev);
-> > > > ret =3D pm_runtime_resume(dev);
-> > > >
-> > > > should just work, but the question is what to do if runtime PM doesn't
-> > > > work as expected.  That is, CONFIG_PM_RUNTIME is unset?  Or something
-> > > > else?
+> > > > What about the extra locking overhead in the scheduler context?
 > > >
-> > > Yes, the question is how to write the code for both with and without
-> > > CONFIG_PM (or CONFIG_PM_RUNTIME).
-> >=20
-> > This basically is about setup, because after that point all should
-> > just work in both cases.
-> >=20
-> > Personally, I would do
-> >=20
-> > if (IS_ENABLED(CONFIG_PM)) {
-> >   do setup based on pm-runtime
-> > } else {
-> >   do manual setup
-> > }
-> >=20
-> > > Right now, we have a code like below, pushing the initialization in an
-> > > async work and let the probe returning quickly.
-> > >
-> > >         hda_tegra_probe() {
-> > >                 ....
-> >=20
-> > So why don't you do
-> >=20
-> > if (!IS_ENABLED(CONFIG_PM)) {
-> >   do manual clock setup
-> > }
-> >=20
-> > here?
+> > > What about using READ_ONCE/WRITE_ONCE here ? Not sure if we really
+> > > need locking in this particular case.
+> > 
+> > If that works, then fine, but ISTR some synchronization issues related to that.
 > 
-> I think that's exactly what Jon and Sameer were proposing, although the
-> discussion started primarily because of the way it was done.
+> I also think there would be synchronization issues :(
 > 
-> So basically the idea was to do:
+> Is your main concern with the spin lock the contention case or the
+> general overhead of locking?
+
+The general overhead is bad enough.  The contention case would be a
+disaster.
+
+> It would be really nice to have cpufreq stats with schedutil. We
+> initially considered a sysfs attribute to allow to temporarily disable
+> fast switching, but at closer sight this seems messy (would require
+> quite some rework in cpufreq_schedutil.c), besides not recording the
+> actual behavior.
 > 
-> 	pm_runtime_enable()
-> 	if (!pm_runtime_enabled())  /* basically !IS_ENABLED(CONFIG_PM) */
+> If another (rarely and only shortly held) lock in scheduler context
 
-But why is it any better than checking !IS_ENABLED(CONFIG_PM) directly?
+This is a global spinlock and you'd like to take it on every frequency
+change for each policy.  On x86, as a rule, there is a policy per logical
+CPU and systems with hundreds of these are not uncommon.  Come on.
 
-> 		hda_runtime_resume()
-> 
-> So we're not calling pm_runtime_resume() but rather the driver's
-> implementation of it. This is to avoid duplicating the code, which under
-> some circumstances can be fairly long. Duplicating is also error prone
-> because both instances may not always be in sync.
-> 
-> My understanding is that Takashi had reservations about using this kind
-> of construct because, well, frankly, it looks a little weird.
+> is a no-go deferred recording could be an option, if that can be
+> implemented without locks in scheduler context.
 
-Yes, the way it was originally written above was weird, but is checking
-IS_ENABLED(CONFIG_PM) directly really so weird?
+Why do you need the stats at all in the fast switch case?
 
-> We'd also likely want to have a similar construct again in the ->remove()
-> callback to make sure we properly power off the device when it is no longer
-> needed.
-
-Sure.  Again, why don't you make it conditional on IS_ENABLED(CONFIG_PM)?
-
-> I'm just wondering if perhaps there should be a mechanism in the
-> core to take care of this,
-
-How exactly?  How's the core going to know what to do when CONFIG_PM is
-disabled?
-
-> because this is basically something that we'd need to do for every single
-> driver.
-
-That is not true.  If the device is alwyas "on" to start with, you don't
-need to do anything.  That's the case on many systems.
-
-> For example, if !CONFIG_PM couldn't the pm_runtime_enable() function be
-> modified to do the above?
-
-But you'd need to pass a pointer to your hda_runtime_resume() to it at least
-and how's that simpler than using a simple conditional directly?
-
-> This would be somewhat tricky because drivers
-> usually use SET_RUNTIME_PM_OPS to populate the struct dev_pm_ops and
-> that would result in an empty structure if !CONFIG_PM, but we could
-> probably work around that by adding a __SET_RUNTIME_PM_OPS that would
-> never be compiled out for this kind of case. Or such drivers could even
-> manually set .runtime_suspend and .runtime_resume to make sure they're
-> always populated.
-> 
-> Another way out of this would be to make sure we never run into the case
-> where runtime PM is disabled. If we always "select PM" on Tegra, then PM
-> should always be available. But is it guaranteed that runtime PM for the
-> devices is functional in that case? From a cursory look at the code it
-> would seem that way.
-
-If you select PM, then all of the requisite code should be there.
-
-Alternatively, you can make the driver depend on PM.
-
-Cheers,
-Rafael
+There is the cpu_frequency tracepoint that can be used to callect
+all data that you need.  Why can't that be used?
