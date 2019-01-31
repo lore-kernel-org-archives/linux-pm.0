@@ -1,65 +1,86 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: Remove unused parameter of _generic_set_opp_clk_only()
-Date: Thu, 31 Jan 2019 13:55:13 +0530
-Message-ID: <e2e83f314120f078f7e24fbd5393decb9940a067.1548923105.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Record stats when fast switching is enabled
+Date: Thu, 31 Jan 2019 14:00:04 +0530
+Message-ID: <20190131083004.rkxehycu4pbbx52s@vireshk-i7>
+References: <20190131015139.126890-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190131015139.126890-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-The previous frequency value isn't getting used in the routine
-_generic_set_opp_clk_only(), drop it.
+On 30-01-19, 17:51, Matthias Kaehlcke wrote:
+> When fast switching is enabled currently no cpufreq stats are
+> recorded and the corresponding sysfs attributes appear empty (see
+> also commit 1aefc75b2449 ("cpufreq: stats: Make the stats code
+> non-modular")).
+> 
+> Record the stats after a successful fast switch and re-enable access
+> through sysfs when fast switching is enabled. Since
+> cpufreq_stats_update() can now be called in interrupt context (during
+> a fast switch) disable local IRQs while holding the stats spinlock.
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> The change is so simple that I wonder if I'm missing some important
+> reason why the stats can't/shouldn't be updated during/after a fast
+> switch ...
+> 
+> I would expect that holding the stats spinlock briefly in
+> cpufreq_stats_update() shouldn't be a problem. In theory it would
+> also be an option to have a per stats lock, though it seems overkill
+> from my (possibly ignorant) point of view.
+> ---
+>  drivers/cpufreq/cpufreq.c       |  8 +++++++-
+>  drivers/cpufreq/cpufreq_stats.c | 11 +++--------
+>  2 files changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e35a886e00bcf..63aadb0bbddfe 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1857,9 +1857,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+>  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>  					unsigned int target_freq)
+>  {
+> +	unsigned int freq;
+> +
+>  	target_freq = clamp_val(target_freq, policy->min, policy->max);
+>  
+> -	return cpufreq_driver->fast_switch(policy, target_freq);
+> +	freq = cpufreq_driver->fast_switch(policy, target_freq);
+> +	if (freq)
+> +		cpufreq_stats_record_transition(policy, freq);
+> +
+> +	return freq;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
+>  
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 1572129844a5b..21b919bfaeccf 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -30,11 +30,12 @@ struct cpufreq_stats {
+>  static void cpufreq_stats_update(struct cpufreq_stats *stats)
+>  {
+>  	unsigned long long cur_time = get_jiffies_64();
+> +	unsigned long flags;
+>  
+> -	spin_lock(&cpufreq_stats_lock);
+> +	spin_lock_irqsave(&cpufreq_stats_lock, flags);
+>  	stats->time_in_state[stats->last_index] += cur_time - stats->last_time;
+>  	stats->last_time = cur_time;
+> -	spin_unlock(&cpufreq_stats_lock);
+> +	spin_unlock_irqrestore(&cpufreq_stats_lock, flags);
+>  }
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/core.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+The only problem that I can think of (or recall) is that this routine
+also gets called when time_in_state sysfs file is read and that can
+end up taking lock which the scheduler's hotpath will wait for.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index d455b84cce5a..fa15aa8e00b0 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -533,9 +533,8 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
- 	return ret;
- }
- 
--static inline int
--_generic_set_opp_clk_only(struct device *dev, struct clk *clk,
--			  unsigned long old_freq, unsigned long freq)
-+static inline int _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
-+					    unsigned long freq)
- {
- 	int ret;
- 
-@@ -572,7 +571,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 	}
- 
- 	/* Change frequency */
--	ret = _generic_set_opp_clk_only(dev, opp_table->clk, old_freq, freq);
-+	ret = _generic_set_opp_clk_only(dev, opp_table->clk, freq);
- 	if (ret)
- 		goto restore_voltage;
- 
-@@ -586,7 +585,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 	return 0;
- 
- restore_freq:
--	if (_generic_set_opp_clk_only(dev, opp_table->clk, freq, old_freq))
-+	if (_generic_set_opp_clk_only(dev, opp_table->clk, old_freq))
- 		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
- 			__func__, old_freq);
- restore_voltage:
-@@ -759,7 +758,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 						 opp->supplies);
- 	} else {
- 		/* Only frequency scaling */
--		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+		ret = _generic_set_opp_clk_only(dev, clk, freq);
- 	}
- 
- 	/* Scaling down? Configure required OPPs after frequency */
 -- 
-2.20.1.321.g9e740568ce00
+viresh
