@@ -1,51 +1,152 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 4/5] cpufreq: arm_big_little: Register an Energy Model
-Date: Fri, 1 Feb 2019 11:53:57 +0000
-Message-ID: <20190201115357.GB10042@e107155-lin>
+Subject: Re: [PATCH v3 1/5] PM / OPP: Introduce a power estimation helper
+Date: Fri, 1 Feb 2019 12:04:53 +0000
+Message-ID: <20190201120453.GC10042@e107155-lin>
 References: <20190201093101.31869-1-quentin.perret@arm.com>
- <20190201093101.31869-5-quentin.perret@arm.com>
+ <20190201093101.31869-2-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190201093101.31869-5-quentin.perret@arm.com>
+In-Reply-To: <20190201093101.31869-2-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org, linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 01, 2019 at 09:31:00AM +0000, Quentin Perret wrote:
-> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
->
-> Now that PM_OPP provides a helper function to estimate the power
-> consumed by CPUs, make sure to try and register an Energy Model (EM)
-> from the arm_big_little CPUFreq driver, hence ensuring interested
-> subsystems (the task scheduler, for example) can make use of that
-> information when available.
->
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+On Fri, Feb 01, 2019 at 09:30:57AM +0000, Quentin Perret wrote:
+> The Energy Model (EM) framework provides an API to let drivers register
+> the active power of CPUs. The drivers are expected to provide a callback
+> method which estimates the power consumed by a CPU at each available
+> performance levels. How exactly this should be implemented, however,
+> depends on the platform.
+> 
+> On some systems, PM_OPP knows the voltage and frequency at which CPUs
+> can run. When coupled with the CPU 'capacitance' (as provided by the
+> 'dynamic-power-coefficient' devicetree binding), it is possible to
+> estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
+> C its capacitance and V and f respectively the voltage and frequency of
+> the OPP. The Intelligent Power Allocator (IPA) thermal governor already
+> implements that estimation method, in the thermal framework.
+> 
+> However, this power estimation method can be applied to any platform
+> where all the parameters are known (C, V and f), and not only those
+> suffering thermal issues. As such, the code implementing this feature
+> can be re-used to also populate the EM framework now used by EAS.
+> 
+> As a first step, introduce in PM_OPP a helper function which CPUFreq
+> drivers can use to register into the EM framework. This duplicates the
+> power estimation done in IPA until it can be migrated to using the EM
+> framework. This will be done later, once the EM framework has support
+> for at least all platforms currently supported by IPA.
+> 
 > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
 > ---
->  drivers/cpufreq/arm_big_little.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> index cf62a1f64dd7..18b05bcb2614 100644
-> --- a/drivers/cpufreq/arm_big_little.c
-> +++ b/drivers/cpufreq/arm_big_little.c
-> @@ -487,6 +487,14 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.transition_latency =
->  				arm_bL_ops->get_transition_latency(cpu_dev);
->
-> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
-> +	if (ret <= 0) {
-> +		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
-> +		return -EPROBE_DEFER;
-> +	}
+>  drivers/opp/of.c       | 96 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  6 +++
+>  2 files changed, 102 insertions(+)
+> 
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index 06f0f632ec47..4bde13d94dc2 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/pm_domain.h>
+>  #include <linux/slab.h>
+>  #include <linux/export.h>
+> +#include <linux/energy_model.h>
+>  
+>  #include "opp.h"
+>  
+> @@ -1047,3 +1048,98 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  	return of_node_get(opp->np);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
+> +
+> +/*
+> + * Callback function provided to the Energy Model framework upon registration.
+> + * This computes the power estimated by @CPU at @kHz if it is the frequency
+> + * of an existing OPP, or at the frequency of the first OPP above @kHz otherwise
+> + * (see dev_pm_opp_find_freq_ceil()). This function updates @kHz to the ceiled
+> + * frequency and @mW to the associated power. The power is estimated as
+> + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
+> + * the voltage and frequency of the OPP.
+> + *
+> + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> + * calculation failed because of missing parameters, 0 otherwise.
+> + */
+> +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
+> +					 int cpu)
+> +{
+> +	struct device *cpu_dev;
+> +	struct dev_pm_opp *opp;
+> +	struct device_node *np;
+> +	unsigned long mV, Hz;
+> +	u32 cap;
+> +	u64 tmp;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return -EINVAL;
+> +
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	Hz = *kHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> +	dev_pm_opp_put(opp);
+> +	if (!mV)
+> +		return -EINVAL;
+> +
+> +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
+> +	do_div(tmp, 1000000000);
+> +
+> +	*mW = (unsigned long)tmp;
+> +	*kHz = Hz / 1000;
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
+> + * @cpus	: CPUs for which an Energy Model has to be registered
+> + * @nr_opp	: Number of OPPs to register in the Energy Model
+> + *
+> + * This checks whether the "dynamic-power-coefficient" devicetree property has
+> + * been specified, and tries to register an Energy Model with it if it has.
+> + */
+> +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+> +{
+> +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
+> +	int ret, cpu = cpumask_first(cpus);
+> +	struct device *cpu_dev;
+> +	struct device_node *np;
+> +	u32 cap;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return;
+> +
 
-The only user of this has the check in init_opp_table that gets called from
-get_cluster_clk_and_freq_table. So the above is not necessary, you can drop
-it.
+Does it make sense to add the check for OPP count here. You need not pass
+that as parameter. Just makes one less thing to check in new drivers adding
+this support. Thoughts ?
 
 --
 Regards,
