@@ -1,7 +1,7 @@
 From: <michael.kao@mediatek.com>
-Subject: [PATCH 4/7] thermal: mediatek: add thermal controller offset
-Date: Fri, 1 Feb 2019 15:38:10 +0800
-Message-ID: <1549006693-11659-5-git-send-email-michael.kao@mediatek.com>
+Subject: [PATCH 2/7] thermal: mediatek: add common index of vts settings.
+Date: Fri, 1 Feb 2019 15:38:08 +0800
+Message-ID: <1549006693-11659-3-git-send-email-michael.kao@mediatek.com>
 References: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,280 +14,196 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Michael Kao <michael.kao@mediatek.com>
 
-One thermal controller can read four sensors at most,
-so we need to add controller_offset for the project with
-more than four sensors to reuse the same register settings.
+Each project has different number of vts settings.
+For the MT2701 just have to set three vts, but the
+original code flow add five unnecessary vts.
+Add common index of vts settings for scalablity,
+and reduce the setting of unnecessary vts.
 
 Signed-off-by: Michael Kao <michael.kao@mediatek.com>
 ---
- drivers/thermal/mtk_thermal.c | 79 +++++++++++++++++++++++++++++--------------
- 1 file changed, 54 insertions(+), 25 deletions(-)
+ drivers/thermal/mtk_thermal.c | 93 ++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 69 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 45c6587..e5cf3f4 100644
+index f646436..07f8ad7 100644
 --- a/drivers/thermal/mtk_thermal.c
 +++ b/drivers/thermal/mtk_thermal.c
-@@ -105,6 +105,9 @@
- /* The number of sensing points per bank */
- #define MT8173_NUM_SENSORS_PER_ZONE	4
- 
-+/* The number of controller in the MT8173 */
-+#define MT8173_NUM_CONTROLLER		1
+@@ -112,17 +112,26 @@
+  * MT2701 has 3 sensors and needs 3 VTS calibration data.
+  * MT2712 has 4 sensors and needs 4 VTS calibration data.
+  */
+-#define MT8173_CALIB_BUF0_VALID		BIT(0)
+-#define MT8173_CALIB_BUF1_ADC_GE(x)	(((x) >> 22) & 0x3ff)
+-#define MT8173_CALIB_BUF0_VTS_TS1(x)	(((x) >> 17) & 0x1ff)
+-#define MT8173_CALIB_BUF0_VTS_TS2(x)	(((x) >> 8) & 0x1ff)
+-#define MT8173_CALIB_BUF1_VTS_TS3(x)	(((x) >> 0) & 0x1ff)
+-#define MT8173_CALIB_BUF2_VTS_TS4(x)	(((x) >> 23) & 0x1ff)
+-#define MT8173_CALIB_BUF2_VTS_TSABB(x)	(((x) >> 14) & 0x1ff)
+-#define MT8173_CALIB_BUF0_DEGC_CALI(x)	(((x) >> 1) & 0x3f)
+-#define MT8173_CALIB_BUF0_O_SLOPE(x)	(((x) >> 26) & 0x3f)
+-#define MT8173_CALIB_BUF0_O_SLOPE_SIGN(x)	(((x) >> 7) & 0x1)
+-#define MT8173_CALIB_BUF1_ID(x)	(((x) >> 9) & 0x1)
++#define CALIB_BUF0_VALID		BIT(0)
++#define CALIB_BUF1_ADC_GE(x)		(((x) >> 22) & 0x3ff)
++#define CALIB_BUF0_VTS_TS1(x)		(((x) >> 17) & 0x1ff)
++#define CALIB_BUF0_VTS_TS2(x)		(((x) >> 8) & 0x1ff)
++#define CALIB_BUF1_VTS_TS3(x)		(((x) >> 0) & 0x1ff)
++#define CALIB_BUF2_VTS_TS4(x)		(((x) >> 23) & 0x1ff)
++#define CALIB_BUF2_VTS_TSABB(x)		(((x) >> 14) & 0x1ff)
++#define CALIB_BUF0_DEGC_CALI(x)		(((x) >> 1) & 0x3f)
++#define CALIB_BUF0_O_SLOPE(x)		(((x) >> 26) & 0x3f)
++#define CALIB_BUF0_O_SLOPE_SIGN(x)	(((x) >> 7) & 0x1)
++#define CALIB_BUF1_ID(x)		(((x) >> 9) & 0x1)
 +
- /* The calibration coefficient of sensor  */
- #define MT8173_CALIBRATION	165
++enum {
++	VTS1,
++	VTS2,
++	VTS3,
++	VTS4,
++	VTSABB,
++	MAX_NUM_VTS,
++};
  
-@@ -150,6 +153,9 @@ enum {
- /* The number of sensing points per bank */
- #define MT2701_NUM_SENSORS_PER_ZONE	3
- 
-+/* The number of controller in the MT2701 */
-+#define MT2701_NUM_CONTROLLER		1
-+
- /* The calibration coefficient of sensor  */
- #define MT2701_CALIBRATION	165
- 
-@@ -168,6 +174,9 @@ enum {
- /* The number of sensing points per bank */
- #define MT2712_NUM_SENSORS_PER_ZONE	4
- 
-+/* The number of controller in the MT2712 */
-+#define MT2712_NUM_CONTROLLER		1
-+
- /* The calibration coefficient of sensor  */
- #define MT2712_CALIBRATION	165
- 
-@@ -176,6 +185,7 @@ enum {
- #define MT7622_NUM_ZONES		1
- #define MT7622_NUM_SENSORS_PER_ZONE	1
- #define MT7622_TS1	0
-+#define MT7622_NUM_CONTROLLER		1
- 
- /* The calibration coefficient of sensor  */
- #define MT7622_CALIBRATION	165
-@@ -201,6 +211,8 @@ struct mtk_thermal_data {
+ /* MT2701 thermal sensors */
+ #define MT2701_TS1	0
+@@ -175,6 +184,7 @@ struct mtk_thermal_data {
+ 	s32 num_banks;
+ 	s32 num_sensors;
+ 	s32 auxadc_channel;
++	const int *vts_index;
+ 	const int *sensor_mux_values;
  	const int *msr;
  	const int *adcpnp;
- 	const int cali_val;
-+	const int num_controller;
-+	const int *controller_offset;
- 	struct thermal_bank_cfg bank_data[];
- };
+@@ -194,7 +204,7 @@ struct mtk_thermal {
+ 	s32 adc_ge;
+ 	s32 degc_cali;
+ 	s32 o_slope;
+-	s32 vts[MT8173_NUM_SENSORS];
++	s32 vts[MAX_NUM_VTS];
  
-@@ -240,6 +252,7 @@ struct mtk_thermal {
- };
+ 	const struct mtk_thermal_data *conf;
+ 	struct mtk_thermal_bank banks[];
+@@ -218,6 +228,10 @@ struct mtk_thermal {
  
  static const int mt8173_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-+static const int mt8173_tc_offset[MT8173_NUM_CONTROLLER] = { 0x0, };
  
- static const int mt8173_vts_index[MT8173_NUM_SENSORS] = {
- 	VTS1, VTS2, VTS3, VTS4, VTSABB
-@@ -259,6 +272,7 @@ struct mtk_thermal {
- };
++static const int mt8173_vts_index[MT8173_NUM_SENSORS] = {
++	VTS1, VTS2, VTS3, VTS4, VTSABB
++};
++
+ /* MT2701 thermal sensor data */
+ static const int mt2701_bank_data[MT2701_NUM_SENSORS] = {
+ 	MT2701_TS1, MT2701_TS2, MT2701_TSABB
+@@ -233,6 +247,10 @@ struct mtk_thermal {
  
  static const int mt2701_mux_values[MT2701_NUM_SENSORS] = { 0, 1, 16 };
-+static const int mt2701_tc_offset[MT2701_NUM_CONTROLLER] = { 0x0, };
  
- static const int mt2701_vts_index[MT2701_NUM_SENSORS] = {
- 	VTS1, VTS2, VTS3
-@@ -278,6 +292,7 @@ struct mtk_thermal {
- };
++static const int mt2701_vts_index[MT2701_NUM_SENSORS] = {
++	VTS1, VTS2, VTS3
++};
++
+ /* MT2712 thermal sensor data */
+ static const int mt2712_bank_data[MT2712_NUM_SENSORS] = {
+ 	MT2712_TS1, MT2712_TS2, MT2712_TS3, MT2712_TS4
+@@ -248,11 +266,16 @@ struct mtk_thermal {
  
  static const int mt2712_mux_values[MT2712_NUM_SENSORS] = { 0, 1, 2, 3 };
-+static const int mt2712_tc_offset[MT2712_NUM_CONTROLLER] = { 0x0, };
  
- static const int mt2712_vts_index[MT2712_NUM_SENSORS] = {
- 	VTS1, VTS2, VTS3, VTS4
-@@ -289,6 +304,7 @@ struct mtk_thermal {
++static const int mt2712_vts_index[MT2712_NUM_SENSORS] = {
++	VTS1, VTS2, VTS3, VTS4
++};
++
+ /* MT7622 thermal sensor data */
+ static const int mt7622_bank_data[MT7622_NUM_SENSORS] = { MT7622_TS1, };
+ static const int mt7622_msr[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_MSR0, };
  static const int mt7622_adcpnp[MT7622_NUM_SENSORS_PER_ZONE] = { TEMP_ADCPNP0, };
  static const int mt7622_mux_values[MT7622_NUM_SENSORS] = { 0, };
- static const int mt7622_vts_index[MT7622_NUM_SENSORS] = { VTS1 };
-+static const int mt7622_tc_offset[MT7622_NUM_CONTROLLER] = { 0x0, };
++static const int mt7622_vts_index[MT7622_NUM_SENSORS] = { VTS1 };
  
  /**
   * The MT8173 thermal controller has four banks. Each bank can read up to
-@@ -309,6 +325,8 @@ struct mtk_thermal {
+@@ -271,6 +294,7 @@ struct mtk_thermal {
+ 	.auxadc_channel = MT8173_TEMP_AUXADC_CHANNEL,
+ 	.num_banks = MT8173_NUM_ZONES,
  	.num_sensors = MT8173_NUM_SENSORS,
- 	.vts_index = mt8173_vts_index,
- 	.cali_val = MT8173_CALIBRATION,
-+	.num_controller = MT8173_NUM_CONTROLLER,
-+	.controller_offset = mt8173_tc_offset,
++	.vts_index = mt8173_vts_index,
  	.bank_data = {
  		{
  			.num_sensors = 2,
-@@ -345,6 +363,8 @@ struct mtk_thermal {
+@@ -305,6 +329,7 @@ struct mtk_thermal {
+ 	.auxadc_channel = MT2701_TEMP_AUXADC_CHANNEL,
+ 	.num_banks = 1,
  	.num_sensors = MT2701_NUM_SENSORS,
- 	.vts_index = mt2701_vts_index,
- 	.cali_val = MT2701_CALIBRATION,
-+	.num_controller = MT2701_NUM_CONTROLLER,
-+	.controller_offset = mt2701_tc_offset,
++	.vts_index = mt2701_vts_index,
  	.bank_data = {
  		{
  			.num_sensors = 3,
-@@ -372,6 +392,8 @@ struct mtk_thermal {
+@@ -330,6 +355,7 @@ struct mtk_thermal {
+ 	.auxadc_channel = MT2712_TEMP_AUXADC_CHANNEL,
+ 	.num_banks = 1,
  	.num_sensors = MT2712_NUM_SENSORS,
- 	.vts_index = mt2712_vts_index,
- 	.cali_val = MT2712_CALIBRATION,
-+	.num_controller = MT2712_NUM_CONTROLLER,
-+	.controller_offset = mt2712_tc_offset,
++	.vts_index = mt2712_vts_index,
  	.bank_data = {
  		{
  			.num_sensors = 4,
-@@ -393,6 +415,8 @@ struct mtk_thermal {
+@@ -349,6 +375,7 @@ struct mtk_thermal {
+ 	.auxadc_channel = MT7622_TEMP_AUXADC_CHANNEL,
+ 	.num_banks = MT7622_NUM_ZONES,
  	.num_sensors = MT7622_NUM_SENSORS,
- 	.vts_index = mt7622_vts_index,
- 	.cali_val = MT7622_CALIBRATION,
-+	.num_controller = MT7622_NUM_CONTROLLER,
-+	.controller_offset = mt7622_tc_offset,
++	.vts_index = mt7622_vts_index,
  	.bank_data = {
  		{
  			.num_sensors = 1,
-@@ -523,19 +547,23 @@ static int mtk_read_temp(void *data, int *temperature)
- };
- 
- static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
--				  u32 apmixed_phys_base, u32 auxadc_phys_base)
-+				  u32 apmixed_phys_base, u32 auxadc_phys_base,
-+				  int ctrl_id)
- {
- 	struct mtk_thermal_bank *bank = &mt->banks[num];
- 	const struct mtk_thermal_data *conf = mt->conf;
- 	int i;
- 
-+	int offset = mt->conf->controller_offset[ctrl_id];
-+	void *controller_base = mt->thermal_base + offset;
-+
- 	bank->id = num;
- 	bank->mt = mt;
- 
- 	mtk_thermal_get_bank(bank);
- 
- 	/* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
--	writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
-+	writel(TEMP_MONCTL1_PERIOD_UNIT(12), controller_base + TEMP_MONCTL1);
- 
- 	/*
- 	 * filt interval is 1 * 46.540us = 46.54us,
-@@ -543,21 +571,21 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
- 	 */
- 	writel(TEMP_MONCTL2_FILTER_INTERVAL(1) |
- 			TEMP_MONCTL2_SENSOR_INTERVAL(429),
--			mt->thermal_base + TEMP_MONCTL2);
-+			controller_base + TEMP_MONCTL2);
- 
- 	/* poll is set to 10u */
- 	writel(TEMP_AHBPOLL_ADC_POLL_INTERVAL(768),
--	       mt->thermal_base + TEMP_AHBPOLL);
-+	       controller_base + TEMP_AHBPOLL);
- 
- 	/* temperature sampling control, 1 sample */
--	writel(0x0, mt->thermal_base + TEMP_MSRCTL0);
-+	writel(0x0, controller_base + TEMP_MSRCTL0);
- 
- 	/* exceed this polling time, IRQ would be inserted */
--	writel(0xffffffff, mt->thermal_base + TEMP_AHBTO);
-+	writel(0xffffffff, controller_base + TEMP_AHBTO);
- 
- 	/* number of interrupts per event, 1 is enough */
--	writel(0x0, mt->thermal_base + TEMP_MONIDET0);
--	writel(0x0, mt->thermal_base + TEMP_MONIDET1);
-+	writel(0x0, controller_base + TEMP_MONIDET0);
-+	writel(0x0, controller_base + TEMP_MONIDET1);
- 
- 	/*
- 	 * The MT8173 thermal controller does not have its own ADC. Instead it
-@@ -572,44 +600,44 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
- 	 * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
- 	 * automatically by hw
- 	 */
--	writel(BIT(conf->auxadc_channel), mt->thermal_base + TEMP_ADCMUX);
-+	writel(BIT(conf->auxadc_channel), controller_base + TEMP_ADCMUX);
- 
- 	/* AHB address for auxadc mux selection */
- 	writel(auxadc_phys_base + AUXADC_CON1_CLR_V,
--	       mt->thermal_base + TEMP_ADCMUXADDR);
-+	       controller_base + TEMP_ADCMUXADDR);
- 
- 	/* AHB address for pnp sensor mux selection */
- 	writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
--	       mt->thermal_base + TEMP_PNPMUXADDR);
-+	       controller_base + TEMP_PNPMUXADDR);
- 
- 	/* AHB value for auxadc enable */
--	writel(BIT(conf->auxadc_channel), mt->thermal_base + TEMP_ADCEN);
-+	writel(BIT(conf->auxadc_channel), controller_base + TEMP_ADCEN);
- 
- 	/* AHB address for auxadc enable (channel 0 immediate mode selected) */
- 	writel(auxadc_phys_base + AUXADC_CON1_SET_V,
--	       mt->thermal_base + TEMP_ADCENADDR);
-+	       controller_base + TEMP_ADCENADDR);
- 
- 	/* AHB address for auxadc valid bit */
- 	writel(auxadc_phys_base + AUXADC_DATA(conf->auxadc_channel),
--	       mt->thermal_base + TEMP_ADCVALIDADDR);
-+	       controller_base + TEMP_ADCVALIDADDR);
- 
- 	/* AHB address for auxadc voltage output */
- 	writel(auxadc_phys_base + AUXADC_DATA(conf->auxadc_channel),
--	       mt->thermal_base + TEMP_ADCVOLTADDR);
-+	       controller_base + TEMP_ADCVOLTADDR);
- 
- 	/* read valid & voltage are at the same register */
--	writel(0x0, mt->thermal_base + TEMP_RDCTRL);
-+	writel(0x0, controller_base + TEMP_RDCTRL);
- 
- 	/* indicate where the valid bit is */
- 	writel(TEMP_ADCVALIDMASK_VALID_HIGH | TEMP_ADCVALIDMASK_VALID_POS(12),
--	       mt->thermal_base + TEMP_ADCVALIDMASK);
-+	       controller_base + TEMP_ADCVALIDMASK);
- 
- 	/* no shift */
--	writel(0x0, mt->thermal_base + TEMP_ADCVOLTAGESHIFT);
-+	writel(0x0, controller_base + TEMP_ADCVOLTAGESHIFT);
- 
- 	/* enable auxadc mux write transaction */
- 	writel(TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
--	       mt->thermal_base + TEMP_ADCWRITECTRL);
-+		controller_base + TEMP_ADCWRITECTRL);
- 
- 	for (i = 0; i < conf->bank_data[num].num_sensors; i++)
- 		writel(conf->sensor_mux_values[conf->bank_data[num].sensors[i]],
-@@ -617,11 +645,11 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
- 		       conf->adcpnp[conf->bank_data[num].sensors[i]]);
- 
- 	writel((1 << conf->bank_data[num].num_sensors) - 1,
--	       mt->thermal_base + TEMP_MONCTL0);
-+	       controller_base + TEMP_MONCTL0);
- 
- 	writel(TEMP_ADCWRITECTRL_ADC_PNP_WRITE |
- 	       TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
--	       mt->thermal_base + TEMP_ADCWRITECTRL);
-+	       controller_base + TEMP_ADCWRITECTRL);
- 
- 	mtk_thermal_put_bank(bank);
- }
-@@ -737,7 +765,7 @@ static int mtk_thermal_get_calibration_data(struct device *dev,
- 
- static int mtk_thermal_probe(struct platform_device *pdev)
- {
--	int ret, i;
-+	int ret, i, ctrl_id;
- 	struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
- 	struct mtk_thermal *mt;
- 	struct resource *res;
-@@ -817,9 +845,10 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 		goto err_disable_clk_auxadc;
+@@ -629,19 +656,37 @@ static int mtk_thermal_get_calibration_data(struct device *dev,
+ 		goto out;
  	}
  
--	for (i = 0; i < mt->conf->num_banks; i++)
--		mtk_thermal_init_bank(mt, i, apmixed_phys_base,
--				      auxadc_phys_base);
-+	for (ctrl_id = 0; ctrl_id < mt->conf->num_controller ; ctrl_id++)
-+		for (i = 0; i < mt->conf->num_banks; i++)
-+			mtk_thermal_init_bank(mt, i, apmixed_phys_base,
-+					      auxadc_phys_base, ctrl_id);
- 
- 	platform_set_drvdata(pdev, mt);
- 
+-	if (buf[0] & MT8173_CALIB_BUF0_VALID) {
+-		mt->adc_ge = MT8173_CALIB_BUF1_ADC_GE(buf[1]);
+-		mt->vts[MT8173_TS1] = MT8173_CALIB_BUF0_VTS_TS1(buf[0]);
+-		mt->vts[MT8173_TS2] = MT8173_CALIB_BUF0_VTS_TS2(buf[0]);
+-		mt->vts[MT8173_TS3] = MT8173_CALIB_BUF1_VTS_TS3(buf[1]);
+-		mt->vts[MT8173_TS4] = MT8173_CALIB_BUF2_VTS_TS4(buf[2]);
+-		mt->vts[MT8173_TSABB] = MT8173_CALIB_BUF2_VTS_TSABB(buf[2]);
+-		mt->degc_cali = MT8173_CALIB_BUF0_DEGC_CALI(buf[0]);
+-		if (MT8173_CALIB_BUF1_ID(buf[1]) &
+-		    MT8173_CALIB_BUF0_O_SLOPE_SIGN(buf[0]))
+-			mt->o_slope = -MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
++	if (buf[0] & CALIB_BUF0_VALID) {
++		mt->adc_ge = CALIB_BUF1_ADC_GE(buf[1]);
++
++		for (i = 0; i < mt->conf->num_sensors; i++) {
++			switch (mt->conf->vts_index[i]) {
++			case VTS1:
++				mt->vts[VTS1] = CALIB_BUF0_VTS_TS1(buf[0]);
++				break;
++			case VTS2:
++				mt->vts[VTS2] = CALIB_BUF0_VTS_TS2(buf[0]);
++				break;
++			case VTS3:
++				mt->vts[VTS3] = CALIB_BUF1_VTS_TS3(buf[1]);
++				break;
++			case VTS4:
++				mt->vts[VTS4] = CALIB_BUF2_VTS_TS4(buf[2]);
++				break;
++			case VTSABB:
++				mt->vts[VTSABB] = CALIB_BUF2_VTS_TSABB(buf[2]);
++				break;
++			default:
++				break;
++			}
++		}
++
++		mt->degc_cali = CALIB_BUF0_DEGC_CALI(buf[0]);
++		if (CALIB_BUF1_ID(buf[1]) &
++		    CALIB_BUF0_O_SLOPE_SIGN(buf[0]))
++			mt->o_slope = -CALIB_BUF0_O_SLOPE(buf[0]);
+ 		else
+-			mt->o_slope = MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
++			mt->o_slope = CALIB_BUF0_O_SLOPE(buf[0]);
+ 	} else {
+ 		dev_info(dev, "Device not calibrated, using default calibration values\n");
+ 	}
 -- 
 1.9.1
