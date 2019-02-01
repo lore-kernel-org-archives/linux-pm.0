@@ -1,206 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 5/9] driver core: Fix adding device links to probing suppliers
-Date: Fri, 01 Feb 2019 01:50:39 +0100
-Message-ID: <1758954.XJRqBzkQZV@aspire.rjw.lan>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: Re: [PATCH] cpuidle: dt: bail out if the idle-state DT node is not
+ compatible
+Date: Fri, 1 Feb 2019 09:42:41 +0800
+Message-ID: <fc49e8b2-cc32-3074-9aa7-04bbc561dfe6@nvidia.com>
+References: <20190131022749.19046-1-josephl@nvidia.com>
+ <20190131103823.GA19907@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1952449.TVsm6CJCTy@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190131103823.GA19907@e107155-lin>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-tegra@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 1/31/19 6:38 PM, Sudeep Holla wrote:
+> On Thu, Jan 31, 2019 at 10:27:49AM +0800, Joseph Lo wrote:
+>> Currently, the DT of the idle states will be parsed first whether it's
+>> compatible or not. This could cause a warning message that comes from if
+>> the CPU doesn't support identical idle states. E.g. Tegra186 can run
+>> with 2 Cortex-A57 and 2 Denver cores with different idle states on
+>> different types of these cores.
+>>
+>> We fix it to check the compatible string before the parsing procedures.
+>> So it can make sure it only goes through the idle states that the CPU
+>> supported.
+>>
+>> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+>> ---
+>>   drivers/cpuidle/dt_idle_states.c | 5 +++++
+>>   1 file changed, 5 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
+>> index 53342b7f1010..4a528908abb3 100644
+>> --- a/drivers/cpuidle/dt_idle_states.c
+>> +++ b/drivers/cpuidle/dt_idle_states.c
+>> @@ -180,6 +180,11 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
+>>   		if (!state_node)
+>>   			break;
+>>
+>> +		if (!of_device_is_compatible(state_node, matches->compatible)) {
+>> +			err = -EINVAL;
+>> +			break;
+>> +		}
+>> +
+> 
+> Does it make sense to use of_match_node to get the matching device id and
+> just pass that to init_state_node instead of the complete array to find the
+> match.
 
-Currently, it is not valid to add a device link from a consumer
-driver ->probe callback to a supplier that is still probing too, but
-generally this is a valid use case.  For example, if the consumer has
-just acquired a resource that can only be available if the supplier
-is functional, adding a device link to that supplier right away
-should be safe (and even desirable arguably), but device_link_add()
-doesn't handle that case correctly and the initial state of the link
-created by it is wrong then.
+Yes, that would be even better.
 
-To address this problem, change the initial state of device links
-added between a probing supplier and a probing consumer to
-DL_STATE_CONSUMER_PROBE and update device_links_driver_bound() to
-skip such links on the supplier side.
-
-With this change, if the supplier probe completes first,
-device_links_driver_bound() called for it will skip the link state
-update and when it is called for the consumer, the link state will
-be updated to "active".  In turn, if the consumer probe completes
-first, device_links_driver_bound() called for it will change the
-state of the link to "active" and when it is called for the
-supplier, the link status update will be skipped.
-
-However, in principle the supplier or consumer probe may still fail
-after the link has been added, so modify device_links_no_driver() to
-change device links in the "active" or "consumer probe" state to
-"dormant" on the supplier side and update __device_links_no_driver()
-to change the link state to "available" only if it is "consumer
-probe" or "active".
-
-Then, if the supplier probe fails first, the leftover link to the
-probing consumer will become "dormant" and device_links_no_driver()
-called for the consumer (when its probe fails) will clean it up.
-In turn, if the consumer probe fails first, it will either drop the
-link, or change its state to "available" and, in the latter case,
-when device_links_no_driver() is called for the supplier, it will
-update the link state to "dormant".  [If the supplier probe fails,
-but the consumer probe succeeds, which should not happen as long as
-the consumer driver is correct, the link still will be around, but
-it will be "dormant" until the supplier is probed again.]
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/driver-api/device_link.rst |   10 ++--
- drivers/base/core.c                      |   74 +++++++++++++++++++++++++++----
- 2 files changed, 73 insertions(+), 11 deletions(-)
-
-Index: linux-pm/drivers/base/core.c
-===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -300,17 +300,26 @@ struct device_link *device_link_add(stru
- 		link->status = DL_STATE_NONE;
- 	} else {
- 		switch (supplier->links.status) {
--		case DL_DEV_DRIVER_BOUND:
-+		case DL_DEV_PROBING:
- 			switch (consumer->links.status) {
- 			case DL_DEV_PROBING:
- 				/*
--				 * Some callers expect the link creation during
--				 * consumer driver probe to resume the supplier
--				 * even without DL_FLAG_RPM_ACTIVE.
-+				 * A consumer driver can create a link to a
-+				 * supplier that has not completed its probing
-+				 * yet as long as it knows that the supplier is
-+				 * already functional (for example, it has just
-+				 * acquired some resources from the supplier).
- 				 */
--				if (flags & DL_FLAG_PM_RUNTIME)
--					pm_runtime_resume(supplier);
--
-+				link->status = DL_STATE_CONSUMER_PROBE;
-+				break;
-+			default:
-+				link->status = DL_STATE_DORMANT;
-+				break;
-+			}
-+			break;
-+		case DL_DEV_DRIVER_BOUND:
-+			switch (consumer->links.status) {
-+			case DL_DEV_PROBING:
- 				link->status = DL_STATE_CONSUMER_PROBE;
- 				break;
- 			case DL_DEV_DRIVER_BOUND:
-@@ -331,6 +340,14 @@ struct device_link *device_link_add(stru
- 	}
- 
- 	/*
-+	 * Some callers expect the link creation during consumer driver probe to
-+	 * resume the supplier even without DL_FLAG_RPM_ACTIVE.
-+	 */
-+	if (link->status == DL_STATE_CONSUMER_PROBE &&
-+	    flags & DL_FLAG_PM_RUNTIME)
-+		pm_runtime_resume(supplier);
-+
-+	/*
- 	 * Move the consumer and all of the devices depending on it to the end
- 	 * of dpm_list and the devices_kset list.
- 	 *
-@@ -518,6 +535,16 @@ void device_links_driver_bound(struct de
- 		if (link->flags & DL_FLAG_STATELESS)
- 			continue;
- 
-+		/*
-+		 * Links created during consumer probe may be in the "consumer
-+		 * probe" state to start with if the supplier is still probing
-+		 * when they are created and they may become "active" if the
-+		 * consumer probe returns first.  Skip them here.
-+		 */
-+		if (link->status == DL_STATE_CONSUMER_PROBE ||
-+		    link->status == DL_STATE_ACTIVE)
-+			continue;
-+
- 		WARN_ON(link->status != DL_STATE_DORMANT);
- 		WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
- 	}
-@@ -557,17 +584,48 @@ static void __device_links_no_driver(str
- 
- 		if (link->flags & DL_FLAG_AUTOREMOVE_CONSUMER)
- 			__device_link_del(&link->kref);
--		else if (link->status != DL_STATE_SUPPLIER_UNBIND)
-+		else if (link->status == DL_STATE_CONSUMER_PROBE ||
-+			 link->status == DL_STATE_ACTIVE)
- 			WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
- 	}
- 
- 	dev->links.status = DL_DEV_NO_DRIVER;
- }
- 
-+/**
-+ * device_links_no_driver - Update links after failing driver probe.
-+ * @dev: Device whose driver has just failed to probe.
-+ *
-+ * Clean up leftover links to consumers for @dev and invoke
-+ * %__device_links_no_driver() to update links to suppliers for it as
-+ * appropriate.
-+ *
-+ * Links with the DL_FLAG_STATELESS flag set are ignored.
-+ */
- void device_links_no_driver(struct device *dev)
- {
-+	struct device_link *link;
-+
- 	device_links_write_lock();
-+
-+	list_for_each_entry(link, &dev->links.consumers, s_node) {
-+		if (link->flags & DL_FLAG_STATELESS)
-+			continue;
-+
-+		/*
-+		 * The probe has failed, so if the status of the link is
-+		 * "consumer probe" or "active", it must have been added by
-+		 * a probing consumer while this device was still probing.
-+		 * Change its state to "dormant", as it represents a valid
-+		 * relationship, but it is not functionally meaningful.
-+		 */
-+		if (link->status == DL_STATE_CONSUMER_PROBE ||
-+		    link->status == DL_STATE_ACTIVE)
-+			WRITE_ONCE(link->status, DL_STATE_DORMANT);
-+	}
-+
- 	__device_links_no_driver(dev);
-+
- 	device_links_write_unlock();
- }
- 
-Index: linux-pm/Documentation/driver-api/device_link.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/device_link.rst
-+++ linux-pm/Documentation/driver-api/device_link.rst
-@@ -59,11 +59,15 @@ device ``->probe`` callback or a boot-ti
- 
- Another example for an inconsistent state would be a device link that
- represents a driver presence dependency, yet is added from the consumer's
--``->probe`` callback while the supplier hasn't probed yet:  Had the driver
--core known about the device link earlier, it wouldn't have probed the
-+``->probe`` callback while the supplier hasn't started to probe yet:  Had the
-+driver core known about the device link earlier, it wouldn't have probed the
- consumer in the first place.  The onus is thus on the consumer to check
- presence of the supplier after adding the link, and defer probing on
--non-presence.
-+non-presence.  [Note that it is valid to create a link from the consumer's
-+``->probe`` callback while the supplier is still probing, but the consumer must
-+know that the supplier is functional already at the link creation time (that is
-+the case, for instance, if the consumer has just acquired some resources that
-+would not have been available had the supplier not been functional then).]
- 
- If a device link is added in the ``->probe`` callback of the supplier or
- consumer driver, it is typically deleted in its ``->remove`` callback for
+Thanks,
+Joseph
