@@ -1,127 +1,74 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
-Date: Fri, 1 Feb 2019 08:54:37 -0800
-Message-ID: <000001d4ba4e$d33c3220$79b49660$@net>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v3 1/5] PM / OPP: Introduce a power estimation helper
+Date: Fri, 1 Feb 2019 10:16:24 -0800
+Message-ID: <20190201181624.GQ81583@google.com>
+References: <20190201093101.31869-1-quentin.perret@arm.com>
+ <20190201093101.31869-2-quentin.perret@arm.com>
+ <20190201120453.GC10042@e107155-lin>
+ <20190201120951.lqxy4u7kxfzfmmub@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-References: ozrUgGQWNCLmLozrWgF2we
-In-Reply-To: ozrUgGQWNCLmLozrWgF2we
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20190201120951.lqxy4u7kxfzfmmub@queper01-lin>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: nm@ti.com, linux-pm@vger.kernel.org, sboyd@kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2019.01.30 16:05 Rafael J. Wysocki wrote:
+On Fri, Feb 01, 2019 at 12:09:53PM +0000, Quentin Perret wrote:
+> Hi Sudeep,
+> 
+> On Friday 01 Feb 2019 at 12:04:53 (+0000), Sudeep Holla wrote:
+> > On Fri, Feb 01, 2019 at 09:30:57AM +0000, Quentin Perret wrote:
+> > > +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
+> > > +{
+> > > +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
+> > > +	int ret, cpu = cpumask_first(cpus);
+> > > +	struct device *cpu_dev;
+> > > +	struct device_node *np;
+> > > +	u32 cap;
+> > > +
+> > > +	cpu_dev = get_cpu_device(cpu);
+> > > +	if (!cpu_dev)
+> > > +		return;
+> > > +
+> > > +	np = of_node_get(cpu_dev->of_node);
+> > > +	if (!np)
+> > > +		return;
+> > > +
+> > 
+> > Does it make sense to add the check for OPP count here. You need not pass
+> > that as parameter. Just makes one less thing to check in new drivers adding
+> > this support. Thoughts ?
+> 
+> Yeah Matthias had the same suggestion. I don't mind moving it here TBH.
+> It's just that some users already do the opp count before calling this
+> function, so I figured I could as well use that data instead of counting
+> again.
+> 
+> But yeah, that's one less thing to worry about on the driver side so
+> I'll move the OPP count in there for v4 and we'll see if people ask me
+> to move it out to optimize things ;-)
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The current iowait boosting mechanism in intel_pstate_update_util()
-> is quite aggressive, as it goes to the maximum P-state right away,
-> and may cause excessive amounts of energy to be used, which is not
-> desirable and arguably isn't necessary too.
->
-> Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
-> more energy efficient") that reworked the analogous iowait boost
-> mechanism in the schedutil governor and make the iowait boosting
-> in intel_pstate_update_util() work along the same lines.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |   46 +++++++++++++++++++++++++----------------
->  1 file changed, 29 insertions(+), 17 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -50,6 +50,8 @@
->  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->  #define fp_toint(X) ((X) >> FRAC_BITS)
-> 
-> +#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
-> +
->  #define EXT_BITS 6
->  #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
->  #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
-> @@ -1678,17 +1680,14 @@ static inline int32_t get_avg_pstate(str
->  static inline int32_t get_target_pstate(struct cpudata *cpu)
->  {
-> 	struct sample *sample = &cpu->sample;
-> -	int32_t busy_frac, boost;
-> +	int32_t busy_frac;
-> 	int target, avg_pstate;
-> 
-> 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
-> 			   sample->tsc);
-> 
-> -	boost = cpu->iowait_boost;
-> -	cpu->iowait_boost >>= 1;
-> -
-> -	if (busy_frac < boost)
-> -		busy_frac = boost;
-> +	if (busy_frac < cpu->iowait_boost)
-> +		busy_frac = cpu->iowait_boost;
-> 
-> 	sample->busy_scaled = busy_frac * 100;
-> 
-> @@ -1767,22 +1766,35 @@ static void intel_pstate_update_util(str
-> 	if (smp_processor_id() != cpu->cpu)
->  		return;
->
-> +	delta_ns = time - cpu->last_update;
-> 	if (flags & SCHED_CPUFREQ_IOWAIT) {
-> -		cpu->iowait_boost = int_tofp(1);
-> -		cpu->last_update = time;
-> -		/*
-> -		 * The last time the busy was 100% so P-state was max anyway
-> -		 * so avoid overhead of computation.
-> -		 */
-> -		if (fp_toint(cpu->sample.busy_scaled) == 100)
-> -			return;
-> -
-> -		goto set_pstate;
-> +		/* Start over if the CPU may have been idle. */
-> +		if (delta_ns > TICK_NSEC) {
-> +			cpu->iowait_boost = ONE_EIGHTH_FP;
-> +		} else if (cpu->iowait_boost) {
-> +			cpu->iowait_boost <<= 1;
-> +			if (cpu->iowait_boost >= int_tofp(1)) {
-> +				cpu->iowait_boost = int_tofp(1);
-> +				cpu->last_update = time;
-> +				/*
-> +				 * The last time the busy was 100% so P-state
-> +				 * was max anyway, so avoid the overhead of
-> +				 * computation.
-> +				 */
-> +				if (fp_toint(cpu->sample.busy_scaled) == 100)
-> +					return;
+>From an API perspective it would be nice to get rid of the nr_opp
+parameter, it seems somewhat arbitrary. Moving dev_pm_opp_get_opp_count()
+from the drivers into dev_pm_opp_of_register_em() (instead of calling
+it twice) also sounds good in general, as long as the error handling
+doesn't become too messy. In the current version
+dev_pm_opp_of_register_em() doesn't return a value, with the change it
+would have to return one to catch an empty OPP table, and it needs
+to be distinguished from other cases where the EM registration fails
+but the cpufreq driver is still functional (e.g. no
+'dynamic-power-coefficient'). Maybe return -ENOTSUPP in those cases?
 
-Hi Rafael,
-
-By exiting here, the trace, if enabled, is also bypassed.
-We want the trace sample.
-Also, there is a generic:
-"If the target ptstate is the same as before, then don't set it"
-later on.
-Suggest to delete this test and exit condition. (I see that this early exit was done before also.)
-
-> +
-> +				goto set_pstate;
-> +			}
-> +		} else {
-> +			cpu->iowait_boost = ONE_EIGHTH_FP;
-> +		}
-> 	} else if (cpu->iowait_boost) {
-> 		/* Clear iowait_boost if the CPU may have been idle. */
-> -		delta_ns = time - cpu->last_update;
-> 		if (delta_ns > TICK_NSEC)
->  			cpu->iowait_boost = 0;
-> +		else
-> +			cpu->iowait_boost >>= 1;
-> 	}
-> 	cpu->last_update = time;
-> 	delta_ns = time - cpu->sample.time;
+Well, let's see how it looks like :)
