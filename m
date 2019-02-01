@@ -1,411 +1,240 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 3/3] devfreq: add mediatek cci devfreq
-Date: Fri, 1 Feb 2019 12:13:38 -0800
-Message-ID: <20190201201338.GS81583@google.com>
-References: <1548743704-16821-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
+From: Dan Murphy <dmurphy@ti.com>
+Subject: Re: [PATCH v3 09/11] leds: max77650: add LEDs support
+Date: Fri, 1 Feb 2019 14:14:46 -0600
+Message-ID: <d86adc21-627f-0350-72e0-f6f10b023413@ti.com>
+References: <20190201094736.32057-1-brgl@bgdev.pl>
+ <20190201094736.32057-10-brgl@bgdev.pl>
+ <78b99abb-f367-1533-0690-8da26957a664@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
+In-Reply-To: <78b99abb-f367-1533-0690-8da26957a664@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, srv_heupstream@mediatek.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, fan.chen@mediatek.com, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Jacek Anaszewski <jacek.anaszewski@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Andrew,
+Hi
 
-On Tue, Jan 29, 2019 at 02:35:04PM +0800, Andrew-sh Cheng wrote:
-> From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-
-the 'From' tag is only needed when you send patches not authored by
-yourself. It doesn't do any harm either, but you can drop it in future
-submissions.
-
-> For big/little cpu cluster architecture,
-> not only CPU frequency, but CCI frequency will also affect performance.
-
-This doesn't provide much information, I suggest to drop it unless
-others find it valuable.
-
-> Little cores and cci share the same buck in Mediatek mt8183 IC,
-> so we add a CCI devfreq which will get notification when buck voltage
-> is changed, then CCI devfreq can set cci frequency as high as
-> possible.
-
-Possible alternative:
-
-"This adds a devfreq driver for the Cache Coherent Interconnect (CCI)
-of the Mediatek MT8183.
-
-On the MT8183 the CCI is supplied by the same regulator as the LITTLE
-cores. The driver is notified when the regulator voltage changes
-(driven by cpufreq) and adjusts the CCI frequency to the maximum
-possible value."
-
-Feel free to ignore or to adjust.
-
-> Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> ---
->  drivers/devfreq/Kconfig              |   9 ++
->  drivers/devfreq/Makefile             |   1 +
->  drivers/devfreq/mt8183-cci-devfreq.c | 224 +++++++++++++++++++++++++++++++++++
->  3 files changed, 234 insertions(+)
->  create mode 100644 drivers/devfreq/mt8183-cci-devfreq.c
+On 2/1/19 1:45 PM, Jacek Anaszewski wrote:
+> Hi Bartosz,
 > 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 6a172d3..0b14aab 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -113,6 +113,15 @@ config ARM_RK3399_DMC_DEVFREQ
->            It sets the frequency for the memory controller and reads the usage counts
->            from hardware.
->  
-> +config ARM_MT8183_CCI_DEVFREQ
-> +	tristate "MT8183 CCI DEVFREQ Driver"
-> +	depends on ARM_MEDIATEK_CPUFREQ
-> +	help
-> +		This adds devfreq for cci clock
+> Thanks for the update.
+> 
+> On 2/1/19 10:47 AM, Bartosz Golaszewski wrote:
+>> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>>
+>> This adds basic support for LEDs for the max77650 PMIC. The device has
+>> three current sinks for driving LEDs.
+>>
+>> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>> ---
+>>   drivers/leds/Kconfig         |   6 ++
+>>   drivers/leds/Makefile        |   1 +
+>>   drivers/leds/leds-max77650.c | 147 +++++++++++++++++++++++++++++++++++
+>>   3 files changed, 154 insertions(+)
+>>   create mode 100644 drivers/leds/leds-max77650.c
+>>
+>> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+>> index a72f97fca57b..6e7a8f51eccc 100644
+>> --- a/drivers/leds/Kconfig
+>> +++ b/drivers/leds/Kconfig
+>> @@ -608,6 +608,12 @@ config LEDS_TLC591XX
+>>         This option enables support for Texas Instruments TLC59108
+>>         and TLC59116 LED controllers.
+>>   +config LEDS_MAX77650
+>> +    tristate "LED support for Maxim MAX77650 PMIC"
+>> +    depends on MFD_MAX77650
+>> +    help
+>> +      LEDs driver for MAX77650 family of PMICs from Maxim Integrated."
+>> +
+>>   config LEDS_MAX77693
+>>       tristate "LED support for MAX77693 Flash"
+>>       depends on LEDS_CLASS_FLASH
+>> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+>> index 4c1b0054f379..f48b2404dbb7 100644
+>> --- a/drivers/leds/Makefile
+>> +++ b/drivers/leds/Makefile
+>> @@ -61,6 +61,7 @@ obj-$(CONFIG_LEDS_MC13783)        += leds-mc13783.o
+>>   obj-$(CONFIG_LEDS_NS2)            += leds-ns2.o
+>>   obj-$(CONFIG_LEDS_NETXBIG)        += leds-netxbig.o
+>>   obj-$(CONFIG_LEDS_ASIC3)        += leds-asic3.o
+>> +obj-$(CONFIG_LEDS_MAX77650)        += leds-max77650.o
+>>   obj-$(CONFIG_LEDS_MAX77693)        += leds-max77693.o
+>>   obj-$(CONFIG_LEDS_MAX8997)        += leds-max8997.o
+>>   obj-$(CONFIG_LEDS_LM355x)        += leds-lm355x.o
+>> diff --git a/drivers/leds/leds-max77650.c b/drivers/leds/leds-max77650.c
+>> new file mode 100644
+>> index 000000000000..6b74ce9cac12
+>> --- /dev/null
+>> +++ b/drivers/leds/leds-max77650.c
+>> @@ -0,0 +1,147 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +//
+>> +// Copyright (C) 2018 BayLibre SAS
+>> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>> +//
+>> +// LED driver for MAXIM 77650/77651 charger/power-supply.
+>> +
+>> +#include <linux/i2c.h>
+>> +#include <linux/leds.h>
+>> +#include <linux/mfd/max77650.h>
+>> +#include <linux/module.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/regmap.h>
+>> +
+>> +#define MAX77650_LED_NUM_LEDS        3
+>> +
+>> +#define MAX77650_LED_A_BASE        0x40
+>> +#define MAX77650_LED_B_BASE        0x43
+>> +
+>> +#define MAX77650_LED_BR_MASK        GENMASK(4, 0)
+>> +#define MAX77650_LED_EN_MASK        GENMASK(7, 6)
+>> +
+>> +#define MAX77650_LED_MAX_BRIGHTNESS    MAX77650_LED_BR_MASK
+>> +
+>> +/* Enable EN_LED_MSTR. */
+>> +#define MAX77650_LED_TOP_DEFAULT    BIT(0)
+>> +
+>> +#define MAX77650_LED_ENABLE        GENMASK(7, 6)
+>> +#define MAX77650_LED_DISABLE        0x00
+>> +
+>> +#define MAX77650_LED_A_DEFAULT        MAX77650_LED_DISABLE
+>> +/* 100% on duty */
+>> +#define MAX77650_LED_B_DEFAULT        GENMASK(3, 0)
+>> +
+>> +struct max77650_led {
+>> +    struct led_classdev cdev;
+>> +    struct regmap *map;
+>> +    unsigned int regA;
+>> +    unsigned int regB;
 
-"This adds a devfreq driver for the Cache Coherent Interconnect (CCI)
-of the Mediatek MT8183"?
+Please don't use camel case.
 
-> +		which is shared the same regulator with cpu cluster.
-> +		It can track buck voltage and update a proper cci frequency.
-> +		Use notification to get regulator status.
+>> +};
+>> +
+>> +static struct max77650_led *max77650_to_led(struct led_classdev *cdev)
+>> +{
+>> +    return container_of(cdev, struct max77650_led, cdev);
+>> +}
+>> +
+>> +static int max77650_led_brightness_set(struct led_classdev *cdev,
+>> +                       enum led_brightness brightness)
+>> +{
+>> +    struct max77650_led *led = max77650_to_led(cdev);
+>> +    int val, mask;
+>> +
 
-not sure how important this info is here, sounds more like an
-implementation detail to me.
+The register value and bits are only 8 bit why an int?
 
-> +
->  source "drivers/devfreq/event/Kconfig"
->  
->  endif # PM_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> index 32b8d4d..25afe8c 100644
-> --- a/drivers/devfreq/Makefile
-> +++ b/drivers/devfreq/Makefile
-> @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
->  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
->  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
->  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
-> +obj-$(CONFIG_ARM_MT8183_CCI_DEVFREQ)	+= mt8183-cci-devfreq.o
->  
->  # DEVFREQ Event Drivers
->  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
-> diff --git a/drivers/devfreq/mt8183-cci-devfreq.c b/drivers/devfreq/mt8183-cci-devfreq.c
-> new file mode 100644
-> index 0000000..4837892
-> --- /dev/null
-> +++ b/drivers/devfreq/mt8183-cci-devfreq.c
-> @@ -0,0 +1,224 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +//
-> +// Copyright (c) 2018 MediaTek Inc.
+>> +    mask = MAX77650_LED_BR_MASK | MAX77650_LED_EN_MASK;
+>> +
+>> +    if (brightness == LED_OFF)
+>> +        val = MAX77650_LED_DISABLE;
+>> +    else
+>> +        val = MAX77650_LED_ENABLE | brightness;
+>> +
+>> +    return regmap_update_bits(led->map, led->regA, mask, val);
+>> +}
+>> +
+>> +static int max77650_led_probe(struct platform_device *pdev)
+>> +{
+>> +    struct device_node *of_node, *child;
+>> +    struct max77650_led *leds, *led;
+>> +    struct device *parent;
+>> +    struct device *dev;
+>> +    struct regmap *map;
+>> +    const char *label;
+>> +    int rv, num_leds;
+>> +    u32 reg;
+>> +
+>> +    dev = &pdev->dev;
+>> +    parent = dev->parent;
+>> +    of_node = dev->of_node;
+>> +
+>> +    if (!of_node)
+>> +        return -ENODEV;
+>> +
+>> +    leds = devm_kcalloc(dev, sizeof(*leds),
+>> +                MAX77650_LED_NUM_LEDS, GFP_KERNEL);
+>> +    if (!leds)
+>> +        return -ENOMEM;
+>> +
+>> +    map = dev_get_regmap(dev->parent, NULL);
+>> +    if (!map)
+>> +        return -ENODEV;
+>> +
+>> +    num_leds = of_get_child_count(of_node);
+>> +    if (!num_leds || num_leds > MAX77650_LED_NUM_LEDS)
+>> +        return -ENODEV;
+>> +
+>> +    for_each_child_of_node(of_node, child) {
+>> +        rv = of_property_read_u32(child, "reg", &reg);
 
-2019 :)
-
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/devfreq.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regulator/consumer.h>
-> +
-> +#include "governor.h"
-> +
-> +struct cci_devfreq_data {
-
-nit: consider dropping the '_data' suffix, it doesn't add much/any
-value.
-
-> +	struct devfreq		*devfreq;
-> +	struct regulator	*proc_reg;
-> +	struct clk		*cci_clk;
-> +	unsigned long		buck_volt;
-
-proc_reg_uV?
-
-place after proc_reg
-
-> +	int			volt_increasing;
-
-should be bool
-
-actually, is it really needed? See comment in cci_devfreq_regulator_notifier()
-
-> +	struct notifier_block	nb;
-> +};
-> +
-> +static int mtk_cci_governor_get_target(struct devfreq *devfreq,
-> +				       unsigned long *freq)
-> +{
-> +	struct cci_devfreq_data *cci_devdata;
-
-nit: consider calling it 'cci_df' (here and elsewhere). In the context
-the abbreviation is clear and there is less clutter when accessing
-fields in the structure.
-
-> +	int	i, opp_count;
-> +	struct dev_pm_opp	*opp;
-> +	unsigned long	opp_rate, opp_voltage;
-> +
-> +	cci_devdata = dev_get_drvdata(devfreq->dev.parent);
-> +
-> +	/* find available frequency */
-> +	opp_count = dev_pm_opp_get_opp_count(devfreq->dev.parent);
-> +	for (i = 0, opp_rate = ULONG_MAX; i < opp_count; i++, opp_rate--) {
-> +		opp = dev_pm_opp_find_freq_floor(devfreq->dev.parent,
-> +						 &opp_rate);
-> +		opp_voltage = dev_pm_opp_get_voltage(opp);
-> +		dev_pm_opp_put(opp);
-> +
-> +		if (opp_voltage <= cci_devdata->buck_volt)
-> +			break;
-> +	}
-> +	*freq = opp_rate;
-> +
-> +	return 0;
-> +}
-> +
-> +static int mtk_cci_governor_event_handler(struct devfreq *devfreq,
-> +					  unsigned int event, void *data)
-> +{
-> +	return 0;
-> +}
-> +
-> +static struct devfreq_governor mtk_cci_devfreq_governor = {
-> +	.name = "voltage_monitor",
-
-"mtk_cci_vmon" or similar?
-
-> +	.get_target_freq = mtk_cci_governor_get_target,
-> +	.event_handler = mtk_cci_governor_event_handler,
-> +};
-> +
-> +static int mtk_cci_devfreq_target(struct device *dev, unsigned long *freq,
-> +				  u32 flags)
-> +{
-> +	struct cci_devfreq_data *cci_devdata;
-> +
-> +	cci_devdata = dev_get_drvdata(dev);
-> +
-> +	clk_set_rate(cci_devdata->cci_clk, *freq);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct devfreq_dev_profile cci_devfreq_profile = {
-> +	.polling_ms	= 0,
-> +	.target		= mtk_cci_devfreq_target,
-> +};
-> +
-> +static int cci_devfreq_regulator_notifier(struct notifier_block *nb,
-> +					  unsigned long val, void *data)
-> +{
-> +	struct cci_devfreq_data *cci_devdata =
-> +		container_of(nb, struct cci_devfreq_data, nb);
-> +
-> +	/* deal with reduce frequency */
-> +	if (val & REGULATOR_EVENT_PRE_VOLTAGE_CHANGE) {
-> +		struct pre_voltage_change_data *pvc_data = data;
-> +
-> +		if (pvc_data->old_uV > pvc_data->min_uV) {
-
-I would suggest to invert the condition. For humans it is easier to
-parse "is the new voltage smaller than the previous one", than
-viceversa.
-
-> +			cci_devdata->volt_increasing = 0;
-> +			cci_devdata->buck_volt =
-> +				(unsigned long)(pvc_data->min_uV);
-> +			mutex_lock(&cci_devdata->devfreq->lock);
-> +			update_devfreq(cci_devdata->devfreq);
-> +			mutex_unlock(&cci_devdata->devfreq->lock);
-> +		} else {
-> +			cci_devdata->volt_increasing = 1;
-> +		}
-> +	}
-
-nit: add empty line
-
-> +	/* deal with abort reduce frequency */
-
-Shouldn't this be "abort voltage change?". If so I suggest to drop the
-comment, REGULATOR_EVENT_ABORT_VOLTAGE_CHANGE in the condition makes
-it clear.
-
-> +	if ((val & REGULATOR_EVENT_ABORT_VOLTAGE_CHANGE) ||
-> +	    /* deal with increase frequency */
-> +	    ((val & REGULATOR_EVENT_VOLTAGE_CHANGE) &&
-> +	     cci_devdata->volt_increasing == 1)) {
-
-to check for a voltage increase you could use 'cci_devdata->buck_volt
-< (unsigned long)data' instead of ->volt_increasing.
-
-> +		cci_devdata->buck_volt = (unsigned long)data;
-> +		mutex_lock(&cci_devdata->devfreq->lock);
-> +		update_devfreq(cci_devdata->devfreq);
-> +		mutex_unlock(&cci_devdata->devfreq->lock);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int mtk_cci_devfreq_probe(struct platform_device *pdev)
-> +{
-> +	struct device *cci_dev = &pdev->dev;
-> +	struct cci_devfreq_data *cci_devdata;
-> +	struct notifier_block *nb;
-> +	int ret;
-> +
-> +	dev_pm_opp_of_add_table(&pdev->dev);
-> +
-> +	cci_devdata = devm_kzalloc(cci_dev, sizeof(*cci_devdata), GFP_KERNEL);
-> +	if (!cci_devdata)
-> +		return -ENOMEM;
-> +	nb = &cci_devdata->nb;
-> +	cci_devdata->cci_clk = ERR_PTR(-ENODEV);
-
-initialization not needed, the field is assigned a few lines below.
-
-> +	cci_devdata->proc_reg = ERR_PTR(-ENODEV);
-
-also not really needed with the right gotos in place
-
-> +
-> +	cci_devdata->cci_clk = clk_get(cci_dev, "cci_clock");
-> +	ret = PTR_ERR_OR_ZERO(cci_devdata->cci_clk);
-> +	if (ret) {
-> +		if (ret == -EPROBE_DEFER)
-> +			pr_err("cci clock not ready, retry\n");
-> +		else
-> +			pr_err("no clock for cci: %d\n", ret);
-> +
-> +		goto out_free_resources;
-
-nothing to be freed here, just return ret.
-
-> +	}
-> +
-> +	cci_devdata->proc_reg = regulator_get_optional(cci_dev, "proc");
-> +	ret = PTR_ERR_OR_ZERO(cci_devdata->proc_reg);
-> +	if (ret) {
-> +		if (ret == -EPROBE_DEFER)
-> +			pr_err("cci regulator not ready, retry\n");
-> +		else
-> +			pr_err("no regulator for cci: %d\n", ret);
-> +
-> +		goto out_free_resources;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, cci_devdata);
-> +
-> +	/* create cci_devfreq and add to cci device.
-> +	 * governor is voltage_monitor.
-> +	 * governor will get platform_device data to make decision.
-> +	 */
-> +	cci_devdata->devfreq = devm_devfreq_add_device(cci_dev,
-> +						       &cci_devfreq_profile,
-> +						       "voltage_monitor",
-
-adjust name in case you follow my suggestion above.
-
-check cci_devdata->devfreq for errors.
-
-> +						       NULL);
-> +
-> +	nb->notifier_call = cci_devfreq_regulator_notifier;
-> +	regulator_register_notifier(cci_devdata->proc_reg,
-> +				    nb);
-> +
-> +	return 0;
-> +
-> +out_free_resources:
-> +	if (!IS_ERR(cci_devdata->cci_clk))
-> +		clk_put(cci_devdata->cci_clk);
-> +	if (!IS_ERR(cci_devdata->proc_reg))
-> +		regulator_put(cci_devdata->proc_reg);
-
-use individual labels and get rid of the IS_ERRs.
-
-e.g.
-
-err_put_reg:
-	regulator_put(cci_devdata->proc_reg);
-
-err_put_clk:
-	clk_put(cci_devdata->cci_clk);
+Can we use the fwnode_property_read_u32 call here?
+And the same for all below as well?
 
 
-and jump to the corresponding lable above.
+>> +        if (rv || reg >= MAX77650_LED_NUM_LEDS)
+>> +            return -EINVAL;
+>> +
+>> +        led = &leds[reg];
+>> +        led->map = map;
+>> +        led->regA = MAX77650_LED_A_BASE + reg;
+>> +        led->regB = MAX77650_LED_B_BASE + reg;
+>> +        led->cdev.brightness_set_blocking = max77650_led_brightness_set;
+>> +        led->cdev.max_brightness = MAX77650_LED_MAX_BRIGHTNESS;
+>> +
+>> +        label = of_get_property(child, "label", NULL);
+>> +        if (!label) {
+>> +            led->cdev.name = "max77650::";
+>> +        } else {
+>> +            led->cdev.name = devm_kasprintf(dev, GFP_KERNEL,
+>> +                            "max77650:%s", label);
+>> +            if (!led->cdev.name)
+>> +                return -ENOMEM;
+>> +        }
+>> +
+>> +        of_property_read_string(child, "linux,default-trigger",
+>> +                    &led->cdev.default_trigger);
+>> +
+>> +        rv = devm_of_led_classdev_register(dev, child, &led->cdev);
+>> +        if (rv)
+>> +            return rv;
+>> +
+>> +        rv = regmap_write(map, led->regA, MAX77650_LED_A_DEFAULT);
+>> +        if (rv)
+>> +            return rv;
+>> +
+>> +        rv = regmap_write(map, led->regB, MAX77650_LED_B_DEFAULT);
+>> +        if (rv)
+>> +            return rv;
+>> +    }
+>> +
+>> +    return regmap_write(map,
+>> +                MAX77650_REG_CNFG_LED_TOP,
+>> +                MAX77650_LED_TOP_DEFAULT);
+>> +}
+>> +
+>> +static struct platform_driver max77650_led_driver = {
+>> +    .driver = {
+>> +        .name = "max77650-led",
+>> +    },
+>> +    .probe = max77650_led_probe,
+>> +};
+>> +module_platform_driver(max77650_led_driver);
+>> +
+>> +MODULE_DESCRIPTION("MAXIM 77650/77651 LED driver");
+>> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
+>> +MODULE_LICENSE("GPL v2");
+>>
+> 
+> Acked-by: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+> 
 
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct of_device_id mediatek_cci_devfreq_of_match[] = {
-> +	{ .compatible = "mediatek,mt8183-cci" },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, mediatek_cci_devfreq_of_match);
-> +
-> +static struct platform_driver cci_devfreq_driver = {
-> +	.probe	= mtk_cci_devfreq_probe,
-> +	.driver = {
-> +		.name = "mediatek-cci-devfreq",
-> +		.of_match_table = mediatek_cci_devfreq_of_match,
-> +	},
-> +};
-> +
-> +static int __init mtk_cci_devfreq_init(void)
-> +{
-> +	int ret = 0;
 
-initialization not needed
-
-> +
-> +	ret = devfreq_add_governor(&mtk_cci_devfreq_governor);
-> +	if (ret) {
-> +		pr_err("%s: failed to add governor: %d\n", __func__, ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = platform_driver_register(&cci_devfreq_driver);
-> +	if (ret)
-> +		devfreq_remove_governor(&mtk_cci_devfreq_governor);
-> +
-> +	return ret;
-> +}
-> +module_init(mtk_cci_devfreq_init)
-> +
-> +static void __exit mtk_cci_devfreq_exit(void)
-> +{
-> +	int ret = 0;
-
-initialization not needed
-
-> +	platform_driver_unregister(&cci_devfreq_driver);
-> +
-> +	ret = devfreq_remove_governor(&mtk_cci_devfreq_governor);
-> +	if (ret)
-> +		pr_err("%s: failed to remove governor: %d\n", __func__, ret);
-
-typically you reverse the order of initialization, i.e. remove the
-governor, then unregister the driver.
-
-> +}
-> +module_exit(mtk_cci_devfreq_exit)
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("Mediatek CCI devfreq driver");
-> +MODULE_AUTHOR("andrew-sh.cheng");
-
-should be either "Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>" or
-"Andrew-sh.Cheng"
-
-Cheers
-
-Matthias
+-- 
+------------------
+Dan Murphy
