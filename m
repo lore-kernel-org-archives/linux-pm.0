@@ -1,32 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6] cpufreq: qcom: Read voltage LUT and populate OPP
-Date: Fri, 1 Feb 2019 11:49:54 +0530
-Message-ID: <20190201061954.ly2aisvwz3bftd5o@vireshk-i7>
-References: <1548955970-2897-1-git-send-email-tdas@codeaurora.org>
+From: <michael.kao@mediatek.com>
+Subject: [PATCH 0/7] Add Mediatek thermal dirver for mt8183
+Date: Fri, 1 Feb 2019 15:38:06 +0800
+Message-ID: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1548955970-2897-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, Matthias Kaehlcke <mka@chromium.org>, evgreen@google.com
+To: =Zhang Rui <rui.zhang@intel.com>, =Eduardo Valentin <edubezval@gmail.com>, =Daniel Lezcano <daniel.lezcano@linaro.org>, =Rob Herring <robh+dt@kernel.org>, =Mark Rutland <mark.rutland@arm.com>, =Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Michael Kao <michael.kao@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 31-01-19, 23:02, Taniya Das wrote:
-> Add support to read the voltage look up table and populate OPP for all
-> corresponding CPUS for consumers like the energy model could use the
-> frequency and voltage from the OPP tables. Also update the logic to not add
-> duplicate OPPs.
-> 
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  drivers/cpufreq/qcom-cpufreq-hw.c | 46 +++++++++++++++++++++++++++++++--------
->  1 file changed, 37 insertions(+), 9 deletions(-)
+From: Michael Kao <michael.kao@mediatek.com>
 
-Applied. Thanks.
+This patchset supports for mt8183 chip to mtk_thermal.c.
+MT8183 has six temperature sensors and two thermal
+controllers. It has different calibration coefficent with
+past project, and doesn't need to select bank.
+As a result, we add the common architecture for scalability.
+
+Michael Kao (7):
+  thermal: mediatek: fix register index error
+  thermal: mediatek: add common index of vts settings.
+  thermal: mediatek: add calibration item
+  thermal: mediatek: add thermal controller offset
+  thermal: mediatek: add flag for bank selection
+  dt-bindings: thermal: add binding document for mt8183 thermal
+    controller
+  thermal: mediatek: add support for MT8183
+
+ .../bindings/thermal/mediatek-thermal.txt          |   1 +
+ drivers/thermal/mtk_thermal.c                      | 315 +++++++++++++++++----
+ 2 files changed, 257 insertions(+), 59 deletions(-)
 
 -- 
-viresh
+1.9.1
