@@ -1,84 +1,161 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v4 1/8] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date: Fri,  1 Feb 2019 17:46:45 +0100
-Message-ID: <1549039612-28905-2-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v4 6/8] DT: arm: exynos: add DMC device for exynos5422
+Date: Fri,  1 Feb 2019 17:46:50 +0100
+Message-ID: <1549039612-28905-7-git-send-email-l.luba@partner.samsung.com>
 References: <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20190201164718eucas1p1bca3a199d60e109e1da654d8afff2a47@eucas1p1.samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+        <CGME20190201164721eucas1p286976bab0cc9e06c2cf74a0eaa20144e@eucas1p2.samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, b.zolnierkie@samsung.com, krzk@kernel.org, Lukasz Luba <l.luba@partner.samsung.com>, cw00.choi@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, myungjoo.ham@samsung.com, s.nawrocki@samsung.com, linux-arm-kernel@lists.infradead.org, m.szyprowski@samsung.com
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Define new IDs for clocks used by Dynamic Memory Controller in
-Exynos5422 SoC.
+Add description of Dynamic Memory Controller and PPMU counters.
+They are used by exynos5422-dmc driver.
 
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- include/dt-bindings/clock/exynos5420.h | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/exynos5420.dtsi             | 78 +++++++++++++++++++++++++++
+ arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 22 ++++++++
+ 2 files changed, 100 insertions(+)
 
-diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
-index 355f469..0d00fbb 100644
---- a/include/dt-bindings/clock/exynos5420.h
-+++ b/include/dt-bindings/clock/exynos5420.h
-@@ -60,6 +60,7 @@
- #define CLK_MAU_EPLL		159
- #define CLK_SCLK_HSIC_12M	160
- #define CLK_SCLK_MPHY_IXTAL24	161
-+#define CLK_SCLK_BPLL		162
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index aaff158..574d398 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -235,6 +235,36 @@
+ 			status = "disabled";
+ 		};
  
- /* gate clocks */
- #define CLK_UART0		257
-@@ -195,6 +196,16 @@
- #define CLK_ACLK432_CAM		518
- #define CLK_ACLK_FL1550_CAM	519
- #define CLK_ACLK550_CAM		520
-+#define CLK_CLKM_PHY0		521
-+#define CLK_CLKM_PHY1		522
-+#define CLK_ACLK_PPMU_DREX0_0	523
-+#define CLK_ACLK_PPMU_DREX0_1	524
-+#define CLK_ACLK_PPMU_DREX1_0	525
-+#define CLK_ACLK_PPMU_DREX1_1	526
-+#define CLK_PCLK_PPMU_DREX0_0	527
-+#define CLK_PCLK_PPMU_DREX0_1	528
-+#define CLK_PCLK_PPMU_DREX1_0	529
-+#define CLK_PCLK_PPMU_DREX1_1	530
++		dmc: memory-controller@10c20000 {
++			compatible = "samsung,exynos5422-dmc";
++			reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
++				<0x10030000 0x1000>, <0x10000000 0x1000>;
++			clocks = <&clock CLK_FOUT_SPLL>,
++				 <&clock CLK_MOUT_SCLK_SPLL>,
++				 <&clock CLK_FF_DOUT_SPLL2>,
++				 <&clock CLK_FOUT_BPLL>,
++				 <&clock CLK_MOUT_BPLL>,
++				 <&clock CLK_SCLK_BPLL>,
++				 <&clock CLK_MOUT_MX_MSPLL_CCORE>,
++				 <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
++				 <&clock CLK_MOUT_MCLK_CDREX>,
++				 <&clock CLK_DOUT_CLK2X_PHY0>,
++				 <&clock CLK_CLKM_PHY0>,
++				 <&clock CLK_CLKM_PHY1>;
++			clock-names = "fout_spll",
++				      "mout_sclk_spll",
++				      "ff_dout_spll2",
++				      "fout_bpll",
++				      "mout_bpll",
++				      "sclk_bpll",
++				      "mout_mx_mspll_ccore",
++				      "mout_mx_mspll_ccore_phy",
++				      "mout_mclk_cdrex",
++				      "dout_clk2x_phy0",
++				      "clkm_phy0",
++				      "clkm_phy1";
++		};
++
+ 		nocp_mem0_0: nocp@10ca1000 {
+ 			compatible = "samsung,exynos5420-nocp";
+ 			reg = <0x10CA1000 0x200>;
+@@ -271,6 +301,54 @@
+ 			status = "disabled";
+ 		};
  
- /* mux clocks */
- #define CLK_MOUT_HDMI		640
-@@ -217,6 +228,8 @@
- #define CLK_MOUT_EPLL		657
- #define CLK_MOUT_MAU_EPLL	658
- #define CLK_MOUT_USER_MAU_EPLL	659
-+#define CLK_MOUT_SCLK_SPLL	660
-+#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
++		ppmu_dmc0_0: ppmu@10d00000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x10d00000 0x2000>;
++			clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
++			clock-names = "ppmu";
++			events {
++				ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
++					event-name = "ppmu-event3-dmc0_0";
++				};
++			};
++		};
++
++		ppmu_dmc0_1: ppmu@10d10000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x10d10000 0x2000>;
++			clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
++			clock-names = "ppmu";
++			events {
++				ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
++					event-name = "ppmu-event3-dmc0_1";
++				};
++			};
++		};
++
++		ppmu_dmc1_0: ppmu@10d10000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x10d60000 0x2000>;
++			clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
++			clock-names = "ppmu";
++			events {
++				ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
++					event-name = "ppmu-event3-dmc1_0";
++				};
++			};
++		};
++
++		ppmu_dmc1_1: ppmu@10d70000 {
++			compatible = "samsung,exynos-ppmu";
++			reg = <0x10d70000 0x2000>;
++			clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
++			clock-names = "ppmu";
++			events {
++				ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
++					event-name = "ppmu-event3-dmc1_1";
++				};
++			};
++		};
++
+ 		gsc_pd: power-domain@10044000 {
+ 			compatible = "samsung,exynos4210-pd";
+ 			reg = <0x10044000 0x20>;
+diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
+index bf09eab..e2b59e9 100644
+--- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
++++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
+@@ -127,6 +127,12 @@
+ 	cpu-supply = <&buck2_reg>;
+ };
  
- /* divider clocks */
- #define CLK_DOUT_PIXEL		768
-@@ -248,8 +261,9 @@
- #define CLK_DOUT_CCLK_DREX0	794
- #define CLK_DOUT_CLK2X_PHY0	795
- #define CLK_DOUT_PCLK_CORE_MEM	796
-+#define CLK_FF_DOUT_SPLL2	797
++&dmc {
++	devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
++			<&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
++	status = "okay";
++};
++
+ &hsi2c_4 {
+ 	status = "okay";
  
- /* must be greater than maximal clock id */
--#define CLK_NR_CLKS		797
-+#define CLK_NR_CLKS		798
+@@ -535,6 +541,22 @@
+ 	};
+ };
  
- #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
++&ppmu_dmc0_0 {
++	status = "okay";
++};
++
++&ppmu_dmc0_1 {
++	status = "okay";
++};
++
++&ppmu_dmc1_0 {
++	status = "okay";
++};
++
++&ppmu_dmc1_1 {
++	status = "okay";
++};
++
+ &tmu_cpu0 {
+ 	vtmu-supply = <&ldo7_reg>;
+ };
 -- 
 2.7.4
