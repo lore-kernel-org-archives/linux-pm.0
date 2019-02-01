@@ -1,47 +1,51 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH V2] cpuidle: dt: bail out if the idle-state DT node is
- not compatible
-Date: Fri, 1 Feb 2019 11:48:38 +0000
-Message-ID: <20190201114838.GA10042@e107155-lin>
-References: <20190201021639.27245-1-josephl@nvidia.com>
+Subject: Re: [PATCH v3 4/5] cpufreq: arm_big_little: Register an Energy Model
+Date: Fri, 1 Feb 2019 11:53:57 +0000
+Message-ID: <20190201115357.GB10042@e107155-lin>
+References: <20190201093101.31869-1-quentin.perret@arm.com>
+ <20190201093101.31869-5-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190201021639.27245-1-josephl@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Joseph Lo <josephl@nvidia.com>
-Cc: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20190201093101.31869-5-quentin.perret@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org, linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 01, 2019 at 10:16:39AM +0800, Joseph Lo wrote:
-> Currently, the DT of the idle states will be parsed first whether it's
-> compatible or not. This could cause a warning message that comes from if
-> the CPU doesn't support identical idle states. E.g. Tegra186 can run
-> with 2 Cortex-A57 and 2 Denver cores with different idle states on
-> different types of these cores.
-> 
-> So fix it by checking the match node earlier, then it can make sure it
-> only goes through the idle states that the CPU supported.
-> 
-> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+On Fri, Feb 01, 2019 at 09:31:00AM +0000, Quentin Perret wrote:
+> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+>
+> Now that PM_OPP provides a helper function to estimate the power
+> consumed by CPUs, make sure to try and register an Energy Model (EM)
+> from the arm_big_little CPUFreq driver, hence ensuring interested
+> subsystems (the task scheduler, for example) can make use of that
+> information when available.
+>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 > ---
-> v2:
->  * fix it by moving of_match_node earlier, so we don't need to match the
->    node twice like the v1 did.
+>  drivers/cpufreq/arm_big_little.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index cf62a1f64dd7..18b05bcb2614 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -487,6 +487,14 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->cpuinfo.transition_latency =
+>  				arm_bL_ops->get_transition_latency(cpu_dev);
+>
+> +	ret = dev_pm_opp_get_opp_count(cpu_dev);
+> +	if (ret <= 0) {
+> +		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+> +		return -EPROBE_DEFER;
+> +	}
 
-Neat, thanks for the quick patch. FWIW,
-
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+The only user of this has the check in init_opp_table that gets called from
+get_cluster_clk_and_freq_table. So the above is not necessary, you can drop
+it.
 
 --
 Regards,
