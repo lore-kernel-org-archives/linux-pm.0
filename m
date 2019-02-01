@@ -1,37 +1,87 @@
-From: <michael.kao@mediatek.com>
-Subject: [PATCH 6/7] dt-bindings: thermal: add binding document for mt8183 thermal controller
-Date: Fri, 1 Feb 2019 15:38:12 +0800
-Message-ID: <1549006693-11659-7-git-send-email-michael.kao@mediatek.com>
-References: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 1/8] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Fri, 1 Feb 2019 16:40:38 +0900
+Message-ID: <d6124295-cb72-0d5f-f887-438698cf48e1@samsung.com>
+References: <1548924594-19084-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190131085006eucas1p2e4ba3f69e039c394e7cd42389ac8bfa7@eucas1p2.samsung.com>
+        <1548924594-19084-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
+In-Reply-To: <1548924594-19084-2-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: =Zhang Rui <rui.zhang@intel.com>, =Eduardo Valentin <edubezval@gmail.com>, =Daniel Lezcano <daniel.lezcano@linaro.org>, =Rob Herring <robh+dt@kernel.org>, =Mark Rutland <mark.rutland@arm.com>, =Matthias Brugger <matthias.bgg@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Michael Kao <michael.kao@mediatek.com>
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Michael Kao <michael.kao@mediatek.com>
+Hi,
 
-This patch adds binding document for mt8183 thermal controller.
+On 19. 1. 31. 오후 5:49, Lukasz Luba wrote:
+> Define new IDs for clocks used by Dynamic Memory Controller in
+> Exynos5422 SoC.
+> 
+> CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> CC: Chanwoo Choi <cw00.choi@samsung.com>
+> CC: Rob Herring <robh+dt@kernel.org>
+> CC: Mark Rutland <mark.rutland@arm.com>
+> CC: Kukjin Kim <kgene@kernel.org>
+> CC: Krzysztof Kozlowski <krzk@kernel.org>
+> CC: linux-samsung-soc@vger.kernel.org
+> CC: devicetree@vger.kernel.org
+> CC: linux-arm-kernel@lists.infradead.org
+> CC: linux-kernel@vger.kernel.org
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
+>  1 file changed, 17 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
+> index 355f469..1827a64 100644
+> --- a/include/dt-bindings/clock/exynos5420.h
+> +++ b/include/dt-bindings/clock/exynos5420.h
+> @@ -60,6 +60,7 @@
+>  #define CLK_MAU_EPLL		159
+>  #define CLK_SCLK_HSIC_12M	160
+>  #define CLK_SCLK_MPHY_IXTAL24	161
+> +#define CLK_SCLK_BPLL		162
+>  
+>  /* gate clocks */
+>  #define CLK_UART0		257
+> @@ -195,6 +196,16 @@
+>  #define CLK_ACLK432_CAM		518
+>  #define CLK_ACLK_FL1550_CAM	519
+>  #define CLK_ACLK550_CAM		520
+> +#define CLK_CLKM_PHY0		521
+> +#define CLK_CLKM_PHY1		522
+> +#define CLK_ACLK_PPMU_DREX0_0	523
+> +#define CLK_ACLK_PPMU_DREX0_1	524
+> +#define CLK_ACLK_PPMU_DREX1_0	525
+> +#define CLK_ACLK_PPMU_DREX1_1	526
+> +#define CLK_PCLK_PPMU_DREX0_0	527
+> +#define CLK_PCLK_PPMU_DREX0_1	528
+> +#define CLK_PCLK_PPMU_DREX1_0	529
+> +#define CLK_PCLK_PPMU_DREX1_1	530
+>  
+>  /* mux clocks */
+>  #define CLK_MOUT_HDMI		640
+> @@ -217,6 +228,10 @@
+>  #define CLK_MOUT_EPLL		657
+>  #define CLK_MOUT_MAU_EPLL	658
+>  #define CLK_MOUT_USER_MAU_EPLL	659
+> +#define CLK_MOUT_DPLL		660
+> +#define CLK_MOUT_ACLK_G3D	661
 
-Signed-off-by: Michael Kao <michael.kao@mediatek.com>
----
- Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 1 +
- 1 file changed, 1 insertion(+)
+The second patch don't implement some clocks
+for CLK_MOUT_DPLL, CLK_MOUT_ACLK_G3D.
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-index 41d6a44..f8d7831 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -13,6 +13,7 @@ Required properties:
-   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
-   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
-   - "mediatek,mt7622-thermal" : For MT7622 SoC
-+  - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
- - reg: Address range of the thermal controller
- - interrupts: IRQ for the thermal controller
- - clocks, clock-names: Clocks needed for the thermal controller. required
+Why do you define them?
+
+(snip)
+
 -- 
-1.9.1
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
