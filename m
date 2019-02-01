@@ -1,100 +1,135 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] driver core: Fix some issues related to device links
-Date: Fri, 01 Feb 2019 01:20:38 +0100
-Message-ID: <3707536.KyOczrGQdC@aspire.rjw.lan>
-References: <2493187.oiOpCWJBV7@aspire.rjw.lan> <2779542.Q4bG6sN7hf@aspire.rjw.lan> <20190201001231.GA4886@kroah.com>
+Subject: [PATCH v2 9/9] driver core: Add device link flag DL_FLAG_AUTOPROBE_CONSUMER
+Date: Fri, 01 Feb 2019 01:59:42 +0100
+Message-ID: <2385908.xrJhg5KmqK@aspire.rjw.lan>
+References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190201001231.GA4886@kroah.com>
+In-Reply-To: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 1, 2019 1:12:31 AM CET Greg Kroah-Hartman wrote:
-> On Fri, Feb 01, 2019 at 12:50:58AM +0100, Rafael J. Wysocki wrote:
-> > On Thursday, January 31, 2019 7:24:07 PM CET Greg Kroah-Hartman wrote:
-> > > On Thu, Jan 31, 2019 at 05:02:05PM +0100, Rafael J. Wysocki wrote:
-> > > > On Thu, Jan 31, 2019 at 2:24 PM Greg Kroah-Hartman
-> > > > <gregkh@linuxfoundation.org> wrote:
-> > > > >
-> > > > > On Thu, Jan 31, 2019 at 02:22:47PM +0100, Greg Kroah-Hartman wrote:
-> > > > > > On Thu, Jan 31, 2019 at 11:09:51AM +0100, Rafael J. Wysocki wrote:
-> > > > > > > On Thu, Jan 24, 2019 at 12:25 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > > > > > >
-> > > > > > > > Hi Greg at al,
-> > > > > > > >
-> > > > > > > > Recently I have been looking at the device links code because of the
-> > > > > > > > recent discussion on possibly using them in the DRM subsystem (see for
-> > > > > > > > example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
-> > > > > > > > found a few issues in that code which should be addressed by this patch
-> > > > > > > > series.  Please refer to the patch changelogs for details.
-> > > > > > > >
-> > > > > > > > None of the problems addressed here should be manifesting themselves in
-> > > > > > > > mainline kernel today, but if there are more device links users in the
-> > > > > > > > future, they most likely will be encountered sooner or later.  Also they
-> > > > > > > > need to be fixed for the DRM use case to be supported IMO.
-> > > > > > > >
-> > > > > > > > This series does not fix all issues in device links that have become
-> > > > > > > > apparent (generally speaking, the idea of returning an existing link
-> > > > > > > > in case there is one already for the given consumer-supplier pair
-> > > > > > > > doesn't play well with stateful links and their flags), so there will
-> > > > > > > > be a follow-up series of patches to clean that up.  Still, I don't see
-> > > > > > > > a reason to sit on these fixes while working on the other patches, so
-> > > > > > > > here they go.
-> > > > > > >
-> > > > > > > Any concerns regarding this lot?
-> > > > > > >
-> > > > > > > [Please note that patch 5 in the series was replaced with the v2 at
-> > > > > > > https://patchwork.kernel.org/patch/10781205/]
-> > > > > > >
-> > > > > > > If not, and if you don't mind, I would like to queue it up next week,
-> > > > > > > possibly along with the follow-up material posted on Monday
-> > > > > > > (https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) if
-> > > > > > > that is not problematic, so it gets some linux-next coverage before
-> > > > > > > the next merge window.
-> > > > > >
-> > > > > > Can I queue it up in my tree, given that I have a number of other driver
-> > > > > > core patches in there, and I don't know how the merge issues will be if
-> > > > > > we start to diverge.
-> > > > > >
-> > > > > > Or do you need this for some other work?
-> > > > >
-> > > > > To make this clearer, I have no objection to take this through my tree
-> > > > > now, along with your second set of patches.  Is that ok?
-> > > > 
-> > > > Yes, it is, AFAICS.  Thank you!
-> > > > 
-> > > > Do you need me to resend all of this as one series?
-> > > 
-> > > Yes, can you please do that.  Also, can you rebase it against my
-> > > driver-core-next branch as right now, patch 1/6 has conflicts due to
-> > > other patches that are in my tree :(
-> > 
-> > So commit 0fe6f7874d467 in your driver-core-next branch, which is the source
-> > of this conflict and I can't recall seeing that patch, if missing a Fixes: tag.
-> 
-> It was sent on the 1st, and seems to have come from this thread:
-> 	https://lore.kernel.org/lkml/1546318276-18993-3-git-send-email-yong.wu@mediatek.com/
-> 
-> I'll gladly revert it if you do not think it is correct.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is not entirely correct, but that's not going to matter after my series
-(and I've already rebased it on top of that commit, so please hold on to it :-)).
+Add a new device link flag, DL_FLAG_AUTOPROBE_CONSUMER, to request the
+driver core to probe for a consumer driver automatically after binding
+a driver to the supplier device on a persistent managed device link.
 
-> Hm, in looking at that closer, it does feel odd that the reference count
-> is being ignored, that doesn't seem right, and might be a driver bug...
+As unbinding the supplier driver on a managed device link causes the
+consumer driver to be detached from its device automatically, this
+flag provides a complementary mechanism which is needed to address
+some "composite device" use cases.
 
-This is a device links code issue which was introduced along with the reference
-counting that was kind of an afterthought and not really well thought through
-IMO.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/driver-api/device_link.rst |    9 +++++++++
+ drivers/base/core.c                      |   16 +++++++++++++++-
+ drivers/base/dd.c                        |    2 +-
+ include/linux/device.h                   |    3 +++
+ 4 files changed, 28 insertions(+), 2 deletions(-)
 
-> Let me look at it again in the morning...
-
-So one of the goals of my series is to clean up that mess (and sorry about
-letting it in in the first place).
-
-Cheers,
-Rafael
+Index: linux-pm/include/linux/device.h
+===================================================================
+--- linux-pm.orig/include/linux/device.h
++++ linux-pm/include/linux/device.h
+@@ -341,6 +341,7 @@ struct device *driver_find_device(struct
+ 				  struct device *start, void *data,
+ 				  int (*match)(struct device *dev, void *data));
+ 
++void driver_deferred_probe_add(struct device *dev);
+ int driver_deferred_probe_check_state(struct device *dev);
+ 
+ /**
+@@ -827,12 +828,14 @@ enum device_link_state {
+  * PM_RUNTIME: If set, the runtime PM framework will use this link.
+  * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
+  * AUTOREMOVE_SUPPLIER: Remove the link automatically on supplier driver unbind.
++ * AUTOPROBE_CONSUMER: Probe consumer driver automatically after supplier binds.
+  */
+ #define DL_FLAG_STATELESS		BIT(0)
+ #define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
+ #define DL_FLAG_PM_RUNTIME		BIT(2)
+ #define DL_FLAG_RPM_ACTIVE		BIT(3)
+ #define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
++#define DL_FLAG_AUTOPROBE_CONSUMER	BIT(5)
+ 
+ /**
+  * struct device_link - Device link representation.
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -208,6 +208,12 @@ static void device_link_rpm_prepare(stru
+  * the link will be maintained until one of the devices pointed to by it (either
+  * the consumer or the supplier) is unregistered.
+  *
++ * Also, if DL_FLAG_STATELESS, DL_FLAG_AUTOREMOVE_CONSUMER and
++ * DL_FLAG_AUTOREMOVE_SUPPLIER are not set in @flags (that is, a persistent
++ * managed device link is being added), the DL_FLAG_AUTOPROBE_CONSUMER flag can
++ * be used to request the driver core to automaticall probe for a consmer
++ * driver after successfully binding a driver to the supplier device.
++ *
+  * The combination of DL_FLAG_STATELESS and either DL_FLAG_AUTOREMOVE_CONSUMER
+  * or DL_FLAG_AUTOREMOVE_SUPPLIER set in @flags at the same time is invalid and
+  * will cause NULL to be returned upfront.
+@@ -228,7 +234,12 @@ struct device_link *device_link_add(stru
+ 
+ 	if (!consumer || !supplier ||
+ 	    (flags & DL_FLAG_STATELESS &&
+-	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER)))
++	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER |
++		      DL_FLAG_AUTOREMOVE_SUPPLIER |
++		      DL_FLAG_AUTOPROBE_CONSUMER)) ||
++	    (flags & DL_FLAG_AUTOPROBE_CONSUMER &&
++	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER |
++		      DL_FLAG_AUTOREMOVE_SUPPLIER)))
+ 		return NULL;
+ 
+ 	if (flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) {
+@@ -589,6 +600,9 @@ void device_links_driver_bound(struct de
+ 
+ 		WARN_ON(link->status != DL_STATE_DORMANT);
+ 		WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
++
++		if (link->flags & DL_FLAG_AUTOPROBE_CONSUMER)
++			driver_deferred_probe_add(link->consumer);
+ 	}
+ 
+ 	list_for_each_entry(link, &dev->links.suppliers, c_node) {
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -116,7 +116,7 @@ static void deferred_probe_work_func(str
+ }
+ static DECLARE_WORK(deferred_probe_work, deferred_probe_work_func);
+ 
+-static void driver_deferred_probe_add(struct device *dev)
++void driver_deferred_probe_add(struct device *dev)
+ {
+ 	mutex_lock(&deferred_probe_mutex);
+ 	if (list_empty(&dev->p->deferred_probe)) {
+Index: linux-pm/Documentation/driver-api/device_link.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/device_link.rst
++++ linux-pm/Documentation/driver-api/device_link.rst
+@@ -94,6 +94,15 @@ Similarly, when the device link is added
+ ``DL_FLAG_AUTOREMOVE_SUPPLIER`` causes the device link to be automatically
+ purged when the supplier fails to probe or later unbinds.
+ 
++If neither ``DL_FLAG_AUTOREMOVE_CONSUMER`` nor ``DL_FLAG_AUTOREMOVE_SUPPLIER``
++is set, ``DL_FLAG_AUTOPROBE_CONSUMER`` can be used to request the driver core
++to probe for a driver for the consumer driver on the link automatically after
++a driver has been bound to the supplier device.
++
++Note, however, that any combinations of ``DL_FLAG_AUTOREMOVE_CONSUMER``,
++``DL_FLAG_AUTOREMOVE_SUPPLIER`` or ``DL_FLAG_AUTOPROBE_CONSUMER`` with
++``DL_FLAG_STATELESS`` are invalid and cannot be used.
++
+ Limitations
+ ===========
+ 
