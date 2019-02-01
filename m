@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 3/9] driver core: Do not resume suppliers under device_links_write_lock()
-Date: Fri, 01 Feb 2019 01:47:53 +0100
-Message-ID: <3345126.YDF5Jo2U6B@aspire.rjw.lan>
+Subject: [PATCH v2 6/9] driver core: Do not call rpm_put_suppliers() in pm_runtime_drop_link()
+Date: Fri, 01 Feb 2019 01:52:45 +0100
+Message-ID: <4428766.iRGOQCpFvn@aspire.rjw.lan>
 References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,69 +15,49 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is incorrect to call pm_runtime_get_sync() under
-device_links_write_lock(), because it may end up trying to take
-device_links_read_lock() while resuming the target device and that
-will deadlock in the non-SRCU case, so avoid that by resuming the
-supplier device in device_link_add() before calling
-device_links_write_lock().
+Calling rpm_put_suppliers() from pm_runtime_drop_link() is excessive
+as it affects all suppliers of the consumer device and not just the
+one pointed to by the device link being dropped.  Worst case it may
+cause the consumer device to stop working unexpectedly.  Moreover, in
+principle it is racy with respect to runtime PM of the consumer
+device.
 
-Fixes: 21d5c57b3726 ("PM / runtime: Use device links")
-Fixes: baa8809f6097 ("PM / runtime: Optimize the use of device links")
+To avoid these problems drop runtime PM references on the particular
+supplier pointed to by the link in question only and do that after
+the link has been dropped from the consumer device's list of links to
+suppliers, which is in device_link_free().
+
+Fixes: a0504aecba76 ("PM / runtime: Drop usage count for suppliers at device link removal")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/core.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/base/core.c          |    3 +++
+ drivers/base/power/runtime.c |    2 --
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 Index: linux-pm/drivers/base/core.c
 ===================================================================
 --- linux-pm.orig/drivers/base/core.c
 +++ linux-pm/drivers/base/core.c
-@@ -201,12 +201,21 @@ struct device_link *device_link_add(stru
- 				    struct device *supplier, u32 flags)
+@@ -374,6 +374,9 @@ EXPORT_SYMBOL_GPL(device_link_add);
+ 
+ static void device_link_free(struct device_link *link)
  {
- 	struct device_link *link;
-+	bool rpm_put_supplier = false;
- 
- 	if (!consumer || !supplier ||
- 	    (flags & DL_FLAG_STATELESS &&
- 	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER)))
- 		return NULL;
- 
-+	if (flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) {
-+		if (pm_runtime_get_sync(supplier) < 0) {
-+			pm_runtime_put_noidle(supplier);
-+			return NULL;
-+		}
-+		rpm_put_supplier = true;
-+	}
++	while (refcount_dec_not_one(&link->rpm_active))
++		pm_runtime_put(link->supplier);
 +
- 	device_links_write_lock();
- 	device_pm_lock();
+ 	put_device(link->consumer);
+ 	put_device(link->supplier);
+ 	kfree(link);
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1611,8 +1611,6 @@ void pm_runtime_new_link(struct device *
  
-@@ -250,13 +259,8 @@ struct device_link *device_link_add(stru
- 
- 	if (flags & DL_FLAG_PM_RUNTIME) {
- 		if (flags & DL_FLAG_RPM_ACTIVE) {
--			if (pm_runtime_get_sync(supplier) < 0) {
--				pm_runtime_put_noidle(supplier);
--				kfree(link);
--				link = NULL;
--				goto out;
--			}
- 			link->rpm_active = true;
-+			rpm_put_supplier = false;
- 		}
- 		pm_runtime_new_link(consumer);
- 		/*
-@@ -328,6 +332,10 @@ struct device_link *device_link_add(stru
-  out:
- 	device_pm_unlock();
- 	device_links_write_unlock();
-+
-+	if (rpm_put_supplier)
-+		pm_runtime_put(supplier);
-+
- 	return link;
- }
- EXPORT_SYMBOL_GPL(device_link_add);
+ void pm_runtime_drop_link(struct device *dev)
+ {
+-	rpm_put_suppliers(dev);
+-
+ 	spin_lock_irq(&dev->power.lock);
+ 	WARN_ON(dev->power.links_count == 0);
+ 	dev->power.links_count--;
