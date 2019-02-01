@@ -1,65 +1,37 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 7/9] IOMMU: Make dwo drivers use stateless device links
-Date: Fri, 01 Feb 2019 01:54:21 +0100
-Message-ID: <2241080.hZz7uDQtY8@aspire.rjw.lan>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
+Subject: [PATCH v2 0/9] driver core: Fix some device links issues and add "consumer autoprobe" flag
+Date: Fri, 01 Feb 2019 01:44:59 +0100
+Message-ID: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Greg at al,
 
-The device links used by rockchip-iommu and exynos-iommu are
-completely managed by these drivers within the IOMMU framework,
-so there is no reason to involve the driver core in the management
-of these links.
+This is a combination of the two device links series I have posted
+recently (https://lore.kernel.org/lkml/2493187.oiOpCWJBV7@aspire.rjw.lan/
+and https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) rebased
+on top of your driver-core-next branch.
 
-For this reason, make rockchip-iommu and exynos-iommu pass
-DL_FLAG_STATELESS in flags to device_link_add(), so that the device
-links used by them are stateless.
+Recently I have been looking at the device links code because of the
+recent discussion on possibly using them in the DRM subsystem (see for
+example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
+found a few issues in that code which should be addressed by this patch
+series.  Please refer to the patch changelogs for details.
 
-[Note that this change is requisite for a subsequent one that will
- rework the management of stateful device links in the driver core
- and it will not be compatible with the two drivers in question any
- more.]
+None of the problems addressed here should be manifesting themselves in
+mainline kernel today, but if there are more device links users in the
+future, they most likely will be encountered sooner or later.  Also they
+need to be fixed for the DRM use case to be supported IMO.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Acked-by: Joerg Roedel <jroedel@suse.de>
----
- drivers/iommu/exynos-iommu.c   |    1 +
- drivers/iommu/rockchip-iommu.c |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
+On top of this the series makes device links support the "composite device"
+use case in the DRM subsystem mentioned above (essentially, the last patch
+in the series is for that purpose).
 
-Index: linux-pm/drivers/iommu/rockchip-iommu.c
-===================================================================
---- linux-pm.orig/drivers/iommu/rockchip-iommu.c
-+++ linux-pm/drivers/iommu/rockchip-iommu.c
-@@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
- 	iommu_group_put(group);
- 
- 	iommu_device_link(&iommu->iommu, dev);
--	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
-+	data->link = device_link_add(dev, iommu->dev,
-+				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
- 
- 	return 0;
- }
-Index: linux-pm/drivers/iommu/exynos-iommu.c
-===================================================================
---- linux-pm.orig/drivers/iommu/exynos-iommu.c
-+++ linux-pm/drivers/iommu/exynos-iommu.c
-@@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
- 		 * direct calls to pm_runtime_get/put in this driver.
- 		 */
- 		data->link = device_link_add(dev, data->sysmmu,
-+					     DL_FLAG_STATELESS |
- 					     DL_FLAG_PM_RUNTIME);
- 	}
- 	iommu_group_put(group);
+Cheers,
+Rafael
