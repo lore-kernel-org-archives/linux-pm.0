@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 2/9] driver core: Avoid careless re-use of existing device links
-Date: Fri, 01 Feb 2019 01:46:54 +0100
-Message-ID: <2222273.ydJmd408XJ@aspire.rjw.lan>
+Subject: [PATCH v2 7/9] IOMMU: Make dwo drivers use stateless device links
+Date: Fri, 01 Feb 2019 01:54:21 +0100
+Message-ID: <2241080.hZz7uDQtY8@aspire.rjw.lan>
 References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,68 +15,51 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After commit ead18c23c263 ("driver core: Introduce device links
-reference counting"), if there is a link between the given supplier
-and the given consumer already, device_link_add() will refcount it
-and return it unconditionally.  However, if the flags passed to
-it on the second (or any subsequent) attempt to create a device
-link between the same consumer-supplier pair are not compatible with
-the existing link's flags, that is incorrect.
+The device links used by rockchip-iommu and exynos-iommu are
+completely managed by these drivers within the IOMMU framework,
+so there is no reason to involve the driver core in the management
+of these links.
 
-First off, if the existing link is stateless and the next caller of
-device_link_add() for the same consumer-supplier pair wants a
-stateful one, or the other way around, the existing link cannot be
-returned, because it will not match the expected behavior, so make
-device_link_add() dump the stack and return NULL in that case.
+For this reason, make rockchip-iommu and exynos-iommu pass
+DL_FLAG_STATELESS in flags to device_link_add(), so that the device
+links used by them are stateless.
 
-Moreover, if the DL_FLAG_AUTOREMOVE_CONSUMER flag is passed to
-device_link_add(), its caller will expect its reference to the link
-to be dropped automatically on consumer driver removal, which will
-not happen if that flag is not set in the link's flags (and
-analogously for DL_FLAG_AUTOREMOVE_SUPPLIER).  For this reason, make
-device_link_add() update the existing link's flags accordingly
-before returning it to the caller.
+[Note that this change is requisite for a subsequent one that will
+ rework the management of stateful device links in the driver core
+ and it will not be compatible with the two drivers in question any
+ more.]
 
-Fixes: ead18c23c263 ("driver core: Introduce device links reference counting")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Acked-by: Joerg Roedel <jroedel@suse.de>
 ---
- drivers/base/core.c |   23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ drivers/iommu/exynos-iommu.c   |    1 +
+ drivers/iommu/rockchip-iommu.c |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-pm/drivers/base/core.c
+Index: linux-pm/drivers/iommu/rockchip-iommu.c
 ===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -221,12 +221,29 @@ struct device_link *device_link_add(stru
- 		goto out;
+--- linux-pm.orig/drivers/iommu/rockchip-iommu.c
++++ linux-pm/drivers/iommu/rockchip-iommu.c
+@@ -1071,7 +1071,8 @@ static int rk_iommu_add_device(struct de
+ 	iommu_group_put(group);
+ 
+ 	iommu_device_link(&iommu->iommu, dev);
+-	data->link = device_link_add(dev, iommu->dev, DL_FLAG_PM_RUNTIME);
++	data->link = device_link_add(dev, iommu->dev,
++				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
+ 
+ 	return 0;
+ }
+Index: linux-pm/drivers/iommu/exynos-iommu.c
+===================================================================
+--- linux-pm.orig/drivers/iommu/exynos-iommu.c
++++ linux-pm/drivers/iommu/exynos-iommu.c
+@@ -1260,6 +1260,7 @@ static int exynos_iommu_add_device(struc
+ 		 * direct calls to pm_runtime_get/put in this driver.
+ 		 */
+ 		data->link = device_link_add(dev, data->sysmmu,
++					     DL_FLAG_STATELESS |
+ 					     DL_FLAG_PM_RUNTIME);
  	}
- 
--	list_for_each_entry(link, &supplier->links.consumers, s_node)
--		if (link->consumer == consumer) {
--			kref_get(&link->kref);
-+	list_for_each_entry(link, &supplier->links.consumers, s_node) {
-+		if (link->consumer != consumer)
-+			continue;
-+
-+		/*
-+		 * Don't return a stateless link if the caller wants a stateful
-+		 * one and vice versa.
-+		 */
-+		if (WARN_ON((flags & DL_FLAG_STATELESS) != (link->flags & DL_FLAG_STATELESS))) {
-+			link = NULL;
- 			goto out;
- 		}
- 
-+		if (flags & DL_FLAG_AUTOREMOVE_CONSUMER)
-+			link->flags |= DL_FLAG_AUTOREMOVE_CONSUMER;
-+
-+		if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
-+			link->flags |= DL_FLAG_AUTOREMOVE_SUPPLIER;
-+
-+		kref_get(&link->kref);
-+		goto out;
-+	}
-+
- 	link = kzalloc(sizeof(*link), GFP_KERNEL);
- 	if (!link)
- 		goto out;
+ 	iommu_group_put(group);
