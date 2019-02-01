@@ -1,53 +1,55 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 1/5] PM / OPP: Introduce a power estimation helper
-Date: Fri, 1 Feb 2019 12:09:53 +0000
-Message-ID: <20190201120951.lqxy4u7kxfzfmmub@queper01-lin>
+Subject: Re: [PATCH v3 4/5] cpufreq: arm_big_little: Register an Energy Model
+Date: Fri, 1 Feb 2019 12:11:25 +0000
+Message-ID: <20190201121123.ir4iodxj6iovsknn@queper01-lin>
 References: <20190201093101.31869-1-quentin.perret@arm.com>
- <20190201093101.31869-2-quentin.perret@arm.com>
- <20190201120453.GC10042@e107155-lin>
+ <20190201093101.31869-5-quentin.perret@arm.com>
+ <20190201115357.GB10042@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190201120453.GC10042@e107155-lin>
+In-Reply-To: <20190201115357.GB10042@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sudeep Holla <sudeep.holla@arm.com>
 Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sudeep,
-
-On Friday 01 Feb 2019 at 12:04:53 (+0000), Sudeep Holla wrote:
-> On Fri, Feb 01, 2019 at 09:30:57AM +0000, Quentin Perret wrote:
-> > +void dev_pm_opp_of_register_em(struct cpumask *cpus, int nr_opp)
-> > +{
-> > +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
-> > +	int ret, cpu = cpumask_first(cpus);
-> > +	struct device *cpu_dev;
-> > +	struct device_node *np;
-> > +	u32 cap;
-> > +
-> > +	cpu_dev = get_cpu_device(cpu);
-> > +	if (!cpu_dev)
-> > +		return;
-> > +
-> > +	np = of_node_get(cpu_dev->of_node);
-> > +	if (!np)
-> > +		return;
-> > +
+On Friday 01 Feb 2019 at 11:53:57 (+0000), Sudeep Holla wrote:
+> On Fri, Feb 01, 2019 at 09:31:00AM +0000, Quentin Perret wrote:
+> > From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> >
+> > Now that PM_OPP provides a helper function to estimate the power
+> > consumed by CPUs, make sure to try and register an Energy Model (EM)
+> > from the arm_big_little CPUFreq driver, hence ensuring interested
+> > subsystems (the task scheduler, for example) can make use of that
+> > information when available.
+> >
+> > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > ---
+> >  drivers/cpufreq/arm_big_little.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> > index cf62a1f64dd7..18b05bcb2614 100644
+> > --- a/drivers/cpufreq/arm_big_little.c
+> > +++ b/drivers/cpufreq/arm_big_little.c
+> > @@ -487,6 +487,14 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency =
+> >  				arm_bL_ops->get_transition_latency(cpu_dev);
+> >
+> > +	ret = dev_pm_opp_get_opp_count(cpu_dev);
+> > +	if (ret <= 0) {
+> > +		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+> > +		return -EPROBE_DEFER;
+> > +	}
 > 
-> Does it make sense to add the check for OPP count here. You need not pass
-> that as parameter. Just makes one less thing to check in new drivers adding
-> this support. Thoughts ?
+> The only user of this has the check in init_opp_table that gets called from
+> get_cluster_clk_and_freq_table. So the above is not necessary, you can drop
+> it.
 
-Yeah Matthias had the same suggestion. I don't mind moving it here TBH.
-It's just that some users already do the opp count before calling this
-function, so I figured I could as well use that data instead of counting
-again.
-
-But yeah, that's one less thing to worry about on the driver side so
-I'll move the OPP count in there for v4 and we'll see if people ask me
-to move it out to optimize things ;-)
+Will do.
 
 Thanks,
 Quentin
