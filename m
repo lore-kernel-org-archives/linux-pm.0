@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 9/9] driver core: Add device link flag DL_FLAG_AUTOPROBE_CONSUMER
-Date: Fri, 01 Feb 2019 01:59:42 +0100
-Message-ID: <2385908.xrJhg5KmqK@aspire.rjw.lan>
+Subject: [PATCH v2 2/9] driver core: Avoid careless re-use of existing device links
+Date: Fri, 01 Feb 2019 01:46:54 +0100
+Message-ID: <2222273.ydJmd408XJ@aspire.rjw.lan>
 References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,121 +15,68 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add a new device link flag, DL_FLAG_AUTOPROBE_CONSUMER, to request the
-driver core to probe for a consumer driver automatically after binding
-a driver to the supplier device on a persistent managed device link.
+After commit ead18c23c263 ("driver core: Introduce device links
+reference counting"), if there is a link between the given supplier
+and the given consumer already, device_link_add() will refcount it
+and return it unconditionally.  However, if the flags passed to
+it on the second (or any subsequent) attempt to create a device
+link between the same consumer-supplier pair are not compatible with
+the existing link's flags, that is incorrect.
 
-As unbinding the supplier driver on a managed device link causes the
-consumer driver to be detached from its device automatically, this
-flag provides a complementary mechanism which is needed to address
-some "composite device" use cases.
+First off, if the existing link is stateless and the next caller of
+device_link_add() for the same consumer-supplier pair wants a
+stateful one, or the other way around, the existing link cannot be
+returned, because it will not match the expected behavior, so make
+device_link_add() dump the stack and return NULL in that case.
 
+Moreover, if the DL_FLAG_AUTOREMOVE_CONSUMER flag is passed to
+device_link_add(), its caller will expect its reference to the link
+to be dropped automatically on consumer driver removal, which will
+not happen if that flag is not set in the link's flags (and
+analogously for DL_FLAG_AUTOREMOVE_SUPPLIER).  For this reason, make
+device_link_add() update the existing link's flags accordingly
+before returning it to the caller.
+
+Fixes: ead18c23c263 ("driver core: Introduce device links reference counting")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/driver-api/device_link.rst |    9 +++++++++
- drivers/base/core.c                      |   16 +++++++++++++++-
- drivers/base/dd.c                        |    2 +-
- include/linux/device.h                   |    3 +++
- 4 files changed, 28 insertions(+), 2 deletions(-)
+ drivers/base/core.c |   23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-Index: linux-pm/include/linux/device.h
-===================================================================
---- linux-pm.orig/include/linux/device.h
-+++ linux-pm/include/linux/device.h
-@@ -341,6 +341,7 @@ struct device *driver_find_device(struct
- 				  struct device *start, void *data,
- 				  int (*match)(struct device *dev, void *data));
- 
-+void driver_deferred_probe_add(struct device *dev);
- int driver_deferred_probe_check_state(struct device *dev);
- 
- /**
-@@ -827,12 +828,14 @@ enum device_link_state {
-  * PM_RUNTIME: If set, the runtime PM framework will use this link.
-  * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
-  * AUTOREMOVE_SUPPLIER: Remove the link automatically on supplier driver unbind.
-+ * AUTOPROBE_CONSUMER: Probe consumer driver automatically after supplier binds.
-  */
- #define DL_FLAG_STATELESS		BIT(0)
- #define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
- #define DL_FLAG_PM_RUNTIME		BIT(2)
- #define DL_FLAG_RPM_ACTIVE		BIT(3)
- #define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
-+#define DL_FLAG_AUTOPROBE_CONSUMER	BIT(5)
- 
- /**
-  * struct device_link - Device link representation.
 Index: linux-pm/drivers/base/core.c
 ===================================================================
 --- linux-pm.orig/drivers/base/core.c
 +++ linux-pm/drivers/base/core.c
-@@ -208,6 +208,12 @@ static void device_link_rpm_prepare(stru
-  * the link will be maintained until one of the devices pointed to by it (either
-  * the consumer or the supplier) is unregistered.
-  *
-+ * Also, if DL_FLAG_STATELESS, DL_FLAG_AUTOREMOVE_CONSUMER and
-+ * DL_FLAG_AUTOREMOVE_SUPPLIER are not set in @flags (that is, a persistent
-+ * managed device link is being added), the DL_FLAG_AUTOPROBE_CONSUMER flag can
-+ * be used to request the driver core to automaticall probe for a consmer
-+ * driver after successfully binding a driver to the supplier device.
-+ *
-  * The combination of DL_FLAG_STATELESS and either DL_FLAG_AUTOREMOVE_CONSUMER
-  * or DL_FLAG_AUTOREMOVE_SUPPLIER set in @flags at the same time is invalid and
-  * will cause NULL to be returned upfront.
-@@ -228,7 +234,12 @@ struct device_link *device_link_add(stru
- 
- 	if (!consumer || !supplier ||
- 	    (flags & DL_FLAG_STATELESS &&
--	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER | DL_FLAG_AUTOREMOVE_SUPPLIER)))
-+	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER |
-+		      DL_FLAG_AUTOREMOVE_SUPPLIER |
-+		      DL_FLAG_AUTOPROBE_CONSUMER)) ||
-+	    (flags & DL_FLAG_AUTOPROBE_CONSUMER &&
-+	     flags & (DL_FLAG_AUTOREMOVE_CONSUMER |
-+		      DL_FLAG_AUTOREMOVE_SUPPLIER)))
- 		return NULL;
- 
- 	if (flags & DL_FLAG_PM_RUNTIME && flags & DL_FLAG_RPM_ACTIVE) {
-@@ -589,6 +600,9 @@ void device_links_driver_bound(struct de
- 
- 		WARN_ON(link->status != DL_STATE_DORMANT);
- 		WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
-+
-+		if (link->flags & DL_FLAG_AUTOPROBE_CONSUMER)
-+			driver_deferred_probe_add(link->consumer);
+@@ -221,12 +221,29 @@ struct device_link *device_link_add(stru
+ 		goto out;
  	}
  
- 	list_for_each_entry(link, &dev->links.suppliers, c_node) {
-Index: linux-pm/drivers/base/dd.c
-===================================================================
---- linux-pm.orig/drivers/base/dd.c
-+++ linux-pm/drivers/base/dd.c
-@@ -116,7 +116,7 @@ static void deferred_probe_work_func(str
- }
- static DECLARE_WORK(deferred_probe_work, deferred_probe_work_func);
- 
--static void driver_deferred_probe_add(struct device *dev)
-+void driver_deferred_probe_add(struct device *dev)
- {
- 	mutex_lock(&deferred_probe_mutex);
- 	if (list_empty(&dev->p->deferred_probe)) {
-Index: linux-pm/Documentation/driver-api/device_link.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/device_link.rst
-+++ linux-pm/Documentation/driver-api/device_link.rst
-@@ -94,6 +94,15 @@ Similarly, when the device link is added
- ``DL_FLAG_AUTOREMOVE_SUPPLIER`` causes the device link to be automatically
- purged when the supplier fails to probe or later unbinds.
- 
-+If neither ``DL_FLAG_AUTOREMOVE_CONSUMER`` nor ``DL_FLAG_AUTOREMOVE_SUPPLIER``
-+is set, ``DL_FLAG_AUTOPROBE_CONSUMER`` can be used to request the driver core
-+to probe for a driver for the consumer driver on the link automatically after
-+a driver has been bound to the supplier device.
+-	list_for_each_entry(link, &supplier->links.consumers, s_node)
+-		if (link->consumer == consumer) {
+-			kref_get(&link->kref);
++	list_for_each_entry(link, &supplier->links.consumers, s_node) {
++		if (link->consumer != consumer)
++			continue;
 +
-+Note, however, that any combinations of ``DL_FLAG_AUTOREMOVE_CONSUMER``,
-+``DL_FLAG_AUTOREMOVE_SUPPLIER`` or ``DL_FLAG_AUTOPROBE_CONSUMER`` with
-+``DL_FLAG_STATELESS`` are invalid and cannot be used.
-+
- Limitations
- ===========
++		/*
++		 * Don't return a stateless link if the caller wants a stateful
++		 * one and vice versa.
++		 */
++		if (WARN_ON((flags & DL_FLAG_STATELESS) != (link->flags & DL_FLAG_STATELESS))) {
++			link = NULL;
+ 			goto out;
+ 		}
  
++		if (flags & DL_FLAG_AUTOREMOVE_CONSUMER)
++			link->flags |= DL_FLAG_AUTOREMOVE_CONSUMER;
++
++		if (flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
++			link->flags |= DL_FLAG_AUTOREMOVE_SUPPLIER;
++
++		kref_get(&link->kref);
++		goto out;
++	}
++
+ 	link = kzalloc(sizeof(*link), GFP_KERNEL);
+ 	if (!link)
+ 		goto out;
