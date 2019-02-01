@@ -1,61 +1,48 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v5.0-rc3
-Date: Fri, 1 Feb 2019 11:39:56 +0100
-Message-ID: <CAJZ5v0gSNtDedxn=zfxCN93srU3BidOH2Uuon8WK9CvM_01oqg@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V2] cpuidle: dt: bail out if the idle-state DT node is
+ not compatible
+Date: Fri, 1 Feb 2019 11:48:38 +0000
+Message-ID: <20190201114838.GA10042@e107155-lin>
+References: <20190201021639.27245-1-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20190201021639.27245-1-josephl@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Joseph Lo <josephl@nvidia.com>
+Cc: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, Feb 01, 2019 at 10:16:39AM +0800, Joseph Lo wrote:
+> Currently, the DT of the idle states will be parsed first whether it's
+> compatible or not. This could cause a warning message that comes from if
+> the CPU doesn't support identical idle states. E.g. Tegra186 can run
+> with 2 Cortex-A57 and 2 Denver cores with different idle states on
+> different types of these cores.
+> 
+> So fix it by checking the match node earlier, then it can make sure it
+> only goes through the idle states that the CPU supported.
+> 
+> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+> ---
+> v2:
+>  * fix it by moving of_match_node earlier, so we don't need to match the
+>    node twice like the v1 did.
 
-Please pull from the tag
+Neat, thanks for the quick patch. FWIW,
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.0-rc5
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 
-with top-most commit cbffab6825731f1baac7a950f6b7dd9239f55594
-
- Merge branch 'pm-cpuidle-fixes'
-
-on top of commit f17b5f06cb92ef2250513a1e154c47b78df07d40
-
- Linux 5.0-rc4
-
-to receive power management fixes for 5.0-rc5.
-
-These fix a PM-runtime framework regression introduced by the
-recent switch-over of device autosuspend to hrtimers and a
-mistake in the "poll idle state" code introduced by a recent
-change in it.
-
-Specifics:
-
- - Since ktime_get() turns out to be problematic for device
-   autosuspend in the PM-runtime framework, make it use
-   ktime_get_mono_fast_ns() instead (Vincent Guittot).
-
- - Fix an initial value of a local variable in the "poll idle state"
-   code that makes it behave not exactly as expected when all idle
-   states except for the "polling" one are disabled (Doug Smythies).
-
-Thanks!
-
-
----------------
-
-Doug Smythies (1):
-      cpuidle: poll_state: Fix default time limit
-
-Vincent Guittot (1):
-      PM-runtime: Fix deadlock with ktime_get()
-
----------------
-
- drivers/base/power/runtime.c | 10 +++++-----
- drivers/cpuidle/poll_state.c |  2 +-
- include/linux/pm_runtime.h   |  2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
+--
+Regards,
+Sudeep
