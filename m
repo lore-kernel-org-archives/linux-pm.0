@@ -1,61 +1,61 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: [PATCH v3 01/11] dt-bindings: mfd: add DT bindings for max77650
-Date: Fri,  1 Feb 2019 10:47:26 +0100
-Message-ID: <20190201094736.32057-2-brgl@bgdev.pl>
-References: <20190201094736.32057-1-brgl@bgdev.pl>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v5.0-rc3
+Date: Fri, 1 Feb 2019 11:39:56 +0100
+Message-ID: <CAJZ5v0gSNtDedxn=zfxCN93srU3BidOH2Uuon8WK9CvM_01oqg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190201094736.32057-1-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Hi Linus,
 
-Add a DT binding document for max77650 ultra-low power PMIC. This
-describes the core mfd device.
+Please pull from the tag
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- .../devicetree/bindings/mfd/max77650.txt      | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.0-rc5
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
-new file mode 100644
-index 000000000000..84631d3b1e14
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77650.txt
-@@ -0,0 +1,28 @@
-+MAX77650 ultra low-power PMIC from Maxim Integrated.
-+
-+Required properties:
-+-------------------
-+- compatible:		Must be "maxim,max77650"
-+- reg:			I2C device address.
-+- interrupts:		The interrupt on the parent the controller is
-+			connected to.
-+- interrupt-parent:	phandle of the parent interrupt controller.
-+- interrupt-controller: Marks the device node as an interrupt controller.
-+- #interrupt-cells:	Must be <2>.
-+
-+For device-tree bindings of sub-modules (regulator, power supply, GPIO, LEDs
-+and onkey) refer to the binding documents under the respective sub-system
-+directories.
-+
-+Example:
-+--------
-+
-+	pmic: max77650@48 {
-+		compatible = "maxim,max77650";
-+		reg = <0x48>;
-+
-+		interrupt-controller;
-+		interrupt-parent = <&gpio2>;
-+		#interrupt-cells = <2>;
-+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+	};
--- 
-2.20.1
+with top-most commit cbffab6825731f1baac7a950f6b7dd9239f55594
+
+ Merge branch 'pm-cpuidle-fixes'
+
+on top of commit f17b5f06cb92ef2250513a1e154c47b78df07d40
+
+ Linux 5.0-rc4
+
+to receive power management fixes for 5.0-rc5.
+
+These fix a PM-runtime framework regression introduced by the
+recent switch-over of device autosuspend to hrtimers and a
+mistake in the "poll idle state" code introduced by a recent
+change in it.
+
+Specifics:
+
+ - Since ktime_get() turns out to be problematic for device
+   autosuspend in the PM-runtime framework, make it use
+   ktime_get_mono_fast_ns() instead (Vincent Guittot).
+
+ - Fix an initial value of a local variable in the "poll idle state"
+   code that makes it behave not exactly as expected when all idle
+   states except for the "polling" one are disabled (Doug Smythies).
+
+Thanks!
+
+
+---------------
+
+Doug Smythies (1):
+      cpuidle: poll_state: Fix default time limit
+
+Vincent Guittot (1):
+      PM-runtime: Fix deadlock with ktime_get()
+
+---------------
+
+ drivers/base/power/runtime.c | 10 +++++-----
+ drivers/cpuidle/poll_state.c |  2 +-
+ include/linux/pm_runtime.h   |  2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
