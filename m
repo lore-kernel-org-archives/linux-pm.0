@@ -1,59 +1,42 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v3 2/5] cpufreq: dt: Register an Energy Model
-Date: Fri,  1 Feb 2019 09:30:58 +0000
-Message-ID: <20190201093101.31869-3-quentin.perret@arm.com>
-References: <20190201093101.31869-1-quentin.perret@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add "consumer autoprobe" flag
+Date: Fri, 01 Feb 2019 10:45:01 +0100
+Message-ID: <2319086.FUgXjVqvWV@aspire.rjw.lan>
+References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <20190201090536.GA17484@kroah.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190201093101.31869-1-quentin.perret@arm.com>
+In-Reply-To: <20190201090536.GA17484@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com, quentin.perret@arm.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Now that PM_OPP provides a helper function to estimate the power
-consumed by CPUs, make sure to try and register an Energy Model (EM)
-from cpufreq-dt, hence ensuring interested subsystems (the task
-scheduler, for example) can make use of that information when available.
+On Friday, February 1, 2019 10:05:36 AM CET Greg Kroah-Hartman wrote:
+> On Fri, Feb 01, 2019 at 01:44:59AM +0100, Rafael J. Wysocki wrote:
+> > Hi Greg at al,
+> > 
+> > This is a combination of the two device links series I have posted
+> > recently (https://lore.kernel.org/lkml/2493187.oiOpCWJBV7@aspire.rjw.lan/
+> > and https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) rebased
+> > on top of your driver-core-next branch.
+> > 
+> > Recently I have been looking at the device links code because of the
+> > recent discussion on possibly using them in the DRM subsystem (see for
+> > example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
+> > found a few issues in that code which should be addressed by this patch
+> > series.  Please refer to the patch changelogs for details.
+> > 
+> > None of the problems addressed here should be manifesting themselves in
+> > mainline kernel today, but if there are more device links users in the
+> > future, they most likely will be encountered sooner or later.  Also they
+> > need to be fixed for the DRM use case to be supported IMO.
+> > 
+> > On top of this the series makes device links support the "composite device"
+> > use case in the DRM subsystem mentioned above (essentially, the last patch
+> > in the series is for that purpose).
+> 
+> All now queued up, thanks!
 
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/cpufreq/cpufreq-dt.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index e58bfcb1169e..1d4ad6f67408 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -160,7 +160,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	unsigned int transition_latency;
- 	bool fallback = false;
- 	const char *name;
--	int ret;
-+	int ret, nr_opp;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -231,8 +231,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	 * But we need OPP table to function so if it is not there let's
- 	 * give platform code chance to provide it for us.
- 	 */
--	ret = dev_pm_opp_get_opp_count(cpu_dev);
--	if (ret <= 0) {
-+	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (nr_opp <= 0) {
- 		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
- 		ret = -EPROBE_DEFER;
- 		goto out_free_opp;
-@@ -280,6 +280,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	dev_pm_opp_of_register_em(policy->cpus, nr_opp);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
--- 
-2.20.1
+Thank you!
