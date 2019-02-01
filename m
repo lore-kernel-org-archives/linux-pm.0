@@ -1,75 +1,156 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
- "consumer autoprobe" flag
-Date: Fri, 1 Feb 2019 16:17:23 +0100
-Message-ID: <CAPDyKFqG-wN+=9i4X+BeREekzKNt0icE==P60Cu1FhsGRNcJjg@mail.gmail.com>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v3] PM-runtime: fix deadlock with ktime
+Date: Fri, 1 Feb 2019 16:28:54 +0100
+Message-ID: <CAKfTPtDNMV+HFsqc9A0VcMHOO=MvxWYZt8XkmWepso7SpfeAqA@mail.gmail.com>
+References: <CAJZ5v0gunbCHp_9mDTmtwW1i-_GcXPcjTP48NdV2zv-B6UrD4g@mail.gmail.com>
+ <1548869162-6223-1-git-send-email-vincent.guittot@linaro.org>
+ <CAJZ5v0gnJ5DKvOO9OcJoMrGYpHfeQBt2Ec0pMW6=2q5aMoFpww@mail.gmail.com> <OSBPR01MB210387DEC42870D8E5688CE9B8920@OSBPR01MB2103.jpnprd01.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1952449.TVsm6CJCTy@aspire.rjw.lan>
+In-Reply-To: <OSBPR01MB210387DEC42870D8E5688CE9B8920@OSBPR01MB2103.jpnprd01.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Biju Das <biju.das@bp.renesas.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Feb 2019 at 02:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Fri, 1 Feb 2019 at 16:02, Biju Das <biju.das@bp.renesas.com> wrote:
 >
-> Hi Greg at al,
+> Hi Vincent,
 >
-> This is a combination of the two device links series I have posted
-> recently (https://lore.kernel.org/lkml/2493187.oiOpCWJBV7@aspire.rjw.lan/
-> and https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) rebased
-> on top of your driver-core-next branch.
+> I have rebased my kernel to "next-20190201".  Still I am seeing dead lock.
 >
-> Recently I have been looking at the device links code because of the
-> recent discussion on possibly using them in the DRM subsystem (see for
-> example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
-> found a few issues in that code which should be addressed by this patch
-> series.  Please refer to the patch changelogs for details.
+> Am I missing any patch?
+
+No you don't miss anything.
+I think that it's the opposite.
+
+Modification in time accounting in PM runtime has been queued but it
+has not moved (yet) to ktime_get_mono_fast_ns()
+
+Can you try to revert c669560be6c8 ("PM-runtime: Replace jiffies-based
+accounting with ktime-based accounting") ?
+
 >
-> None of the problems addressed here should be manifesting themselves in
-> mainline kernel today, but if there are more device links users in the
-> future, they most likely will be encountered sooner or later.  Also they
-> need to be fixed for the DRM use case to be supported IMO.
+> root@ek874:/# echo e61e0000.timer > /sys/devices/system/clocksource/clocksource0/current_clocksource
+> [  193.869423]
+> [  193.870963] ============================================
+> [  193.876292] WARNING: possible recursive locking detected
+> [  193.881625] 5.0.0-rc4-next-20190201-00007-g731346f #3 Not tainted
+> [  193.887737] --------------------------------------------
+> [  193.893066] migration/0/11 is trying to acquire lock:
+> [  193.898136] (____ptrval____) (tk_core.seq){----}, at: update_pm_runtime_accounting+0x14/0x68
+> [  193.906632]
+> [  193.906632] but task is already holding lock:
+> [  193.912483] (____ptrval____) (tk_core.seq){----}, at: multi_cpu_stop+0x8c/0x140
+> [  193.919828]
+> [  193.919828] other info that might help us debug this:
+> [  193.926377]  Possible unsafe locking scenario:
+> [  193.926377]
+> [  193.932314]        CPU0
+> [  193.934765]        ----
+> [  193.937216]   lock(tk_core.seq);
+> [  193.940453]   lock(tk_core.seq);
+> [  193.943691]
+> [  193.943691]  *** DEADLOCK ***
+> [  193.943691]
+> [  193.949634]  May be due to missing lock nesting notation
+> [  193.949634]
+> [  193.956446] 3 locks held by migration/0/11:
+> [  193.960642]  #0: (____ptrval____) (timekeeper_lock){-.-.}, at: change_clocksource+0x2c/0x118
+> [  193.969125]  #1: (____ptrval____) (tk_core.seq){----}, at: multi_cpu_stop+0x8c/0x140
+> [  193.976903]  #2: (____ptrval____) (&(&dev->power.lock)->rlock){....}, at: __pm_runtime_resume+0x40/0x98
+> [  193.986339]
+> [  193.986339] stack backtrace:
+> [  193.990715] CPU: 0 PID: 11 Comm: migration/0 Not tainted 5.0.0-rc4-next-20190201-00007-g731346f #3
+> [  193.999707] Hardware name: Silicon Linux RZ/G2E evaluation kit EK874 (CAT874 + CAT875) (DT)
+> [  194.008089] Call trace:
+> [  194.010553]  dump_backtrace+0x0/0x178
+> [  194.014227]  show_stack+0x14/0x20
+> [  194.017562]  dump_stack+0xb0/0xec
+> [  194.020895]  __lock_acquire+0xfb4/0x1c08
+> [  194.024832]  lock_acquire+0xd0/0x268
+> [  194.028420]  ktime_get+0x5c/0x108
+> [  194.031747]  update_pm_runtime_accounting+0x14/0x68
+> [  194.036643]  rpm_resume+0x4ec/0x698
+> [  194.040144]  __pm_runtime_resume+0x50/0x98
+> [  194.044264]  sh_tmu_enable.part.1+0x24/0x50
+> [  194.048462]  sh_tmu_clocksource_enable+0x48/0x70
+> [  194.053097]  change_clocksource+0x84/0x118
+> [  194.057208]  multi_cpu_stop+0x8c/0x140
+> [  194.060970]  cpu_stopper_thread+0xac/0x120
+> [  194.065087]  smpboot_thread_fn+0x1ac/0x2c8
+> [  194.069198]  kthread+0x128/0x130
+> [  194.072439]  ret_from_fork+0x10/0x18
 >
-> On top of this the series makes device links support the "composite device"
-> use case in the DRM subsystem mentioned above (essentially, the last patch
-> in the series is for that purpose).
 >
-
-Rafael, Greg, I have reviewed patch 1 -> 7, they all look good to me.
-
-If not too late, feel free to add for the first 7 patches:
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Although, I want to point out one problem that I have found when using
-device links. I believe it's already there, even before this series,
-but just wanted to described it for your consideration.
-
-This is what happens:
-I have a platform driver is being probed. During ->probe() the driver
-adds a device link like this:
-
-link = device_link_add(consumer-dev, supplier-dev, DL_FLAG_STATELESS |
-DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
-
-At some point later in ->probe(), the driver realizes that it must
-remove the device link, either because it encountered an error or
-simply because it doesn't need the device link to be there anymore.
-Thus it calls:
-
-device_link_del(link);
-
-When probe finished of the driver, the runtime PM usage count for the
-supplier-dev remains increased to 1 and thus it never becomes runtime
-suspended.
-
-I haven't thought more in detail of how to address this problem, just
-wanted to describe it for you, briefly. The test I have done is by
-using a my local RPM testdriver and my local PM domain testdriver, so
-no real bug has been reported, at least as far as I know.
-
-Kind regards
-Uffe
+> Regards,
+> Biju
+>
+> > -----Original Message-----
+> > From: Rafael J. Wysocki <rafael@kernel.org>
+> > Sent: 30 January 2019 21:53
+> > To: Vincent Guittot <vincent.guittot@linaro.org>
+> > Cc: Linux PM <linux-pm@vger.kernel.org>; Linux Kernel Mailing List <linux-
+> > kernel@vger.kernel.org>; Linux ARM <linux-arm-
+> > kernel@lists.infradead.org>; Linux OMAP Mailing List <linux-
+> > omap@vger.kernel.org>; Rafael J. Wysocki <rjw@rjwysocki.net>; Ulf
+> > Hansson <ulf.hansson@linaro.org>; Biju Das <biju.das@bp.renesas.com>;
+> > Geert Uytterhoeven <geert@linux-m68k.org>; Linux-Renesas <linux-
+> > renesas-soc@vger.kernel.org>
+> > Subject: Re: [PATCH v3] PM-runtime: fix deadlock with ktime
+> >
+> > On Wed, Jan 30, 2019 at 6:26 PM Vincent Guittot
+> > <vincent.guittot@linaro.org> wrote:
+> > >
+> > > A deadlock has been seen when swicthing clocksources which use PM
+> > runtime.
+> > > The call path is:
+> > > change_clocksource
+> > >     ...
+> > >     write_seqcount_begin
+> > >     ...
+> > >     timekeeping_update
+> > >         ...
+> > >         sh_cmt_clocksource_enable
+> > >             ...
+> > >             rpm_resume
+> > >                 pm_runtime_mark_last_busy
+> > >                     ktime_get
+> > >                         do
+> > >                             read_seqcount_begin
+> > >                         while read_seqcount_retry
+> > >     ....
+> > >     write_seqcount_end
+> > >
+> > > Although we should be safe because we haven't yet changed the
+> > > clocksource at that time, we can't because of seqcount protection.
+> > >
+> > > Use ktime_get_mono_fast_ns() instead which is lock safe for such case
+> > >
+> > > With ktime_get_mono_fast_ns, the timestamp is not guaranteed to be
+> > > monotonic across an update and as a result can goes backward.
+> > > According to
+> > > update_fast_timekeeper() description: "In the worst case, this can
+> > > result is a slightly wrong timestamp (a few nanoseconds)". For PM
+> > > runtime autosuspend, this means only that the suspend decision can be
+> > > slightly sub optimal.
+> > >
+> > > Fixes: 8234f6734c5d ("PM-runtime: Switch autosuspend over to using
+> > > hrtimers")
+> > > Reported-by: Biju Das <biju.das@bp.renesas.com>
+> > > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> > > ---
+> > >
+> > > Hi Rafael,
+> > >
+> > > Sorry, I sent the version with the typo mistake that generated the
+> > > compilation error reported by kbuild-test-robot
+> > >
+> > > This version doesn't have the typo.
+> >
+> > OK, I've applied this one, thanks!
+>
+>
+>
+> Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, Buckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered No. 04586709.
