@@ -1,228 +1,266 @@
-From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Subject: Re: [RFC PATCH] cpufreq / cppc: Work around for Hisilicon CPPC
- cpufreq
-Date: Sat, 2 Feb 2019 16:30:45 +0800
-Message-ID: <db5dd295-b821-7daf-44a3-a506ac656699@huawei.com>
-References: <1547722811-18052-1-git-send-email-wangxiongfeng2@huawei.com>
- <5822895.TaUaiHzPlI@aspire.rjw.lan>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: Re: [PATCH v3 09/11] leds: max77650: add LEDs support
+Date: Sat, 2 Feb 2019 15:39:55 +0100
+Message-ID: <CAMRc=McK0oc2-Cve5x6k+3TOJDF9qSxaCr9ix3=i=7Z2eDw2XQ@mail.gmail.com>
+References: <20190201094736.32057-1-brgl@bgdev.pl> <20190201094736.32057-10-brgl@bgdev.pl>
+ <78b99abb-f367-1533-0690-8da26957a664@gmail.com> <d86adc21-627f-0350-72e0-f6f10b023413@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5822895.TaUaiHzPlI@aspire.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <d86adc21-627f-0350-72e0-f6f10b023413@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: viresh.kumar@linaro.org, robert.moore@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, guohanjun@huawei.com
+To: Dan Murphy <dmurphy@ti.com>
+Cc: Jacek Anaszewski <jacek.anaszewski@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Rafael
+pt., 1 lut 2019 o 21:15 Dan Murphy <dmurphy@ti.com> napisa=C5=82(a):
+>
+> Hi
+>
+> On 2/1/19 1:45 PM, Jacek Anaszewski wrote:
+> > Hi Bartosz,
+> >
+> > Thanks for the update.
+> >
+> > On 2/1/19 10:47 AM, Bartosz Golaszewski wrote:
+> >> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >>
+> >> This adds basic support for LEDs for the max77650 PMIC. The device has
+> >> three current sinks for driving LEDs.
+> >>
+> >> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >> ---
+> >>   drivers/leds/Kconfig         |   6 ++
+> >>   drivers/leds/Makefile        |   1 +
+> >>   drivers/leds/leds-max77650.c | 147 +++++++++++++++++++++++++++++++++=
+++
+> >>   3 files changed, 154 insertions(+)
+> >>   create mode 100644 drivers/leds/leds-max77650.c
+> >>
+> >> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> >> index a72f97fca57b..6e7a8f51eccc 100644
+> >> --- a/drivers/leds/Kconfig
+> >> +++ b/drivers/leds/Kconfig
+> >> @@ -608,6 +608,12 @@ config LEDS_TLC591XX
+> >>         This option enables support for Texas Instruments TLC59108
+> >>         and TLC59116 LED controllers.
+> >>   +config LEDS_MAX77650
+> >> +    tristate "LED support for Maxim MAX77650 PMIC"
+> >> +    depends on MFD_MAX77650
+> >> +    help
+> >> +      LEDs driver for MAX77650 family of PMICs from Maxim Integrated.=
+"
+> >> +
+> >>   config LEDS_MAX77693
+> >>       tristate "LED support for MAX77693 Flash"
+> >>       depends on LEDS_CLASS_FLASH
+> >> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> >> index 4c1b0054f379..f48b2404dbb7 100644
+> >> --- a/drivers/leds/Makefile
+> >> +++ b/drivers/leds/Makefile
+> >> @@ -61,6 +61,7 @@ obj-$(CONFIG_LEDS_MC13783)        +=3D leds-mc13783.=
+o
+> >>   obj-$(CONFIG_LEDS_NS2)            +=3D leds-ns2.o
+> >>   obj-$(CONFIG_LEDS_NETXBIG)        +=3D leds-netxbig.o
+> >>   obj-$(CONFIG_LEDS_ASIC3)        +=3D leds-asic3.o
+> >> +obj-$(CONFIG_LEDS_MAX77650)        +=3D leds-max77650.o
+> >>   obj-$(CONFIG_LEDS_MAX77693)        +=3D leds-max77693.o
+> >>   obj-$(CONFIG_LEDS_MAX8997)        +=3D leds-max8997.o
+> >>   obj-$(CONFIG_LEDS_LM355x)        +=3D leds-lm355x.o
+> >> diff --git a/drivers/leds/leds-max77650.c b/drivers/leds/leds-max77650=
+.c
+> >> new file mode 100644
+> >> index 000000000000..6b74ce9cac12
+> >> --- /dev/null
+> >> +++ b/drivers/leds/leds-max77650.c
+> >> @@ -0,0 +1,147 @@
+> >> +// SPDX-License-Identifier: GPL-2.0
+> >> +//
+> >> +// Copyright (C) 2018 BayLibre SAS
+> >> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >> +//
+> >> +// LED driver for MAXIM 77650/77651 charger/power-supply.
+> >> +
+> >> +#include <linux/i2c.h>
+> >> +#include <linux/leds.h>
+> >> +#include <linux/mfd/max77650.h>
+> >> +#include <linux/module.h>
+> >> +#include <linux/platform_device.h>
+> >> +#include <linux/regmap.h>
+> >> +
+> >> +#define MAX77650_LED_NUM_LEDS        3
+> >> +
+> >> +#define MAX77650_LED_A_BASE        0x40
+> >> +#define MAX77650_LED_B_BASE        0x43
+> >> +
+> >> +#define MAX77650_LED_BR_MASK        GENMASK(4, 0)
+> >> +#define MAX77650_LED_EN_MASK        GENMASK(7, 6)
+> >> +
+> >> +#define MAX77650_LED_MAX_BRIGHTNESS    MAX77650_LED_BR_MASK
+> >> +
+> >> +/* Enable EN_LED_MSTR. */
+> >> +#define MAX77650_LED_TOP_DEFAULT    BIT(0)
+> >> +
+> >> +#define MAX77650_LED_ENABLE        GENMASK(7, 6)
+> >> +#define MAX77650_LED_DISABLE        0x00
+> >> +
+> >> +#define MAX77650_LED_A_DEFAULT        MAX77650_LED_DISABLE
+> >> +/* 100% on duty */
+> >> +#define MAX77650_LED_B_DEFAULT        GENMASK(3, 0)
+> >> +
+> >> +struct max77650_led {
+> >> +    struct led_classdev cdev;
+> >> +    struct regmap *map;
+> >> +    unsigned int regA;
+> >> +    unsigned int regB;
+>
+> Please don't use camel case.
+>
 
-Thanks for your reply and advice below.
-Sorry, I'am out of the office because of the Chinese spring festival.
-I will send another version when I come back. It's 14th February.
+Sorry, but this is pointless nitpicking. The registers are referred to
+in the manual as LED[012]_A and LED[012]_B so these variable names
+reflect that. The difference between ThisKindOfCamelCase and regA/regB
+is obvious. It's much more readable than for example rega or reg_a. I
+also used the same approach in the regulator module and there were no
+complaints.
 
-Thanks,
-Xiongfeng
+> >> +};
+> >> +
+> >> +static struct max77650_led *max77650_to_led(struct led_classdev *cdev=
+)
+> >> +{
+> >> +    return container_of(cdev, struct max77650_led, cdev);
+> >> +}
+> >> +
+> >> +static int max77650_led_brightness_set(struct led_classdev *cdev,
+> >> +                       enum led_brightness brightness)
+> >> +{
+> >> +    struct max77650_led *led =3D max77650_to_led(cdev);
+> >> +    int val, mask;
+> >> +
+>
+> The register value and bits are only 8 bit why an int?
+>
 
-On 2019/1/31 7:42, Rafael J. Wysocki wrote:
-> On Thursday, January 17, 2019 12:00:11 PM CET Xiongfeng Wang wrote:
->> Hisilicon chips do not support delivered performance counter register
->> and reference performance counter register. But the platform can
->> calculate the real performance using its own method. This patch provide
->> a workaround for this problem, and other platforms can also use this
->> workaround framework. We reuse the desired performance register to
->> store the real performance calculated by the platform. After the
->> platform finished the frequency adjust, it gets the real performance and
->> writes it into desired performance register. OS can use it to calculate
->> the real frequency.
->>
->> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-> 
-> Overall, I would do it differently.
-> 
->> ---
->>  drivers/acpi/cppc_acpi.c       | 29 ++++++++++++++++++++
->>  drivers/cpufreq/Kconfig.arm    |  7 +++++
->>  drivers/cpufreq/cppc_cpufreq.c | 62 ++++++++++++++++++++++++++++++++++++++++++
->>  include/acpi/cppc_acpi.h       |  4 +++
->>  4 files changed, 102 insertions(+)
->>
->> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
->> index 217a782..0cdaf7e 100644
->> --- a/drivers/acpi/cppc_acpi.c
->> +++ b/drivers/acpi/cppc_acpi.c
->> @@ -1050,6 +1050,35 @@ static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
->>  	return ret_val;
->>  }
->>  
->> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->> +/*
->> + * We reuse the desired performance register to store the real performance
->> + * calculated by the platform.
->> + */
->> +u64 hisi_cppc_get_real_perf(unsigned int cpunum)
->> +{
->> +	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
->> +	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
->> +	struct cpc_register_resource *desired_reg;
->> +	u64 desired_perf;
->> +	int ret;
->> +
->> +	/*
->> +	 * Make sure the platform has finished the frequency adjust
->> +	 * and wrote the real performance in desired performance register
->> +	 */
->> +	ret = check_pcc_chan(pcc_ss_id, false);
->> +	if (ret)
->> +		return 0;
->> +
->> +	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
->> +	cpc_read(cpunum, desired_reg, &desired_perf);
->> +
->> +	return desired_perf;
->> +}
->> +EXPORT_SYMBOL_GPL(hisi_cppc_get_real_perf);
->> +#endif
-> 
-> I would provide library routine to read desired_perf and it doesn't
-> need to have anything to do with HiSi at this level.  Also, it doesn't
-> need to be compiled conditionally.  Just call it cppc_get_desired_perf()
-> or similar.
-> 
-> Then, you can use it to implement the quirk in the cpufreq driver.
-> 
->> +
->>  /**
->>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
->>   * @cpunum: CPU from which to get capabilities info.
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index 688f102..236bd07 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
->>  
->>  	  If in doubt, say N.
->>  
->> +config HISILICON_CPPC_CPUFREQ_WORKAROUND
->> +	bool "Workaround for Hisilicon CPPC Cpufreq"
-> 
-> What is the reason for this to be a user-selectable option?
-> 
->> +	default y
->> +	depends on ACPI_CPPC_CPUFREQ && ARM64
->> +	help
->> +	  This option enables a workaround for Hisilicon CPPC Cpufreq.
->> +
->>  config ARM_ARMADA_37XX_CPUFREQ
->>  	tristate "Armada 37xx CPUFreq support"
->>  	depends on ARCH_MVEBU && CPUFREQ_DT
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index fd25c21c..b910e84 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -33,6 +33,13 @@
->>  /* Offest in the DMI processor structure for the max frequency */
->>  #define DMI_PROCESSOR_MAX_SPEED  0x14
->>  
->> +struct cppc_get_rate_workaround_info {
->> +	char oem_id[ACPI_OEM_ID_SIZE +1];
->> +	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
->> +	u32 oem_revision;
->> +	unsigned int (*get)(unsigned int cpu);
->> +};
->> +
->>  /*
->>   * These structs contain information parsed from per CPU
->>   * ACPI _CPC structures.
->> @@ -357,6 +364,59 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
->>  	.name = "cppc_cpufreq",
->>  };
->>  
->> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->> +/*
->> + * When the platform does not support delivered performance counter or
->> + * reference performance counter, it can calculate the performance using the
->> + * platform specific mechanism. We reuse the desired performance register to
->> + * store the real performance calculated by the platform.
->> + */
->> +static unsigned int hisi_cppc_cpufreq_get_rate(unsigned int cpunum)
->> +{
->> +	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
->> +	u64 desired_perf = hisi_cppc_get_real_perf(cpunum);
->> +
->> +	return cppc_cpufreq_perf_to_khz(cpu, desired_perf);
->> +}
->> +#endif
->> +
->> +static struct cppc_get_rate_workaround_info wa_info[] = {
->> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->> +	{
->> +		.oem_id		= "HISI  ",
->> +		.oem_table_id	= "HIP07   ",
->> +		.oem_revision	= 0,
->> +		.get = hisi_cppc_cpufreq_get_rate,
->> +	},
->> +	{
->> +		.oem_id		= "HISI  ",
->> +		.oem_table_id	= "HIP08   ",
->> +		.oem_revision	= 0,
->> +		.get = hisi_cppc_cpufreq_get_rate,
->> +	},
->> +#endif
-> 
-> Is this #ifdef really necessary?
-> 
->> +	{},
->> +};
->> +
->> +static void cppc_check_get_rate_workaround(struct cpufreq_driver *cppc_cpufreq_driver)
->> +{
->> +	struct acpi_table_header *tbl;
->> +	acpi_status status = AE_OK;
->> +	int i;
->> +
->> +	status = acpi_get_table(ACPI_SIG_PCCT, 0, &tbl);
->> +	if (ACPI_FAILURE(status) || !tbl)
->> +		return;
->> +
->> +	for (i = 0; i < ARRAY_SIZE(wa_info) - 1; i++) {
->> +		if (!memcmp(wa_info[i].oem_id, tbl->oem_id, ACPI_OEM_ID_SIZE) &&
->> +		    !memcmp(wa_info[i].oem_table_id, tbl->oem_table_id, ACPI_OEM_TABLE_ID_SIZE) &&
->> +		    wa_info[i].oem_revision == tbl->oem_revision) {
->> +			cppc_cpufreq_driver->get = wa_info[i].get;
->> +			return;
->> +		}
->> +	}
->> +}
->>  static int __init cppc_cpufreq_init(void)
->>  {
->>  	int i, ret = 0;
->> @@ -386,6 +446,8 @@ static int __init cppc_cpufreq_init(void)
->>  		goto out;
->>  	}
->>  
->> +	cppc_check_get_rate_workaround(&cppc_cpufreq_driver);
->> +
->>  	ret = cpufreq_register_driver(&cppc_cpufreq_driver);
->>  	if (ret)
->>  		goto out;
->> diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
->> index 4f34734..be7400b 100644
->> --- a/include/acpi/cppc_acpi.h
->> +++ b/include/acpi/cppc_acpi.h
->> @@ -146,4 +146,8 @@ struct cppc_cpudata {
->>  extern int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val);
->>  extern int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val);
->>  
->> +#ifdef CONFIG_HISILICON_CPPC_CPUFREQ_WORKAROUND
->> +u64 hisi_cppc_get_real_perf(unsigned int cpunum);
->> +#endif
->> +
->>  #endif /* _CPPC_ACPI_H*/
->>
-> 
-> 
-> 
-> .
-> 
+Because regmap_update_bits() deals with 32-bit integers. There's no
+hurt and it's less confusing.
+
+> >> +    mask =3D MAX77650_LED_BR_MASK | MAX77650_LED_EN_MASK;
+> >> +
+> >> +    if (brightness =3D=3D LED_OFF)
+> >> +        val =3D MAX77650_LED_DISABLE;
+> >> +    else
+> >> +        val =3D MAX77650_LED_ENABLE | brightness;
+> >> +
+> >> +    return regmap_update_bits(led->map, led->regA, mask, val);
+> >> +}
+> >> +
+> >> +static int max77650_led_probe(struct platform_device *pdev)
+> >> +{
+> >> +    struct device_node *of_node, *child;
+> >> +    struct max77650_led *leds, *led;
+> >> +    struct device *parent;
+> >> +    struct device *dev;
+> >> +    struct regmap *map;
+> >> +    const char *label;
+> >> +    int rv, num_leds;
+> >> +    u32 reg;
+> >> +
+> >> +    dev =3D &pdev->dev;
+> >> +    parent =3D dev->parent;
+> >> +    of_node =3D dev->of_node;
+> >> +
+> >> +    if (!of_node)
+> >> +        return -ENODEV;
+> >> +
+> >> +    leds =3D devm_kcalloc(dev, sizeof(*leds),
+> >> +                MAX77650_LED_NUM_LEDS, GFP_KERNEL);
+> >> +    if (!leds)
+> >> +        return -ENOMEM;
+> >> +
+> >> +    map =3D dev_get_regmap(dev->parent, NULL);
+> >> +    if (!map)
+> >> +        return -ENODEV;
+> >> +
+> >> +    num_leds =3D of_get_child_count(of_node);
+> >> +    if (!num_leds || num_leds > MAX77650_LED_NUM_LEDS)
+> >> +        return -ENODEV;
+> >> +
+> >> +    for_each_child_of_node(of_node, child) {
+> >> +        rv =3D of_property_read_u32(child, "reg", &reg);
+>
+> Can we use the fwnode_property_read_u32 call here?
+> And the same for all below as well?
+>
+>
+
+Of course we can. But why? This is a low-power PMIC. Is there really a
+chance that a non-DT system will want to use it? If so - we will be
+able to convert it if needed. For now: I'd stick with of_* functions.
+
+> >> +        if (rv || reg >=3D MAX77650_LED_NUM_LEDS)
+> >> +            return -EINVAL;
+> >> +
+> >> +        led =3D &leds[reg];
+> >> +        led->map =3D map;
+> >> +        led->regA =3D MAX77650_LED_A_BASE + reg;
+> >> +        led->regB =3D MAX77650_LED_B_BASE + reg;
+> >> +        led->cdev.brightness_set_blocking =3D max77650_led_brightness=
+_set;
+> >> +        led->cdev.max_brightness =3D MAX77650_LED_MAX_BRIGHTNESS;
+> >> +
+> >> +        label =3D of_get_property(child, "label", NULL);
+> >> +        if (!label) {
+> >> +            led->cdev.name =3D "max77650::";
+> >> +        } else {
+> >> +            led->cdev.name =3D devm_kasprintf(dev, GFP_KERNEL,
+> >> +                            "max77650:%s", label);
+> >> +            if (!led->cdev.name)
+> >> +                return -ENOMEM;
+> >> +        }
+> >> +
+> >> +        of_property_read_string(child, "linux,default-trigger",
+> >> +                    &led->cdev.default_trigger);
+> >> +
+> >> +        rv =3D devm_of_led_classdev_register(dev, child, &led->cdev);
+> >> +        if (rv)
+> >> +            return rv;
+> >> +
+> >> +        rv =3D regmap_write(map, led->regA, MAX77650_LED_A_DEFAULT);
+> >> +        if (rv)
+> >> +            return rv;
+> >> +
+> >> +        rv =3D regmap_write(map, led->regB, MAX77650_LED_B_DEFAULT);
+> >> +        if (rv)
+> >> +            return rv;
+> >> +    }
+> >> +
+> >> +    return regmap_write(map,
+> >> +                MAX77650_REG_CNFG_LED_TOP,
+> >> +                MAX77650_LED_TOP_DEFAULT);
+> >> +}
+> >> +
+> >> +static struct platform_driver max77650_led_driver =3D {
+> >> +    .driver =3D {
+> >> +        .name =3D "max77650-led",
+> >> +    },
+> >> +    .probe =3D max77650_led_probe,
+> >> +};
+> >> +module_platform_driver(max77650_led_driver);
+> >> +
+> >> +MODULE_DESCRIPTION("MAXIM 77650/77651 LED driver");
+> >> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
+> >> +MODULE_LICENSE("GPL v2");
+> >>
+> >
+> > Acked-by: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+> >
+>
+>
+> --
+> ------------------
+> Dan Murphy
+
+Best regards,
+Bartosz Golaszewski
