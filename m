@@ -1,273 +1,149 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC PATCH v5 10/10] watchdog: bd70528: Initial support for ROHM
- BD70528 watchdog block
-Date: Mon, 4 Feb 2019 06:38:43 -0800
-Message-ID: <a76ec2b9-a95e-a17a-f231-c1d04ec8e846@roeck-us.net>
-References: <cover.1549283919.git.matti.vaittinen@fi.rohmeurope.com>
- <c03a470dac74047a72dc3ed8f51ab81f456594d1.1549283920.git.matti.vaittinen@fi.rohmeurope.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [RFC PATCH] drivers core: cpu: add hotplug callback to update
+ cpu_dev state to resumed
+Date: Mon, 4 Feb 2019 15:37:20 +0000
+Message-ID: <20190204153720.GA24131@e107155-lin>
+References: <20190125130701.GA855@vmlxhi-102.adit-jv.com>
+ <20190125150906.27614-1-sudeep.holla@arm.com>
+ <2397404.eE4apdlqQK@aspire.rjw.lan>
+ <20190131160559.GA32759@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c03a470dac74047a72dc3ed8f51ab81f456594d1.1549283920.git.matti.vaittinen@fi.rohmeurope.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190131160559.GA32759@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, mazziesaccount@gmail.com
-Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Sudeep Holla <sudeep.holla@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/4/19 4:49 AM, Matti Vaittinen wrote:
-> Initial support for watchdog block included in ROHM BD70528
-> power management IC.
+On Thu, Jan 31, 2019 at 04:05:59PM +0000, Sudeep Holla wrote:
+> On Thu, Jan 31, 2019 at 12:48:49AM +0100, Rafael J. Wysocki wrote:
+> > On Friday, January 25, 2019 4:09:06 PM CET Sudeep Holla wrote:
+> > > The sysfs for the cpu caches are managed by adding devices with cpu
+> > > as the parent in cpu_device_create() when secondary cpu is brought
+> > > onlin. Generally when the secondary CPUs are hotplugged back is as part
+> > > of resume from suspend-to-ram, we call cpu_device_create() from the cpu
+> > > hotplug state machine while the cpu device associated with that CPU is
+> > > not yet ready to be resumed as the device_resume() call happens bit later.
+> > > It's not really needed to set the flag is_prepared for cpu devices are
+> > > they are mostly pseudo device and hotplug framework deals with state
+> > > machine and not managed through the cpu device.
+> > >
+> > > This often results in annoying warning when resuming:
+> > > Enabling non-boot CPUs ...
+> > > CPU1: Booted secondary processor
+> > >  cache: parent cpu1 should not be sleeping
+> > > CPU1 is up
+> > > CPU2: Booted secondary processor
+> > >  cache: parent cpu2 should not be sleeping
+> > > CPU2 is up
+> > > .... and so on.
+> > >
+> > > Just fix the warning by updating the device state quite early.
+> > >
+> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > > Reported-by: Jisheng Zhang <jszhang@marvell.com>
+> > > Reported-by: Steve Longerbeam <slongerbeam@gmail.com>
+> > > Reported-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+> > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> > > ---
+> > >  drivers/base/cpu.c         | 20 +++++++++++++++++++-
+> > >  include/linux/cpuhotplug.h |  1 +
+> > >  2 files changed, 20 insertions(+), 1 deletion(-)
+> > >
+> > > Hi Rafael,
+> > >
+> > > This is getting reported for quite some time. Let me know if you have
+> > > better solution to fix this harmless yet annoying warnings during system
+> > > resume.
+> >
+> > I'd rather have a flag in struct dev_pm_info that will cause the message to
+> > be suppressed if set.
+> >
+> > It could be used for other purposes too then in princple (like skipping the
+> > creation of empty "power" attr groups in sysfs for devices that don't
+> > need them etc.).
+> >
+> Thanks for the suggestion. I did quick hack and came up with something
+> below. I wanted to run through you once before I materialise it into
+> a formal patch to check if I understood your suggestion correctly.
+> We can move no_pm_required outside dev_pm_info struct and rename with
+> any better names.
+>
+
+Sorry for the nag, since the title has RFC, thought there are chances of
+this getting lost. Let me know if the below idea aligns with your suggestion ?
+
+Regards,
+Sudeep
+> -->8
 > 
-> Configurations for low power states are still to be checked.
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> ---
->   drivers/watchdog/Kconfig       |  12 +++
->   drivers/watchdog/Makefile      |   1 +
->   drivers/watchdog/bd70528_wdt.c | 187 +++++++++++++++++++++++++++++++++++++++++
->   3 files changed, 200 insertions(+)
->   create mode 100644 drivers/watchdog/bd70528_wdt.c
-> 
-> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-> index 57f017d74a97..f30e3a3e886e 100644
-> --- a/drivers/watchdog/Kconfig
-> +++ b/drivers/watchdog/Kconfig
-> @@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
->   	  watchdog. Be aware that governors might affect the watchdog because it
->   	  is purely software, e.g. the panic governor will stall it!
->   
-> +config BD70528_WATCHDOG
-> +	tristate "ROHM BD70528 PMIC Watchdog"
-> +	depends on MFD_ROHM_BD70528
-> +	select WATCHDOG_CORE
-> +	help
-> +	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
-> +	  cause system reset.
+> diff --git i/drivers/base/cpu.c w/drivers/base/cpu.c
+> index eb9443d5bae1..b61f9772ed33 100644
+> --- i/drivers/base/cpu.c
+> +++ w/drivers/base/cpu.c
+> @@ -379,6 +379,7 @@ int register_cpu(struct cpu *cpu, int num)
+>  	cpu->dev.bus->uevent = cpu_uevent;
+>  #endif
+>  	cpu->dev.groups = common_cpu_attr_groups;
+> +	cpu->dev.power.no_pm_required = true;
+>  	if (cpu->hotpluggable)
+>  		cpu->dev.groups = hotplugable_cpu_attr_groups;
+>  	error = device_register(&cpu->dev);
+> @@ -427,6 +428,7 @@ __cpu_device_create(struct device *parent, void *drvdata,
+>  	dev->parent = parent;
+>  	dev->groups = groups;
+>  	dev->release = device_create_release;
+> +	dev->power.no_pm_required = true;
+>  	dev_set_drvdata(dev, drvdata);
+>  
+>  	retval = kobject_set_name_vargs(&dev->kobj, fmt, args);
+> diff --git i/drivers/base/power/main.c w/drivers/base/power/main.c
+> index 0992e67e862b..ed1b133f73db 100644
+> --- i/drivers/base/power/main.c
+> +++ w/drivers/base/power/main.c
+> @@ -124,6 +124,8 @@ void device_pm_unlock(void)
+>   */
+>  void device_pm_add(struct device *dev)
+>  {
+> +	if (dev->power.no_pm_required)
+> +		return;
+>  	pr_debug("PM: Adding info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+>  	device_pm_check_callbacks(dev);
+> @@ -142,6 +144,8 @@ void device_pm_add(struct device *dev)
+>   */
+>  void device_pm_remove(struct device *dev)
+>  {
+> +	if (dev->power.no_pm_required)
+> +		return;
+>  	pr_debug("PM: Removing info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+>  	complete_all(&dev->power.completion);
+> diff --git i/drivers/base/power/sysfs.c w/drivers/base/power/sysfs.c
+> index d713738ce796..54c1bfec396e 100644
+> --- i/drivers/base/power/sysfs.c
+> +++ w/drivers/base/power/sysfs.c
+> @@ -648,6 +648,9 @@ int dpm_sysfs_add(struct device *dev)
+>  {
+>  	int rc;
+>  
+> +	if (dev->power.no_pm_required)
+> +		return 0;
 > +
-> +	  Say Y here to include support for the ROHM BD70528 watchdog.
-> +	  Alternatively say M to compile the driver as a module,
-> +	  which will be called bd70528_wdt.
-> +
->   config DA9052_WATCHDOG
->   	tristate "Dialog DA9052 Watchdog"
->   	depends on PMIC_DA9052 || COMPILE_TEST
-> diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-> index a0917ef28e07..1ce87a3b1172 100644
-> --- a/drivers/watchdog/Makefile
-> +++ b/drivers/watchdog/Makefile
-> @@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
->   obj-$(CONFIG_XEN_WDT) += xen_wdt.o
->   
->   # Architecture Independent
-> +obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
->   obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
->   obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
->   obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
-> diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
-> new file mode 100644
-> index 000000000000..c24d4cce5e9c
-> --- /dev/null
-> +++ b/drivers/watchdog/bd70528_wdt.c
-> @@ -0,0 +1,187 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +// Copyright (C) 2018 ROHM Semiconductors
-> +// ROHM BD70528MWV watchdog driver
-> +
-> +#include <linux/bcd.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mfd/rohm-bd70528.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +#include <linux/watchdog.h>
-> +
-> +struct wdtbd70528 {
-> +	struct device *dev;
-> +	struct regmap *regmap;
-> +	struct mutex *rtc_lock;
-> +	struct watchdog_device wdt;
-> +};
-> +
-> +static int bd70528_wdt_set_locked(struct wdtbd70528 *w, int enable)
-> +{
-> +	struct bd70528 *bd70528;
-> +
-> +	bd70528 = container_of(w->rtc_lock, struct bd70528, rtc_timer_lock);
-> +	return bd70528->wdt_set(bd70528, enable, NULL);
-> +}
-
-Please add an empty line here.
-
-> +static int bd70528_wdt_set(struct wdtbd70528 *w, int enable)
-> +{
-> +	int ret;
-> +
-> +	mutex_lock(w->rtc_lock);
-> +	ret = bd70528_wdt_set_locked(w, enable);
-> +	mutex_unlock(w->rtc_lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static int bd70528_wdt_start(struct watchdog_device *wdt)
-> +{
-> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-> +
-> +	dev_dbg(w->dev, "WDT ping...\n");
-> +	return bd70528_wdt_set(w, 1);
-> +}
-> +
-> +static int bd70528_wdt_stop(struct watchdog_device *wdt)
-> +{
-> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-> +
-> +	dev_dbg(w->dev, "WDT stopping...\n");
-> +	return bd70528_wdt_set(w, 0);
-> +}
-> +
-> +static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
-> +				    unsigned int timeout)
-> +{
-> +	unsigned int hours;
-> +	unsigned int minutes;
-> +	unsigned int seconds;
-> +	int ret;
-> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-> +
-> +	seconds = timeout;
-> +	hours = timeout / (60 * 60);
-> +	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
-> +	if (hours)
-> +		seconds -= (60 * 60);
-> +	minutes = seconds / 60;
-> +	seconds = seconds % 60;
-> +
-> +	mutex_lock(w->rtc_lock);
-> +
-> +	ret = bd70528_wdt_set_locked(w, 0);
-> +	if (ret)
-> +		goto out_unlock;
-> +
-> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_HOUR,
-> +				 BD70528_MASK_WDT_HOUR, hours);
-> +	if (ret) {
-> +		dev_err(w->dev, "Failed to set WDT hours\n");
-> +		goto out_en_unlock;
-> +	}
-> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_MINUTE,
-> +				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
-> +	if (ret) {
-> +		dev_err(w->dev, "Failed to set WDT minutes\n");
-> +		goto out_en_unlock;
-> +	}
-> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_SEC,
-> +				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
-> +	if (ret)
-> +		dev_err(w->dev, "Failed to set WDT seconds\n");
-> +	else
-> +		dev_dbg(w->dev, "WDT tmo set to %u\n", timeout);
-> +
-> +out_en_unlock:
-> +	ret = bd70528_wdt_set_locked(w, 1);
-> +out_unlock:
-> +	mutex_unlock(w->rtc_lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct watchdog_info bd70528_wdt_info = {
-> +	.identity = "bd70528-wdt",
-> +	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
-> +};
-> +
-> +static const struct watchdog_ops bd70528_wdt_ops = {
-> +	.start		= bd70528_wdt_start,
-> +	.stop		= bd70528_wdt_stop,
-> +	.set_timeout	= bd70528_wdt_set_timeout,
-> +};
-> +
-> +/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
-> +#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
-> +/* Minimum time is 1 second */
-> +#define WDT_MIN_MS 1000
-> +#define DEFAULT_TIMEOUT 60
-> +
-
-Please move to top, and tab-align the values.
-
-Otherwise I am ok with the patch.
-
-On a side note, isn't it past time to drop the RFC ?
-
-Guenter
-
-> +static int bd70528_wdt_probe(struct platform_device *pdev)
-> +{
-> +	struct bd70528 *bd70528;
-> +	struct wdtbd70528 *w;
-> +	int ret;
-> +	unsigned int reg;
-> +
-> +	bd70528 = dev_get_drvdata(pdev->dev.parent);
-> +	if (!bd70528) {
-> +		dev_err(&pdev->dev, "No MFD driver data\n");
-> +		return -EINVAL;
-> +	}
-> +	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
-> +	if (!w)
-> +		return -ENOMEM;
-> +
-> +	w->regmap = bd70528->chip.regmap;
-> +	w->rtc_lock = &bd70528->rtc_timer_lock;
-> +	w->dev = &pdev->dev;
-> +
-> +	w->wdt.info = &bd70528_wdt_info;
-> +	w->wdt.ops =  &bd70528_wdt_ops;
-> +	w->wdt.min_hw_heartbeat_ms = WDT_MIN_MS;
-> +	w->wdt.max_hw_heartbeat_ms = WDT_MAX_MS;
-> +	w->wdt.parent = pdev->dev.parent;
-> +	w->wdt.timeout = DEFAULT_TIMEOUT;
-> +	watchdog_set_drvdata(&w->wdt, w);
-> +	watchdog_init_timeout(&w->wdt, 0, pdev->dev.parent);
-> +
-> +	ret = bd70528_wdt_set_timeout(&w->wdt, w->wdt.timeout);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
-> +		return ret;
-> +	}
-> +
-> +	mutex_lock(w->rtc_lock);
-> +	ret = regmap_read(w->regmap, BD70528_REG_WDT_CTRL, &reg);
-> +	mutex_unlock(w->rtc_lock);
-> +
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to get the watchdog state\n");
-> +		return ret;
-> +	}
-> +	if (reg & BD70528_MASK_WDT_EN) {
-> +		dev_dbg(&pdev->dev, "watchdog was running during probe\n");
-> +		set_bit(WDOG_HW_RUNNING, &w->wdt.status);
-> +	}
-> +
-> +	ret = devm_watchdog_register_device(&pdev->dev, &w->wdt);
-> +	if (ret < 0)
-> +		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
-> +
-> +	return ret;
-> +}
-> +static struct platform_driver bd70528_wdt = {
-> +	.driver = {
-> +		.name = "bd70528-wdt"
-> +	},
-> +	.probe = bd70528_wdt_probe,
-> +};
-> +
-> +module_platform_driver(bd70528_wdt);
-> +
-> +MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
-> +MODULE_DESCRIPTION("BD70528 watchdog driver");
-> +MODULE_LICENSE("GPL");
-> 
+>  	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
+>  	if (rc)
+>  		return rc;
+> diff --git i/include/linux/pm.h w/include/linux/pm.h
+> index 0bd9de116826..300ab9f0b858 100644
+> --- i/include/linux/pm.h
+> +++ w/include/linux/pm.h
+> @@ -592,6 +592,7 @@ struct dev_pm_info {
+>  	bool			is_suspended:1;	/* Ditto */
+>  	bool			is_noirq_suspended:1;
+>  	bool			is_late_suspended:1;
+> +	bool			no_pm_required:1;
+>  	bool			early_init:1;	/* Owned by the PM core */
+>  	bool			direct_complete:1;	/* Owned by the PM core */
+>  	u32			driver_flags;
