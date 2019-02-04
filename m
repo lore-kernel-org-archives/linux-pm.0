@@ -1,7 +1,7 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 1/2] PM-runtime: move runtime accounting on ktime_get_mono_fast_ns()
-Date: Mon,  4 Feb 2019 17:25:52 +0100
-Message-ID: <1549297553-17647-2-git-send-email-vincent.guittot@linaro.org>
+Subject: [PATCH 2/2] PM-runtime: update time accounting only when enabled
+Date: Mon,  4 Feb 2019 17:25:53 +0100
+Message-ID: <1549297553-17647-3-git-send-email-vincent.guittot@linaro.org>
 References: <1549297553-17647-1-git-send-email-vincent.guittot@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1549297553-17647-1-git-send-email-vincent.guittot@linaro.org>
@@ -10,77 +10,65 @@ To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, u
 Cc: linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, thara.gopinath@linaro.org, linux-renesas-soc@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Similarly to what happened whith autosuspend, a deadlock has been raised
-with runtime accounting in the sequence:
+Update accounting_timestamp field only when PM runtime is enable
+and don't forget to account the last state before disabling it.
 
-change_clocksource
-    ...
-    write_seqcount_begin
-    ...
-    timekeeping_update
-        ...
-        sh_cmt_clocksource_enable
-            ...
-            rpm_resume
-                update_pm_runtime_accounting
-                    ktime_get
-                        do
-                            read_seqcount_begin
-                        while read_seqcount_retry
-    ....
-    write_seqcount_end
-
-Move runtime accounting on ktime_get_mono_fast_ns()
-With ktime_get_mono_fast_ns, the timestamp is not guaranteed to be
-monotonic across an update of timekeeping and as a result time can goes
-backward. Add a test to skip accounting for such situation which should
-stay exceptional.
-
-Fixes: a08c2a5a3194 ("PM-runtime: Replace jiffies-based accounting with ktime-based accounting")
-Reported-by: Biju Das <biju.das@bp.renesas.com>
+Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- drivers/base/power/runtime.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ drivers/base/power/runtime.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 1caa394..50740da 100644
+index 50740da..ed62cca 100644
 --- a/drivers/base/power/runtime.c
 +++ b/drivers/base/power/runtime.c
-@@ -66,13 +66,22 @@ static int rpm_suspend(struct device *dev, int rpmflags);
+@@ -66,11 +66,14 @@ static int rpm_suspend(struct device *dev, int rpmflags);
   */
  void update_pm_runtime_accounting(struct device *dev)
  {
--	u64 now = ktime_to_ns(ktime_get());
-+	u64 now = ktime_get_mono_fast_ns();
-+	u64 last = dev->power.accounting_timestamp;
- 	u64 delta;
+-	u64 now = ktime_get_mono_fast_ns();
+-	u64 last = dev->power.accounting_timestamp;
+-	u64 delta;
++	u64 now, last, delta;
  
--	delta = now - dev->power.accounting_timestamp;
--
- 	dev->power.accounting_timestamp = now;
- 
-+	/*
-+	 * Because ktime_get_mono_fast_ns() is not monotonic during
-+	 * timekeeping update, we must ensure that now is after the last saved
-+	 * timesptamp
-+	 */
-+	if (now < last)
+-	dev->power.accounting_timestamp = now;
++	if (dev->power.disable_depth > 0)
 +		return;
 +
-+	delta = now - last;
++	last = dev->power.accounting_timestamp;
 +
- 	if (dev->power.disable_depth > 0)
- 		return;
++	dev->power.accounting_timestamp = now = ktime_get_mono_fast_ns();
  
-@@ -1312,7 +1321,7 @@ void pm_runtime_enable(struct device *dev)
+ 	/*
+ 	 * Because ktime_get_mono_fast_ns() is not monotonic during
+@@ -82,9 +85,6 @@ void update_pm_runtime_accounting(struct device *dev)
  
- 		/* About to enable runtime pm, set accounting_timestamp to now */
- 		if (!dev->power.disable_depth)
--			dev->power.accounting_timestamp = ktime_to_ns(ktime_get());
-+			dev->power.accounting_timestamp = ktime_get_mono_fast_ns();
- 	} else {
- 		dev_warn(dev, "Unbalanced %s!\n", __func__);
+ 	delta = now - last;
+ 
+-	if (dev->power.disable_depth > 0)
+-		return;
+-
+ 	if (dev->power.runtime_status == RPM_SUSPENDED)
+ 		dev->power.suspended_time += delta;
+ 	else
+@@ -1298,6 +1298,9 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
+ 		pm_runtime_put_noidle(dev);
  	}
+ 
++	/* Update time accounting before disabling pm runtime */
++	update_pm_runtime_accounting(dev);
++
+ 	if (!dev->power.disable_depth++)
+ 		__pm_runtime_barrier(dev);
+ 
+@@ -1521,7 +1524,6 @@ void pm_runtime_init(struct device *dev)
+ 	dev->power.request_pending = false;
+ 	dev->power.request = RPM_REQ_NONE;
+ 	dev->power.deferred_resume = false;
+-	dev->power.accounting_timestamp = 0;
+ 	INIT_WORK(&dev->power.work, pm_runtime_work);
+ 
+ 	dev->power.timer_expires = 0;
 -- 
 2.7.4
