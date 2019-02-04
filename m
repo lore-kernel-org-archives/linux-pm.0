@@ -1,76 +1,82 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH v7 03/28] x86/asm/suspend: use SYM_DATA for data
-Date: Mon, 4 Feb 2019 21:18:31 +0100
-Message-ID: <20190204201831.GK29639@zn.tnic>
-References: <20190130124711.12463-1-jslaby@suse.cz>
- <20190130124711.12463-4-jslaby@suse.cz>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 2/2] cpufreq: stats: Fix concurrency issues while
+ resetting stats
+Date: Mon, 4 Feb 2019 14:31:31 -0800
+Message-ID: <20190204223131.GF117604@google.com>
+References: <d5d8c15aca712342350d2f451002f55e15e9e93b.1549001732.git.viresh.kumar@linaro.org>
+ <927dcc1de6acad3dd2cfae4e300e6fee4f665101.1549001732.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190130124711.12463-4-jslaby@suse.cz>
+In-Reply-To: <927dcc1de6acad3dd2cfae4e300e6fee4f665101.1549001732.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: mingo@redhat.com, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 30, 2019 at 01:46:46PM +0100, Jiri Slaby wrote:
-> Some global data in the suspend code were marked as `ENTRY'. ENTRY was
-> intended for functions and shall be paired with ENDPROC. ENTRY also
-> aligns symbols which creates unnecessary holes here between data. Since
-> we are dropping historical markings, make proper use of newly added
-> SYM_DATA in this code.
+On Fri, Feb 01, 2019 at 11:45:45AM +0530, Viresh Kumar wrote:
+> It is possible for cpufreq_stats_clear_table() and
+> cpufreq_stats_record_transition() to get called concurrently and they
+> will try to update same variables simultaneously and may lead to
+> corruption of data.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: x86@kernel.org
-> Cc: linux-pm@vger.kernel.org
+> Prevent that with the help of existing spinlock.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  arch/x86/kernel/acpi/wakeup_32.S | 2 +-
->  arch/x86/kernel/acpi/wakeup_64.S | 2 +-
->  arch/x86/kernel/head_32.S        | 6 ++----
->  arch/x86/kernel/head_64.S        | 5 ++---
->  4 files changed, 6 insertions(+), 9 deletions(-)
+>  drivers/cpufreq/cpufreq_stats.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-> index 4203d4f0c68d..feac1e5ecba0 100644
-> --- a/arch/x86/kernel/acpi/wakeup_32.S
-> +++ b/arch/x86/kernel/acpi/wakeup_32.S
-> @@ -89,7 +89,7 @@ ret_point:
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 941e63e3e652..e2db5581489a 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -31,20 +31,20 @@ static void cpufreq_stats_update(struct cpufreq_stats *stats)
+>  {
+>  	unsigned long long cur_time = get_jiffies_64();
 >  
->  .data
->  ALIGN
-> -ENTRY(saved_magic)	.long	0
-> +SYM_DATA(saved_magic,	.long 0)
->  saved_eip:		.long 0
+> -	spin_lock(&cpufreq_stats_lock);
+>  	stats->time_in_state[stats->last_index] += cur_time - stats->last_time;
+>  	stats->last_time = cur_time;
+> -	spin_unlock(&cpufreq_stats_lock);
+>  }
 >  
->  # saved registers
-> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-> index 510fa12aab73..551758f48eb7 100644
-> --- a/arch/x86/kernel/acpi/wakeup_64.S
-> +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> @@ -133,4 +133,4 @@ saved_rbx:		.quad	0
->  saved_rip:		.quad	0
->  saved_rsp:		.quad	0
+>  static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
+>  {
+>  	unsigned int count = stats->max_state;
 >  
-> -ENTRY(saved_magic)	.quad	0
-> +SYM_DATA(saved_magic,	.quad	0)
+> +	spin_lock(&cpufreq_stats_lock);
+>  	memset(stats->time_in_state, 0, count * sizeof(u64));
+>  	memset(stats->trans_table, 0, count * count * sizeof(int));
+>  	stats->last_time = get_jiffies_64();
+>  	stats->total_trans = 0;
+> +	spin_unlock(&cpufreq_stats_lock);
+>  }
+>  
+>  static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
+> @@ -62,7 +62,10 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+>  	if (policy->fast_switch_enabled)
+>  		return 0;
+>  
+> +	spin_lock(&cpufreq_stats_lock);
+>  	cpufreq_stats_update(stats);
+> +	spin_unlock(&cpufreq_stats_lock);
+> +
+>  	for (i = 0; i < stats->state_num; i++) {
+>  		len += sprintf(buf + len, "%u %llu\n", stats->freq_table[i],
+>  			(unsigned long long)
+> @@ -239,9 +242,11 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+>  	if (old_index == -1 || new_index == -1 || old_index == new_index)
+>  		return;
+>  
+> +	spin_lock(&cpufreq_stats_lock);
+>  	cpufreq_stats_update(stats);
+>  
+>  	stats->last_index = new_index;
+>  	stats->trans_table[old_index * stats->max_state + new_index]++;
+>  	stats->total_trans++;
+> +	spin_unlock(&cpufreq_stats_lock);
+>  }
 
-Ok, I like the proper ELF symbol typing with this: NOTYPE goes away.
-
- 74408: ffffffff82021920     0 NOTYPE  GLOBAL DEFAULT   11 saved_magic
-
-->
-
- 74366: ffffffff820218f0     8 OBJECT  GLOBAL DEFAULT   11 saved_magic
-
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
