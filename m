@@ -1,131 +1,194 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH 3/7] thermal: mediatek: add calibration item
-Date: Mon, 4 Feb 2019 18:31:41 +0100
-Message-ID: <dcc04c1e-eb7d-024e-abc8-7b75504947c2@gmail.com>
-References: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
- <1549006693-11659-4-git-send-email-michael.kao@mediatek.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 1/5] PM / OPP: Introduce a power estimation helper
+Date: Mon, 4 Feb 2019 10:03:03 -0800
+Message-ID: <20190204180303.GD117604@google.com>
+References: <20190204110952.16025-1-quentin.perret@arm.com>
+ <20190204110952.16025-2-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1549006693-11659-4-git-send-email-michael.kao@mediatek.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190204110952.16025-2-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: michael.kao@mediatek.com, =Zhang Rui <rui.zhang@intel.com>, =Eduardo Valentin <edubezval@gmail.com>, =Daniel Lezcano <daniel.lezcano@linaro.org>, =Rob Herring <robh+dt@kernel.org>, =Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 01/02/2019 08:38, michael.kao@mediatek.com wrote:
-> From: Michael Kao <michael.kao@mediatek.com>
+On Mon, Feb 04, 2019 at 11:09:48AM +0000, Quentin Perret wrote:
+> The Energy Model (EM) framework provides an API to let drivers register
+> the active power of CPUs. The drivers are expected to provide a callback
+> method which estimates the power consumed by a CPU at each available
+> performance levels. How exactly this should be implemented, however,
+> depends on the platform.
 > 
-> Add calibration item in thermal_data to support
-> the project with different calibration coefficient.
+> On some systems, PM_OPP knows the voltage and frequency at which CPUs
+> can run. When coupled with the CPU 'capacitance' (as provided by the
+> 'dynamic-power-coefficient' devicetree binding), it is possible to
+> estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
+> C its capacitance and V and f respectively the voltage and frequency of
+> the OPP. The Intelligent Power Allocator (IPA) thermal governor already
+> implements that estimation method, in the thermal framework.
 > 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> However, this power estimation method can be applied to any platform
+> where all the parameters are known (C, V and f), and not only those
+> suffering thermal issues. As such, the code implementing this feature
+> can be re-used to also populate the EM framework now used by EAS.
+> 
+> As a first step, introduce in PM_OPP a helper function which CPUFreq
+> drivers can use to register into the EM framework. This duplicates the
+> power estimation done in IPA until it can be migrated to using the EM
+> framework. This will be done later, once the EM framework has support
+> for at least all platforms currently supported by IPA.
+> 
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> Tested-by: Matthias Kaehlcke <mka@chromium.org>
 > ---
->  drivers/thermal/mtk_thermal.c | 19 ++++++++++++++++++-
->  1 file changed, 18 insertions(+), 1 deletion(-)
+>  drivers/opp/of.c       | 99 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  6 +++
+>  2 files changed, 105 insertions(+)
 > 
-> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-> index 07f8ad7..45c6587 100644
-> --- a/drivers/thermal/mtk_thermal.c
-> +++ b/drivers/thermal/mtk_thermal.c
-> @@ -105,6 +105,9 @@
->  /* The number of sensing points per bank */
->  #define MT8173_NUM_SENSORS_PER_ZONE	4
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index 06f0f632ec47..cd58959e5158 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/pm_domain.h>
+>  #include <linux/slab.h>
+>  #include <linux/export.h>
+> +#include <linux/energy_model.h>
 >  
-> +/* The calibration coefficient of sensor  */
-> +#define MT8173_CALIBRATION	165
+>  #include "opp.h"
+>  
+> @@ -1047,3 +1048,101 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  	return of_node_get(opp->np);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
 > +
-
-Calibration value is the same for all SoCs (including mt8183), we can define it
-once and use it in all mtk_thermal structs.
-
-Regards,
-Matthias
-
-
->  /*
->   * Layout of the fuses providing the calibration data
->   * These macros could be used for MT8173, MT2701, and MT2712.
-> @@ -147,6 +150,9 @@ enum {
->  /* The number of sensing points per bank */
->  #define MT2701_NUM_SENSORS_PER_ZONE	3
->  
-> +/* The calibration coefficient of sensor  */
-> +#define MT2701_CALIBRATION	165
+> +/*
+> + * Callback function provided to the Energy Model framework upon registration.
+> + * This computes the power estimated by @CPU at @kHz if it is the frequency
+> + * of an existing OPP, or at the frequency of the first OPP above @kHz otherwise
+> + * (see dev_pm_opp_find_freq_ceil()). This function updates @kHz to the ceiled
+> + * frequency and @mW to the associated power. The power is estimated as
+> + * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
+> + * the voltage and frequency of the OPP.
+> + *
+> + * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
+> + * calculation failed because of missing parameters, 0 otherwise.
+> + */
+> +static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
+> +					 int cpu)
+> +{
+> +	struct device *cpu_dev;
+> +	struct dev_pm_opp *opp;
+> +	struct device_node *np;
+> +	unsigned long mV, Hz;
+> +	u32 cap;
+> +	u64 tmp;
+> +	int ret;
 > +
->  /* MT2712 thermal sensors */
->  #define MT2712_TS1	0
->  #define MT2712_TS2	1
-> @@ -162,12 +168,18 @@ enum {
->  /* The number of sensing points per bank */
->  #define MT2712_NUM_SENSORS_PER_ZONE	4
->  
-> +/* The calibration coefficient of sensor  */
-> +#define MT2712_CALIBRATION	165
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return -ENODEV;
 > +
->  #define MT7622_TEMP_AUXADC_CHANNEL	11
->  #define MT7622_NUM_SENSORS		1
->  #define MT7622_NUM_ZONES		1
->  #define MT7622_NUM_SENSORS_PER_ZONE	1
->  #define MT7622_TS1	0
->  
-> +/* The calibration coefficient of sensor  */
-> +#define MT7622_CALIBRATION	165
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return -EINVAL;
 > +
->  struct mtk_thermal;
->  
->  struct thermal_bank_cfg {
-> @@ -188,6 +200,7 @@ struct mtk_thermal_data {
->  	const int *sensor_mux_values;
->  	const int *msr;
->  	const int *adcpnp;
-> +	const int cali_val;
->  	struct thermal_bank_cfg bank_data[];
->  };
->  
-> @@ -295,6 +308,7 @@ struct mtk_thermal {
->  	.num_banks = MT8173_NUM_ZONES,
->  	.num_sensors = MT8173_NUM_SENSORS,
->  	.vts_index = mt8173_vts_index,
-> +	.cali_val = MT8173_CALIBRATION,
->  	.bank_data = {
->  		{
->  			.num_sensors = 2,
-> @@ -330,6 +344,7 @@ struct mtk_thermal {
->  	.num_banks = 1,
->  	.num_sensors = MT2701_NUM_SENSORS,
->  	.vts_index = mt2701_vts_index,
-> +	.cali_val = MT2701_CALIBRATION,
->  	.bank_data = {
->  		{
->  			.num_sensors = 3,
-> @@ -356,6 +371,7 @@ struct mtk_thermal {
->  	.num_banks = 1,
->  	.num_sensors = MT2712_NUM_SENSORS,
->  	.vts_index = mt2712_vts_index,
-> +	.cali_val = MT2712_CALIBRATION,
->  	.bank_data = {
->  		{
->  			.num_sensors = 4,
-> @@ -376,6 +392,7 @@ struct mtk_thermal {
->  	.num_banks = MT7622_NUM_ZONES,
->  	.num_sensors = MT7622_NUM_SENSORS,
->  	.vts_index = mt7622_vts_index,
-> +	.cali_val = MT7622_CALIBRATION,
->  	.bank_data = {
->  		{
->  			.num_sensors = 1,
-> @@ -402,7 +419,7 @@ static int raw_to_mcelsius(struct mtk_thermal *mt, int sensno, s32 raw)
->  	raw &= 0xfff;
->  
->  	tmp = 203450520 << 3;
-> -	tmp /= 165 + mt->o_slope;
-> +	tmp /= mt->conf->cali_val + mt->o_slope;
->  	tmp /= 10000 + mt->adc_ge;
->  	tmp *= raw - mt->vts[sensno] - 3350;
->  	tmp >>= 3;
-> 
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	Hz = *kHz * 1000;
+> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
+> +	if (IS_ERR(opp))
+> +		return -EINVAL;
+> +
+> +	mV = dev_pm_opp_get_voltage(opp) / 1000;
+> +	dev_pm_opp_put(opp);
+> +	if (!mV)
+> +		return -EINVAL;
+> +
+> +	tmp = (u64)cap * mV * mV * (Hz / 1000000);
+> +	do_div(tmp, 1000000000);
+> +
+> +	*mW = (unsigned long)tmp;
+> +	*kHz = Hz / 1000;
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
+> + * @cpus	: CPUs for which an Energy Model has to be registered
+> + *
+> + * This checks whether the "dynamic-power-coefficient" devicetree property has
+> + * been specified, and tries to register an Energy Model with it if it has.
+> + */
+> +void dev_pm_opp_of_register_em(struct cpumask *cpus)
+> +{
+> +	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
+> +	int ret, nr_opp, cpu = cpumask_first(cpus);
+> +	struct device *cpu_dev;
+> +	struct device_node *np;
+> +	u32 cap;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev)
+> +		return;
+> +
+> +	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+> +	if (nr_opp <= 0)
+> +		return;
+> +
+> +	np = of_node_get(cpu_dev->of_node);
+> +	if (!np)
+> +		return;
+> +
+> +	/*
+> +	 * Register an EM only if the 'dynamic-power-coefficient' property is
+> +	 * set in devicetree. It is assumed the voltage values are known if that
+> +	 * property is set since it is useless otherwise. If voltages are not
+> +	 * known, just let the EM registration fail with an error to alert the
+> +	 * user about the inconsistent configuration.
+> +	 */
+> +	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
+> +	of_node_put(np);
+> +	if (ret || !cap)
+> +		return;
+> +
+> +	em_register_perf_domain(cpus, nr_opp, &em_cb);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index b895f4e79868..c9c76310865a 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+>  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+>  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
+>  int of_get_required_opp_performance_state(struct device_node *np, int index);
+> +void dev_pm_opp_of_register_em(struct cpumask *cpus);
+>  #else
+>  static inline int dev_pm_opp_of_add_table(struct device *dev)
+>  {
+> @@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+>  {
+>  	return NULL;
+>  }
+> +
+> +static inline void dev_pm_opp_of_register_em(struct cpumask *cpus)
+> +{
+> +}
+> +
+>  static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
+>  {
+>  	return -ENOTSUPP;
+
+There is the option to remove the OPP check from the cpufreq drivers
+and instead return an error from dev_pm_opp_of_register_em(), but with
+the more complex error handling it might be more hassle than it's
+worth.
+
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
