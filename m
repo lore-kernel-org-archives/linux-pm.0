@@ -1,105 +1,80 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during
-	probe
-Date: Mon, 4 Feb 2019 15:03:49 +0300
-Message-ID: <f0bdcc21-efca-4d04-c7ec-953ec3d87031@gmail.com>
-References: <1548414418-5785-1-git-send-email-spujar@nvidia.com>
- <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
- <20190131143024.GO23438@ulmo> <2034694.JE9CgBysmF@aspire.rjw.lan>
- <20190204084555.GF19087@ulmo>
- <07d58962-4c49-0575-2f95-4c885998bb52@nvidia.com>
- <20190204110510.GA10412@ulmo>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [RFC PATCH v4 07/10] gpio: Initial support for ROHM bd70528 GPIO
+ block
+Date: Mon, 4 Feb 2019 14:25:11 +0200
+Message-ID: <20190204122511.GG23791@localhost.localdomain>
+References: <cover.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
+ <5f63684b62c7a320c514088bcf9091ed7efbd2cc.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
+ <CACRpkdauoQ=qcFUi7wTUKu22ZHeq=g0grWqvZz1gfOt0=dXrbw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <alsa-devel-bounces@alsa-project.org>
-In-Reply-To: <20190204110510.GA10412@ulmo>
-Content-Language: en-US
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: Thierry Reding <thierry.reding@gmail.com>, Jon Hunter <jonathanh@nvidia.com>
-Cc: "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sameer Pujar <spujar@nvidia.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-tegra@vger.kernel.org, sharadg@nvidia.com, rlokhande@nvidia.com, mkumard@nvidia.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CACRpkdauoQ=qcFUi7wTUKu22ZHeq=g0grWqvZz1gfOt0=dXrbw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 List-Id: linux-pm@vger.kernel.org
 
-MDQuMDIuMjAxOSAxNDowNSwgVGhpZXJyeSBSZWRpbmcg0L/QuNGI0LXRgjoKPiBPbiBNb24sIEZl
-YiAwNCwgMjAxOSBhdCAwOTo1MzozMkFNICswMDAwLCBKb24gSHVudGVyIHdyb3RlOgo+Pgo+Pgo+
-PiBPbiAwNC8wMi8yMDE5IDA4OjQ1LCBUaGllcnJ5IFJlZGluZyB3cm90ZToKPj4KPj4gLi4uCj4+
-Cj4+PiBUaGUgaWRlYSB3YXMsIGFzIEkgd2FzIHNheWluZyBiZWxvdywgdG8gcmV1c2UgZGV2X3Bt
-X29wcyBldmVuIGlmCj4+PiAhQ09ORklHX1BNLiBTbyBwbV9ydW50aW1lX2VuYWJsZSgpIGNvdWxk
-IGJlIHNvbWV0aGluZyBsaWtlIHRoaXM6Cj4+Pgo+Pj4gCXBtX3J1bnRpbWVfZW5hYmxlKGRldikK
-Pj4+IAl7Cj4+PiAJCWlmICghQ09ORklHX1BNKQo+Pj4gCQkJaWYgKGRldi0+cG1fb3BzLT5yZXN1
-bWUpCj4+PiAJCQkJZGV2LT5wbV9vcHMtPnJlc3VtZShkZXYpOwo+Pj4KPj4+IAkJLi4uCj4+PiAJ
-fQo+Pj4KPj4+IEJ1dCB0aGF0J3MgYWRtaXR0ZWRseSBzb21ld2hhdCBvZiBhIHN0cmV0Y2guIFRo
-aXMgY291bGQgb2YgY291cnNlIGJlCj4+PiBtYWRlIHNvbWV3aGF0IG5pY2VyIGJ5IGFkZGluZyBh
-biBleHBsaWNpdCB2YXJpYW50LCBzYXk6Cj4+Pgo+Pj4gCXBtX3J1bnRpbWVfZW5hYmxlX2Zvbyhk
-ZXYpCj4+PiAJewo+Pj4gCQlpZiAoIUNPTkZJR19QTSAmJiBkZXYtPnBtX29wcy0+cmVzdW1lKQo+
-Pj4gCQkJcmV0dXJuIGRldi0+cG1fb3BzLT5yZXN1bWUoZGV2KTsKPj4+Cj4+PiAJCXJldHVybiAw
-Owo+Pj4gCX0KPj4+Cj4+PiBNYXliZSB0aGUgZmFjdCB0aGF0IEkgY291bGRuJ3QgY29tZSB1cCB3
-aXRoIGEgZ29vZCBuYW1lIGlzIGEgZ29vZAo+Pj4gaW5kaWNhdGlvbiB0aGF0IHRoaXMgaXMgYSBi
-YWQgaWRlYS4uLgo+Pgo+PiBIb3cgYWJvdXQgc29tZSBuZXcgQVBJcyBjYWxsZWQgLi4uCj4+Cj4+
-IHBtX3J1bnRpbWVfZW5hYmxlX2dldCgpCj4+IHBtX3J1bnRpbWVfZW5hYmxlX2dldF9zeW5jKCkK
-Pj4gcG1fcnVudGltZV9wdXRfZGlzYWJsZSgpIChpbXBsaWVzIGEgcHV0X3N5bmMpCj4+Cj4+IC4u
-LiBhbmQgaW4gdGhlc2UgQVBJcyB3ZSBhZGQgLi4uCj4+Cj4+IHBtX3J1bnRpbWVfZW5hYmxlX2dl
-dChkZXYpCj4+IHsKPj4gCWlmICghQ09ORklHX1BNICYmIGRldi0+cG1fb3BzLT5yZXN1bWUpCj4+
-IAkJcmV0dXJuIGRldi0+cG1fb3BzLT5yZXN1bWUoZGV2KTsKPj4KPj4gCXBtX3J1bnRpbWVfZW5h
-YmxlKGRldik7Cj4+IAlyZXR1cm4gcG1fcnVudGltZV9nZXQoZGV2KTsKPj4gfQo+IAo+IFllYWgs
-IHRob3NlIHNvdW5kIHNlbnNpYmxlLiBJJ20gc3RpbGwgYSBiaXQgdG9ybiBiZXR3ZWVuIHRoaXMg
-YW5kIGp1c3QKPiBlbmZvcmNpbmcgUE0uIEF0IGxlYXN0IG9uIHRoZSBkaXNwbGF5IHNpZGUgSSB0
-aGluayB3ZSBhbHJlYWR5IHJlcXVpcmUgUE0KPiBhbmQgd2l0aCBhbGwgdGhlIHBvd2VyIGRvbWFp
-biB3b3JrIHRoYXQgeW91IGRpZCB3ZSdkIGJlIG11Y2ggYmV0dGVyIG9mZgo+IGlmIHdlIGNvdWxk
-IGp1c3QgZ2V0IHJpZCBvZiB0aGUgIVBNIHdvcmthcm91bmRzLgo+IAo+Pj4+PiBUaGlzIHdvdWxk
-IGJlIHNvbWV3aGF0IHRyaWNreSBiZWNhdXNlIGRyaXZlcnMKPj4+Pj4gdXN1YWxseSB1c2UgU0VU
-X1JVTlRJTUVfUE1fT1BTIHRvIHBvcHVsYXRlIHRoZSBzdHJ1Y3QgZGV2X3BtX29wcyBhbmQKPj4+
-Pj4gdGhhdCB3b3VsZCByZXN1bHQgaW4gYW4gZW1wdHkgc3RydWN0dXJlIGlmICFDT05GSUdfUE0s
-IGJ1dCB3ZSBjb3VsZAo+Pj4+PiBwcm9iYWJseSB3b3JrIGFyb3VuZCB0aGF0IGJ5IGFkZGluZyBh
-IF9fU0VUX1JVTlRJTUVfUE1fT1BTIHRoYXQgd291bGQKPj4+Pj4gbmV2ZXIgYmUgY29tcGlsZWQg
-b3V0IGZvciB0aGlzIGtpbmQgb2YgY2FzZS4gT3Igc3VjaCBkcml2ZXJzIGNvdWxkIGV2ZW4KPj4+
-Pj4gbWFudWFsbHkgc2V0IC5ydW50aW1lX3N1c3BlbmQgYW5kIC5ydW50aW1lX3Jlc3VtZSB0byBt
-YWtlIHN1cmUgdGhleSdyZQo+Pj4+PiBhbHdheXMgcG9wdWxhdGVkLgo+Pj4+Pgo+Pj4+PiBBbm90
-aGVyIHdheSBvdXQgb2YgdGhpcyB3b3VsZCBiZSB0byBtYWtlIHN1cmUgd2UgbmV2ZXIgcnVuIGlu
-dG8gdGhlIGNhc2UKPj4+Pj4gd2hlcmUgcnVudGltZSBQTSBpcyBkaXNhYmxlZC4gSWYgd2UgYWx3
-YXlzICJzZWxlY3QgUE0iIG9uIFRlZ3JhLCB0aGVuIFBNCj4+Pj4+IHNob3VsZCBhbHdheXMgYmUg
-YXZhaWxhYmxlLiBCdXQgaXMgaXQgZ3VhcmFudGVlZCB0aGF0IHJ1bnRpbWUgUE0gZm9yIHRoZQo+
-Pj4+PiBkZXZpY2VzIGlzIGZ1bmN0aW9uYWwgaW4gdGhhdCBjYXNlPyBGcm9tIGEgY3Vyc29yeSBs
-b29rIGF0IHRoZSBjb2RlIGl0Cj4+Pj4+IHdvdWxkIHNlZW0gdGhhdCB3YXkuCj4+Pj4KPj4+PiBJ
-ZiB5b3Ugc2VsZWN0IFBNLCB0aGVuIGFsbCBvZiB0aGUgcmVxdWlzaXRlIGNvZGUgc2hvdWxkIGJl
-IHRoZXJlLgo+Pj4KPj4+IFdlIGRvIHRoaXMgb24gNjQtYml0IEFSTSwgYnV0IHRoZXJlIGhhZCBi
-ZWVuIHNvbWUgcHVzaGJhY2sgd2hlbiB3ZSBoYWQKPj4+IHByb3Bvc2VkIHRvIGRvIHRoZSBzYW1l
-IHRoaW5nIG9uIDMyLWJpdCBBUk0uIEkgdGhpbmsgdGhlcmUgd2VyZSB0d28KPj4+IGNvbmNlcm5z
-Ogo+Pj4KPj4+IAkxKSBzZWxlY3QgUE0gd291bGQgZm9yY2UgdGhlIHNldHRpbmcgZm9yIGFsbCBw
-bGF0Zm9ybXMgb24gbXVsdGktCj4+PiAJICAgcGxhdGZvcm1zIGJ1aWxkcwo+Pj4KPj4+IAkyKSBw
-cmV2ZW50cyBhbnlvbmUgZnJvbSBkaXNhYmxpbmcgUE0gZm9yIGRlYnVnZ2luZyBwdXJwb3Nlcwo+
-Pj4KPj4+IDEpIG5vIGxvbmdlciBzZWVtcyB0byBiZSB2YWxpZCBiZWNhdXNlIFJvY2tjaGlwIGFs
-cmVhZHkgc2VsZWN0cyBQTQo+Pj4gdW5jb25kaXRpb25hbGx5LiBJJ20gbm90IHN1cmUgaWYgMikg
-aXMgdmFsaWQgYW55bW9yZSBlaXRoZXIuIEkgaGF2ZW4ndAo+Pj4gcnVuIGEgYnVpbGQgd2l0aCAh
-UE0gaW4gYSB2ZXJ5IGxvbmcgdGltZSBhbmQgSSB3b3VsZG4ndCBiZSBzdXJwcmlzZWQgaWYKPj4+
-IHRoYXQgd2FzIGNvbXBsZXRlbHkgYnJva2VuLgo+Pj4KPj4+IE1heWJlIHdlIG5lZWQgdG8gdHJ5
-IHRoaXMgYWdhaW4gc2luY2UgYSBjb3VwbGUgb2YgeWVhcnMgaGF2ZSBlbGFwc2VkIGFuZAo+Pj4g
-cnVudGltZSBQTSBzdXBwb3J0IG9uIFRlZ3JhIGlzIG11Y2ggbW9yZSBtYXR1cmUgYXQgdGhpcyBw
-b2ludC4KPj4+Cj4+Pj4gQWx0ZXJuYXRpdmVseSwgeW91IGNhbiBtYWtlIHRoZSBkcml2ZXIgZGVw
-ZW5kIG9uIFBNLgo+Pj4KPj4+IFRoYXQncyBwcm9iYWJseSB0aGUgZWFzaWVzdCB3YXkgb3V0LCBi
-dXQgdG8gYmUgaG9uZXN0IEkgdGhpbmsgSSdkIHByZWZlcgo+Pj4gdG8ganVzdCBlbmZvcmNlIFBN
-IGFuZCBrZWVwIHRoaW5ncyBzaW1wbGUuCj4+Pgo+Pj4gSm9uLCBhbnkgb2JqZWN0aW9ucz8KPj4K
-Pj4gTm9uZSwgYnV0IHNlZW1zIG92ZXJraWxsIGp1c3QgZm9yIHRoaXMgY2FzZS4KPiAKPiBCdXQg
-dGhhdCdzIHByZWNpc2VseSB0aGUgcG9pbnQuIEl0J3Mgbm90IGp1c3QgYWJvdXQgdGhpcyBjYXNl
-LiBXZSd2ZQo+IGFscmVhZHkgZ290IHNvbWUgZHJpdmVycyB3aGVyZSB3ZSBkbyBhIHNpbWlsYXIg
-ZGFuY2UganVzdCB0byBiZSBhYmxlIHRvCj4gc3VwcG9ydCB0aGUsIGxldCdzIGFkbWl0IGl0LCBl
-eG90aWMgY2FzZSB3aGVyZSBzb21lYm9keSB0dXJucyBvZmYgUE0uIEkKPiB0aGluayBzdXBwb3J0
-aW5nICFQTSBtaWdodCBoYXZlIG1hZGUgc2Vuc2UgYXQgYSBwb2ludCB3aGVyZSB3ZSBoYWQgbm8K
-PiBzdXBwb3J0IGZvciBwb3dlciBtYW5hZ2VtZW50IGF0IGFsbC4gQnV0IEkgdGhpbmsgd2UndmUg
-Y29tZSBhIGxvbmcgd2F5Cj4gc2luY2UgdGhlbiwgYW5kIHdoaWxlIHdlIG1heSBzdGlsbCBoYXZl
-IHNvbWUgd2F5cyB0byBnbyBpbiBzb21lIGFyZWFzLAo+IHdlIGRvIGZhaXJseSBkZWNlbnQgcnVu
-dGltZSBQTSBtb3N0IG9mIHRoZSB0aW1lLCB0byB0aGUgcG9pbnQgd2hlcmUgSSBubwo+IGxvbmdl
-ciBzZWUgYW55IGJlbmVmaXRzIGluICFQTS4KCkknbSByZXF1ZXN0aW5nIFBNX0RFQlVHX0FMV0FZ
-U19PTiBvcHRpb24gdGhlbiEgRGlzYWJsaW5nIFBNIGlzIGEgdXNlZnVsIGRlYnVnIGZlYXR1cmUs
-IGl0IGNhbid0IGp1c3QgZ28gYXdheS4gCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCkFsc2EtZGV2ZWwgbWFpbGluZyBsaXN0CkFsc2EtZGV2ZWxAYWxzYS1w
-cm9qZWN0Lm9yZwpodHRwOi8vbWFpbG1hbi5hbHNhLXByb2plY3Qub3JnL21haWxtYW4vbGlzdGlu
-Zm8vYWxzYS1kZXZlbAo=
+On Mon, Feb 04, 2019 at 12:29:53PM +0100, Linus Walleij wrote:
+> On Thu, Jan 31, 2019 at 1:08 PM Matti Vaittinen
+> <matti.vaittinen@fi.rohmeurope.com> wrote:
+> 
+> > ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
+> > controlled by GPIO framework.
+> >
+> > IRQs are handled by regmap-irq and GPIO driver is not
+> > aware of the irq usage.
+> >
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> (...)
+> > I dropped the review-by from Linus Walleij because I would like to
+> > get a comment on if locking is required when we check the direction
+> > in order to detect the correct register for getting the pin state.
+> 
+> I don't know that. You isn't regmap locking inherently?
+
+This direction fetching and then the value reading are two separate
+operations at regmap-level. I guess the regmap can't be holding any
+locks during two indpendent operations.
+
+> 
+> > My initial feeling is that locking makes no sense.
+> 
+> Mine too.
+
+Yep. I change the comment to explain why I think this race condition
+is Ok. We can fix it if it ever turns out to be an issue.
+
+> 
+> > +       bdgpio->gpio.get_direction = &bd70528_get_direction;
+> > +       bdgpio->gpio.direction_input = &bd70528_direction_input;
+> > +       bdgpio->gpio.direction_output = &bd70528_direction_output;
+> > +       bdgpio->gpio.set_config = &bd70528_gpio_set_config;
+> > +       bdgpio->gpio.can_sleep = true;
+> > +       bdgpio->gpio.get = &bd70528_gpio_get;
+> > +       bdgpio->gpio.set = &bd70528_gpio_set;
+> 
+> Drop the &ampersand in from of the functions. All functions
+> are pointers.
+
+Yes they are. This & in front of functions when initializing a pointer
+with their addresss is my old habit. I liked to consistently use & when
+taking address of any beast, whether it was a variable or function.
+Getting rid of old habits is not so easy :/ I'll clean thisi at v5 and
+put back your Reviewed-by =) Thanks
+> 
+> With that:
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> 
+> Yours,
+> Linus Walleij
+
+-- 
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
+
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
