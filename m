@@ -1,74 +1,64 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH 2/2] PM-runtime: update time accounting only when enabled
-Date: Mon,  4 Feb 2019 17:25:53 +0100
-Message-ID: <1549297553-17647-3-git-send-email-vincent.guittot@linaro.org>
-References: <1549297553-17647-1-git-send-email-vincent.guittot@linaro.org>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 1/7] thermal: mediatek: fix register index error
+Date: Mon, 4 Feb 2019 18:24:08 +0100
+Message-ID: <6496b13f-57e4-af86-bb59-91a4705d91b0@gmail.com>
+References: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
+ <1549006693-11659-2-git-send-email-michael.kao@mediatek.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1549297553-17647-1-git-send-email-vincent.guittot@linaro.org>
+In-Reply-To: <1549006693-11659-2-git-send-email-michael.kao@mediatek.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, biju.das@bp.renesas.com
-Cc: linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, thara.gopinath@linaro.org, linux-renesas-soc@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: michael.kao@mediatek.com, =Zhang Rui <rui.zhang@intel.com>, =Eduardo Valentin <edubezval@gmail.com>, =Daniel Lezcano <daniel.lezcano@linaro.org>, =Rob Herring <robh+dt@kernel.org>, =Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com
 List-Id: linux-pm@vger.kernel.org
 
-Update accounting_timestamp field only when PM runtime is enable
-and don't forget to account the last state before disabling it.
 
-Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- drivers/base/power/runtime.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 50740da..ed62cca 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -66,11 +66,14 @@ static int rpm_suspend(struct device *dev, int rpmflags);
-  */
- void update_pm_runtime_accounting(struct device *dev)
- {
--	u64 now = ktime_get_mono_fast_ns();
--	u64 last = dev->power.accounting_timestamp;
--	u64 delta;
-+	u64 now, last, delta;
- 
--	dev->power.accounting_timestamp = now;
-+	if (dev->power.disable_depth > 0)
-+		return;
-+
-+	last = dev->power.accounting_timestamp;
-+
-+	dev->power.accounting_timestamp = now = ktime_get_mono_fast_ns();
- 
- 	/*
- 	 * Because ktime_get_mono_fast_ns() is not monotonic during
-@@ -82,9 +85,6 @@ void update_pm_runtime_accounting(struct device *dev)
- 
- 	delta = now - last;
- 
--	if (dev->power.disable_depth > 0)
--		return;
--
- 	if (dev->power.runtime_status == RPM_SUSPENDED)
- 		dev->power.suspended_time += delta;
- 	else
-@@ -1298,6 +1298,9 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
- 		pm_runtime_put_noidle(dev);
- 	}
- 
-+	/* Update time accounting before disabling pm runtime */
-+	update_pm_runtime_accounting(dev);
-+
- 	if (!dev->power.disable_depth++)
- 		__pm_runtime_barrier(dev);
- 
-@@ -1521,7 +1524,6 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.request_pending = false;
- 	dev->power.request = RPM_REQ_NONE;
- 	dev->power.deferred_resume = false;
--	dev->power.accounting_timestamp = 0;
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
- 	dev->power.timer_expires = 0;
--- 
-2.7.4
+On 01/02/2019 08:38, michael.kao@mediatek.com wrote:
+> From: Michael Kao <michael.kao@mediatek.com>
+> 
+> The index of msr and adcpnp should match the sensor
+> which belongs to the selected bank in the for loop.
+> 
+
+If I get that right, this fixes
+b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
+
+So please add a fixes tag to the commit.
+
+Thanks,
+Matthias
+
+> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> ---
+>  drivers/thermal/mtk_thermal.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> index 0691f26..f646436 100644
+> --- a/drivers/thermal/mtk_thermal.c
+> +++ b/drivers/thermal/mtk_thermal.c
+> @@ -431,7 +431,8 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
+>  	u32 raw;
+>  
+>  	for (i = 0; i < conf->bank_data[bank->id].num_sensors; i++) {
+> -		raw = readl(mt->thermal_base + conf->msr[i]);
+> +		raw = readl(mt->thermal_base +
+> +			    conf->msr[conf->bank_data[bank->id].sensors[i]]);
+>  
+>  		temp = raw_to_mcelsius(mt,
+>  				       conf->bank_data[bank->id].sensors[i],
+> @@ -568,7 +569,8 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
+>  
+>  	for (i = 0; i < conf->bank_data[num].num_sensors; i++)
+>  		writel(conf->sensor_mux_values[conf->bank_data[num].sensors[i]],
+> -		       mt->thermal_base + conf->adcpnp[i]);
+> +		       mt->thermal_base +
+> +		       conf->adcpnp[conf->bank_data[num].sensors[i]]);
+>  
+>  	writel((1 << conf->bank_data[num].num_sensors) - 1,
+>  	       mt->thermal_base + TEMP_MONCTL0);
+> 
