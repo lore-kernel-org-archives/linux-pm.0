@@ -1,148 +1,273 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during probe
-Date: Mon, 4 Feb 2019 17:28:23 +0300
-Message-ID: <ef8cef12-12d5-4729-b603-9f0c6c0c0865@gmail.com>
-References: <1548414418-5785-1-git-send-email-spujar@nvidia.com>
- <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
- <20190131143024.GO23438@ulmo> <2034694.JE9CgBysmF@aspire.rjw.lan>
- <20190204084555.GF19087@ulmo>
- <07d58962-4c49-0575-2f95-4c885998bb52@nvidia.com>
- <20190204110510.GA10412@ulmo>
- <f0bdcc21-efca-4d04-c7ec-953ec3d87031@gmail.com>
- <20190204140024.GJ10412@ulmo>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH v5 10/10] watchdog: bd70528: Initial support for ROHM
+ BD70528 watchdog block
+Date: Mon, 4 Feb 2019 06:38:43 -0800
+Message-ID: <a76ec2b9-a95e-a17a-f231-c1d04ec8e846@roeck-us.net>
+References: <cover.1549283919.git.matti.vaittinen@fi.rohmeurope.com>
+ <c03a470dac74047a72dc3ed8f51ab81f456594d1.1549283920.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190204140024.GJ10412@ulmo>
+In-Reply-To: <c03a470dac74047a72dc3ed8f51ab81f456594d1.1549283920.git.matti.vaittinen@fi.rohmeurope.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Sameer Pujar <spujar@nvidia.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, mazziesaccount@gmail.com
+Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-04.02.2019 17:00, Thierry Reding пишет:
-> On Mon, Feb 04, 2019 at 03:03:49PM +0300, Dmitry Osipenko wrote:
->> 04.02.2019 14:05, Thierry Reding пишет:
->>> On Mon, Feb 04, 2019 at 09:53:32AM +0000, Jon Hunter wrote:
->>>>
->>>>
->>>> On 04/02/2019 08:45, Thierry Reding wrote:
->>>>
->>>> ...
->>>>
->>>>> The idea was, as I was saying below, to reuse dev_pm_ops even if
->>>>> !CONFIG_PM. So pm_runtime_enable() could be something like this:
->>>>>
->>>>> 	pm_runtime_enable(dev)
->>>>> 	{
->>>>> 		if (!CONFIG_PM)
->>>>> 			if (dev->pm_ops->resume)
->>>>> 				dev->pm_ops->resume(dev);
->>>>>
->>>>> 		...
->>>>> 	}
->>>>>
->>>>> But that's admittedly somewhat of a stretch. This could of course be
->>>>> made somewhat nicer by adding an explicit variant, say:
->>>>>
->>>>> 	pm_runtime_enable_foo(dev)
->>>>> 	{
->>>>> 		if (!CONFIG_PM && dev->pm_ops->resume)
->>>>> 			return dev->pm_ops->resume(dev);
->>>>>
->>>>> 		return 0;
->>>>> 	}
->>>>>
->>>>> Maybe the fact that I couldn't come up with a good name is a good
->>>>> indication that this is a bad idea...
->>>>
->>>> How about some new APIs called ...
->>>>
->>>> pm_runtime_enable_get()
->>>> pm_runtime_enable_get_sync()
->>>> pm_runtime_put_disable() (implies a put_sync)
->>>>
->>>> ... and in these APIs we add ...
->>>>
->>>> pm_runtime_enable_get(dev)
->>>> {
->>>> 	if (!CONFIG_PM && dev->pm_ops->resume)
->>>> 		return dev->pm_ops->resume(dev);
->>>>
->>>> 	pm_runtime_enable(dev);
->>>> 	return pm_runtime_get(dev);
->>>> }
->>>
->>> Yeah, those sound sensible. I'm still a bit torn between this and just
->>> enforcing PM. At least on the display side I think we already require PM
->>> and with all the power domain work that you did we'd be much better off
->>> if we could just get rid of the !PM workarounds.
->>>
->>>>>>> This would be somewhat tricky because drivers
->>>>>>> usually use SET_RUNTIME_PM_OPS to populate the struct dev_pm_ops and
->>>>>>> that would result in an empty structure if !CONFIG_PM, but we could
->>>>>>> probably work around that by adding a __SET_RUNTIME_PM_OPS that would
->>>>>>> never be compiled out for this kind of case. Or such drivers could even
->>>>>>> manually set .runtime_suspend and .runtime_resume to make sure they're
->>>>>>> always populated.
->>>>>>>
->>>>>>> Another way out of this would be to make sure we never run into the case
->>>>>>> where runtime PM is disabled. If we always "select PM" on Tegra, then PM
->>>>>>> should always be available. But is it guaranteed that runtime PM for the
->>>>>>> devices is functional in that case? From a cursory look at the code it
->>>>>>> would seem that way.
->>>>>>
->>>>>> If you select PM, then all of the requisite code should be there.
->>>>>
->>>>> We do this on 64-bit ARM, but there had been some pushback when we had
->>>>> proposed to do the same thing on 32-bit ARM. I think there were two
->>>>> concerns:
->>>>>
->>>>> 	1) select PM would force the setting for all platforms on multi-
->>>>> 	   platforms builds
->>>>>
->>>>> 	2) prevents anyone from disabling PM for debugging purposes
->>>>>
->>>>> 1) no longer seems to be valid because Rockchip already selects PM
->>>>> unconditionally. I'm not sure if 2) is valid anymore either. I haven't
->>>>> run a build with !PM in a very long time and I wouldn't be surprised if
->>>>> that was completely broken.
->>>>>
->>>>> Maybe we need to try this again since a couple of years have elapsed and
->>>>> runtime PM support on Tegra is much more mature at this point.
->>>>>
->>>>>> Alternatively, you can make the driver depend on PM.
->>>>>
->>>>> That's probably the easiest way out, but to be honest I think I'd prefer
->>>>> to just enforce PM and keep things simple.
->>>>>
->>>>> Jon, any objections?
->>>>
->>>> None, but seems overkill just for this case.
->>>
->>> But that's precisely the point. It's not just about this case. We've
->>> already got some drivers where we do a similar dance just to be able to
->>> support the, let's admit it, exotic case where somebody turns off PM. I
->>> think supporting !PM might have made sense at a point where we had no
->>> support for power management at all. But I think we've come a long way
->>> since then, and while we may still have some ways to go in some areas,
->>> we do fairly decent runtime PM most of the time, to the point where I no
->>> longer see any benefits in !PM.
->>
->> I'm requesting PM_DEBUG_ALWAYS_ON option then! Disabling PM is a
->> useful debug feature, it can't just go away. 
+On 2/4/19 4:49 AM, Matti Vaittinen wrote:
+> Initial support for watchdog block included in ROHM BD70528
+> power management IC.
 > 
-> What is it about disabling PM that you consider useful? I can understand
-> why you'd want that option if power management is broken, but as far as
-> I can tell, power management on Tegra is in pretty good state, and it's
-> more likely that !PM would actually be broken (though I haven't built a
-> configuration like that in a couple of years, so I'm speculating). We
-> already can't disable PM on 64-bit ARM, so I don't understand why 32-bit
-> ARM should be treated any differently.
+> Configurations for low power states are still to be checked.
+> 
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
+>   drivers/watchdog/Kconfig       |  12 +++
+>   drivers/watchdog/Makefile      |   1 +
+>   drivers/watchdog/bd70528_wdt.c | 187 +++++++++++++++++++++++++++++++++++++++++
+>   3 files changed, 200 insertions(+)
+>   create mode 100644 drivers/watchdog/bd70528_wdt.c
+> 
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index 57f017d74a97..f30e3a3e886e 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
+>   	  watchdog. Be aware that governors might affect the watchdog because it
+>   	  is purely software, e.g. the panic governor will stall it!
+>   
+> +config BD70528_WATCHDOG
+> +	tristate "ROHM BD70528 PMIC Watchdog"
+> +	depends on MFD_ROHM_BD70528
+> +	select WATCHDOG_CORE
+> +	help
+> +	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
+> +	  cause system reset.
+> +
+> +	  Say Y here to include support for the ROHM BD70528 watchdog.
+> +	  Alternatively say M to compile the driver as a module,
+> +	  which will be called bd70528_wdt.
+> +
+>   config DA9052_WATCHDOG
+>   	tristate "Dialog DA9052 Watchdog"
+>   	depends on PMIC_DA9052 || COMPILE_TEST
+> diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+> index a0917ef28e07..1ce87a3b1172 100644
+> --- a/drivers/watchdog/Makefile
+> +++ b/drivers/watchdog/Makefile
+> @@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
+>   obj-$(CONFIG_XEN_WDT) += xen_wdt.o
+>   
+>   # Architecture Independent
+> +obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
+>   obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
+>   obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
+>   obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
+> diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
+> new file mode 100644
+> index 000000000000..c24d4cce5e9c
+> --- /dev/null
+> +++ b/drivers/watchdog/bd70528_wdt.c
+> @@ -0,0 +1,187 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (C) 2018 ROHM Semiconductors
+> +// ROHM BD70528MWV watchdog driver
+> +
+> +#include <linux/bcd.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/rohm-bd70528.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/watchdog.h>
+> +
+> +struct wdtbd70528 {
+> +	struct device *dev;
+> +	struct regmap *regmap;
+> +	struct mutex *rtc_lock;
+> +	struct watchdog_device wdt;
+> +};
+> +
+> +static int bd70528_wdt_set_locked(struct wdtbd70528 *w, int enable)
+> +{
+> +	struct bd70528 *bd70528;
+> +
+> +	bd70528 = container_of(w->rtc_lock, struct bd70528, rtc_timer_lock);
+> +	return bd70528->wdt_set(bd70528, enable, NULL);
+> +}
 
-Yes, I want an option for debugging of a broken PM. It doesn't matter that there are no known PM-related issues on Tegra today, it could become a problem tomorrow. Probably a kernel boot parameter like pm_debug_always_on would suit even better here. 
+Please add an empty line here.
 
-Or maybe PM API already provides such debug options and I'm just not aware about them?
+> +static int bd70528_wdt_set(struct wdtbd70528 *w, int enable)
+> +{
+> +	int ret;
+> +
+> +	mutex_lock(w->rtc_lock);
+> +	ret = bd70528_wdt_set_locked(w, enable);
+> +	mutex_unlock(w->rtc_lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static int bd70528_wdt_start(struct watchdog_device *wdt)
+> +{
+> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
+> +
+> +	dev_dbg(w->dev, "WDT ping...\n");
+> +	return bd70528_wdt_set(w, 1);
+> +}
+> +
+> +static int bd70528_wdt_stop(struct watchdog_device *wdt)
+> +{
+> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
+> +
+> +	dev_dbg(w->dev, "WDT stopping...\n");
+> +	return bd70528_wdt_set(w, 0);
+> +}
+> +
+> +static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
+> +				    unsigned int timeout)
+> +{
+> +	unsigned int hours;
+> +	unsigned int minutes;
+> +	unsigned int seconds;
+> +	int ret;
+> +	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
+> +
+> +	seconds = timeout;
+> +	hours = timeout / (60 * 60);
+> +	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
+> +	if (hours)
+> +		seconds -= (60 * 60);
+> +	minutes = seconds / 60;
+> +	seconds = seconds % 60;
+> +
+> +	mutex_lock(w->rtc_lock);
+> +
+> +	ret = bd70528_wdt_set_locked(w, 0);
+> +	if (ret)
+> +		goto out_unlock;
+> +
+> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_HOUR,
+> +				 BD70528_MASK_WDT_HOUR, hours);
+> +	if (ret) {
+> +		dev_err(w->dev, "Failed to set WDT hours\n");
+> +		goto out_en_unlock;
+> +	}
+> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_MINUTE,
+> +				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
+> +	if (ret) {
+> +		dev_err(w->dev, "Failed to set WDT minutes\n");
+> +		goto out_en_unlock;
+> +	}
+> +	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_SEC,
+> +				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
+> +	if (ret)
+> +		dev_err(w->dev, "Failed to set WDT seconds\n");
+> +	else
+> +		dev_dbg(w->dev, "WDT tmo set to %u\n", timeout);
+> +
+> +out_en_unlock:
+> +	ret = bd70528_wdt_set_locked(w, 1);
+> +out_unlock:
+> +	mutex_unlock(w->rtc_lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct watchdog_info bd70528_wdt_info = {
+> +	.identity = "bd70528-wdt",
+> +	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
+> +};
+> +
+> +static const struct watchdog_ops bd70528_wdt_ops = {
+> +	.start		= bd70528_wdt_start,
+> +	.stop		= bd70528_wdt_stop,
+> +	.set_timeout	= bd70528_wdt_set_timeout,
+> +};
+> +
+> +/* Max time we can set is 1 hour, 59 minutes and 59 seconds */
+> +#define WDT_MAX_MS ((2 * 60 * 60 - 1) * 1000)
+> +/* Minimum time is 1 second */
+> +#define WDT_MIN_MS 1000
+> +#define DEFAULT_TIMEOUT 60
+> +
 
-Do you know what's the exact reason for ARM64 to not support !PM?
+Please move to top, and tab-align the values.
+
+Otherwise I am ok with the patch.
+
+On a side note, isn't it past time to drop the RFC ?
+
+Guenter
+
+> +static int bd70528_wdt_probe(struct platform_device *pdev)
+> +{
+> +	struct bd70528 *bd70528;
+> +	struct wdtbd70528 *w;
+> +	int ret;
+> +	unsigned int reg;
+> +
+> +	bd70528 = dev_get_drvdata(pdev->dev.parent);
+> +	if (!bd70528) {
+> +		dev_err(&pdev->dev, "No MFD driver data\n");
+> +		return -EINVAL;
+> +	}
+> +	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
+> +	if (!w)
+> +		return -ENOMEM;
+> +
+> +	w->regmap = bd70528->chip.regmap;
+> +	w->rtc_lock = &bd70528->rtc_timer_lock;
+> +	w->dev = &pdev->dev;
+> +
+> +	w->wdt.info = &bd70528_wdt_info;
+> +	w->wdt.ops =  &bd70528_wdt_ops;
+> +	w->wdt.min_hw_heartbeat_ms = WDT_MIN_MS;
+> +	w->wdt.max_hw_heartbeat_ms = WDT_MAX_MS;
+> +	w->wdt.parent = pdev->dev.parent;
+> +	w->wdt.timeout = DEFAULT_TIMEOUT;
+> +	watchdog_set_drvdata(&w->wdt, w);
+> +	watchdog_init_timeout(&w->wdt, 0, pdev->dev.parent);
+> +
+> +	ret = bd70528_wdt_set_timeout(&w->wdt, w->wdt.timeout);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
+> +		return ret;
+> +	}
+> +
+> +	mutex_lock(w->rtc_lock);
+> +	ret = regmap_read(w->regmap, BD70528_REG_WDT_CTRL, &reg);
+> +	mutex_unlock(w->rtc_lock);
+> +
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Failed to get the watchdog state\n");
+> +		return ret;
+> +	}
+> +	if (reg & BD70528_MASK_WDT_EN) {
+> +		dev_dbg(&pdev->dev, "watchdog was running during probe\n");
+> +		set_bit(WDOG_HW_RUNNING, &w->wdt.status);
+> +	}
+> +
+> +	ret = devm_watchdog_register_device(&pdev->dev, &w->wdt);
+> +	if (ret < 0)
+> +		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
+> +
+> +	return ret;
+> +}
+> +static struct platform_driver bd70528_wdt = {
+> +	.driver = {
+> +		.name = "bd70528-wdt"
+> +	},
+> +	.probe = bd70528_wdt_probe,
+> +};
+> +
+> +module_platform_driver(bd70528_wdt);
+> +
+> +MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
+> +MODULE_DESCRIPTION("BD70528 watchdog driver");
+> +MODULE_LICENSE("GPL");
+> 
