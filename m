@@ -1,268 +1,160 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH v3 08/11] gpio: max77650: add GPIO support
-Date: Mon, 4 Feb 2019 11:49:35 +0100
-Message-ID: <CAMRc=Md5duy1nw2neBRoEUGcqV-KCdLasUL0f6DF41t3gFMsYQ@mail.gmail.com>
-References: <20190201094736.32057-1-brgl@bgdev.pl> <20190201094736.32057-9-brgl@bgdev.pl>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during probe
+Date: Mon, 4 Feb 2019 12:05:10 +0100
+Message-ID: <20190204110510.GA10412@ulmo>
+References: <1548414418-5785-1-git-send-email-spujar@nvidia.com>
+ <CAJZ5v0hezV7et3VgD7yHa8MLiP0z3YtJ9stwSQL54-tyz_VXkQ@mail.gmail.com>
+ <20190131143024.GO23438@ulmo>
+ <2034694.JE9CgBysmF@aspire.rjw.lan>
+ <20190204084555.GF19087@ulmo>
+ <07d58962-4c49-0575-2f95-4c885998bb52@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190201094736.32057-9-brgl@bgdev.pl>
+Content-Disposition: inline
+In-Reply-To: <07d58962-4c49-0575-2f95-4c885998bb52@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Sameer Pujar <spujar@nvidia.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-pt., 1 lut 2019 o 10:48 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(a)=
-:
->
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->
-> Add GPIO support for max77650 mfd device. This PMIC exposes a single
-> GPIO line.
->
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->  drivers/gpio/Kconfig         |   7 ++
->  drivers/gpio/Makefile        |   1 +
->  drivers/gpio/gpio-max77650.c | 189 +++++++++++++++++++++++++++++++++++
->  3 files changed, 197 insertions(+)
->  create mode 100644 drivers/gpio/gpio-max77650.c
->
-> diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-> index b5a2845347ec..fb297fe5bfec 100644
-> --- a/drivers/gpio/Kconfig
-> +++ b/drivers/gpio/Kconfig
-> @@ -1095,6 +1095,13 @@ config GPIO_MAX77620
->           driver also provides interrupt support for each of the gpios.
->           Say yes here to enable the max77620 to be used as gpio controll=
-er.
->
-> +config GPIO_MAX77650
-> +       tristate "Maxim MAX77650/77651 GPIO support"
-> +       depends on MFD_MAX77650
-> +       help
-> +         GPIO driver for MAX77650/77651 PMIC from Maxim Semiconductor.
-> +         These chips have a single pin that can be configured as GPIO.
-> +
->  config GPIO_MSIC
->         bool "Intel MSIC mixed signal gpio support"
->         depends on (X86 || COMPILE_TEST) && MFD_INTEL_MSIC
-> diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-> index 37628f8dbf70..8bdad50db822 100644
-> --- a/drivers/gpio/Makefile
-> +++ b/drivers/gpio/Makefile
-> @@ -78,6 +78,7 @@ obj-$(CONFIG_GPIO_MAX7300)    +=3D gpio-max7300.o
->  obj-$(CONFIG_GPIO_MAX7301)     +=3D gpio-max7301.o
->  obj-$(CONFIG_GPIO_MAX732X)     +=3D gpio-max732x.o
->  obj-$(CONFIG_GPIO_MAX77620)    +=3D gpio-max77620.o
-> +obj-$(CONFIG_GPIO_MAX77650)    +=3D gpio-max77650.o
->  obj-$(CONFIG_GPIO_MB86S7X)     +=3D gpio-mb86s7x.o
->  obj-$(CONFIG_GPIO_MENZ127)     +=3D gpio-menz127.o
->  obj-$(CONFIG_GPIO_MERRIFIELD)  +=3D gpio-merrifield.o
-> diff --git a/drivers/gpio/gpio-max77650.c b/drivers/gpio/gpio-max77650.c
-> new file mode 100644
-> index 000000000000..8382dd85c548
-> --- /dev/null
-> +++ b/drivers/gpio/gpio-max77650.c
-> @@ -0,0 +1,189 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +//
-> +// Copyright (C) 2018 BayLibre SAS
-> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> +//
-> +// GPIO driver for MAXIM 77650/77651 charger/power-supply.
-> +
-> +#include <linux/gpio/driver.h>
-> +#include <linux/i2c.h>
-> +#include <linux/mfd/max77650.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +
-> +#define MAX77650_GPIO_DIR_MASK         BIT(0)
-> +#define MAX77650_GPIO_INVAL_MASK       BIT(1)
-> +#define MAX77650_GPIO_DRV_MASK         BIT(2)
-> +#define MAX77650_GPIO_OUTVAL_MASK      BIT(3)
-> +#define MAX77650_GPIO_DEBOUNCE_MASK    BIT(4)
-> +
-> +#define MAX77650_GPIO_DIR_OUT          0x00
-> +#define MAX77650_GPIO_DIR_IN           BIT(0)
-> +#define MAX77650_GPIO_OUT_LOW          0x00
-> +#define MAX77650_GPIO_OUT_HIGH         BIT(3)
-> +#define MAX77650_GPIO_DRV_OPEN_DRAIN   0x00
-> +#define MAX77650_GPIO_DRV_PUSH_PULL    BIT(2)
-> +#define MAX77650_GPIO_DEBOUNCE         BIT(4)
-> +
-> +#define MAX77650_GPIO_DIR_BITS(_reg) \
-> +               ((_reg) & MAX77650_GPIO_DIR_MASK)
-> +#define MAX77650_GPIO_INVAL_BITS(_reg) \
-> +               (((_reg) & MAX77650_GPIO_INVAL_MASK) >> 1)
-> +
-> +struct max77650_gpio_chip {
-> +       struct regmap *map;
-> +       struct gpio_chip gc;
-> +};
-> +
-> +static int max77650_gpio_direction_input(struct gpio_chip *gc,
-> +                                        unsigned int offset)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +
-> +       return regmap_update_bits(chip->map,
-> +                                 MAX77650_REG_CNFG_GPIO,
-> +                                 MAX77650_GPIO_DIR_MASK,
-> +                                 MAX77650_GPIO_DIR_IN);
-> +}
-> +
-> +static int max77650_gpio_direction_output(struct gpio_chip *gc,
-> +                                         unsigned int offset, int value)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +       int mask, regval;
-> +
-> +       mask =3D MAX77650_GPIO_DIR_MASK | MAX77650_GPIO_OUTVAL_MASK;
-> +       regval =3D value ? MAX77650_GPIO_OUT_HIGH : MAX77650_GPIO_OUT_LOW=
-;
-> +       regval |=3D MAX77650_GPIO_DIR_OUT;
-> +
-> +       return regmap_update_bits(chip->map,
-> +                                 MAX77650_REG_CNFG_GPIO, mask, regval);
-> +}
-> +
-> +static void max77650_gpio_set_value(struct gpio_chip *gc,
-> +                                   unsigned int offset, int value)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +       int rv, regval;
-> +
-> +       regval =3D value ? MAX77650_GPIO_OUT_HIGH : MAX77650_GPIO_OUT_LOW=
-;
-> +
-> +       rv =3D regmap_update_bits(chip->map, MAX77650_REG_CNFG_GPIO,
-> +                               MAX77650_GPIO_OUTVAL_MASK, regval);
-> +       if (rv)
-> +               dev_err(gc->parent, "cannot set GPIO value: %d\n", rv);
-> +}
-> +
-> +static int max77650_gpio_get_value(struct gpio_chip *gc,
-> +                                  unsigned int offset)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +       unsigned int val;
-> +       int rv;
-> +
-> +       rv =3D regmap_read(chip->map, MAX77650_REG_CNFG_GPIO, &val);
-> +       if (rv)
-> +               return rv;
-> +
-> +       return MAX77650_GPIO_INVAL_BITS(val);
-> +}
-> +
-> +static int max77650_gpio_get_direction(struct gpio_chip *gc,
-> +                                      unsigned int offset)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +       unsigned int val;
-> +       int rv;
-> +
-> +       rv =3D regmap_read(chip->map, MAX77650_REG_CNFG_GPIO, &val);
-> +       if (rv)
-> +               return rv;
-> +
-> +       return MAX77650_GPIO_DIR_BITS(val);
-> +}
-> +
-> +static int max77650_gpio_set_config(struct gpio_chip *gc,
-> +                                   unsigned int offset, unsigned long cf=
-g)
-> +{
-> +       struct max77650_gpio_chip *chip =3D gpiochip_get_data(gc);
-> +
-> +       switch (pinconf_to_config_param(cfg)) {
-> +       case PIN_CONFIG_DRIVE_OPEN_DRAIN:
-> +               return regmap_update_bits(chip->map,
-> +                                         MAX77650_REG_CNFG_GPIO,
-> +                                         MAX77650_GPIO_DRV_MASK,
-> +                                         MAX77650_GPIO_DRV_OPEN_DRAIN);
-> +       case PIN_CONFIG_DRIVE_PUSH_PULL:
-> +               return regmap_update_bits(chip->map,
-> +                                         MAX77650_REG_CNFG_GPIO,
-> +                                         MAX77650_GPIO_DRV_MASK,
-> +                                         MAX77650_GPIO_DRV_PUSH_PULL);
-> +       case PIN_CONFIG_INPUT_DEBOUNCE:
-> +               return regmap_update_bits(chip->map,
-> +                                         MAX77650_REG_CNFG_GPIO,
-> +                                         MAX77650_GPIO_DEBOUNCE_MASK,
-> +                                         MAX77650_GPIO_DEBOUNCE);
-> +       default:
-> +               return -ENOTSUPP;
-> +       }
-> +}
-> +
-> +static int max77650_gpio_to_irq(struct gpio_chip *gc, unsigned int offse=
-t)
-> +{
-> +       /*
-> +        * TODO Add interrupt support.
-> +        *
-> +        * We first need to properly support hierarchical irqs in gpiolib
-> +        * and regmap irq_chip.
-> +        */
-> +       return -EOPNOTSUPP;
-> +}
-> +
-> +static int max77650_gpio_probe(struct platform_device *pdev)
-> +{
-> +       struct max77650_gpio_chip *chip;
-> +       struct device *dev, *parent;
-> +       struct i2c_client *i2c;
-> +
-> +       dev =3D &pdev->dev;
-> +       parent =3D dev->parent;
-> +       i2c =3D to_i2c_client(parent);
-> +
-> +       chip =3D devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
-> +       if (!chip)
-> +               return -ENOMEM;
-> +
-> +       chip->map =3D dev_get_regmap(parent, NULL);
-> +       if (!chip->map)
-> +               return -ENODEV;
-> +
-> +       chip->gc.base =3D -1;
-> +       chip->gc.ngpio =3D 1;
-> +       chip->gc.label =3D i2c->name;
-> +       chip->gc.parent =3D dev;
-> +       chip->gc.owner =3D THIS_MODULE;
-> +       chip->gc.can_sleep =3D true;
-> +
-> +       chip->gc.direction_input =3D max77650_gpio_direction_input;
-> +       chip->gc.direction_output =3D max77650_gpio_direction_output;
-> +       chip->gc.set =3D max77650_gpio_set_value;
-> +       chip->gc.get =3D max77650_gpio_get_value;
-> +       chip->gc.get_direction =3D max77650_gpio_get_direction;
-> +       chip->gc.set_config =3D max77650_gpio_set_config;
-> +       chip->gc.to_irq =3D max77650_gpio_to_irq;
-> +
-> +       return devm_gpiochip_add_data(dev, &chip->gc, chip);
-> +}
-> +
-> +static struct platform_driver max77650_gpio_driver =3D {
-> +       .driver =3D {
-> +               .name =3D "max77650-gpio",
-> +       },
-> +       .probe =3D max77650_gpio_probe,
-> +};
-> +module_platform_driver(max77650_gpio_driver);
-> +
-> +MODULE_DESCRIPTION("MAXIM 77650/77651 GPIO driver");
-> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
-> +MODULE_LICENSE("GPL v2");
-> --
-> 2.20.1
->
 
-I forgot to collect the tag, but Linus left his Reviewed-by:.
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Bart
+On Mon, Feb 04, 2019 at 09:53:32AM +0000, Jon Hunter wrote:
+>=20
+>=20
+> On 04/02/2019 08:45, Thierry Reding wrote:
+>=20
+> ...
+>=20
+> > The idea was, as I was saying below, to reuse dev_pm_ops even if
+> > !CONFIG_PM. So pm_runtime_enable() could be something like this:
+> >=20
+> > 	pm_runtime_enable(dev)
+> > 	{
+> > 		if (!CONFIG_PM)
+> > 			if (dev->pm_ops->resume)
+> > 				dev->pm_ops->resume(dev);
+> >=20
+> > 		...
+> > 	}
+> >=20
+> > But that's admittedly somewhat of a stretch. This could of course be
+> > made somewhat nicer by adding an explicit variant, say:
+> >=20
+> > 	pm_runtime_enable_foo(dev)
+> > 	{
+> > 		if (!CONFIG_PM && dev->pm_ops->resume)
+> > 			return dev->pm_ops->resume(dev);
+> >=20
+> > 		return 0;
+> > 	}
+> >=20
+> > Maybe the fact that I couldn't come up with a good name is a good
+> > indication that this is a bad idea...
+>=20
+> How about some new APIs called ...
+>=20
+> pm_runtime_enable_get()
+> pm_runtime_enable_get_sync()
+> pm_runtime_put_disable() (implies a put_sync)
+>=20
+> ... and in these APIs we add ...
+>=20
+> pm_runtime_enable_get(dev)
+> {
+> 	if (!CONFIG_PM && dev->pm_ops->resume)
+> 		return dev->pm_ops->resume(dev);
+>=20
+> 	pm_runtime_enable(dev);
+> 	return pm_runtime_get(dev);
+> }
+
+Yeah, those sound sensible. I'm still a bit torn between this and just
+enforcing PM. At least on the display side I think we already require PM
+and with all the power domain work that you did we'd be much better off
+if we could just get rid of the !PM workarounds.
+
+> >>> This would be somewhat tricky because drivers
+> >>> usually use SET_RUNTIME_PM_OPS to populate the struct dev_pm_ops and
+> >>> that would result in an empty structure if !CONFIG_PM, but we could
+> >>> probably work around that by adding a __SET_RUNTIME_PM_OPS that would
+> >>> never be compiled out for this kind of case. Or such drivers could ev=
+en
+> >>> manually set .runtime_suspend and .runtime_resume to make sure they're
+> >>> always populated.
+> >>>
+> >>> Another way out of this would be to make sure we never run into the c=
+ase
+> >>> where runtime PM is disabled. If we always "select PM" on Tegra, then=
+ PM
+> >>> should always be available. But is it guaranteed that runtime PM for =
+the
+> >>> devices is functional in that case? From a cursory look at the code it
+> >>> would seem that way.
+> >>
+> >> If you select PM, then all of the requisite code should be there.
+> >=20
+> > We do this on 64-bit ARM, but there had been some pushback when we had
+> > proposed to do the same thing on 32-bit ARM. I think there were two
+> > concerns:
+> >=20
+> > 	1) select PM would force the setting for all platforms on multi-
+> > 	   platforms builds
+> >=20
+> > 	2) prevents anyone from disabling PM for debugging purposes
+> >=20
+> > 1) no longer seems to be valid because Rockchip already selects PM
+> > unconditionally. I'm not sure if 2) is valid anymore either. I haven't
+> > run a build with !PM in a very long time and I wouldn't be surprised if
+> > that was completely broken.
+> >=20
+> > Maybe we need to try this again since a couple of years have elapsed and
+> > runtime PM support on Tegra is much more mature at this point.
+> >=20
+> >> Alternatively, you can make the driver depend on PM.
+> >=20
+> > That's probably the easiest way out, but to be honest I think I'd prefer
+> > to just enforce PM and keep things simple.
+> >=20
+> > Jon, any objections?
+>=20
+> None, but seems overkill just for this case.
+
+But that's precisely the point. It's not just about this case. We've
+already got some drivers where we do a similar dance just to be able to
+support the, let's admit it, exotic case where somebody turns off PM. I
+think supporting !PM might have made sense at a point where we had no
+support for power management at all. But I think we've come a long way
+since then, and while we may still have some ways to go in some areas,
+we do fairly decent runtime PM most of the time, to the point where I no
+longer see any benefits in !PM.
+
+Thierry
+
+--FCuugMFkClbJLl1L
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlxYHGMACgkQ3SOs138+
+s6Gx3w//XJu+ERF3qvtbn607pHgfD4SfNiWNCog4IPuO8zYEdQQ0YdGjDusNOUBV
+m3tMjat2semb69xdMr4/H7DiINvFVLw/s/WBvkKVw8/XH3C3jP23zD0lkgODn/f1
+HKLdxeAWrQ8BgJmoyoOl1pQ8jfKsM161C+dRI/4eDgvwxvyLYWAOt/oVgKQbeHwl
+ySRh2tfcit7yb2YwJFsUgyXAtipZNXmSeNfKg/ozSUaMlYfxUAAwiPZRa053LLsm
+L41MRflToeqrRfA5mNKRR7xz6pASP60V+MGPh8BSZIYvlwBLnk2qxP29ovG6br20
+Yz3YjoKU0QyqgqdxLWbdrVYLGhr0vGH4MnHnW82wjd4HbRdyesUVgszGyRPWVmj5
+/NstNMPwjMhtzQZu38x0xY7KttUeADGePgcs/qiysXxLeYX9vjLAiSzMF9PjgDMf
+zltaMxogr7nVN0PDZ8J5nTVhP92zqCFskA5VsnVp1/Fq+6Tq9GVINB5FKjfDQiaK
+wO/LtvjSIhHBJGePNFyakwh7NCdsaj49P0PGP81T+N5XC2V8+i0ObY15Ur1HsRvH
+EYdlr+dcCeu2x9PXvkrXgVpSZ5kpewUc/3mlMo/ndNlZzX3zrXYCXP4B7E1jDuwX
+kEnZ/O+1yTAKYSCdT3yBveUBiOmxml+2+/h0UIRHkKyvk5i2KeQ=
+=oPAV
+-----END PGP SIGNATURE-----
+
+--FCuugMFkClbJLl1L--
