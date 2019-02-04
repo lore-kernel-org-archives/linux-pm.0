@@ -1,186 +1,46 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v4 1/5] PM / OPP: Introduce a power estimation helper
-Date: Mon,  4 Feb 2019 11:09:48 +0000
-Message-ID: <20190204110952.16025-2-quentin.perret@arm.com>
-References: <20190204110952.16025-1-quentin.perret@arm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [RFC PATCH v4 06/10] devicetree: bindings: Document first ROHM
+ BD70528 bindings
+Date: Mon, 4 Feb 2019 12:25:41 +0100
+Message-ID: <CACRpkdZOzacQ5Myb_wsHz5wUGvwQ1avhfY5gaR+3oqhNtArH-A@mail.gmail.com>
+References: <cover.1548935790.git.matti.vaittinen@fi.rohmeurope.com> <127bd8d6765e35272ad174c59838d1374813c910.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190204110952.16025-1-quentin.perret@arm.com>
+In-Reply-To: <127bd8d6765e35272ad174c59838d1374813c910.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, mka@chromium.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dietmar.eggemann@arm.com, quentin.perret@arm.com
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 List-Id: linux-pm@vger.kernel.org
 
-The Energy Model (EM) framework provides an API to let drivers register
-the active power of CPUs. The drivers are expected to provide a callback
-method which estimates the power consumed by a CPU at each available
-performance levels. How exactly this should be implemented, however,
-depends on the platform.
+On Thu, Jan 31, 2019 at 1:04 PM Matti Vaittinen
+<matti.vaittinen@fi.rohmeurope.com> wrote:
 
-On some systems, PM_OPP knows the voltage and frequency at which CPUs
-can run. When coupled with the CPU 'capacitance' (as provided by the
-'dynamic-power-coefficient' devicetree binding), it is possible to
-estimate the dynamic power consumption of a CPU as P = C * V^2 * f, with
-C its capacitance and V and f respectively the voltage and frequency of
-the OPP. The Intelligent Power Allocator (IPA) thermal governor already
-implements that estimation method, in the thermal framework.
+> Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
+> drivers) and 4 GPIO pins which can be configured for I/O or
+> as interrupt sources withe configurable trigger levels.
+>
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+(...)
+> +Required properties:
+> + - compatible          : Should be "rohm,bd70528"
+> + - reg                 : I2C slave address.
+> + - interrupts          : The interrupt line the device is connected to.
+> + - interrupt-controller        : To indicate bd70528 acts as an interrupt controller.
+> + - #interrupt-cells    : Should be 2. usage is compliant to the 2 cells
+> +                         variant of ../interrupt-controller/interrupts.txt
+> + - gpio-controller     : To indicate bd70528 acts as a gpio controller.
+> + - #gpio-cells         : Should be 2. The first cell is the pin number and
+> +                         the second cell is used to specify flags. See
+> +                         ../gpio/gpio.txt for more information.
+> + - #clock-cells                : Should be 0.
+> + - regulators:         : List of child nodes that specify the regulators.
+> +                         Please see ../regulator/rohm,bd70528-regulator.txt
 
-However, this power estimation method can be applied to any platform
-where all the parameters are known (C, V and f), and not only those
-suffering thermal issues. As such, the code implementing this feature
-can be re-used to also populate the EM framework now used by EAS.
+So if I understand correctly, the clocks and GPIO does not spawn any
+child nodes but are attached directly to the MFD node.
+This works!
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-As a first step, introduce in PM_OPP a helper function which CPUFreq
-drivers can use to register into the EM framework. This duplicates the
-power estimation done in IPA until it can be migrated to using the EM
-framework. This will be done later, once the EM framework has support
-for at least all platforms currently supported by IPA.
-
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/opp/of.c       | 99 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h |  6 +++
- 2 files changed, 105 insertions(+)
-
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 06f0f632ec47..cd58959e5158 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -20,6 +20,7 @@
- #include <linux/pm_domain.h>
- #include <linux/slab.h>
- #include <linux/export.h>
-+#include <linux/energy_model.h>
- 
- #include "opp.h"
- 
-@@ -1047,3 +1048,101 @@ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- 	return of_node_get(opp->np);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_of_node);
-+
-+/*
-+ * Callback function provided to the Energy Model framework upon registration.
-+ * This computes the power estimated by @CPU at @kHz if it is the frequency
-+ * of an existing OPP, or at the frequency of the first OPP above @kHz otherwise
-+ * (see dev_pm_opp_find_freq_ceil()). This function updates @kHz to the ceiled
-+ * frequency and @mW to the associated power. The power is estimated as
-+ * P = C * V^2 * f with C being the CPU's capacitance and V and f respectively
-+ * the voltage and frequency of the OPP.
-+ *
-+ * Returns -ENODEV if the CPU device cannot be found, -EINVAL if the power
-+ * calculation failed because of missing parameters, 0 otherwise.
-+ */
-+static int __maybe_unused _get_cpu_power(unsigned long *mW, unsigned long *kHz,
-+					 int cpu)
-+{
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	struct device_node *np;
-+	unsigned long mV, Hz;
-+	u32 cap;
-+	u64 tmp;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -EINVAL;
-+
-+	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-+	of_node_put(np);
-+	if (ret)
-+		return -EINVAL;
-+
-+	Hz = *kHz * 1000;
-+	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-+	if (IS_ERR(opp))
-+		return -EINVAL;
-+
-+	mV = dev_pm_opp_get_voltage(opp) / 1000;
-+	dev_pm_opp_put(opp);
-+	if (!mV)
-+		return -EINVAL;
-+
-+	tmp = (u64)cap * mV * mV * (Hz / 1000000);
-+	do_div(tmp, 1000000000);
-+
-+	*mW = (unsigned long)tmp;
-+	*kHz = Hz / 1000;
-+
-+	return 0;
-+}
-+
-+/**
-+ * dev_pm_opp_of_register_em() - Attempt to register an Energy Model
-+ * @cpus	: CPUs for which an Energy Model has to be registered
-+ *
-+ * This checks whether the "dynamic-power-coefficient" devicetree property has
-+ * been specified, and tries to register an Energy Model with it if it has.
-+ */
-+void dev_pm_opp_of_register_em(struct cpumask *cpus)
-+{
-+	struct em_data_callback em_cb = EM_DATA_CB(_get_cpu_power);
-+	int ret, nr_opp, cpu = cpumask_first(cpus);
-+	struct device *cpu_dev;
-+	struct device_node *np;
-+	u32 cap;
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return;
-+
-+	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (nr_opp <= 0)
-+		return;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return;
-+
-+	/*
-+	 * Register an EM only if the 'dynamic-power-coefficient' property is
-+	 * set in devicetree. It is assumed the voltage values are known if that
-+	 * property is set since it is useless otherwise. If voltages are not
-+	 * known, just let the EM registration fail with an error to alert the
-+	 * user about the inconsistent configuration.
-+	 */
-+	ret = of_property_read_u32(np, "dynamic-power-coefficient", &cap);
-+	of_node_put(np);
-+	if (ret || !cap)
-+		return;
-+
-+	em_register_perf_domain(cpus, nr_opp, &em_cb);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index b895f4e79868..c9c76310865a 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -327,6 +327,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
- struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
- struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
- int of_get_required_opp_performance_state(struct device_node *np, int index);
-+void dev_pm_opp_of_register_em(struct cpumask *cpus);
- #else
- static inline int dev_pm_opp_of_add_table(struct device *dev)
- {
-@@ -365,6 +366,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- {
- 	return NULL;
- }
-+
-+static inline void dev_pm_opp_of_register_em(struct cpumask *cpus)
-+{
-+}
-+
- static inline int of_get_required_opp_performance_state(struct device_node *np, int index)
- {
- 	return -ENOTSUPP;
--- 
-2.20.1
+Yours,
+Linus Walleij
