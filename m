@@ -1,51 +1,93 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [RFC PATCH v4 07/10] gpio: Initial support for ROHM bd70528 GPIO block
-Date: Mon, 4 Feb 2019 12:29:53 +0100
-Message-ID: <CACRpkdauoQ=qcFUi7wTUKu22ZHeq=g0grWqvZz1gfOt0=dXrbw@mail.gmail.com>
-References: <cover.1548935790.git.matti.vaittinen@fi.rohmeurope.com> <5f63684b62c7a320c514088bcf9091ed7efbd2cc.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
+ "consumer autoprobe" flag
+Date: Mon, 4 Feb 2019 12:40:25 +0100
+Message-ID: <CAJZ5v0g0BC900-u1wivAWqq=XomPgpfpz7s=sWgvCML+2MwLgg@mail.gmail.com>
+References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <CAPDyKFqG-wN+=9i4X+BeREekzKNt0icE==P60Cu1FhsGRNcJjg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5f63684b62c7a320c514088bcf9091ed7efbd2cc.1548935790.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <CAPDyKFqG-wN+=9i4X+BeREekzKNt0icE==P60Cu1FhsGRNcJjg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: Matti Vaittinen <mazziesaccount@gmail.com>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 31, 2019 at 1:08 PM Matti Vaittinen
-<matti.vaittinen@fi.rohmeurope.com> wrote:
-
-> ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
-> controlled by GPIO framework.
+On Fri, Feb 1, 2019 at 4:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> IRQs are handled by regmap-irq and GPIO driver is not
-> aware of the irq usage.
+> On Fri, 1 Feb 2019 at 02:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > Hi Greg at al,
+> >
+> > This is a combination of the two device links series I have posted
+> > recently (https://lore.kernel.org/lkml/2493187.oiOpCWJBV7@aspire.rjw.lan/
+> > and https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) rebased
+> > on top of your driver-core-next branch.
+> >
+> > Recently I have been looking at the device links code because of the
+> > recent discussion on possibly using them in the DRM subsystem (see for
+> > example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
+> > found a few issues in that code which should be addressed by this patch
+> > series.  Please refer to the patch changelogs for details.
+> >
+> > None of the problems addressed here should be manifesting themselves in
+> > mainline kernel today, but if there are more device links users in the
+> > future, they most likely will be encountered sooner or later.  Also they
+> > need to be fixed for the DRM use case to be supported IMO.
+> >
+> > On top of this the series makes device links support the "composite device"
+> > use case in the DRM subsystem mentioned above (essentially, the last patch
+> > in the series is for that purpose).
+> >
 >
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-(...)
-> I dropped the review-by from Linus Walleij because I would like to
-> get a comment on if locking is required when we check the direction
-> in order to detect the correct register for getting the pin state.
+> Rafael, Greg, I have reviewed patch 1 -> 7, they all look good to me.
+>
+> If not too late, feel free to add for the first 7 patches:
+>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-I don't know that. You isn't regmap locking inherently?
+Thanks!
 
-> My initial feeling is that locking makes no sense.
+> Although, I want to point out one problem that I have found when using
+> device links. I believe it's already there, even before this series,
+> but just wanted to described it for your consideration.
+>
+> This is what happens:
+> I have a platform driver is being probed. During ->probe() the driver
+> adds a device link like this:
+>
+> link = device_link_add(consumer-dev, supplier-dev, DL_FLAG_STATELESS |
+> DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
+>
+> At some point later in ->probe(), the driver realizes that it must
+> remove the device link, either because it encountered an error or
+> simply because it doesn't need the device link to be there anymore.
+> Thus it calls:
+>
+> device_link_del(link);
+>
+> When probe finished of the driver, the runtime PM usage count for the
+> supplier-dev remains increased to 1 and thus it never becomes runtime
+> suspended.
 
-Mine too.
+OK, so this is a tricky one.
 
-> +       bdgpio->gpio.get_direction = &bd70528_get_direction;
-> +       bdgpio->gpio.direction_input = &bd70528_direction_input;
-> +       bdgpio->gpio.direction_output = &bd70528_direction_output;
-> +       bdgpio->gpio.set_config = &bd70528_gpio_set_config;
-> +       bdgpio->gpio.can_sleep = true;
-> +       bdgpio->gpio.get = &bd70528_gpio_get;
-> +       bdgpio->gpio.set = &bd70528_gpio_set;
+With this series applied, if the link actually goes away after the
+cleanup device_link_del(), device_link_free() should take care of
+dropping the PM-runtime count of the supplier.  If it doesn't do that,
+there is a mistake in the code that needs to be fixed.
 
-Drop the &ampersand in from of the functions. All functions
-are pointers.
+However, if the link doesn't go away after the cleanup
+device_link_del(), the supplier's PM-runtime count will not be
+dropped, because the core doesn't know whether or not the
+device_link_del() has been called by the same entity that caused the
+supplier's PM-runtime count to be incremented.  For example, if the
+consumer device is suspended after the device_link_add() that
+incremented the supplier's PM-runtime count and then suspended again,
+the link's rpm_active refcount is one already and so the supplier's
+PM-runtime count should not be dropped.
 
-With that:
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-
-Yours,
-Linus Walleij
+Arguably, device_link_del() could be made automatically drop the
+supplier's PM-runtime count by one if the link's rpm_active refcount
+is not one, but there will be failing scenarios in that case too
+AFAICS.
