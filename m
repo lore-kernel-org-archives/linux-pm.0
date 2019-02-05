@@ -1,89 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Tue, 5 Feb 2019 22:23:08 +0100
-Message-ID: <20190205212308.GA2816@amd>
-References: <20190203052007.27392-1-harry.pan@intel.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH V4 00/20] Tegra210 DFLL support
+Date: Tue, 05 Feb 2019 14:27:28 -0800
+Message-ID: <154940564864.169292.12172524763781613917@swboyd.mtv.corp.google.com>
+References: <20190104030702.8684-1-josephl@nvidia.com>
+ <20190125134617.GE22565@ulmo>
+ <0a7abeee-1b78-4f90-e94f-43c19eddb9b1@nvidia.com>
+ <20190128075442.GA18124@ulmo>
+ <a2cf3ccd-658a-e004-1e66-d4f9cf1026f1@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190203052007.27392-1-harry.pan@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Harry Pan <harry.pan@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <a2cf3ccd-658a-e004-1e66-d4f9cf1026f1@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Joseph Lo <josephl@nvidia.com>, Michael Turquette <mturquette@baylibre.com>, Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pm@vger.kernel.org, Peter De Schrijver <pdeschrijver@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Quoting Joseph Lo (2019-01-31 18:49:38)
+> On 1/28/19 3:54 PM, Thierry Reding wrote:
+> > 
+> > the same applies for clk patches. Stephen's acked all of them and I
+> > think all of the series is good to go. How about if I pick up these
+> > up in the Tegra tree and let this all cook in linux-next for a week
+> > or so and then send you a pull request with these? Stephen already
+> > picked up a couple of fixes for clk/tegra, but I don't think any of
+> > those would conflict with this series.
+> > 
+> > All of that said, Joseph confirmed that there are no dependencies
+> > between these subsystem subseries, so if you'd prefer to pick up the
+> > patches into your respective trees, I have no objections to that.
+> > 
+> > Thierry
+> > 
+> 
+> Hi Rafael, Stephen,
+> 
+> Gental ping. Please let Thierry know if the cpufreq and DFLL clock 
+> related changes can go through Tegra tree.
+> 
+> I know Rafael did say [1] it's okay to go through Tegra tree in earlier 
+> comment.
+> 
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sun 2019-02-03 13:20:07, Harry Pan wrote:
-> This patch gives the reader an intuitive metric of the time cost by
-> the kernel issuing a filesystem sync during suspend; although developer
-> can guess by the timestamp of next log or enable the ftrace power event
-> for manual calculation, this manner is easier to read and benefits the
-> automatic script.
-
-Do we really need this functionality?
-
-As you explained, developers can already use next timestamp or
-ftrace... and this is really not that interesting number.
-
-								Pavel
-
-> Signed-off-by: Harry Pan <harry.pan@intel.com>
-> ---
->  kernel/power/suspend.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->=20
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 0bd595a0b610..f3b7c64f2242 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -550,6 +550,8 @@ static void suspend_finish(void)
->  static int enter_state(suspend_state_t state)
->  {
->  	int error;
-> +	ktime_t start, end, elapsed;
-> +	unsigned int elapsed_msecs;
-> =20
->  	trace_suspend_resume(TPS("suspend_enter"), state, true);
->  	if (state =3D=3D PM_SUSPEND_TO_IDLE) {
-> @@ -570,9 +572,14 @@ static int enter_state(suspend_state_t state)
-> =20
->  #ifndef CONFIG_SUSPEND_SKIP_SYNC
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-> +	start =3D ktime_get_boottime();
->  	pr_info("Syncing filesystems ... ");
->  	ksys_sync();
-> -	pr_cont("done.\n");
-> +	end =3D ktime_get_boottime();
-> +	elapsed =3D ktime_sub(end, start);
-> +	elapsed_msecs =3D ktime_to_ms(elapsed);
-> +	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
-> +		elapsed_msecs % 1000);
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
->  #endif
-> =20
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---NzB8fVQJ5HfG6fxh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlxZ/rwACgkQMOfwapXb+vKxWQCffU49bj6+FkVTyZL3n0zebj5I
-4vQAn2CajxkYlaWHbdifSUUeoQhe0y4+
-=gDCM
------END PGP SIGNATURE-----
-
---NzB8fVQJ5HfG6fxh--
+I am happy with the plan. Thanks!
