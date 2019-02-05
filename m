@@ -1,8 +1,8 @@
 From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [PATCH v6 01/10] mfd: bd718x7.h split to ROHM common and bd718x7
- specific parts
-Date: Tue, 5 Feb 2019 11:04:27 +0200
-Message-ID: <0f5a3b94f936556c1ad05da58bfb35182ae20a96.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
+Subject: [PATCH v6 02/10] regulator: bd718x7 use chip specific and generic
+ data structs
+Date: Tue, 5 Feb 2019 11:04:49 +0200
+Message-ID: <5c58562b069b8b09ae44b344bb20252ed385993b.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
 References: <cover.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -14,162 +14,101 @@ To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
 Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Split the bd718x7.h to ROHM common and bd718x7 specific parts
-so that we do not need to add same things in every new ROHM
-PMIC header. Please note that this change requires changes also
-in bd718x7 sub-device drivers for regulators and clk.
+Header rohm-bd718x7.h was split to generic and component specific
+parts. This changed the struct bd718x7. Adapt the regulator driver to
+these changes.
 
 Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/mfd/rohm-bd718x7.c       | 23 ++++++++++++-----------
- include/linux/mfd/rohm-bd718x7.h | 22 ++++++++--------------
- include/linux/mfd/rohm-generic.h | 20 ++++++++++++++++++++
- 3 files changed, 40 insertions(+), 25 deletions(-)
- create mode 100644 include/linux/mfd/rohm-generic.h
+ drivers/regulator/bd718x7-regulator.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/mfd/rohm-bd718x7.c b/drivers/mfd/rohm-bd718x7.c
-index a29d529a96f4..7beb444a57cb 100644
---- a/drivers/mfd/rohm-bd718x7.c
-+++ b/drivers/mfd/rohm-bd718x7.c
-@@ -98,18 +98,19 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- 		return -ENOMEM;
- 
- 	bd718xx->chip_irq = i2c->irq;
--	bd718xx->chip_type = (unsigned int)(uintptr_t)
-+	bd718xx->chip.chip_type = (unsigned int)(uintptr_t)
- 				of_device_get_match_data(&i2c->dev);
--	bd718xx->dev = &i2c->dev;
-+	bd718xx->chip.dev = &i2c->dev;
- 	dev_set_drvdata(&i2c->dev, bd718xx);
- 
--	bd718xx->regmap = devm_regmap_init_i2c(i2c, &bd718xx_regmap_config);
--	if (IS_ERR(bd718xx->regmap)) {
-+	bd718xx->chip.regmap = devm_regmap_init_i2c(i2c,
-+						    &bd718xx_regmap_config);
-+	if (IS_ERR(bd718xx->chip.regmap)) {
- 		dev_err(&i2c->dev, "regmap initialization failed\n");
--		return PTR_ERR(bd718xx->regmap);
-+		return PTR_ERR(bd718xx->chip.regmap);
+diff --git a/drivers/regulator/bd718x7-regulator.c b/drivers/regulator/bd718x7-regulator.c
+index ccea133778c8..9109920b4a06 100644
+--- a/drivers/regulator/bd718x7-regulator.c
++++ b/drivers/regulator/bd718x7-regulator.c
+@@ -1018,11 +1018,11 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 	struct bd718xx *mfd;
+ 	struct regulator_config config = { 0 };
+ 	struct bd718xx_pmic_inits pmic_regulators[] = {
+-		[BD718XX_TYPE_BD71837] = {
++		[ROHM_CHIP_TYPE_BD71837] = {
+ 			.r_datas = bd71837_regulators,
+ 			.r_amount = ARRAY_SIZE(bd71837_regulators),
+ 		},
+-		[BD718XX_TYPE_BD71847] = {
++		[ROHM_CHIP_TYPE_BD71847] = {
+ 			.r_datas = bd71847_regulators,
+ 			.r_amount = ARRAY_SIZE(bd71847_regulators),
+ 		},
+@@ -1037,15 +1037,15 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 		goto err;
  	}
  
--	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->regmap,
-+	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->chip.regmap,
- 				       bd718xx->chip_irq, IRQF_ONESHOT, 0,
- 				       &bd718xx_irq_chip, &bd718xx->irq_data);
- 	if (ret) {
-@@ -118,7 +119,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+-	if (mfd->chip_type >= BD718XX_TYPE_AMOUNT ||
+-	    !pmic_regulators[mfd->chip_type].r_datas) {
++	if (mfd->chip.chip_type >= ROHM_CHIP_TYPE_AMOUNT ||
++	    !pmic_regulators[mfd->chip.chip_type].r_datas) {
+ 		dev_err(&pdev->dev, "Unsupported chip type\n");
+ 		err = -EINVAL;
+ 		goto err;
  	}
  
- 	/* Configure short press to 10 milliseconds */
--	ret = regmap_update_bits(bd718xx->regmap,
-+	ret = regmap_update_bits(bd718xx->chip.regmap,
- 				 BD718XX_REG_PWRONCONFIG0,
- 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
- 				 BD718XX_PWRBTN_SHORT_PRESS_10MS);
-@@ -129,7 +130,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+ 	/* Register LOCK release */
+-	err = regmap_update_bits(mfd->regmap, BD718XX_REG_REGLOCK,
++	err = regmap_update_bits(mfd->chip.regmap, BD718XX_REG_REGLOCK,
+ 				 (REGLOCK_PWRSEQ | REGLOCK_VREG), 0);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Failed to unlock PMIC (%d)\n", err);
+@@ -1065,7 +1065,7 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 	 * for all reset types because OTP loading at READY will clear SEL
+ 	 * bit allowing HW defaults for power rails to be used
+ 	 */
+-	err = regmap_update_bits(mfd->regmap, BD718XX_REG_TRANS_COND1,
++	err = regmap_update_bits(mfd->chip.regmap, BD718XX_REG_TRANS_COND1,
+ 				 BD718XX_ON_REQ_POWEROFF_MASK |
+ 				 BD718XX_SWRESET_POWEROFF_MASK |
+ 				 BD718XX_WDOG_POWEROFF_MASK |
+@@ -1078,17 +1078,17 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 		dev_dbg(&pdev->dev, "Changed all resets from SVNS to READY\n");
  	}
  
- 	/* Configure long press to 10 seconds */
--	ret = regmap_update_bits(bd718xx->regmap,
-+	ret = regmap_update_bits(bd718xx->chip.regmap,
- 				 BD718XX_REG_PWRONCONFIG1,
- 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
- 				 BD718XX_PWRBTN_LONG_PRESS_10S);
-@@ -149,7 +150,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
+-	for (i = 0; i < pmic_regulators[mfd->chip_type].r_amount; i++) {
++	for (i = 0; i < pmic_regulators[mfd->chip.chip_type].r_amount; i++) {
  
- 	button.irq = ret;
+ 		const struct regulator_desc *desc;
+ 		struct regulator_dev *rdev;
+ 		const struct bd718xx_regulator_data *r;
  
--	ret = devm_mfd_add_devices(bd718xx->dev, PLATFORM_DEVID_AUTO,
-+	ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
- 				   bd718xx_mfd_cells,
- 				   ARRAY_SIZE(bd718xx_mfd_cells), NULL, 0,
- 				   regmap_irq_get_domain(bd718xx->irq_data));
-@@ -162,11 +163,11 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- static const struct of_device_id bd718xx_of_match[] = {
- 	{
- 		.compatible = "rohm,bd71837",
--		.data = (void *)BD718XX_TYPE_BD71837,
-+		.data = (void *)ROHM_CHIP_TYPE_BD71837,
- 	},
- 	{
- 		.compatible = "rohm,bd71847",
--		.data = (void *)BD718XX_TYPE_BD71847,
-+		.data = (void *)ROHM_CHIP_TYPE_BD71847,
- 	},
- 	{ }
- };
-diff --git a/include/linux/mfd/rohm-bd718x7.h b/include/linux/mfd/rohm-bd718x7.h
-index fd194bfc836f..7f2dbde402a1 100644
---- a/include/linux/mfd/rohm-bd718x7.h
-+++ b/include/linux/mfd/rohm-bd718x7.h
-@@ -4,14 +4,9 @@
- #ifndef __LINUX_MFD_BD718XX_H__
- #define __LINUX_MFD_BD718XX_H__
+-		r = &pmic_regulators[mfd->chip_type].r_datas[i];
++		r = &pmic_regulators[mfd->chip.chip_type].r_datas[i];
+ 		desc = &r->desc;
  
-+#include <linux/mfd/rohm-generic.h>
- #include <linux/regmap.h>
+ 		config.dev = pdev->dev.parent;
+-		config.regmap = mfd->regmap;
++		config.regmap = mfd->chip.regmap;
  
--enum {
--	BD718XX_TYPE_BD71837 = 0,
--	BD718XX_TYPE_BD71847,
--	BD718XX_TYPE_AMOUNT
--};
--
- enum {
- 	BD718XX_BUCK1 = 0,
- 	BD718XX_BUCK2,
-@@ -321,18 +316,17 @@ enum {
- 	BD718XX_PWRBTN_LONG_PRESS_15S
- };
- 
--struct bd718xx_clk;
--
- struct bd718xx {
--	unsigned int chip_type;
--	struct device *dev;
--	struct regmap *regmap;
--	unsigned long int id;
-+	/*
-+	 * Please keep this as the first member here as some
-+	 * drivers (clk) supporting more than one chip may only know this
-+	 * generic struct 'struct rohm_regmap_dev' and assume it is
-+	 * the first chunk of parent device's private data.
-+	 */
-+	struct rohm_regmap_dev chip;
- 
- 	int chip_irq;
- 	struct regmap_irq_chip_data *irq_data;
--
--	struct bd718xx_clk *clk;
- };
- 
- #endif /* __LINUX_MFD_BD718XX_H__ */
-diff --git a/include/linux/mfd/rohm-generic.h b/include/linux/mfd/rohm-generic.h
-new file mode 100644
-index 000000000000..bff15ac26f2c
---- /dev/null
-+++ b/include/linux/mfd/rohm-generic.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/* Copyright (C) 2018 ROHM Semiconductors */
-+
-+#ifndef __LINUX_MFD_ROHM_H__
-+#define __LINUX_MFD_ROHM_H__
-+
-+enum {
-+	ROHM_CHIP_TYPE_BD71837 = 0,
-+	ROHM_CHIP_TYPE_BD71847,
-+	ROHM_CHIP_TYPE_BD70528,
-+	ROHM_CHIP_TYPE_AMOUNT
-+};
-+
-+struct rohm_regmap_dev {
-+	unsigned int chip_type;
-+	struct device *dev;
-+	struct regmap *regmap;
-+};
-+
-+#endif
+ 		rdev = devm_regulator_register(&pdev->dev, desc, &config);
+ 		if (IS_ERR(rdev)) {
+@@ -1104,7 +1104,7 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 		 * can now switch the control from PMIC state machine to the
+ 		 * register interface
+ 		 */
+-		err = regmap_update_bits(mfd->regmap, r->init.reg,
++		err = regmap_update_bits(mfd->chip.regmap, r->init.reg,
+ 					 r->init.mask, r->init.val);
+ 		if (err) {
+ 			dev_err(&pdev->dev,
+@@ -1113,7 +1113,7 @@ static int bd718xx_probe(struct platform_device *pdev)
+ 			goto err;
+ 		}
+ 		for (j = 0; j < r->additional_init_amnt; j++) {
+-			err = regmap_update_bits(mfd->regmap,
++			err = regmap_update_bits(mfd->chip.regmap,
+ 						 r->additional_inits[j].reg,
+ 						 r->additional_inits[j].mask,
+ 						 r->additional_inits[j].val);
 -- 
 2.14.3
 
