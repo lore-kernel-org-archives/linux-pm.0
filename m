@@ -1,38 +1,42 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH 2/2] cpufreq: mediatek: Register an Energy Model
-Date: Tue,  5 Feb 2019 09:52:25 -0800
-Message-ID: <20190205175225.25923-2-mka@chromium.org>
-References: <20190205175225.25923-1-mka@chromium.org>
+From: Artur Rojek <contact@artur-rojek.eu>
+Subject: [PATCH 1/2] dt-bindings: power: supply: gpio-charger: Add status-gpios property
+Date: Tue,  5 Feb 2019 20:03:15 +0100
+Message-ID: <20190205190316.19296-1-contact@artur-rojek.eu>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190205175225.25923-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Quentin Perret <quentin.perret@arm.com>, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 List-Id: linux-pm@vger.kernel.org
 
-Try and register an Energy Model from mediatek-cpufreq to allow
-interested subsystems like the task scheduler to use the provided
-information.
+Add documentation for the "status-gpios" property.
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+ .../devicetree/bindings/power/supply/gpio-charger.txt         | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index eb8920d398181..e6168ee582783 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -460,6 +460,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
- 		return ret;
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+index adbb5dc5b6e9..b98a05a4973c 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+@@ -14,12 +14,16 @@ Required properties :
+      usb-cdp (USB charging downstream port)
+      usb-aca (USB accessory charger adapter)
+ 
++Optional properties:
++ - status-gpios: GPIO indicating the charger status
++
+ Example:
+ 
+ 	usb_charger: charger {
+ 		compatible = "gpio-charger";
+ 		charger-type = "usb-sdp";
+ 		gpios = <&gpf0 2 0 0 0>;
++		status-gpios = <&gpf0 3 0 0 0>;
  	}
  
-+	dev_pm_opp_of_register_em(policy->cpus);
-+
- 	cpumask_copy(policy->cpus, &info->cpus);
- 	policy->freq_table = freq_table;
- 	policy->driver_data = info;
+ 	battery {
 -- 
-2.20.1.611.gfbb209baf1-goog
+2.20.1
