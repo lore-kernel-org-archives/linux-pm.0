@@ -1,77 +1,99 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH v2] ALSA: hda/tegra: enable clock during probe
-Date: Tue, 05 Feb 2019 12:34:46 +0100
-Message-ID: <4564414.Hi6AUZdI4M@aspire.rjw.lan>
-References: <1548414418-5785-1-git-send-email-spujar@nvidia.com> <e7597220-2be7-ca29-50b7-c515c06cbed7@nvidia.com> <80a45aa3-8a22-959c-0c73-03ad2d6b1f8c@nvidia.com>
+Date: Tue, 05 Feb 2019 12:52:17 +0100
+Message-ID: <2224002.YA0vJHJrjz@aspire.rjw.lan>
+References: <1548414418-5785-1-git-send-email-spujar@nvidia.com> <07d58962-4c49-0575-2f95-4c885998bb52@nvidia.com> <20190204110510.GA10412@ulmo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <80a45aa3-8a22-959c-0c73-03ad2d6b1f8c@nvidia.com>
+In-Reply-To: <20190204110510.GA10412@ulmo>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Sameer Pujar <spujar@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Takashi Iwai <tiwai@suse.de>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Sameer Pujar <spujar@nvidia.com>, Jaroslav Kysela <perex@perex.cz>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, mkumard@nvidia.com, rlokhande@nvidia.com, sharadg@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 4, 2019 11:04:50 AM CET Jon Hunter wrote:
+On Monday, February 4, 2019 12:05:10 PM CET Thierry Reding wrote:
 > 
-> On 04/02/2019 08:16, Sameer Pujar wrote:
+> --FCuugMFkClbJLl1L
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
 > 
-> ...
-> 
-> > Objective is to have things working with or without CONFIG_PM enabled.
-> > From previous comments and discussions it appears that there is mixed
-> > response
-> > for calling hda_tegra_runtime_resume() or runtime PM APIs in probe()
-> > call. Need
-> > to have consensus regarding the best practice to be followed, which
-> > would eventually
-> > can be used in other drivers too.
-> > 
-> > Rafael is suggesting to use CONFIG_PM check to do manual setup or
-> > runtime PM setup in probe,
-> > which would bring back the earlier above mentioned concern.
-> > 
-> > if (IS_ENABLED(CONFIG_PM)) {
-> > do setup based on pm-runtime
-> > } else {
-> >     do manual setup
-> > }
-> > Both if/else might end up doing the same here.
-> > Do we really need CONFIG_PM check here?
-> > 
-> > Instead does below proposal appear fine?
-> > 
-> > probe() {
-> >     hda_tegra_enable_clock();
-> > }
-> > 
-> > probe_work() {
-> >     /* hda setup */
-> >     . . .
-> >     pm_runtime_set_active(); /* initial state as active */
-> >     pm_runtime_enable();
-> >     return;
-> > }
-> 
-> I believe that this still does not work, because if there is a
-> power-domain that needs to be turned on, this does not guarantee this.
-> So I think that you need to call pm_runtime_get ...
-> 
->  probe() {
->  	if (!IS_ENABLED(CONFIG_PM))
->  		hda_tegra_enable_clock();
->  }
-> 
+> On Mon, Feb 04, 2019 at 09:53:32AM +0000, Jon Hunter wrote:
+> >=20
+> >=20
+> > On 04/02/2019 08:45, Thierry Reding wrote:
+> >=20
+> > ...
+> >=20
+> > > The idea was, as I was saying below, to reuse dev_pm_ops even if
+> > > !CONFIG_PM. So pm_runtime_enable() could be something like this:
+> > >=20
+> > > 	pm_runtime_enable(dev)
+> > > 	{
+> > > 		if (!CONFIG_PM)
+> > > 			if (dev->pm_ops->resume)
+> > > 				dev->pm_ops->resume(dev);
+> > >=20
+> > > 		...
+> > > 	}
+> > >=20
+> > > But that's admittedly somewhat of a stretch. This could of course be
+> > > made somewhat nicer by adding an explicit variant, say:
+> > >=20
+> > > 	pm_runtime_enable_foo(dev)
+> > > 	{
+> > > 		if (!CONFIG_PM && dev->pm_ops->resume)
+> > > 			return dev->pm_ops->resume(dev);
+> > >=20
+> > > 		return 0;
+> > > 	}
+> > >=20
+> > > Maybe the fact that I couldn't come up with a good name is a good
+> > > indication that this is a bad idea...
+> >=20
+> > How about some new APIs called ...
+> >=20
+> > pm_runtime_enable_get()
+> > pm_runtime_enable_get_sync()
+> > pm_runtime_put_disable() (implies a put_sync)
+> >=20
+> > ... and in these APIs we add ...
+> >=20
+> > pm_runtime_enable_get(dev)
+> > {
+> > 	if (!CONFIG_PM && dev->pm_ops->resume)
+> > 		return dev->pm_ops->resume(dev);
 
-But alas, there are no PM domains with CONFIG_PM unset.
+No, we're not adding this to the core.
 
-CONFIG_PM unset means that the *driver* has to know how to turn on the
-device and that has to be sufficient.
+While in principle you could provide a set of pointers to the routines
+you want to be called when CONFIG_PM is unset, IMO it is just cleaner
+and more straightforward (and fewer lines of code for that matter) to add
+a simple conditional to each ->probe() and ->remove().
 
-Which basically is my point when I'm saying that this information is
-not available to the core and it cannot do anything to handle this
-case without the extra knowledge.
+[cut]
+
+> > None, but seems overkill just for this case.
+> 
+> But that's precisely the point. It's not just about this case. We've
+> already got some drivers where we do a similar dance just to be able to
+> support the, let's admit it, exotic case where somebody turns off PM. I
+> think supporting !PM might have made sense at a point where we had no
+> support for power management at all. But I think we've come a long way
+> since then, and while we may still have some ways to go in some areas,
+> we do fairly decent runtime PM most of the time, to the point where I no
+> longer see any benefits in !PM.
+
+This IMO is an excellent point.
+
+Trying to handle the !CONFIG_PM case only really makes sense if you know
+what to do to turn the device on without relying on things like PM domains
+etc which are not even available if CONFIG_PM is not set.
+
+IOW, if any of the platforms your driver is expected to work with require
+something like genpd to even make the device functional, I wouldn't bother.
 
 Thanks,
 Rafael
