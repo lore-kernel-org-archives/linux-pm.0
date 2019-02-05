@@ -1,279 +1,80 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [PATCH v6 10/10] watchdog: bd70528: Initial support for ROHM BD70528
- watchdog block
-Date: Tue, 5 Feb 2019 11:09:58 +0200
-Message-ID: <a0079e8a89a770933062c14cab82d24c1370266e.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: [PATCH v4 01/10] dt-bindings: mfd: add DT bindings for max77650
+Date: Tue,  5 Feb 2019 10:12:28 +0100
+Message-ID: <20190205091237.6448-2-brgl@bgdev.pl>
+References: <20190205091237.6448-1-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1549356505.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <20190205091237.6448-1-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mazziesaccount@gmail.com, matti.vaittinen@fi.rohmeurope.com
-Cc: heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Initial support for watchdog block included in ROHM BD70528
-power management IC.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Configurations for low power states are still to be checked.
+Add a DT binding document for max77650 ultra-low power PMIC. This
+describes the core mfd device and the GPIO module.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
+ .../devicetree/bindings/mfd/max77650.txt      | 47 +++++++++++++++++++
+ 1 file changed, 47 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
 
-Please note that I translated following comment:
-
-"Otherwise I am ok with the patch." from Guenter into an acked-by
-above. Please let me know if that's not Ok.
-
- drivers/watchdog/Kconfig       |  12 +++
- drivers/watchdog/Makefile      |   1 +
- drivers/watchdog/bd70528_wdt.c | 190 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 203 insertions(+)
- create mode 100644 drivers/watchdog/bd70528_wdt.c
-
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 57f017d74a97..f30e3a3e886e 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -90,6 +90,18 @@ config SOFT_WATCHDOG_PRETIMEOUT
- 	  watchdog. Be aware that governors might affect the watchdog because it
- 	  is purely software, e.g. the panic governor will stall it!
- 
-+config BD70528_WATCHDOG
-+	tristate "ROHM BD70528 PMIC Watchdog"
-+	depends on MFD_ROHM_BD70528
-+	select WATCHDOG_CORE
-+	help
-+	  Support for the watchdog in the ROHM BD70528 PMIC. Watchdog trigger
-+	  cause system reset.
-+
-+	  Say Y here to include support for the ROHM BD70528 watchdog.
-+	  Alternatively say M to compile the driver as a module,
-+	  which will be called bd70528_wdt.
-+
- config DA9052_WATCHDOG
- 	tristate "Dialog DA9052 Watchdog"
- 	depends on PMIC_DA9052 || COMPILE_TEST
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index a0917ef28e07..1ce87a3b1172 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -204,6 +204,7 @@ obj-$(CONFIG_WATCHDOG_SUN4V)		+= sun4v_wdt.o
- obj-$(CONFIG_XEN_WDT) += xen_wdt.o
- 
- # Architecture Independent
-+obj-$(CONFIG_BD70528_WATCHDOG) += bd70528_wdt.o
- obj-$(CONFIG_DA9052_WATCHDOG) += da9052_wdt.o
- obj-$(CONFIG_DA9055_WATCHDOG) += da9055_wdt.o
- obj-$(CONFIG_DA9062_WATCHDOG) += da9062_wdt.o
-diff --git a/drivers/watchdog/bd70528_wdt.c b/drivers/watchdog/bd70528_wdt.c
+diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
 new file mode 100644
-index 000000000000..cab802ddde06
+index 000000000000..0a40e9c6aab8
 --- /dev/null
-+++ b/drivers/watchdog/bd70528_wdt.c
-@@ -0,0 +1,190 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 ROHM Semiconductors
-+// ROHM BD70528MWV watchdog driver
++++ b/Documentation/devicetree/bindings/mfd/max77650.txt
+@@ -0,0 +1,47 @@
++MAX77650 ultra low-power PMIC from Maxim Integrated.
 +
-+#include <linux/bcd.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/rohm-bd70528.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/watchdog.h>
++Required properties:
++-------------------
++- compatible:		Must be "maxim,max77650"
++- reg:			I2C device address.
++- interrupts:		The interrupt on the parent the controller is
++			connected to.
++- interrupt-parent:	phandle of the parent interrupt controller.
++- interrupt-controller: Marks the device node as an interrupt controller.
++- #interrupt-cells:	Must be <2>.
 +
-+/*
-+ * Max time we can set is 1 hour, 59 minutes and 59 seconds
-+ * and Minimum time is 1 second
-+ */
-+#define WDT_MAX_MS	((2 * 60 * 60 - 1) * 1000)
-+#define WDT_MIN_MS	1000
-+#define DEFAULT_TIMEOUT	60
++- gpio-controller : 	Marks the device node as a gpio controller.
++- #gpio-cells : 	Must be <2>. The first cell is the pin number and
++			the second cell is used to specify the gpio active
++			state.
 +
-+struct wdtbd70528 {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct mutex *rtc_lock;
-+	struct watchdog_device wdt;
-+};
++Optional properties:
++--------------------
++gpio-line-names:	Single string containing the name of the GPIO line.
 +
-+static int bd70528_wdt_set_locked(struct wdtbd70528 *w, int enable)
-+{
-+	struct bd70528 *bd70528;
++The GPIO-controller module is represented as part of the top-level PMIC
++node. The device exposes a single GPIO line.
 +
-+	bd70528 = container_of(w->rtc_lock, struct bd70528, rtc_timer_lock);
-+	return bd70528->wdt_set(bd70528, enable, NULL);
-+}
++For device-tree bindings of other sub-modules (regulator, power supply,
++LEDs and onkey) refer to the binding documents under the respective
++sub-system directories.
 +
-+static int bd70528_wdt_set(struct wdtbd70528 *w, int enable)
-+{
-+	int ret;
++For more details on GPIO bindings, please refer to the generic GPIO DT
++binding document <devicetree/bindings/gpio/gpio.txt>.
 +
-+	mutex_lock(w->rtc_lock);
-+	ret = bd70528_wdt_set_locked(w, enable);
-+	mutex_unlock(w->rtc_lock);
++Example:
++--------
 +
-+	return ret;
-+}
++	pmic: max77650@48 {
++		compatible = "maxim,max77650";
++		reg = <0x48>;
 +
-+static int bd70528_wdt_start(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
++		interrupt-controller;
++		interrupt-parent = <&gpio2>;
++		#interrupt-cells = <2>;
++		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
 +
-+	dev_dbg(w->dev, "WDT ping...\n");
-+	return bd70528_wdt_set(w, 1);
-+}
-+
-+static int bd70528_wdt_stop(struct watchdog_device *wdt)
-+{
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	dev_dbg(w->dev, "WDT stopping...\n");
-+	return bd70528_wdt_set(w, 0);
-+}
-+
-+static int bd70528_wdt_set_timeout(struct watchdog_device *wdt,
-+				    unsigned int timeout)
-+{
-+	unsigned int hours;
-+	unsigned int minutes;
-+	unsigned int seconds;
-+	int ret;
-+	struct wdtbd70528 *w = watchdog_get_drvdata(wdt);
-+
-+	seconds = timeout;
-+	hours = timeout / (60 * 60);
-+	/* Maximum timeout is 1h 59m 59s => hours is 1 or 0 */
-+	if (hours)
-+		seconds -= (60 * 60);
-+	minutes = seconds / 60;
-+	seconds = seconds % 60;
-+
-+	mutex_lock(w->rtc_lock);
-+
-+	ret = bd70528_wdt_set_locked(w, 0);
-+	if (ret)
-+		goto out_unlock;
-+
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_HOUR,
-+				 BD70528_MASK_WDT_HOUR, hours);
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT hours\n");
-+		goto out_en_unlock;
-+	}
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_MINUTE,
-+				 BD70528_MASK_WDT_MINUTE, bin2bcd(minutes));
-+	if (ret) {
-+		dev_err(w->dev, "Failed to set WDT minutes\n");
-+		goto out_en_unlock;
-+	}
-+	ret = regmap_update_bits(w->regmap, BD70528_REG_WDT_SEC,
-+				 BD70528_MASK_WDT_SEC, bin2bcd(seconds));
-+	if (ret)
-+		dev_err(w->dev, "Failed to set WDT seconds\n");
-+	else
-+		dev_dbg(w->dev, "WDT tmo set to %u\n", timeout);
-+
-+out_en_unlock:
-+	ret = bd70528_wdt_set_locked(w, 1);
-+out_unlock:
-+	mutex_unlock(w->rtc_lock);
-+
-+	return ret;
-+}
-+
-+static const struct watchdog_info bd70528_wdt_info = {
-+	.identity = "bd70528-wdt",
-+	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
-+};
-+
-+static const struct watchdog_ops bd70528_wdt_ops = {
-+	.start		= bd70528_wdt_start,
-+	.stop		= bd70528_wdt_stop,
-+	.set_timeout	= bd70528_wdt_set_timeout,
-+};
-+
-+static int bd70528_wdt_probe(struct platform_device *pdev)
-+{
-+	struct bd70528 *bd70528;
-+	struct wdtbd70528 *w;
-+	int ret;
-+	unsigned int reg;
-+
-+	bd70528 = dev_get_drvdata(pdev->dev.parent);
-+	if (!bd70528) {
-+		dev_err(&pdev->dev, "No MFD driver data\n");
-+		return -EINVAL;
-+	}
-+	w = devm_kzalloc(&pdev->dev, sizeof(*w), GFP_KERNEL);
-+	if (!w)
-+		return -ENOMEM;
-+
-+	w->regmap = bd70528->chip.regmap;
-+	w->rtc_lock = &bd70528->rtc_timer_lock;
-+	w->dev = &pdev->dev;
-+
-+	w->wdt.info = &bd70528_wdt_info;
-+	w->wdt.ops =  &bd70528_wdt_ops;
-+	w->wdt.min_hw_heartbeat_ms = WDT_MIN_MS;
-+	w->wdt.max_hw_heartbeat_ms = WDT_MAX_MS;
-+	w->wdt.parent = pdev->dev.parent;
-+	w->wdt.timeout = DEFAULT_TIMEOUT;
-+	watchdog_set_drvdata(&w->wdt, w);
-+	watchdog_init_timeout(&w->wdt, 0, pdev->dev.parent);
-+
-+	ret = bd70528_wdt_set_timeout(&w->wdt, w->wdt.timeout);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to set the watchdog timeout\n");
-+		return ret;
-+	}
-+
-+	mutex_lock(w->rtc_lock);
-+	ret = regmap_read(w->regmap, BD70528_REG_WDT_CTRL, &reg);
-+	mutex_unlock(w->rtc_lock);
-+
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to get the watchdog state\n");
-+		return ret;
-+	}
-+	if (reg & BD70528_MASK_WDT_EN) {
-+		dev_dbg(&pdev->dev, "watchdog was running during probe\n");
-+		set_bit(WDOG_HW_RUNNING, &w->wdt.status);
-+	}
-+
-+	ret = devm_watchdog_register_device(&pdev->dev, &w->wdt);
-+	if (ret < 0)
-+		dev_err(&pdev->dev, "watchdog registration failed: %d\n", ret);
-+
-+	return ret;
-+}
-+static struct platform_driver bd70528_wdt = {
-+	.driver = {
-+		.name = "bd70528-wdt"
-+	},
-+	.probe = bd70528_wdt_probe,
-+};
-+
-+module_platform_driver(bd70528_wdt);
-+
-+MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
-+MODULE_DESCRIPTION("BD70528 watchdog driver");
-+MODULE_LICENSE("GPL");
++		gpio-controller;
++		#gpio-cells = <2>;
++		gpio-line-names = "max77650-charger";
++	};
 -- 
-2.14.3
-
-
--- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+2.20.1
