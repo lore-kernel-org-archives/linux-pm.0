@@ -1,123 +1,104 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
- "consumer autoprobe" flag
-Date: Tue, 5 Feb 2019 09:15:49 +0100
-Message-ID: <CAPDyKFrq-r-rFDDB3yU=W4mOF2-A4xGGomqFqUba6MVWZugHmQ@mail.gmail.com>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <CAPDyKFqG-wN+=9i4X+BeREekzKNt0icE==P60Cu1FhsGRNcJjg@mail.gmail.com>
- <CAJZ5v0g0BC900-u1wivAWqq=XomPgpfpz7s=sWgvCML+2MwLgg@mail.gmail.com> <CAJZ5v0jOVLZDoW5BAy9obp7AptTYzKikFo7Qd15kNt5Y9=vXRQ@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH 1/2] PM-runtime: move runtime accounting on ktime_get_mono_fast_ns()
+Date: Tue, 5 Feb 2019 09:39:59 +0100
+Message-ID: <CAKfTPtCqj62fYHYDth0evMqBYxY9JgqVBngDe57D4XqBKw35UA@mail.gmail.com>
+References: <1549297553-17647-1-git-send-email-vincent.guittot@linaro.org>
+ <1549297553-17647-2-git-send-email-vincent.guittot@linaro.org> <CAPDyKFrzs5PvrK_23HARKYkytPr3LF4S7j5rJ6LJANKmm7BMrA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jOVLZDoW5BAy9obp7AptTYzKikFo7Qd15kNt5Y9=vXRQ@mail.gmail.com>
+In-Reply-To: <CAPDyKFrzs5PvrK_23HARKYkytPr3LF4S7j5rJ6LJANKmm7BMrA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Biju Das <biju.das@bp.renesas.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 4 Feb 2019 at 12:45, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Tue, 5 Feb 2019 at 09:10, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> On Mon, Feb 4, 2019 at 12:40 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Mon, 4 Feb 2019 at 17:25, Vincent Guittot <vincent.guittot@linaro.org> wrote:
 > >
-> > On Fri, Feb 1, 2019 at 4:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Fri, 1 Feb 2019 at 02:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > >
-> > > > Hi Greg at al,
-> > > >
-> > > > This is a combination of the two device links series I have posted
-> > > > recently (https://lore.kernel.org/lkml/2493187.oiOpCWJBV7@aspire.rjw.lan/
-> > > > and https://lore.kernel.org/lkml/2405639.4es7pRLqn0@aspire.rjw.lan/) rebased
-> > > > on top of your driver-core-next branch.
-> > > >
-> > > > Recently I have been looking at the device links code because of the
-> > > > recent discussion on possibly using them in the DRM subsystem (see for
-> > > > example https://marc.info/?l=linux-pm&m=154832771905309&w=2) and I have
-> > > > found a few issues in that code which should be addressed by this patch
-> > > > series.  Please refer to the patch changelogs for details.
-> > > >
-> > > > None of the problems addressed here should be manifesting themselves in
-> > > > mainline kernel today, but if there are more device links users in the
-> > > > future, they most likely will be encountered sooner or later.  Also they
-> > > > need to be fixed for the DRM use case to be supported IMO.
-> > > >
-> > > > On top of this the series makes device links support the "composite device"
-> > > > use case in the DRM subsystem mentioned above (essentially, the last patch
-> > > > in the series is for that purpose).
-> > > >
-> > >
-> > > Rafael, Greg, I have reviewed patch 1 -> 7, they all look good to me.
-> > >
-> > > If not too late, feel free to add for the first 7 patches:
-> > >
-> > > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Similarly to what happened whith autosuspend, a deadlock has been raised
+> > with runtime accounting in the sequence:
 > >
-> > Thanks!
+> > change_clocksource
+> >     ...
+> >     write_seqcount_begin
+> >     ...
+> >     timekeeping_update
+> >         ...
+> >         sh_cmt_clocksource_enable
+> >             ...
+> >             rpm_resume
+> >                 update_pm_runtime_accounting
+> >                     ktime_get
+> >                         do
+> >                             read_seqcount_begin
+> >                         while read_seqcount_retry
+> >     ....
+> >     write_seqcount_end
 > >
-> > > Although, I want to point out one problem that I have found when using
-> > > device links. I believe it's already there, even before this series,
-> > > but just wanted to described it for your consideration.
-> > >
-> > > This is what happens:
-> > > I have a platform driver is being probed. During ->probe() the driver
-> > > adds a device link like this:
-> > >
-> > > link = device_link_add(consumer-dev, supplier-dev, DL_FLAG_STATELESS |
-> > > DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
-> > >
-> > > At some point later in ->probe(), the driver realizes that it must
-> > > remove the device link, either because it encountered an error or
-> > > simply because it doesn't need the device link to be there anymore.
-> > > Thus it calls:
-> > >
-> > > device_link_del(link);
-> > >
-> > > When probe finished of the driver, the runtime PM usage count for the
-> > > supplier-dev remains increased to 1 and thus it never becomes runtime
-> > > suspended.
+> > Move runtime accounting on ktime_get_mono_fast_ns()
+> > With ktime_get_mono_fast_ns, the timestamp is not guaranteed to be
+> > monotonic across an update of timekeeping and as a result time can goes
+> > backward. Add a test to skip accounting for such situation which should
+> > stay exceptional.
 > >
-> > OK, so this is a tricky one.
-> >
-> > With this series applied, if the link actually goes away after the
-> > cleanup device_link_del(), device_link_free() should take care of
-> > dropping the PM-runtime count of the supplier.  If it doesn't do that,
-> > there is a mistake in the code that needs to be fixed.
-
-Unless this is a of your "distracted part", then I think this is what
-happening and thus is a problem.
-
-> >
-> > However, if the link doesn't go away after the cleanup
-> > device_link_del(), the supplier's PM-runtime count will not be
-> > dropped, because the core doesn't know whether or not the
-> > device_link_del() has been called by the same entity that caused the
-> > supplier's PM-runtime count to be incremented.  For example, if the
-> > consumer device is suspended after the device_link_add() that
-> > incremented the supplier's PM-runtime count and then suspended again,
+> > Fixes: a08c2a5a3194 ("PM-runtime: Replace jiffies-based accounting with ktime-based accounting")
+> > Reported-by: Biju Das <biju.das@bp.renesas.com>
+> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 >
-> I was distracted while writing this, sorry for the confusion.
->
-> So let me rephrase:
->
-> For example, if the consumer device is suspended after the
-> device_link_add() that incremented the supplier's PM-runtime count and
-> then resumed again, the rpm_active refcount will be greater than one
-> because of the last resume and not because of the initial link
-> creation.  In that case, dropping the supplier's PM-runtime count on
-> link deletion may not work as expected.
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-I see what your are saying and I must admit, by looking at the code,
-that it has turned into being rather complicated. Assuming of good
-reasons, of course.
-
-Anyway, I will play a little bit more with my tests to see what I can find out.
+Thanks
 
 >
-> > Arguably, device_link_del() could be made automatically drop the
-> > supplier's PM-runtime count by one if the link's rpm_active refcount
-> > is not one, but there will be failing scenarios in that case too
-> > AFAICS.
-
-Let's see.
-
-Kind regards
-Uffe
+> Kind regards
+> Uffe
+>
+>
+> > ---
+> >  drivers/base/power/runtime.c | 17 +++++++++++++----
+> >  1 file changed, 13 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 1caa394..50740da 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -66,13 +66,22 @@ static int rpm_suspend(struct device *dev, int rpmflags);
+> >   */
+> >  void update_pm_runtime_accounting(struct device *dev)
+> >  {
+> > -       u64 now = ktime_to_ns(ktime_get());
+> > +       u64 now = ktime_get_mono_fast_ns();
+> > +       u64 last = dev->power.accounting_timestamp;
+> >         u64 delta;
+> >
+> > -       delta = now - dev->power.accounting_timestamp;
+> > -
+> >         dev->power.accounting_timestamp = now;
+> >
+> > +       /*
+> > +        * Because ktime_get_mono_fast_ns() is not monotonic during
+> > +        * timekeeping update, we must ensure that now is after the last saved
+> > +        * timesptamp
+> > +        */
+> > +       if (now < last)
+> > +               return;
+> > +
+> > +       delta = now - last;
+> > +
+> >         if (dev->power.disable_depth > 0)
+> >                 return;
+> >
+> > @@ -1312,7 +1321,7 @@ void pm_runtime_enable(struct device *dev)
+> >
+> >                 /* About to enable runtime pm, set accounting_timestamp to now */
+> >                 if (!dev->power.disable_depth)
+> > -                       dev->power.accounting_timestamp = ktime_to_ns(ktime_get());
+> > +                       dev->power.accounting_timestamp = ktime_get_mono_fast_ns();
+> >         } else {
+> >                 dev_warn(dev, "Unbalanced %s!\n", __func__);
+> >         }
+> > --
+> > 2.7.4
+> >
