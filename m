@@ -1,133 +1,89 @@
-From: Artur Rojek <contact@artur-rojek.eu>
-Subject: [PATCH 2/2] power: supply: gpio-charger: Add support for charger status.
-Date: Tue,  5 Feb 2019 20:03:16 +0100
-Message-ID: <20190205190316.19296-2-contact@artur-rojek.eu>
-References: <20190205190316.19296-1-contact@artur-rojek.eu>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
+Date: Tue, 5 Feb 2019 22:23:08 +0100
+Message-ID: <20190205212308.GA2816@amd>
+References: <20190203052007.27392-1-harry.pan@intel.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190205190316.19296-1-contact@artur-rojek.eu>
+Content-Disposition: inline
+In-Reply-To: <20190203052007.27392-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
+To: Harry Pan <harry.pan@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Introduce optional support of POWER_SUPPLY_PROP_STATUS for chargers
-which provide charging status GPIO.
 
-Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
----
- drivers/power/supply/gpio-charger.c | 53 +++++++++++++++++++++++------
- 1 file changed, 42 insertions(+), 11 deletions(-)
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 7e4f11d5a230..ebe986f09472 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -29,11 +29,13 @@
- 
- struct gpio_charger {
- 	unsigned int irq;
-+	unsigned int status_irq;
- 	bool wakeup_enabled;
- 
- 	struct power_supply *charger;
- 	struct power_supply_desc charger_desc;
- 	struct gpio_desc *gpiod;
-+	struct gpio_desc *status;
- };
- 
- static irqreturn_t gpio_charger_irq(int irq, void *devid)
-@@ -59,6 +61,12 @@ static int gpio_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		val->intval = gpiod_get_value_cansleep(gpio_charger->gpiod);
- 		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (gpiod_get_value_cansleep(gpio_charger->status))
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -93,8 +101,29 @@ static enum power_supply_type gpio_charger_get_type(struct device *dev)
- 	return POWER_SUPPLY_TYPE_UNKNOWN;
- }
- 
-+static int gpio_charger_get_irq(struct device *dev, void *dev_id,
-+				struct gpio_desc *gpio)
-+{
-+	int ret, irq = gpiod_to_irq(gpio);
-+
-+	if (irq > 0) {
-+		ret = devm_request_any_context_irq(dev, irq, gpio_charger_irq,
-+						   IRQF_TRIGGER_RISING |
-+						   IRQF_TRIGGER_FALLING,
-+						   dev_name(dev),
-+						   dev_id);
-+		if (ret < 0) {
-+			dev_warn(dev, "Failed to request irq: %d\n", ret);
-+			irq = 0;
-+		}
-+	}
-+
-+	return irq;
-+}
-+
- static enum power_supply_property gpio_charger_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_STATUS /* Must always be last in the array. */
- };
- 
- static int gpio_charger_probe(struct platform_device *pdev)
-@@ -105,7 +134,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 	struct gpio_charger *gpio_charger;
- 	struct power_supply_desc *charger_desc;
- 	unsigned long flags;
--	int irq, ret;
-+	int ret;
- 
- 	if (!pdata && !dev->of_node) {
- 		dev_err(dev, "No platform data\n");
-@@ -151,9 +180,16 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(gpio_charger->gpiod);
- 	}
- 
-+	gpio_charger->status = devm_gpiod_get_optional(dev, "status", GPIOD_IN);
-+	if (IS_ERR(gpio_charger->status))
-+		return PTR_ERR(gpio_charger->status);
-+
- 	charger_desc = &gpio_charger->charger_desc;
- 	charger_desc->properties = gpio_charger_properties;
- 	charger_desc->num_properties = ARRAY_SIZE(gpio_charger_properties);
-+	/* Remove POWER_SUPPLY_PROP_STATUS from the supported properties. */
-+	if (!gpio_charger->status)
-+		charger_desc->num_properties -= 1;
- 	charger_desc->get_property = gpio_charger_get_property;
- 
- 	psy_cfg.of_node = dev->of_node;
-@@ -180,16 +216,11 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	irq = gpiod_to_irq(gpio_charger->gpiod);
--	if (irq > 0) {
--		ret = devm_request_any_context_irq(dev, irq, gpio_charger_irq,
--				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
--				dev_name(dev), gpio_charger->charger);
--		if (ret < 0)
--			dev_warn(dev, "Failed to request irq: %d\n", ret);
--		else
--			gpio_charger->irq = irq;
--	}
-+	gpio_charger->irq = gpio_charger_get_irq(dev, gpio_charger->charger,
-+						 gpio_charger->gpiod);
-+	gpio_charger->status_irq = gpio_charger_get_irq(dev,
-+							gpio_charger->charger,
-+							gpio_charger->status);
- 
- 	platform_set_drvdata(pdev, gpio_charger);
- 
--- 
-2.20.1
+On Sun 2019-02-03 13:20:07, Harry Pan wrote:
+> This patch gives the reader an intuitive metric of the time cost by
+> the kernel issuing a filesystem sync during suspend; although developer
+> can guess by the timestamp of next log or enable the ftrace power event
+> for manual calculation, this manner is easier to read and benefits the
+> automatic script.
+
+Do we really need this functionality?
+
+As you explained, developers can already use next timestamp or
+ftrace... and this is really not that interesting number.
+
+								Pavel
+
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
+> ---
+>  kernel/power/suspend.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 0bd595a0b610..f3b7c64f2242 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -550,6 +550,8 @@ static void suspend_finish(void)
+>  static int enter_state(suspend_state_t state)
+>  {
+>  	int error;
+> +	ktime_t start, end, elapsed;
+> +	unsigned int elapsed_msecs;
+> =20
+>  	trace_suspend_resume(TPS("suspend_enter"), state, true);
+>  	if (state =3D=3D PM_SUSPEND_TO_IDLE) {
+> @@ -570,9 +572,14 @@ static int enter_state(suspend_state_t state)
+> =20
+>  #ifndef CONFIG_SUSPEND_SKIP_SYNC
+>  	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> +	start =3D ktime_get_boottime();
+>  	pr_info("Syncing filesystems ... ");
+>  	ksys_sync();
+> -	pr_cont("done.\n");
+> +	end =3D ktime_get_boottime();
+> +	elapsed =3D ktime_sub(end, start);
+> +	elapsed_msecs =3D ktime_to_ms(elapsed);
+> +	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
+> +		elapsed_msecs % 1000);
+>  	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+>  #endif
+> =20
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlxZ/rwACgkQMOfwapXb+vKxWQCffU49bj6+FkVTyZL3n0zebj5I
+4vQAn2CajxkYlaWHbdifSUUeoQhe0y4+
+=gDCM
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
