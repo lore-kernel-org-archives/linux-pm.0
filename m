@@ -1,63 +1,120 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Tue, 05 Feb 2019 12:55:01 +0100
-Message-ID: <1702604.tyfAVjpQ0o@aspire.rjw.lan>
-References: <20190203052007.27392-1-harry.pan@intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
+Date: Tue, 05 Feb 2019 13:04:17 +0100
+Message-ID: <2490415.lMhmKlOKko@aspire.rjw.lan>
+References: <000001d4ba4e$d33c3220$79b49660$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190203052007.27392-1-harry.pan@intel.com>
+In-Reply-To: <000001d4ba4e$d33c3220$79b49660$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Harry Pan <harry.pan@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, February 3, 2019 6:20:07 AM CET Harry Pan wrote:
-> This patch gives the reader an intuitive metric of the time cost by
-> the kernel issuing a filesystem sync during suspend; although developer
-> can guess by the timestamp of next log or enable the ftrace power event
-> for manual calculation, this manner is easier to read and benefits the
-> automatic script.
+On Friday, February 1, 2019 5:54:37 PM CET Doug Smythies wrote:
+> On 2019.01.30 16:05 Rafael J. Wysocki wrote:
 > 
-> Signed-off-by: Harry Pan <harry.pan@intel.com>
-> ---
->  kernel/power/suspend.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > The current iowait boosting mechanism in intel_pstate_update_util()
+> > is quite aggressive, as it goes to the maximum P-state right away,
+> > and may cause excessive amounts of energy to be used, which is not
+> > desirable and arguably isn't necessary too.
+> >
+> > Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
+> > more energy efficient") that reworked the analogous iowait boost
+> > mechanism in the schedutil governor and make the iowait boosting
+> > in intel_pstate_update_util() work along the same lines.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/cpufreq/intel_pstate.c |   46 +++++++++++++++++++++++++----------------
+> >  1 file changed, 29 insertions(+), 17 deletions(-)
+> >
+> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> > @@ -50,6 +50,8 @@
+> >  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+> >  #define fp_toint(X) ((X) >> FRAC_BITS)
+> > 
+> > +#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
+> > +
+> >  #define EXT_BITS 6
+> >  #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
+> >  #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
+> > @@ -1678,17 +1680,14 @@ static inline int32_t get_avg_pstate(str
+> >  static inline int32_t get_target_pstate(struct cpudata *cpu)
+> >  {
+> > 	struct sample *sample = &cpu->sample;
+> > -	int32_t busy_frac, boost;
+> > +	int32_t busy_frac;
+> > 	int target, avg_pstate;
+> > 
+> > 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
+> > 			   sample->tsc);
+> > 
+> > -	boost = cpu->iowait_boost;
+> > -	cpu->iowait_boost >>= 1;
+> > -
+> > -	if (busy_frac < boost)
+> > -		busy_frac = boost;
+> > +	if (busy_frac < cpu->iowait_boost)
+> > +		busy_frac = cpu->iowait_boost;
+> > 
+> > 	sample->busy_scaled = busy_frac * 100;
+> > 
+> > @@ -1767,22 +1766,35 @@ static void intel_pstate_update_util(str
+> > 	if (smp_processor_id() != cpu->cpu)
+> >  		return;
+> >
+> > +	delta_ns = time - cpu->last_update;
+> > 	if (flags & SCHED_CPUFREQ_IOWAIT) {
+> > -		cpu->iowait_boost = int_tofp(1);
+> > -		cpu->last_update = time;
+> > -		/*
+> > -		 * The last time the busy was 100% so P-state was max anyway
+> > -		 * so avoid overhead of computation.
+> > -		 */
+> > -		if (fp_toint(cpu->sample.busy_scaled) == 100)
+> > -			return;
+> > -
+> > -		goto set_pstate;
+> > +		/* Start over if the CPU may have been idle. */
+> > +		if (delta_ns > TICK_NSEC) {
+> > +			cpu->iowait_boost = ONE_EIGHTH_FP;
+> > +		} else if (cpu->iowait_boost) {
+> > +			cpu->iowait_boost <<= 1;
+> > +			if (cpu->iowait_boost >= int_tofp(1)) {
+> > +				cpu->iowait_boost = int_tofp(1);
+> > +				cpu->last_update = time;
+> > +				/*
+> > +				 * The last time the busy was 100% so P-state
+> > +				 * was max anyway, so avoid the overhead of
+> > +				 * computation.
+> > +				 */
+> > +				if (fp_toint(cpu->sample.busy_scaled) == 100)
+> > +					return;
 > 
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 0bd595a0b610..f3b7c64f2242 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -550,6 +550,8 @@ static void suspend_finish(void)
->  static int enter_state(suspend_state_t state)
->  {
->  	int error;
-> +	ktime_t start, end, elapsed;
-
-Why do you need three vars here?  One should be sufficient.
-
-> +	unsigned int elapsed_msecs;
->  
->  	trace_suspend_resume(TPS("suspend_enter"), state, true);
->  	if (state == PM_SUSPEND_TO_IDLE) {
-> @@ -570,9 +572,14 @@ static int enter_state(suspend_state_t state)
->  
->  #ifndef CONFIG_SUSPEND_SKIP_SYNC
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-> +	start = ktime_get_boottime();
-
-Why _boottime()?
-
->  	pr_info("Syncing filesystems ... ");
->  	ksys_sync();
-> -	pr_cont("done.\n");
-> +	end = ktime_get_boottime();
-> +	elapsed = ktime_sub(end, start);
-> +	elapsed_msecs = ktime_to_ms(elapsed);
-> +	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
-> +		elapsed_msecs % 1000);
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
->  #endif
->  
+> Hi Rafael,
 > 
+> By exiting here, the trace, if enabled, is also bypassed.
+> We want the trace sample.
+
+Fair enough, but the return is there regardless of this patch.
+
+Maybe it should be fixed separately?
+
+> Also, there is a generic:
+> "If the target ptstate is the same as before, then don't set it"
+> later on.
+> Suggest to delete this test and exit condition. (I see that this early
+> exit was done before also.)
+
+Well, exactly.
+
+It is not unreasonable to boost the frequency right away for an IO-waiter
+without waiting for the next sample time IMO.
