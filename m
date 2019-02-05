@@ -1,87 +1,192 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH 1/1] PM / Domains: Add multi PM domains support for attach_dev
-Date: Tue, 5 Feb 2019 10:39:47 +0100
-Message-ID: <CAPDyKFrnUK1_=0okEPTxCjACbOpYuOF9h3oK6pBTXrR9OYje+A@mail.gmail.com>
-References: <1545930550-9906-1-git-send-email-aisheng.dong@nxp.com>
- <CAPDyKFrP8HOum_4S0-4Bx+sYbTNSyctv3rQDB78zozeNWOuv=A@mail.gmail.com>
- <AM0PR04MB42117D773477A408462D19D180B00@AM0PR04MB4211.eurprd04.prod.outlook.com>
- <CAPDyKFq4eji_FVKrRJ2k=c1iKuVP_3aERspy6vpXQzeFdBYt9w@mail.gmail.com>
- <AM0PR04MB421124AE755C01CEEC0CF31D808C0@AM0PR04MB4211.eurprd04.prod.outlook.com>
- <CAPDyKFodySv0A9ESDWwpJU=FQeyZ3FpOG0BMVBPxfgxd3oLWDw@mail.gmail.com> <AM0PR04MB4211C13768DD0D9543B6A59F808E0@AM0PR04MB4211.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] tools/power/cpupower: Display boost frequency separately
+Date: Tue,  5 Feb 2019 04:51:28 -0600
+Message-ID: <20190205105128.9484-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AM0PR04MB4211C13768DD0D9543B6A59F808E0@AM0PR04MB4211.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Aisheng Dong <aisheng.dong@nxp.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "khilman@kernel.org" <khilman@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: trenn@suse.com, shuah@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: akshay.adiga@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+cpufreq driver creates sysfs file "scaling_boost_frequency" for platforms
+which support boost frequency. Cpupower now prints boost frequencies
+separately. For few x86 vendors who already have different way to get boost
+frequency, will continue to use the existing logic. Rest of the platforms
+will rely on "scaling_boost_frequency" file to display boost frequency.
 
-> > > Then attach_dev() can parse the correct "resource id" (e.g.
-> > > IMX_SC_R_SDHC_1) from device tree And store it in per-device struct
-> > generic_pm_domain_data for later start()/stop() using.
-> >
-> > I see, thanks for clarifying.
-> >
-> > Seem like, we have two options to make this work.
-> >
-> > 1. Let genpd pre-store the index in a the per device generic_pm_domain_data
-> > while doing the attach and before calling the
-> > ->attach_dev() callback. This would make sense, if we consider this to
-> > be a common thing.
-> >
-> > 2. Provide the index as an additional new in-parameter to the
-> > ->attach_dev() callback. This requires a tree wide change as it means
-> > we need to update existing code using the ->attach_dev() callback.
-> >
-> > I would probably try 1) first to see how the code would look like and then fall
-> > back to 2). What do you think?
-> >
->
-> Yes, I agree with you.
-> This patch is exactly doing 1.
->
-> For your former suggestion:
-> " Just assign virt_dev->of_node = of_node_get(dev->of_node), somewhere in
-> genpd_dev_pm_attach_by_id() and before calling __genpd_dev_pm_attach().
-> Doing that, would mean the genpd provider's ->attach_dev() callback,
-> don't have to distinguish between virtual and non-virtual devices"
->
-> As this can only solve passing the real device node issue and we still need
-> pre-store the index in a the per device generic_pm_domain_data and then
-> distinguish if it's multi power domain virtual devices in attach_dev(), so
-> I'm not sure if it's still quite necessary to do that way by assigning
-> "virt_dev->of_node = of_node_get(dev->of_node) before attach".
-> Probably after fully switch to option 2, then we can do it to fully drop the using
-> of per device generic_pm_domain_data to make it transparent to attach_dev()
-> users.
->
-> So now the options may be:
-> 1. Pre-store both device node and domain index in generic_pm_domain_data before
->   Calling attach_dev(). This is exactly this patch does.
-> 2. Pre-store only domain index in generic_pm_domain_data. For device node, assigning
->   "virt_dev->of_node = of_node_get(dev->of_node) before attach.
-> 3. Change attach_dev() to passing domain index and assigning
->   "virt_dev->of_node = of_node_get(dev->of_node) before attach.
->
-> Can you please tell what's your prefer?
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
+ tools/power/cpupower/lib/cpufreq.c        | 19 +++++-----
+ tools/power/cpupower/lib/cpufreq.h        | 16 ++++-----
+ tools/power/cpupower/utils/cpufreq-info.c | 42 +++++++++++++++++------
+ 3 files changed, 50 insertions(+), 27 deletions(-)
 
-Apologize for the delay, just realized that you were expecting a reply from me.
-
-To me is sounds like option 2) is the most feasible. Perhaps it's even
-a good idea to store the domain index in the struct
-generic_pm_domain_data, as it allows it then to be used at any point
-later in time, this not only from the ->attach_dev() callback as
-option 3) would mean.
-
-So according to my understandings, then your genpd backend driver's
-->attach_dev() callback, would use dev_gpd_data() to find out the
-domain index for the device in question. Is that sufficient, or is
-there anything else that is needed?
-
-[...]
-
-Kind regards
-Uffe
+diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
+index 0c0f3e3f0..80650497f 100644
+--- a/tools/power/cpupower/lib/cpufreq.c
++++ b/tools/power/cpupower/lib/cpufreq.c
+@@ -333,17 +333,20 @@ void cpufreq_put_available_governors(struct cpufreq_available_governors *any)
+ }
+ 
+ 
+-struct cpufreq_available_frequencies
+-*cpufreq_get_available_frequencies(unsigned int cpu)
++struct cpufreq_frequencies
++*cpufreq_get_frequencies(const char *type, unsigned int cpu)
+ {
+-	struct cpufreq_available_frequencies *first = NULL;
+-	struct cpufreq_available_frequencies *current = NULL;
++	struct cpufreq_frequencies *first = NULL;
++	struct cpufreq_frequencies *current = NULL;
+ 	char one_value[SYSFS_PATH_MAX];
+ 	char linebuf[MAX_LINE_LEN];
++	char fname[MAX_LINE_LEN];
+ 	unsigned int pos, i;
+ 	unsigned int len;
+ 
+-	len = sysfs_cpufreq_read_file(cpu, "scaling_available_frequencies",
++	snprintf(fname, MAX_LINE_LEN, "scaling_%s_frequencies", type);
++
++	len = sysfs_cpufreq_read_file(cpu, fname,
+ 				linebuf, sizeof(linebuf));
+ 	if (len == 0)
+ 		return NULL;
+@@ -389,9 +392,9 @@ struct cpufreq_available_frequencies
+ 	return NULL;
+ }
+ 
+-void cpufreq_put_available_frequencies(struct cpufreq_available_frequencies
+-				*any) {
+-	struct cpufreq_available_frequencies *tmp, *next;
++void cpufreq_put_frequencies(struct cpufreq_frequencies *any)
++{
++	struct cpufreq_frequencies *tmp, *next;
+ 
+ 	if (!any)
+ 		return;
+diff --git a/tools/power/cpupower/lib/cpufreq.h b/tools/power/cpupower/lib/cpufreq.h
+index 60beaf5ed..775738269 100644
+--- a/tools/power/cpupower/lib/cpufreq.h
++++ b/tools/power/cpupower/lib/cpufreq.h
+@@ -28,10 +28,10 @@ struct cpufreq_available_governors {
+ 	struct cpufreq_available_governors *first;
+ };
+ 
+-struct cpufreq_available_frequencies {
++struct cpufreq_frequencies {
+ 	unsigned long frequency;
+-	struct cpufreq_available_frequencies *next;
+-	struct cpufreq_available_frequencies *first;
++	struct cpufreq_frequencies *next;
++	struct cpufreq_frequencies *first;
+ };
+ 
+ 
+@@ -129,14 +129,14 @@ void cpufreq_put_available_governors(
+  *
+  * Only present on _some_ ->target() cpufreq drivers. For information purposes
+  * only. Please free allocated memory by calling
+- * cpufreq_put_available_frequencies after use.
++ * cpufreq_put_frequencies after use.
+  */
+ 
+-struct cpufreq_available_frequencies
+-*cpufreq_get_available_frequencies(unsigned int cpu);
++struct cpufreq_frequencies
++*cpufreq_get_frequencies(const char *type, unsigned int cpu);
+ 
+-void cpufreq_put_available_frequencies(
+-		struct cpufreq_available_frequencies *first);
++void cpufreq_put_frequencies(
++		struct cpufreq_frequencies *first);
+ 
+ 
+ /* determine affected CPUs
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index c3f39d512..10290b308 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -161,19 +161,12 @@ static void print_duration(unsigned long duration)
+ 	return;
+ }
+ 
+-/* --boost / -b */
+-
+-static int get_boost_mode(unsigned int cpu)
++static int get_boost_mode_x86(unsigned int cpu)
+ {
+ 	int support, active, b_states = 0, ret, pstate_no, i;
+ 	/* ToDo: Make this more global */
+ 	unsigned long pstates[MAX_HW_PSTATES] = {0,};
+ 
+-	if (cpupower_cpu_info.vendor != X86_VENDOR_AMD &&
+-	    cpupower_cpu_info.vendor != X86_VENDOR_HYGON &&
+-	    cpupower_cpu_info.vendor != X86_VENDOR_INTEL)
+-		return 0;
+-
+ 	ret = cpufreq_has_boost_support(cpu, &support, &active, &b_states);
+ 	if (ret) {
+ 		printf(_("Error while evaluating Boost Capabilities"
+@@ -248,6 +241,33 @@ static int get_boost_mode(unsigned int cpu)
+ 	return 0;
+ }
+ 
++/* --boost / -b */
++
++static int get_boost_mode(unsigned int cpu)
++{
++	struct cpufreq_frequencies *freqs;
++
++	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD ||
++	    cpupower_cpu_info.vendor == X86_VENDOR_HYGON ||
++	    cpupower_cpu_info.vendor == X86_VENDOR_INTEL)
++		return get_boost_mode_x86(cpu);
++
++	freqs = cpufreq_get_frequencies("boost", cpu);
++	if (freqs) {
++		printf(_("  boost frequency steps: "));
++		while (freqs->next) {
++			print_speed(freqs->frequency);
++			printf(", ");
++			freqs = freqs->next;
++		}
++		print_speed(freqs->frequency);
++		printf("\n");
++		cpufreq_put_frequencies(freqs);
++	}
++
++	return 0;
++}
++
+ /* --freq / -f */
+ 
+ static int get_freq_kernel(unsigned int cpu, unsigned int human)
+@@ -456,7 +476,7 @@ static int get_latency(unsigned int cpu, unsigned int human)
+ 
+ static void debug_output_one(unsigned int cpu)
+ {
+-	struct cpufreq_available_frequencies *freqs;
++	struct cpufreq_frequencies *freqs;
+ 
+ 	get_driver(cpu);
+ 	get_related_cpus(cpu);
+@@ -464,7 +484,7 @@ static void debug_output_one(unsigned int cpu)
+ 	get_latency(cpu, 1);
+ 	get_hardware_limits(cpu, 1);
+ 
+-	freqs = cpufreq_get_available_frequencies(cpu);
++	freqs = cpufreq_get_frequencies("available", cpu);
+ 	if (freqs) {
+ 		printf(_("  available frequency steps:  "));
+ 		while (freqs->next) {
+@@ -474,7 +494,7 @@ static void debug_output_one(unsigned int cpu)
+ 		}
+ 		print_speed(freqs->frequency);
+ 		printf("\n");
+-		cpufreq_put_available_frequencies(freqs);
++		cpufreq_put_frequencies(freqs);
+ 	}
+ 
+ 	get_available_governors(cpu);
+-- 
+2.17.1
