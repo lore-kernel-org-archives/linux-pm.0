@@ -1,75 +1,51 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
- "consumer autoprobe" flag
-Date: Wed, 6 Feb 2019 10:56:11 +0100
-Message-ID: <CAJZ5v0gBYyoumVkLTuEcHsFE8QKEXdYuhDRGwmvoKPhx7gPvgQ@mail.gmail.com>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <CAJZ5v0jOVLZDoW5BAy9obp7AptTYzKikFo7Qd15kNt5Y9=vXRQ@mail.gmail.com>
- <CAPDyKFrq-r-rFDDB3yU=W4mOF2-A4xGGomqFqUba6MVWZugHmQ@mail.gmail.com> <24600564.pMaimVIQbW@aspire.rjw.lan>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH 2/2] cpufreq: mediatek: Register an Energy Model
+Date: Wed, 6 Feb 2019 10:13:18 +0000
+Message-ID: <20190206101316.fr7z4ffr4ck4l4aj@queper01-lin>
+References: <20190205175225.25923-1-mka@chromium.org>
+ <20190205175225.25923-2-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <24600564.pMaimVIQbW@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20190205175225.25923-2-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 5, 2019 at 12:27 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, February 5, 2019 9:15:49 AM CET Ulf Hansson wrote:
-> > On Mon, 4 Feb 2019 at 12:45, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Mon, Feb 4, 2019 at 12:40 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > >
-> > > > On Fri, Feb 1, 2019 at 4:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+Hi Matthias,
 
-[cut]
+On Tuesday 05 Feb 2019 at 09:52:25 (-0800), Matthias Kaehlcke wrote:
+> Try and register an Energy Model from mediatek-cpufreq to allow
+> interested subsystems like the task scheduler to use the provided
+> information.
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+>  drivers/cpufreq/mediatek-cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index eb8920d398181..e6168ee582783 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -460,6 +460,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
+>  		return ret;
+>  	}
+>  
+> +	dev_pm_opp_of_register_em(policy->cpus);
 
-> > >
-> > > For example, if the consumer device is suspended after the
-> > > device_link_add() that incremented the supplier's PM-runtime count and
-> > > then resumed again, the rpm_active refcount will be greater than one
-> > > because of the last resume and not because of the initial link
-> > > creation.  In that case, dropping the supplier's PM-runtime count on
-> > > link deletion may not work as expected.
-> >
-> > I see what your are saying and I must admit, by looking at the code,
-> > that it has turned into being rather complicated. Assuming of good
-> > reasons, of course.
-> >
-> > Anyway, I will play a little bit more with my tests to see what I can find out.
-> >
-> > >
-> > > > Arguably, device_link_del() could be made automatically drop the
-> > > > supplier's PM-runtime count by one if the link's rpm_active refcount
-> > > > is not one, but there will be failing scenarios in that case too
-> > > > AFAICS.
-> >
-> > Let's see.
->
-> So for the record, below is the (untested) patch I'm thinking about.
->
-> Having considered this for some time, I think that it would be better to
-> try to drop the supplier's PM-runtime usage counter on link removal even if
-> the link doesn't go away then.  That would be more consistent at least IMO.
+I'm not familiar with the mediatek-cpufreq driver so bear with me, but
+the code sets policy->cpus just below here. Is there any particular
+reason for not using that in PM_EM ?
 
-So I can't convince myself that this is the case.
+>  	cpumask_copy(policy->cpus, &info->cpus);
+>  	policy->freq_table = freq_table;
+>  	policy->driver_data = info;
+> -- 
+> 2.20.1.611.gfbb209baf1-goog
+> 
 
-Either way, if there are two callers of device_link_add() for one
-consumer-supplier pair trying to add a stateless link between them and
-one of these callers passes DL_FLAG_RPM_ACTIVE set in the flags to it,
-there may be issues regardless of what device_link_del() and
-device_link_remove() do.  However, if they decrement the link's
-rpm_active refcount (and possibly the supplier's PM-runtime usage
-counter too), the supplier may be suspended prematurely, whereas in
-the other case (no decrementation of rpm_active, which how the code
-works after this series) it may just be prevented from suspending.  To
-me, the former is worse than the latter.
-
-Moreover, there is a workaround for the latter issue that seems to be
-easy enough: it is sufficient to let the consumer runtime suspend
-after calling device_link_add() to create the link (with
-DL_FLAG_RPM_ACTIVE set) and before trying to remove it.
-
-Because of the above, I'm just going to post a patch to document the
-current behavior of the code as a known limitation.
+Thanks,
+Quentin
