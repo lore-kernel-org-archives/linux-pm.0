@@ -1,51 +1,47 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: mediatek: Register an Energy Model
-Date: Wed, 6 Feb 2019 10:13:18 +0000
-Message-ID: <20190206101316.fr7z4ffr4ck4l4aj@queper01-lin>
-References: <20190205175225.25923-1-mka@chromium.org>
- <20190205175225.25923-2-mka@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpuidle: dt: bail out if the idle-state DT node is not
+ compatible
+Date: Wed, 06 Feb 2019 11:25:57 +0100
+Message-ID: <2111013.byp0gTo4u7@aspire.rjw.lan>
+References: <20190201021639.27245-1-josephl@nvidia.com>
+ <20190201114838.GA10042@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190205175225.25923-2-mka@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190201114838.GA10042@e107155-lin>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Joseph Lo <josephl@nvidia.com>
+Cc: linux-tegra@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
-
-On Tuesday 05 Feb 2019 at 09:52:25 (-0800), Matthias Kaehlcke wrote:
-> Try and register an Energy Model from mediatek-cpufreq to allow
-> interested subsystems like the task scheduler to use the provided
-> information.
+On Friday, February 1, 2019 12:48:38 PM CET Sudeep Holla wrote:
+> On Fri, Feb 01, 2019 at 10:16:39AM +0800, Joseph Lo wrote:
+> > Currently, the DT of the idle states will be parsed first whether it's
+> > compatible or not. This could cause a warning message that comes from if
+> > the CPU doesn't support identical idle states. E.g. Tegra186 can run
+> > with 2 Cortex-A57 and 2 Denver cores with different idle states on
+> > different types of these cores.
+> > 
+> > So fix it by checking the match node earlier, then it can make sure it
+> > only goes through the idle states that the CPU supported.
+> > 
+> > Signed-off-by: Joseph Lo <josephl@nvidia.com>
+> > ---
+> > v2:
+> >  * fix it by moving of_match_node earlier, so we don't need to match the
+> >    node twice like the v1 did.
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/cpufreq/mediatek-cpufreq.c | 2 ++
->  1 file changed, 2 insertions(+)
+> Neat, thanks for the quick patch. FWIW,
 > 
-> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-> index eb8920d398181..e6168ee582783 100644
-> --- a/drivers/cpufreq/mediatek-cpufreq.c
-> +++ b/drivers/cpufreq/mediatek-cpufreq.c
-> @@ -460,6 +460,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
->  		return ret;
->  	}
->  
-> +	dev_pm_opp_of_register_em(policy->cpus);
+> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 
-I'm not familiar with the mediatek-cpufreq driver so bear with me, but
-the code sets policy->cpus just below here. Is there any particular
-reason for not using that in PM_EM ?
-
->  	cpumask_copy(policy->cpus, &info->cpus);
->  	policy->freq_table = freq_table;
->  	policy->driver_data = info;
-> -- 
-> 2.20.1.611.gfbb209baf1-goog
-> 
-
-Thanks,
-Quentin
+Patch applied, thanks!
