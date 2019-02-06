@@ -1,165 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
- "consumer autoprobe" flag
-Date: Wed, 6 Feb 2019 14:02:00 +0100
-Message-ID: <CAPDyKFoQWTANLTdO1Ci_Vvtsq+QhWMxo=MZ811MoE6LSDWb7ng@mail.gmail.com>
-References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <CAJZ5v0jOVLZDoW5BAy9obp7AptTYzKikFo7Qd15kNt5Y9=vXRQ@mail.gmail.com>
- <CAPDyKFrq-r-rFDDB3yU=W4mOF2-A4xGGomqFqUba6MVWZugHmQ@mail.gmail.com>
- <24600564.pMaimVIQbW@aspire.rjw.lan> <CAJZ5v0gBYyoumVkLTuEcHsFE8QKEXdYuhDRGwmvoKPhx7gPvgQ@mail.gmail.com>
- <CAPDyKFoUfM8kopWfkorDhVKfk35wVaKVPzJeZ55RPRdc2Y1MYw@mail.gmail.com> <CAJZ5v0hnXyqdrq3cXLuwZ-imda2=EEUEq8rx=en7=DwdgB5N9A@mail.gmail.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v5 6/9] cpufreq: mediatek: Use auto-registration of
+ thermal cooling device
+Date: Wed, 6 Feb 2019 14:55:03 +0100
+Message-ID: <b745a0be-c3ca-00d3-50c3-8ec560548da7@gmail.com>
+References: <cover.1548737236.git.amit.kucheria@linaro.org>
+ <36eb429112e84263bdbd26d8ea3027f71eeb862e.1548737236.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hnXyqdrq3cXLuwZ-imda2=EEUEq8rx=en7=DwdgB5N9A@mail.gmail.com>
+In-Reply-To: <36eb429112e84263bdbd26d8ea3027f71eeb862e.1548737236.git.amit.kucheria@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sean Wang <sean.wang@mediatek.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 6 Feb 2019 at 13:10, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Wed, Feb 6, 2019 at 12:24 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Wed, 6 Feb 2019 at 10:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Tue, Feb 5, 2019 at 12:27 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > >
-> > > > On Tuesday, February 5, 2019 9:15:49 AM CET Ulf Hansson wrote:
-> > > > > On Mon, 4 Feb 2019 at 12:45, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > > > >
-> > > > > > On Mon, Feb 4, 2019 at 12:40 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > > > > >
-> > > > > > > On Fri, Feb 1, 2019 at 4:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > [cut]
-> > >
-> > > > > >
-> > > > > > For example, if the consumer device is suspended after the
-> > > > > > device_link_add() that incremented the supplier's PM-runtime count and
-> > > > > > then resumed again, the rpm_active refcount will be greater than one
-> > > > > > because of the last resume and not because of the initial link
-> > > > > > creation.  In that case, dropping the supplier's PM-runtime count on
-> > > > > > link deletion may not work as expected.
-> > > > >
-> > > > > I see what your are saying and I must admit, by looking at the code,
-> > > > > that it has turned into being rather complicated. Assuming of good
-> > > > > reasons, of course.
-> > > > >
-> > > > > Anyway, I will play a little bit more with my tests to see what I can find out.
-> > > > >
-> > > > > >
-> > > > > > > Arguably, device_link_del() could be made automatically drop the
-> > > > > > > supplier's PM-runtime count by one if the link's rpm_active refcount
-> > > > > > > is not one, but there will be failing scenarios in that case too
-> > > > > > > AFAICS.
-> > > > >
-> > > > > Let's see.
-> > > >
-> > > > So for the record, below is the (untested) patch I'm thinking about.
-> > > >
-> > > > Having considered this for some time, I think that it would be better to
-> > > > try to drop the supplier's PM-runtime usage counter on link removal even if
-> > > > the link doesn't go away then.  That would be more consistent at least IMO.
-> > >
-> > > So I can't convince myself that this is the case.
-> > >
-> > > Either way, if there are two callers of device_link_add() for one
-> > > consumer-supplier pair trying to add a stateless link between them and
-> > > one of these callers passes DL_FLAG_RPM_ACTIVE set in the flags to it,
-> > > there may be issues regardless of what device_link_del() and
-> > > device_link_remove() do.  However, if they decrement the link's
-> > > rpm_active refcount (and possibly the supplier's PM-runtime usage
-> > > counter too), the supplier may be suspended prematurely, whereas in
-> > > the other case (no decrementation of rpm_active, which how the code
-> > > works after this series) it may just be prevented from suspending.  To
-> > > me, the former is worse than the latter.
-> >
-> > Well, I would say it sucks in both cases. :-)
-> >
-> > >
-> > > Moreover, there is a workaround for the latter issue that seems to be
-> > > easy enough: it is sufficient to let the consumer runtime suspend
-> > > after calling device_link_add() to create the link (with
-> > > DL_FLAG_RPM_ACTIVE set) and before trying to remove it.
-> >
-> > I get your point, but unfortunate I don't think it's that simple.
-> >
-> > For example, someone (like a child) may prevent runtime suspend for
-> > the consumer. Hence, also the supplier is prevented from being runtime
-> > suspended.
->
-> Well, in that case the supplier should not be suspended until the
-> consumer can be suspended too.
->
-> IOW, if you call device_link_del() in that case, it would be a bug if
-> it allowed the supplier suspend.
 
-Well, maybe the "child" was a bad example. The point is, the driver
-doesn't control the RPM child count and nor the RPM usage count for
-its consumer device - solely by itself.
 
-Someone, like the driver/PM core can at some point decide to increase
-the runtime PM usage count for example for the consumer device. For
-whatever good reason.
+On 29/01/2019 05:55, Amit Kucheria wrote:
+> Use the CPUFREQ_IS_COOLING_DEV flag to allow cpufreq core to
+> automatically register as a thermal cooling device.
+> 
+> This allows removal of boiler plate code from the driver.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
->
-> > So, if you want to push this responsibility to the driver, then I
-> > think we need make __pm_runtime_set_status() to respect device links,
-> > similar to how it already deals with child/parents.
-> >
-> > In that way, the driver could call pm_runtime_set_suspended(), before
-> > dropping the device link in ->probe(), which would allow the supplier
-> > to also become runtime suspended.
->
-> I guess you mean that runtime PM would be disabled for the consumer at
-> that point?
+Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
 
-Yes.
-
-Calling pm_runtime_set_suspended() should be a part of the error path
-in the driver, which includes disabling runtime PM as well (if it
-enabled it in the first place of course).
-
->
-> > I did a quick research of users of device links, unless I am mistaken,
-> > this seems like an okay approach.
-> >
-> > What do you think?
->
-> Well, I think I need to know the exact use case you have in mind. :-)
-
-The use case is simply a generic driver that fails to probe by
-returning -EPROBE_DEFER. So it's hypothetical, but I often tests
-common sequences by using my RPM testdriver, to make sure it all works
-as expected.
-The below sequence is common, so then I have added the use of device
-links, to see how this plays. And it doesn't.
-
-->probe()
-  ...
-
-  pm_runtime_get_noresume()
-  pm_runtime_set_active()
-  pm_runtime_enable()
-
-  ...
-
-  device_link_add(con, supp, DL_FLAG_STATELESS |DL_FLAG_PM_RUNTIME |
-DL_FLAG_RPM_ACTIVE);
-
-we got some errors...
-  goto err:
-
-  ...
-
-err:
-  pm_runtime_put_noidle()
-  pm_runtime_disable()
-  pm_runtime_set_suspended()
-
-  device_link_remove()
-
-  return err;
-
-Kind regards
-Uffe
+> ---
+>  drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
+>  1 file changed, 2 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index eb8920d39818..4229fcc31310 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -14,7 +14,6 @@
+>  
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+> -#include <linux/cpu_cooling.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpumask.h>
+>  #include <linux/module.h>
+> @@ -48,7 +47,6 @@ struct mtk_cpu_dvfs_info {
+>  	struct regulator *sram_reg;
+>  	struct clk *cpu_clk;
+>  	struct clk *inter_clk;
+> -	struct thermal_cooling_device *cdev;
+>  	struct list_head list_head;
+>  	int intermediate_voltage;
+>  	bool need_voltage_tracking;
+> @@ -307,13 +305,6 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+>  
+>  #define DYNAMIC_POWER "dynamic-power-coefficient"
+>  
+> -static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+> -{
+> -	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+> -
+> -	info->cdev = of_cpufreq_cooling_register(policy);
+> -}
+> -
+>  static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+>  {
+>  	struct device *cpu_dev;
+> @@ -472,7 +463,6 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+>  {
+>  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+>  
+> -	cpufreq_cooling_unregister(info->cdev);
+>  	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
+>  
+>  	return 0;
+> @@ -480,13 +470,13 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+>  
+>  static struct cpufreq_driver mtk_cpufreq_driver = {
+>  	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> -		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+> +		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
+> +		 CPUFREQ_IS_COOLING_DEV,
+>  	.verify = cpufreq_generic_frequency_table_verify,
+>  	.target_index = mtk_cpufreq_set_target,
+>  	.get = cpufreq_generic_get,
+>  	.init = mtk_cpufreq_init,
+>  	.exit = mtk_cpufreq_exit,
+> -	.ready = mtk_cpufreq_ready,
+>  	.name = "mtk-cpufreq",
+>  	.attr = cpufreq_generic_attr,
+>  };
+> 
