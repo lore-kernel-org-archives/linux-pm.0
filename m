@@ -1,45 +1,60 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v7 05/10] clk: bd718x7: Support ROHM BD70528 clk block
-Date: Wed, 06 Feb 2019 09:31:27 -0800
-Message-ID: <154947428734.74891.4523492147164733315@swboyd.mtv.corp.google.com>
-References: <cover.1549444366.git.matti.vaittinen@fi.rohmeurope.com> <88c49b30bbb4b1f3ecc24d333647585e2c82f4e4.1549444366.git.matti.vaittinen@fi.rohmeurope.com>
+From: <Nicolas.Ferre@microchip.com>
+Subject: Re: [PATCH 0/8] ARM: at91/dt: update to existing drivers for the
+ sam9x60 SoC
+Date: Wed, 6 Feb 2019 17:51:33 +0000
+Message-ID: <0a24778f-9fc3-6edc-5d74-d152a95d5a98@microchip.com>
+References: <cover.1547629763.git.nicolas.ferre@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <88c49b30bbb4b1f3ecc24d333647585e2c82f4e4.1549444366.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <cover.1547629763.git.nicolas.ferre@microchip.com>
+Content-Language: en-US
+Content-ID: <C96802A825E3BB469161DBD1AE2DE3B9@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, mazziesaccount@gmail.com
-Cc: Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org, gregkh@linuxfoundation.org, robh+dt@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net, linux-usb@vger.kernel.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Matti Vaittinen (2019-02-06 01:39:38)
-> @@ -86,9 +87,21 @@ static int bd71837_clk_probe(struct platform_device *p=
-dev)
->                 dev_err(&pdev->dev, "No parent clk found\n");
->                 return -EINVAL;
->         }
-> -
-> -       c->reg =3D BD718XX_REG_OUT32K;
-> -       c->mask =3D BD718XX_OUT32K_EN;
-> +       switch (mfd->chip_type) {
-> +       case ROHM_CHIP_TYPE_BD71837:
-> +       case ROHM_CHIP_TYPE_BD71847:
-> +
-
-Nitpick: why the extra newline above?
-
-> +               c->reg =3D BD718XX_REG_OUT32K;
-> +               c->mask =3D BD718XX_OUT32K_EN;
-> +               break;
-> +       case ROHM_CHIP_TYPE_BD70528:
-> +               c->reg =3D BD70528_REG_CLK_OUT;
-> +               c->mask =3D BD70528_CLK_OUT_EN_MASK;
-> +               break;
-> +       default:
-> +               dev_err(&pdev->dev, "Unknown clk chip\n");
-> +               return -EINVAL;
-> +       }
->         c->mfd =3D mfd;
->         c->pdev =3D pdev;
->         c->hw.init =3D &init;
+QWxsLA0KDQpPbiAxNi8wMS8yMDE5IGF0IDEwOjU3LCBOaWNvbGFzIEZlcnJlIHdyb3RlOg0KPiBI
+aSwNCj4gDQo+IFRoaXMgc2VyaWVzIGNvbGxlY3RzIHNvbWUgbGl0dGxlIG1vZGlmaWNhdGlvbnMg
+dG8gRFQgYmluZGluZ3MgYW5kIGFzc29jaWF0ZWQNCj4gZHJpdmVycyBjaGFuZ2VzIGZvciBzdXBw
+b3J0aW5nIHRoZSB1cGNvbWluZyBTQU05WDYwIFNvQy4NCj4gDQo+IEkgdG9vayB0aGUgYWR2YW50
+YWdlIG9mIHRoaXMgc2VyaWVzIGZvciBmaXhpbmcgc29tZSBvZiB0aGUgbGVmdG92ZXJzIGluIERU
+DQo+IGJpbmRpbmdzIGZvciByZXNldCBjb250cm9sbGVyIGFuZCBFdGhlcm5ldCBtYWNiLg0KPiAN
+Cj4gVGhlc2UgY2hhbmdlcyB0b3VjaCBzZXZlcmFsIHN1Yi1zeXN0ZW1zIGJ1dCBJIHdvdWxkIGxp
+a2UgdGhhdCB0aGVzZSAobW9zdGx5DQo+IHRyaXZpYWwpIHBhdGNoZXMgc3RheSB0b2dldGhlciBm
+b3IgZmFjaWxpdGF0aW5nIHJldmlld3MsIHByZXZlbnQgYnJlYWtpbmcNCj4gZGVwZW5kZW5jaWVz
+IGFuZCBmYWNpbGl0YXRpbmcgdGhlIHRyYWNraW5nIG9mIGFjY2VwdGFuY2Ugc3RhdHVzLiBIb3dl
+dmVyLCB0ZWxsDQo+IG1lIGlmIHlvdSB0aGluayBvdGhlcndpc2UuDQoNCkl0IHNlZW1zIGl0J3Mg
+bm90IHRoZSBwcmVmZXJyZWQgd2F5IHRvIGdvIGFuZCB0aGF0IEkgbXVzdCBzcGxpdCBhbmQgc2Vu
+ZCANCnRvIHN1Yi1zeXN0ZW0gTWFpbnRhaW5lcnMgc28gdGhhdCBiaW5kaW5ncyBhbmQgZHJpdmVy
+IGNvZGUgZ28gdG9nZXRoZXIgDQp0aHJvdWdoIE1haW50YWluZXIncyBnaXQgdHJlZXMgKFVTQiwg
+cG93ZXIvcmVzZXQsIG5ldGRldikuDQoNCj4gTXkgaW50ZW50aW9ucyBhcmUgdGhhdCB0aGUgc2Vy
+aWVzIHdvdWxkIGVudGVyIE1haW5saW5lIHRocm91Z2ggYXJtLXNvYyB0cmVlOg0KPiBzb3VuZHMg
+b2theSB0byBldmVyeW9uZT8gSWYgb2theSwgSSdtIHJlYWR5IHRvIGNvbGxlY3QgQWNrIHRhZ3Mu
+Li4NCg0KSSdtIHJlLXNlbmRpbmcgdGhpcyBzcGxpdCBzZXJpZXMuIFNvbWUgb2YgdGhlICJSZXZp
+ZXdlZC1ieToiIGFyZSBtaXNzaW5nIA0Kc28gd2UnbGwgaGF2ZSB0aGUgY2hhbmNlIHRvIGFkZCB0
+aGVtIG9uIGluZGl2aWR1YWwgc2VyaWVzLg0KDQpUaGFua3MgZm9yIHlvdXIgcmV2aWV3cyBzbyBm
+YXIuDQoNCkJlc3QgcmVnYXJkcywNCiAgIE5pY29sYXMNCg0KDQo+IEZvciB0aGUgZmlyc3QgYmF0
+Y2gsIEkgc2VuZCB0aGUgd2hvbGUgc2VyaWVzIHRvIGV2ZXJ5b25lLiBJJ2xsIHRyeSBteSBiZXN0
+IHRvDQo+IHJlZHVjZSBzdWJzZXF1ZW50IG1lc3NhZ2UgZGVsaXZlcmllcyBpZiBvbmUgcGFydCBv
+ZiB0aGUgc2VycmllcyBuZWVkcyByZXdvcmsuDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+ICAgIE5p
+Y29sYXMNCj4gDQo+IA0KPiBOaWNvbGFzIEZlcnJlICg4KToNCj4gICAgZHQtYmluZGluZ3M6IGFy
+bTogYXRtZWw6IGFkZCBtaXNzaW5nIHNhbXg3IHRvIHJlc2V0IGNvbnRyb2xsZXINCj4gICAgZHQt
+YmluZGluZ3M6IGFybTogYXRtZWw6IGFkZCBuZXcgc2FtOXg2MCByZXNldCBjb250cm9sbGVyIGJp
+bmRpbmcNCj4gICAgZHQtYmluZGluZ3M6IGFybTogYXRtZWw6IGFkZCBuZXcgc2FtOXg2MCBTRlIg
+YmluZGluZw0KPiAgICBuZXQvbWFjYjogYmluZGluZ3MgZG9jL3RyaXZpYWw6IGZpeCBkb2N1bWVu
+dGF0aW9uIGZvciBzYW1hNWQzIDEwLzEwMA0KPiAgICAgIGludGVyZmFjZQ0KPiAgICBuZXQvbWFj
+YjogYmluZGluZ3MgZG9jOiBhZGQgc2FtOXg2MCBiaW5kaW5nDQo+ICAgIHBvd2VyOiByZXNldDog
+YXQ5MS1yZXNldDogYWRkIHN1cHBvcnQgZm9yIHNhbTl4NjAgU29DDQo+ICAgIFVTQjogaG9zdDog
+b2hjaS1hdDkxOiBhZGQgc2FtOXg2MC1zZnIgZGVmaW5pdGlvbiBmb3Igb2hjaQ0KPiAgICBuZXQ6
+IG1hY2I6IGFkZCBzYW05eDYwLW1hY2IgY29tcGF0aWJpbGl0eSBzdHJpbmcNCj4gDQo+ICAgLi4u
+L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0ICAgICAgIHwgIDQgKysr
+LQ0KPiAgIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvbWFjYi50eHQgICAg
+ICB8ICA0ICsrLS0NCj4gICBkcml2ZXJzL25ldC9ldGhlcm5ldC9jYWRlbmNlL21hY2JfbWFpbi5j
+ICAgICAgICAgICAgfCAgMSArDQo+ICAgZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMg
+ICAgICAgICAgICAgICAgICAgIHwgMTMgKysrKysrKysrKysrKw0KPiAgIGRyaXZlcnMvdXNiL2hv
+c3Qvb2hjaS1hdDkxLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICA3ICsrKysrLS0NCj4gICA1
+IGZpbGVzIGNoYW5nZWQsIDI0IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+IA0KDQoN
+Ci0tIA0KTmljb2xhcyBGZXJyZQ0K
