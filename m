@@ -1,28 +1,39 @@
-From: Kalle Valo <kvalo@codeaurora.org>
-Subject: Re: [PATCH v7 00/10] support ROHM BD70528 PMIC
-Date: Wed, 06 Feb 2019 20:31:32 +0200
-Message-ID: <87o97ovke3.fsf@codeaurora.org>
-References: <cover.1549444366.git.matti.vaittinen@fi.rohmeurope.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH v2] cpufreq: mediatek: Register an Energy Model
+Date: Wed,  6 Feb 2019 10:50:04 -0800
+Message-ID: <20190206185004.54779-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1549444366.git.matti.vaittinen@fi.rohmeurope.com> (Matti
-        Vaittinen's message of "Wed, 6 Feb 2019 11:35:36 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Quentin Perret <quentin.perret@arm.com>, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com> writes:
+Try and register an Energy Model from mediatek-cpufreq to allow
+interested subsystems like the task scheduler to use the provided
+information.
 
-> Patch series introducing support for ROHM BD70528 PMIC
->
-> Please note that patch 1 breaks compilation without patches 2 and 3
-> Knowing the bd718x7 driver is already in upstream, it might be good
-> if this change went through single tree, right?
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+Changes in v2:
+- register the EM after setting the cpumask
+---
+ drivers/cpufreq/mediatek-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-That would break bisect, please avoid that. So after applying patches
-from a patchset one by one the compilation should always succeed.
-
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index eb8920d398181..5250df762814e 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -465,6 +465,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = info;
+ 	policy->clk = info->cpu_clk;
+ 
++	dev_pm_opp_of_register_em(policy->cpus);
++
+ 	return 0;
+ }
+ 
 -- 
-Kalle Valo
+2.20.1.611.gfbb209baf1-goog
