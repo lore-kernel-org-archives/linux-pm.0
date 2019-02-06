@@ -1,87 +1,39 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Pan, Harry" <harry.pan@intel.com>
 Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Wed, 6 Feb 2019 15:53:22 +0100
-Message-ID: <20190206145322.GA31815@amd>
+Date: Wed, 6 Feb 2019 15:08:18 +0000
+Message-ID: <fb17e68f94236b1dd02419ebe01c9f76f6fe2259.camel@intel.com>
 References: <20190203052007.27392-1-harry.pan@intel.com>
- <20190206144257.21464-1-harry.pan@intel.com>
+         <20190205212308.GA2816@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190206144257.21464-1-harry.pan@intel.com>
+In-Reply-To: <20190205212308.GA2816@amd>
+Content-Language: en-US
+Content-ID: <7A22E95B5717B7458C90F6EFD6E1727A@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Harry Pan <harry.pan@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
+To: "pavel@ucw.cz" <pavel@ucw.cz>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed 2019-02-06 22:42:57, Harry Pan wrote:
-> This patch gives the reader an intuitive metric of the time cost by
-> the kernel issuing a filesystem sync during suspend; although developer
-> can guess by the timestamp of next log or enable the ftrace power event
-> for manual calculation, this manner is easier to read and benefits the
-> automatic script.
->=20
-> v2: simplify the variables, apply the simplest form of ktime API.
->=20
-> Signed-off-by: Harry Pan <harry.pan@intel.com>
-
-NAK.
-								Pavel
-							=09
-> ---
->  kernel/power/suspend.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->=20
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 0bd595a0b610..87c0073f0c9d 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -550,6 +550,8 @@ static void suspend_finish(void)
->  static int enter_state(suspend_state_t state)
->  {
->  	int error;
-> +	ktime_t start;
-> +	unsigned int elapsed_msecs;
-> =20
->  	trace_suspend_resume(TPS("suspend_enter"), state, true);
->  	if (state =3D=3D PM_SUSPEND_TO_IDLE) {
-> @@ -570,9 +572,12 @@ static int enter_state(suspend_state_t state)
-> =20
->  #ifndef CONFIG_SUSPEND_SKIP_SYNC
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-> +	start =3D ktime_get();
->  	pr_info("Syncing filesystems ... ");
->  	ksys_sync();
-> -	pr_cont("done.\n");
-> +	elapsed_msecs =3D ktime_to_ms(ktime_sub(ktime_get(), start));
-> +	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
-> +		elapsed_msecs % 1000);
->  	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
->  #endif
-> =20
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlxa9OIACgkQMOfwapXb+vK41wCfUiP4kyXwCFDr3IyBSoRpYFAs
-qTYAn32HBKY2Z4CbT1r7Yjw5qII8hYAc
-=meE1
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+T24gVHVlLCAyMDE5LTAyLTA1IGF0IDIyOjIzICswMTAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
+IE9uIFN1biAyMDE5LTAyLTAzIDEzOjIwOjA3LCBIYXJyeSBQYW4gd3JvdGU6DQo+ID4gVGhpcyBw
+YXRjaCBnaXZlcyB0aGUgcmVhZGVyIGFuIGludHVpdGl2ZSBtZXRyaWMgb2YgdGhlIHRpbWUgY29z
+dCBieQ0KPiA+IHRoZSBrZXJuZWwgaXNzdWluZyBhIGZpbGVzeXN0ZW0gc3luYyBkdXJpbmcgc3Vz
+cGVuZDsgYWx0aG91Z2gNCj4gPiBkZXZlbG9wZXINCj4gPiBjYW4gZ3Vlc3MgYnkgdGhlIHRpbWVz
+dGFtcCBvZiBuZXh0IGxvZyBvciBlbmFibGUgdGhlIGZ0cmFjZSBwb3dlcg0KPiA+IGV2ZW50DQo+
+ID4gZm9yIG1hbnVhbCBjYWxjdWxhdGlvbiwgdGhpcyBtYW5uZXIgaXMgZWFzaWVyIHRvIHJlYWQg
+YW5kIGJlbmVmaXRzDQo+ID4gdGhlDQo+ID4gYXV0b21hdGljIHNjcmlwdC4NCj4gDQo+IERvIHdl
+IHJlYWxseSBuZWVkIHRoaXMgZnVuY3Rpb25hbGl0eT8NCj4gDQo+IEFzIHlvdSBleHBsYWluZWQs
+IGRldmVsb3BlcnMgY2FuIGFscmVhZHkgdXNlIG5leHQgdGltZXN0YW1wIG9yDQo+IGZ0cmFjZS4u
+LiBhbmQgdGhpcyBpcyByZWFsbHkgbm90IHRoYXQgaW50ZXJlc3RpbmcgbnVtYmVyLg0KDQpUaGUg
+YmFja2Ryb3AgaXMgc29tZSBzdHJlc3MgdGVzdCBzY3JpcHQgb2Ygc3VzcGVuZC9yZXN1bWUsIGxp
+a2UgQ2hyb21lDQpPUywgaXMgZGVzaWduZWQgdG8gcHJvZ3JhbSBhbiBleHBlY3RlZCBSVEMgd2Fr
+ZS1hbGFybSB0aGVuIGlzc3VlDQpzdXNwZW5kIGNvbW1hbmQsIHdoaWxlIGluIHJhcmUgY2FzZSAo
+b3IgYnVnZ3kgc29mdHdhcmUpLCB0aGUgZmlsZXN5c3RlbQ0Kc3luYyBjb3VsZCBjb3N0IGxvbmdl
+ciB0aW1lIGluIHNlY29uZHMsIHRoaXMgY29uc3VtZXMgdGhlIGFsYXJtIGJ1ZGdldA0KY2F1c2Vz
+IHN1c3BlbmQgYWJvcnRpbmcsIGl0IGNvdWxkIGJlIGFic3RydXNlIHRvIHByb2R1Y3Rpb24gbGlu
+ZQ0KZGV2ZWxvcGVycyB0byByZWFsaXplIGl0IGlzIG5vdCBhIHBsYXRmb3JtIGlzc3VlIGluIHRl
+cm1zIG9mIGRyaXZlcnMNCnN1c3BlbmRpbmc7IGdpdmVuIGEgc3VjaCBtZXRyaWMgbWlnaHQgbWFr
+ZSB0aGUgY29tbXVuaWNhdGlvbiBlYXNpZXIsDQp0aGlzIGlzIG15IGludHVpdGlvbi4NCg0KLUhh
+cnJ5DQoNCg==
