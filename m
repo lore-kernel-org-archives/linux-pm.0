@@ -1,60 +1,38 @@
-From: <Nicolas.Ferre@microchip.com>
-Subject: Re: [PATCH 0/8] ARM: at91/dt: update to existing drivers for the
- sam9x60 SoC
-Date: Wed, 6 Feb 2019 17:51:33 +0000
-Message-ID: <0a24778f-9fc3-6edc-5d74-d152a95d5a98@microchip.com>
-References: <cover.1547629763.git.nicolas.ferre@microchip.com>
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+Subject: [PATCH v2 2/3] dt-bindings: arm: atmel: add new sam9x60 reset controller binding
+Date: Wed, 6 Feb 2019 19:12:20 +0100
+Message-ID: <20190206181221.27914-2-nicolas.ferre@microchip.com>
+References: <20190206181221.27914-1-nicolas.ferre@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1547629763.git.nicolas.ferre@microchip.com>
-Content-Language: en-US
-Content-ID: <C96802A825E3BB469161DBD1AE2DE3B9@namprd11.prod.outlook.com>
+In-Reply-To: <20190206181221.27914-1-nicolas.ferre@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org, gregkh@linuxfoundation.org, robh+dt@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net, linux-usb@vger.kernel.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>
 List-Id: linux-pm@vger.kernel.org
 
-QWxsLA0KDQpPbiAxNi8wMS8yMDE5IGF0IDEwOjU3LCBOaWNvbGFzIEZlcnJlIHdyb3RlOg0KPiBI
-aSwNCj4gDQo+IFRoaXMgc2VyaWVzIGNvbGxlY3RzIHNvbWUgbGl0dGxlIG1vZGlmaWNhdGlvbnMg
-dG8gRFQgYmluZGluZ3MgYW5kIGFzc29jaWF0ZWQNCj4gZHJpdmVycyBjaGFuZ2VzIGZvciBzdXBw
-b3J0aW5nIHRoZSB1cGNvbWluZyBTQU05WDYwIFNvQy4NCj4gDQo+IEkgdG9vayB0aGUgYWR2YW50
-YWdlIG9mIHRoaXMgc2VyaWVzIGZvciBmaXhpbmcgc29tZSBvZiB0aGUgbGVmdG92ZXJzIGluIERU
-DQo+IGJpbmRpbmdzIGZvciByZXNldCBjb250cm9sbGVyIGFuZCBFdGhlcm5ldCBtYWNiLg0KPiAN
-Cj4gVGhlc2UgY2hhbmdlcyB0b3VjaCBzZXZlcmFsIHN1Yi1zeXN0ZW1zIGJ1dCBJIHdvdWxkIGxp
-a2UgdGhhdCB0aGVzZSAobW9zdGx5DQo+IHRyaXZpYWwpIHBhdGNoZXMgc3RheSB0b2dldGhlciBm
-b3IgZmFjaWxpdGF0aW5nIHJldmlld3MsIHByZXZlbnQgYnJlYWtpbmcNCj4gZGVwZW5kZW5jaWVz
-IGFuZCBmYWNpbGl0YXRpbmcgdGhlIHRyYWNraW5nIG9mIGFjY2VwdGFuY2Ugc3RhdHVzLiBIb3dl
-dmVyLCB0ZWxsDQo+IG1lIGlmIHlvdSB0aGluayBvdGhlcndpc2UuDQoNCkl0IHNlZW1zIGl0J3Mg
-bm90IHRoZSBwcmVmZXJyZWQgd2F5IHRvIGdvIGFuZCB0aGF0IEkgbXVzdCBzcGxpdCBhbmQgc2Vu
-ZCANCnRvIHN1Yi1zeXN0ZW0gTWFpbnRhaW5lcnMgc28gdGhhdCBiaW5kaW5ncyBhbmQgZHJpdmVy
-IGNvZGUgZ28gdG9nZXRoZXIgDQp0aHJvdWdoIE1haW50YWluZXIncyBnaXQgdHJlZXMgKFVTQiwg
-cG93ZXIvcmVzZXQsIG5ldGRldikuDQoNCj4gTXkgaW50ZW50aW9ucyBhcmUgdGhhdCB0aGUgc2Vy
-aWVzIHdvdWxkIGVudGVyIE1haW5saW5lIHRocm91Z2ggYXJtLXNvYyB0cmVlOg0KPiBzb3VuZHMg
-b2theSB0byBldmVyeW9uZT8gSWYgb2theSwgSSdtIHJlYWR5IHRvIGNvbGxlY3QgQWNrIHRhZ3Mu
-Li4NCg0KSSdtIHJlLXNlbmRpbmcgdGhpcyBzcGxpdCBzZXJpZXMuIFNvbWUgb2YgdGhlICJSZXZp
-ZXdlZC1ieToiIGFyZSBtaXNzaW5nIA0Kc28gd2UnbGwgaGF2ZSB0aGUgY2hhbmNlIHRvIGFkZCB0
-aGVtIG9uIGluZGl2aWR1YWwgc2VyaWVzLg0KDQpUaGFua3MgZm9yIHlvdXIgcmV2aWV3cyBzbyBm
-YXIuDQoNCkJlc3QgcmVnYXJkcywNCiAgIE5pY29sYXMNCg0KDQo+IEZvciB0aGUgZmlyc3QgYmF0
-Y2gsIEkgc2VuZCB0aGUgd2hvbGUgc2VyaWVzIHRvIGV2ZXJ5b25lLiBJJ2xsIHRyeSBteSBiZXN0
-IHRvDQo+IHJlZHVjZSBzdWJzZXF1ZW50IG1lc3NhZ2UgZGVsaXZlcmllcyBpZiBvbmUgcGFydCBv
-ZiB0aGUgc2VycmllcyBuZWVkcyByZXdvcmsuDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+ICAgIE5p
-Y29sYXMNCj4gDQo+IA0KPiBOaWNvbGFzIEZlcnJlICg4KToNCj4gICAgZHQtYmluZGluZ3M6IGFy
-bTogYXRtZWw6IGFkZCBtaXNzaW5nIHNhbXg3IHRvIHJlc2V0IGNvbnRyb2xsZXINCj4gICAgZHQt
-YmluZGluZ3M6IGFybTogYXRtZWw6IGFkZCBuZXcgc2FtOXg2MCByZXNldCBjb250cm9sbGVyIGJp
-bmRpbmcNCj4gICAgZHQtYmluZGluZ3M6IGFybTogYXRtZWw6IGFkZCBuZXcgc2FtOXg2MCBTRlIg
-YmluZGluZw0KPiAgICBuZXQvbWFjYjogYmluZGluZ3MgZG9jL3RyaXZpYWw6IGZpeCBkb2N1bWVu
-dGF0aW9uIGZvciBzYW1hNWQzIDEwLzEwMA0KPiAgICAgIGludGVyZmFjZQ0KPiAgICBuZXQvbWFj
-YjogYmluZGluZ3MgZG9jOiBhZGQgc2FtOXg2MCBiaW5kaW5nDQo+ICAgIHBvd2VyOiByZXNldDog
-YXQ5MS1yZXNldDogYWRkIHN1cHBvcnQgZm9yIHNhbTl4NjAgU29DDQo+ICAgIFVTQjogaG9zdDog
-b2hjaS1hdDkxOiBhZGQgc2FtOXg2MC1zZnIgZGVmaW5pdGlvbiBmb3Igb2hjaQ0KPiAgICBuZXQ6
-IG1hY2I6IGFkZCBzYW05eDYwLW1hY2IgY29tcGF0aWJpbGl0eSBzdHJpbmcNCj4gDQo+ICAgLi4u
-L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0ICAgICAgIHwgIDQgKysr
-LQ0KPiAgIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvbWFjYi50eHQgICAg
-ICB8ICA0ICsrLS0NCj4gICBkcml2ZXJzL25ldC9ldGhlcm5ldC9jYWRlbmNlL21hY2JfbWFpbi5j
-ICAgICAgICAgICAgfCAgMSArDQo+ICAgZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMg
-ICAgICAgICAgICAgICAgICAgIHwgMTMgKysrKysrKysrKysrKw0KPiAgIGRyaXZlcnMvdXNiL2hv
-c3Qvb2hjaS1hdDkxLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICA3ICsrKysrLS0NCj4gICA1
-IGZpbGVzIGNoYW5nZWQsIDI0IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+IA0KDQoN
-Ci0tIA0KTmljb2xhcyBGZXJyZQ0K
+Update the Reset Controller's binding to add new SoC compatibility string.
+
+Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+v2: split series and collect tag
+
+ Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+index dd7864f2bb2b..dfc91bc02b97 100644
+--- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
++++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+@@ -22,6 +22,7 @@ Its subnodes can be:
+ RSTC Reset Controller required properties:
+ - compatible: Should be "atmel,<chip>-rstc".
+   <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
++  it also can be "microchip,sam9x60-rstc"
+ - reg: Should contain registers location and length
+ - clocks: phandle to input clock.
+ 
+-- 
+2.17.1
