@@ -1,75 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/9] cpufreq: Add flag to auto-register as cooling device
-Date: Wed, 06 Feb 2019 11:32:09 +0100
-Message-ID: <2181391.oHn0C2QMFc@aspire.rjw.lan>
-References: <cover.1548737236.git.amit.kucheria@linaro.org>
+Subject: Re: [PATCH] PM/runtime: Optimize pm_runtime_autosuspend_expiration()
+Date: Wed, 06 Feb 2019 11:34:03 +0100
+Message-ID: <4091828.IqCJ3qcF9B@aspire.rjw.lan>
+References: <20190130214017.GA5038@lenoch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1548737236.git.amit.kucheria@linaro.org>
+In-Reply-To: <20190130214017.GA5038@lenoch>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/Mediatek SoC support" <linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>
+To: Ladislav Michl <ladis@linux-mips.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Biju Das <biju.das@bp.renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 29, 2019 5:55:06 AM CET Amit Kucheria wrote:
-> Add a flag for cpufreq drivers to tell cpufreq core to auto-register
-> themselves as a thermal cooling device.
+On Wednesday, January 30, 2019 10:40:17 PM CET Ladislav Michl wrote:
+> pm_runtime_autosuspend_expiration calls ktime_get_mono_fast_ns
+> even when its returned value may be unused. Therefore get
+> current time later and remove gotos while there.
 > 
-> There series converts over all the drivers except arm_big_little.c.
-> Tested on SDM845 with the qcom-cpufreq-hw driver. Only compile-tested the
-> others.
+> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+> Acked-by: Tony Lindgren <tony@atomide.com>
+> Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  This patch is based on top of bleeding-edge branch, where
+>  "[PATCH v2 ] PM-runtime: fix deadlock with ktime" is sitting.
+>  I expect v3 of that patch, which should not harm this one.
+>  It is meant to replace "PM/runtime: Do not needlessly call ktime_get"
+>  sent earlier.
 > 
-> Things needing fixing (but not a blocker for the series):
->  - Look at how to detect that we're not in IKS mode in arm_big_little's
->    .ready callback.
+>  drivers/base/power/runtime.c | 19 ++++++++-----------
+>  1 file changed, 8 insertions(+), 11 deletions(-)
 > 
-> Changes since v4:
->  - Added IS_ENABLED guards in cpufreq.c
->  - Changed flag name to CPUFREQ_IS_COOLING_DEV
->  - Collected various review tags
-> 
-> Changes since v3:
->  - Got rid of wrapper function to register/unregister cooling devices.
->    Directly call the function in cpufreq.c
-> 
-> Changes since v2:
->  - Get rid of #ifdef'ery and let the pointer exist in all cases
->  - Get rid of (!CPU_THERMAL || THERMAL) dependency in all cpufreq drivers'
->    Kconfig
-> 
-> Changes since v1:
-> - Fix compilation failures with allmodconfig
-> - Get rid of #ifdef in cpufreq.c
-> - Removed miscellaneous patches and sent them separately
-> - Merged patches 1 and 2 from v1
-> 
-> Amit Kucheria (9):
->   thermal: cpu_cooling: Require thermal core to be compiled in
->   cpufreq: Auto-register the driver as a thermal cooling device if asked
->   cpufreq: qcom-hw: Register as a cpufreq cooling device
->   cpufreq: imx6q: Use auto-registration of thermal cooling device
->   cpufreq: cpufreq-dt: Use auto-registration of thermal cooling device
->   cpufreq: mediatek: Use auto-registration of thermal cooling device
->   cpufreq: qoriq: Use auto-registration of thermal cooling device
->   cpufreq: scmi: Use auto-registration of thermal cooling device
->   cpufreq: scpi: Use auto-registration of thermal cooling device
-> 
->  drivers/cpufreq/Kconfig            |  3 ---
->  drivers/cpufreq/Kconfig.arm        |  5 -----
->  drivers/cpufreq/cpufreq-dt.c       | 14 ++------------
->  drivers/cpufreq/cpufreq.c          | 13 +++++++++++++
->  drivers/cpufreq/imx6q-cpufreq.c    | 24 ++----------------------
->  drivers/cpufreq/mediatek-cpufreq.c | 14 ++------------
->  drivers/cpufreq/qcom-cpufreq-hw.c  |  3 ++-
->  drivers/cpufreq/qoriq-cpufreq.c    | 15 ++-------------
->  drivers/cpufreq/scmi-cpufreq.c     | 14 ++------------
->  drivers/cpufreq/scpi-cpufreq.c     | 14 ++------------
->  drivers/thermal/Kconfig            |  1 +
->  include/linux/cpufreq.h            |  9 +++++++++
->  12 files changed, 37 insertions(+), 92 deletions(-)
-> 
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 65e2b5f48e0c..7bbe28faca8d 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -145,24 +145,21 @@ static void pm_runtime_cancel_pending(struct device *dev)
+>  u64 pm_runtime_autosuspend_expiration(struct device *dev)
+>  {
+>  	int autosuspend_delay;
+> -	u64 last_busy, expires = 0;
+> -	u64 now = ktime_get_mono_fast_ns();
+> +	u64 expires;
+>  
+>  	if (!dev->power.use_autosuspend)
+> -		goto out;
+> +		return 0;
+>  
+>  	autosuspend_delay = READ_ONCE(dev->power.autosuspend_delay);
+>  	if (autosuspend_delay < 0)
+> -		goto out;
+> -
+> -	last_busy = READ_ONCE(dev->power.last_busy);
+> +		return 0;
+>  
+> -	expires = last_busy + (u64)autosuspend_delay * NSEC_PER_MSEC;
+> -	if (expires <= now)
+> -		expires = 0;	/* Already expired. */
+> +	expires  = READ_ONCE(dev->power.last_busy);
+> +	expires += (u64)autosuspend_delay * NSEC_PER_MSEC;
+> +	if (expires > ktime_get_mono_fast_ns())
+> +		return expires;	/* Expires in the future */
+>  
+> - out:
+> -	return expires;
+> +	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
+>  
 > 
 
-I've applied the series, thanks!
+Applied, thanks!
