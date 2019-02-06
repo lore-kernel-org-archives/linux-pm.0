@@ -1,26 +1,87 @@
-From: "Pan, Harry" <harry.pan@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Wed, 6 Feb 2019 14:52:06 +0000
-Message-ID: <e34a97305c9f40fd510582b4c04ea3839f85e04d.camel@intel.com>
+Date: Wed, 6 Feb 2019 15:53:22 +0100
+Message-ID: <20190206145322.GA31815@amd>
 References: <20190203052007.27392-1-harry.pan@intel.com>
-         <1702604.tyfAVjpQ0o@aspire.rjw.lan>
+ <20190206144257.21464-1-harry.pan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1702604.tyfAVjpQ0o@aspire.rjw.lan>
-Content-Language: en-US
-Content-ID: <D66E85236CD4BE4A8AC68D0E546C211A@intel.com>
+Content-Disposition: inline
+In-Reply-To: <20190206144257.21464-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Harry Pan <harry.pan@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE5LTAyLTA1IGF0IDEyOjU1ICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToNCj4gDQo+ID4gKwlrdGltZV90IHN0YXJ0LCBlbmQsIGVsYXBzZWQ7DQo+IA0KPiBXaHkgZG8g
-eW91IG5lZWQgdGhyZWUgdmFycyBoZXJlPyAgT25lIHNob3VsZCBiZSBzdWZmaWNpZW50Lg0KLi4u
-DQo+ID4gKwlzdGFydCA9IGt0aW1lX2dldF9ib290dGltZSgpOw0KPiANCj4gV2h5IF9ib290dGlt
-ZSgpPw0KPiANClllcywgSSBhZ3JlZSBib3RoIGNvbW1lbnRzLg0KDQpCVFcsIFRoZSBpbml0aWFs
-IGlkZWEgY2FtZSBmcm9tIHByb2Nlc3NlcyBmcmVlemluZywgYXBvbG9neSBteSBza2V0Y2h5DQpp
-bWl0YXRpb24gbm90IGNvbnNpZGVyaW5nIHRoZSBjb250ZXh0IHdlbGwgdG8gY2hvb3NlIGEgcHJv
-cGVyIEFQSS4NCg0KLUhhcnJ5DQoNCg==
+
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed 2019-02-06 22:42:57, Harry Pan wrote:
+> This patch gives the reader an intuitive metric of the time cost by
+> the kernel issuing a filesystem sync during suspend; although developer
+> can guess by the timestamp of next log or enable the ftrace power event
+> for manual calculation, this manner is easier to read and benefits the
+> automatic script.
+>=20
+> v2: simplify the variables, apply the simplest form of ktime API.
+>=20
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
+
+NAK.
+								Pavel
+							=09
+> ---
+>  kernel/power/suspend.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 0bd595a0b610..87c0073f0c9d 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -550,6 +550,8 @@ static void suspend_finish(void)
+>  static int enter_state(suspend_state_t state)
+>  {
+>  	int error;
+> +	ktime_t start;
+> +	unsigned int elapsed_msecs;
+> =20
+>  	trace_suspend_resume(TPS("suspend_enter"), state, true);
+>  	if (state =3D=3D PM_SUSPEND_TO_IDLE) {
+> @@ -570,9 +572,12 @@ static int enter_state(suspend_state_t state)
+> =20
+>  #ifndef CONFIG_SUSPEND_SKIP_SYNC
+>  	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> +	start =3D ktime_get();
+>  	pr_info("Syncing filesystems ... ");
+>  	ksys_sync();
+> -	pr_cont("done.\n");
+> +	elapsed_msecs =3D ktime_to_ms(ktime_sub(ktime_get(), start));
+> +	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
+> +		elapsed_msecs % 1000);
+>  	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+>  #endif
+> =20
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlxa9OIACgkQMOfwapXb+vK41wCfUiP4kyXwCFDr3IyBSoRpYFAs
+qTYAn32HBKY2Z4CbT1r7Yjw5qII8hYAc
+=meE1
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
