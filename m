@@ -1,45 +1,75 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: Re: [PATCH v3 6/7] ARM64: dts: marvell: armada-37xx: declare SATA
- clock
-Date: Wed, 06 Feb 2019 10:46:32 +0100
-Message-ID: <8736p18d1j.fsf@FE-laptop>
-References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
- <20181204192831.12440-7-miquel.raynal@bootlin.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 0/9] driver core: Fix some device links issues and add
+ "consumer autoprobe" flag
+Date: Wed, 6 Feb 2019 10:56:11 +0100
+Message-ID: <CAJZ5v0gBYyoumVkLTuEcHsFE8QKEXdYuhDRGwmvoKPhx7gPvgQ@mail.gmail.com>
+References: <1952449.TVsm6CJCTy@aspire.rjw.lan> <CAJZ5v0jOVLZDoW5BAy9obp7AptTYzKikFo7Qd15kNt5Y9=vXRQ@mail.gmail.com>
+ <CAPDyKFrq-r-rFDDB3yU=W4mOF2-A4xGGomqFqUba6MVWZugHmQ@mail.gmail.com> <24600564.pMaimVIQbW@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181204192831.12440-7-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Hans de Goede <hdegoede@redhat.com>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <24600564.pMaimVIQbW@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgTWlxdWVsLAogCiBPbiBtYXIuLCBkw6ljLiAwNCAyMDE4LCBNaXF1ZWwgUmF5bmFsIDxtaXF1
-ZWwucmF5bmFsQGJvb3RsaW4uY29tPiB3cm90ZToKCj4gVGhlIFNBVEEgSVAgZ2V0IGl0cyBjbG9j
-ayBmcm9tIHRoZSBub3J0aC1icmlkZ2UuCj4KPiBTaWduZWQtb2ZmLWJ5OiBNaXF1ZWwgUmF5bmFs
-IDxtaXF1ZWwucmF5bmFsQGJvb3RsaW4uY29tPgoKQXBwbGllZCB0byBtdmVidS9kdDY0CgpUaGFu
-a3MsCgpHcmVnb3J5Cj4gLS0tCj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEt
-Mzd4eC5kdHNpIHwgMSArCj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKQo+Cj4gZGlm
-ZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtMzd4eC5kdHNpIGIv
-YXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS0zN3h4LmR0c2kKPiBpbmRleCAwMzZk
-NmZkNmM5ZWYuLjY1YmY3NzQ1MTZlYyAxMDA2NDQKPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRz
-L21hcnZlbGwvYXJtYWRhLTM3eHguZHRzaQo+ICsrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWFy
-dmVsbC9hcm1hZGEtMzd4eC5kdHNpCj4gQEAgLTM4OSw2ICszODksNyBAQAo+ICAJCQkJY29tcGF0
-aWJsZSA9ICJtYXJ2ZWxsLGFybWFkYS0zNzAwLWFoY2kiOwo+ICAJCQkJcmVnID0gPDB4ZTAwMDAg
-MHgxNzg+Owo+ICAJCQkJaW50ZXJydXB0cyA9IDxHSUNfU1BJIDI3IElSUV9UWVBFX0xFVkVMX0hJ
-R0g+Owo+ICsJCQkJY2xvY2tzID0gPCZuYl9wZXJpcGhfY2xrIDE+Owo+ICAJCQkJc3RhdHVzID0g
-ImRpc2FibGVkIjsKPiAgCQkJfTsKPiAgCj4gLS0gCj4gMi4xOS4xCj4KCi0tIApHcmVnb3J5IENs
-ZW1lbnQsIEJvb3RsaW4KRW1iZWRkZWQgTGludXggYW5kIEtlcm5lbCBlbmdpbmVlcmluZwpodHRw
-Oi8vYm9vdGxpbi5jb20KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlz
-dHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Tue, Feb 5, 2019 at 12:27 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Tuesday, February 5, 2019 9:15:49 AM CET Ulf Hansson wrote:
+> > On Mon, 4 Feb 2019 at 12:45, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > On Mon, Feb 4, 2019 at 12:40 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > >
+> > > > On Fri, Feb 1, 2019 at 4:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+
+[cut]
+
+> > >
+> > > For example, if the consumer device is suspended after the
+> > > device_link_add() that incremented the supplier's PM-runtime count and
+> > > then resumed again, the rpm_active refcount will be greater than one
+> > > because of the last resume and not because of the initial link
+> > > creation.  In that case, dropping the supplier's PM-runtime count on
+> > > link deletion may not work as expected.
+> >
+> > I see what your are saying and I must admit, by looking at the code,
+> > that it has turned into being rather complicated. Assuming of good
+> > reasons, of course.
+> >
+> > Anyway, I will play a little bit more with my tests to see what I can find out.
+> >
+> > >
+> > > > Arguably, device_link_del() could be made automatically drop the
+> > > > supplier's PM-runtime count by one if the link's rpm_active refcount
+> > > > is not one, but there will be failing scenarios in that case too
+> > > > AFAICS.
+> >
+> > Let's see.
+>
+> So for the record, below is the (untested) patch I'm thinking about.
+>
+> Having considered this for some time, I think that it would be better to
+> try to drop the supplier's PM-runtime usage counter on link removal even if
+> the link doesn't go away then.  That would be more consistent at least IMO.
+
+So I can't convince myself that this is the case.
+
+Either way, if there are two callers of device_link_add() for one
+consumer-supplier pair trying to add a stateless link between them and
+one of these callers passes DL_FLAG_RPM_ACTIVE set in the flags to it,
+there may be issues regardless of what device_link_del() and
+device_link_remove() do.  However, if they decrement the link's
+rpm_active refcount (and possibly the supplier's PM-runtime usage
+counter too), the supplier may be suspended prematurely, whereas in
+the other case (no decrementation of rpm_active, which how the code
+works after this series) it may just be prevented from suspending.  To
+me, the former is worse than the latter.
+
+Moreover, there is a workaround for the latter issue that seems to be
+easy enough: it is sufficient to let the consumer runtime suspend
+after calling device_link_add() to create the link (with
+DL_FLAG_RPM_ACTIVE set) and before trying to remove it.
+
+Because of the above, I'm just going to post a patch to document the
+current behavior of the code as a known limitation.
