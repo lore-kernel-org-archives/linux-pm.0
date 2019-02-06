@@ -1,13 +1,13 @@
 From: Harry Pan <harry.pan@intel.com>
-Subject: [PATCH v2] PM / suspend: measure the time of filesystem syncing
-Date: Wed,  6 Feb 2019 23:42:14 +0800
-Message-ID: <20190206154214.576-1-harry.pan@intel.com>
+Subject: [PATCH] PM / suspend: measure the time of filesystem syncing
+Date: Wed,  6 Feb 2019 22:42:57 +0800
+Message-ID: <20190206144257.21464-1-harry.pan@intel.com>
 References: <20190203052007.27392-1-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190203052007.27392-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
+Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 This patch gives the reader an intuitive metric of the time cost by
