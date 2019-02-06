@@ -1,54 +1,75 @@
-From: Harry Pan <harry.pan@intel.com>
-Subject: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Wed,  6 Feb 2019 22:42:57 +0800
-Message-ID: <20190206144257.21464-1-harry.pan@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
+Date: Wed, 6 Feb 2019 17:16:13 +0100
+Message-ID: <20190206161612.GA7868@amd>
 References: <20190203052007.27392-1-harry.pan@intel.com>
+ <20190205212308.GA2816@amd>
+ <fb17e68f94236b1dd02419ebe01c9f76f6fe2259.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190203052007.27392-1-harry.pan@intel.com>
+Content-Disposition: inline
+In-Reply-To: <fb17e68f94236b1dd02419ebe01c9f76f6fe2259.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+To: "Pan, Harry" <harry.pan@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-This patch gives the reader an intuitive metric of the time cost by
-the kernel issuing a filesystem sync during suspend; although developer
-can guess by the timestamp of next log or enable the ftrace power event
-for manual calculation, this manner is easier to read and benefits the
-automatic script.
 
-v2: simplify the variables, apply the simplest form of ktime API.
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Harry Pan <harry.pan@intel.com>
----
- kernel/power/suspend.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+On Wed 2019-02-06 15:08:18, Pan, Harry wrote:
+> On Tue, 2019-02-05 at 22:23 +0100, Pavel Machek wrote:
+> > On Sun 2019-02-03 13:20:07, Harry Pan wrote:
+> > > This patch gives the reader an intuitive metric of the time cost by
+> > > the kernel issuing a filesystem sync during suspend; although
+> > > developer
+> > > can guess by the timestamp of next log or enable the ftrace power
+> > > event
+> > > for manual calculation, this manner is easier to read and benefits
+> > > the
+> > > automatic script.
+> >=20
+> > Do we really need this functionality?
+> >=20
+> > As you explained, developers can already use next timestamp or
+> > ftrace... and this is really not that interesting number.
+>=20
+> The backdrop is some stress test script of suspend/resume, like Chrome
+> OS, is designed to program an expected RTC wake-alarm then issue
+> suspend command, while in rare case (or buggy software), the filesystem
+> sync could cost longer time in seconds, this consumes the alarm budget
+> causes suspend aborting, it could be abstruse to production line
+> developers to realize it is not a platform issue in terms of drivers
+> suspending; given a such metric might make the communication easier,
+> this is my intuition.
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 0bd595a0b610..87c0073f0c9d 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -550,6 +550,8 @@ static void suspend_finish(void)
- static int enter_state(suspend_state_t state)
- {
- 	int error;
-+	ktime_t start;
-+	unsigned int elapsed_msecs;
- 
- 	trace_suspend_resume(TPS("suspend_enter"), state, true);
- 	if (state == PM_SUSPEND_TO_IDLE) {
-@@ -570,9 +572,12 @@ static int enter_state(suspend_state_t state)
- 
- #ifndef CONFIG_SUSPEND_SKIP_SYNC
- 	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-+	start = ktime_get();
- 	pr_info("Syncing filesystems ... ");
- 	ksys_sync();
--	pr_cont("done.\n");
-+	elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
-+	pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
-+		elapsed_msecs % 1000);
- 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
- #endif
- 
--- 
-2.18.1
+I'd rather educate other developers that this may happen. dmesg
+timestamps should already make it easy to see.
+
+And actually... if you do "time sync" in userspace just before
+programing the RTC and suspending, this whole issue should go away.
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--mP3DRpeJDSE+ciuQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlxbCEwACgkQMOfwapXb+vIKhgCaAnD9fPajXqwIhVuWFT72fKjh
+KdQAn3hBYS5jaOiUEw44mzte/TprnrEL
+=fRxm
+-----END PGP SIGNATURE-----
+
+--mP3DRpeJDSE+ciuQ--
