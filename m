@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 01/24] drivers: thermal: tsens: Document the data structures
-Date: Thu,  7 Feb 2019 16:19:19 +0530
-Message-ID: <ab0571b9d3059342361522b8ae0df69990385547.1549525708.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 02/24] drivers: thermal: tsens: Rename tsens_data
+Date: Thu,  7 Feb 2019 16:19:20 +0530
+Message-ID: <c85198235ef4eb5800a3239267441a31504bf487.1549525708.git.amit.kucheria@linaro.org>
 References: <cover.1549525708.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
@@ -12,74 +12,121 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Describe how the TSENS device and the various sensors connected to it
-are described in the driver
+Rename to tsens_plat_data to denote that it is platform-data passed in
+at compile-time.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens.h | 31 ++++++++++++++++++++++++++++---
- 1 file changed, 28 insertions(+), 3 deletions(-)
+ drivers/thermal/qcom/tsens-8916.c | 2 +-
+ drivers/thermal/qcom/tsens-8960.c | 2 +-
+ drivers/thermal/qcom/tsens-8974.c | 2 +-
+ drivers/thermal/qcom/tsens-v2.c   | 4 ++--
+ drivers/thermal/qcom/tsens.c      | 2 +-
+ drivers/thermal/qcom/tsens.h      | 8 ++++----
+ 6 files changed, 10 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
+index c6dd620ac029..66edcfca1526 100644
+--- a/drivers/thermal/qcom/tsens-8916.c
++++ b/drivers/thermal/qcom/tsens-8916.c
+@@ -97,7 +97,7 @@ static const struct tsens_ops ops_8916 = {
+ 	.get_temp	= get_temp_common,
+ };
+ 
+-const struct tsens_data data_8916 = {
++const struct tsens_plat_data data_8916 = {
+ 	.num_sensors	= 5,
+ 	.ops		= &ops_8916,
+ 	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x0 },
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
+index 0f0adb302a7b..f3c3820e6e8e 100644
+--- a/drivers/thermal/qcom/tsens-8960.c
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -277,7 +277,7 @@ static const struct tsens_ops ops_8960 = {
+ 	.resume		= resume_8960,
+ };
+ 
+-const struct tsens_data data_8960 = {
++const struct tsens_plat_data data_8960 = {
+ 	.num_sensors	= 11,
+ 	.ops		= &ops_8960,
+ };
+diff --git a/drivers/thermal/qcom/tsens-8974.c b/drivers/thermal/qcom/tsens-8974.c
+index 3d3fda3d731b..5023f20afc14 100644
+--- a/drivers/thermal/qcom/tsens-8974.c
++++ b/drivers/thermal/qcom/tsens-8974.c
+@@ -229,7 +229,7 @@ static const struct tsens_ops ops_8974 = {
+ 	.get_temp	= get_temp_common,
+ };
+ 
+-const struct tsens_data data_8974 = {
++const struct tsens_plat_data data_8974 = {
+ 	.num_sensors	= 11,
+ 	.ops		= &ops_8974,
+ 	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x0 },
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 381a212872bf..cc98a61e093b 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -66,13 +66,13 @@ static const struct tsens_ops ops_generic_v2 = {
+ 	.get_temp	= get_temp_tsens_v2,
+ };
+ 
+-const struct tsens_data data_tsens_v2 = {
++const struct tsens_plat_data data_tsens_v2 = {
+ 	.ops            = &ops_generic_v2,
+ 	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x4 },
+ };
+ 
+ /* Kept around for backward compatibility with old msm8996.dtsi */
+-const struct tsens_data data_8996 = {
++const struct tsens_plat_data data_8996 = {
+ 	.num_sensors	= 13,
+ 	.ops		= &ops_generic_v2,
+ 	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x4 },
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index f1ec9bbe4717..065ec2189bd3 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -102,7 +102,7 @@ static int tsens_probe(struct platform_device *pdev)
+ 	struct device *dev;
+ 	struct device_node *np;
+ 	struct tsens_device *tmdev;
+-	const struct tsens_data *data;
++	const struct tsens_plat_data *data;
+ 	const struct of_device_id *id;
+ 	u32 num_sensors;
+ 
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 7b7feee5dc46..89318523c848 100644
+index 89318523c848..232376c690cc 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
-@@ -14,6 +14,16 @@
- 
- struct tsens_device;
- 
-+/**
-+ * struct tsens_sensor - data for each sensor connected to the tsens device
-+ * @tmdev: tsens device instance that this sensor is connected to
-+ * @tzd: pointer to the thermal zone that this sensor is in
-+ * @offset: offset of temperature adjustment curve
-+ * @id: Sensor ID
-+ * @hw_id: HW ID can be used in case of platform-specific IDs
-+ * @slope: slope of temperature adjustment curve
-+ * @status: 8960-specific variable to track 8960 and 8660 status register offset
-+ */
- struct tsens_sensor {
- 	struct tsens_device		*tmdev;
- 	struct thermal_zone_device	*tzd;
-@@ -55,8 +65,8 @@ enum reg_list {
+@@ -65,13 +65,13 @@ enum reg_list {
  };
  
  /**
-- * struct tsens_data - tsens instance specific data
-- * @num_sensors: Max number of sensors supported by platform
-+ * struct tsens_data - tsens platform data
-+ * @num_sensors: Number of sensors supported by platform
+- * struct tsens_data - tsens platform data
++ * struct tsens_plat_data - tsens compile-time platform data
+  * @num_sensors: Number of sensors supported by platform
   * @ops: operations the tsens instance supports
   * @hw_ids: Subset of sensors ids supported by platform, if not the first n
   * @reg_offsets: Register offsets for commonly used registers
-@@ -68,12 +78,27 @@ struct tsens_data {
- 	unsigned int		*hw_ids;
- };
+  */
+-struct tsens_data {
++struct tsens_plat_data {
+ 	const u32		num_sensors;
+ 	const struct tsens_ops	*ops;
+ 	const u16		reg_offsets[REG_ARRAY_SIZE];
+@@ -117,8 +117,8 @@ int init_common(struct tsens_device *);
+ int get_temp_common(struct tsens_device *, int, int *);
  
--/* Registers to be saved/restored across a context loss */
-+/**
-+ * struct tsens_context - Registers to be saved/restored across a context loss
-+ */
- struct tsens_context {
- 	int	threshold;
- 	int	control;
- };
+ /* TSENS v1 targets */
+-extern const struct tsens_data data_8916, data_8974, data_8960;
++extern const struct tsens_plat_data data_8916, data_8974, data_8960;
+ /* TSENS v2 targets */
+-extern const struct tsens_data data_8996, data_tsens_v2;
++extern const struct tsens_plat_data data_8996, data_tsens_v2;
  
-+/**
-+ * struct tsens_device - private data for each instance of the tsens IP
-+ * @dev: pointer to struct device
-+ * @num_sensors: number of sensors enabled on this device
-+ * @tm_map: pointer to TM register address space
-+ * @srot_map: pointer to SROT register address space
-+ * @tm_offset: deal with old device trees that don't address TM and SROT
-+ *             address space separately
-+ * @reg_offsets: array of offsets to important regs for this version of IP
-+ * @ctx: registers to be saved and restored during suspend/resume
-+ * @ops: pointer to list of callbacks supported by this device
-+ * @sensor: list of sensors attached to this device
-+ */
- struct tsens_device {
- 	struct device			*dev;
- 	u32				num_sensors;
+ #endif /* __QCOM_TSENS_H__ */
 -- 
 2.17.1
