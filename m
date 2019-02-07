@@ -1,72 +1,52 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFT PATCH 7/9] mfd: axp20x: add USB power supply
- mfd cell to AXP813
-Date: Thu, 7 Feb 2019 11:02:47 +0000
-Message-ID: <20190207110247.GE20638@dell>
-References: <20190207064535.9226-1-wens@csie.org>
- <20190207064535.9226-8-wens@csie.org>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v8 1/8] mfd: regulator: clk: split rohm-bd718x7.h
+Date: Thu, 7 Feb 2019 11:41:03 +0000
+Message-ID: <20190207114103.GF20638@dell>
+References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <58a56ac25564baa221d471e878a3e4f5d9081f36.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBWVA6DRAKGQEPK3QGEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190207064535.9226-8-wens-jdAy2FN1RRM@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <58a56ac25564baa221d471e878a3e4f5d9081f36.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 07 Feb 2019, Chen-Yu Tsai wrote:
+On Thu, 07 Feb 2019, Matti Vaittinen wrote:
 
-> From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
->=20
-> The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
-> supports this variant, we can add an mfd cell for it to use it.
->=20
-> Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-> [wens-jdAy2FN1RRM@public.gmane.org: add commit message]
-> Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> Split the bd718x7.h to ROHM common and bd718x7 specific parts
+> so that we do not need to add same things in every new ROHM
+> PMIC header. Please note that this change requires changes also
+> in bd718x7 sub-device drivers for regulators and clk.
+> 
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> Acked-by: Mark Brown <broonie@kernel.org>
+> Acked-by: Stephen Boyd <sboyd@kernel.org>
 > ---
->  drivers/mfd/axp20x.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
->=20
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index 3c97f2c0fdfe..17b115845993 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply=
-_resources[] =3D {
->  	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
->  };
-> =20
-> +/* AXP803 and AXP813/AXP818 share the same interrupts */
-> +static struct resource axp803_usb_power_supply_resources[] =3D {
-> +	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-> +	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-
-Nit: Why 2 spaces here?                              ^
-
-With that fixed, you can add my:
+> 
+> Please note that I maintained the acks from Mark and Stephen even
+> though this is a squash of 3 commits and both Mark and Stephen had
+> only acked one of the patches. (The patch which touched their area
+> clk for Stephen, regulators for Mark). I interpreted their acks as
+> 'the split is in general Ok and portion I am interested in is fine'
+> and thus maintained the acks. Please let me know if this is not Ok.
+> 
+>  drivers/clk/clk-bd718x7.c             |  6 +++---
+>  drivers/mfd/rohm-bd718x7.c            | 23 ++++++++++++-----------
+>  drivers/regulator/bd718x7-regulator.c | 24 ++++++++++++------------
+>  include/linux/mfd/rohm-bd718x7.h      | 22 ++++++++--------------
+>  include/linux/mfd/rohm-generic.h      | 20 ++++++++++++++++++++
+>  5 files changed, 55 insertions(+), 40 deletions(-)
+>  create mode 100644 include/linux/mfd/rohm-generic.h
 
 For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
---=20
-Lee Jones [=E6=9D=8E=E7=90=BC=E6=96=AF]
+-- 
+Lee Jones [李琼斯]
 Linaro Services Technical Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
+Linaro.org │ Open source software for ARM SoCs
 Follow Linaro: Facebook | Twitter | Blog
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
