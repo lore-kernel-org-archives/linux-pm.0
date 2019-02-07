@@ -1,61 +1,76 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] drivers: base: add support to skip power management in
- device/driver model
-Date: Thu, 7 Feb 2019 15:06:38 +0000
-Message-ID: <20190207150638.GB14464@e107155-lin>
-References: <20190206150935.12140-1-sudeep.holla@arm.com>
- <CAPDyKFr2qwXoOL3SRy7Crf-pg4FMn_qecPrw__BE+YpVAjAFZA@mail.gmail.com>
- <20190207103600.GA14464@e107155-lin>
- <CAPDyKFpkiaP0J_LJxP6tRUOyz3QKtDgA+PuhL-9vew7-RfKyNA@mail.gmail.com>
+From: Priit Laes <plaes-q/aMd4JkU83YtjvyW6yDsg@public.gmane.org>
+Subject: Re: [RFT PATCH 7/9] mfd: axp20x: add USB power supply
+ mfd cell to AXP813
+Date: Thu, 7 Feb 2019 15:13:06 +0000
+Message-ID: <20190207151306.lyjcwyllshwm4o6q@plaes.org>
+References: <20190207064535.9226-1-wens@csie.org>
+ <20190207064535.9226-8-wens@csie.org>
+Reply-To: plaes-q/aMd4JkU83YtjvyW6yDsg@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBDB4J47M7YERBBMW6HRAKGQE7SI6FJQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFpkiaP0J_LJxP6tRUOyz3QKtDgA+PuhL-9vew7-RfKyNA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
+In-Reply-To: <20190207064535.9226-8-wens-jdAy2FN1RRM@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 07, 2019 at 03:29:07PM +0100, Ulf Hansson wrote:
-> On Thu, 7 Feb 2019 at 11:36, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On Thu, Feb 07, 2019 at 02:45:33PM +0800, Chen-Yu Tsai wrote:
+> From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+> 
+> The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
+> supports this variant, we can add an mfd cell for it to use it.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+> [wens-jdAy2FN1RRM@public.gmane.org: add commit message]
+> Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> ---
+>  drivers/mfd/axp20x.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 3c97f2c0fdfe..17b115845993 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
+>  	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+>  };
+>  
+> +/* AXP803 and AXP813/AXP818 share the same interrupts */
+> +static struct resource axp803_usb_power_supply_resources[] = {
 
-[..]
+const, if possible?
 
-> >
-> > May be, but as mentioned above we can't really. Also this change will
-> > help to avoid creating unnecessary power sysfs which is mainly runtime
-> > pm related for some of the devices created. CPU/caches was just one
-> > example which triggered this, but this can be more useful. We can avoid
-> > adding them to dpm list.
->
-> Well, to me the approach you suggest sounds prone to errors and I am
-> afraid people may abuse it. Moreover, I don't know if there is other
-> problems with it, let's see what Rafael thinks about it.
->
-
-Sorry, I should have put reference to earlier discussion that led to this
-patch. For your reference: [1]
-
-> Instead I think we should make the PM core to deal with this scenario,
-> as all it boils down to, is to allow a device to be unregistered and
-> registered during system suspend/resume, with a parent device that is
-> "persistent" during the sequence.
->
-
-OK
-
-> Perhaps we could even just drop the corresponding printed warning,
-> "cache: parent cpu1 should not be sleeping", in device_pm_add() as I
-> wonder if it's really a necessary print.
->
-Indeed, I was ignoring knowing that it's harmless. But more people
-started to complain, and Rafael suggested this which I agree as we
-have several pseudo devices created in the kernel that we can bypass
-some of these pm handling knowing we won't need it.
-
---
-Regards,
-Sudeep
-
-[1] https://lkml.org/lkml/2019/1/30/1078
+> +	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
+> +	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+> +};
+> +
+>  static const struct resource axp22x_pek_resources[] = {
+>  	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_RIS_EDGE, "PEK_DBR"),
+>  	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
+> @@ -793,6 +799,11 @@ static const struct mfd_cell axp813_cells[] = {
+>  		.of_compatible	= "x-powers,axp813-ac-power-supply",
+>  		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
+>  		.resources	= axp20x_ac_power_supply_resources,
+> +	}, {
+> +		.name		= "axp20x-usb-power-supply",
+> +		.num_resources	= ARRAY_SIZE(axp803_usb_power_supply_resources),
+> +		.resources	= axp803_usb_power_supply_resources,
+> +		.of_compatible	= "x-powers,axp813-usb-power-supply",
+>  	},
+>  };
+>  
+> -- 
+> 2.20.1
+> 
+> -- 
+> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+> For more options, visit https://groups.google.com/d/optout.
