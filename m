@@ -1,163 +1,59 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v8 4/8] devicetree: bindings: Document first ROHM BD70528
- bindings
-Date: Thu, 7 Feb 2019 14:04:18 +0000
-Message-ID: <20190207140418.GH20638@dell>
-References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
- <52b17ed2599b21f4b93665ac689113ce3f8816b7.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [RFT PATCH 7/9] mfd: axp20x: add USB power supply mfd cell to AXP813
+Date: Thu, 7 Feb 2019 22:28:12 +0800
+Message-ID: <CAGb2v66uC=ZUj3S3ceVHABg68WMuyfHPcG77CV1DjCNn9ff71A@mail.gmail.com>
+References: <20190207064535.9226-1-wens@csie.org> <20190207064535.9226-8-wens@csie.org>
+ <20190207110247.GE20638@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <52b17ed2599b21f4b93665ac689113ce3f8816b7.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <20190207110247.GE20638@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Quentin Schulz <quentin.schulz@bootlin.com>, devicetree <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 07 Feb 2019, Matti Vaittinen wrote:
+On Thu, Feb 7, 2019 at 7:02 PM Lee Jones <lee.jones@linaro.org> wrote:
+>
+> On Thu, 07 Feb 2019, Chen-Yu Tsai wrote:
+>
+> > From: Quentin Schulz <quentin.schulz@bootlin.com>
+> >
+> > The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
+> > supports this variant, we can add an mfd cell for it to use it.
+> >
+> > Signed-off-by: Quentin Schulz <quentin.schulz@bootlin.com>
+> > [wens@csie.org: add commit message]
+> > Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+> > ---
+> >  drivers/mfd/axp20x.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> >
+> > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> > index 3c97f2c0fdfe..17b115845993 100644
+> > --- a/drivers/mfd/axp20x.c
+> > +++ b/drivers/mfd/axp20x.c
+> > @@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
+> >       DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+> >  };
+> >
+> > +/* AXP803 and AXP813/AXP818 share the same interrupts */
+> > +static struct resource axp803_usb_power_supply_resources[] = {
+> > +     DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
+> > +     DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+>
+> Nit: Why 2 spaces here?                              ^
 
-> Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
-> drivers) and 4 GPIO pins which can be configured for I/O or
-> as interrupt sources withe configurable trigger levels.
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 102 +++++++++++++++++++++
->  1 file changed, 102 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> new file mode 100644
-> index 000000000000..f80be7e40184
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> @@ -0,0 +1,102 @@
-> +* ROHM BD70528 Power Management Integrated Circuit bindings
-> +
-> +BD70528MWV is an ultra-low Iq general purpose single-chip power management IC
+2 spaces? I'm only seeing one.
 
-What's an Iq?
-
-> +for battery-powered portable devices. The IC integrates 3 ultra-low current
-> +consumption buck converters, 3 LDOs and 2 LED Drivers. Also included are 4
-> +GPIOs, a real-time clock (RTC), a 32kHz clock gate, high-accuracy VREF
-> +for use with an external ADC, flexible dual-input power path, 10 bits SAR ADC
-
-"bit"
-
-> +for battery temperature monitor and 1S battery charger with scalable charge
-> +currents.
-> +
-> +Required properties:
-> + - compatible		: Should be "rohm,bd70528"
-> + - reg			: I2C slave address.
-> + - interrupts		: The interrupt line the device is connected to.
-> + - interrupt-controller	: To indicate bd70528 acts as an interrupt controller.
-
-"BS70528"
-
-> + - #interrupt-cells	: Should be 2. usage is compliant to the 2 cells
-
-"Usage"
-
-> +			  variant of ../interrupt-controller/interrupts.txt
-> + - gpio-controller	: To indicate bd70528 acts as a gpio controller.
-
-"BD*"
-
-"GPIO"
-
-> + - #gpio-cells		: Should be 2. The first cell is the pin number and
-> +			  the second cell is used to specify flags. See
-> +			  ../gpio/gpio.txt for more information.
-> + - #clock-cells		: Should be 0.
-> + - regulators:		: List of child nodes that specify the regulators.
-> +			  Please see ../regulator/rohm,bd70528-regulator.txt
-> +
-> +Optional properties:
-> + - clock-output-names	: Should contain name for output clock.
-> +
-> +Example:
-> +/* external oscillator */
-> +osc: oscillator {
-> +	compatible = "fixed-clock";
-> +	#clock-cells = <1>;
-> +	clock-frequency  = <32768>;
-> +	clock-output-names = "osc";
-> +};
-> +
-> +pmic: pmic@4b {
-> +	compatible = "rohm,bd70528";
-> +	reg = <0x4b>;
-> +	interrupt-parent = <&gpio1>;
-> +	interrupts = <29 GPIO_ACTIVE_LOW>;
-> +	clocks = <&osc 0>;
-> +	#clock-cells = <0>;
-> +	clock-output-names = "bd70528-32k-out";
-> +	#gpio-cells = <2>;
-> +	gpio-controller;
-> +	interrupt-controller;
-> +	#interrupt-cells = <2>;
-> +
-> +	regulators {
-> +		buck1: BUCK1 {
-> +			regulator-name = "buck1";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3400000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck2: BUCK2 {
-> +			regulator-name = "buck2";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck3: BUCK3 {
-> +			regulator-name = "buck3";
-> +			regulator-min-microvolt = <800000>;
-> +			regulator-max-microvolt = <1800000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <250>;
-> +		};
-> +		ldo1: LDO1 {
-> +			regulator-name = "ldo1";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +		ldo2: LDO2 {
-> +			regulator-name = "ldo2";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +
-> +		ldo3: LDO3 {
-> +			regulator-name = "ldo3";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +		};
-> +		led_ldo1: LED_LDO1 {
-> +			regulator-name = "led_ldo1";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +		led_ldo2: LED_LDO2 {
-> +			regulator-name = "led_ldo2";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +	};
-> +};
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> With that fixed, you can add my:
+>
+> For my own reference:
+>   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+>
+> --
+> Lee Jones [李琼斯]
+> Linaro Services Technical Lead
+> Linaro.org │ Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
