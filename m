@@ -1,105 +1,43 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: [RFT PATCH 5/9] power: supply: axp20x_usb_power: add
- function to get max current
-Date: Thu,  7 Feb 2019 14:45:31 +0800
-Message-ID: <20190207064535.9226-6-wens@csie.org>
-References: <20190207064535.9226-1-wens@csie.org>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
+Date: Thu, 7 Feb 2019 12:27:12 +0530
+Message-ID: <7af27aa5-3ff6-d4ee-1dc0-bac797c2bdbc@codeaurora.org>
+References: <20190129015547.213276-1-swboyd@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBGNI57RAKGQEWRW2TAI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20190207064535.9226-1-wens-jdAy2FN1RRM@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190129015547.213276-1-swboyd@chromium.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <swboyd@chromium.org>, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 
-To prepare for a new PMIC, factor out the code responsible of returning
-the maximum current to axp20x_get_current_max.
+> 3) How do we handle devices that already have power-domains specified in
+> DT? The opp binding for required-opps doesn't let us specify the power
+> domain to target, instead it assumes that whatever power domain is
+> attached to a device is the one that OPP needs to use to change the
+> genpd performance state. Do we need a
+> dev_pm_opp_set_required_opps_name() or something to be explicit about
+> this? Can we have some way for the power domain that required-opps
+> correspond to be expressed in the OPP tables themselves?
 
-Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- drivers/power/supply/axp20x_usb_power.c | 52 ++++++++++++++-----------
- 1 file changed, 30 insertions(+), 22 deletions(-)
+I was converting a few more drivers to use the proposed approach in this
+RFC, in order to identify all outstanding issues we need to deal with,
+and specifically for UFS, I end up with this exact scenario where UFS already
+has an existing power domain (gdsc) and I need to add another one (rpmhpd) for
+setting the performance state.
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index ac061bcdc056..90d06027bf98 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -102,6 +102,35 @@ static bool axp20x_usb_vbus_needs_polling(struct axp20x_usb_power *power)
- 	return false;
- }
- 
-+static int axp20x_get_current_max(struct axp20x_usb_power *power, int *val)
-+{
-+	unsigned int v;
-+	int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
-+
-+	if (ret)
-+		return ret;
-+
-+	switch (v & AXP20X_VBUS_CLIMIT_MASK) {
-+	case AXP20X_VBUS_CLIMIT_100mA:
-+		if (power->axp20x_id == AXP221_ID)
-+			*val = -1; /* No 100mA limit */
-+		else
-+			*val = 100000;
-+		break;
-+	case AXP20X_VBUS_CLIMIT_500mA:
-+		*val = 500000;
-+		break;
-+	case AXP20X_VBUS_CLIMIT_900mA:
-+		*val = 900000;
-+		break;
-+	case AXP20X_VBUS_CLIMIT_NONE:
-+		*val = -1;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
- static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -140,28 +169,7 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 		val->intval = ret * 1700; /* 1 step = 1.7 mV */
- 		return 0;
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
--		ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
--		if (ret)
--			return ret;
--
--		switch (v & AXP20X_VBUS_CLIMIT_MASK) {
--		case AXP20X_VBUS_CLIMIT_100mA:
--			if (power->axp20x_id == AXP221_ID)
--				val->intval = -1; /* No 100mA limit */
--			else
--				val->intval = 100000;
--			break;
--		case AXP20X_VBUS_CLIMIT_500mA:
--			val->intval = 500000;
--			break;
--		case AXP20X_VBUS_CLIMIT_900mA:
--			val->intval = 900000;
--			break;
--		case AXP20X_VBUS_CLIMIT_NONE:
--			val->intval = -1;
--			break;
--		}
--		return 0;
-+		return axp20x_get_current_max(power, &val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
- 			ret = iio_read_channel_processed(power->vbus_i,
+If I use dev_pm_opp_of_add_table() to add the opp table from DT, the opp
+layer assumes its the same device on which it can do a dev_pm_genpd_set_performance_state()
+with, however the device that's actually associated with the pm_domain when we
+have multiple power domains is infact the one (dummy) that we create when
+the driver makes a call to dev_pm_domain_attach_by_name/id().
+
+Any thoughts on whats a good way to handle this?
+
 -- 
-2.20.1
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
