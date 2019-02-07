@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/2] driver core: Document limitation related to DL_FLAG_RPM_ACTIVE
-Date: Thu, 07 Feb 2019 19:41:56 +0100
-Message-ID: <2290146.QHuzNgG4dT@aspire.rjw.lan>
+Subject: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
+Date: Thu, 07 Feb 2019 19:38:56 +0100
+Message-ID: <1634058.cXDNg15SOd@aspire.rjw.lan>
 References: <3917694.ab5GGAjohB@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,61 +15,112 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If device_link_add() is called twice in a row to create a stateless
-device link for the same consumer-supplier pair without an attempt
-to delete the link between these calls, and the second caller passes
-DL_FLAG_RPM_ACTIVE to it in flags, calling either device_link_del()
-or device_link_remove() immediately after that will leave the link's
-supplier device with nonzero PM-runtime usage counter, which may
-prevent the supplier from being runtime-suspended going forward
-until the link is deleted by another invocation of device_link_del()
-or device_link_remove() for it.
+If the target device has any suppliers, as reflected by device links
+to them, __pm_runtime_set_status() does not take them into account,
+which is not consistent with the other parts of the PM-runtime
+framework and may lead to programming mistakes.
 
-Even though this is confusing and may lead to subtle issues, trying
-to avoid it in the framework also may cause problems to appear, so
-document it as a known limitation.
+Modify __pm_runtime_set_status() to take suppliers into account by
+activating them upfront if the new status is RPM_ACTIVE and
+deactivating them on exit if the new status is RPM_SUSPENDED.
+
+If the activation of one of the suppliers fails, the new status
+will be RPM_SUSPENDED and the (remaining) suppliers will be
+deactivated on exit (the child count of the device's parent
+will be dropped too then).
+
+Of course, adding device links locking to __pm_runtime_set_status()
+means that it cannot be run fron interrupt context, so make it use
+spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
+and spin_unlock_irqrestore(), respectively.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/driver-api/device_link.rst |   21 ++++++++++++++++++---
- 1 file changed, 18 insertions(+), 3 deletions(-)
+ drivers/base/power/runtime.c |   45 ++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 40 insertions(+), 5 deletions(-)
 
-Index: linux-pm/Documentation/driver-api/device_link.rst
+Index: linux-pm/drivers/base/power/runtime.c
 ===================================================================
---- linux-pm.orig/Documentation/driver-api/device_link.rst
-+++ linux-pm/Documentation/driver-api/device_link.rst
-@@ -86,9 +86,10 @@ integration is desired.
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1102,20 +1102,43 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_u
+  * and the device parent's counter of unsuspended children is modified to
+  * reflect the new status.  If the new status is RPM_SUSPENDED, an idle
+  * notification request for the parent is submitted.
++ *
++ * If @dev has any suppliers (as reflected by device links to them), and @status
++ * is RPM_ACTIVE, they will be activated upfront and if the activation of one
++ * of them fails, the status of @dev will be changed to RPM_SUSPENDED (instead
++ * of the @status value) and the suppliers will be deacticated on exit.  The
++ * error returned by the failing supplier activation will be returned in that
++ * case.
+  */
+ int __pm_runtime_set_status(struct device *dev, unsigned int status)
+ {
+ 	struct device *parent = dev->parent;
+-	unsigned long flags;
+ 	bool notify_parent = false;
+ 	int error = 0;
  
- Two other flags are specifically targeted at use cases where the device
- link is added from the consumer's ``->probe`` callback:  ``DL_FLAG_RPM_ACTIVE``
--can be specified to runtime resume the supplier upon addition of the
--device link.  ``DL_FLAG_AUTOREMOVE_CONSUMER`` causes the device link to be
--automatically purged when the consumer fails to probe or later unbinds.
-+can be specified to runtime resume the supplier and prevent it from suspending
-+before the consumer is runtime suspended.  ``DL_FLAG_AUTOREMOVE_CONSUMER``
-+causes the device link to be automatically purged when the consumer fails to
-+probe or later unbinds.
+ 	if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+ 		return -EINVAL;
  
- Similarly, when the device link is added from supplier's ``->probe`` callback,
- ``DL_FLAG_AUTOREMOVE_SUPPLIER`` causes the device link to be automatically
-@@ -121,6 +122,20 @@ set) are expected to be removed by whoev
- to add them with the help of either :c:func:`device_link_del()` or
- :c:func:`device_link_remove()`.
- 
-+Passing ``DL_FLAG_RPM_ACTIVE`` along with ``DL_FLAG_STATELESS`` to
-+:c:func:`device_link_add()` may cause the PM-runtime usage counter of the
-+supplier device to remain nonzero after a subsequent invocation of either
-+:c:func:`device_link_del()` or :c:func:`device_link_remove()` to remove the
-+device link returned by it.  This happens if :c:func:`device_link_add()` is
-+called twice in a row for the same consumer-supplier pair without removing the
-+link between these calls, in which case allowing the PM-runtime usage counter
-+of the supplier to drop on an attempt to remove the link may cause it to be
-+suspended while the consumer is still PM-runtime-active and that has to be
-+avoided.  [To work around this limitation it is sufficient to let the consumer
-+runtime suspend at least once, or call :c:func:`pm_runtime_set_suspended()` for
-+it with PM-runtime disabled, between the :c:func:`device_link_add()` and
-+:c:func:`device_link_del()` or :c:func:`device_link_remove()` calls.]
+-	spin_lock_irqsave(&dev->power.lock, flags);
++	/*
++	 * If the new status is RPM_ACTIVE, the suppliers can be activated
++	 * upfront regardless of the current status, because next time
++	 * rpm_put_suppliers() runs, the rpm_active refcounts of the links
++	 * involved will be dropped down to one anyway.
++	 */
++	if (status == RPM_ACTIVE) {
++		int idx = device_links_read_lock();
 +
- Sometimes drivers depend on optional resources.  They are able to operate
- in a degraded mode (reduced feature set or performance) when those resources
- are not present.  An example is an SPI controller that can use a DMA engine
++		error = rpm_get_suppliers(dev);
++		if (error)
++			status = RPM_SUSPENDED;
++
++		device_links_read_unlock(idx);
++	}
++
++	spin_lock_irq(&dev->power.lock);
+ 
+ 	if (!dev->power.runtime_error && !dev->power.disable_depth) {
++		status = dev->power.runtime_status;
+ 		error = -EAGAIN;
+ 		goto out;
+ 	}
+@@ -1147,19 +1170,31 @@ int __pm_runtime_set_status(struct devic
+ 
+ 		spin_unlock(&parent->power.lock);
+ 
+-		if (error)
++		if (error) {
++			status = RPM_SUSPENDED;
+ 			goto out;
++		}
+ 	}
+ 
+  out_set:
+ 	__update_runtime_status(dev, status);
+-	dev->power.runtime_error = 0;
++	if (!error)
++		dev->power.runtime_error = 0;
++
+  out:
+-	spin_unlock_irqrestore(&dev->power.lock, flags);
++	spin_unlock_irq(&dev->power.lock);
+ 
+ 	if (notify_parent)
+ 		pm_request_idle(parent);
+ 
++	if (status == RPM_SUSPENDED) {
++		int idx = device_links_read_lock();
++
++		rpm_put_suppliers(dev);
++
++		device_links_read_unlock(idx);
++	}
++
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
