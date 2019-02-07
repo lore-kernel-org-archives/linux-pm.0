@@ -1,49 +1,57 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] drivers: base: add support to skip power management in
- device/driver model
-Date: Thu, 7 Feb 2019 15:29:08 +0000
-Message-ID: <20190207152908.GC14464@e107155-lin>
-References: <20190206150935.12140-1-sudeep.holla@arm.com>
- <CAPDyKFr2qwXoOL3SRy7Crf-pg4FMn_qecPrw__BE+YpVAjAFZA@mail.gmail.com>
- <20190207103600.GA14464@e107155-lin>
- <CAPDyKFpkiaP0J_LJxP6tRUOyz3QKtDgA+PuhL-9vew7-RfKyNA@mail.gmail.com>
- <20190207150638.GB14464@e107155-lin>
- <CAPDyKFoenSDhYk_xNLFn6kB+rqvQQ+p71F27Mvevu-H9Nhxhuw@mail.gmail.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [PATCH v8 4/8] devicetree: bindings: Document first ROHM BD70528
+ bindings
+Date: Thu, 7 Feb 2019 17:36:00 +0200
+Message-ID: <20190207153600.GA1920@localhost.localdomain>
+References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <52b17ed2599b21f4b93665ac689113ce3f8816b7.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190207140418.GH20638@dell>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFoenSDhYk_xNLFn6kB+rqvQQ+p71F27Mvevu-H9Nhxhuw@mail.gmail.com>
+In-Reply-To: <20190207140418.GH20638@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 07, 2019 at 04:18:57PM +0100, Ulf Hansson wrote:
-> On Thu, 7 Feb 2019 at 16:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
+Hello Lee,
 
-[...]
+Thanks for the reviews!
 
-> > Indeed, I was ignoring knowing that it's harmless. But more people
-> > started to complain, and Rafael suggested this which I agree as we
-> > have several pseudo devices created in the kernel that we can bypass
-> > some of these pm handling knowing we won't need it.
->
-> Okay, I see.
->
-> Anyway, I will likely need to restore part of this change, via my
-> cluster idling series then. As from that point, the cpu device that
-> you call device_set_pm_not_required() for, starts to be used from both
-> PM core and runtime PM point of view. But I guess that's okay then.
->
+On Thu, Feb 07, 2019 at 02:04:18PM +0000, Lee Jones wrote:
+> On Thu, 07 Feb 2019, Matti Vaittinen wrote:
+> 
+> > Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
+> > drivers) and 4 GPIO pins which can be configured for I/O or
+> > as interrupt sources withe configurable trigger levels.
+> > 
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+> > Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> > ---
+> >  .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 102 +++++++++++++++++++++
+> >  1 file changed, 102 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > new file mode 100644
+> > index 000000000000..f80be7e40184
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > @@ -0,0 +1,102 @@
+> > +* ROHM BD70528 Power Management Integrated Circuit bindings
+> > +
+> > +BD70528MWV is an ultra-low Iq general purpose single-chip power management IC
+> 
+> What's an Iq?
 
-Ah I see. I can drop for CPU devices then. Since I didn't see any use for
-them, I set the flag, but I can drop it now or you can do that as part
-of that series. There are quite a few devices(especially the ones
-registered under system subsys can set this but I would take it separate
-once we settle on this). Also Rafael may have seen use for few more
-devices when he suggested this.
+http://www.ti.com/lit/an/slyt412/slyt412.pdf
+Iq is an abbreviation of quiescet current. Do you think it's worth
+writing the whole words instead of an abbreviation?
 
---
-Regards,
-Sudeep
+Thanks for the rest of the corrections, I'll fix them in next version.
+
+Br,
+	Matti Vaittinen
