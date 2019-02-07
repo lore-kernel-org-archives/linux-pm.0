@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 11/24] drivers: thermal: tsens: Save reference to the device pointer and use it
-Date: Thu,  7 Feb 2019 16:19:29 +0530
-Message-ID: <caf59d37fdde5368daf3b59795f39cfb5b5ea6c0.1549525708.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 12/24] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
+Date: Thu,  7 Feb 2019 16:19:30 +0530
+Message-ID: <999576e731dfc32bdd382ebb6506bf3d8f4f79e9.1549525708.git.amit.kucheria@linaro.org>
 References: <cover.1549525708.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
@@ -12,76 +12,34 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Code cleanup making it easier to read
+We print a calibration failure message on -EPROBE_DEFER from
+nvmem/qfprom as follows:
+[    3.003090] qcom-tsens 4a9000.thermal-sensor: version: 1.4
+[    3.005376] qcom-tsens 4a9000.thermal-sensor: tsens calibration failed
+[    3.113248] qcom-tsens 4a9000.thermal-sensor: version: 1.4
+
+This confuses people when, in fact, calibration succeeds later when
+nvmem/qfprom device is available. Don't print this message on a
+-EPROBE_DEFER.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/thermal/qcom/tsens.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index a82e4c928a78..aae3d71d7eed 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -119,6 +119,7 @@ static const struct regmap_config tsens_srot_config = {
- int __init init_common(struct tsens_priv *priv)
- {
- 	void __iomem *tm_base, *srot_base;
-+	struct device *dev = priv->dev;
- 	struct resource *res;
- 	u32 enabled;
- 	int ret, i, j;
-@@ -135,7 +136,7 @@ int __init init_common(struct tsens_priv *priv)
- 		if (IS_ERR(srot_base))
- 			return PTR_ERR(srot_base);
- 
--		priv->srot_map = devm_regmap_init_mmio(priv->dev, srot_base,
-+		priv->srot_map = devm_regmap_init_mmio(dev, srot_base,
- 							&tsens_srot_config);
- 		if (IS_ERR(priv->srot_map))
- 			return PTR_ERR(priv->srot_map);
-@@ -150,11 +151,11 @@ int __init init_common(struct tsens_priv *priv)
- 	if (IS_ERR(tm_base))
- 		return PTR_ERR(tm_base);
- 
--	priv->tm_map = devm_regmap_init_mmio(priv->dev, tm_base, &tsens_config);
-+	priv->tm_map = devm_regmap_init_mmio(dev, tm_base, &tsens_config);
- 	if (IS_ERR(priv->tm_map))
- 		return PTR_ERR(priv->tm_map);
- 
--	priv->rf[TSENS_EN] = devm_regmap_field_alloc(priv->dev, priv->srot_map,
-+	priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->srot_map,
- 						     priv->fields[TSENS_EN]);
- 	if (IS_ERR(priv->rf[TSENS_EN]))
- 		return PTR_ERR(priv->rf[TSENS_EN]);
-@@ -162,24 +163,24 @@ int __init init_common(struct tsens_priv *priv)
- 	if (ret)
- 		return ret;
- 	if (!enabled) {
--		dev_err(priv->dev, "tsens device is not enabled\n");
-+		dev_err(dev, "tsens device is not enabled\n");
- 		return -ENODEV;
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index b91a0b88d33c..057b33353ba3 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -159,7 +159,8 @@ static int tsens_probe(struct platform_device *pdev)
+ 	if (priv->ops->calibrate) {
+ 		ret = priv->ops->calibrate(priv);
+ 		if (ret < 0) {
+-			dev_err(dev, "tsens calibration failed\n");
++			if (ret != -EPROBE_DEFER)
++				dev_err(dev, "tsens calibration failed\n");
+ 			return ret;
+ 		}
  	}
- 
--	priv->rf[SENSOR_EN] = devm_regmap_field_alloc(priv->dev, priv->srot_map,
-+	priv->rf[SENSOR_EN] = devm_regmap_field_alloc(dev, priv->srot_map,
- 						      priv->fields[SENSOR_EN]);
- 	if (IS_ERR(priv->rf[SENSOR_EN]))
- 		return PTR_ERR(priv->rf[SENSOR_EN]);
- 
- 	/* now alloc regmap_fields in tm_map */
- 	for (i = 0, j = LAST_TEMP_0; i < priv->num_sensors; i++, j++) {
--		priv->rf[j] = devm_regmap_field_alloc(priv->dev, priv->tm_map,
-+		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
- 						      priv->fields[j]);
- 		if (IS_ERR(priv->rf[j]))
- 			return PTR_ERR(priv->rf[j]);
- 	}
- 	for (i = 0, j = VALID_0; i < priv->num_sensors; i++, j++) {
--		priv->rf[j] = devm_regmap_field_alloc(priv->dev, priv->tm_map,
-+		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
- 						      priv->fields[j]);
- 		if (IS_ERR(priv->rf[j]))
- 			return PTR_ERR(priv->rf[j]);
 -- 
 2.17.1
