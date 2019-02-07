@@ -1,47 +1,154 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [PATCH v7 05/10] clk: bd718x7: Support ROHM BD70528 clk block
-Date: Thu, 7 Feb 2019 08:01:04 +0200
-Message-ID: <20190207060104.GB5798@localhost.localdomain>
-References: <cover.1549444366.git.matti.vaittinen@fi.rohmeurope.com>
- <88c49b30bbb4b1f3ecc24d333647585e2c82f4e4.1549444366.git.matti.vaittinen@fi.rohmeurope.com>
- <154947428734.74891.4523492147164733315@swboyd.mtv.corp.google.com>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: [RFT PATCH 4/9] power: supply: axp20x_usb_power: use
+ polling to detect vbus status change
+Date: Thu,  7 Feb 2019 14:45:30 +0800
+Message-ID: <20190207064535.9226-5-wens@csie.org>
+References: <20190207064535.9226-1-wens@csie.org>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <154947428734.74891.4523492147164733315@swboyd.mtv.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>
-Cc: mazziesaccount@gmail.com, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBFVI57RAKGQETPKGCHQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20190207064535.9226-1-wens-jdAy2FN1RRM@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 06, 2019 at 09:31:27AM -0800, Stephen Boyd wrote:
-> Quoting Matti Vaittinen (2019-02-06 01:39:38)
-> > @@ -86,9 +87,21 @@ static int bd71837_clk_probe(struct platform_device *pdev)
-> >                 dev_err(&pdev->dev, "No parent clk found\n");
-> >                 return -EINVAL;
-> >         }
-> > -
-> > -       c->reg = BD718XX_REG_OUT32K;
-> > -       c->mask = BD718XX_OUT32K_EN;
-> > +       switch (mfd->chip_type) {
-> > +       case ROHM_CHIP_TYPE_BD71837:
-> > +       case ROHM_CHIP_TYPE_BD71847:
-> > +
-> 
-> Nitpick: why the extra newline above?
-For no obvious reason. I'll fix this as I need to create new version
-anyways. I'll squash the first 3 patches and fix some issues pointed out
-by the 0-Day test suite.
+On AXP221 and later AXP PMICs that have the N_VBUSEN pin, when this pin
+is high, either due to the PMIC driving it high or as an input, the VBUS
+detection related interrupt mechanisms are disabled.
 
-Br,
-	Matti Vaittinen
+Previously this was worked around in the phy-sun4i-usb driver, which
+needed to sense VBUS changes and report them to the musb driver in a
+timely matter. However this workaround was only for the A31 and A33 type
+USB PHYs. To support newer platforms we would have to enable it for
+almost all the post-A31 SoCs.
 
+However, since this is actually the result of the PMIC's behavior, the
+workaround would be better if done in the PMIC driver, in this case the
+VBUS power supply driver.
+
+Add the same workqueue-based polling to the VBUS power supply driver.
+The polling interval is chosen to be the debounce interval from the USB
+PHY driver, as this short interval is needed in some cases, but the
+power supply driver would not know when.
+
+Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+---
+ drivers/power/supply/axp20x_usb_power.c | 53 +++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index e2f353906bb1..ac061bcdc056 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -24,6 +24,7 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ #include <linux/iio/consumer.h>
++#include <linux/workqueue.h>
+ 
+ #define DRVNAME "axp20x-usb-power-supply"
+ 
+@@ -46,6 +47,12 @@
+ 
+ #define AXP20X_VBUS_MON_VBUS_VALID	BIT(3)
+ 
++/*
++ * Note do not raise the debounce time, we must report Vusb high within
++ * 100ms otherwise we get Vbus errors in musb.
++ */
++#define DEBOUNCE_TIME			msecs_to_jiffies(50)
++
+ struct axp20x_usb_power {
+ 	struct device_node *np;
+ 	struct regmap *regmap;
+@@ -53,6 +60,8 @@ struct axp20x_usb_power {
+ 	enum axp20x_variants axp20x_id;
+ 	struct iio_channel *vbus_v;
+ 	struct iio_channel *vbus_i;
++	struct delayed_work vbus_detect;
++	unsigned int old_status;
+ };
+ 
+ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
+@@ -64,6 +73,35 @@ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void axp20x_usb_power_poll_vbus(struct work_struct *work)
++{
++	struct axp20x_usb_power *power =
++		container_of(work, struct axp20x_usb_power, vbus_detect.work);
++	unsigned int val;
++	int ret;
++
++	ret = regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &val);
++	if (ret)
++		goto out;
++
++	val &= (AXP20X_PWR_STATUS_VBUS_PRESENT | AXP20X_PWR_STATUS_VBUS_USED);
++	if (val != power->old_status)
++		power_supply_changed(power->supply);
++
++	power->old_status = val;
++
++out:
++	mod_delayed_work(system_wq, &power->vbus_detect, DEBOUNCE_TIME);
++}
++
++static bool axp20x_usb_vbus_needs_polling(struct axp20x_usb_power *power)
++{
++	if (power->axp20x_id >= AXP221_ID)
++		return true;
++
++	return false;
++}
++
+ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 	enum power_supply_property psp, union power_supply_propval *val)
+ {
+@@ -362,6 +400,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 	if (!power)
+ 		return -ENOMEM;
+ 
++	platform_set_drvdata(pdev, power);
+ 	power->axp20x_id = (enum axp20x_variants)of_device_get_match_data(
+ 								&pdev->dev);
+ 
+@@ -420,6 +459,19 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 				 irq_names[i], ret);
+ 	}
+ 
++	INIT_DELAYED_WORK(&power->vbus_detect, axp20x_usb_power_poll_vbus);
++	if (axp20x_usb_vbus_needs_polling(power))
++		queue_delayed_work(system_wq, &power->vbus_detect, 0);
++
++	return 0;
++}
++
++static int axp20x_usb_power_remove(struct platform_device *pdev)
++{
++	struct axp20x_usb_power *power = platform_get_drvdata(pdev);
++
++	cancel_delayed_work_sync(&power->vbus_detect);
++
+ 	return 0;
+ }
+ 
+@@ -439,6 +491,7 @@ MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
+ 
+ static struct platform_driver axp20x_usb_power_driver = {
+ 	.probe = axp20x_usb_power_probe,
++	.remove = axp20x_usb_power_remove,
+ 	.driver = {
+ 		.name = DRVNAME,
+ 		.of_match_table = axp20x_usb_power_match,
 -- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+2.20.1
