@@ -1,35 +1,33 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH v2 0/3] Documentation: Explain EAS and EM
-Date: Wed, 6 Feb 2019 17:32:28 -0700
-Message-ID: <20190206173228.30e99cf4@lwn.net>
-References: <20190121111724.18234-1-quentin.perret@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: mediatek: Register an Energy Model
+Date: Thu, 7 Feb 2019 09:38:05 +0530
+Message-ID: <20190207040805.og4t2s5ycuy6hqab@vireshk-i7>
+References: <20190205175225.25923-1-mka@chromium.org>
+ <20190205175225.25923-2-mka@chromium.org>
+ <20190206101316.fr7z4ffr4ck4l4aj@queper01-lin>
+ <20190206181659.GI117604@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190121111724.18234-1-quentin.perret@arm.com>
+Content-Disposition: inline
+In-Reply-To: <20190206181659.GI117604@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, juri.lelli@redhat.com, mingo@redhat.com, morten.rasmussen@arm.com, qais.yousef@arm.com, patrick.bellasi@arm.com, dietmar.eggemann@arm.com, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Quentin Perret <quentin.perret@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Jan 2019 11:17:21 +0000
-Quentin Perret <quentin.perret@arm.com> wrote:
+On 06-02-19, 10:16, Matthias Kaehlcke wrote:
+> You are prefectly right, I missed the obvious and didn't get my hands
+> on hardware yet for testing.
+> 
+> So much for screwing up a one-liner ... I'll send a fix.
+> 
+> I thought Viresh already applied the patch, however in opp/linux-next
+> I currently only see the other one of this series for qcom-hw, so it
+> seems sending a new version rather than a fix-up patch is the way to
+> go.
 
-> The recently introduced Energy Aware Scheduling (EAS) feature relies on
-> a large set of concepts, assumptions, and design choices that are
-> probably not obvious for an outsider. Moreover, enabling EAS on a
-> particular platform isn't straightforward because of all its
-> dependencies. This series tries to address this by introducing proper
-> documentation files for the scheduler's part of EAS and for the newly
-> introduced Energy Model (EM) framework. These are meant to explain not
-> only the design choices of EAS but also to list its dependencies in a
-> human-readable location.
+Yeah, I dropped it after Quentin reported the issue.
 
-So these have been sitting in my folder waiting for acks or some other
-sort of discussion, but it's been awfully quiet.  Should I take them, or
-do they need further work or ... ?
-
-Thanks,
-
-jon
+-- 
+viresh
