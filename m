@@ -1,45 +1,68 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 12/24] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
-Date: Thu,  7 Feb 2019 16:19:30 +0530
-Message-ID: <999576e731dfc32bdd382ebb6506bf3d8f4f79e9.1549525708.git.amit.kucheria@linaro.org>
-References: <cover.1549525708.git.amit.kucheria@linaro.org>
+From: Gilad Ben-Yossef <gilad@benyossef.com>
+Subject: Re: Regression due to "PM-runtime: Switch autosuspend over to using hrtimers"
+Date: Thu, 7 Feb 2019 14:58:16 +0200
+Message-ID: <CAOtvUMdkC+v0R39OADF3R7Qpk+NPWW+JH0S6SUNXoHM3v+19Vg@mail.gmail.com>
+References: <CAOtvUMd-38BL1jJnHQY0J68mmtxW1WBQF2qGqyNpWtwsrwUcYg@mail.gmail.com>
+ <CAKfTPtBaKbtfLMjLH1u20+ukhpm6i9qDK-3HiTPizSjKNCnw=w@mail.gmail.com> <CAOtvUMdRWjqp0sEZUQU6w6RcDFP26i3Gxzg5zsRvG2ej1LVSFg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
-References: <cover.1549525708.git.amit.kucheria@linaro.org>
+In-Reply-To: <CAOtvUMdRWjqp0sEZUQU6w6RcDFP26i3Gxzg5zsRvG2ej1LVSFg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, Ofir Drang <Ofir.Drang@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-We print a calibration failure message on -EPROBE_DEFER from
-nvmem/qfprom as follows:
-[    3.003090] qcom-tsens 4a9000.thermal-sensor: version: 1.4
-[    3.005376] qcom-tsens 4a9000.thermal-sensor: tsens calibration failed
-[    3.113248] qcom-tsens 4a9000.thermal-sensor: version: 1.4
+On Thu, Feb 7, 2019 at 10:25 AM Gilad Ben-Yossef <gilad@benyossef.com> wrot=
+e:
 
-This confuses people when, in fact, calibration succeeds later when
-nvmem/qfprom device is available. Don't print this message on a
--EPROBE_DEFER.
+> >
+> > On Wed, 6 Feb 2019 at 17:40, Gilad Ben-Yossef <gilad@benyossef.com> wro=
+te:
+> > >
+> > > Hi all,
+> > >
+> > > A regression was spotted in the ccree driver running on Arm 32 bit
+> > > causing a kernel panic during the crypto API self test phase (panic
+> > > messages included with this message) happening in the PM resume
+> > > callback that was not happening before.
+> > >
+> > > I've bisected the change that caused this to commit 8234f6734c5d
+> > > ("PM-runtime: Switch autosuspend over to using hrtimers").
+> > >
+> > > I'm still trying to figure out what is going on inside the callback,
+> > > but as it was not happening before, I thought I'd give you a shout ou=
+t
+> > > to make you aware of this.
+> >
+> > Are you using autosuspend mode for this device ?
+> Yes.
+>
+>
+> > Also this happen in a platform specific function cc_init_hash_sram().
+> > I can't see anything related to pm runtime and autosuspend in it.
+>
+> True. However, the function is called from the driver PM resume
+> callback and before that commit it did not fail.
+> My guess is that there is something related to the timing the callback
+> is called, probably some race condition the change exposed.
+>
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+OK, I've found it. It was indeed a race condition in the ccree driver.
+We were doing something in the resume callback that relied on
+initialization sequence that happens after autosuspend was enabled for
+the device.
+It was never a problem because with the lower res timers we always got
+around to that initialization before auto suspend kicked in and we had
+to resume but with your change we started losing that race.... :-)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index b91a0b88d33c..057b33353ba3 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -159,7 +159,8 @@ static int tsens_probe(struct platform_device *pdev)
- 	if (priv->ops->calibrate) {
- 		ret = priv->ops->calibrate(priv);
- 		if (ret < 0) {
--			dev_err(dev, "tsens calibration failed\n");
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(dev, "tsens calibration failed\n");
- 			return ret;
- 		}
- 	}
--- 
-2.17.1
+Sorry for the noise and thanks for your help!
+Gilad
+
+
+--=20
+Gilad Ben-Yossef
+Chief Coffee Drinker
+
+values of =CE=B2 will give rise to dom!
