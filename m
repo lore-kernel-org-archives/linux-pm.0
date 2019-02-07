@@ -1,68 +1,64 @@
-From: Gilad Ben-Yossef <gilad@benyossef.com>
-Subject: Re: Regression due to "PM-runtime: Switch autosuspend over to using hrtimers"
-Date: Thu, 7 Feb 2019 14:58:16 +0200
-Message-ID: <CAOtvUMdkC+v0R39OADF3R7Qpk+NPWW+JH0S6SUNXoHM3v+19Vg@mail.gmail.com>
-References: <CAOtvUMd-38BL1jJnHQY0J68mmtxW1WBQF2qGqyNpWtwsrwUcYg@mail.gmail.com>
- <CAKfTPtBaKbtfLMjLH1u20+ukhpm6i9qDK-3HiTPizSjKNCnw=w@mail.gmail.com> <CAOtvUMdRWjqp0sEZUQU6w6RcDFP26i3Gxzg5zsRvG2ej1LVSFg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v1 13/24] drivers: thermal: tsens: Print IP version
+Date: Thu,  7 Feb 2019 16:19:31 +0530
+Message-ID: <ab6dd34ce0236de12ec1e9984931780c3df643f9.1549525708.git.amit.kucheria@linaro.org>
+References: <cover.1549525708.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOtvUMdRWjqp0sEZUQU6w6RcDFP26i3Gxzg5zsRvG2ej1LVSFg@mail.gmail.com>
+In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
+References: <cover.1549525708.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Linux Crypto Mailing List <linux-crypto@vger.kernel.org>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, Ofir Drang <Ofir.Drang@arm.com>
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 7, 2019 at 10:25 AM Gilad Ben-Yossef <gilad@benyossef.com> wrot=
-e:
+On some TSENS IP, version is stored. Print that version at init.
 
-> >
-> > On Wed, 6 Feb 2019 at 17:40, Gilad Ben-Yossef <gilad@benyossef.com> wro=
-te:
-> > >
-> > > Hi all,
-> > >
-> > > A regression was spotted in the ccree driver running on Arm 32 bit
-> > > causing a kernel panic during the crypto API self test phase (panic
-> > > messages included with this message) happening in the PM resume
-> > > callback that was not happening before.
-> > >
-> > > I've bisected the change that caused this to commit 8234f6734c5d
-> > > ("PM-runtime: Switch autosuspend over to using hrtimers").
-> > >
-> > > I'm still trying to figure out what is going on inside the callback,
-> > > but as it was not happening before, I thought I'd give you a shout ou=
-t
-> > > to make you aware of this.
-> >
-> > Are you using autosuspend mode for this device ?
-> Yes.
->
->
-> > Also this happen in a platform specific function cc_init_hash_sram().
-> > I can't see anything related to pm runtime and autosuspend in it.
->
-> True. However, the function is called from the driver PM resume
-> callback and before that commit it did not fail.
-> My guess is that there is something related to the timing the callback
-> is called, probably some race condition the change exposed.
->
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/thermal/qcom/tsens-common.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-OK, I've found it. It was indeed a race condition in the ccree driver.
-We were doing something in the resume callback that relied on
-initialization sequence that happens after autosuspend was enabled for
-the device.
-It was never a problem because with the lower res timers we always got
-around to that initialization before auto suspend kicked in and we had
-to resume but with your change we started losing that race.... :-)
-
-Sorry for the noise and thanks for your help!
-Gilad
-
-
---=20
-Gilad Ben-Yossef
-Chief Coffee Drinker
-
-values of =CE=B2 will give rise to dom!
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index aae3d71d7eed..39cd5733fd44 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -121,7 +121,7 @@ int __init init_common(struct tsens_priv *priv)
+ 	void __iomem *tm_base, *srot_base;
+ 	struct device *dev = priv->dev;
+ 	struct resource *res;
+-	u32 enabled;
++	u32 enabled, maj_ver, min_ver;
+ 	int ret, i, j;
+ 	struct platform_device *op = of_find_device_by_node(priv->dev->of_node);
+ 
+@@ -155,6 +155,27 @@ int __init init_common(struct tsens_priv *priv)
+ 	if (IS_ERR(priv->tm_map))
+ 		return PTR_ERR(priv->tm_map);
+ 
++	for (i = 0; i < MAX_REGFIELDS; i++) {
++		priv->rf[i] = NULL;
++	}
++
++	/* alloc regmap_fields in srot_map */
++	if (priv->feat->ver_info) {
++		for (i = 0, j = VER_MAJOR; i < 2; i++, j++) {
++			priv->rf[j] = devm_regmap_field_alloc(dev, priv->srot_map,
++							      priv->fields[j]);
++			if (IS_ERR(priv->rf[j]))
++				return PTR_ERR(priv->rf[j]);
++		}
++		ret = regmap_field_read(priv->rf[VER_MAJOR], &maj_ver);
++		if (ret)
++			return ret;
++		ret = regmap_field_read(priv->rf[VER_MINOR], &min_ver);
++		if (ret)
++			return ret;
++		dev_info(dev, "version: %d.%d\n", maj_ver, min_ver);
++	}
++
+ 	priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->srot_map,
+ 						     priv->fields[TSENS_EN]);
+ 	if (IS_ERR(priv->rf[TSENS_EN]))
+-- 
+2.17.1
