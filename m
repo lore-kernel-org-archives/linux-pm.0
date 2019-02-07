@@ -1,116 +1,117 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
-Date: Thu, 07 Feb 2019 12:51:04 +0100
-Message-ID: <16144228.tcT5YVROcV@aspire.rjw.lan>
-References: <2038590.kmssd2ZIyd@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 0/2] cpufreq/opp: rework regulator initialization
+Date: Thu, 07 Feb 2019 13:22:25 +0100
+Message-ID: <20190207122227.19873-1-m.szyprowski@samsung.com>
+References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2038590.kmssd2ZIyd@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Dear All,
 
-The current iowait boosting mechanism in intel_pstate_update_util()
-is quite aggressive, as it goes to the maximum P-state right away,
-and may cause excessive amounts of energy to be used, which is not
-desirable and arguably isn't necessary too.
+Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
+i2c adapters") added a visible warning for an attempt to do i2c transfer
+over a suspended i2c bus. This revealed a long standing issue in the
+cpufreq-dt driver, which gives a following warning during system
+suspend/resume cycle:
 
-Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
-more energy efficient") that reworked the analogous iowait boost
-mechanism in the schedutil governor and make the iowait boosting
-in intel_pstate_update_util() work along the same lines.
+--->8---
+Enabling non-boot CPUs ...
+CPU1 is up
+CPU2 is up
+CPU3 is up
+------------[ cut here ]------------
+WARNING: CPU: 4 PID: 29 at drivers/i2c/i2c-core-base.c:1869 __i2c_transfer+0x6f8/0xa50
+Modules linked in:
+CPU: 4 PID: 29 Comm: cpuhp/4 Tainted: G        W         5.0.0-rc4-next-20190131-00024-g54b06b29cc65 #5324
+Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+[<c01110e8>] (unwind_backtrace) from [<c010d11c>] (show_stack+0x10/0x14)
+[<c010d11c>] (show_stack) from [<c09a2584>] (dump_stack+0x90/0xc8)
+[<c09a2584>] (dump_stack) from [<c0120bd0>] (__warn+0xf8/0x124)
+[<c0120bd0>] (__warn) from [<c0120c3c>] (warn_slowpath_null+0x40/0x48)
+[<c0120c3c>] (warn_slowpath_null) from [<c065cda0>] (__i2c_transfer+0x6f8/0xa50)
+[<c065cda0>] (__i2c_transfer) from [<c065d168>] (i2c_transfer+0x70/0xe4)
+[<c065d168>] (i2c_transfer) from [<c053ce4c>] (regmap_i2c_read+0x48/0x64)
+[<c053ce4c>] (regmap_i2c_read) from [<c0536f1c>] (_regmap_raw_read+0xf8/0x450)
+[<c0536f1c>] (_regmap_raw_read) from [<c053772c>] (_regmap_bus_read+0x38/0x68)
+[<c053772c>] (_regmap_bus_read) from [<c05365a0>] (_regmap_read+0x60/0x250)
+[<c05365a0>] (_regmap_read) from [<c05367cc>] (regmap_read+0x3c/0x5c)
+[<c05367cc>] (regmap_read) from [<c047cfc0>] (regulator_is_enabled_regmap+0x20/0x90)
+[<c047cfc0>] (regulator_is_enabled_regmap) from [<c0477660>] (_regulator_is_enabled+0x34/0x40)
+[<c0477660>] (_regulator_is_enabled) from [<c0478674>] (create_regulator+0x1a4/0x25c)
+[<c0478674>] (create_regulator) from [<c047c818>] (_regulator_get+0xe4/0x278)
+[<c047c818>] (_regulator_get) from [<c068f1dc>] (dev_pm_opp_set_regulators+0xa0/0x1c0)
+[<c068f1dc>] (dev_pm_opp_set_regulators) from [<c0698cc8>] (cpufreq_init+0x98/0x2d0)
+[<c0698cc8>] (cpufreq_init) from [<c06959e4>] (cpufreq_online+0xc8/0x71c)
+[<c06959e4>] (cpufreq_online) from [<c06960fc>] (cpuhp_cpufreq_online+0x8/0x10)
+[<c06960fc>] (cpuhp_cpufreq_online) from [<c01213d4>] (cpuhp_invoke_callback+0xf4/0xebc)
+[<c01213d4>] (cpuhp_invoke_callback) from [<c0122e4c>] (cpuhp_thread_fun+0x1d8/0x320)
+[<c0122e4c>] (cpuhp_thread_fun) from [<c0149858>] (smpboot_thread_fn+0x194/0x340)
+[<c0149858>] (smpboot_thread_fn) from [<c014573c>] (kthread+0x124/0x160)
+[<c014573c>] (kthread) from [<c01010b4>] (ret_from_fork+0x14/0x20)
+Exception stack(0xe897dfb0 to 0xe897dff8)
+dfa0:                                     00000000 00000000 00000000 00000000
+dfc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+dfe0: 00000000 00000000 00000000 00000000 00000013 00000000
+irq event stamp: 3865
+hardirqs last  enabled at (3873): [<c0186dec>] vprintk_emit+0x228/0x2a4
+hardirqs last disabled at (3880): [<c0186cf0>] vprintk_emit+0x12c/0x2a4
+softirqs last  enabled at (3052): [<c0102564>] __do_softirq+0x3a4/0x66c
+softirqs last disabled at (3043): [<c0128464>] irq_exit+0x140/0x168
+---[ end trace db48b455d924fec2 ]---
+CPU4 is up
+CPU5 is up
+CPU6 is up
+CPU7 is up
+--->8---
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+This is a scenario that triggers the above issue:
 
--> v2:
-  * Follow the Doug's suggestion and drop the immediate jump to
-    max P-state if boost is max.  The code is simpler this way and
-    the perf impact should not be noticeable on average.
+1. system disables non-boot cpu's at the end of system suspend procedure,
+2. this in turn deinitializes cpufreq drivers for the disabled cpus,
+3. early in the system resume procedure all cpus are got back to online
+   state,
+4. this in turn causes cpufreq to be initialized for the newly onlined
+   cpus,
+5. cpufreq-dt acquires all its resources (clocks, regulators) during
+   ->init() callback,
+6. getting regulator require to check its state, what in turn requires
+   i2c transfer,
+7. during system early resume stage this is not really possible.
 
----
- drivers/cpufreq/intel_pstate.c |   36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+The issue is caused by cpufreq-dt driver not keeping its resources for
+the whole driver lifetime and relying that they can be always acquired
+at any system context. This problem has been observed on Samsung
+Exynos based Odroid XU3/XU4 boards, but it happens on all boards, which
+have separate regulators for different CPU clusters.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -50,6 +50,8 @@
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
- 
-+#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
-+
- #define EXT_BITS 6
- #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
- #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
-@@ -1679,17 +1681,14 @@ static inline int32_t get_avg_pstate(str
- static inline int32_t get_target_pstate(struct cpudata *cpu)
- {
- 	struct sample *sample = &cpu->sample;
--	int32_t busy_frac, boost;
-+	int32_t busy_frac;
- 	int target, avg_pstate;
- 
- 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
- 			   sample->tsc);
- 
--	boost = cpu->iowait_boost;
--	cpu->iowait_boost >>= 1;
--
--	if (busy_frac < boost)
--		busy_frac = boost;
-+	if (busy_frac < cpu->iowait_boost)
-+		busy_frac = cpu->iowait_boost;
- 
- 	sample->busy_scaled = busy_frac * 100;
- 
-@@ -1768,29 +1767,30 @@ static void intel_pstate_update_util(str
- 	if (smp_processor_id() != cpu->cpu)
- 		return;
- 
-+	delta_ns = time - cpu->last_update;
- 	if (flags & SCHED_CPUFREQ_IOWAIT) {
--		cpu->iowait_boost = int_tofp(1);
--		cpu->last_update = time;
--		/*
--		 * The last time the busy was 100% so P-state was max anyway
--		 * so avoid overhead of computation.
--		 */
--		if (fp_toint(cpu->sample.busy_scaled) == 100)
--			return;
--
--		goto set_pstate;
-+		/* Start over if the CPU may have been idle. */
-+		if (delta_ns > TICK_NSEC) {
-+			cpu->iowait_boost = ONE_EIGHTH_FP;
-+		} else if (cpu->iowait_boost) {
-+			cpu->iowait_boost <<= 1;
-+			if (cpu->iowait_boost > int_tofp(1))
-+				cpu->iowait_boost = int_tofp(1);
-+		} else {
-+			cpu->iowait_boost = ONE_EIGHTH_FP;
-+		}
- 	} else if (cpu->iowait_boost) {
- 		/* Clear iowait_boost if the CPU may have been idle. */
--		delta_ns = time - cpu->last_update;
- 		if (delta_ns > TICK_NSEC)
- 			cpu->iowait_boost = 0;
-+		else
-+			cpu->iowait_boost >>= 1;
- 	}
- 	cpu->last_update = time;
- 	delta_ns = time - cpu->sample.time;
- 	if ((s64)delta_ns < INTEL_PSTATE_SAMPLING_INTERVAL)
- 		return;
- 
--set_pstate:
- 	if (intel_pstate_sample(cpu, time))
- 		intel_pstate_adjust_pstate(cpu);
- }
+To fix this issue I've rewritten resources (clock and regulators)
+handling in cpufreq-dt driver. Now the driver gathers them in its
+->probe() and keeps using them until the ->remove() happens. This
+required also some rework in common opp regulators handling code.
+Namely, regulators are no longer assigned by name, instead the caller
+has to pass proper regulator object. The side-effect of this work
+is also a removal of the FIXME item and correct handling of deferred
+probe caused by lack of non-CPU0 regulator.
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+
+Patch summary:
+
+Marek Szyprowski (2):
+  cpufreq: dt/ti/opp: move regulators initialization to the drivers
+  cpufreq: dt: rework resources initialization
+
+ drivers/cpufreq/cpufreq-dt.c | 127 +++++++++++++++--------------------
+ drivers/cpufreq/ti-cpufreq.c |  42 ++++++++++--
+ drivers/opp/core.c           |  40 ++---------
+ include/linux/pm_opp.h       |   2 +-
+ 4 files changed, 96 insertions(+), 115 deletions(-)
+
+-- 
+2.17.1
