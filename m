@@ -1,37 +1,46 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH 2/2] cpufreq: OMAP: Register an Energy Model
-Date: Wed,  6 Feb 2019 23:35:50 -0500
-Message-ID: <20190207043550.3890-1-tiny.windzz@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: mediatek: Register an Energy Model
+Date: Thu, 7 Feb 2019 10:06:10 +0530
+Message-ID: <20190207043610.dy5nf5e3vujtmzgn@vireshk-i7>
+References: <20190206185004.54779-1-mka@chromium.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190206185004.54779-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: khilman@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, quentin.perret@arm.com, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Quentin Perret <quentin.perret@arm.com>, Taniya Das <tdas@codeaurora.org>, CK Hu <ck.hu@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Nicolas Boichat <drinkcat@chromium.org>, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Try and register an Energy Model from omap-cpufreq.c to allow
-interested subsystems like the task scheduler to use the provided
-information.
+On 06-02-19, 10:50, Matthias Kaehlcke wrote:
+> Try and register an Energy Model from mediatek-cpufreq to allow
+> interested subsystems like the task scheduler to use the provided
+> information.
+> 
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> Changes in v2:
+> - register the EM after setting the cpumask
+> ---
+>  drivers/cpufreq/mediatek-cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index eb8920d398181..5250df762814e 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -465,6 +465,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->driver_data = info;
+>  	policy->clk = info->cpu_clk;
+>  
+> +	dev_pm_opp_of_register_em(policy->cpus);
+> +
+>  	return 0;
+>  }
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- drivers/cpufreq/omap-cpufreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Applied it after rebasing over the change in cpufreq/arm/linux-next
+branch. Thanks.
 
-diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
-index 71e81bbf031b..68052b74d28f 100644
---- a/drivers/cpufreq/omap-cpufreq.c
-+++ b/drivers/cpufreq/omap-cpufreq.c
-@@ -133,8 +133,10 @@ static int omap_cpu_init(struct cpufreq_policy *policy)
- 
- 	/* FIXME: what's the actual transition time? */
- 	result = cpufreq_generic_init(policy, freq_table, 300 * 1000);
--	if (!result)
-+	if (!result) {
-+		dev_pm_opp_of_register_em(policy->cpus);
- 		return 0;
-+	}
- 
- 	freq_table_free();
- fail:
 -- 
-2.17.0
+viresh
