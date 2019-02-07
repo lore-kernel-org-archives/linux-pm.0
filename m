@@ -1,65 +1,68 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: [RFT PATCH 7/9] mfd: axp20x: add USB power supply mfd
- cell to AXP813
-Date: Thu,  7 Feb 2019 14:45:33 +0800
-Message-ID: <20190207064535.9226-8-wens@csie.org>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: [RFT PATCH 2/9] power: supply: axp20x_usb_power: Fix typo in VBUS current limit macros
+Date: Thu,  7 Feb 2019 14:45:28 +0800
+Message-ID: <20190207064535.9226-3-wens@csie.org>
 References: <20190207064535.9226-1-wens@csie.org>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBGNI57RAKGQEWRW2TAI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20190207064535.9226-1-wens-jdAy2FN1RRM@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190207064535.9226-1-wens@csie.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@bootlin.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Chen-Yu Tsai <wens@csie.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Quentin Schulz <quentin.schulz@bootlin.com>, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+The VBUS current limit value macros have VBUS typed as VBUC, while
+the bitmask macro is named correctly. Fix it.
 
-The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
-supports this variant, we can add an mfd cell for it to use it.
-
-Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-[wens-jdAy2FN1RRM@public.gmane.org: add commit message]
-Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Fixes: 69fb4dcada77 ("power: Add an axp20x-usb-power driver")
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 ---
- drivers/mfd/axp20x.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/power/supply/axp20x_usb_power.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 3c97f2c0fdfe..17b115845993 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
- };
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index f52fe77edb6f..cd9b90d79839 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -36,10 +36,10 @@
+ #define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
+ #define AXP20X_VBUS_VHOLD_OFFSET	3
+ #define AXP20X_VBUS_CLIMIT_MASK		3
+-#define AXP20X_VBUC_CLIMIT_900mA	0
+-#define AXP20X_VBUC_CLIMIT_500mA	1
+-#define AXP20X_VBUC_CLIMIT_100mA	2
+-#define AXP20X_VBUC_CLIMIT_NONE		3
++#define AXP20X_VBUS_CLIMIT_900mA	0
++#define AXP20X_VBUS_CLIMIT_500mA	1
++#define AXP20X_VBUS_CLIMIT_100mA	2
++#define AXP20X_VBUS_CLIMIT_NONE		3
  
-+/* AXP803 and AXP813/AXP818 share the same interrupts */
-+static struct resource axp803_usb_power_supply_resources[] = {
-+	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-+	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-+};
-+
- static const struct resource axp22x_pek_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_RIS_EDGE, "PEK_DBR"),
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
-@@ -793,6 +799,11 @@ static const struct mfd_cell axp813_cells[] = {
- 		.of_compatible	= "x-powers,axp813-ac-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
- 		.resources	= axp20x_ac_power_supply_resources,
-+	}, {
-+		.name		= "axp20x-usb-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp803_usb_power_supply_resources),
-+		.resources	= axp803_usb_power_supply_resources,
-+		.of_compatible	= "x-powers,axp813-usb-power-supply",
- 	},
- };
+ #define AXP20X_ADC_EN1_VBUS_CURR	BIT(2)
+ #define AXP20X_ADC_EN1_VBUS_VOLT	BIT(3)
+@@ -107,19 +107,19 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 			return ret;
  
+ 		switch (v & AXP20X_VBUS_CLIMIT_MASK) {
+-		case AXP20X_VBUC_CLIMIT_100mA:
++		case AXP20X_VBUS_CLIMIT_100mA:
+ 			if (power->axp20x_id == AXP221_ID)
+ 				val->intval = -1; /* No 100mA limit */
+ 			else
+ 				val->intval = 100000;
+ 			break;
+-		case AXP20X_VBUC_CLIMIT_500mA:
++		case AXP20X_VBUS_CLIMIT_500mA:
+ 			val->intval = 500000;
+ 			break;
+-		case AXP20X_VBUC_CLIMIT_900mA:
++		case AXP20X_VBUS_CLIMIT_900mA:
+ 			val->intval = 900000;
+ 			break;
+-		case AXP20X_VBUC_CLIMIT_NONE:
++		case AXP20X_VBUS_CLIMIT_NONE:
+ 			val->intval = -1;
+ 			break;
+ 		}
 -- 
 2.20.1
