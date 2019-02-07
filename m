@@ -1,59 +1,77 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [RFT PATCH 7/9] mfd: axp20x: add USB power supply mfd cell to AXP813
-Date: Thu, 7 Feb 2019 22:28:12 +0800
-Message-ID: <CAGb2v66uC=ZUj3S3ceVHABg68WMuyfHPcG77CV1DjCNn9ff71A@mail.gmail.com>
-References: <20190207064535.9226-1-wens@csie.org> <20190207064535.9226-8-wens@csie.org>
- <20190207110247.GE20638@dell>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] drivers: base: add support to skip power management in
+ device/driver model
+Date: Thu, 7 Feb 2019 15:29:07 +0100
+Message-ID: <CAPDyKFpkiaP0J_LJxP6tRUOyz3QKtDgA+PuhL-9vew7-RfKyNA@mail.gmail.com>
+References: <20190206150935.12140-1-sudeep.holla@arm.com> <CAPDyKFr2qwXoOL3SRy7Crf-pg4FMn_qecPrw__BE+YpVAjAFZA@mail.gmail.com>
+ <20190207103600.GA14464@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190207110247.GE20638@dell>
+In-Reply-To: <20190207103600.GA14464@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Quentin Schulz <quentin.schulz@bootlin.com>, devicetree <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>, Hans de Goede <hdegoede@redhat.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 7, 2019 at 7:02 PM Lee Jones <lee.jones@linaro.org> wrote:
+On Thu, 7 Feb 2019 at 11:36, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> On Thu, 07 Feb 2019, Chen-Yu Tsai wrote:
+> On Thu, Feb 07, 2019 at 10:53:56AM +0100, Ulf Hansson wrote:
+> > On Wed, 6 Feb 2019 at 16:09, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > >
+> > > All device objects in the driver model contain fields that control the
+> > > handling of various power management activities. However, it's not
+> > > always useful. There are few instances where pseudo devices are added
+> > > to the model just to take advantage of many other features like
+> > > kobjects, udev events, and so on. One such example is cpu devices and
+> > > their caches.
+> > >
+> > > The sysfs for the cpu caches are managed by adding devices with cpu
+> > > as the parent in cpu_device_create() when secondary cpu is brought
+> > > online. Generally when the secondary CPUs are hotplugged back in as part
+> > > of resume from suspend-to-ram, we call cpu_device_create() from the cpu
+> > > hotplug state machine while the cpu device associated with that CPU is
+> > > not yet ready to be resumed as the device_resume() call happens bit
+> > > later. It's not really needed to set the flag is_prepared for cpu
+> > > devices as they are mostly pseudo device and hotplug framework deals
+> > > with state machine and not managed through the cpu device.
+> >
+> > What's the point of removing and then re-adding the sysfs attributes
+> > for the cpu caches, at each hotplug off/on sequence? To me that sounds
+> > inefficient and unnecessary, no?
+> >
 >
-> > From: Quentin Schulz <quentin.schulz@bootlin.com>
-> >
-> > The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
-> > supports this variant, we can add an mfd cell for it to use it.
-> >
-> > Signed-off-by: Quentin Schulz <quentin.schulz@bootlin.com>
-> > [wens@csie.org: add commit message]
-> > Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-> > ---
-> >  drivers/mfd/axp20x.c | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> >
-> > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> > index 3c97f2c0fdfe..17b115845993 100644
-> > --- a/drivers/mfd/axp20x.c
-> > +++ b/drivers/mfd/axp20x.c
-> > @@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
-> >       DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-> >  };
-> >
-> > +/* AXP803 and AXP813/AXP818 share the same interrupts */
-> > +static struct resource axp803_usb_power_supply_resources[] = {
-> > +     DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-> > +     DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
->
-> Nit: Why 2 spaces here?                              ^
+> Oh well, you must look at PowerPC pHyp which can change cache nodes for
+> suspend/resume operation too, let alone hotplug operations. So, we can't
+> assume the same CPUs with exact same caches are always hotplugged back
+> in. That's may happen in embedded and other static platforms but not
+> everywhere. Anyway that's my understand as why it's done in hotplug
+> patch. So it's not so simple to call it inefficient and unnecessary IMO.
 
-2 spaces? I'm only seeing one.
+Okay, I see.
 
-> With that fixed, you can add my:
 >
-> For my own reference:
->   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+> > If you avoid this, would that solve this problem?
+> >
 >
-> --
-> Lee Jones [李琼斯]
-> Linaro Services Technical Lead
-> Linaro.org │ Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+> May be, but as mentioned above we can't really. Also this change will
+> help to avoid creating unnecessary power sysfs which is mainly runtime
+> pm related for some of the devices created. CPU/caches was just one
+> example which triggered this, but this can be more useful. We can avoid
+> adding them to dpm list.
+
+Well, to me the approach you suggest sounds prone to errors and I am
+afraid people may abuse it. Moreover, I don't know if there is other
+problems with it, let's see what Rafael thinks about it.
+
+Instead I think we should make the PM core to deal with this scenario,
+as all it boils down to, is to allow a device to be unregistered and
+registered during system suspend/resume, with a parent device that is
+"persistent" during the sequence.
+
+Perhaps we could even just drop the corresponding printed warning,
+"cache: parent cpu1 should not be sleeping", in device_pm_add() as I
+wonder if it's really a necessary print.
+
+Kind regards
+Uffe
