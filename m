@@ -1,177 +1,600 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
-Date: Thu, 7 Feb 2019 14:37:14 +0100
-Message-ID: <CAPDyKFrrncpfEfbZJ1LHvqDbkc29CaJxZnXwh4Mz7PT6Efbctg@mail.gmail.com>
-References: <20190129015547.213276-1-swboyd@chromium.org> <20190131092349.fksfqemm23qddkhw@vireshk-i7>
- <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v8 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
+Date: Thu, 7 Feb 2019 14:00:53 +0000
+Message-ID: <20190207140053.GG20638@dell>
+References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <50d1debf03bbd07f49b2c5a85cf9672439cbd0ac.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
+Content-Disposition: inline
+In-Reply-To: <50d1debf03bbd07f49b2c5a85cf9672439cbd0ac.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Graham Roff <grahamr@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Doug Anderson <dianders@chromium.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 Feb 2019 at 08:58, Stephen Boyd <swboyd@chromium.org> wrote:
->
-> Quoting Viresh Kumar (2019-01-31 01:23:49)
-> > Adding few folks to the thread who might be interested in this stuff.
-> >
-> > On 28-01-19, 17:55, Stephen Boyd wrote:
-> > > This patch series is an RFC around how we can implement DVFS for devices
-> > > that aren't your typical OPPish device (i.e. GPU/CPU). They don't have a
-> > > strict set of frequencies that they have been tested at to derive some
-> > > operating performance point. Instead they have a coarser set of
-> > > frequency max or 'fmax' OPPs that describe the maiximum frequency the
-> > > device can operate at with a given voltage.
-> > >
-> > > The approach we take is to let the devm_pm_opp_set_rate() API accept 0
-> > > as a valid frequency indicating the frequency isn't required anymore and
-> > > to make the same API use the clk framework to round the frequency passed
-> > > in instead of relying on the OPP table to specify each frequency that
-> > > can be used. Once we have these two patches in place, we can use the OPP
-> > > API to change clk rates instead of clk_set_rate() and use all the recent
-> > > OPP enhancements that have been made around required-opps and genpd
-> > > performance states to do DVFS for all devices.
-> >
-> > Generally speaking I am fine with such an approach but I am not sure
-> > about what others would say on this as they had objections to using
-> > OPP core for setting the rate itself.
-> >
-> > FWIW, I suggested exactly this solution sometime back [1]
-> >
-> > - Drivers need to use two API sets to change clock rate (OPP helpers)
-> >   and enable/disable them (CLK framework helpers) and this leads us to
-> >   exactly that combination. Is that acceptable ? It doesn't look great
-> >   to me as well..
->
-> Agreed. I don't think anyone thinks this looks great, but I'll argue
-> that it's improving OPP for devices that already use it so that we can
-> remove voltage requirements when their clk is off. Think about CPUs that
-> are in their own clk domain where we want to remove the voltage
-> requirement when those CPUs are offline, or a GPU that wants to remove
-> its voltage requirement when it turns off clks. The combination is
-> already out there, just OPP hasn't solved this problem.
->
-> The only other plan I had was to implement another API like
-> dev_pm_set_state() or something like that and have that do something
-> like what the OPP rate API does right now. The main difference being
-> that the argument to the function would be some opaque u64 that's
-> converted by the bus/class/genpd attached to the device into whatever
-> frequency/voltage/performance state is desired (and sequenced in the
-> right order too). And then I was thinking that runtime PM or explicit
-> dev_pm_set_state() calls would be used to tell this new layer that the
-> device was going to a lower power mode with some other number (sub-kHz
-> integer?) and have that be translated again into some
-> frequency/voltage/performance state.
->
-> Either way, each driver will have to change from using the clk APIs to
-> changes rates to something else like one of these APIs, so I don't see a
-> huge difference. Drivers will have to change.
->
-> >
-> > - Do we expect the callers will disable clk before calling
-> >   opp-set-rate with 0 ? We should remove the regulator requirements as
-> >   well along with perf-state.
->
-> Yes, that's the plan. Problems come along with this though, like shared
-> resource constraints and actually knowing the clk on/off state,
-> frequency, voltage, etc. at boot time and making sure to keep those
-> constraints satisfied during normal operation.
->
-> >
-> > - What about enabling/disabling clock as well from OPP framework. We
-> >   can enable it on the very first call to opp-set-rate and disable
-> >   when freq is 0. That will simplify the drivers as well.
->
-> It works when those drivers aren't calling clk_disable() directly from
-> some irq handler. I don't think that's very common, but in those cases
-> we would probably want to allow drivers to quickly gate and ungate their
-> clks but then defer the sleeping stuff (voltages and off chip clks) to
-> the schedulable contexts. We'll still be left with a small number of
-> drivers that want to only call clk_prepare() and clk_unprepare() from
-> within OPP and keep calling clk_enable() and clk_disable() from their
-> driver. So introduce different APIs for those drivers to indicate this
-> to OPP? And only do that when it becomes a requirement?
->
-> Otherwise I don't really see a problem with the OPP call handling the
-> enable state of the clk as well.
+On Thu, 07 Feb 2019, Matti Vaittinen wrote:
 
-I think we also need to consider cross SoC drivers. One SoC may have
-both clocks and OPPs to manage, while another may have only clocks.
+> ROHM BD70528MWV is an ultra-low quiescent current general
+> purpose single-chip power management IC for battery-powered
+> portable devices.
+> 
+> Add MFD core which enables chip access for following subdevices:
+> 	- regulators/LED drivers
+> 	- battery-charger
+> 	- gpios
+> 	- 32.768kHz clk
+> 	- RTC
+> 	- watchdog
+> 
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
+>  drivers/mfd/Kconfig              |  17 ++
+>  drivers/mfd/Makefile             |   1 +
+>  drivers/mfd/rohm-bd70528.c       | 410 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/rohm-bd70528.h | 392 +++++++++++++++++++++++++++++++++++++
+>  4 files changed, 820 insertions(+)
+>  create mode 100644 drivers/mfd/rohm-bd70528.c
+>  create mode 100644 include/linux/mfd/rohm-bd70528.h
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index f461460a2aeb..f1a0574cebb1 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -1847,6 +1847,23 @@ config MFD_ROHM_BD718XX
+>  	  NXP i.MX8. It contains 8 BUCK outputs and 7 LDOs, voltage monitoring
+>  	  and emergency shut down as well as 32,768KHz clock output.
+>  
+> +config MFD_ROHM_BD70528
+> +	tristate "ROHM BD70528 Power Management IC"
+> +	depends on I2C=y
+> +	depends on OF
+> +	select REGMAP_I2C
+> +	select REGMAP_IRQ
+> +	select MFD_CORE
+> +	help
+> +	  Select this option to get support for the ROHM BD70528 Power
+> +	  Management IC. BD71837 is general purpose single-chip power
+> +	  management IC for battery-powered portable devices. It contains
+> +	  3 ultra-low current consumption buck converters, 3 LDOs and 2 LED
+> +	  Drivers. Also included are 4 GPIOs, a real-time clock (RTC), a 32kHz
+> +	  crystal oscillator, high-accuracy VREF for use with an external ADC,
+> +	  10 bits SAR ADC for battery temperature monitor and 1S battery
+> +	  charger.
+> +
+>  config MFD_STM32_LPTIMER
+>  	tristate "Support for STM32 Low-Power Timer"
+>  	depends on (ARCH_STM32 && OF) || COMPILE_TEST
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 12980a4ad460..fc9b1408e39b 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -241,4 +241,5 @@ obj-$(CONFIG_MFD_MXS_LRADC)     += mxs-lradc.o
+>  obj-$(CONFIG_MFD_SC27XX_PMIC)	+= sprd-sc27xx-spi.o
+>  obj-$(CONFIG_RAVE_SP_CORE)	+= rave-sp.o
+>  obj-$(CONFIG_MFD_ROHM_BD718XX)	+= rohm-bd718x7.o
+> +obj-$(CONFIG_MFD_ROHM_BD70528)	+= rohm-bd70528.o
+>  
+> diff --git a/drivers/mfd/rohm-bd70528.c b/drivers/mfd/rohm-bd70528.c
+> new file mode 100644
+> index 000000000000..580164addeeb
+> --- /dev/null
+> +++ b/drivers/mfd/rohm-bd70528.c
+> @@ -0,0 +1,410 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +//
+> +// Copyright (C) 2018 ROHM Semiconductors
 
-Even it this may be fairly uncommon, we should consider it, before we
-decide to fold in additional clock management, like
-clk_prepare|unprepare() for example, behind the dev_pm_opp_set_rate()
-API.
+This needs updating.
 
-The point is, the driver may need to call clk_prepare|enable()
-anyways, unless we make that conditional depending on a DT compatible
-string, for example. Of course, because the clock prepare/enable is
-reference counted, there may not be a problem in practice to have both
-the OPP and driver to deal with it.
+> +// ROHM BD70528 PMIC driver
+> +
+> +#include <linux/i2c.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/irq.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/rohm-bd70528.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/types.h>
+> +
+> +#define BD70528_INT_RES(_reg, _name)		\
+> +	{					\
+> +		.start = (_reg),		\
+> +		.end = (_reg),			\
+> +		.name = (_name),		\
+> +		.flags = IORESOURCE_IRQ,	\
+> +	}
 
->
-> >
-> > > One nice feature of this approach is that we don't need to change the
-> > > OPP binding to support this. We can specify only the max frequencies and
-> > > the voltage requirements in DT with the existing binding and slightly
-> > > tweak the OPP code to achieve these results.
-> > >
-> > > This series includes a conversion of the uart and spi drivers on
-> > > qcom sdm845 where these patches are being developed. It shows how a
-> > > driver is converted from the clk APIs to the OPP APIs and how
-> > > enable/disable state of the clk is communicated to the OPP layer.
-> > >
-> > > Some open topics and initial points for discussion are:
-> > >
-> > > 1) The dev_pm_opp_set_rate() API changes may break something that's
-> > > relying on the rate rounding that OPP provides. If those exist,
-> > > we may need to implement another API that is more explicit about using
-> > > the clk API instead of the OPP tables.
-> > >
-> > > 2) dev_pm_opp_set_rate(0) is an interesting solution to the problem of
-> > > dropping the rate requirement. Is there anything better than this?
+I think you're looking for DEFINE_RES_IRQ_NAMED()
 
-This seems like a reasonable approach to me.
+> +static const struct resource rtc_irqs[] = {
+> +	BD70528_INT_RES(BD70528_INT_RTC_ALARM, "bd70528-rtc-alm"),
+> +	BD70528_INT_RES(BD70528_INT_ELPS_TIM, "bd70528-elapsed-timer"),
+> +};
+> +
+> +static const struct resource charger_irqs[] = {
+> +	BD70528_INT_RES(BD70528_INT_BAT_OV_RES, "bd70528-bat-ov-res"),
+> +	BD70528_INT_RES(BD70528_INT_BAT_OV_DET, "bd70528-bat-ov-det"),
+> +	BD70528_INT_RES(BD70528_INT_DBAT_DET, "bd70528-bat-dead"),
+> +	BD70528_INT_RES(BD70528_INT_BATTSD_COLD_RES, "bd70528-bat-warmed"),
+> +	BD70528_INT_RES(BD70528_INT_BATTSD_COLD_DET, "bd70528-bat-cold"),
+> +	BD70528_INT_RES(BD70528_INT_BATTSD_HOT_RES, "bd70528-bat-cooled"),
+> +	BD70528_INT_RES(BD70528_INT_BATTSD_HOT_DET, "bd70528-bat-hot"),
+> +	BD70528_INT_RES(BD70528_INT_CHG_TSD, "bd70528-chg-tshd"),
+> +	BD70528_INT_RES(BD70528_INT_BAT_RMV, "bd70528-bat-removed"),
+> +	BD70528_INT_RES(BD70528_INT_BAT_DET, "bd70528-bat-detected"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN2_OV_RES, "bd70528-dcin2-ov-res"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN2_OV_DET, "bd70528-dcin2-ov-det"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN2_RMV, "bd70528-dcin2-removed"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN2_DET, "bd70528-dcin2-detected"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN1_RMV, "bd70528-dcin1-removed"),
+> +	BD70528_INT_RES(BD70528_INT_DCIN1_DET, "bd70528-dcin1-detected"),
+> +};
+> +
+> +static struct mfd_cell bd70528_mfd_cells[] = {
+> +	{ .name = "bd70528-pmic", },
+> +	{ .name = "bd70528-gpio", },
+> +	/*
+> +	 * We use BD71837 driver to drive the clk block. Only differences to
+> +	 * BD70528 clock gate are the register address and mask.
+> +	 */
+> +	{ .name = "bd718xx-clk", },
+> +	{ .name = "bd70528-wdt", },
+> +	{
+> +		.name = "bd70528-power",
+> +		.resources = &charger_irqs[0],
 
-At least it seams silly to invent a separate API and I can't think of
-anything else that makes sense.
+Why not just, 'charger_irqs'?
 
-> > >
-> > > 3) How do we handle devices that already have power-domains specified in
-> > > DT? The opp binding for required-opps doesn't let us specify the power
-> > > domain to target, instead it assumes that whatever power domain is
-> > > attached to a device is the one that OPP needs to use to change the
-> > > genpd performance state. Do we need a
-> > > dev_pm_opp_set_required_opps_name() or something to be explicit about
-> > > this? Can we have some way for the power domain that required-opps
-> > > correspond to be expressed in the OPP tables themselves?
+> +		.num_resources = ARRAY_SIZE(charger_irqs),
 
-Is the about the multiple PM domains per device? I thought we have
-already covered this case, or at least part of it [1].
+> +	},
+> +	{
 
-Doesn't dev_pm_opp_set_genpd_virt_dev() and friends, help you with this, no?
+These should be on the same line.
 
-> > >
-> > > 4) How do we achieve the "full constraint" state? i.e. what do we do
-> > > about some devices being active and others being inactive during boot
-> > > and making sure that the voltage for the shared power domains doesn't
-> > > drop until all devices requiring it have informed OPP about their
-> > > power requirements?
+> +		.name = "bd70528-rtc",
+> +		.resources = &rtc_irqs[0],
 
-Good question. What kind of problems do you see.
+As above.
 
-Will drivers fail to probe? Will the HW operate outside valid conditions?
+> +		.num_resources = ARRAY_SIZE(rtc_irqs),
+> +	},
+> +};
+> +
+> +static const struct regmap_range volatile_ranges[] = {
+> +	/* IRQ regs */
+> +	{
+> +		.range_min = BD70528_REG_INT_MAIN,
+> +		.range_max = BD70528_REG_INT_OP_FAIL,
+> +	},
+> +	/* RTC regs */
+> +	{
+> +		.range_min = BD70528_REG_RTC_COUNT_H,
+> +		.range_max = BD70528_REG_RTC_ALM_REPEAT,
+> +	},
+> +	/*
+> +	 * WDT control reg is special. Magic values must be
+> +	 * written to it in order to change the control. Should
+> +	 * not be cached.
+> +	 */
+> +	{
+> +		.range_min = BD70528_REG_WDT_CTRL,
+> +		.range_max = BD70528_REG_WDT_CTRL,
+> +	},
+> +	/*
+> +	 * bd70528 contains also few other registers which require
 
-> > >
->
-> Any comments on these topics?
->
+"BD70528"
 
-Kind regards
-Uffe
+I don't think this means what you think it does.
 
-[1]
-https://lkml.org/lkml/2018/10/25/204
+I think you want to say "also contains a few".
+
+> +	 * magic sequence to be written in order to update the value.
+
+"sequences"
+
+> +	 * At least SHIPMODE, HWRESET, WARMRESET,and STANDBY
+> +	 */
+> +	{
+> +		.range_min = BD70528_REG_SHIPMODE,
+> +		.range_max = BD70528_REG_STANDBY,
+> +	},
+> +};
+> +
+> +static const struct regmap_access_table volatile_regs = {
+> +	.yes_ranges = &volatile_ranges[0],
+> +	.n_yes_ranges = ARRAY_SIZE(volatile_ranges),
+> +};
+> +
+> +static struct regmap_config bd70528_regmap = {
+> +	.reg_bits = 8,
+> +	.val_bits = 8,
+> +	.volatile_table = &volatile_regs,
+> +	.max_register = BD70528_MAX_REGISTER,
+> +	.cache_type = REGCACHE_RBTREE,
+> +};
+
+'\n' here.
+
+> +/* bit [0] - Shutdown register */
+> +unsigned int bit0_offsets[] = {0};
+> +/* bit [1] - Power failure register */
+> +unsigned int bit1_offsets[] = {1};
+> +/* bit [2] - VR FAULT register */
+> +unsigned int bit2_offsets[] = {2};
+> +/* bit [3] - PMU register interrupts */
+> +unsigned int bit3_offsets[] = {3};
+> +/* bit [4] - Charger 1 and Charger 2 registers */
+> +unsigned int bit4_offsets[] = {4, 5};
+> +/* bit [5] - RTC register */
+> +unsigned int bit5_offsets[] = {6};
+> +/* bit [6] - GPIO register */
+> +unsigned int bit6_offsets[] = {7};
+> +/* bit [7] - Invalid operation register */
+> +unsigned int bit7_offsets[] = {8};
+
+What on earth is this?
+
+> +static struct regmap_irq_sub_irq_map bd70528_sub_irq_offsets[] = {
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit0_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit1_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit2_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit3_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit4_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit5_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit6_offsets),
+> +	REGMAP_IRQ_MAIN_REG_OFFSET(bit7_offsets),
+> +};
+
+This looks totally hairy.  What is it mean to look like?
+
+> +static struct regmap_irq irqs[] = {
+> +	REGMAP_IRQ_REG(BD70528_INT_LONGPUSH, 0, BD70528_INT_LONGPUSH_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_WDT, 0, BD70528_INT_WDT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_HWRESET, 0, BD70528_INT_HWRESET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_RSTB_FAULT, 0, BD70528_INT_RSTB_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_VBAT_UVLO, 0, BD70528_INT_VBAT_UVLO_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_TSD, 0, BD70528_INT_TSD_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_RSTIN, 0, BD70528_INT_RSTIN_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK1_FAULT, 1,
+> +		       BD70528_INT_BUCK1_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK2_FAULT, 1,
+> +		       BD70528_INT_BUCK2_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK3_FAULT, 1,
+> +		       BD70528_INT_BUCK3_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LDO1_FAULT, 1, BD70528_INT_LDO1_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LDO2_FAULT, 1, BD70528_INT_LDO2_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LDO3_FAULT, 1, BD70528_INT_LDO3_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED1_FAULT, 1, BD70528_INT_LED1_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED2_FAULT, 1, BD70528_INT_LED2_FAULT_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK1_OCP, 2, BD70528_INT_BUCK1_OCP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK2_OCP, 2, BD70528_INT_BUCK2_OCP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK3_OCP, 2, BD70528_INT_BUCK3_OCP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED1_OCP, 2, BD70528_INT_LED1_OCP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED2_OCP, 2, BD70528_INT_LED2_OCP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK1_FULLON, 2,
+> +		       BD70528_INT_BUCK1_FULLON_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK2_FULLON, 2,
+> +		       BD70528_INT_BUCK2_FULLON_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_SHORTPUSH, 3, BD70528_INT_SHORTPUSH_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_AUTO_WAKEUP, 3,
+> +		       BD70528_INT_AUTO_WAKEUP_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_STATE_CHANGE, 3,
+> +		       BD70528_INT_STATE_CHANGE_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BAT_OV_RES, 4, BD70528_INT_BAT_OV_RES_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BAT_OV_DET, 4, BD70528_INT_BAT_OV_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DBAT_DET, 4, BD70528_INT_DBAT_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BATTSD_COLD_RES, 4,
+> +		       BD70528_INT_BATTSD_COLD_RES_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BATTSD_COLD_DET, 4,
+> +		       BD70528_INT_BATTSD_COLD_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BATTSD_HOT_RES, 4,
+> +		       BD70528_INT_BATTSD_HOT_RES_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BATTSD_HOT_DET, 4,
+> +		       BD70528_INT_BATTSD_HOT_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_CHG_TSD, 4, BD70528_INT_CHG_TSD_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BAT_RMV, 5, BD70528_INT_BAT_RMV_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BAT_DET, 5, BD70528_INT_BAT_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN2_OV_RES, 5,
+> +		       BD70528_INT_DCIN2_OV_RES_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN2_OV_DET, 5,
+> +		       BD70528_INT_DCIN2_OV_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN2_RMV, 5, BD70528_INT_DCIN2_RMV_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN2_DET, 5, BD70528_INT_DCIN2_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN1_RMV, 5, BD70528_INT_DCIN1_RMV_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_DCIN1_DET, 5, BD70528_INT_DCIN1_DET_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_RTC_ALARM, 6, BD70528_INT_RTC_ALARM_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_ELPS_TIM, 6, BD70528_INT_ELPS_TIM_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_GPIO0, 7, BD70528_INT_GPIO0_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_GPIO1, 7, BD70528_INT_GPIO1_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_GPIO2, 7, BD70528_INT_GPIO2_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_GPIO3, 7, BD70528_INT_GPIO3_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK1_DVS_OPFAIL, 8,
+> +		       BD70528_INT_BUCK1_DVS_OPFAIL_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK2_DVS_OPFAIL, 8,
+> +		       BD70528_INT_BUCK2_DVS_OPFAIL_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_BUCK3_DVS_OPFAIL, 8,
+> +		       BD70528_INT_BUCK3_DVS_OPFAIL_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED1_VOLT_OPFAIL, 8,
+> +		       BD70528_INT_LED1_VOLT_OPFAIL_MASK),
+> +	REGMAP_IRQ_REG(BD70528_INT_LED2_VOLT_OPFAIL, 8,
+> +		       BD70528_INT_LED2_VOLT_OPFAIL_MASK),
+> +};
+> +
+> +static struct regmap_irq_chip bd70528_irq_chip = {
+> +	.name = "bd70528_irq",
+> +	.main_status = BD70528_REG_INT_MAIN,
+> +	.irqs = &irqs[0],
+> +	.num_irqs = ARRAY_SIZE(irqs),
+> +	.status_base = BD70528_REG_INT_SHDN,
+> +	.mask_base = BD70528_REG_INT_SHDN_MASK,
+> +	.ack_base = BD70528_REG_INT_SHDN,
+> +	.type_base = BD70528_REG_GPIO1_IN,
+> +	.init_ack_masked = true,
+> +	.num_regs = 9,
+> +	.num_main_regs = 1,
+> +	.num_type_reg = 4,
+> +	.sub_reg_offsets = &bd70528_sub_irq_offsets[0],
+> +	.num_main_status_bits = 8,
+> +	.irq_reg_stride = 1,
+> +};
+> +
+> +#define WD_CTRL_MAGIC1 0x55
+> +#define WD_CTRL_MAGIC2 0xAA
+> +
+> +static int bd70528_wdt_set(struct bd70528 *bd70528, int enable, int *old_state)
+> +{
+> +	int ret, i;
+> +	unsigned int tmp;
+> +	u8 wd_ctrl_arr[3] = { WD_CTRL_MAGIC1, WD_CTRL_MAGIC2, 0 };
+> +	u8 *wd_ctrl = &wd_ctrl_arr[2];
+> +
+> +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WDT_CTRL, &tmp);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*wd_ctrl = (u8)tmp;
+> +
+> +	if (old_state) {
+> +		if (*wd_ctrl & BD70528_MASK_WDT_EN)
+> +			*old_state |= BD70528_WDT_STATE_BIT;
+> +		else
+> +			*old_state &= ~BD70528_WDT_STATE_BIT;
+> +		if ((!enable) == (!(*old_state & BD70528_WDT_STATE_BIT)))
+> +			return 0;
+> +	}
+> +
+> +	if (enable) {
+> +		if (*wd_ctrl & BD70528_MASK_WDT_EN)
+> +			return 0;
+> +		*wd_ctrl |= BD70528_MASK_WDT_EN;
+> +	} else {
+> +		if (*wd_ctrl & BD70528_MASK_WDT_EN)
+> +			*wd_ctrl &= ~BD70528_MASK_WDT_EN;
+> +		else
+> +			return 0;
+> +	}
+> +
+> +	for (i = 0; i < 3; i++) {
+> +		ret = regmap_write(bd70528->chip.regmap, BD70528_REG_WDT_CTRL,
+> +				   wd_ctrl_arr[i]);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	ret = regmap_read(bd70528->chip.regmap, BD70528_REG_WDT_CTRL, &tmp);
+> +	if ((tmp & BD70528_MASK_WDT_EN) != (*wd_ctrl & BD70528_MASK_WDT_EN)) {
+> +		dev_err(bd70528->chip.dev,
+> +			"Watchdog ctrl mismatch (hw) 0x%x (set) 0x%x\n",
+> +			tmp, *wd_ctrl);
+> +		ret = -EIO;
+> +	}
+> +
+> +	return ret;
+> +}
+
+Shouldn't this be one in the WDT driver?
+
+> +static int bd70528_i2c_probe(struct i2c_client *i2c,
+> +			    const struct i2c_device_id *id)
+> +{
+> +	struct bd70528 *bd70528;
+> +	struct regmap_irq_chip_data *irq_data;
+> +	int ret, i;
+> +	struct mutex *rtc_mutex;
+> +
+> +	if (!i2c->irq) {
+> +		dev_err(&i2c->dev, "No IRQ configured\n");
+> +		return -EINVAL;
+> +	}
+
+'\n' here.
+
+> +	bd70528 = devm_kzalloc(&i2c->dev, sizeof(*bd70528), GFP_KERNEL);
+> +
+
+Remove this line.
+
+> +	if (!bd70528)
+> +		return -ENOMEM;
+> +
+> +	mutex_init(&bd70528->rtc_timer_lock);
+
+Shouldn't this in the RTC driver?
+
+> +	dev_set_drvdata(&i2c->dev, bd70528);
+
+'\n' here.
+
+> +	bd70528->chip.chip_type = ROHM_CHIP_TYPE_BD70528;
+> +	bd70528->wdt_set = bd70528_wdt_set;
+
+Why?
+
+> +	bd70528->chip.regmap = devm_regmap_init_i2c(i2c, &bd70528_regmap);
+> +	if (IS_ERR(bd70528->chip.regmap)) {
+> +		dev_err(&i2c->dev, "regmap initialization failed\n");
+> +		return PTR_ERR(bd70528->chip.regmap);
+> +	}
+> +
+> +	/*
+> +	 * Disallow type setting for all IRQs by default as
+> +	 *  most of them do not support setting type.
+> +	 */
+> +	for (i = 0; i < ARRAY_SIZE(irqs); i++)
+> +		irqs[i].type.types_supported = 0;
+> +
+> +	irqs[BD70528_INT_GPIO0].type.type_reg_offset = 0;
+> +	irqs[BD70528_INT_GPIO0].type.type_rising_val = 0x20;
+> +	irqs[BD70528_INT_GPIO0].type.type_falling_val = 0x10;
+> +	irqs[BD70528_INT_GPIO0].type.type_level_high_val = 0x40;
+> +	irqs[BD70528_INT_GPIO0].type.type_level_low_val = 0x50;
+> +	irqs[BD70528_INT_GPIO0].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> +	irqs[BD70528_INT_GPIO1].type.type_reg_offset = 2;
+> +	irqs[BD70528_INT_GPIO1].type.type_rising_val = 0x20;
+> +	irqs[BD70528_INT_GPIO1].type.type_falling_val = 0x10;
+> +	irqs[BD70528_INT_GPIO1].type.type_level_high_val = 0x40;
+> +	irqs[BD70528_INT_GPIO1].type.type_level_low_val = 0x50;
+> +	irqs[BD70528_INT_GPIO1].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> +	irqs[BD70528_INT_GPIO2].type.type_reg_offset = 4;
+> +	irqs[BD70528_INT_GPIO2].type.type_rising_val = 0x20;
+> +	irqs[BD70528_INT_GPIO2].type.type_falling_val = 0x10;
+> +	irqs[BD70528_INT_GPIO2].type.type_level_high_val = 0x40;
+> +	irqs[BD70528_INT_GPIO2].type.type_level_low_val = 0x50;
+> +	irqs[BD70528_INT_GPIO2].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> +	irqs[BD70528_INT_GPIO3].type.type_reg_offset = 6;
+> +	irqs[BD70528_INT_GPIO3].type.type_rising_val = 0x20;
+> +	irqs[BD70528_INT_GPIO3].type.type_falling_val = 0x10;
+> +	irqs[BD70528_INT_GPIO3].type.type_level_high_val = 0x40;
+> +	irqs[BD70528_INT_GPIO3].type.type_level_low_val = 0x50;
+> +	irqs[BD70528_INT_GPIO3].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+
+Could you please explain:
+
+a) what you're doing here
+b) why you don't mass assign them
+    - seeing as most of the data is identical.
+
+> +	ret = devm_regmap_add_irq_chip(&i2c->dev, bd70528->chip.regmap,
+> +				       i2c->irq, IRQF_ONESHOT, 0,
+> +				       &bd70528_irq_chip, &irq_data);
+> +	if (ret) {
+> +		dev_err(&i2c->dev, "Failed to add irq_chip\n");
+> +		return ret;
+> +	}
+
+'\n' here.
+
+> +	dev_dbg(&i2c->dev, "Registered %d irqs for chip\n",
+> +			bd70528_irq_chip.num_irqs);
+
+Is this really required/useful?
+
+> +	/*
+> +	 * BD70528 irq controller is not touching the main mask register.
+
+"IRQ"
+
+> +	 * So enable the GPIO block interrupts at main level. We can just
+> +	 * leave them enabled as irq-controller should disable irqs
+
+"the IRQ controller"
+"IRQs"
+
+> +	 * from sub-registers when IRQ is disabled or freed.
+> +	 */
+> +	ret = regmap_update_bits(bd70528->chip.regmap,
+> +				 BD70528_REG_INT_MAIN_MASK,
+> +				 BD70528_INT_GPIO_MASK, 0);
+> +
+> +	ret = devm_mfd_add_devices(&i2c->dev, PLATFORM_DEVID_AUTO,
+> +				   bd70528_mfd_cells,
+> +				   ARRAY_SIZE(bd70528_mfd_cells), NULL, 0,
+> +				   regmap_irq_get_domain(irq_data));
+> +	if (ret)
+> +		dev_err(&i2c->dev, "Failed to create subdevices\n");
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct of_device_id bd70528_of_match[] = {
+> +	{
+> +		.compatible = "rohm,bd70528",
+> +	},
+
+This can be placed on a single line.
+
+> +	{ },
+> +};
+> +MODULE_DEVICE_TABLE(of, bd70528_of_match);
+> +
+> +static struct i2c_driver bd70528_drv = {
+> +	.driver = {
+> +		.name = "rohm-bd70528",
+> +		.of_match_table = bd70528_of_match,
+> +	},
+> +	.probe = &bd70528_i2c_probe,
+> +};
+> +
+> +static int __init bd70528_init(void)
+> +{
+> +	return i2c_add_driver(&bd70528_drv);
+> +}
+> +subsys_initcall(bd70528_init);
+
+Does it need to be initialised this early?
+
+> +static void __exit bd70528_exit(void)
+> +{
+> +	i2c_del_driver(&bd70528_drv);
+> +}
+> +module_exit(bd70528_exit);
+> +
+> +MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
+> +MODULE_DESCRIPTION("ROHM BD70528 Power Management IC driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/mfd/rohm-bd70528.h b/include/linux/mfd/rohm-bd70528.h
+> new file mode 100644
+> index 000000000000..576b672870b7
+> --- /dev/null
+> +++ b/include/linux/mfd/rohm-bd70528.h
+> @@ -0,0 +1,392 @@
+> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+> +/* Copyright (C) 2018 ROHM Semiconductors */
+> +
+> +#ifndef __LINUX_MFD_BD70528_H__
+> +#define __LINUX_MFD_BD70528_H__
+> +
+> +#include <linux/device.h>
+> +#include <linux/mfd/rohm-generic.h>
+> +#include <linux/regmap.h>
+> +
+> +struct bd70528 {
+> +	/*
+> +	 * Please keep this as the first member here as some
+> +	 * drivers (clk) supporting more than one chip may only know this
+> +	 * generic struct 'struct rohm_regmap_dev' and assume it is
+> +	 * the first chunk of parent device's private data.
+> +	 */
+> +	struct rohm_regmap_dev chip;
+> +	/* wdt_set must be called rtc_timer_lock held */
+
+This doesn't make sense.
+
+[...]
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
