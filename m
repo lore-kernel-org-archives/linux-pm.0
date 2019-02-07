@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 24/24] drivers: thermal: tsens: Move calibration constants to header file
-Date: Thu,  7 Feb 2019 16:19:42 +0530
-Message-ID: <99a7e1fca9db203b2784fcbe0f8cab6993e51a39.1549525708.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 06/24] drivers: thermal: tsens: Function prototypes should have argument names
+Date: Thu,  7 Feb 2019 16:19:24 +0530
+Message-ID: <1ff476080e60beab71905ef39f2f703c52ae92f9.1549525708.git.amit.kucheria@linaro.org>
 References: <cover.1549525708.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1549525708.git.amit.kucheria@linaro.org>
@@ -12,46 +12,60 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This will allow calibration routines to correctly include the constants
-from anywhere and allow more code sharing.
+check_patch complains a lot as follows:
+
+WARNING: function definition argument 'struct tsens_priv *' should also have an identifier name
++       int (*init)(struct tsens_priv *);
+
+Fix it.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 5 -----
- drivers/thermal/qcom/tsens.h        | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/qcom/tsens.h | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index a935d2335eea..35e82aaaef59 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -12,11 +12,6 @@
- #include <linux/regmap.h>
- #include "tsens.h"
- 
--#define CAL_DEGC_PT1		30
--#define CAL_DEGC_PT2		120
--#define SLOPE_FACTOR		1000
--#define SLOPE_DEFAULT		3200
--
- char *qfprom_read(struct device *dev, const char *cname)
- {
- 	struct nvmem_cell *cell;
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 4ed07e607cbc..8a747ab892f5 100644
+index 61ca2905ee7a..4d6a406f8dca 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
-@@ -9,6 +9,11 @@
- #define ONE_PT_CALIB		0x1
- #define ONE_PT_CALIB2		0x2
- #define TWO_PT_CALIB		0x3
-+#define CAL_DEGC_PT1		30
-+#define CAL_DEGC_PT2		120
-+#define SLOPE_FACTOR		1000
-+#define SLOPE_DEFAULT		3200
-+
+@@ -47,15 +47,15 @@ struct tsens_sensor {
+  */
+ struct tsens_ops {
+ 	/* mandatory callbacks */
+-	int (*init)(struct tsens_priv *);
+-	int (*calibrate)(struct tsens_priv *);
+-	int (*get_temp)(struct tsens_priv *, int, int *);
++	int (*init)(struct tsens_priv *priv);
++	int (*calibrate)(struct tsens_priv *priv);
++	int (*get_temp)(struct tsens_priv *priv, int i, int *temp);
+ 	/* optional callbacks */
+-	int (*enable)(struct tsens_priv *, int);
+-	void (*disable)(struct tsens_priv *);
+-	int (*suspend)(struct tsens_priv *);
+-	int (*resume)(struct tsens_priv *);
+-	int (*get_trend)(struct tsens_priv *, int, enum thermal_trend *);
++	int (*enable)(struct tsens_priv *priv, int i);
++	void (*disable)(struct tsens_priv *priv);
++	int (*suspend)(struct tsens_priv *priv);
++	int (*resume)(struct tsens_priv *priv);
++	int (*get_trend)(struct tsens_priv *priv, int i, enum thermal_trend *trend);
+ };
  
- #include <linux/thermal.h>
- #include <linux/regmap.h>
+ enum reg_list {
+@@ -111,10 +111,10 @@ struct tsens_priv {
+ 	struct tsens_sensor		sensor[0];
+ };
+ 
+-char *qfprom_read(struct device *, const char *);
+-void compute_intercept_slope(struct tsens_priv *, u32 *, u32 *, u32);
+-int init_common(struct tsens_priv *);
+-int get_temp_common(struct tsens_priv *, int, int *);
++char *qfprom_read(struct device *dev, const char *cname);
++void compute_intercept_slope(struct tsens_priv *priv, u32 *pt1, u32 *pt2, u32 mode);
++int init_common(struct tsens_priv *priv);
++int get_temp_common(struct tsens_priv *priv, int i, int *temp);
+ 
+ /* TSENS v1 targets */
+ extern const struct tsens_plat_data data_8916, data_8974, data_8960;
 -- 
 2.17.1
