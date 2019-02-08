@@ -1,315 +1,105 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v7 12/15] sched/core: uclamp: Propagate parent clamps
-Date: Fri,  8 Feb 2019 10:05:51 +0000
-Message-ID: <20190208100554.32196-13-patrick.bellasi@arm.com>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
+Date: Fri, 8 Feb 2019 11:08:38 +0100
+Message-ID: <CAJZ5v0i=q78gXjCUUgXVHFFjwEiY9H2Ds7ba3gAHNC11JQ6q9A@mail.gmail.com>
+References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
+ <20190207122227.19873-1-m.szyprowski@samsung.com> <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
+ <dc3802db-2931-e4fa-72f4-fa6e9b5c0e9a@samsung.com> <20190208085544.vqkebcgg7jpbv2a6@vireshk-i7>
+ <bbab0116-c2e5-a3a6-30e4-cbd8c583a120@samsung.com> <20190208092348.uqkfgxwx2pe3lmpd@vireshk-i7>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208100554.32196-1-patrick.bellasi@arm.com>
+In-Reply-To: <20190208092348.uqkfgxwx2pe3lmpd@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-In order to properly support hierarchical resources control, the cgroup
-delegation model requires that attribute writes from a child group never
-fail but still are (potentially) constrained based on parent's assigned
-resources. This requires to properly propagate and aggregate parent
-attributes down to its descendants.
+On Fri, Feb 8, 2019 at 10:23 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 08-02-19, 10:15, Marek Szyprowski wrote:
+> > On 2019-02-08 09:55, Viresh Kumar wrote:
+> > > On 08-02-19, 09:12, Marek Szyprowski wrote:
+> > >> On 2019-02-08 07:49, Viresh Kumar wrote:
+> > >>> Why don't you get similar problem during suspend? I think you can get
+> > >>> it when the CPUs are offlined as I2C would have gone by then. The
+> > >>> cpufreq or OPP core can try and run some regulator or genpd or clk
+> > >>> calls to disable resources, etc. Even if doesn't happen, it certainly
+> > >>> can.
+> > >> CPUfreq is suspended very early during system suspend and thus it does
+> > >> nothing when CPUs are being offlined.
+> > >>> Also at resume the cpufreq core may try to change the frequency right
+> > >>> from ->init() on certain cases, though not everytime and so the
+> > >>> problem can come despite of this series.
+> > >> cpufreq is still in suspended state (it is being 'resume' very late in
+> > >> the system resume procedure), so if driver doesn't explicitly change any
+> > >> opp in ->init(), then cpufreq core waits until everything is resumed. To
+> > >> sum up, this seems to be fine, beside the issue with regulator
+> > >> initialization I've addressed in this patchset.
+> > > Yeah, the governors are suspended very soon, but any frequency change
+> > > starting from cpufreq core can still happen. There are at least two
+> > > points in cpufreq_online() where we may end up changing the frequency,
+> > > but that is conditional and may not be getting hit.
+> >
+> > Then probably cpufreq core suspend should handle this.
+>
+> Handle what ? That code is part of cpufreq_online() and needs to be
+> there only.
+>
+> > >>> We guarantee that the resources are available during probe but not
+> > >>> during resume, that's where the problem is.
+> > >> Yes, so I've changed cpufreq-dt to the common approach, in which the
+> > >> driver keeps all needed resources for the whole lifetime of the device.
+> > > That's not what I was saying actually. I was saying that it should be
+> > > fine to do a I2C transfer during resume, else we will always have
+> > > problems and have to fix them with hacks like the one you proposed
+> > > where you acquire resources for all the possible CPUs. Maybe we can
+> > > fix it once and for all.
+> >
+> > It is fine to do i2c transfers during cpufreq resume (see
+>
+> By resume I meant system resume and the whole onlining process of
+> non-boot CPUs.
+>
+> > drivers/base/power/main.c dpm_resume() function for exact call place).
+> > The problem is that such calls are not allowed in ->init(), which might
+> > be called very early from CPU hotplug path (CPUs are resumed in the
+> > first step of system resume procedure).
+>
+> Right and that's where I think we can do something to fix it in a
+> proper way.
+>
+> > What's wrong with my proposed fix? It is not that uncommon to gather all
+> > resources in probe() and keep them until remove() happens.
+>
+> For cpufreq drivers, we must be doing most of the stuff in init/exit
+> only as far as possible. I am not saying your patch is bad, that is
+> the best we can do in such situations. But I don't like that we have
+> to get the resources for all CPUs, despite the fact that many of them
+> would be part of the same policy and hence share resources. The
+> problem was that we need to get sharing-cpus detail as well in probe
+> then, etc.
+>
+> I was thinking about doing disable_nonboot_cpus() much earlier as the
+> userspace is already frozen by then.
+>
+> @Rafael: Will that slowdown the suspend/resume process? Maybe not as
+> we are doing everything from a single CPU/thread anyways ?
 
-Let's implement this mechanism by adding a new "effective" clamp value
-for each task group. The effective clamp value is defined as the smaller
-value between the clamp value of a group and the effective clamp value
-of its parent. This is the actual clamp value enforced on tasks in a
-task group.
+First, we used to do that and we switched over to what we have right
+now several years ago, because it didn't work reliably then.
 
-Since it can be interesting for userspace, e.g. system management
-software, to know exactly what the currently propagated/enforced
-configuration is, the effective clamp values are exposed to user-space
-by means of a new pair of read-only attributes
-cpu.util.{min,max}.effective.
+Arguably, CPU hotplug is in a much better shape now, so it might be
+working better, but that would be a huge change and lots of
+documentation would need to be revised. :-)
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
+Also it is not true that everything is done on a single CPU, but I'm
+not really sure about the possible slowdown.
 
----
-Changes in v7:
- Others:
- - ensure clamp values are not tunable at root cgroup level
----
- Documentation/admin-guide/cgroup-v2.rst |  19 ++++
- kernel/sched/core.c                     | 118 +++++++++++++++++++++++-
- 2 files changed, 133 insertions(+), 4 deletions(-)
+Second, there are (many) systems for which that change is not really
+necessary and it is risky because of possible regressions.
 
-diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-index 47710a77f4fa..7aad2435e961 100644
---- a/Documentation/admin-guide/cgroup-v2.rst
-+++ b/Documentation/admin-guide/cgroup-v2.rst
-@@ -990,6 +990,16 @@ All time durations are in microseconds.
-         values similar to the sched_setattr(2). This minimum utilization
-         value is used to clamp the task specific minimum utilization clamp.
- 
-+  cpu.util.min.effective
-+        A read-only single value file which exists on non-root cgroups and
-+        reports minimum utilization clamp value currently enforced on a task
-+        group.
-+
-+        The actual minimum utilization in the range [0, 1024].
-+
-+        This value can be lower then cpu.util.min in case a parent cgroup
-+        allows only smaller minimum utilization values.
-+
-   cpu.util.max
-         A read-write single value file which exists on non-root cgroups.
-         The default is "1024". i.e. no utilization capping
-@@ -1000,6 +1010,15 @@ All time durations are in microseconds.
-         values similar to the sched_setattr(2). This maximum utilization
-         value is used to clamp the task specific maximum utilization clamp.
- 
-+  cpu.util.max.effective
-+        A read-only single value file which exists on non-root cgroups and
-+        reports maximum utilization clamp value currently enforced on a task
-+        group.
-+
-+        The actual maximum utilization in the range [0, 1024].
-+
-+        This value can be lower then cpu.util.max in case a parent cgroup
-+        is enforcing a more restrictive clamping on max utilization.
- 
- 
- Memory
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 122ab069ade5..1e54517acd58 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -720,6 +720,18 @@ static void set_load_weight(struct task_struct *p, bool update_load)
- }
- 
- #ifdef CONFIG_UCLAMP_TASK
-+/*
-+ * Serializes updates of utilization clamp values
-+ *
-+ * The (slow-path) user-space triggers utilization clamp value updates which
-+ * can require updates on (fast-path) scheduler's data structures used to
-+ * support enqueue/dequeue operations.
-+ * While the per-CPU rq lock protects fast-path update operations, user-space
-+ * requests are serialized using a mutex to reduce the risk of conflicting
-+ * updates or API abuses.
-+ */
-+static DEFINE_MUTEX(uclamp_mutex);
-+
- /* Max allowed minimum utilization */
- unsigned int sysctl_sched_uclamp_util_min = SCHED_CAPACITY_SCALE;
- 
-@@ -1127,6 +1139,8 @@ static void __init init_uclamp(void)
- 	unsigned int value;
- 	int cpu;
- 
-+	mutex_init(&uclamp_mutex);
-+
- 	for_each_possible_cpu(cpu) {
- 		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
- 		cpu_rq(cpu)->uclamp_flags = 0;
-@@ -6758,6 +6772,10 @@ static inline int alloc_uclamp_sched_group(struct task_group *tg,
- 			parent->uclamp[clamp_id].value;
- 		tg->uclamp[clamp_id].bucket_id =
- 			parent->uclamp[clamp_id].bucket_id;
-+		tg->uclamp[clamp_id].effective.value =
-+			parent->uclamp[clamp_id].effective.value;
-+		tg->uclamp[clamp_id].effective.bucket_id =
-+			parent->uclamp[clamp_id].effective.bucket_id;
- 	}
- #endif
- 
-@@ -7011,6 +7029,53 @@ static void cpu_cgroup_attach(struct cgroup_taskset *tset)
- }
- 
- #ifdef CONFIG_UCLAMP_TASK_GROUP
-+static void cpu_util_update_hier(struct cgroup_subsys_state *css,
-+				 unsigned int clamp_id, unsigned int bucket_id,
-+				 unsigned int value)
-+{
-+	struct cgroup_subsys_state *top_css = css;
-+	struct uclamp_se *uc_se, *uc_parent;
-+
-+	css_for_each_descendant_pre(css, top_css) {
-+		/*
-+		 * The first visited task group is top_css, which clamp value
-+		 * is the one passed as parameter. For descendent task
-+		 * groups we consider their current value.
-+		 */
-+		uc_se = &css_tg(css)->uclamp[clamp_id];
-+		if (css != top_css) {
-+			value = uc_se->value;
-+			bucket_id = uc_se->effective.bucket_id;
-+		}
-+		uc_parent = NULL;
-+		if (css_tg(css)->parent)
-+			uc_parent = &css_tg(css)->parent->uclamp[clamp_id];
-+
-+		/*
-+		 * Skip the whole subtrees if the current effective clamp is
-+		 * already matching the TG's clamp value.
-+		 * In this case, all the subtrees already have top_value, or a
-+		 * more restrictive value, as effective clamp.
-+		 */
-+		if (uc_se->effective.value == value &&
-+		    uc_parent && uc_parent->effective.value >= value) {
-+			css = css_rightmost_descendant(css);
-+			continue;
-+		}
-+
-+		/* Propagate the most restrictive effective value */
-+		if (uc_parent && uc_parent->effective.value < value) {
-+			value = uc_parent->effective.value;
-+			bucket_id = uc_parent->effective.bucket_id;
-+		}
-+		if (uc_se->effective.value == value)
-+			continue;
-+
-+		uc_se->effective.value = value;
-+		uc_se->effective.bucket_id = bucket_id;
-+	}
-+}
-+
- static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 				  struct cftype *cftype, u64 min_value)
- {
-@@ -7020,6 +7085,7 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 	if (min_value > SCHED_CAPACITY_SCALE)
- 		return -ERANGE;
- 
-+	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
- 
- 	tg = css_tg(css);
-@@ -7038,8 +7104,13 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 	tg->uclamp[UCLAMP_MIN].value = min_value;
- 	tg->uclamp[UCLAMP_MIN].bucket_id = uclamp_bucket_id(min_value);
- 
-+	/* Update effective clamps to track the most restrictive value */
-+	cpu_util_update_hier(css, UCLAMP_MIN, tg->uclamp[UCLAMP_MIN].bucket_id,
-+			     min_value);
-+
- out:
- 	rcu_read_unlock();
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return ret;
- }
-@@ -7053,6 +7124,7 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	if (max_value > SCHED_CAPACITY_SCALE)
- 		return -ERANGE;
- 
-+	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
- 
- 	tg = css_tg(css);
-@@ -7071,21 +7143,29 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	tg->uclamp[UCLAMP_MAX].value = max_value;
- 	tg->uclamp[UCLAMP_MAX].bucket_id = uclamp_bucket_id(max_value);
- 
-+	/* Update effective clamps to track the most restrictive value */
-+	cpu_util_update_hier(css, UCLAMP_MAX, tg->uclamp[UCLAMP_MAX].bucket_id,
-+			     max_value);
-+
- out:
- 	rcu_read_unlock();
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return ret;
- }
- 
- static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
--				  enum uclamp_id clamp_id)
-+				  enum uclamp_id clamp_id,
-+				  bool effective)
- {
- 	struct task_group *tg;
- 	u64 util_clamp;
- 
- 	rcu_read_lock();
- 	tg = css_tg(css);
--	util_clamp = tg->uclamp[clamp_id].value;
-+	util_clamp = effective
-+		? tg->uclamp[clamp_id].effective.value
-+		: tg->uclamp[clamp_id].value;
- 	rcu_read_unlock();
- 
- 	return util_clamp;
-@@ -7094,13 +7174,25 @@ static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
- static u64 cpu_util_min_read_u64(struct cgroup_subsys_state *css,
- 				 struct cftype *cft)
- {
--	return cpu_uclamp_read(css, UCLAMP_MIN);
-+	return cpu_uclamp_read(css, UCLAMP_MIN, false);
- }
- 
- static u64 cpu_util_max_read_u64(struct cgroup_subsys_state *css,
- 				 struct cftype *cft)
- {
--	return cpu_uclamp_read(css, UCLAMP_MAX);
-+	return cpu_uclamp_read(css, UCLAMP_MAX, false);
-+}
-+
-+static u64 cpu_util_min_effective_read_u64(struct cgroup_subsys_state *css,
-+					   struct cftype *cft)
-+{
-+	return cpu_uclamp_read(css, UCLAMP_MIN, true);
-+}
-+
-+static u64 cpu_util_max_effective_read_u64(struct cgroup_subsys_state *css,
-+					   struct cftype *cft)
-+{
-+	return cpu_uclamp_read(css, UCLAMP_MAX, true);
- }
- #endif /* CONFIG_UCLAMP_TASK_GROUP */
- 
-@@ -7448,11 +7540,19 @@ static struct cftype cpu_legacy_files[] = {
- 		.read_u64 = cpu_util_min_read_u64,
- 		.write_u64 = cpu_util_min_write_u64,
- 	},
-+	{
-+		.name = "util.min.effective",
-+		.read_u64 = cpu_util_min_effective_read_u64,
-+	},
- 	{
- 		.name = "util.max",
- 		.read_u64 = cpu_util_max_read_u64,
- 		.write_u64 = cpu_util_max_write_u64,
- 	},
-+	{
-+		.name = "util.max.effective",
-+		.read_u64 = cpu_util_max_effective_read_u64,
-+	},
- #endif
- 	{ }	/* Terminate */
- };
-@@ -7628,12 +7728,22 @@ static struct cftype cpu_files[] = {
- 		.read_u64 = cpu_util_min_read_u64,
- 		.write_u64 = cpu_util_min_write_u64,
- 	},
-+	{
-+		.name = "util.min.effective",
-+		.flags = CFTYPE_NOT_ON_ROOT,
-+		.read_u64 = cpu_util_min_effective_read_u64,
-+	},
- 	{
- 		.name = "util.max",
- 		.flags = CFTYPE_NOT_ON_ROOT,
- 		.read_u64 = cpu_util_max_read_u64,
- 		.write_u64 = cpu_util_max_write_u64,
- 	},
-+	{
-+		.name = "util.max.effective",
-+		.flags = CFTYPE_NOT_ON_ROOT,
-+		.read_u64 = cpu_util_max_effective_read_u64,
-+	},
- #endif
- 	{ }	/* terminate */
- };
--- 
-2.20.1
+I guess that CPUs depending on I2C for online/offline could be taken
+offline earlier and brought back online later during suspend/resume,
+like before/after the _noirq suspend of devices, but doing that on all
+systems altogether is almost guaranteed to introduce regressions.
