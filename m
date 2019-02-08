@@ -1,107 +1,46 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 11:02:48 +0100
-Message-ID: <b0a743d8-ab28-2da3-9cb2-f9bb369ec2dd@samsung.com>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
-        <20190207122227.19873-1-m.szyprowski@samsung.com>
-        <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
-        <dc3802db-2931-e4fa-72f4-fa6e9b5c0e9a@samsung.com>
-        <20190208085544.vqkebcgg7jpbv2a6@vireshk-i7>
-        <bbab0116-c2e5-a3a6-30e4-cbd8c583a120@samsung.com>
-        <20190208092348.uqkfgxwx2pe3lmpd@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
+Date: Fri, 8 Feb 2019 15:35:29 +0530
+Message-ID: <20190208100529.l2y75ua3bfa6nnyx@vireshk-i7>
+References: <20190129015547.213276-1-swboyd@chromium.org>
+ <20190131092349.fksfqemm23qddkhw@vireshk-i7>
+ <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
+ <CAPDyKFrrncpfEfbZJ1LHvqDbkc29CaJxZnXwh4Mz7PT6Efbctg@mail.gmail.com>
+ <20190208071726.urevxs5a3vaf7gwh@vireshk-i7>
+ <CAPDyKFrXWAzDChd3d2acQnF6GZw57+g6XeNtHo29q3i1qjidnQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208092348.uqkfgxwx2pe3lmpd@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrXWAzDChd3d2acQnF6GZw57+g6XeNtHo29q3i1qjidnQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Stephen Boyd <swboyd@chromium.org>, Graham Roff <grahamr@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Doug Anderson <dianders@chromium.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
+On 08-02-19, 10:45, Ulf Hansson wrote:
+> On Fri, 8 Feb 2019 at 08:17, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 07-02-19, 14:37, Ulf Hansson wrote:
+> > > I think we also need to consider cross SoC drivers. One SoC may have
+> > > both clocks and OPPs to manage, while another may have only clocks.
+> >
+> > We already have that case with CPUs as well and dev_pm_opp_set_rate()
+> > takes care of it.
+> 
+> I think you may have misunderstood my point. Or maybe I don't get yours. :-)
 
-On 2019-02-08 10:23, Viresh Kumar wrote:
-> On 08-02-19, 10:15, Marek Szyprowski wrote:
->> On 2019-02-08 09:55, Viresh Kumar wrote:
->>> On 08-02-19, 09:12, Marek Szyprowski wrote:
->>>> On 2019-02-08 07:49, Viresh Kumar wrote:
->>>>> Why don't you get similar problem during suspend? I think you can get
->>>>> it when the CPUs are offlined as I2C would have gone by then. The
->>>>> cpufreq or OPP core can try and run some regulator or genpd or clk
->>>>> calls to disable resources, etc. Even if doesn't happen, it certainly
->>>>> can.
->>>> CPUfreq is suspended very early during system suspend and thus it does
->>>> nothing when CPUs are being offlined.
->>>>> Also at resume the cpufreq core may try to change the frequency right
->>>>> from ->init() on certain cases, though not everytime and so the
->>>>> problem can come despite of this series.
->>>> cpufreq is still in suspended state (it is being 'resume' very late in
->>>> the system resume procedure), so if driver doesn't explicitly change any
->>>> opp in ->init(), then cpufreq core waits until everything is resumed. To
->>>> sum up, this seems to be fine, beside the issue with regulator
->>>> initialization I've addressed in this patchset.
->>> Yeah, the governors are suspended very soon, but any frequency change
->>> starting from cpufreq core can still happen. There are at least two
->>> points in cpufreq_online() where we may end up changing the frequency,
->>> but that is conditional and may not be getting hit.
->> Then probably cpufreq core suspend should handle this.
-> Handle what ? That code is part of cpufreq_online() and needs to be
-> there only.
+It was me. I thought you are talking about regulators and that is what
+is already managed, i.e. to work with or without regulators.
 
-If got it right, it is a matter of handling
-CPUFREQ_NEED_INITIAL_FREQ_CHECK flag. Maybe there should be additional
-check if CPUfreq is not suspended?
+> What if there is no OPP at all to use, then dev_pm_opp_set_rate() is
+> just a noop, right? In this scenario the driver still need to call
+> clk_set_rate().
+> 
+> How do we cope with these cases?
 
->>>>> We guarantee that the resources are available during probe but not
->>>>> during resume, that's where the problem is.
->>>> Yes, so I've changed cpufreq-dt to the common approach, in which the
->>>> driver keeps all needed resources for the whole lifetime of the device.
->>> That's not what I was saying actually. I was saying that it should be
->>> fine to do a I2C transfer during resume, else we will always have
->>> problems and have to fix them with hacks like the one you proposed
->>> where you acquire resources for all the possible CPUs. Maybe we can
->>> fix it once and for all.
->> It is fine to do i2c transfers during cpufreq resume (see
-> By resume I meant system resume and the whole onlining process of
-> non-boot CPUs.
+Yeah, that would be a problem and hacking the OPP core may not be the
+right solution :(
 
-Right now those are 2 separate things in cpufreq core.
-
->> drivers/base/power/main.c dpm_resume() function for exact call place).
->> The problem is that such calls are not allowed in ->init(), which might
->> be called very early from CPU hotplug path (CPUs are resumed in the
->> first step of system resume procedure).
-> Right and that's where I think we can do something to fix it in a
-> proper way.
->
->> What's wrong with my proposed fix? It is not that uncommon to gather all
->> resources in probe() and keep them until remove() happens.
-> For cpufreq drivers, we must be doing most of the stuff in init/exit
-> only as far as possible. I am not saying your patch is bad, that is
-> the best we can do in such situations. But I don't like that we have
-> to get the resources for all CPUs, despite the fact that many of them
-> would be part of the same policy and hence share resources. The
-> problem was that we need to get sharing-cpus detail as well in probe
-> then, etc.
-
-Both resources in this case: clocks and regulators are refcounted by
-their frameworks, so the cost of getting a few more references for them
-is imho negligible.
-
-> I was thinking about doing disable_nonboot_cpus() much earlier as the
-> userspace is already frozen by then.
->
-> @Rafael: Will that slowdown the suspend/resume process? Maybe not as
-> we are doing everything from a single CPU/thread anyways ?
-
-For some reasons drivers are handled partially asynchronously in
-suspend/resume procedure and can do suspend and resume in parallel. I
-don't think that limiting the whole suspend/resume process to a single
-cpu is the best we can do.
-
-Best regards
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+viresh
