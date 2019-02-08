@@ -1,40 +1,38 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: Re: [PATCH v2 3/3] power: reset: at91-reset: add support for sam9x60
- SoC
-Date: Fri, 8 Feb 2019 16:24:35 +0100
-Message-ID: <20190208152435.GC23062@piout.net>
-References: <20190206181221.27914-1-nicolas.ferre@microchip.com>
- <20190206181221.27914-3-nicolas.ferre@microchip.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v1 0/2] interconnect: Add path tagging support
+Date: Fri,  8 Feb 2019 19:21:50 +0200
+Message-ID: <20190208172152.1807-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190206181221.27914-3-nicolas.ferre@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: Ludovic Desroches <ludovic.desroches@microchip.com>, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: daidavid1@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, evgreen@chromium.org, dianders@chromium.org, seansw@qti.qualcomm.com, mturquette@baylibre.com, abailon@baylibre.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2019 19:12:21+0100, Nicolas Ferre wrote:
-> Add support for additional reset causes and the proper compatibility
-> string for sam9x60 SoC. The restart function is the same as the samx7.
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Reviewed-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+SoCs that have multiple coexisting CPUs and DSPs, may have shared
+interconnect buses between them. In such cases, each CPU/DSP may have
+different bandwidth needs, depending on whether it is active or sleeping.
+This means that we have to keep different bandwidth configurations for
+the CPU (active/sleep). In such systems, usually there is a way to
+communicate and synchronize this information with some firmware or pass
+it to another processor responsible for monitoring and switching the
+interconnect configurations based on the state of each CPU/DSP.
 
-> ---
-> v2: split series and collect tag
-> 
-> Sebastian,
-> I add your Acked-by tag here but as I would like that you take the 3 patches on
-> your tree now, I let you modify it on your side. I'm expecting Alexandre or
-> Ludovic to have a look as well.
-> 
+The above problem can be solved by introducing the path tagging concept,
+that allows consumers to optionally attach a tag to each path they use.
+This tag is used to differentiate between the aggregated bandwidth values
+for each state. The tag is generic and how it's handled is up to the
+platform specific interconnect provider drivers.
 
-Sebastian, please take this series through your tree. Thanks!
+David Dai (1):
+  interconnect: qcom: Add tagging and wake/sleep support for sdm845
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Georgi Djakov (1):
+  interconnect: Add support for path tags
+
+ drivers/interconnect/core.c           |  27 ++++++-
+ drivers/interconnect/qcom/sdm845.c    | 103 +++++++++++++++++++-------
+ include/linux/interconnect-provider.h |   4 +-
+ include/linux/interconnect.h          |   5 ++
+ 4 files changed, 106 insertions(+), 33 deletions(-)
