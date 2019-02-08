@@ -1,116 +1,93 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 11:22:02 +0100
-Message-ID: <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com> <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Fri, 8 Feb 2019 15:53:46 +0530
+Message-ID: <20190208102346.ophy3eqhxjzaqsxr@vireshk-i7>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+ <20190208090912.43aao5kny42iirum@vireshk-i7>
+ <CAJZ5v0iE9tFt9Xs27EYcjv6N1KAq-LaAQnv=QBvnbNRpfwrWCg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iE9tFt9Xs27EYcjv6N1KAq-LaAQnv=QBvnbNRpfwrWCg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2019 at 7:50 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 07-02-19, 13:22, Marek Szyprowski wrote:
-> > Dear All,
+On 08-02-19, 10:53, Rafael J. Wysocki wrote:
+> On Fri, Feb 8, 2019 at 10:09 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > >
-> > Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
-> > i2c adapters") added a visible warning for an attempt to do i2c transfer
-> > over a suspended i2c bus. This revealed a long standing issue in the
-> > cpufreq-dt driver, which gives a following warning during system
-> > suspend/resume cycle:
+> > On 11-01-19, 10:47, Rafael J. Wysocki wrote:
+> > > On Fri, Jan 11, 2019 at 10:18 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > >
+> > > > Hi,
+> > > >
+> > > > This commit introduces the frequency constraint infrastructure, which
+> > > > provides a generic interface for parts of the kernel to constraint the
+> > > > working frequency range of a device.
+> > > >
+> > > > The primary users of this are the cpufreq and devfreq frameworks. The
+> > > > cpufreq framework already implements such constraints with help of
+> > > > notifier chains (for thermal and other constraints) and some local code
+> > > > (for user-space constraints). The devfreq framework developers have also
+> > > > shown interest [1] in such a framework, which may use it at a later
+> > > > point of time.
+> > > >
+> > > > The idea here is to provide a generic interface and get rid of the
+> > > > notifier based mechanism.
+> > > >
+> > > > Only one constraint is added for now for the cpufreq framework and the
+> > > > rest will follow after this stuff is merged.
+> > > >
+> > > > Matthias Kaehlcke was involved in the preparation of the first draft of
+> > > > this work and so I have added him as Co-author to the first patch.
+> > > > Thanks Matthias.
+> > > >
+> > > > FWIW, This doesn't have anything to do with the boot-constraints
+> > > > framework [2] I was trying to upstream earlier :)
+> > >
+> > > This is quite a bit of code to review, so it will take some time.
 > >
-> > --->8---
-> > Enabling non-boot CPUs ...
-> > CPU1 is up
-> > CPU2 is up
-> > CPU3 is up
-> > ------------[ cut here ]------------
-> > WARNING: CPU: 4 PID: 29 at drivers/i2c/i2c-core-base.c:1869 __i2c_transfer+0x6f8/0xa50
-> > Modules linked in:
-> > CPU: 4 PID: 29 Comm: cpuhp/4 Tainted: G        W         5.0.0-rc4-next-20190131-00024-g54b06b29cc65 #5324
-> > Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-> > [<c01110e8>] (unwind_backtrace) from [<c010d11c>] (show_stack+0x10/0x14)
-> > [<c010d11c>] (show_stack) from [<c09a2584>] (dump_stack+0x90/0xc8)
-> > [<c09a2584>] (dump_stack) from [<c0120bd0>] (__warn+0xf8/0x124)
-> > [<c0120bd0>] (__warn) from [<c0120c3c>] (warn_slowpath_null+0x40/0x48)
-> > [<c0120c3c>] (warn_slowpath_null) from [<c065cda0>] (__i2c_transfer+0x6f8/0xa50)
-> > [<c065cda0>] (__i2c_transfer) from [<c065d168>] (i2c_transfer+0x70/0xe4)
-> > [<c065d168>] (i2c_transfer) from [<c053ce4c>] (regmap_i2c_read+0x48/0x64)
-> > [<c053ce4c>] (regmap_i2c_read) from [<c0536f1c>] (_regmap_raw_read+0xf8/0x450)
-> > [<c0536f1c>] (_regmap_raw_read) from [<c053772c>] (_regmap_bus_read+0x38/0x68)
-> > [<c053772c>] (_regmap_bus_read) from [<c05365a0>] (_regmap_read+0x60/0x250)
-> > [<c05365a0>] (_regmap_read) from [<c05367cc>] (regmap_read+0x3c/0x5c)
-> > [<c05367cc>] (regmap_read) from [<c047cfc0>] (regulator_is_enabled_regmap+0x20/0x90)
-> > [<c047cfc0>] (regulator_is_enabled_regmap) from [<c0477660>] (_regulator_is_enabled+0x34/0x40)
-> > [<c0477660>] (_regulator_is_enabled) from [<c0478674>] (create_regulator+0x1a4/0x25c)
-> > [<c0478674>] (create_regulator) from [<c047c818>] (_regulator_get+0xe4/0x278)
-> > [<c047c818>] (_regulator_get) from [<c068f1dc>] (dev_pm_opp_set_regulators+0xa0/0x1c0)
-> > [<c068f1dc>] (dev_pm_opp_set_regulators) from [<c0698cc8>] (cpufreq_init+0x98/0x2d0)
-> > [<c0698cc8>] (cpufreq_init) from [<c06959e4>] (cpufreq_online+0xc8/0x71c)
-> > [<c06959e4>] (cpufreq_online) from [<c06960fc>] (cpuhp_cpufreq_online+0x8/0x10)
-> > [<c06960fc>] (cpuhp_cpufreq_online) from [<c01213d4>] (cpuhp_invoke_callback+0xf4/0xebc)
-> > [<c01213d4>] (cpuhp_invoke_callback) from [<c0122e4c>] (cpuhp_thread_fun+0x1d8/0x320)
-> > [<c0122e4c>] (cpuhp_thread_fun) from [<c0149858>] (smpboot_thread_fn+0x194/0x340)
-> > [<c0149858>] (smpboot_thread_fn) from [<c014573c>] (kthread+0x124/0x160)
-> > [<c014573c>] (kthread) from [<c01010b4>] (ret_from_fork+0x14/0x20)
-> > Exception stack(0xe897dfb0 to 0xe897dff8)
-> > dfa0:                                     00000000 00000000 00000000 00000000
-> > dfc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> > dfe0: 00000000 00000000 00000000 00000000 00000013 00000000
-> > irq event stamp: 3865
-> > hardirqs last  enabled at (3873): [<c0186dec>] vprintk_emit+0x228/0x2a4
-> > hardirqs last disabled at (3880): [<c0186cf0>] vprintk_emit+0x12c/0x2a4
-> > softirqs last  enabled at (3052): [<c0102564>] __do_softirq+0x3a4/0x66c
-> > softirqs last disabled at (3043): [<c0128464>] irq_exit+0x140/0x168
-> > ---[ end trace db48b455d924fec2 ]---
-> > CPU4 is up
-> > CPU5 is up
-> > CPU6 is up
-> > CPU7 is up
-> > --->8---
-> >
-> > This is a scenario that triggers the above issue:
-> >
-> > 1. system disables non-boot cpu's at the end of system suspend procedure,
-> > 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
-> > 3. early in the system resume procedure all cpus are got back to online
-> >    state,
-> > 4. this in turn causes cpufreq to be initialized for the newly onlined
-> >    cpus,
-> > 5. cpufreq-dt acquires all its resources (clocks, regulators) during
-> >    ->init() callback,
-> > 6. getting regulator require to check its state, what in turn requires
-> >    i2c transfer,
-> > 7. during system early resume stage this is not really possible.
-> >
-> > The issue is caused by cpufreq-dt driver not keeping its resources for
-> > the whole driver lifetime and relying that they can be always acquired
-> > at any system context. This problem has been observed on Samsung
-> > Exynos based Odroid XU3/XU4 boards, but it happens on all boards, which
-> > have separate regulators for different CPU clusters.
->
-> Why don't you get similar problem during suspend? I think you can get
-> it when the CPUs are offlined as I2C would have gone by then. The
-> cpufreq or OPP core can try and run some regulator or genpd or clk
-> calls to disable resources, etc. Even if doesn't happen, it certainly
-> can.
->
-> Also at resume the cpufreq core may try to change the frequency right
-> from ->init() on certain cases, though not everytime and so the
-> problem can come despite of this series.
->
-> We guarantee that the resources are available during probe but not
-> during resume, that's where the problem is.
->
-> @Rafael any suggestions on how to fix this ?
+> > @Rafael: You are going to provide some more feedback here, right ?
+> 
+> I think I've said something already.
+> 
+> TLDR: I'm not convinced.
+> 
+> PM QoS does similar things in a similar way.  Why does it have to be a
+> different framework?
 
-There are cpufreq driver suspend and resume callbacks, maybe use them?
+I did it because no one objected to the initial proposal [1]. But you
+weren't directly cc'd (but only PM list) so can't blame you either :)
 
-The driver could do the I2C transactions in its suspend/resume
-callbacks and do nothing in online/offline if those are part of
-system-wide suspend/resume.
+Maybe we can make it work with PM QoS as well, I will see that aspect.
+
+> Using freq constraints for thermal reasons without coordinating it
+> with scheduling is questionable in general, because thermal control
+> may work against scheduling then.
+
+Sure, I agree but all we are talking about here is the mechanism with
+which the constraints should be put and it doesn't make things bad
+than they already are. With the notifiers in place currently, thermal
+core doesn't talk to scheduler.
+
+I think a different set of people are trying to fix that by issuing
+some calls to scheduler from thermal core, or something like that but
+I still consider that work orthogonal to the way constraints should be
+added instead of notifiers.
+
+Will implementing it the QoS way would be fine from thermal-scheduler
+standpoint ?
+
+> AFAICS, the original reason for notifiers in cpufreq was to avoid
+> drawing too much power (and frequency was a proxy of power then) and
+> they allowed the firmware to set the additional limit when going from
+> AC to battery, for example.  That appears to be a different goal,
+> though.
+
+-- 
+viresh
+
+[1] https://marc.info/?l=linux-pm&m=153851798809709
