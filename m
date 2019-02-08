@@ -1,53 +1,91 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 11:51:22 +0000
-Message-ID: <20190208115122.GA13043@e107155-lin>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
- <20190208110053.GA7913@e107155-lin>
- <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
+From: Erwan Velu <erwanaliasr1@gmail.com>
+Subject: [PATCH] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
+Date: Fri,  8 Feb 2019 12:56:58 +0100
+Message-ID: <20190208115658.723-1-e.velu@criteo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+Cc: e.velu@criteo.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 08, 2019 at 12:47:06PM +0100, Marek Szyprowski wrote:
-> Hi Sudeep,
->
-> On 2019-02-08 12:00, Sudeep Holla wrote:
-> > On Thu, Feb 07, 2019 at 01:22:25PM +0100, Marek Szyprowski wrote:
-> >> Dear All,
-> >>
-> >> This is a scenario that triggers the above issue:
-> > [...]
-> >> 1. system disables non-boot cpu's at the end of system suspend procedure,
-> >> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
-> >> 3. early in the system resume procedure all cpus are got back to online
-> >>    state,
-> >> 4. this in turn causes cpufreq to be initialized for the newly onlined
-> >>    cpus,
-> >> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
-> >>    ->init() callback,
-> > This is strictly not just restricted to cpufreq-dt, but to any driver
-> > supporting multiple policies. So we need a generic fix not just
-> > cpufreq-dt specific.
->
-> Could you point which other driver needs similar fix? Here in cpufreq-dt
-> the problem was caused by using regulator api (indirectly) from
-> ->init(). All other drivers, which have regulators support, are for old,
-> obsolete, uni-processor systems, which don't have the problem of
-> secondary cpu suspend during system suspend/resume cycle.
->
+The init code path have several execeptions where the module can decide not to load.
+As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is not reachable.
+The initialisation code is neither verbose of the reason why it did choose to prematurely exit.
 
-scmi_cpufreq for instance. We can fix that in driver my moving to polling
-to get cpufreq_get_rate, but we support both polling and interrupt based.
-We may wait for remote processor interrupt in get_rate.
+This situation leads to situation where its difficult for a user to determine,
+on a given platform, why the driver didn't loaded properly.
 
---
-Regards,
-Sudeep
+This patch is about reporting to the user the reason/context why the driver failed to load.
+That is a precious hint when debugging a platform.
+
+Signed-off-by: Erwan Velu <e.velu@criteo.com>
+---
+ drivers/cpufreq/intel_pstate.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index dd66decf2087..635049095dde 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2592,8 +2592,10 @@ static int __init intel_pstate_init(void)
+ 	const struct x86_cpu_id *id;
+ 	int rc;
+ 
+-	if (no_load)
++	if (no_load) {
++		pr_info("disabling as per user-request\n");
+ 		return -ENODEV;
++	}
+ 
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
+@@ -2606,31 +2608,41 @@ static int __init intel_pstate_init(void)
+ 		}
+ 	} else {
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+-		if (!id)
++		if (!id) {
++			pr_warn("CPU doesn't support P-states\n");
+ 			return -ENODEV;
++		}
+ 
+ 		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
+ 	}
+ 
+-	if (intel_pstate_msrs_not_valid())
++	if (intel_pstate_msrs_not_valid()) {
++		pr_warn("Cannot enable driver as per invalid MSRs\n");
+ 		return -ENODEV;
++	}
+ 
+ hwp_cpu_matched:
+ 	/*
+ 	 * The Intel pstate driver will be ignored if the platform
+ 	 * firmware has its own power management modes.
+ 	 */
+-	if (intel_pstate_platform_pwr_mgmt_exists())
++	if (intel_pstate_platform_pwr_mgmt_exists()) {
++		pr_warn("Platform already taking care of power management\n");
+ 		return -ENODEV;
++	}
+ 
+-	if (!hwp_active && hwp_only)
++	if (!hwp_active && hwp_only) {
++		pr_warn("HWP not present\n");
+ 		return -ENOTSUPP;
++	}
+ 
+ 	pr_info("Intel P-state driver initializing\n");
+ 
+ 	all_cpu_data = vzalloc(array_size(sizeof(void *), num_possible_cpus()));
+-	if (!all_cpu_data)
++	if (!all_cpu_data) {
++		pr_warn("Cannot allocate memory\n");
+ 		return -ENOMEM;
++	}
+ 
+ 	intel_pstate_request_control_from_smm();
+ 
+-- 
+2.20.1
