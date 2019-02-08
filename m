@@ -1,55 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
-Date: Fri, 8 Feb 2019 14:39:12 +0530
-Message-ID: <20190208090912.43aao5kny42iirum@vireshk-i7>
-References: <cover.1547197612.git.viresh.kumar@linaro.org>
- <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
+Date: Fri, 8 Feb 2019 10:15:50 +0100
+Message-ID: <bbab0116-c2e5-a3a6-30e4-cbd8c583a120@samsung.com>
+References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
+        <20190207122227.19873-1-m.szyprowski@samsung.com>
+        <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
+        <dc3802db-2931-e4fa-72f4-fa6e9b5c0e9a@samsung.com>
+        <20190208085544.vqkebcgg7jpbv2a6@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+In-Reply-To: <20190208085544.vqkebcgg7jpbv2a6@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 11-01-19, 10:47, Rafael J. Wysocki wrote:
-> On Fri, Jan 11, 2019 at 10:18 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > Hi,
-> >
-> > This commit introduces the frequency constraint infrastructure, which
-> > provides a generic interface for parts of the kernel to constraint the
-> > working frequency range of a device.
-> >
-> > The primary users of this are the cpufreq and devfreq frameworks. The
-> > cpufreq framework already implements such constraints with help of
-> > notifier chains (for thermal and other constraints) and some local code
-> > (for user-space constraints). The devfreq framework developers have also
-> > shown interest [1] in such a framework, which may use it at a later
-> > point of time.
-> >
-> > The idea here is to provide a generic interface and get rid of the
-> > notifier based mechanism.
-> >
-> > Only one constraint is added for now for the cpufreq framework and the
-> > rest will follow after this stuff is merged.
-> >
-> > Matthias Kaehlcke was involved in the preparation of the first draft of
-> > this work and so I have added him as Co-author to the first patch.
-> > Thanks Matthias.
-> >
-> > FWIW, This doesn't have anything to do with the boot-constraints
-> > framework [2] I was trying to upstream earlier :)
-> 
-> This is quite a bit of code to review, so it will take some time.
+Hi Viresh,
 
-@Rafael: You are going to provide some more feedback here, right ?
+On 2019-02-08 09:55, Viresh Kumar wrote:
+> On 08-02-19, 09:12, Marek Szyprowski wrote:
+>> On 2019-02-08 07:49, Viresh Kumar wrote:
+>>> Why don't you get similar problem during suspend? I think you can get
+>>> it when the CPUs are offlined as I2C would have gone by then. The
+>>> cpufreq or OPP core can try and run some regulator or genpd or clk
+>>> calls to disable resources, etc. Even if doesn't happen, it certainly
+>>> can.
+>> CPUfreq is suspended very early during system suspend and thus it does
+>> nothing when CPUs are being offlined.
+>>> Also at resume the cpufreq core may try to change the frequency right
+>>> from ->init() on certain cases, though not everytime and so the
+>>> problem can come despite of this series.
+>> cpufreq is still in suspended state (it is being 'resume' very late in
+>> the system resume procedure), so if driver doesn't explicitly change any
+>> opp in ->init(), then cpufreq core waits until everything is resumed. To
+>> sum up, this seems to be fine, beside the issue with regulator
+>> initialization I've addressed in this patchset.
+> Yeah, the governors are suspended very soon, but any frequency change
+> starting from cpufreq core can still happen. There are at least two
+> points in cpufreq_online() where we may end up changing the frequency,
+> but that is conditional and may not be getting hit.
 
-> One immediate observation is that it seems to do quite a bit of what
-> is done in the PM QoS framework, so maybe there is an opportunity for
-> some consolidation in there.
+Then probably cpufreq core suspend should handle this.
 
+>>> We guarantee that the resources are available during probe but not
+>>> during resume, that's where the problem is.
+>> Yes, so I've changed cpufreq-dt to the common approach, in which the
+>> driver keeps all needed resources for the whole lifetime of the device.
+> That's not what I was saying actually. I was saying that it should be
+> fine to do a I2C transfer during resume, else we will always have
+> problems and have to fix them with hacks like the one you proposed
+> where you acquire resources for all the possible CPUs. Maybe we can
+> fix it once and for all.
+
+It is fine to do i2c transfers during cpufreq resume (see
+drivers/base/power/main.c dpm_resume() function for exact call place).
+The problem is that such calls are not allowed in ->init(), which might
+be called very early from CPU hotplug path (CPUs are resumed in the
+first step of system resume procedure).
+
+What's wrong with my proposed fix? It is not that uncommon to gather all
+resources in probe() and keep them until remove() happens.
+
+Best regards
 -- 
-viresh
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
