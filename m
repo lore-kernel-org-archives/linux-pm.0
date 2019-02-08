@@ -1,112 +1,145 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 12:19:57 +0530
-Message-ID: <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
+Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
+Date: Fri, 8 Feb 2019 12:44:53 +0530
+Message-ID: <20190208071453.3ktqwu773z3jnaww@vireshk-i7>
+References: <20190129015547.213276-1-swboyd@chromium.org>
+ <20190131092349.fksfqemm23qddkhw@vireshk-i7>
+ <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190207122227.19873-1-m.szyprowski@samsung.com>
+In-Reply-To: <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Stephen Boyd <swboyd@chromium.org>
+Cc: grahamr@codeaurora.org, mturquette@baylibre.com, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Doug Anderson <dianders@chromium.org>, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-02-19, 13:22, Marek Szyprowski wrote:
-> Dear All,
+On 06-02-19, 23:58, Stephen Boyd wrote:
+> Quoting Viresh Kumar (2019-01-31 01:23:49)
+> > FWIW, I suggested exactly this solution sometime back [1]
+> > 
+> > - Drivers need to use two API sets to change clock rate (OPP helpers)
+> >   and enable/disable them (CLK framework helpers) and this leads us to
+> >   exactly that combination. Is that acceptable ? It doesn't look great
+> >   to me as well..
 > 
-> Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
-> i2c adapters") added a visible warning for an attempt to do i2c transfer
-> over a suspended i2c bus. This revealed a long standing issue in the
-> cpufreq-dt driver, which gives a following warning during system
-> suspend/resume cycle:
+> Agreed. I don't think anyone thinks this looks great, but I'll argue
+> that it's improving OPP for devices that already use it so that we can
+> remove voltage requirements when their clk is off. Think about CPUs that
+> are in their own clk domain where we want to remove the voltage
+> requirement when those CPUs are offline, or a GPU that wants to remove
+> its voltage requirement when it turns off clks. The combination is
+> already out there, just OPP hasn't solved this problem.
 > 
-> --->8---
-> Enabling non-boot CPUs ...
-> CPU1 is up
-> CPU2 is up
-> CPU3 is up
-> ------------[ cut here ]------------
-> WARNING: CPU: 4 PID: 29 at drivers/i2c/i2c-core-base.c:1869 __i2c_transfer+0x6f8/0xa50
-> Modules linked in:
-> CPU: 4 PID: 29 Comm: cpuhp/4 Tainted: G        W         5.0.0-rc4-next-20190131-00024-g54b06b29cc65 #5324
-> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-> [<c01110e8>] (unwind_backtrace) from [<c010d11c>] (show_stack+0x10/0x14)
-> [<c010d11c>] (show_stack) from [<c09a2584>] (dump_stack+0x90/0xc8)
-> [<c09a2584>] (dump_stack) from [<c0120bd0>] (__warn+0xf8/0x124)
-> [<c0120bd0>] (__warn) from [<c0120c3c>] (warn_slowpath_null+0x40/0x48)
-> [<c0120c3c>] (warn_slowpath_null) from [<c065cda0>] (__i2c_transfer+0x6f8/0xa50)
-> [<c065cda0>] (__i2c_transfer) from [<c065d168>] (i2c_transfer+0x70/0xe4)
-> [<c065d168>] (i2c_transfer) from [<c053ce4c>] (regmap_i2c_read+0x48/0x64)
-> [<c053ce4c>] (regmap_i2c_read) from [<c0536f1c>] (_regmap_raw_read+0xf8/0x450)
-> [<c0536f1c>] (_regmap_raw_read) from [<c053772c>] (_regmap_bus_read+0x38/0x68)
-> [<c053772c>] (_regmap_bus_read) from [<c05365a0>] (_regmap_read+0x60/0x250)
-> [<c05365a0>] (_regmap_read) from [<c05367cc>] (regmap_read+0x3c/0x5c)
-> [<c05367cc>] (regmap_read) from [<c047cfc0>] (regulator_is_enabled_regmap+0x20/0x90)
-> [<c047cfc0>] (regulator_is_enabled_regmap) from [<c0477660>] (_regulator_is_enabled+0x34/0x40)
-> [<c0477660>] (_regulator_is_enabled) from [<c0478674>] (create_regulator+0x1a4/0x25c)
-> [<c0478674>] (create_regulator) from [<c047c818>] (_regulator_get+0xe4/0x278)
-> [<c047c818>] (_regulator_get) from [<c068f1dc>] (dev_pm_opp_set_regulators+0xa0/0x1c0)
-> [<c068f1dc>] (dev_pm_opp_set_regulators) from [<c0698cc8>] (cpufreq_init+0x98/0x2d0)
-> [<c0698cc8>] (cpufreq_init) from [<c06959e4>] (cpufreq_online+0xc8/0x71c)
-> [<c06959e4>] (cpufreq_online) from [<c06960fc>] (cpuhp_cpufreq_online+0x8/0x10)
-> [<c06960fc>] (cpuhp_cpufreq_online) from [<c01213d4>] (cpuhp_invoke_callback+0xf4/0xebc)
-> [<c01213d4>] (cpuhp_invoke_callback) from [<c0122e4c>] (cpuhp_thread_fun+0x1d8/0x320)
-> [<c0122e4c>] (cpuhp_thread_fun) from [<c0149858>] (smpboot_thread_fn+0x194/0x340)
-> [<c0149858>] (smpboot_thread_fn) from [<c014573c>] (kthread+0x124/0x160)
-> [<c014573c>] (kthread) from [<c01010b4>] (ret_from_fork+0x14/0x20)
-> Exception stack(0xe897dfb0 to 0xe897dff8)
-> dfa0:                                     00000000 00000000 00000000 00000000
-> dfc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> dfe0: 00000000 00000000 00000000 00000000 00000013 00000000
-> irq event stamp: 3865
-> hardirqs last  enabled at (3873): [<c0186dec>] vprintk_emit+0x228/0x2a4
-> hardirqs last disabled at (3880): [<c0186cf0>] vprintk_emit+0x12c/0x2a4
-> softirqs last  enabled at (3052): [<c0102564>] __do_softirq+0x3a4/0x66c
-> softirqs last disabled at (3043): [<c0128464>] irq_exit+0x140/0x168
-> ---[ end trace db48b455d924fec2 ]---
-> CPU4 is up
-> CPU5 is up
-> CPU6 is up
-> CPU7 is up
-> --->8---
+> The only other plan I had was to implement another API like
+> dev_pm_set_state() or something like that and have that do something
+> like what the OPP rate API does right now. The main difference being
+> that the argument to the function would be some opaque u64 that's
+> converted by the bus/class/genpd attached to the device into whatever
+> frequency/voltage/performance state is desired (and sequenced in the
+> right order too). And then I was thinking that runtime PM or explicit
+> dev_pm_set_state() calls would be used to tell this new layer that the
+> device was going to a lower power mode with some other number (sub-kHz
+> integer?) and have that be translated again into some
+> frequency/voltage/performance state.
 > 
-> This is a scenario that triggers the above issue:
-> 
-> 1. system disables non-boot cpu's at the end of system suspend procedure,
-> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
-> 3. early in the system resume procedure all cpus are got back to online
->    state,
-> 4. this in turn causes cpufreq to be initialized for the newly onlined
->    cpus,
-> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
->    ->init() callback,
-> 6. getting regulator require to check its state, what in turn requires
->    i2c transfer,
-> 7. during system early resume stage this is not really possible.
-> 
-> The issue is caused by cpufreq-dt driver not keeping its resources for
-> the whole driver lifetime and relying that they can be always acquired
-> at any system context. This problem has been observed on Samsung
-> Exynos based Odroid XU3/XU4 boards, but it happens on all boards, which
-> have separate regulators for different CPU clusters.
+> Either way, each driver will have to change from using the clk APIs to
+> changes rates to something else like one of these APIs, so I don't see a
+> huge difference. Drivers will have to change.
 
-Why don't you get similar problem during suspend? I think you can get
-it when the CPUs are offlined as I2C would have gone by then. The
-cpufreq or OPP core can try and run some regulator or genpd or clk
-calls to disable resources, etc. Even if doesn't happen, it certainly
-can.
+I agree, that's why I wrote the dev_pm_opp_set_rate() API initially.
 
-Also at resume the cpufreq core may try to change the frequency right
-from ->init() on certain cases, though not everytime and so the
-problem can come despite of this series.
+> > 
+> > - Do we expect the callers will disable clk before calling
+> >   opp-set-rate with 0 ? We should remove the regulator requirements as
+> >   well along with perf-state.
+> 
+> Yes, that's the plan. Problems come along with this though, like shared
+> resource constraints and actually knowing the clk on/off state,
+> frequency, voltage, etc. at boot time and making sure to keep those
+> constraints satisfied during normal operation.
 
-We guarantee that the resources are available during probe but not
-during resume, that's where the problem is.
+But that isn't any different from drivers doing clk_disable directly,
+right ? So that shouldn't worry us.
 
-@Rafael any suggestions on how to fix this ?
+> > - What about enabling/disabling clock as well from OPP framework. We
+> >   can enable it on the very first call to opp-set-rate and disable
+> >   when freq is 0. That will simplify the drivers as well.
+> 
+> It works when those drivers aren't calling clk_disable() directly from
+> some irq handler. I don't think that's very common, but in those cases
+> we would probably want to allow drivers to quickly gate and ungate their
+> clks but then defer the sleeping stuff (voltages and off chip clks) to
+> the schedulable contexts. We'll still be left with a small number of
+> drivers that want to only call clk_prepare() and clk_unprepare() from
+> within OPP and keep calling clk_enable() and clk_disable() from their
+> driver. So introduce different APIs for those drivers to indicate this
+> to OPP? And only do that when it becomes a requirement?
+
+I am not sure I understood this well. The reference counting within
+clk/regulator should let both the layers (driver and opp core) work
+just fine. Why would a driver don't want OPP core to call
+clk_prepare_enable() all the time ?
+
+> Otherwise I don't really see a problem with the OPP call handling the
+> enable state of the clk as well.
+
+Right, so I would like that to be part of this series when this gets
+implemented.
+
+> > > One nice feature of this approach is that we don't need to change the
+> > > OPP binding to support this. We can specify only the max frequencies and
+> > > the voltage requirements in DT with the existing binding and slightly
+> > > tweak the OPP code to achieve these results. 
+> > > 
+> > > This series includes a conversion of the uart and spi drivers on
+> > > qcom sdm845 where these patches are being developed. It shows how a
+> > > driver is converted from the clk APIs to the OPP APIs and how
+> > > enable/disable state of the clk is communicated to the OPP layer.
+> > > 
+> > > Some open topics and initial points for discussion are:
+> > > 
+> > > 1) The dev_pm_opp_set_rate() API changes may break something that's 
+> > > relying on the rate rounding that OPP provides. If those exist,
+> > > we may need to implement another API that is more explicit about using
+> > > the clk API instead of the OPP tables.
+
+I don't remember any such cases, I may have forgotten about those
+though.
+
+> > > 2) dev_pm_opp_set_rate(0) is an interesting solution to the problem of
+> > > dropping the rate requirement. Is there anything better than this?
+
+I am okay with it. I don't want to invent another set of APIs to
+enable / disable the resources.
+
+> > > 3) How do we handle devices that already have power-domains specified in
+> > > DT? The opp binding for required-opps doesn't let us specify the power
+> > > domain to target, instead it assumes that whatever power domain is
+> > > attached to a device is the one that OPP needs to use to change the
+> > > genpd performance state. Do we need a
+> > > dev_pm_opp_set_required_opps_name() or something to be explicit about
+
+Yeah, we may need to come up with something like this eventually. I
+had written something like that earlier, but then it wasn't required.
+
+> > > this? Can we have some way for the power domain that required-opps
+> > > correspond to be expressed in the OPP tables themselves?
+
+Not sure I understood it. Can you explain with some example please ?
+
+> > > 4) How do we achieve the "full constraint" state? i.e. what do we do
+> > > about some devices being active and others being inactive during boot
+> > > and making sure that the voltage for the shared power domains doesn't
+> > > drop until all devices requiring it have informed OPP about their
+> > > power requirements?
+
+We need the boot-constraint framework for that. I think this is a
+problem which we have currently as well. I am waiting for the
+bus-scaling framework to get in, after that we will have lot of cases
+where boot-constraints would be required and it won't be limited to
+just clcd then.
 
 -- 
 viresh
