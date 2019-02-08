@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v1 1/2] interconnect: Add support for path tags
-Date: Fri,  8 Feb 2019 19:21:51 +0200
-Message-ID: <20190208172152.1807-2-georgi.djakov@linaro.org>
+Subject: [PATCH v1 2/2] interconnect: qcom: Add tagging and wake/sleep support for sdm845
+Date: Fri,  8 Feb 2019 19:21:52 +0200
+Message-ID: <20190208172152.1807-3-georgi.djakov@linaro.org>
 References: <20190208172152.1807-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,148 +12,199 @@ To: linux-pm@vger.kernel.org
 Cc: daidavid1@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, evgreen@chromium.org, dianders@chromium.org, seansw@qti.qualcomm.com, mturquette@baylibre.com, abailon@baylibre.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Consumers may have use cases with different bandwidth requirements based
-on the system or driver state. The consumer driver can append a specific
-tag to the path and pass this information to the interconnect platform
-driver to do the aggregation based on this state.
+From: David Dai <daidavid1@codeaurora.org>
 
-Introduce icc_set_tag() function that will allow the consumers to append
-an optional tag to each path. The aggregation of these tagged paths is
-platform specific.
+Add support for wake and sleep commands by using a tag to indicate
+whether or not the aggregate and set requests are active only or
+dual context for a particular path.
 
+Signed-off-by: David Dai <daidavid1@codeaurora.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c           | 27 +++++++++++++++++++++++----
- drivers/interconnect/qcom/sdm845.c    |  2 +-
- include/linux/interconnect-provider.h |  4 ++--
- include/linux/interconnect.h          |  5 +++++
- 4 files changed, 31 insertions(+), 7 deletions(-)
+ drivers/interconnect/qcom/sdm845.c | 101 +++++++++++++++++++++--------
+ 1 file changed, 75 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 6005a1c189f6..31eacd0f5349 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -42,10 +42,12 @@ struct icc_req {
- 
- /**
-  * struct icc_path - interconnect path structure
-+ * @tag: path tag (optional)
-  * @num_nodes: number of hops (nodes)
-  * @reqs: array of the requests applicable to this path of nodes
-  */
- struct icc_path {
-+	u32 tag;
- 	size_t num_nodes;
- 	struct icc_req reqs[];
- };
-@@ -206,7 +208,7 @@ static struct icc_path *path_find(struct device *dev, struct icc_node *src,
-  * implementing its own aggregate() function.
-  */
- 
--static int aggregate_requests(struct icc_node *node)
-+static int aggregate_requests(struct icc_node *node, u32 tag)
- {
- 	struct icc_provider *p = node->provider;
- 	struct icc_req *r;
-@@ -215,7 +217,7 @@ static int aggregate_requests(struct icc_node *node)
- 	node->peak_bw = 0;
- 
- 	hlist_for_each_entry(r, &node->req_list, req_node)
--		p->aggregate(node, r->avg_bw, r->peak_bw,
-+		p->aggregate(node, tag, r->avg_bw, r->peak_bw,
- 			     &node->avg_bw, &node->peak_bw);
- 
- 	return 0;
-@@ -396,6 +398,23 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
- }
- EXPORT_SYMBOL_GPL(of_icc_get);
- 
-+/**
-+ * icc_set_tag() - set an optional tag on a path
-+ * @path: the path we want to tag
-+ * @tag: the tag value
-+ *
-+ * This function allows consumers to append a tag to the path, so that a
-+ * different aggregation could be done based on this tag.
-+ */
-+void icc_set_tag(struct icc_path *path, u32 tag)
-+{
-+	if (!path)
-+		return;
-+
-+	path->tag = tag;
-+}
-+EXPORT_SYMBOL_GPL(icc_set_tag);
-+
- /**
-  * icc_set_bw() - set bandwidth constraints on an interconnect path
-  * @path: reference to the path returned by icc_get()
-@@ -434,7 +453,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 		path->reqs[i].peak_bw = peak_bw;
- 
- 		/* aggregate requests for this node */
--		aggregate_requests(node);
-+		aggregate_requests(node, path->tag);
- 	}
- 
- 	ret = apply_constraints(path);
-@@ -446,7 +465,7 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 			node = path->reqs[i].node;
- 			path->reqs[i].avg_bw = old_avg;
- 			path->reqs[i].peak_bw = old_peak;
--			aggregate_requests(node);
-+			aggregate_requests(node, path->tag);
- 		}
- 		apply_constraints(path);
- 	}
 diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
-index 4915b78da673..fb526004c82e 100644
+index fb526004c82e..13499f681160 100644
 --- a/drivers/interconnect/qcom/sdm845.c
 +++ b/drivers/interconnect/qcom/sdm845.c
-@@ -626,7 +626,7 @@ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
- 	bcm->dirty = false;
+@@ -65,6 +65,12 @@ struct bcm_db {
+ #define SDM845_MAX_BCMS		30
+ #define SDM845_MAX_BCM_PER_NODE	2
+ #define SDM845_MAX_VCD		10
++#define SDM845_MAX_CTX		2
++#define SDM845_EE_STATE		2
++#define EE_STATE_WAKE		0
++#define EE_STATE_SLEEP		1
++#define AO_CTX			0
++#define DUAL_CTX		1
+ 
+ /**
+  * struct qcom_icc_node - Qualcomm specific interconnect nodes
+@@ -86,8 +92,8 @@ struct qcom_icc_node {
+ 	u16 num_links;
+ 	u16 channels;
+ 	u16 buswidth;
+-	u64 sum_avg;
+-	u64 max_peak;
++	u64 sum_avg[SDM845_MAX_CTX];
++	u64 max_peak[SDM845_MAX_CTX];
+ 	struct qcom_icc_bcm *bcms[SDM845_MAX_BCM_PER_NODE];
+ 	size_t num_bcms;
+ };
+@@ -112,8 +118,8 @@ struct qcom_icc_bcm {
+ 	const char *name;
+ 	u32 type;
+ 	u32 addr;
+-	u64 vote_x;
+-	u64 vote_y;
++	u64 vote_x[SDM845_EE_STATE];
++	u64 vote_y[SDM845_EE_STATE];
+ 	bool dirty;
+ 	bool keepalive;
+ 	struct bcm_db aux_data;
+@@ -555,7 +561,7 @@ inline void tcs_cmd_gen(struct tcs_cmd *cmd, u64 vote_x, u64 vote_y,
+ 		cmd->wait = true;
  }
  
--static int qcom_icc_aggregate(struct icc_node *node, u32 avg_bw,
-+static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- 			      u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
+-static void tcs_list_gen(struct list_head *bcm_list,
++static void tcs_list_gen(struct list_head *bcm_list, int ee_state,
+ 			 struct tcs_cmd tcs_list[SDM845_MAX_VCD],
+ 			 int n[SDM845_MAX_VCD])
+ {
+@@ -573,8 +579,8 @@ static void tcs_list_gen(struct list_head *bcm_list,
+ 			commit = true;
+ 			cur_vcd_size = 0;
+ 		}
+-		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x, bcm->vote_y,
+-			    bcm->addr, commit);
++		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x[ee_state],
++			    bcm->vote_y[ee_state], bcm->addr, commit);
+ 		idx++;
+ 		n[batch]++;
+ 		/*
+@@ -595,32 +601,42 @@ static void tcs_list_gen(struct list_head *bcm_list,
+ 
+ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
+ {
+-	size_t i;
+-	u64 agg_avg = 0;
+-	u64 agg_peak = 0;
++	size_t i, ctx;
++	u64 agg_avg[SDM845_MAX_CTX] = {0};
++	u64 agg_peak[SDM845_MAX_CTX] = {0};
+ 	u64 temp;
+ 
+-	for (i = 0; i < bcm->num_nodes; i++) {
+-		temp = bcm->nodes[i]->sum_avg * bcm->aux_data.width;
+-		do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
+-		agg_avg = max(agg_avg, temp);
++	for (ctx = 0; ctx < SDM845_MAX_CTX; ctx++) {
++		for (i = 0; i < bcm->num_nodes; i++) {
++			temp = bcm->nodes[i]->sum_avg[ctx] * bcm->aux_data.width;
++			do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
++			agg_avg[ctx] = max(agg_avg[ctx], temp);
+ 
+-		temp = bcm->nodes[i]->max_peak * bcm->aux_data.width;
+-		do_div(temp, bcm->nodes[i]->buswidth);
+-		agg_peak = max(agg_peak, temp);
++			temp = bcm->nodes[i]->max_peak[ctx] * bcm->aux_data.width;
++			do_div(temp, bcm->nodes[i]->buswidth);
++			agg_peak[ctx] = max(agg_peak[ctx], temp);
++		}
+ 	}
+ 
+-	temp = agg_avg * 1000ULL;
++	temp = agg_avg[AO_CTX] + agg_avg[DUAL_CTX] * 1000ULL;
++	do_div(temp, bcm->aux_data.unit);
++	bcm->vote_x[EE_STATE_WAKE] = temp;
++
++	temp = max(agg_peak[AO_CTX], agg_peak[DUAL_CTX]) * 1000ULL;
++	do_div(temp, bcm->aux_data.unit);
++	bcm->vote_y[EE_STATE_WAKE] = temp;
++
++	temp = agg_avg[DUAL_CTX] * 1000ULL;
+ 	do_div(temp, bcm->aux_data.unit);
+-	bcm->vote_x = temp;
++	bcm->vote_x[EE_STATE_SLEEP] = temp;
+ 
+-	temp = agg_peak * 1000ULL;
++	temp = agg_peak[DUAL_CTX] * 1000ULL;
+ 	do_div(temp, bcm->aux_data.unit);
+-	bcm->vote_y = temp;
++	bcm->vote_y[EE_STATE_SLEEP] = temp;
+ 
+ 	if (bcm->keepalive && bcm->vote_x == 0 && bcm->vote_y == 0) {
+-		bcm->vote_x = 1;
+-		bcm->vote_y = 1;
++		bcm->vote_x[EE_STATE_WAKE] = 1;
++		bcm->vote_y[EE_STATE_WAKE] = 1;
+ 	}
+ 
+ 	bcm->dirty = false;
+@@ -631,14 +647,16 @@ static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
  {
  	size_t i;
-diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-index 63caccadc2db..4ee19fd41568 100644
---- a/include/linux/interconnect-provider.h
-+++ b/include/linux/interconnect-provider.h
-@@ -45,8 +45,8 @@ struct icc_provider {
- 	struct list_head	provider_list;
- 	struct list_head	nodes;
- 	int (*set)(struct icc_node *src, struct icc_node *dst);
--	int (*aggregate)(struct icc_node *node, u32 avg_bw, u32 peak_bw,
--			 u32 *agg_avg, u32 *agg_peak);
-+	int (*aggregate)(struct icc_node *node, u32 tag, u32 avg_bw,
-+			 u32 peak_bw, u32 *agg_avg, u32 *agg_peak);
- 	struct icc_node* (*xlate)(struct of_phandle_args *spec, void *data);
- 	struct device		*dev;
- 	int			users;
-diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-index dc25864755ba..d70a914cba11 100644
---- a/include/linux/interconnect.h
-+++ b/include/linux/interconnect.h
-@@ -30,6 +30,7 @@ struct icc_path *icc_get(struct device *dev, const int src_id,
- struct icc_path *of_icc_get(struct device *dev, const char *name);
- void icc_put(struct icc_path *path);
- int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
-+void icc_set_tag(struct icc_path *path, u32 tag);
+ 	struct qcom_icc_node *qn;
++	u32 ctx = 0;
  
- #else
+ 	qn = node->data;
++	ctx = (!!tag) ? AO_CTX : DUAL_CTX;
  
-@@ -54,6 +55,10 @@ static inline int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 	return 0;
+ 	*agg_avg += avg_bw;
+ 	*agg_peak = max_t(u32, *agg_peak, peak_bw);
+ 
+-	qn->sum_avg = *agg_avg;
+-	qn->max_peak = *agg_peak;
++	qn->sum_avg[ctx] = *agg_avg;
++	qn->max_peak[ctx] = *agg_peak;
+ 
+ 	for (i = 0; i < qn->num_bcms; i++)
+ 		qn->bcms[i]->dirty = true;
+@@ -675,7 +693,7 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	 * Construct the command list based on a pre ordered list of BCMs
+ 	 * based on VCD.
+ 	 */
+-	tcs_list_gen(&commit_list, cmds, commit_idx);
++	tcs_list_gen(&commit_list, EE_STATE_WAKE, cmds, commit_idx);
+ 
+ 	if (!commit_idx[0])
+ 		return ret;
+@@ -693,6 +711,37 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 		return ret;
+ 	}
+ 
++	INIT_LIST_HEAD(&commit_list);
++
++	for (i = 0; i < qp->num_bcms; i++) {
++		/* Only generate WAKE and SLEEP commands if a resource's
++		 * requirements change as the execution environment transitions
++		 * between different power states.
++		 */
++		if (qp->bcms[i]->vote_x[EE_STATE_WAKE] !=
++		    qp->bcms[i]->vote_x[EE_STATE_SLEEP] ||
++		    qp->bcms[i]->vote_y[EE_STATE_WAKE] !=
++		    qp->bcms[i]->vote_y[EE_STATE_SLEEP]) {
++			list_add_tail(&qp->bcms[i]->list, &commit_list);
++		}
++	}
++
++	tcs_list_gen(&commit_list, EE_STATE_WAKE, cmds, commit_idx);
++
++	ret = rpmh_write_batch(qp->dev, RPMH_WAKE_ONLY_STATE, cmds, commit_idx);
++	if (ret) {
++		dev_err(qp->dev, "Error sending WAKE RPMH requests: %d\n", ret);
++		return ret;
++	}
++
++	tcs_list_gen(&commit_list, EE_STATE_SLEEP, cmds, commit_idx);
++
++	ret = rpmh_write_batch(qp->dev, RPMH_SLEEP_STATE, cmds, commit_idx);
++	if (ret) {
++		dev_err(qp->dev, "Error sending SLEEP RPMH requests: %d\n", ret);
++		return ret;
++	}
++
+ 	return ret;
  }
  
-+static inline void icc_set_tag(struct icc_path *path, u32 tag)
-+{
-+}
-+
- #endif /* CONFIG_INTERCONNECT */
- 
- #endif /* __LINUX_INTERCONNECT_H */
