@@ -1,128 +1,34 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 11:31:29 +0100
-Message-ID: <bf3e2c35-fbc9-791a-eb10-206d5cfc400d@samsung.com>
+Date: Fri, 8 Feb 2019 16:01:33 +0530
+Message-ID: <20190208103133.ysvaroyniuc3k4i5@vireshk-i7>
 References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
-        <20190207122227.19873-1-m.szyprowski@samsung.com>
-        <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
-        <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
+ <20190207122227.19873-1-m.szyprowski@samsung.com>
+ <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
+ <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-On 2019-02-08 11:22, Rafael J. Wysocki wrote:
-> On Fri, Feb 8, 2019 at 7:50 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 07-02-19, 13:22, Marek Szyprowski wrote:
->>> Dear All,
->>>
->>> Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
->>> i2c adapters") added a visible warning for an attempt to do i2c transfer
->>> over a suspended i2c bus. This revealed a long standing issue in the
->>> cpufreq-dt driver, which gives a following warning during system
->>> suspend/resume cycle:
->>>
->>> --->8---
->>> Enabling non-boot CPUs ...
->>> CPU1 is up
->>> CPU2 is up
->>> CPU3 is up
->>> ------------[ cut here ]------------
->>> WARNING: CPU: 4 PID: 29 at drivers/i2c/i2c-core-base.c:1869 __i2c_transfer+0x6f8/0xa50
->>> Modules linked in:
->>> CPU: 4 PID: 29 Comm: cpuhp/4 Tainted: G        W         5.0.0-rc4-next-20190131-00024-g54b06b29cc65 #5324
->>> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
->>> [<c01110e8>] (unwind_backtrace) from [<c010d11c>] (show_stack+0x10/0x14)
->>> [<c010d11c>] (show_stack) from [<c09a2584>] (dump_stack+0x90/0xc8)
->>> [<c09a2584>] (dump_stack) from [<c0120bd0>] (__warn+0xf8/0x124)
->>> [<c0120bd0>] (__warn) from [<c0120c3c>] (warn_slowpath_null+0x40/0x48)
->>> [<c0120c3c>] (warn_slowpath_null) from [<c065cda0>] (__i2c_transfer+0x6f8/0xa50)
->>> [<c065cda0>] (__i2c_transfer) from [<c065d168>] (i2c_transfer+0x70/0xe4)
->>> [<c065d168>] (i2c_transfer) from [<c053ce4c>] (regmap_i2c_read+0x48/0x64)
->>> [<c053ce4c>] (regmap_i2c_read) from [<c0536f1c>] (_regmap_raw_read+0xf8/0x450)
->>> [<c0536f1c>] (_regmap_raw_read) from [<c053772c>] (_regmap_bus_read+0x38/0x68)
->>> [<c053772c>] (_regmap_bus_read) from [<c05365a0>] (_regmap_read+0x60/0x250)
->>> [<c05365a0>] (_regmap_read) from [<c05367cc>] (regmap_read+0x3c/0x5c)
->>> [<c05367cc>] (regmap_read) from [<c047cfc0>] (regulator_is_enabled_regmap+0x20/0x90)
->>> [<c047cfc0>] (regulator_is_enabled_regmap) from [<c0477660>] (_regulator_is_enabled+0x34/0x40)
->>> [<c0477660>] (_regulator_is_enabled) from [<c0478674>] (create_regulator+0x1a4/0x25c)
->>> [<c0478674>] (create_regulator) from [<c047c818>] (_regulator_get+0xe4/0x278)
->>> [<c047c818>] (_regulator_get) from [<c068f1dc>] (dev_pm_opp_set_regulators+0xa0/0x1c0)
->>> [<c068f1dc>] (dev_pm_opp_set_regulators) from [<c0698cc8>] (cpufreq_init+0x98/0x2d0)
->>> [<c0698cc8>] (cpufreq_init) from [<c06959e4>] (cpufreq_online+0xc8/0x71c)
->>> [<c06959e4>] (cpufreq_online) from [<c06960fc>] (cpuhp_cpufreq_online+0x8/0x10)
->>> [<c06960fc>] (cpuhp_cpufreq_online) from [<c01213d4>] (cpuhp_invoke_callback+0xf4/0xebc)
->>> [<c01213d4>] (cpuhp_invoke_callback) from [<c0122e4c>] (cpuhp_thread_fun+0x1d8/0x320)
->>> [<c0122e4c>] (cpuhp_thread_fun) from [<c0149858>] (smpboot_thread_fn+0x194/0x340)
->>> [<c0149858>] (smpboot_thread_fn) from [<c014573c>] (kthread+0x124/0x160)
->>> [<c014573c>] (kthread) from [<c01010b4>] (ret_from_fork+0x14/0x20)
->>> Exception stack(0xe897dfb0 to 0xe897dff8)
->>> dfa0:                                     00000000 00000000 00000000 00000000
->>> dfc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
->>> dfe0: 00000000 00000000 00000000 00000000 00000013 00000000
->>> irq event stamp: 3865
->>> hardirqs last  enabled at (3873): [<c0186dec>] vprintk_emit+0x228/0x2a4
->>> hardirqs last disabled at (3880): [<c0186cf0>] vprintk_emit+0x12c/0x2a4
->>> softirqs last  enabled at (3052): [<c0102564>] __do_softirq+0x3a4/0x66c
->>> softirqs last disabled at (3043): [<c0128464>] irq_exit+0x140/0x168
->>> ---[ end trace db48b455d924fec2 ]---
->>> CPU4 is up
->>> CPU5 is up
->>> CPU6 is up
->>> CPU7 is up
->>> --->8---
->>>
->>> This is a scenario that triggers the above issue:
->>>
->>> 1. system disables non-boot cpu's at the end of system suspend procedure,
->>> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
->>> 3. early in the system resume procedure all cpus are got back to online
->>>    state,
->>> 4. this in turn causes cpufreq to be initialized for the newly onlined
->>>    cpus,
->>> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
->>>    ->init() callback,
->>> 6. getting regulator require to check its state, what in turn requires
->>>    i2c transfer,
->>> 7. during system early resume stage this is not really possible.
->>>
->>> The issue is caused by cpufreq-dt driver not keeping its resources for
->>> the whole driver lifetime and relying that they can be always acquired
->>> at any system context. This problem has been observed on Samsung
->>> Exynos based Odroid XU3/XU4 boards, but it happens on all boards, which
->>> have separate regulators for different CPU clusters.
->> Why don't you get similar problem during suspend? I think you can get
->> it when the CPUs are offlined as I2C would have gone by then. The
->> cpufreq or OPP core can try and run some regulator or genpd or clk
->> calls to disable resources, etc. Even if doesn't happen, it certainly
->> can.
->>
->> Also at resume the cpufreq core may try to change the frequency right
->> from ->init() on certain cases, though not everytime and so the
->> problem can come despite of this series.
->>
->> We guarantee that the resources are available during probe but not
->> during resume, that's where the problem is.
->>
->> @Rafael any suggestions on how to fix this ?
+On 08-02-19, 11:22, Rafael J. Wysocki wrote:
 > There are cpufreq driver suspend and resume callbacks, maybe use them?
->
+> 
 > The driver could do the I2C transactions in its suspend/resume
 > callbacks and do nothing in online/offline if those are part of
 > system-wide suspend/resume.
 
-This is exactly what I suggested, when I wrote to handle it in cpufreq
+These are per-policy things that we need to do, not sure if driver
+suspend/resume is a good place for that. It is more for a case where
+CPU 0-3 are in one policy and 4-7 in another. Now 1-7 are
+hot-unplugged during system suspend and hotplugged later on. This is
+more like complete removal/addition of devices instead of
 suspend/resume.
 
-Best regards
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+viresh
