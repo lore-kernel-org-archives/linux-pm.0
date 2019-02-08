@@ -1,210 +1,159 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v1 2/2] interconnect: qcom: Add tagging and wake/sleep support for sdm845
-Date: Fri,  8 Feb 2019 19:21:52 +0200
-Message-ID: <20190208172152.1807-3-georgi.djakov@linaro.org>
-References: <20190208172152.1807-1-georgi.djakov@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
+Date: Fri, 8 Feb 2019 17:41:31 +0000
+Message-ID: <20190208174131.GB22401@e107155-lin>
+References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
+ <20190207122227.19873-1-m.szyprowski@samsung.com>
+ <20190208110053.GA7913@e107155-lin>
+ <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
+ <20190208115122.GA13043@e107155-lin>
+ <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208172152.1807-1-georgi.djakov@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: daidavid1@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, evgreen@chromium.org, dianders@chromium.org, seansw@qti.qualcomm.com, mturquette@baylibre.com, abailon@baylibre.com, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: David Dai <daidavid1@codeaurora.org>
+On Fri, Feb 08, 2019 at 01:04:18PM +0100, Marek Szyprowski wrote:
+> Hi Sudeep,
+> 
+> On 2019-02-08 12:51, Sudeep Holla wrote:
+> > On Fri, Feb 08, 2019 at 12:47:06PM +0100, Marek Szyprowski wrote:
+> >> On 2019-02-08 12:00, Sudeep Holla wrote:
+> >>> On Thu, Feb 07, 2019 at 01:22:25PM +0100, Marek Szyprowski wrote:
+> >>>> Dear All,
+> >>>>
+> >>>> This is a scenario that triggers the above issue:
+> >>> [...]
+> >>>> 1. system disables non-boot cpu's at the end of system suspend procedure,
+> >>>> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
+> >>>> 3. early in the system resume procedure all cpus are got back to online
+> >>>>    state,
+> >>>> 4. this in turn causes cpufreq to be initialized for the newly onlined
+> >>>>    cpus,
+> >>>> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
+> >>>>    ->init() callback,
+> >>> This is strictly not just restricted to cpufreq-dt, but to any driver
+> >>> supporting multiple policies. So we need a generic fix not just
+> >>> cpufreq-dt specific.
+> >> Could you point which other driver needs similar fix? Here in cpufreq-dt
+> >> the problem was caused by using regulator api (indirectly) from
+> >> ->init(). All other drivers, which have regulators support, are for old,
+> >> obsolete, uni-processor systems, which don't have the problem of
+> >> secondary cpu suspend during system suspend/resume cycle.
+> >>
+> > scmi_cpufreq for instance. We can fix that in driver my moving to polling
+> > to get cpufreq_get_rate, but we support both polling and interrupt based.
+> > We may wait for remote processor interrupt in get_rate.
+> 
+> Frankly, I don't feel I know enough to touch this driver and I don't
+> think that this can even be fixed in a generic way in the cpufreq core.
 
-Add support for wake and sleep commands by using a tag to indicate
-whether or not the aggregate and set requests are active only or
-dual context for a particular path.
+Based on Rafael's suggestion, I cooked up something. See if this helps ?
+The policy to cpu dance can be removed and we can just run through the
+online cpumask I think.
 
-Signed-off-by: David Dai <daidavid1@codeaurora.org>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/interconnect/qcom/sdm845.c | 101 +++++++++++++++++++++--------
- 1 file changed, 75 insertions(+), 26 deletions(-)
+Regards,
+Sudeep
 
-diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
-index fb526004c82e..13499f681160 100644
---- a/drivers/interconnect/qcom/sdm845.c
-+++ b/drivers/interconnect/qcom/sdm845.c
-@@ -65,6 +65,12 @@ struct bcm_db {
- #define SDM845_MAX_BCMS		30
- #define SDM845_MAX_BCM_PER_NODE	2
- #define SDM845_MAX_VCD		10
-+#define SDM845_MAX_CTX		2
-+#define SDM845_EE_STATE		2
-+#define EE_STATE_WAKE		0
-+#define EE_STATE_SLEEP		1
-+#define AO_CTX			0
-+#define DUAL_CTX		1
+-->8
+
+diff --git i/drivers/cpufreq/cpufreq.c w/drivers/cpufreq/cpufreq.c
+index e35a886e00bc..03d65a02a542 100644
+--- i/drivers/cpufreq/cpufreq.c
++++ w/drivers/cpufreq/cpufreq.c
+@@ -1640,6 +1640,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
+ void cpufreq_suspend(void)
+ {
+ 	struct cpufreq_policy *policy;
++	int cpu;
  
- /**
-  * struct qcom_icc_node - Qualcomm specific interconnect nodes
-@@ -86,8 +92,8 @@ struct qcom_icc_node {
- 	u16 num_links;
- 	u16 channels;
- 	u16 buswidth;
--	u64 sum_avg;
--	u64 max_peak;
-+	u64 sum_avg[SDM845_MAX_CTX];
-+	u64 max_peak[SDM845_MAX_CTX];
- 	struct qcom_icc_bcm *bcms[SDM845_MAX_BCM_PER_NODE];
- 	size_t num_bcms;
- };
-@@ -112,8 +118,8 @@ struct qcom_icc_bcm {
- 	const char *name;
- 	u32 type;
- 	u32 addr;
--	u64 vote_x;
--	u64 vote_y;
-+	u64 vote_x[SDM845_EE_STATE];
-+	u64 vote_y[SDM845_EE_STATE];
- 	bool dirty;
- 	bool keepalive;
- 	struct bcm_db aux_data;
-@@ -555,7 +561,7 @@ inline void tcs_cmd_gen(struct tcs_cmd *cmd, u64 vote_x, u64 vote_y,
- 		cmd->wait = true;
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1662,6 +1663,11 @@ void cpufreq_suspend(void)
+ 	}
+ 
+ suspend:
++	if (cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME)
++		for_each_active_policy(policy)
++			for_each_cpu(cpu, policy->cpus)
++				cpufreq_offline(cpu);
++
+ 	cpufreq_suspended = true;
  }
  
--static void tcs_list_gen(struct list_head *bcm_list,
-+static void tcs_list_gen(struct list_head *bcm_list, int ee_state,
- 			 struct tcs_cmd tcs_list[SDM845_MAX_VCD],
- 			 int n[SDM845_MAX_VCD])
+@@ -1674,7 +1680,7 @@ void cpufreq_suspend(void)
+ void cpufreq_resume(void)
  {
-@@ -573,8 +579,8 @@ static void tcs_list_gen(struct list_head *bcm_list,
- 			commit = true;
- 			cur_vcd_size = 0;
- 		}
--		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x, bcm->vote_y,
--			    bcm->addr, commit);
-+		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x[ee_state],
-+			    bcm->vote_y[ee_state], bcm->addr, commit);
- 		idx++;
- 		n[batch]++;
- 		/*
-@@ -595,32 +601,42 @@ static void tcs_list_gen(struct list_head *bcm_list,
+ 	struct cpufreq_policy *policy;
+-	int ret;
++	int ret, cpu;
  
- static void bcm_aggregate(struct qcom_icc_bcm *bcm)
+ 	if (!cpufreq_driver)
+ 		return;
+@@ -1682,6 +1688,11 @@ void cpufreq_resume(void)
+ 	if (unlikely(!cpufreq_suspended))
+ 		return;
+ 
++	if (cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME)
++		for_each_active_policy(policy)
++			for_each_cpu(cpu, policy->cpus)
++				cpufreq_online(cpu);
++
+ 	cpufreq_suspended = false;
+ 
+ 	if (!has_target() && !cpufreq_driver->resume)
+@@ -2444,14 +2455,16 @@ static enum cpuhp_state hp_online;
+ 
+ static int cpuhp_cpufreq_online(unsigned int cpu)
  {
--	size_t i;
--	u64 agg_avg = 0;
--	u64 agg_peak = 0;
-+	size_t i, ctx;
-+	u64 agg_avg[SDM845_MAX_CTX] = {0};
-+	u64 agg_peak[SDM845_MAX_CTX] = {0};
- 	u64 temp;
+-	cpufreq_online(cpu);
++	if (!(cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME))
++		cpufreq_online(cpu);
  
--	for (i = 0; i < bcm->num_nodes; i++) {
--		temp = bcm->nodes[i]->sum_avg * bcm->aux_data.width;
--		do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
--		agg_avg = max(agg_avg, temp);
-+	for (ctx = 0; ctx < SDM845_MAX_CTX; ctx++) {
-+		for (i = 0; i < bcm->num_nodes; i++) {
-+			temp = bcm->nodes[i]->sum_avg[ctx] * bcm->aux_data.width;
-+			do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
-+			agg_avg[ctx] = max(agg_avg[ctx], temp);
- 
--		temp = bcm->nodes[i]->max_peak * bcm->aux_data.width;
--		do_div(temp, bcm->nodes[i]->buswidth);
--		agg_peak = max(agg_peak, temp);
-+			temp = bcm->nodes[i]->max_peak[ctx] * bcm->aux_data.width;
-+			do_div(temp, bcm->nodes[i]->buswidth);
-+			agg_peak[ctx] = max(agg_peak[ctx], temp);
-+		}
- 	}
- 
--	temp = agg_avg * 1000ULL;
-+	temp = agg_avg[AO_CTX] + agg_avg[DUAL_CTX] * 1000ULL;
-+	do_div(temp, bcm->aux_data.unit);
-+	bcm->vote_x[EE_STATE_WAKE] = temp;
-+
-+	temp = max(agg_peak[AO_CTX], agg_peak[DUAL_CTX]) * 1000ULL;
-+	do_div(temp, bcm->aux_data.unit);
-+	bcm->vote_y[EE_STATE_WAKE] = temp;
-+
-+	temp = agg_avg[DUAL_CTX] * 1000ULL;
- 	do_div(temp, bcm->aux_data.unit);
--	bcm->vote_x = temp;
-+	bcm->vote_x[EE_STATE_SLEEP] = temp;
- 
--	temp = agg_peak * 1000ULL;
-+	temp = agg_peak[DUAL_CTX] * 1000ULL;
- 	do_div(temp, bcm->aux_data.unit);
--	bcm->vote_y = temp;
-+	bcm->vote_y[EE_STATE_SLEEP] = temp;
- 
- 	if (bcm->keepalive && bcm->vote_x == 0 && bcm->vote_y == 0) {
--		bcm->vote_x = 1;
--		bcm->vote_y = 1;
-+		bcm->vote_x[EE_STATE_WAKE] = 1;
-+		bcm->vote_y[EE_STATE_WAKE] = 1;
- 	}
- 
- 	bcm->dirty = false;
-@@ -631,14 +647,16 @@ static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
- {
- 	size_t i;
- 	struct qcom_icc_node *qn;
-+	u32 ctx = 0;
- 
- 	qn = node->data;
-+	ctx = (!!tag) ? AO_CTX : DUAL_CTX;
- 
- 	*agg_avg += avg_bw;
- 	*agg_peak = max_t(u32, *agg_peak, peak_bw);
- 
--	qn->sum_avg = *agg_avg;
--	qn->max_peak = *agg_peak;
-+	qn->sum_avg[ctx] = *agg_avg;
-+	qn->max_peak[ctx] = *agg_peak;
- 
- 	for (i = 0; i < qn->num_bcms; i++)
- 		qn->bcms[i]->dirty = true;
-@@ -675,7 +693,7 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 	 * Construct the command list based on a pre ordered list of BCMs
- 	 * based on VCD.
- 	 */
--	tcs_list_gen(&commit_list, cmds, commit_idx);
-+	tcs_list_gen(&commit_list, EE_STATE_WAKE, cmds, commit_idx);
- 
- 	if (!commit_idx[0])
- 		return ret;
-@@ -693,6 +711,37 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 		return ret;
- 	}
- 
-+	INIT_LIST_HEAD(&commit_list);
-+
-+	for (i = 0; i < qp->num_bcms; i++) {
-+		/* Only generate WAKE and SLEEP commands if a resource's
-+		 * requirements change as the execution environment transitions
-+		 * between different power states.
-+		 */
-+		if (qp->bcms[i]->vote_x[EE_STATE_WAKE] !=
-+		    qp->bcms[i]->vote_x[EE_STATE_SLEEP] ||
-+		    qp->bcms[i]->vote_y[EE_STATE_WAKE] !=
-+		    qp->bcms[i]->vote_y[EE_STATE_SLEEP]) {
-+			list_add_tail(&qp->bcms[i]->list, &commit_list);
-+		}
-+	}
-+
-+	tcs_list_gen(&commit_list, EE_STATE_WAKE, cmds, commit_idx);
-+
-+	ret = rpmh_write_batch(qp->dev, RPMH_WAKE_ONLY_STATE, cmds, commit_idx);
-+	if (ret) {
-+		dev_err(qp->dev, "Error sending WAKE RPMH requests: %d\n", ret);
-+		return ret;
-+	}
-+
-+	tcs_list_gen(&commit_list, EE_STATE_SLEEP, cmds, commit_idx);
-+
-+	ret = rpmh_write_batch(qp->dev, RPMH_SLEEP_STATE, cmds, commit_idx);
-+	if (ret) {
-+		dev_err(qp->dev, "Error sending SLEEP RPMH requests: %d\n", ret);
-+		return ret;
-+	}
-+
- 	return ret;
+ 	return 0;
  }
+ 
+ static int cpuhp_cpufreq_offline(unsigned int cpu)
+ {
+-	cpufreq_offline(cpu);
++	if (!(cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME))
++		cpufreq_offline(cpu);
+ 
+ 	return 0;
+ }
+diff --git i/drivers/cpufreq/scmi-cpufreq.c w/drivers/cpufreq/scmi-cpufreq.c
+index 01871418ffde..0bfc96102739 100644
+--- i/drivers/cpufreq/scmi-cpufreq.c
++++ w/drivers/cpufreq/scmi-cpufreq.c
+@@ -203,7 +203,8 @@ static void scmi_cpufreq_ready(struct cpufreq_policy *policy)
+ static struct cpufreq_driver scmi_cpufreq_driver = {
+ 	.name	= "scmi",
+ 	.flags	= CPUFREQ_STICKY | CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
+-		  CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++		  CPUFREQ_NEED_INITIAL_FREQ_CHECK |
++		  CPUFREQ_DEFER_INIT_DURING_RESUME,
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.attr	= cpufreq_generic_attr,
+ 	.target_index	= scmi_cpufreq_set_target,
+diff --git i/include/linux/cpufreq.h w/include/linux/cpufreq.h
+index c86d6d8bdfed..9cf6b3ce063a 100644
+--- i/include/linux/cpufreq.h
++++ w/include/linux/cpufreq.h
+@@ -385,6 +385,12 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING (1 << 6)
+ 
++/*
++ * Set by drivers to advance/defer the cpufreq online/offline operation during
++ * system suspend/resume.
++ */
++#define CPUFREQ_DEFER_INIT_DURING_RESUME (1 << 7)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
  
