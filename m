@@ -1,31 +1,29 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v4 8/8] ARM: exynos_defconfig: enable DMC driver
-Date: Fri, 8 Feb 2019 09:15:01 +0100
-Message-ID: <CAJKOXPf5_0eXt45eRmiXCvVhmKTOFwTFpJ4SkP=yG=5_qc8sMw@mail.gmail.com>
-References: <CGME20190201164723eucas1p1ec009489584e1c85fd0d62270796e003@eucas1p1.samsung.com>
- <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com> <1549039612-28905-9-git-send-email-l.luba@partner.samsung.com>
+From: Stephan Mueller <smueller@chronox.de>
+Subject: Re: [PATCH v2 0/6] General Key Derivation Function Support
+Date: Fri, 08 Feb 2019 09:17:50 +0100
+Message-ID: <2047284.dgeq8KlW64@tauon.chronox.de>
+References: <20190103143227.9138-1-jlee@suse.com> <1798550.XZem68xxzE@tauon.chronox.de> <20190208080547.224fudg2m22d3a6d@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1549039612-28905-9-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <20190208080547.224fudg2m22d3a6d@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Russell King <linux@armlinux.org.uk>, Guenter Roeck <groeck@chromium.org>, Benson Leung <bleung@chromium.org>, linux-arm-kernel@lists.infradead.org
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Feb 2019 at 17:47, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->
-> Enable driver for Dynamic Memory Controller dynamic frequency and
-> voltage scaling in Exynos5422 SoCs.
->
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  arch/arm/configs/exynos_defconfig | 1 +
->  1 file changed, 1 insertion(+)
+Am Freitag, 8. Februar 2019, 09:05:47 CET schrieb Herbert Xu:
 
-Looks good for me. I will take it after driver gets accepted. It is
-getting late in the cycle so it might end up in subsequent merge
-window.
+Hi Herbert,
+> 
+> > Also, shall we add the signature verification enforcemnt to the helper as
+> > well?
+> 
+> What do you mean by that?
 
-Best regards,
-Krzysztof
+We need to invoke the function crypto_check_module_sig when the module is 
+loaded. Do you have any concerns invoking it from the module init function?
+
+Ciao
+Stephan
