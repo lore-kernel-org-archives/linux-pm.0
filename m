@@ -1,102 +1,178 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 13:23:37 +0100
-Message-ID: <CAJZ5v0jkpMyXrg9HwFizXLBEu0tggBmMbhZZZxzt_+a10cmuYA@mail.gmail.com>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com> <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
- <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
- <20190208103133.ysvaroyniuc3k4i5@vireshk-i7> <CAJZ5v0ghQ6bTV8atd6dtq8=ZBDUpDRVsCiAhwQVtfoMH-JhH9A@mail.gmail.com>
- <20190208113904.GB7913@e107155-lin> <CAJZ5v0gbh2LDq+6P_CQ+GWOxEdQrRUqQnx7v59hvs2_wwx9=kw@mail.gmail.com>
- <20190208120949.GB13043@e107155-lin>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [PATCH v8 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
+Date: Fri, 8 Feb 2019 14:41:11 +0200
+Message-ID: <20190208124111.GB3012@localhost.localdomain>
+References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <50d1debf03bbd07f49b2c5a85cf9672439cbd0ac.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190207140053.GG20638@dell>
+ <20190207162807.GB1920@localhost.localdomain>
+ <20190208105743.GI20638@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208120949.GB13043@e107155-lin>
+Content-Disposition: inline
+In-Reply-To: <20190208105743.GI20638@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2019 at 1:09 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> On Fri, Feb 08, 2019 at 01:03:10PM +0100, Rafael J. Wysocki wrote:
-> > On Fri, Feb 8, 2019 at 12:39 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > >
-> > > On Fri, Feb 08, 2019 at 11:42:20AM +0100, Rafael J. Wysocki wrote:
-> > > > On Fri, Feb 8, 2019 at 11:31 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > > >
-> > > > > On 08-02-19, 11:22, Rafael J. Wysocki wrote:
-> > > > > > There are cpufreq driver suspend and resume callbacks, maybe use them?
-> > > > > >
-> > > > > > The driver could do the I2C transactions in its suspend/resume
-> > > > > > callbacks and do nothing in online/offline if those are part of
-> > > > > > system-wide suspend/resume.
-> > > > >
-> > > > > These are per-policy things that we need to do, not sure if driver
-> > > > > suspend/resume is a good place for that. It is more for a case where
-> > > > > CPU 0-3 are in one policy and 4-7 in another. Now 1-7 are
-> > > > > hot-unplugged during system suspend and hotplugged later on. This is
-> > > > > more like complete removal/addition of devices instead of
-> > > > > suspend/resume.
-> > > >
-> > > > No, it isn't.  We don't remove devices on offline.  We migrate stuff
-> > > > away from them and (opportunistically) power them down.
-> > > >
-> > > > If this is system suspend, the driver kind of knows that offline will
-> > > > take place, so it can prepare for it.  Likewise, when online takes
-> > > > place during system-wide resume, it generally is known that this is
-> > > > system-wide resume (there is a flag to indicate that in CPU hotplug),
-> > > > it can be "smart" and avoid accessing suspended devices.  Deferring
-> > > > the frequency set up until the driver resume time should do the trick
-> > > > I suppose.
-> > >
-> > > I agree. The reason we don't see this generally on boot is because all
-> > > the CPUs are brought online before CPUfreq is initialised. While during
-> > > system suspend, we call cpufreq_online which in turn calls ->init in
-> > > the hotplug state machine.
-> > >
-> > > So as Rafael suggests we need to do some trick, but can it be done in
-> > > the core itself ? I may be missing something, but how about the patch
-> > > below:
-> > >
-> > > Regards,
-> > > Sudeep
-> > >
-> > > --
-> > > diff --git i/drivers/cpufreq/cpufreq.c w/drivers/cpufreq/cpufreq.c
-> > > index e35a886e00bc..7d8b0b99f91d 100644
-> > > --- i/drivers/cpufreq/cpufreq.c
-> > > +++ w/drivers/cpufreq/cpufreq.c
-> > > @@ -1241,7 +1241,8 @@ static int cpufreq_online(unsigned int cpu)
-> > >                 policy->max = policy->user_policy.max;
-> > >         }
-> > >
-> > > -       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
-> > > +       if (cpufreq_driver->get && !cpufreq_driver->setpolicy &&
-> > > +           !cpufreq_suspended) {
-> > >                 policy->cur = cpufreq_driver->get(policy->cpu);
-> > >                 if (!policy->cur) {
-> > >                         pr_err("%s: ->get() failed\n", __func__);
-> >
-> > It looks like we need to skip the "initial freq check" block below.
-> >
->
-> Indeed, copy pasted an earlier version of diff. I found that I even
-> used a goto label wrong which I fixed along with the additional check
-> in "initial freq check" when I tried to compile :).
->
-> > Also this doesn't really help the case when the driver ->init() messes
-> > up with things.
-> >
->
-> Yes, in that case additional logic in the driver also needed. I am fine
-> if we enforce driver to deal with this issue, but was thinking if we can
-> make it generic. Also I was just trying to avoid adding _suspend/resume
-> to driver just to avoid this issue.
+Hello Lee,
 
-I was wondering if cpufreq_offline()/online() could be invoked from
-cpufreq_suspend()/resume() for the nonboot CPUs - if the driver needs
-it (there could be a driver flag to indicate that).
+On Fri, Feb 08, 2019 at 10:57:43AM +0000, Lee Jones wrote:
+> > 
+> > This is needed by both RTC and WDT drivers as RTC driver must stop the
+> > WDT when it sets RTC. WDT HW is using RTC counter and might trigger
+> > timeout/reset when RTC is set. Options are to dublicate the
+> > enable/disable to both drivers or to export a function or share a
+> > function pointer. I didn't want dublication or dependency between RTC
+> > and WDT drivers. Thus I thought that MFD is best place for this code as
+> > both RTC and WDT require it anyways. Perhaps this should be commented
+> > here?
+> 
+> I think an exported function with comments would be better.
 
-If they are made exit immediately when cpufreq_suspended is set (and
-the requisite driver flag is set too), that might work AFAICS.
+So do you mean you would prefer exported function over the pointer from
+MFD? I guess I can do it but I would still like to keep the code in the
+MFD as I would rather not introduce dependency from WDT driver to RTC or
+other way around. I can easily think of cases where WDT or RTC drivers
+would be unnecessary and user might want to drop one of them out of
+configuration. And I wonder if export actually makes any real
+improvement as we need to share the mutex between RTC and WDT anyways.
+
+> 
+> [...]
+> 
+> > > > +	irqs[BD70528_INT_GPIO3].type.type_reg_offset = 6;
+> > > > +	irqs[BD70528_INT_GPIO3].type.type_rising_val = 0x20;
+> > > > +	irqs[BD70528_INT_GPIO3].type.type_falling_val = 0x10;
+> > > > +	irqs[BD70528_INT_GPIO3].type.type_level_high_val = 0x40;
+> > > > +	irqs[BD70528_INT_GPIO3].type.type_level_low_val = 0x50;
+> > > > +	irqs[BD70528_INT_GPIO3].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> > > > +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> > > 
+> > > Could you please explain:
+> > > 
+> > > a) what you're doing here
+> > 
+> > Regmap-irq gained support for type-setting. On bd70528 the type setting
+> > makes sense only for GPIO interrupts - so we must not populate type
+> > setting information for the rest of the IRQs. The macro REGMAP_IRQ_REG
+> > is nice and makes the irq struct initialization cleaner. Thus it is used.
+> > It does not allow populating the type information - hence we do it here.
+> > 
+> > I can change this if you think some other way would be cleaner?
+> 
+> It's pretty fugly.  Can the REGMAP_IRQ_REG be expanded upon?
+
+I was thinking of that but for vast majority of REGMAP_IRQ_REG users
+initializing type regs would be just unnecessary burden (giving 6
+zeroes for unsupported fields for each IRQ gets dull quite soon) I
+was also thinking of adding another macro to be used in cases where
+we have type setting supported - but macros with 9 parameters won't fit
+on a line and (in my opinion) will not bring much improvement over
+plain assignment.
+
+> > > b) why you don't mass assign them
+> > >     - seeing as most of the data is identical.
+> > 
+> > Maybe I am a bit slow today - but I don't know how the 'mass assignment'
+> > should be done?
+> 
+> Something like (completely untested):
+> 
+> unsigned int type_reg_offset_inc = 0;
+> for (i = BD70528_INT_GPIO0; i <=  BD70528_INT_GPIO3; i++) {
+> 	irqs[i].type.type_reg_offset     = type_reg_offset_inc;
+> 	irqs[i].type.type_rising_val     = 0x20;
+> 	irqs[i].type.type_falling_val    = 0x10;
+> 	irqs[i].type.type_level_high_val = 0x40;
+> 	irqs[i].type.type_level_low_val  = 0x50;
+> 	irqs[i].type.types_supported =
+> 		(IRQ_TYPE_EDGE_BOTH | IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> 	type_reg_offset_inc += 2;
+> }
+
+Right. I did this this morning =)
+
+> It's still fugly though.
+
+Agree.
+
+> If we can do this via MACROs, it would be better.
+
+I just dont see how to do a nice macro for this. Truth is that there is
+6 fields to initialize - and the values can't be guessed so each value
+needs to be given. In best case the macro can somewhat shorten the
+assignment (but no way it'd still fit nicely on one row) - in worst
+case it just hides the meaning of values we are passing as arguments.
+With raw assignment we at least have some idea what the 0x40 or 0x20 are
+referring to =)
+
+> [...]
+> 
+> > > > +subsys_initcall(bd70528_init);
+> > > 
+> > > Does it need to be initialised this early?
+> > 
+> > I think it may be required on some board(s). Is it a problem? I guess I
+> > can change this for my purposes but guess it may become a problem later.
+> 
+> If you do this normally, you can use MACROs (see other drivers) and
+> remove the boilerplate init code you have here.
+
+Ok. I can change this. We can change it back if we need something
+(regulators or GPIO or clk) to be ready at early stage. Currently my
+setup does not require this.
+
+> > > > +struct bd70528 {
+> > > > +	/*
+> > > > +	 * Please keep this as the first member here as some
+> > > > +	 * drivers (clk) supporting more than one chip may only know this
+> > > > +	 * generic struct 'struct rohm_regmap_dev' and assume it is
+> > > > +	 * the first chunk of parent device's private data.
+> > > > +	 */
+> > > > +	struct rohm_regmap_dev chip;
+> > > > +	/* wdt_set must be called rtc_timer_lock held */
+> > > 
+> > > This doesn't make sense.
+> > 
+> > Umm.. The comment does not make sense? Maybe I can explain it further.
+> 
+> "wdt_set must be called when the rtc_timer_lock is held"
+
+Yes. I wanted to say that who-ever is calling the wdt_set function
+below, should have locked the rtc_timer_lock mutex (last in this
+struct). The function does not do locking inside because we want the RTC
+to be able to perform:
+
+lock
+disable wdt (store original state)
+set RTC
+return wdt original state
+unlock
+
+Locking is needed so that we can exclude the watchdog enabling or
+disabling the WDT timer between moments when RTC is getting the original
+WDT state and re-turning back the old state. Without the lock we have a
+risk that WDT-driver enables or disables the timer when RTC is being
+set, and RTC overwrites the watchdog driver changes when writing back
+the old state. I hope this makes sense now... Any suggestions how to
+explain this nicely in english?
+
+> 
+> -- 
+> Lee Jones [李琼斯]
+> Linaro Services Technical Lead
+> Linaro.org │ Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
+
+-- 
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
+
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
