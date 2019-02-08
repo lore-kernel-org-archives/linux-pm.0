@@ -1,60 +1,92 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC/PATCH 0/5] DVFS in the OPP core
-Date: Fri, 8 Feb 2019 16:03:50 +0530
-Message-ID: <20190208103350.jnmpsd3hkehzwbo3@vireshk-i7>
-References: <20190129015547.213276-1-swboyd@chromium.org>
- <20190131092349.fksfqemm23qddkhw@vireshk-i7>
- <154952629766.115909.11259861549408107064@swboyd.mtv.corp.google.com>
- <CAPDyKFrrncpfEfbZJ1LHvqDbkc29CaJxZnXwh4Mz7PT6Efbctg@mail.gmail.com>
- <20190208071726.urevxs5a3vaf7gwh@vireshk-i7>
- <CAPDyKFrXWAzDChd3d2acQnF6GZw57+g6XeNtHo29q3i1qjidnQ@mail.gmail.com>
- <20190208100529.l2y75ua3bfa6nnyx@vireshk-i7>
- <CAPDyKFpmZNW7KgsgagD_6tKTQ07AJS7Kc=AGCQmMpNASuOG-Dg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Fri, 8 Feb 2019 11:35:15 +0100
+Message-ID: <CAJZ5v0gNhmqY_oem9SZk2fEkOikmjTK3YfFRuOi8f=66GSgVuw@mail.gmail.com>
+References: <cover.1547197612.git.viresh.kumar@linaro.org> <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+ <20190208090912.43aao5kny42iirum@vireshk-i7> <CAJZ5v0iE9tFt9Xs27EYcjv6N1KAq-LaAQnv=QBvnbNRpfwrWCg@mail.gmail.com>
+ <20190208102346.ophy3eqhxjzaqsxr@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFpmZNW7KgsgagD_6tKTQ07AJS7Kc=AGCQmMpNASuOG-Dg@mail.gmail.com>
+In-Reply-To: <20190208102346.ophy3eqhxjzaqsxr@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Stephen Boyd <swboyd@chromium.org>, Graham Roff <grahamr@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Doug Anderson <dianders@chromium.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08-02-19, 11:31, Ulf Hansson wrote:
-> On Fri, 8 Feb 2019 at 11:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 08-02-19, 10:45, Ulf Hansson wrote:
-> > > On Fri, 8 Feb 2019 at 08:17, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > >
-> > > > On 07-02-19, 14:37, Ulf Hansson wrote:
-> > > > > I think we also need to consider cross SoC drivers. One SoC may have
-> > > > > both clocks and OPPs to manage, while another may have only clocks.
-> > > >
-> > > > We already have that case with CPUs as well and dev_pm_opp_set_rate()
-> > > > takes care of it.
+On Fri, Feb 8, 2019 at 11:23 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 08-02-19, 10:53, Rafael J. Wysocki wrote:
+> > On Fri, Feb 8, 2019 at 10:09 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > > >
-> > > I think you may have misunderstood my point. Or maybe I don't get yours. :-)
-> >
-> > It was me. I thought you are talking about regulators and that is what
-> > is already managed, i.e. to work with or without regulators.
-> >
-> > > What if there is no OPP at all to use, then dev_pm_opp_set_rate() is
-> > > just a noop, right? In this scenario the driver still need to call
-> > > clk_set_rate().
+> > > On 11-01-19, 10:47, Rafael J. Wysocki wrote:
+> > > > On Fri, Jan 11, 2019 at 10:18 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > > >
+> > > > > Hi,
+> > > > >
+> > > > > This commit introduces the frequency constraint infrastructure, which
+> > > > > provides a generic interface for parts of the kernel to constraint the
+> > > > > working frequency range of a device.
+> > > > >
+> > > > > The primary users of this are the cpufreq and devfreq frameworks. The
+> > > > > cpufreq framework already implements such constraints with help of
+> > > > > notifier chains (for thermal and other constraints) and some local code
+> > > > > (for user-space constraints). The devfreq framework developers have also
+> > > > > shown interest [1] in such a framework, which may use it at a later
+> > > > > point of time.
+> > > > >
+> > > > > The idea here is to provide a generic interface and get rid of the
+> > > > > notifier based mechanism.
+> > > > >
+> > > > > Only one constraint is added for now for the cpufreq framework and the
+> > > > > rest will follow after this stuff is merged.
+> > > > >
+> > > > > Matthias Kaehlcke was involved in the preparation of the first draft of
+> > > > > this work and so I have added him as Co-author to the first patch.
+> > > > > Thanks Matthias.
+> > > > >
+> > > > > FWIW, This doesn't have anything to do with the boot-constraints
+> > > > > framework [2] I was trying to upstream earlier :)
+> > > >
+> > > > This is quite a bit of code to review, so it will take some time.
 > > >
-> > > How do we cope with these cases?
+> > > @Rafael: You are going to provide some more feedback here, right ?
 > >
-> > Yeah, that would be a problem and hacking the OPP core may not be the
-> > right solution :(
-> 
-> I guess one simple way forward could just be to check if there is an
-> OPP handle/table available, then use dev_pm_opp_set_rate(). When no
-> OPP handle/table, use clk_set_rate() *instead*, not both.
-> 
-> That could work, don't you think?
+> > I think I've said something already.
+> >
+> > TLDR: I'm not convinced.
+> >
+> > PM QoS does similar things in a similar way.  Why does it have to be a
+> > different framework?
+>
+> I did it because no one objected to the initial proposal [1]. But you
+> weren't directly cc'd (but only PM list) so can't blame you either :)
+>
+> Maybe we can make it work with PM QoS as well, I will see that aspect.
 
-Yeah, just that it adds more conditional code in drivers, while we
-wanted to make them light-weight :)
+At least some of the underlying mechanics seem to be very similar.
+You have priority lists, addition and removal of requests etc.
 
--- 
-viresh
+Arguably, PM QoS may be regarded as a bit overly complicated, but
+maybe they both can use a common library underneath?
+
+> > Using freq constraints for thermal reasons without coordinating it
+> > with scheduling is questionable in general, because thermal control
+> > may work against scheduling then.
+>
+> Sure, I agree but all we are talking about here is the mechanism with
+> which the constraints should be put and it doesn't make things bad
+> than they already are. With the notifiers in place currently, thermal
+> core doesn't talk to scheduler.
+>
+> I think a different set of people are trying to fix that by issuing
+> some calls to scheduler from thermal core, or something like that but
+> I still consider that work orthogonal to the way constraints should be
+> added instead of notifiers.
+>
+> Will implementing it the QoS way would be fine from thermal-scheduler
+> standpoint ?
+
+As I said I like the idea of replacing cpufreq notifiers with
+something nicer, so if you can avoid doing almost-the-same-ting in two
+different frameworks, it would be fine by me.
