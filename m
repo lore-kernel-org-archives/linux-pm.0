@@ -1,48 +1,38 @@
 From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: Re: [PATCH v2 2/3] dt-bindings: arm: atmel: add new sam9x60 reset
- controller binding
-Date: Fri, 8 Feb 2019 16:23:42 +0100
-Message-ID: <20190208152342.GB23062@piout.net>
+Subject: Re: [PATCH v2 3/3] power: reset: at91-reset: add support for sam9x60
+ SoC
+Date: Fri, 8 Feb 2019 16:24:35 +0100
+Message-ID: <20190208152435.GC23062@piout.net>
 References: <20190206181221.27914-1-nicolas.ferre@microchip.com>
- <20190206181221.27914-2-nicolas.ferre@microchip.com>
+ <20190206181221.27914-3-nicolas.ferre@microchip.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190206181221.27914-2-nicolas.ferre@microchip.com>
+In-Reply-To: <20190206181221.27914-3-nicolas.ferre@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Nicolas Ferre <nicolas.ferre@microchip.com>
 Cc: Ludovic Desroches <ludovic.desroches@microchip.com>, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2019 19:12:20+0100, Nicolas Ferre wrote:
-> Update the Reset Controller's binding to add new SoC compatibility string.
+On 06/02/2019 19:12:21+0100, Nicolas Ferre wrote:
+> Add support for additional reset causes and the proper compatibility
+> string for sam9x60 SoC. The restart function is the same as the samx7.
 > 
 > Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Reviewed-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
 > ---
 > v2: split series and collect tag
 > 
->  Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 1 +
->  1 file changed, 1 insertion(+)
+> Sebastian,
+> I add your Acked-by tag here but as I would like that you take the 3 patches on
+> your tree now, I let you modify it on your side. I'm expecting Alexandre or
+> Ludovic to have a look as well.
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> index dd7864f2bb2b..dfc91bc02b97 100644
-> --- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> +++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-> @@ -22,6 +22,7 @@ Its subnodes can be:
->  RSTC Reset Controller required properties:
->  - compatible: Should be "atmel,<chip>-rstc".
->    <chip> can be "at91sam9260", "at91sam9g45", "sama5d3" or "samx7"
-> +  it also can be "microchip,sam9x60-rstc"
->  - reg: Should contain registers location and length
->  - clocks: phandle to input clock.
->  
-> -- 
-> 2.17.1
-> 
+
+Sebastian, please take this series through your tree. Thanks!
 
 -- 
 Alexandre Belloni, Bootlin
