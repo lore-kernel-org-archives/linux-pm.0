@@ -1,61 +1,29 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 13:11:35 +0100
-Message-ID: <CAJZ5v0h5BqdKoLoSjMLHjwzCtEgtxkJ=UOQG7VQ3zyTHAsUTbQ@mail.gmail.com>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com> <20190208110053.GA7913@e107155-lin>
- <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com> <20190208115122.GA13043@e107155-lin>
- <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v4 01/10] dt-bindings: mfd: add DT bindings for max77650
+Date: Fri, 8 Feb 2019 13:15:26 +0100
+Message-ID: <CACRpkdaERR=jBf-mchuEEyRu_vb8vr8CoZ5uL6apPGD9gOgw=w@mail.gmail.com>
+References: <20190205091237.6448-1-brgl@bgdev.pl> <20190205091237.6448-2-brgl@bgdev.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
+In-Reply-To: <20190205091237.6448-2-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2019 at 1:04 PM Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
->
-> Hi Sudeep,
->
-> On 2019-02-08 12:51, Sudeep Holla wrote:
-> > On Fri, Feb 08, 2019 at 12:47:06PM +0100, Marek Szyprowski wrote:
-> >> On 2019-02-08 12:00, Sudeep Holla wrote:
-> >>> On Thu, Feb 07, 2019 at 01:22:25PM +0100, Marek Szyprowski wrote:
-> >>>> Dear All,
-> >>>>
-> >>>> This is a scenario that triggers the above issue:
-> >>> [...]
-> >>>> 1. system disables non-boot cpu's at the end of system suspend procedure,
-> >>>> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
-> >>>> 3. early in the system resume procedure all cpus are got back to online
-> >>>>    state,
-> >>>> 4. this in turn causes cpufreq to be initialized for the newly onlined
-> >>>>    cpus,
-> >>>> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
-> >>>>    ->init() callback,
-> >>> This is strictly not just restricted to cpufreq-dt, but to any driver
-> >>> supporting multiple policies. So we need a generic fix not just
-> >>> cpufreq-dt specific.
-> >> Could you point which other driver needs similar fix? Here in cpufreq-dt
-> >> the problem was caused by using regulator api (indirectly) from
-> >> ->init(). All other drivers, which have regulators support, are for old,
-> >> obsolete, uni-processor systems, which don't have the problem of
-> >> secondary cpu suspend during system suspend/resume cycle.
-> >>
-> > scmi_cpufreq for instance. We can fix that in driver my moving to polling
-> > to get cpufreq_get_rate, but we support both polling and interrupt based.
-> > We may wait for remote processor interrupt in get_rate.
->
-> Frankly, I don't feel I know enough to touch this driver and I don't
-> think that this can even be fixed in a generic way in the cpufreq core.
-> Maybe a comment somewhere is needed that ->init() might be called during
-> early system resume with irqs off and driver is responsible for handling
-> such case until the proper resume?
+On Tue, Feb 5, 2019 at 10:12 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
 
-Well, adding a comment to that effect certainly won't hurt as that's
-how things work now.
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> Add a DT binding document for max77650 ultra-low power PMIC. This
+> describes the core mfd device and the GPIO module.
+>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-However, it looks like something needs to be done in addition to that.
+This is a good solution!
+
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
