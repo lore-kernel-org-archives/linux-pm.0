@@ -1,86 +1,48 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Fri, 8 Feb 2019 11:39:04 +0000
-Message-ID: <20190208113904.GB7913@e107155-lin>
+Date: Fri, 8 Feb 2019 12:47:06 +0100
+Message-ID: <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
 References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
- <20190208064957.zhyue42kpgaoslwm@vireshk-i7>
- <CAJZ5v0iU1+YdAqHai+r_ubC1FarC2JWBuc98MG58n+y9=1WB=A@mail.gmail.com>
- <20190208103133.ysvaroyniuc3k4i5@vireshk-i7>
- <CAJZ5v0ghQ6bTV8atd6dtq8=ZBDUpDRVsCiAhwQVtfoMH-JhH9A@mail.gmail.com>
+        <20190207122227.19873-1-m.szyprowski@samsung.com>
+        <20190208110053.GA7913@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ghQ6bTV8atd6dtq8=ZBDUpDRVsCiAhwQVtfoMH-JhH9A@mail.gmail.com>
+In-Reply-To: <20190208110053.GA7913@e107155-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sudeep Holla <sudeep.holla@arm.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 08, 2019 at 11:42:20AM +0100, Rafael J. Wysocki wrote:
-> On Fri, Feb 8, 2019 at 11:31 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 08-02-19, 11:22, Rafael J. Wysocki wrote:
-> > > There are cpufreq driver suspend and resume callbacks, maybe use them?
-> > >
-> > > The driver could do the I2C transactions in its suspend/resume
-> > > callbacks and do nothing in online/offline if those are part of
-> > > system-wide suspend/resume.
-> >
-> > These are per-policy things that we need to do, not sure if driver
-> > suspend/resume is a good place for that. It is more for a case where
-> > CPU 0-3 are in one policy and 4-7 in another. Now 1-7 are
-> > hot-unplugged during system suspend and hotplugged later on. This is
-> > more like complete removal/addition of devices instead of
-> > suspend/resume.
->
-> No, it isn't.  We don't remove devices on offline.  We migrate stuff
-> away from them and (opportunistically) power them down.
->
-> If this is system suspend, the driver kind of knows that offline will
-> take place, so it can prepare for it.  Likewise, when online takes
-> place during system-wide resume, it generally is known that this is
-> system-wide resume (there is a flag to indicate that in CPU hotplug),
-> it can be "smart" and avoid accessing suspended devices.  Deferring
-> the frequency set up until the driver resume time should do the trick
-> I suppose.
+Hi Sudeep,
 
-I agree. The reason we don't see this generally on boot is because all
-the CPUs are brought online before CPUfreq is initialised. While during
-system suspend, we call cpufreq_online which in turn calls ->init in
-the hotplug state machine.
+On 2019-02-08 12:00, Sudeep Holla wrote:
+> On Thu, Feb 07, 2019 at 01:22:25PM +0100, Marek Szyprowski wrote:
+>> Dear All,
+>>
+>> This is a scenario that triggers the above issue:
+> [...]
+>> 1. system disables non-boot cpu's at the end of system suspend procedure,
+>> 2. this in turn deinitializes cpufreq drivers for the disabled cpus,
+>> 3. early in the system resume procedure all cpus are got back to online
+>>    state,
+>> 4. this in turn causes cpufreq to be initialized for the newly onlined
+>>    cpus,
+>> 5. cpufreq-dt acquires all its resources (clocks, regulators) during
+>>    ->init() callback,
+> This is strictly not just restricted to cpufreq-dt, but to any driver
+> supporting multiple policies. So we need a generic fix not just
+> cpufreq-dt specific.
 
-So as Rafael suggests we need to do some trick, but can it be done in
-the core itself ? I may be missing something, but how about the patch
-below:
+Could you point which other driver needs similar fix? Here in cpufreq-dt
+the problem was caused by using regulator api (indirectly) from
+->init(). All other drivers, which have regulators support, are for old,
+obsolete, uni-processor systems, which don't have the problem of
+secondary cpu suspend during system suspend/resume cycle.
 
-Regards,
-Sudeep
-
---
-diff --git i/drivers/cpufreq/cpufreq.c w/drivers/cpufreq/cpufreq.c
-index e35a886e00bc..7d8b0b99f91d 100644
---- i/drivers/cpufreq/cpufreq.c
-+++ w/drivers/cpufreq/cpufreq.c
-@@ -1241,7 +1241,8 @@ static int cpufreq_online(unsigned int cpu)
-                policy->max = policy->user_policy.max;
-        }
-
--       if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
-+       if (cpufreq_driver->get && !cpufreq_driver->setpolicy &&
-+           !cpufreq_suspended) {
-                policy->cur = cpufreq_driver->get(policy->cpu);
-                if (!policy->cur) {
-                        pr_err("%s: ->get() failed\n", __func__);
-@@ -1702,6 +1703,11 @@ void cpufreq_resume(void)
-                                pr_err("%s: Failed to start governor for policy: %p\n",
-                                       __func__, policy);
-                }
-+               policy->cur = cpufreq_driver->get(policy->cpu);
-+               if (!policy->cur) {
-+                       pr_err("%s: ->get() failed\n", __func__);
-+                       goto out_destroy_policy;
-+               }
-        }
- }
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
