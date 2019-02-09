@@ -1,108 +1,106 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to broadcast  _PPC to all online CPUs
-Date: Sat,  9 Feb 2019 20:02:32 +0800
-Message-ID: <20190209120232.21582-1-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 03/16] cpufreq: check if policy is inactive early in __cpufreq_get()
+Date: Sat,  9 Feb 2019 13:49:14 -0500
+Message-ID: <20190209184927.126791-3-sashal@kernel.org>
+References: <20190209184927.126791-1-sashal@kernel.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20190209184927.126791-1-sashal@kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Dell Inc. XPS13 9333, the BIOS changes the value of
-MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
-the power source changes), the maximum frequency of the
-CPU is not updated accordingly. This is due to the policy's
-cpuinfo.max is not updated when _PPC notifier fires.
+From: Sudeep Holla <sudeep.holla@arm.com>
 
-Fix this problem by updating the policy's cpuinfo.max
-and broadcast the _PPC notifier to all online CPUs.
+[ Upstream commit 2f66196208c98b3d1b4294edffb2c5a8197be899 ]
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+cpuinfo_cur_freq gets current CPU frequency as detected by hardware
+while scaling_cur_freq last known CPU frequency. Some platforms may not
+allow checking the CPU frequency of an offline CPU or the associated
+resources may have been released via cpufreq_exit when the CPU gets
+offlined, in which case the policy would have been invalidated already.
+If we attempt to get current frequency from the hardware, it may result
+in hang or crash.
+
+For example on Juno, I see:
+
+Unable to handle kernel NULL pointer dereference at virtual address 0000000000000188
+[0000000000000188] pgd=0000000000000000
+Internal error: Oops: 96000004 [#1] PREEMPT SMP
+Modules linked in:
+CPU: 5 PID: 4202 Comm: cat Not tainted 4.20.0-08251-ga0f2c0318a15-dirty #87
+Hardware name: ARM LTD ARM Juno Development Platform/ARM Juno Development Platform
+pstate: 40000005 (nZcv daif -PAN -UAO)
+pc : scmi_cpufreq_get_rate+0x34/0xb0
+lr : scmi_cpufreq_get_rate+0x34/0xb0
+Call trace:
+ scmi_cpufreq_get_rate+0x34/0xb0
+ __cpufreq_get+0x34/0xc0
+ show_cpuinfo_cur_freq+0x24/0x78
+ show+0x40/0x60
+ sysfs_kf_seq_show+0xc0/0x148
+ kernfs_seq_show+0x44/0x50
+ seq_read+0xd4/0x480
+ kernfs_fop_read+0x15c/0x208
+ __vfs_read+0x60/0x188
+ vfs_read+0x94/0x150
+ ksys_read+0x6c/0xd8
+ __arm64_sys_read+0x24/0x30
+ el0_svc_common+0x78/0x100
+ el0_svc_handler+0x38/0x78
+ el0_svc+0x8/0xc
+---[ end trace 3d1024e58f77f6b2 ]---
+
+So fix the issue by checking if the policy is invalid early in
+__cpufreq_get before attempting to get the current frequency.
+
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
- drivers/cpufreq/cpufreq.c        |  2 ++
- drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
- 3 files changed, 30 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index a303fd0e108c..737dbf5aa7f7 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
- MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
- 		 "limited by BIOS, this should help");
- 
-+static int broadcast_ppc;
-+module_param(broadcast_ppc, int, 0644);
-+MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
-+
- #define PPC_REGISTERED   1
- #define PPC_IN_USE       2
- 
-@@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
- 		else
- 			acpi_processor_ppc_ost(pr->handle, 0);
- 	}
--	if (ret >= 0)
--		cpufreq_update_policy(pr->id);
-+	if (ret >= 0) {
-+		if (broadcast_ppc) {
-+			int cpu;
-+
-+			for_each_possible_cpu(cpu)
-+				cpufreq_update_policy(cpu);
-+		} else {
-+			cpufreq_update_policy(pr->id);
-+		}
-+	}
- }
- 
- int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e35a886e00bc..95e08816b512 100644
+index 93754300cb57..66c2790dcc5f 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 
- 	policy->min = new_policy->min;
- 	policy->max = new_policy->max;
-+	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
-+	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
- 	trace_cpu_frequency_limits(policy);
- 
- 	policy->cached_target_freq = UINT_MAX;
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dd66decf2087..e1881313c396 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
- 
- static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+@@ -1523,17 +1523,16 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
  {
-+	int max_freq;
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	unsigned int ret_freq = 0;
  
- 	update_turbo_state();
-+	max_freq = intel_pstate_get_max_freq(cpu);
-+
-+	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
-+	    max_freq != policy->cpuinfo.max_freq) {
-+		/*
-+		 * System was not running under any constraints, but the
-+		 * current max possible frequency is changed. So reset
-+		 * policy limits.
-+		 */
-+		policy->cpuinfo.max_freq = policy->max = max_freq;
-+	}
-+
- 	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
--				     intel_pstate_get_max_freq(cpu));
-+				     max_freq);
+-	if (!cpufreq_driver->get)
++	if (unlikely(policy_is_inactive(policy)) || !cpufreq_driver->get)
+ 		return ret_freq;
  
- 	if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
- 	    policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+ 	ret_freq = cpufreq_driver->get(policy->cpu);
+ 
+ 	/*
+-	 * Updating inactive policies is invalid, so avoid doing that.  Also
+-	 * if fast frequency switching is used with the given policy, the check
++	 * If fast frequency switching is used with the given policy, the check
+ 	 * against policy->cur is pointless, so skip it in that case too.
+ 	 */
+-	if (unlikely(policy_is_inactive(policy)) || policy->fast_switch_enabled)
++	if (policy->fast_switch_enabled)
+ 		return ret_freq;
+ 
+ 	if (ret_freq && policy->cur &&
+@@ -1562,10 +1561,7 @@ unsigned int cpufreq_get(unsigned int cpu)
+ 
+ 	if (policy) {
+ 		down_read(&policy->rwsem);
+-
+-		if (!policy_is_inactive(policy))
+-			ret_freq = __cpufreq_get(policy);
+-
++		ret_freq = __cpufreq_get(policy);
+ 		up_read(&policy->rwsem);
+ 
+ 		cpufreq_cpu_put(policy);
 -- 
-2.17.1
+2.19.1
