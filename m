@@ -1,13 +1,13 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 03/16] cpufreq: check if policy is inactive early in __cpufreq_get()
-Date: Sat,  9 Feb 2019 13:49:14 -0500
-Message-ID: <20190209184927.126791-3-sashal@kernel.org>
-References: <20190209184927.126791-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 02/12] cpufreq: check if policy is inactive early in __cpufreq_get()
+Date: Sat,  9 Feb 2019 13:49:42 -0500
+Message-ID: <20190209184952.127009-2-sashal@kernel.org>
+References: <20190209184952.127009-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190209184927.126791-1-sashal@kernel.org>
-Sender: stable-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190209184952.127009-1-sashal@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -62,14 +62,14 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/cpufreq.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 93754300cb57..66c2790dcc5f 100644
+index d6d91e8afa9e..61fe4bbc6dc0 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1523,17 +1523,16 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+@@ -1496,17 +1496,16 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
  {
  	unsigned int ret_freq = 0;
  
@@ -90,17 +90,5 @@ index 93754300cb57..66c2790dcc5f 100644
  		return ret_freq;
  
  	if (ret_freq && policy->cur &&
-@@ -1562,10 +1561,7 @@ unsigned int cpufreq_get(unsigned int cpu)
- 
- 	if (policy) {
- 		down_read(&policy->rwsem);
--
--		if (!policy_is_inactive(policy))
--			ret_freq = __cpufreq_get(policy);
--
-+		ret_freq = __cpufreq_get(policy);
- 		up_read(&policy->rwsem);
- 
- 		cpufreq_cpu_put(policy);
 -- 
 2.19.1
