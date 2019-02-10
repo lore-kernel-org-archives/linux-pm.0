@@ -1,106 +1,43 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 07/28] cpufreq: check if policy is inactive early in __cpufreq_get()
-Date: Sat,  9 Feb 2019 13:48:15 -0500
-Message-ID: <20190209184840.126418-7-sashal@kernel.org>
-References: <20190209184840.126418-1-sashal@kernel.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management fixes for v5.0-rc6
+Date: Sat, 9 Feb 2019 20:17:23 -0800
+Message-ID: <20190210041721.GA2805@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190209184840.126418-1-sashal@kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sudeep Holla <sudeep.holla@arm.com>
+Hello Linus,
 
-[ Upstream commit 2f66196208c98b3d1b4294edffb2c5a8197be899 ]
+Please consider pulling from
 
-cpuinfo_cur_freq gets current CPU frequency as detected by hardware
-while scaling_cur_freq last known CPU frequency. Some platforms may not
-allow checking the CPU frequency of an offline CPU or the associated
-resources may have been released via cpufreq_exit when the CPU gets
-offlined, in which case the policy would have been invalidated already.
-If we attempt to get current frequency from the hardware, it may result
-in hang or crash.
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
-For example on Juno, I see:
+to receive Thermal-SoC Management fixes for v5.0-rc6 with top-most
 
-Unable to handle kernel NULL pointer dereference at virtual address 0000000000000188
-[0000000000000188] pgd=0000000000000000
-Internal error: Oops: 96000004 [#1] PREEMPT SMP
-Modules linked in:
-CPU: 5 PID: 4202 Comm: cat Not tainted 4.20.0-08251-ga0f2c0318a15-dirty #87
-Hardware name: ARM LTD ARM Juno Development Platform/ARM Juno Development Platform
-pstate: 40000005 (nZcv daif -PAN -UAO)
-pc : scmi_cpufreq_get_rate+0x34/0xb0
-lr : scmi_cpufreq_get_rate+0x34/0xb0
-Call trace:
- scmi_cpufreq_get_rate+0x34/0xb0
- __cpufreq_get+0x34/0xc0
- show_cpuinfo_cur_freq+0x24/0x78
- show+0x40/0x60
- sysfs_kf_seq_show+0xc0/0x148
- kernfs_seq_show+0x44/0x50
- seq_read+0xd4/0x480
- kernfs_fop_read+0x15c/0x208
- __vfs_read+0x60/0x188
- vfs_read+0x94/0x150
- ksys_read+0x6c/0xd8
- __arm64_sys_read+0x24/0x30
- el0_svc_common+0x78/0x100
- el0_svc_handler+0x38/0x78
- el0_svc+0x8/0xc
----[ end trace 3d1024e58f77f6b2 ]---
+bf78f133cd39e0ed41551150909e41513958a738:
 
-So fix the issue by checking if the policy is invalid early in
-__cpufreq_get before attempting to get the current frequency.
+  thermal: cpu_cooling: Clarify error message (2019-02-05 15:50:13 -0800)
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+on top of commit 8834f5600cf3c8db365e18a3d5cac2c2780c81e5:
 
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/cpufreq.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+  Linux 5.0-rc5 (2019-02-03 13:48:04 -0800)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f53fb41efb7b..b100260b6ed2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1530,17 +1530,16 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
- {
- 	unsigned int ret_freq = 0;
- 
--	if (!cpufreq_driver->get)
-+	if (unlikely(policy_is_inactive(policy)) || !cpufreq_driver->get)
- 		return ret_freq;
- 
- 	ret_freq = cpufreq_driver->get(policy->cpu);
- 
- 	/*
--	 * Updating inactive policies is invalid, so avoid doing that.  Also
--	 * if fast frequency switching is used with the given policy, the check
-+	 * If fast frequency switching is used with the given policy, the check
- 	 * against policy->cur is pointless, so skip it in that case too.
- 	 */
--	if (unlikely(policy_is_inactive(policy)) || policy->fast_switch_enabled)
-+	if (policy->fast_switch_enabled)
- 		return ret_freq;
- 
- 	if (ret_freq && policy->cur &&
-@@ -1569,10 +1568,7 @@ unsigned int cpufreq_get(unsigned int cpu)
- 
- 	if (policy) {
- 		down_read(&policy->rwsem);
--
--		if (!policy_is_inactive(policy))
--			ret_freq = __cpufreq_get(policy);
--
-+		ret_freq = __cpufreq_get(policy);
- 		up_read(&policy->rwsem);
- 
- 		cpufreq_cpu_put(policy);
--- 
-2.19.1
+Specifics:
+- Minor fixes on of-thermal and cpu cooling.
+
+BR,
+Eduardo
+
+----------------------------------------------------------------
+Amit Kucheria (2):
+      thermal: of-thermal: Print name of device node with error
+      thermal: cpu_cooling: Clarify error message
+
+ drivers/thermal/cpu_cooling.c | 2 +-
+ drivers/thermal/of-thermal.c  | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
