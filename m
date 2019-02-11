@@ -1,99 +1,151 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] base: fix a missing check of clk_prepare
-Date: Mon, 11 Feb 2019 14:24:06 +0100
-Message-ID: <20190211132406.GB11067@amd>
-References: <20181226024700.72318-1-kjlu@umn.edu>
- <CAJZ5v0iK+ASbadEjj+9vgCV+1ycjp8Hs2GbEmT3dGSqjLVGbPA@mail.gmail.com>
- <20181231172556.GA14092@amd>
- <CAJZ5v0hOKXkZbpchv9+23uTgZyeq_3oQHznPKR3-+X43JakGeg@mail.gmail.com>
- <20190101202119.GA13097@amd>
- <CAJZ5v0iJCaCju7sgCF9u7PYxmHF0jQDy95_QEVt8q+R2NX5zAA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
+Date: Mon, 11 Feb 2019 14:27:49 +0100
+Message-ID: <CAPDyKFpWCT9CcmxqqWk+S8tSPz_at56UCnk3EVBab-TnScHw8Q@mail.gmail.com>
+References: <3917694.ab5GGAjohB@aspire.rjw.lan> <1634058.cXDNg15SOd@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="98e8jtXdkpgskNou"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iJCaCju7sgCF9u7PYxmHF0jQDy95_QEVt8q+R2NX5zAA@mail.gmail.com>
+In-Reply-To: <1634058.cXDNg15SOd@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: kjlu@umn.edu, pakki001@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 7 Feb 2019 at 19:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If the target device has any suppliers, as reflected by device links
+> to them, __pm_runtime_set_status() does not take them into account,
+> which is not consistent with the other parts of the PM-runtime
+> framework and may lead to programming mistakes.
+>
+> Modify __pm_runtime_set_status() to take suppliers into account by
+> activating them upfront if the new status is RPM_ACTIVE and
+> deactivating them on exit if the new status is RPM_SUSPENDED.
+>
+> If the activation of one of the suppliers fails, the new status
+> will be RPM_SUSPENDED and the (remaining) suppliers will be
+> deactivated on exit (the child count of the device's parent
+> will be dropped too then).
+>
+> Of course, adding device links locking to __pm_runtime_set_status()
+> means that it cannot be run fron interrupt context, so make it use
+> spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
+> and spin_unlock_irqrestore(), respectively.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---98e8jtXdkpgskNou
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Rafael, thanks for working on this!
 
-On Tue 2019-01-01 22:05:39, Rafael J. Wysocki wrote:
-> On Tue, Jan 1, 2019 at 9:21 PM Pavel Machek <pavel@ucw.cz> wrote:
-> >
-> > On Tue 2019-01-01 21:13:01, Rafael J. Wysocki wrote:
-> > > On Mon, Dec 31, 2018 at 6:25 PM Pavel Machek <pavel@ucw.cz> wrote:
-> > > >
-> > > > On Wed 2018-12-26 10:37:54, Rafael J. Wysocki wrote:
-> > > > > On Wed, Dec 26, 2018 at 3:47 AM Kangjie Lu <kjlu@umn.edu> wrote:
-> > > > > >
-> > > > > > clk_prepare() could fail, so let's check its status, and if it =
-fails,
-> > > > > > issue an error message.
-> > > > > >
-> > > > > > Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> > > > > > ---
-> > > > > >  drivers/base/power/clock_ops.c | 4 +++-
-> > > > > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > > > > >
-> > > > > > diff --git a/drivers/base/power/clock_ops.c b/drivers/base/powe=
-r/clock_ops.c
-> > > > > > index 5a42ae4078c2..cb6144fb24e2 100644
-> > > > > > --- a/drivers/base/power/clock_ops.c
-> > > > > > +++ b/drivers/base/power/clock_ops.c
-> > > > > > @@ -65,7 +65,9 @@ static void pm_clk_acquire(struct device *dev=
-, struct pm_clock_entry *ce)
-> > > > > >         if (IS_ERR(ce->clk)) {
-> > > > > >                 ce->status =3D PCE_STATUS_ERROR;
-> > > > > >         } else {
-> > > > > > -               clk_prepare(ce->clk);
-> > > > > > +               if (clk_prepare(ce->clk))
-> > > > > > +                       dev_err(dev, "clk_prepare failed.\n");
-> > > > >
-> > > > > I'm not sure that this is useful.  The code continues regardless =
-of
-> > > > > the error anyway and it should at least set ce->status to
-> > > > > PCE_STATUS_ERROR in the failing case.
-> > > >
-> > > > Maybe this is not complete fix, but dev_err() is preferable to sile=
-nt
-> > > > failure.
-> > >
-> > > Preferable to you I suppose?
-> >
-> > Preferable to the poor person trying to figure out why his machine
-> > does not work?
->=20
-> Not really, unless that person knows what the message means.
->=20
-> Honestly, what would you do if you saw that message?
+I am running some tests at my side, but still not achieving the
+behavior I expect to. Will let you know when I have more details, but
+first some comments below.
 
-Grep it in the kernel sources. Having something to grep for
-(vs. machine that fails to work properly) is quite important.
-									Pavel
+> ---
+>  drivers/base/power/runtime.c |   45 ++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 40 insertions(+), 5 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -1102,20 +1102,43 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_u
+>   * and the device parent's counter of unsuspended children is modified to
+>   * reflect the new status.  If the new status is RPM_SUSPENDED, an idle
+>   * notification request for the parent is submitted.
+> + *
+> + * If @dev has any suppliers (as reflected by device links to them), and @status
+> + * is RPM_ACTIVE, they will be activated upfront and if the activation of one
+> + * of them fails, the status of @dev will be changed to RPM_SUSPENDED (instead
+> + * of the @status value) and the suppliers will be deacticated on exit.  The
+> + * error returned by the failing supplier activation will be returned in that
+> + * case.
+>   */
+>  int __pm_runtime_set_status(struct device *dev, unsigned int status)
+>  {
+>         struct device *parent = dev->parent;
+> -       unsigned long flags;
+>         bool notify_parent = false;
+>         int error = 0;
+>
+>         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+>                 return -EINVAL;
+>
+> -       spin_lock_irqsave(&dev->power.lock, flags);
+> +       /*
+> +        * If the new status is RPM_ACTIVE, the suppliers can be activated
+> +        * upfront regardless of the current status, because next time
+> +        * rpm_put_suppliers() runs, the rpm_active refcounts of the links
+> +        * involved will be dropped down to one anyway.
+> +        */
+> +       if (status == RPM_ACTIVE) {
+> +               int idx = device_links_read_lock();
+> +
+> +               error = rpm_get_suppliers(dev);
+> +               if (error)
+> +                       status = RPM_SUSPENDED;
+> +
+> +               device_links_read_unlock(idx);
+> +       }
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+This doesn't look right to me, and more importantly, this isn't
+consistent with how we treat a parent/child.
 
---98e8jtXdkpgskNou
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+More precisely, I think you need to check "if
+(!dev->power.runtime_error && !dev->power.disable_depth)" and also
+whether "dev->power.runtime_status == status", before deciding to call
+rpm_get_suppliers() above. Otherwise you may end up resuming suppliers
+and/or increasing the link->rpm_active count, when you shouldn't.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+In other words, expecting __pm_runtime_set_status() to be called in
+"balanced" manner isn't correct.
 
-iEYEARECAAYFAlxhd3YACgkQMOfwapXb+vKzLwCffEdNUlOcZCUYak6EBr4/f/6G
-IF4AoJiVgIYSQSyZqeIcHTmllY4ulRhZ
-=KhsR
------END PGP SIGNATURE-----
+> +
+> +       spin_lock_irq(&dev->power.lock);
+>
+>         if (!dev->power.runtime_error && !dev->power.disable_depth) {
+> +               status = dev->power.runtime_status;
+>                 error = -EAGAIN;
+>                 goto out;
+>         }
+> @@ -1147,19 +1170,31 @@ int __pm_runtime_set_status(struct devic
+>
+>                 spin_unlock(&parent->power.lock);
+>
+> -               if (error)
+> +               if (error) {
+> +                       status = RPM_SUSPENDED;
+>                         goto out;
+> +               }
+>         }
+>
+>   out_set:
+>         __update_runtime_status(dev, status);
+> -       dev->power.runtime_error = 0;
+> +       if (!error)
+> +               dev->power.runtime_error = 0;
+> +
+>   out:
+> -       spin_unlock_irqrestore(&dev->power.lock, flags);
+> +       spin_unlock_irq(&dev->power.lock);
+>
+>         if (notify_parent)
+>                 pm_request_idle(parent);
+>
+> +       if (status == RPM_SUSPENDED) {
+> +               int idx = device_links_read_lock();
+> +
+> +               rpm_put_suppliers(dev);
+> +
+> +               device_links_read_unlock(idx);
+> +       }
+> +
+>         return error;
+>  }
+>  EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
+>
 
---98e8jtXdkpgskNou--
+Kind regards
+Uffe
