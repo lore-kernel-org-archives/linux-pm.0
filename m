@@ -1,205 +1,157 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH] drivers: devfreq: change devfreq workqueue mechanism
-Date: Mon, 11 Feb 2019 12:54:14 -0800
-Message-ID: <20190211205414.GP117604@google.com>
-References: <CGME20190201183813eucas1p20183a08d4f75f853468a8129b048c208@eucas1p2.samsung.com>
- <1549046283-18242-1-git-send-email-l.luba@partner.samsung.com>
- <20190205003948.GG117604@google.com>
- <880f4d57-263f-cd59-ef33-6bf40a8ee3d1@partner.samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v3] cpufreq: intel_pstate: Reporting reasons why driver
+ prematurely exit
+Date: Mon, 11 Feb 2019 13:25:19 -0800
+Message-ID: <eaf4286b0836444e00ec2e92178b5f31957c9a7a.camel@linux.intel.com>
+References: <20190211093140.23608-1-e.velu@criteo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <880f4d57-263f-cd59-ef33-6bf40a8ee3d1@partner.samsung.com>
+In-Reply-To: <20190211093140.23608-1-e.velu@criteo.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, tkjos@google.com, joel@joelfernandes.org, chris.diamand@arm.com
+To: Erwan Velu <erwanaliasr1@gmail.com>
+Cc: e.velu@criteo.com, Liam.Howlett@oracle.com, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
-
-On Mon, Feb 11, 2019 at 11:05:27AM +0100, Lukasz Luba wrote:
-> Hi Matthias,
+On Mon, 2019-02-11 at 10:31 +0100, Erwan Velu wrote:
+> The init code path have several execeptions where the module can
+> decide not to load.
+> As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is
+> not reachable.
+> The initialisation code is neither verbose of the reason why it did
+> choose to prematurely exit.
 > 
-> My apologize for late response, I did not have access to mailbox.
-> Thank you for review, please check the comments below.
+> This situation leads to situation where its difficult for a user to
+> determine,
+> on a given platform, why the driver didn't loaded properly.
 > 
-> On 2/5/19 1:39 AM, Matthias Kaehlcke wrote:
-> > Hi Lukasz,
-> > 
-> > On Fri, Feb 01, 2019 at 07:38:03PM +0100, Lukasz Luba wrote:
-> >> This patch removes devfreq's custom workqueue and uses system one.
-> >> It switches from queue_delayed_work() to schedule_delayed_work().
-> >> It also changes deferred work to delayed work, which is now not missed
-> >> when timer is put on CPU that entered idle state.
-> >> The devfreq framework governor was not called, thus changing the frequency
-> >> of the device did not happen.
-> >> Benchmarks for stressing Dynamic Memory Controller show x2
-> >> performance boost with this patch when 'simpleondemand_governor' is
-> >> responsible for monitoring the device load and frequency changes.
-> >> With this patch, the scheduled delayed work is done no mater CPUs' idle.
-> >> It also does not wake up the system when it enters suspend (this
-> >> functionality stays the same).
-> >> All of the drivers in devfreq which rely on periodic, guaranteed wakeup
-> >> intervals should benefit from it.
-> >>
-> >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> >> ---
-> >>   drivers/devfreq/devfreq.c | 27 +++++++--------------------
-> >>   1 file changed, 7 insertions(+), 20 deletions(-)
-> >>
-> >> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> >> index 0ae3de7..c200b3c 100644
-> >> --- a/drivers/devfreq/devfreq.c
-> >> +++ b/drivers/devfreq/devfreq.c
-> >> @@ -31,13 +31,6 @@
-> >>   
-> >>   static struct class *devfreq_class;
-> >>   
-> >> -/*
-> >> - * devfreq core provides delayed work based load monitoring helper
-> >> - * functions. Governors can use these or can implement their own
-> >> - * monitoring mechanism.
-> >> - */
-> >> -static struct workqueue_struct *devfreq_wq;
-> >> -
-> >>   /* The list of all device-devfreq governors */
-> >>   static LIST_HEAD(devfreq_governor_list);
-> >>   /* The list of all device-devfreq */
-> >> @@ -391,8 +384,8 @@ static void devfreq_monitor(struct work_struct *work)
-> >>   	if (err)
-> >>   		dev_err(&devfreq->dev, "dvfs failed with (%d) error\n", err);
-> >>   
-> >> -	queue_delayed_work(devfreq_wq, &devfreq->work,
-> >> -				msecs_to_jiffies(devfreq->profile->polling_ms));
-> >> +	schedule_delayed_work(&devfreq->work,
-> >> +			      msecs_to_jiffies(devfreq->profile->polling_ms));
-> >>   	mutex_unlock(&devfreq->lock);
-> >>   }
-> >>   
-> >> @@ -407,9 +400,9 @@ static void devfreq_monitor(struct work_struct *work)
-> >>    */
-> >>   void devfreq_monitor_start(struct devfreq *devfreq)
-> >>   {
-> >> -	INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
-> >> +	INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
-> >>   	if (devfreq->profile->polling_ms)
-> >> -		queue_delayed_work(devfreq_wq, &devfreq->work,
-> >> +		schedule_delayed_work(&devfreq->work,
-> >>   			msecs_to_jiffies(devfreq->profile->polling_ms));
-> >>   }
-> >>   EXPORT_SYMBOL(devfreq_monitor_start);
-> >> @@ -473,7 +466,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
-> >>   
-> >>   	if (!delayed_work_pending(&devfreq->work) &&
-> >>   			devfreq->profile->polling_ms)
-> >> -		queue_delayed_work(devfreq_wq, &devfreq->work,
-> >> +		schedule_delayed_work(&devfreq->work,
-> >>   			msecs_to_jiffies(devfreq->profile->polling_ms));
-> >>   
-> >>   	devfreq->last_stat_updated = jiffies;
-> >> @@ -516,7 +509,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
-> >>   
-> >>   	/* if current delay is zero, start polling with new delay */
-> >>   	if (!cur_delay) {
-> >> -		queue_delayed_work(devfreq_wq, &devfreq->work,
-> >> +		schedule_delayed_work(&devfreq->work,
-> >>   			msecs_to_jiffies(devfreq->profile->polling_ms));
-> >>   		goto out;
-> >>   	}
-> >> @@ -527,7 +520,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
-> >>   		cancel_delayed_work_sync(&devfreq->work);
-> >>   		mutex_lock(&devfreq->lock);
-> >>   		if (!devfreq->stop_polling)
-> >> -			queue_delayed_work(devfreq_wq, &devfreq->work,
-> >> +			schedule_delayed_work(&devfreq->work,
-> >>   			      msecs_to_jiffies(devfreq->profile->polling_ms));
-> >>   	}
-> >>   out:
-> >> @@ -1430,12 +1423,6 @@ static int __init devfreq_init(void)
-> >>   		return PTR_ERR(devfreq_class);
-> >>   	}
-> >>   
-> >> -	devfreq_wq = create_freezable_workqueue("devfreq_wq");
-> >> -	if (!devfreq_wq) {
-> >> -		class_destroy(devfreq_class);
-> >> -		pr_err("%s: couldn't create workqueue\n", __FILE__);
-> >> -		return -ENOMEM;
-> >> -	}
-> >>   	devfreq_class->dev_groups = devfreq_groups;
-> >>   
-> >>   	return 0;
-> > 
-> > If I understand correctly this changes three things:
-> > 
-> > 1. use system workqueue instead of custom one
-> > 
-> > should be fine with the cwmq's we have nowadays
-> > 
-> > 
-> > 2. use non-freezable workqueue
-> > 
-> >    ``WQ_FREEZABLE``
-> >      A freezable wq participates in the freeze phase of the system
-> >      suspend operations.  Work items on the wq are drained and no
-> >      new work item starts execution until thawed.
-> > 
-> > I'm not entirely sure what the impact of this is.
-> > 
-> > I imagine suspend is potentially quicker because the wq isn't drained,
-> > but could works that execute during the suspend phase be a problem?
-> I did not check if the suspend is quicker, but I will try to simulate
-> and check these scenarios.
-> I just wanted to get rid of another workqueue in the system.
+> This patch is about reporting to the user the reason/context why the
+> driver failed to load.
+> That is a precious hint when debugging a platform.
+pr_info and pr_warn are too strong for this debug use case. Anytime
+someone see some error in dmesg, we have an additional work to explain
+that that is not a problem to an average user. So this is an
+maintenance overhead for the purpose of debugging. Only few users who
+are really trying to debug, will care for these errors. For them
+pr_debug will be enough, we have other pr_debugs which will be helpful
+to root cause the issue, even if driver loads.
 
-Are you sure that freezable vs. non-freezable isn't a problem? I
-suppose there was a reason WQ_FREEZABLE was chosen initially, so I
-don't know if it is still valid.
+Also when some user disabled intel_pstate via kernel command line,
+additional debug message is not useful.
 
-> > 3. use delayed work instead of deferrable work
-> > 
-> > I hadn't come across deferrable work yet:
-> Me neither, but using it to run governors is not the best idea.
-> > 
-> >    "Add a new deferrable delayed work init.  This can be used to schedule work
-> >    that are 'unimportant' when CPU is idle and can be called later, when CPU
-> >    eventually comes out of idle."
-> > 
-> >    28287033e124 ("Add a new deferrable delayed work init")
-> > 
-> > The commit message mentions that frequency changes were missed due to
-> > deferred works being scheduled on an idle CPU. The change to a delayed
-> > work seems reasonable to me.
-> It is not only the Dynamic Memory Controller and DRAM affected.
-> The drivers for GPUs, Network on Chip, cache L3 rely on it.
-> They all are missing opportunity to check the HW state and react.
+Thanks,
+Srinivas
+
 > 
-> > 
-> > It could make sense to split this change into two patches, one for the
-> > change from deferrable to delayed work, and another for custom workqueue
-> > to system workqueue (and possibly even a third, transitory change for
-> > freezable to non-freezable, if it's confirmed that that's the right
-> > thing to do).
-> OK, I will split the patch into two: one with delayed work and one with
-> regular system workqueue.
-> I thought that one patch would be simpler to apply to stable tree if needed.
-
-It's not strictly needed and preferences of different maintainers may
-vary (I'm not a maintainer myself). Splitting up a patch may help
-getting parts of it landed, while others are still under
-discussion. E.g. in this case I'd expect 'deferrable => delayed work'
-to be non-controversial (and IIUC it fixes the issue you want to
-address), the same if probably true for 'custom workqueue => system
-workqueue', however freezable vs. non-freezable might need more
-discussion (though it probably won't be lengthy). And you separate the
-fix of an actual problems from unrelated improvements, which IMO is
-preferable, though there is no hard rule.
-
-Applying a single (simple) patch to stable should indeed be slightly
-less work, but I wouldn't expect a short series to cause a huge
-overhead. And Greg/stable maintainers might chose to just to take the
-one patch with the actual fix and not the 'improvements'.
-
-Cheers
-
-Matthias
+> Signed-off-by: Erwan Velu <e.velu@criteo.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 36 ++++++++++++++++++++++++++----
+> ----
+>  1 file changed, 28 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index dd66decf2087..ba2e2aee6c20 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2475,6 +2475,7 @@ static bool __init
+> intel_pstate_no_acpi_pss(void)
+>  		kfree(pss);
+>  	}
+>  
+> +	pr_info("Cannot detect ACPI PSS");
+>  	return true;
+>  }
+>  
+> @@ -2484,10 +2485,16 @@ static bool __init
+> intel_pstate_no_acpi_pcch(void)
+>  	acpi_handle handle;
+>  
+>  	status = acpi_get_handle(NULL, "\\_SB", &handle);
+> -	if (ACPI_FAILURE(status))
+> +	if (ACPI_FAILURE(status)) {
+> +		pr_info("Cannot detect ACPI SB");
+>  		return true;
+> +	}
+>  
+> -	return !acpi_has_method(handle, "PCCH");
+> +	status = acpi_has_method(handle, "PCCH");
+> +	if (!status) {
+> +		pr_info("Cannot detect ACPI PCCH");
+> +	}
+> +	return !status;
+>  }
+>  
+>  static bool __init intel_pstate_has_acpi_ppc(void)
+> @@ -2502,6 +2509,7 @@ static bool __init
+> intel_pstate_has_acpi_ppc(void)
+>  		if (acpi_has_method(pr->handle, "_PPC"))
+>  			return true;
+>  	}
+> +	pr_info("Cannot detect ACPI PPC");
+>  	return false;
+>  }
+>  
+> @@ -2592,8 +2600,10 @@ static int __init intel_pstate_init(void)
+>  	const struct x86_cpu_id *id;
+>  	int rc;
+>  
+> -	if (no_load)
+> +	if (no_load) {
+> +		pr_info("disabling as per user-request\n");
+>  		return -ENODEV;
+> +	}
+>  
+>  	id = x86_match_cpu(hwp_support_ids);
+>  	if (id) {
+> @@ -2606,31 +2616,41 @@ static int __init intel_pstate_init(void)
+>  		}
+>  	} else {
+>  		id = x86_match_cpu(intel_pstate_cpu_ids);
+> -		if (!id)
+> +		if (!id) {
+> +			pr_warn("CPU ID is not in the list of supported
+> devices\n");
+>  			return -ENODEV;
+> +		}
+>  
+>  		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
+>  	}
+>  
+> -	if (intel_pstate_msrs_not_valid())
+> +	if (intel_pstate_msrs_not_valid()) {
+> +		pr_warn("Cannot enable driver as per invalid MSRs\n");
+>  		return -ENODEV;
+> +	}
+>  
+>  hwp_cpu_matched:
+>  	/*
+>  	 * The Intel pstate driver will be ignored if the platform
+>  	 * firmware has its own power management modes.
+>  	 */
+> -	if (intel_pstate_platform_pwr_mgmt_exists())
+> +	if (intel_pstate_platform_pwr_mgmt_exists()) {
+> +		pr_warn("Platform already taking care of power
+> management\n");
+>  		return -ENODEV;
+> +	}
+>  
+> -	if (!hwp_active && hwp_only)
+> +	if (!hwp_active && hwp_only) {
+> +		pr_warn("HWP not present\n");
+>  		return -ENOTSUPP;
+> +	}
+>  
+>  	pr_info("Intel P-state driver initializing\n");
+>  
+>  	all_cpu_data = vzalloc(array_size(sizeof(void *),
+> num_possible_cpus()));
+> -	if (!all_cpu_data)
+> +	if (!all_cpu_data) {
+> +		pr_warn("Cannot allocate memory\n");
+>  		return -ENOMEM;
+> +	}
+>  
+>  	intel_pstate_request_control_from_smm();
+>  
