@@ -1,133 +1,56 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
-Date: Mon, 11 Feb 2019 12:14:17 -0800
-Message-ID: <002701d4c246$5fdd60b0$1f982210$@net>
-References: <000001d4ba4e$d33c3220$79b49660$@net> qzTngvRgpCLmLqzTsgj72v
+From: Konstantin Ryabitsev <konstantin@linuxfoundation.org>
+Subject: Re: [GIT PULL] Thermal-SoC management fixes for v5.0-rc6
+Date: Mon, 11 Feb 2019 15:16:19 -0500
+Message-ID: <20190211201619.GA8065@work>
+References: <20190210041721.GA2805@localhost.localdomain>
+ <154977271617.2362.11794417398216386913.pr-tracker-bot@kernel.org>
+ <20190211031921.GA1799@localhost.localdomain>
+ <CAHk-=wgz_WpD7jc084QROuM0zszEG0-WvQhQZPsCboMOWNRiWw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: qzTngvRgpCLmLqzTsgj72v
-Content-Language: en-ca
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wgz_WpD7jc084QROuM0zszEG0-WvQhQZPsCboMOWNRiWw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, pr-tracker-bot@kernel.org, Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2019.02.05 04:04 Rafael J. Wysocki wrote:
-> On Friday, February 1, 2019 5:54:37 PM CET Doug Smythies wrote:
->> On 2019.01.30 16:05 Rafael J. Wysocki wrote:
->> 
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> The current iowait boosting mechanism in intel_pstate_update_util()
->>> is quite aggressive, as it goes to the maximum P-state right away,
->>> and may cause excessive amounts of energy to be used, which is not
->>> desirable and arguably isn't necessary too.
->>>
->>> Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
->>> more energy efficient") that reworked the analogous iowait boost
->>> mechanism in the schedutil governor and make the iowait boosting
->>> in intel_pstate_update_util() work along the same lines.
->>> 
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>  drivers/cpufreq/intel_pstate.c |   46 +++++++++++++++++++++++++----------------
->>>  1 file changed, 29 insertions(+), 17 deletions(-)
->>>
->>> Index: linux-pm/drivers/cpufreq/intel_pstate.c
->>> ===================================================================
->>> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
->>> +++ linux-pm/drivers/cpufreq/intel_pstate.c
->>> @@ -50,6 +50,8 @@
->>>  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->>>  #define fp_toint(X) ((X) >> FRAC_BITS)
->>> 
->>> +#define ONE_EIGHTH_FP ((int64_t)1 << (FRAC_BITS - 3))
->>> +
->>>  #define EXT_BITS 6
->>>  #define EXT_FRAC_BITS (EXT_BITS + FRAC_BITS)
->>>  #define fp_ext_toint(X) ((X) >> EXT_FRAC_BITS)
->>> @@ -1678,17 +1680,14 @@ static inline int32_t get_avg_pstate(str
->>>  static inline int32_t get_target_pstate(struct cpudata *cpu)
->>>  {
->>> 	struct sample *sample = &cpu->sample;
->>> -	int32_t busy_frac, boost;
->>> +	int32_t busy_frac;
->>> 	int target, avg_pstate;
->>> 
->>> 	busy_frac = div_fp(sample->mperf << cpu->aperf_mperf_shift,
->>> 			   sample->tsc);
->>> 
->>> -	boost = cpu->iowait_boost;
->>> -	cpu->iowait_boost >>= 1;
->>> -
->>> -	if (busy_frac < boost)
->>> -		busy_frac = boost;
->>> +	if (busy_frac < cpu->iowait_boost)
->>> +		busy_frac = cpu->iowait_boost;
->>> 
->>> 	sample->busy_scaled = busy_frac * 100;
->>> 
->>> @@ -1767,22 +1766,35 @@ static void intel_pstate_update_util(str
->>> 	if (smp_processor_id() != cpu->cpu)
->>>  		return;
->>>
->>> +	delta_ns = time - cpu->last_update;
->>> 	if (flags & SCHED_CPUFREQ_IOWAIT) {
->>> -		cpu->iowait_boost = int_tofp(1);
->>> -		cpu->last_update = time;
->>> -		/*
->>> -		 * The last time the busy was 100% so P-state was max anyway
->>> -		 * so avoid overhead of computation.
->>> -		 */
->>> -		if (fp_toint(cpu->sample.busy_scaled) == 100)
->>> -			return;
->>> -
->>> -		goto set_pstate;
->>> +		/* Start over if the CPU may have been idle. */
->>> +		if (delta_ns > TICK_NSEC) {
->>> +			cpu->iowait_boost = ONE_EIGHTH_FP;
->>> +		} else if (cpu->iowait_boost) {
->>> +			cpu->iowait_boost <<= 1;
->>> +			if (cpu->iowait_boost >= int_tofp(1)) {
->>> +				cpu->iowait_boost = int_tofp(1);
->>> +				cpu->last_update = time;
->>> +				/*
->>> +				 * The last time the busy was 100% so P-state
->>> +				 * was max anyway, so avoid the overhead of
->>> +				 * computation.
->>> +				 */
->>> +				if (fp_toint(cpu->sample.busy_scaled) == 100)
->>> +					return;
->> 
->> Hi Rafael,
->> 
->> By exiting here, the trace, if enabled, is also bypassed.
->> We want the trace sample.
+On Mon, Feb 11, 2019 at 10:34:09AM -0800, Linus Torvalds wrote:
+>> > > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal 
+>> > > fixes
+>> >
+>> > has been merged into torvalds/linux.git:
+>> > https://git.kernel.org/torvalds/c/7ad915f5ebf5b9e7ca98a7048d8f84a631fe388b
+>>
+>> I think the bot is off here because the above commit is about a merge
+>> from the linux-omap tree from Tony.
 >
-> Fair enough, but the return is there regardless of this patch.
+>Indeed.
 >
-> Maybe it should be fixed separately?
-
-O.K.
-
->> Also, there is a generic:
->> "If the target ptstate is the same as before, then don't set it"
->> later on.
->> Suggest to delete this test and exit condition. (I see that this early
->> exit was done before also.)
+>.. and the pr-tracker-bot thing actually made me ignore the pull
+>request, thinking I had left it in my inbox despite having pulled it.
 >
-> Well, exactly.
->
-> It is not unreasonable to boost the frequency right away for an IO-waiter
-> without waiting for the next sample time IMO.
+>So it would be really good to know why pr-tracker-bot ended up
+>replying to the wrong email, because it can cause real problems.
 
-I agree, but am just saying that it should include a trace sample, otherwise
-it is difficult to understand what happened.
+Okay, so I need guidance on the proper behaviour here. As this request 
+didn't use the magic wording for the commit-id (as generated by 
+git-request-pull), we ended up trying to look up the remote. The remote 
+specified was:
 
-By the way, I forgot to mention before, I tried the patch and it does prevent
-CPU frequency spikes to maximum every few seconds in a very idle system.
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
-... Doug
+Since it's a short refname, we first try to look it up as a tag:
+
+$ git ls-remote git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes^{}
+a6d25f4c951b8b28f2eaec6f891ff834622532f2        refs/tags/omap-for-v3.10-rc1/fixes^{}
+77319669af37a1cfc844b801e83343b37e3c7e13        refs/tags/omap/fixes^{}
+
+If it finds a matching tag, the script assumes you'd meant to specify 
+the tag, not the head. Is that the opposite of git's behaviour when 
+applying a remote? Should we be checking for a head first, before we try 
+the refname as a tag? I assume that's the case, but want to double-check 
+with you all.
+
+-K
