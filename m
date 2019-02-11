@@ -1,7 +1,7 @@
 From: Erwan Velu <erwanaliasr1@gmail.com>
-Subject: [PATCH v2] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
-Date: Mon, 11 Feb 2019 10:28:26 +0100
-Message-ID: <20190211092827.23188-1-e.velu@criteo.com>
+Subject: [PATCH v3] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
+Date: Mon, 11 Feb 2019 10:31:40 +0100
+Message-ID: <20190211093140.23608-1-e.velu@criteo.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -21,11 +21,11 @@ That is a precious hint when debugging a platform.
 
 Signed-off-by: Erwan Velu <e.velu@criteo.com>
 ---
- drivers/cpufreq/intel_pstate.c | 39 ++++++++++++++++++++++++++--------
- 1 file changed, 30 insertions(+), 9 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 36 ++++++++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dd66decf2087..2b10f8864898 100644
+index dd66decf2087..ba2e2aee6c20 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
 @@ -2475,6 +2475,7 @@ static bool __init intel_pstate_no_acpi_pss(void)
@@ -55,20 +55,15 @@ index dd66decf2087..2b10f8864898 100644
  }
  
  static bool __init intel_pstate_has_acpi_ppc(void)
-@@ -2499,9 +2506,11 @@ static bool __init intel_pstate_has_acpi_ppc(void)
- 
- 		if (!pr)
- 			continue;
--		if (acpi_has_method(pr->handle, "_PPC"))
-+		if (acpi_has_method(pr->handle, "_PPC")) {
+@@ -2502,6 +2509,7 @@ static bool __init intel_pstate_has_acpi_ppc(void)
+ 		if (acpi_has_method(pr->handle, "_PPC"))
  			return true;
-+		}
  	}
 +	pr_info("Cannot detect ACPI PPC");
  	return false;
  }
  
-@@ -2592,8 +2601,10 @@ static int __init intel_pstate_init(void)
+@@ -2592,8 +2600,10 @@ static int __init intel_pstate_init(void)
  	const struct x86_cpu_id *id;
  	int rc;
  
@@ -80,7 +75,7 @@ index dd66decf2087..2b10f8864898 100644
  
  	id = x86_match_cpu(hwp_support_ids);
  	if (id) {
-@@ -2606,31 +2617,41 @@ static int __init intel_pstate_init(void)
+@@ -2606,31 +2616,41 @@ static int __init intel_pstate_init(void)
  		}
  	} else {
  		id = x86_match_cpu(intel_pstate_cpu_ids);
