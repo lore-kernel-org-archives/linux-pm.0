@@ -1,135 +1,129 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 3/8] clk: samsung: add BPLL rate table for Exynos
- 5422 SoC
-Date: Mon, 11 Feb 2019 11:21:16 +0100
-Message-ID: <59a5e9bc-a5de-9f98-5710-4cd48cb5b239@partner.samsung.com>
-References: <1548924594-19084-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190131085007eucas1p2f16107042b8ce5638811840618bcf017@eucas1p2.samsung.com>
-        <1548924594-19084-4-git-send-email-l.luba@partner.samsung.com>
-        <d5b8d165-564e-b776-77de-31a069118067@samsung.com>
-        <0ca15b4c-ddaa-1be5-35be-e76b008b28a8@partner.samsung.com>
-        <CAGTfZH05zn_FiNt3zSHZJfspvo4RXWPrAtWLUq5xsqKoB3qxBA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
+ broadcast _PPC to all online CPUs
+Date: Mon, 11 Feb 2019 16:00:10 +0530
+Message-ID: <20190211103010.qet5jvncvkdl7s5n@vireshk-i7>
+References: <20190209120232.21582-1-yu.c.chen@intel.com>
+ <20190211091627.homaij2rtqzrytbu@vireshk-i7>
+ <CAJZ5v0gMV-GCoFcwa4zMKPf8W=o=bb6fzB7ZRAxkKUyjNwqc+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGTfZH05zn_FiNt3zSHZJfspvo4RXWPrAtWLUq5xsqKoB3qxBA@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gMV-GCoFcwa4zMKPf8W=o=bb6fzB7ZRAxkKUyjNwqc+w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: cwchoi00@gmail.com
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, linux-clk@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+On 11-02-19, 11:20, Rafael J. Wysocki wrote:
+> On Mon, Feb 11, 2019 at 10:16 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 09-02-19, 20:02, Chen Yu wrote:
+> > > On Dell Inc. XPS13 9333, the BIOS changes the value of
+> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> > > the power source changes), the maximum frequency of the
+> > > CPU is not updated accordingly. This is due to the policy's
+> > > cpuinfo.max is not updated when _PPC notifier fires.
+> > >
+> > > Fix this problem by updating the policy's cpuinfo.max
+> > > and broadcast the _PPC notifier to all online CPUs.
+> > >
+> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > ---
+> > >  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
+> > >  drivers/cpufreq/cpufreq.c        |  2 ++
+> > >  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
+> > >  3 files changed, 30 insertions(+), 3 deletions(-)
+> > >
+> > > diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> > > index a303fd0e108c..737dbf5aa7f7 100644
+> > > --- a/drivers/acpi/processor_perflib.c
+> > > +++ b/drivers/acpi/processor_perflib.c
+> > > @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
+> > >  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+> > >                "limited by BIOS, this should help");
+> > >
+> > > +static int broadcast_ppc;
+> > > +module_param(broadcast_ppc, int, 0644);
+> > > +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
+> > > +
+> > >  #define PPC_REGISTERED   1
+> > >  #define PPC_IN_USE       2
+> > >
+> > > @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+> > >               else
+> > >                       acpi_processor_ppc_ost(pr->handle, 0);
+> > >       }
+> > > -     if (ret >= 0)
+> > > -             cpufreq_update_policy(pr->id);
+> > > +     if (ret >= 0) {
+> > > +             if (broadcast_ppc) {
+> > > +                     int cpu;
+> > > +
+> > > +                     for_each_possible_cpu(cpu)
+> > > +                             cpufreq_update_policy(cpu);
+> > > +             } else {
+> > > +                     cpufreq_update_policy(pr->id);
+> > > +             }
+> > > +     }
+> > >  }
+> > >
+> > >  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index e35a886e00bc..95e08816b512 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > >
+> > >       policy->min = new_policy->min;
+> > >       policy->max = new_policy->max;
+> > > +     policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> > > +     policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+> > >       trace_cpu_frequency_limits(policy);
+> > >
+> > >       policy->cached_target_freq = UINT_MAX;
+> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > > index dd66decf2087..e1881313c396 100644
+> > > --- a/drivers/cpufreq/intel_pstate.c
+> > > +++ b/drivers/cpufreq/intel_pstate.c
+> > > @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+> > >
+> > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+> > >  {
+> > > +     int max_freq;
+> > >       struct cpudata *cpu = all_cpu_data[policy->cpu];
+> > >
+> > >       update_turbo_state();
+> > > +     max_freq = intel_pstate_get_max_freq(cpu);
+> > > +
+> > > +     if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
+> > > +         max_freq != policy->cpuinfo.max_freq) {
+> > > +             /*
+> > > +              * System was not running under any constraints, but the
+> > > +              * current max possible frequency is changed. So reset
+> > > +              * policy limits.
+> > > +              */
+> > > +             policy->cpuinfo.max_freq = policy->max = max_freq;
+> > > +     }
+> > > +
+> > >       cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> > > -                                  intel_pstate_get_max_freq(cpu));
+> > > +                                  max_freq);
+> > >
+> > >       if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+> > >           policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+> >
+> > By TURBO I believe this is about boost-frequencies and you should use
+> > that infrastructure to make it work, isn't it ?
+> 
+> I guess you mean the the "boost" attribute in the core, but that's not
+> applicable to intel_pstate.
 
-On 2/3/19 8:54 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> 2019년 2월 1일 (금) 오후 11:22, Lukasz Luba <l.luba@partner.samsung.com>님이 작성:
-> 
->>
->> Hi Chanwoo,
->>
->> On 2/1/19 9:44 AM, Chanwoo Choi wrote:
->>> Hi,
->>>
->>> On 19. 1. 31. 오후 5:49, Lukasz Luba wrote:
->>>> Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
->>>> Controller frequencies for driver's DRAM timings.
->>>>
->>>> CC: Sylwester Nawrocki <s.nawrocki@samsung.com>
->>>> CC: Chanwoo Choi <cw00.choi@samsung.com>
->>>> CC: Michael Turquette <mturquette@baylibre.com>
->>>> CC: Stephen Boyd <sboyd@kernel.org>
->>>> CC: Kukjin Kim <kgene@kernel.org>
->>>> CC: Krzysztof Kozlowski <krzk@kernel.org>
->>>> CC: linux-samsung-soc@vger.kernel.org
->>>> CC: linux-clk@vger.kernel.org
->>>> CC: linux-arm-kernel@lists.infradead.org
->>>> CC: linux-kernel@vger.kernel.org
->>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>>> ---
->>>>    drivers/clk/samsung/clk-exynos5420.c | 15 ++++++++++++++-
->>>>    1 file changed, 14 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
->>>> index 3e87421..8bf9579 100644
->>>> --- a/drivers/clk/samsung/clk-exynos5420.c
->>>> +++ b/drivers/clk/samsung/clk-exynos5420.c
->>>> @@ -1325,6 +1325,19 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
->>>>       PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
->>>>    };
->>>>
->>>> +static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
->>>> +    PLL_35XX_RATE(24 * MHZ, 933000000, 311, 4, 1),
->>>> +    PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
->>>> +    PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
->>>> +    PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
->>>> +    PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
->>>> +    PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
->>>> +    PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
->>>> +    PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
->>>> +    PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
->>>> +    PLL_35XX_RATE(24 * MHZ, 138000000, 184, 2, 4),
->>>
->>> Except for 825Mhz, I can't find the target frequency
->>> on Exynos5422 TRM document. Usually, Exynos TRM specified
->>> the supported stable clocks. It means that undefined clocks
->>> are not stable as I knew. Where do you find them?
->>>
->>> When I calculated the PLL frequency with PMS value, it is correct.
->>> But, just we need to check the reference of undefined clocks on TRM
->>> in order to guarantee the stable operation.
->> They values live in vendor code for Android.
->> I have tested the DMC & DDR with these ratios in stress scenarios
->> for a few days and it was stable.
-> 
-> If possible, please share the url of original vendor code.
-Here is the vendor code for the BPLL values:
-https://github.com/hardkernel/linux/blob/odroidxu3-3.10.y-android/drivers/clk/samsung/clk-exynos5422.c#L2026
+Ahh, I missed the part that this is for the !has_target() platforms :(
 
-Regards,
-Lukasz
-> 
->>
->>>
->>> Remove 933/138Mhz because exynos5433-dmc.c doesn't use 933Mhz and 138Mhz
->>> and also Exynos5422 TRM doesn't define 933/138Mhz on pll table.
->> OK, I will remove them.
->>>
->>>> +};
->>>> +
->>>>    static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
->>>>       PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
->>>>       PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
->>>> @@ -1467,7 +1480,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
->>>>               exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>>>               exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->>>>               exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>>> -            exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>>> +            exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
->>>
->>> Exynos5422 used the same PLL table for apll, kpll, bpll and so on.
->>> You don't need to make the separate pll table. Just add new entries
->>> to exynos5420_pll2550x_24mhz_tbl table.
->> OK, I will extend the exynos5420_pll2550x_24mhz_tbl table.
->>
->> In v4 patch set, it will be fixed.
->>
->> Regards,
->> Lukasz
->>>
->>>>       }
->>>>
->>>>       samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
->>>>
->>>
-> 
-> 
-> 
-> --
-> Best Regards,
-> Chanwoo Choi
-> Samsung Electronics
-> 
-> 
+-- 
+viresh
