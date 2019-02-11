@@ -1,41 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / suspend: Print debug messages for device using direct-complete
-Date: Mon, 11 Feb 2019 13:17:12 +0100
-Message-ID: <2477658.mvXUDI8C0e@aspire.rjw.lan>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
+Date: Mon, 11 Feb 2019 13:22:24 +0100
+Message-ID: <f9f54181-f7bc-6add-2c06-2ed3d6410d01@samsung.com>
+References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
+        <20190207122227.19873-1-m.szyprowski@samsung.com>
+        <20190211084413.b53qyx6sgkxsjhdv@vireshk-i7>
+        <9b4a6c9a-93f9-474f-b8c0-4353a531e128@samsung.com>
+        <20190211095527.5brreiqppn7kk3yt@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190211095527.5brreiqppn7kk3yt@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>, Sudeep.Holla@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Viresh,
 
-Devices using the direct-complete optimization are not present it
-debug messages printed by the core device suspend and resume code,
-which sometimes makes it difficult to diagnose problems related to
-them, so add debug messages for those devices.
+On 2019-02-11 10:55, Viresh Kumar wrote:
+> On 11-02-19, 10:52, Marek Szyprowski wrote:
+>> On 2019-02-11 09:44, Viresh Kumar wrote:
+>>> On 07-02-19, 13:22, Marek Szyprowski wrote:
+>>>> Dear All,
+>>>>
+>>>> Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
+>>>> i2c adapters") added a visible warning for an attempt to do i2c transfer
+>>>> over a suspended i2c bus. This revealed a long standing issue in the
+>>>> cpufreq-dt driver, which gives a following warning during system
+>>>> suspend/resume cycle:
+>>> Marek,
+>>>
+>>> I have sent a patchset which is not directly related to the problem
+>>> you are facing, but it may solve your problem as a side effect. Can
+>>> you please see if that works to solve this issue as well ?
+>>>
+>>> https://lore.kernel.org/lkml/cover.1549874368.git.viresh.kumar@linaro.org/T/#u
+>> Thanks for the patch. It indeed solves the problem of the i2c transfer
+>> in cpu hotplug procedure during system resume, although my resources
+>> management rewrite is still valid as a way to fix remaining 'todos' in
+>> the cpufreq-dt driver.
+> Which remaining todos are you talking about ? Sorry I am not able to
+> recall :(
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/cpufreq-dt.c#n347
 
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1741,8 +1741,10 @@ static int __device_suspend(struct devic
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
- 			pm_runtime_disable(dev);
--			if (pm_runtime_status_suspended(dev))
-+			if (pm_runtime_status_suspended(dev)) {
-+				pm_dev_dbg(dev, state, "direct-complete ");
- 				goto Complete;
-+			}
- 
- 			pm_runtime_enable(dev);
- 		}
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
