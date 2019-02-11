@@ -1,95 +1,119 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Mon, 11 Feb 2019 14:17:14 +0530
-Message-ID: <20190211084714.nq3wqxk66dbrfqvy@vireshk-i7>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
- <20190208110053.GA7913@e107155-lin>
- <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
- <20190208115122.GA13043@e107155-lin>
- <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
- <20190208174131.GB22401@e107155-lin>
+Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
+ broadcast  _PPC to all online CPUs
+Date: Mon, 11 Feb 2019 14:46:27 +0530
+Message-ID: <20190211091627.homaij2rtqzrytbu@vireshk-i7>
+References: <20190209120232.21582-1-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190208174131.GB22401@e107155-lin>
+In-Reply-To: <20190209120232.21582-1-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08-02-19, 17:41, Sudeep Holla wrote:
-> Based on Rafael's suggestion, I cooked up something. See if this helps ?
-> The policy to cpu dance can be removed and we can just run through the
-> online cpumask I think.
+On 09-02-19, 20:02, Chen Yu wrote:
+> On Dell Inc. XPS13 9333, the BIOS changes the value of
+> MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> the power source changes), the maximum frequency of the
+> CPU is not updated accordingly. This is due to the policy's
+> cpuinfo.max is not updated when _PPC notifier fires.
 > 
-> Regards,
-> Sudeep
+> Fix this problem by updating the policy's cpuinfo.max
+> and broadcast the _PPC notifier to all online CPUs.
 > 
-> -->8
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
+>  drivers/cpufreq/cpufreq.c        |  2 ++
+>  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
+>  3 files changed, 30 insertions(+), 3 deletions(-)
 > 
-> diff --git i/drivers/cpufreq/cpufreq.c w/drivers/cpufreq/cpufreq.c
-> index e35a886e00bc..03d65a02a542 100644
-> --- i/drivers/cpufreq/cpufreq.c
-> +++ w/drivers/cpufreq/cpufreq.c
-> @@ -1640,6 +1640,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
->  void cpufreq_suspend(void)
->  {
->  	struct cpufreq_policy *policy;
-> +	int cpu;
+> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> index a303fd0e108c..737dbf5aa7f7 100644
+> --- a/drivers/acpi/processor_perflib.c
+> +++ b/drivers/acpi/processor_perflib.c
+> @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
+>  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+>  		 "limited by BIOS, this should help");
 >  
->  	if (!cpufreq_driver)
->  		return;
-> @@ -1662,6 +1663,11 @@ void cpufreq_suspend(void)
->  	}
->  
->  suspend:
-> +	if (cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME)
-> +		for_each_active_policy(policy)
-> +			for_each_cpu(cpu, policy->cpus)
-> +				cpufreq_offline(cpu);
-
-You will offline boot-cpu as well :)
-
+> +static int broadcast_ppc;
+> +module_param(broadcast_ppc, int, 0644);
+> +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
 > +
->  	cpufreq_suspended = true;
+>  #define PPC_REGISTERED   1
+>  #define PPC_IN_USE       2
+>  
+> @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>  		else
+>  			acpi_processor_ppc_ost(pr->handle, 0);
+>  	}
+> -	if (ret >= 0)
+> -		cpufreq_update_policy(pr->id);
+> +	if (ret >= 0) {
+> +		if (broadcast_ppc) {
+> +			int cpu;
+> +
+> +			for_each_possible_cpu(cpu)
+> +				cpufreq_update_policy(cpu);
+> +		} else {
+> +			cpufreq_update_policy(pr->id);
+> +		}
+> +	}
 >  }
 >  
-> @@ -1674,7 +1680,7 @@ void cpufreq_suspend(void)
->  void cpufreq_resume(void)
+>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e35a886e00bc..95e08816b512 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>  
+>  	policy->min = new_policy->min;
+>  	policy->max = new_policy->max;
+> +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+>  	trace_cpu_frequency_limits(policy);
+>  
+>  	policy->cached_target_freq = UINT_MAX;
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index dd66decf2087..e1881313c396 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+>  
+>  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
 >  {
->  	struct cpufreq_policy *policy;
-> -	int ret;
-> +	int ret, cpu;
+> +	int max_freq;
+>  	struct cpudata *cpu = all_cpu_data[policy->cpu];
 >  
->  	if (!cpufreq_driver)
->  		return;
-> @@ -1682,6 +1688,11 @@ void cpufreq_resume(void)
->  	if (unlikely(!cpufreq_suspended))
->  		return;
->  
-> +	if (cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME)
-> +		for_each_active_policy(policy)
-> +			for_each_cpu(cpu, policy->cpus)
-> +				cpufreq_online(cpu);
+>  	update_turbo_state();
+> +	max_freq = intel_pstate_get_max_freq(cpu);
 > +
->  	cpufreq_suspended = false;
+> +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
+> +	    max_freq != policy->cpuinfo.max_freq) {
+> +		/*
+> +		 * System was not running under any constraints, but the
+> +		 * current max possible frequency is changed. So reset
+> +		 * policy limits.
+> +		 */
+> +		policy->cpuinfo.max_freq = policy->max = max_freq;
+> +	}
+> +
+>  	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> -				     intel_pstate_get_max_freq(cpu));
+> +				     max_freq);
 >  
->  	if (!has_target() && !cpufreq_driver->resume)
-> @@ -2444,14 +2455,16 @@ static enum cpuhp_state hp_online;
->  
->  static int cpuhp_cpufreq_online(unsigned int cpu)
->  {
-> -	cpufreq_online(cpu);
-> +	if (!(cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME))
-> +		cpufreq_online(cpu);
+>  	if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+>  	    policy->policy != CPUFREQ_POLICY_PERFORMANCE)
 
-This isn't correct as we can offline the CPUs without suspend as well
-and cpufreq_online/offline should always be called in such cases.
-
-Anyways, I have cc'd you on another series which may end up fixing
-this problem as well.
+By TURBO I believe this is about boost-frequencies and you should use
+that infrastructure to make it work, isn't it ?
 
 -- 
 viresh
