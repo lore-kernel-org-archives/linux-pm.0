@@ -1,44 +1,35 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal-SoC management fixes for v5.0-rc6
-Date: Sun, 10 Feb 2019 19:19:23 -0800
-Message-ID: <20190211031921.GA1799@localhost.localdomain>
-References: <20190210041721.GA2805@localhost.localdomain>
- <154977271617.2362.11794417398216386913.pr-tracker-bot@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/3] drivers: Frequency constraint infrastructure
+Date: Mon, 11 Feb 2019 11:13:38 +0530
+Message-ID: <20190211054338.nxw4dbs75wkqolr3@vireshk-i7>
+References: <cover.1547197612.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gs3FnCgFS8rg7vwCeATJKfR+mfMVrpkTbM237XVhpDJQ@mail.gmail.com>
+ <20190208090912.43aao5kny42iirum@vireshk-i7>
+ <CAJZ5v0iE9tFt9Xs27EYcjv6N1KAq-LaAQnv=QBvnbNRpfwrWCg@mail.gmail.com>
+ <20190208102346.ophy3eqhxjzaqsxr@vireshk-i7>
+ <CAJZ5v0gNhmqY_oem9SZk2fEkOikmjTK3YfFRuOi8f=66GSgVuw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <154977271617.2362.11794417398216386913.pr-tracker-bot@kernel.org>
+In-Reply-To: <CAJZ5v0gNhmqY_oem9SZk2fEkOikmjTK3YfFRuOi8f=66GSgVuw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: pr-tracker-bot@kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Matthias Kaehlcke <mka@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hey,
-
-Thanks for the note, but..
-
-On Sun, Feb 10, 2019 at 04:25:16AM +0000, pr-tracker-bot@kernel.org wrote:
-> The pull request you sent on Sat, 9 Feb 2019 20:17:23 -0800:
+On 08-02-19, 11:35, Rafael J. Wysocki wrote:
+> At least some of the underlying mechanics seem to be very similar.
+> You have priority lists, addition and removal of requests etc.
 > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-> 
-> has been merged into torvalds/linux.git:
-> https://git.kernel.org/torvalds/c/7ad915f5ebf5b9e7ca98a7048d8f84a631fe388b
+> Arguably, PM QoS may be regarded as a bit overly complicated, but
+> maybe they both can use a common library underneath?
+ 
+> As I said I like the idea of replacing cpufreq notifiers with
+> something nicer, so if you can avoid doing almost-the-same-ting in two
+> different frameworks, it would be fine by me.
 
-I think the bot is off here because the above commit is about a merge
-from the linux-omap tree from Tony.
+Ok, will try to move to PM QoS. Thanks.
 
-7ad915f5ebf5 ("Merge tag 'omap-for-v3.10-rc1/fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap into fixes")
-
-not the above pull. In fact, this pull was not merged so far, as per the log
-of v5.0-rc6. I mean, this is a very late fixes pull anyways and I can always
-resend the pull, but I believe the bot got confused this time.
-
-
-> 
-> Thank you!
-> 
-> -- 
-> Deet-doot-dot, I am a bot.
-> https://korg.wiki.kernel.org/userdoc/prtracker
+-- 
+viresh
