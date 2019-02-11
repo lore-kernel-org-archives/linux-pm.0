@@ -1,85 +1,46 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Mon, 11 Feb 2019 14:08:29 +0000
-Message-ID: <20190211140829.GA4269@e107155-lin>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
- <20190208110053.GA7913@e107155-lin>
- <87302853-74cc-8eeb-6bd4-6338746e0738@samsung.com>
- <20190208115122.GA13043@e107155-lin>
- <66b33c07-4970-b60a-d924-d4baba79c836@samsung.com>
- <20190208174131.GB22401@e107155-lin>
- <20190211084714.nq3wqxk66dbrfqvy@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Mon, 11 Feb 2019 16:30:03 +0100
+Message-ID: <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190211084714.nq3wqxk66dbrfqvy@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, tkjos@google.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 11, 2019 at 02:17:14PM +0530, Viresh Kumar wrote:
-> On 08-02-19, 17:41, Sudeep Holla wrote:
-> > Based on Rafael's suggestion, I cooked up something. See if this helps ?
-> > The policy to cpu dance can be removed and we can just run through the
-> > online cpumask I think.
-> >
-> > Regards,
-> > Sudeep
-> >
-> > -->8
-> >
-> > diff --git i/drivers/cpufreq/cpufreq.c w/drivers/cpufreq/cpufreq.c
-> > index e35a886e00bc..03d65a02a542 100644
-> > --- i/drivers/cpufreq/cpufreq.c
-> > +++ w/drivers/cpufreq/cpufreq.c
-> > @@ -1640,6 +1640,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
-> >  void cpufreq_suspend(void)
-> >  {
-> >  	struct cpufreq_policy *policy;
-> > +	int cpu;
-> >
-> >  	if (!cpufreq_driver)
-> >  		return;
-> > @@ -1662,6 +1663,11 @@ void cpufreq_suspend(void)
-> >  	}
-> >
-> >  suspend:
-> > +	if (cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME)
-> > +		for_each_active_policy(policy)
-> > +			for_each_cpu(cpu, policy->cpus)
-> > +				cpufreq_offline(cpu);
->
-> You will offline boot-cpu as well :)
->
+This patch set changes workqueue related features in devfreq framework.
+First patch switches to delayed work instead of deferred.
+The second switches to regular system work and deletes custom 'devfreq'.
 
-Indeed, I was just trying to check the idea of flags and clearly missed
-the boot cpu :(
+Using deferred work in this context might harm the system performance.
+When the CPU enters idle, deferred work is not fired. The devfreq device's
+utilization does not have to be connected with a particular CPU.
+The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+They all are missing opportunity to check the HW state and react when
+the deferred work is not fired.
+A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+on full speed, might show x5 worse performance if the crucial CPU is in idle.
 
+Changes:
+v2:
+- single patch split into two
+- added cover letter
 
-[..]
+link for the previous version and discussion:
+https://marc.info/?l=linux-pm&m=154904631226997&w=2
 
-> > @@ -2444,14 +2455,16 @@ static enum cpuhp_state hp_online;
-> >
-> >  static int cpuhp_cpufreq_online(unsigned int cpu)
-> >  {
-> > -	cpufreq_online(cpu);
-> > +	if (!(cpufreq_driver->flags & CPUFREQ_DEFER_INIT_DURING_RESUME))
-> > +		cpufreq_online(cpu);
->
-> This isn't correct as we can offline the CPUs without suspend as well
-> and cpufreq_online/offline should always be called in such cases.
->
-
-Understood
-
-> Anyways, I have cc'd you on another series which may end up fixing
-> this problem as well.
-
-Sure, will have a look.
-
---
 Regards,
-Sudeep
+Lukasz Luba
+
+Lukasz Luba (2):
+  drivers: devfreq: change devfreq workqueue mechanism
+  drivers: devfreq: change deferred work into delayed
+
+ drivers/devfreq/devfreq.c | 27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
+
+-- 
+2.7.4
