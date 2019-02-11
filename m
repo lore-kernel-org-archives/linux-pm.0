@@ -1,119 +1,131 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
- broadcast  _PPC to all online CPUs
-Date: Mon, 11 Feb 2019 14:46:27 +0530
-Message-ID: <20190211091627.homaij2rtqzrytbu@vireshk-i7>
-References: <20190209120232.21582-1-yu.c.chen@intel.com>
+From: Erwan Velu <erwanaliasr1@gmail.com>
+Subject: [PATCH v2] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
+Date: Mon, 11 Feb 2019 10:28:26 +0100
+Message-ID: <20190211092827.23188-1-e.velu@criteo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190209120232.21582-1-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: e.velu@criteo.com, Liam.Howlett@oracle.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-02-19, 20:02, Chen Yu wrote:
-> On Dell Inc. XPS13 9333, the BIOS changes the value of
-> MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
-> the power source changes), the maximum frequency of the
-> CPU is not updated accordingly. This is due to the policy's
-> cpuinfo.max is not updated when _PPC notifier fires.
-> 
-> Fix this problem by updating the policy's cpuinfo.max
-> and broadcast the _PPC notifier to all online CPUs.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-> Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-> Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
->  drivers/cpufreq/cpufreq.c        |  2 ++
->  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
->  3 files changed, 30 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> index a303fd0e108c..737dbf5aa7f7 100644
-> --- a/drivers/acpi/processor_perflib.c
-> +++ b/drivers/acpi/processor_perflib.c
-> @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
->  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
->  		 "limited by BIOS, this should help");
->  
-> +static int broadcast_ppc;
-> +module_param(broadcast_ppc, int, 0644);
-> +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
-> +
->  #define PPC_REGISTERED   1
->  #define PPC_IN_USE       2
->  
-> @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->  		else
->  			acpi_processor_ppc_ost(pr->handle, 0);
->  	}
-> -	if (ret >= 0)
-> -		cpufreq_update_policy(pr->id);
-> +	if (ret >= 0) {
-> +		if (broadcast_ppc) {
-> +			int cpu;
-> +
-> +			for_each_possible_cpu(cpu)
-> +				cpufreq_update_policy(cpu);
-> +		} else {
-> +			cpufreq_update_policy(pr->id);
-> +		}
-> +	}
->  }
->  
->  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e35a886e00bc..95e08816b512 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  
->  	policy->min = new_policy->min;
->  	policy->max = new_policy->max;
-> +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
-> +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
->  	trace_cpu_frequency_limits(policy);
->  
->  	policy->cached_target_freq = UINT_MAX;
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index dd66decf2087..e1881313c396 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
->  
->  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
->  {
-> +	int max_freq;
->  	struct cpudata *cpu = all_cpu_data[policy->cpu];
->  
->  	update_turbo_state();
-> +	max_freq = intel_pstate_get_max_freq(cpu);
-> +
-> +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
-> +	    max_freq != policy->cpuinfo.max_freq) {
-> +		/*
-> +		 * System was not running under any constraints, but the
-> +		 * current max possible frequency is changed. So reset
-> +		 * policy limits.
-> +		 */
-> +		policy->cpuinfo.max_freq = policy->max = max_freq;
-> +	}
-> +
->  	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-> -				     intel_pstate_get_max_freq(cpu));
-> +				     max_freq);
->  
->  	if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
->  	    policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+The init code path have several execeptions where the module can decide not to load.
+As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is not reachable.
+The initialisation code is neither verbose of the reason why it did choose to prematurely exit.
 
-By TURBO I believe this is about boost-frequencies and you should use
-that infrastructure to make it work, isn't it ?
+This situation leads to situation where its difficult for a user to determine,
+on a given platform, why the driver didn't loaded properly.
 
+This patch is about reporting to the user the reason/context why the driver failed to load.
+That is a precious hint when debugging a platform.
+
+Signed-off-by: Erwan Velu <e.velu@criteo.com>
+---
+ drivers/cpufreq/intel_pstate.c | 39 ++++++++++++++++++++++++++--------
+ 1 file changed, 30 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index dd66decf2087..2b10f8864898 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2475,6 +2475,7 @@ static bool __init intel_pstate_no_acpi_pss(void)
+ 		kfree(pss);
+ 	}
+ 
++	pr_info("Cannot detect ACPI PSS");
+ 	return true;
+ }
+ 
+@@ -2484,10 +2485,16 @@ static bool __init intel_pstate_no_acpi_pcch(void)
+ 	acpi_handle handle;
+ 
+ 	status = acpi_get_handle(NULL, "\\_SB", &handle);
+-	if (ACPI_FAILURE(status))
++	if (ACPI_FAILURE(status)) {
++		pr_info("Cannot detect ACPI SB");
+ 		return true;
++	}
+ 
+-	return !acpi_has_method(handle, "PCCH");
++	status = acpi_has_method(handle, "PCCH");
++	if (!status) {
++		pr_info("Cannot detect ACPI PCCH");
++	}
++	return !status;
+ }
+ 
+ static bool __init intel_pstate_has_acpi_ppc(void)
+@@ -2499,9 +2506,11 @@ static bool __init intel_pstate_has_acpi_ppc(void)
+ 
+ 		if (!pr)
+ 			continue;
+-		if (acpi_has_method(pr->handle, "_PPC"))
++		if (acpi_has_method(pr->handle, "_PPC")) {
+ 			return true;
++		}
+ 	}
++	pr_info("Cannot detect ACPI PPC");
+ 	return false;
+ }
+ 
+@@ -2592,8 +2601,10 @@ static int __init intel_pstate_init(void)
+ 	const struct x86_cpu_id *id;
+ 	int rc;
+ 
+-	if (no_load)
++	if (no_load) {
++		pr_info("disabling as per user-request\n");
+ 		return -ENODEV;
++	}
+ 
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
+@@ -2606,31 +2617,41 @@ static int __init intel_pstate_init(void)
+ 		}
+ 	} else {
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+-		if (!id)
++		if (!id) {
++			pr_warn("CPU ID is not in the list of supported devices\n");
+ 			return -ENODEV;
++		}
+ 
+ 		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
+ 	}
+ 
+-	if (intel_pstate_msrs_not_valid())
++	if (intel_pstate_msrs_not_valid()) {
++		pr_warn("Cannot enable driver as per invalid MSRs\n");
+ 		return -ENODEV;
++	}
+ 
+ hwp_cpu_matched:
+ 	/*
+ 	 * The Intel pstate driver will be ignored if the platform
+ 	 * firmware has its own power management modes.
+ 	 */
+-	if (intel_pstate_platform_pwr_mgmt_exists())
++	if (intel_pstate_platform_pwr_mgmt_exists()) {
++		pr_warn("Platform already taking care of power management\n");
+ 		return -ENODEV;
++	}
+ 
+-	if (!hwp_active && hwp_only)
++	if (!hwp_active && hwp_only) {
++		pr_warn("HWP not present\n");
+ 		return -ENOTSUPP;
++	}
+ 
+ 	pr_info("Intel P-state driver initializing\n");
+ 
+ 	all_cpu_data = vzalloc(array_size(sizeof(void *), num_possible_cpus()));
+-	if (!all_cpu_data)
++	if (!all_cpu_data) {
++		pr_warn("Cannot allocate memory\n");
+ 		return -ENOMEM;
++	}
+ 
+ 	intel_pstate_request_control_from_smm();
+ 
 -- 
-viresh
+2.20.1
