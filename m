@@ -1,100 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] PM-runtime: Fix __pm_runtime_set_status() race with
- runtime resume
-Date: Tue, 12 Feb 2019 17:28:46 +0100
-Message-ID: <CAJZ5v0jv6dboQd=iu9pHA_B2HzCEhd2WaN3-732S9px_u6MA-w@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <1670239.00ZbddH1IV@aspire.rjw.lan>
- <CAPDyKFoR+evmvDehgTJvxcZ70ZLTqU5J4To_c=2vYdOk26h92w@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] drivers: base: add support to skip power management in
+ device/driver model
+Date: Tue, 12 Feb 2019 17:49:37 +0000
+Message-ID: <20190212174937.GA19095@e107155-lin>
+References: <20190206150935.12140-1-sudeep.holla@arm.com>
+ <CAPDyKFr2qwXoOL3SRy7Crf-pg4FMn_qecPrw__BE+YpVAjAFZA@mail.gmail.com>
+ <20190207103600.GA14464@e107155-lin>
+ <CAPDyKFpkiaP0J_LJxP6tRUOyz3QKtDgA+PuhL-9vew7-RfKyNA@mail.gmail.com>
+ <20190207150638.GB14464@e107155-lin>
+ <CAPDyKFoenSDhYk_xNLFn6kB+rqvQQ+p71F27Mvevu-H9Nhxhuw@mail.gmail.com>
+ <20190207152908.GC14464@e107155-lin>
+ <CAPDyKFrV7XpKK-Pds=BNgJm9EC50C0wB_f99DK-6N7+K8aZXZw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoR+evmvDehgTJvxcZ70ZLTqU5J4To_c=2vYdOk26h92w@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrV7XpKK-Pds=BNgJm9EC50C0wB_f99DK-6N7+K8aZXZw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jisheng Zhang <jszhang@marvell.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 12, 2019 at 5:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Mon, Feb 11, 2019 at 05:20:20PM +0100, Ulf Hansson wrote:
+> On Thu, 7 Feb 2019 at 16:29, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >
+> > On Thu, Feb 07, 2019 at 04:18:57PM +0100, Ulf Hansson wrote:
+> > > On Thu, 7 Feb 2019 at 16:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >
+> > [...]
+> >
+> > > > Indeed, I was ignoring knowing that it's harmless. But more people
+> > > > started to complain, and Rafael suggested this which I agree as we
+> > > > have several pseudo devices created in the kernel that we can bypass
+> > > > some of these pm handling knowing we won't need it.
+> > >
+> > > Okay, I see.
+> > >
+> > > Anyway, I will likely need to restore part of this change, via my
+> > > cluster idling series then. As from that point, the cpu device that
+> > > you call device_set_pm_not_required() for, starts to be used from both
+> > > PM core and runtime PM point of view. But I guess that's okay then.
+> > >
+> >
+> > Ah I see. I can drop for CPU devices then. Since I didn't see any use for
+> > them, I set the flag, but I can drop it now or you can do that as part
+> > of that series.
 >
-> On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Commit 4080ab083000 ("PM-runtime: Take suppliers into account in
-> > __pm_runtime_set_status()") introduced a race condition that may
-> > trigger if __pm_runtime_set_status() is used incorrectly (that is,
-> > if it is called when PM-runtime is enabled for the target device
-> > and working).
-> >
-> > In that case, if the original PM-runtime status of the device is
-> > RPM_SUSPENDED, a runtime resume of the device may occur after
-> > __pm_runtime_set_status() has dropped its power.lock spinlock
-> > and before deactivating its suppliers, so the suppliers may be
-> > deactivated while the device is PM-runtime-active which may lead
-> > to functional issues.
-> >
-> > To avoid that, modify __pm_runtime_set_status() to check whether
-> > or not PM-runtime is enabled for the device before activating its
-> > suppliers (if the new status is RPM_ACTIVE) and either return an
-> > error if that's the case or increment the device's disable_depth
-> > counter to prevent PM-runtime from being enabled for it while
-> > the remaining part of the function is running (disable_depth is
-> > then decremented on the way out).
-> >
-> > Fixes: 4080ab083000 ("PM-runtime: Take suppliers into account in __pm_runtime_set_status()")
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/base/power/runtime.c |   24 ++++++++++++++++++------
-> >  1 file changed, 18 insertions(+), 6 deletions(-)
-> >
-> > Index: linux-pm/drivers/base/power/runtime.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/power/runtime.c
-> > +++ linux-pm/drivers/base/power/runtime.c
-> > @@ -1129,6 +1129,22 @@ int __pm_runtime_set_status(struct devic
-> >         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
-> >                 return -EINVAL;
-> >
-> > +       spin_lock_irq(&dev->power.lock);
-> > +
-> > +       /*
-> > +        * Prevent PM-runtime from being enabled for the device or return an
-> > +        * error if it is enabled already and working.
-> > +        */
-> > +       if (dev->power.runtime_error || dev->power.disable_depth)
-> > +               dev->power.disable_depth++;
-> > +       else
-> > +               error = -EAGAIN;
-> > +
-> > +       spin_unlock_irq(&dev->power.lock);
-> > +
-> > +       if (error)
-> > +               return error;
-> > +
-> >         /*
-> >          * If the new status is RPM_ACTIVE, the suppliers can be activated
-> >          * upfront regardless of the current status, because next time
-> > @@ -1147,12 +1163,6 @@ int __pm_runtime_set_status(struct devic
-> >
-> >         spin_lock_irq(&dev->power.lock);
-> >
-> > -       if (!dev->power.runtime_error && !dev->power.disable_depth) {
-> > -               status = dev->power.runtime_status;
-> > -               error = -EAGAIN;
-> > -               goto out;
-> > -       }
-> > -
-> >         if (dev->power.runtime_status == status || !parent)
-> >                 goto out_set;
-> >
-> > @@ -1205,6 +1215,8 @@ int __pm_runtime_set_status(struct devic
-> >                 device_links_read_unlock(idx);
-> >         }
-> >
-> > +       pm_runtime_enable(dev);
+> Well, I prefer if you drop it for CPU devices, as least for now.
 >
-> pm_runtime_enable() uses spin_lock_irqsave(), rather than
-> spin_lock_irq() - is there a reason to why you want to allow that
-> here, but not earlier in the function?
+> > There are quite a few devices(especially the ones
+> > registered under system subsys can set this but I would take it separate
+> > once we settle on this). Also Rafael may have seen use for few more
+> > devices when he suggested this.
+>
+> Yep, let's find another first user of this.
+>
+> Additionally, it seems like we should drop the print in device_pm_add().
+>
 
-Device links locking cannot be used in interrupt context.
+Hi Rafael,
+
+Do you prefer to drop the error message or retain it as is ? With this
+patch, we don't have to. I will repost v2 dropping this flags for cpus
+and just retaining the cache nodes for now.
+
+Regards,
+Sudeep
