@@ -1,43 +1,114 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH v3] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Tue, 12 Feb 2019 06:57:15 +0000
-Message-ID: <a806a805-92a6-1b23-65f9-6ccd76a56f65@criteo.com>
-References: <20190211093140.23608-1-e.velu@criteo.com>
- <eaf4286b0836444e00ec2e92178b5f31957c9a7a.camel@linux.intel.com>
- <CAL2Jzuwz3gYmYwiP-6mRN5HS65oXMKR1V7997d92K_n+fJt7QQ@mail.gmail.com>
- <754cbb153e6c215db9771b05a735afaf7eb1120f.camel@linux.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
+Date: Tue, 12 Feb 2019 09:03:23 +0100
+Message-ID: <CAPDyKFrtVHNA0-zAbUYR9k_qWKQUS2f+1Z=VLhvfQ=EDcBkPKA@mail.gmail.com>
+References: <3917694.ab5GGAjohB@aspire.rjw.lan> <1634058.cXDNg15SOd@aspire.rjw.lan>
+ <CAPDyKFpWCT9CcmxqqWk+S8tSPz_at56UCnk3EVBab-TnScHw8Q@mail.gmail.com>
+ <CAPDyKFqnWgjZ1icajdzbaQ_HW-2ec0-npEU_nAWvSVEpZMzSRA@mail.gmail.com> <CAJZ5v0hV-G_U=XV1N=rpEv1LMgB+jjB3kVEoHKUasd2p3QP5Bg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <754cbb153e6c215db9771b05a735afaf7eb1120f.camel@linux.intel.com>
-Content-Language: en-US
-Content-ID: <AFB32A258DFF0B45A918D88D66AC3C1B@eurprd04.prod.outlook.com>
+In-Reply-To: <CAJZ5v0hV-G_U=XV1N=rpEv1LMgB+jjB3kVEoHKUasd2p3QP5Bg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Erwan Velu <erwanaliasr1@gmail.com>
-Cc: "Liam.Howlett@oracle.com" <Liam.Howlett@oracle.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-DQpMZSAxMi8wMi8yMDE5IMOgIDAwOjE3LCBTcmluaXZhcyBQYW5kcnV2YWRhIGEgw6ljcml0wqA6
-DQo+IFsuLi5dDQo+IFRvIGtub3cgaWYgdGhlIGludGVsX3BzdGF0ZSBpbiBjb250cm9sLCB5b3Ug
-Y2FuIGxvb2sgYXQ6DQo+ICNjYXQgL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1ZnJlcS9wb2xp
-Y3kwL3NjYWxpbmdfZHJpdmVyDQo+DQo+IFNvIGlmIGl0IGlzIG5vdCBsb2FkZWQgYW5kIEludGVs
-IGludGVuZCB0byBzdXBwb3J0IGEgcHJvY2Vzc29yIG1vZGVsDQo+IHdpdGggaW50ZWxfcHN0YXRl
-LCB0aGVuIE9FTSdzIHBsYXRmb3JtX3Bvd2VyX21hbmFnZW1lbnQgcG9saWN5IGNhbg0KPiBvdmVy
-cmlkZS4gU28gd2UgY2FuIGFkZCBvbmUgcHJfaW5mbyB0byBzaG93IHRoYXQgZHJpdmVyIGNhbid0
-IGJlIGxvYWRlZA0KPiBiZWNhdXNlIG9mIHBsYXRmb3JtDQo+IGludGVsX3BzdGF0ZV9wbGF0Zm9y
-bV9wd3JfbWdtdF9leGlzdHMoKSwgcmV0dXJuIHRydWUuDQoNCkFncmVlZC4NCg0KQnV0IEkgZG8g
-dGhpbmsgdGhlIGludGVsX3BzdGF0ZV9tc3JzX25vdF92YWxpZCgpIGNhc2UgYWxzbyBkZXNlcnZl
-cyBhIA0KcHJfd2FybigpIGFzIHRoaXMgaXMgYSBwcmVtYXR1cmUgZXhpdCBiZWNhdXNlIG9mIHNv
-bWUgaGFyZHdhcmUgc2V0dGluZ3MuDQoNCj4gSWYgSFdQIGlzIHVzZWQgd2UgYWxyZWFkeSBoYXZl
-IGEgcHJfaW5mby4gSWYgSFdQIGlzIHByZXNlbnQgaXQgd2lsbA0KPiBhbHdheXMgYmUgdXNlZCB1
-bmxlc3MgdXNlciBvdmVycmlkZXMuDQo+DQo+IFRoZSBjYXNlcyB3aGVyZSBhIG1lbW9yeSBhbGxv
-Y2F0aW9uIGZhaWxzIHlvdSB3aWxsIHNlZSBvdGhlciB3YXJuaW5ncw0KPiBpbiB0aGUgc3lzdGVt
-LCBzbyBkb24ndCBuZWVkIHRvIGFkZCBpbiBkcml2ZXIuIEFsc28gaWYgc29tZW9uZQ0KPiBleHBs
-Y2l0bHkgdXNpbmcga2VybmVsIGNvbW1hbmQgbGluZSB0byBlaXRoZXIgZGlzYWJsZSBvciBjb250
-cm9sDQo+IGZlYXR1cmVzLCB1c2VyIGtub3dzIHdoYXQgaGUgaXMgZG9pbmcuDQo+DQo+IFNvIG5v
-IG5lZWQgb2YgcHJfd2FybiBvciBwcl9pbmZvIGV4Y2VwdCBvbmUgY2FzZSBmb3IgcGxhdGZvcm0g
-bW93ZXINCj4gbWFuYWdlbWVudC4gVGhlIG90aGVycyBhcmUgZGVidWcgbWVzc2FnZXMgb25seS4N
-Cg0KQWNrLg0KDQpJJ20gc2VuZGluZyBhIHY0IHRoaXMgd2F5Lg0KDQpUaGFua3MgZm9yIHRoZSBy
-ZXZpZXcgJiBkaXNjdXNzaW9ucy4NCg0KRXJ3YW4sDQoNCg==
+On Tue, 12 Feb 2019 at 00:05, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Mon, Feb 11, 2019 at 4:51 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Mon, 11 Feb 2019 at 14:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Thu, 7 Feb 2019 at 19:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > >
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > If the target device has any suppliers, as reflected by device links
+> > > > to them, __pm_runtime_set_status() does not take them into account,
+> > > > which is not consistent with the other parts of the PM-runtime
+> > > > framework and may lead to programming mistakes.
+> > > >
+> > > > Modify __pm_runtime_set_status() to take suppliers into account by
+> > > > activating them upfront if the new status is RPM_ACTIVE and
+> > > > deactivating them on exit if the new status is RPM_SUSPENDED.
+> > > >
+> > > > If the activation of one of the suppliers fails, the new status
+> > > > will be RPM_SUSPENDED and the (remaining) suppliers will be
+> > > > deactivated on exit (the child count of the device's parent
+> > > > will be dropped too then).
+> > > >
+> > > > Of course, adding device links locking to __pm_runtime_set_status()
+> > > > means that it cannot be run fron interrupt context, so make it use
+> > > > spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
+> > > > and spin_unlock_irqrestore(), respectively.
+> > > >
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > Rafael, thanks for working on this!
+> > >
+> > > I am running some tests at my side, but still not achieving the
+> > > behavior I expect to. Will let you know when I have more details, but
+> > > first some comments below.
+> >
+> > Alright, this is what I found.
+> >
+> > When I call pm_runtime_set_suspended(), in the ->probe() error path of
+> > my RPM test driver (I am removing the device link afterwards), then my
+> > expectation was that this should allow the supplier to become runtime
+> > suspended (sooner or later). This isn't the case, as it turns out the
+> > runtime PM usage count of the supplier, still remains 1 after the
+> > probe failure.
+> >
+> > My observation is that with $subject patch, the link->rpm_active count
+> > is now reaching 1, before it stayed at 2 - so one step forward. :-)
+> >
+> > However, the reason to why the runtime PM usage count never reaches 0,
+> > is because of the call to pm_runtime_get_noresume(supplier) in
+> > device_link_rpm_prepare(), which is called from device_link_add().
+>
+> That was there previously, I've just moved it to device_link_rpm_prepare().
+
+Correct. The problem been there before. Even without using  DL_FLAG_RPM_ACTIVE.
+
+>
+> But good catch!
+>
+> > To solve the problem, it seems like we need to call
+> > pm_runtime_put(supplier), in case the device link is deleted while the
+> > consumer is still probing.
+>
+> I'd rather change the way pm_runtime_get/put_suppliers() work, so that
+> they use the rpm_active refcount, but pm_runtime_put_suppliers() only
+> drops it by one - unless it is one already.
+
+That seems like a very reasonable approach!
+
+The mix between calling pm_runtime_get/put*() on the supplier device
+directly vs using the path with the rpm_active count, is to me rather
+confusing. Using only the latter, would be a nice cleanup anyway, I
+think.
+
+>
+> Then, when adding a new link with DL_FLAG_RPM_ACTIVE,
+> device_link_add() only needs to increment its rpm_active *twice*
+> (instead of doing that once as to does now), so it will stay above one
+> after the subsequent pm_runtime_put_suppliers() - and if it goes away
+> in the meantime, then it will be cleaned up by the removal.
+
+Assuming you will add a check for "consumer->links.status ==
+DL_DEV_PROBING" to understand if rpm_active should by be decreased.
+
+Yes, it seems reasonable.
+
+>
+> In turn, if a link is created without DL_FLAG_RPM_ACTIVE, its
+> rpm_active is one and then pm_runtime_put_suppliers() will just skip
+> it.
+>
+> A patch will follow. :-)
+
+Great, I am here to review it. :-)
+
+Kind regards
+Uffe
