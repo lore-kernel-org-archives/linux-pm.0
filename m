@@ -1,60 +1,160 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 2/2] cpufreq: dt: Implement online/offline() callbacks
-Date: Tue, 12 Feb 2019 11:26:25 +0100
-Message-ID: <CAJZ5v0hABvt2w7v9bfxyzf84+a4LU4C4tczVvwFnaDaY=pKG6A@mail.gmail.com>
-References: <cover.1549955027.git.viresh.kumar@linaro.org> <8030961ef762018fc286e4d3d3a010638e900e53.1549955027.git.viresh.kumar@linaro.org>
- <CAJZ5v0hLOD-5XDp7jAwt4EqWYGAU9VZzumNchW9_+bt7F1MdQw@mail.gmail.com> <20190212094909.5eivfzfnc62lay7x@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 1/2] cpufreq: Allow light-weight tear down and bring up of CPUs
+Date: Tue, 12 Feb 2019 16:17:33 +0530
+Message-ID: <15c641e4139d0b9a7d7540eefced1c012b608e91.1549968315.git.viresh.kumar@linaro.org>
+References: <f48f04ddfe3bd072f40154cdd971079199db0e4b.1549955027.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212094909.5eivfzfnc62lay7x@vireshk-i7>
+In-Reply-To: <f48f04ddfe3bd072f40154cdd971079199db0e4b.1549955027.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 12, 2019 at 10:49 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 12-02-19, 10:43, Rafael J. Wysocki wrote:
-> > On Tue, Feb 12, 2019 at 8:07 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > >
-> > > Implement the light-weight tear down and bring up helpers to reduce the
-> > > amount of work to do on CPU offline/online operation.
-> > >
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > >  drivers/cpufreq/cpufreq-dt.c | 17 +++++++++++++++++
-> > >  1 file changed, 17 insertions(+)
-> > >
-> > > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> > > index 7ba392911cd0..1aefaa1b0ca2 100644
-> > > --- a/drivers/cpufreq/cpufreq-dt.c
-> > > +++ b/drivers/cpufreq/cpufreq-dt.c
-> > > @@ -295,6 +295,21 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> > >         return ret;
-> > >  }
-> > >
-> > > +static int cpufreq_online(struct cpufreq_policy *policy)
-> > > +{
-> > > +       /* We did light-weight tear down earlier, nothing to do here */
-> > > +       return 0;
-> > > +}
-> >
-> > I think you could avoid having to add this empty stub if the core
-> > checked for both online and offline, that is
-> >
-> > if (driver->offline || driver->online) {
->
-> This doesn't look great as all we should care about here is ->online()
-> and checking for offline as well looks a bit hacky.
+The cpufreq core doesn't remove the cpufreq policy anymore on CPU
+offline operation, rather that happens when the CPU device gets
+unregistered from the kernel. This allows faster recovery when the CPU
+comes back online. This is also very useful during system wide
+suspend/resume where we offline all non-boot CPUs during suspend and
+then bring them back on resume.
 
-That's a matter of the driver I/F definition.
+This commit takes the same idea a step ahead to allow drivers to do
+light weight tear-down and bring-up during CPU offline and online
+operations.
 
-You can require online to be there if offline is set and the other way
-around (but then you should check if that's the case while registering
-the driver) or you can allow just one of them to be provided for the
-lightweight online/offline to be done.  In the latter case the
-presence of the other callback plays the role of a flag.
+A new set of callbacks is introduced, online/offline(). online() gets
+called when the first CPU of an inactive policy is brought up and
+offline() gets called when all the CPUs of a policy are offlined.
 
-Both are basically fine by me, but if you go for the former, please
-add the checks to cpufreq_register_driver().
+The existing init/exit() callback get called on policy
+creation/destruction. They also get called instead of online/offline()
+callbacks if the online/offline() callbacks aren't provided.
+
+This also moves around some code to get executed only for the new-policy
+case going forward.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2->V3:
+- Additional check in cpufreq_register_driver().
+
+ drivers/cpufreq/cpufreq.c | 58 +++++++++++++++++++++++++--------------
+ include/linux/cpufreq.h   |  2 ++
+ 2 files changed, 40 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 96a69c67a545..dd7626c5eb85 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1201,28 +1201,39 @@ static int cpufreq_online(unsigned int cpu)
+ 			return -ENOMEM;
+ 	}
+ 
+-	cpumask_copy(policy->cpus, cpumask_of(cpu));
++	if (!new_policy && cpufreq_driver->online) {
++		ret = cpufreq_driver->online(policy);
++		if (ret) {
++			pr_debug("%s: %d: initialization failed\n", __func__,
++				 __LINE__);
++			goto out_exit_policy;
++		}
+ 
+-	/* call driver. From then on the cpufreq must be able
+-	 * to accept all calls to ->verify and ->setpolicy for this CPU
+-	 */
+-	ret = cpufreq_driver->init(policy);
+-	if (ret) {
+-		pr_debug("initialization failed\n");
+-		goto out_free_policy;
+-	}
++		/* Recover policy->cpus using related_cpus */
++		cpumask_copy(policy->cpus, policy->related_cpus);
++	} else {
++		cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+-	ret = cpufreq_table_validate_and_sort(policy);
+-	if (ret)
+-		goto out_exit_policy;
++		/*
++		 * Call driver. From then on the cpufreq must be able
++		 * to accept all calls to ->verify and ->setpolicy for this CPU.
++		 */
++		ret = cpufreq_driver->init(policy);
++		if (ret) {
++			pr_debug("%s: %d: initialization failed\n", __func__,
++				 __LINE__);
++			goto out_free_policy;
++		}
+ 
+-	down_write(&policy->rwsem);
++		ret = cpufreq_table_validate_and_sort(policy);
++		if (ret)
++			goto out_exit_policy;
+ 
+-	if (new_policy) {
+ 		/* related_cpus should at least include policy->cpus. */
+ 		cpumask_copy(policy->related_cpus, policy->cpus);
+ 	}
+ 
++	down_write(&policy->rwsem);
+ 	/*
+ 	 * affected cpus must always be the one, which are online. We aren't
+ 	 * managing offline cpus here.
+@@ -1421,11 +1432,12 @@ static int cpufreq_offline(unsigned int cpu)
+ 		cpufreq_exit_governor(policy);
+ 
+ 	/*
+-	 * Perform the ->exit() even during light-weight tear-down,
+-	 * since this is a core component, and is essential for the
+-	 * subsequent light-weight ->init() to succeed.
++	 * Perform the ->offline() during light-weight tear-down, as
++	 * that allows fast recovery when the CPU comes back.
+ 	 */
+-	if (cpufreq_driver->exit) {
++	if (cpufreq_driver->offline) {
++		cpufreq_driver->offline(policy);
++	} else if (cpufreq_driver->exit) {
+ 		cpufreq_driver->exit(policy);
+ 		policy->freq_table = NULL;
+ 	}
+@@ -1454,8 +1466,13 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 	remove_cpu_dev_symlink(policy, dev);
+ 
+-	if (cpumask_empty(policy->real_cpus))
++	if (cpumask_empty(policy->real_cpus)) {
++		/* We did light-weight exit earlier, do full tear down now */
++		if (cpufreq_driver->offline)
++			cpufreq_driver->exit(policy);
++
+ 		cpufreq_policy_free(policy);
++	}
+ }
+ 
+ /**
+@@ -2488,7 +2505,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ 		    driver_data->target) ||
+ 	     (driver_data->setpolicy && (driver_data->target_index ||
+ 		    driver_data->target)) ||
+-	     (!!driver_data->get_intermediate != !!driver_data->target_intermediate))
++	     (!!driver_data->get_intermediate != !!driver_data->target_intermediate) ||
++	     (!driver_data->online ^ !driver_data->offline))
+ 		return -EINVAL;
+ 
+ 	pr_debug("trying to register driver %s\n", driver_data->name);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 9db074ecbbd7..b160e98076e3 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -325,6 +325,8 @@ struct cpufreq_driver {
+ 	/* optional */
+ 	int		(*bios_limit)(int cpu, unsigned int *limit);
+ 
++	int		(*online)(struct cpufreq_policy *policy);
++	int		(*offline)(struct cpufreq_policy *policy);
+ 	int		(*exit)(struct cpufreq_policy *policy);
+ 	void		(*stop_cpu)(struct cpufreq_policy *policy);
+ 	int		(*suspend)(struct cpufreq_policy *policy);
+-- 
+2.20.1.321.g9e740568ce00
