@@ -1,57 +1,100 @@
-From: Sven Van Asbroeck <thesven73@gmail.com>
-Subject: [PATCH v2] power: supply: ds2782: fix possible use-after-free on remove
-Date: Tue, 12 Feb 2019 11:21:49 -0500
-Message-ID: <20190212162149.21583-1-TheSven73@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] PM-runtime: Fix __pm_runtime_set_status() race with
+ runtime resume
+Date: Tue, 12 Feb 2019 17:28:46 +0100
+Message-ID: <CAJZ5v0jv6dboQd=iu9pHA_B2HzCEhd2WaN3-732S9px_u6MA-w@mail.gmail.com>
+References: <5510642.nRbR3bcduN@aspire.rjw.lan> <1670239.00ZbddH1IV@aspire.rjw.lan>
+ <CAPDyKFoR+evmvDehgTJvxcZ70ZLTqU5J4To_c=2vYdOk26h92w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoR+evmvDehgTJvxcZ70ZLTqU5J4To_c=2vYdOk26h92w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-In remove(), use cancel_delayed_work_sync() to cancel the
-delayed work. Otherwise there's a chance that this work
-will continue to run until after the device has been removed.
+On Tue, Feb 12, 2019 at 5:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Commit 4080ab083000 ("PM-runtime: Take suppliers into account in
+> > __pm_runtime_set_status()") introduced a race condition that may
+> > trigger if __pm_runtime_set_status() is used incorrectly (that is,
+> > if it is called when PM-runtime is enabled for the target device
+> > and working).
+> >
+> > In that case, if the original PM-runtime status of the device is
+> > RPM_SUSPENDED, a runtime resume of the device may occur after
+> > __pm_runtime_set_status() has dropped its power.lock spinlock
+> > and before deactivating its suppliers, so the suppliers may be
+> > deactivated while the device is PM-runtime-active which may lead
+> > to functional issues.
+> >
+> > To avoid that, modify __pm_runtime_set_status() to check whether
+> > or not PM-runtime is enabled for the device before activating its
+> > suppliers (if the new status is RPM_ACTIVE) and either return an
+> > error if that's the case or increment the device's disable_depth
+> > counter to prevent PM-runtime from being enabled for it while
+> > the remaining part of the function is running (disable_depth is
+> > then decremented on the way out).
+> >
+> > Fixes: 4080ab083000 ("PM-runtime: Take suppliers into account in __pm_runtime_set_status()")
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/base/power/runtime.c |   24 ++++++++++++++++++------
+> >  1 file changed, 18 insertions(+), 6 deletions(-)
+> >
+> > Index: linux-pm/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/runtime.c
+> > +++ linux-pm/drivers/base/power/runtime.c
+> > @@ -1129,6 +1129,22 @@ int __pm_runtime_set_status(struct devic
+> >         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+> >                 return -EINVAL;
+> >
+> > +       spin_lock_irq(&dev->power.lock);
+> > +
+> > +       /*
+> > +        * Prevent PM-runtime from being enabled for the device or return an
+> > +        * error if it is enabled already and working.
+> > +        */
+> > +       if (dev->power.runtime_error || dev->power.disable_depth)
+> > +               dev->power.disable_depth++;
+> > +       else
+> > +               error = -EAGAIN;
+> > +
+> > +       spin_unlock_irq(&dev->power.lock);
+> > +
+> > +       if (error)
+> > +               return error;
+> > +
+> >         /*
+> >          * If the new status is RPM_ACTIVE, the suppliers can be activated
+> >          * upfront regardless of the current status, because next time
+> > @@ -1147,12 +1163,6 @@ int __pm_runtime_set_status(struct devic
+> >
+> >         spin_lock_irq(&dev->power.lock);
+> >
+> > -       if (!dev->power.runtime_error && !dev->power.disable_depth) {
+> > -               status = dev->power.runtime_status;
+> > -               error = -EAGAIN;
+> > -               goto out;
+> > -       }
+> > -
+> >         if (dev->power.runtime_status == status || !parent)
+> >                 goto out_set;
+> >
+> > @@ -1205,6 +1215,8 @@ int __pm_runtime_set_status(struct devic
+> >                 device_links_read_unlock(idx);
+> >         }
+> >
+> > +       pm_runtime_enable(dev);
+>
+> pm_runtime_enable() uses spin_lock_irqsave(), rather than
+> spin_lock_irq() - is there a reason to why you want to allow that
+> here, but not earlier in the function?
 
-While we're here, fix the deallocation order in remove(),
-to correspond to the inverse of the probe() allocation
-order. This guarantees that any remaining work can run
-to completion with all driver structures still intact.
-
-This issue was detected with the help of Coccinelle.
-
-Signed-off-by: Sven Van Asbroeck <TheSven73@gmail.com>
----
-
-v2: fix silly use-after-free in remove()
-
- drivers/power/supply/ds2782_battery.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply/ds2782_battery.c
-index 019c58493e3d..04b0fe7d7d62 100644
---- a/drivers/power/supply/ds2782_battery.c
-+++ b/drivers/power/supply/ds2782_battery.c
-@@ -319,17 +319,17 @@ static void ds278x_power_supply_init(struct power_supply_desc *battery)
- static int ds278x_battery_remove(struct i2c_client *client)
- {
- 	struct ds278x_info *info = i2c_get_clientdata(client);
-+	int id = info->id;
- 
- 	power_supply_unregister(info->battery);
-+	cancel_delayed_work_sync(&info->bat_work);
- 	kfree(info->battery_desc.name);
-+	kfree(info);
- 
- 	mutex_lock(&battery_lock);
--	idr_remove(&battery_id, info->id);
-+	idr_remove(&battery_id, id);
- 	mutex_unlock(&battery_lock);
- 
--	cancel_delayed_work(&info->bat_work);
--
--	kfree(info);
- 	return 0;
- }
- 
--- 
-2.17.1
+Device links locking cannot be used in interrupt context.
