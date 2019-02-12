@@ -1,59 +1,38 @@
-From: Moritz Fischer <moritz.fischer@ettus.com>
-Subject: Re: [RFC 1/6] mfd: Support for Ettus Research E31x devices PMU
-Date: Tue, 12 Feb 2019 02:51:51 -0800
-Message-ID: <CAAtXAHd=-8H7AYpApe1B+WRWCv54GhxJBv1BD4bc-C9rnScU+w@mail.gmail.com>
-References: <20190212010143.3729-1-virendra.kakade@ni.com> <20190212010143.3729-2-virendra.kakade@ni.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3 1/2] cpufreq: Allow light-weight tear down and bring up
+ of CPUs
+Date: Tue, 12 Feb 2019 11:54:29 +0100
+Message-ID: <CAJZ5v0hez63un9g4h0U+YOZV1o7S+FT8NritiX6dxEcD1-fTSQ@mail.gmail.com>
+References: <f48f04ddfe3bd072f40154cdd971079199db0e4b.1549955027.git.viresh.kumar@linaro.org>
+ <15c641e4139d0b9a7d7540eefced1c012b608e91.1549968315.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212010143.3729-2-virendra.kakade@ni.com>
+In-Reply-To: <15c641e4139d0b9a7d7540eefced1c012b608e91.1549968315.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Virendra Kakade <virendra.kakade@ni.com>
-Cc: Devicetree List <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Virendra,
-
-On Mon, Feb 11, 2019 at 5:02 PM Virendra Kakade <virendra.kakade@ni.com> wrote:
->
-> Document bindings for E31x device PMU MFD driver.
->
-> Signed-off-by: Virendra Kakade <virendra.kakade@ni.com>
-> ---
->  Documentation/devicetree/bindings/mfd/e31x-pmu.txt | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/e31x-pmu.txt
->
-> diff --git a/Documentation/devicetree/bindings/mfd/e31x-pmu.txt b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> new file mode 100644
-> index 000000000000..ebb5625f6c74
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> @@ -0,0 +1,14 @@
-> +Ettus Research/National Instruments E31x PMU MFD driver
-> +
-> +Required properties:
-> +- compatible : Must be "ni,e31x-pmu"
-> +- regmap     : Must be <&regmapnode>
-> +
-> +Example:
-> +
-> +pmu {
-> +       compatible = "ni,e31x-pmu";
-> +       regmap = <&devctrl>;
-> +       status = "okay";
-
-Please drop this.
->
-> +};
-> +
-> --
-> 2.17.1
+On Tue, Feb 12, 2019 at 11:47 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
 
-Your binding patches should have "dt-bindings: ... " in the commit message.
+[cut]
 
-Please fix that when you resubmit your series.
+> @@ -2488,7 +2505,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>                     driver_data->target) ||
+>              (driver_data->setpolicy && (driver_data->target_index ||
+>                     driver_data->target)) ||
+> -            (!!driver_data->get_intermediate != !!driver_data->target_intermediate))
+> +            (!!driver_data->get_intermediate != !!driver_data->target_intermediate) ||
+> +            (!driver_data->online ^ !driver_data->offline))
 
-Cheers,
-Moritz
+Why do you need the ^ here?  != should be sufficient:
+
+!driver_data->online != !driver_data->offline
+
+?
+
+>                 return -EINVAL;
+>
+>         pr_debug("trying to register driver %s\n", driver_data->name);
