@@ -1,433 +1,150 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 06/10] power: supply: max77650: add support for
- battery charger
-Date: Tue, 12 Feb 2019 08:23:45 +0000
-Message-ID: <20190212082344.GS20638@dell>
-References: <20190205091237.6448-1-brgl@bgdev.pl>
- <20190205091237.6448-7-brgl@bgdev.pl>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
+Date: Tue, 12 Feb 2019 09:25:59 +0100
+Message-ID: <CAPDyKFrVeRYfRFHX4Tq-mSAFabBTxbJfQoTXaxb2OA+Gbm8tAg@mail.gmail.com>
+References: <3917694.ab5GGAjohB@aspire.rjw.lan> <1634058.cXDNg15SOd@aspire.rjw.lan>
+ <CAPDyKFpWCT9CcmxqqWk+S8tSPz_at56UCnk3EVBab-TnScHw8Q@mail.gmail.com> <CAJZ5v0j2Gi7uG7TWSXdmQ09VWT+ZZF=woUFAnoFBDLx9zy-Cng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190205091237.6448-7-brgl@bgdev.pl>
+In-Reply-To: <CAJZ5v0j2Gi7uG7TWSXdmQ09VWT+ZZF=woUFAnoFBDLx9zy-Cng@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Sebastian,
+On Mon, 11 Feb 2019 at 23:41, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+>  On Mon, Feb 11, 2019 at 2:28 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Thu, 7 Feb 2019 at 19:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > If the target device has any suppliers, as reflected by device links
+> > > to them, __pm_runtime_set_status() does not take them into account,
+> > > which is not consistent with the other parts of the PM-runtime
+> > > framework and may lead to programming mistakes.
+> > >
+> > > Modify __pm_runtime_set_status() to take suppliers into account by
+> > > activating them upfront if the new status is RPM_ACTIVE and
+> > > deactivating them on exit if the new status is RPM_SUSPENDED.
+> > >
+> > > If the activation of one of the suppliers fails, the new status
+> > > will be RPM_SUSPENDED and the (remaining) suppliers will be
+> > > deactivated on exit (the child count of the device's parent
+> > > will be dropped too then).
+> > >
+> > > Of course, adding device links locking to __pm_runtime_set_status()
+> > > means that it cannot be run fron interrupt context, so make it use
+> > > spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
+> > > and spin_unlock_irqrestore(), respectively.
+> > >
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Rafael, thanks for working on this!
+> >
+> > I am running some tests at my side, but still not achieving the
+> > behavior I expect to. Will let you know when I have more details, but
+> > first some comments below.
+> >
+> > > ---
+> > >  drivers/base/power/runtime.c |   45 ++++++++++++++++++++++++++++++++++++++-----
+> > >  1 file changed, 40 insertions(+), 5 deletions(-)
+> > >
+> > > Index: linux-pm/drivers/base/power/runtime.c
+> > > ===================================================================
+> > > --- linux-pm.orig/drivers/base/power/runtime.c
+> > > +++ linux-pm/drivers/base/power/runtime.c
+> > > @@ -1102,20 +1102,43 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_u
+> > >   * and the device parent's counter of unsuspended children is modified to
+> > >   * reflect the new status.  If the new status is RPM_SUSPENDED, an idle
+> > >   * notification request for the parent is submitted.
+> > > + *
+> > > + * If @dev has any suppliers (as reflected by device links to them), and @status
+> > > + * is RPM_ACTIVE, they will be activated upfront and if the activation of one
+> > > + * of them fails, the status of @dev will be changed to RPM_SUSPENDED (instead
+> > > + * of the @status value) and the suppliers will be deacticated on exit.  The
+> > > + * error returned by the failing supplier activation will be returned in that
+> > > + * case.
+> > >   */
+> > >  int __pm_runtime_set_status(struct device *dev, unsigned int status)
+> > >  {
+> > >         struct device *parent = dev->parent;
+> > > -       unsigned long flags;
+> > >         bool notify_parent = false;
+> > >         int error = 0;
+> > >
+> > >         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+> > >                 return -EINVAL;
+> > >
+> > > -       spin_lock_irqsave(&dev->power.lock, flags);
+> > > +       /*
+> > > +        * If the new status is RPM_ACTIVE, the suppliers can be activated
+> > > +        * upfront regardless of the current status, because next time
+> > > +        * rpm_put_suppliers() runs, the rpm_active refcounts of the links
+> > > +        * involved will be dropped down to one anyway.
+> > > +        */
+> > > +       if (status == RPM_ACTIVE) {
+> > > +               int idx = device_links_read_lock();
+> > > +
+> > > +               error = rpm_get_suppliers(dev);
+> > > +               if (error)
+> > > +                       status = RPM_SUSPENDED;
+> > > +
+> > > +               device_links_read_unlock(idx);
+> > > +       }
+> >
+> > This doesn't look right to me, and more importantly, this isn't
+> > consistent with how we treat a parent/child.
+>
+> It cannot be entirely consistent with that, because you cannot walk
+> the suppliers under the device's power.lock.
+>
+> The idea here is that activating suppliers upfront if the new status
+> is RPM_ACTIVE shouldn't hurt regardless.
 
-Just waiting on your Ack for the set.
+I see. However, perhaps we can just read out the needed flags/states
+(within device's power.lock) before walking the suppliers.
 
-Could you review this please?
+In principle, those flags/states shouldn't really change, in case
+runtime PM have been properly disabled by the caller.
 
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> 
-> Add basic support for the battery charger for max77650 PMIC.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->  drivers/power/supply/Kconfig            |   7 +
->  drivers/power/supply/Makefile           |   1 +
->  drivers/power/supply/max77650-charger.c | 355 ++++++++++++++++++++++++
->  3 files changed, 363 insertions(+)
->  create mode 100644 drivers/power/supply/max77650-charger.c
-> 
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index e901b9879e7e..0230c96fa94d 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -499,6 +499,13 @@ config CHARGER_DETECTOR_MAX14656
->  	  Revision 1.2 and can be found e.g. in Kindle 4/5th generation
->  	  readers and certain LG devices.
->  
-> +config CHARGER_MAX77650
-> +	tristate "Maxim MAX77650 battery charger driver"
-> +	depends on MFD_MAX77650
-> +	help
-> +	  Say Y to enable support for the battery charger control of MAX77650
-> +	  PMICs.
-> +
->  config CHARGER_MAX77693
->  	tristate "Maxim MAX77693 battery charger driver"
->  	depends on MFD_MAX77693
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index b731c2a9b695..b73eb8c5c1a9 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -70,6 +70,7 @@ obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
->  obj-$(CONFIG_CHARGER_LTC3651)	+= ltc3651-charger.o
->  obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
->  obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+= max14656_charger_detector.o
-> +obj-$(CONFIG_CHARGER_MAX77650)	+= max77650-charger.o
->  obj-$(CONFIG_CHARGER_MAX77693)	+= max77693_charger.o
->  obj-$(CONFIG_CHARGER_MAX8997)	+= max8997_charger.o
->  obj-$(CONFIG_CHARGER_MAX8998)	+= max8998_charger.o
-> diff --git a/drivers/power/supply/max77650-charger.c b/drivers/power/supply/max77650-charger.c
-> new file mode 100644
-> index 000000000000..7055c9b5ee24
-> --- /dev/null
-> +++ b/drivers/power/supply/max77650-charger.c
-> @@ -0,0 +1,355 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +//
-> +// Copyright (C) 2018 BayLibre SAS
-> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> +//
-> +// Battery charger driver for MAXIM 77650/77651 charger/power-supply.
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/mfd/max77650.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/regmap.h>
-> +
-> +#define MAX77650_CHARGER_ENABLED		BIT(0)
-> +#define MAX77650_CHARGER_DISABLED		0x00
-> +#define MAX77650_CHARGER_CHG_EN_MASK		BIT(0)
-> +
-> +#define MAX77650_CHARGER_CHG_DTLS_MASK		GENMASK(7, 4)
-> +#define MAX77650_CHARGER_CHG_DTLS_BITS(_reg) \
-> +		(((_reg) & MAX77650_CHARGER_CHG_DTLS_MASK) >> 4)
-> +
-> +#define MAX77650_CHARGER_CHG_OFF		0x00
-> +#define MAX77650_CHARGER_CHG_PREQ		0x01
-> +#define MAX77650_CHARGER_CHG_ON_CURR		0x02
-> +#define MAX77650_CHARGER_CHG_ON_JCURR		0x03
-> +#define MAX77650_CHARGER_CHG_ON_VOLT		0x04
-> +#define MAX77650_CHARGER_CHG_ON_JVOLT		0x05
-> +#define MAX77650_CHARGER_CHG_ON_TOPOFF		0x06
-> +#define MAX77650_CHARGER_CHG_ON_JTOPOFF		0x07
-> +#define MAX77650_CHARGER_CHG_DONE		0x08
-> +#define MAX77650_CHARGER_CHG_JDONE		0x09
-> +#define MAX77650_CHARGER_CHG_SUSP_PF		0x0a
-> +#define MAX77650_CHARGER_CHG_SUSP_FCF		0x0b
-> +#define MAX77650_CHARGER_CHG_SUSP_BTF		0x0c
-> +
-> +#define MAX77650_CHARGER_CHGIN_DTLS_MASK	GENMASK(3, 2)
-> +#define MAX77650_CHARGER_CHGIN_DTLS_BITS(_reg) \
-> +		(((_reg) & MAX77650_CHARGER_CHGIN_DTLS_MASK) >> 2)
-> +
-> +#define MAX77650_CHARGER_CHGIN_UVL		0x00
-> +#define MAX77650_CHARGER_CHGIN_OVL		0x01
-> +#define MAX77650_CHARGER_CHGIN_OKAY		0x11
-> +
-> +#define MAX77650_CHARGER_CHG_MASK	BIT(1)
-> +#define MAX77650_CHARGER_CHG_CHARGING(_reg) \
-> +		(((_reg) & MAX77650_CHARGER_CHG_MASK) > 1)
-> +
-> +#define MAX77650_CHARGER_VCHGIN_MIN_MASK	0xc0
-> +#define MAX77650_CHARGER_VCHGIN_MIN_SHIFT(_val)	((_val) << 5)
-> +
-> +#define MAX77650_CHARGER_ICHGIN_LIM_MASK	0x1c
-> +#define MAX77650_CHARGER_ICHGIN_LIM_SHIFT(_val)	((_val) << 2)
-> +
-> +struct max77650_charger_data {
-> +	struct regmap *map;
-> +	struct device *dev;
-> +};
-> +
-> +static enum power_supply_property max77650_charger_properties[] = {
-> +	POWER_SUPPLY_PROP_STATUS,
-> +	POWER_SUPPLY_PROP_ONLINE,
-> +	POWER_SUPPLY_PROP_CHARGE_TYPE
-> +};
-> +
-> +static const unsigned int max77650_charger_vchgin_min_table[] = {
-> +	4000000, 4100000, 4200000, 4300000, 4400000, 4500000, 4600000, 4700000
-> +};
-> +
-> +static const unsigned int max77650_charger_ichgin_lim_table[] = {
-> +	95000, 190000, 285000, 380000, 475000
-> +};
-> +
-> +static int max77650_charger_set_vchgin_min(struct max77650_charger_data *chg,
-> +					   unsigned int val)
-> +{
-> +	int i, rv;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(max77650_charger_vchgin_min_table); i++) {
-> +		if (val == max77650_charger_vchgin_min_table[i]) {
-> +			rv = regmap_update_bits(chg->map,
-> +					MAX77650_REG_CNFG_CHG_B,
-> +					MAX77650_CHARGER_VCHGIN_MIN_MASK,
-> +					MAX77650_CHARGER_VCHGIN_MIN_SHIFT(i));
-> +			if (rv)
-> +				return rv;
-> +
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static int max77650_charger_set_ichgin_lim(struct max77650_charger_data *chg,
-> +					   unsigned int val)
-> +{
-> +	int i, rv;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(max77650_charger_ichgin_lim_table); i++) {
-> +		if (val == max77650_charger_ichgin_lim_table[i]) {
-> +			rv = regmap_update_bits(chg->map,
-> +					MAX77650_REG_CNFG_CHG_B,
-> +					MAX77650_CHARGER_ICHGIN_LIM_MASK,
-> +					MAX77650_CHARGER_ICHGIN_LIM_SHIFT(i));
-> +			if (rv)
-> +				return rv;
-> +
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static void max77650_charger_enable(struct max77650_charger_data *chg)
-> +{
-> +	int rv;
-> +
-> +	rv = regmap_update_bits(chg->map,
-> +				MAX77650_REG_CNFG_CHG_B,
-> +				MAX77650_CHARGER_CHG_EN_MASK,
-> +				MAX77650_CHARGER_ENABLED);
-> +	if (rv)
-> +		dev_err(chg->dev, "unable to enable the charger: %d\n", rv);
-> +}
-> +
-> +static void max77650_charger_disable(struct max77650_charger_data *chg)
-> +{
-> +	int rv;
-> +
-> +	rv = regmap_update_bits(chg->map,
-> +				MAX77650_REG_CNFG_CHG_B,
-> +				MAX77650_CHARGER_CHG_EN_MASK,
-> +				MAX77650_CHARGER_DISABLED);
-> +	if (rv)
-> +		dev_err(chg->dev, "unable to disable the charger: %d\n", rv);
-> +}
-> +
-> +static irqreturn_t max77650_charger_check_status(int irq, void *data)
-> +{
-> +	struct max77650_charger_data *chg = data;
-> +	int rv, reg;
-> +
-> +	rv = regmap_read(chg->map, MAX77650_REG_STAT_CHG_B, &reg);
-> +	if (rv) {
-> +		dev_err(chg->dev,
-> +			"unable to read the charger status: %d\n", rv);
-> +		return IRQ_HANDLED;
-> +	}
-> +
-> +	switch (MAX77650_CHARGER_CHGIN_DTLS_BITS(reg)) {
-> +	case MAX77650_CHARGER_CHGIN_UVL:
-> +		dev_err(chg->dev, "undervoltage lockout detected, disabling charger\n");
-> +		max77650_charger_disable(chg);
-> +		break;
-> +	case MAX77650_CHARGER_CHGIN_OVL:
-> +		dev_err(chg->dev, "overvoltage lockout detected, disabling charger\n");
-> +		max77650_charger_disable(chg);
-> +		break;
-> +	case MAX77650_CHARGER_CHGIN_OKAY:
-> +		max77650_charger_enable(chg);
-> +		break;
-> +	default:
-> +		/* May be 0x10 - debouncing */
-> +		break;
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int max77650_charger_get_property(struct power_supply *psy,
-> +					 enum power_supply_property psp,
-> +					 union power_supply_propval *val)
-> +{
-> +	struct max77650_charger_data *chg = power_supply_get_drvdata(psy);
-> +	int rv, reg;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_STATUS:
-> +		rv = regmap_read(chg->map, MAX77650_REG_STAT_CHG_B, &reg);
-> +		if (rv)
-> +			return rv;
-> +
-> +		if (MAX77650_CHARGER_CHG_CHARGING(reg)) {
-> +			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-> +			break;
-> +		}
-> +
-> +		switch (MAX77650_CHARGER_CHG_DTLS_BITS(reg)) {
-> +		case MAX77650_CHARGER_CHG_OFF:
-> +		case MAX77650_CHARGER_CHG_SUSP_PF:
-> +		case MAX77650_CHARGER_CHG_SUSP_FCF:
-> +		case MAX77650_CHARGER_CHG_SUSP_BTF:
-> +			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-> +			break;
-> +		case MAX77650_CHARGER_CHG_PREQ:
-> +		case MAX77650_CHARGER_CHG_ON_CURR:
-> +		case MAX77650_CHARGER_CHG_ON_JCURR:
-> +		case MAX77650_CHARGER_CHG_ON_VOLT:
-> +		case MAX77650_CHARGER_CHG_ON_JVOLT:
-> +		case MAX77650_CHARGER_CHG_ON_TOPOFF:
-> +		case MAX77650_CHARGER_CHG_ON_JTOPOFF:
-> +			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-> +			break;
-> +		case MAX77650_CHARGER_CHG_DONE:
-> +			val->intval = POWER_SUPPLY_STATUS_FULL;
-> +			break;
-> +		default:
-> +			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
-> +		}
-> +		break;
-> +	case POWER_SUPPLY_PROP_ONLINE:
-> +		rv = regmap_read(chg->map, MAX77650_REG_STAT_CHG_B, &reg);
-> +		if (rv)
-> +			return rv;
-> +
-> +		val->intval = MAX77650_CHARGER_CHG_CHARGING(reg);
-> +		break;
-> +	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-> +		rv = regmap_read(chg->map, MAX77650_REG_STAT_CHG_B, &reg);
-> +		if (rv)
-> +			return rv;
-> +
-> +		if (!MAX77650_CHARGER_CHG_CHARGING(reg)) {
-> +			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
-> +			break;
-> +		}
-> +
-> +		switch (MAX77650_CHARGER_CHG_DTLS_BITS(reg)) {
-> +		case MAX77650_CHARGER_CHG_PREQ:
-> +		case MAX77650_CHARGER_CHG_ON_CURR:
-> +		case MAX77650_CHARGER_CHG_ON_JCURR:
-> +		case MAX77650_CHARGER_CHG_ON_VOLT:
-> +		case MAX77650_CHARGER_CHG_ON_JVOLT:
-> +			val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
-> +			break;
-> +		case MAX77650_CHARGER_CHG_ON_TOPOFF:
-> +		case MAX77650_CHARGER_CHG_ON_JTOPOFF:
-> +			val->intval = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-> +			break;
-> +		default:
-> +			val->intval = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-> +		}
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct power_supply_desc max77650_battery_desc = {
-> +	.name		= "max77650",
-> +	.type		= POWER_SUPPLY_TYPE_USB,
-> +	.get_property	= max77650_charger_get_property,
-> +	.properties	= max77650_charger_properties,
-> +	.num_properties	= ARRAY_SIZE(max77650_charger_properties),
-> +};
-> +
-> +static int max77650_charger_probe(struct platform_device *pdev)
-> +{
-> +	struct power_supply_config pscfg = {};
-> +	struct max77650_charger_data *chg;
-> +	struct power_supply *battery;
-> +	struct device *dev, *parent;
-> +	int rv, chg_irq, chgin_irq;
-> +	unsigned int prop;
-> +
-> +	dev = &pdev->dev;
-> +	parent = dev->parent;
-> +
-> +	chg = devm_kzalloc(dev, sizeof(*chg), GFP_KERNEL);
-> +	if (!chg)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, chg);
-> +
-> +	chg->map = dev_get_regmap(parent, NULL);
-> +	if (!chg->map)
-> +		return -ENODEV;
-> +
-> +	chg->dev = dev;
-> +
-> +	pscfg.of_node = dev->of_node;
-> +	pscfg.drv_data = chg;
-> +
-> +	chg_irq = platform_get_irq_byname(pdev, "CHG");
-> +	if (chg_irq < 0)
-> +		return chg_irq;
-> +
-> +	chgin_irq = platform_get_irq_byname(pdev, "CHGIN");
-> +	if (chgin_irq < 0)
-> +		return chgin_irq;
-> +
-> +	rv = devm_request_any_context_irq(dev, chg_irq,
-> +					  max77650_charger_check_status,
-> +					  IRQF_ONESHOT, "chg", chg);
-> +	if (rv < 0)
-> +		return rv;
-> +
-> +	rv = devm_request_any_context_irq(dev, chgin_irq,
-> +					  max77650_charger_check_status,
-> +					  IRQF_ONESHOT, "chgin", chg);
-> +	if (rv < 0)
-> +		return rv;
-> +
-> +	battery = devm_power_supply_register(dev,
-> +					     &max77650_battery_desc, &pscfg);
-> +	if (IS_ERR(battery))
-> +		return PTR_ERR(battery);
-> +
-> +	rv = of_property_read_u32(dev->of_node, "maxim,vchgin-min", &prop);
-> +	if (rv == 0) {
-> +		rv = max77650_charger_set_vchgin_min(chg, prop);
-> +		if (rv)
-> +			return rv;
-> +	}
-> +
-> +	rv = of_property_read_u32(dev->of_node, "maxim,ichgin-lim", &prop);
-> +	if (rv == 0) {
-> +		rv = max77650_charger_set_ichgin_lim(chg, prop);
-> +		if (rv)
-> +			return rv;
-> +	}
-> +
-> +	return regmap_update_bits(chg->map,
-> +				  MAX77650_REG_CNFG_CHG_B,
-> +				  MAX77650_CHARGER_CHG_EN_MASK,
-> +				  MAX77650_CHARGER_ENABLED);
-> +}
-> +
-> +static int max77650_charger_remove(struct platform_device *pdev)
-> +{
-> +	struct max77650_charger_data *chg = platform_get_drvdata(pdev);
-> +
-> +	return regmap_update_bits(chg->map,
-> +				  MAX77650_REG_CNFG_CHG_B,
-> +				  MAX77650_CHARGER_CHG_EN_MASK,
-> +				  MAX77650_CHARGER_DISABLED);
-> +}
-> +
-> +static struct platform_driver max77650_charger_driver = {
-> +	.driver = {
-> +		.name = "max77650-charger",
-> +	},
-> +	.probe = max77650_charger_probe,
-> +	.remove = max77650_charger_remove,
-> +};
-> +module_platform_driver(max77650_charger_driver);
-> +
-> +MODULE_DESCRIPTION("MAXIM 77650/77651 charger driver");
-> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
-> +MODULE_LICENSE("GPL v2");
+>
+> > More precisely, I think you need to check "if
+> > (!dev->power.runtime_error && !dev->power.disable_depth)" and also
+> > whether "dev->power.runtime_status == status", before deciding to call
+> > rpm_get_suppliers() above. Otherwise you may end up resuming suppliers
+> > and/or increasing the link->rpm_active count, when you shouldn't.
+>
+> Resuming suppliers unnecessarily is not particularly efficient, but it
+> is not incorrect.  Incrementing their rpm_active temporarily also
+> isn't incorrect as long as the rpm_active values are correct on exit
+> (and note that incementing them if the consumer's status is RPM_ACTIVE
+> doesn't even matter).
+>
+> > In other words, expecting __pm_runtime_set_status() to be called in
+> > "balanced" manner isn't correct.
+>
+> There is no such expectation here.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+You are right!
+
+I didn't realize that rpm_put_suppliers() actually doesn't drop the
+usage count only by one, but instead as many times as needed to let
+rpm_active reach one.
+
+>
+> There is a possible race between __pm_runtime_set_status() and runtime
+> suspend or resume of the device in case PM-runtime is enabled for it
+> when __pm_runtime_set_status() is called, but it shouldn't occur if
+> __pm_runtime_set_status() is used correctly (that is, when PM-runtime
+> is disabled for the device).
+>
+> I think I know how to avoid that race, though, so I'm going to post an
+> incremental fix if that works out.
+
+Okay, let's see what comes out of this.
+
+Kind regards
+Uffe
