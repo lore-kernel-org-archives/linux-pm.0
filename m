@@ -1,99 +1,60 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 2/3] dt-bindings: devfreq: add compatible for mt8183 cci
- devfreq
-Date: Tue, 12 Feb 2019 10:00:20 +0900
-Message-ID: <803eacf2-a3c7-a4d0-682a-837b7367bf2f@samsung.com>
-References: <1548743704-16821-1-git-send-email-andrew-sh.cheng@mediatek.com>
-        <CGME20190129063540epcas2p2562f42dd248030292eb438259e54236b@epcas2p2.samsung.com>
-        <1548743704-16821-3-git-send-email-andrew-sh.cheng@mediatek.com>
+From: Virendra Kakade <virendra.kakade@ni.com>
+Subject: [RFC 0/6] Add support for Ettus Research E31x devices PMU
+Date: Mon, 11 Feb 2019 19:01:37 -0600
+Message-ID: <20190212010143.3729-1-virendra.kakade@ni.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1548743704-16821-3-git-send-email-andrew-sh.cheng@mediatek.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, srv_heupstream@mediatek.com, fan.chen@mediatek.com
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, moritz.fischer@ettus.com, Virendra Kakade <virendra.kakade@ni.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Andrew-sh.Cheng,
+E31x devices are embedded devices made by Ettus Research which have
+a Zynq based FPGA architecture. This code adds driver support for the
+charger and battery to enable query of properties like voltage,
+temperature, charge and online status among others via the device tree
+on addition of overlay.
 
-On 19. 1. 29. 오후 3:35, Andrew-sh Cheng wrote:
-> From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-> 
-> This adds dt-binding documentation of cci devfreq
-> for Mediatek MT8183 SoC platform.
-> 
-> Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> ---
->  .../bindings/devfreq/mt8183-cci-devfreq.txt           | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt b/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
-> new file mode 100644
-> index 0000000..e2b61cf
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
-> @@ -0,0 +1,19 @@
-> +* Mediatek CCI frequency device
+The driver follows a MFD structure with a parent driver and two
+sub-drivers.
 
-You have to add more detailed what to do on this driver.
-Also, please add the full alphabet for CCI.
+* Patch 1 and 2: Add device bindings and E31x-PMU MFD device driver
 
-> +
-> +Required properties:
-> +- compatible: should contain "mediatek,mt8183-cci" for cci devfreq
+* Patch 3 and 4: Add device bindings for the charger and the sub-driver
+  for it. This driver shares the register map from its parent MFD
+  driver.
 
-Usually, dt-binding document only specifies h/w information
-and how to bind device. 'devfreq' is the word of linux-side.
-It means that 'devfreq' cannot indicate the any h/w device.
+* Patch 5 and 6: Add device bindings for the battery and the sub-driver
+  for it. Register map is re-used.
 
-You should use the h/w device information and word of CCI for writing
-the dt-binding document without linux-side word like devfreq.
+Virendra Kakade (6):
+  mfd: Support for Ettus Research E31x devices PMU
+  mfd: Support for Ettus Research E31x devices PMU
+  power: supply: Ettus Research E31x charger driver
+  power: supply: Ettus Research E31x charger driver
+  power: supply: Ettus Research E31x battery driver
+  power: supply: Ettus Research E31x battery driver
 
-For example, 
-- cci devfreq -> frequency scaling of CCI
-
-> +
-
-Remove unneeded blank line.
-
-> +- clocks: for cci devfreq
-
-ditto of 'devfreq' word.
-
-> +
-
-ditto of blank line
-
-> +- clock-names: for cci devfreq driver to reference
-
-ditto of 'devfreq' word.
-
-> +
-
-ditto of blank line
-
-> +- operating-points-v2: for cci devfreq opp table
-
-ditto of 'devfreq' word.
-
-> +
-> +Example:
-> +	cci: cci {
-> +		compatible = "mediatek,cci";
-> +		clocks = <&apmixedsys CLK_APMIXED_CCIPLL>;
-> +		clock-names = "cci_clock";
-> +		operating-points-v2 = <&cci_opp>;
-> +	};
-> +
-> 
-
-This document is missing the 'regulator' property. Please add it
+ .../devicetree/bindings/mfd/e31x-pmu.txt      |  28 ++
+ .../bindings/power/supply/e31x-battery.txt    |  14 +
+ .../bindings/power/supply/e31x-charger.txt    |  14 +
+ drivers/mfd/Kconfig                           |   7 +
+ drivers/mfd/Makefile                          |   2 +-
+ drivers/mfd/e31x-pmu.c                        |  89 +++++
+ drivers/power/supply/Kconfig                  |  12 +
+ drivers/power/supply/Makefile                 |   2 +
+ drivers/power/supply/e31x-battery.c           | 357 ++++++++++++++++++
+ drivers/power/supply/e31x-charger.c           | 190 ++++++++++
+ include/linux/mfd/e31x-pmu.h                  |  35 ++
+ 11 files changed, 749 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/e31x-pmu.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/e31x-battery.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/e31x-charger.txt
+ create mode 100644 drivers/mfd/e31x-pmu.c
+ create mode 100644 drivers/power/supply/e31x-battery.c
+ create mode 100644 drivers/power/supply/e31x-charger.c
+ create mode 100644 include/linux/mfd/e31x-pmu.h
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.17.1
