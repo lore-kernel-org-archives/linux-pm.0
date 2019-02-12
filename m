@@ -1,102 +1,89 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM-runtime: Fix __pm_runtime_set_status() race with
- runtime resume
-Date: Tue, 12 Feb 2019 21:14:52 +0100
-Message-ID: <CAPDyKFpg=FzZ7ACH0OH0tp3UNN7tL2b1KMTu0fmdCicVXS6CzA@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <1670239.00ZbddH1IV@aspire.rjw.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 12/13] input: max77650: add onkey support
+Date: Tue, 12 Feb 2019 20:34:08 +0000
+Message-ID: <20190212203408.GA1863@dell>
+References: <20190118134244.22253-1-brgl@bgdev.pl>
+ <20190118134244.22253-13-brgl@bgdev.pl>
+ <20190119090318.GB187380@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1670239.00ZbddH1IV@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20190119090318.GB187380@dtor-ws>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Commit 4080ab083000 ("PM-runtime: Take suppliers into account in
-> __pm_runtime_set_status()") introduced a race condition that may
-> trigger if __pm_runtime_set_status() is used incorrectly (that is,
-> if it is called when PM-runtime is enabled for the target device
-> and working).
->
-> In that case, if the original PM-runtime status of the device is
-> RPM_SUSPENDED, a runtime resume of the device may occur after
-> __pm_runtime_set_status() has dropped its power.lock spinlock
-> and before deactivating its suppliers, so the suppliers may be
-> deactivated while the device is PM-runtime-active which may lead
-> to functional issues.
->
-> To avoid that, modify __pm_runtime_set_status() to check whether
-> or not PM-runtime is enabled for the device before activating its
-> suppliers (if the new status is RPM_ACTIVE) and either return an
-> error if that's the case or increment the device's disable_depth
-> counter to prevent PM-runtime from being enabled for it while
-> the remaining part of the function is running (disable_depth is
-> then decremented on the way out).
->
-> Fixes: 4080ab083000 ("PM-runtime: Take suppliers into account in __pm_runtime_set_status()")
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > 
+> > Add support for the push- and slide-button events for max77650.
+> > 
+> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > ---
+> >  drivers/input/misc/Kconfig          |   9 ++
+> >  drivers/input/misc/Makefile         |   1 +
+> >  drivers/input/misc/max77650-onkey.c | 135 ++++++++++++++++++++++++++++
+> >  3 files changed, 145 insertions(+)
+> >  create mode 100644 drivers/input/misc/max77650-onkey.c
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+[...]
 
-Kind regards
-Uffe
+Moving things around a bit:
 
-> ---
->  drivers/base/power/runtime.c |   24 ++++++++++++++++++------
->  1 file changed, 18 insertions(+), 6 deletions(-)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -1129,6 +1129,22 @@ int __pm_runtime_set_status(struct devic
->         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
->                 return -EINVAL;
->
-> +       spin_lock_irq(&dev->power.lock);
-> +
-> +       /*
-> +        * Prevent PM-runtime from being enabled for the device or return an
-> +        * error if it is enabled already and working.
-> +        */
-> +       if (dev->power.runtime_error || dev->power.disable_depth)
-> +               dev->power.disable_depth++;
-> +       else
-> +               error = -EAGAIN;
-> +
-> +       spin_unlock_irq(&dev->power.lock);
-> +
-> +       if (error)
-> +               return error;
-> +
->         /*
->          * If the new status is RPM_ACTIVE, the suppliers can be activated
->          * upfront regardless of the current status, because next time
-> @@ -1147,12 +1163,6 @@ int __pm_runtime_set_status(struct devic
->
->         spin_lock_irq(&dev->power.lock);
->
-> -       if (!dev->power.runtime_error && !dev->power.disable_depth) {
-> -               status = dev->power.runtime_status;
-> -               error = -EAGAIN;
-> -               goto out;
-> -       }
-> -
->         if (dev->power.runtime_status == status || !parent)
->                 goto out_set;
->
-> @@ -1205,6 +1215,8 @@ int __pm_runtime_set_status(struct devic
->                 device_links_read_unlock(idx);
->         }
->
-> +       pm_runtime_enable(dev);
-> +
->         return error;
->  }
->  EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
->
+> > +static int max77650_onkey_probe(struct platform_device *pdev)
+> > +{
+
+> > +	irq_f = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_F);
+> > +	if (irq_f <= 0)
+> > +		return -EINVAL;
+> > +
+> > +	irq_r = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_R);
+> > +	if (irq_r <= 0)
+> > +		return -EINVAL;
+> 
+> Ugh, it would be better if you handled IRQ mapping in the MFD piece and
+> passed it as resources of platform device. Then you'd simply call
+> platform_get_irq() here and did not have to reach into parent device for
+> "irq_dara".
+
+These device IRQs were defined and registered with the Regmap *set*
+(actually init()) APIs and thus should be pulled out using the
+appropriate reverse Regmap *get* APIs here in the device.
+
+Registering them with Regmap *and* pulling them back out again in the
+same (MFD in this case) driver, only to register them as platform data
+is certainly not how I see the API being designed/used.
+
+> > +	struct regmap_irq_chip_data *irq_data;
+> > +	struct device *dev, *parent;
+
+> > +	dev = &pdev->dev;
+> > +	parent = dev->parent;
+> > +	i2c = to_i2c_client(parent);
+> > +	irq_data = i2c_get_clientdata(i2c);
+> > +
+> > +	map = dev_get_regmap(parent, NULL);
+> > +	if (!map)
+> > +		return -ENODEV;
+
+However, this hoop jumping is a bit crazy and for the most part
+superfluous.  Instead, create a struct of attributes you wish to share
+with the child devices (containing both regmap (which you should call
+regmap and not map by the way) and irq_data) and pass it as either
+platform data (preferred) or as device data.
+
+If you choose the latter, you do not need to convert from 'device' to
+'i2c' to do the look-up.  Since this function (probe()) is provided
+with a platform_device, you can just use platform_get_drvdata() to
+achieve the same as above.
+
+If you go the preferred (platform data) route, then you should use
+dev_get_platdata() instead.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
