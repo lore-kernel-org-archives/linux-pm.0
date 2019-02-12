@@ -1,348 +1,198 @@
-From: andrew-sh.cheng <andrew-sh.cheng@mediatek.com>
-Subject: Re: [PATCH 3/3] devfreq: add mediatek cci devfreq
-Date: Tue, 12 Feb 2019 17:05:40 +0800
-Message-ID: <1549962340.7155.2.camel@mtksdaap41>
-References: <1548743704-16821-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1548743704-16821-4-git-send-email-andrew-sh.cheng@mediatek.com>
- <CANMq1KAbaZWM0BQWdKgg8nQhOovBR9Y=cFyd1kG0FAteWhZtiw@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v8 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
+Date: Tue, 12 Feb 2019 09:17:23 +0000
+Message-ID: <20190212091723.GZ20638@dell>
+References: <cover.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <50d1debf03bbd07f49b2c5a85cf9672439cbd0ac.1549523718.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190207140053.GG20638@dell>
+ <20190207162807.GB1920@localhost.localdomain>
+ <20190208105743.GI20638@dell>
+ <20190208124111.GB3012@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CANMq1KAbaZWM0BQWdKgg8nQhOovBR9Y=cFyd1kG0FAteWhZtiw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Boichat <drinkcat@chromium.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, srv_heupstream@mediatek.com, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, "moderated list:ARM/Mediatek SoC
- support" <linux-mediatek@lists.infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Matthias Brugger <matthias.bgg@gmail.com>, Fan Chen <fan.chen@mediatek.com>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190208124111.GB3012@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2019-02-01 at 10:43 +0700, Nicolas Boichat wrote:
-> On Tue, Jan 29, 2019 at 1:36 PM Andrew-sh Cheng
-> <andrew-sh.cheng@mediatek.com> wrote:
-> >
-> > From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-> >
-> > For big/little cpu cluster architecture,
-> > not only CPU frequency, but CCI frequency will also affect performance.
-> >
-> > Little cores and cci share the same buck in Mediatek mt8183 IC,
-> > so we add a CCI devfreq which will get notification when buck voltage
-> > is changed, then CCI devfreq can set cci frequency as high as possible.
-> >
-> > Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> > ---
-> >  drivers/devfreq/Kconfig              |   9 ++
-> >  drivers/devfreq/Makefile             |   1 +
-> >  drivers/devfreq/mt8183-cci-devfreq.c | 224 +++++++++++++++++++++++++++++++++++
-> >  3 files changed, 234 insertions(+)
-> >  create mode 100644 drivers/devfreq/mt8183-cci-devfreq.c
-> >
-> > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> > index 6a172d3..0b14aab 100644
-> > --- a/drivers/devfreq/Kconfig
-> > +++ b/drivers/devfreq/Kconfig
-> > @@ -113,6 +113,15 @@ config ARM_RK3399_DMC_DEVFREQ
-> >            It sets the frequency for the memory controller and reads the usage counts
-> >            from hardware.
-> >
-> > +config ARM_MT8183_CCI_DEVFREQ
-> > +       tristate "MT8183 CCI DEVFREQ Driver"
-> > +       depends on ARM_MEDIATEK_CPUFREQ
-> > +       help
-> > +               This adds devfreq for cci clock
+On Fri, 08 Feb 2019, Matti Vaittinen wrote:
+
+> Hello Lee,
 > 
-> It might be nice to spell out that CCI stands for "Cache Coherent Interconnect".
-I will modify in next patch.
+> On Fri, Feb 08, 2019 at 10:57:43AM +0000, Lee Jones wrote:
+> > > 
+> > > This is needed by both RTC and WDT drivers as RTC driver must stop the
+> > > WDT when it sets RTC. WDT HW is using RTC counter and might trigger
+> > > timeout/reset when RTC is set. Options are to dublicate the
+> > > enable/disable to both drivers or to export a function or share a
+> > > function pointer. I didn't want dublication or dependency between RTC
+> > > and WDT drivers. Thus I thought that MFD is best place for this code as
+> > > both RTC and WDT require it anyways. Perhaps this should be commented
+> > > here?
+> > 
+> > I think an exported function with comments would be better.
 > 
-> > +               which is shared the same regulator with cpu cluster.
-> > +               It can track buck voltage and update a proper cci frequency.
-> > +               Use notification to get regulator status.
-> > +
-> >  source "drivers/devfreq/event/Kconfig"
-> >
-> >  endif # PM_DEVFREQ
-> > diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> > index 32b8d4d..25afe8c 100644
-> > --- a/drivers/devfreq/Makefile
-> > +++ b/drivers/devfreq/Makefile
-> > @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)     += governor_passive.o
-> >  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)   += exynos-bus.o
-> >  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)   += rk3399_dmc.o
-> >  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)                += tegra-devfreq.o
-> > +obj-$(CONFIG_ARM_MT8183_CCI_DEVFREQ)   += mt8183-cci-devfreq.o
-> >
-> >  # DEVFREQ Event Drivers
-> >  obj-$(CONFIG_PM_DEVFREQ_EVENT)         += event/
-> > diff --git a/drivers/devfreq/mt8183-cci-devfreq.c b/drivers/devfreq/mt8183-cci-devfreq.c
-> > new file mode 100644
-> > index 0000000..4837892
-> > --- /dev/null
-> > +++ b/drivers/devfreq/mt8183-cci-devfreq.c
-> > @@ -0,0 +1,224 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +//
-> > +// Copyright (c) 2018 MediaTek Inc.
-> > +#include <linux/cpu.h>
-> > +#include <linux/cpufreq.h>
-> > +#include <linux/devfreq.h>
-> > +#include <linux/module.h>
-> > +#include <linux/of.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/regulator/consumer.h>
-> > +
-> > +#include "governor.h"
-> > +
-> > +struct cci_devfreq_data {
-> > +       struct devfreq          *devfreq;
-> > +       struct regulator        *proc_reg;
-> > +       struct clk              *cci_clk;
-> > +       unsigned long           buck_volt;
-> > +       int                     volt_increasing;
-> > +       struct notifier_block   nb;
-> > +};
-> > +
-> > +static int mtk_cci_governor_get_target(struct devfreq *devfreq,
-> > +                                      unsigned long *freq)
-> > +{
-> > +       struct cci_devfreq_data *cci_devdata;
-> > +       int     i, opp_count;
+> So do you mean you would prefer exported function over the pointer from
+
+Yes please.  Call-back pointers for non-subsystem level actions are a
+bit messy IMHO.
+
+> MFD? I guess I can do it but I would still like to keep the code in the
+> MFD as I would rather not introduce dependency from WDT driver to RTC or
+> other way around. I can easily think of cases where WDT or RTC drivers
+> would be unnecessary and user might want to drop one of them out of
+
+Sounds fine.
+
+> configuration. And I wonder if export actually makes any real
+> improvement as we need to share the mutex between RTC and WDT anyways.
+
+They all (parent (MFD), RTC and WDT) have shared data anyway.
+
+> > [...]
+> > 
+> > > > > +	irqs[BD70528_INT_GPIO3].type.type_reg_offset = 6;
+> > > > > +	irqs[BD70528_INT_GPIO3].type.type_rising_val = 0x20;
+> > > > > +	irqs[BD70528_INT_GPIO3].type.type_falling_val = 0x10;
+> > > > > +	irqs[BD70528_INT_GPIO3].type.type_level_high_val = 0x40;
+> > > > > +	irqs[BD70528_INT_GPIO3].type.type_level_low_val = 0x50;
+> > > > > +	irqs[BD70528_INT_GPIO3].type.types_supported = (IRQ_TYPE_EDGE_BOTH |
+> > > > > +				IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> > > > 
+> > > > Could you please explain:
+> > > > 
+> > > > a) what you're doing here
+> > > 
+> > > Regmap-irq gained support for type-setting. On bd70528 the type setting
+> > > makes sense only for GPIO interrupts - so we must not populate type
+> > > setting information for the rest of the IRQs. The macro REGMAP_IRQ_REG
+> > > is nice and makes the irq struct initialization cleaner. Thus it is used.
+> > > It does not allow populating the type information - hence we do it here.
+> > > 
+> > > I can change this if you think some other way would be cleaner?
+> > 
+> > It's pretty fugly.  Can the REGMAP_IRQ_REG be expanded upon?
 > 
-> No tab here: single space between int and i.
-I will modify in next patch.
+> I was thinking of that but for vast majority of REGMAP_IRQ_REG users
+> initializing type regs would be just unnecessary burden (giving 6
+> zeroes for unsupported fields for each IRQ gets dull quite soon) I
+
+No, I don't mean edit REGMAP_IRQ_REG directly.  I'm proposing to
+create another, separate MACRO based on REGMAP_IRQ_REG.
+
+> was also thinking of adding another macro to be used in cases where
+> we have type setting supported - but macros with 9 parameters won't fit
+> on a line and (in my opinion) will not bring much improvement over
+> plain assignment.
+
+I think a 2 line MACRO is better than the current imp.
+
+> > > > b) why you don't mass assign them
+> > > >     - seeing as most of the data is identical.
+> > > 
+> > > Maybe I am a bit slow today - but I don't know how the 'mass assignment'
+> > > should be done?
+> > 
+> > Something like (completely untested):
+> > 
+> > unsigned int type_reg_offset_inc = 0;
+> > for (i = BD70528_INT_GPIO0; i <=  BD70528_INT_GPIO3; i++) {
+> > 	irqs[i].type.type_reg_offset     = type_reg_offset_inc;
+> > 	irqs[i].type.type_rising_val     = 0x20;
+> > 	irqs[i].type.type_falling_val    = 0x10;
+> > 	irqs[i].type.type_level_high_val = 0x40;
+> > 	irqs[i].type.type_level_low_val  = 0x50;
+> > 	irqs[i].type.types_supported =
+> > 		(IRQ_TYPE_EDGE_BOTH | IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+> > 	type_reg_offset_inc += 2;
+> > }
 > 
-> > +       struct dev_pm_opp       *opp;
-> > +       unsigned long   opp_rate, opp_voltage;
-> > +
-> > +       cci_devdata = dev_get_drvdata(devfreq->dev.parent);
-> > +
-> > +       /* find available frequency */
-> > +       opp_count = dev_pm_opp_get_opp_count(devfreq->dev.parent);
-> > +       for (i = 0, opp_rate = ULONG_MAX; i < opp_count; i++, opp_rate--) {
-> > +               opp = dev_pm_opp_find_freq_floor(devfreq->dev.parent,
-> > +                                                &opp_rate);
+> Right. I did this this morning =)
 > 
-> This is quite inefficient as each call to dev_pm_opp_find_freq_floor
-> may go through the whole OPP table (so your loop is O(n**2), but this
-> can be done in O(n) by simply walking through the list).
+> > It's still fugly though.
 > 
-> I'd just copy what dev_pm_opp_find_freq_ceil does
-> (https://elixir.bootlin.com/linux/v4.19/source/drivers/opp/core.c#L425).
-> Or maybe we need a new function in the opp core.
-I will add an API for opp framework for this in next patch
+> Agree.
 > 
-> > +               opp_voltage = dev_pm_opp_get_voltage(opp);
-> > +               dev_pm_opp_put(opp);
-> > +
-> > +               if (opp_voltage <= cci_devdata->buck_volt)
-> > +                       break;
-> > +       }
-> > +       *freq = opp_rate;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int mtk_cci_governor_event_handler(struct devfreq *devfreq,
-> > +                                         unsigned int event, void *data)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static struct devfreq_governor mtk_cci_devfreq_governor = {
-> > +       .name = "voltage_monitor",
-> > +       .get_target_freq = mtk_cci_governor_get_target,
-> > +       .event_handler = mtk_cci_governor_event_handler,
-> > +};
-> > +
-> > +static int mtk_cci_devfreq_target(struct device *dev, unsigned long *freq,
-> > +                                 u32 flags)
-> > +{
-> > +       struct cci_devfreq_data *cci_devdata;
-> > +
-> > +       cci_devdata = dev_get_drvdata(dev);
-> > +
-> > +       clk_set_rate(cci_devdata->cci_clk, *freq);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static struct devfreq_dev_profile cci_devfreq_profile = {
-> > +       .polling_ms     = 0,
-> > +       .target         = mtk_cci_devfreq_target,
-> > +};
-> > +
-> > +static int cci_devfreq_regulator_notifier(struct notifier_block *nb,
-> > +                                         unsigned long val, void *data)
-> > +{
-> > +       struct cci_devfreq_data *cci_devdata =
-> > +               container_of(nb, struct cci_devfreq_data, nb);
-> > +
-> > +       /* deal with reduce frequency */
-> > +       if (val & REGULATOR_EVENT_PRE_VOLTAGE_CHANGE) {
-> > +               struct pre_voltage_change_data *pvc_data = data;
-> > +
-> > +               if (pvc_data->old_uV > pvc_data->min_uV) {
-> > +                       cci_devdata->volt_increasing = 0;
-> > +                       cci_devdata->buck_volt =
-> > +                               (unsigned long)(pvc_data->min_uV);
-> > +                       mutex_lock(&cci_devdata->devfreq->lock);
-> > +                       update_devfreq(cci_devdata->devfreq);
-> > +                       mutex_unlock(&cci_devdata->devfreq->lock);
-> > +               } else {
-> > +                       cci_devdata->volt_increasing = 1;
-> > +               }
-> > +       }
-> > +       /* deal with abort reduce frequency */
-> > +       if ((val & REGULATOR_EVENT_ABORT_VOLTAGE_CHANGE) ||
-> > +           /* deal with increase frequency */
-> > +           ((val & REGULATOR_EVENT_VOLTAGE_CHANGE) &&
-> > +            cci_devdata->volt_increasing == 1)) {
-> > +               cci_devdata->buck_volt = (unsigned long)data;
-> > +               mutex_lock(&cci_devdata->devfreq->lock);
-> > +               update_devfreq(cci_devdata->devfreq);
-> > +               mutex_unlock(&cci_devdata->devfreq->lock);
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int mtk_cci_devfreq_probe(struct platform_device *pdev)
-> > +{
-> > +       struct device *cci_dev = &pdev->dev;
-> > +       struct cci_devfreq_data *cci_devdata;
-> > +       struct notifier_block *nb;
-> > +       int ret;
-> > +
-> > +       dev_pm_opp_of_add_table(&pdev->dev);
-> > +
-> > +       cci_devdata = devm_kzalloc(cci_dev, sizeof(*cci_devdata), GFP_KERNEL);
-> > +       if (!cci_devdata)
-> > +               return -ENOMEM;
-> > +       nb = &cci_devdata->nb;
-> > +       cci_devdata->cci_clk = ERR_PTR(-ENODEV);
+> > If we can do this via MACROs, it would be better.
 > 
-> This one is useless as you set cci_clk again just below.
+> I just dont see how to do a nice macro for this. Truth is that there is
+> 6 fields to initialize - and the values can't be guessed so each value
+> needs to be given. In best case the macro can somewhat shorten the
+> assignment (but no way it'd still fit nicely on one row) - in worst
+
+Don't get hung up on MACROS existing on a single line.
+
+> case it just hides the meaning of values we are passing as arguments.
+> With raw assignment we at least have some idea what the 0x40 or 0x20 are
+> referring to =)
+
+Well I do agree with your last comment.
+
+Maybe doing the following would help with the ugliness (i.e. the shear
+number of chars):
+
+ unsigned int type_reg_offset_inc = 0;
+ for (i = BD70528_INT_GPIO0; i <=  BD70528_INT_GPIO3; i++) {
+        <blar> *t = irqs[i].type;
+        t->type_reg_offset     = type_reg_offset_inc;
+ 	t->type_rising_val     = 0x20;
+ 	t->type_falling_val    = 0x10;
+ 	t->type_level_high_val = 0x40;
+ 	t->type_level_low_val  = 0x50;
+ 	t->types_supported =
+ 		(IRQ_TYPE_EDGE_BOTH | IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW);
+ 	type_reg_offset_inc += 2;
+ }
+
+> > > > > +struct bd70528 {
+> > > > > +	/*
+> > > > > +	 * Please keep this as the first member here as some
+> > > > > +	 * drivers (clk) supporting more than one chip may only know this
+> > > > > +	 * generic struct 'struct rohm_regmap_dev' and assume it is
+> > > > > +	 * the first chunk of parent device's private data.
+> > > > > +	 */
+> > > > > +	struct rohm_regmap_dev chip;
+> > > > > +	/* wdt_set must be called rtc_timer_lock held */
+> > > > 
+> > > > This doesn't make sense.
+> > > 
+> > > Umm.. The comment does not make sense? Maybe I can explain it further.
+> > 
+> > "wdt_set must be called when the rtc_timer_lock is held"
 > 
-> > +       cci_devdata->proc_reg = ERR_PTR(-ENODEV);
+> Yes. I wanted to say that who-ever is calling the wdt_set function
+> below, should have locked the rtc_timer_lock mutex (last in this
+> struct). The function does not do locking inside because we want the RTC
+> to be able to perform:
 > 
-> For this one, I'd just create 2 goto targets below, instead of those
-> ifs in the error path.
-I will modify and change to 2 goto in next patch.
+> lock
+> disable wdt (store original state)
+> set RTC
+> return wdt original state
+> unlock
 > 
-> > +
-> > +       cci_devdata->cci_clk = clk_get(cci_dev, "cci_clock");
-> > +       ret = PTR_ERR_OR_ZERO(cci_devdata->cci_clk);
-> > +       if (ret) {
-> > +               if (ret == -EPROBE_DEFER)
-> > +                       pr_err("cci clock not ready, retry\n");
-> > +               else
-> > +                       pr_err("no clock for cci: %d\n", ret);
-> > +
-> > +               goto out_free_resources;
-> > +       }
-> > +
-> > +       cci_devdata->proc_reg = regulator_get_optional(cci_dev, "proc");
-> > +       ret = PTR_ERR_OR_ZERO(cci_devdata->proc_reg);
-> > +       if (ret) {
-> > +               if (ret == -EPROBE_DEFER)
-> > +                       pr_err("cci regulator not ready, retry\n");
-> > +               else
-> > +                       pr_err("no regulator for cci: %d\n", ret);
-> > +
-> > +               goto out_free_resources;
-> > +       }
-> > +
-> > +       platform_set_drvdata(pdev, cci_devdata);
-> > +
-> > +       /* create cci_devfreq and add to cci device.
-> > +        * governor is voltage_monitor.
-> > +        * governor will get platform_device data to make decision.
-> > +        */
-> > +       cci_devdata->devfreq = devm_devfreq_add_device(cci_dev,
-> > +                                                      &cci_devfreq_profile,
-> > +                                                      "voltage_monitor",
-> > +                                                      NULL);
-> > +
-> > +       nb->notifier_call = cci_devfreq_regulator_notifier;
-> > +       regulator_register_notifier(cci_devdata->proc_reg,
-> > +                                   nb);
-> > +
-> > +       return 0;
-> > +
-> > +out_free_resources:
-> > +       if (!IS_ERR(cci_devdata->cci_clk))
-> > +               clk_put(cci_devdata->cci_clk);
-> > +       if (!IS_ERR(cci_devdata->proc_reg))
-> > +               regulator_put(cci_devdata->proc_reg);
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +static const struct of_device_id mediatek_cci_devfreq_of_match[] = {
-> > +       { .compatible = "mediatek,mt8183-cci" },
-> > +       { },
-> > +};
-> > +MODULE_DEVICE_TABLE(of, mediatek_cci_devfreq_of_match);
-> > +
-> > +static struct platform_driver cci_devfreq_driver = {
-> > +       .probe  = mtk_cci_devfreq_probe,
-> > +       .driver = {
-> > +               .name = "mediatek-cci-devfreq",
-> > +               .of_match_table = mediatek_cci_devfreq_of_match,
-> > +       },
-> > +};
-> > +
-> > +static int __init mtk_cci_devfreq_init(void)
-> > +{
-> > +       int ret = 0;
-> > +
-> > +       ret = devfreq_add_governor(&mtk_cci_devfreq_governor);
-> > +       if (ret) {
-> > +               pr_err("%s: failed to add governor: %d\n", __func__, ret);
-> > +               return ret;
-> > +       }
-> > +
-> > +       ret = platform_driver_register(&cci_devfreq_driver);
-> > +       if (ret)
-> > +               devfreq_remove_governor(&mtk_cci_devfreq_governor);
-> > +
-> > +       return ret;
-> > +}
-> > +module_init(mtk_cci_devfreq_init)
-> > +
-> > +static void __exit mtk_cci_devfreq_exit(void)
-> > +{
-> > +       int ret = 0;
-> > +
-> > +       platform_driver_unregister(&cci_devfreq_driver);
-> > +
-> > +       ret = devfreq_remove_governor(&mtk_cci_devfreq_governor);
-> > +       if (ret)
-> > +               pr_err("%s: failed to remove governor: %d\n", __func__, ret);
-> > +}
-> > +module_exit(mtk_cci_devfreq_exit)
-> > +
-> > +MODULE_LICENSE("GPL v2");
-> > +MODULE_DESCRIPTION("Mediatek CCI devfreq driver");
-> > +MODULE_AUTHOR("andrew-sh.cheng");
-> > +
-> > --
-> > 1.8.1.1.dirty
-> >
-> >
-> > _______________________________________________
-> > Linux-mediatek mailing list
-> > Linux-mediatek@lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-mediatek
-> 
-> _______________________________________________
-> Linux-mediatek mailing list
-> Linux-mediatek@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+> Locking is needed so that we can exclude the watchdog enabling or
+> disabling the WDT timer between moments when RTC is getting the original
+> WDT state and re-turning back the old state. Without the lock we have a
+> risk that WDT-driver enables or disables the timer when RTC is being
+> set, and RTC overwrites the watchdog driver changes when writing back
+> the old state. I hope this makes sense now... Any suggestions how to
+> explain this nicely in english?
+
+I think I did already:
+
+ "wdt_set must be called when the rtc_timer_lock is held"
+
+Actually, this is a little ambiguous.  A better sentence could read:
+
+ "rtc_timer_lock must be taken before calling wdt_set()"
+ 
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
