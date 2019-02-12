@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
-Date: Wed, 13 Feb 2019 00:26:50 +0100
-Message-ID: <CAJZ5v0hRY_KdJ5LJY9O4vm3cU+meKdgoNW-9xzMFjT8wsQuvxw@mail.gmail.com>
+Date: Wed, 13 Feb 2019 00:35:37 +0100
+Message-ID: <CAJZ5v0j3pDoLnxNqZRvNW8+hdBs_MLf22OsNivkBpcCG_if0DA@mail.gmail.com>
 References: <20190203052007.27392-1-harry.pan@intel.com> <20190206144257.21464-1-harry.pan@intel.com>
  <CAJZ5v0j+JEs5G+ySmkxEc0kbomTckX=wRg_DbnQ6svnX+EZaTg@mail.gmail.com>
 Mime-Version: 1.0
@@ -42,39 +42,7 @@ On Wed, Feb 13, 2019 at 12:21 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
 > > +       unsigned int elapsed_msecs;
 >
 > You only need these two if CONFIG_SUSPEND_SKIP_SYNC is set, ->
->
-> >
-> >         trace_suspend_resume(TPS("suspend_enter"), state, true);
-> >         if (state == PM_SUSPEND_TO_IDLE) {
-> > @@ -570,9 +572,12 @@ static int enter_state(suspend_state_t state)
-> >
-> >  #ifndef CONFIG_SUSPEND_SKIP_SYNC
->
-> -> so I would change this to
->
-> if (IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
 
-if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
+s/set/unset/
 
-that is (missing "!").
-
->      ktime_t start;
->      unsigned int elapsed_msecs;
->
-> >         trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-> > +       start = ktime_get();
->
-> Why don't you do this after printing the message below?
->
-> >         pr_info("Syncing filesystems ... ");
-> >         ksys_sync();
-> > -       pr_cont("done.\n");
-> > +       elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
-> > +       pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
-> > +               elapsed_msecs % 1000);
->
-> Use MSEC_PER_SEC here.
->
-> >         trace_suspend_resume(TPS("sync_filesystems"), 0, false);
-> >  #endif
-> >
+Sorry for the confusion.
