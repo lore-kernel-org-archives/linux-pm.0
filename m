@@ -1,47 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH 0/2] driver core: Fixes related to device links
-Date: Tue, 12 Feb 2019 15:52:53 +0100
-Message-ID: <CAPDyKFoSGO5Y8wOF8Jd=b7DDSz6Lb2M4+pn7EXOJ4U_AFz+4gQ@mail.gmail.com>
+Date: Tue, 12 Feb 2019 16:04:59 +0100
+Message-ID: <CAJZ5v0iNXHAYOq-tAHp4U+tbOQXxF43cgF08KM8EAwOtc7Re7A@mail.gmail.com>
 References: <5510642.nRbR3bcduN@aspire.rjw.lan> <20190212140924.GA14444@kroah.com>
+ <CAPDyKFoSGO5Y8wOF8Jd=b7DDSz6Lb2M4+pn7EXOJ4U_AFz+4gQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212140924.GA14444@kroah.com>
+In-Reply-To: <CAPDyKFoSGO5Y8wOF8Jd=b7DDSz6Lb2M4+pn7EXOJ4U_AFz+4gQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Feb 2019 at 15:09, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
+On Tue, Feb 12, 2019 at 3:53 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> On Tue, Feb 12, 2019 at 01:01:13PM +0100, Rafael J. Wysocki wrote:
-> > Hi Greg at al,
+> On Tue, 12 Feb 2019 at 15:09, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
 > >
-> > These fix two issues on top of the recent device links material in
-> > driver-core/driver-core-next.
+> > On Tue, Feb 12, 2019 at 01:01:13PM +0100, Rafael J. Wysocki wrote:
+> > > Hi Greg at al,
+> > >
+> > > These fix two issues on top of the recent device links material in
+> > > driver-core/driver-core-next.
+> > >
+> > > The first one fixes a race condition that may trigger when
+> > > __pm_runtime_set_status() is used incorrectly (that is, when it is
+> > > called with PM-runtime enabled for the target device and working).
+> > >
+> > > The second one fixes a supplier PM-runtime usage counter imbalance
+> > > resulting from adding and removing (e.g. in the error code path) a
+> > > stateless device link to it from within the consumer driver's probe
+> > > callback.
+> > >
+> > > Please refer to the patch changelogs for details.
 > >
-> > The first one fixes a race condition that may trigger when
-> > __pm_runtime_set_status() is used incorrectly (that is, when it is
-> > called with PM-runtime enabled for the target device and working).
-> >
-> > The second one fixes a supplier PM-runtime usage counter imbalance
-> > resulting from adding and removing (e.g. in the error code path) a
-> > stateless device link to it from within the consumer driver's probe
-> > callback.
-> >
-> > Please refer to the patch changelogs for details.
+> > Looks good, all now queued up, thanks.
 >
-> Looks good, all now queued up, thanks.
+> Greg, please don't get me wrong, but ~1.5 hours isn't sufficient for
+> me to review/test submitted patches.
+>
+> I have been trying to collaborate (review/test) device links related
+> code with Rafael, but what's the point if you queue up the patches,
+> before I even got the change to look at them. Shall I interpret it as
+> you don't care about me reviewing this, then just tell me so I don't
+> have to waste my time.
 
-Greg, please don't get me wrong, but ~1.5 hours isn't sufficient for
-me to review/test submitted patches.
+I certainly do care about that.
 
-I have been trying to collaborate (review/test) device links related
-code with Rafael, but what's the point if you queue up the patches,
-before I even got the change to look at them. Shall I interpret it as
-you don't care about me reviewing this, then just tell me so I don't
-have to waste my time.
+Moreover, if you find any issues in the patches, they still can be
+dropped or incremental fixes on top of them can be done.
 
-Kind regards
-Uffe
+Your work and feedback here is much appreciated, please don't drop the ball. :-)
