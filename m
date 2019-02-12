@@ -1,63 +1,77 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] driver core: Fix possible supplier PM-usage counter imbalance
-Date: Tue, 12 Feb 2019 23:08:50 +0100
-Message-ID: <CAJZ5v0iQiks4e4te3eoafD5=27zKSK3DRMZxsnjEvaBBPyt2ww@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <9351473.C2nPJoyFsE@aspire.rjw.lan>
- <CAPDyKFpVygMvKAVRd4bCkS6v5MotDRO6sb-VCHK+YEQvbLbc4Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v3 0/7] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Tue, 12 Feb 2019 23:23:51 +0100
+Message-ID: <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190212222422eucas1p1624203db4db3e495035820dea542e23a@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpVygMvKAVRd4bCkS6v5MotDRO6sb-VCHK+YEQvbLbc4Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, tkjos@google.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 12, 2019 at 10:03 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > If a stateless device link to a certain supplier with
-> > DL_FLAG_PM_RUNTIME set in the flags is added and then removed by the
-> > consumer driver's probe callback, the supplier's PM-runtime usage
-> > counter will be nonzero after that which effectively causes the
-> > supplier to remain "always on" going forward.
-> >
-> > Namely, device_link_add() called to add the link invokes
-> > device_link_rpm_prepare() which notices that the consumer driver is
-> > probing, so it increments the supplier's PM-runtime usage counter
-> > with the assumption that the link will stay around until
-> > pm_runtime_put_suppliers() is called by driver_probe_device(),
-> > but if the link goes away before that point, the supplier's
-> > PM-runtime usage counter will remain nonzero.
-> >
-> > To prevent that from happening, first rework pm_runtime_get_suppliers()
-> > and pm_runtime_put_suppliers() to use the rpm_active refounts of device
-> > links and make the latter only drop rpm_active and the supplier's
-> > PM-runtime usage counter for each link by one, unless rpm_active is
-> > one already for it.  Next, modify device_link_add() to bump up the
-> > new link's rpm_active refcount and the suppliers PM-runtime usage
-> > counter by two, to prevent pm_runtime_put_suppliers(), if it is
-> > called subsequently, from suspending the supplier prematurely (in
-> > case its PM-runtime usage counter goes down to 0 in there).
-> >
-> > Due to the way rpm_put_suppliers() works, this change does not
-> > affect runtime suspend of the consumer ends of new device links (or,
-> > generally, device links for which DL_FLAG_PM_RUNTIME has just been
-> > set).
-> >
-> > Fixes: e2f3cd831a28 ("driver core: Fix handling of runtime PM flags in device_link_add()")
-> > Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> I have tested a several various common probe sequences (including
-> error paths) by using my RPM test driver, no issues found. Of course
-> it also fixes the problem that occurred while deleting the device link
-> during ->probe(). Thanks a lot!
->
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
+This patch set changes workqueue related features in devfreq framework.
+First patch switches to delayed work instead of deferred.
+The second switches to regular system work and deletes custom 'devfreq'.
 
-Thank you!
+Using deferred work in this context might harm the system performance.
+When the CPU enters idle, deferred work is not fired. The devfreq device's
+utilization does not have to be connected with a particular CPU.
+The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+They all are missing opportunity to check the HW state and react when
+the deferred work is not fired.
+A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+on full speed, might show x5 worse performance if the crucial CPU is in idle.
+
+There was a discussion regarding v2 that the power usage because of waking up
+an idle CPU would be too high. In my opinion it won't and fixing bug is more
+important than < 1% more power used [1].
+I have addressed also this issue. In this patch set there is a mechanism
+which prevents from to frequent checks when there is no need.
+When the device enters its lowest state (OPP) the framework sets polling
+interval to 'polling_idle_ms'. In default Kconfig it is 500ms, so 2 times per
+second.
+It is tunable from the sysfs interface per device, thus driver developer can
+experiment and choose best intervals for the system.
+
+Changes:
+v3:
+- reordered first two patches
+- added functionality to lower power consumption when the device is less busy;
+  there is a new polling interval enabled when device enters lowest frequency;
+- added trace events to capture the behaviour of the system
+v2:
+- single patch split into two
+- added cover letter
+
+link for the previous version and discussion:
+https://marc.info/?l=linux-pm&m=154989907416072&w=2
+https://marc.info/?l=linux-pm&m=154904631226997&w=2
+
+Regards,
+Lukasz Luba
+
+[1] https://marc.info/?l=linux-kernel&m=155000641622443&w=2
+
+Lukasz Luba (7):
+  drivers: devfreq: change deferred work into delayed
+  drivers: devfreq: change devfreq workqueue mechanism
+  Kconfig: drivers: devfreq: add default idle polling
+  include: devfreq: add polling_idle_ms to 'profile'
+  drivers: devfreq: add longer polling interval in idle
+  trace: events: add devfreq trace event file
+  drivers: devfreq: add tracing for scheduling work
+
+ MAINTAINERS                               |   1 +
+ drivers/devfreq/Kconfig                   |  13 +++
+ drivers/devfreq/devfreq.c                 | 184 ++++++++++++++++++++++++------
+ drivers/devfreq/governor.h                |   3 +-
+ drivers/devfreq/governor_simpleondemand.c |   6 +-
+ include/linux/devfreq.h                   |   6 +
+ include/trace/events/devfreq.h            |  39 +++++++
+ 7 files changed, 218 insertions(+), 34 deletions(-)
+ create mode 100644 include/trace/events/devfreq.h
+
+-- 
+2.7.4
