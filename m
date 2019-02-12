@@ -1,114 +1,69 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
-Date: Tue, 12 Feb 2019 09:03:23 +0100
-Message-ID: <CAPDyKFrtVHNA0-zAbUYR9k_qWKQUS2f+1Z=VLhvfQ=EDcBkPKA@mail.gmail.com>
-References: <3917694.ab5GGAjohB@aspire.rjw.lan> <1634058.cXDNg15SOd@aspire.rjw.lan>
- <CAPDyKFpWCT9CcmxqqWk+S8tSPz_at56UCnk3EVBab-TnScHw8Q@mail.gmail.com>
- <CAPDyKFqnWgjZ1icajdzbaQ_HW-2ec0-npEU_nAWvSVEpZMzSRA@mail.gmail.com> <CAJZ5v0hV-G_U=XV1N=rpEv1LMgB+jjB3kVEoHKUasd2p3QP5Bg@mail.gmail.com>
+From: Michael Kao <michael.kao@mediatek.com>
+Subject: Re: [PATCH 1/7] thermal: mediatek: fix register index error
+Date: Tue, 12 Feb 2019 16:20:13 +0800
+Message-ID: <1549959613.22716.6.camel@mtksdccf07>
+References: <1549006693-11659-1-git-send-email-michael.kao@mediatek.com>
+         <1549006693-11659-2-git-send-email-michael.kao@mediatek.com>
+         <6496b13f-57e4-af86-bb59-91a4705d91b0@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hV-G_U=XV1N=rpEv1LMgB+jjB3kVEoHKUasd2p3QP5Bg@mail.gmail.com>
+In-Reply-To: <6496b13f-57e4-af86-bb59-91a4705d91b0@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: =Zhang Rui <rui.zhang@intel.com>, =Eduardo Valentin <edubezval@gmail.com>, =Daniel Lezcano <daniel.lezcano@linaro.org>, =Rob Herring <robh+dt@kernel.org>, =Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Feb 2019 at 00:05, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Mon, Feb 11, 2019 at 4:51 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Mon, 11 Feb 2019 at 14:27, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Thu, 7 Feb 2019 at 19:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > >
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > >
-> > > > If the target device has any suppliers, as reflected by device links
-> > > > to them, __pm_runtime_set_status() does not take them into account,
-> > > > which is not consistent with the other parts of the PM-runtime
-> > > > framework and may lead to programming mistakes.
-> > > >
-> > > > Modify __pm_runtime_set_status() to take suppliers into account by
-> > > > activating them upfront if the new status is RPM_ACTIVE and
-> > > > deactivating them on exit if the new status is RPM_SUSPENDED.
-> > > >
-> > > > If the activation of one of the suppliers fails, the new status
-> > > > will be RPM_SUSPENDED and the (remaining) suppliers will be
-> > > > deactivated on exit (the child count of the device's parent
-> > > > will be dropped too then).
-> > > >
-> > > > Of course, adding device links locking to __pm_runtime_set_status()
-> > > > means that it cannot be run fron interrupt context, so make it use
-> > > > spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
-> > > > and spin_unlock_irqrestore(), respectively.
-> > > >
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > Rafael, thanks for working on this!
-> > >
-> > > I am running some tests at my side, but still not achieving the
-> > > behavior I expect to. Will let you know when I have more details, but
-> > > first some comments below.
-> >
-> > Alright, this is what I found.
-> >
-> > When I call pm_runtime_set_suspended(), in the ->probe() error path of
-> > my RPM test driver (I am removing the device link afterwards), then my
-> > expectation was that this should allow the supplier to become runtime
-> > suspended (sooner or later). This isn't the case, as it turns out the
-> > runtime PM usage count of the supplier, still remains 1 after the
-> > probe failure.
-> >
-> > My observation is that with $subject patch, the link->rpm_active count
-> > is now reaching 1, before it stayed at 2 - so one step forward. :-)
-> >
-> > However, the reason to why the runtime PM usage count never reaches 0,
-> > is because of the call to pm_runtime_get_noresume(supplier) in
-> > device_link_rpm_prepare(), which is called from device_link_add().
->
-> That was there previously, I've just moved it to device_link_rpm_prepare().
+On Mon, 2019-02-04 at 18:24 +0100, Matthias Brugger wrote:
+> 
+> On 01/02/2019 08:38, michael.kao@mediatek.com wrote:
+> > From: Michael Kao <michael.kao@mediatek.com>
+> > 
+> > The index of msr and adcpnp should match the sensor
+> > which belongs to the selected bank in the for loop.
+> > 
+> 
+> If I get that right, this fixes
+> b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
+> 
+> So please add a fixes tag to the commit.
 
-Correct. The problem been there before. Even without using  DL_FLAG_RPM_ACTIVE.
+It is true that the patch is fix b7cf0053738c.
+I will add 
+Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
+to the commit message of next version.
 
->
-> But good catch!
->
-> > To solve the problem, it seems like we need to call
-> > pm_runtime_put(supplier), in case the device link is deleted while the
-> > consumer is still probing.
->
-> I'd rather change the way pm_runtime_get/put_suppliers() work, so that
-> they use the rpm_active refcount, but pm_runtime_put_suppliers() only
-> drops it by one - unless it is one already.
-
-That seems like a very reasonable approach!
-
-The mix between calling pm_runtime_get/put*() on the supplier device
-directly vs using the path with the rpm_active count, is to me rather
-confusing. Using only the latter, would be a nice cleanup anyway, I
-think.
-
->
-> Then, when adding a new link with DL_FLAG_RPM_ACTIVE,
-> device_link_add() only needs to increment its rpm_active *twice*
-> (instead of doing that once as to does now), so it will stay above one
-> after the subsequent pm_runtime_put_suppliers() - and if it goes away
-> in the meantime, then it will be cleaned up by the removal.
-
-Assuming you will add a check for "consumer->links.status ==
-DL_DEV_PROBING" to understand if rpm_active should by be decreased.
-
-Yes, it seems reasonable.
-
->
-> In turn, if a link is created without DL_FLAG_RPM_ACTIVE, its
-> rpm_active is one and then pm_runtime_put_suppliers() will just skip
-> it.
->
-> A patch will follow. :-)
-
-Great, I am here to review it. :-)
-
-Kind regards
-Uffe
+> Thanks,
+> Matthias
+> 
+> > Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> > ---
+> >  drivers/thermal/mtk_thermal.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> > index 0691f26..f646436 100644
+> > --- a/drivers/thermal/mtk_thermal.c
+> > +++ b/drivers/thermal/mtk_thermal.c
+> > @@ -431,7 +431,8 @@ static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
+> >  	u32 raw;
+> >  
+> >  	for (i = 0; i < conf->bank_data[bank->id].num_sensors; i++) {
+> > -		raw = readl(mt->thermal_base + conf->msr[i]);
+> > +		raw = readl(mt->thermal_base +
+> > +			    conf->msr[conf->bank_data[bank->id].sensors[i]]);
+> >  
+> >  		temp = raw_to_mcelsius(mt,
+> >  				       conf->bank_data[bank->id].sensors[i],
+> > @@ -568,7 +569,8 @@ static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
+> >  
+> >  	for (i = 0; i < conf->bank_data[num].num_sensors; i++)
+> >  		writel(conf->sensor_mux_values[conf->bank_data[num].sensors[i]],
+> > -		       mt->thermal_base + conf->adcpnp[i]);
+> > +		       mt->thermal_base +
+> > +		       conf->adcpnp[conf->bank_data[num].sensors[i]]);
+> >  
+> >  	writel((1 << conf->bank_data[num].num_sensors) - 1,
+> >  	       mt->thermal_base + TEMP_MONCTL0);
+> > 
