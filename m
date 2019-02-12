@@ -1,112 +1,72 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v3 6/7] trace: events: add devfreq trace event file
-Date: Tue, 12 Feb 2019 18:14:15 -0500
-Message-ID: <20190212181415.1156e542@gandalf.local.home>
-References: <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190212222437eucas1p198db6fca1f1ba3056d93c57327dd48ed@eucas1p1.samsung.com>
-        <1550010238-24002-7-git-send-email-l.luba@partner.samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / suspend: measure the time of filesystem syncing
+Date: Wed, 13 Feb 2019 00:21:31 +0100
+Message-ID: <CAJZ5v0j+JEs5G+ySmkxEc0kbomTckX=wRg_DbnQ6svnX+EZaTg@mail.gmail.com>
+References: <20190203052007.27392-1-harry.pan@intel.com> <20190206144257.21464-1-harry.pan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550010238-24002-7-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <20190206144257.21464-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, tkjos@google.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, mingo@redhat.com
+To: Harry Pan <harry.pan@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Harry Pan <gs0622@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Feb 2019 23:23:57 +0100
-Lukasz Luba <l.luba@partner.samsung.com> wrote:
-
-> The patch adds a new file for with trace events for devfreq
-> framework. They are used for performance analysis of the framework.
-> It also contains updates in MAINTAINERS file adding new entry for
-> devfreq maintainers.
-> 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+On Wed, Feb 6, 2019 at 4:57 PM Harry Pan <harry.pan@intel.com> wrote:
+>
+> This patch gives the reader an intuitive metric of the time cost by
+> the kernel issuing a filesystem sync during suspend; although developer
+> can guess by the timestamp of next log or enable the ftrace power event
+> for manual calculation, this manner is easier to read and benefits the
+> automatic script.
+>
+> v2: simplify the variables, apply the simplest form of ktime API.
+>
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
 > ---
->  MAINTAINERS                    |  1 +
->  include/trace/events/devfreq.h | 39 +++++++++++++++++++++++++++++++++++++++
->  2 files changed, 40 insertions(+)
->  create mode 100644 include/trace/events/devfreq.h
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 9919840..c042fda 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4447,6 +4447,7 @@ S:	Maintained
->  F:	drivers/devfreq/
->  F:	include/linux/devfreq.h
->  F:	Documentation/devicetree/bindings/devfreq/
-> +F:	include/trace/events/devfreq.h
->  
->  DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
->  M:	Chanwoo Choi <cw00.choi@samsung.com>
-> diff --git a/include/trace/events/devfreq.h b/include/trace/events/devfreq.h
-> new file mode 100644
-> index 0000000..fec9304
-> --- /dev/null
-> +++ b/include/trace/events/devfreq.h
-> @@ -0,0 +1,39 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM devfreq
-> +
-> +#if !defined(_TRACE_DEVFREQ_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_DEVFREQ_H
-> +
-> +#include <linux/devfreq.h>
-> +#include <linux/tracepoint.h>
-> +
-> +TRACE_EVENT(devfreq_monitor,
-> +	TP_PROTO(const char *dev_name, unsigned long freq,
-> +		 unsigned int polling_ms, unsigned long busy_time,
-> +		 unsigned long total_time),
-> +
-> +	TP_ARGS(dev_name, freq, polling_ms, busy_time, total_time),
-> +
-> +	TP_STRUCT__entry(
-> +		__string(dev_name, dev_name)
-> +		__field(unsigned long, freq)
-> +		__field(unsigned int, polling_ms)
-> +		__field(unsigned int, load)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__assign_str(dev_name, dev_name);
-> +		__entry->freq = freq;
-> +		__entry->polling_ms = polling_ms;
-> +		__entry->load = (100 * busy_time) / total_time;
+>  kernel/power/suspend.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 0bd595a0b610..87c0073f0c9d 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -550,6 +550,8 @@ static void suspend_finish(void)
+>  static int enter_state(suspend_state_t state)
+>  {
+>         int error;
+> +       ktime_t start;
+> +       unsigned int elapsed_msecs;
 
-How critical is the code that this trace event is called in. If it is
-not that critical (it is a slow path), then this is fine, but if this
-is not a slow path (something triggered 100 HZ or less), then I would
-recommend moving the above calculation to TP_printk(). A divide is a
-slow operation, and is best to do that in the post processing. The
-current location does the divide at the time of the tracepoint is
-called.
+You only need these two if CONFIG_SUSPEND_SKIP_SYNC is set, ->
 
-I would also have a check to make sure that total_time is not zero
-here, otherwise that could be bad.
+>
+>         trace_suspend_resume(TPS("suspend_enter"), state, true);
+>         if (state == PM_SUSPEND_TO_IDLE) {
+> @@ -570,9 +572,12 @@ static int enter_state(suspend_state_t state)
+>
+>  #ifndef CONFIG_SUSPEND_SKIP_SYNC
 
-		__entry->busy_time = busy_time;
-		__entry->total_time = total_time;
+-> so I would change this to
 
-> +	),
-> +
-> +	TP_printk("dev_name=%s freq=%lu polling_ms=%u load=%u",
+if (IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
+     ktime_t start;
+     unsigned int elapsed_msecs;
 
+>         trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> +       start = ktime_get();
 
-> +		__get_str(dev_name), __entry->freq, __entry->polling_ms,
+Why don't you do this after printing the message below?
 
-		__entry->total_time == 0 ? 100 :
-			__entry->busy_time / __entry->total_time)
+>         pr_info("Syncing filesystems ... ");
+>         ksys_sync();
+> -       pr_cont("done.\n");
+> +       elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
+> +       pr_cont("(elapsed %d.%03d seconds) done.\n", elapsed_msecs / 1000,
+> +               elapsed_msecs % 1000);
 
--- Steve
+Use MSEC_PER_SEC here.
 
-> +		__entry->load)
-> +);
-> +#endif /* _TRACE_DEVFREQ_H */
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
+>         trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+>  #endif
+>
