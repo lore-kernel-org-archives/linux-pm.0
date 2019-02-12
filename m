@@ -1,201 +1,128 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/2] driver core: Fix possible supplier PM-usage counter imbalance
-Date: Tue, 12 Feb 2019 22:02:56 +0100
-Message-ID: <CAPDyKFpVygMvKAVRd4bCkS6v5MotDRO6sb-VCHK+YEQvbLbc4Q@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <9351473.C2nPJoyFsE@aspire.rjw.lan>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Tue, 12 Feb 2019 22:20:07 +0100
+Message-ID: <1356584e-1812-6768-72af-931c07d925a8@partner.samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
+        <20190212193229.GT117604@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9351473.C2nPJoyFsE@aspire.rjw.lan>
+In-Reply-To: <20190212193229.GT117604@google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Matthias Kaehlcke <mka@chromium.org>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If a stateless device link to a certain supplier with
-> DL_FLAG_PM_RUNTIME set in the flags is added and then removed by the
-> consumer driver's probe callback, the supplier's PM-runtime usage
-> counter will be nonzero after that which effectively causes the
-> supplier to remain "always on" going forward.
->
-> Namely, device_link_add() called to add the link invokes
-> device_link_rpm_prepare() which notices that the consumer driver is
-> probing, so it increments the supplier's PM-runtime usage counter
-> with the assumption that the link will stay around until
-> pm_runtime_put_suppliers() is called by driver_probe_device(),
-> but if the link goes away before that point, the supplier's
-> PM-runtime usage counter will remain nonzero.
->
-> To prevent that from happening, first rework pm_runtime_get_suppliers()
-> and pm_runtime_put_suppliers() to use the rpm_active refounts of device
-> links and make the latter only drop rpm_active and the supplier's
-> PM-runtime usage counter for each link by one, unless rpm_active is
-> one already for it.  Next, modify device_link_add() to bump up the
-> new link's rpm_active refcount and the suppliers PM-runtime usage
-> counter by two, to prevent pm_runtime_put_suppliers(), if it is
-> called subsequently, from suspending the supplier prematurely (in
-> case its PM-runtime usage counter goes down to 0 in there).
->
-> Due to the way rpm_put_suppliers() works, this change does not
-> affect runtime suspend of the consumer ends of new device links (or,
-> generally, device links for which DL_FLAG_PM_RUNTIME has just been
-> set).
->
-> Fixes: e2f3cd831a28 ("driver core: Fix handling of runtime PM flags in device_link_add()")
-> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Matthias,
 
-I have tested a several various common probe sequences (including
-error paths) by using my RPM test driver, no issues found. Of course
-it also fixes the problem that occurred while deleting the device link
-during ->probe(). Thanks a lot!
+On 2/12/19 8:32 PM, Matthias Kaehlcke wrote:
+> Hi,
+> 
+> On Tue, Feb 12, 2019 at 02:46:24PM +0900, Chanwoo Choi wrote:
+>> Hi Lukasz,
+>>
+>> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+>>> This patch set changes workqueue related features in devfreq framework.
+>>> First patch switches to delayed work instead of deferred.
+>>> The second switches to regular system work and deletes custom 'devfreq'.
+>>>
+>>> Using deferred work in this context might harm the system performance.
+>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
+>>> utilization does not have to be connected with a particular CPU.
+>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+>>> They all are missing opportunity to check the HW state and react when
+>>> the deferred work is not fired.
+>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+>>
+>> The devfreq framework keeps the balancing between performance
+>> and power-consumption. It is wrong to focus on only either
+>> performance or power.
+>>
+>> This cover-letter focus on the only performance without any power-consumption
+>> disadvantages. It is easy to raise the performance with short sampling rate
+>> with polling modes. To get the performance, it is good as short as possible
+>> of period.
+>>
+>> Sometimes, when cpu is idle, the device might require the busy state.
+>> It is very difficult to catch the always right timing between them.
+>>
+>> Also, this patch cannot prevent the unneeded wakeup from idle state.
+>> Apparently, it only focuses on performance without considering
+>> the power-consumption disadvantage. In the embedded device,
+>> the power-consumption is very important point. We can not ignore
+>> the side effect.
+>>
+>> Always, I hope to improve the devfreq framwork more that older.
+>> But, frankly, it is difficult to agree because it only consider
+>> the performance without considering the side-effect.
+>>
+>> The power management framework always have to consider
+>> the power-consumption issue. This point is always true.
+> 
+> I missed the impact of forcing a CPU out of an idle state and/or not
+> allowing it to enter a more power efficient state. I agree that this
+> should be avoided.
+It would be good to have some real world scenarios for comparison:
+w/ and w/o this change, i.e. it is 5% or 50% more power used.
+I have patches that tries to mitigate wake-ups when there is small
+utilization. Let's make it tunable and involve driver developers.
+They will decide how much impact on the system power usage they
+introduce.
+> 
+> I wonder if using a power-efficient workqueue could help here:
+> 
+>    Instead of running work on the local CPU, the workqueue core asks the
+>    scheduler to provide the target CPU for the work queued on unbound
+>    workqueues (which includes those marked as power-efficient). So they
+>    will not get pinned on a single CPU as can happen with regular
+>    workqueues.
+> 
+>    https://lwn.net/Articles/731052/
+> 
+> 
+> Since this series also changes from a custom to system workqueue it
+> seems worth to mention that there are power-efficient system workqueues:
+> 
+> system_power_efficient_wq
+> system_freezable_power_efficient_wq
+> 
+> 
+> In case a power-efficient workqueue is suitable in principle there
+> would still be a problem though: the feature is currently disabled by
+> default, hence devfreq couldn't really rely on it. It is enabled in
+> the arm64 defconfig though, so at least devices on this architecture
+> would benefit from it. Also power-efficient workqueues might be
+> enabled by default in the future as the scheduler becomes more energy
+> aware.
+Regarding this CPU idle cost worries.
+IIRC the new energy model does not even consider idle costs of the CPU.
+It would be good to know the measurements, i.e. worst case scenario:
+waking up 1 (of 4 or 8) CPU from idle 30 times per second for let's
+say 100 us. It is 3 ms / 1000 ms * running energy cost i.e. 250mW.
+Thus, 0.75mW.
+In my opinion it is not a big cost. In most cases the system is still
+doing some other work. It is worth to mention here that on mobiles
+when the power button is hit the full suspend is called which freezes
+all tasks, devices and power consumption is ~15mW. Thus, the system
+suspend is out of scope here.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
+As I replayed to Chanwoon for the same email: in my opinion current
+devfreq is broken.
+It was probably developed in times where there was 1 CPU (maybe 2)
+and idle state of CPU would be a good hint to not to check devfreq
+devices.
 
-Kind regards
-Uffe
-
-> ---
->
-> Note that the issue had been there before commit e2f3cd831a28, but it was
-> overlooked by that commit and this change is a fix on top of it, so make
-> the Fixes: tag point to commit e2f3cd831a28 (instead of an earlier one
-> that the patch will not be applicable to).
->
-> ---
->  drivers/base/core.c          |   21 ++++-----------------
->  drivers/base/power/runtime.c |   27 +++++++++++++++++++++++++--
->  include/linux/pm_runtime.h   |    4 ++++
->  3 files changed, 33 insertions(+), 19 deletions(-)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -1655,8 +1655,10 @@ void pm_runtime_get_suppliers(struct dev
->         idx = device_links_read_lock();
->
->         list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-> -               if (link->flags & DL_FLAG_PM_RUNTIME)
-> +               if (link->flags & DL_FLAG_PM_RUNTIME) {
-> +                       refcount_inc(&link->rpm_active);
->                         pm_runtime_get_sync(link->supplier);
-> +               }
->
->         device_links_read_unlock(idx);
->  }
-> @@ -1673,7 +1675,8 @@ void pm_runtime_put_suppliers(struct dev
->         idx = device_links_read_lock();
->
->         list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-> -               if (link->flags & DL_FLAG_PM_RUNTIME)
-> +               if (link->flags & DL_FLAG_PM_RUNTIME &&
-> +                   refcount_dec_not_one(&link->rpm_active))
->                         pm_runtime_put(link->supplier);
->
->         device_links_read_unlock(idx);
-> @@ -1686,6 +1689,26 @@ void pm_runtime_new_link(struct device *
->         spin_unlock_irq(&dev->power.lock);
->  }
->
-> +/**
-> + * pm_runtime_active_link - Set up new device link as active for PM-runtime.
-> + * @link: Device link to be set up as active.
-> + * @supplier: Supplier end of the link.
-> + *
-> + * Add 2 to the rpm_active refcount of @link and increment the PM-runtime
-> + * usage counter of @supplier once more in case the link is being added while
-> + * the consumer driver is probing and pm_runtime_put_suppliers() will be called
-> + * subsequently.
-> + *
-> + * Note that this doesn't prevent rpm_put_suppliers() from decreasing the link's
-> + * rpm_active refcount down to one, so runtime suspend of the consumer end of
-> + * @link is not affected.
-> + */
-> +void pm_runtime_active_link(struct device_link *link, struct device *supplier)
-> +{
-> +       refcount_add(2, &link->rpm_active);
-> +       pm_runtime_get_noresume(supplier);
-> +}
-> +
->  void pm_runtime_drop_link(struct device *dev)
->  {
->         spin_lock_irq(&dev->power.lock);
-> Index: linux-pm/drivers/base/core.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/core.c
-> +++ linux-pm/drivers/base/core.c
-> @@ -165,19 +165,6 @@ void device_pm_move_to_tail(struct devic
->         device_links_read_unlock(idx);
->  }
->
-> -static void device_link_rpm_prepare(struct device *consumer,
-> -                                   struct device *supplier)
-> -{
-> -       pm_runtime_new_link(consumer);
-> -       /*
-> -        * If the link is being added by the consumer driver at probe time,
-> -        * balance the decrementation of the supplier's runtime PM usage counter
-> -        * after consumer probe in driver_probe_device().
-> -        */
-> -       if (consumer->links.status == DL_DEV_PROBING)
-> -               pm_runtime_get_noresume(supplier);
-> -}
-> -
->  /**
->   * device_link_add - Create a link between two devices.
->   * @consumer: Consumer end of the link.
-> @@ -286,11 +273,11 @@ struct device_link *device_link_add(stru
->
->                 if (flags & DL_FLAG_PM_RUNTIME) {
->                         if (!(link->flags & DL_FLAG_PM_RUNTIME)) {
-> -                               device_link_rpm_prepare(consumer, supplier);
-> +                               pm_runtime_new_link(consumer);
->                                 link->flags |= DL_FLAG_PM_RUNTIME;
->                         }
->                         if (flags & DL_FLAG_RPM_ACTIVE)
-> -                               refcount_inc(&link->rpm_active);
-> +                               pm_runtime_active_link(link, supplier);
->                 }
->
->                 if (flags & DL_FLAG_STATELESS) {
-> @@ -323,9 +310,9 @@ struct device_link *device_link_add(stru
->
->         if (flags & DL_FLAG_PM_RUNTIME) {
->                 if (flags & DL_FLAG_RPM_ACTIVE)
-> -                       refcount_inc(&link->rpm_active);
-> +                       pm_runtime_active_link(link, supplier);
->
-> -               device_link_rpm_prepare(consumer, supplier);
-> +               pm_runtime_new_link(consumer);
->         }
->
->         get_device(supplier);
-> Index: linux-pm/include/linux/pm_runtime.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm_runtime.h
-> +++ linux-pm/include/linux/pm_runtime.h
-> @@ -59,6 +59,8 @@ extern void pm_runtime_clean_up_links(st
->  extern void pm_runtime_get_suppliers(struct device *dev);
->  extern void pm_runtime_put_suppliers(struct device *dev);
->  extern void pm_runtime_new_link(struct device *dev);
-> +extern void pm_runtime_active_link(struct device_link *link,
-> +                                  struct device *supplier);
->  extern void pm_runtime_drop_link(struct device *dev);
->
->  static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
-> @@ -178,6 +180,8 @@ static inline void pm_runtime_clean_up_l
->  static inline void pm_runtime_get_suppliers(struct device *dev) {}
->  static inline void pm_runtime_put_suppliers(struct device *dev) {}
->  static inline void pm_runtime_new_link(struct device *dev) {}
-> +static inline void pm_runtime_active_link(struct device_link *link,
-> +                                         struct device *supplier) {}
->  static inline void pm_runtime_drop_link(struct device *dev) {}
->
->  #endif /* !CONFIG_PM */
->
+Regards,
+Lukasz
+> 
+> Cheers
+> 
+> Matthias
+> 
+> 
