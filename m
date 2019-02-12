@@ -1,11 +1,14 @@
 From: Abel Vesa <abel.vesa@nxp.com>
-Subject: [PATCH 1/2] cpufreq: Add i.mx8mq support
-Date: Tue, 12 Feb 2019 12:21:35 +0000
-Message-ID: <1549974071-8284-1-git-send-email-abel.vesa@nxp.com>
+Subject: [PATCH 2/2] soc: imx8: Add cpufreq registering and speed grading
+ check for i.MX8MQ
+Date: Tue, 12 Feb 2019 12:21:36 +0000
+Message-ID: <1549974071-8284-2-git-send-email-abel.vesa@nxp.com>
+References: <1549974071-8284-1-git-send-email-abel.vesa@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1549974071-8284-1-git-send-email-abel.vesa@nxp.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>
@@ -14,288 +17,155 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Anson Huang <Anson.Huang@nxp.com>
 
-Add i.MX8MQ cpufreq support, current version of
-EVK board does NOT support voltage scale, but next
-version will add this support, so this driver only
-supports cpu frequency scale, voltage scale will
-be added later once new board available.
+Register cpu-freq platform driver for i.MX8.
+i.MX8MQ has different parts like consumer, industrial and auto etc.,
+different parts have different cpufreq set-points, this patch adds
+fuse check to select correct cpufreq set-points for each part. The
+default dtb has all set-points available, then kernel will check fuse
+to disable those unused set-points, definition as below:
 
-A53 CPU clock normally is from ARM_PLL, but during
-ARM_PLL relock window, it will be switched to
-SYS1_PLL_800M to avoid clock missing, and after
-arm pll relock done, it will be switched back.
+OCOTP offset 0x440, bit [7:6]
+
+'00' - Consumer 0C to 95C
+'01' - Ext. Consumer -20C to 105C
+'10' - Industrial -40C to 105C
+'11' - Automotive -40C to 125C
+
+cpu-freq set-points definition as below (datasheet Rev-E):
+
+		Normal		Over-Drive
+Consumer	1GHz@0.9V	1.5GHz@1V
+Industrial	800MHz@0.9V	1.3GHz@1V
 
 Signed-off-by: Anson Huang <anson.huang@nxp.com>
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- drivers/cpufreq/Kconfig.arm      |   8 ++
- drivers/cpufreq/Makefile         |   1 +
- drivers/cpufreq/imx8mq-cpufreq.c | 223 +++++++++++++++++++++++++++++++++++=
+ drivers/soc/imx/Makefile   |   1 +
+ drivers/soc/imx/soc-imx8.c | 107 +++++++++++++++++++++++++++++++++++++++++=
 ++++
- 3 files changed, 232 insertions(+)
- create mode 100644 drivers/cpufreq/imx8mq-cpufreq.c
+ 2 files changed, 108 insertions(+)
+ create mode 100644 drivers/soc/imx/soc-imx8.c
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 179a1d3..9d8001c 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -92,6 +92,14 @@ config ARM_IMX6Q_CPUFREQ
-=20
- 	  If in doubt, say N.
-=20
-+config ARM_IMX8MQ_CPUFREQ
-+	tristate "NXP i.MX8MQ cpufreq support"
-+	select PM_OPP
-+	help
-+	  This adds cpufreq driver support for NXP i.MX8MQ series SoCs.
-+
-+	  If in doubt, say N.
-+
- config ARM_KIRKWOOD_CPUFREQ
- 	def_bool MACH_KIRKWOOD
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 689b26c..fe5416c 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+=3D cppc_cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+=3D davinci-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+=3D highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+=3D imx6q-cpufreq.o
-+obj-$(CONFIG_ARM_IMX8MQ_CPUFREQ)	+=3D imx8mq-cpufreq.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+=3D kirkwood-cpufreq.o
- obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+=3D mediatek-cpufreq.o
- obj-$(CONFIG_MACH_MVEBU_V7)		+=3D mvebu-cpufreq.o
-diff --git a/drivers/cpufreq/imx8mq-cpufreq.c b/drivers/cpufreq/imx8mq-cpuf=
-req.c
+diff --git a/drivers/soc/imx/Makefile b/drivers/soc/imx/Makefile
+index 506a6f3..d6b529e0 100644
+--- a/drivers/soc/imx/Makefile
++++ b/drivers/soc/imx/Makefile
+@@ -1,2 +1,3 @@
+ obj-$(CONFIG_HAVE_IMX_GPC) +=3D gpc.o
+ obj-$(CONFIG_IMX_GPCV2_PM_DOMAINS) +=3D gpcv2.o
++obj-$(CONFIG_ARCH_MXC) +=3D soc-imx8.o
+diff --git a/drivers/soc/imx/soc-imx8.c b/drivers/soc/imx/soc-imx8.c
 new file mode 100644
-index 0000000..ee24fab
+index 0000000..3896310
 --- /dev/null
-+++ b/drivers/cpufreq/imx8mq-cpufreq.c
-@@ -0,0 +1,223 @@
++++ b/drivers/soc/imx/soc-imx8.c
+@@ -0,0 +1,107 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Copyright (C) 2019 NXP
++ * Copyright 2019 NXP.
 + */
 +
-+#include <linux/clk.h>
 +#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/of_address.h>
 +#include <linux/pm_opp.h>
++#include <linux/slab.h>
++#include <linux/sys_soc.h>
 +#include <linux/platform_device.h>
-+#include <linux/suspend.h>
++#include <linux/of.h>
 +
-+static struct device *cpu_dev;
-+static bool free_opp;
-+static struct cpufreq_frequency_table *freq_table;
-+static struct mutex set_cpufreq_lock;
-+static unsigned int transition_latency;
-+static unsigned int suspend_freq;
-+static struct clk *a53_clk;
-+static struct clk *arm_a53_src_clk;
-+static struct clk *arm_pll_clk;
-+static struct clk *arm_pll_out_clk;
-+static struct clk *sys1_pll_800m_clk;
++#define OCOTP_CFG3			0x440
++#define OCOTP_CFG3_MKT_SEGMENT_SHIFT	6
++#define OCOTP_CFG3_CONSUMER		0
++#define OCOTP_CFG3_EXT_CONSUMER		1
++#define OCOTP_CFG3_INDUSTRIAL		2
++#define OCOTP_CFG3_AUTO			3
 +
-+static int imx8mq_set_target(struct cpufreq_policy *policy, unsigned int i=
-ndex)
-+{
-+	struct dev_pm_opp *opp;
-+	unsigned long freq_hz;
-+	unsigned int old_freq, new_freq;
-+	int ret;
-+
-+	mutex_lock(&set_cpufreq_lock);
-+
-+	new_freq =3D freq_table[index].frequency;
-+	freq_hz =3D new_freq * 1000;
-+	old_freq =3D policy->cur;
-+
-+	rcu_read_lock();
-+	opp =3D dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
-+	if (IS_ERR(opp)) {
-+		rcu_read_unlock();
-+		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
-+		mutex_unlock(&set_cpufreq_lock);
-+		return PTR_ERR(opp);
-+	}
-+	rcu_read_unlock();
-+
-+	dev_dbg(cpu_dev, "%u MHz --> %u MHz\n",
-+		old_freq / 1000, new_freq / 1000);
-+
-+	clk_set_parent(arm_a53_src_clk, sys1_pll_800m_clk);
-+	clk_set_rate(arm_pll_clk, new_freq * 1000);
-+	clk_set_parent(arm_a53_src_clk, arm_pll_out_clk);
-+
-+	/* Ensure the arm clock divider is what we expect */
-+	ret =3D clk_set_rate(a53_clk, new_freq * 1000);
-+	if (ret)
-+		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
-+
-+	mutex_unlock(&set_cpufreq_lock);
-+	return ret;
-+}
-+
-+static int imx8mq_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	policy->clk =3D a53_clk;
-+	policy->cur =3D clk_get_rate(a53_clk) / 1000;
-+	policy->suspend_freq =3D suspend_freq;
-+
-+	ret =3D cpufreq_generic_init(policy, freq_table, transition_latency);
-+	if (ret) {
-+		dev_err(cpu_dev, "imx8mq cpufreq init failed!\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct cpufreq_driver imx8mq_cpufreq_driver =3D {
-+	.flags =3D CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify =3D cpufreq_generic_frequency_table_verify,
-+	.target_index =3D imx8mq_set_target,
-+	.get =3D cpufreq_generic_get,
-+	.init =3D imx8mq_cpufreq_init,
-+	.name =3D "imx8mq-cpufreq",
-+	.attr =3D cpufreq_generic_attr,
-+#ifdef CONFIG_PM
-+	.suspend =3D cpufreq_generic_suspend,
-+#endif
-+};
-+
-+static int imx8mq_cpufreq_probe(struct platform_device *pdev)
++static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 +{
 +	struct device_node *np;
-+	int num, ret;
++	void __iomem *base;
++	u32 val;
 +
-+	cpu_dev =3D get_cpu_device(0);
-+	if (!cpu_dev) {
-+		pr_err("failed to get cpu0 device\n");
-+		return -ENODEV;
++	np =3D of_find_compatible_node(NULL, NULL, "fsl,imx8mq-ocotp");
++	if (!np) {
++		pr_warn("failed to find ocotp node\n");
++		return;
 +	}
 +
++	base =3D of_iomap(np, 0);
++	if (!base) {
++		pr_warn("failed to map ocotp\n");
++		goto put_node;
++	}
++	val =3D readl_relaxed(base + OCOTP_CFG3);
++	val >>=3D OCOTP_CFG3_MKT_SEGMENT_SHIFT;
++	val &=3D 0x3;
++
++	switch (val) {
++	case OCOTP_CFG3_CONSUMER:
++		if (dev_pm_opp_disable(cpu_dev, 800000000))
++			pr_warn("failed to disable 800MHz OPP!\n");
++		if (dev_pm_opp_disable(cpu_dev, 1300000000))
++			pr_warn("failed to disable 1.3GHz OPP!\n");
++		break;
++	case OCOTP_CFG3_INDUSTRIAL:
++		if (dev_pm_opp_disable(cpu_dev, 1000000000))
++			pr_warn("failed to disable 1GHz OPP!\n");
++		if (dev_pm_opp_disable(cpu_dev, 1500000000))
++			pr_warn("failed to disable 1.5GHz OPP!\n");
++		break;
++	default:
++		/* consumer part for default */
++		if (dev_pm_opp_disable(cpu_dev, 800000000))
++			pr_warn("failed to disable 800MHz OPP!\n");
++		if (dev_pm_opp_disable(cpu_dev, 1300000000))
++			pr_warn("failed to disable 1.3GHz OPP!\n");
++		break;
++	}
++
++	iounmap(base);
++
++put_node:
++	of_node_put(np);
++}
++
++static void __init imx8mq_opp_init(void)
++{
++	struct device_node *np;
++	struct device *cpu_dev =3D get_cpu_device(0);
++
++	if (!cpu_dev) {
++		pr_warn("failed to get cpu0 device\n");
++		return;
++	}
 +	np =3D of_node_get(cpu_dev->of_node);
 +	if (!np) {
-+		dev_err(cpu_dev, "failed to find cpu0 node\n");
-+		return -ENOENT;
++		pr_warn("failed to find cpu0 node\n");
++		return;
 +	}
 +
-+	a53_clk =3D clk_get(cpu_dev, "a53");
-+	arm_a53_src_clk =3D clk_get(cpu_dev, "arm_a53_src");
-+	arm_pll_clk =3D clk_get(cpu_dev, "arm_pll");
-+	arm_pll_out_clk =3D clk_get(cpu_dev, "arm_pll_out");
-+	sys1_pll_800m_clk =3D clk_get(cpu_dev, "sys1_pll_800m");
-+	if (IS_ERR(a53_clk) || IS_ERR(arm_a53_src_clk)
-+		|| IS_ERR(arm_pll_out_clk) || IS_ERR(arm_pll_clk)
-+		|| IS_ERR(sys1_pll_800m_clk)) {
-+		dev_err(cpu_dev, "failed to get clocks\n");
-+		ret =3D -ENOENT;
-+		goto put_clk;
++	if (dev_pm_opp_of_add_table(cpu_dev)) {
++		pr_warn("failed to init OPP table\n");
++		goto put_node;
 +	}
 +
-+	/*
-+	 * We expect an OPP table supplied by platform.
-+	 * Just, incase the platform did not supply the OPP
-+	 * table, it will try to get it.
-+	 */
-+	num =3D dev_pm_opp_get_opp_count(cpu_dev);
-+	if (num < 0) {
-+		ret =3D dev_pm_opp_of_add_table(cpu_dev);
-+		if (ret < 0) {
-+			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
-+			goto put_clk;
-+		}
++	imx8mq_opp_check_speed_grading(cpu_dev);
 +
-+		/* Because we have added the OPPs here, we must free them */
-+		free_opp =3D true;
-+
-+		num =3D dev_pm_opp_get_opp_count(cpu_dev);
-+		if (num < 0) {
-+			ret =3D num;
-+			dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-+			goto out_free_opp;
-+		}
-+	}
-+
-+	ret =3D dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-+		goto out_free_opp;
-+	}
-+
-+	/* use MAX freq to suspend */
-+	suspend_freq =3D freq_table[num - 1].frequency;
-+
-+	if (of_property_read_u32(np, "clock-latency", &transition_latency))
-+		transition_latency =3D CPUFREQ_ETERNAL;
-+
-+	mutex_init(&set_cpufreq_lock);
-+
-+	ret =3D cpufreq_register_driver(&imx8mq_cpufreq_driver);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-+		goto free_freq_table;
-+	}
-+
++put_node:
 +	of_node_put(np);
-+	dev_info(cpu_dev, "registered imx8mq-cpufreq\n");
-+
-+	return 0;
-+
-+free_freq_table:
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+out_free_opp:
-+	if (free_opp)
-+		dev_pm_opp_of_remove_table(cpu_dev);
-+put_clk:
-+	if (!IS_ERR(a53_clk))
-+		clk_put(a53_clk);
-+	if (!IS_ERR(arm_a53_src_clk))
-+		clk_put(arm_a53_src_clk);
-+	if (!IS_ERR(arm_pll_clk))
-+		clk_put(arm_pll_clk);
-+	if (!IS_ERR(arm_pll_out_clk))
-+		clk_put(arm_pll_out_clk);
-+	if (!IS_ERR(sys1_pll_800m_clk))
-+		clk_put(sys1_pll_800m_clk);
-+	of_node_put(np);
-+	return ret;
 +}
 +
-+static int imx8mq_cpufreq_remove(struct platform_device *pdev)
++static int __init imx8_register_cpufreq(void)
 +{
-+	cpufreq_unregister_driver(&imx8mq_cpufreq_driver);
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+	if (free_opp)
-+		dev_pm_opp_of_remove_table(cpu_dev);
-+	clk_put(a53_clk);
-+	clk_put(arm_a53_src_clk);
-+	clk_put(arm_pll_clk);
-+	clk_put(arm_pll_out_clk);
-+	clk_put(sys1_pll_800m_clk);
++	if (of_machine_is_compatible("fsl,imx8mq")) {
++		imx8mq_opp_init();
++		platform_device_register_simple("imx8mq-cpufreq", -1, NULL, 0);
++	}
 +
 +	return 0;
 +}
-+
-+static struct platform_driver imx8mq_cpufreq_platdrv =3D {
-+	.driver =3D {
-+		.name	=3D "imx8mq-cpufreq",
-+	},
-+	.probe		=3D imx8mq_cpufreq_probe,
-+	.remove		=3D imx8mq_cpufreq_remove,
-+};
-+module_platform_driver(imx8mq_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Anson Huang <Anson.Huang@nxp.com>");
-+MODULE_DESCRIPTION("Freescale i.MX8MQ cpufreq driver");
-+MODULE_LICENSE("GPL");
++late_initcall(imx8_register_cpufreq);
 --=20
 2.7.4
