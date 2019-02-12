@@ -1,80 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq/opp: rework regulator initialization
-Date: Tue, 12 Feb 2019 10:38:54 +0530
-Message-ID: <20190212050854.p6av2y2iich24wnv@vireshk-i7>
-References: <CGME20190207122255eucas1p1cdebed838c799eca46cce6a654a26187@eucas1p1.samsung.com>
- <20190207122227.19873-1-m.szyprowski@samsung.com>
- <20190211084413.b53qyx6sgkxsjhdv@vireshk-i7>
- <9b4a6c9a-93f9-474f-b8c0-4353a531e128@samsung.com>
- <20190211095527.5brreiqppn7kk3yt@vireshk-i7>
- <f9f54181-f7bc-6add-2c06-2ed3d6410d01@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Tue, 12 Feb 2019 14:46:24 +0900
+Message-ID: <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <f9f54181-f7bc-6add-2c06-2ed3d6410d01@samsung.com>
+In-Reply-To: <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Gerlach <d-gerlach@ti.com>, Wolfram Sang <wsa@the-dreams.de>, Sudeep.Holla@arm.com
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11-02-19, 13:22, Marek Szyprowski wrote:
-> Hi Viresh,
+Hi Lukasz,
+
+On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+> This patch set changes workqueue related features in devfreq framework.
+> First patch switches to delayed work instead of deferred.
+> The second switches to regular system work and deletes custom 'devfreq'.
 > 
-> On 2019-02-11 10:55, Viresh Kumar wrote:
-> > On 11-02-19, 10:52, Marek Szyprowski wrote:
-> >> On 2019-02-11 09:44, Viresh Kumar wrote:
-> >>> On 07-02-19, 13:22, Marek Szyprowski wrote:
-> >>>> Dear All,
-> >>>>
-> >>>> Recent commit 9ac6cb5fbb17 ("i2c: add suspended flag and accessors for
-> >>>> i2c adapters") added a visible warning for an attempt to do i2c transfer
-> >>>> over a suspended i2c bus. This revealed a long standing issue in the
-> >>>> cpufreq-dt driver, which gives a following warning during system
-> >>>> suspend/resume cycle:
-> >>> Marek,
-> >>>
-> >>> I have sent a patchset which is not directly related to the problem
-> >>> you are facing, but it may solve your problem as a side effect. Can
-> >>> you please see if that works to solve this issue as well ?
-> >>>
-> >>> https://lore.kernel.org/lkml/cover.1549874368.git.viresh.kumar@linaro.org/T/#u
-> >> Thanks for the patch. It indeed solves the problem of the i2c transfer
-> >> in cpu hotplug procedure during system resume, although my resources
-> >> management rewrite is still valid as a way to fix remaining 'todos' in
-> >> the cpufreq-dt driver.
-> > Which remaining todos are you talking about ? Sorry I am not able to
-> > recall :(
+> Using deferred work in this context might harm the system performance.
+> When the CPU enters idle, deferred work is not fired. The devfreq device's
+> utilization does not have to be connected with a particular CPU.
+> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+> They all are missing opportunity to check the HW state and react when
+> the deferred work is not fired.
+> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+
+The devfreq framework keeps the balancing between performance
+and power-consumption. It is wrong to focus on only either
+performance or power.
+
+This cover-letter focus on the only performance without any power-consumption
+disadvantages. It is easy to raise the performance with short sampling rate
+with polling modes. To get the performance, it is good as short as possible
+of period.
+
+Sometimes, when cpu is idle, the device might require the busy state.
+It is very difficult to catch the always right timing between them.
+
+Also, this patch cannot prevent the unneeded wakeup from idle state.
+Apparently, it only focuses on performance without considering
+the power-consumption disadvantage. In the embedded device,
+the power-consumption is very important point. We can not ignore
+the side effect.
+
+Always, I hope to improve the devfreq framwork more that older.
+But, frankly, it is difficult to agree because it only consider
+the performance without considering the side-effect.
+
+The power management framework always have to consider
+the power-consumption issue. This point is always true.
+
 > 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/cpufreq-dt.c#n347
+> Changes:
+> v2:
+> - single patch split into two
+> - added cover letter
+> 
+> link for the previous version and discussion:
+> https://marc.info/?l=linux-pm&m=154904631226997&w=2
+> 
+> Regards,
+> Lukasz Luba
+> 
+> Lukasz Luba (2):
+>   drivers: devfreq: change devfreq workqueue mechanism
+>   drivers: devfreq: change deferred work into delayed
+> 
+>  drivers/devfreq/devfreq.c | 27 +++++++--------------------
+>  1 file changed, 7 insertions(+), 20 deletions(-)
+> 
 
-Ah, okay. Thanks for the pointer.
-
-Ideally we shouldn't be doing anything in probe, like
-resources_available(), but we are forced to do it as
-subsys_interface_register() doesn't return the errors returned from
-cpufreq_add_dev() currently. I tried to fix it once but there were
-some complications I believe and then left it.
-
-The main problem is that if cpufreq_online() doesn't find the required
-resources and returns -EPROBE_DEFER, it never comes back to the
-probe() routine which registers the cpufreq driver. And so we have to
-add the duplicate checks in probe() itself before it registers the
-cpufreq driver.
-
-Now all we need to do there is to guarantee that the resources are
-available when the cpufreq driver registers and so we do it only for
-CPU0 currently. Logically speaking, if the resources are available for
-CPU0, it will normally be available for any other CPU as well and so
-there never was a requirement to test it for other CPUs. And so I left
-a FIXME there, so that we know what's going on there in case a
-platform comes up for which it doesn't work.
-
-I won't fix it with something like what this patch series tried to do,
-rather I would try to make sure that EPROBE_DEFER gets returned from
-cpufreq_driver_register() instead.
-
-Thanks.
 
 -- 
-viresh
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
