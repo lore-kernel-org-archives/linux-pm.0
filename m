@@ -1,127 +1,179 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+Subject: Re: [PATCH v2 1/2] drivers: devfreq: change devfreq workqueue
  mechanism
-Date: Tue, 12 Feb 2019 22:20:07 +0100
-Message-ID: <1356584e-1812-6768-72af-931c07d925a8@partner.samsung.com>
-References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
-        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
-        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
-        <20190212193229.GT117604@google.com>
+Date: Tue, 12 Feb 2019 22:37:20 +0100
+Message-ID: <6eb6fc90-27ef-87d2-1123-3d71f0a5102e@partner.samsung.com>
+References: <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190211153035eucas1p12ecdd3289a20ce9fb28588ba20869c60@eucas1p1.samsung.com>
+        <1549899005-7760-2-git-send-email-l.luba@partner.samsung.com>
+        <20190211214252.GR117604@google.com>
+        <01644c1c-a419-9864-3b34-0837a114b799@partner.samsung.com>
+        <20190212201228.GU117604@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212193229.GT117604@google.com>
+In-Reply-To: <20190212201228.GU117604@google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, tkjos@google.com, joel@joelfernandes.org, chris.diamand@arm.com
 List-Id: linux-pm@vger.kernel.org
 
 Hi Matthias,
 
-On 2/12/19 8:32 PM, Matthias Kaehlcke wrote:
-> Hi,
-> 
-> On Tue, Feb 12, 2019 at 02:46:24PM +0900, Chanwoo Choi wrote:
->> Hi Lukasz,
+On 2/12/19 9:12 PM, Matthias Kaehlcke wrote:
+> On Tue, Feb 12, 2019 at 12:20:42PM +0100, Lukasz Luba wrote:
+>> Hi Matthias,
 >>
->> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
->>> This patch set changes workqueue related features in devfreq framework.
->>> First patch switches to delayed work instead of deferred.
->>> The second switches to regular system work and deletes custom 'devfreq'.
+>> On 2/11/19 10:42 PM, Matthias Kaehlcke wrote:
+>>> Hi Lukasz,
 >>>
->>> Using deferred work in this context might harm the system performance.
->>> When the CPU enters idle, deferred work is not fired. The devfreq device's
->>> utilization does not have to be connected with a particular CPU.
->>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
->>> They all are missing opportunity to check the HW state and react when
->>> the deferred work is not fired.
->>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
->>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
->>
->> The devfreq framework keeps the balancing between performance
->> and power-consumption. It is wrong to focus on only either
->> performance or power.
->>
->> This cover-letter focus on the only performance without any power-consumption
->> disadvantages. It is easy to raise the performance with short sampling rate
->> with polling modes. To get the performance, it is good as short as possible
->> of period.
->>
->> Sometimes, when cpu is idle, the device might require the busy state.
->> It is very difficult to catch the always right timing between them.
->>
->> Also, this patch cannot prevent the unneeded wakeup from idle state.
->> Apparently, it only focuses on performance without considering
->> the power-consumption disadvantage. In the embedded device,
->> the power-consumption is very important point. We can not ignore
->> the side effect.
->>
->> Always, I hope to improve the devfreq framwork more that older.
->> But, frankly, it is difficult to agree because it only consider
->> the performance without considering the side-effect.
->>
->> The power management framework always have to consider
->> the power-consumption issue. This point is always true.
+>>> On Mon, Feb 11, 2019 at 04:30:04PM +0100, Lukasz Luba wrote:
+>>>> There is no need for creating another workqueue in the system,
+>>>> the existing one should meet the requirements.
+>>>> This patch removes devfreq's custom workqueue and uses system one.
+>>>> It switches from queue_delayed_work() to schedule_delayed_work().
+>>>> It also does not wake up the system when it enters suspend (this
+>>>> functionality stays the same).
+>>>>
+>>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>>>> ---
+>>>>    drivers/devfreq/devfreq.c | 25 ++++++-------------------
+>>>>    1 file changed, 6 insertions(+), 19 deletions(-)
+>>>>
+>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>> index 0ae3de7..882e717 100644
+>>>> --- a/drivers/devfreq/devfreq.c
+>>>> +++ b/drivers/devfreq/devfreq.c
+>>>> @@ -31,13 +31,6 @@
+>>>>    
+>>>>    static struct class *devfreq_class;
+>>>>    
+>>>> -/*
+>>>> - * devfreq core provides delayed work based load monitoring helper
+>>>> - * functions. Governors can use these or can implement their own
+>>>> - * monitoring mechanism.
+>>>> - */
+>>>> -static struct workqueue_struct *devfreq_wq;
+>>>> -
+>>>>    /* The list of all device-devfreq governors */
+>>>>    static LIST_HEAD(devfreq_governor_list);
+>>>>    /* The list of all device-devfreq */
+>>>> @@ -391,8 +384,8 @@ static void devfreq_monitor(struct work_struct *work)
+>>>>    	if (err)
+>>>>    		dev_err(&devfreq->dev, "dvfs failed with (%d) error\n", err);
+>>>>    
+>>>> -	queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>> -				msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>> +	schedule_delayed_work(&devfreq->work,
+>>>> +			      msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>    	mutex_unlock(&devfreq->lock);
+>>>>    }
+>>>>    
+>>>> @@ -409,7 +402,7 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+>>>>    {
+>>>>    	INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
+>>>>    	if (devfreq->profile->polling_ms)
+>>>> -		queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>> +		schedule_delayed_work(&devfreq->work,
+>>>>    			msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>    }
+>>>>    EXPORT_SYMBOL(devfreq_monitor_start);
+>>>> @@ -473,7 +466,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
+>>>>    
+>>>>    	if (!delayed_work_pending(&devfreq->work) &&
+>>>>    			devfreq->profile->polling_ms)
+>>>> -		queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>> +		schedule_delayed_work(&devfreq->work,
+>>>>    			msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>    
+>>>>    	devfreq->last_stat_updated = jiffies;
+>>>> @@ -516,7 +509,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
+>>>>    
+>>>>    	/* if current delay is zero, start polling with new delay */
+>>>>    	if (!cur_delay) {
+>>>> -		queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>> +		schedule_delayed_work(&devfreq->work,
+>>>>    			msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>    		goto out;
+>>>>    	}
+>>>> @@ -527,7 +520,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
+>>>>    		cancel_delayed_work_sync(&devfreq->work);
+>>>>    		mutex_lock(&devfreq->lock);
+>>>>    		if (!devfreq->stop_polling)
+>>>> -			queue_delayed_work(devfreq_wq, &devfreq->work,
+>>>> +			schedule_delayed_work(&devfreq->work,
+>>>>    			      msecs_to_jiffies(devfreq->profile->polling_ms));
+>>>>    	}
+>>>>    out:
+>>>> @@ -1430,12 +1423,6 @@ static int __init devfreq_init(void)
+>>>>    		return PTR_ERR(devfreq_class);
+>>>>    	}
+>>>>    
+>>>> -	devfreq_wq = create_freezable_workqueue("devfreq_wq");
+>>>> -	if (!devfreq_wq) {
+>>>> -		class_destroy(devfreq_class);
+>>>> -		pr_err("%s: couldn't create workqueue\n", __FILE__);
+>>>> -		return -ENOMEM;
+>>>> -	}
+>>>>    	devfreq_class->dev_groups = devfreq_groups;
+>>>>    
+>>>>    	return 0;
+>>>
+>>> As commented on v1, the change from a custom to a system workqueue
+>>> seems reasonable to me. However this patch also changes from a
+>>> freezable workqueue to a non-freezable one. C&P of my comments on v1:
+>>>
+>>> ``WQ_FREEZABLE``
+>>>       A freezable wq participates in the freeze phase of the system
+>>>       suspend operations.  Work items on the wq are drained and no
+>>>       new work item starts execution until thawed.
+>>>
+>>> I'm not entirely sure what the impact of this is.
+>>>
+>>> I imagine suspend is potentially quicker because the wq isn't drained,
+>>> but could works that execute during the suspend phase be a problem?
+>> The devfreq supports suspend from v4.20-rc6, which picks OPP for a
+>> device based on its DT 'opp-suspend'. For the devices which do not
+>> choose the suspend OPP it is possible to enter that state with any
+>> frequency. Queuing work for calling governor during suspend which
+>> calculates the device's frequency for the next period is IMO not needed,
+>> The 'next period' is actually suspend and is not related to
+>> 'predicted' load by the governor.
 > 
-> I missed the impact of forcing a CPU out of an idle state and/or not
-> allowing it to enter a more power efficient state. I agree that this
-> should be avoided.
-It would be good to have some real world scenarios for comparison:
-w/ and w/o this change, i.e. it is 5% or 50% more power used.
-I have patches that tries to mitigate wake-ups when there is small
-utilization. Let's make it tunable and involve driver developers.
-They will decide how much impact on the system power usage they
-introduce.
+> If I am not mistaken the monitor can still be running after a device
+> was suspended:
 > 
-> I wonder if using a power-efficient workqueue could help here:
+> devfreq_suspend
+>    list_for_each_entry(devfreq, &devfreq_list, node)
+>      devfreq_suspend_device
+>        devfreq->governor->event_handler(devfreq,
+>                                         DEVFREQ_GOV_SUSPEND, NULL);
 > 
->    Instead of running work on the local CPU, the workqueue core asks the
->    scheduler to provide the target CPU for the work queued on unbound
->    workqueues (which includes those marked as power-efficient). So they
->    will not get pinned on a single CPU as can happen with regular
->    workqueues.
+> According to the comment of devfreq_monitor_suspend() the function is
+> supposed to be called by the governor in response to
+> DEVFREQ_GOV_SUSPEND, however this doesn't seem to be universally the case:
 > 
->    https://lwn.net/Articles/731052/
+> git grep devfreq_monitor_suspend
+>    drivers/devfreq/governor_simpleondemand.c:              devfreq_monitor_suspend(devfreq);
+>    drivers/devfreq/tegra-devfreq.c:                devfreq_monitor_suspend(devfreq);
 > 
+> i.e. the other governors don't seem to call devfreq_monitor_suspend().
 > 
-> Since this series also changes from a custom to system workqueue it
-> seems worth to mention that there are power-efficient system workqueues:
-> 
-> system_power_efficient_wq
-> system_freezable_power_efficient_wq
-> 
-> 
-> In case a power-efficient workqueue is suitable in principle there
-> would still be a problem though: the feature is currently disabled by
-> default, hence devfreq couldn't really rely on it. It is enabled in
-> the arm64 defconfig though, so at least devices on this architecture
-> would benefit from it. Also power-efficient workqueues might be
-> enabled by default in the future as the scheduler becomes more energy
-> aware.
-Regarding this CPU idle cost worries.
-IIRC the new energy model does not even consider idle costs of the CPU.
-It would be good to know the measurements, i.e. worst case scenario:
-waking up 1 (of 4 or 8) CPU from idle 30 times per second for let's
-say 100 us. It is 3 ms / 1000 ms * running energy cost i.e. 250mW.
-Thus, 0.75mW.
-In my opinion it is not a big cost. In most cases the system is still
-doing some other work. It is worth to mention here that on mobiles
-when the power button is hit the full suspend is called which freezes
-all tasks, devices and power consumption is ~15mW. Thus, the system
-suspend is out of scope here.
-
-As I replayed to Chanwoon for the same email: in my opinion current
-devfreq is broken.
-It was probably developed in times where there was 1 CPU (maybe 2)
-and idle state of CPU would be a good hint to not to check devfreq
-devices.
+> Am I missing something?
+Probably not.
+Good catch, these governors should support case DEVFREQ_GOV_SUSPEND.
+The system suspend which calls 'devfreq_suspend' does it when the
+workqueues are frozen and sets the desired OPP for later resume.
+The other use use cases (like pm_suspend) might assume that these
+governors are ready for DEVFREQ_GOV_SUSPEND...
+Do you like to write a patch for them (I can test it) or should I do it?
 
 Regards,
 Lukasz
 > 
-> Cheers
+> Thanks
 > 
 > Matthias
 > 
