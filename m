@@ -1,65 +1,93 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 09/11] leds: max77650: add LEDs support
-Date: Tue, 12 Feb 2019 13:10:32 +0100
-Message-ID: <20190212121032.GC25613@amd>
-References: <20190201094736.32057-1-brgl@bgdev.pl>
- <20190201094736.32057-10-brgl@bgdev.pl>
- <78b99abb-f367-1533-0690-8da26957a664@gmail.com>
- <d86adc21-627f-0350-72e0-f6f10b023413@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 1/2] PM-runtime: Fix __pm_runtime_set_status() race with runtime resume
+Date: Tue, 12 Feb 2019 13:04:12 +0100
+Message-ID: <1670239.00ZbddH1IV@aspire.rjw.lan>
+References: <5510642.nRbR3bcduN@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="L6iaP+gRLNZHKoI4"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d86adc21-627f-0350-72e0-f6f10b023413@ti.com>
+In-Reply-To: <5510642.nRbR3bcduN@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dan Murphy <dmurphy@ti.com>
-Cc: Jacek Anaszewski <jacek.anaszewski@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---L6iaP+gRLNZHKoI4
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit 4080ab083000 ("PM-runtime: Take suppliers into account in
+__pm_runtime_set_status()") introduced a race condition that may
+trigger if __pm_runtime_set_status() is used incorrectly (that is,
+if it is called when PM-runtime is enabled for the target device
+and working).
 
-Hi!
+In that case, if the original PM-runtime status of the device is
+RPM_SUSPENDED, a runtime resume of the device may occur after
+__pm_runtime_set_status() has dropped its power.lock spinlock
+and before deactivating its suppliers, so the suppliers may be
+deactivated while the device is PM-runtime-active which may lead
+to functional issues.
 
+To avoid that, modify __pm_runtime_set_status() to check whether
+or not PM-runtime is enabled for the device before activating its
+suppliers (if the new status is RPM_ACTIVE) and either return an
+error if that's the case or increment the device's disable_depth
+counter to prevent PM-runtime from being enabled for it while
+the remaining part of the function is running (disable_depth is
+then decremented on the way out).
 
-> >> +static struct max77650_led *max77650_to_led(struct led_classdev *cdev)
-> >> +{
-> >> +=A0=A0=A0 return container_of(cdev, struct max77650_led, cdev);
-> >> +}
-> >> +
-> >> +static int max77650_led_brightness_set(struct led_classdev *cdev,
-> >> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 en=
-um led_brightness brightness)
-> >> +{
-> >> +=A0=A0=A0 struct max77650_led *led =3D max77650_to_led(cdev);
-> >> +=A0=A0=A0 int val, mask;
-> >> +
->=20
-> The register value and bits are only 8 bit why an int?
+Fixes: 4080ab083000 ("PM-runtime: Take suppliers into account in __pm_runtime_set_status()")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |   24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-int is word size CPU prefers. It is ok here. If you force u8, it may
-actually result in slower/bigger code.
-									Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---L6iaP+gRLNZHKoI4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlxit7gACgkQMOfwapXb+vKeagCfQs/Zi7YeXVV37ZRpXicN7R20
-JloAnjwl9w6tDCPswwMDR4nDGMl3RHJ7
-=L2XV
------END PGP SIGNATURE-----
-
---L6iaP+gRLNZHKoI4--
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1129,6 +1129,22 @@ int __pm_runtime_set_status(struct devic
+ 	if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
+ 		return -EINVAL;
+ 
++	spin_lock_irq(&dev->power.lock);
++
++	/*
++	 * Prevent PM-runtime from being enabled for the device or return an
++	 * error if it is enabled already and working.
++	 */
++	if (dev->power.runtime_error || dev->power.disable_depth)
++		dev->power.disable_depth++;
++	else
++		error = -EAGAIN;
++
++	spin_unlock_irq(&dev->power.lock);
++
++	if (error)
++		return error;
++
+ 	/*
+ 	 * If the new status is RPM_ACTIVE, the suppliers can be activated
+ 	 * upfront regardless of the current status, because next time
+@@ -1147,12 +1163,6 @@ int __pm_runtime_set_status(struct devic
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+-	if (!dev->power.runtime_error && !dev->power.disable_depth) {
+-		status = dev->power.runtime_status;
+-		error = -EAGAIN;
+-		goto out;
+-	}
+-
+ 	if (dev->power.runtime_status == status || !parent)
+ 		goto out_set;
+ 
+@@ -1205,6 +1215,8 @@ int __pm_runtime_set_status(struct devic
+ 		device_links_read_unlock(idx);
+ 	}
+ 
++	pm_runtime_enable(dev);
++
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
