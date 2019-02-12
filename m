@@ -1,117 +1,96 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] PM-runtime: Fix __pm_runtime_set_status() race with
- runtime resume
-Date: Tue, 12 Feb 2019 20:05:21 +0100
-Message-ID: <CAJZ5v0i6U3PW=MbFsNKFROUTajRpRBg1oWatAW-rXF1M7ihJYA@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <1670239.00ZbddH1IV@aspire.rjw.lan>
- <CAPDyKFoR+evmvDehgTJvxcZ70ZLTqU5J4To_c=2vYdOk26h92w@mail.gmail.com>
- <CAJZ5v0jv6dboQd=iu9pHA_B2HzCEhd2WaN3-732S9px_u6MA-w@mail.gmail.com> <CAPDyKFpNWrVCW9xwwsWf=vGukEkSj4qYs58terDy0tmmrhyLDw@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Tue, 12 Feb 2019 11:32:29 -0800
+Message-ID: <20190212193229.GT117604@google.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+ <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+ <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpNWrVCW9xwwsWf=vGukEkSj4qYs58terDy0tmmrhyLDw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 12, 2019 at 7:28 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Tue, 12 Feb 2019 at 17:28, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Tue, Feb 12, 2019 at 5:18 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Tue, 12 Feb 2019 at 13:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > >
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > >
-> > > > Commit 4080ab083000 ("PM-runtime: Take suppliers into account in
-> > > > __pm_runtime_set_status()") introduced a race condition that may
-> > > > trigger if __pm_runtime_set_status() is used incorrectly (that is,
-> > > > if it is called when PM-runtime is enabled for the target device
-> > > > and working).
-> > > >
-> > > > In that case, if the original PM-runtime status of the device is
-> > > > RPM_SUSPENDED, a runtime resume of the device may occur after
-> > > > __pm_runtime_set_status() has dropped its power.lock spinlock
-> > > > and before deactivating its suppliers, so the suppliers may be
-> > > > deactivated while the device is PM-runtime-active which may lead
-> > > > to functional issues.
-> > > >
-> > > > To avoid that, modify __pm_runtime_set_status() to check whether
-> > > > or not PM-runtime is enabled for the device before activating its
-> > > > suppliers (if the new status is RPM_ACTIVE) and either return an
-> > > > error if that's the case or increment the device's disable_depth
-> > > > counter to prevent PM-runtime from being enabled for it while
-> > > > the remaining part of the function is running (disable_depth is
-> > > > then decremented on the way out).
-> > > >
-> > > > Fixes: 4080ab083000 ("PM-runtime: Take suppliers into account in __pm_runtime_set_status()")
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > ---
-> > > >  drivers/base/power/runtime.c |   24 ++++++++++++++++++------
-> > > >  1 file changed, 18 insertions(+), 6 deletions(-)
-> > > >
-> > > > Index: linux-pm/drivers/base/power/runtime.c
-> > > > ===================================================================
-> > > > --- linux-pm.orig/drivers/base/power/runtime.c
-> > > > +++ linux-pm/drivers/base/power/runtime.c
-> > > > @@ -1129,6 +1129,22 @@ int __pm_runtime_set_status(struct devic
-> > > >         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
-> > > >                 return -EINVAL;
-> > > >
-> > > > +       spin_lock_irq(&dev->power.lock);
-> > > > +
-> > > > +       /*
-> > > > +        * Prevent PM-runtime from being enabled for the device or return an
-> > > > +        * error if it is enabled already and working.
-> > > > +        */
-> > > > +       if (dev->power.runtime_error || dev->power.disable_depth)
-> > > > +               dev->power.disable_depth++;
-> > > > +       else
-> > > > +               error = -EAGAIN;
-> > > > +
-> > > > +       spin_unlock_irq(&dev->power.lock);
-> > > > +
-> > > > +       if (error)
-> > > > +               return error;
-> > > > +
-> > > >         /*
-> > > >          * If the new status is RPM_ACTIVE, the suppliers can be activated
-> > > >          * upfront regardless of the current status, because next time
-> > > > @@ -1147,12 +1163,6 @@ int __pm_runtime_set_status(struct devic
-> > > >
-> > > >         spin_lock_irq(&dev->power.lock);
-> > > >
-> > > > -       if (!dev->power.runtime_error && !dev->power.disable_depth) {
-> > > > -               status = dev->power.runtime_status;
-> > > > -               error = -EAGAIN;
-> > > > -               goto out;
-> > > > -       }
-> > > > -
-> > > >         if (dev->power.runtime_status == status || !parent)
-> > > >                 goto out_set;
-> > > >
-> > > > @@ -1205,6 +1215,8 @@ int __pm_runtime_set_status(struct devic
-> > > >                 device_links_read_unlock(idx);
-> > > >         }
-> > > >
-> > > > +       pm_runtime_enable(dev);
-> > >
-> > > pm_runtime_enable() uses spin_lock_irqsave(), rather than
-> > > spin_lock_irq() - is there a reason to why you want to allow that
-> > > here, but not earlier in the function?
-> >
-> > Device links locking cannot be used in interrupt context.
->
-> I get that, but thanks for clarifying.
->
-> However, then why did you convert __pm_runtime_set_status() from using
-> spin_lock_irqsave() to spin_lock_irq() in commit "PM-runtime: Take
-> suppliers into account in __pm_runtime_set_status()"?
->
-> As far as I can tell, the spin_lock is not being held while we operate
-> on the device links anyway. Or is this just to give the caller an
-> indication what kind of context the function can be called from?
+Hi,
 
-The latter plus getting rid of saving/restoring the flags which isn't necessary.
+On Tue, Feb 12, 2019 at 02:46:24PM +0900, Chanwoo Choi wrote:
+> Hi Lukasz,
+> 
+> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+> > This patch set changes workqueue related features in devfreq framework.
+> > First patch switches to delayed work instead of deferred.
+> > The second switches to regular system work and deletes custom 'devfreq'.
+> > 
+> > Using deferred work in this context might harm the system performance.
+> > When the CPU enters idle, deferred work is not fired. The devfreq device's
+> > utilization does not have to be connected with a particular CPU.
+> > The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+> > They all are missing opportunity to check the HW state and react when
+> > the deferred work is not fired.
+> > A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+> > on full speed, might show x5 worse performance if the crucial CPU is in idle.
+> 
+> The devfreq framework keeps the balancing between performance
+> and power-consumption. It is wrong to focus on only either
+> performance or power.
+> 
+> This cover-letter focus on the only performance without any power-consumption
+> disadvantages. It is easy to raise the performance with short sampling rate
+> with polling modes. To get the performance, it is good as short as possible
+> of period.
+> 
+> Sometimes, when cpu is idle, the device might require the busy state.
+> It is very difficult to catch the always right timing between them.
+> 
+> Also, this patch cannot prevent the unneeded wakeup from idle state.
+> Apparently, it only focuses on performance without considering
+> the power-consumption disadvantage. In the embedded device,
+> the power-consumption is very important point. We can not ignore
+> the side effect.
+> 
+> Always, I hope to improve the devfreq framwork more that older.
+> But, frankly, it is difficult to agree because it only consider
+> the performance without considering the side-effect.
+> 
+> The power management framework always have to consider
+> the power-consumption issue. This point is always true.
+
+I missed the impact of forcing a CPU out of an idle state and/or not
+allowing it to enter a more power efficient state. I agree that this
+should be avoided.
+
+I wonder if using a power-efficient workqueue could help here:
+
+  Instead of running work on the local CPU, the workqueue core asks the
+  scheduler to provide the target CPU for the work queued on unbound
+  workqueues (which includes those marked as power-efficient). So they
+  will not get pinned on a single CPU as can happen with regular
+  workqueues.
+
+  https://lwn.net/Articles/731052/
+
+
+Since this series also changes from a custom to system workqueue it
+seems worth to mention that there are power-efficient system workqueues:
+
+system_power_efficient_wq
+system_freezable_power_efficient_wq
+
+
+In case a power-efficient workqueue is suitable in principle there
+would still be a problem though: the feature is currently disabled by
+default, hence devfreq couldn't really rely on it. It is enabled in
+the arm64 defconfig though, so at least devices on this architecture
+would benefit from it. Also power-efficient workqueues might be
+enabled by default in the future as the scheduler becomes more energy
+aware.
+
+Cheers
+
+Matthias
