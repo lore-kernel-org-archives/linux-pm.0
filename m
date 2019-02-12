@@ -1,58 +1,60 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
-Date: Tue, 12 Feb 2019 11:24:32 +0100
-Message-ID: <CAMRc=MfYeVbvY6O03xq4eLN9TVpAKWCAXPk0eP5LSBCU7VU9fA@mail.gmail.com>
-References: <20190205091237.6448-1-brgl@bgdev.pl> <20190205091237.6448-6-brgl@bgdev.pl>
- <20190212083642.GT20638@dell> <CAMRc=MderQf20_8aG4-otBkCv60FSNSSqV3NVALPkFL-MqmJbg@mail.gmail.com>
- <20190212095457.GA20638@dell> <CAMRc=MdyT7nMJ7dUTf6M3PvRdynaCurb_TftMyA4eCwzpR9fVA@mail.gmail.com>
- <20190212101835.GB20638@dell>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: dt: Implement online/offline() callbacks
+Date: Tue, 12 Feb 2019 11:26:25 +0100
+Message-ID: <CAJZ5v0hABvt2w7v9bfxyzf84+a4LU4C4tczVvwFnaDaY=pKG6A@mail.gmail.com>
+References: <cover.1549955027.git.viresh.kumar@linaro.org> <8030961ef762018fc286e4d3d3a010638e900e53.1549955027.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hLOD-5XDp7jAwt4EqWYGAU9VZzumNchW9_+bt7F1MdQw@mail.gmail.com> <20190212094909.5eivfzfnc62lay7x@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212101835.GB20638@dell>
+In-Reply-To: <20190212094909.5eivfzfnc62lay7x@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-wt., 12 lut 2019 o 11:18 Lee Jones <lee.jones@linaro.org> napisa=C5=82(a):
+On Tue, Feb 12, 2019 at 10:49 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
->
-> > wt., 12 lut 2019 o 10:55 Lee Jones <lee.jones@linaro.org> napisa=C5=82(=
-a):
+> On 12-02-19, 10:43, Rafael J. Wysocki wrote:
+> > On Tue, Feb 12, 2019 at 8:07 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > > >
-> > >  * The declaration of a superfluous struct
-> > >  * 100 lines of additional/avoidable code
-> > >  * Hacky hoop jumping trying to fudge VIRQs into resources
-> > >  * Resources were designed for HWIRQs (unless a domain is present)
-> > >  * Loads of additional/avoidable CPU cycles setting all this up
+> > > Implement the light-weight tear down and bring up helpers to reduce the
+> > > amount of work to do on CPU offline/online operation.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > >  drivers/cpufreq/cpufreq-dt.c | 17 +++++++++++++++++
+> > >  1 file changed, 17 insertions(+)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> > > index 7ba392911cd0..1aefaa1b0ca2 100644
+> > > --- a/drivers/cpufreq/cpufreq-dt.c
+> > > +++ b/drivers/cpufreq/cpufreq-dt.c
+> > > @@ -295,6 +295,21 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> > >         return ret;
+> > >  }
+> > >
+> > > +static int cpufreq_online(struct cpufreq_policy *policy)
+> > > +{
+> > > +       /* We did light-weight tear down earlier, nothing to do here */
+> > > +       return 0;
+> > > +}
 > >
-> > While the above may be right, this one is negligible and you know it. :=
-)
->
-> You have nested for() loops.  You *are* wasting lots of cycles.
->
-> > > Need I go on? :)
-> > >
-> > > Surely the fact that you are using both sides of an API
-> > > (devm_regmap_init_i2c and regmap_irq_get_*) in the same driver, must
-> > > set some alarm bells ringing?
-> > >
-> > > This whole HWIRQ setting, VIRQ getting, resource hacking is a mess.
-> > >
-> > > And for what?  To avoid passing IRQ data to a child driver?
+> > I think you could avoid having to add this empty stub if the core
+> > checked for both online and offline, that is
 > >
-> > What do you propose? Should I go back to the approach in v1 and pass
-> > the regmap_irq_chip_data to child drivers?
+> > if (driver->offline || driver->online) {
 >
-> I'm saying you should remove all of this hackery and pass IRQs as they
-> are supposed to be passed (like everyone else does).
->
+> This doesn't look great as all we should care about here is ->online()
+> and checking for offline as well looks a bit hacky.
 
-I'm not sure what you mean by "like everyone else does" - different
-mfd drivers seem to be doing different things. Is a simple struct
-containing virtual irq numbers passed to sub-drivers fine?
+That's a matter of the driver I/F definition.
 
-Bart
+You can require online to be there if offline is set and the other way
+around (but then you should check if that's the case while registering
+the driver) or you can allow just one of them to be provided for the
+lightweight online/offline to be done.  In the latter case the
+presence of the other callback plays the role of a flag.
+
+Both are basically fine by me, but if you go for the former, please
+add the checks to cpufreq_register_driver().
