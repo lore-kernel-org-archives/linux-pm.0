@@ -1,150 +1,522 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM-runtime: Take suppliers into account in __pm_runtime_set_status()
-Date: Tue, 12 Feb 2019 09:25:59 +0100
-Message-ID: <CAPDyKFrVeRYfRFHX4Tq-mSAFabBTxbJfQoTXaxb2OA+Gbm8tAg@mail.gmail.com>
-References: <3917694.ab5GGAjohB@aspire.rjw.lan> <1634058.cXDNg15SOd@aspire.rjw.lan>
- <CAPDyKFpWCT9CcmxqqWk+S8tSPz_at56UCnk3EVBab-TnScHw8Q@mail.gmail.com> <CAJZ5v0j2Gi7uG7TWSXdmQ09VWT+ZZF=woUFAnoFBDLx9zy-Cng@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
+Date: Tue, 12 Feb 2019 08:36:42 +0000
+Message-ID: <20190212083642.GT20638@dell>
+References: <20190205091237.6448-1-brgl@bgdev.pl>
+ <20190205091237.6448-6-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j2Gi7uG7TWSXdmQ09VWT+ZZF=woUFAnoFBDLx9zy-Cng@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190205091237.6448-6-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <jroedel@suse.de>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Feb 2019 at 23:41, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
->  On Mon, Feb 11, 2019 at 2:28 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Thu, 7 Feb 2019 at 19:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > If the target device has any suppliers, as reflected by device links
-> > > to them, __pm_runtime_set_status() does not take them into account,
-> > > which is not consistent with the other parts of the PM-runtime
-> > > framework and may lead to programming mistakes.
-> > >
-> > > Modify __pm_runtime_set_status() to take suppliers into account by
-> > > activating them upfront if the new status is RPM_ACTIVE and
-> > > deactivating them on exit if the new status is RPM_SUSPENDED.
-> > >
-> > > If the activation of one of the suppliers fails, the new status
-> > > will be RPM_SUSPENDED and the (remaining) suppliers will be
-> > > deactivated on exit (the child count of the device's parent
-> > > will be dropped too then).
-> > >
-> > > Of course, adding device links locking to __pm_runtime_set_status()
-> > > means that it cannot be run fron interrupt context, so make it use
-> > > spin_lock_irq() and spin_unlock_irq() instead of spin_lock_irqsave()
-> > > and spin_unlock_irqrestore(), respectively.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Rafael, thanks for working on this!
-> >
-> > I am running some tests at my side, but still not achieving the
-> > behavior I expect to. Will let you know when I have more details, but
-> > first some comments below.
-> >
-> > > ---
-> > >  drivers/base/power/runtime.c |   45 ++++++++++++++++++++++++++++++++++++++-----
-> > >  1 file changed, 40 insertions(+), 5 deletions(-)
-> > >
-> > > Index: linux-pm/drivers/base/power/runtime.c
-> > > ===================================================================
-> > > --- linux-pm.orig/drivers/base/power/runtime.c
-> > > +++ linux-pm/drivers/base/power/runtime.c
-> > > @@ -1102,20 +1102,43 @@ EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_u
-> > >   * and the device parent's counter of unsuspended children is modified to
-> > >   * reflect the new status.  If the new status is RPM_SUSPENDED, an idle
-> > >   * notification request for the parent is submitted.
-> > > + *
-> > > + * If @dev has any suppliers (as reflected by device links to them), and @status
-> > > + * is RPM_ACTIVE, they will be activated upfront and if the activation of one
-> > > + * of them fails, the status of @dev will be changed to RPM_SUSPENDED (instead
-> > > + * of the @status value) and the suppliers will be deacticated on exit.  The
-> > > + * error returned by the failing supplier activation will be returned in that
-> > > + * case.
-> > >   */
-> > >  int __pm_runtime_set_status(struct device *dev, unsigned int status)
-> > >  {
-> > >         struct device *parent = dev->parent;
-> > > -       unsigned long flags;
-> > >         bool notify_parent = false;
-> > >         int error = 0;
-> > >
-> > >         if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
-> > >                 return -EINVAL;
-> > >
-> > > -       spin_lock_irqsave(&dev->power.lock, flags);
-> > > +       /*
-> > > +        * If the new status is RPM_ACTIVE, the suppliers can be activated
-> > > +        * upfront regardless of the current status, because next time
-> > > +        * rpm_put_suppliers() runs, the rpm_active refcounts of the links
-> > > +        * involved will be dropped down to one anyway.
-> > > +        */
-> > > +       if (status == RPM_ACTIVE) {
-> > > +               int idx = device_links_read_lock();
-> > > +
-> > > +               error = rpm_get_suppliers(dev);
-> > > +               if (error)
-> > > +                       status = RPM_SUSPENDED;
-> > > +
-> > > +               device_links_read_unlock(idx);
-> > > +       }
-> >
-> > This doesn't look right to me, and more importantly, this isn't
-> > consistent with how we treat a parent/child.
->
-> It cannot be entirely consistent with that, because you cannot walk
-> the suppliers under the device's power.lock.
->
-> The idea here is that activating suppliers upfront if the new status
-> is RPM_ACTIVE shouldn't hurt regardless.
+On Tue, 05 Feb 2019, Bartosz Golaszewski wrote:
 
-I see. However, perhaps we can just read out the needed flags/states
-(within device's power.lock) before walking the suppliers.
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> Add the core mfd driver for max77650 PMIC. We define five sub-devices
+> for which the drivers will be added in subsequent patches.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> ---
+>  drivers/mfd/Kconfig          |  11 ++
+>  drivers/mfd/Makefile         |   1 +
+>  drivers/mfd/max77650.c       | 342 +++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/max77650.h |  59 ++++++
+>  4 files changed, 413 insertions(+)
+>  create mode 100644 drivers/mfd/max77650.c
+>  create mode 100644 include/linux/mfd/max77650.h
+> 
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 76f9909cf396..a80c3fe80fbe 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -734,6 +734,17 @@ config MFD_MAX77620
+>  	  provides common support for accessing the device; additional drivers
+>  	  must be enabled in order to use the functionality of the device.
+>  
+> +config MFD_MAX77650
+> +	tristate "Maxim MAX77650/77651 PMIC Support"
+> +	depends on I2C
+> +	depends on OF || COMPILE_TEST
+> +	select MFD_CORE
+> +	select REGMAP_I2C
+> +	help
+> +	  Say yes here to add support for Maxim Semiconductor MAX77650 and
+> +	  MAX77651 Power Management ICs. This is the core multifunction
+> +	  driver for interacting with the device.
+> +
+>  config MFD_MAX77686
+>  	tristate "Maxim Semiconductor MAX77686/802 PMIC Support"
+>  	depends on I2C
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index 12980a4ad460..3b912a4015d1 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -151,6 +151,7 @@ obj-$(CONFIG_MFD_DA9150)	+= da9150-core.o
+>  
+>  obj-$(CONFIG_MFD_MAX14577)	+= max14577.o
+>  obj-$(CONFIG_MFD_MAX77620)	+= max77620.o
+> +obj-$(CONFIG_MFD_MAX77650)	+= max77650.o
+>  obj-$(CONFIG_MFD_MAX77686)	+= max77686.o
+>  obj-$(CONFIG_MFD_MAX77693)	+= max77693.o
+>  obj-$(CONFIG_MFD_MAX77843)	+= max77843.o
+> diff --git a/drivers/mfd/max77650.c b/drivers/mfd/max77650.c
+> new file mode 100644
+> index 000000000000..7c6164f1fde4
+> --- /dev/null
+> +++ b/drivers/mfd/max77650.c
+> @@ -0,0 +1,342 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +//
+> +// Copyright (C) 2018 BayLibre SAS
+> +// Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> +//
+> +// Core MFD driver for MAXIM 77650/77651 charger/power-supply.
+> +
+> +#include <linux/i2c.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/irq.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/mfd/max77650.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +
+> +#define MAX77650_INT_GPI_F_MSK		BIT(0)
+> +#define MAX77650_INT_GPI_R_MSK		BIT(1)
+> +#define MAX77650_INT_GPI_MSK \
+> +			(MAX77650_INT_GPI_F_MSK | MAX77650_INT_GPI_R_MSK)
+> +#define MAX77650_INT_nEN_F_MSK		BIT(2)
+> +#define MAX77650_INT_nEN_R_MSK		BIT(3)
+> +#define MAX77650_INT_TJAL1_R_MSK	BIT(4)
+> +#define MAX77650_INT_TJAL2_R_MSK	BIT(5)
+> +#define MAX77650_INT_DOD_R_MSK		BIT(6)
+> +
+> +#define MAX77650_INT_THM_MSK		BIT(0)
+> +#define MAX77650_INT_CHG_MSK		BIT(1)
+> +#define MAX77650_INT_CHGIN_MSK		BIT(2)
+> +#define MAX77650_INT_TJ_REG_MSK		BIT(3)
+> +#define MAX77650_INT_CHGIN_CTRL_MSK	BIT(4)
+> +#define MAX77650_INT_SYS_CTRL_MSK	BIT(5)
+> +#define MAX77650_INT_SYS_CNFG_MSK	BIT(6)
+> +
+> +#define MAX77650_INT_GLBL_OFFSET	0
+> +#define MAX77650_INT_CHG_OFFSET		1
+> +
+> +#define MAX77650_SBIA_LPM_MASK		BIT(5)
+> +#define MAX77650_SBIA_LPM_DISABLED	0x00
+> +
+> +enum {
+> +	MAX77650_INT_GPI = 0,
+> +	MAX77650_INT_nEN_F,
+> +	MAX77650_INT_nEN_R,
+> +	MAX77650_INT_TJAL1_R,
+> +	MAX77650_INT_TJAL2_R,
+> +	MAX77650_INT_DOD_R,
+> +	MAX77650_INT_THM,
+> +	MAX77650_INT_CHG,
+> +	MAX77650_INT_CHGIN,
+> +	MAX77650_INT_TJ_REG,
+> +	MAX77650_INT_CHGIN_CTRL,
+> +	MAX77650_INT_SYS_CTRL,
+> +	MAX77650_INT_SYS_CNFG,
+> +};
+> +
+> +enum {
+> +	MAX77650_CELL_REGULATOR = 0,
+> +	MAX77650_CELL_CHARGER,
+> +	MAX77650_CELL_GPIO,
+> +	MAX77650_CELL_LED,
+> +	MAX77650_CELL_ONKEY,
+> +	MAX77650_NUM_CELLS,
+> +};
+> +
+> +struct max77650_irq_mapping {
+> +	int cell_num;
+> +	const int *irqs;
+> +	const char *const *irq_names;
+> +	unsigned int num_irqs;
+> +};
+> +
+> +static const int max77650_charger_irqs[] = {
+> +	MAX77650_INT_CHG,
+> +	MAX77650_INT_CHGIN,
+> +};
+> +
+> +static const int max77650_gpio_irqs[] = {
+> +	MAX77650_INT_GPI,
+> +};
+> +
+> +static const int max77650_onkey_irqs[] = {
+> +	MAX77650_INT_nEN_F,
+> +	MAX77650_INT_nEN_R,
+> +};
+> +
+> +static const char *const max77650_charger_irq_names[] = {
+> +	"CHG",
+> +	"CHGIN",
+> +};
+> +
+> +static const char *const max77650_gpio_irq_names[] = {
+> +	"GPI",
+> +};
+> +
+> +static const char *const max77650_onkey_irq_names[] = {
+> +	"nEN_F",
+> +	"nEN_R",
+> +};
+> +
+> +static const struct max77650_irq_mapping max77650_irq_mapping_table[] = {
+> +	{
+> +		.cell_num	= MAX77650_CELL_CHARGER,
+> +		.irqs		= max77650_charger_irqs,
+> +		.irq_names	= max77650_charger_irq_names,
+> +		.num_irqs	= ARRAY_SIZE(max77650_charger_irqs),
+> +	},
+> +	{
+> +		.cell_num	= MAX77650_CELL_GPIO,
+> +		.irqs		= max77650_gpio_irqs,
+> +		.irq_names	= max77650_gpio_irq_names,
+> +		.num_irqs	= ARRAY_SIZE(max77650_gpio_irqs),
+> +	},
+> +	{
+> +		.cell_num	= MAX77650_CELL_ONKEY,
+> +		.irqs		= max77650_onkey_irqs,
+> +		.irq_names	= max77650_onkey_irq_names,
+> +		.num_irqs	= ARRAY_SIZE(max77650_onkey_irqs),
+> +	},
+> +};
 
-In principle, those flags/states shouldn't really change, in case
-runtime PM have been properly disabled by the caller.
+This is all a bit convoluted and nasty TBH.
 
->
-> > More precisely, I think you need to check "if
-> > (!dev->power.runtime_error && !dev->power.disable_depth)" and also
-> > whether "dev->power.runtime_status == status", before deciding to call
-> > rpm_get_suppliers() above. Otherwise you may end up resuming suppliers
-> > and/or increasing the link->rpm_active count, when you shouldn't.
->
-> Resuming suppliers unnecessarily is not particularly efficient, but it
-> is not incorrect.  Incrementing their rpm_active temporarily also
-> isn't incorrect as long as the rpm_active values are correct on exit
-> (and note that incementing them if the consumer's status is RPM_ACTIVE
-> doesn't even matter).
->
-> > In other words, expecting __pm_runtime_set_status() to be called in
-> > "balanced" manner isn't correct.
->
-> There is no such expectation here.
+> +static const struct mfd_cell max77650_cells[] = {
+> +	[MAX77650_CELL_REGULATOR] = {
+> +		.name		= "max77650-regulator",
+> +		.of_compatible	= "maxim,max77650-regulator",
+> +	},
+> +	[MAX77650_CELL_CHARGER] = {
+> +		.name		= "max77650-charger",
+> +		.of_compatible	= "maxim,max77650-charger",
+> +	},
+> +	[MAX77650_CELL_GPIO] = {
+> +		.name		= "max77650-gpio",
+> +		.of_compatible	= "maxim,max77650-gpio",
+> +	},
+> +	[MAX77650_CELL_LED] = {
+> +		.name		= "max77650-led",
+> +		.of_compatible	= "maxim,max77650-led",
+> +	},
+> +	[MAX77650_CELL_ONKEY] = {
+> +		.name		= "max77650-onkey",
+> +		.of_compatible	= "maxim,max77650-onkey",
+> +	},
+> +};
 
-You are right!
+Why are you numbering the cells?  There is no need to do this.
 
-I didn't realize that rpm_put_suppliers() actually doesn't drop the
-usage count only by one, but instead as many times as needed to let
-rpm_active reach one.
+> +static const struct regmap_irq max77650_irqs[] = {
+> +	[MAX77650_INT_GPI] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_GPI_MSK,
+> +		.type = {
+> +			.type_falling_val	= MAX77650_INT_GPI_F_MSK,
+> +			.type_rising_val	= MAX77650_INT_GPI_R_MSK,
+> +			.types_supported	= IRQ_TYPE_EDGE_BOTH,
+> +		},
+> +	},
+> +	[MAX77650_INT_nEN_F] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_nEN_F_MSK,
+> +	},
+> +	[MAX77650_INT_nEN_R] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_nEN_R_MSK,
+> +	},
+> +	[MAX77650_INT_TJAL1_R] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_TJAL1_R_MSK,
+> +	},
+> +	[MAX77650_INT_TJAL2_R] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_TJAL2_R_MSK,
+> +	},
+> +	[MAX77650_INT_DOD_R] = {
+> +		.reg_offset		= MAX77650_INT_GLBL_OFFSET,
+> +		.mask			= MAX77650_INT_DOD_R_MSK,
+> +	},
+> +	[MAX77650_INT_THM] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_THM_MSK,
+> +	},
+> +	[MAX77650_INT_CHG] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_CHG_MSK,
+> +	},
+> +	[MAX77650_INT_CHGIN] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_CHGIN_MSK,
+> +	},
+> +	[MAX77650_INT_TJ_REG] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_TJ_REG_MSK,
+> +	},
+> +	[MAX77650_INT_CHGIN_CTRL] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_CHGIN_CTRL_MSK,
+> +	},
+> +	[MAX77650_INT_SYS_CTRL] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_SYS_CTRL_MSK,
+> +	},
+> +	[MAX77650_INT_SYS_CNFG] = {
+> +		.reg_offset		= MAX77650_INT_CHG_OFFSET,
+> +		.mask			= MAX77650_INT_SYS_CNFG_MSK,
+> +	},
+> +};
 
->
-> There is a possible race between __pm_runtime_set_status() and runtime
-> suspend or resume of the device in case PM-runtime is enabled for it
-> when __pm_runtime_set_status() is called, but it shouldn't occur if
-> __pm_runtime_set_status() is used correctly (that is, when PM-runtime
-> is disabled for the device).
->
-> I think I know how to avoid that race, though, so I'm going to post an
-> incremental fix if that works out.
+If you get rid of all of the horrible hoop jumping in *_setup_irqs(),
+you can use REGMAP_IRQ_REG() like everyone else does.
 
-Okay, let's see what comes out of this.
+> +static const struct regmap_irq_chip max77650_irq_chip = {
+> +	.name			= "max77650-irq",
+> +	.irqs			= max77650_irqs,
+> +	.num_irqs		= ARRAY_SIZE(max77650_irqs),
+> +	.num_regs		= 2,
+> +	.status_base		= MAX77650_REG_INT_GLBL,
+> +	.mask_base		= MAX77650_REG_INTM_GLBL,
+> +	.type_in_mask		= true,
+> +	.type_invert		= true,
+> +	.init_ack_masked	= true,
+> +	.clear_on_unmask	= true,
+> +};
+> +
+> +static const struct regmap_config max77650_regmap_config = {
+> +	.name		= "max77650",
+> +	.reg_bits	= 8,
+> +	.val_bits	= 8,
+> +};
+> +
+> +static int max77650_setup_irqs(struct device *dev, struct mfd_cell *cells)
+> +{
+> +	const struct max77650_irq_mapping *mapping;
+> +	struct regmap_irq_chip_data *irq_data;
+> +	struct i2c_client *i2c;
+> +	struct mfd_cell *cell;
+> +	struct resource *res;
+> +	struct regmap *map;
+> +	int i, j, irq, rv;
+> +
+> +	i2c = to_i2c_client(dev);
+> +
+> +	map = dev_get_regmap(dev, NULL);
+> +	if (!map)
+> +		return -ENODEV;
+> +
+> +	rv = devm_regmap_add_irq_chip(dev, map, i2c->irq,
+> +				      IRQF_ONESHOT | IRQF_SHARED, -1,
 
-Kind regards
-Uffe
+What is -1?  Are you sure this isn't defined somewhere?
+
+> +				      &max77650_irq_chip, &irq_data);
+> +	if (rv)
+> +		return rv;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(max77650_irq_mapping_table); i++) {
+> +		mapping = &max77650_irq_mapping_table[i];
+> +		cell = &cells[mapping->cell_num];
+> +
+> +		res = devm_kcalloc(dev, sizeof(*res),
+> +				   mapping->num_irqs, GFP_KERNEL);
+> +		if (!res)
+> +			return -ENOMEM;
+> +
+> +		cell->resources = res;
+> +		cell->num_resources = mapping->num_irqs;
+> +
+> +		for (j = 0; j < mapping->num_irqs; j++) {
+> +			irq = regmap_irq_get_virq(irq_data, mapping->irqs[j]);
+> +			if (irq < 0)
+> +				return irq;
+> +
+> +			res[j].start = res[j].end = irq;
+> +			res[j].flags = IORESOURCE_IRQ;
+> +			res[j].name = mapping->irq_names[j];
+> +		}
+> +	}
+
+This is the first time I've seen it done like this (and I hate it).
+
+Why are you storing the virqs in resources?
+
+I think this is highly irregular.
+
+> +	return 0;
+> +}
+> +
+> +static int max77650_i2c_probe(struct i2c_client *i2c)
+> +{
+> +	struct device *dev = &i2c->dev;
+> +	struct mfd_cell *cells;
+> +	struct regmap *map;
+> +	unsigned int val;
+> +	int rv;
+> +
+> +	map = devm_regmap_init_i2c(i2c, &max77650_regmap_config);
+> +	if (IS_ERR(map))
+
+What error messages does devm_regmap_init_i2c() report?  Does it print
+out its own error messages internally?  If not it would be better to
+provide a suitable error message here.
+
+> +		return PTR_ERR(map);
+> +
+> +	rv = regmap_read(map, MAX77650_REG_CID, &val);
+> +	if (rv)
+
+Better to provide a suitable error message here.
+
+> +		return rv;
+> +
+> +	switch (MAX77650_CID_BITS(val)) {
+> +	case MAX77650_CID_77650A:
+> +	case MAX77650_CID_77650C:
+> +	case MAX77650_CID_77651A:
+> +	case MAX77650_CID_77651B:
+> +		break;
+> +	default:
+
+Better to provide a suitable error message here.
+
+> +		return -ENODEV;
+> +	}
+> +
+> +	/*
+> +	 * This IC has a low-power mode which reduces the quiescent current
+> +	 * consumption to ~5.6uA but is only suitable for systems consuming
+> +	 * less than ~2mA. Since this is not likely the case even on
+> +	 * linux-based wearables - keep the chip in normal power mode.
+> +	 */
+> +	rv = regmap_update_bits(map,
+> +				MAX77650_REG_CNFG_GLBL,
+> +				MAX77650_SBIA_LPM_MASK,
+> +				MAX77650_SBIA_LPM_DISABLED);
+> +	if (rv)
+
+Better to provide a suitable error message here.
+
+> +		return rv;
+> +
+> +	cells = devm_kmemdup(dev, max77650_cells,
+> +			     sizeof(max77650_cells), GFP_KERNEL);
+> +	if (!cells)
+> +		return -ENOMEM;
+> +
+> +	rv = max77650_setup_irqs(dev, cells);
+> +	if (rv)
+> +		return rv;
+> +
+> +	return devm_mfd_add_devices(dev, -1, cells,
+
+Use the correct defines instead of -1.
+
+`git grep mfd_add_devices`
+
+> +				    MAX77650_NUM_CELLS, NULL, 0, NULL);
+> +}
+> +
+> +static const struct of_device_id max77650_of_match[] = {
+> +	{ .compatible = "maxim,max77650" },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(of, max77650_of_match);
+> +
+> +static struct i2c_driver max77650_i2c_driver = {
+> +	.driver = {
+> +		.name = "max77650",
+> +		.of_match_table = of_match_ptr(max77650_of_match),
+> +	},
+> +	.probe_new = max77650_i2c_probe,
+> +};
+> +module_i2c_driver(max77650_i2c_driver);
+> +
+> +MODULE_DESCRIPTION("MAXIM 77650/77651 multi-function core driver");
+> +MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/include/linux/mfd/max77650.h b/include/linux/mfd/max77650.h
+> new file mode 100644
+> index 000000000000..c809e211a8cd
+> --- /dev/null
+> +++ b/include/linux/mfd/max77650.h
+> @@ -0,0 +1,59 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (C) 2018 BayLibre SAS
+> + * Author: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> + *
+> + * Common definitions for MAXIM 77650/77651 charger/power-supply.
+> + */
+> +
+> +#ifndef MAX77650_H
+> +#define MAX77650_H
+> +
+> +#include <linux/bits.h>
+> +
+> +#define MAX77650_REG_INT_GLBL		0x00
+> +#define MAX77650_REG_INT_CHG		0x01
+> +#define MAX77650_REG_STAT_CHG_A		0x02
+> +#define MAX77650_REG_STAT_CHG_B		0x03
+> +#define MAX77650_REG_ERCFLAG		0x04
+> +#define MAX77650_REG_STAT_GLBL		0x05
+> +#define MAX77650_REG_INTM_GLBL		0x06
+> +#define MAX77650_REG_INTM_CHG		0x07
+> +#define MAX77650_REG_CNFG_GLBL		0x10
+> +#define MAX77650_REG_CID		0x11
+> +#define MAX77650_REG_CNFG_GPIO		0x12
+> +#define MAX77650_REG_CNFG_CHG_A		0x18
+> +#define MAX77650_REG_CNFG_CHG_B		0x19
+> +#define MAX77650_REG_CNFG_CHG_C		0x1a
+> +#define MAX77650_REG_CNFG_CHG_D		0x1b
+> +#define MAX77650_REG_CNFG_CHG_E		0x1c
+> +#define MAX77650_REG_CNFG_CHG_F		0x1d
+> +#define MAX77650_REG_CNFG_CHG_G		0x1e
+> +#define MAX77650_REG_CNFG_CHG_H		0x1f
+> +#define MAX77650_REG_CNFG_CHG_I		0x20
+> +#define MAX77650_REG_CNFG_SBB_TOP	0x28
+> +#define MAX77650_REG_CNFG_SBB0_A	0x29
+> +#define MAX77650_REG_CNFG_SBB0_B	0x2a
+> +#define MAX77650_REG_CNFG_SBB1_A	0x2b
+> +#define MAX77650_REG_CNFG_SBB1_B	0x2c
+> +#define MAX77650_REG_CNFG_SBB2_A	0x2d
+> +#define MAX77650_REG_CNFG_SBB2_B	0x2e
+> +#define MAX77650_REG_CNFG_LDO_A		0x38
+> +#define MAX77650_REG_CNFG_LDO_B		0x39
+> +#define MAX77650_REG_CNFG_LED0_A	0x40
+> +#define MAX77650_REG_CNFG_LED1_A	0x41
+> +#define MAX77650_REG_CNFG_LED2_A	0x42
+> +#define MAX77650_REG_CNFG_LED0_B	0x43
+> +#define MAX77650_REG_CNFG_LED1_B	0x44
+> +#define MAX77650_REG_CNFG_LED2_B	0x45
+> +#define MAX77650_REG_CNFG_LED_TOP	0x46
+> +
+> +#define MAX77650_CID_MASK		GENMASK(3, 0)
+> +#define MAX77650_CID_BITS(_reg)		(_reg & MAX77650_CID_MASK)
+> +
+> +#define MAX77650_CID_77650A		0x03
+> +#define MAX77650_CID_77650C		0x0a
+> +#define MAX77650_CID_77651A		0x06
+> +#define MAX77650_CID_77651B		0x08
+> +
+> +#endif /* MAX77650_H */
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
