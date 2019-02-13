@@ -1,42 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: imx-sc: add i.mx system controller cpufreq
- support
-Date: Wed, 13 Feb 2019 12:39:04 +0530
-Message-ID: <20190213070904.3oswrjafy6cqedsr@vireshk-i7>
-References: <1550027011-7884-1-git-send-email-Anson.Huang@nxp.com>
- <1550027011-7884-3-git-send-email-Anson.Huang@nxp.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 12/13] input: max77650: add onkey support
+Date: Tue, 12 Feb 2019 23:30:17 -0800
+Message-ID: <CAKdAkRQZ+ug7tpkE4x_8iTbUm9JnyF5wWrUnPRASi98t25LTbA@mail.gmail.com>
+References: <20190118134244.22253-1-brgl@bgdev.pl> <20190118134244.22253-13-brgl@bgdev.pl>
+ <20190119090318.GB187380@dtor-ws> <20190212203408.GA1863@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1550027011-7884-3-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <20190212203408.GA1863@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Aisheng Dong <aisheng.dong@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolution>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-02-19, 03:09, Anson Huang wrote:
-> On NXP's i.MX SoCs with system controller inside, CPU frequency
-> scaling can ONLY be done by system controller firmware, and it
-> can ONLY be requested from secure mode, so Linux cpufreq driver has
-> to call ARM SMC to trap to ARM-Trusted-Firmware to request system
-> controller firmware to do CPU frequency scaling.
-> 
-> This patch adds i.MX system controller cpufreq driver support,
-> when doing CPU frequency scaling, cpufreq driver will do ARM SMC
-> call and trap to ARM-Trusted-Firmware, then SIP(silicon provider)
-> service will communicate with system controller for CPU frequenct
-> scaling.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> ---
->  drivers/cpufreq/Kconfig.arm      |   9 ++
->  drivers/cpufreq/Makefile         |   1 +
->  drivers/cpufreq/imx-sc-cpufreq.c | 183 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 193 insertions(+)
->  create mode 100644 drivers/cpufreq/imx-sc-cpufreq.c
+Hi Lee,
 
-Why can't you use cpufreq-dt driver like everyone else ?
+On Tue, Feb 12, 2019 at 12:34 PM Lee Jones <lee.jones@linaro.org> wrote:
+>
+> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > >
+> > > Add support for the push- and slide-button events for max77650.
+> > >
+> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > ---
+> > >  drivers/input/misc/Kconfig          |   9 ++
+> > >  drivers/input/misc/Makefile         |   1 +
+> > >  drivers/input/misc/max77650-onkey.c | 135 ++++++++++++++++++++++++++++
+> > >  3 files changed, 145 insertions(+)
+> > >  create mode 100644 drivers/input/misc/max77650-onkey.c
+>
+> [...]
+>
+> Moving things around a bit:
+>
+> > > +static int max77650_onkey_probe(struct platform_device *pdev)
+> > > +{
+>
+> > > +   irq_f = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_F);
+> > > +   if (irq_f <= 0)
+> > > +           return -EINVAL;
+> > > +
+> > > +   irq_r = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_R);
+> > > +   if (irq_r <= 0)
+> > > +           return -EINVAL;
+> >
+> > Ugh, it would be better if you handled IRQ mapping in the MFD piece and
+> > passed it as resources of platform device. Then you'd simply call
+> > platform_get_irq() here and did not have to reach into parent device for
+> > "irq_dara".
+>
+> These device IRQs were defined and registered with the Regmap *set*
+> (actually init()) APIs and thus should be pulled out using the
+> appropriate reverse Regmap *get* APIs here in the device.
+>
+> Registering them with Regmap *and* pulling them back out again in the
+> same (MFD in this case) driver, only to register them as platform data
+> is certainly not how I see the API being designed/used.
+>
+> > > +   struct regmap_irq_chip_data *irq_data;
+> > > +   struct device *dev, *parent;
+>
+> > > +   dev = &pdev->dev;
+> > > +   parent = dev->parent;
+> > > +   i2c = to_i2c_client(parent);
+> > > +   irq_data = i2c_get_clientdata(i2c);
+> > > +
+> > > +   map = dev_get_regmap(parent, NULL);
+> > > +   if (!map)
+> > > +           return -ENODEV;
+>
+> However, this hoop jumping is a bit crazy and for the most part
+> superfluous.  Instead, create a struct of attributes you wish to share
+> with the child devices (containing both regmap (which you should call
+> regmap and not map by the way) and irq_data) and pass it as either
+> platform data (preferred) or as device data.
+>
+> If you choose the latter, you do not need to convert from 'device' to
+> 'i2c' to do the look-up.  Since this function (probe()) is provided
+> with a platform_device, you can just use platform_get_drvdata() to
+> achieve the same as above.
+>
+> If you go the preferred (platform data) route, then you should use
+> dev_get_platdata() instead.
+
+By doing what you are suggesting (introducing platform data) you
+introducing strong dependency between MFD and input piece for no
+different reason. With the current implementation the parent can be
+reworked completely without involving onkey driver.
+
+I find such clean separation desirable. We are trying to move away
+form platform data where it makes sense.
+
+Thanks.
 
 -- 
-viresh
+Dmitry
