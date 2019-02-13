@@ -1,92 +1,127 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH v4] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Wed, 13 Feb 2019 08:50:14 +0000
-Message-ID: <a2f4128c-54cc-44b3-d615-977e9ed37d07@criteo.com>
-References: <20190212070839.25981-1-e.velu@criteo.com>
- <CAJZ5v0i4PFWQ5fMZ8Rh3jgu22=Me1+ArOwVW333BWa4z54Lqbg@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
+Date: Wed, 13 Feb 2019 09:25:53 +0000
+Message-ID: <20190213092553.GE1863@dell>
+References: <20190205091237.6448-6-brgl@bgdev.pl>
+ <20190212083642.GT20638@dell>
+ <CAMRc=MderQf20_8aG4-otBkCv60FSNSSqV3NVALPkFL-MqmJbg@mail.gmail.com>
+ <20190212095457.GA20638@dell>
+ <CAMRc=MdyT7nMJ7dUTf6M3PvRdynaCurb_TftMyA4eCwzpR9fVA@mail.gmail.com>
+ <20190212101835.GB20638@dell>
+ <CAMRc=MfYeVbvY6O03xq4eLN9TVpAKWCAXPk0eP5LSBCU7VU9fA@mail.gmail.com>
+ <20190212111403.GC20638@dell>
+ <CAMpxmJWXOb1HW4QiEn8gMp3Nh05ahE0CMLXkac+hEKRjtGxTHQ@mail.gmail.com>
+ <20190212132016.GA4781@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i4PFWQ5fMZ8Rh3jgu22=Me1+ArOwVW333BWa4z54Lqbg@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <5B14B9071893594AAF66184801B998D8@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <20190212132016.GA4781@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Erwan Velu <erwanaliasr1@gmail.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQpMZSAxMy8wMi8yMDE5IMOgIDAwOjAxLCBSYWZhZWwgSi4gV3lzb2NraSBhIMOpY3JpdMKgOg0K
-Wy4uLl0NCj4gTmV3bGluZSBjaGFyYWN0ZXJzIGFyZSBtaXNzaW5nIGluIGFsbCBvZiB5b3VyIG1l
-c3NhZ2VzLg0KDQpvb3BzLiBGaXhpbmcgdGhpcy4NCg0KPiAiQUNQSSBfUFNTIG5vdCBmb3VuZFxu
-Ig0KDQpEb25lLg0KDQoNCj4+ICAgICAgICAgIHJldHVybiB0cnVlOw0KPj4gICB9DQo+Pg0KPj4g
-QEAgLTI0ODQsMTAgKzI0ODUsMTUgQEAgc3RhdGljIGJvb2wgX19pbml0IGludGVsX3BzdGF0ZV9u
-b19hY3BpX3BjY2godm9pZCkNCj4+ICAgICAgICAgIGFjcGlfaGFuZGxlIGhhbmRsZTsNCj4+DQo+
-PiAgICAgICAgICBzdGF0dXMgPSBhY3BpX2dldF9oYW5kbGUoTlVMTCwgIlxcX1NCIiwgJmhhbmRs
-ZSk7DQo+PiAtICAgICAgIGlmIChBQ1BJX0ZBSUxVUkUoc3RhdHVzKSkNCj4+ICsgICAgICAgaWYg
-KEFDUElfRkFJTFVSRShzdGF0dXMpKSB7DQo+PiArICAgICAgICAgICAgICAgcHJfZGVidWcoIkNh
-bm5vdCBkZXRlY3QgQUNQSSBTQiIpOw0KPiBUaGlzIGlzIHZlcnkgdW5saWtlbHkgdG8gaGFwcGVu
-LCBJIHdvdWxkbid0IGJvdGhlciB0byBwcmludCBhbnl0aGluZyBoZXJlLg0KDQpBcyB0aGlzIGlz
-IHRlc3QgaXMgbWFkZSwgaXQgbWVhbnMgc29tZW9uZSBjb25zaWRlcmVkIHRoYXQgY2FzZSBjb3Vs
-ZCBleGlzdC4NCg0KVGhhdCdzIHdoeSBhIGFkZGVkIGEgbWVzc2FnZSB0byBjYXRjaCB0aGlzIGNh
-c2Ugd2hpbGUgZGVidWdnaW5nLg0KDQpJIGRvIGFncmVlIHRoYXQgaXMgbm90IHZlcnkgbGlrZWx5
-Lg0KDQo+DQo+PiAgICAgICAgICAgICAgICAgIHJldHVybiB0cnVlOw0KPj4gKyAgICAgICB9DQo+
-Pg0KPj4gLSAgICAgICByZXR1cm4gIWFjcGlfaGFzX21ldGhvZChoYW5kbGUsICJQQ0NIIik7DQo+
-PiArICAgICAgIHN0YXR1cyA9IGFjcGlfaGFzX21ldGhvZChoYW5kbGUsICJQQ0NIIik7DQo+PiAr
-ICAgICAgIGlmICghc3RhdHVzKQ0KPj4gKyAgICAgICAgICAgICAgIHByX2RlYnVnKCJDYW5ub3Qg
-ZGV0ZWN0IEFDUEkgUENDSCIpOw0KPiBUaGlzIG1lc3NhZ2UgY2FuIGJlIHByaW50ZWQgYnkgdGhl
-IGNhbGxlciBhbmQsIGFnYWluLCBJIHdvdWxkIHByZWZlcg0KPiBzb21ldGhpbmcgbGlrZSAiQUNQ
-SSBQQ0NIIG5vdCBmb3VuZCIuDQpGaXhlZCB0b28uDQoNClsuLl0NCj4gIkFDUEkgX1BQQyBub3Qg
-Zm91bmRcbiINCmZpeGVkLg0KPj4gICAgICAgICAgcmV0dXJuIGZhbHNlOw0KPj4gICB9DQo+Pg0K
-Pj4gQEAgLTI1MzksOCArMjU0NiwxMCBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRl
-X3BsYXRmb3JtX3B3cl9tZ210X2V4aXN0cyh2b2lkKQ0KPj4gICAgICAgICAgaWQgPSB4ODZfbWF0
-Y2hfY3B1KGludGVsX3BzdGF0ZV9jcHVfb29iX2lkcyk7DQo+PiAgICAgICAgICBpZiAoaWQpIHsN
-Cj4+ICAgICAgICAgICAgICAgICAgcmRtc3JsKE1TUl9NSVNDX1BXUl9NR01ULCBtaXNjX3B3cik7
-DQo+PiAtICAgICAgICAgICAgICAgaWYgKCBtaXNjX3B3ciAmICgxIDw8IDgpKQ0KPj4gKyAgICAg
-ICAgICAgICAgIGlmIChtaXNjX3B3ciAmICgxIDw8IDgpKSB7DQo+PiArICAgICAgICAgICAgICAg
-ICAgICAgICBwcl9kZWJ1ZygiTVNSX01JU0NfUFdSX01HTVQgcmVwb3J0cyBlbmFibGVkIEhXIGNv
-b3JkaW5hdGlvbiIpOw0KPiBJSVJDIHRoaXMgbWVhbnMgdGhhdCB0aGUgcGxhdGZvcm0gaXMgbWFu
-YWdpbmcgUC1zdGF0ZXMgb24gc3lzdGVtcw0KPiB3aXRob3V0IEhXUCwgc28gSSB3b3VsZCBwcmlu
-dCBzb21ldGhpbmcgbGlrZSAiUC1zdGF0ZXMgbWFuYWdlZCBieSB0aGUNCj4gcGxhdGZvcm1cbiIu
-DQoNClRoYXQncyB3aGF0IHRoZSBjYWxsZXIgcmVwb3J0cy4NCg0KSSBhZGRlZCB0aGlzIGFkZGl0
-aW9uYWwgbWVzc2FnZSBiZWNhdXNlIHRoaXMgZnVuY3Rpb24gYWRkZWQgYXMgc3BlY2lhbCANCmNh
-c2UgZm9yIHRoaXMgTVNSIHNldHRpbmcuDQoNCmlmIGludGVsX3BzdGF0ZV9wbGF0Zm9ybV9wd3Jf
-bWdtdF9leGlzdHMoKSBpcyB0cnVlLCB0aGF0J3MgbmljZSB0byBrbm93IA0Kd2h5IHdoZW4gZGVi
-dWdnaW5nLg0KDQo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHRydWU7DQo+PiAr
-ICAgICAgICAgICAgICAgfQ0KPj4gICAgICAgICAgfQ0KPj4NCj4+ICAgICAgICAgIGlkeCA9IGFj
-cGlfbWF0Y2hfcGxhdGZvcm1fbGlzdChwbGF0X2luZm8pOw0KPj4gQEAgLTI2MDYsMjIgKzI2MTUs
-MjggQEAgc3RhdGljIGludCBfX2luaXQgaW50ZWxfcHN0YXRlX2luaXQodm9pZCkNCj4+ICAgICAg
-ICAgICAgICAgICAgfQ0KPj4gICAgICAgICAgfSBlbHNlIHsNCj4+ICAgICAgICAgICAgICAgICAg
-aWQgPSB4ODZfbWF0Y2hfY3B1KGludGVsX3BzdGF0ZV9jcHVfaWRzKTsNCj4+IC0gICAgICAgICAg
-ICAgICBpZiAoIWlkKQ0KPj4gKyAgICAgICAgICAgICAgIGlmICghaWQpIHsNCj4+ICsgICAgICAg
-ICAgICAgICAgICAgICAgIHByX3dhcm4oIkNQVSBJRCBpcyBub3QgaW4gdGhlIGxpc3Qgb2Ygc3Vw
-cG9ydGVkIGRldmljZXNcbiIpOw0KPiBXaHkgbm90IHByX2RlYnVnKCk/DQo+DQo+IEFuZCBhbmFs
-b2dvdXNseSBiZWxvdz8NCg0KSSdtIGNvbWluZyBmcm9tIGEgdXNlIGNhc2Ugd2hlcmUgb24gdGhl
-IHNhbWUgaGFyZHdhcmUsIGNoYW5naW5nIHRoZSANCmtlcm5lbCBjaGFuZ2VkIHRoZSBwZXJmb3Jt
-YW5jZSBwcm9maWxlIGFuZCBpbXBhY3RlZCB1c2VyJ3MgcGVyZm9ybWFuY2UuDQoNCkkgaGFkIHRv
-IGRlYnVnIHRoaXMgY2FzZSBmcm9tIGEgcnVubmluZyBzZXJ2ZXIuDQoNCiBGcm9tIHRoZSBkbWVz
-Zywgb25lIG9mIHRoZSBkaWZmZXJlbmNlIEkgc2F3IHdhcyBhYm91dCB0aGUgDQptaXNzaW5nwqAi
-SW50ZWwgUC1zdGF0ZSBkcml2ZXIgaW5pdGlhbGl6aW5nIiBtZXNzYWdlLCBidXQgbm90aGluZyBl
-bHNlLg0KDQpUaGUgcmVhc29uIHdoeSB0aGUgZHJpdmVyIGRpZG4ndCBlbmdhZ2VkIGl0c2VsZiB3
-YXNuJ3QgZXhwbGljaXQuDQoNCkFzIENPTkZJR19YODZfSU5URUxfUFNUQVRFIGlzIHNldCB0byBZ
-IGJ5IGRlZmF1bHQsIEkgd2Fzbid0IGVuYWJsZSB0byANCnJlbG9hZCBpdCBpbiBhbnkgd2F5Lg0K
-DQpCeSByZWFkaW5nIHRoZSBjb2RlLCBtb3N0IG9mIHRoZSBjb2RlIHBhdGggYW5kIHJldHVybiBv
-cHRpb25zIGRvZXNuJ3QgDQpoYXZlIGEgc2luZ2xlIHByXzxzb21ldGhpbmc+IGNhbGwgdG8gZXhw
-bGFpbiB3aHkuDQoNClNvIEkgaGFkIHRvIHJlYnVpbGQgdGhlIGtlcm5lbCArIG15IHBhdGNoIHRv
-IHVuZGVyc3RhbmQgd2hpY2ggcGF0aCB3YXMgDQp0YWtlbiBhbmQgdGhlbiBmaW5kIHRoZSByb290
-IGNhdXNlIG9mIHdoeSB0aGUgcHN0YXRlIGJlaGF2aW9yIGNoYW5nZWQuDQoNCkkgd2FudGVkIHRv
-IGNvbnRyaWJ1dGUgYmFjayBteSBleHBlcmllbmNlIGhlcmUgYnkgcHJvdmlkaW5nIG1lc3NhZ2Vz
-IHRvIA0KZWFzZSB0aGUgdW5kZXJzdGFuZGluZyBhbmQgcG90ZW50aWFsbHkgZGVidWdnaW5nIG9m
-IHRoZSBkcml2ZXIgd2l0aG91dCANCnJlY29tcGlsaW5nIGl0Lg0KDQoNClNvIHRoZSByb290IG9m
-IHRoaXMgcGF0Y2ggaXMgYmVpbmcgYWJsZSB0byByZXBvcnQgdGhlIG1haW4gcmVhc29ucyBvZiAN
-CndoeSB0aGUgZHJpdmVyIGRpZG4ndCBlbmdhZ2VkIGl0c2VsZiB3aXRoIGEgcHJfd2FybiAoY291
-bGQgYmUgYWxzbyBhIA0KcHJfaW5mbykuDQoNCkFsbCB0aGUgbWFqb3IgYW5kIHByb2JhYmxlICJy
-ZXR1cm4gLUVOT0RFViIgY2FsbHMgYmVmb3JlIHByX2luZm8oIkludGVsIA0KUC1zdGF0ZSBkcml2
-ZXIgaW5pdGlhbGl6aW5nXG4iKSBkZXNlcnZlcyB0byBiZSBleHBsaWNpdCBhbmQgcmVhY2hhYmxl
-IG9uIA0KZG1lc2cgZm9yIHRoZSBvcGVyYXRvcnMuDQoNCkknbSBvcGVyYXRpbmcgMzBLKyBzZXJ2
-ZXJzIGFuZCBoYXZpbmcgdGhpcyBraW5kIGRpcmVjdCBpbmZvcm1hdGlvbiB3b3VsZCANCnNhdmUg
-c2VyaW91cyB0aW1lIHdoZW4gZGVidWdnaW5nIHRoaXMgc2l0dWF0aW9ucy4NCg0KSWYgbXkgZXhw
-ZXJpZW5jZSBpbiB0aGF0IGFyZWEgY291bGQgaGVscCBvdGhlciB1c2VycywgSSdkIGJlIGhhcHB5
-Lg0KDQoNCkknbSBwb3NpdGluZyBhIHY1IHdpdGggYWxsIHRob3NlIGNoYW5nZXMuDQoNClRoYW5r
-cyBmb3IgdGhlIHJldmlldy4NCg0KDQpFcndhbiwNCg0K
+On Tue, 12 Feb 2019, Lee Jones wrote:
+
+> On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> 
+> > wt., 12 lut 2019 o 12:14 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > >
+> > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> > >
+> > > > wt., 12 lut 2019 o 11:18 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > > >
+> > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> > > > >
+> > > > > > wt., 12 lut 2019 o 10:55 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > > > > >
+> > > > > > >  * The declaration of a superfluous struct
+> > > > > > >  * 100 lines of additional/avoidable code
+> > > > > > >  * Hacky hoop jumping trying to fudge VIRQs into resources
+> > > > > > >  * Resources were designed for HWIRQs (unless a domain is present)
+> > > > > > >  * Loads of additional/avoidable CPU cycles setting all this up
+> > > > > >
+> > > > > > While the above may be right, this one is negligible and you know it. :)
+> > > > >
+> > > > > You have nested for() loops.  You *are* wasting lots of cycles.
+> > > > >
+> > > > > > > Need I go on? :)
+> > > > > > >
+> > > > > > > Surely the fact that you are using both sides of an API
+> > > > > > > (devm_regmap_init_i2c and regmap_irq_get_*) in the same driver, must
+> > > > > > > set some alarm bells ringing?
+> > > > > > >
+> > > > > > > This whole HWIRQ setting, VIRQ getting, resource hacking is a mess.
+> > > > > > >
+> > > > > > > And for what?  To avoid passing IRQ data to a child driver?
+> > > > > >
+> > > > > > What do you propose? Should I go back to the approach in v1 and pass
+> > > > > > the regmap_irq_chip_data to child drivers?
+> > > > >
+> > > > > I'm saying you should remove all of this hackery and pass IRQs as they
+> > > > > are supposed to be passed (like everyone else does).
+> > > >
+> > > > I'm not sure what you mean by "like everyone else does" - different
+> > > > mfd drivers seem to be doing different things. Is a simple struct
+> > > > containing virtual irq numbers passed to sub-drivers fine?
+> > >
+> > > How do you plan on deriving the VIRQs to place into the struct?
+> > 
+> > Exampe:
+> > 
+> > struct max77650_gpio_pdata {
+> >     int gpi_irq;
+> > };
+> > 
+> > In MFD driver:
+> > 
+> > struct max77650_gpio_pdata *gpio_data = devm_kmalloc(dev, sizeof(*gpio_data));
+> > 
+> > gpio_data->gpi_irq = regmap_irq_get_virq(irqchip_data, GPI_NUM);
+> > 
+> > gpio_cell.platform_data = gpio_data;
+> > 
+> > In GPIO driver:
+> > 
+> > struct max77650_gpio_pdata *gpio_data = pdev->dev.platform_data;
+> > 
+> > int irq = gpio_data->gpi_irq;
+> 
+> Definitely not.  What you're trying to do is a hack.
+> 
+> If you're using Regmap to handle your IRQs, then you should use Regmap
+> in the client to pull them out.  Setting them via Regmap, then pulling
+> them out again in the *same driver*, only to store them in platform
+> data to be passed to a child device is bonkers.
+> 
+> *Either* use the MFD provided platform-data helpers *or* pass and
+> handle them via the Regmap APIs, *not* both.
+
+Right, a plan has been formed.
+
+Hopefully this works and you can avoid all this dancing around.
+
+Firstly, you need to make a small change to:
+
+  drivers/base/regmap/regmap-irq.c
+
+Add the following function:
+
+  struct irq_domain *regmap_irq_get_domain(struct regmap *map)
+
+As you can see, it will return the IRQ Domain for the chip.
+
+You can then pass this IRQ domain to mfd_add_devices() and it will do
+the HWIRQ => VIRQ mapping for you on the fly.  Meaning that you can
+remove all the nastiness in max77650_setup_irqs() and have the Input
+device use the standard (e.g. platform_get_irq()) APIs.
+
+How does that Sound?
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
