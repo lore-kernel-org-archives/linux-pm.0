@@ -1,144 +1,220 @@
-From: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] drm/msm/a6xx: Add support for an
- interconnect path
-Date: Wed, 13 Feb 2019 14:51:40 +0200
-Message-ID: <5dd06ff3-4fe7-af11-33ef-6dc9ed5fd8a5@linaro.org>
-References: <20190212095238.12306-1-georgi.djakov@linaro.org>
- <20190212101624.GA20915@kroah.com>
- <99ab72bf-9e06-bcaf-85ec-33d4037a54cd@linaro.org>
- <20190212143525.GA15405@kroah.com>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Wed, 13 Feb 2019 14:00:26 +0100
+Message-ID: <90bbff25-1c9c-127c-13a7-91a5f4fe666e@partner.samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
+        <20190212193229.GT117604@google.com>
+        <1356584e-1812-6768-72af-931c07d925a8@partner.samsung.com>
+        <20190213003044.GV117604@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20190212143525.GA15405-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190213003044.GV117604@google.com>
 Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, evgreen-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiAyLzEyLzE5IDE2OjM1LCBHcmVnIEtIIHdyb3RlOgo+IE9uIFR1ZSwgRmViIDEyLCAy
-MDE5IGF0IDA0OjA3OjM1UE0gKzAyMDAsIEdlb3JnaSBEamFrb3Ygd3JvdGU6Cj4+IEhpIEdyZWcs
-Cj4+Cj4+IE9uIDIvMTIvMTkgMTI6MTYsIEdyZWcgS0ggd3JvdGU6Cj4+PiBPbiBUdWUsIEZlYiAx
-MiwgMjAxOSBhdCAxMTo1MjozOEFNICswMjAwLCBHZW9yZ2kgRGpha292IHdyb3RlOgo+Pj4+IEZy
-b206IEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9yYS5vcmc+Cj4+Pj4KPj4+PiBUcnkg
-dG8gZ2V0IHRoZSBpbnRlcmNvbm5lY3QgcGF0aCBmb3IgdGhlIEdQVSBhbmQgdm90ZSBmb3IgdGhl
-IG1heGltdW0KPj4+PiBiYW5kd2lkdGggdG8gc3VwcG9ydCBhbGwgZnJlcXVlbmNpZXMuIFRoaXMg
-aXMgbmVlZGVkIGZvciBwZXJmb3JtYW5jZS4KPj4+PiBMYXRlciB3ZSB3aWxsIHdhbnQgdG8gc2Nh
-bGUgdGhlIGJhbmR3aWR0aCBiYXNlZCBvbiB0aGUgZnJlcXVlbmN5IHRvCj4+Pj4gYWxzbyBvcHRp
-bWl6ZSBmb3IgcG93ZXIgYnV0IHRoYXQgd2lsbCByZXF1aXJlIHNvbWUgZGV2aWNlIHRyZWUKPj4+
-PiBpbmZyYXN0cnVjdHVyZSB0aGF0IGRvZXMgbm90IHlldCBleGlzdC4KPj4+Pgo+Pj4+IHY2OiB1
-c2UgaWNjX3NldF9idygpIGluc3RlYWQgb2YgaWNjX3NldCgpCj4+Pj4gdjU6IFJlbW92ZSBoYXJk
-Y29kZWQgaW50ZXJjb25uZWN0IG5hbWUgYW5kIGp1c3QgdXNlIHRoZSBkZWZhdWx0Cj4+Pj4gdjQ6
-IERvbid0IHVzZSBhIHBvcnQgc3RyaW5nIGF0IGFsbCB0byBza2lwIHRoZSBuZWVkIGZvciBuYW1l
-cyBpbiB0aGUgRFQKPj4+PiB2MzogVXNlIG1hY3JvcyBhbmQgY2hhbmdlIHBvcnQgc3RyaW5nIHBl
-ciBHZW9yZ2kgRGpha292Cj4+Pj4KPj4+PiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxq
-Y3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+Pj4+IEFja2VkLWJ5OiBSb2IgQ2xhcmsgPHJvYmRjbGFy
-a0BnbWFpbC5jb20+Cj4+Pj4gUmV2aWV3ZWQtYnk6IEV2YW4gR3JlZW4gPGV2Z3JlZW5AY2hyb21p
-dW0ub3JnPgo+Pj4+IFNpZ25lZC1vZmYtYnk6IEdlb3JnaSBEamFrb3YgPGdlb3JnaS5kamFrb3ZA
-bGluYXJvLm9yZz4KPj4+PiAtLS0KPj4+Pgo+Pj4+IEhpIEdyZWcsCj4+Pj4KPj4+PiBJZiBub3Qg
-dG9vIGxhdGUsIGNvdWxkIHlvdSBwbGVhc2UgdGFrZSB0aGlzIHBhdGNoIGludG8gY2hhci1taXNj
-LW5leHQuCj4+Pj4gSXQgaXMgYWRkaW5nIHRoZSBmaXJzdCBjb25zdW1lciBvZiB0aGUgaW50ZXJj
-b25uZWN0IEFQSS4gV2UgYXJlIGp1c3QKPj4+PiBnZXR0aW5nIHRoZSBjb2RlIGluIHBsYWNlLCB3
-aXRob3V0IG1ha2luZyBpdCBmdW5jdGlvbmFsIHlldCwgYXMgc29tZQo+Pj4+IERUIGJpdHMgYXJl
-IHN0aWxsIG5lZWRlZCB0byBhY3R1YWxseSBlbmFibGUgaXQuIFdlIGhhdmUgUm9iJ3MgQWNrIHRv
-Cj4+Pj4gbWVyZ2UgdGhpcyB0b2dldGhlciB3aXRoIHRoZSBpbnRlcmNvbm5lY3QgY29kZS4gVGhp
-cyBwYXRjaCBoYXMgYWxyZWFkeQo+Pj4+IHNwZW50IHNvbWUgdGltZSBpbiBsaW51eC1uZXh0IHdp
-dGhvdXQgYW55IGlzc3Vlcy4KPj4+Cj4+PiBJIGhhdmUgYSBxdWVzdGlvbiBhYm91dCB0aGUgaW50
-ZXJjb25uZWN0IGNvZGUuICBMYXN0IHdlZWsgSSBzYXcgYQo+Pj4gcHJlc2VudGF0aW9uIGFib3V0
-IHRoZSByZXNjdHJsL1JEVCBjb2RlIGZyb20gQVJNIHRoYXQgaXMgY29taW5nIChNUEFNKSwKPj4+
-IGFuZCBpdCByZWFsbHkgbG9va3MgbGlrZSB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5IGFzIHRoaXMg
-aW50ZXJjb25uZWN0Cj4+PiBjb2RlLiAgSW4gZmFjdCwgdGhpcyBjb2RlIGxvb2tzIGxpa2UgdGhl
-IGV4aXN0aW5nIHJlc2N0cmwgc3R1ZmYsIHJpZ2h0Pwo+Pgo+PiBUaGFua3MgZm9yIHRoZSBxdWVz
-dGlvbiEgSXQncyBuaWNlIHRoYXQgTVBBTSBpcyBtb3ZpbmcgZm9yd2FyZC4gV2hlbiBpCj4+IGxv
-b2tlZCBpbnRvIHRoZSBNUEFNIGRyYWZ0IHNwZWMgYW4geWVhciBhZ28sIGl0IHdhcyBhbiBvcHRp
-b25hbAo+PiBleHRlbnNpb24gbWVudGlvbmluZyBtb3N0bHkgdXNlLWNhc2VzIHdpdGggVk1zIG9u
-IHNlcnZlciBzeXN0ZW1zLgo+Pgo+PiBCdXQgYW55d2F5LCBNUEFNIGlzIG9ubHkgYXZhaWxhYmxl
-IGZvciBBUk12OC4yKyBjb3JlcyBhcyBhbiBvcHRpb25hbAo+PiBleHRlbnNpb24gYW5kIGFhcmNo
-MzIgaXMgbm90IHN1cHBvcnRlZC4gSW4gY29udHJhc3QgdG8gdGhhdCwgdGhlCj4+IGludGVyY29u
-bmVjdCBjb2RlIGlzIGdlbmVyaWMgYW5kIGRvZXMgbm90IHB1dCBhbnkgbGltaXRhdGlvbnMgb24g
-dGhlCj4+IHBsYXRmb3JtL2FyY2hpdGVjdHVyZSB0aGF0IGNhbiB1c2UgaXQgLSBqdXN0IHRoZSBw
-bGF0Zm9ybSBzcGVjaWZpYwo+PiBpbXBsZW1lbnRhdGlvbiB3b3VsZCBiZSBkaWZmZXJlbnQuIFdl
-IGhhdmUgZGlzY3Vzc2VkIGluIHRoYXQgcGFzdCB0aGF0Cj4+IGl0IGNhbiBiZSB1c2VkIGV2ZW4g
-b24geDg2IHBsYXRmb3JtcyB0byBwcm92aWRlIGhpbnRzIHRvIGZpcm13YXJlLgo+IAo+IFllcywg
-YnV0IHJlc2N0cmwgaXMgYXJjaCBpbmRlcGVuZGFudC4gIEl0J3Mgbm90IHRoZSAiYmFja2VuZCIg
-dGhhdCBJJ20KPiBjb25jZXJuZWQgYWJvdXQsIGl0J3MgdGhlIHVzZXJzcGFjZSBhbmQgaW4ta2Vy
-bmVsIGFwaSB0aGF0IEkgd29ycnkKPiBhYm91dC4KCkFncmVlIHRoYXQgcmVzY3RybCBpcyBub3cg
-YXJjaCBpbmRlcGVuZGVudCwgYnV0IGl0IGxvb2tzIHRvIG1lIHRoYXQKcmVzY3RybCBzZXJ2ZXMg
-Zm9yIGEgZGlmZmVyZW50IHB1cnBvc2UuIEl0IG1heSBzb3VuZCB0aGF0IHRoZSBoYXZlCnNpbWls
-YXJpdGllcyByZWxhdGVkIHRvIGJhbmR3aWR0aCBtYW5hZ2VtZW50LCBidXQgdGhleSBhcmUgY29t
-cGxldGVseQpkaWZmZXJlbnQgYW5kIHJlc2N0cmwgZG9lcyBub3Qgc2VlbSBzdWl0YWJsZSBmb3Ig
-bWFuYWdpbmcgaW50ZXJjb25uZWN0cwpvbiBhIHN5c3RlbS1vbi1jaGlwIHN5c3RlbXMuIElmIGkg
-dW5kZXJzdGFuZCBjb3JyZWN0bHksIHRoZSByZXNjdHJsIGlzCmFib3V0IG1vbml0b3JpbmcgYW5k
-IGNvbnRyb2xsaW5nIHN5c3RlbSByZXNvdXJjZXMgbGlrZSBjYWNoZSwgbWVtb3J5CmJhbmR3aWR0
-aCwgTDIsIEwzLCB0aGF0IGFyZSB1c2VkIGJ5IGFwcGxpY2F0aW9ucywgVk1zIGFuZCBjb250YWlu
-ZXJzIGluCmEgQ1BVIGNlbnRyaWMgYXBwcm9hY2guIEl0IGRvZXMgdGhpcyBieSBtYWtpbmcgdXNl
-IG9mIHNvbWUgQ1BVIGhhcmR3YXJlCmZlYXR1cmVzIGFuZCBleHBvc2UgdGhpcyB2aWEgYSBmaWxl
-LXN5c3RlbSB0byBiZSBjb250cm9sbGVkIGZyb20gdXNlcnNwYWNlLgoKPj4+IFNvIHdoeSBzaG91
-bGRuJ3Qgd2UganVzdCBkcm9wIHRoZSBpbnRlcmNvbm5lY3QgY29kZSBhbmQgdXNlIHJlc2N0cmwK
-Pj4+IGluc3RlYWQgYXMgaXQncyBhbHJlYWR5IG1lcmdlZD8KPj4KPj4gSSBoYXZlbid0IHNlZW4g
-YW55IE1QQU0gY29kZSBzbyBmYXIsIGJ1dCBpIGFzc3VtZSB0aGF0IHdlIGNhbiBoYXZlIGFuCj4+
-IGludGVyY29ubmVjdCBwcm92aWRlciB0aGF0IGltcGxlbWVudHMgdGhpcyBNUEFNIGV4dGVuc2lv
-biBmb3Igc3lzdGVtcwo+PiB0aGF0IHN1cHBvcnQgaXQgKGFuZCB3YW50IHRvIHVzZSBpdCkuIEN1
-cnJlbnRseSB0aGVyZSBhcmUgcGVvcGxlIHdvcmtpbmcKPj4gb24gdmFyaW91cyBpbnRlcmNvbm5l
-Y3QgcGxhdGZvcm0gZHJpdmVycyBmcm9tIDUgZGlmZmVyZW50IFNvQyB2ZW5kb3JzCj4+IGFuZCB3
-ZSBoYXZlIGFncmVlZCB0byB1c2UgYSBjb21tb24gRFQgYmluZGluZ3MgKGFuZCBBUEkpLiBJIGRv
-dWJ0IHRoYXQKPj4gZXZlbiBhIHNpbmdsZSBvbmUgb2YgdGhlc2UgcGxhdGZvcm1zIGlzIGJhc2Vk
-IG9uIHY4LjIrLiBQcm9iYWJseSBzdWNoCj4+IFNvQ3Mgd291bGQgYmUgY29taW5nIGluIHRoZSBm
-dXR1cmUgYW5kIHRoZW4gaSBleHBlY3QgcGVvcGxlIG1ha2luZyB1c2UKPj4gb2YgTVBBTSBpbiBz
-b21lIGludGVyY29ubmVjdCBwcm92aWRlciBkcml2ZXIuCj4gCj4gQWdhaW4sIGRvbid0IGZvY3Vz
-IG9uIE1QQU0gYXMtaXMsIGl0J3MgdGhlIHJlc2N0cmwgYXBpIHRoYXQgSSB3b3VsZCBsaWtlCj4g
-dG8gc2VlIGV4cGxhaW5lZCB3aHkgaW50ZXJjb25uZWN0IGNhbid0IHVzZS4KCldoaWxlIHJlc2N0
-cmwgY2FuIHdvcmsgZm9yIG1hbmFnaW5nIGZvciBleGFtcGxlIGEgQ1BVIHRvIG1lbW9yeQpiYW5k
-d2lkdGggZm9yIHByb2Nlc3NlcywgdGhpcyBpcyBub3QgZW5vdWdoIGZvciB0aGUgYmlnZ2VyIHBp
-Y3R1cmUgaWYKeW91IGhhdmUgYSB3aG9sZSBzeXN0ZW0tb24tY2hpcCB0b3BvbG9neSB3aXRoIGRp
-c3RyaWJ1dGVkIGhhcmR3YXJlCmNvbXBvbmVudHMgdGFsa2luZyB0byBlYWNoIG90aGVyLiBUaGUg
-IkxpbnV4IiBDUFUgbWlnaHQgbm90IGJlIGV2ZW4gdGhlCmNlbnRyYWwgYXJiaXRlciBpbiBzdWNo
-IHRvcG9sb2dpZXMuIFRoZSBpbnRlcmNvbm5lY3QgY29kZSBkb2VzIG5vdApzdXBwb3J0IGludGVy
-YWN0aW9uIHdpdGggdXNlcnNwYWNlLgoKU29tZSByZWFzb25zIHdoeSB0aGUgaW50ZXJjb25uZWN0
-IGNvZGUgY2FuJ3QgdXNlIHRoZSByZXNjdHJsIGFwaSBub3c6Ci0gVGhlIGRpc3RyaWJ1dGVkIGhh
-cmR3YXJlIGNvbXBvbmVudHMgbmVlZCB0byBleHByZXNzIHRoZWlyIG5lZWRzIGZvcgp3aGljaCBp
-bnRlcmNvbm5lY3QgcGF0aCBhbmQgaG93IG11Y2ggYmFuZHdpZHRoIHRoZXkgd2FudCB0byB1c2Us
-IGluCm9yZGVyIHRvIHR1bmUgdGhlIHdob2xlIHN5c3RlbSdzIChzeXN0ZW0tb24tY2hpcCkgcGVy
-Zm9ybWFuY2UgaW4gdGhlCm1vc3Qgb3B0aW1hbCBzdGF0ZS4gVGhlIGludGVyY29ubmVjdCBjb2Rl
-IGRvZXMgdGhpcyB3aXRoIGEKY29uc3VtZXItcHJvdmlkZXIgQVBJLgotIEN1c3RvbSBhZ2dyZWdh
-dGlvbiBvZiB0aGUgY29uc3VtZXIgcmVxdWVzdHMgbmVlZHMgdG8gYmUgZG9uZSBiYXNlZCBvbgp0
-aGUgdG9wb2xvZ3kuIFNvQ3MgbWF5IHVzZSBkaWZmZXJlbnQgYWdncmVnYXRpb24gZm9ybXVsYSwg
-ZGVwZW5kaW5nIGZvcgpleGFtcGxlIG9uIHdoZXRoZXIgdGhleSBhcmUgdXNpbmcgYSBzaW1wbGUg
-aGllcmFyY2hpY2FsIGJ1cywgYSBjcm9zc2JhcgpvciBzb21lIG5ldHdvcmstb24tY2hpcC4gV2hl
-biB0aGUgTm9DIGNvbmNlcHQgaXMgdXNlZCwgdGhlcmUgaXMKaW50ZXJsZWF2ZWQgdHJhZmZpYyB0
-aGF0IG5lZWRzIHRvIGJlIGFnZ3JlZ2F0ZWQgYW5kIGFuIGludGVyY29ubmVjdCBwYXRoCmNhbiBz
-cGFuIGFjcm9zcyBtdWx0aXBsZSBjbG9jayBkb21haW5zIChhbGxvd2luZyBlYWNoIGZ1bmN0aW9u
-YWwgdW5pdCB0bwpoYXZlIGl0J3Mgb3duIGNsb2NrIGRvbWFpbikuCi0gU3VwcG9ydCBmb3IgY29t
-cGxleCB0b3BvbG9naWVzIGlzIG5lZWRlZCAtIG11bHRpLXRpZXJlZCBidXNlcyB3aXRoCmRldmlj
-ZXMgaGF2aW5nIG11bHRpcGxlIHBhdGhzIGJldHdlZW4gZWFjaCBvdGhlci4gVGhlIGRldmljZSBt
-YXkgY2hvb3NlCndoaWNoIHBhdGggdG8gdXNlIGRlcGVuZGluZyBvbiB0aGUgbmVlZHMgb3IgdXNl
-IGV2ZW4gbXVsdGlwbGUgZm9yCmxvYWQtYmFsYW5jaW5nLgotIEEgdG9wb2xvZ3kgY2hhbmdlcyBz
-aG91bGQgYmUgc3VwcG9ydGVkIHdpdGggYW4gQVBJIC0gdGhlcmUgYXJlIEZQR0EKYm9hcmRzIHRo
-YXQgY2FuIGNoYW5nZSB0aGVpciB0b3BvbG9neS4KCkkgbG9va2VkIGF0IHRoZSBleGlzdGluZyBy
-ZXNjdHJsIGNvZGUgYW5kIGF0IHNvbWUgaW4tZmxpZ2h0IHBhdGNoZXMsIGJ1dAppdCBkb2Vzbid0
-IGZlZWwgcmlnaHQgdG8gbWUgdG8gdXNlIHJlc2N0cmwuIEkgZG9uJ3QgdGhpbmsgbXVjaCBvZiBp
-dCBjYW4KYmUgcmV1c2VkIG9yIGV4dGVuZGVkIHdpdGhvdXQgdmVyeSBzaWduaWZpY2FudCBjaGFu
-Z2VzIHRoYXQgd291bGQKcHJvYmFibHkgdHdpc3QgcmVzY3RybCBhd2F5IGZyb20gaXQncyBvcmln
-aW5hbCBwdXJwb3NlIChhbmQgbWF5YmUKY29uZmxpY3Qgd2l0aCBpdCkuCgpUTDtEUjogVGhlIGZ1
-bmN0aW9uYWxpdHkgb2YgcmVzY3RybCBhbmQgaW50ZXJjb25uZWN0IGNvZGUgaXMgZGlmZmVyZW50
-IC0KcmVzY3RybCBzZWVtcyB0byBiZSBhYm91dCBtb25pdG9yaW5nL21hbmFnaW5nL2VuZm9yY2lu
-ZyB0aGUgdXNhZ2Ugb2YKcmVzb3VyY2VzIHNoYXJlZCBieSBvbmUgb3IgbW9yZSBDUFVzLCB0aGUg
-aW50ZXJjb25uZWN0IGNvZGUgaXMgbW9yZQphYm91dCBzeXN0ZW0tb24tY2hpcCBzeXN0ZW1zIGFs
-bG93aW5nIHZhcmlvdXMgbW9kdWxlcyAoR1BVLCBEU1AsIG1vZGVtLApXaUZpLCBibHVldG9vdGgs
-IHtlbixkZX1jb2RlcnMsIGNhbWVyYSwgZXRoZXJuZXQsIGV0Yy4pIHRvIGV4cHJlc3MgdGhlaXIK
-YmFuZHdpZHRoIG5lZWRzIGluIG9yZGVyIHRvIGltcHJvdmUgdGhlIHBvd2VyIGVmZmljaWVuY3kg
-b2YgdGhlIHdob2xlIFNvQy4KCkhvcGUgdGhhdCB0aGlzIGFkZHJlc3NlZCB5b3VyIGNvbmNlcm5z
-LgoKVGhhbmtzLApHZW9yZ2kKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJl
-ZWRyZW5v
+Hi Matthias,
+
+On 2/13/19 1:30 AM, Matthias Kaehlcke wrote:
+> Hi Lukasz,
+> 
+> On Tue, Feb 12, 2019 at 10:20:07PM +0100, Lukasz Luba wrote:
+>> Hi Matthias,
+>>
+>> On 2/12/19 8:32 PM, Matthias Kaehlcke wrote:
+>>> Hi,
+>>>
+>>> On Tue, Feb 12, 2019 at 02:46:24PM +0900, Chanwoo Choi wrote:
+>>>> Hi Lukasz,
+>>>>
+>>>> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+>>>>> This patch set changes workqueue related features in devfreq framework.
+>>>>> First patch switches to delayed work instead of deferred.
+>>>>> The second switches to regular system work and deletes custom 'devfreq'.
+>>>>>
+>>>>> Using deferred work in this context might harm the system performance.
+>>>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
+>>>>> utilization does not have to be connected with a particular CPU.
+>>>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+>>>>> They all are missing opportunity to check the HW state and react when
+>>>>> the deferred work is not fired.
+>>>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+>>>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+>>>>
+>>>> The devfreq framework keeps the balancing between performance
+>>>> and power-consumption. It is wrong to focus on only either
+>>>> performance or power.
+>>>>
+>>>> This cover-letter focus on the only performance without any power-consumption
+>>>> disadvantages. It is easy to raise the performance with short sampling rate
+>>>> with polling modes. To get the performance, it is good as short as possible
+>>>> of period.
+>>>>
+>>>> Sometimes, when cpu is idle, the device might require the busy state.
+>>>> It is very difficult to catch the always right timing between them.
+>>>>
+>>>> Also, this patch cannot prevent the unneeded wakeup from idle state.
+>>>> Apparently, it only focuses on performance without considering
+>>>> the power-consumption disadvantage. In the embedded device,
+>>>> the power-consumption is very important point. We can not ignore
+>>>> the side effect.
+>>>>
+>>>> Always, I hope to improve the devfreq framwork more that older.
+>>>> But, frankly, it is difficult to agree because it only consider
+>>>> the performance without considering the side-effect.
+>>>>
+>>>> The power management framework always have to consider
+>>>> the power-consumption issue. This point is always true.
+>>>
+>>> I missed the impact of forcing a CPU out of an idle state and/or not
+>>> allowing it to enter a more power efficient state. I agree that this
+>>> should be avoided.
+>> It would be good to have some real world scenarios for comparison:
+>> w/ and w/o this change, i.e. it is 5% or 50% more power used.
+> 
+> If you have data please share :)
+I will try to measure it. I have some data which refer to CPU hotplug
+and generic data regarding ARM big.LITTLE.
+It is a mobile on my desk.
+When one CPU of ARM big is sent offline power drops ~12mW comparing
+to WFI idle which was previous state. The same for LITTLE ~12mW.
+When the last CPU in the cluster is sent offline, whole culster
+is switched off and power drops ~50mW.
+The LITTLE core can consume ~250mW at max speed.
+Energy Aware Scheduler is now merged IIRC, so if it has to choose
+which core wake up for idle, it will take LITTLE not big.
+For older platforms which has Cortex-A9 500mW is also better estimation.
+
+> 
+> Though I also imagine there will be quite some variation between
+> different systems/platforms.
+True.
+> 
+>> I have patches that tries to mitigate wake-ups when there is small
+>> utilization. Let's make it tunable and involve driver developers.
+>> They will decide how much impact on the system power usage they
+>> introduce.
+> 
+> Great!
+> 
+>>> I wonder if using a power-efficient workqueue could help here:
+>>>
+>>>     Instead of running work on the local CPU, the workqueue core asks the
+>>>     scheduler to provide the target CPU for the work queued on unbound
+>>>     workqueues (which includes those marked as power-efficient). So they
+>>>     will not get pinned on a single CPU as can happen with regular
+>>>     workqueues.
+>>>
+>>>     https://lwn.net/Articles/731052/
+>>>
+>>>
+>>> Since this series also changes from a custom to system workqueue it
+>>> seems worth to mention that there are power-efficient system workqueues:
+>>>
+>>> system_power_efficient_wq
+>>> system_freezable_power_efficient_wq
+>>>
+>>>
+>>> In case a power-efficient workqueue is suitable in principle there
+>>> would still be a problem though: the feature is currently disabled by
+>>> default, hence devfreq couldn't really rely on it. It is enabled in
+>>> the arm64 defconfig though, so at least devices on this architecture
+>>> would benefit from it. Also power-efficient workqueues might be
+>>> enabled by default in the future as the scheduler becomes more energy
+>>> aware.
+>> Regarding this CPU idle cost worries.
+>> IIRC the new energy model does not even consider idle costs of the CPU.
+>> It would be good to know the measurements, i.e. worst case scenario:
+>> waking up 1 (of 4 or 8) CPU from idle 30 times per second for let's
+>> say 100 us. It is 3 ms / 1000 ms * running energy cost i.e. 250mW.
+>> Thus, 0.75mW.
+> 
+> I'm not an expert in this area, but your example seems too optimistic
+> You are just accounting for the pure runtime, not for the cost of
+> entering and exiting an idle state. Let's take a SDM845 idle state as
+> example:
+> 
+> C0_CPU_PD: c0-power-down {
+>    ...
+>    entry-latency-us = <350>;
+>    exit-latency-us = <461>;
+>    min-residency-us = <1890>;
+>    ...
+> };
+> 
+> https://patchwork.kernel.org/patch/10661319/
+> 
+> That's 811us for entering and exiting the idle state. At an
+> intermediate OPP (1.8 GHz) the power consumption is 505mW, according
+> to the Energy Model. I'm ignoring the actual execution time, since I
+> tend to agree with you that the monitoring should be done, unless it
+> has a really unreasonable cost. That leaves us with 30 * 811us =
+> 24.3ms and 24.3ms / 1000 ms * 505mW = 12.3mW.
+You are probably taking ARM 'big' core wake-up from deeper that WFI 
+idle. I was referring to ARM LITTLE 250mW.
+It is also not 100% that the schedule work will wake up CPU which
+is currently in deepest idle.
+
+A short array would create a better picture of the use cases.
+The question is also probability of occurrence for each of these cases.
+For first two CPU state it would be a power cost lost during additional
+rescheduling to/from workqueue task, which takes i.e. 2*5 us * 30 times.
+
+CPU state ->|  running | idle    | idle clock | idle, pwr  |
+------------|   (C0)   | WFI (C1)|  gated (C2)| gated (C3) |
+architecture|          |         |            |            |
+------V-----------------------------------------------------
+ARM big     |    <1mW  | <1mW    |   ~12mW    |  ~12mW     |
+ARM LITTLE  |    <1mW  | <1mW    |   ~6mW     |  ~6mW      |
+MIPS
+PowerPC
+
+
+> 
+>> In my opinion it is not a big cost. In most cases the system is still
+>> doing some other work. It is worth to mention here that on mobiles
+>> when the power button is hit the full suspend is called which freezes
+>> all tasks, devices and power consumption is ~15mW. Thus, the system
+>> suspend is out of scope here.
+> 
+> I agree that system suspend is out of scope.
+> 
+>> As I replayed to Chanwoon for the same email: in my opinion current
+>> devfreq is broken.
+>> It was probably developed in times where there was 1 CPU (maybe 2)
+>> and idle state of CPU would be a good hint to not to check devfreq
+>> devices.
+> 
+> IIUC the use of a power-efficient workqueues would address the problem
+> of waking up a CPU in idle state, however as mentioned earlier by
+> default this feature is disabled (except for arm64). How about
+> switching to system_power_efficient_wq and use INIT_DELAYED_WORK if
+> CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y (or check if the workqueue in
+> question has WQ_UNBOUND set?) and INIT_DEFERRABLE_WORK otherwise? It's
+> not ideal, but a possible improvement.
+I think it would be to complicated to maintain because different
+platforms might use different mechanisms.
+I would suggests that we could just follow mechanism in thermal
+framework. I have never faced any issue with delayed work there,
+while working on IPA.
+They use 'system_freezable_power_efficient_wq' and INIT_DELAYED_WORK().
+https://elixir.bootlin.com/linux/v5.0-rc6/source/drivers/thermal/thermal_core.c#L293
+https://elixir.bootlin.com/linux/v5.0-rc6/source/drivers/thermal/thermal_core.c#L1281
+They have these two polling intervals, though.
+
+Regards,
+Lukasz
+
+> 
+> Cheers
+> 
+> Matthias
+> 
+> 
