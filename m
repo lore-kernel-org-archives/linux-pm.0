@@ -1,187 +1,150 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
-Date: Wed, 13 Feb 2019 11:15:48 +0100
-Message-ID: <CAMpxmJXqEwNtyT1ahmRd05QOjhdi0rT_-5S9Lk8O-PmV8BuA6w@mail.gmail.com>
-References: <CAMRc=MderQf20_8aG4-otBkCv60FSNSSqV3NVALPkFL-MqmJbg@mail.gmail.com>
- <20190212095457.GA20638@dell> <CAMRc=MdyT7nMJ7dUTf6M3PvRdynaCurb_TftMyA4eCwzpR9fVA@mail.gmail.com>
- <20190212101835.GB20638@dell> <CAMRc=MfYeVbvY6O03xq4eLN9TVpAKWCAXPk0eP5LSBCU7VU9fA@mail.gmail.com>
- <20190212111403.GC20638@dell> <CAMpxmJWXOb1HW4QiEn8gMp3Nh05ahE0CMLXkac+hEKRjtGxTHQ@mail.gmail.com>
- <20190212132016.GA4781@dell> <20190213092553.GE1863@dell> <CAMRc=MeTMq_GWzQB6LBvts1csMftj=On5sB22jsJZzQzONxbNg@mail.gmail.com>
- <20190213095330.GF1863@dell>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v4] cpufreq: intel_pstate: Reporting reasons why driver
+ prematurely exit
+Date: Wed, 13 Feb 2019 11:34:23 +0100
+Message-ID: <CAJZ5v0jq4RGkSoO7+_uO3yDZ6g3a=Jm3YGck8Maptqff2RCkZQ@mail.gmail.com>
+References: <20190212070839.25981-1-e.velu@criteo.com> <CAJZ5v0i4PFWQ5fMZ8Rh3jgu22=Me1+ArOwVW333BWa4z54Lqbg@mail.gmail.com>
+ <a2f4128c-54cc-44b3-d615-977e9ed37d07@criteo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213095330.GF1863@dell>
+In-Reply-To: <a2f4128c-54cc-44b3-d615-977e9ed37d07@criteo.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>
+To: Erwan Velu <e.velu@criteo.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-=C5=9Br., 13 lut 2019 o 10:53 Lee Jones <lee.jones@linaro.org> napisa=C5=82=
-(a):
+On Wed, Feb 13, 2019 at 10:13 AM Erwan Velu <e.velu@criteo.com> wrote:
 >
-> On Wed, 13 Feb 2019, Bartosz Golaszewski wrote:
 >
-> > =C5=9Br., 13 lut 2019 o 10:25 Lee Jones <lee.jones@linaro.org> napisa=
-=C5=82(a):
-> > >
-> > > On Tue, 12 Feb 2019, Lee Jones wrote:
-> > >
-> > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > >
-> > > > > wt., 12 lut 2019 o 12:14 Lee Jones <lee.jones@linaro.org> napisa=
-=C5=82(a):
-> > > > > >
-> > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > > > >
-> > > > > > > wt., 12 lut 2019 o 11:18 Lee Jones <lee.jones@linaro.org> nap=
-isa=C5=82(a):
-> > > > > > > >
-> > > > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > > > > > >
-> > > > > > > > > wt., 12 lut 2019 o 10:55 Lee Jones <lee.jones@linaro.org>=
- napisa=C5=82(a):
-> > > > > > > > > >
-> > > > > > > > > >  * The declaration of a superfluous struct
-> > > > > > > > > >  * 100 lines of additional/avoidable code
-> > > > > > > > > >  * Hacky hoop jumping trying to fudge VIRQs into resour=
-ces
-> > > > > > > > > >  * Resources were designed for HWIRQs (unless a domain =
-is present)
-> > > > > > > > > >  * Loads of additional/avoidable CPU cycles setting all=
- this up
-> > > > > > > > >
-> > > > > > > > > While the above may be right, this one is negligible and =
-you know it. :)
-> > > > > > > >
-> > > > > > > > You have nested for() loops.  You *are* wasting lots of cyc=
-les.
-> > > > > > > >
-> > > > > > > > > > Need I go on? :)
-> > > > > > > > > >
-> > > > > > > > > > Surely the fact that you are using both sides of an API
-> > > > > > > > > > (devm_regmap_init_i2c and regmap_irq_get_*) in the same=
- driver, must
-> > > > > > > > > > set some alarm bells ringing?
-> > > > > > > > > >
-> > > > > > > > > > This whole HWIRQ setting, VIRQ getting, resource hackin=
-g is a mess.
-> > > > > > > > > >
-> > > > > > > > > > And for what?  To avoid passing IRQ data to a child dri=
-ver?
-> > > > > > > > >
-> > > > > > > > > What do you propose? Should I go back to the approach in =
-v1 and pass
-> > > > > > > > > the regmap_irq_chip_data to child drivers?
-> > > > > > > >
-> > > > > > > > I'm saying you should remove all of this hackery and pass I=
-RQs as they
-> > > > > > > > are supposed to be passed (like everyone else does).
-> > > > > > >
-> > > > > > > I'm not sure what you mean by "like everyone else does" - dif=
-ferent
-> > > > > > > mfd drivers seem to be doing different things. Is a simple st=
-ruct
-> > > > > > > containing virtual irq numbers passed to sub-drivers fine?
-> > > > > >
-> > > > > > How do you plan on deriving the VIRQs to place into the struct?
-> > > > >
-> > > > > Exampe:
-> > > > >
-> > > > > struct max77650_gpio_pdata {
-> > > > >     int gpi_irq;
-> > > > > };
-> > > > >
-> > > > > In MFD driver:
-> > > > >
-> > > > > struct max77650_gpio_pdata *gpio_data =3D devm_kmalloc(dev, sizeo=
-f(*gpio_data));
-> > > > >
-> > > > > gpio_data->gpi_irq =3D regmap_irq_get_virq(irqchip_data, GPI_NUM)=
-;
-> > > > >
-> > > > > gpio_cell.platform_data =3D gpio_data;
-> > > > >
-> > > > > In GPIO driver:
-> > > > >
-> > > > > struct max77650_gpio_pdata *gpio_data =3D pdev->dev.platform_data=
-;
-> > > > >
-> > > > > int irq =3D gpio_data->gpi_irq;
-> > > >
-> > > > Definitely not.  What you're trying to do is a hack.
-> > > >
-> > > > If you're using Regmap to handle your IRQs, then you should use Reg=
-map
-> > > > in the client to pull them out.  Setting them via Regmap, then pull=
-ing
-> > > > them out again in the *same driver*, only to store them in platform
-> > > > data to be passed to a child device is bonkers.
-> > > >
-> > > > *Either* use the MFD provided platform-data helpers *or* pass and
-> > > > handle them via the Regmap APIs, *not* both.
-> > >
-> > > Right, a plan has been formed.
-> > >
-> > > Hopefully this works and you can avoid all this dancing around.
-> > >
-> > > Firstly, you need to make a small change to:
-> > >
-> > >   drivers/base/regmap/regmap-irq.c
-> > >
-> > > Add the following function:
-> > >
-> > >   struct irq_domain *regmap_irq_get_domain(struct regmap *map)
+> Le 13/02/2019 à 00:01, Rafael J. Wysocki a écrit :
+> [...]
+> > Newline characters are missing in all of your messages.
+>
+> oops. Fixing this.
+>
+> > "ACPI _PSS not found\n"
+>
+> Done.
+>
+>
+> >>          return true;
+> >>   }
+> >>
+> >> @@ -2484,10 +2485,15 @@ static bool __init intel_pstate_no_acpi_pcch(void)
+> >>          acpi_handle handle;
+> >>
+> >>          status = acpi_get_handle(NULL, "\\_SB", &handle);
+> >> -       if (ACPI_FAILURE(status))
+> >> +       if (ACPI_FAILURE(status)) {
+> >> +               pr_debug("Cannot detect ACPI SB");
+> > This is very unlikely to happen, I wouldn't bother to print anything here.
+>
+> As this is test is made, it means someone considered that case could exist.
+>
+> That's why a added a message to catch this case while debugging.
+>
+> I do agree that is not very likely.
+
+So a single "no PCCH" message for this whole function should be sufficient.
+
 > >
-> > We already do have such function and a lot of mfd drivers actually use =
-it.
+> >>                  return true;
+> >> +       }
+> >>
+> >> -       return !acpi_has_method(handle, "PCCH");
+> >> +       status = acpi_has_method(handle, "PCCH");
+> >> +       if (!status)
+> >> +               pr_debug("Cannot detect ACPI PCCH");
+> > This message can be printed by the caller and, again, I would prefer
+> > something like "ACPI PCCH not found".
+> Fixed too.
 >
-> Even better.
+> [..]
+> > "ACPI _PPC not found\n"
+> fixed.
+> >>          return false;
+> >>   }
+> >>
+> >> @@ -2539,8 +2546,10 @@ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
+> >>          id = x86_match_cpu(intel_pstate_cpu_oob_ids);
+> >>          if (id) {
+> >>                  rdmsrl(MSR_MISC_PWR_MGMT, misc_pwr);
+> >> -               if ( misc_pwr & (1 << 8))
+> >> +               if (misc_pwr & (1 << 8)) {
+> >> +                       pr_debug("MSR_MISC_PWR_MGMT reports enabled HW coordination");
+> > IIRC this means that the platform is managing P-states on systems
+> > without HWP, so I would print something like "P-states managed by the
+> > platform\n".
 >
-> > > As you can see, it will return the IRQ Domain for the chip.
-> > >
-> > > You can then pass this IRQ domain to mfd_add_devices() and it will do
-> > > the HWIRQ =3D> VIRQ mapping for you on the fly.  Meaning that you can
-> > > remove all the nastiness in max77650_setup_irqs() and have the Input
-> > > device use the standard (e.g. platform_get_irq()) APIs.
-> > >
-> > > How does that Sound?
+> That's what the caller reports.
+>
+> I added this additional message because this function added as special
+> case for this MSR setting.
+>
+> if intel_pstate_platform_pwr_mgmt_exists() is true, that's nice to know
+> why when debugging.
+
+I see.
+
+> >>                          return true;
+> >> +               }
+> >>          }
+> >>
+> >>          idx = acpi_match_platform_list(plat_info);
+> >> @@ -2606,22 +2615,28 @@ static int __init intel_pstate_init(void)
+> >>                  }
+> >>          } else {
+> >>                  id = x86_match_cpu(intel_pstate_cpu_ids);
+> >> -               if (!id)
+> >> +               if (!id) {
+> >> +                       pr_warn("CPU ID is not in the list of supported devices\n");
+> > Why not pr_debug()?
 > >
-> > This does sound better! Why didn't you lead with that in the first plac=
-e?
+> > And analogously below?
 >
-> I'm not even going to dignify that stupid question with a response.
+> I'm coming from a use case where on the same hardware, changing the
+> kernel changed the performance profile and impacted user's performance.
 >
+> I had to debug this case from a running server.
+>
+>  From the dmesg, one of the difference I saw was about the
+> missing "Intel P-state driver initializing" message, but nothing else.
+>
+> The reason why the driver didn't engaged itself wasn't explicit.
 
-It's not a stupid question and you're being unnecessarily rude. As an
-expert in the subsystem you maintain you could have answered simply
-with a "this is wrong, retrieve the irq domain from the regmap
-irq_chip and pass it over to mfd_add_devices, the mfd core will create
-appropriate mappings".
+And what did turn out to be the problem?
 
-> > It's a pity it's not documented, I had to look at the code to find out
-> > irq resources would get translated in mfd_add_devices() if a domain is
-> > present.
->
-> Where is it likely to be documented?  MFD is pretty simple and seldom
-> needs explanation.  A 3 second look at the API you're trying to use
-> (instead of blind copy & paste) would have told you that it's possible
-> to take an IRQ domain as an argument.
->
-> It's only the craziness in this patch which forced me to look into how
-> Regmap handles IRQs and come up with a subsequent solution which fits
-> your use-case.
->
-> > In that case - I really don't see a reason to create a superfluous
-> > structure to only hold the main regmap - we can very well get it from
-> > the parent device in sub-drivers as I do now.
->
-> The whole point of this solution is that you don't need to pass
-> anything non-standard (i.e. not provided by the current APIs) to the
-> child device.
->
+Anyway, pr_info() should be sufficient IMO.
 
-I don't understand what you're saying here.
+> As CONFIG_X86_INTEL_PSTATE is set to Y by default, I wasn't enable to
+> reload it in any way.
+>
+> By reading the code, most of the code path and return options doesn't
+> have a single pr_<something> call to explain why.
+>
+> So I had to rebuild the kernel + my patch to understand which path was
+> taken and then find the root cause of why the pstate behavior changed.
+>
+> I wanted to contribute back my experience here by providing messages to
+> ease the understanding and potentially debugging of the driver without
+> recompiling it.
+>
+>
+> So the root of this patch is being able to report the main reasons of
+> why the driver didn't engaged itself with a pr_warn (could be also a
+> pr_info).
+>
+> All the major and probable "return -ENODEV" calls before pr_info("Intel
+> P-state driver initializing\n") deserves to be explicit and reachable on
+> dmesg for the operators.
+>
+> I'm operating 30K+ servers and having this kind direct information would
+> save serious time when debugging this situations.
+>
+> If my experience in that area could help other users, I'd be happy.
+>
+> I'm positing a v5 with all those changes.
 
-Bartosz
+Many thanks for your contribution!
