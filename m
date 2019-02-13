@@ -1,171 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] drivers: base: add support to skip power management in
- device/driver model
-Date: Wed, 13 Feb 2019 21:03:31 +0100
-Message-ID: <CAPDyKFr2JJynsKHvoro3kV2yN5bMPPfdCFgkgyCXVhzgHuZwCA@mail.gmail.com>
-References: <20190213120137.23354-1-sudeep.holla@arm.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 01/11] dt-bindings: mfd: add DT bindings for max77650
+Date: Wed, 13 Feb 2019 14:43:28 -0600
+Message-ID: <20190213204328.GA26408@bogus>
+References: <20190213134335.10838-1-brgl@bgdev.pl>
+ <20190213134335.10838-2-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213120137.23354-1-sudeep.holla@arm.com>
+Content-Disposition: inline
+In-Reply-To: <20190213134335.10838-2-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 Feb 2019 at 13:01, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> All device objects in the driver model contain fields that control the
-> handling of various power management activities. However, it's not
-> always useful. There are few instances where pseudo devices are added
-> to the model just to take advantage of many other features like
-> kobjects, udev events, and so on. One such example is cpu devices and
-> their caches.
->
-> The sysfs for the cpu caches are managed by adding devices with cpu
-> as the parent in cpu_device_create() when secondary cpu is brought
-> online. Generally when the secondary CPUs are hotplugged back in as part
-> of resume from suspend-to-ram, we call cpu_device_create() from the cpu
-> hotplug state machine while the cpu device associated with that CPU is
-> not yet ready to be resumed as the device_resume() call happens bit
-> later. It's not really needed to set the flag is_prepared for cpu
-> devices as they are mostly pseudo device and hotplug framework deals
-> with state machine and not managed through the cpu device.
->
-> This often results in annoying warning when resuming:
-> Enabling non-boot CPUs ...
-> CPU1: Booted secondary processor
->  cache: parent cpu1 should not be sleeping
-> CPU1 is up
-> CPU2: Booted secondary processor
->  cache: parent cpu2 should not be sleeping
-> CPU2 is up
-> .... and so on.
->
-> So in order to fix these kind of errors, we could just completely avoid
-> doing any power management related initialisations and operations if
-> they are not used by these devices.
->
-> Lets add no_pm_required flags to indicate that the device doesn't
-> require any sort of pm activities and all of them can be completely
-> skipped. We can use the same flag to also avoid adding not used *power*
-> sysfs entries for these devices. For now, lets use this for cpu cache
-> devices.
->
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
+On Wed, Feb 13, 2019 at 02:43:25PM +0100, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> Add a DT binding document for max77650 ultra-low power PMIC. This
+> describes the core mfd device and the GPIO module.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > ---
->  drivers/base/cpu.c         |  1 +
->  drivers/base/power/main.c  |  7 +++++++
->  drivers/base/power/sysfs.c |  4 ++++
->  include/linux/device.h     | 10 ++++++++++
->  include/linux/pm.h         |  1 +
->  5 files changed, 23 insertions(+)
->
-> v1->v2:
->         - dropped setting the flag for cpu devices, for now just cpu caches
->          will make use of this new flag.
->
-> RFC->v1:
->         - dropped the idea of adding cpu hotplug callback to deal just
->           with cpu devices, instead add a new flag in the device pm_info
->           structure
->
-> [RFC] : https://marc.info/?l=linux-pm&m=154842896407904&w=2
-> [v1] : https://marc.info/?l=linux-pm&m=154946578717730&w=2
->
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index eb9443d5bae1..6ce93a52bf3f 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -427,6 +427,7 @@ __cpu_device_create(struct device *parent, void *drvdata,
->         dev->parent = parent;
->         dev->groups = groups;
->         dev->release = device_create_release;
-> +       device_set_pm_not_required(dev);
->         dev_set_drvdata(dev, drvdata);
->
->         retval = kobject_set_name_vargs(&dev->kobj, fmt, args);
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 0992e67e862b..2a29c3d4e240 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -124,6 +124,10 @@ void device_pm_unlock(void)
->   */
->  void device_pm_add(struct device *dev)
->  {
-> +       /* No need to create pm sysfs if explicitly specified as not required */
-> +       if (device_pm_not_required(dev))
-> +               return;
+>  .../devicetree/bindings/mfd/max77650.txt      | 47 +++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
+> new file mode 100644
+> index 000000000000..0a40e9c6aab8
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/mfd/max77650.txt
+> @@ -0,0 +1,47 @@
+> +MAX77650 ultra low-power PMIC from Maxim Integrated.
 > +
->         pr_debug("PM: Adding info for %s:%s\n",
->                  dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
->         device_pm_check_callbacks(dev);
-> @@ -142,6 +146,9 @@ void device_pm_add(struct device *dev)
->   */
->  void device_pm_remove(struct device *dev)
->  {
-> +       if (device_pm_not_required(dev))
-> +               return;
+> +Required properties:
+> +-------------------
+> +- compatible:		Must be "maxim,max77650"
+> +- reg:			I2C device address.
+> +- interrupts:		The interrupt on the parent the controller is
+> +			connected to.
+> +- interrupt-parent:	phandle of the parent interrupt controller.
+
+This is implied (and may be in a parent node), so remove it.
+
+> +- interrupt-controller: Marks the device node as an interrupt controller.
+> +- #interrupt-cells:	Must be <2>.
 > +
->         pr_debug("PM: Removing info for %s:%s\n",
->                  dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
->         complete_all(&dev->power.completion);
-> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-> index d713738ce796..6cd159b51114 100644
-> --- a/drivers/base/power/sysfs.c
-> +++ b/drivers/base/power/sysfs.c
-> @@ -648,6 +648,10 @@ int dpm_sysfs_add(struct device *dev)
->  {
->         int rc;
->
-> +       /* No need to create pm sysfs if explicitly disabled */
-> +       if (device_pm_not_required(dev))
-> +               return 0;
+> +- gpio-controller : 	Marks the device node as a gpio controller.
+> +- #gpio-cells : 	Must be <2>. The first cell is the pin number and
+
+Some space before tabs here.
+
+> +			the second cell is used to specify the gpio active
+> +			state.
 > +
->         rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
->         if (rc)
->                 return rc;
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 6cb4640b6160..739d0b62e4d4 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -1165,6 +1165,16 @@ static inline bool device_async_suspend_enabled(struct device *dev)
->         return !!dev->power.async_suspend;
->  }
->
-> +static inline bool device_pm_not_required(struct device *dev)
-> +{
-> +       return dev->power.no_pm_required;
-> +}
+> +Optional properties:
+> +--------------------
+> +gpio-line-names:	Single string containing the name of the GPIO line.
 > +
-> +static inline void device_set_pm_not_required(struct device *dev)
-> +{
-> +       dev->power.no_pm_required = true;
-> +}
+> +The GPIO-controller module is represented as part of the top-level PMIC
+> +node. The device exposes a single GPIO line.
 > +
->  static inline void dev_pm_syscore_device(struct device *dev, bool val)
->  {
->  #ifdef CONFIG_PM_SLEEP
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 0bd9de116826..300ab9f0b858 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -592,6 +592,7 @@ struct dev_pm_info {
->         bool                    is_suspended:1; /* Ditto */
->         bool                    is_noirq_suspended:1;
->         bool                    is_late_suspended:1;
-> +       bool                    no_pm_required:1;
->         bool                    early_init:1;   /* Owned by the PM core */
->         bool                    direct_complete:1;      /* Owned by the PM core */
->         u32                     driver_flags;
-> --
-> 2.17.1
->
+> +For device-tree bindings of other sub-modules (regulator, power supply,
+> +LEDs and onkey) refer to the binding documents under the respective
+> +sub-system directories.
+> +
+> +For more details on GPIO bindings, please refer to the generic GPIO DT
+> +binding document <devicetree/bindings/gpio/gpio.txt>.
+> +
+> +Example:
+> +--------
+> +
+> +	pmic: max77650@48 {
+
+Hopefully some day this will stop.
+
+pmic@48
+
+> +		compatible = "maxim,max77650";
+> +		reg = <0x48>;
+> +
+> +		interrupt-controller;
+> +		interrupt-parent = <&gpio2>;
+> +		#interrupt-cells = <2>;
+> +		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+> +
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		gpio-line-names = "max77650-charger";
+> +	};
+> -- 
+> 2.20.1
+> 
