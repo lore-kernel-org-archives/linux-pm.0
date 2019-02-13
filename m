@@ -1,110 +1,144 @@
-From: Erwan Velu <erwanaliasr1@gmail.com>
-Subject: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
-Date: Wed, 13 Feb 2019 13:21:05 +0100
-Message-ID: <20190213122105.14270-1-e.velu@criteo.com>
+From: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] drm/msm/a6xx: Add support for an
+ interconnect path
+Date: Wed, 13 Feb 2019 14:51:40 +0200
+Message-ID: <5dd06ff3-4fe7-af11-33ef-6dc9ed5fd8a5@linaro.org>
+References: <20190212095238.12306-1-georgi.djakov@linaro.org>
+ <20190212101624.GA20915@kroah.com>
+ <99ab72bf-9e06-bcaf-85ec-33d4037a54cd@linaro.org>
+ <20190212143525.GA15405@kroah.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-Cc: rafael@kernel.org, Erwan Velu <e.velu@criteo.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20190212143525.GA15405-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, evgreen-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The init code path has several exceptions where the module can decide not to load.
-As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is not reachable.
-The initialization code is neither verbose of the reason why it did choose to prematurely exit.
-
-This situation leads to a situation where its difficult for a user to determine,
-on a given platform, why the driver didn't load properly.
-
-This patch is about reporting to the user the reason/context of why the driver failed to load.
-That is a precious hint when debugging a platform.
-
-Signed-off-by: Erwan Velu <e.velu@criteo.com>
----
- drivers/cpufreq/intel_pstate.c | 27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dd66decf2087..e1ae309923bf 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2475,6 +2475,7 @@ static bool __init intel_pstate_no_acpi_pss(void)
- 		kfree(pss);
- 	}
- 
-+	pr_debug("ACPI _PSS not found\n");
- 	return true;
- }
- 
-@@ -2484,10 +2485,15 @@ static bool __init intel_pstate_no_acpi_pcch(void)
- 	acpi_handle handle;
- 
- 	status = acpi_get_handle(NULL, "\\_SB", &handle);
--	if (ACPI_FAILURE(status))
-+	if (ACPI_FAILURE(status)) {
-+		pr_debug("ACPI PCCH not found\n");
- 		return true;
-+	}
- 
--	return !acpi_has_method(handle, "PCCH");
-+	status = acpi_has_method(handle, "PCCH");
-+	if (!status)
-+		pr_debug("ACPI PCCH not found\n");
-+	return !status;
- }
- 
- static bool __init intel_pstate_has_acpi_ppc(void)
-@@ -2502,6 +2508,7 @@ static bool __init intel_pstate_has_acpi_ppc(void)
- 		if (acpi_has_method(pr->handle, "_PPC"))
- 			return true;
- 	}
-+	pr_debug("ACPI _PPC not found\n");
- 	return false;
- }
- 
-@@ -2539,8 +2546,10 @@ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
- 	id = x86_match_cpu(intel_pstate_cpu_oob_ids);
- 	if (id) {
- 		rdmsrl(MSR_MISC_PWR_MGMT, misc_pwr);
--		if ( misc_pwr & (1 << 8))
-+		if (misc_pwr & (1 << 8)) {
-+			pr_debug("MSR_MISC_PWR_MGMT enabled\n");
- 			return true;
-+		}
- 	}
- 
- 	idx = acpi_match_platform_list(plat_info);
-@@ -2606,22 +2615,28 @@ static int __init intel_pstate_init(void)
- 		}
- 	} else {
- 		id = x86_match_cpu(intel_pstate_cpu_ids);
--		if (!id)
-+		if (!id) {
-+			pr_info("CPU ID is not in the list of supported devices\n");
- 			return -ENODEV;
-+		}
- 
- 		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
- 	}
- 
--	if (intel_pstate_msrs_not_valid())
-+	if (intel_pstate_msrs_not_valid()) {
-+		pr_warn("Cannot enable driver as per invalid MSRs\n");
- 		return -ENODEV;
-+	}
- 
- hwp_cpu_matched:
- 	/*
- 	 * The Intel pstate driver will be ignored if the platform
- 	 * firmware has its own power management modes.
- 	 */
--	if (intel_pstate_platform_pwr_mgmt_exists())
-+	if (intel_pstate_platform_pwr_mgmt_exists()) {
-+		pr_info("Platform already taking care of power management\n");
- 		return -ENODEV;
-+	}
- 
- 	if (!hwp_active && hwp_only)
- 		return -ENOTSUPP;
--- 
-2.20.1
+SGksCgpPbiAyLzEyLzE5IDE2OjM1LCBHcmVnIEtIIHdyb3RlOgo+IE9uIFR1ZSwgRmViIDEyLCAy
+MDE5IGF0IDA0OjA3OjM1UE0gKzAyMDAsIEdlb3JnaSBEamFrb3Ygd3JvdGU6Cj4+IEhpIEdyZWcs
+Cj4+Cj4+IE9uIDIvMTIvMTkgMTI6MTYsIEdyZWcgS0ggd3JvdGU6Cj4+PiBPbiBUdWUsIEZlYiAx
+MiwgMjAxOSBhdCAxMTo1MjozOEFNICswMjAwLCBHZW9yZ2kgRGpha292IHdyb3RlOgo+Pj4+IEZy
+b206IEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9yYS5vcmc+Cj4+Pj4KPj4+PiBUcnkg
+dG8gZ2V0IHRoZSBpbnRlcmNvbm5lY3QgcGF0aCBmb3IgdGhlIEdQVSBhbmQgdm90ZSBmb3IgdGhl
+IG1heGltdW0KPj4+PiBiYW5kd2lkdGggdG8gc3VwcG9ydCBhbGwgZnJlcXVlbmNpZXMuIFRoaXMg
+aXMgbmVlZGVkIGZvciBwZXJmb3JtYW5jZS4KPj4+PiBMYXRlciB3ZSB3aWxsIHdhbnQgdG8gc2Nh
+bGUgdGhlIGJhbmR3aWR0aCBiYXNlZCBvbiB0aGUgZnJlcXVlbmN5IHRvCj4+Pj4gYWxzbyBvcHRp
+bWl6ZSBmb3IgcG93ZXIgYnV0IHRoYXQgd2lsbCByZXF1aXJlIHNvbWUgZGV2aWNlIHRyZWUKPj4+
+PiBpbmZyYXN0cnVjdHVyZSB0aGF0IGRvZXMgbm90IHlldCBleGlzdC4KPj4+Pgo+Pj4+IHY2OiB1
+c2UgaWNjX3NldF9idygpIGluc3RlYWQgb2YgaWNjX3NldCgpCj4+Pj4gdjU6IFJlbW92ZSBoYXJk
+Y29kZWQgaW50ZXJjb25uZWN0IG5hbWUgYW5kIGp1c3QgdXNlIHRoZSBkZWZhdWx0Cj4+Pj4gdjQ6
+IERvbid0IHVzZSBhIHBvcnQgc3RyaW5nIGF0IGFsbCB0byBza2lwIHRoZSBuZWVkIGZvciBuYW1l
+cyBpbiB0aGUgRFQKPj4+PiB2MzogVXNlIG1hY3JvcyBhbmQgY2hhbmdlIHBvcnQgc3RyaW5nIHBl
+ciBHZW9yZ2kgRGpha292Cj4+Pj4KPj4+PiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxq
+Y3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+Pj4+IEFja2VkLWJ5OiBSb2IgQ2xhcmsgPHJvYmRjbGFy
+a0BnbWFpbC5jb20+Cj4+Pj4gUmV2aWV3ZWQtYnk6IEV2YW4gR3JlZW4gPGV2Z3JlZW5AY2hyb21p
+dW0ub3JnPgo+Pj4+IFNpZ25lZC1vZmYtYnk6IEdlb3JnaSBEamFrb3YgPGdlb3JnaS5kamFrb3ZA
+bGluYXJvLm9yZz4KPj4+PiAtLS0KPj4+Pgo+Pj4+IEhpIEdyZWcsCj4+Pj4KPj4+PiBJZiBub3Qg
+dG9vIGxhdGUsIGNvdWxkIHlvdSBwbGVhc2UgdGFrZSB0aGlzIHBhdGNoIGludG8gY2hhci1taXNj
+LW5leHQuCj4+Pj4gSXQgaXMgYWRkaW5nIHRoZSBmaXJzdCBjb25zdW1lciBvZiB0aGUgaW50ZXJj
+b25uZWN0IEFQSS4gV2UgYXJlIGp1c3QKPj4+PiBnZXR0aW5nIHRoZSBjb2RlIGluIHBsYWNlLCB3
+aXRob3V0IG1ha2luZyBpdCBmdW5jdGlvbmFsIHlldCwgYXMgc29tZQo+Pj4+IERUIGJpdHMgYXJl
+IHN0aWxsIG5lZWRlZCB0byBhY3R1YWxseSBlbmFibGUgaXQuIFdlIGhhdmUgUm9iJ3MgQWNrIHRv
+Cj4+Pj4gbWVyZ2UgdGhpcyB0b2dldGhlciB3aXRoIHRoZSBpbnRlcmNvbm5lY3QgY29kZS4gVGhp
+cyBwYXRjaCBoYXMgYWxyZWFkeQo+Pj4+IHNwZW50IHNvbWUgdGltZSBpbiBsaW51eC1uZXh0IHdp
+dGhvdXQgYW55IGlzc3Vlcy4KPj4+Cj4+PiBJIGhhdmUgYSBxdWVzdGlvbiBhYm91dCB0aGUgaW50
+ZXJjb25uZWN0IGNvZGUuICBMYXN0IHdlZWsgSSBzYXcgYQo+Pj4gcHJlc2VudGF0aW9uIGFib3V0
+IHRoZSByZXNjdHJsL1JEVCBjb2RlIGZyb20gQVJNIHRoYXQgaXMgY29taW5nIChNUEFNKSwKPj4+
+IGFuZCBpdCByZWFsbHkgbG9va3MgbGlrZSB0aGUgc2FtZSBmdW5jdGlvbmFsaXR5IGFzIHRoaXMg
+aW50ZXJjb25uZWN0Cj4+PiBjb2RlLiAgSW4gZmFjdCwgdGhpcyBjb2RlIGxvb2tzIGxpa2UgdGhl
+IGV4aXN0aW5nIHJlc2N0cmwgc3R1ZmYsIHJpZ2h0Pwo+Pgo+PiBUaGFua3MgZm9yIHRoZSBxdWVz
+dGlvbiEgSXQncyBuaWNlIHRoYXQgTVBBTSBpcyBtb3ZpbmcgZm9yd2FyZC4gV2hlbiBpCj4+IGxv
+b2tlZCBpbnRvIHRoZSBNUEFNIGRyYWZ0IHNwZWMgYW4geWVhciBhZ28sIGl0IHdhcyBhbiBvcHRp
+b25hbAo+PiBleHRlbnNpb24gbWVudGlvbmluZyBtb3N0bHkgdXNlLWNhc2VzIHdpdGggVk1zIG9u
+IHNlcnZlciBzeXN0ZW1zLgo+Pgo+PiBCdXQgYW55d2F5LCBNUEFNIGlzIG9ubHkgYXZhaWxhYmxl
+IGZvciBBUk12OC4yKyBjb3JlcyBhcyBhbiBvcHRpb25hbAo+PiBleHRlbnNpb24gYW5kIGFhcmNo
+MzIgaXMgbm90IHN1cHBvcnRlZC4gSW4gY29udHJhc3QgdG8gdGhhdCwgdGhlCj4+IGludGVyY29u
+bmVjdCBjb2RlIGlzIGdlbmVyaWMgYW5kIGRvZXMgbm90IHB1dCBhbnkgbGltaXRhdGlvbnMgb24g
+dGhlCj4+IHBsYXRmb3JtL2FyY2hpdGVjdHVyZSB0aGF0IGNhbiB1c2UgaXQgLSBqdXN0IHRoZSBw
+bGF0Zm9ybSBzcGVjaWZpYwo+PiBpbXBsZW1lbnRhdGlvbiB3b3VsZCBiZSBkaWZmZXJlbnQuIFdl
+IGhhdmUgZGlzY3Vzc2VkIGluIHRoYXQgcGFzdCB0aGF0Cj4+IGl0IGNhbiBiZSB1c2VkIGV2ZW4g
+b24geDg2IHBsYXRmb3JtcyB0byBwcm92aWRlIGhpbnRzIHRvIGZpcm13YXJlLgo+IAo+IFllcywg
+YnV0IHJlc2N0cmwgaXMgYXJjaCBpbmRlcGVuZGFudC4gIEl0J3Mgbm90IHRoZSAiYmFja2VuZCIg
+dGhhdCBJJ20KPiBjb25jZXJuZWQgYWJvdXQsIGl0J3MgdGhlIHVzZXJzcGFjZSBhbmQgaW4ta2Vy
+bmVsIGFwaSB0aGF0IEkgd29ycnkKPiBhYm91dC4KCkFncmVlIHRoYXQgcmVzY3RybCBpcyBub3cg
+YXJjaCBpbmRlcGVuZGVudCwgYnV0IGl0IGxvb2tzIHRvIG1lIHRoYXQKcmVzY3RybCBzZXJ2ZXMg
+Zm9yIGEgZGlmZmVyZW50IHB1cnBvc2UuIEl0IG1heSBzb3VuZCB0aGF0IHRoZSBoYXZlCnNpbWls
+YXJpdGllcyByZWxhdGVkIHRvIGJhbmR3aWR0aCBtYW5hZ2VtZW50LCBidXQgdGhleSBhcmUgY29t
+cGxldGVseQpkaWZmZXJlbnQgYW5kIHJlc2N0cmwgZG9lcyBub3Qgc2VlbSBzdWl0YWJsZSBmb3Ig
+bWFuYWdpbmcgaW50ZXJjb25uZWN0cwpvbiBhIHN5c3RlbS1vbi1jaGlwIHN5c3RlbXMuIElmIGkg
+dW5kZXJzdGFuZCBjb3JyZWN0bHksIHRoZSByZXNjdHJsIGlzCmFib3V0IG1vbml0b3JpbmcgYW5k
+IGNvbnRyb2xsaW5nIHN5c3RlbSByZXNvdXJjZXMgbGlrZSBjYWNoZSwgbWVtb3J5CmJhbmR3aWR0
+aCwgTDIsIEwzLCB0aGF0IGFyZSB1c2VkIGJ5IGFwcGxpY2F0aW9ucywgVk1zIGFuZCBjb250YWlu
+ZXJzIGluCmEgQ1BVIGNlbnRyaWMgYXBwcm9hY2guIEl0IGRvZXMgdGhpcyBieSBtYWtpbmcgdXNl
+IG9mIHNvbWUgQ1BVIGhhcmR3YXJlCmZlYXR1cmVzIGFuZCBleHBvc2UgdGhpcyB2aWEgYSBmaWxl
+LXN5c3RlbSB0byBiZSBjb250cm9sbGVkIGZyb20gdXNlcnNwYWNlLgoKPj4+IFNvIHdoeSBzaG91
+bGRuJ3Qgd2UganVzdCBkcm9wIHRoZSBpbnRlcmNvbm5lY3QgY29kZSBhbmQgdXNlIHJlc2N0cmwK
+Pj4+IGluc3RlYWQgYXMgaXQncyBhbHJlYWR5IG1lcmdlZD8KPj4KPj4gSSBoYXZlbid0IHNlZW4g
+YW55IE1QQU0gY29kZSBzbyBmYXIsIGJ1dCBpIGFzc3VtZSB0aGF0IHdlIGNhbiBoYXZlIGFuCj4+
+IGludGVyY29ubmVjdCBwcm92aWRlciB0aGF0IGltcGxlbWVudHMgdGhpcyBNUEFNIGV4dGVuc2lv
+biBmb3Igc3lzdGVtcwo+PiB0aGF0IHN1cHBvcnQgaXQgKGFuZCB3YW50IHRvIHVzZSBpdCkuIEN1
+cnJlbnRseSB0aGVyZSBhcmUgcGVvcGxlIHdvcmtpbmcKPj4gb24gdmFyaW91cyBpbnRlcmNvbm5l
+Y3QgcGxhdGZvcm0gZHJpdmVycyBmcm9tIDUgZGlmZmVyZW50IFNvQyB2ZW5kb3JzCj4+IGFuZCB3
+ZSBoYXZlIGFncmVlZCB0byB1c2UgYSBjb21tb24gRFQgYmluZGluZ3MgKGFuZCBBUEkpLiBJIGRv
+dWJ0IHRoYXQKPj4gZXZlbiBhIHNpbmdsZSBvbmUgb2YgdGhlc2UgcGxhdGZvcm1zIGlzIGJhc2Vk
+IG9uIHY4LjIrLiBQcm9iYWJseSBzdWNoCj4+IFNvQ3Mgd291bGQgYmUgY29taW5nIGluIHRoZSBm
+dXR1cmUgYW5kIHRoZW4gaSBleHBlY3QgcGVvcGxlIG1ha2luZyB1c2UKPj4gb2YgTVBBTSBpbiBz
+b21lIGludGVyY29ubmVjdCBwcm92aWRlciBkcml2ZXIuCj4gCj4gQWdhaW4sIGRvbid0IGZvY3Vz
+IG9uIE1QQU0gYXMtaXMsIGl0J3MgdGhlIHJlc2N0cmwgYXBpIHRoYXQgSSB3b3VsZCBsaWtlCj4g
+dG8gc2VlIGV4cGxhaW5lZCB3aHkgaW50ZXJjb25uZWN0IGNhbid0IHVzZS4KCldoaWxlIHJlc2N0
+cmwgY2FuIHdvcmsgZm9yIG1hbmFnaW5nIGZvciBleGFtcGxlIGEgQ1BVIHRvIG1lbW9yeQpiYW5k
+d2lkdGggZm9yIHByb2Nlc3NlcywgdGhpcyBpcyBub3QgZW5vdWdoIGZvciB0aGUgYmlnZ2VyIHBp
+Y3R1cmUgaWYKeW91IGhhdmUgYSB3aG9sZSBzeXN0ZW0tb24tY2hpcCB0b3BvbG9neSB3aXRoIGRp
+c3RyaWJ1dGVkIGhhcmR3YXJlCmNvbXBvbmVudHMgdGFsa2luZyB0byBlYWNoIG90aGVyLiBUaGUg
+IkxpbnV4IiBDUFUgbWlnaHQgbm90IGJlIGV2ZW4gdGhlCmNlbnRyYWwgYXJiaXRlciBpbiBzdWNo
+IHRvcG9sb2dpZXMuIFRoZSBpbnRlcmNvbm5lY3QgY29kZSBkb2VzIG5vdApzdXBwb3J0IGludGVy
+YWN0aW9uIHdpdGggdXNlcnNwYWNlLgoKU29tZSByZWFzb25zIHdoeSB0aGUgaW50ZXJjb25uZWN0
+IGNvZGUgY2FuJ3QgdXNlIHRoZSByZXNjdHJsIGFwaSBub3c6Ci0gVGhlIGRpc3RyaWJ1dGVkIGhh
+cmR3YXJlIGNvbXBvbmVudHMgbmVlZCB0byBleHByZXNzIHRoZWlyIG5lZWRzIGZvcgp3aGljaCBp
+bnRlcmNvbm5lY3QgcGF0aCBhbmQgaG93IG11Y2ggYmFuZHdpZHRoIHRoZXkgd2FudCB0byB1c2Us
+IGluCm9yZGVyIHRvIHR1bmUgdGhlIHdob2xlIHN5c3RlbSdzIChzeXN0ZW0tb24tY2hpcCkgcGVy
+Zm9ybWFuY2UgaW4gdGhlCm1vc3Qgb3B0aW1hbCBzdGF0ZS4gVGhlIGludGVyY29ubmVjdCBjb2Rl
+IGRvZXMgdGhpcyB3aXRoIGEKY29uc3VtZXItcHJvdmlkZXIgQVBJLgotIEN1c3RvbSBhZ2dyZWdh
+dGlvbiBvZiB0aGUgY29uc3VtZXIgcmVxdWVzdHMgbmVlZHMgdG8gYmUgZG9uZSBiYXNlZCBvbgp0
+aGUgdG9wb2xvZ3kuIFNvQ3MgbWF5IHVzZSBkaWZmZXJlbnQgYWdncmVnYXRpb24gZm9ybXVsYSwg
+ZGVwZW5kaW5nIGZvcgpleGFtcGxlIG9uIHdoZXRoZXIgdGhleSBhcmUgdXNpbmcgYSBzaW1wbGUg
+aGllcmFyY2hpY2FsIGJ1cywgYSBjcm9zc2JhcgpvciBzb21lIG5ldHdvcmstb24tY2hpcC4gV2hl
+biB0aGUgTm9DIGNvbmNlcHQgaXMgdXNlZCwgdGhlcmUgaXMKaW50ZXJsZWF2ZWQgdHJhZmZpYyB0
+aGF0IG5lZWRzIHRvIGJlIGFnZ3JlZ2F0ZWQgYW5kIGFuIGludGVyY29ubmVjdCBwYXRoCmNhbiBz
+cGFuIGFjcm9zcyBtdWx0aXBsZSBjbG9jayBkb21haW5zIChhbGxvd2luZyBlYWNoIGZ1bmN0aW9u
+YWwgdW5pdCB0bwpoYXZlIGl0J3Mgb3duIGNsb2NrIGRvbWFpbikuCi0gU3VwcG9ydCBmb3IgY29t
+cGxleCB0b3BvbG9naWVzIGlzIG5lZWRlZCAtIG11bHRpLXRpZXJlZCBidXNlcyB3aXRoCmRldmlj
+ZXMgaGF2aW5nIG11bHRpcGxlIHBhdGhzIGJldHdlZW4gZWFjaCBvdGhlci4gVGhlIGRldmljZSBt
+YXkgY2hvb3NlCndoaWNoIHBhdGggdG8gdXNlIGRlcGVuZGluZyBvbiB0aGUgbmVlZHMgb3IgdXNl
+IGV2ZW4gbXVsdGlwbGUgZm9yCmxvYWQtYmFsYW5jaW5nLgotIEEgdG9wb2xvZ3kgY2hhbmdlcyBz
+aG91bGQgYmUgc3VwcG9ydGVkIHdpdGggYW4gQVBJIC0gdGhlcmUgYXJlIEZQR0EKYm9hcmRzIHRo
+YXQgY2FuIGNoYW5nZSB0aGVpciB0b3BvbG9neS4KCkkgbG9va2VkIGF0IHRoZSBleGlzdGluZyBy
+ZXNjdHJsIGNvZGUgYW5kIGF0IHNvbWUgaW4tZmxpZ2h0IHBhdGNoZXMsIGJ1dAppdCBkb2Vzbid0
+IGZlZWwgcmlnaHQgdG8gbWUgdG8gdXNlIHJlc2N0cmwuIEkgZG9uJ3QgdGhpbmsgbXVjaCBvZiBp
+dCBjYW4KYmUgcmV1c2VkIG9yIGV4dGVuZGVkIHdpdGhvdXQgdmVyeSBzaWduaWZpY2FudCBjaGFu
+Z2VzIHRoYXQgd291bGQKcHJvYmFibHkgdHdpc3QgcmVzY3RybCBhd2F5IGZyb20gaXQncyBvcmln
+aW5hbCBwdXJwb3NlIChhbmQgbWF5YmUKY29uZmxpY3Qgd2l0aCBpdCkuCgpUTDtEUjogVGhlIGZ1
+bmN0aW9uYWxpdHkgb2YgcmVzY3RybCBhbmQgaW50ZXJjb25uZWN0IGNvZGUgaXMgZGlmZmVyZW50
+IC0KcmVzY3RybCBzZWVtcyB0byBiZSBhYm91dCBtb25pdG9yaW5nL21hbmFnaW5nL2VuZm9yY2lu
+ZyB0aGUgdXNhZ2Ugb2YKcmVzb3VyY2VzIHNoYXJlZCBieSBvbmUgb3IgbW9yZSBDUFVzLCB0aGUg
+aW50ZXJjb25uZWN0IGNvZGUgaXMgbW9yZQphYm91dCBzeXN0ZW0tb24tY2hpcCBzeXN0ZW1zIGFs
+bG93aW5nIHZhcmlvdXMgbW9kdWxlcyAoR1BVLCBEU1AsIG1vZGVtLApXaUZpLCBibHVldG9vdGgs
+IHtlbixkZX1jb2RlcnMsIGNhbWVyYSwgZXRoZXJuZXQsIGV0Yy4pIHRvIGV4cHJlc3MgdGhlaXIK
+YmFuZHdpZHRoIG5lZWRzIGluIG9yZGVyIHRvIGltcHJvdmUgdGhlIHBvd2VyIGVmZmljaWVuY3kg
+b2YgdGhlIHdob2xlIFNvQy4KCkhvcGUgdGhhdCB0aGlzIGFkZHJlc3NlZCB5b3VyIGNvbmNlcm5z
+LgoKVGhhbmtzLApHZW9yZ2kKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0
+b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJl
+ZWRyZW5v
