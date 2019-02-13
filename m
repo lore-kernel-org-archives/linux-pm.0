@@ -1,111 +1,24 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
- broadcast  _PPC to all online CPUs
-Date: Thu, 14 Feb 2019 00:55:38 +0800
-Message-ID: <20190213165538.GB30385@chenyu-office.sh.intel.com>
-References: <20190209120232.21582-1-yu.c.chen@intel.com>
- <20190211103307.rccddkso3f5s3yko@vireshk-i7>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v9 3/8] clk: bd718x7: Support ROHM BD70528 clk block
+Date: Wed, 13 Feb 2019 09:43:41 -0800
+Message-ID: <155007982166.115909.16929990408175018819@swboyd.mtv.corp.google.com>
+References: <cover.1550063882.git.matti.vaittinen@fi.rohmeurope.com> <f3d5163067e97426a9bb00991d200f04bcd0058b.1550063882.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190211103307.rccddkso3f5s3yko@vireshk-i7>
+In-Reply-To: <f3d5163067e97426a9bb00991d200f04bcd0058b.1550063882.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: matti.vaittinen@fi.rohmeurope.com, mazziesaccount@gmail.com
+Cc: Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-On Mon, Feb 11, 2019 at 04:03:07PM +0530, Viresh Kumar wrote:
-> On 09-02-19, 20:02, Chen Yu wrote:
-> > On Dell Inc. XPS13 9333, the BIOS changes the value of
-> > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
-> > the power source changes), the maximum frequency of the
-> > CPU is not updated accordingly. This is due to the policy's
-> > cpuinfo.max is not updated when _PPC notifier fires.
-> > 
-> > Fix this problem by updating the policy's cpuinfo.max
-> > and broadcast the _PPC notifier to all online CPUs.
-> > 
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-> > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-> > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > ---
-> >  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
-> >  drivers/cpufreq/cpufreq.c        |  2 ++
-> >  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
-> >  3 files changed, 30 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> > index a303fd0e108c..737dbf5aa7f7 100644
-> > --- a/drivers/acpi/processor_perflib.c
-> > +++ b/drivers/acpi/processor_perflib.c
-> > @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
-> >  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
-> >  		 "limited by BIOS, this should help");
-> >  
-> > +static int broadcast_ppc;
-> > +module_param(broadcast_ppc, int, 0644);
-> > +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
-> > +
-> >  #define PPC_REGISTERED   1
-> >  #define PPC_IN_USE       2
-> >  
-> > @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
-> >  		else
-> >  			acpi_processor_ppc_ost(pr->handle, 0);
-> >  	}
-> > -	if (ret >= 0)
-> > -		cpufreq_update_policy(pr->id);
-> > +	if (ret >= 0) {
-> > +		if (broadcast_ppc) {
-> > +			int cpu;
-> > +
-> > +			for_each_possible_cpu(cpu)
-> > +				cpufreq_update_policy(cpu);
-> > +		} else {
-> > +			cpufreq_update_policy(pr->id);
-> > +		}
-> > +	}
-> >  }
-> >  
-> >  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index e35a886e00bc..95e08816b512 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> >  
-> >  	policy->min = new_policy->min;
-> >  	policy->max = new_policy->max;
-> > +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
-> > +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
-> >  	trace_cpu_frequency_limits(policy);
-> >  
-> >  	policy->cached_target_freq = UINT_MAX;
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index dd66decf2087..e1881313c396 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
-> >  
-> >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
-> >  {
-> > +	int max_freq;
-> >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
-> >  
-> >  	update_turbo_state();
-> > +	max_freq = intel_pstate_get_max_freq(cpu);
-> > +
-> > +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
-> 
-> Why do have this check for policy->max here ?
->
-Thanks for looking at this change, I've replied to another email in detail of
-the scenario that, this is due to corner case that if the system boots
-with battery and plug the AC after boot up, the cpufreq max limit will not
-increase even the turbo has been enabled after the AC plugged.
+Quoting Matti Vaittinen (2019-02-13 05:29:55)
+> ROHM BD70528 is an ultra low power PMIC with similar 32K clk as
+> bd718x7. Only difference (from clk perspective) is register address.
+> Add support for controlling BD70528 clk using bd718x7 driver.
+>=20
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> ---
 
-Best,
-Yu
+Acked-by: Stephen Boyd <sboyd@kernel.org>
