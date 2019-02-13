@@ -1,90 +1,110 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH 3/3] cpufreq: imx-sc: add i.mx system controller cpufreq
- support
-Date: Wed, 13 Feb 2019 08:53:09 +0000
-Message-ID: <DB3PR0402MB391662EC01B6160C1AA9A540F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1550027011-7884-1-git-send-email-Anson.Huang@nxp.com>
- <1550027011-7884-3-git-send-email-Anson.Huang@nxp.com>
- <20190213070904.3oswrjafy6cqedsr@vireshk-i7>
- <DB3PR0402MB3916203C35D82A7667DA3A16F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+From: Erwan Velu <erwanaliasr1@gmail.com>
+Subject: [PATCH v5] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
+Date: Wed, 13 Feb 2019 09:58:35 +0100
+Message-ID: <20190213085835.4705-1-e.velu@criteo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB3PR0402MB3916203C35D82A7667DA3A16F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Aisheng Dong <aisheng.dong@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolution>
+Cc: rafael@kernel.org, Erwan Velu <e.velu@criteo.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gRnJvbTogQW5zb24gSHVhbmcNCj4gU2VudDogMjAxOcTqMtTCMTPI1SAxNjo0Nw0K
-PiBUbzogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4gQ2M6IHJvYmgr
-ZHRAa2VybmVsLm9yZzsgbWFyay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7
-DQo+IHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2
-YW1AZ21haWwuY29tOw0KPiBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJt
-LmNvbTsgcmp3QHJqd3lzb2NraS5uZXQ7DQo+IEFpc2hlbmcgRG9uZyA8YWlzaGVuZy5kb25nQG54
-cC5jb20+OyBEYW5pZWwgQmFsdXRhDQo+IDxkYW5pZWwuYmFsdXRhQG54cC5jb20+OyBBbmR5IEdy
-b3NzIDxhbmR5Lmdyb3NzQGxpbmFyby5vcmc+Ow0KPiBob3JtcytyZW5lc2FzQHZlcmdlLm5ldC5h
-dTsgaGVpa29Ac250ZWNoLmRlOyBhcm5kQGFybmRiLmRlOw0KPiBiam9ybi5hbmRlcnNzb25AbGlu
-YXJvLm9yZzsgamFnYW5AYW1hcnVsYXNvbHV0aW9ucy5jb207DQo+IGVucmljLmJhbGxldGJvQGNv
-bGxhYm9yYS5jb207IG1hcmMudy5nb256YWxlekBmcmVlLmZyOyBvbG9mQGxpeG9tLm5ldDsNCj4g
-ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
-ZWFkLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIu
-a2VybmVsLm9yZzsgZGwtbGludXgtaW14IDxsaW51eC0NCj4gaW14QG54cC5jb20+DQo+IFN1Ympl
-Y3Q6IFJFOiBbUEFUQ0ggMy8zXSBjcHVmcmVxOiBpbXgtc2M6IGFkZCBpLm14IHN5c3RlbSBjb250
-cm9sbGVyIGNwdWZyZXENCj4gc3VwcG9ydA0KPiANCj4gSGksIFZpcmVzaA0KPiANCj4gQmVzdCBS
-ZWdhcmRzIQ0KPiBBbnNvbiBIdWFuZw0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiA+IEZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1hckBsaW5hcm8ub3Jn
-XQ0KPiA+IFNlbnQ6IDIwMTnE6jLUwjEzyNUgMTU6MDkNCj4gPiBUbzogQW5zb24gSHVhbmcgPGFu
-c29uLmh1YW5nQG54cC5jb20+DQo+ID4gQ2M6IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFyay5ydXRs
-YW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+ID4gcy5oYXVlckBwZW5ndXRyb25p
-eC5kZTsga2VybmVsQHBlbmd1dHJvbml4LmRlOyBmZXN0ZXZhbUBnbWFpbC5jb207DQo+ID4gY2F0
-YWxpbi5tYXJpbmFzQGFybS5jb207IHdpbGwuZGVhY29uQGFybS5jb207IHJqd0Byand5c29ja2ku
-bmV0Ow0KPiA+IEFpc2hlbmcgRG9uZyA8YWlzaGVuZy5kb25nQG54cC5jb20+OyBEYW5pZWwgQmFs
-dXRhDQo+ID4gPGRhbmllbC5iYWx1dGFAbnhwLmNvbT47IEFuZHkgR3Jvc3MgPGFuZHkuZ3Jvc3NA
-bGluYXJvLm9yZz47DQo+ID4gaG9ybXMrcmVuZXNhc0B2ZXJnZS5uZXQuYXU7IGhlaWtvQHNudGVj
-aC5kZTsgYXJuZEBhcm5kYi5kZTsNCj4gPiBiam9ybi5hbmRlcnNzb25AbGluYXJvLm9yZzsgamFn
-YW5AYW1hcnVsYXNvbHV0aW9ucy5jb207DQo+ID4gZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNv
-bTsgbWFyYy53LmdvbnphbGV6QGZyZWUuZnI7IG9sb2ZAbGl4b20ubmV0Ow0KPiA+IGRldmljZXRy
-ZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7
-DQo+ID4gbGludXgtIGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZzsgZGwtbGludXgtaW14DQo+ID4gPGxpbnV4LSBpbXhAbnhwLmNvbT4NCj4gPiBTdWJqZWN0
-OiBSZTogW1BBVENIIDMvM10gY3B1ZnJlcTogaW14LXNjOiBhZGQgaS5teCBzeXN0ZW0gY29udHJv
-bGxlcg0KPiA+IGNwdWZyZXEgc3VwcG9ydA0KPiA+DQo+ID4gT24gMTMtMDItMTksIDAzOjA5LCBB
-bnNvbiBIdWFuZyB3cm90ZToNCj4gPiA+IE9uIE5YUCdzIGkuTVggU29DcyB3aXRoIHN5c3RlbSBj
-b250cm9sbGVyIGluc2lkZSwgQ1BVIGZyZXF1ZW5jeQ0KPiA+ID4gc2NhbGluZyBjYW4gT05MWSBi
-ZSBkb25lIGJ5IHN5c3RlbSBjb250cm9sbGVyIGZpcm13YXJlLCBhbmQgaXQgY2FuDQo+ID4gPiBP
-TkxZIGJlIHJlcXVlc3RlZCBmcm9tIHNlY3VyZSBtb2RlLCBzbyBMaW51eCBjcHVmcmVxIGRyaXZl
-ciBoYXMgdG8NCj4gPiA+IGNhbGwgQVJNIFNNQyB0byB0cmFwIHRvIEFSTS1UcnVzdGVkLUZpcm13
-YXJlIHRvIHJlcXVlc3Qgc3lzdGVtDQo+ID4gPiBjb250cm9sbGVyIGZpcm13YXJlIHRvIGRvIENQ
-VSBmcmVxdWVuY3kgc2NhbGluZy4NCj4gPiA+DQo+ID4gPiBUaGlzIHBhdGNoIGFkZHMgaS5NWCBz
-eXN0ZW0gY29udHJvbGxlciBjcHVmcmVxIGRyaXZlciBzdXBwb3J0LCB3aGVuDQo+ID4gPiBkb2lu
-ZyBDUFUgZnJlcXVlbmN5IHNjYWxpbmcsIGNwdWZyZXEgZHJpdmVyIHdpbGwgZG8gQVJNIFNNQyBj
-YWxsIGFuZA0KPiA+ID4gdHJhcCB0byBBUk0tVHJ1c3RlZC1GaXJtd2FyZSwgdGhlbiBTSVAoc2ls
-aWNvbiBwcm92aWRlcikgc2VydmljZQ0KPiA+ID4gd2lsbCBjb21tdW5pY2F0ZSB3aXRoIHN5c3Rl
-bSBjb250cm9sbGVyIGZvciBDUFUgZnJlcXVlbmN0IHNjYWxpbmcuDQo+ID4gPg0KPiA+ID4gU2ln
-bmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+ID4gPiAtLS0N
-Cj4gPiA+ICBkcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5hcm0gICAgICB8ICAgOSArKw0KPiA+ID4g
-IGRyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZSAgICAgICAgIHwgICAxICsNCj4gPiA+ICBkcml2ZXJz
-L2NwdWZyZXEvaW14LXNjLWNwdWZyZXEuYyB8IDE4Mw0KPiA+ID4gKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrDQo+ID4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAxOTMgaW5zZXJ0
-aW9ucygrKQ0KPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2NwdWZyZXEvaW14LXNj
-LWNwdWZyZXEuYw0KPiA+DQo+ID4gV2h5IGNhbid0IHlvdSB1c2UgY3B1ZnJlcS1kdCBkcml2ZXIg
-bGlrZSBldmVyeW9uZSBlbHNlID8NCj4gDQo+IEp1c3Qgbm90aWNlIHRoYXQgd2UgY2FuIG92ZXJ3
-cml0ZSB0aGUgc2V0X3RhcmdldCBpZiB1c2luZyBjcHVmcmVxLWR0LCB0aGVuIHdlDQo+IHN0aWxs
-IG5lZWQgYSBwbGF0Zm9ybSBjcHVmcmVxIGZpbGUgdG8gaW1wbGVtZW50IGFyY2hfc2V0X2ZyZXFf
-c2NhbGUoKSwgSSBjYW4NCj4gdXNlIGl0IHRvIHNhdmUgdGhlIGNvZGUgb2YgaW14IHN5c3RlbSBj
-b250cm9sbGVyIGNwdWZyZXEgZHJpdmVyLCBhbmQgQlRXLCBjYW4NCj4gY3B1ZnJlcS1kdCBzdXBw
-b3J0IG11bHRpIGNsdXN0ZXJzIGNwdWZyZXE/IEFzIGkuTVg4UU0gaGFzIDIgY2x1c3RlcnMNCj4g
-cnVubmluZyB3aXRoIGRpZmZlcmVudCBPUFBzLg0KPiANCj4gVGhhbmtzLA0KPiBBbnNvbi4NCg0K
-Rm9yZ290IHRvIG1lbnRpb24sIGkuTVggc3lzdGVtIGNvbnRyb2xsZXIgY3B1ZnJlcSBhY3R1YWxs
-eSBjYW4gTk9UIGRvIGFueSBDUFUNCmNsb2NrL3ZvbHRhZ2Ugc2NhbGluZyBmcm9tIExpbnV4IGtl
-cm5lbCwgdGhleSBhcmUgY29udHJvbGxlZCBieSBzeXN0ZW0gY29udHJvbGxlcg0KZmlybXdhcmUg
-YW5kIE9OTFkgY2FuIGJlIHJlcXVlc3RlZCB2aWEgUlBDIHdpdGggc2VjdXJlIG1vZGUsIHNvIExp
-bnV4IGtlcm5lbA0KaGFzIHRvIGNhbGwgU01DIGFuZCB0cmFwIHRvIEFSTS1UcnVzdGVkLUZpcm13
-YXJlIHRvIGRvIGl0LCBpbiB0aGlzIGNhc2UsIGlzIGNwdWZyZXEtZHQNCnN0aWxsIHN1aXRhYmxl
-IHRvIHN1cHBvcnQgaXQ/IEkgc2F3IGNwdWZyZXEtZHQgZHJpdmVyIHdpbGwgZG8gQ1BVIGNsb2Nr
-L3ZvbHRhZ2Ugc2NhbGluZw0KZGlyZWN0bHkuDQoNCkFuc29uLg0KDQo+IA0KPiA+DQo+ID4gLS0N
-Cj4gPiB2aXJlc2gNCg==
+The init code path has several exceptions where the module can decide not to load.
+As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is not reachable.
+The initialization code is neither verbose of the reason why it did choose to prematurely exit.
+
+This situation leads to a situation where its difficult for a user to determine,
+on a given platform, why the driver didn't load properly.
+
+This patch is about reporting to the user the reason/context of why the driver failed to load.
+That is a precious hint when debugging a platform.
+
+Signed-off-by: Erwan Velu <e.velu@criteo.com>
+---
+ drivers/cpufreq/intel_pstate.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index dd66decf2087..c6220261a87f 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2475,6 +2475,7 @@ static bool __init intel_pstate_no_acpi_pss(void)
+ 		kfree(pss);
+ 	}
+ 
++	pr_debug("ACPI _PSS not found\n");
+ 	return true;
+ }
+ 
+@@ -2484,10 +2485,15 @@ static bool __init intel_pstate_no_acpi_pcch(void)
+ 	acpi_handle handle;
+ 
+ 	status = acpi_get_handle(NULL, "\\_SB", &handle);
+-	if (ACPI_FAILURE(status))
++	if (ACPI_FAILURE(status)) {
++		pr_debug("ACPI _SB not found\n");
+ 		return true;
++	}
+ 
+-	return !acpi_has_method(handle, "PCCH");
++	status = acpi_has_method(handle, "PCCH");
++	if (!status)
++		pr_debug("ACPI PCCH not found\n");
++	return !status;
+ }
+ 
+ static bool __init intel_pstate_has_acpi_ppc(void)
+@@ -2502,6 +2508,7 @@ static bool __init intel_pstate_has_acpi_ppc(void)
+ 		if (acpi_has_method(pr->handle, "_PPC"))
+ 			return true;
+ 	}
++	pr_debug("ACPI _PPC not found\n");
+ 	return false;
+ }
+ 
+@@ -2539,8 +2546,10 @@ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
+ 	id = x86_match_cpu(intel_pstate_cpu_oob_ids);
+ 	if (id) {
+ 		rdmsrl(MSR_MISC_PWR_MGMT, misc_pwr);
+-		if ( misc_pwr & (1 << 8))
++		if (misc_pwr & (1 << 8)) {
++			pr_debug("MSR_MISC_PWR_MGMT enabled\n");
+ 			return true;
++		}
+ 	}
+ 
+ 	idx = acpi_match_platform_list(plat_info);
+@@ -2606,22 +2615,28 @@ static int __init intel_pstate_init(void)
+ 		}
+ 	} else {
+ 		id = x86_match_cpu(intel_pstate_cpu_ids);
+-		if (!id)
++		if (!id) {
++			pr_warn("CPU ID is not in the list of supported devices\n");
+ 			return -ENODEV;
++		}
+ 
+ 		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
+ 	}
+ 
+-	if (intel_pstate_msrs_not_valid())
++	if (intel_pstate_msrs_not_valid()) {
++		pr_warn("Cannot enable driver as per invalid MSRs\n");
+ 		return -ENODEV;
++	}
+ 
+ hwp_cpu_matched:
+ 	/*
+ 	 * The Intel pstate driver will be ignored if the platform
+ 	 * firmware has its own power management modes.
+ 	 */
+-	if (intel_pstate_platform_pwr_mgmt_exists())
++	if (intel_pstate_platform_pwr_mgmt_exists()) {
++		pr_warn("Platform already taking care of power management\n");
+ 		return -ENODEV;
++	}
+ 
+ 	if (!hwp_active && hwp_only)
+ 		return -ENOTSUPP;
+-- 
+2.20.1
