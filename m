@@ -1,97 +1,62 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 12/13] input: max77650: add onkey support
-Date: Tue, 12 Feb 2019 23:30:17 -0800
-Message-ID: <CAKdAkRQZ+ug7tpkE4x_8iTbUm9JnyF5wWrUnPRASi98t25LTbA@mail.gmail.com>
-References: <20190118134244.22253-1-brgl@bgdev.pl> <20190118134244.22253-13-brgl@bgdev.pl>
- <20190119090318.GB187380@dtor-ws> <20190212203408.GA1863@dell>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH 3/3] cpufreq: imx-sc: add i.mx system controller cpufreq
+ support
+Date: Wed, 13 Feb 2019 08:46:45 +0000
+Message-ID: <DB3PR0402MB3916203C35D82A7667DA3A16F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1550027011-7884-1-git-send-email-Anson.Huang@nxp.com>
+ <1550027011-7884-3-git-send-email-Anson.Huang@nxp.com>
+ <20190213070904.3oswrjafy6cqedsr@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190212203408.GA1863@dell>
+In-Reply-To: <20190213070904.3oswrjafy6cqedsr@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Aisheng Dong <aisheng.dong@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolution>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lee,
-
-On Tue, Feb 12, 2019 at 12:34 PM Lee Jones <lee.jones@linaro.org> wrote:
->
-> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > >
-> > > Add support for the push- and slide-button events for max77650.
-> > >
-> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > ---
-> > >  drivers/input/misc/Kconfig          |   9 ++
-> > >  drivers/input/misc/Makefile         |   1 +
-> > >  drivers/input/misc/max77650-onkey.c | 135 ++++++++++++++++++++++++++++
-> > >  3 files changed, 145 insertions(+)
-> > >  create mode 100644 drivers/input/misc/max77650-onkey.c
->
-> [...]
->
-> Moving things around a bit:
->
-> > > +static int max77650_onkey_probe(struct platform_device *pdev)
-> > > +{
->
-> > > +   irq_f = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_F);
-> > > +   if (irq_f <= 0)
-> > > +           return -EINVAL;
-> > > +
-> > > +   irq_r = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_R);
-> > > +   if (irq_r <= 0)
-> > > +           return -EINVAL;
-> >
-> > Ugh, it would be better if you handled IRQ mapping in the MFD piece and
-> > passed it as resources of platform device. Then you'd simply call
-> > platform_get_irq() here and did not have to reach into parent device for
-> > "irq_dara".
->
-> These device IRQs were defined and registered with the Regmap *set*
-> (actually init()) APIs and thus should be pulled out using the
-> appropriate reverse Regmap *get* APIs here in the device.
->
-> Registering them with Regmap *and* pulling them back out again in the
-> same (MFD in this case) driver, only to register them as platform data
-> is certainly not how I see the API being designed/used.
->
-> > > +   struct regmap_irq_chip_data *irq_data;
-> > > +   struct device *dev, *parent;
->
-> > > +   dev = &pdev->dev;
-> > > +   parent = dev->parent;
-> > > +   i2c = to_i2c_client(parent);
-> > > +   irq_data = i2c_get_clientdata(i2c);
-> > > +
-> > > +   map = dev_get_regmap(parent, NULL);
-> > > +   if (!map)
-> > > +           return -ENODEV;
->
-> However, this hoop jumping is a bit crazy and for the most part
-> superfluous.  Instead, create a struct of attributes you wish to share
-> with the child devices (containing both regmap (which you should call
-> regmap and not map by the way) and irq_data) and pass it as either
-> platform data (preferred) or as device data.
->
-> If you choose the latter, you do not need to convert from 'device' to
-> 'i2c' to do the look-up.  Since this function (probe()) is provided
-> with a platform_device, you can just use platform_get_drvdata() to
-> achieve the same as above.
->
-> If you go the preferred (platform data) route, then you should use
-> dev_get_platdata() instead.
-
-By doing what you are suggesting (introducing platform data) you
-introducing strong dependency between MFD and input piece for no
-different reason. With the current implementation the parent can be
-reworked completely without involving onkey driver.
-
-I find such clean separation desirable. We are trying to move away
-form platform data where it makes sense.
-
-Thanks.
-
--- 
-Dmitry
+SGksIFZpcmVzaA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1h
+ckBsaW5hcm8ub3JnXQ0KPiBTZW50OiAyMDE5xOoy1MIxM8jVIDE1OjA5DQo+IFRvOiBBbnNvbiBI
+dWFuZyA8YW5zb24uaHVhbmdAbnhwLmNvbT4NCj4gQ2M6IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFy
+ay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+IHMuaGF1ZXJAcGVuZ3V0
+cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21haWwuY29tOw0KPiBj
+YXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsgcmp3QHJqd3lzb2Nr
+aS5uZXQ7DQo+IEFpc2hlbmcgRG9uZyA8YWlzaGVuZy5kb25nQG54cC5jb20+OyBEYW5pZWwgQmFs
+dXRhDQo+IDxkYW5pZWwuYmFsdXRhQG54cC5jb20+OyBBbmR5IEdyb3NzIDxhbmR5Lmdyb3NzQGxp
+bmFyby5vcmc+Ow0KPiBob3JtcytyZW5lc2FzQHZlcmdlLm5ldC5hdTsgaGVpa29Ac250ZWNoLmRl
+OyBhcm5kQGFybmRiLmRlOw0KPiBiam9ybi5hbmRlcnNzb25AbGluYXJvLm9yZzsgamFnYW5AYW1h
+cnVsYXNvbHV0aW9ucy5jb207DQo+IGVucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb207IG1hcmMu
+dy5nb256YWxlekBmcmVlLmZyOyBvbG9mQGxpeG9tLm5ldDsNCj4gZGV2aWNldHJlZUB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtDQo+
+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgZGwtbGlu
+dXgtaW14IDxsaW51eC0NCj4gaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8z
+XSBjcHVmcmVxOiBpbXgtc2M6IGFkZCBpLm14IHN5c3RlbSBjb250cm9sbGVyIGNwdWZyZXENCj4g
+c3VwcG9ydA0KPiANCj4gT24gMTMtMDItMTksIDAzOjA5LCBBbnNvbiBIdWFuZyB3cm90ZToNCj4g
+PiBPbiBOWFAncyBpLk1YIFNvQ3Mgd2l0aCBzeXN0ZW0gY29udHJvbGxlciBpbnNpZGUsIENQVSBm
+cmVxdWVuY3kNCj4gPiBzY2FsaW5nIGNhbiBPTkxZIGJlIGRvbmUgYnkgc3lzdGVtIGNvbnRyb2xs
+ZXIgZmlybXdhcmUsIGFuZCBpdCBjYW4NCj4gPiBPTkxZIGJlIHJlcXVlc3RlZCBmcm9tIHNlY3Vy
+ZSBtb2RlLCBzbyBMaW51eCBjcHVmcmVxIGRyaXZlciBoYXMgdG8NCj4gPiBjYWxsIEFSTSBTTUMg
+dG8gdHJhcCB0byBBUk0tVHJ1c3RlZC1GaXJtd2FyZSB0byByZXF1ZXN0IHN5c3RlbQ0KPiA+IGNv
+bnRyb2xsZXIgZmlybXdhcmUgdG8gZG8gQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nLg0KPiA+DQo+ID4g
+VGhpcyBwYXRjaCBhZGRzIGkuTVggc3lzdGVtIGNvbnRyb2xsZXIgY3B1ZnJlcSBkcml2ZXIgc3Vw
+cG9ydCwgd2hlbg0KPiA+IGRvaW5nIENQVSBmcmVxdWVuY3kgc2NhbGluZywgY3B1ZnJlcSBkcml2
+ZXIgd2lsbCBkbyBBUk0gU01DIGNhbGwgYW5kDQo+ID4gdHJhcCB0byBBUk0tVHJ1c3RlZC1GaXJt
+d2FyZSwgdGhlbiBTSVAoc2lsaWNvbiBwcm92aWRlcikgc2VydmljZSB3aWxsDQo+ID4gY29tbXVu
+aWNhdGUgd2l0aCBzeXN0ZW0gY29udHJvbGxlciBmb3IgQ1BVIGZyZXF1ZW5jdCBzY2FsaW5nLg0K
+PiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+
+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybSAgICAgIHwgICA5ICsr
+DQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZSAgICAgICAgIHwgICAxICsNCj4gPiAgZHJp
+dmVycy9jcHVmcmVxL2lteC1zYy1jcHVmcmVxLmMgfCAxODMNCj4gPiArKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMyBmaWxlcyBjaGFuZ2VkLCAxOTMgaW5zZXJ0
+aW9ucygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9jcHVmcmVxL2lteC1zYy1j
+cHVmcmVxLmMNCj4gDQo+IFdoeSBjYW4ndCB5b3UgdXNlIGNwdWZyZXEtZHQgZHJpdmVyIGxpa2Ug
+ZXZlcnlvbmUgZWxzZSA/DQoNCkp1c3Qgbm90aWNlIHRoYXQgd2UgY2FuIG92ZXJ3cml0ZSB0aGUg
+c2V0X3RhcmdldCBpZiB1c2luZyBjcHVmcmVxLWR0LCB0aGVuIHdlIHN0aWxsDQpuZWVkIGEgcGxh
+dGZvcm0gY3B1ZnJlcSBmaWxlIHRvIGltcGxlbWVudCBhcmNoX3NldF9mcmVxX3NjYWxlKCksIEkg
+Y2FuIHVzZSBpdCB0byBzYXZlDQp0aGUgY29kZSBvZiBpbXggc3lzdGVtIGNvbnRyb2xsZXIgY3B1
+ZnJlcSBkcml2ZXIsIGFuZCBCVFcsIGNhbiBjcHVmcmVxLWR0IHN1cHBvcnQNCm11bHRpIGNsdXN0
+ZXJzIGNwdWZyZXE/IEFzIGkuTVg4UU0gaGFzIDIgY2x1c3RlcnMgcnVubmluZyB3aXRoIGRpZmZl
+cmVudCBPUFBzLg0KDQpUaGFua3MsDQpBbnNvbi4NCg0KPiANCj4gLS0NCj4gdmlyZXNoDQo=
