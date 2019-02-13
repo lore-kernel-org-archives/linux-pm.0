@@ -1,228 +1,209 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
-Date: Wed, 13 Feb 2019 11:46:30 +0100
-Message-ID: <CAMRc=Mctzwh7=gt43h3pra_SPoG8=RyKSVhe2zC3XgbjsaL56Q@mail.gmail.com>
-References: <CAMRc=MdyT7nMJ7dUTf6M3PvRdynaCurb_TftMyA4eCwzpR9fVA@mail.gmail.com>
- <20190212101835.GB20638@dell> <CAMRc=MfYeVbvY6O03xq4eLN9TVpAKWCAXPk0eP5LSBCU7VU9fA@mail.gmail.com>
- <20190212111403.GC20638@dell> <CAMpxmJWXOb1HW4QiEn8gMp3Nh05ahE0CMLXkac+hEKRjtGxTHQ@mail.gmail.com>
- <20190212132016.GA4781@dell> <20190213092553.GE1863@dell> <CAMRc=MeTMq_GWzQB6LBvts1csMftj=On5sB22jsJZzQzONxbNg@mail.gmail.com>
- <20190213095330.GF1863@dell> <CAMpxmJXqEwNtyT1ahmRd05QOjhdi0rT_-5S9Lk8O-PmV8BuA6w@mail.gmail.com>
- <20190213103946.GG1863@dell>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Wed, 13 Feb 2019 11:47:54 +0100
+Message-ID: <376d00b9-0635-539a-3106-f83baa2e15ea@partner.samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
+        <f60efa88-cf43-faed-55be-f90ce8f44f9e@partner.samsung.com>
+        <815961f8-f9c3-6d26-8811-880e4cd76cb9@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213103946.GG1863@dell>
+In-Reply-To: <815961f8-f9c3-6d26-8811-880e4cd76cb9@samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-=C5=9Br., 13 lut 2019 o 11:39 Lee Jones <lee.jones@linaro.org> napisa=C5=82=
-(a):
->
-> On Wed, 13 Feb 2019, Bartosz Golaszewski wrote:
->
-> > =C5=9Br., 13 lut 2019 o 10:53 Lee Jones <lee.jones@linaro.org> napisa=
-=C5=82(a):
-> > >
-> > > On Wed, 13 Feb 2019, Bartosz Golaszewski wrote:
-> > >
-> > > > =C5=9Br., 13 lut 2019 o 10:25 Lee Jones <lee.jones@linaro.org> napi=
-sa=C5=82(a):
-> > > > >
-> > > > > On Tue, 12 Feb 2019, Lee Jones wrote:
-> > > > >
-> > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > > > >
-> > > > > > > wt., 12 lut 2019 o 12:14 Lee Jones <lee.jones@linaro.org> nap=
-isa=C5=82(a):
-> > > > > > > >
-> > > > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > > > > > >
-> > > > > > > > > wt., 12 lut 2019 o 11:18 Lee Jones <lee.jones@linaro.org>=
- napisa=C5=82(a):
-> > > > > > > > > >
-> > > > > > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
-> > > > > > > > > >
-> > > > > > > > > > > wt., 12 lut 2019 o 10:55 Lee Jones <lee.jones@linaro.=
-org> napisa=C5=82(a):
-> > > > > > > > > > > >
-> > > > > > > > > > > >  * The declaration of a superfluous struct
-> > > > > > > > > > > >  * 100 lines of additional/avoidable code
-> > > > > > > > > > > >  * Hacky hoop jumping trying to fudge VIRQs into re=
-sources
-> > > > > > > > > > > >  * Resources were designed for HWIRQs (unless a dom=
-ain is present)
-> > > > > > > > > > > >  * Loads of additional/avoidable CPU cycles setting=
- all this up
-> > > > > > > > > > >
-> > > > > > > > > > > While the above may be right, this one is negligible =
-and you know it. :)
-> > > > > > > > > >
-> > > > > > > > > > You have nested for() loops.  You *are* wasting lots of=
- cycles.
-> > > > > > > > > >
-> > > > > > > > > > > > Need I go on? :)
-> > > > > > > > > > > >
-> > > > > > > > > > > > Surely the fact that you are using both sides of an=
- API
-> > > > > > > > > > > > (devm_regmap_init_i2c and regmap_irq_get_*) in the =
-same driver, must
-> > > > > > > > > > > > set some alarm bells ringing?
-> > > > > > > > > > > >
-> > > > > > > > > > > > This whole HWIRQ setting, VIRQ getting, resource ha=
-cking is a mess.
-> > > > > > > > > > > >
-> > > > > > > > > > > > And for what?  To avoid passing IRQ data to a child=
- driver?
-> > > > > > > > > > >
-> > > > > > > > > > > What do you propose? Should I go back to the approach=
- in v1 and pass
-> > > > > > > > > > > the regmap_irq_chip_data to child drivers?
-> > > > > > > > > >
-> > > > > > > > > > I'm saying you should remove all of this hackery and pa=
-ss IRQs as they
-> > > > > > > > > > are supposed to be passed (like everyone else does).
-> > > > > > > > >
-> > > > > > > > > I'm not sure what you mean by "like everyone else does" -=
- different
-> > > > > > > > > mfd drivers seem to be doing different things. Is a simpl=
-e struct
-> > > > > > > > > containing virtual irq numbers passed to sub-drivers fine=
-?
-> > > > > > > >
-> > > > > > > > How do you plan on deriving the VIRQs to place into the str=
-uct?
-> > > > > > >
-> > > > > > > Exampe:
-> > > > > > >
-> > > > > > > struct max77650_gpio_pdata {
-> > > > > > >     int gpi_irq;
-> > > > > > > };
-> > > > > > >
-> > > > > > > In MFD driver:
-> > > > > > >
-> > > > > > > struct max77650_gpio_pdata *gpio_data =3D devm_kmalloc(dev, s=
-izeof(*gpio_data));
-> > > > > > >
-> > > > > > > gpio_data->gpi_irq =3D regmap_irq_get_virq(irqchip_data, GPI_=
-NUM);
-> > > > > > >
-> > > > > > > gpio_cell.platform_data =3D gpio_data;
-> > > > > > >
-> > > > > > > In GPIO driver:
-> > > > > > >
-> > > > > > > struct max77650_gpio_pdata *gpio_data =3D pdev->dev.platform_=
-data;
-> > > > > > >
-> > > > > > > int irq =3D gpio_data->gpi_irq;
-> > > > > >
-> > > > > > Definitely not.  What you're trying to do is a hack.
-> > > > > >
-> > > > > > If you're using Regmap to handle your IRQs, then you should use=
- Regmap
-> > > > > > in the client to pull them out.  Setting them via Regmap, then =
-pulling
-> > > > > > them out again in the *same driver*, only to store them in plat=
-form
-> > > > > > data to be passed to a child device is bonkers.
-> > > > > >
-> > > > > > *Either* use the MFD provided platform-data helpers *or* pass a=
-nd
-> > > > > > handle them via the Regmap APIs, *not* both.
-> > > > >
-> > > > > Right, a plan has been formed.
-> > > > >
-> > > > > Hopefully this works and you can avoid all this dancing around.
-> > > > >
-> > > > > Firstly, you need to make a small change to:
-> > > > >
-> > > > >   drivers/base/regmap/regmap-irq.c
-> > > > >
-> > > > > Add the following function:
-> > > > >
-> > > > >   struct irq_domain *regmap_irq_get_domain(struct regmap *map)
-> > > >
-> > > > We already do have such function and a lot of mfd drivers actually =
-use it.
-> > >
-> > > Even better.
-> > >
-> > > > > As you can see, it will return the IRQ Domain for the chip.
-> > > > >
-> > > > > You can then pass this IRQ domain to mfd_add_devices() and it wil=
-l do
-> > > > > the HWIRQ =3D> VIRQ mapping for you on the fly.  Meaning that you=
- can
-> > > > > remove all the nastiness in max77650_setup_irqs() and have the In=
-put
-> > > > > device use the standard (e.g. platform_get_irq()) APIs.
-> > > > >
-> > > > > How does that Sound?
-> > > >
-> > > > This does sound better! Why didn't you lead with that in the first =
-place?
-> > >
-> > > I'm not even going to dignify that stupid question with a response.
-> >
-> > It's not a stupid question and you're being unnecessarily rude. As an
-> > expert in the subsystem you maintain you could have answered simply
-> > with a "this is wrong, retrieve the irq domain from the regmap
-> > irq_chip and pass it over to mfd_add_devices, the mfd core will create
-> > appropriate mappings".
->
-> Could be culture clash, but I found the question offensive which is
-> why I chose not to answer it.  The reason is actually explained below:
->
+Hi Chanwoo,
 
-It wasn't meant to be offensive. I guess when dealing with non-native
-English speakers over e-mail it's best to assume good faith.
+On 2/13/19 2:09 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
+> 
+> On 19. 2. 12. 오후 9:05, Lukasz Luba wrote:
+>> Hi Chanwoo
+>>
+>> On 2/12/19 6:46 AM, Chanwoo Choi wrote:
+>>> Hi Lukasz,
+>>>
+>>> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+>>>> This patch set changes workqueue related features in devfreq framework.
+>>>> First patch switches to delayed work instead of deferred.
+>>>> The second switches to regular system work and deletes custom 'devfreq'.
+>>>>
+>>>> Using deferred work in this context might harm the system performance.
+>>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
+>>>> utilization does not have to be connected with a particular CPU.
+>>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+>>>> They all are missing opportunity to check the HW state and react when
+>>>> the deferred work is not fired.
+>>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+>>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+>>>
+>>> The devfreq framework keeps the balancing between performance
+>>> and power-consumption. It is wrong to focus on only either
+>>> performance or power.
+>> IMO it just does not work, please see my explanation below.
+>>>
+>>> This cover-letter focus on the only performance without any power-consumption
+>>> disadvantages. It is easy to raise the performance with short sampling rate
+>>> with polling modes. To get the performance, it is good as short as possible
+>>> of period.
+>> The cover-letter mentioned about missing functionality. The interface
+>> has 'polling_ms' field, which driver developer would assume works.
+>> I have test cases where it would not be called for seconds or even
+>> never.
+>> In your driver drivers/devfreq/exynos-bus.c polling_ms = 50
+>> The driver is controlling many devices including Network-on-Chip (NOC).
+>> It is using 'simple_ondemand' governor. When it is missing opportunity
+>> to change the frequency, it can either harm the performance or power
+>> consumption, depending of the frequency the device stuck on.
+> 
+> Almost everyone knew that DVFS governor is never perfect in the linux kernel.
+> I don't want to discuss it with this too generic opinion which doesn't
+> include the real measured data.
+> 
+>>
+>>>
+>>> Sometimes, when cpu is idle, the device might require the busy state.
+>>> It is very difficult to catch the always right timing between them.
+>> I will try to address them in the next patch set.
+>>>
+>>> Also, this patch cannot prevent the unneeded wakeup from idle state.
+> 
+> Please answer this question.
+> 
+> When release the real mobile product like galaxy phone,
+> it is very important issue to remove the unneeded wakeup on idle state.
+I would say that these devfreq wake-ups are important and people thought
+that they are periodic and rely on it. Since the devfreq does not have
+trace events no one knew what is actually happening inside.
+Profiling the whole devfreq framework just for one product is not fair.
+The devfreq clients are not only mobiles, there are other type of
+embedded devices. There are embedded devices (based on TI, iMX, etc)
+which are not powered from battery and are used i.e. for streaming video
+from camera or image recognition.
+> 
+> 
+>>> Apparently, it only focuses on performance without considering
+>>> the power-consumption disadvantage. In the embedded device,
+>>> the power-consumption is very important point. We can not ignore
+>>> the side effect.
+>> Power consumption is important, but we cannot rely on randomness
+>> when we develop core features in a framework.
+> 
+> Sure, I agree that as I commented, the devfreq framework keep
+> the balancing between performance and power-consumption.
+> 
+> Instead, this patch only focus on the performance without considering
+> the power-consumption side-effect.
+Please refer to patch set v3 which tries to address battery power
+devices.
 
->  "It's only the craziness in this patch which forced me to look into how
->   Regmap handles IRQs and come up with a subsequent solution which fits
->   your use-case."
->
-> Thus the fact that a) Regmap used IRQ domains and b) the IRQ domain
-> could be fetched and reused here didn't enter my thought process until
-> I delved into the inner workings of Regmap.
->
-> Yes, I know MFD pretty well, but I only tend to deep-dive into other
-> subsystems, particularly ones as complicated as Regmap, when it's
-> necessary to do so.  Now I know a little more about it, I can provide
-> the feedback you suggest going forward.
->
-> > > > It's a pity it's not documented, I had to look at the code to find =
-out
-> > > > irq resources would get translated in mfd_add_devices() if a domain=
- is
-> > > > present.
-> > >
-> > > Where is it likely to be documented?  MFD is pretty simple and seldom
-> > > needs explanation.  A 3 second look at the API you're trying to use
-> > > (instead of blind copy & paste) would have told you that it's possibl=
-e
-> > > to take an IRQ domain as an argument.
-> > >
-> > > It's only the craziness in this patch which forced me to look into ho=
-w
-> > > Regmap handles IRQs and come up with a subsequent solution which fits
-> > > your use-case.
-> > >
-> > > > In that case - I really don't see a reason to create a superfluous
-> > > > structure to only hold the main regmap - we can very well get it fr=
-om
-> > > > the parent device in sub-drivers as I do now.
-> > >
-> > > The whole point of this solution is that you don't need to pass
-> > > anything non-standard (i.e. not provided by the current APIs) to the
-> > > child device.
-> >
-> > I don't understand what you're saying here.
->
-> I'm saying that the structure you speak of is no longer required.
->
+> 
+>>>
+>>> Always, I hope to improve the devfreq framwork more that older.
+>>> But, frankly, it is difficult to agree because it only consider
+>>> the performance without considering the side-effect.
+>>>
+>>> The power management framework always have to consider
+>>> the power-consumption issue. This point is always true.
+>> I do agree that the power vs. performance trade-off must be considered
+>> in the devfreq framework. I have developed 2 additional patches and
+> 
+> You should only mention the posted patches on mailing list.
+The patches are now posted on LKLM as v3 (after ~7h).
+Frankly, I do not understand your behavior.
+You were explicitly added on the review on Tizen kernel
+on these patches (from 21 Jan) before even discussion on LKLM
+happen. There was a few iteration and good review.
+I just wanted to say that it was verified and questions about
+power usage also appeared.
 
-Thanks for clarifying.
+Secondly, people are referring to different patches in Android
+kernel, ARM EAS kernel or like Matthias to LineageOS.
+They are even referring to some research papers or trace analyses.
+I have mentioned these patches and said that the same day they will
+be posted on LKLM (which actually happen) because they were ready.
+> 
+>> I am going to post them today (you can now check them on Tizen gerrit,
+>> change 198160).
+> 
+> It is not good to mention the some specific gerrit. I just only review
+> the patches on mailing list. First of all, please answer the question
+> on above
+I have already replayed: devfreq is broken, drivers for GPUs, buses
+cannot rely on it. Cost of a fix is in corner case: waking up CPU
+a few times per second. Result: reliable periodic callback for drivers.
+The way how it is implemented in v3 provides a tunable for driver
+developer which saves some power when the device is less utilized:
+'polling_idle_ms'.
+Thermal framework also has two polling intervals: longer when the
+temperature is lower than threshold (i.e. 1s) and shorter when the
+temperature crosses threshold (i.e. 100ms).
+Suggestion from Matthias that we could use power efficient wq
+would have to involve changes in configs and verifications on
+probably a lot of ARM platforms.
+> 
+>>
+>> We cannot simply pin the *device* load with *CPU* load or idle state.
+>> It is not an implication.
+>> The device like GPU, NoC or Dynamic Memory Controller can have
+>> completely different utilization (i.e in Exynos the GPU is connected
+>> to DDR memory through NoC and DMC).
+> 
+> In order to get the high performance, the performance of GPU depends on CPU.
+> h/w have depended on them tightly coupled. So, it is not easy to show
+> the just relationship between them. We need the comprehensive measured data
+> for both performance and power-consumption on all cases without the corner cases.
+Are you sure that the fully loaded GPU implies that all CPUs are not in
+idle? What about tasks pinned to CPU cgroups?
+I will try create some small OpenCL kernel for Odroid XU4 and verify it.
 
-Bartosz
+The current devfreq implementation is missing trace events.
+I have posted in v3 basic support. It would be a good starting point
+for measurements and analysis.
+
+Regards,
+Lukasz
+> 
+>> Some developers who use OpenCL on GPU might be interested in this
+>> improvement.>
+>> Thank you for participating in the discussion on this issue.
+>> It will need more development and iterations.
+>> In my opinion currently there is one bug in the devfreq and one missing
+>> feature to solve.
+>>
+>> Regards,
+>> Lukasz
+>>
+>>>
+>>>>
+>>>> Changes:
+>>>> v2:
+>>>> - single patch split into two
+>>>> - added cover letter
+>>>>
+>>>> link for the previous version and discussion:
+>>>> https://marc.info/?l=linux-pm&m=154904631226997&w=2
+>>>>
+>>>> Regards,
+>>>> Lukasz Luba
+>>>>
+>>>> Lukasz Luba (2):
+>>>>     drivers: devfreq: change devfreq workqueue mechanism
+>>>>     drivers: devfreq: change deferred work into delayed
+>>>>
+>>>>    drivers/devfreq/devfreq.c | 27 +++++++--------------------
+>>>>    1 file changed, 7 insertions(+), 20 deletions(-)
+>>>>
+>>>
+>>>
+>>
+>>
+> 
+> 
