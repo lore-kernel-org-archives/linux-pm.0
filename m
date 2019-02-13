@@ -1,52 +1,190 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH 3/3] cpufreq: imx-sc: add i.mx system controller cpufreq
- support
-Date: Wed, 13 Feb 2019 10:35:32 +0000
-Message-ID: <DB3PR0402MB39161A96602CBF6D38514164F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1550027011-7884-1-git-send-email-Anson.Huang@nxp.com>
- <1550027011-7884-3-git-send-email-Anson.Huang@nxp.com>
- <20190213070904.3oswrjafy6cqedsr@vireshk-i7>
- <DB3PR0402MB3916203C35D82A7667DA3A16F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <DB3PR0402MB391662EC01B6160C1AA9A540F5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <20190213101502.v75d3nfwctcks2gx@vireshk-i7>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 05/10] mfd: max77650: new core mfd driver
+Date: Wed, 13 Feb 2019 10:39:46 +0000
+Message-ID: <20190213103946.GG1863@dell>
+References: <CAMRc=MdyT7nMJ7dUTf6M3PvRdynaCurb_TftMyA4eCwzpR9fVA@mail.gmail.com>
+ <20190212101835.GB20638@dell>
+ <CAMRc=MfYeVbvY6O03xq4eLN9TVpAKWCAXPk0eP5LSBCU7VU9fA@mail.gmail.com>
+ <20190212111403.GC20638@dell>
+ <CAMpxmJWXOb1HW4QiEn8gMp3Nh05ahE0CMLXkac+hEKRjtGxTHQ@mail.gmail.com>
+ <20190212132016.GA4781@dell>
+ <20190213092553.GE1863@dell>
+ <CAMRc=MeTMq_GWzQB6LBvts1csMftj=On5sB22jsJZzQzONxbNg@mail.gmail.com>
+ <20190213095330.GF1863@dell>
+ <CAMpxmJXqEwNtyT1ahmRd05QOjhdi0rT_-5S9Lk8O-PmV8BuA6w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213101502.v75d3nfwctcks2gx@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAMpxmJXqEwNtyT1ahmRd05QOjhdi0rT_-5S9Lk8O-PmV8BuA6w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Aisheng Dong <aisheng.dong@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolution>
+To: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gRnJvbTogVmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5v
-cmddDQo+IFNlbnQ6IDIwMTnE6jLUwjEzyNUgMTg6MTUNCj4gVG86IEFuc29uIEh1YW5nIDxhbnNv
-bi5odWFuZ0BueHAuY29tPg0KPiBDYzogcm9iaCtkdEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRA
-YXJtLmNvbTsgc2hhd25ndW9Aa2VybmVsLm9yZzsNCj4gcy5oYXVlckBwZW5ndXRyb25peC5kZTsg
-a2VybmVsQHBlbmd1dHJvbml4LmRlOyBmZXN0ZXZhbUBnbWFpbC5jb207DQo+IGNhdGFsaW4ubWFy
-aW5hc0Bhcm0uY29tOyB3aWxsLmRlYWNvbkBhcm0uY29tOyByandAcmp3eXNvY2tpLm5ldDsNCj4g
-QWlzaGVuZyBEb25nIDxhaXNoZW5nLmRvbmdAbnhwLmNvbT47IERhbmllbCBCYWx1dGENCj4gPGRh
-bmllbC5iYWx1dGFAbnhwLmNvbT47IEFuZHkgR3Jvc3MgPGFuZHkuZ3Jvc3NAbGluYXJvLm9yZz47
-DQo+IGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1OyBoZWlrb0BzbnRlY2guZGU7IGFybmRAYXJu
-ZGIuZGU7DQo+IGJqb3JuLmFuZGVyc3NvbkBsaW5hcm8ub3JnOyBqYWdhbkBhbWFydWxhc29sdXRp
-b25zLmNvbTsNCj4gZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsgbWFyYy53LmdvbnphbGV6
-QGZyZWUuZnI7IG9sb2ZAbGl4b20ubmV0Ow0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsg
-bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC0NCj4ga2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBkbC1saW51eC1pbXggPGxp
-bnV4LQ0KPiBpbXhAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzNdIGNwdWZyZXE6
-IGlteC1zYzogYWRkIGkubXggc3lzdGVtIGNvbnRyb2xsZXIgY3B1ZnJlcQ0KPiBzdXBwb3J0DQo+
-IA0KPiBPbiAxMy0wMi0xOSwgMDg6NTMsIEFuc29uIEh1YW5nIHdyb3RlOg0KPiA+IEZvcmdvdCB0
-byBtZW50aW9uLCBpLk1YIHN5c3RlbSBjb250cm9sbGVyIGNwdWZyZXEgYWN0dWFsbHkgY2FuIE5P
-VCBkbw0KPiA+IGFueSBDUFUgY2xvY2svdm9sdGFnZSBzY2FsaW5nIGZyb20gTGludXgga2VybmVs
-LCB0aGV5IGFyZSBjb250cm9sbGVkDQo+ID4gYnkgc3lzdGVtIGNvbnRyb2xsZXIgZmlybXdhcmUg
-YW5kIE9OTFkgY2FuIGJlIHJlcXVlc3RlZCB2aWEgUlBDIHdpdGgNCj4gPiBzZWN1cmUgbW9kZSwg
-c28gTGludXgga2VybmVsIGhhcyB0byBjYWxsIFNNQyBhbmQgdHJhcCB0bw0KPiA+IEFSTS1UcnVz
-dGVkLUZpcm13YXJlIHRvIGRvIGl0LCBpbiB0aGlzIGNhc2UsIGlzIGNwdWZyZXEtZHQgc3RpbGwN
-Cj4gPiBzdWl0YWJsZSB0byBzdXBwb3J0IGl0PyBJIHNhdyBjcHVmcmVxLWR0IGRyaXZlciB3aWxs
-IGRvIENQVSBjbG9jay92b2x0YWdlDQo+IHNjYWxpbmcgZGlyZWN0bHkuDQo+IA0KPiBXaGF0IGFi
-b3V0IG1vdmluZyB0aG9zZSBTTUMgY2FsbHMgdG8gdGhlIGNsay1kcml2ZXIsIHRoZW4gaXQgd291
-bGRuJ3QgbWF0dGVyDQo+IHRvIHRoZSBjcHVmcmVxIGRyaXZlciBvbiBob3cgdGhlIGNsb2NrIGlz
-IGdldHRpbmcgY2hhbmdlZC4NCg0KT0ssIHRoYW5rcywgSSB3aWxsIGhhdmUgYSB0cnkgYW5kIHJl
-c2VuZCB0aGUgcGF0Y2guDQoNCkFuc29uLg0KDQo+IA0KPiAtLQ0KPiB2aXJlc2gNCg==
+On Wed, 13 Feb 2019, Bartosz Golaszewski wrote:
+
+> śr., 13 lut 2019 o 10:53 Lee Jones <lee.jones@linaro.org> napisał(a):
+> >
+> > On Wed, 13 Feb 2019, Bartosz Golaszewski wrote:
+> >
+> > > śr., 13 lut 2019 o 10:25 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > >
+> > > > On Tue, 12 Feb 2019, Lee Jones wrote:
+> > > >
+> > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> > > > >
+> > > > > > wt., 12 lut 2019 o 12:14 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > > > > >
+> > > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> > > > > > >
+> > > > > > > > wt., 12 lut 2019 o 11:18 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > > > > > > >
+> > > > > > > > > On Tue, 12 Feb 2019, Bartosz Golaszewski wrote:
+> > > > > > > > >
+> > > > > > > > > > wt., 12 lut 2019 o 10:55 Lee Jones <lee.jones@linaro.org> napisał(a):
+> > > > > > > > > > >
+> > > > > > > > > > >  * The declaration of a superfluous struct
+> > > > > > > > > > >  * 100 lines of additional/avoidable code
+> > > > > > > > > > >  * Hacky hoop jumping trying to fudge VIRQs into resources
+> > > > > > > > > > >  * Resources were designed for HWIRQs (unless a domain is present)
+> > > > > > > > > > >  * Loads of additional/avoidable CPU cycles setting all this up
+> > > > > > > > > >
+> > > > > > > > > > While the above may be right, this one is negligible and you know it. :)
+> > > > > > > > >
+> > > > > > > > > You have nested for() loops.  You *are* wasting lots of cycles.
+> > > > > > > > >
+> > > > > > > > > > > Need I go on? :)
+> > > > > > > > > > >
+> > > > > > > > > > > Surely the fact that you are using both sides of an API
+> > > > > > > > > > > (devm_regmap_init_i2c and regmap_irq_get_*) in the same driver, must
+> > > > > > > > > > > set some alarm bells ringing?
+> > > > > > > > > > >
+> > > > > > > > > > > This whole HWIRQ setting, VIRQ getting, resource hacking is a mess.
+> > > > > > > > > > >
+> > > > > > > > > > > And for what?  To avoid passing IRQ data to a child driver?
+> > > > > > > > > >
+> > > > > > > > > > What do you propose? Should I go back to the approach in v1 and pass
+> > > > > > > > > > the regmap_irq_chip_data to child drivers?
+> > > > > > > > >
+> > > > > > > > > I'm saying you should remove all of this hackery and pass IRQs as they
+> > > > > > > > > are supposed to be passed (like everyone else does).
+> > > > > > > >
+> > > > > > > > I'm not sure what you mean by "like everyone else does" - different
+> > > > > > > > mfd drivers seem to be doing different things. Is a simple struct
+> > > > > > > > containing virtual irq numbers passed to sub-drivers fine?
+> > > > > > >
+> > > > > > > How do you plan on deriving the VIRQs to place into the struct?
+> > > > > >
+> > > > > > Exampe:
+> > > > > >
+> > > > > > struct max77650_gpio_pdata {
+> > > > > >     int gpi_irq;
+> > > > > > };
+> > > > > >
+> > > > > > In MFD driver:
+> > > > > >
+> > > > > > struct max77650_gpio_pdata *gpio_data = devm_kmalloc(dev, sizeof(*gpio_data));
+> > > > > >
+> > > > > > gpio_data->gpi_irq = regmap_irq_get_virq(irqchip_data, GPI_NUM);
+> > > > > >
+> > > > > > gpio_cell.platform_data = gpio_data;
+> > > > > >
+> > > > > > In GPIO driver:
+> > > > > >
+> > > > > > struct max77650_gpio_pdata *gpio_data = pdev->dev.platform_data;
+> > > > > >
+> > > > > > int irq = gpio_data->gpi_irq;
+> > > > >
+> > > > > Definitely not.  What you're trying to do is a hack.
+> > > > >
+> > > > > If you're using Regmap to handle your IRQs, then you should use Regmap
+> > > > > in the client to pull them out.  Setting them via Regmap, then pulling
+> > > > > them out again in the *same driver*, only to store them in platform
+> > > > > data to be passed to a child device is bonkers.
+> > > > >
+> > > > > *Either* use the MFD provided platform-data helpers *or* pass and
+> > > > > handle them via the Regmap APIs, *not* both.
+> > > >
+> > > > Right, a plan has been formed.
+> > > >
+> > > > Hopefully this works and you can avoid all this dancing around.
+> > > >
+> > > > Firstly, you need to make a small change to:
+> > > >
+> > > >   drivers/base/regmap/regmap-irq.c
+> > > >
+> > > > Add the following function:
+> > > >
+> > > >   struct irq_domain *regmap_irq_get_domain(struct regmap *map)
+> > >
+> > > We already do have such function and a lot of mfd drivers actually use it.
+> >
+> > Even better.
+> >
+> > > > As you can see, it will return the IRQ Domain for the chip.
+> > > >
+> > > > You can then pass this IRQ domain to mfd_add_devices() and it will do
+> > > > the HWIRQ => VIRQ mapping for you on the fly.  Meaning that you can
+> > > > remove all the nastiness in max77650_setup_irqs() and have the Input
+> > > > device use the standard (e.g. platform_get_irq()) APIs.
+> > > >
+> > > > How does that Sound?
+> > >
+> > > This does sound better! Why didn't you lead with that in the first place?
+> >
+> > I'm not even going to dignify that stupid question with a response.
+> 
+> It's not a stupid question and you're being unnecessarily rude. As an
+> expert in the subsystem you maintain you could have answered simply
+> with a "this is wrong, retrieve the irq domain from the regmap
+> irq_chip and pass it over to mfd_add_devices, the mfd core will create
+> appropriate mappings".
+
+Could be culture clash, but I found the question offensive which is
+why I chose not to answer it.  The reason is actually explained below:
+
+ "It's only the craziness in this patch which forced me to look into how
+  Regmap handles IRQs and come up with a subsequent solution which fits
+  your use-case."
+
+Thus the fact that a) Regmap used IRQ domains and b) the IRQ domain
+could be fetched and reused here didn't enter my thought process until
+I delved into the inner workings of Regmap.
+
+Yes, I know MFD pretty well, but I only tend to deep-dive into other
+subsystems, particularly ones as complicated as Regmap, when it's
+necessary to do so.  Now I know a little more about it, I can provide
+the feedback you suggest going forward.
+
+> > > It's a pity it's not documented, I had to look at the code to find out
+> > > irq resources would get translated in mfd_add_devices() if a domain is
+> > > present.
+> >
+> > Where is it likely to be documented?  MFD is pretty simple and seldom
+> > needs explanation.  A 3 second look at the API you're trying to use
+> > (instead of blind copy & paste) would have told you that it's possible
+> > to take an IRQ domain as an argument.
+> >
+> > It's only the craziness in this patch which forced me to look into how
+> > Regmap handles IRQs and come up with a subsequent solution which fits
+> > your use-case.
+> >
+> > > In that case - I really don't see a reason to create a superfluous
+> > > structure to only hold the main regmap - we can very well get it from
+> > > the parent device in sub-drivers as I do now.
+> >
+> > The whole point of this solution is that you don't need to pass
+> > anything non-standard (i.e. not provided by the current APIs) to the
+> > child device.
+> 
+> I don't understand what you're saying here.
+
+I'm saying that the structure you speak of is no longer required.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
