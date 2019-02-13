@@ -1,110 +1,92 @@
-From: Erwan Velu <erwanaliasr1@gmail.com>
-Subject: [PATCH v5] cpufreq: intel_pstate: Reporting reasons why driver prematurely exit
-Date: Wed, 13 Feb 2019 09:58:35 +0100
-Message-ID: <20190213085835.4705-1-e.velu@criteo.com>
+From: Erwan Velu <e.velu@criteo.com>
+Subject: Re: [PATCH v4] cpufreq: intel_pstate: Reporting reasons why driver
+ prematurely exit
+Date: Wed, 13 Feb 2019 08:50:14 +0000
+Message-ID: <a2f4128c-54cc-44b3-d615-977e9ed37d07@criteo.com>
+References: <20190212070839.25981-1-e.velu@criteo.com>
+ <CAJZ5v0i4PFWQ5fMZ8Rh3jgu22=Me1+ArOwVW333BWa4z54Lqbg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0i4PFWQ5fMZ8Rh3jgu22=Me1+ArOwVW333BWa4z54Lqbg@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <5B14B9071893594AAF66184801B998D8@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: rafael@kernel.org, Erwan Velu <e.velu@criteo.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Erwan Velu <erwanaliasr1@gmail.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The init code path has several exceptions where the module can decide not to load.
-As CONFIG_X86_INTEL_PSTATE is generally set to Y, the return code is not reachable.
-The initialization code is neither verbose of the reason why it did choose to prematurely exit.
-
-This situation leads to a situation where its difficult for a user to determine,
-on a given platform, why the driver didn't load properly.
-
-This patch is about reporting to the user the reason/context of why the driver failed to load.
-That is a precious hint when debugging a platform.
-
-Signed-off-by: Erwan Velu <e.velu@criteo.com>
----
- drivers/cpufreq/intel_pstate.c | 27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index dd66decf2087..c6220261a87f 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2475,6 +2475,7 @@ static bool __init intel_pstate_no_acpi_pss(void)
- 		kfree(pss);
- 	}
- 
-+	pr_debug("ACPI _PSS not found\n");
- 	return true;
- }
- 
-@@ -2484,10 +2485,15 @@ static bool __init intel_pstate_no_acpi_pcch(void)
- 	acpi_handle handle;
- 
- 	status = acpi_get_handle(NULL, "\\_SB", &handle);
--	if (ACPI_FAILURE(status))
-+	if (ACPI_FAILURE(status)) {
-+		pr_debug("ACPI _SB not found\n");
- 		return true;
-+	}
- 
--	return !acpi_has_method(handle, "PCCH");
-+	status = acpi_has_method(handle, "PCCH");
-+	if (!status)
-+		pr_debug("ACPI PCCH not found\n");
-+	return !status;
- }
- 
- static bool __init intel_pstate_has_acpi_ppc(void)
-@@ -2502,6 +2508,7 @@ static bool __init intel_pstate_has_acpi_ppc(void)
- 		if (acpi_has_method(pr->handle, "_PPC"))
- 			return true;
- 	}
-+	pr_debug("ACPI _PPC not found\n");
- 	return false;
- }
- 
-@@ -2539,8 +2546,10 @@ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
- 	id = x86_match_cpu(intel_pstate_cpu_oob_ids);
- 	if (id) {
- 		rdmsrl(MSR_MISC_PWR_MGMT, misc_pwr);
--		if ( misc_pwr & (1 << 8))
-+		if (misc_pwr & (1 << 8)) {
-+			pr_debug("MSR_MISC_PWR_MGMT enabled\n");
- 			return true;
-+		}
- 	}
- 
- 	idx = acpi_match_platform_list(plat_info);
-@@ -2606,22 +2615,28 @@ static int __init intel_pstate_init(void)
- 		}
- 	} else {
- 		id = x86_match_cpu(intel_pstate_cpu_ids);
--		if (!id)
-+		if (!id) {
-+			pr_warn("CPU ID is not in the list of supported devices\n");
- 			return -ENODEV;
-+		}
- 
- 		copy_cpu_funcs((struct pstate_funcs *)id->driver_data);
- 	}
- 
--	if (intel_pstate_msrs_not_valid())
-+	if (intel_pstate_msrs_not_valid()) {
-+		pr_warn("Cannot enable driver as per invalid MSRs\n");
- 		return -ENODEV;
-+	}
- 
- hwp_cpu_matched:
- 	/*
- 	 * The Intel pstate driver will be ignored if the platform
- 	 * firmware has its own power management modes.
- 	 */
--	if (intel_pstate_platform_pwr_mgmt_exists())
-+	if (intel_pstate_platform_pwr_mgmt_exists()) {
-+		pr_warn("Platform already taking care of power management\n");
- 		return -ENODEV;
-+	}
- 
- 	if (!hwp_active && hwp_only)
- 		return -ENOTSUPP;
--- 
-2.20.1
+DQpMZSAxMy8wMi8yMDE5IMOgIDAwOjAxLCBSYWZhZWwgSi4gV3lzb2NraSBhIMOpY3JpdMKgOg0K
+Wy4uLl0NCj4gTmV3bGluZSBjaGFyYWN0ZXJzIGFyZSBtaXNzaW5nIGluIGFsbCBvZiB5b3VyIG1l
+c3NhZ2VzLg0KDQpvb3BzLiBGaXhpbmcgdGhpcy4NCg0KPiAiQUNQSSBfUFNTIG5vdCBmb3VuZFxu
+Ig0KDQpEb25lLg0KDQoNCj4+ICAgICAgICAgIHJldHVybiB0cnVlOw0KPj4gICB9DQo+Pg0KPj4g
+QEAgLTI0ODQsMTAgKzI0ODUsMTUgQEAgc3RhdGljIGJvb2wgX19pbml0IGludGVsX3BzdGF0ZV9u
+b19hY3BpX3BjY2godm9pZCkNCj4+ICAgICAgICAgIGFjcGlfaGFuZGxlIGhhbmRsZTsNCj4+DQo+
+PiAgICAgICAgICBzdGF0dXMgPSBhY3BpX2dldF9oYW5kbGUoTlVMTCwgIlxcX1NCIiwgJmhhbmRs
+ZSk7DQo+PiAtICAgICAgIGlmIChBQ1BJX0ZBSUxVUkUoc3RhdHVzKSkNCj4+ICsgICAgICAgaWYg
+KEFDUElfRkFJTFVSRShzdGF0dXMpKSB7DQo+PiArICAgICAgICAgICAgICAgcHJfZGVidWcoIkNh
+bm5vdCBkZXRlY3QgQUNQSSBTQiIpOw0KPiBUaGlzIGlzIHZlcnkgdW5saWtlbHkgdG8gaGFwcGVu
+LCBJIHdvdWxkbid0IGJvdGhlciB0byBwcmludCBhbnl0aGluZyBoZXJlLg0KDQpBcyB0aGlzIGlz
+IHRlc3QgaXMgbWFkZSwgaXQgbWVhbnMgc29tZW9uZSBjb25zaWRlcmVkIHRoYXQgY2FzZSBjb3Vs
+ZCBleGlzdC4NCg0KVGhhdCdzIHdoeSBhIGFkZGVkIGEgbWVzc2FnZSB0byBjYXRjaCB0aGlzIGNh
+c2Ugd2hpbGUgZGVidWdnaW5nLg0KDQpJIGRvIGFncmVlIHRoYXQgaXMgbm90IHZlcnkgbGlrZWx5
+Lg0KDQo+DQo+PiAgICAgICAgICAgICAgICAgIHJldHVybiB0cnVlOw0KPj4gKyAgICAgICB9DQo+
+Pg0KPj4gLSAgICAgICByZXR1cm4gIWFjcGlfaGFzX21ldGhvZChoYW5kbGUsICJQQ0NIIik7DQo+
+PiArICAgICAgIHN0YXR1cyA9IGFjcGlfaGFzX21ldGhvZChoYW5kbGUsICJQQ0NIIik7DQo+PiAr
+ICAgICAgIGlmICghc3RhdHVzKQ0KPj4gKyAgICAgICAgICAgICAgIHByX2RlYnVnKCJDYW5ub3Qg
+ZGV0ZWN0IEFDUEkgUENDSCIpOw0KPiBUaGlzIG1lc3NhZ2UgY2FuIGJlIHByaW50ZWQgYnkgdGhl
+IGNhbGxlciBhbmQsIGFnYWluLCBJIHdvdWxkIHByZWZlcg0KPiBzb21ldGhpbmcgbGlrZSAiQUNQ
+SSBQQ0NIIG5vdCBmb3VuZCIuDQpGaXhlZCB0b28uDQoNClsuLl0NCj4gIkFDUEkgX1BQQyBub3Qg
+Zm91bmRcbiINCmZpeGVkLg0KPj4gICAgICAgICAgcmV0dXJuIGZhbHNlOw0KPj4gICB9DQo+Pg0K
+Pj4gQEAgLTI1MzksOCArMjU0NiwxMCBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRl
+X3BsYXRmb3JtX3B3cl9tZ210X2V4aXN0cyh2b2lkKQ0KPj4gICAgICAgICAgaWQgPSB4ODZfbWF0
+Y2hfY3B1KGludGVsX3BzdGF0ZV9jcHVfb29iX2lkcyk7DQo+PiAgICAgICAgICBpZiAoaWQpIHsN
+Cj4+ICAgICAgICAgICAgICAgICAgcmRtc3JsKE1TUl9NSVNDX1BXUl9NR01ULCBtaXNjX3B3cik7
+DQo+PiAtICAgICAgICAgICAgICAgaWYgKCBtaXNjX3B3ciAmICgxIDw8IDgpKQ0KPj4gKyAgICAg
+ICAgICAgICAgIGlmIChtaXNjX3B3ciAmICgxIDw8IDgpKSB7DQo+PiArICAgICAgICAgICAgICAg
+ICAgICAgICBwcl9kZWJ1ZygiTVNSX01JU0NfUFdSX01HTVQgcmVwb3J0cyBlbmFibGVkIEhXIGNv
+b3JkaW5hdGlvbiIpOw0KPiBJSVJDIHRoaXMgbWVhbnMgdGhhdCB0aGUgcGxhdGZvcm0gaXMgbWFu
+YWdpbmcgUC1zdGF0ZXMgb24gc3lzdGVtcw0KPiB3aXRob3V0IEhXUCwgc28gSSB3b3VsZCBwcmlu
+dCBzb21ldGhpbmcgbGlrZSAiUC1zdGF0ZXMgbWFuYWdlZCBieSB0aGUNCj4gcGxhdGZvcm1cbiIu
+DQoNClRoYXQncyB3aGF0IHRoZSBjYWxsZXIgcmVwb3J0cy4NCg0KSSBhZGRlZCB0aGlzIGFkZGl0
+aW9uYWwgbWVzc2FnZSBiZWNhdXNlIHRoaXMgZnVuY3Rpb24gYWRkZWQgYXMgc3BlY2lhbCANCmNh
+c2UgZm9yIHRoaXMgTVNSIHNldHRpbmcuDQoNCmlmIGludGVsX3BzdGF0ZV9wbGF0Zm9ybV9wd3Jf
+bWdtdF9leGlzdHMoKSBpcyB0cnVlLCB0aGF0J3MgbmljZSB0byBrbm93IA0Kd2h5IHdoZW4gZGVi
+dWdnaW5nLg0KDQo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHRydWU7DQo+PiAr
+ICAgICAgICAgICAgICAgfQ0KPj4gICAgICAgICAgfQ0KPj4NCj4+ICAgICAgICAgIGlkeCA9IGFj
+cGlfbWF0Y2hfcGxhdGZvcm1fbGlzdChwbGF0X2luZm8pOw0KPj4gQEAgLTI2MDYsMjIgKzI2MTUs
+MjggQEAgc3RhdGljIGludCBfX2luaXQgaW50ZWxfcHN0YXRlX2luaXQodm9pZCkNCj4+ICAgICAg
+ICAgICAgICAgICAgfQ0KPj4gICAgICAgICAgfSBlbHNlIHsNCj4+ICAgICAgICAgICAgICAgICAg
+aWQgPSB4ODZfbWF0Y2hfY3B1KGludGVsX3BzdGF0ZV9jcHVfaWRzKTsNCj4+IC0gICAgICAgICAg
+ICAgICBpZiAoIWlkKQ0KPj4gKyAgICAgICAgICAgICAgIGlmICghaWQpIHsNCj4+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIHByX3dhcm4oIkNQVSBJRCBpcyBub3QgaW4gdGhlIGxpc3Qgb2Ygc3Vw
+cG9ydGVkIGRldmljZXNcbiIpOw0KPiBXaHkgbm90IHByX2RlYnVnKCk/DQo+DQo+IEFuZCBhbmFs
+b2dvdXNseSBiZWxvdz8NCg0KSSdtIGNvbWluZyBmcm9tIGEgdXNlIGNhc2Ugd2hlcmUgb24gdGhl
+IHNhbWUgaGFyZHdhcmUsIGNoYW5naW5nIHRoZSANCmtlcm5lbCBjaGFuZ2VkIHRoZSBwZXJmb3Jt
+YW5jZSBwcm9maWxlIGFuZCBpbXBhY3RlZCB1c2VyJ3MgcGVyZm9ybWFuY2UuDQoNCkkgaGFkIHRv
+IGRlYnVnIHRoaXMgY2FzZSBmcm9tIGEgcnVubmluZyBzZXJ2ZXIuDQoNCiBGcm9tIHRoZSBkbWVz
+Zywgb25lIG9mIHRoZSBkaWZmZXJlbmNlIEkgc2F3IHdhcyBhYm91dCB0aGUgDQptaXNzaW5nwqAi
+SW50ZWwgUC1zdGF0ZSBkcml2ZXIgaW5pdGlhbGl6aW5nIiBtZXNzYWdlLCBidXQgbm90aGluZyBl
+bHNlLg0KDQpUaGUgcmVhc29uIHdoeSB0aGUgZHJpdmVyIGRpZG4ndCBlbmdhZ2VkIGl0c2VsZiB3
+YXNuJ3QgZXhwbGljaXQuDQoNCkFzIENPTkZJR19YODZfSU5URUxfUFNUQVRFIGlzIHNldCB0byBZ
+IGJ5IGRlZmF1bHQsIEkgd2Fzbid0IGVuYWJsZSB0byANCnJlbG9hZCBpdCBpbiBhbnkgd2F5Lg0K
+DQpCeSByZWFkaW5nIHRoZSBjb2RlLCBtb3N0IG9mIHRoZSBjb2RlIHBhdGggYW5kIHJldHVybiBv
+cHRpb25zIGRvZXNuJ3QgDQpoYXZlIGEgc2luZ2xlIHByXzxzb21ldGhpbmc+IGNhbGwgdG8gZXhw
+bGFpbiB3aHkuDQoNClNvIEkgaGFkIHRvIHJlYnVpbGQgdGhlIGtlcm5lbCArIG15IHBhdGNoIHRv
+IHVuZGVyc3RhbmQgd2hpY2ggcGF0aCB3YXMgDQp0YWtlbiBhbmQgdGhlbiBmaW5kIHRoZSByb290
+IGNhdXNlIG9mIHdoeSB0aGUgcHN0YXRlIGJlaGF2aW9yIGNoYW5nZWQuDQoNCkkgd2FudGVkIHRv
+IGNvbnRyaWJ1dGUgYmFjayBteSBleHBlcmllbmNlIGhlcmUgYnkgcHJvdmlkaW5nIG1lc3NhZ2Vz
+IHRvIA0KZWFzZSB0aGUgdW5kZXJzdGFuZGluZyBhbmQgcG90ZW50aWFsbHkgZGVidWdnaW5nIG9m
+IHRoZSBkcml2ZXIgd2l0aG91dCANCnJlY29tcGlsaW5nIGl0Lg0KDQoNClNvIHRoZSByb290IG9m
+IHRoaXMgcGF0Y2ggaXMgYmVpbmcgYWJsZSB0byByZXBvcnQgdGhlIG1haW4gcmVhc29ucyBvZiAN
+CndoeSB0aGUgZHJpdmVyIGRpZG4ndCBlbmdhZ2VkIGl0c2VsZiB3aXRoIGEgcHJfd2FybiAoY291
+bGQgYmUgYWxzbyBhIA0KcHJfaW5mbykuDQoNCkFsbCB0aGUgbWFqb3IgYW5kIHByb2JhYmxlICJy
+ZXR1cm4gLUVOT0RFViIgY2FsbHMgYmVmb3JlIHByX2luZm8oIkludGVsIA0KUC1zdGF0ZSBkcml2
+ZXIgaW5pdGlhbGl6aW5nXG4iKSBkZXNlcnZlcyB0byBiZSBleHBsaWNpdCBhbmQgcmVhY2hhYmxl
+IG9uIA0KZG1lc2cgZm9yIHRoZSBvcGVyYXRvcnMuDQoNCkknbSBvcGVyYXRpbmcgMzBLKyBzZXJ2
+ZXJzIGFuZCBoYXZpbmcgdGhpcyBraW5kIGRpcmVjdCBpbmZvcm1hdGlvbiB3b3VsZCANCnNhdmUg
+c2VyaW91cyB0aW1lIHdoZW4gZGVidWdnaW5nIHRoaXMgc2l0dWF0aW9ucy4NCg0KSWYgbXkgZXhw
+ZXJpZW5jZSBpbiB0aGF0IGFyZWEgY291bGQgaGVscCBvdGhlciB1c2VycywgSSdkIGJlIGhhcHB5
+Lg0KDQoNCkknbSBwb3NpdGluZyBhIHY1IHdpdGggYWxsIHRob3NlIGNoYW5nZXMuDQoNClRoYW5r
+cyBmb3IgdGhlIHJldmlldy4NCg0KDQpFcndhbiwNCg0K
