@@ -1,220 +1,210 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
- mechanism
-Date: Wed, 13 Feb 2019 14:00:26 +0100
-Message-ID: <90bbff25-1c9c-127c-13a7-91a5f4fe666e@partner.samsung.com>
-References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
-        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
-        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
-        <20190212193229.GT117604@google.com>
-        <1356584e-1812-6768-72af-931c07d925a8@partner.samsung.com>
-        <20190213003044.GV117604@google.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: [PATCH v9 0/8] support ROHM BD70528 PMIC
+Date: Wed, 13 Feb 2019 15:27:54 +0200
+Message-ID: <cover.1550063882.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213003044.GV117604@google.com>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: matti.vaittinen@fi.rohmeurope.com, mazziesaccount@gmail.com
+Cc: Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, bogdan-petru.chircu-mare@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Patch series introducing support for ROHM BD70528 PMIC
 
-On 2/13/19 1:30 AM, Matthias Kaehlcke wrote:
-> Hi Lukasz,
-> 
-> On Tue, Feb 12, 2019 at 10:20:07PM +0100, Lukasz Luba wrote:
->> Hi Matthias,
->>
->> On 2/12/19 8:32 PM, Matthias Kaehlcke wrote:
->>> Hi,
->>>
->>> On Tue, Feb 12, 2019 at 02:46:24PM +0900, Chanwoo Choi wrote:
->>>> Hi Lukasz,
->>>>
->>>> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
->>>>> This patch set changes workqueue related features in devfreq framework.
->>>>> First patch switches to delayed work instead of deferred.
->>>>> The second switches to regular system work and deletes custom 'devfreq'.
->>>>>
->>>>> Using deferred work in this context might harm the system performance.
->>>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
->>>>> utilization does not have to be connected with a particular CPU.
->>>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
->>>>> They all are missing opportunity to check the HW state and react when
->>>>> the deferred work is not fired.
->>>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
->>>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
->>>>
->>>> The devfreq framework keeps the balancing between performance
->>>> and power-consumption. It is wrong to focus on only either
->>>> performance or power.
->>>>
->>>> This cover-letter focus on the only performance without any power-consumption
->>>> disadvantages. It is easy to raise the performance with short sampling rate
->>>> with polling modes. To get the performance, it is good as short as possible
->>>> of period.
->>>>
->>>> Sometimes, when cpu is idle, the device might require the busy state.
->>>> It is very difficult to catch the always right timing between them.
->>>>
->>>> Also, this patch cannot prevent the unneeded wakeup from idle state.
->>>> Apparently, it only focuses on performance without considering
->>>> the power-consumption disadvantage. In the embedded device,
->>>> the power-consumption is very important point. We can not ignore
->>>> the side effect.
->>>>
->>>> Always, I hope to improve the devfreq framwork more that older.
->>>> But, frankly, it is difficult to agree because it only consider
->>>> the performance without considering the side-effect.
->>>>
->>>> The power management framework always have to consider
->>>> the power-consumption issue. This point is always true.
->>>
->>> I missed the impact of forcing a CPU out of an idle state and/or not
->>> allowing it to enter a more power efficient state. I agree that this
->>> should be avoided.
->> It would be good to have some real world scenarios for comparison:
->> w/ and w/o this change, i.e. it is 5% or 50% more power used.
-> 
-> If you have data please share :)
-I will try to measure it. I have some data which refer to CPU hotplug
-and generic data regarding ARM big.LITTLE.
-It is a mobile on my desk.
-When one CPU of ARM big is sent offline power drops ~12mW comparing
-to WFI idle which was previous state. The same for LITTLE ~12mW.
-When the last CPU in the cluster is sent offline, whole culster
-is switched off and power drops ~50mW.
-The LITTLE core can consume ~250mW at max speed.
-Energy Aware Scheduler is now merged IIRC, so if it has to choose
-which core wake up for idle, it will take LITTLE not big.
-For older platforms which has Cortex-A9 500mW is also better estimation.
+ROHM BD70528 is a programmable Power Management IC for battery
+powered 'ultra low power' systems like the pre-announced NXP
+i.MX7 ULP. This patch series introduces support for the PMIC. Please
+note that this driver only supports HW setup where PMIC is connected
+to I2C on A7 core. The other scenario is to use M4 as a power manager
+and connect pmic to M4. On such setups the A7 can only access pmic
+via M4 core using RPMSG virtio. Such setup depends on RPMSG
+implementation on M4 core and is currently not supported by this
+patch series.
 
-> 
-> Though I also imagine there will be quite some variation between
-> different systems/platforms.
-True.
-> 
->> I have patches that tries to mitigate wake-ups when there is small
->> utilization. Let's make it tunable and involve driver developers.
->> They will decide how much impact on the system power usage they
->> introduce.
-> 
-> Great!
-> 
->>> I wonder if using a power-efficient workqueue could help here:
->>>
->>>     Instead of running work on the local CPU, the workqueue core asks the
->>>     scheduler to provide the target CPU for the work queued on unbound
->>>     workqueues (which includes those marked as power-efficient). So they
->>>     will not get pinned on a single CPU as can happen with regular
->>>     workqueues.
->>>
->>>     https://lwn.net/Articles/731052/
->>>
->>>
->>> Since this series also changes from a custom to system workqueue it
->>> seems worth to mention that there are power-efficient system workqueues:
->>>
->>> system_power_efficient_wq
->>> system_freezable_power_efficient_wq
->>>
->>>
->>> In case a power-efficient workqueue is suitable in principle there
->>> would still be a problem though: the feature is currently disabled by
->>> default, hence devfreq couldn't really rely on it. It is enabled in
->>> the arm64 defconfig though, so at least devices on this architecture
->>> would benefit from it. Also power-efficient workqueues might be
->>> enabled by default in the future as the scheduler becomes more energy
->>> aware.
->> Regarding this CPU idle cost worries.
->> IIRC the new energy model does not even consider idle costs of the CPU.
->> It would be good to know the measurements, i.e. worst case scenario:
->> waking up 1 (of 4 or 8) CPU from idle 30 times per second for let's
->> say 100 us. It is 3 ms / 1000 ms * running energy cost i.e. 250mW.
->> Thus, 0.75mW.
-> 
-> I'm not an expert in this area, but your example seems too optimistic
-> You are just accounting for the pure runtime, not for the cost of
-> entering and exiting an idle state. Let's take a SDM845 idle state as
-> example:
-> 
-> C0_CPU_PD: c0-power-down {
->    ...
->    entry-latency-us = <350>;
->    exit-latency-us = <461>;
->    min-residency-us = <1890>;
->    ...
-> };
-> 
-> https://patchwork.kernel.org/patch/10661319/
-> 
-> That's 811us for entering and exiting the idle state. At an
-> intermediate OPP (1.8 GHz) the power consumption is 505mW, according
-> to the Energy Model. I'm ignoring the actual execution time, since I
-> tend to agree with you that the monitoring should be done, unless it
-> has a really unreasonable cost. That leaves us with 30 * 811us =
-> 24.3ms and 24.3ms / 1000 ms * 505mW = 12.3mW.
-You are probably taking ARM 'big' core wake-up from deeper that WFI 
-idle. I was referring to ARM LITTLE 250mW.
-It is also not 100% that the schedule work will wake up CPU which
-is currently in deepest idle.
+RTC block of the bd70528 can support 'wake' irq which wakes PMIC
+from standby state. Wake irq's can be armed to wake up system up
+to 24 hours from arming. bd70528 can also generate alarm interrupts
+which can be armed to occur years after triggering. The RTC driver
+does always arm both the waker and alarm irqs and does not utilize
+longer period of alarm interrupts. All the RTC timers are limited
+to occur within the next 24 hours. Any suggestions on more elegant
+timer support are welcome =)
 
-A short array would create a better picture of the use cases.
-The question is also probability of occurrence for each of these cases.
-For first two CPU state it would be a power cost lost during additional
-rescheduling to/from workqueue task, which takes i.e. 2*5 us * 30 times.
+GPIO portion of bd70528 driver adds I/O support for driving GPIO
+pins or reading the state. The interrupt functionality is provided
+by regmap-irq. Current GPIO driver is not aware of whether the pin(s)
+are used for I/O or interrupts and it is up-to driver user to
+ensure there is no misconfiguration or "double use".
 
-CPU state ->|  running | idle    | idle clock | idle, pwr  |
-------------|   (C0)   | WFI (C1)|  gated (C2)| gated (C3) |
-architecture|          |         |            |            |
-------V-----------------------------------------------------
-ARM big     |    <1mW  | <1mW    |   ~12mW    |  ~12mW     |
-ARM LITTLE  |    <1mW  | <1mW    |   ~6mW     |  ~6mW      |
-MIPS
-PowerPC
+The power-supply patch included in series is only poorly tested as I
+lack of hardware with real battery connected. Reset and ADC are not
+supported by this series.
+
+Changelog v9: Changes suggested by Lee Jones
+- MFD, DT-binding, RTC and WDT changed
+- DT-bindings: Spelling fixes
+- RTC and WDT: Use exported function instead of function pointer for WDT
+  arming/disarming
+- MFD: Export WDT arming/disarming function instead of providing a
+  pointer to it.
+- Various styling fixes.
+
+Changelog v8:
+- regulators(*), wdt, gpio, rtc, mfd(*) and dt-bindings unchanged.
+  (*)Patches 1-3 squashed to not break bisecting.
+
+- removed unnecessary newline from clk
+- fixed possible use of uninitialized 'reg' from power-supply.
+  Found by 0-day tests and reported by Dan Carpenter.
+
+Changelog v7:
+Only patch 2 changed.
+- Avoid out-of-array-bounds access at regulator probe if unsupported
+  chip type is passed to bd718x7 regulator driver.
+
+Changelog v6:
+Only patch 10 changed.
+- styling fixes pointed by Gunter Roeck
+- dropped RFC tag
+
+Changelog v5 (RFC):
+Only patch 7 changed.
+- Explained why lock is not needed at GPIO value getting
+- removed ampersands from function pointer assignments.
+
+Changelog v4 (RFC):
+patches 1,2,3,4,5,10 are unchanged from v3
+DT-binding fixes suggested by Rob Herring:
+- drop interrupt-parent
+- drop clock-frequency
+- change pmic node name to a generic one
+RTC:
+- enable RTC block's irqs before registering rtc
+GPIO fixes after initial testing:
+- fix getting GPIO value when direction is output
+POWER:
+- Add ASCII art intended to clarify the charger HW state machine
+
+Changelog v3 (RFC):
+patches 1,2,3,4,5,6,7,8 and 10 are unchanged from v2
+RTC fixups suggested by Guenter Roeck:
+- create bd70528_set_time_locked function in order to simplify
+  error handling and to make mutex lock/unlock path more obvious
+- don't ignore errors on bd70528_set_time_locked
+- simplify bd70528_read_alarm enabled condition setting
+- add __packed to structs where members are mapped to HW registers
+- remove unnecessary brackets from enable condition in set_wake
+RTC: fixups suggested by Alessandro Belloni
+- don't use deprecated devm_rtc_device_register
+- add alarm_irq_enable callback
+- add range_min and range_max
+WDT:
+- add regmap and mutex pointers to WDT data so that they can be accessed
+  without dereferencing the parent data
+- remove parent data pointer from WDT data
+- embed struct watchdog_device into WDT data in order to avoid double
+  allocation.
+GPIO:
+- remove unused header as pointed by Linus Walleij
+POWER:
+- do not copy the whole MFD data (especially the mutex to avoid
+  all possibilities of accidentally using the copy of a mutex)
+
+Changelog v2 (RFC): Mainly feedback from Guenter Roeck:
+- patches 1, 2, 3, 4, 5, 9 are unchanged.
+- mfd: own mutex for each bd70528 instance - embed in struct bd70528
+- watchdog: do not copy parent device data
+- watchdog: fix deadlock caused by double locked mutex
+- watchdog: set initial timeouts and WDT parent information
+- watchdog: remove unnecessary ping function from ops
+- watchdog: and the comment regarding it
+- watchdog: allocate watchdog struct in order to allow multiple WDG
+  instances
+- rtc: bd70528 fix the order of mutex unlock and re-enabling RTC based
+  timers
+- rtc: fix the irq mask register address
+- power: fix the irq mask register address
+- regulator/regmap-irq: Drop the patches 1, 8 and 9 from original series
+  as those were already applied by Mark 
+
+Patch 1:
+	split the bd718x7.h to generic and chip specific portions.
+	(breaks compilation without patch 2 and 3)
+	- adapt bd718x7.h changes to bd718x7 regulator driver
+	- adapt bd718x7.h changes to bd718x7 clk driver
+Patch 2:
+	add MFD core support for bd70528
+Patch 3:
+	support bd70528 clk using bd718x7 clk driver
+Patch 4:
+	document DT bindings for BD70528
+Patch 5:
+	support BD70528 GPIO block
+Patch 6:
+	support BD70528 RTC
+Patch 7:
+	support BD70528 battery charger
+Patch 8:
+	support BD70528 watchdog
+
+This patch series is based on Mark's regulator/for-next branch
+
+---
+
+Matti Vaittinen (8):
+  mfd: regulator: clk: split rohm-bd718x7.h
+  mfd: bd70528: Support ROHM bd70528 PMIC - core
+  clk: bd718x7: Support ROHM BD70528 clk block
+  devicetree: bindings: Document first ROHM BD70528 bindings
+  gpio: Initial support for ROHM bd70528 GPIO block
+  rtc: bd70528: Initial support for ROHM bd70528 RTC
+  power: supply: Initial support for ROHM BD70528 PMIC charger block
+  watchdog: bd70528: Initial support for ROHM BD70528 watchdog block
+
+ .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 102 +++
+ drivers/clk/Kconfig                                |   6 +-
+ drivers/clk/clk-bd718x7.c                          |  24 +-
+ drivers/gpio/Kconfig                               |  11 +
+ drivers/gpio/Makefile                              |   1 +
+ drivers/gpio/gpio-bd70528.c                        | 232 +++++++
+ drivers/mfd/Kconfig                                |  17 +
+ drivers/mfd/Makefile                               |   1 +
+ drivers/mfd/rohm-bd70528.c                         | 397 +++++++++++
+ drivers/mfd/rohm-bd718x7.c                         |  23 +-
+ drivers/power/supply/Kconfig                       |   9 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/bd70528-charger.c             | 745 +++++++++++++++++++++
+ drivers/regulator/bd718x7-regulator.c              |  24 +-
+ drivers/rtc/Kconfig                                |   8 +
+ drivers/rtc/Makefile                               |   1 +
+ drivers/rtc/rtc-bd70528.c                          | 500 ++++++++++++++
+ drivers/watchdog/Kconfig                           |  12 +
+ drivers/watchdog/Makefile                          |   1 +
+ drivers/watchdog/bd70528_wdt.c                     | 190 ++++++
+ include/linux/mfd/rohm-bd70528.h                   | 392 +++++++++++
+ include/linux/mfd/rohm-bd718x7.h                   |  22 +-
+ include/linux/mfd/rohm-generic.h                   |  20 +
+ 23 files changed, 2693 insertions(+), 46 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+ create mode 100644 drivers/gpio/gpio-bd70528.c
+ create mode 100644 drivers/mfd/rohm-bd70528.c
+ create mode 100644 drivers/power/supply/bd70528-charger.c
+ create mode 100644 drivers/rtc/rtc-bd70528.c
+ create mode 100644 drivers/watchdog/bd70528_wdt.c
+ create mode 100644 include/linux/mfd/rohm-bd70528.h
+ create mode 100644 include/linux/mfd/rohm-generic.h
+
+-- 
+2.14.3
 
 
-> 
->> In my opinion it is not a big cost. In most cases the system is still
->> doing some other work. It is worth to mention here that on mobiles
->> when the power button is hit the full suspend is called which freezes
->> all tasks, devices and power consumption is ~15mW. Thus, the system
->> suspend is out of scope here.
-> 
-> I agree that system suspend is out of scope.
-> 
->> As I replayed to Chanwoon for the same email: in my opinion current
->> devfreq is broken.
->> It was probably developed in times where there was 1 CPU (maybe 2)
->> and idle state of CPU would be a good hint to not to check devfreq
->> devices.
-> 
-> IIUC the use of a power-efficient workqueues would address the problem
-> of waking up a CPU in idle state, however as mentioned earlier by
-> default this feature is disabled (except for arm64). How about
-> switching to system_power_efficient_wq and use INIT_DELAYED_WORK if
-> CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y (or check if the workqueue in
-> question has WQ_UNBOUND set?) and INIT_DEFERRABLE_WORK otherwise? It's
-> not ideal, but a possible improvement.
-I think it would be to complicated to maintain because different
-platforms might use different mechanisms.
-I would suggests that we could just follow mechanism in thermal
-framework. I have never faced any issue with delayed work there,
-while working on IPA.
-They use 'system_freezable_power_efficient_wq' and INIT_DELAYED_WORK().
-https://elixir.bootlin.com/linux/v5.0-rc6/source/drivers/thermal/thermal_core.c#L293
-https://elixir.bootlin.com/linux/v5.0-rc6/source/drivers/thermal/thermal_core.c#L1281
-They have these two polling intervals, though.
+-- 
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
 
-Regards,
-Lukasz
-
-> 
-> Cheers
-> 
-> Matthias
-> 
-> 
+~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
