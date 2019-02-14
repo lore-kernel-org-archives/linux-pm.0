@@ -1,88 +1,60 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5 07/11] power: supply: max77650: add support for
- battery charger
-Date: Thu, 14 Feb 2019 11:51:15 +0100
-Message-ID: <20190214105115.GD6132@amd>
-References: <20190213134335.10838-1-brgl@bgdev.pl>
- <20190213134335.10838-8-brgl@bgdev.pl>
- <20190214103944.GC6132@amd>
- <CAMRc=MdR9j3pEw4SFU+SQyWF-jD3n-kp6Z7_6L-bH6J2zyeSZA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="NklN7DEeGtkPCoo3"
+From: Harry Pan <harry.pan@intel.com>
+Subject: [PATCH v3] PM / suspend: measure the time of filesystem syncing
+Date: Thu, 14 Feb 2019 19:15:43 +0800
+Message-ID: <20190214111543.22137-1-harry.pan@intel.com>
+References: <20190206154214.576-1-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMRc=MdR9j3pEw4SFU+SQyWF-jD3n-kp6Z7_6L-bH6J2zyeSZA@mail.gmail.com>
+In-Reply-To: <20190206154214.576-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+This patch gives the reader an intuitive metric of the time cost by
+the kernel issuing a filesystem sync during suspend; although developer
+can guess by the timestamp of next log or enable the ftrace power event
+for manual calculation, this manner is easier to read and benefits the
+automatic script.
 
---NklN7DEeGtkPCoo3
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+v2: simplify the variables, apply the simplest form of ktime API.
+v3: reduce conditional compilation, rectify profiling in better syntax
 
-On Thu 2019-02-14 11:42:03, Bartosz Golaszewski wrote:
-> czw., 14 lut 2019 o 11:39 Pavel Machek <pavel@ucw.cz> napisa=C5=82(a):
-> >
-> > Hi!
-> >
-> > > +#define MAX77650_CHG_OFF                     0x00
-> > > +#define MAX77650_CHG_PREQ                    0x01
-> > > +
-> > > +#define MAX77650_CHGIN_UNDERVOLTAGE_LOCKOUT  0x00
-> > > +#define MAX77650_CHGIN_OVERVOLTAGE_LOCKOUT   0x01
-> > > +#define MAX77650_CHGIN_OKAY                  0x11
-> >
-> > Thanks for doing this.
-> >
-> > > +#define MAX77650_CHG_ON_CURR                 0x02
-> > > +#define MAX77650_CHG_ON_CURR_JEITA           0x03
-> > > +#define MAX77650_CHG_ON_VOLT                 0x04
-> > > +#define MAX77650_CHG_ON_VOLT_JEITA           0x05
-> > > +#define MAX77650_CHG_ON_TOPOFF                       0x06
-> > > +#define MAX77650_CHG_ON_TOPOFF_JEITA         0x07
-> > > +#define MAX77650_CHG_DONE                    0x08
-> > > +#define MAX77650_CHG_DONE_JEITA                      0x09
-> > > +#define MAX77650_CHG_SUSP_PREQ_TIM_FAULT     0x0a
-> > > +#define MAX77650_CHG_SUSP_FAST_CHG_TIM_FAULT 0x0b
-> > > +#define MAX77650_CHG_SUSP_BATT_TEMP_FAULT    0x0c
-> > > +
-> > > +#define MAX77650_CHARGER_CHGIN_DTLS_MASK     GENMASK(3, 2)
-> > > +#define MAX77650_CHARGER_CHGIN_DTLS_BITS(_reg) \
-> > > +             (((_reg) & MAX77650_CHARGER_CHGIN_DTLS_MASK) >> 2)
-> >
-> > But I guess these could use similar treatment?
-> >                                                         Pavel
-> >
->=20
-> These are already called the same as in the manual, so we can keep them r=
-ight?
+Signed-off-by: Harry Pan <harry.pan@intel.com>
+---
+ kernel/power/suspend.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-Will the person fixing the driver in 5 years have the manual?
-
-Someone in the manual was leaving out letters, unfortunately the
-result is not readable without the manual. PREQ TIM? Adding the
-letters back would help, as would comments.
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---NklN7DEeGtkPCoo3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEUEARECAAYFAlxlSCMACgkQMOfwapXb+vJ61QCYvQW22YY08iRs4fNS+4u78dHu
-uQCghDrKjjWbUqxyNHWG7qSN4Q3gzes=
-=vokJ
------END PGP SIGNATURE-----
-
---NklN7DEeGtkPCoo3--
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0bd595a0b610..4844fc6a796d 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -568,13 +568,20 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_TO_IDLE)
+ 		s2idle_begin();
+ 
+-#ifndef CONFIG_SUSPEND_SKIP_SYNC
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	pr_info("Syncing filesystems ... ");
+-	ksys_sync();
+-	pr_cont("done.\n");
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-#endif
++	if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
++		ktime_t start;
++		unsigned int elapsed_msecs;
++
++		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
++		pr_info("Syncing filesystems ... ");
++		start = ktime_get();
++		ksys_sync();
++		elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
++		pr_cont("(elapsed %d.%03d seconds) done.\n",
++			elapsed_msecs / MSEC_PER_SEC,
++			elapsed_msecs % MSEC_PER_SEC);
++		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
++	}
+ 
+ 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+ 	pm_suspend_clear_flags();
+-- 
+2.18.1
