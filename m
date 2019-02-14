@@ -1,50 +1,40 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
- devfreq core
-Date: Thu, 14 Feb 2019 11:28:55 -0800
-Message-ID: <20190214192855.GD117604@google.com>
-References: <20190214013042.254790-1-mka@chromium.org>
- <20190214013042.254790-5-mka@chromium.org>
- <CAGTfZH118diXgKHetWwiNMXHALxXqt=MSh9oVv+nt4-SJkzN2Q@mail.gmail.com>
+From: Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: [PATCH v3] drivers: base: add support to skip power management
+ in device/driver model
+Date: Thu, 14 Feb 2019 21:09:37 +0100
+Message-ID: <20190214200937.GA21536@vmlxhi-102.adit-jv.com>
+References: <20190214182910.20600-1-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAGTfZH118diXgKHetWwiNMXHALxXqt=MSh9oVv+nt4-SJkzN2Q@mail.gmail.com>
+In-Reply-To: <20190214182910.20600-1-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cwchoi00@gmail.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jisheng Zhang <jszhang@marvell.com>, Ulf Hansson <ulf.hansson@linaro.org>, Steve Longerbeam <slongerbeam@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, "Rafael J. Wysocki" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+Hello Sudeep,
 
-On Thu, Feb 14, 2019 at 11:17:36PM +0900, Chanwoo Choi wrote:
-> Hi Matthias,
+On Thu, Feb 14, 2019 at 06:29:10PM +0000, Sudeep Holla wrote:
+[..]
 > 
-> As I commented on the first patch, it is not possible to call some codes
-> according to the intention of each governor between 'devfreq_moniotr_*()'
-> and some codes which are executed before or after 'devfreq_moniotr_*()'
-> 
-> For example, if some governor requires the following sequence,
-> after this patch, it is not possible.
-> 
-> case DEVFREQ_GOV_xxx:
->         /* execute some code before devfreq_monitor_xxx() */
->         devfreq_monitor_xxx()
->         /* execute some code after devfreq_monitor_xxx() */
+> Lets add no_pm_required flags to indicate that the device doesn't
 
-As for the suspend/resume case I agree that the patch introduces this
-limitation, but I'm not convinced that this is an actual problem.
+s/no_pm_required/no_pm/ ?
 
-For governor_start(): why can't the governor execute the code
-before polling started, does it make any difference to the governor
-that a work is scheduled?
+> require any sort of pm activities and all of them can be completely
+> skipped. We can use the same flag to also avoid adding not used *power*
+> sysfs entries for these devices. For now, lets use this for cpu cache
+> devices.
+[..]
 
-For governor_stop(): why would the governor require polling to be
-active during stop? If it needs update_devfreq() to run (called by
-devfreq_monitor()) it can call it directly, instead of waiting for the
-monitor to run at some later time.
+Running suspend/resume ~500 times on H3-Salvator-X with this patch
+didn't reveal any regressions. The annoying warnings are gone.
+Console log and .config are available at:
+https://gist.github.com/erosca/1af11aa62e16903e1b6964be6a9eea77
 
-Cheers
+Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
 
-Matthias
+Thanks!
+Eugeniu.
