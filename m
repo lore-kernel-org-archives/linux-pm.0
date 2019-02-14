@@ -1,79 +1,73 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/2] drivers: devfreq: add tracing for scheduling work
-Date: Thu, 14 Feb 2019 14:07:25 -0500
-Message-ID: <20190214140725.307d493c@gandalf.local.home>
-References: <1550170676-14173-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190214185811eucas1p1e2f44d59495296fbfed42f28a2c897a0@eucas1p1.samsung.com>
-        <1550170676-14173-3-git-send-email-l.luba@partner.samsung.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
+ devfreq core
+Date: Thu, 14 Feb 2019 11:07:41 -0800
+Message-ID: <20190214190741.GC117604@google.com>
+References: <20190214013042.254790-1-mka@chromium.org>
+ <CGME20190214013154epcas1p31326fdc127b3a75d566426e4f785121b@epcas1p3.samsung.com>
+ <20190214013042.254790-5-mka@chromium.org>
+ <1771fe9e-c107-f133-7b39-f4d7dbb004c5@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550170676-14173-3-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1771fe9e-c107-f133-7b39-f4d7dbb004c5@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, mingo@redhat.com
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 14 Feb 2019 19:57:56 +0100
-Lukasz Luba <l.luba@partner.samsung.com> wrote:
+Hi Lukasz,
 
-> This patch add basic tracing of the devfreq workqueue and delayed work.
-> It aims to capture changes of the polling intervals and device state.
+On Thu, Feb 14, 2019 at 07:01:36PM +0100, Lukasz Luba wrote:
+> Hi Matthias,
 > 
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de7..c9714fd 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -29,6 +29,9 @@
->  #include <linux/of.h>
->  #include "governor.h"
->  
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/devfreq.h>
-> +
->  static struct class *devfreq_class;
->  
->  /*
-> @@ -394,6 +397,11 @@ static void devfreq_monitor(struct work_struct *work)
->  	queue_delayed_work(devfreq_wq, &devfreq->work,
->  				msecs_to_jiffies(devfreq->profile->polling_ms));
->  	mutex_unlock(&devfreq->lock);
-> +
-> +	trace_devfreq_monitor(dev_name(&devfreq->dev), devfreq->previous_freq,
-> +			      devfreq->profile->polling_ms,
-> +			      devfreq->last_status.busy_time,
-> +			      devfreq->last_status.total_time);
+> I have compiled and run your changes on Odroid xu3 and v5.0-rc6.
+> There are kernel warnings because of mutex not held in function
+> devfreq_monitor_[start|stop]() in use cases:
+>   1) a few times during registration of new devices devfreq_add_device()
+>   2) poking the device from sysfs
 
-I would pass just devfreq into the tracepoint (it will be less work by
-gcc in this code path), and do all this work in the TP__fast_assign()
+Thanks testing!
 
-The string can still handle this with:
+I messed up carrying over changes from my v4.19 device kernel
+to the tree used for upstreaming :(
 
-		__string(dev_name, dev_name(&devfreq->dev))
+Do you still see warnings with the below patch?
 
-And assigned:
+Thanks
 
-		__assign_str(dev_name, dev_name(&devfreq->dev))
+Matthias
 
-But the rest of fast assign should be:
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a42c37543c190..866fe711b43ca 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -440,7 +440,6 @@ static void devfreq_monitor_stop(struct devfreq *devfreq)
 
-	TP_fast_assign(
-		__entry->freq = devfreq->previous_freq;
-		__entry->busy_time = devfreq->last_status.busy_time;
-		__entry->total_time = devfreq->last_status.total_time;
-		__entry->polling_ms = devfreq->profile->polling_ms;
-		__assign_str(dev_name, dev_name(&deqfreq->dev));
-	}
+        mutex_lock(&devfreq->lock);
+        devfreq->monitor_state = DEVFREQ_MONITOR_STOPPED;
+-       mutex_unlock(&devfreq->lock);
+ }
 
--- Steve
+ /**
+@@ -596,7 +595,9 @@ static int governor_start(struct devfreq *devfreq)
+                return err;
+        }
 
->  }
->  
->  /**
++       mutex_lock(&devfreq->lock);
+        devfreq_monitor_start(devfreq);
++       mutex_unlock(&devfreq->lock);
+
+        return 0;
+ }
+@@ -614,7 +615,9 @@ static int governor_stop(struct devfreq *devfreq)
+                 "mutex must *not* be held by the caller\n"))
+                return -EINVAL;
+
++       mutex_lock(&devfreq->lock);
+        devfreq_monitor_stop(devfreq);
++       mutex_unlock(&devfreq->lock);
+
+        err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_STOP, NULL);
+        if (err) {
