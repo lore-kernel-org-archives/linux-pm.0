@@ -1,34 +1,59 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Thu, 14 Feb 2019 18:31:54 +0100
-Message-ID: <CAJZ5v0gHvZwUuhOepgsUZ3OZZ4X4iGTA3LXOwMi3SYVj7F=iYA@mail.gmail.com>
-References: <20190213122105.14270-1-e.velu@criteo.com> <ae38f70b-f352-8567-2dac-5f6c7723a668@criteo.com>
- <CAJZ5v0geHMDMLqg98BZEGLjNrSRy3juB9y54ots357wVeK-shQ@mail.gmail.com> <8158d558-bbcd-fabe-6c8a-8de840807dc0@criteo.com>
+Subject: Re: [PATCH v2] drivers: base: add support to skip power management in
+ device/driver model
+Date: Thu, 14 Feb 2019 18:34:19 +0100
+Message-ID: <CAJZ5v0hVNcXc3eOSNqC_u5Zvvw78isb0zUBcKnmFqDX57uiLbA@mail.gmail.com>
+References: <20190213120137.23354-1-sudeep.holla@arm.com> <CAJZ5v0gg7H9G_HrvLhf9k26maYUR+_EpE8DDQ7NPh58HMRH3Ew@mail.gmail.com>
+ <20190214111609.GC28361@e107155-lin> <20190214120509.GA28292@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8158d558-bbcd-fabe-6c8a-8de840807dc0@criteo.com>
+In-Reply-To: <20190214120509.GA28292@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Erwan Velu <e.velu@criteo.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jisheng Zhang <jszhang@marvell.com>, Ulf Hansson <ulf.hansson@linaro.org>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 14, 2019 at 5:42 PM Erwan Velu <e.velu@criteo.com> wrote:
+On Thu, Feb 14, 2019 at 1:05 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
+> On Thu, Feb 14, 2019 at 11:16:09AM +0000, Sudeep Holla wrote:
+> > On Wed, Feb 13, 2019 at 11:17:47PM +0100, Rafael J. Wysocki wrote:
+> > > On Wed, Feb 13, 2019 at 1:01 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Le 14/02/2019 à 11:22, Rafael J. Wysocki a écrit :
-> > I've queued it up with some manual changes.  No need to update.
+> [...]
 >
-> As this could help troubleshooting platforms and as some commits like
-> the PSS one on Proliant servers were backported to stable, I would
-> surely make sense to backport it to the other stable.
+> > > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > > index 0992e67e862b..2a29c3d4e240 100644
+> > > > --- a/drivers/base/power/main.c
+> > > > +++ b/drivers/base/power/main.c
+> > > > @@ -124,6 +124,10 @@ void device_pm_unlock(void)
+> > > >   */
+> > > >  void device_pm_add(struct device *dev)
+> > > >  {
+> > > > +       /* No need to create pm sysfs if explicitly specified as not required */
+> > >
+> > > Is this really about sysfs?
+> > >
+> >
+> > Nope, copy-paste from dpm_sysfs_add, will drop it.
+> >
+> > > > +       if (device_pm_not_required(dev))
+> > >
+> > > Should power.disable_depth be bumped up here or while setting the "no PM" flag?
+> > >
+> >
+> > OK, I missed that.
+> >
 >
-> I know this is only a trivial print patch but as my initial issue
-> started with some of the 4.14 serie, it could be nice to have it too.
+> Looking at it,
+> 1. We can't set it when we set "no PM" flag as pm_runtime_init called later
+>    initialise it to 1
+> 2. We can bump it here, but I see it's usage self contained in runtime.c
+>    and may look odd to access it here.
+>
+> More basic question is should we really need to bump it to 2 as its
+> initialised to 1 in runtime_init.
 
-You can always request -stable to pick up a patch once it's got to the mainline.
+Right, I thought about that.
 
-I'm not going to mark it as -stable material, though, as it is not a
-fix strictly speaking.
+Let's leave it as is maybe. :-)
