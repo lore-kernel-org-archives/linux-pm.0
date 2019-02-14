@@ -1,239 +1,77 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
- devfreq core
-Date: Thu, 14 Feb 2019 23:17:36 +0900
-Message-ID: <CAGTfZH118diXgKHetWwiNMXHALxXqt=MSh9oVv+nt4-SJkzN2Q@mail.gmail.com>
-References: <20190214013042.254790-1-mka@chromium.org> <20190214013042.254790-5-mka@chromium.org>
-Reply-To: cwchoi00@gmail.com
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 02/11] dt-bindings: power: supply: add DT bindings for max77650
+Date: Thu, 14 Feb 2019 08:18:11 -0600
+Message-ID: <CAL_JsqKokJhAXyOV1y-TNYfNAsd236vz0kLQkg+rpTKPZynWPw@mail.gmail.com>
+References: <20190213134335.10838-1-brgl@bgdev.pl> <20190213134335.10838-3-brgl@bgdev.pl>
+ <20190213204834.GA31342@bogus> <CAMRc=MeyMnRMzmexgNBF5PkP-Hs2G2sS4hCP4mTZR5jxC=ej1w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190214013042.254790-5-mka@chromium.org>
+In-Reply-To: <CAMRc=MeyMnRMzmexgNBF5PkP-Hs2G2sS4hCP4mTZR5jxC=ej1w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+On Thu, Feb 14, 2019 at 3:29 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+>
+> =C5=9Br., 13 lut 2019 o 21:48 Rob Herring <robh@kernel.org> napisa=C5=82(=
+a):
+> >
+> > On Wed, Feb 13, 2019 at 02:43:26PM +0100, Bartosz Golaszewski wrote:
+> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > >
+> > > Add the DT binding document for the battery charger module of max7765=
+0.
+> > >
+> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > ---
+> > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++=
+++
+> > >  1 file changed, 27 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/power/supply/ma=
+x77650-charger.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-=
+charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charg=
+er.txt
+> > > new file mode 100644
+> > > index 000000000000..16e24173c80e
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger=
+.txt
+> > > @@ -0,0 +1,27 @@
+> > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> > > +
+> > > +This module is part of the MAX77650 MFD device. For more details
+> > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > > +
+> > > +The charger is represented as a sub-node of the PMIC node on the dev=
+ice tree.
+> > > +
+> > > +Required properties:
+> > > +--------------------
+> > > +- compatible:                Must be "maxim,max77650-charger"
+> > > +
+> > > +Optional properties:
+> > > +--------------------
+> > > +- min-input-voltage: Minimum CHGIN regulation voltage (in microvolts=
+). Must be
+> > > +                     one of: 4000000, 4100000, 4200000, 4300000, 440=
+0000,
+> > > +                     4500000, 4600000, 4700000.
+> > > +- current-limit:     CHGIN input current limit (in microamps). Must =
+be one of:
+> > > +                     95000, 190000, 285000, 380000, 475000.
+> >
+> > Unit suffix? Really, these should be common properties. We have
+> > some I think. Charger bindings are a mess though...
+> >
+>
+> Do you mean a suffix like: ua for microamps and uv for microvolts? I'm
+> not seeing any other such properties.
 
-As I commented on the first patch, it is not possible to call some codes
-according to the intention of each governor between 'devfreq_moniotr_*()'
-and some codes which are executed before or after 'devfreq_moniotr_*()'
+See bindings/property-units.txt
 
-For example, if some governor requires the following sequence,
-after this patch, it is not possible.
-
-case DEVFREQ_GOV_xxx:
-        /* execute some code before devfreq_monitor_xxx() */
-        devfreq_monitor_xxx()
-        /* execute some code after devfreq_monitor_xxx() */
-
-2019=EB=85=84 2=EC=9B=94 14=EC=9D=BC (=EB=AA=A9) =EC=98=A4=ED=9B=84 7:16, M=
-atthias Kaehlcke <mka@chromium.org>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
->
-> devfreq expects governors to call devfreq_monitor_start/stop()
-> in response to DEVFREQ_GOV_START/STOP events. Since the devfreq
-> core itself generates these events and invokes the governor's event
-> handler the start/stop of the load monitor can be done in the common
-> code.
->
-> Call devfreq_monitor_start/stop() when the governor reports a
-> successful handling of DEVFREQ_GOV_START/STOP and remove these
-> calls from the simpleondemand and tegra governors. Make
-> devfreq_monitor_start/stop() static since these functions are now
-> only used by the devfreq core. For better integration with the
-> callers the functions must now be called with devfreq->lock held.
->
-> Also stop manipulating the monitor workqueue directly, use
-> devfreq_monitor_start/stop() instead.
->
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/devfreq/devfreq.c                 | 45 +++++++++++------------
->  drivers/devfreq/governor.h                |  2 -
->  drivers/devfreq/governor_simpleondemand.c |  8 ----
->  drivers/devfreq/tegra-devfreq.c           |  2 -
->  4 files changed, 22 insertions(+), 35 deletions(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index eb86461648d74..ac553c00f6790 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -404,14 +404,14 @@ static void devfreq_monitor(struct work_struct *wor=
-k)
->   * devfreq_monitor_start() - Start load monitoring of devfreq instance
->   * @devfreq:   the devfreq instance.
->   *
-> - * Helper function for starting devfreq device load monitoing. By
-> - * default delayed work based monitoring is supported. Function
-> - * to be called from governor in response to DEVFREQ_GOV_START
-> - * event when device is added to devfreq framework.
-> + * Helper function for starting devfreq device load monitoring. By
-> + * default delayed work based monitoring is supported. Must be called
-> + * with devfreq->lock held.
->   */
-> -void devfreq_monitor_start(struct devfreq *devfreq)
-> +static void devfreq_monitor_start(struct devfreq *devfreq)
->  {
-> -       mutex_lock(&devfreq->lock);
-> +       WARN(!mutex_is_locked(&devfreq->lock),
-> +            "devfreq->lock must be held by the caller.\n");
->
->         if (devfreq->profile->polling_ms) {
->                 INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
-> @@ -420,28 +420,28 @@ void devfreq_monitor_start(struct devfreq *devfreq)
->
->                 devfreq->monitor_state =3D DEVFREQ_MONITOR_RUNNING;
->         }
-> -
-> -       mutex_unlock(&devfreq->lock);
->  }
-> -EXPORT_SYMBOL(devfreq_monitor_start);
->
->  /**
->   * devfreq_monitor_stop() - Stop load monitoring of a devfreq instance
->   * @devfreq:   the devfreq instance.
->   *
-> - * Helper function to stop devfreq device load monitoing. Function
-> - * to be called from governor in response to DEVFREQ_GOV_STOP
-> - * event when device is removed from devfreq framework.
-> + * Helper function to stop devfreq device load monitoring. Must be
-> + * called with devfreq->lock held.
->   */
-> -void devfreq_monitor_stop(struct devfreq *devfreq)
-> +static void devfreq_monitor_stop(struct devfreq *devfreq)
->  {
-> +       /* mutex must be held for symmetry with _start() */
-> +       WARN(!mutex_is_locked(&devfreq->lock),
-> +            "devfreq->lock must be held by the caller.\n");
-> +
-> +       mutex_unlock(&devfreq->lock);
->         cancel_delayed_work_sync(&devfreq->work);
->
->         mutex_lock(&devfreq->lock);
->         devfreq->monitor_state =3D DEVFREQ_MONITOR_STOPPED;
->         mutex_unlock(&devfreq->lock);
->  }
-> -EXPORT_SYMBOL(devfreq_monitor_stop);
->
->  /**
->   * devfreq_monitor_suspend() - Suspend load monitoring of a devfreq inst=
-ance
-> @@ -518,27 +518,22 @@ void devfreq_interval_update(struct devfreq *devfre=
-q, unsigned int *delay)
->
->         /* if new delay is zero, stop polling */
->         if (!new_delay) {
-> +               devfreq_monitor_stop(devfreq);
->                 mutex_unlock(&devfreq->lock);
-> -               cancel_delayed_work_sync(&devfreq->work);
-> -               devfreq->monitor_state =3D=3D DEVFREQ_MONITOR_STOPPED;
->                 return;
->         }
->
->         /* if current delay is zero, start polling with new delay */
->         if (!cur_delay) {
-> -               queue_delayed_work(devfreq_wq, &devfreq->work,
-> -                       msecs_to_jiffies(devfreq->profile->polling_ms));
-> +               devfreq_monitor_start(devfreq);
->                 goto out;
->         }
->
->         /* if current delay is greater than new delay, restart polling */
->         if (cur_delay > new_delay) {
-> -               mutex_unlock(&devfreq->lock);
-> -               cancel_delayed_work_sync(&devfreq->work);
-> -               mutex_lock(&devfreq->lock);
-> +               devfreq_monitor_stop(devfreq);
->                 if (devfreq->monitor_state !=3D DEVFREQ_MONITOR_SUSPENDED=
-)
-> -                       queue_delayed_work(devfreq_wq, &devfreq->work,
-> -                             msecs_to_jiffies(devfreq->profile->polling_=
-ms));
-> +                       devfreq_monitor_start(devfreq);
->         }
->  out:
->         mutex_unlock(&devfreq->lock);
-> @@ -601,6 +596,8 @@ static int devfreq_governor_start(struct devfreq *dev=
-freq)
->                 return err;
->         }
->
-> +       devfreq_monitor_start(devfreq);
-> +
->         return 0;
->  }
->
-> @@ -624,6 +621,8 @@ static int devfreq_governor_stop(struct devfreq *devf=
-req)
->                 return err;
->         }
->
-> +       devfreq_monitor_stop(devfreq);
-> +
->         return 0;
->  }
->
-> diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-> index d136792c0cc91..47efe747b6f79 100644
-> --- a/drivers/devfreq/governor.h
-> +++ b/drivers/devfreq/governor.h
-> @@ -57,8 +57,6 @@ struct devfreq_governor {
->                                 unsigned int event, void *data);
->  };
->
-> -extern void devfreq_monitor_start(struct devfreq *devfreq);
-> -extern void devfreq_monitor_stop(struct devfreq *devfreq);
->  extern void devfreq_interval_update(struct devfreq *devfreq,
->                                         unsigned int *delay);
->
-> diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/=
-governor_simpleondemand.c
-> index 52eb0c734b312..e0f0944a9c7aa 100644
-> --- a/drivers/devfreq/governor_simpleondemand.c
-> +++ b/drivers/devfreq/governor_simpleondemand.c
-> @@ -91,14 +91,6 @@ static int devfreq_simple_ondemand_handler(struct devf=
-req *devfreq,
->                                 unsigned int event, void *data)
->  {
->         switch (event) {
-> -       case DEVFREQ_GOV_START:
-> -               devfreq_monitor_start(devfreq);
-> -               break;
-> -
-> -       case DEVFREQ_GOV_STOP:
-> -               devfreq_monitor_stop(devfreq);
-> -               break;
-> -
->         case DEVFREQ_GOV_INTERVAL:
->                 devfreq_interval_update(devfreq, (unsigned int *)data);
->                 break;
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devf=
-req.c
-> index 79efa1e51bd06..515fb852dbad6 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -580,13 +580,11 @@ static int tegra_governor_event_handler(struct devf=
-req *devfreq,
->
->         switch (event) {
->         case DEVFREQ_GOV_START:
-> -               devfreq_monitor_start(devfreq);
->                 tegra_actmon_enable_interrupts(tegra);
->                 break;
->
->         case DEVFREQ_GOV_STOP:
->                 tegra_actmon_disable_interrupts(tegra);
-> -               devfreq_monitor_stop(devfreq);
->                 break;
->
->         case DEVFREQ_GOV_SUSPEND:
-> --
-> 2.20.1.791.gb4d0f1c61a-goog
->
-
-
---=20
-Best Regards,
-Chanwoo Choi
+Rob
