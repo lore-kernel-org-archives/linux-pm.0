@@ -1,53 +1,39 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH v5 07/11] power: supply: max77650: add support for battery charger
-Date: Thu, 14 Feb 2019 11:42:03 +0100
-Message-ID: <CAMRc=MdR9j3pEw4SFU+SQyWF-jD3n-kp6Z7_6L-bH6J2zyeSZA@mail.gmail.com>
-References: <20190213134335.10838-1-brgl@bgdev.pl> <20190213134335.10838-8-brgl@bgdev.pl>
- <20190214103944.GC6132@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Replace double NOT (!!) with single NOT (!)
+Date: Thu, 14 Feb 2019 16:16:21 +0530
+Message-ID: <e0ea5fc21f9d3bd38eb4eb678d39359d66c8e79e.1550141092.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190214103944.GC6132@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-czw., 14 lut 2019 o 11:39 Pavel Machek <pavel@ucw.cz> napisa=C5=82(a):
->
-> Hi!
->
-> > +#define MAX77650_CHG_OFF                     0x00
-> > +#define MAX77650_CHG_PREQ                    0x01
-> > +
-> > +#define MAX77650_CHGIN_UNDERVOLTAGE_LOCKOUT  0x00
-> > +#define MAX77650_CHGIN_OVERVOLTAGE_LOCKOUT   0x01
-> > +#define MAX77650_CHGIN_OKAY                  0x11
->
-> Thanks for doing this.
->
-> > +#define MAX77650_CHG_ON_CURR                 0x02
-> > +#define MAX77650_CHG_ON_CURR_JEITA           0x03
-> > +#define MAX77650_CHG_ON_VOLT                 0x04
-> > +#define MAX77650_CHG_ON_VOLT_JEITA           0x05
-> > +#define MAX77650_CHG_ON_TOPOFF                       0x06
-> > +#define MAX77650_CHG_ON_TOPOFF_JEITA         0x07
-> > +#define MAX77650_CHG_DONE                    0x08
-> > +#define MAX77650_CHG_DONE_JEITA                      0x09
-> > +#define MAX77650_CHG_SUSP_PREQ_TIM_FAULT     0x0a
-> > +#define MAX77650_CHG_SUSP_FAST_CHG_TIM_FAULT 0x0b
-> > +#define MAX77650_CHG_SUSP_BATT_TEMP_FAULT    0x0c
-> > +
-> > +#define MAX77650_CHARGER_CHGIN_DTLS_MASK     GENMASK(3, 2)
-> > +#define MAX77650_CHARGER_CHGIN_DTLS_BITS(_reg) \
-> > +             (((_reg) & MAX77650_CHARGER_CHGIN_DTLS_MASK) >> 2)
->
-> But I guess these could use similar treatment?
->                                                         Pavel
->
+Double NOT (!!) operation is normally done to convert a non-zero value
+to 1 and keep zero as is, but that isn't the requirement in this case.
+All we wanted was to make sure that only one of the two routines isn't
+set, i.e. either both function pointers are set or both are unset.
 
-These are already called the same as in the manual, so we can keep them rig=
-ht?
+This can be done with a single NOT (!) operation as well.
 
-Bart
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 55e9795801a4..ad4e9991c3cc 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2505,7 +2505,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ 		    driver_data->target) ||
+ 	     (driver_data->setpolicy && (driver_data->target_index ||
+ 		    driver_data->target)) ||
+-	     (!!driver_data->get_intermediate != !!driver_data->target_intermediate) ||
++	     (!driver_data->get_intermediate != !driver_data->target_intermediate) ||
+ 	     (!driver_data->online != !driver_data->offline))
+ 		return -EINVAL;
+ 
+-- 
+2.21.0.rc0.269.g1a574e7a288b
