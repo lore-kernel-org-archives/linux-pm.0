@@ -1,77 +1,56 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 02/11] dt-bindings: power: supply: add DT bindings for max77650
-Date: Thu, 14 Feb 2019 08:18:11 -0600
-Message-ID: <CAL_JsqKokJhAXyOV1y-TNYfNAsd236vz0kLQkg+rpTKPZynWPw@mail.gmail.com>
-References: <20190213134335.10838-1-brgl@bgdev.pl> <20190213134335.10838-3-brgl@bgdev.pl>
- <20190213204834.GA31342@bogus> <CAMRc=MeyMnRMzmexgNBF5PkP-Hs2G2sS4hCP4mTZR5jxC=ej1w@mail.gmail.com>
+Subject: Re: [PATCH] devfreq: Use of_node_name_eq for node name comparisons
+Date: Thu, 14 Feb 2019 08:24:07 -0600
+Message-ID: <CAL_Jsq+hoRE5UG3+Z9OKDc3xmkJbGgQpUF+M4pzXJ_BSjj0kfg@mail.gmail.com>
+References: <20181205195050.4759-6-robh@kernel.org> <CGME20190213161024epcas3p3acc5c074714ad1d44fb90ab3f21cfcff@epcas3p3.samsung.com>
+ <CAL_Jsq+xpRPvj=UcSo+jQKX1pB=9B3SV9jB5ZVhaVsKvOqtoOg@mail.gmail.com> <5cc4b5a3-c4ad-46a9-2856-3ed67c6755d3@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMRc=MeyMnRMzmexgNBF5PkP-Hs2G2sS4hCP4mTZR5jxC=ej1w@mail.gmail.com>
+In-Reply-To: <5cc4b5a3-c4ad-46a9-2856-3ed67c6755d3@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 14, 2019 at 3:29 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+On Wed, Feb 13, 2019 at 9:49 PM Chanwoo Choi <cw00.choi@samsung.com> wrote:
 >
-> =C5=9Br., 13 lut 2019 o 21:48 Rob Herring <robh@kernel.org> napisa=C5=82(=
-a):
-> >
-> > On Wed, Feb 13, 2019 at 02:43:26PM +0100, Bartosz Golaszewski wrote:
-> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > >
-> > > Add the DT binding document for the battery charger module of max7765=
-0.
-> > >
-> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > ---
-> > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++=
-++
-> > >  1 file changed, 27 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/power/supply/ma=
-x77650-charger.txt
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-=
-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charg=
-er.txt
-> > > new file mode 100644
-> > > index 000000000000..16e24173c80e
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger=
-.txt
-> > > @@ -0,0 +1,27 @@
-> > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> > > +
-> > > +This module is part of the MAX77650 MFD device. For more details
-> > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > > +
-> > > +The charger is represented as a sub-node of the PMIC node on the dev=
-ice tree.
-> > > +
-> > > +Required properties:
-> > > +--------------------
-> > > +- compatible:                Must be "maxim,max77650-charger"
-> > > +
-> > > +Optional properties:
-> > > +--------------------
-> > > +- min-input-voltage: Minimum CHGIN regulation voltage (in microvolts=
-). Must be
-> > > +                     one of: 4000000, 4100000, 4200000, 4300000, 440=
-0000,
-> > > +                     4500000, 4600000, 4700000.
-> > > +- current-limit:     CHGIN input current limit (in microamps). Must =
-be one of:
-> > > +                     95000, 190000, 285000, 380000, 475000.
-> >
-> > Unit suffix? Really, these should be common properties. We have
-> > some I think. Charger bindings are a mess though...
-> >
+> Hi Rob,
 >
-> Do you mean a suffix like: ua for microamps and uv for microvolts? I'm
-> not seeing any other such properties.
+> On 19. 2. 14. =EC=98=A4=EC=A0=84 1:09, Rob Herring wrote:
+> > On Wed, Dec 5, 2018 at 1:50 PM Rob Herring <robh@kernel.org> wrote:
+> >>
+> >> Convert string compares of DT node names to use of_node_name_eq helper
+> >> instead. This removes direct access to the node name pointer.
+> >>
+> >> For instances using of_node_cmp, this has the side effect of now using
+> >> case sensitive comparisons. This should not matter for any FDT based
+> >> system which all of these are.
+> >>
+> >> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> >> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> >> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> >> Cc: Kukjin Kim <kgene@kernel.org>
+> >> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> >> Cc: linux-pm@vger.kernel.org
+> >> Cc: linux-arm-kernel@lists.infradead.org
+> >> Cc: linux-samsung-soc@vger.kernel.org
+> >> Signed-off-by: Rob Herring <robh@kernel.org>
+> >> ---
+> >>  drivers/devfreq/devfreq-event.c     | 2 +-
+> >>  drivers/devfreq/event/exynos-ppmu.c | 2 +-
+> >>  2 files changed, 2 insertions(+), 2 deletions(-)
+> >
+> > Can someone apply this please.
+>
+> Myungjoo picked up this patch[1] on devfreq.git
+> but has not yet sent the pull request.
 
-See bindings/property-units.txt
+Okay, thanks.
+
+Please add that tree to linux-next or reply to patches when they've
+been applied, so submitters have some way to know when their patch is
+accepted.
 
 Rob
