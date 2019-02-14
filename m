@@ -1,65 +1,78 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RFC 1/6] mfd: Support for Ettus Research E31x devices PMU
-Date: Thu, 14 Feb 2019 09:23:10 +0000
-Message-ID: <20190214092310.GE13737@dell>
-References: <20190212010143.3729-1-virendra.kakade@ni.com>
- <20190212010143.3729-2-virendra.kakade@ni.com>
+From: Erwan Velu <e.velu@criteo.com>
+Subject: Re: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver
+ prematurely exit
+Date: Thu, 14 Feb 2019 09:28:27 +0000
+Message-ID: <ae38f70b-f352-8567-2dac-5f6c7723a668@criteo.com>
+References: <20190213122105.14270-1-e.velu@criteo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190212010143.3729-2-virendra.kakade@ni.com>
+In-Reply-To: <20190213122105.14270-1-e.velu@criteo.com>
+Content-Language: en-US
+Content-ID: <65A70BF18378EF4DA33AD2EBCEEA1167@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Virendra Kakade <virendra.kakade@ni.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, moritz.fischer@ettus.com
+To: "rafael@kernel.org" <rafael@kernel.org>
+Cc: Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Feb 2019, Virendra Kakade wrote:
-
-> Document bindings for E31x device PMU MFD driver.
-> 
-> Signed-off-by: Virendra Kakade <virendra.kakade@ni.com>
-> ---
->  Documentation/devicetree/bindings/mfd/e31x-pmu.txt | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/e31x-pmu.txt b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> new file mode 100644
-> index 000000000000..ebb5625f6c74
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> @@ -0,0 +1,14 @@
-> +Ettus Research/National Instruments E31x PMU MFD driver
-
-Please expand on what PMU is.
-
-MFD is a Linuxisum and has no place in the description.
-
-You can supplement it with "parent device" or some such.
-
-> +Required properties:
-> +- compatible : Must be "ni,e31x-pmu"
-> +- regmap     : Must be <&regmapnode>
-> +
-> +Example:
-> +
-> +pmu {
-> +	compatible = "ni,e31x-pmu";
-
-No address?
-
-> +	regmap = <&devctrl>;
-> +	status = "okay";
-
-Not required in DT documentation.
-
-> +};
-> +
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+SGV5IHJhZmFlbCwNCg0KRG9lcyB0aGUgVjYgbG9va3MgZ29vZCB0byB5b3UgPw0KDQpUaGFua3Ms
+DQoNCkVyd2FuLA0KDQpMZSAxMy8wMi8yMDE5IMOgIDEzOjIxLCBFcndhbiBWZWx1IGEgw6ljcml0
+wqA6DQo+IFRoZSBpbml0IGNvZGUgcGF0aCBoYXMgc2V2ZXJhbCBleGNlcHRpb25zIHdoZXJlIHRo
+ZSBtb2R1bGUgY2FuIGRlY2lkZSBub3QgdG8gbG9hZC4NCj4gQXMgQ09ORklHX1g4Nl9JTlRFTF9Q
+U1RBVEUgaXMgZ2VuZXJhbGx5IHNldCB0byBZLCB0aGUgcmV0dXJuIGNvZGUgaXMgbm90IHJlYWNo
+YWJsZS4NCj4gVGhlIGluaXRpYWxpemF0aW9uIGNvZGUgaXMgbmVpdGhlciB2ZXJib3NlIG9mIHRo
+ZSByZWFzb24gd2h5IGl0IGRpZCBjaG9vc2UgdG8gcHJlbWF0dXJlbHkgZXhpdC4NCj4NCj4gVGhp
+cyBzaXR1YXRpb24gbGVhZHMgdG8gYSBzaXR1YXRpb24gd2hlcmUgaXRzIGRpZmZpY3VsdCBmb3Ig
+YSB1c2VyIHRvIGRldGVybWluZSwNCj4gb24gYSBnaXZlbiBwbGF0Zm9ybSwgd2h5IHRoZSBkcml2
+ZXIgZGlkbid0IGxvYWQgcHJvcGVybHkuDQo+DQo+IFRoaXMgcGF0Y2ggaXMgYWJvdXQgcmVwb3J0
+aW5nIHRvIHRoZSB1c2VyIHRoZSByZWFzb24vY29udGV4dCBvZiB3aHkgdGhlIGRyaXZlciBmYWls
+ZWQgdG8gbG9hZC4NCj4gVGhhdCBpcyBhIHByZWNpb3VzIGhpbnQgd2hlbiBkZWJ1Z2dpbmcgYSBw
+bGF0Zm9ybS4NCj4NCj4gU2lnbmVkLW9mZi1ieTogRXJ3YW4gVmVsdSA8ZS52ZWx1QGNyaXRlby5j
+b20+DQo+IC0tLQ0KPiAgIGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyB8IDI3ICsrKysr
+KysrKysrKysrKysrKysrKy0tLS0tLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRpb25z
+KCspLCA2IGRlbGV0aW9ucygtKQ0KPg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lu
+dGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+IGluZGV4IGRk
+NjZkZWNmMjA4Ny4uZTFhZTMwOTkyM2JmIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2NwdWZyZXEv
+aW50ZWxfcHN0YXRlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+
+IEBAIC0yNDc1LDYgKzI0NzUsNyBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRlX25v
+X2FjcGlfcHNzKHZvaWQpDQo+ICAgCQlrZnJlZShwc3MpOw0KPiAgIAl9DQo+ICAgDQo+ICsJcHJf
+ZGVidWcoIkFDUEkgX1BTUyBub3QgZm91bmRcbiIpOw0KPiAgIAlyZXR1cm4gdHJ1ZTsNCj4gICB9
+DQo+ICAgDQo+IEBAIC0yNDg0LDEwICsyNDg1LDE1IEBAIHN0YXRpYyBib29sIF9faW5pdCBpbnRl
+bF9wc3RhdGVfbm9fYWNwaV9wY2NoKHZvaWQpDQo+ICAgCWFjcGlfaGFuZGxlIGhhbmRsZTsNCj4g
+ICANCj4gICAJc3RhdHVzID0gYWNwaV9nZXRfaGFuZGxlKE5VTEwsICJcXF9TQiIsICZoYW5kbGUp
+Ow0KPiAtCWlmIChBQ1BJX0ZBSUxVUkUoc3RhdHVzKSkNCj4gKwlpZiAoQUNQSV9GQUlMVVJFKHN0
+YXR1cykpIHsNCj4gKwkJcHJfZGVidWcoIkFDUEkgUENDSCBub3QgZm91bmRcbiIpOw0KPiAgIAkJ
+cmV0dXJuIHRydWU7DQo+ICsJfQ0KPiAgIA0KPiAtCXJldHVybiAhYWNwaV9oYXNfbWV0aG9kKGhh
+bmRsZSwgIlBDQ0giKTsNCj4gKwlzdGF0dXMgPSBhY3BpX2hhc19tZXRob2QoaGFuZGxlLCAiUEND
+SCIpOw0KPiArCWlmICghc3RhdHVzKQ0KPiArCQlwcl9kZWJ1ZygiQUNQSSBQQ0NIIG5vdCBmb3Vu
+ZFxuIik7DQo+ICsJcmV0dXJuICFzdGF0dXM7DQo+ICAgfQ0KPiAgIA0KPiAgIHN0YXRpYyBib29s
+IF9faW5pdCBpbnRlbF9wc3RhdGVfaGFzX2FjcGlfcHBjKHZvaWQpDQo+IEBAIC0yNTAyLDYgKzI1
+MDgsNyBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRlX2hhc19hY3BpX3BwYyh2b2lk
+KQ0KPiAgIAkJaWYgKGFjcGlfaGFzX21ldGhvZChwci0+aGFuZGxlLCAiX1BQQyIpKQ0KPiAgIAkJ
+CXJldHVybiB0cnVlOw0KPiAgIAl9DQo+ICsJcHJfZGVidWcoIkFDUEkgX1BQQyBub3QgZm91bmRc
+biIpOw0KPiAgIAlyZXR1cm4gZmFsc2U7DQo+ICAgfQ0KPiAgIA0KPiBAQCAtMjUzOSw4ICsyNTQ2
+LDEwIEBAIHN0YXRpYyBib29sIF9faW5pdCBpbnRlbF9wc3RhdGVfcGxhdGZvcm1fcHdyX21nbXRf
+ZXhpc3RzKHZvaWQpDQo+ICAgCWlkID0geDg2X21hdGNoX2NwdShpbnRlbF9wc3RhdGVfY3B1X29v
+Yl9pZHMpOw0KPiAgIAlpZiAoaWQpIHsNCj4gICAJCXJkbXNybChNU1JfTUlTQ19QV1JfTUdNVCwg
+bWlzY19wd3IpOw0KPiAtCQlpZiAoIG1pc2NfcHdyICYgKDEgPDwgOCkpDQo+ICsJCWlmIChtaXNj
+X3B3ciAmICgxIDw8IDgpKSB7DQo+ICsJCQlwcl9kZWJ1ZygiTVNSX01JU0NfUFdSX01HTVQgZW5h
+YmxlZFxuIik7DQo+ICAgCQkJcmV0dXJuIHRydWU7DQo+ICsJCX0NCj4gICAJfQ0KPiAgIA0KPiAg
+IAlpZHggPSBhY3BpX21hdGNoX3BsYXRmb3JtX2xpc3QocGxhdF9pbmZvKTsNCj4gQEAgLTI2MDYs
+MjIgKzI2MTUsMjggQEAgc3RhdGljIGludCBfX2luaXQgaW50ZWxfcHN0YXRlX2luaXQodm9pZCkN
+Cj4gICAJCX0NCj4gICAJfSBlbHNlIHsNCj4gICAJCWlkID0geDg2X21hdGNoX2NwdShpbnRlbF9w
+c3RhdGVfY3B1X2lkcyk7DQo+IC0JCWlmICghaWQpDQo+ICsJCWlmICghaWQpIHsNCj4gKwkJCXBy
+X2luZm8oIkNQVSBJRCBpcyBub3QgaW4gdGhlIGxpc3Qgb2Ygc3VwcG9ydGVkIGRldmljZXNcbiIp
+Ow0KPiAgIAkJCXJldHVybiAtRU5PREVWOw0KPiArCQl9DQo+ICAgDQo+ICAgCQljb3B5X2NwdV9m
+dW5jcygoc3RydWN0IHBzdGF0ZV9mdW5jcyAqKWlkLT5kcml2ZXJfZGF0YSk7DQo+ICAgCX0NCj4g
+ICANCj4gLQlpZiAoaW50ZWxfcHN0YXRlX21zcnNfbm90X3ZhbGlkKCkpDQo+ICsJaWYgKGludGVs
+X3BzdGF0ZV9tc3JzX25vdF92YWxpZCgpKSB7DQo+ICsJCXByX3dhcm4oIkNhbm5vdCBlbmFibGUg
+ZHJpdmVyIGFzIHBlciBpbnZhbGlkIE1TUnNcbiIpOw0KPiAgIAkJcmV0dXJuIC1FTk9ERVY7DQo+
+ICsJfQ0KPiAgIA0KPiAgIGh3cF9jcHVfbWF0Y2hlZDoNCj4gICAJLyoNCj4gICAJICogVGhlIElu
+dGVsIHBzdGF0ZSBkcml2ZXIgd2lsbCBiZSBpZ25vcmVkIGlmIHRoZSBwbGF0Zm9ybQ0KPiAgIAkg
+KiBmaXJtd2FyZSBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IG1vZGVzLg0KPiAgIAkgKi8N
+Cj4gLQlpZiAoaW50ZWxfcHN0YXRlX3BsYXRmb3JtX3B3cl9tZ210X2V4aXN0cygpKQ0KPiArCWlm
+IChpbnRlbF9wc3RhdGVfcGxhdGZvcm1fcHdyX21nbXRfZXhpc3RzKCkpIHsNCj4gKwkJcHJfaW5m
+bygiUGxhdGZvcm0gYWxyZWFkeSB0YWtpbmcgY2FyZSBvZiBwb3dlciBtYW5hZ2VtZW50XG4iKTsN
+Cj4gICAJCXJldHVybiAtRU5PREVWOw0KPiArCX0NCj4gICANCj4gICAJaWYgKCFod3BfYWN0aXZl
+ICYmIGh3cF9vbmx5KQ0KPiAgIAkJcmV0dXJuIC1FTk9UU1VQUDsNCg==
