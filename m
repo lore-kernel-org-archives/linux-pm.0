@@ -1,78 +1,87 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Thu, 14 Feb 2019 09:28:27 +0000
-Message-ID: <ae38f70b-f352-8567-2dac-5f6c7723a668@criteo.com>
-References: <20190213122105.14270-1-e.velu@criteo.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: Re: [PATCH v5 02/11] dt-bindings: power: supply: add DT bindings for max77650
+Date: Thu, 14 Feb 2019 10:29:22 +0100
+Message-ID: <CAMRc=MeyMnRMzmexgNBF5PkP-Hs2G2sS4hCP4mTZR5jxC=ej1w@mail.gmail.com>
+References: <20190213134335.10838-1-brgl@bgdev.pl> <20190213134335.10838-3-brgl@bgdev.pl>
+ <20190213204834.GA31342@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190213122105.14270-1-e.velu@criteo.com>
-Content-Language: en-US
-Content-ID: <65A70BF18378EF4DA33AD2EBCEEA1167@eurprd04.prod.outlook.com>
+In-Reply-To: <20190213204834.GA31342@bogus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rafael@kernel.org" <rafael@kernel.org>
-Cc: Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGV5IHJhZmFlbCwNCg0KRG9lcyB0aGUgVjYgbG9va3MgZ29vZCB0byB5b3UgPw0KDQpUaGFua3Ms
-DQoNCkVyd2FuLA0KDQpMZSAxMy8wMi8yMDE5IMOgIDEzOjIxLCBFcndhbiBWZWx1IGEgw6ljcml0
-wqA6DQo+IFRoZSBpbml0IGNvZGUgcGF0aCBoYXMgc2V2ZXJhbCBleGNlcHRpb25zIHdoZXJlIHRo
-ZSBtb2R1bGUgY2FuIGRlY2lkZSBub3QgdG8gbG9hZC4NCj4gQXMgQ09ORklHX1g4Nl9JTlRFTF9Q
-U1RBVEUgaXMgZ2VuZXJhbGx5IHNldCB0byBZLCB0aGUgcmV0dXJuIGNvZGUgaXMgbm90IHJlYWNo
-YWJsZS4NCj4gVGhlIGluaXRpYWxpemF0aW9uIGNvZGUgaXMgbmVpdGhlciB2ZXJib3NlIG9mIHRo
-ZSByZWFzb24gd2h5IGl0IGRpZCBjaG9vc2UgdG8gcHJlbWF0dXJlbHkgZXhpdC4NCj4NCj4gVGhp
-cyBzaXR1YXRpb24gbGVhZHMgdG8gYSBzaXR1YXRpb24gd2hlcmUgaXRzIGRpZmZpY3VsdCBmb3Ig
-YSB1c2VyIHRvIGRldGVybWluZSwNCj4gb24gYSBnaXZlbiBwbGF0Zm9ybSwgd2h5IHRoZSBkcml2
-ZXIgZGlkbid0IGxvYWQgcHJvcGVybHkuDQo+DQo+IFRoaXMgcGF0Y2ggaXMgYWJvdXQgcmVwb3J0
-aW5nIHRvIHRoZSB1c2VyIHRoZSByZWFzb24vY29udGV4dCBvZiB3aHkgdGhlIGRyaXZlciBmYWls
-ZWQgdG8gbG9hZC4NCj4gVGhhdCBpcyBhIHByZWNpb3VzIGhpbnQgd2hlbiBkZWJ1Z2dpbmcgYSBw
-bGF0Zm9ybS4NCj4NCj4gU2lnbmVkLW9mZi1ieTogRXJ3YW4gVmVsdSA8ZS52ZWx1QGNyaXRlby5j
-b20+DQo+IC0tLQ0KPiAgIGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyB8IDI3ICsrKysr
-KysrKysrKysrKysrKysrKy0tLS0tLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRpb25z
-KCspLCA2IGRlbGV0aW9ucygtKQ0KPg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lu
-dGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+IGluZGV4IGRk
-NjZkZWNmMjA4Ny4uZTFhZTMwOTkyM2JmIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2NwdWZyZXEv
-aW50ZWxfcHN0YXRlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+
-IEBAIC0yNDc1LDYgKzI0NzUsNyBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRlX25v
-X2FjcGlfcHNzKHZvaWQpDQo+ICAgCQlrZnJlZShwc3MpOw0KPiAgIAl9DQo+ICAgDQo+ICsJcHJf
-ZGVidWcoIkFDUEkgX1BTUyBub3QgZm91bmRcbiIpOw0KPiAgIAlyZXR1cm4gdHJ1ZTsNCj4gICB9
-DQo+ICAgDQo+IEBAIC0yNDg0LDEwICsyNDg1LDE1IEBAIHN0YXRpYyBib29sIF9faW5pdCBpbnRl
-bF9wc3RhdGVfbm9fYWNwaV9wY2NoKHZvaWQpDQo+ICAgCWFjcGlfaGFuZGxlIGhhbmRsZTsNCj4g
-ICANCj4gICAJc3RhdHVzID0gYWNwaV9nZXRfaGFuZGxlKE5VTEwsICJcXF9TQiIsICZoYW5kbGUp
-Ow0KPiAtCWlmIChBQ1BJX0ZBSUxVUkUoc3RhdHVzKSkNCj4gKwlpZiAoQUNQSV9GQUlMVVJFKHN0
-YXR1cykpIHsNCj4gKwkJcHJfZGVidWcoIkFDUEkgUENDSCBub3QgZm91bmRcbiIpOw0KPiAgIAkJ
-cmV0dXJuIHRydWU7DQo+ICsJfQ0KPiAgIA0KPiAtCXJldHVybiAhYWNwaV9oYXNfbWV0aG9kKGhh
-bmRsZSwgIlBDQ0giKTsNCj4gKwlzdGF0dXMgPSBhY3BpX2hhc19tZXRob2QoaGFuZGxlLCAiUEND
-SCIpOw0KPiArCWlmICghc3RhdHVzKQ0KPiArCQlwcl9kZWJ1ZygiQUNQSSBQQ0NIIG5vdCBmb3Vu
-ZFxuIik7DQo+ICsJcmV0dXJuICFzdGF0dXM7DQo+ICAgfQ0KPiAgIA0KPiAgIHN0YXRpYyBib29s
-IF9faW5pdCBpbnRlbF9wc3RhdGVfaGFzX2FjcGlfcHBjKHZvaWQpDQo+IEBAIC0yNTAyLDYgKzI1
-MDgsNyBAQCBzdGF0aWMgYm9vbCBfX2luaXQgaW50ZWxfcHN0YXRlX2hhc19hY3BpX3BwYyh2b2lk
-KQ0KPiAgIAkJaWYgKGFjcGlfaGFzX21ldGhvZChwci0+aGFuZGxlLCAiX1BQQyIpKQ0KPiAgIAkJ
-CXJldHVybiB0cnVlOw0KPiAgIAl9DQo+ICsJcHJfZGVidWcoIkFDUEkgX1BQQyBub3QgZm91bmRc
-biIpOw0KPiAgIAlyZXR1cm4gZmFsc2U7DQo+ICAgfQ0KPiAgIA0KPiBAQCAtMjUzOSw4ICsyNTQ2
-LDEwIEBAIHN0YXRpYyBib29sIF9faW5pdCBpbnRlbF9wc3RhdGVfcGxhdGZvcm1fcHdyX21nbXRf
-ZXhpc3RzKHZvaWQpDQo+ICAgCWlkID0geDg2X21hdGNoX2NwdShpbnRlbF9wc3RhdGVfY3B1X29v
-Yl9pZHMpOw0KPiAgIAlpZiAoaWQpIHsNCj4gICAJCXJkbXNybChNU1JfTUlTQ19QV1JfTUdNVCwg
-bWlzY19wd3IpOw0KPiAtCQlpZiAoIG1pc2NfcHdyICYgKDEgPDwgOCkpDQo+ICsJCWlmIChtaXNj
-X3B3ciAmICgxIDw8IDgpKSB7DQo+ICsJCQlwcl9kZWJ1ZygiTVNSX01JU0NfUFdSX01HTVQgZW5h
-YmxlZFxuIik7DQo+ICAgCQkJcmV0dXJuIHRydWU7DQo+ICsJCX0NCj4gICAJfQ0KPiAgIA0KPiAg
-IAlpZHggPSBhY3BpX21hdGNoX3BsYXRmb3JtX2xpc3QocGxhdF9pbmZvKTsNCj4gQEAgLTI2MDYs
-MjIgKzI2MTUsMjggQEAgc3RhdGljIGludCBfX2luaXQgaW50ZWxfcHN0YXRlX2luaXQodm9pZCkN
-Cj4gICAJCX0NCj4gICAJfSBlbHNlIHsNCj4gICAJCWlkID0geDg2X21hdGNoX2NwdShpbnRlbF9w
-c3RhdGVfY3B1X2lkcyk7DQo+IC0JCWlmICghaWQpDQo+ICsJCWlmICghaWQpIHsNCj4gKwkJCXBy
-X2luZm8oIkNQVSBJRCBpcyBub3QgaW4gdGhlIGxpc3Qgb2Ygc3VwcG9ydGVkIGRldmljZXNcbiIp
-Ow0KPiAgIAkJCXJldHVybiAtRU5PREVWOw0KPiArCQl9DQo+ICAgDQo+ICAgCQljb3B5X2NwdV9m
-dW5jcygoc3RydWN0IHBzdGF0ZV9mdW5jcyAqKWlkLT5kcml2ZXJfZGF0YSk7DQo+ICAgCX0NCj4g
-ICANCj4gLQlpZiAoaW50ZWxfcHN0YXRlX21zcnNfbm90X3ZhbGlkKCkpDQo+ICsJaWYgKGludGVs
-X3BzdGF0ZV9tc3JzX25vdF92YWxpZCgpKSB7DQo+ICsJCXByX3dhcm4oIkNhbm5vdCBlbmFibGUg
-ZHJpdmVyIGFzIHBlciBpbnZhbGlkIE1TUnNcbiIpOw0KPiAgIAkJcmV0dXJuIC1FTk9ERVY7DQo+
-ICsJfQ0KPiAgIA0KPiAgIGh3cF9jcHVfbWF0Y2hlZDoNCj4gICAJLyoNCj4gICAJICogVGhlIElu
-dGVsIHBzdGF0ZSBkcml2ZXIgd2lsbCBiZSBpZ25vcmVkIGlmIHRoZSBwbGF0Zm9ybQ0KPiAgIAkg
-KiBmaXJtd2FyZSBoYXMgaXRzIG93biBwb3dlciBtYW5hZ2VtZW50IG1vZGVzLg0KPiAgIAkgKi8N
-Cj4gLQlpZiAoaW50ZWxfcHN0YXRlX3BsYXRmb3JtX3B3cl9tZ210X2V4aXN0cygpKQ0KPiArCWlm
-IChpbnRlbF9wc3RhdGVfcGxhdGZvcm1fcHdyX21nbXRfZXhpc3RzKCkpIHsNCj4gKwkJcHJfaW5m
-bygiUGxhdGZvcm0gYWxyZWFkeSB0YWtpbmcgY2FyZSBvZiBwb3dlciBtYW5hZ2VtZW50XG4iKTsN
-Cj4gICAJCXJldHVybiAtRU5PREVWOw0KPiArCX0NCj4gICANCj4gICAJaWYgKCFod3BfYWN0aXZl
-ICYmIGh3cF9vbmx5KQ0KPiAgIAkJcmV0dXJuIC1FTk9UU1VQUDsNCg==
+=C5=9Br., 13 lut 2019 o 21:48 Rob Herring <robh@kernel.org> napisa=C5=82(a)=
+:
+>
+> On Wed, Feb 13, 2019 at 02:43:26PM +0100, Bartosz Golaszewski wrote:
+> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >
+> > Add the DT binding document for the battery charger module of max77650.
+> >
+> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > ---
+> >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
+> >  1 file changed, 27 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/supply/max7=
+7650-charger.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-ch=
+arger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger=
+.txt
+> > new file mode 100644
+> > index 000000000000..16e24173c80e
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.t=
+xt
+> > @@ -0,0 +1,27 @@
+> > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> > +
+> > +This module is part of the MAX77650 MFD device. For more details
+> > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > +
+> > +The charger is represented as a sub-node of the PMIC node on the devic=
+e tree.
+> > +
+> > +Required properties:
+> > +--------------------
+> > +- compatible:                Must be "maxim,max77650-charger"
+> > +
+> > +Optional properties:
+> > +--------------------
+> > +- min-input-voltage: Minimum CHGIN regulation voltage (in microvolts).=
+ Must be
+> > +                     one of: 4000000, 4100000, 4200000, 4300000, 44000=
+00,
+> > +                     4500000, 4600000, 4700000.
+> > +- current-limit:     CHGIN input current limit (in microamps). Must be=
+ one of:
+> > +                     95000, 190000, 285000, 380000, 475000.
+>
+> Unit suffix? Really, these should be common properties. We have
+> some I think. Charger bindings are a mess though...
+>
+
+Do you mean a suffix like: ua for microamps and uv for microvolts? I'm
+not seeing any other such properties.
+
+Bart
+
+> > +
+> > +Example:
+> > +--------
+> > +
+> > +     charger {
+> > +             compatible =3D "maxim,max77650-charger";
+> > +             maxim,vchgin-min =3D <4200000>;
+> > +             maxim,ichgin-lim =3D <285000>;
+>
+> Doesn't match above.
+>
+> > +     };
+> > --
+> > 2.20.1
+> >
