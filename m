@@ -1,18 +1,18 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
- devfreq core
-Date: Fri, 15 Feb 2019 08:42:30 +0900
-Message-ID: <b28e763d-c3c9-0673-6216-f67561112b60@samsung.com>
+Subject: Re: [PATCH 1/4] PM / devfreq: Track overall load monitor state
+ instead of 'stop_polling'
+Date: Fri, 15 Feb 2019 08:47:51 +0900
+Message-ID: <fdb765d1-6248-dbb9-20c5-3add6581018e@samsung.com>
 References: <20190214013042.254790-1-mka@chromium.org>
-        <20190214013042.254790-5-mka@chromium.org>
-        <CAGTfZH118diXgKHetWwiNMXHALxXqt=MSh9oVv+nt4-SJkzN2Q@mail.gmail.com>
-        <CGME20190214192933epcas5p204c34010accb5e63480abd3ca34991eb@epcas5p2.samsung.com>
-        <20190214192855.GD117604@google.com>
+        <20190214013042.254790-2-mka@chromium.org>
+        <CAGTfZH3E+RetMzKxzZNEgYw6=kocdfgRcKSbmP5GfZ4k1j0Cuw@mail.gmail.com>
+        <CGME20190214170024epcas3p1fd9703dd6d0f2ee90bb52f24b8357d1c@epcas3p1.samsung.com>
+        <20190214165947.GY117604@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190214192855.GD117604@google.com>
+In-Reply-To: <20190214165947.GY117604@google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>, Chanwoo Choi <cwchoi00@gmail.com>
@@ -21,73 +21,44 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Matthias,
 
-On 19. 2. 15. 오전 4:28, Matthias Kaehlcke wrote:
+On 19. 2. 15. 오전 1:59, Matthias Kaehlcke wrote:
 > Hi Chanwoo,
 > 
-> On Thu, Feb 14, 2019 at 11:17:36PM +0900, Chanwoo Choi wrote:
+> On Thu, Feb 14, 2019 at 11:25:52PM +0900, Chanwoo Choi wrote:
 >> Hi Matthias,
 >>
->> As I commented on the first patch, it is not possible to call some codes
->> according to the intention of each governor between 'devfreq_moniotr_*()'
->> and some codes which are executed before or after 'devfreq_moniotr_*()'
+>> 2019년 2월 14일 (목) 오후 7:16, Matthias Kaehlcke <mka@chromium.org>님이 작성:
+>>>
+>>> The field ->stop_polling indicates whether load monitoring should be/is
+>>> stopped, it is set in devfreq_monitor_suspend(). Change the variable to
+>>> hold the general state of load monitoring (stopped, running, suspended).
+>>> Besides improving readability of conditions involving the field and this
+>>> prepares the terrain for moving some duplicated code from the governors
+>>> into the devfreq core.
+>>>
+>>> Hold the devfreq lock in devfreq_monitor_start/stop() to ensure proper
+>>> synchronization.
 >>
->> For example, if some governor requires the following sequence,
->> after this patch, it is not possible.
->>
->> case DEVFREQ_GOV_xxx:
->>         /* execute some code before devfreq_monitor_xxx() */
->>         devfreq_monitor_xxx()
->>         /* execute some code after devfreq_monitor_xxx() */
+>> IMHO, I'm not sure that there are any benefits changing
+>> from 'stop_polling' to 'monitor_state'. I have no objections
+>> if Myungjoo confirms it.
 > 
-> As for the suspend/resume case I agree that the patch introduces this
-> limitation, but I'm not convinced that this is an actual problem.
+> I agree that as an isolated change there isn't a clear benefit.
+> However in the context of the series the change is needed to
+> avoid resuming a load monitor that wasn't even started.
 > 
-> For governor_start(): why can't the governor execute the code
-> before polling started, does it make any difference to the governor
-> that a work is scheduled?
+> In case this series isn't accepted I'd still suggest to change the
+> name from 'stop_polling' to 'suspended'. I read 'stop_polling' as a
+> call for action, while 'suspended' is a state. IMO at least in some
+> contexts conditions using a state is clearer.
 
-The some governors might want to do something before starting
-the work and do something after work started. I think that
-the existing style is more flexible.
-
-And,
-It has one more problem when changing the governor on the fly
-from simple_ondemand to other governors like performance,
-powersave and so on.
-
-Even if other governors don't need to monitor the utilization,
-the work timer will be executed continually because the devfreq
-device has the polling_ms value. It is not necessary
-of the other governors such as performance, powersave.
-
-It means that only specific governor like simple_ondemand
-have to call the devfreq_monitor_start() by itself
-instead of calling it on devfreq core.
-
-> 
-> For governor_stop(): why would the governor require polling to be
-> active during stop? If it needs update_devfreq() to run (called by
-> devfreq_monitor()) it can call it directly, instead of waiting for the
-> monitor to run at some later time.
-
-As I knew, if the current governors are performance/powersave/
-userspace, the monitoring is already stopped and not used.
-Because they don't need to handle the codes related to the work
-like queue_delayed_work(), cancel_delayed_work_sync().
-
-And,
-In case of the existing style for calling devfreq_monitor_*(),
-other governors like performance/powersave/userspace/passice
-don't need to call the devfreq_monitor_stop() because they
-didn't use the work timer.
+I agree to change the variable name 'stop_polling' to 'suspended'
+for using the correct meaningful name.
 
 > 
 > Cheers
 > 
 > Matthias
-> 
-> 
-> 
 > 
 > 
 
