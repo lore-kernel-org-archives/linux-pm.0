@@ -1,118 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
- broadcast  _PPC to all online CPUs
-Date: Thu, 14 Feb 2019 12:36:48 +0530
-Message-ID: <20190214070648.pvsavc46iivub4hy@vireshk-i7>
-References: <20190209120232.21582-1-yu.c.chen@intel.com>
- <20190211103307.rccddkso3f5s3yko@vireshk-i7>
- <20190213165538.GB30385@chenyu-office.sh.intel.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v9 5/8] gpio: Initial support for ROHM bd70528 GPIO block
+Date: Thu, 14 Feb 2019 09:00:33 +0100
+Message-ID: <CACRpkdYqSyWGSy6OKukE_SQWi1r0uOQD91JwpqUgrbJq28gbUQ@mail.gmail.com>
+References: <cover.1550063882.git.matti.vaittinen@fi.rohmeurope.com> <8334d6064575249e871e88aa6057b134795232e3.1550063882.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190213165538.GB30385@chenyu-office.sh.intel.com>
+In-Reply-To: <8334d6064575249e871e88aa6057b134795232e3.1550063882.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mark Brown <broonie@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
 List-Id: linux-pm@vger.kernel.org
 
-On 14-02-19, 00:55, Yu Chen wrote:
-> Hi Viresh,
-> On Mon, Feb 11, 2019 at 04:03:07PM +0530, Viresh Kumar wrote:
-> > On 09-02-19, 20:02, Chen Yu wrote:
-> > > On Dell Inc. XPS13 9333, the BIOS changes the value of
-> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
-> > > the power source changes), the maximum frequency of the
-> > > CPU is not updated accordingly. This is due to the policy's
-> > > cpuinfo.max is not updated when _PPC notifier fires.
-> > > 
-> > > Fix this problem by updating the policy's cpuinfo.max
-> > > and broadcast the _PPC notifier to all online CPUs.
-> > > 
-> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-> > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-> > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > ---
-> > >  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
-> > >  drivers/cpufreq/cpufreq.c        |  2 ++
-> > >  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
-> > >  3 files changed, 30 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> > > index a303fd0e108c..737dbf5aa7f7 100644
-> > > --- a/drivers/acpi/processor_perflib.c
-> > > +++ b/drivers/acpi/processor_perflib.c
-> > > @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
-> > >  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
-> > >  		 "limited by BIOS, this should help");
-> > >  
-> > > +static int broadcast_ppc;
-> > > +module_param(broadcast_ppc, int, 0644);
-> > > +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
-> > > +
-> > >  #define PPC_REGISTERED   1
-> > >  #define PPC_IN_USE       2
-> > >  
-> > > @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
-> > >  		else
-> > >  			acpi_processor_ppc_ost(pr->handle, 0);
-> > >  	}
-> > > -	if (ret >= 0)
-> > > -		cpufreq_update_policy(pr->id);
-> > > +	if (ret >= 0) {
-> > > +		if (broadcast_ppc) {
-> > > +			int cpu;
-> > > +
-> > > +			for_each_possible_cpu(cpu)
-> > > +				cpufreq_update_policy(cpu);
-> > > +		} else {
-> > > +			cpufreq_update_policy(pr->id);
-> > > +		}
-> > > +	}
-> > >  }
-> > >  
-> > >  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index e35a886e00bc..95e08816b512 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> > >  
-> > >  	policy->min = new_policy->min;
-> > >  	policy->max = new_policy->max;
-> > > +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
-> > > +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
-> > >  	trace_cpu_frequency_limits(policy);
-> > >  
-> > >  	policy->cached_target_freq = UINT_MAX;
-> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > > index dd66decf2087..e1881313c396 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
-> > >  
-> > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
-> > >  {
-> > > +	int max_freq;
-> > >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
-> > >  
-> > >  	update_turbo_state();
-> > > +	max_freq = intel_pstate_get_max_freq(cpu);
-> > > +
-> > > +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
-> > 
-> > Why do have this check for policy->max here ?
-> >
-> Thanks for looking at this change, I've replied to another email in detail of
-> the scenario that, this is due to corner case that if the system boots
-> with battery and plug the AC after boot up, the cpufreq max limit will not
-> increase even the turbo has been enabled after the AC plugged.
+On Wed, Feb 13, 2019 at 2:34 PM Matti Vaittinen
+<matti.vaittinen@fi.rohmeurope.com> wrote:
 
-Yeah, but I asked a different question I believe, why is this
-comparison necessary ?
+> ROHM BD70528 PMIC has 4 GPIO pins. Allow them to be
+> controlled by GPIO framework.
+>
+> IRQs are handled by regmap-irq and GPIO driver is not
+> aware of the irq usage.
+>
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-policy->max == policy->cpuinfo.max_freq
+(...)
 
--- 
-viresh
+Just spotted this:
+
+> +#include <linux/gpio/driver.h>
+> +#include <linux/gpio.h>
+
+A driver should only need <linux/gpio/driver.h>
+the <linux/gpio.h> should not be used at all in new code,
+it is a legacy header.
+
+> +static int bd70528_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
+> +                                  unsigned long config)
+> +{
+> +       struct bd70528_gpio *bdgpio = gpiochip_get_data(chip);
+> +
+> +       switch (pinconf_to_config_param(config)) {
+> +       case PIN_CONFIG_DRIVE_OPEN_DRAIN:
+> +               return regmap_update_bits(bdgpio->chip.regmap,
+> +                                         GPIO_OUT_REG(offset),
+> +                                         BD70528_GPIO_DRIVE_MASK,
+> +                                         BD70528_GPIO_OPEN_DRAIN);
+> +               break;
+> +       case PIN_CONFIG_DRIVE_PUSH_PULL:
+> +               return regmap_update_bits(bdgpio->chip.regmap,
+> +                                         GPIO_OUT_REG(offset),
+> +                                         BD70528_GPIO_DRIVE_MASK,
+> +                                         BD70528_GPIO_PUSH_PULL);
+> +               break;
+> +       case PIN_CONFIG_INPUT_DEBOUNCE:
+> +               return bd70528_set_debounce(bdgpio, offset,
+> +                                           pinconf_to_config_argument(config));
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +       return -ENOTSUPP;
+> +}
+
+BTW I just merged code from Thomas Petazzoni that make it possible to
+also support pull-up and pull-down from GPIO here if you want to enable
+it.
+
+Yours,
+Linus Walleij
