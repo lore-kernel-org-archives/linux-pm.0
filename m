@@ -1,16 +1,16 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 4/7] include: devfreq: add polling_idle_ms to
- 'profile'
-Date: Thu, 14 Feb 2019 13:51:00 +0900
-Message-ID: <b956e581-0753-6257-279b-a4c8218c2651@samsung.com>
+Subject: Re: [PATCH v3 7/7] drivers: devfreq: add tracing for scheduling
+ work
+Date: Thu, 14 Feb 2019 13:57:54 +0900
+Message-ID: <971cee25-cb3c-97b0-087e-97551dc066ad@samsung.com>
 References: <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190212222434eucas1p134dcdce827df19704c698fd6452b0a06@eucas1p1.samsung.com>
-        <1550010238-24002-5-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190212222438eucas1p27e020c2b36f2e5a2188e4df6fb18488b@eucas1p2.samsung.com>
+        <1550010238-24002-8-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550010238-24002-5-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <1550010238-24002-8-git-send-email-l.luba@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
@@ -19,57 +19,59 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Lukasz,
 
-If the user can select the type of work in accordance with
-their choice, either deferrable work or delayed work
-for periodic without stop on idle state,
-I think that the existing polling_ms is enough.
-
-Because, user determine to use the 'delayed work' for periodic timer,
-user can change the polling_ms through already provided sysfs interface
-according to multiple situation.
-
-In fact,
-If the user want to use the periodic timer without stop on idle state
-instead of deferrable work, it means that the user always want to
-monitor/check the current load/status of device at the correct interval
-and then changing the frequency without any latency.
-
 On 19. 2. 13. 오전 7:23, Lukasz Luba wrote:
-> Add needed fields to support new state: idle, where different polling
-> interval is in use. It provides better control of the devfreq device
-> and lower the power consumption when the device is not busy.
+> This patch add basic tracing of the devfreq workqueue and delayed work.
+> It aims to capture changes of the polling intervals and device state.
 > 
 > Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->  include/linux/devfreq.h | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/devfreq/devfreq.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index fbffa74..5140970 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -72,6 +72,11 @@ struct devfreq_dev_status {
->   * @initial_freq:	The operating frequency when devfreq_add_device() is
->   *			called.
->   * @polling_ms:		The polling interval in ms. 0 disables polling.
-> + * @polling_idle_ms:	The polling interval in 'idle state' in ms.
-> + *			When the device is running at lowest frequency and has
-> + *			low-load, it is considered as in 'idle state'.
-> + *			Thus, longer polling interval is used for the device
-> + *			to save some power.
->   * @target:		The device should set its operating frequency at
->   *			freq or lowest-upper-than-freq value. If freq is
->   *			higher than any operable frequency, set maximum.
-> @@ -98,6 +103,7 @@ struct devfreq_dev_status {
->  struct devfreq_dev_profile {
->  	unsigned long initial_freq;
->  	unsigned int polling_ms;
-> +	unsigned int polling_idle_ms;
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 29e99ce..c1d0d8c 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -29,6 +29,9 @@
+>  #include <linux/of.h>
+>  #include "governor.h"
 >  
->  	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
->  	int (*get_dev_status)(struct device *dev,
-> 
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/devfreq.h>
+> +
+>  /* The ~30% load threshold used for load calculation (due to fixed point
+>   * arithmetic) */
+>  #define LOAD_THRESHOLD_IN_DEVICE_USAGE (300)
+> @@ -418,6 +421,7 @@ static void devfreq_monitor(struct work_struct *work)
+>  	struct devfreq *devfreq = container_of(work,
+>  					struct devfreq, work.work);
+>  	unsigned int polling_ms;
+> +	const char *df_name = dev_name(&devfreq->dev);
 
+nit: You can use 'dev_name(&devfreq->dev)' directly
+without defining the separate df_name.
+
+>  
+>  	mutex_lock(&devfreq->lock);
+>  	polling_ms = devfreq_get_polling_delay(devfreq);
+> @@ -429,6 +433,10 @@ static void devfreq_monitor(struct work_struct *work)
+>  	schedule_delayed_work(&devfreq->work,
+>  			      msecs_to_jiffies(polling_ms));
+>  	mutex_unlock(&devfreq->lock);
+> +
+> +	trace_devfreq_monitor(df_name, devfreq->previous_freq, polling_ms,
+> +			      devfreq->last_status.busy_time,
+> +			      devfreq->last_status.total_time);
+
+Regardless of type of work,
+I think that trace point is necessary for devfreq framework.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+>  }
+>  
+>  /**
+> 
 
 -- 
 Best Regards,
