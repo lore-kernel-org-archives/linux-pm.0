@@ -1,27 +1,44 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Thu, 14 Feb 2019 15:18:05 +0000
-Message-ID: <4c1e9d87-6e4c-2bca-f069-c071ad561788@criteo.com>
-References: <20190213122105.14270-1-e.velu@criteo.com>
- <ae38f70b-f352-8567-2dac-5f6c7723a668@criteo.com>
- <CAJZ5v0geHMDMLqg98BZEGLjNrSRy3juB9y54ots357wVeK-shQ@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v7 11/15] sched/core: uclamp: Extend CPU's cgroup
+ controller
+Date: Thu, 14 Feb 2019 07:48:17 -0800
+Message-ID: <20190214154817.GN50184@devbig004.ftw2.facebook.com>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-12-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0geHMDMLqg98BZEGLjNrSRy3juB9y54ots357wVeK-shQ@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <8E080BB06FB63D4DBEE4A9627843DD99@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <20190208100554.32196-12-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQpMZSAxNC8wMi8yMDE5IMOgIDExOjIyLCBSYWZhZWwgSi4gV3lzb2NraSBhIMOpY3JpdMKgOg0K
-PiBPbiBUaHUsIEZlYiAxNCwgMjAxOSBhdCAxMDoyOCBBTSBFcndhbiBWZWx1IDxlLnZlbHVAY3Jp
-dGVvLmNvbT4gd3JvdGU6DQo+PiBIZXkgcmFmYWVsLA0KPj4NCj4+IERvZXMgdGhlIFY2IGxvb2tz
-IGdvb2QgdG8geW91ID8NCj4gSSd2ZSBxdWV1ZWQgaXQgdXAgd2l0aCBzb21lIG1hbnVhbCBjaGFu
-Z2VzLiAgTm8gbmVlZCB0byB1cGRhdGUuDQoNCk9rLCBjb29sLiBXaGF0IGtpbmQgb2YgY2hhbmdl
-cyA/DQoNCkknZCBsb3ZlIHRvIHVuZGVyc3RhbmQgd2hhdCBJIG1pc3NlZC4NCg0KVGh4LA0KDQpF
-cndhbg0KDQo=
+Hello,
+
+On Fri, Feb 08, 2019 at 10:05:50AM +0000, Patrick Bellasi wrote:
+> a) are available only for non-root nodes, both on default and legacy
+>    hierarchies, while system wide clamps are defined by a generic
+>    interface which does not depends on cgroups
+> 
+> b) do not enforce any constraints and/or dependencies between the parent
+>    and its child nodes, thus relying:
+>    - on permission settings defined by the system management software,
+>      to define if subgroups can configure their clamp values
+>    - on the delegation model, to ensure that effective clamps are
+>      updated to consider both subgroup requests and parent group
+>      constraints
+
+I'm not sure about this hierarchical behavior.
+
+> c) have higher priority than task-specific clamps, defined via
+>    sched_setattr(), thus allowing to control and restrict task requests
+
+and I have some other concerns about the interface, but let's discuss
+them once the !cgroup portion is settled.
+
+Thanks.
+
+-- 
+tejun
