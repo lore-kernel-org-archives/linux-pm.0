@@ -1,29 +1,52 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH v6] cpufreq: intel_pstate: Reporting reasons why driver
- prematurely exit
-Date: Thu, 14 Feb 2019 16:42:10 +0000
-Message-ID: <8158d558-bbcd-fabe-6c8a-8de840807dc0@criteo.com>
-References: <20190213122105.14270-1-e.velu@criteo.com>
- <ae38f70b-f352-8567-2dac-5f6c7723a668@criteo.com>
- <CAJZ5v0geHMDMLqg98BZEGLjNrSRy3juB9y54ots357wVeK-shQ@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 1/4] PM / devfreq: Track overall load monitor state
+ instead of 'stop_polling'
+Date: Thu, 14 Feb 2019 08:59:47 -0800
+Message-ID: <20190214165947.GY117604@google.com>
+References: <20190214013042.254790-1-mka@chromium.org>
+ <20190214013042.254790-2-mka@chromium.org>
+ <CAGTfZH3E+RetMzKxzZNEgYw6=kocdfgRcKSbmP5GfZ4k1j0Cuw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0geHMDMLqg98BZEGLjNrSRy3juB9y54ots357wVeK-shQ@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <AF0E74F8E8D3A04D90BBA2FE55580C16@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <CAGTfZH3E+RetMzKxzZNEgYw6=kocdfgRcKSbmP5GfZ4k1j0Cuw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Erwan Velu <erwanaliasr1@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:INTEL PSTATE DRIVER" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Chanwoo Choi <cwchoi00@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQpMZSAxNC8wMi8yMDE5IMOgIDExOjIyLCBSYWZhZWwgSi4gV3lzb2NraSBhIMOpY3JpdMKgOg0K
-PiBJJ3ZlIHF1ZXVlZCBpdCB1cCB3aXRoIHNvbWUgbWFudWFsIGNoYW5nZXMuICBObyBuZWVkIHRv
-IHVwZGF0ZS4NCg0KQXMgdGhpcyBjb3VsZCBoZWxwIHRyb3VibGVzaG9vdGluZyBwbGF0Zm9ybXMg
-YW5kIGFzIHNvbWUgY29tbWl0cyBsaWtlIA0KdGhlIFBTUyBvbmUgb24gUHJvbGlhbnQgc2VydmVy
-cyB3ZXJlIGJhY2twb3J0ZWQgdG8gc3RhYmxlLCBJIHdvdWxkIA0Kc3VyZWx5IG1ha2Ugc2Vuc2Ug
-dG8gYmFja3BvcnQgaXQgdG8gdGhlIG90aGVyIHN0YWJsZS4NCg0KSSBrbm93IHRoaXMgaXMgb25s
-eSBhIHRyaXZpYWwgcHJpbnQgcGF0Y2ggYnV0IGFzIG15IGluaXRpYWwgaXNzdWUgDQpzdGFydGVk
-IHdpdGggc29tZSBvZiB0aGUgNC4xNCBzZXJpZSwgaXQgY291bGQgYmUgbmljZSB0byBoYXZlIGl0
-IHRvby4NCg0KRXJ3YW4sDQoNCg==
+Hi Chanwoo,
+
+On Thu, Feb 14, 2019 at 11:25:52PM +0900, Chanwoo Choi wrote:
+> Hi Matthias,
+> 
+> 2019년 2월 14일 (목) 오후 7:16, Matthias Kaehlcke <mka@chromium.org>님이 작성:
+> >
+> > The field ->stop_polling indicates whether load monitoring should be/is
+> > stopped, it is set in devfreq_monitor_suspend(). Change the variable to
+> > hold the general state of load monitoring (stopped, running, suspended).
+> > Besides improving readability of conditions involving the field and this
+> > prepares the terrain for moving some duplicated code from the governors
+> > into the devfreq core.
+> >
+> > Hold the devfreq lock in devfreq_monitor_start/stop() to ensure proper
+> > synchronization.
+> 
+> IMHO, I'm not sure that there are any benefits changing
+> from 'stop_polling' to 'monitor_state'. I have no objections
+> if Myungjoo confirms it.
+
+I agree that as an isolated change there isn't a clear benefit.
+However in the context of the series the change is needed to
+avoid resuming a load monitor that wasn't even started.
+
+In case this series isn't accepted I'd still suggest to change the
+name from 'stop_polling' to 'suspended'. I read 'stop_polling' as a
+call for action, while 'suspended' is a state. IMO at least in some
+contexts conditions using a state is clearer.
+
+Cheers
+
+Matthias
