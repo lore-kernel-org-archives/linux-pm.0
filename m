@@ -1,84 +1,106 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [RFC 5/6] power: supply: Ettus Research E31x battery driver
-Date: Thu, 14 Feb 2019 09:39:49 +0000
-Message-ID: <20190214093949.GH13737@dell>
-References: <20190212010143.3729-1-virendra.kakade@ni.com>
- <20190212010143.3729-6-virendra.kakade@ni.com>
+Subject: Re: [PATCH 12/13] input: max77650: add onkey support
+Date: Thu, 14 Feb 2019 09:42:48 +0000
+Message-ID: <20190214094248.GI13737@dell>
+References: <20190118134244.22253-1-brgl@bgdev.pl>
+ <20190118134244.22253-13-brgl@bgdev.pl>
+ <20190119090318.GB187380@dtor-ws>
+ <20190212203408.GA1863@dell>
+ <CAKdAkRQZ+ug7tpkE4x_8iTbUm9JnyF5wWrUnPRASi98t25LTbA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190212010143.3729-6-virendra.kakade@ni.com>
+In-Reply-To: <CAKdAkRQZ+ug7tpkE4x_8iTbUm9JnyF5wWrUnPRASi98t25LTbA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Virendra Kakade <virendra.kakade@ni.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, moritz.fischer@ettus.com
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Feb 2019, Virendra Kakade wrote:
+On Tue, 12 Feb 2019, Dmitry Torokhov wrote:
 
-> Document bindings for the E31x devices battery.
+> Hi Lee,
 > 
-> Signed-off-by: Virendra Kakade <virendra.kakade@ni.com>
-> ---
->  Documentation/devicetree/bindings/mfd/e31x-pmu.txt |  8 +++++++-
->  .../bindings/power/supply/e31x-battery.txt         | 14 ++++++++++++++
->  2 files changed, 21 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/e31x-battery.txt
+> On Tue, Feb 12, 2019 at 12:34 PM Lee Jones <lee.jones@linaro.org> wrote:
+> >
+> > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > >
+> > > > Add support for the push- and slide-button events for max77650.
+> > > >
+> > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > ---
+> > > >  drivers/input/misc/Kconfig          |   9 ++
+> > > >  drivers/input/misc/Makefile         |   1 +
+> > > >  drivers/input/misc/max77650-onkey.c | 135 ++++++++++++++++++++++++++++
+> > > >  3 files changed, 145 insertions(+)
+> > > >  create mode 100644 drivers/input/misc/max77650-onkey.c
+> >
+> > [...]
+> >
+> > Moving things around a bit:
+> >
+> > > > +static int max77650_onkey_probe(struct platform_device *pdev)
+> > > > +{
+> >
+> > > > +   irq_f = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_F);
+> > > > +   if (irq_f <= 0)
+> > > > +           return -EINVAL;
+> > > > +
+> > > > +   irq_r = regmap_irq_get_virq(irq_data, MAX77650_INT_nEN_R);
+> > > > +   if (irq_r <= 0)
+> > > > +           return -EINVAL;
+> > >
+> > > Ugh, it would be better if you handled IRQ mapping in the MFD piece and
+> > > passed it as resources of platform device. Then you'd simply call
+> > > platform_get_irq() here and did not have to reach into parent device for
+> > > "irq_dara".
+> >
+> > These device IRQs were defined and registered with the Regmap *set*
+> > (actually init()) APIs and thus should be pulled out using the
+> > appropriate reverse Regmap *get* APIs here in the device.
+> >
+> > Registering them with Regmap *and* pulling them back out again in the
+> > same (MFD in this case) driver, only to register them as platform data
+> > is certainly not how I see the API being designed/used.
+> >
+> > > > +   struct regmap_irq_chip_data *irq_data;
+> > > > +   struct device *dev, *parent;
+> >
+> > > > +   dev = &pdev->dev;
+> > > > +   parent = dev->parent;
+> > > > +   i2c = to_i2c_client(parent);
+> > > > +   irq_data = i2c_get_clientdata(i2c);
+> > > > +
+> > > > +   map = dev_get_regmap(parent, NULL);
+> > > > +   if (!map)
+> > > > +           return -ENODEV;
+> >
+> > However, this hoop jumping is a bit crazy and for the most part
+> > superfluous.  Instead, create a struct of attributes you wish to share
+> > with the child devices (containing both regmap (which you should call
+> > regmap and not map by the way) and irq_data) and pass it as either
+> > platform data (preferred) or as device data.
+> >
+> > If you choose the latter, you do not need to convert from 'device' to
+> > 'i2c' to do the look-up.  Since this function (probe()) is provided
+> > with a platform_device, you can just use platform_get_drvdata() to
+> > achieve the same as above.
+> >
+> > If you go the preferred (platform data) route, then you should use
+> > dev_get_platdata() instead.
 > 
-> diff --git a/Documentation/devicetree/bindings/mfd/e31x-pmu.txt b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> index 3798886578ba..223ab9e0d680 100644
-> --- a/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> +++ b/Documentation/devicetree/bindings/mfd/e31x-pmu.txt
-> @@ -4,11 +4,14 @@ Required properties:
->  - compatible : Must be "ni,e31x-pmu"
->  - regmap     : Must be <&regmapnode>
->  
-> -e31x-pmu has a sub-device called e31x-charger.
-> +e31x-pmu consists of two sub-devices, e31x-charger and e31x-battery.
->  
->  For the e31x-charger properties please refer to:
->  Documentation/device-tree/bindings/power/supply/e31x-charger.txt
->  
-> +For the e31x-battery properties please refer to:
-> +Documentation/device-tree/bindings/power/supply/e31x-battery.txt
+> By doing what you are suggesting (introducing platform data) you
+> introducing strong dependency between MFD and input piece for no
+> different reason. With the current implementation the parent can be
+> reworked completely without involving onkey driver.
+> 
+> I find such clean separation desirable. We are trying to move away
+> form platform data where it makes sense.
 
-Same comment as I provided in the Charger patch.
+Never mind.  We found a way forward where everyone wins!
 
->  Example:
->  
->  pmu {
-> @@ -18,5 +21,8 @@ pmu {
->  	charger: charger@0{
->  		compatible = "ni,e31x-charger";
->  	};
-> +	battery: battery@1{
-> +		compatible = "ni,e31x-battery";
-> +	};
->  };
-
-Still seems kinda simple.
-
-> diff --git a/Documentation/devicetree/bindings/power/supply/e31x-battery.txt b/Documentation/devicetree/bindings/power/supply/e31x-battery.txt
-> new file mode 100644
-> index 000000000000..e09cd92ef82e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/e31x-battery.txt
-> @@ -0,0 +1,14 @@
-> +Ettus Research/National Instruments E31x Devices Battery
-> +
-> +Some variants of the E31x devices have an in-built Li-ion
-> +battery. This driver provides capability to monitor
-> +the battery.
-> +
-> +Required properties:
-> +- compatible: Must be "ni,e31x-battery"
-> +
-> +Example:
-> +
-> +battery: battery@0{
-> +	compatible = "ni,e31x-battery";
-> +};
+Thanks for your time.
 
 -- 
 Lee Jones [李琼斯]
