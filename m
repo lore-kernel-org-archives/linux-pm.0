@@ -1,44 +1,171 @@
-From: Eugeniu Rosca <erosca@de.adit-jv.com>
-Subject: Re: [PATCH v2] drivers: base: add support to skip power management
- in device/driver model
-Date: Wed, 13 Feb 2019 23:38:49 +0100
-Message-ID: <20190213223849.GA26335@vmlxhi-102.adit-jv.com>
-References: <20190213120137.23354-1-sudeep.holla@arm.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 0/7] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Thu, 14 Feb 2019 09:41:13 +0900
+Message-ID: <3657574e-a258-e6cb-9632-9d17b66e7379@samsung.com>
+References: <CGME20190212222422eucas1p1624203db4db3e495035820dea542e23a@eucas1p1.samsung.com>
+        <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
+        <d9245497-ec63-4a5d-6c00-0ec2954af735@samsung.com>
+        <80cd346e-a0a3-ff66-40a6-c15fd23ba904@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190213120137.23354-1-sudeep.holla@arm.com>
+In-Reply-To: <80cd346e-a0a3-ff66-40a6-c15fd23ba904@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jisheng Zhang <jszhang@marvell.com>, Ulf Hansson <ulf.hansson@linaro.org>, Steve Longerbeam <slongerbeam@gmail.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello Sudeep,
+Hi Lukasz,
 
-I appreciate your efforts. Currently, this patch generates below
-warnings during s2ram on R-Car H3-Salvator-X:
+On 19. 2. 13. 오후 8:14, Lukasz Luba wrote:
+> Hi Chanwoo,
+> 
+> On 2/13/19 1:18 AM, Chanwoo Choi wrote:
+>> On 19. 2. 13. 오전 7:23, Lukasz Luba wrote:
+>>> This patch set changes workqueue related features in devfreq framework.
+>>> First patch switches to delayed work instead of deferred.
+>>> The second switches to regular system work and deletes custom 'devfreq'.
+>>>
+>>> Using deferred work in this context might harm the system performance.
+>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
+>>> utilization does not have to be connected with a particular CPU.
+>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+>>> They all are missing opportunity to check the HW state and react when
+>>> the deferred work is not fired.
+>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+>>>
+>>> There was a discussion regarding v2 that the power usage because of waking up
+>>
+>> We have not yet finished the any discussion. We only just had a few reply
+>> and you didn't wait for any reply from other. As I already commented
+>> on exynos5422-dmc series, please don't send the next patch
+>> without any final agreement.
+>>
+>> In this series, patch1/patch2 are same at version 2 patchset.
+>> Even if we need to discuss more them, you just send same patches
+>> without any agreement among reviewers. At least, you have to wait the reply
+>> instead of just sending the new patchset. It is basic review rule on mailing list.
+> I think you are blocking the fixes.
+> Matthias is currently fixing devfreq governors which lack 'case SUSPEND'
+> and he is interested in these v3. I have fixed a month ago issue with
+> system suspend and OPP state of devfreq devices, which Tobias was rising
+> and sending patches a few years ago, but you have blocked them.
 
-[ 46.874214] PM: suspend entry (deep)
-[ 46.878211] PM: Syncing filesystems ... done.
-[ 46.989148] Freezing user space processes ... (elapsed 0.004 seconds) done.
-[ 47.000428] OOM killer disabled.
-[ 47.003895] Freezing remaining freezable tasks ... (elapsed 0.003 seconds) done.
-[ 47.226363] PM: suspend devices took 0.210 seconds
-[ 47.280553] Disabling non-boot CPUs ...
-[ 47.289157] ------------[ cut here ]------------
-[ 47.294524] sysfs group 'power' not found for kobject 'index0'
-[ 47.300622] WARNING: CPU: 1 PID: 14 at fs/sysfs/group.c:256 sysfs_remove_group+0x78/0xc4
----snip---
-[ 47.550425] sysfs group 'power' not found for kobject 'index1'
----snip---
-[ 47.807005] sysfs group 'power' not found for kobject 'index2'
----snip---
-[ 48.063703] sysfs group 'power' not found for kobject 'cache'
----snip---
+I never blocked any something. I spent many times to review the devfreq patches
+to imporve the devfreq frameworw. In case of Tobias's patch,
+I just suggested other opinion and approach, but he didn't finish them.
 
-Complete log and .config are shared in
-https://gist.github.com/erosca/da9ea551033a503121de61049d77b834
+If I blocked some patches for devfreq, why am I review your suspend patch
+and agree them? It is very ridiculous of your thinking.
 
-Thank you,
-Eugeniu.
+> 
+> These version is ready for comments regarding 'battery powered devices'.
+> The v3 has introduced approach for 2 polling intervals similar to
+> thermal framework.
+> It also has trace events. The trace events are *really* important in
+> this discussion because we need some measurements.
+> 
+> You said:
+> 'When release the real mobile product like galaxy phone,
+> it is very important issue to remove the unneeded wakeup on idle state.'
+> Was it a real reason for profiling the devfreq framework and core
+> workqueue mechanism? There are embedded devices which are not using
+
+Yes. I think that deferrable workqueue is very important for some case.
+But, on the other hand, it might be always true.
+
+I don't just want to remove the deferrable work. But, I agree that
+to support both delayed and deferrable work according to the
+choice of devfreq device drivers.
+
+If remove the deferrable work, it always wakeup the idle state.
+The device driver never handle them. Someone want to get the
+high-performance but, someone don't want to wakeup from idle state.
+
+On your v2 patchset, just remove the deferrable work without
+any tunable feature. So, I try to discuss them. But, you just
+sent next patches without any discussion. And then, you also
+asked that we had to check the next patches.
+
+It is wrong for review sequence. I have to wait the review
+/discuss before sending the next patches.
+
+Once again,
+I don't just want to remove the deferrable work without
+any tunable interface. But, I agree that to support both
+delayed and deferrable work according to the choice of
+devfreq device drivers.
+
+
+> battery and probably developers were not aware because there was no
+> traces which could give any information about devfreq behavior.
+> Power is important, performance is important but relaying on randomness
+> is not the best solution. As I said earlier, your driver can stuck on
+> highest OPP waiting for next callback which will not come...
+> 
+> Regards,
+> Lukasz
+>>
+>>
+>>> an idle CPU would be too high. In my opinion it won't and fixing bug is more
+>>> important than < 1% more power used [1].
+>>> I have addressed also this issue. In this patch set there is a mechanism
+>>> which prevents from to frequent checks when there is no need.
+>>> When the device enters its lowest state (OPP) the framework sets polling
+>>> interval to 'polling_idle_ms'. In default Kconfig it is 500ms, so 2 times per
+>>> second.
+>>> It is tunable from the sysfs interface per device, thus driver developer can
+>>> experiment and choose best intervals for the system.
+>>>
+>>> Changes:
+>>> v3:
+>>> - reordered first two patches
+>>> - added functionality to lower power consumption when the device is less busy;
+>>>    there is a new polling interval enabled when device enters lowest frequency;
+>>> - added trace events to capture the behaviour of the system
+>>> v2:
+>>> - single patch split into two
+>>> - added cover letter
+>>>
+>>> link for the previous version and discussion:
+>>> https://marc.info/?l=linux-pm&m=154989907416072&w=2
+>>> https://marc.info/?l=linux-pm&m=154904631226997&w=2
+>>>
+>>> Regards,
+>>> Lukasz Luba
+>>>
+>>> [1] https://marc.info/?l=linux-kernel&m=155000641622443&w=2
+>>>
+>>> Lukasz Luba (7):
+>>>    drivers: devfreq: change deferred work into delayed
+>>>    drivers: devfreq: change devfreq workqueue mechanism
+>>>    Kconfig: drivers: devfreq: add default idle polling
+>>>    include: devfreq: add polling_idle_ms to 'profile'
+>>>    drivers: devfreq: add longer polling interval in idle
+>>>    trace: events: add devfreq trace event file
+>>>    drivers: devfreq: add tracing for scheduling work
+>>>
+>>>   MAINTAINERS                               |   1 +
+>>>   drivers/devfreq/Kconfig                   |  13 +++
+>>>   drivers/devfreq/devfreq.c                 | 184 ++++++++++++++++++++++++------
+>>>   drivers/devfreq/governor.h                |   3 +-
+>>>   drivers/devfreq/governor_simpleondemand.c |   6 +-
+>>>   include/linux/devfreq.h                   |   6 +
+>>>   include/trace/events/devfreq.h            |  39 +++++++
+>>>   7 files changed, 218 insertions(+), 34 deletions(-)
+>>>   create mode 100644 include/trace/events/devfreq.h
+>>>
+>>
+>>
+> 
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
