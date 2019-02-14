@@ -1,171 +1,168 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 0/7] drivers: devfreq: fix and optimize workqueue
- mechanism
-Date: Thu, 14 Feb 2019 09:41:13 +0900
-Message-ID: <3657574e-a258-e6cb-9632-9d17b66e7379@samsung.com>
-References: <CGME20190212222422eucas1p1624203db4db3e495035820dea542e23a@eucas1p1.samsung.com>
-        <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
-        <d9245497-ec63-4a5d-6c00-0ec2954af735@samsung.com>
-        <80cd346e-a0a3-ff66-40a6-c15fd23ba904@partner.samsung.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH 1/4] PM / devfreq: Track overall load monitor state instead of 'stop_polling'
+Date: Wed, 13 Feb 2019 17:30:39 -0800
+Message-ID: <20190214013042.254790-2-mka@chromium.org>
+References: <20190214013042.254790-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <80cd346e-a0a3-ff66-40a6-c15fd23ba904@partner.samsung.com>
-Content-Language: en-US
+In-Reply-To: <20190214013042.254790-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
+Cc: Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+The field ->stop_polling indicates whether load monitoring should be/is
+stopped, it is set in devfreq_monitor_suspend(). Change the variable to
+hold the general state of load monitoring (stopped, running, suspended).
+Besides improving readability of conditions involving the field and this
+prepares the terrain for moving some duplicated code from the governors
+into the devfreq core.
 
-On 19. 2. 13. 오후 8:14, Lukasz Luba wrote:
-> Hi Chanwoo,
-> 
-> On 2/13/19 1:18 AM, Chanwoo Choi wrote:
->> On 19. 2. 13. 오전 7:23, Lukasz Luba wrote:
->>> This patch set changes workqueue related features in devfreq framework.
->>> First patch switches to delayed work instead of deferred.
->>> The second switches to regular system work and deletes custom 'devfreq'.
->>>
->>> Using deferred work in this context might harm the system performance.
->>> When the CPU enters idle, deferred work is not fired. The devfreq device's
->>> utilization does not have to be connected with a particular CPU.
->>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
->>> They all are missing opportunity to check the HW state and react when
->>> the deferred work is not fired.
->>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
->>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
->>>
->>> There was a discussion regarding v2 that the power usage because of waking up
->>
->> We have not yet finished the any discussion. We only just had a few reply
->> and you didn't wait for any reply from other. As I already commented
->> on exynos5422-dmc series, please don't send the next patch
->> without any final agreement.
->>
->> In this series, patch1/patch2 are same at version 2 patchset.
->> Even if we need to discuss more them, you just send same patches
->> without any agreement among reviewers. At least, you have to wait the reply
->> instead of just sending the new patchset. It is basic review rule on mailing list.
-> I think you are blocking the fixes.
-> Matthias is currently fixing devfreq governors which lack 'case SUSPEND'
-> and he is interested in these v3. I have fixed a month ago issue with
-> system suspend and OPP state of devfreq devices, which Tobias was rising
-> and sending patches a few years ago, but you have blocked them.
+Hold the devfreq lock in devfreq_monitor_start/stop() to ensure proper
+synchronization.
 
-I never blocked any something. I spent many times to review the devfreq patches
-to imporve the devfreq frameworw. In case of Tobias's patch,
-I just suggested other opinion and approach, but he didn't finish them.
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/devfreq/devfreq.c | 34 +++++++++++++++++++++++++---------
+ include/linux/devfreq.h   |  4 ++--
+ 2 files changed, 27 insertions(+), 11 deletions(-)
 
-If I blocked some patches for devfreq, why am I review your suspend patch
-and agree them? It is very ridiculous of your thinking.
-
-> 
-> These version is ready for comments regarding 'battery powered devices'.
-> The v3 has introduced approach for 2 polling intervals similar to
-> thermal framework.
-> It also has trace events. The trace events are *really* important in
-> this discussion because we need some measurements.
-> 
-> You said:
-> 'When release the real mobile product like galaxy phone,
-> it is very important issue to remove the unneeded wakeup on idle state.'
-> Was it a real reason for profiling the devfreq framework and core
-> workqueue mechanism? There are embedded devices which are not using
-
-Yes. I think that deferrable workqueue is very important for some case.
-But, on the other hand, it might be always true.
-
-I don't just want to remove the deferrable work. But, I agree that
-to support both delayed and deferrable work according to the
-choice of devfreq device drivers.
-
-If remove the deferrable work, it always wakeup the idle state.
-The device driver never handle them. Someone want to get the
-high-performance but, someone don't want to wakeup from idle state.
-
-On your v2 patchset, just remove the deferrable work without
-any tunable feature. So, I try to discuss them. But, you just
-sent next patches without any discussion. And then, you also
-asked that we had to check the next patches.
-
-It is wrong for review sequence. I have to wait the review
-/discuss before sending the next patches.
-
-Once again,
-I don't just want to remove the deferrable work without
-any tunable interface. But, I agree that to support both
-delayed and deferrable work according to the choice of
-devfreq device drivers.
-
-
-> battery and probably developers were not aware because there was no
-> traces which could give any information about devfreq behavior.
-> Power is important, performance is important but relaying on randomness
-> is not the best solution. As I said earlier, your driver can stuck on
-> highest OPP waiting for next callback which will not come...
-> 
-> Regards,
-> Lukasz
->>
->>
->>> an idle CPU would be too high. In my opinion it won't and fixing bug is more
->>> important than < 1% more power used [1].
->>> I have addressed also this issue. In this patch set there is a mechanism
->>> which prevents from to frequent checks when there is no need.
->>> When the device enters its lowest state (OPP) the framework sets polling
->>> interval to 'polling_idle_ms'. In default Kconfig it is 500ms, so 2 times per
->>> second.
->>> It is tunable from the sysfs interface per device, thus driver developer can
->>> experiment and choose best intervals for the system.
->>>
->>> Changes:
->>> v3:
->>> - reordered first two patches
->>> - added functionality to lower power consumption when the device is less busy;
->>>    there is a new polling interval enabled when device enters lowest frequency;
->>> - added trace events to capture the behaviour of the system
->>> v2:
->>> - single patch split into two
->>> - added cover letter
->>>
->>> link for the previous version and discussion:
->>> https://marc.info/?l=linux-pm&m=154989907416072&w=2
->>> https://marc.info/?l=linux-pm&m=154904631226997&w=2
->>>
->>> Regards,
->>> Lukasz Luba
->>>
->>> [1] https://marc.info/?l=linux-kernel&m=155000641622443&w=2
->>>
->>> Lukasz Luba (7):
->>>    drivers: devfreq: change deferred work into delayed
->>>    drivers: devfreq: change devfreq workqueue mechanism
->>>    Kconfig: drivers: devfreq: add default idle polling
->>>    include: devfreq: add polling_idle_ms to 'profile'
->>>    drivers: devfreq: add longer polling interval in idle
->>>    trace: events: add devfreq trace event file
->>>    drivers: devfreq: add tracing for scheduling work
->>>
->>>   MAINTAINERS                               |   1 +
->>>   drivers/devfreq/Kconfig                   |  13 +++
->>>   drivers/devfreq/devfreq.c                 | 184 ++++++++++++++++++++++++------
->>>   drivers/devfreq/governor.h                |   3 +-
->>>   drivers/devfreq/governor_simpleondemand.c |   6 +-
->>>   include/linux/devfreq.h                   |   6 +
->>>   include/trace/events/devfreq.h            |  39 +++++++
->>>   7 files changed, 218 insertions(+), 34 deletions(-)
->>>   create mode 100644 include/trace/events/devfreq.h
->>>
->>
->>
-> 
-> 
-
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 0ae3de76833b7..1d3a43f8b3a10 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -29,6 +29,10 @@
+ #include <linux/of.h>
+ #include "governor.h"
+ 
++#define DEVFREQ_MONITOR_STOPPED		0
++#define DEVFREQ_MONITOR_RUNNING		1
++#define DEVFREQ_MONITOR_SUSPENDED	2
++
+ static struct class *devfreq_class;
+ 
+ /*
+@@ -407,10 +411,17 @@ static void devfreq_monitor(struct work_struct *work)
+  */
+ void devfreq_monitor_start(struct devfreq *devfreq)
+ {
+-	INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
+-	if (devfreq->profile->polling_ms)
++	mutex_lock(&devfreq->lock);
++
++	if (devfreq->profile->polling_ms) {
++		INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
+ 		queue_delayed_work(devfreq_wq, &devfreq->work,
+ 			msecs_to_jiffies(devfreq->profile->polling_ms));
++
++		devfreq->monitor_state = DEVFREQ_MONITOR_RUNNING;
++	}
++
++	mutex_unlock(&devfreq->lock);
+ }
+ EXPORT_SYMBOL(devfreq_monitor_start);
+ 
+@@ -425,6 +436,10 @@ EXPORT_SYMBOL(devfreq_monitor_start);
+ void devfreq_monitor_stop(struct devfreq *devfreq)
+ {
+ 	cancel_delayed_work_sync(&devfreq->work);
++
++	mutex_lock(&devfreq->lock);
++	devfreq->monitor_state = DEVFREQ_MONITOR_STOPPED;
++	mutex_unlock(&devfreq->lock);
+ }
+ EXPORT_SYMBOL(devfreq_monitor_stop);
+ 
+@@ -443,13 +458,13 @@ EXPORT_SYMBOL(devfreq_monitor_stop);
+ void devfreq_monitor_suspend(struct devfreq *devfreq)
+ {
+ 	mutex_lock(&devfreq->lock);
+-	if (devfreq->stop_polling) {
++	if (devfreq->monitor_state != DEVFREQ_MONITOR_RUNNING) {
+ 		mutex_unlock(&devfreq->lock);
+ 		return;
+ 	}
+ 
+ 	devfreq_update_status(devfreq, devfreq->previous_freq);
+-	devfreq->stop_polling = true;
++	devfreq->monitor_state = DEVFREQ_MONITOR_SUSPENDED;
+ 	mutex_unlock(&devfreq->lock);
+ 	cancel_delayed_work_sync(&devfreq->work);
+ }
+@@ -468,7 +483,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
+ 	unsigned long freq;
+ 
+ 	mutex_lock(&devfreq->lock);
+-	if (!devfreq->stop_polling)
++	if (devfreq->monitor_state == DEVFREQ_MONITOR_STOPPED)
+ 		goto out;
+ 
+ 	if (!delayed_work_pending(&devfreq->work) &&
+@@ -477,7 +492,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
+ 			msecs_to_jiffies(devfreq->profile->polling_ms));
+ 
+ 	devfreq->last_stat_updated = jiffies;
+-	devfreq->stop_polling = false;
++	devfreq->monitor_state = DEVFREQ_MONITOR_RUNNING;
+ 
+ 	if (devfreq->profile->get_cur_freq &&
+ 		!devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
+@@ -504,13 +519,14 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
+ 	mutex_lock(&devfreq->lock);
+ 	devfreq->profile->polling_ms = new_delay;
+ 
+-	if (devfreq->stop_polling)
++	if (devfreq->monitor_state == DEVFREQ_MONITOR_SUSPENDED)
+ 		goto out;
+ 
+ 	/* if new delay is zero, stop polling */
+ 	if (!new_delay) {
+ 		mutex_unlock(&devfreq->lock);
+ 		cancel_delayed_work_sync(&devfreq->work);
++		devfreq->monitor_state == DEVFREQ_MONITOR_STOPPED;
+ 		return;
+ 	}
+ 
+@@ -526,7 +542,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
+ 		mutex_unlock(&devfreq->lock);
+ 		cancel_delayed_work_sync(&devfreq->work);
+ 		mutex_lock(&devfreq->lock);
+-		if (!devfreq->stop_polling)
++		if (devfreq->monitor_state != DEVFREQ_MONITOR_SUSPENDED)
+ 			queue_delayed_work(devfreq_wq, &devfreq->work,
+ 			      msecs_to_jiffies(devfreq->profile->polling_ms));
+ 	}
+@@ -1372,7 +1388,7 @@ static ssize_t trans_stat_show(struct device *dev,
+ 	int i, j;
+ 	unsigned int max_state = devfreq->profile->max_state;
+ 
+-	if (!devfreq->stop_polling &&
++	if ((devfreq->monitor_state == DEVFREQ_MONITOR_RUNNING) &&
+ 			devfreq_update_status(devfreq, devfreq->previous_freq))
+ 		return 0;
+ 	if (max_state == 0)
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index fbffa74bfc1bb..0a618bbb8b294 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -130,7 +130,7 @@ struct devfreq_dev_profile {
+  * @max_freq:	Limit maximum frequency requested by user (0: none)
+  * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
+  * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
+- * @stop_polling:	 devfreq polling status of a device.
++ * @monitor_state:	State of the load monitor.
+  * @suspend_freq:	 frequency of a device set during suspend phase.
+  * @resume_freq:	 frequency of a device set in resume phase.
+  * @suspend_count:	 suspend requests counter for a device.
+@@ -168,7 +168,7 @@ struct devfreq {
+ 	unsigned long max_freq;
+ 	unsigned long scaling_min_freq;
+ 	unsigned long scaling_max_freq;
+-	bool stop_polling;
++	int monitor_state;
+ 
+ 	unsigned long suspend_freq;
+ 	unsigned long resume_freq;
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.20.1.791.gb4d0f1c61a-goog
