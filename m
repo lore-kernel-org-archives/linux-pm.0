@@ -1,55 +1,59 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: [PATCH 3/3] dt-bindings: arm: atmel: add binding for SAM9X60 shutdown
- controller
-Date: Thu, 14 Feb 2019 11:24:18 +0000
-Message-ID: <1550143407-26109-4-git-send-email-claudiu.beznea@microchip.com>
-References: <1550143407-26109-1-git-send-email-claudiu.beznea@microchip.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2] drivers: base: add support to skip power management
+ in device/driver model
+Date: Thu, 14 Feb 2019 12:05:09 +0000
+Message-ID: <20190214120509.GA28292@e107155-lin>
+References: <20190213120137.23354-1-sudeep.holla@arm.com>
+ <CAJZ5v0gg7H9G_HrvLhf9k26maYUR+_EpE8DDQ7NPh58HMRH3Ew@mail.gmail.com>
+ <20190214111609.GC28361@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550143407-26109-1-git-send-email-claudiu.beznea@microchip.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190214111609.GC28361@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu.Beznea@microchip.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jisheng Zhang <jszhang@marvell.com>, Ulf Hansson <ulf.hansson@linaro.org>, Steve Longerbeam <slongerbeam@gmail.com>, Eugeniu Rosca <erosca@de.adit-jv.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
+On Thu, Feb 14, 2019 at 11:16:09AM +0000, Sudeep Holla wrote:
+> On Wed, Feb 13, 2019 at 11:17:47PM +0100, Rafael J. Wysocki wrote:
+> > On Wed, Feb 13, 2019 at 1:01 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
 
-Add documentation for SAM9X60 shutdown controller.
+[...]
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > index 0992e67e862b..2a29c3d4e240 100644
+> > > --- a/drivers/base/power/main.c
+> > > +++ b/drivers/base/power/main.c
+> > > @@ -124,6 +124,10 @@ void device_pm_unlock(void)
+> > >   */
+> > >  void device_pm_add(struct device *dev)
+> > >  {
+> > > +       /* No need to create pm sysfs if explicitly specified as not required */
+> >
+> > Is this really about sysfs?
+> >
+>
+> Nope, copy-paste from dpm_sysfs_add, will drop it.
+>
+> > > +       if (device_pm_not_required(dev))
+> >
+> > Should power.disable_depth be bumped up here or while setting the "no PM" flag?
+> >
+>
+> OK, I missed that.
+>
 
-diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Docu=
-mentation/devicetree/bindings/arm/atmel-sysregs.txt
-index 14f319f694b7..9711052c5800 100644
---- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-+++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-@@ -83,7 +83,7 @@ SHDWC SAMA5D2-Compatible Shutdown Controller
- 1) shdwc node
-=20
- required properties:
--- compatible: should be "atmel,sama5d2-shdwc".
-+- compatible: should be "atmel,sama5d2-shdwc" or "microchip,sam9x60-shdwc"=
-.
- - reg: should contain registers location and length
- - clocks: phandle to input clock.
- - #address-cells: should be one. The cell is the wake-up input index.
-@@ -95,6 +95,10 @@ optional properties:
-   microseconds. It's usually a board-related property.
- - atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
-=20
-+optional properties for microchip,sam9x60-shdwc:
-+- atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
-+- atmel,wakeup-rtt-timer: boolean to enable Real-time Timer Wake-up.
-+
- The node contains child nodes for each wake-up input that the platform use=
-s.
-=20
- 2) input nodes
---=20
-2.7.4
+Looking at it,
+1. We can't set it when we set "no PM" flag as pm_runtime_init called later
+   initialise it to 1
+2. We can bump it here, but I see it's usage self contained in runtime.c
+   and may look odd to access it here.
+
+More basic question is should we really need to bump it to 2 as its
+initialised to 1 in runtime_init.
+
+--
+Regards,
+Sudeep
