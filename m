@@ -1,143 +1,118 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 6/7] trace: events: add devfreq trace event file
-Date: Thu, 14 Feb 2019 14:01:53 +0900
-Message-ID: <3e44ca8a-a72b-8bdd-e702-00c927bd3c06@samsung.com>
-References: <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190212222437eucas1p198db6fca1f1ba3056d93c57327dd48ed@eucas1p1.samsung.com>
-        <1550010238-24002-7-git-send-email-l.luba@partner.samsung.com>
-        <20190212181415.1156e542@gandalf.local.home>
-        <fb5d5359-7663-f119-f28f-7be820e1108d@partner.samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
+ broadcast  _PPC to all online CPUs
+Date: Thu, 14 Feb 2019 12:36:48 +0530
+Message-ID: <20190214070648.pvsavc46iivub4hy@vireshk-i7>
+References: <20190209120232.21582-1-yu.c.chen@intel.com>
+ <20190211103307.rccddkso3f5s3yko@vireshk-i7>
+ <20190213165538.GB30385@chenyu-office.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fb5d5359-7663-f119-f28f-7be820e1108d@partner.samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190213165538.GB30385@chenyu-office.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org, mingo@redhat.com
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+On 14-02-19, 00:55, Yu Chen wrote:
+> Hi Viresh,
+> On Mon, Feb 11, 2019 at 04:03:07PM +0530, Viresh Kumar wrote:
+> > On 09-02-19, 20:02, Chen Yu wrote:
+> > > On Dell Inc. XPS13 9333, the BIOS changes the value of
+> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> > > the power source changes), the maximum frequency of the
+> > > CPU is not updated accordingly. This is due to the policy's
+> > > cpuinfo.max is not updated when _PPC notifier fires.
+> > > 
+> > > Fix this problem by updating the policy's cpuinfo.max
+> > > and broadcast the _PPC notifier to all online CPUs.
+> > > 
+> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > ---
+> > >  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
+> > >  drivers/cpufreq/cpufreq.c        |  2 ++
+> > >  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
+> > >  3 files changed, 30 insertions(+), 3 deletions(-)
+> > > 
+> > > diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> > > index a303fd0e108c..737dbf5aa7f7 100644
+> > > --- a/drivers/acpi/processor_perflib.c
+> > > +++ b/drivers/acpi/processor_perflib.c
+> > > @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
+> > >  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+> > >  		 "limited by BIOS, this should help");
+> > >  
+> > > +static int broadcast_ppc;
+> > > +module_param(broadcast_ppc, int, 0644);
+> > > +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
+> > > +
+> > >  #define PPC_REGISTERED   1
+> > >  #define PPC_IN_USE       2
+> > >  
+> > > @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+> > >  		else
+> > >  			acpi_processor_ppc_ost(pr->handle, 0);
+> > >  	}
+> > > -	if (ret >= 0)
+> > > -		cpufreq_update_policy(pr->id);
+> > > +	if (ret >= 0) {
+> > > +		if (broadcast_ppc) {
+> > > +			int cpu;
+> > > +
+> > > +			for_each_possible_cpu(cpu)
+> > > +				cpufreq_update_policy(cpu);
+> > > +		} else {
+> > > +			cpufreq_update_policy(pr->id);
+> > > +		}
+> > > +	}
+> > >  }
+> > >  
+> > >  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index e35a886e00bc..95e08816b512 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > >  
+> > >  	policy->min = new_policy->min;
+> > >  	policy->max = new_policy->max;
+> > > +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> > > +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+> > >  	trace_cpu_frequency_limits(policy);
+> > >  
+> > >  	policy->cached_target_freq = UINT_MAX;
+> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > > index dd66decf2087..e1881313c396 100644
+> > > --- a/drivers/cpufreq/intel_pstate.c
+> > > +++ b/drivers/cpufreq/intel_pstate.c
+> > > @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+> > >  
+> > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+> > >  {
+> > > +	int max_freq;
+> > >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
+> > >  
+> > >  	update_turbo_state();
+> > > +	max_freq = intel_pstate_get_max_freq(cpu);
+> > > +
+> > > +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
+> > 
+> > Why do have this check for policy->max here ?
+> >
+> Thanks for looking at this change, I've replied to another email in detail of
+> the scenario that, this is due to corner case that if the system boots
+> with battery and plug the AC after boot up, the cpufreq max limit will not
+> increase even the turbo has been enabled after the AC plugged.
 
-On 19. 2. 13. 오후 10:35, Lukasz Luba wrote:
-> Hi Steven,
-> 
-> On 2/13/19 12:14 AM, Steven Rostedt wrote:
->> On Tue, 12 Feb 2019 23:23:57 +0100
->> Lukasz Luba <l.luba@partner.samsung.com> wrote:
->>
->>> The patch adds a new file for with trace events for devfreq
->>> framework. They are used for performance analysis of the framework.
->>> It also contains updates in MAINTAINERS file adding new entry for
->>> devfreq maintainers.
->>>
->>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>> ---
->>>   MAINTAINERS                    |  1 +
->>>   include/trace/events/devfreq.h | 39 +++++++++++++++++++++++++++++++++++++++
->>>   2 files changed, 40 insertions(+)
->>>   create mode 100644 include/trace/events/devfreq.h
->>>
->>> diff --git a/MAINTAINERS b/MAINTAINERS
->>> index 9919840..c042fda 100644
->>> --- a/MAINTAINERS
->>> +++ b/MAINTAINERS
->>> @@ -4447,6 +4447,7 @@ S:	Maintained
->>>   F:	drivers/devfreq/
->>>   F:	include/linux/devfreq.h
->>>   F:	Documentation/devicetree/bindings/devfreq/
->>> +F:	include/trace/events/devfreq.h
->>>   
->>>   DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
->>>   M:	Chanwoo Choi <cw00.choi@samsung.com>
->>> diff --git a/include/trace/events/devfreq.h b/include/trace/events/devfreq.h
->>> new file mode 100644
->>> index 0000000..fec9304
->>> --- /dev/null
->>> +++ b/include/trace/events/devfreq.h
->>> @@ -0,0 +1,39 @@
->>> +/* SPDX-License-Identifier: GPL-2.0 */
->>> +#undef TRACE_SYSTEM
->>> +#define TRACE_SYSTEM devfreq
->>> +
->>> +#if !defined(_TRACE_DEVFREQ_H) || defined(TRACE_HEADER_MULTI_READ)
->>> +#define _TRACE_DEVFREQ_H
->>> +
->>> +#include <linux/devfreq.h>
->>> +#include <linux/tracepoint.h>
->>> +
->>> +TRACE_EVENT(devfreq_monitor,
->>> +	TP_PROTO(const char *dev_name, unsigned long freq,
->>> +		 unsigned int polling_ms, unsigned long busy_time,
->>> +		 unsigned long total_time),
->>> +
->>> +	TP_ARGS(dev_name, freq, polling_ms, busy_time, total_time),
->>> +
->>> +	TP_STRUCT__entry(
->>> +		__string(dev_name, dev_name)
->>> +		__field(unsigned long, freq)
->>> +		__field(unsigned int, polling_ms)
->>> +		__field(unsigned int, load)
->>> +	),
->>> +
->>> +	TP_fast_assign(
->>> +		__assign_str(dev_name, dev_name);
->>> +		__entry->freq = freq;
->>> +		__entry->polling_ms = polling_ms;
->>> +		__entry->load = (100 * busy_time) / total_time;
->>
->> How critical is the code that this trace event is called in. If it is
->> not that critical (it is a slow path), then this is fine, but if this
->> is not a slow path (something triggered 100 HZ or less), then I would
->> recommend moving the above calculation to TP_printk(). A divide is a
->> slow operation, and is best to do that in the post processing. The
->> current location does the divide at the time of the tracepoint is
->> called.
-> I wasn't aware of these two stages, good to know.
-> I will move it to TP_printk().
->>
->> I would also have a check to make sure that total_time is not zero
->> here, otherwise that could be bad.
->>
->> 		__entry->busy_time = busy_time;
->> 		__entry->total_time = total_time;
->>
-> 
->>> +	),
->>> +
->>> +	TP_printk("dev_name=%s freq=%lu polling_ms=%u load=%u",
->>
->>
->>> +		__get_str(dev_name), __entry->freq, __entry->polling_ms,
->>
->> 		__entry->total_time == 0 ? 100 :
->> 			__entry->busy_time / __entry->total_time)
-> Thank you for the review.
-> I will add this check.
-> 
-> Regards,
-> Lukasz
->>
->> -- Steve
->>
->>> +		__entry->load)
->>> +);
->>> +#endif /* _TRACE_DEVFREQ_H */
->>> +
->>> +/* This part must be outside protection */
->>> +#include <trace/define_trace.h>
->>
->>
->>
-> 
-> 
+Yeah, but I asked a different question I believe, why is this
+comparison necessary ?
 
-I agree that trace point is necessary for devfreq framework.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
+policy->max == policy->cpuinfo.max_freq
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
