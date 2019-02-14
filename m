@@ -1,85 +1,274 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: Use of_node_name_eq for node name comparisons
-Date: Thu, 14 Feb 2019 12:49:38 +0900
-Message-ID: <5cc4b5a3-c4ad-46a9-2856-3ed67c6755d3@samsung.com>
-References: <20181205195050.4759-6-robh@kernel.org>
-        <CGME20190213161024epcas3p3acc5c074714ad1d44fb90ab3f21cfcff@epcas3p3.samsung.com>
-        <CAL_Jsq+xpRPvj=UcSo+jQKX1pB=9B3SV9jB5ZVhaVsKvOqtoOg@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] drivers: devfreq: fix and optimize workqueue
+ mechanism
+Date: Thu, 14 Feb 2019 13:00:33 +0900
+Message-ID: <d0cd3ee1-0472-e3ff-8119-95889c41f994@samsung.com>
+References: <CGME20190211153030eucas1p19bd9a7eca565ca066ab00dc2243cfb46@eucas1p1.samsung.com>
+        <1549899005-7760-1-git-send-email-l.luba@partner.samsung.com>
+        <26e38213-630f-94bc-ff80-1cad708c7f83@samsung.com>
+        <f60efa88-cf43-faed-55be-f90ce8f44f9e@partner.samsung.com>
+        <815961f8-f9c3-6d26-8811-880e4cd76cb9@samsung.com>
+        <376d00b9-0635-539a-3106-f83baa2e15ea@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_Jsq+xpRPvj=UcSo+jQKX1pB=9B3SV9jB5ZVhaVsKvOqtoOg@mail.gmail.com>
+In-Reply-To: <376d00b9-0635-539a-3106-f83baa2e15ea@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, joel@joelfernandes.org, chris.diamand@arm.com, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+Hi Lukasz,
 
-On 19. 2. 14. 오전 1:09, Rob Herring wrote:
-> On Wed, Dec 5, 2018 at 1:50 PM Rob Herring <robh@kernel.org> wrote:
->>
->> Convert string compares of DT node names to use of_node_name_eq helper
->> instead. This removes direct access to the node name pointer.
->>
->> For instances using of_node_cmp, this has the side effect of now using
->> case sensitive comparisons. This should not matter for any FDT based
->> system which all of these are.
->>
->> Cc: Chanwoo Choi <cw00.choi@samsung.com>
->> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
->> Cc: Kyungmin Park <kyungmin.park@samsung.com>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: Krzysztof Kozlowski <krzk@kernel.org>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-samsung-soc@vger.kernel.org
->> Signed-off-by: Rob Herring <robh@kernel.org>
->> ---
->>  drivers/devfreq/devfreq-event.c     | 2 +-
->>  drivers/devfreq/event/exynos-ppmu.c | 2 +-
->>  2 files changed, 2 insertions(+), 2 deletions(-)
+On 19. 2. 13. 오후 7:47, Lukasz Luba wrote:
+> Hi Chanwoo,
 > 
-> Can someone apply this please.
+> On 2/13/19 2:09 AM, Chanwoo Choi wrote:
+>> Hi Lukasz,
+>>
+>> On 19. 2. 12. 오후 9:05, Lukasz Luba wrote:
+>>> Hi Chanwoo
+>>>
+>>> On 2/12/19 6:46 AM, Chanwoo Choi wrote:
+>>>> Hi Lukasz,
+>>>>
+>>>> On 19. 2. 12. 오전 12:30, Lukasz Luba wrote:
+>>>>> This patch set changes workqueue related features in devfreq framework.
+>>>>> First patch switches to delayed work instead of deferred.
+>>>>> The second switches to regular system work and deletes custom 'devfreq'.
+>>>>>
+>>>>> Using deferred work in this context might harm the system performance.
+>>>>> When the CPU enters idle, deferred work is not fired. The devfreq device's
+>>>>> utilization does not have to be connected with a particular CPU.
+>>>>> The drivers for GPUs, Network on Chip, cache L3 rely on devfreq governor.
+>>>>> They all are missing opportunity to check the HW state and react when
+>>>>> the deferred work is not fired.
+>>>>> A corner test case, when Dynamic Memory Controller is utilized by CPUs running
+>>>>> on full speed, might show x5 worse performance if the crucial CPU is in idle.
+>>>>
+>>>> The devfreq framework keeps the balancing between performance
+>>>> and power-consumption. It is wrong to focus on only either
+>>>> performance or power.
+>>> IMO it just does not work, please see my explanation below.
+>>>>
+>>>> This cover-letter focus on the only performance without any power-consumption
+>>>> disadvantages. It is easy to raise the performance with short sampling rate
+>>>> with polling modes. To get the performance, it is good as short as possible
+>>>> of period.
+>>> The cover-letter mentioned about missing functionality. The interface
+>>> has 'polling_ms' field, which driver developer would assume works.
+>>> I have test cases where it would not be called for seconds or even
+>>> never.
+>>> In your driver drivers/devfreq/exynos-bus.c polling_ms = 50
+>>> The driver is controlling many devices including Network-on-Chip (NOC).
+>>> It is using 'simple_ondemand' governor. When it is missing opportunity
+>>> to change the frequency, it can either harm the performance or power
+>>> consumption, depending of the frequency the device stuck on.
+>>
+>> Almost everyone knew that DVFS governor is never perfect in the linux kernel.
+>> I don't want to discuss it with this too generic opinion which doesn't
+>> include the real measured data.
+>>
+>>>
+>>>>
+>>>> Sometimes, when cpu is idle, the device might require the busy state.
+>>>> It is very difficult to catch the always right timing between them.
+>>> I will try to address them in the next patch set.
+>>>>
+>>>> Also, this patch cannot prevent the unneeded wakeup from idle state.
+>>
+>> Please answer this question.
+>>
+>> When release the real mobile product like galaxy phone,
+>> it is very important issue to remove the unneeded wakeup on idle state.
+> I would say that these devfreq wake-ups are important and people thought
+> that they are periodic and rely on it. Since the devfreq does not have
+> trace events no one knew what is actually happening inside.
 
-Myungjoo picked up this patch[1] on devfreq.git
-but has not yet sent the pull request.
+I agree that adding the trace events for devfreq.
 
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=0c1e8ce295acc3becc95e393e88a9a6da233074f
+But, just I mentioned the 'unneeded wakeup from idle state'.
+As I already replied on patch, v2 patchset don't provide
+the any tunable interface for the kind of work. 
+
+The v2 patches just changed the work from deferrable to delayed.
+Someone want to keep the deferrable or someone want to use
+the periodic without considering idle. 
+
+But, in this series, just remove the deferrable work
+without any choice. It is my point to discuss your patch.
+
+
+> Profiling the whole devfreq framework just for one product is not fair.
+> The devfreq clients are not only mobiles, there are other type of
+> embedded devices. There are embedded devices (based on TI, iMX, etc)
+> which are not powered from battery and are used i.e. for streaming video
+> from camera or image recognition.
+
+I agree absolutely. There are many kind of embedded devices.
+For one embedded device, I don't want to remove the previous benefit.
+
+To remove the any confusion, I mention my opinion once again.
+
+It is not proper to just remove the deferrable work
+without any tunable interface. Instead, if devfreq
+framework supports both deferrable and delayed work
+according to tunable interface, I agree.
+
+
+>>
+>>
+>>>> Apparently, it only focuses on performance without considering
+>>>> the power-consumption disadvantage. In the embedded device,
+>>>> the power-consumption is very important point. We can not ignore
+>>>> the side effect.
+>>> Power consumption is important, but we cannot rely on randomness
+>>> when we develop core features in a framework.
+>>
+>> Sure, I agree that as I commented, the devfreq framework keep
+>> the balancing between performance and power-consumption.
+>>
+>> Instead, this patch only focus on the performance without considering
+>> the power-consumption side-effect.
+> Please refer to patch set v3 which tries to address battery power
+> devices.
+
+I didn't object to send next patches.
+But, Without any agreement and enough discussion on this series,
+you just sent next patches. It is not proper for review sequence. 
 
 > 
 >>
->> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
->> index d67242d87744..87e93406d7cd 100644
->> --- a/drivers/devfreq/devfreq-event.c
->> +++ b/drivers/devfreq/devfreq-event.c
->> @@ -240,7 +240,7 @@ struct devfreq_event_dev *devfreq_event_get_edev_by_phandle(struct device *dev,
->>         }
+>>>>
+>>>> Always, I hope to improve the devfreq framwork more that older.
+>>>> But, frankly, it is difficult to agree because it only consider
+>>>> the performance without considering the side-effect.
+>>>>
+>>>> The power management framework always have to consider
+>>>> the power-consumption issue. This point is always true.
+>>> I do agree that the power vs. performance trade-off must be considered
+>>> in the devfreq framework. I have developed 2 additional patches and
 >>
->>         list_for_each_entry(edev, &devfreq_event_list, node) {
->> -               if (!strcmp(edev->desc->name, node->name))
->> +               if (of_node_name_eq(node, edev->desc->name))
->>                         goto out;
->>         }
->>         edev = NULL;
->> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
->> index c61de0bdf053..c2ea94957501 100644
->> --- a/drivers/devfreq/event/exynos-ppmu.c
->> +++ b/drivers/devfreq/event/exynos-ppmu.c
->> @@ -529,7 +529,7 @@ static int of_get_devfreq_events(struct device_node *np,
->>                         if (!ppmu_events[i].name)
->>                                 continue;
+>> You should only mention the posted patches on mailing list.
+> The patches are now posted on LKLM as v3 (after ~7h).
+> Frankly, I do not understand your behavior.
+> You were explicitly added on the review on Tizen kernel
+> on these patches (from 21 Jan) before even discussion on LKLM
+
+As I mentioned, I only want to discuss something on mailing list.
+
+> happen. There was a few iteration and good review.
+> I just wanted to say that it was verified and questions about
+> power usage also appeared.> 
+> Secondly, people are referring to different patches in Android
+> kernel, ARM EAS kernel or like Matthias to LineageOS.
+> They are even referring to some research papers or trace analyses.
+> I have mentioned these patches and said that the same day they will
+> be posted on LKLM (which actually happen) because they were ready.
+
+You seem to misunderstand.
+
+I only mentioned that didn't agree to remove the deferrable work
+without considering the any side-effect and any tunable interface
+in order to use the deferrable work.
+
 >>
->> -                       if (!of_node_cmp(node->name, ppmu_events[i].name))
->> +                       if (of_node_name_eq(node, ppmu_events[i].name))
->>                                 break;
->>                 }
+>>> I am going to post them today (you can now check them on Tizen gerrit,
+>>> change 198160).
 >>
->> --
->> 2.19.1
+>> It is not good to mention the some specific gerrit. I just only review
+>> the patches on mailing list. First of all, please answer the question
+>> on above
+> I have already replayed: devfreq is broken, drivers for GPUs, buses
+> cannot rely on it. Cost of a fix is in corner case: waking up CPU
+> a few times per second. Result: reliable periodic callback for drivers.
+> The way how it is implemented in v3 provides a tunable for driver
+
+As I commented already, 
+I don't want to just remove the deferrable work and change
+the style of timer from deferrable to delayed work.
+
+Instead, if devfreq framework supports both deferrable
+and delayed work without considering the idle state
+according to tunable interface, I agree.
+
+> developer which saves some power when the device is less utilized:
+> 'polling_idle_ms'.
+> Thermal framework also has two polling intervals: longer when the
+> temperature is lower than threshold (i.e. 1s) and shorter when the
+> temperature crosses threshold (i.e. 100ms).
+
+Actullay, there is critical different between thermal and DVFS framework
+like cpufreq, devfreq. 
+
+If thermal framework doesn't check the temperature on idle state,
+it may cause the critical problem of embedded board or SoC.
+Because the external reasons can affect and raise the temperature
+of embedded board or SoC even if the system is on idle state.
+
+> Suggestion from Matthias that we could use power efficient wq
+> would have to involve changes in configs and verifications on
+> probably a lot of ARM platforms.
+>>
+>>>
+>>> We cannot simply pin the *device* load with *CPU* load or idle state.
+>>> It is not an implication.
+>>> The device like GPU, NoC or Dynamic Memory Controller can have
+>>> completely different utilization (i.e in Exynos the GPU is connected
+>>> to DDR memory through NoC and DMC).
+>>
+>> In order to get the high performance, the performance of GPU depends on CPU.
+>> h/w have depended on them tightly coupled. So, it is not easy to show
+>> the just relationship between them. We need the comprehensive measured data
+>> for both performance and power-consumption on all cases without the corner cases.
+> Are you sure that the fully loaded GPU implies that all CPUs are not in
+> idle? What about tasks pinned to CPU cgroups?
+> I will try create some small OpenCL kernel for Odroid XU4 and verify it.
+> 
+> The current devfreq implementation is missing trace events.
+> I have posted in v3 basic support. It would be a good starting point
+> for measurements and analysis.
+> 
+> Regards,
+> Lukasz
+>>
+>>> Some developers who use OpenCL on GPU might be interested in this
+>>> improvement.>
+>>> Thank you for participating in the discussion on this issue.
+>>> It will need more development and iterations.
+>>> In my opinion currently there is one bug in the devfreq and one missing
+>>> feature to solve.
+>>>
+>>> Regards,
+>>> Lukasz
+>>>
+>>>>
+>>>>>
+>>>>> Changes:
+>>>>> v2:
+>>>>> - single patch split into two
+>>>>> - added cover letter
+>>>>>
+>>>>> link for the previous version and discussion:
+>>>>> https://marc.info/?l=linux-pm&m=154904631226997&w=2
+>>>>>
+>>>>> Regards,
+>>>>> Lukasz Luba
+>>>>>
+>>>>> Lukasz Luba (2):
+>>>>>     drivers: devfreq: change devfreq workqueue mechanism
+>>>>>     drivers: devfreq: change deferred work into delayed
+>>>>>
+>>>>>    drivers/devfreq/devfreq.c | 27 +++++++--------------------
+>>>>>    1 file changed, 7 insertions(+), 20 deletions(-)
+>>>>>
+>>>>
+>>>>
+>>>
+>>>
+>>
 >>
 > 
 > 
