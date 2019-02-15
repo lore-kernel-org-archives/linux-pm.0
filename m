@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.4 04/20] thermal: int340x_thermal: Fix a NULL vs IS_ERR() check
-Date: Thu, 14 Feb 2019 21:14:55 -0500
-Message-ID: <20190215021511.179333-4-sashal@kernel.org>
-References: <20190215021511.179333-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 04/27] thermal: int340x_thermal: Fix a NULL vs IS_ERR() check
+Date: Thu, 14 Feb 2019 21:14:01 -0500
+Message-ID: <20190215021424.178979-4-sashal@kernel.org>
+References: <20190215021424.178979-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215021511.179333-1-sashal@kernel.org>
+In-Reply-To: <20190215021424.178979-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Dan Carpenter <dan.carpenter@oracle.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -28,10 +28,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index ccc0ad02d066..7f374ab5b176 100644
+index ff3b36f339e3..06d46e2ff337 100644
 --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
 +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -363,7 +363,7 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+@@ -416,7 +416,7 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
  		proc_priv->soc_dts = intel_soc_dts_iosf_init(
  					INTEL_SOC_DTS_INTERRUPT_MSI, 2, 0);
  
