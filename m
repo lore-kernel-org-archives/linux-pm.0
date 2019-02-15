@@ -1,36 +1,68 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Mark "name" const in genpd_dev_pm_attach_by_name()
-Date: Fri, 15 Feb 2019 07:47:06 -0800
-Message-ID: <CAD=FV=WH9zg62ME5Atk2NDXX8rLn0qMY3-P1U8jqDr4Th_BX_Q@mail.gmail.com>
-References: <20190214181249.2749-1-dianders@chromium.org> <20190215030205.g6ntaiec3kscsaoi@vireshk-i7>
+From: Alex Deucher via amd-gfx <amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Subject: Re: [PATCH] gpu: drm: radeon: Set DPM_FLAG_NEVER_SKIP when enabling
+ PM-runtime
+Date: Fri, 15 Feb 2019 11:01:04 -0500
+Message-ID: <CADnq5_NmDYzZZPUh5Wp+a8bycRWFDt3Lhzf0AKx9BECJ_U-Kyg@mail.gmail.com>
+References: <2281684.8tZHfIXjiu@aspire.rjw.lan>
+Reply-To: Alex Deucher <alexdeucher-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215030205.g6ntaiec3kscsaoi@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <2281684.8tZHfIXjiu-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/amd-gfx>,
+ <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/amd-gfx>
+List-Post: <mailto:amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/amd-gfx>,
+ <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "amd-gfx" <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: David Zhou <David1.Zhou-5C7GfCeVMHo@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, amd-gfx list <amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, =?UTF-8?B?0K/RgNC+0YHQu9Cw0LIg0KHQtdC80YfQtdC90LrQvg==?= <ukrkyi-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig-5C7GfCeVMHo@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Thu, Feb 14, 2019 at 7:02 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 14-02-19, 10:12, Douglas Anderson wrote:
-> > The genpd_dev_pm_attach_by_name() simply takes the name and passes it
-> > to of_property_match_string() where the argument is "const char *".
-> > Adding a const here allows a later patch to add a const to
-> > dev_pm_domain_attach_by_name() which allows drivers to pass in a name
-> > that was declared "const" in a driver.
-> >
-> > Fixes: 5d6be70add65 ("PM / Domains: Introduce option to attach a device by name to genpd")
->
-> Not sure if this should be counted as a fix.
-
-I'm OK if the "Fixes" is stripped when applying or if someone tells me
-to re-post without the Fixes--just let me know.  In general I do a lot
-of cherry-picks from upstream and I appreciate the Fixes tag helping
-to link patches together.  In this case if I picked the original patch
-I'd definitely want this one too.  Certainly, though, CCing stable
-would make no sense in this case.  ;-)
-
--Doug
+T24gRnJpLCBGZWIgMTUsIDIwMTkgYXQgMTA6MzkgQU0gUmFmYWVsIEouIFd5c29ja2kgPHJqd0By
+and5c29ja2kubmV0PiB3cm90ZToKPgo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwu
+ai53eXNvY2tpQGludGVsLmNvbT4KPgo+IE9uIEhQIFByb0Jvb2sgNDU0MHMsIGlmIFBNLXJ1bnRp
+bWUgaXMgZW5hYmxlZCBpbiB0aGUgcmFkZW9uIGRyaXZlcgo+IGFuZCB0aGUgZGlyZWN0LWNvbXBs
+ZXRlIG9wdGltaXphdGlvbiBpcyB1c2VkIGZvciB0aGUgcmFkZW9uIGRldmljZQo+IGR1cmluZyBz
+eXN0ZW0td2lkZSBzdXNwZW5kLCB0aGUgc3lzdGVtIGRvZXNuJ3QgcmVzdW1lLgo+Cj4gUHJldmVu
+dGluZyBkaXJlY3QtY29tcGxldGUgZnJvbSBiZWluZyB1c2VkIHdpdGggdGhlIHJhZGVvbiBkZXZp
+Y2UgYnkKPiBzZXR0aW5nIHRoZSBEUE1fRkxBR19ORVZFUl9TS0lQIGRyaXZlciBmbGFnIGZvciBp
+dCBtYWtlcyB0aGUgcHJvYmxlbQo+IGdvIGF3YXksIHdoaWNoIGluZGljYXRlcyB0aGF0IGRpcmVj
+dC1jb21wbGV0ZSBpcyBub3Qgc2FmZSBmb3IgdGhlCj4gcmFkZW9uIGRyaXZlciBpbiBnZW5lcmFs
+IGFuZCBzaG91bGQgbm90IGJlIHVzZWQgd2l0aCBpdCAoYXQgbGVhc3QKPiBmb3Igbm93KS4KPgo+
+IFRoaXMgZml4ZXMgYSByZWdyZXNzaW9uIGludHJvZHVjZWQgYnkgY29tbWl0IGM2MmVjNDYxMGM0
+MAo+ICgiUE0gLyBjb3JlOiBGaXggZGlyZWN0X2NvbXBsZXRlIGhhbmRsaW5nIGZvciBkZXZpY2Vz
+IHdpdGggbm8KPiBjYWxsYmFja3MiKSB3aGljaCBhbGxvd2VkIGRpcmVjdC1jb21wbGV0ZSB0byBi
+ZSBhcHBsaWVkIHRvCj4gZGV2aWNlcyB3aXRob3V0IFBNIGNhbGxiYWNrcyAoYWdhaW4pIHdoaWNo
+IGluIHR1cm4gdW5sb2NrZWQKPiBkaXJlY3QtY29tcGxldGUgZm9yIHJhZGVvbiBvbiBIUCBQcm9C
+b29rIDQ1NDBzLgoKRG8gb3RoZXIgc2ltaWxhciBkcml2ZXJzIGxpa2UgYW1kZ3B1IGFuZCBub3V2
+ZWF1IG5lZWQgdGhlIHNhbWUgZml4PwpJJ20gbm90IHRvbyBmYW1pbGlhciB3aXRoIHRoZSBkaXJl
+Y3RfY29tcGxldGUgZmVhdHVyZSBpbiBnZW5lcmFsLgoKQWxleAoKPgo+IEZpeGVzOiBjNjJlYzQ2
+MTBjNDAgKCJQTSAvIGNvcmU6IEZpeCBkaXJlY3RfY29tcGxldGUgaGFuZGxpbmcgZm9yIGRldmlj
+ZXMgd2l0aCBubyBjYWxsYmFja3MiKQo+IExpbms6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9y
+Zy9zaG93X2J1Zy5jZ2k/aWQ9MjAxNTE5Cj4gUmVwb3J0ZWQtYnk6INCv0YDQvtGB0LvQsNCyINCh
+0LXQvNGH0LXQvdC60L4gPHVrcmt5aUBnbWFpbC5jb20+Cj4gVGVzdGVkLWJ5OiDQr9GA0L7RgdC7
+0LDQsiDQodC10LzRh9C10L3QutC+IDx1a3JreWlAZ21haWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6
+IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4KPiAtLS0KPiAg
+ZHJpdmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fa21zLmMgfCAgICAxICsKPiAgMSBmaWxlIGNo
+YW5nZWQsIDEgaW5zZXJ0aW9uKCspCj4KPiBJbmRleDogbGludXgtcG0vZHJpdmVycy9ncHUvZHJt
+L3JhZGVvbi9yYWRlb25fa21zLmMKPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gLS0tIGxpbnV4LXBtLm9yaWcvZHJp
+dmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fa21zLmMKPiArKysgbGludXgtcG0vZHJpdmVycy9n
+cHUvZHJtL3JhZGVvbi9yYWRlb25fa21zLmMKPiBAQCAtMTcyLDYgKzE3Miw3IEBAIGludCByYWRl
+b25fZHJpdmVyX2xvYWRfa21zKHN0cnVjdCBkcm1fZGUKPiAgICAgICAgIH0KPgo+ICAgICAgICAg
+aWYgKHJhZGVvbl9pc19weChkZXYpKSB7Cj4gKyAgICAgICAgICAgICAgIGRldl9wbV9zZXRfZHJp
+dmVyX2ZsYWdzKGRldi0+ZGV2LCBEUE1fRkxBR19ORVZFUl9TS0lQKTsKPiAgICAgICAgICAgICAg
+ICAgcG1fcnVudGltZV91c2VfYXV0b3N1c3BlbmQoZGV2LT5kZXYpOwo+ICAgICAgICAgICAgICAg
+ICBwbV9ydW50aW1lX3NldF9hdXRvc3VzcGVuZF9kZWxheShkZXYtPmRldiwgNTAwMCk7Cj4gICAg
+ICAgICAgICAgICAgIHBtX3J1bnRpbWVfc2V0X2FjdGl2ZShkZXYtPmRldik7Cj4KPiBfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IGFtZC1nZnggbWFpbGlu
+ZyBsaXN0Cj4gYW1kLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKPiBodHRwczovL2xpc3RzLmZy
+ZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2FtZC1nZngKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KYW1kLWdmeCBtYWlsaW5nIGxpc3QKYW1kLWdm
+eEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9hbWQtZ2Z4
