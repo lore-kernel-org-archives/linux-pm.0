@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 11/27] drivers: thermal: int340x_thermal: Fix sysfs race condition
-Date: Thu, 14 Feb 2019 21:14:08 -0500
-Message-ID: <20190215021424.178979-11-sashal@kernel.org>
-References: <20190215021424.178979-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 16/40] drivers: thermal: int340x_thermal: Fix sysfs race condition
+Date: Thu, 14 Feb 2019 21:12:49 -0500
+Message-ID: <20190215021313.178476-16-sashal@kernel.org>
+References: <20190215021313.178476-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215021424.178979-1-sashal@kernel.org>
+In-Reply-To: <20190215021313.178476-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Aaron Hill <aa1ronham@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -46,7 +46,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 06d46e2ff337..1fdf6fd24cdf 100644
+index c6ab7db8c8e2..c344a3783625 100644
 --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
 +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
 @@ -77,7 +77,12 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
