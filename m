@@ -1,123 +1,44 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 27/65] drivers: thermal: int340x_thermal: Fix sysfs race condition
-Date: Thu, 14 Feb 2019 21:10:43 -0500
-Message-ID: <20190215021121.177674-27-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 08/65] thermal: int340x_thermal: Fix a NULL vs IS_ERR() check
+Date: Thu, 14 Feb 2019 21:10:24 -0500
+Message-ID: <20190215021121.177674-8-sashal@kernel.org>
 References: <20190215021121.177674-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 In-Reply-To: <20190215021121.177674-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Aaron Hill <aa1ronham@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Aaron Hill <aa1ronham@gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-[ Upstream commit 129699bb8c7572106b5bbb2407c2daee4727ccad ]
+[ Upstream commit 3fe931b31a4078395c1967f0495dcc9e5ec6b5e3 ]
 
-Changes since V1:
-* Use dev_info instead of printk
-* Use dev_warn instead of BUG_ON
+The intel_soc_dts_iosf_init() function doesn't return NULL, it returns
+error pointers.
 
-Previously, sysfs_create_group was called before all initialization had
-fully run - specifically, before pci_set_drvdata was called. Since the
-sysctl group is visible to userspace as soon as sysfs_create_group
-returns, a small window of time existed during which a process could read
-from an uninitialized/partially-initialized device.
-
-This commit moves the creation of the sysctl group to after all
-initialized is completed. This ensures that it's impossible for
-userspace to read from a sysctl file before initialization has fully
-completed.
-
-To catch any future regressions, I've added a check to ensure
-that proc_thermal_emum_mode is never PROC_THERMAL_NONE when a process
-tries to read from a sysctl file. Previously, the aforementioned race
-condition could result in the 'else' branch
-running while PROC_THERMAL_NONE was set,
-leading to a null pointer deference.
-
-Signed-off-by: Aaron Hill <aa1ronham@gmail.com>
+Fixes: 4d0dd6c1576b ("Thermal/int340x/processor_thermal: Enable auxiliary DTS for Braswell")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../processor_thermal_device.c                | 28 ++++++++++---------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ drivers/thermal/int340x_thermal/processor_thermal_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index 8e0f665cf06f..8e1cf4d789be 100644
+index 284cf2c5a8fd..8e0f665cf06f 100644
 --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
 +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -84,7 +84,12 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
- 	struct pci_dev *pci_dev; \
- 	struct platform_device *pdev; \
- 	struct proc_thermal_device *proc_dev; \
--\
-+	\
-+	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
-+		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
-+		return 0; \
-+	} \
-+	\
- 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
- 		pdev = to_platform_device(dev); \
- 		proc_dev = platform_get_drvdata(pdev); \
-@@ -298,11 +303,6 @@ static int proc_thermal_add(struct device *dev,
- 	*priv = proc_priv;
+@@ -423,7 +423,7 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+ 		proc_priv->soc_dts = intel_soc_dts_iosf_init(
+ 					INTEL_SOC_DTS_INTERRUPT_MSI, 2, 0);
  
- 	ret = proc_thermal_read_ppcc(proc_priv);
--	if (!ret) {
--		ret = sysfs_create_group(&dev->kobj,
--					 &power_limit_attribute_group);
--
--	}
- 	if (ret)
- 		return ret;
- 
-@@ -316,8 +316,7 @@ static int proc_thermal_add(struct device *dev,
- 
- 	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
- 	if (IS_ERR(proc_priv->int340x_zone)) {
--		ret = PTR_ERR(proc_priv->int340x_zone);
--		goto remove_group;
-+		return PTR_ERR(proc_priv->int340x_zone);
- 	} else
- 		ret = 0;
- 
-@@ -331,9 +330,6 @@ static int proc_thermal_add(struct device *dev,
- 
- remove_zone:
- 	int340x_thermal_zone_remove(proc_priv->int340x_zone);
--remove_group:
--	sysfs_remove_group(&proc_priv->dev->kobj,
--			   &power_limit_attribute_group);
- 
- 	return ret;
- }
-@@ -364,7 +360,10 @@ static int int3401_add(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, proc_priv);
- 	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
- 
--	return 0;
-+	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PLATFORM_DEV\n");
-+
-+	return sysfs_create_group(&pdev->dev.kobj,
-+					 &power_limit_attribute_group);
- }
- 
- static int int3401_remove(struct platform_device *pdev)
-@@ -441,7 +440,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
- 			dev_err(&pdev->dev, "No auxiliary DTSs enabled\n");
- 	}
- 
--	return 0;
-+	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PCI\n");
-+
-+	return sysfs_create_group(&pdev->dev.kobj,
-+					 &power_limit_attribute_group);
- }
- 
- static void  proc_thermal_pci_remove(struct pci_dev *pdev)
+-		if (proc_priv->soc_dts && pdev->irq) {
++		if (!IS_ERR(proc_priv->soc_dts) && pdev->irq) {
+ 			ret = pci_enable_msi(pdev);
+ 			if (!ret) {
+ 				ret = request_threaded_irq(pdev->irq, NULL,
 -- 
 2.19.1
