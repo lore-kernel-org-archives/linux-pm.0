@@ -1,151 +1,123 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
- devfreq core
-Date: Fri, 15 Feb 2019 09:33:05 +0900
-Message-ID: <1671c5fa-5414-8a83-b372-99f7f057a2ac@samsung.com>
-References: <20190214013042.254790-1-mka@chromium.org>
-        <20190214013042.254790-5-mka@chromium.org>
-        <CAGTfZH118diXgKHetWwiNMXHALxXqt=MSh9oVv+nt4-SJkzN2Q@mail.gmail.com>
-        <CGME20190214192933epcas5p204c34010accb5e63480abd3ca34991eb@epcas5p2.samsung.com>
-        <20190214192855.GD117604@google.com>
-        <b28e763d-c3c9-0673-6216-f67561112b60@samsung.com>
-        <20190215001947.GF117604@google.com>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 34/77] drivers: thermal: int340x_thermal: Fix sysfs race condition
+Date: Thu, 14 Feb 2019 21:08:12 -0500
+Message-ID: <20190215020855.176727-34-sashal@kernel.org>
+References: <20190215020855.176727-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215001947.GF117604@google.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Chanwoo Choi <cwchoi00@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20190215020855.176727-1-sashal@kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Aaron Hill <aa1ronham@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+From: Aaron Hill <aa1ronham@gmail.com>
 
-On 19. 2. 15. 오전 9:19, Matthias Kaehlcke wrote:
-> Hi Chanwoo,
-> 
-> On Fri, Feb 15, 2019 at 08:42:30AM +0900, Chanwoo Choi wrote:
->> Hi Matthias,
->>
->> On 19. 2. 15. 오전 4:28, Matthias Kaehlcke wrote:
->>> Hi Chanwoo,
->>>
->>> On Thu, Feb 14, 2019 at 11:17:36PM +0900, Chanwoo Choi wrote:
->>>> Hi Matthias,
->>>>
->>>> As I commented on the first patch, it is not possible to call some codes
->>>> according to the intention of each governor between 'devfreq_moniotr_*()'
->>>> and some codes which are executed before or after 'devfreq_moniotr_*()'
->>>>
->>>> For example, if some governor requires the following sequence,
->>>> after this patch, it is not possible.
->>>>
->>>> case DEVFREQ_GOV_xxx:
->>>>         /* execute some code before devfreq_monitor_xxx() */
->>>>         devfreq_monitor_xxx()
->>>>         /* execute some code after devfreq_monitor_xxx() */
->>>
->>> As for the suspend/resume case I agree that the patch introduces this
->>> limitation, but I'm not convinced that this is an actual problem.
->>>
->>> For governor_start(): why can't the governor execute the code
->>> before polling started, does it make any difference to the governor
->>> that a work is scheduled?
->>
->> The some governors might want to do something before starting
->> the work and do something after work started. I think that
->> the existing style is more flexible.
-> 
-> Could you provide a practical example that answers my question above:
-> 
-> "why can't the governor execute the code before polling started, does
-> it make any difference to the governor that a work is scheduled?"
+[ Upstream commit 129699bb8c7572106b5bbb2407c2daee4727ccad ]
 
-Actually, as for now, I don't know the correct practice and now.
-I want to say that the existing style is more flexible for the
-new governor in the future. If there are no any special benefits,
-I think we don't need to harm the flexibility.
+Changes since V1:
+* Use dev_info instead of printk
+* Use dev_warn instead of BUG_ON
 
-> 
->> And,
->> It has one more problem when changing the governor on the fly
->> from simple_ondemand to other governors like performance,
->> powersave and so on.
->>
->> Even if other governors don't need to monitor the utilization,
->> the work timer will be executed continually because the devfreq
->> device has the polling_ms value. It is not necessary
->> of the other governors such as performance, powersave.
->>
->> It means that only specific governor like simple_ondemand
->> have to call the devfreq_monitor_start() by itself
->> instead of calling it on devfreq core.
-> 
-> yes, I noticed that too, it can be easily fixed with a flag in the
-> governor.
+Previously, sysfs_create_group was called before all initialization had
+fully run - specifically, before pci_set_drvdata was called. Since the
+sysctl group is visible to userspace as soon as sysfs_create_group
+returns, a small window of time existed during which a process could read
+from an uninitialized/partially-initialized device.
 
-Right, If we add some codes like flag, it is easy.
-Actually, it is just difference how to support them.
+This commit moves the creation of the sysctl group to after all
+initialized is completed. This ensures that it's impossible for
+userspace to read from a sysctl file before initialization has fully
+completed.
 
-I think that the existing style has not any problem and is not
-complicated to develop the new governor. If there are no
-some benefits, IMO, we better to keep the flexibility.
-It can give the flexibility to the developer of governor.
+To catch any future regressions, I've added a check to ensure
+that proc_thermal_emum_mode is never PROC_THERMAL_NONE when a process
+tries to read from a sysctl file. Previously, the aforementioned race
+condition could result in the 'else' branch
+running while PROC_THERMAL_NONE was set,
+leading to a null pointer deference.
 
-> 
->>> For governor_stop(): why would the governor require polling to be
->>> active during stop? If it needs update_devfreq() to run (called by
->>> devfreq_monitor()) it can call it directly, instead of waiting for the
->>> monitor to run at some later time.
->>
->> As I knew, if the current governors are performance/powersave/
->> userspace, the monitoring is already stopped and not used.
->> Because they don't need to handle the codes related to the work
->> like queue_delayed_work(), cancel_delayed_work_sync().
->>
->> And,
->> In case of the existing style for calling devfreq_monitor_*(),
->> other governors like performance/powersave/userspace/passice
->> don't need to call the devfreq_monitor_stop() because they
->> didn't use the work timer.
-> 
-> As per above, the governor could have a flag indicating that it
-> doesn't need load monitoring.
+Signed-off-by: Aaron Hill <aa1ronham@gmail.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ .../processor_thermal_device.c                | 28 ++++++++++---------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-About this, I commented above. Pleas check it.
-
-> 
-> I think it should be avoided to expect the governors to do the right
-> thing if certain actions are mandatory and common for all governors
-> (unless the feature in question is not used). It should be handled in
-> the core code, unless there are good reasons not to do this.
-
-I agree to distinguish for common code and specific code depends on governor.
-But, it is harm for the flexibility. We know that there are no problem
-after applying this patchset. But, as I commented, I'm not sure that
-it is meaningful to harm the flexibility.
-
-> 
-> With thispatch set the amount of code remains essentially the same,
-> and no new code needs to be added for governors that don't do anything
-> special in start/stop/suspend/resume.
-> 
-> TBH I think probably the entire event handler multiplexing should go
-> away and be changed to a struct devfreq_ops with optional callbacks
-> for start, stop, suspend, resume and update interval. As far as I can
-> tell the multiplexing isn't needed and separate ops would result in
-> cleaner code, in both the devfreq core and the governors.
-> 
-> Cheers
-> 
-> Matthias
-> 
-> 
-
-
+diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+index 8e0f665cf06f..8e1cf4d789be 100644
+--- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
+@@ -84,7 +84,12 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
+ 	struct pci_dev *pci_dev; \
+ 	struct platform_device *pdev; \
+ 	struct proc_thermal_device *proc_dev; \
+-\
++	\
++	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
++		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
++		return 0; \
++	} \
++	\
+ 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
+ 		pdev = to_platform_device(dev); \
+ 		proc_dev = platform_get_drvdata(pdev); \
+@@ -298,11 +303,6 @@ static int proc_thermal_add(struct device *dev,
+ 	*priv = proc_priv;
+ 
+ 	ret = proc_thermal_read_ppcc(proc_priv);
+-	if (!ret) {
+-		ret = sysfs_create_group(&dev->kobj,
+-					 &power_limit_attribute_group);
+-
+-	}
+ 	if (ret)
+ 		return ret;
+ 
+@@ -316,8 +316,7 @@ static int proc_thermal_add(struct device *dev,
+ 
+ 	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
+ 	if (IS_ERR(proc_priv->int340x_zone)) {
+-		ret = PTR_ERR(proc_priv->int340x_zone);
+-		goto remove_group;
++		return PTR_ERR(proc_priv->int340x_zone);
+ 	} else
+ 		ret = 0;
+ 
+@@ -331,9 +330,6 @@ static int proc_thermal_add(struct device *dev,
+ 
+ remove_zone:
+ 	int340x_thermal_zone_remove(proc_priv->int340x_zone);
+-remove_group:
+-	sysfs_remove_group(&proc_priv->dev->kobj,
+-			   &power_limit_attribute_group);
+ 
+ 	return ret;
+ }
+@@ -364,7 +360,10 @@ static int int3401_add(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, proc_priv);
+ 	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
+ 
+-	return 0;
++	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PLATFORM_DEV\n");
++
++	return sysfs_create_group(&pdev->dev.kobj,
++					 &power_limit_attribute_group);
+ }
+ 
+ static int int3401_remove(struct platform_device *pdev)
+@@ -441,7 +440,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+ 			dev_err(&pdev->dev, "No auxiliary DTSs enabled\n");
+ 	}
+ 
+-	return 0;
++	dev_info(&pdev->dev, "Creating sysfs group for PROC_THERMAL_PCI\n");
++
++	return sysfs_create_group(&pdev->dev.kobj,
++					 &power_limit_attribute_group);
+ }
+ 
+ static void  proc_thermal_pci_remove(struct pci_dev *pdev)
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.19.1
