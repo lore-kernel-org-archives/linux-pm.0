@@ -1,86 +1,84 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 1/2] trace: events: add devfreq trace event file
-Date: Fri, 15 Feb 2019 14:05:12 +0100
-Message-ID: <1550235913-5189-2-git-send-email-l.luba@partner.samsung.com>
-References: <1550235913-5189-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190215130555eucas1p219217e3f1d0901f61be78870df0ecf6d@eucas1p2.samsung.com>
+Subject: Re: [PATCH 4/4] PM / devfreq: Handle monitor start/stop in the
+ devfreq core
+Date: Fri, 15 Feb 2019 14:07:38 +0100
+Message-ID: <194a0fba-3e39-d577-810d-de300e8b4edd@partner.samsung.com>
+References: <20190214013042.254790-1-mka@chromium.org>
+        <CGME20190214013154epcas1p31326fdc127b3a75d566426e4f785121b@epcas1p3.samsung.com>
+        <20190214013042.254790-5-mka@chromium.org>
+        <1771fe9e-c107-f133-7b39-f4d7dbb004c5@partner.samsung.com>
+        <20190214190741.GC117604@google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550235913-5189-1-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <20190214190741.GC117604@google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com, Lukasz Luba <l.luba@partner.samsung.com>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds a new file for with trace events for devfreq
-framework. They are used for performance analysis of the framework.
-It also contains updates in MAINTAINERS file adding new entry for
-devfreq maintainers.
+Hi Matthias,
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- MAINTAINERS                    |  1 +
- include/trace/events/devfreq.h | 40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+)
- create mode 100644 include/trace/events/devfreq.h
+On 2/14/19 8:07 PM, Matthias Kaehlcke wrote:
+> Hi Lukasz,
+> 
+> On Thu, Feb 14, 2019 at 07:01:36PM +0100, Lukasz Luba wrote:
+>> Hi Matthias,
+>>
+>> I have compiled and run your changes on Odroid xu3 and v5.0-rc6.
+>> There are kernel warnings because of mutex not held in function
+>> devfreq_monitor_[start|stop]() in use cases:
+>>    1) a few times during registration of new devices devfreq_add_device()
+>>    2) poking the device from sysfs
+> 
+> Thanks testing!
+> 
+> I messed up carrying over changes from my v4.19 device kernel
+> to the tree used for upstreaming :(
+> 
+> Do you still see warnings with the below patch?
+No, the warnings are no longer present in the log. The patch solves it.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 41ce5f4..9c44076 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4447,6 +4447,7 @@ S:	Maintained
- F:	drivers/devfreq/
- F:	include/linux/devfreq.h
- F:	Documentation/devicetree/bindings/devfreq/
-+F:	include/trace/events/devfreq.h
- 
- DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
- M:	Chanwoo Choi <cw00.choi@samsung.com>
-diff --git a/include/trace/events/devfreq.h b/include/trace/events/devfreq.h
-new file mode 100644
-index 0000000..ce83dba
---- /dev/null
-+++ b/include/trace/events/devfreq.h
-@@ -0,0 +1,40 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM devfreq
-+
-+#if !defined(_TRACE_DEVFREQ_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_DEVFREQ_H
-+
-+#include <linux/devfreq.h>
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(devfreq_monitor,
-+	TP_PROTO(struct devfreq *devfreq),
-+
-+	TP_ARGS(devfreq),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned long, freq)
-+		__field(unsigned long, busy_time)
-+		__field(unsigned long, total_time)
-+		__field(unsigned int, polling_ms)
-+		__string(dev_name, dev_name(&devfreq->dev))
-+	),
-+
-+	TP_fast_assign(
-+		__entry->freq = devfreq->previous_freq;
-+		__entry->busy_time = devfreq->last_status.busy_time;
-+		__entry->total_time = devfreq->last_status.total_time;
-+		__entry->polling_ms = devfreq->profile->polling_ms;
-+		__assign_str(dev_name, dev_name(&devfreq->dev));
-+	),
-+
-+	TP_printk("dev_name=%s freq=%lu polling_ms=%u load=%lu",
-+		__get_str(dev_name), __entry->freq, __entry->polling_ms,
-+		__entry->total_time == 0 ? 100 :
-+			(100 * __entry->busy_time) / __entry->total_time)
-+);
-+#endif /* _TRACE_DEVFREQ_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
--- 
-2.7.4
+Regards,
+Lukasz
+> 
+> Thanks
+> 
+> Matthias
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index a42c37543c190..866fe711b43ca 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -440,7 +440,6 @@ static void devfreq_monitor_stop(struct devfreq *devfreq)
+> 
+>          mutex_lock(&devfreq->lock);
+>          devfreq->monitor_state = DEVFREQ_MONITOR_STOPPED;
+> -       mutex_unlock(&devfreq->lock);
+>   }
+> 
+>   /**
+> @@ -596,7 +595,9 @@ static int governor_start(struct devfreq *devfreq)
+>                  return err;
+>          }
+> 
+> +       mutex_lock(&devfreq->lock);
+>          devfreq_monitor_start(devfreq);
+> +       mutex_unlock(&devfreq->lock);
+> 
+>          return 0;
+>   }
+> @@ -614,7 +615,9 @@ static int governor_stop(struct devfreq *devfreq)
+>                   "mutex must *not* be held by the caller\n"))
+>                  return -EINVAL;
+> 
+> +       mutex_lock(&devfreq->lock);
+>          devfreq_monitor_stop(devfreq);
+> +       mutex_unlock(&devfreq->lock);
+> 
+>          err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_STOP, NULL);
+>          if (err) {
+> 
+> 
