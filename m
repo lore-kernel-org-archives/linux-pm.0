@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 16/40] drivers: thermal: int340x_thermal: Fix sysfs race condition
-Date: Thu, 14 Feb 2019 21:12:49 -0500
-Message-ID: <20190215021313.178476-16-sashal@kernel.org>
-References: <20190215021313.178476-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 27/65] drivers: thermal: int340x_thermal: Fix sysfs race condition
+Date: Thu, 14 Feb 2019 21:10:43 -0500
+Message-ID: <20190215021121.177674-27-sashal@kernel.org>
+References: <20190215021121.177674-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215021313.178476-1-sashal@kernel.org>
+In-Reply-To: <20190215021121.177674-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Aaron Hill <aa1ronham@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -46,10 +46,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index c6ab7db8c8e2..c344a3783625 100644
+index 8e0f665cf06f..8e1cf4d789be 100644
 --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
 +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -77,7 +77,12 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
+@@ -84,7 +84,12 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
  	struct pci_dev *pci_dev; \
  	struct platform_device *pdev; \
  	struct proc_thermal_device *proc_dev; \
@@ -63,7 +63,7 @@ index c6ab7db8c8e2..c344a3783625 100644
  	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
  		pdev = to_platform_device(dev); \
  		proc_dev = platform_get_drvdata(pdev); \
-@@ -291,11 +296,6 @@ static int proc_thermal_add(struct device *dev,
+@@ -298,11 +303,6 @@ static int proc_thermal_add(struct device *dev,
  	*priv = proc_priv;
  
  	ret = proc_thermal_read_ppcc(proc_priv);
@@ -75,7 +75,7 @@ index c6ab7db8c8e2..c344a3783625 100644
  	if (ret)
  		return ret;
  
-@@ -309,8 +309,7 @@ static int proc_thermal_add(struct device *dev,
+@@ -316,8 +316,7 @@ static int proc_thermal_add(struct device *dev,
  
  	proc_priv->int340x_zone = int340x_thermal_zone_add(adev, ops);
  	if (IS_ERR(proc_priv->int340x_zone)) {
@@ -85,7 +85,7 @@ index c6ab7db8c8e2..c344a3783625 100644
  	} else
  		ret = 0;
  
-@@ -324,9 +323,6 @@ static int proc_thermal_add(struct device *dev,
+@@ -331,9 +330,6 @@ static int proc_thermal_add(struct device *dev,
  
  remove_zone:
  	int340x_thermal_zone_remove(proc_priv->int340x_zone);
@@ -95,7 +95,7 @@ index c6ab7db8c8e2..c344a3783625 100644
  
  	return ret;
  }
-@@ -357,7 +353,10 @@ static int int3401_add(struct platform_device *pdev)
+@@ -364,7 +360,10 @@ static int int3401_add(struct platform_device *pdev)
  	platform_set_drvdata(pdev, proc_priv);
  	proc_thermal_emum_mode = PROC_THERMAL_PLATFORM_DEV;
  
@@ -107,7 +107,7 @@ index c6ab7db8c8e2..c344a3783625 100644
  }
  
  static int int3401_remove(struct platform_device *pdev)
-@@ -434,7 +433,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+@@ -441,7 +440,10 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
  			dev_err(&pdev->dev, "No auxiliary DTSs enabled\n");
  	}
  
