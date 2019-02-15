@@ -1,63 +1,71 @@
 From: Sven Van Asbroeck <thesven73@gmail.com>
-Subject: [PATCH 1/2] power: supply: max14656: fix potential use-before-alloc
-Date: Fri, 15 Feb 2019 16:43:02 -0500
-Message-ID: <20190215214303.7274-1-TheSven73@gmail.com>
+Subject: [PATCH 2/2] power: supply: max14656: fix potential use-after-free
+Date: Fri, 15 Feb 2019 16:43:03 -0500
+Message-ID: <20190215214303.7274-2-TheSven73@gmail.com>
+References: <20190215214303.7274-1-TheSven73@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190215214303.7274-1-TheSven73@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Kurz <akurz@blala.de>
 List-Id: linux-pm@vger.kernel.org
 
-Call order on probe():
-- max14656_hw_init() enables interrupts on the chip
-- devm_request_irq() starts processing interrupts, isr
-  could be called immediately
--    isr: schedules delayed work (irq_work)
--    irq_work: calls power_supply_changed()
-- devm_power_supply_register() registers the power supply
+Explicitly cancel/sync the irq_work delayed work, otherwise
+there's a chance that it will run after the device is removed,
+which would result in a use-after-free.
 
-Depending on timing, it's possible that power_supply_changed()
-is called on an unregistered power supply structure.
-
-Fix by registering the power supply before requesting the irq.
+Note that cancel/sync should happen:
+- after irq's have been disabled, as the isr re-schedules the work
+- before the power supply is unregistered, because the work func
+    uses the power supply handle.
 
 Cc: Alexander Kurz <akurz@blala.de>
 Signed-off-by: Sven Van Asbroeck <TheSven73@gmail.com>
 ---
- drivers/power/supply/max14656_charger_detector.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ .../power/supply/max14656_charger_detector.c    | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/max14656_charger_detector.c b/drivers/power/supply/max14656_charger_detector.c
-index b91b1d2999dc..d19307f791c6 100644
+index d19307f791c6..9e6472834e37 100644
 --- a/drivers/power/supply/max14656_charger_detector.c
 +++ b/drivers/power/supply/max14656_charger_detector.c
-@@ -280,6 +280,13 @@ static int max14656_probe(struct i2c_client *client,
+@@ -240,6 +240,14 @@ static enum power_supply_property max14656_battery_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ };
  
- 	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
++static void stop_irq_work(void *data)
++{
++	struct max14656_chip *chip = data;
++
++	cancel_delayed_work_sync(&chip->irq_work);
++}
++
++
+ static int max14656_probe(struct i2c_client *client,
+ 			  const struct i2c_device_id *id)
+ {
+@@ -278,8 +286,6 @@ static int max14656_probe(struct i2c_client *client,
+ 	if (ret)
+ 		return -ENODEV;
  
-+	chip->detect_psy = devm_power_supply_register(dev,
-+		       &chip->psy_desc, &psy_cfg);
-+	if (IS_ERR(chip->detect_psy)) {
-+		dev_err(dev, "power_supply_register failed\n");
-+		return -EINVAL;
+-	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
+-
+ 	chip->detect_psy = devm_power_supply_register(dev,
+ 		       &chip->psy_desc, &psy_cfg);
+ 	if (IS_ERR(chip->detect_psy)) {
+@@ -287,6 +293,13 @@ static int max14656_probe(struct i2c_client *client,
+ 		return -EINVAL;
+ 	}
+ 
++	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
++	ret = devm_add_action(dev, stop_irq_work, chip);
++	if (ret) {
++		dev_err(dev, "devm_add_action %d failed\n", ret);
++		return ret;
 +	}
 +
  	ret = devm_request_irq(dev, chip->irq, max14656_irq,
  			       IRQF_TRIGGER_FALLING,
  			       MAX14656_NAME, chip);
-@@ -289,13 +296,6 @@ static int max14656_probe(struct i2c_client *client,
- 	}
- 	enable_irq_wake(chip->irq);
- 
--	chip->detect_psy = devm_power_supply_register(dev,
--		       &chip->psy_desc, &psy_cfg);
--	if (IS_ERR(chip->detect_psy)) {
--		dev_err(dev, "power_supply_register failed\n");
--		return -EINVAL;
--	}
--
- 	schedule_delayed_work(&chip->irq_work, msecs_to_jiffies(2000));
- 
- 	return 0;
 -- 
 2.17.1
