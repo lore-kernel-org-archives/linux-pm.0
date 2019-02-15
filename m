@@ -1,71 +1,55 @@
 From: Sven Van Asbroeck <thesven73@gmail.com>
-Subject: [PATCH 2/2] power: supply: max14656: fix potential use-after-free
-Date: Fri, 15 Feb 2019 16:43:03 -0500
-Message-ID: <20190215214303.7274-2-TheSven73@gmail.com>
-References: <20190215214303.7274-1-TheSven73@gmail.com>
+Subject: [PATCH] max17042_battery: fix potential use-after-free on device remove
+Date: Fri, 15 Feb 2019 17:03:44 -0500
+Message-ID: <20190215220344.16604-1-TheSven73@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190215214303.7274-1-TheSven73@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alexander Kurz <akurz@blala.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Explicitly cancel/sync the irq_work delayed work, otherwise
-there's a chance that it will run after the device is removed,
-which would result in a use-after-free.
+The work which is scheduled on a POR boot is potentially left
+pending or running until after the device module is removed,
+which could result in a use-after-free.
 
-Note that cancel/sync should happen:
-- after irq's have been disabled, as the isr re-schedules the work
-- before the power supply is unregistered, because the work func
-    uses the power supply handle.
+Fix by registering a cancel/sync callback, which gets executed as
+part of standard resource unwinding.
 
-Cc: Alexander Kurz <akurz@blala.de>
+This issue was detected with the help of Coccinelle.
+
+Cc: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Sven Van Asbroeck <TheSven73@gmail.com>
 ---
- .../power/supply/max14656_charger_detector.c    | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ drivers/power/supply/max17042_battery.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/power/supply/max14656_charger_detector.c b/drivers/power/supply/max14656_charger_detector.c
-index d19307f791c6..9e6472834e37 100644
---- a/drivers/power/supply/max14656_charger_detector.c
-+++ b/drivers/power/supply/max14656_charger_detector.c
-@@ -240,6 +240,14 @@ static enum power_supply_property max14656_battery_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index 2a8d75e5e930..581c6bd23388 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -995,6 +995,13 @@ static const struct power_supply_desc max17042_no_current_sense_psy_desc = {
+ 	.num_properties	= ARRAY_SIZE(max17042_battery_props) - 2,
  };
  
-+static void stop_irq_work(void *data)
++static void max17042_stop_work(void *data)
 +{
-+	struct max14656_chip *chip = data;
++	struct max17042_chip *chip = data;
 +
-+	cancel_delayed_work_sync(&chip->irq_work);
++	cancel_work_sync(&chip->work);
 +}
 +
-+
- static int max14656_probe(struct i2c_client *client,
- 			  const struct i2c_device_id *id)
+ static int max17042_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
  {
-@@ -278,8 +286,6 @@ static int max14656_probe(struct i2c_client *client,
- 	if (ret)
- 		return -ENODEV;
- 
--	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
--
- 	chip->detect_psy = devm_power_supply_register(dev,
- 		       &chip->psy_desc, &psy_cfg);
- 	if (IS_ERR(chip->detect_psy)) {
-@@ -287,6 +293,13 @@ static int max14656_probe(struct i2c_client *client,
- 		return -EINVAL;
- 	}
- 
-+	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
-+	ret = devm_add_action(dev, stop_irq_work, chip);
-+	if (ret) {
-+		dev_err(dev, "devm_add_action %d failed\n", ret);
-+		return ret;
-+	}
-+
- 	ret = devm_request_irq(dev, chip->irq, max14656_irq,
- 			       IRQF_TRIGGER_FALLING,
- 			       MAX14656_NAME, chip);
+@@ -1101,6 +1108,9 @@ static int max17042_probe(struct i2c_client *client,
+ 	regmap_read(chip->regmap, MAX17042_STATUS, &val);
+ 	if (val & STATUS_POR_BIT) {
+ 		INIT_WORK(&chip->work, max17042_init_worker);
++		ret = devm_add_action(&client->dev, max17042_stop_work, chip);
++		if (ret)
++			return ret;
+ 		schedule_work(&chip->work);
+ 	} else {
+ 		chip->init_complete = 1;
 -- 
 2.17.1
