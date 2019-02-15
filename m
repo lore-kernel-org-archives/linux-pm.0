@@ -1,75 +1,83 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Mark "name" const in genpd_dev_pm_attach_by_name()
-Date: Fri, 15 Feb 2019 11:27:54 +0100
-Message-ID: <CAPDyKFpw8Fwgc8QjjhjuxcW7zJp1-kqcKC4RAs65S8Jr5H=uYA@mail.gmail.com>
-References: <20190214181249.2749-1-dianders@chromium.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH 2/2] driver core: Fix possible supplier PM-usage counter
+ imbalance
+Date: Fri, 15 Feb 2019 11:00:27 +0000
+Message-ID: <2ed95b05-317c-59bb-498a-b5481e54bcf6@nvidia.com>
+References: <5510642.nRbR3bcduN@aspire.rjw.lan>
+ <9351473.C2nPJoyFsE@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190214181249.2749-1-dianders@chromium.org>
+In-Reply-To: <9351473.C2nPJoyFsE@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Douglas Anderson <dianders@chromium.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-tegra <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 14 Feb 2019 at 19:13, Douglas Anderson <dianders@chromium.org> wrote:
->
-> The genpd_dev_pm_attach_by_name() simply takes the name and passes it
-> to of_property_match_string() where the argument is "const char *".
-> Adding a const here allows a later patch to add a const to
-> dev_pm_domain_attach_by_name() which allows drivers to pass in a name
-> that was declared "const" in a driver.
->
-> Fixes: 5d6be70add65 ("PM / Domains: Introduce option to attach a device by name to genpd")
-> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+Hi Rafael,
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
-
+On 12/02/2019 12:08, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> If a stateless device link to a certain supplier with
+> DL_FLAG_PM_RUNTIME set in the flags is added and then removed by the
+> consumer driver's probe callback, the supplier's PM-runtime usage
+> counter will be nonzero after that which effectively causes the
+> supplier to remain "always on" going forward.
+> 
+> Namely, device_link_add() called to add the link invokes
+> device_link_rpm_prepare() which notices that the consumer driver is
+> probing, so it increments the supplier's PM-runtime usage counter
+> with the assumption that the link will stay around until
+> pm_runtime_put_suppliers() is called by driver_probe_device(),
+> but if the link goes away before that point, the supplier's
+> PM-runtime usage counter will remain nonzero.
+> 
+> To prevent that from happening, first rework pm_runtime_get_suppliers()
+> and pm_runtime_put_suppliers() to use the rpm_active refounts of device
+> links and make the latter only drop rpm_active and the supplier's
+> PM-runtime usage counter for each link by one, unless rpm_active is
+> one already for it.  Next, modify device_link_add() to bump up the
+> new link's rpm_active refcount and the suppliers PM-runtime usage
+> counter by two, to prevent pm_runtime_put_suppliers(), if it is
+> called subsequently, from suspending the supplier prematurely (in
+> case its PM-runtime usage counter goes down to 0 in there).
+> 
+> Due to the way rpm_put_suppliers() works, this change does not
+> affect runtime suspend of the consumer ends of new device links (or,
+> generally, device links for which DL_FLAG_PM_RUNTIME has just been
+> set).
+> 
+> Fixes: e2f3cd831a28 ("driver core: Fix handling of runtime PM flags in device_link_add()")
+> Reported-by: Ulf Hansson <ulf.hansson@linaro.org> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->
->  drivers/base/power/domain.c | 2 +-
->  include/linux/pm_domain.h   | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 45eafe8cf7dd..2c334c01fc43 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2483,7 +2483,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
->   * power-domain-names DT property. For further description see
->   * genpd_dev_pm_attach_by_id().
->   */
-> -struct device *genpd_dev_pm_attach_by_name(struct device *dev, char *name)
-> +struct device *genpd_dev_pm_attach_by_name(struct device *dev, const char *name)
->  {
->         int index;
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index dd364abb649a..203be5082f33 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -271,7 +271,7 @@ int genpd_dev_pm_attach(struct device *dev);
->  struct device *genpd_dev_pm_attach_by_id(struct device *dev,
->                                          unsigned int index);
->  struct device *genpd_dev_pm_attach_by_name(struct device *dev,
-> -                                          char *name);
-> +                                          const char *name);
->  #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
->  static inline int of_genpd_add_provider_simple(struct device_node *np,
->                                         struct generic_pm_domain *genpd)
-> @@ -324,7 +324,7 @@ static inline struct device *genpd_dev_pm_attach_by_id(struct device *dev,
->  }
->
->  static inline struct device *genpd_dev_pm_attach_by_name(struct device *dev,
-> -                                                        char *name)
-> +                                                        const char *name)
->  {
->         return NULL;
->  }
-> --
-> 2.21.0.rc0.258.g878e2cd30e-goog
->
+> 
+> Note that the issue had been there before commit e2f3cd831a28, but it was
+> overlooked by that commit and this change is a fix on top of it, so make
+> the Fixes: tag point to commit e2f3cd831a28 (instead of an earlier one
+> that the patch will not be applicable to).
+I noticed that yesterday's and today's -next were no longer booting on
+one of our Tegra boards (Tegra210 Jetson TX2) because networking is
+failing. The ethernet chip is a USB device and looking at the bootlogs I
+can see that the Tegra XHCI driver is failing ...
+
+ tegra-xusb 70090000.usb: xHCI host controller not responding, assume dead
+ tegra-xusb 70090000.usb: HC died; cleaning up
+
+The Tegra XHCI driver uses multiple power-domains and uses
+device_link_add() to attach them. So now I am wondering if there is
+something that we have got wrong in our implementation. However, I don't
+see the device being probed deferred on boot or anything like that.
+
+The driver in question is drivers/usb/host/xhci-tegra.c and we add the
+links in the function tegra_xusb_powerdomain_init() which is before RPM
+is enabled. Let me know if you have any thoughts.
+
+Cheers
+Jon
+
+-- 
+nvpublic
