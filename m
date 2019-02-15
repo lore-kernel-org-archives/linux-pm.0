@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 08/65] thermal: int340x_thermal: Fix a NULL vs IS_ERR() check
-Date: Thu, 14 Feb 2019 21:10:24 -0500
-Message-ID: <20190215021121.177674-8-sashal@kernel.org>
-References: <20190215021121.177674-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 11/77] thermal: int340x_thermal: Fix a NULL vs IS_ERR() check
+Date: Thu, 14 Feb 2019 21:07:49 -0500
+Message-ID: <20190215020855.176727-11-sashal@kernel.org>
+References: <20190215020855.176727-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190215021121.177674-1-sashal@kernel.org>
+In-Reply-To: <20190215020855.176727-1-sashal@kernel.org>
 Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Dan Carpenter <dan.carpenter@oracle.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
