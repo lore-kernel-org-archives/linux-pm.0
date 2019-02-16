@@ -1,36 +1,61 @@
 From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] cpufreq: scmi: fix use-after-free in scmi_cpufreq_exit()
-Date: Sat, 16 Feb 2019 11:31:48 -0500
-Message-ID: <20190216163148.12375-1-tiny.windzz@gmail.com>
+Subject: [PATCH] cpufreq: powernv: fix missing check of return value in init_powernv_pstates()
+Date: Sat, 16 Feb 2019 12:06:23 -0500
+Message-ID: <20190216170623.12634-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sudeep.holla@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This issue was detected with the help of Coccinelle. So
-change the order of function calls to fix it.
+kmalloc() could fail, so insert a check of its return value. And
+if it fails, returns -ENOMEM.
 
-Fixes: 1690d8bb91e37 (cpufreq: scpi/scmi: Fix freeing of dynamic OPPs)
+And remove (struct pstate_idx_revmap_data *) to fix coccinelle WARNING
+by the way.
+
+WARNING: casting value returned by memory allocation function to (struct
+pstate_idx_revmap_data *) is useless.
 
 Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- drivers/cpufreq/scmi-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/powernv-cpufreq.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index 242c3370544e..9ed46d188cb5 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -187,8 +187,8 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 7e7ad3879c4e..d2230812fa4b 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -244,6 +244,7 @@ static int init_powernv_pstates(void)
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
+ 	u32 pstate_turbo, pstate_ultra_turbo;
++	int rc = -ENODEV;
  
- 	cpufreq_cooling_unregister(priv->cdev);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
--	kfree(priv);
- 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
-+	kfree(priv);
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -327,8 +328,11 @@ static int init_powernv_pstates(void)
+ 		powernv_freqs[i].frequency = freq * 1000; /* kHz */
+ 		powernv_freqs[i].driver_data = id & 0xFF;
  
+-		revmap_data = (struct pstate_idx_revmap_data *)
+-			      kmalloc(sizeof(*revmap_data), GFP_KERNEL);
++		revmap_data = kmalloc(sizeof(*revmap_data), GFP_KERNEL);
++		if (!revmap_data) {
++			rc = -ENOMEM;
++			goto out;
++		}
+ 
+ 		revmap_data->pstate_id = id & 0xFF;
+ 		revmap_data->cpufreq_table_idx = i;
+@@ -357,7 +361,7 @@ static int init_powernv_pstates(void)
  	return 0;
+ out:
+ 	of_node_put(power_mgt);
+-	return -ENODEV;
++	return rc;
  }
+ 
+ /* Returns the CPU frequency corresponding to the pstate_id. */
 -- 
 2.17.0
