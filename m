@@ -1,108 +1,79 @@
-From: Alex Deucher via amd-gfx <amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Subject: Re: [PATCH] gpu: drm: radeon: Set DPM_FLAG_NEVER_SKIP when enabling
- PM-runtime
-Date: Sat, 16 Feb 2019 18:37:13 -0500
-Message-ID: <CADnq5_OqaQA2HNcy+ZZvsN5MTEWLXoFEuirX4f4nzEOJ6NrdVA@mail.gmail.com>
-References: <2281684.8tZHfIXjiu@aspire.rjw.lan>
- <CADnq5_NmDYzZZPUh5Wp+a8bycRWFDt3Lhzf0AKx9BECJ_U-Kyg@mail.gmail.com>
- <20190216060058.gsiddsmj3f27e6v7@wunner.de>
-Reply-To: Alex Deucher <alexdeucher-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Artur Rojek <contact@artur-rojek.eu>
+Subject: [PATCH 1/7] iio: inkern: API for reading available iio channel attribute values
+Date: Sun, 17 Feb 2019 15:29:10 +0100
+Message-ID: <20190217142914.17433-1-contact@artur-rojek.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20190216060058.gsiddsmj3f27e6v7-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/amd-gfx>,
- <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/amd-gfx>
-List-Post: <mailto:amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/amd-gfx>,
- <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "amd-gfx" <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Cc: David Zhou <David1.Zhou-5C7GfCeVMHo@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, amd-gfx list <amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, ?????????????? ???????????????? <ukrkyi-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alex Deucher <alexander.deucher-5C7GfCeVMHo@public.gmane.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig-5C7GfCeVMHo@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBGZWIgMTYsIDIwMTkgYXQgMTowMSBBTSBMdWthcyBXdW5uZXIgPGx1a2FzQHd1bm5l
-ci5kZT4gd3JvdGU6Cj4KPiBPbiBGcmksIEZlYiAxNSwgMjAxOSBhdCAxMTowMTowNEFNIC0wNTAw
-LCBBbGV4IERldWNoZXIgd3JvdGU6Cj4gPiBPbiBGcmksIEZlYiAxNSwgMjAxOSBhdCAxMDozOSBB
-TSBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+IHdyb3RlOgo+ID4gPiBPbiBI
-UCBQcm9Cb29rIDQ1NDBzLCBpZiBQTS1ydW50aW1lIGlzIGVuYWJsZWQgaW4gdGhlIHJhZGVvbiBk
-cml2ZXIKPiA+ID4gYW5kIHRoZSBkaXJlY3QtY29tcGxldGUgb3B0aW1pemF0aW9uIGlzIHVzZWQg
-Zm9yIHRoZSByYWRlb24gZGV2aWNlCj4gPiA+IGR1cmluZyBzeXN0ZW0td2lkZSBzdXNwZW5kLCB0
-aGUgc3lzdGVtIGRvZXNuJ3QgcmVzdW1lLgo+ID4gPgo+ID4gPiBQcmV2ZW50aW5nIGRpcmVjdC1j
-b21wbGV0ZSBmcm9tIGJlaW5nIHVzZWQgd2l0aCB0aGUgcmFkZW9uIGRldmljZSBieQo+ID4gPiBz
-ZXR0aW5nIHRoZSBEUE1fRkxBR19ORVZFUl9TS0lQIGRyaXZlciBmbGFnIGZvciBpdCBtYWtlcyB0
-aGUgcHJvYmxlbQo+ID4gPiBnbyBhd2F5LCB3aGljaCBpbmRpY2F0ZXMgdGhhdCBkaXJlY3QtY29t
-cGxldGUgaXMgbm90IHNhZmUgZm9yIHRoZQo+ID4gPiByYWRlb24gZHJpdmVyIGluIGdlbmVyYWwg
-YW5kIHNob3VsZCBub3QgYmUgdXNlZCB3aXRoIGl0IChhdCBsZWFzdAo+ID4gPiBmb3Igbm93KS4K
-PiA+ID4KPiA+ID4gVGhpcyBmaXhlcyBhIHJlZ3Jlc3Npb24gaW50cm9kdWNlZCBieSBjb21taXQg
-YzYyZWM0NjEwYzQwCj4gPiA+ICgiUE0gLyBjb3JlOiBGaXggZGlyZWN0X2NvbXBsZXRlIGhhbmRs
-aW5nIGZvciBkZXZpY2VzIHdpdGggbm8KPiA+ID4gY2FsbGJhY2tzIikgd2hpY2ggYWxsb3dlZCBk
-aXJlY3QtY29tcGxldGUgdG8gYmUgYXBwbGllZCB0bwo+ID4gPiBkZXZpY2VzIHdpdGhvdXQgUE0g
-Y2FsbGJhY2tzIChhZ2Fpbikgd2hpY2ggaW4gdHVybiB1bmxvY2tlZAo+ID4gPiBkaXJlY3QtY29t
-cGxldGUgZm9yIHJhZGVvbiBvbiBIUCBQcm9Cb29rIDQ1NDBzLgo+ID4KPiA+IERvIG90aGVyIHNp
-bWlsYXIgZHJpdmVycyBsaWtlIGFtZGdwdSBhbmQgbm91dmVhdSBuZWVkIHRoZSBzYW1lIGZpeD8K
-PiA+IEknbSBub3QgdG9vIGZhbWlsaWFyIHdpdGggdGhlIGRpcmVjdF9jb21wbGV0ZSBmZWF0dXJl
-IGluIGdlbmVyYWwuCj4KPiBkaXJlY3RfY29tcGxldGUgbWVhbnMgdGhhdCBhIGRpc2NyZXRlIEdQ
-VSB3aGljaCBpcyBpbiBEM2NvbGQgdXBvbgo+IGVudGVyaW5nIHN5c3RlbSBzbGVlcCBpcyBsZWZ0
-IGFzIGlzLCBpLmUuIGl0IGlzIG5vdCB3b2tlbi4gIEl0IGlzCj4gYWxzbyBleHBlY3RlZCB0byBz
-dGlsbCBiZSBpbiBEM2NvbGQgd2hlbiByZXN1bWluZyBmcm9tIHN5c3RlbSBzbGVlcAo+IGZyb20g
-dGhlIFBNIGNvcmUncyBwb2ludCBvZiB2aWV3LiAgKElmIGl0IGlzIGluIEQwdW5pbml0aWFsaXpl
-ZCwgdGhlCj4gR1BVJ3MgZHJpdmVyIG5lZWRzIHRvIGVuc3VyZSBpdCBpcyB0cmFuc2l0aW9uZWQg
-dG8gRDNjb2xkIGFnYWluLikKPgo+IEkga25vdyBmb3IgYSBmYWN0IHRoYXQgcmVzdW1pbmcgdGhl
-IGRpc2NyZXRlIEdQVSBpcyBub3QgbmVjZXNzYXJ5Cj4gb24gbXkgTWFjQm9vayBQcm8gd2l0aCBO
-dmlkaWEgR1BVLiAgSSdkIGV4cGVjdCB0aG9zZSB3aXRoIEFNRCBHUFVzCj4gdG8gYmVoYXZlIHRo
-ZSBzYW1lLiAgVGhlIGFwcGxlLWdtdXggZHJpdmVyIHRha2VzIGNhcmUgb2YgcHV0dGluZwo+IHRo
-ZSBHUFUgaW50byBEM2NvbGQgb24gcmVzdW1lIGZyb20gc3lzdGVtIHNsZWVwIGlmIGl0IHdhcyBp
-biBEM2NvbGQKPiB3aGVuIGVudGVyaW5nIHN5c3RlbSBzbGVlcCAoc2VlIGRyaXZlcnMvcGxhdGZv
-cm0veDg2L2FwcGxlLWdtdXguYywKPiBnbXV4X3Jlc3VtZSgpKS4KPgo+IEkgdGhpbmsgaXQgaXMg
-ZGVzaXJhYmxlIHRvIHVzZSBkaXJlY3RfY29tcGxldGUgYmVjYXVzZSBpdCBzYXZlcyBwb3dlcgo+
-IChubyBuZWVkIHRvIGdyYXR1aXRvdXNseSB3YWtlIHRoZSBHUFUgdXBvbiBlbnRlcmluZyBzeXN0
-ZW0gc2xlZXAsCj4gb25seSB0byBpbW1lZGlhdGVseSBjdXQgaXRzIHBvd2VyKSBhbmQgaXQgYWxz
-byBzcGVlZHMgdXAgdGhlIHN1c3BlbmQKPiBwcm9jZXNzIGJ5IGFib3V0IGhhbGYgYSBzZWNvbmQu
-CgpUaGFua3MgZm9yIHRoZSBpbmZvLiAgSXQgc291bmRzIGxpa2Ugd2UgbmVlZCBhIHNpbWlsYXIg
-cGF0Y2ggZm9yCmFtZGdwdS4gIFdpdGggZEdQVXMgY29udHJvbGxlZCBieSB0aGUgQUNQSSBBVFBY
-IG1ldGhvZCwgSSBiZWxpZXZlIHRoZQpkR1BVIGlzIHBvd2VyZWQgYnkgYXV0b21hdGljYWxseSBv
-biByZXN1bWUgZnJvbSBTMy9TNC4gIEkgdGhpbmsgdGhlcmUKbWF5IGJlIGEgd2F5IHRvIGNoYW5n
-ZSB0aGF0IGJlaGF2aW9yIGluIHNvbWUgcmV2aXNpb25zIG9mIEFUUFggKGkuZS4sCnRvIGtlZXAg
-dGhlIHN0YXRlIGFjcm9zcyBzdXNwZW5kIGN5Y2xlcyksIGJ1dCBpdCdzIG5vdCB0aGUgZGVmYXVs
-dC4KSSdtIG5vdCBzdXJlIGFib3V0IHRoZSBuZXdlciBfUFIzIHN0dWZmIGluIEh5YnJpZCBHcmFw
-aGljcyBsYXB0b3BzLiAgSQp0aGluayBpdCByZXRhaW5zIHN0YXRlLiAgSW4gYm90aCByYWRlb24g
-YW5kIGFtZGdwdSB3ZSBwcm9iYWJseSBuZWVkIHRvCmNoZWNrIGlmIHRoZSBzeXN0ZW0gaXMgdXNp
-bmcgQVRQWCBvciBfUFIzIGFuZCBkaXNhYmxlIGRpcmVjdCBjb21wbGV0ZQpmb3IgQVRQWCBhdCBs
-ZWFzdC4KCkFsZXgKCj4KPiBUaGUgcm9vdCBjYXVzZSBvbiB0aGUgSFAgUHJvQm9vayA0NTQwcyBu
-ZWVkcyB0byBiZSBkZWJ1Z2dlZCwgSSdkCj4gc3VzcGVjdCBhIEJJT1MgaXNzdWUgd2hpY2ggY291
-bGQgYmUgYWRyZXNzZWQgYnkgYSBxdWlyaywgZWl0aGVyIGZvcgo+IHRoaXMgcGFydGljdWxhciBt
-YWNoaW5lIG9yIGZvciBhIGNlcnRhaW4gY2xhc3Mgb2YgZGV2aWNlcyAoZS5nLiBhbGwKPiBtYWNo
-aW5lcyB3aGljaCB1c2UgUFIzIHRvIHRyYW5zaXRpb24gdG8gRDNjb2xkKSBpZiB0aGF0IGlzIG5l
-Y2Vzc2FyeQo+IHRvIGJlaGF2ZSBpZGVudGljYWxseSB0byBXaW5kb3dzLiAgT3IgbWF5YmUgdGhl
-IGF0cHggdmdhX3N3aXRjaGVyb28KPiBoYW5kbGVyIG5lZWRzIHRvIGJlIGFtZW5kZWQgdG8gcHV0
-IHRoZSBHUFUgaW50byBEM2NvbGQgb24gcmVzdW1lIGZyb20KPiBzeXN0ZW0gc2xlZXAgaWYgaXQg
-d2FzIHJ1bnRpbWUgc3VzcGVuZGVkIGJlZm9yZS4KPgo+IElzIHRoaXMgbWFjaGluZSB1c2luZyBz
-MmlkbGUgb3IgZG9lcyBpdCBzdXNwZW5kIHRvIFMzPwo+Cj4gVGhhbmtzLAo+Cj4gTHVrYXMKPgo+
-ID4gPiBGaXhlczogYzYyZWM0NjEwYzQwICgiUE0gLyBjb3JlOiBGaXggZGlyZWN0X2NvbXBsZXRl
-IGhhbmRsaW5nIGZvciBkZXZpY2VzIHdpdGggbm8gY2FsbGJhY2tzIikKPiA+ID4gTGluazogaHR0
-cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMDE1MTkKPiA+ID4gUmVw
-b3J0ZWQtYnk6ID8/Pz8/Pz8/Pz8/Pz8/ID8/Pz8/Pz8/Pz8/Pz8/Pz8gPHVrcmt5aUBnbWFpbC5j
-b20+Cj4gPiA+IFRlc3RlZC1ieTogPz8/Pz8/Pz8/Pz8/Pz8gPz8/Pz8/Pz8/Pz8/Pz8/PyA8dWty
-a3lpQGdtYWlsLmNvbT4KPiA+ID4gU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJh
-ZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPgo+ID4gPiAtLS0KPiA+ID4gIGRyaXZlcnMvZ3B1L2Ry
-bS9yYWRlb24vcmFkZW9uX2ttcy5jIHwgICAgMSArCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgMSBp
-bnNlcnRpb24oKykKPiA+ID4KPiA+ID4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvZ3B1L2RybS9y
-YWRlb24vcmFkZW9uX2ttcy5jCj4gPiA+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiA+ID4gLS0tIGxpbnV4LXBtLm9y
-aWcvZHJpdmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fa21zLmMKPiA+ID4gKysrIGxpbnV4LXBt
-L2RyaXZlcnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX2ttcy5jCj4gPiA+IEBAIC0xNzIsNiArMTcy
-LDcgQEAgaW50IHJhZGVvbl9kcml2ZXJfbG9hZF9rbXMoc3RydWN0IGRybV9kZQo+ID4gPiAgICAg
-ICAgIH0KPiA+ID4KPiA+ID4gICAgICAgICBpZiAocmFkZW9uX2lzX3B4KGRldikpIHsKPiA+ID4g
-KyAgICAgICAgICAgICAgIGRldl9wbV9zZXRfZHJpdmVyX2ZsYWdzKGRldi0+ZGV2LCBEUE1fRkxB
-R19ORVZFUl9TS0lQKTsKPiA+ID4gICAgICAgICAgICAgICAgIHBtX3J1bnRpbWVfdXNlX2F1dG9z
-dXNwZW5kKGRldi0+ZGV2KTsKPiA+ID4gICAgICAgICAgICAgICAgIHBtX3J1bnRpbWVfc2V0X2F1
-dG9zdXNwZW5kX2RlbGF5KGRldi0+ZGV2LCA1MDAwKTsKPiA+ID4gICAgICAgICAgICAgICAgIHBt
-X3J1bnRpbWVfc2V0X2FjdGl2ZShkZXYtPmRldik7Cl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmFtZC1nZnggbWFpbGluZyBsaXN0CmFtZC1nZnhAbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
-dGluZm8vYW1kLWdmeA==
+Extend the inkern API with a function for reading available
+attribute values of iio channels.
+
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+---
+ drivers/iio/inkern.c         | 20 ++++++++++++++++++++
+ include/linux/iio/consumer.h | 14 ++++++++++++++
+ 2 files changed, 34 insertions(+)
+
+diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
+index 06ca3f7fcc44..f19dbde3c945 100644
+--- a/drivers/iio/inkern.c
++++ b/drivers/iio/inkern.c
+@@ -733,6 +733,26 @@ static int iio_channel_read_avail(struct iio_channel *chan,
+ 						 vals, type, length, info);
+ }
+ 
++int iio_read_avail_channel_attribute(struct iio_channel *chan,
++				     const int **vals, int *type, int *length,
++				     enum iio_chan_info_enum attribute)
++{
++	int ret;
++
++	mutex_lock(&chan->indio_dev->info_exist_lock);
++	if (!chan->indio_dev->info) {
++		ret = -ENODEV;
++		goto err_unlock;
++	}
++
++	ret = iio_channel_read_avail(chan, vals, type, length, attribute);
++err_unlock:
++	mutex_unlock(&chan->indio_dev->info_exist_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(iio_read_avail_channel_attribute);
++
+ int iio_read_avail_channel_raw(struct iio_channel *chan,
+ 			       const int **vals, int *length)
+ {
+diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
+index 9887f4f8e2a8..b2d34831ed7c 100644
+--- a/include/linux/iio/consumer.h
++++ b/include/linux/iio/consumer.h
+@@ -290,6 +290,20 @@ int iio_read_max_channel_raw(struct iio_channel *chan, int *val);
+ int iio_read_avail_channel_raw(struct iio_channel *chan,
+ 			       const int **vals, int *length);
+ 
++/**
++ * iio_read_avail_channel_attribute() - read available channel attribute values
++ * @chan:		The channel being queried.
++ * @vals:		Available values read back.
++ * @type:		Type of values read back.
++ * @length:		Number of entries in vals.
++ * @attribute:		info attribute to be read back.
++ *
++ * Returns an error code, IIO_AVAIL_RANGE or IIO_AVAIL_LIST.
++ */
++int iio_read_avail_channel_attribute(struct iio_channel *chan,
++				     const int **vals, int *type, int *length,
++				     enum iio_chan_info_enum attribute);
++
+ /**
+  * iio_get_channel_type() - get the type of a channel
+  * @channel:		The channel being queried.
+-- 
+2.20.1
