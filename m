@@ -1,52 +1,27 @@
-From: <Nicolas.Ferre@microchip.com>
-Subject: Re: [PATCH 3/3] dt-bindings: arm: atmel: add binding for SAM9X60
- shutdown controller
-Date: Mon, 18 Feb 2019 11:01:45 +0000
-Message-ID: <97af1d45-d74b-87d3-c934-baae80307e1d@microchip.com>
-References: <1550143407-26109-1-git-send-email-claudiu.beznea@microchip.com>
- <1550143407-26109-4-git-send-email-claudiu.beznea@microchip.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpufreq: scmi: fix use-after-free in scmi_cpufreq_exit()
+Date: Mon, 18 Feb 2019 11:04:54 +0000
+Message-ID: <20190218110454.GA12994@e107155-lin>
+References: <20190216163148.12375-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550143407-26109-4-git-send-email-claudiu.beznea@microchip.com>
-Content-Language: en-US
-Content-ID: <9FB745B54B46AC43AE8FC8B39A8C0EB2@namprd11.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <20190216163148.12375-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com, robh+dt@kernel.org, mark.rutland@arm.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTQvMDIvMjAxOSBhdCAxMjoyNCwgQ2xhdWRpdSBCZXpuZWEgLSBNMTgwNjMgd3JvdGU6DQo+
-IEZyb206IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2NoaXAuY29tPg0KPiAN
-Cj4gQWRkIGRvY3VtZW50YXRpb24gZm9yIFNBTTlYNjAgc2h1dGRvd24gY29udHJvbGxlci4NCj4g
-DQo+IFNpZ25lZC1vZmYtYnk6IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2No
-aXAuY29tPg0KPiAtLS0NCj4gICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJt
-L2F0bWVsLXN5c3JlZ3MudHh0IHwgNiArKysrKy0NCj4gICAxIGZpbGUgY2hhbmdlZCwgNSBpbnNl
-cnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9hdG1lbC1zeXNyZWdzLnR4dCBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vYXRtZWwtc3lzcmVncy50eHQNCj4gaW5kZXggMTRm
-MzE5ZjY5NGI3Li45NzExMDUyYzU4MDAgMTAwNjQ0DQo+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2
-aWNldHJlZS9iaW5kaW5ncy9hcm0vYXRtZWwtc3lzcmVncy50eHQNCj4gKysrIGIvRG9jdW1lbnRh
-dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9hdG1lbC1zeXNyZWdzLnR4dA0KPiBAQCAtODMs
-NyArODMsNyBAQCBTSERXQyBTQU1BNUQyLUNvbXBhdGlibGUgU2h1dGRvd24gQ29udHJvbGxlcg0K
-PiAgIDEpIHNoZHdjIG5vZGUNCj4gICANCj4gICByZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiAtLSBj
-b21wYXRpYmxlOiBzaG91bGQgYmUgImF0bWVsLHNhbWE1ZDItc2hkd2MiLg0KPiArLSBjb21wYXRp
-YmxlOiBzaG91bGQgYmUgImF0bWVsLHNhbWE1ZDItc2hkd2MiIG9yICJtaWNyb2NoaXAsc2FtOXg2
-MC1zaGR3YyIuDQo+ICAgLSByZWc6IHNob3VsZCBjb250YWluIHJlZ2lzdGVycyBsb2NhdGlvbiBh
-bmQgbGVuZ3RoDQo+ICAgLSBjbG9ja3M6IHBoYW5kbGUgdG8gaW5wdXQgY2xvY2suDQo+ICAgLSAj
-YWRkcmVzcy1jZWxsczogc2hvdWxkIGJlIG9uZS4gVGhlIGNlbGwgaXMgdGhlIHdha2UtdXAgaW5w
-dXQgaW5kZXguDQo+IEBAIC05NSw2ICs5NSwxMCBAQCBvcHRpb25hbCBwcm9wZXJ0aWVzOg0KPiAg
-ICAgbWljcm9zZWNvbmRzLiBJdCdzIHVzdWFsbHkgYSBib2FyZC1yZWxhdGVkIHByb3BlcnR5Lg0K
-PiAgIC0gYXRtZWwsd2FrZXVwLXJ0Yy10aW1lcjogYm9vbGVhbiB0byBlbmFibGUgUmVhbC1UaW1l
-IENsb2NrIHdha2UtdXAuDQo+ICAgDQo+ICtvcHRpb25hbCBwcm9wZXJ0aWVzIGZvciBtaWNyb2No
-aXAsc2FtOXg2MC1zaGR3YzoNCg0KaXMgaXQgZm9yIHNhbTl4NjAgb25seSBvciBpcyB0aGUgb3B0
-aW9uYWwgcHJvcGVydHkgImRlYm91bmNlLWRlbGF5LXVzIiANCmFwcGxpY2FibGUgdG8gdGhpcyBT
-b0M/DQoNCj4gKy0gYXRtZWwsd2FrZXVwLXJ0Yy10aW1lcjogYm9vbGVhbiB0byBlbmFibGUgUmVh
-bC1UaW1lIENsb2NrIHdha2UtdXAuDQo+ICstIGF0bWVsLHdha2V1cC1ydHQtdGltZXI6IGJvb2xl
-YW4gdG8gZW5hYmxlIFJlYWwtdGltZSBUaW1lciBXYWtlLXVwLg0KDQpXZWxsLCBJIHdvdWxkIG1h
-a2UgY2xlYXIgdGhhdCB0aGUgb25seSBhZGRpdGlvbmFsIG9wdGlvbmFsIHByb3BlcnR5IGlzIA0K
-ImF0bWVsLHdha2V1cC1ydHQtdGltZXIiIHdoaWxlIHRoZSAyIG90aGVyIG9wdGlvbmFsIHByb3Bl
-cnRpZXMgc3RpbGwgDQphcHBseS4uLg0KDQoNCj4gICBUaGUgbm9kZSBjb250YWlucyBjaGlsZCBu
-b2RlcyBmb3IgZWFjaCB3YWtlLXVwIGlucHV0IHRoYXQgdGhlIHBsYXRmb3JtIHVzZXMuDQo+ICAg
-DQo+ICAgMikgaW5wdXQgbm9kZXMNCj4gDQoNCg0KLS0gDQpOaWNvbGFzIEZlcnJlDQo=
+On Sat, Feb 16, 2019 at 11:31:48AM -0500, Yangtao Li wrote:
+> This issue was detected with the help of Coccinelle. So
+> change the order of function calls to fix it.
+>
+> Fixes: 1690d8bb91e37 (cpufreq: scpi/scmi: Fix freeing of dynamic OPPs)
+>
+
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+
+--
+Regards,
+Sudeep
