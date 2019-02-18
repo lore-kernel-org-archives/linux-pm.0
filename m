@@ -1,163 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] driver core: Fix possible supplier PM-usage counter imbalance
-Date: Mon, 18 Feb 2019 23:14:35 +0100
-Message-ID: <1643324.bcmPelzAHY@aspire.rjw.lan>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <CAJZ5v0gywb2jE-FRowxuosucNVqQ4iLLTCFte4hN_CELF9rHRA@mail.gmail.com> <6ee66fc6-cba5-7aea-0e92-3380544c1a94@nvidia.com>
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [PATCH] gpu: drm: radeon: Set DPM_FLAG_NEVER_SKIP when enabling PM-runtime
+Date: Mon, 18 Feb 2019 17:21:19 -0500
+Message-ID: <CADnq5_O+2i5jC_0DRQvfkMtmfMGLgMzRDo+aSZHXeewhDPVhOg@mail.gmail.com>
+References: <2281684.8tZHfIXjiu@aspire.rjw.lan> <CADnq5_NmDYzZZPUh5Wp+a8bycRWFDt3Lhzf0AKx9BECJ_U-Kyg@mail.gmail.com>
+ <20190216060058.gsiddsmj3f27e6v7@wunner.de> <CADnq5_OqaQA2HNcy+ZZvsN5MTEWLXoFEuirX4f4nzEOJ6NrdVA@mail.gmail.com>
+ <CAJZ5v0g8-+cqQFspwYytTbzptZrt+GhT2RUX_nQnFD-rDbA7sA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6ee66fc6-cba5-7aea-0e92-3380544c1a94@nvidia.com>
+In-Reply-To: <CAJZ5v0g8-+cqQFspwYytTbzptZrt+GhT2RUX_nQnFD-rDbA7sA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-tegra <linux-tegra@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alex Deucher <alexander.deucher@amd.com>, David Zhou <David1.Zhou@amd.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, amd-gfx list <amd-gfx@lists.freedesktop.org>, ?????????????? ???????????????? <ukrkyi@gmail.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 18, 2019 2:02:50 PM CET Jon Hunter wrote:
-> 
-> On 18/02/2019 12:12, Rafael J. Wysocki wrote:
-> >  On Fri, Feb 15, 2019 at 5:44 PM Jon Hunter <jonathanh@nvidia.com> wrote:
-> >>
-> >>
-> >> On 15/02/2019 14:37, Ulf Hansson wrote:
-> >>> On Fri, 15 Feb 2019 at 12:00, Jon Hunter <jonathanh@nvidia.com> wrote:
-> >>>>
-> >>>> Hi Rafael,
-> >>>>
-> >>>> On 12/02/2019 12:08, Rafael J. Wysocki wrote:
-> >>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>>>
-> >>>>> If a stateless device link to a certain supplier with
-> >>>>> DL_FLAG_PM_RUNTIME set in the flags is added and then removed by the
-> >>>>> consumer driver's probe callback, the supplier's PM-runtime usage
-> >>>>> counter will be nonzero after that which effectively causes the
-> >>>>> supplier to remain "always on" going forward.
-> >>>>>
-> >>>>> Namely, device_link_add() called to add the link invokes
-> >>>>> device_link_rpm_prepare() which notices that the consumer driver is
-> >>>>> probing, so it increments the supplier's PM-runtime usage counter
-> >>>>> with the assumption that the link will stay around until
-> >>>>> pm_runtime_put_suppliers() is called by driver_probe_device(),
-> >>>>> but if the link goes away before that point, the supplier's
-> >>>>> PM-runtime usage counter will remain nonzero.
-> >>>>>
-> >>>>> To prevent that from happening, first rework pm_runtime_get_suppliers()
-> >>>>> and pm_runtime_put_suppliers() to use the rpm_active refounts of device
-> >>>>> links and make the latter only drop rpm_active and the supplier's
-> >>>>> PM-runtime usage counter for each link by one, unless rpm_active is
-> >>>>> one already for it.  Next, modify device_link_add() to bump up the
-> >>>>> new link's rpm_active refcount and the suppliers PM-runtime usage
-> >>>>> counter by two, to prevent pm_runtime_put_suppliers(), if it is
-> >>>>> called subsequently, from suspending the supplier prematurely (in
-> >>>>> case its PM-runtime usage counter goes down to 0 in there).
-> >>>>>
-> >>>>> Due to the way rpm_put_suppliers() works, this change does not
-> >>>>> affect runtime suspend of the consumer ends of new device links (or,
-> >>>>> generally, device links for which DL_FLAG_PM_RUNTIME has just been
-> >>>>> set).
-> >>>>>
-> >>>>> Fixes: e2f3cd831a28 ("driver core: Fix handling of runtime PM flags in device_link_add()")
-> >>>>> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>>> ---
-> >>>>>
-> >>>>> Note that the issue had been there before commit e2f3cd831a28, but it was
-> >>>>> overlooked by that commit and this change is a fix on top of it, so make
-> >>>>> the Fixes: tag point to commit e2f3cd831a28 (instead of an earlier one
-> >>>>> that the patch will not be applicable to).
-> >>>> I noticed that yesterday's and today's -next were no longer booting on
-> >>>> one of our Tegra boards (Tegra210 Jetson TX2) because networking is
-> >>>> failing. The ethernet chip is a USB device and looking at the bootlogs I
-> >>>> can see that the Tegra XHCI driver is failing ...
-> >>>>
-> >>>>  tegra-xusb 70090000.usb: xHCI host controller not responding, assume dead
-> >>>>  tegra-xusb 70090000.usb: HC died; cleaning up
-> >>>>
-> >>>> The Tegra XHCI driver uses multiple power-domains and uses
-> >>>> device_link_add() to attach them. So now I am wondering if there is
-> >>>> something that we have got wrong in our implementation. However, I don't
-> >>>> see the device being probed deferred on boot or anything like that.
-> >>>>
-> >>>> The driver in question is drivers/usb/host/xhci-tegra.c and we add the
-> >>>> links in the function tegra_xusb_powerdomain_init() which is before RPM
-> >>>> is enabled. Let me know if you have any thoughts.
-> >>>
-> >>> If you are willing to help debugging then I am offering my assistance.
-> >>>
-> >>> I would start by enabling CONFIG_PM_ADVANCED_DEBUG, which gives you
-> >>> some more information about the runtime PM state of the device, like
-> >>> the usage count for example.
-> >>> I would also add a couple of prints in
-> >>> tegra_xusb_runtime_suspend|resume() and in the ->power_on|off()
-> >>> callbacks for the corresponding genpds, to see when those gets called.
-> >>
-> >> From the bootlog I see ...
-> >>
-> >> [    4.445827] tegra_xusb_runtime_resume-788
-> >> [    4.508799] tegra-xusb 70090000.usb: Firmware timestamp: 2015-08-10 09:47:54 UTC
-> > 
-> > This message comes from tegra_xusb_load_firmware() in
-> > tegra_xusb_probe() which is after the pm_runtime_get_sync().
-> > 
-> > If the device was PM-runtime-suspended before, the
-> > pm_runtime_get_sync() will runtime-resume and reference-count the
-> > suppliers in addition to resuming the device.  In that case
-> > pm_runtime_put_suppliers() will suspend the suppliers, so there is a
-> > bug in there.
-> > 
-> > What happens is that the links are new when pm_runtime_get_sync() runs
-> > and so their rpm_active refcounts are one.  After the
-> > pm_runtime_get_sync() they are two and pm_runtime_put_suppliers() will
-> > drop them by one and drop the PM-runtime usage counter of each of them
-> > by one, so they will become zero and the suppliers will suspend.
-> > 
-> > Passing DL_FLAG_RPM_ACTIVE to device_link_add() should help, but IMO
-> > things should also work without that.
-> 
-> I can confirm that DL_FLAG_RPM_ACTIVE does indeed work. I assume though
-> this would prevent the suppliers from ever being suspended,
+On Sun, Feb 17, 2019 at 4:26 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Sun, Feb 17, 2019 at 12:37 AM Alex Deucher <alexdeucher@gmail.com> wrote:
+> >
+> > On Sat, Feb 16, 2019 at 1:01 AM Lukas Wunner <lukas@wunner.de> wrote:
+> > >
+> > > On Fri, Feb 15, 2019 at 11:01:04AM -0500, Alex Deucher wrote:
+> > > > On Fri, Feb 15, 2019 at 10:39 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > > > On HP ProBook 4540s, if PM-runtime is enabled in the radeon driver
+> > > > > and the direct-complete optimization is used for the radeon device
+> > > > > during system-wide suspend, the system doesn't resume.
+> > > > >
+> > > > > Preventing direct-complete from being used with the radeon device by
+> > > > > setting the DPM_FLAG_NEVER_SKIP driver flag for it makes the problem
+> > > > > go away, which indicates that direct-complete is not safe for the
+> > > > > radeon driver in general and should not be used with it (at least
+> > > > > for now).
+> > > > >
+> > > > > This fixes a regression introduced by commit c62ec4610c40
+> > > > > ("PM / core: Fix direct_complete handling for devices with no
+> > > > > callbacks") which allowed direct-complete to be applied to
+> > > > > devices without PM callbacks (again) which in turn unlocked
+> > > > > direct-complete for radeon on HP ProBook 4540s.
+> > > >
+> > > > Do other similar drivers like amdgpu and nouveau need the same fix?
+> > > > I'm not too familiar with the direct_complete feature in general.
+> > >
+> > > direct_complete means that a discrete GPU which is in D3cold upon
+> > > entering system sleep is left as is, i.e. it is not woken.  It is
+> > > also expected to still be in D3cold when resuming from system sleep
+> > > from the PM core's point of view.  (If it is in D0uninitialized, the
+> > > GPU's driver needs to ensure it is transitioned to D3cold again.)
+> > >
+> > > I know for a fact that resuming the discrete GPU is not necessary
+> > > on my MacBook Pro with Nvidia GPU.  I'd expect those with AMD GPUs
+> > > to behave the same.  The apple-gmux driver takes care of putting
+> > > the GPU into D3cold on resume from system sleep if it was in D3cold
+> > > when entering system sleep (see drivers/platform/x86/apple-gmux.c,
+> > > gmux_resume()).
+> > >
+> > > I think it is desirable to use direct_complete because it saves power
+> > > (no need to gratuitously wake the GPU upon entering system sleep,
+> > > only to immediately cut its power) and it also speeds up the suspend
+> > > process by about half a second.
+> >
+> > Thanks for the info.  It sounds like we need a similar patch for
+> > amdgpu.  With dGPUs controlled by the ACPI ATPX method, I believe the
+> > dGPU is powered by automatically on resume from S3/S4.  I think there
+> > may be a way to change that behavior in some revisions of ATPX (i.e.,
+> > to keep the state across suspend cycles), but it's not the default.
+> > I'm not sure about the newer _PR3 stuff in Hybrid Graphics laptops.  I
+> > think it retains state.  In both radeon and amdgpu we probably need to
+> > check if the system is using ATPX or _PR3 and disable direct complete
+> > for ATPX at least.
+>
+> I would disable direct-complete entirely for them then and possibly
+> consider using DPM_FLAG_SMART_SUSPEND in the cases when that would be
+> safe.
+>
+> Anyway, I posted this patch for radeon, because it addresses a
+> specific regression and I'm not super-familiar with GPU drivers in
+> general.
 
-No, it wouldn't.  It only prevents the supplier from suspending as long as
-the consumer remains active.
+Thanks.  I've applied this patch and sent out a patch for amdgpu.
 
-In your case it shouldn't matter (it only matters because of the bug in
-the $subject patch), because the consumer is suspended to start with.
-
-Had it been active initially, though, passing DL_FLAG_RPM_ACTIVE to
-device_link_add() would have been the only way to to force the supplier to
-remain active accross the return from consumer probe until the consumer is
-suspended.
-
-> which maybe
-> we will want to do eventually.
-> 
-> >> [    4.516223] tegra-xusb 70090000.usb: xHCI Host Controller
-> >> [    4.521622] tegra-xusb 70090000.usb: new USB bus registered, assigned bus number 1
-> > 
-> > This comes from usb_add_hcd()
-> > 
-> >> [    4.530087] tegra-xusb 70090000.usb: hcc params 0x0184f525 hci version 0x100 quirks 0x0000000000010010
-> >> [    4.539398] tegra-xusb 70090000.usb: irq 69, io mem 0x70090000
-> >> [    4.553671] tegra-xusb 70090000.usb: xHCI Host Controller
-> >> [    4.559064] tegra-xusb 70090000.usb: new USB bus registered, assigned bus number 2
-> > 
-> > Like this.
-> > 
-> >> [    4.566622] tegra-xusb 70090000.usb: Host supports USB 3.0  SuperSpeed
-> > 
-> > And this if from xhci_gen_setup(), so probe returns around this point.
-> > 
-> >> [    4.595393] tegra-pmc: tegra_genpd_power_off-673: xusbc
-> >> [    4.600672] tegra-pmc: tegra_genpd_power_off-673: xusba
-> > 
-> > And this appears to be done by pm_runtime_put_suppliers().
-> > 
-> > Hmm, I need to think how to fix this.  Maybe we'll need to revert
-> > $subject patch and do something else, we'll see (later today).
-> 
-> OK, thanks. Let me know if there is anything else I can test.
-
-Please test https://patchwork.kernel.org/patch/10818923/
-
-Cheers,
-Rafael
+Alex
