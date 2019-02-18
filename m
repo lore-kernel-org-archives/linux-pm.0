@@ -1,140 +1,71 @@
-From: Henry Chen <henryc.chen@mediatek.com>
-Subject: Re: [RFC RESEND PATCH 1/7] dt-bindings: soc: Add DVFSRC driver
- bindings
-Date: Mon, 18 Feb 2019 12:55:32 +0800
-Message-ID: <1550465732.32365.6.camel@mtksdaap41>
-References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
-         <1546438198-1677-2-git-send-email-henryc.chen@mediatek.com>
-         <20190111160918.GA20480@bogus>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: powernv: fix missing check of return value in
+ init_powernv_pstates()
+Date: Mon, 18 Feb 2019 10:29:34 +0530
+Message-ID: <20190218045934.5txhn3tumhm3wncn@vireshk-i7>
+References: <20190216170623.12634-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190111160918.GA20480@bogus>
+Content-Disposition: inline
+In-Reply-To: <20190216170623.12634-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, James Liao <jamesjj.liao@mediatek.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kees Cook <keescook@chromium.org>, Weiyi Lu <weiyi.lu@mediatek.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-kernel@vger.kernel.org, Fan Chen <fan.chen@mediatek.com>, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-Sorry for late reply. I missed this mail before.
-
-On Fri, 2019-01-11 at 10:09 -0600, Rob Herring wrote:
-> On Wed, Jan 02, 2019 at 10:09:52PM +0800, Henry Chen wrote:
-> > Document the binding for enabling DVFSRC on MediaTek SoC.
-> > 
-> > Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
-> > ---
-> >  .../devicetree/bindings/soc/mediatek/dvfsrc.txt    | 26 ++++++++++++++++++++++
-> >  include/dt-bindings/soc/mtk,dvfsrc.h               | 18 +++++++++++++++
-> >  2 files changed, 44 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
-> >  create mode 100644 include/dt-bindings/soc/mtk,dvfsrc.h
-> > 
-> > diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
-> > new file mode 100644
-> > index 0000000..402c885
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
-> > @@ -0,0 +1,26 @@
-> > +MediaTek DVFSRC Driver
+On 16-02-19, 12:06, Yangtao Li wrote:
+> kmalloc() could fail, so insert a check of its return value. And
+> if it fails, returns -ENOMEM.
 > 
-> Bindings are for h/w blocks, not drivers.
-ok.
+> And remove (struct pstate_idx_revmap_data *) to fix coccinelle WARNING
+> by the way.
 > 
-> > +The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
-> > +HW module which is used to collect all the requests from both software and
-> > +hardware and turn into the decision of minimum operating voltage and minimum
-> > +DRAM frequency to fulfill those requests.
+> WARNING: casting value returned by memory allocation function to (struct
+> pstate_idx_revmap_data *) is useless.
 > 
-> Seems like the OPP table should be a child of this instead of where you 
-> currently have it?
-Do you means the opp table that I put on scpsys likes below?
-I think this opp table is used for mapping the performance state of
-power domain, so I put it on scpsys device tree document.
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 7e7ad3879c4e..d2230812fa4b 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -244,6 +244,7 @@ static int init_powernv_pstates(void)
+>  	u32 len_ids, len_freqs;
+>  	u32 pstate_min, pstate_max, pstate_nominal;
+>  	u32 pstate_turbo, pstate_ultra_turbo;
+> +	int rc = -ENODEV;
+>  
+>  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+>  	if (!power_mgt) {
+> @@ -327,8 +328,11 @@ static int init_powernv_pstates(void)
+>  		powernv_freqs[i].frequency = freq * 1000; /* kHz */
+>  		powernv_freqs[i].driver_data = id & 0xFF;
+>  
+> -		revmap_data = (struct pstate_idx_revmap_data *)
+> -			      kmalloc(sizeof(*revmap_data), GFP_KERNEL);
+> +		revmap_data = kmalloc(sizeof(*revmap_data), GFP_KERNEL);
+> +		if (!revmap_data) {
+> +			rc = -ENOMEM;
+> +			goto out;
+> +		}
+>  
+>  		revmap_data->pstate_id = id & 0xFF;
+>  		revmap_data->cpufreq_table_idx = i;
+> @@ -357,7 +361,7 @@ static int init_powernv_pstates(void)
+>  	return 0;
+>  out:
+>  	of_node_put(power_mgt);
+> -	return -ENODEV;
+> +	return rc;
+>  }
+>  
+>  /* Returns the CPU frequency corresponding to the pstate_id. */
 
-		dvfsrc_opp_table: opp-table {
-			compatible = "operating-points-v2-level";
+Applied. Thanks.
 
-			dvfsrc_vol_min: opp1 {
-				opp,level = <MT8183_DVFSRC_LEVEL_1>;
-			};
-
-			dvfsrc_freq_medium: opp2 {
-				opp,level = <MT8183_DVFSRC_LEVEL_2>;
-			};
-
-			dvfsrc_freq_max: opp3 {
-				opp,level = <MT8183_DVFSRC_LEVEL_3>;
-			};
-
-			dvfsrc_vol_max: opp4 {
-				opp,level = <MT8183_DVFSRC_LEVEL_4>;
-			};
-		};
-
-> 
-> > +
-> > +Required Properties:
-> > +- compatible: Should be one of the following
-> > +	- "mediatek,mt8183-dvfsrc": For MT8183 SoC
-> > +- reg: Address range of the DVFSRC unit
-> > +- dram_type: Refer to <include/dt-bindings/soc/mtk,dvfsrc.h> for the
-> > +	different dram type support.
-> 
-> This information should come from the DDR controller or memory nodes 
-> probably. And we already have some properties related to DDR type.
-Sorry, I don't know that before, could you give some hint or example for
-that?
-
-> 
-> > +- clock-names: Must include the following entries:
-> > +	"dvfsrc": DVFSRC module clock
-> > +- clocks: Must contain an entry for each entry in clock-names.
-> > +
-> > +Example:
-> > +
-> > +	dvfsrc_top@10012000 {
-> 
-> Drop the '_top'. (Don't use '_' in node and property names)..
-ok
-> 
-> > +		compatible = "mediatek,mt8183-dvfsrc";
-> > +		reg = <0 0x10012000 0 0x1000>;
-> > +		clocks = <&infracfg CLK_INFRA_DVFSRC>;
-> > +		clock-names = "dvfsrc";
-> > +		dram_type = <MT8183_DVFSRC_OPP_LP4>;
-> > +	};
-> > diff --git a/include/dt-bindings/soc/mtk,dvfsrc.h b/include/dt-bindings/soc/mtk,dvfsrc.h
-> > new file mode 100644
-> > index 0000000..60b3497
-> > --- /dev/null
-> > +++ b/include/dt-bindings/soc/mtk,dvfsrc.h
-> > @@ -0,0 +1,18 @@
-> > +/* SPDX-License-Identifier: GPL-2.0
-> > + *
-> > + * Copyright (c) 2018 MediaTek Inc.
-> > + */
-> > +
-> > +#ifndef _DT_BINDINGS_POWER_MTK_DVFSRC_H
-> > +#define _DT_BINDINGS_POWER_MTK_DVFSRC_H
-> > +
-> > +#define MT8183_DVFSRC_OPP_LP4	0
-> > +#define MT8183_DVFSRC_OPP_LP4X	1
-> > +#define MT8183_DVFSRC_OPP_LP3	2
-> > +
-> > +#define MT8183_DVFSRC_LEVEL_1	1
-> > +#define MT8183_DVFSRC_LEVEL_2	2
-> > +#define MT8183_DVFSRC_LEVEL_3	3
-> > +#define MT8183_DVFSRC_LEVEL_4	4
-> > +
-> > +#endif /* _DT_BINDINGS_POWER_MTK_DVFSRC_H */
-> > -- 
-> > 1.9.1
-> > 
-> 
-> _______________________________________________
-> Linux-mediatek mailing list
-> Linux-mediatek@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+-- 
+viresh
