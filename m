@@ -1,107 +1,140 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 1/2] trace: events: add devfreq trace event file
-Date: Mon, 18 Feb 2019 14:40:58 +0900
-Message-ID: <bfe5eced-712e-774a-a5d9-3649e276e848@samsung.com>
-References: <1550235913-5189-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190215130555eucas1p219217e3f1d0901f61be78870df0ecf6d@eucas1p2.samsung.com>
-        <1550235913-5189-2-git-send-email-l.luba@partner.samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: davinci: move configuration to
+ include/linux/platform_data
+Date: Mon, 18 Feb 2019 11:46:10 +0530
+Message-ID: <20190218061610.cwvwij7aoemi2gbe@vireshk-i7>
+References: <20190214170505.27251-1-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550235913-5189-2-git-send-email-l.luba@partner.samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190214170505.27251-1-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
-
-On 19. 2. 15. 오후 10:05, Lukasz Luba wrote:
-> The patch adds a new file for with trace events for devfreq
-> framework. They are used for performance analysis of the framework.
-> It also contains updates in MAINTAINERS file adding new entry for
-> devfreq maintainers.
+On 14-02-19, 18:05, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> The header containing the configuration structure for davinci cpufreq
+> driver lives in mach-davinci/include/mach/. This is fine for now but
+> if we want to make davinci part of the multi_v5 build, no code external
+> to mach-davinci should include machine-specific headers.
+> 
+> Move the configuration structure to include/linux/platform_data.
+> 
+> While we're at it: convert the GPL-2.0 boilerplate to a proper SPDX
+> license identifier.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > ---
->  MAINTAINERS                    |  1 +
->  include/trace/events/devfreq.h | 40 ++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 41 insertions(+)
->  create mode 100644 include/trace/events/devfreq.h
+>  arch/arm/mach-davinci/da850.c                 |  2 +-
+>  arch/arm/mach-davinci/include/mach/cpufreq.h  | 26 -------------------
+>  drivers/cpufreq/davinci-cpufreq.c             |  5 +---
+>  include/linux/platform_data/davinci-cpufreq.h | 19 ++++++++++++++
+>  4 files changed, 21 insertions(+), 31 deletions(-)
+>  delete mode 100644 arch/arm/mach-davinci/include/mach/cpufreq.h
+>  create mode 100644 include/linux/platform_data/davinci-cpufreq.h
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 41ce5f4..9c44076 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4447,6 +4447,7 @@ S:	Maintained
->  F:	drivers/devfreq/
->  F:	include/linux/devfreq.h
->  F:	Documentation/devicetree/bindings/devfreq/
-> +F:	include/trace/events/devfreq.h
+> diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
+> index e7b78df2bfef..a02ff431ba47 100644
+> --- a/arch/arm/mach-davinci/da850.c
+> +++ b/arch/arm/mach-davinci/da850.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/mfd/da8xx-cfgchip.h>
+>  #include <linux/platform_data/clk-da8xx-cfgchip.h>
+>  #include <linux/platform_data/clk-davinci-pll.h>
+> +#include <linux/platform_data/davinci-cpufreq.h>
+>  #include <linux/platform_data/gpio-davinci.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
+> @@ -29,7 +30,6 @@
+>  #include <asm/mach/map.h>
 >  
->  DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
->  M:	Chanwoo Choi <cw00.choi@samsung.com>
-> diff --git a/include/trace/events/devfreq.h b/include/trace/events/devfreq.h
+>  #include <mach/common.h>
+> -#include <mach/cpufreq.h>
+>  #include <mach/cputype.h>
+>  #include <mach/da8xx.h>
+>  #include <mach/irqs.h>
+> diff --git a/arch/arm/mach-davinci/include/mach/cpufreq.h b/arch/arm/mach-davinci/include/mach/cpufreq.h
+> deleted file mode 100644
+> index 3c089cfb6cd6..000000000000
+> --- a/arch/arm/mach-davinci/include/mach/cpufreq.h
+> +++ /dev/null
+> @@ -1,26 +0,0 @@
+> -/*
+> - * TI DaVinci CPUFreq platform support.
+> - *
+> - * Copyright (C) 2009 Texas Instruments, Inc. http://www.ti.com/
+> - *
+> - * This program is free software; you can redistribute it and/or
+> - * modify it under the terms of the GNU General Public License as
+> - * published by the Free Software Foundation version 2.
+> - *
+> - * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> - * kind, whether express or implied; without even the implied warranty
+> - * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - */
+> -#ifndef _MACH_DAVINCI_CPUFREQ_H
+> -#define _MACH_DAVINCI_CPUFREQ_H
+> -
+> -#include <linux/cpufreq.h>
+> -
+> -struct davinci_cpufreq_config {
+> -	struct cpufreq_frequency_table *freq_table;
+> -	int (*set_voltage) (unsigned int index);
+> -	int (*init) (void);
+> -};
+> -
+> -#endif
+> diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+> index d54a27c99121..940fe85db97a 100644
+> --- a/drivers/cpufreq/davinci-cpufreq.c
+> +++ b/drivers/cpufreq/davinci-cpufreq.c
+> @@ -23,13 +23,10 @@
+>  #include <linux/init.h>
+>  #include <linux/err.h>
+>  #include <linux/clk.h>
+> +#include <linux/platform_data/davinci-cpufreq.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/export.h>
+>  
+> -#include <mach/hardware.h>
+> -#include <mach/cpufreq.h>
+> -#include <mach/common.h>
+> -
+>  struct davinci_cpufreq {
+>  	struct device *dev;
+>  	struct clk *armclk;
+> diff --git a/include/linux/platform_data/davinci-cpufreq.h b/include/linux/platform_data/davinci-cpufreq.h
 > new file mode 100644
-> index 0000000..ce83dba
+> index 000000000000..3fbf9f2793b5
 > --- /dev/null
-> +++ b/include/trace/events/devfreq.h
-> @@ -0,0 +1,40 @@
+> +++ b/include/linux/platform_data/davinci-cpufreq.h
+> @@ -0,0 +1,19 @@
 > +/* SPDX-License-Identifier: GPL-2.0 */
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM devfreq
+> +/*
+> + * TI DaVinci CPUFreq platform support.
+> + *
+> + * Copyright (C) 2009 Texas Instruments, Inc. http://www.ti.com/
+> + */
 > +
-> +#if !defined(_TRACE_DEVFREQ_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_DEVFREQ_H
+> +#ifndef _MACH_DAVINCI_CPUFREQ_H
+> +#define _MACH_DAVINCI_CPUFREQ_H
 > +
-> +#include <linux/devfreq.h>
-> +#include <linux/tracepoint.h>
+> +#include <linux/cpufreq.h>
 > +
-> +TRACE_EVENT(devfreq_monitor,
-> +	TP_PROTO(struct devfreq *devfreq),
+> +struct davinci_cpufreq_config {
+> +	struct cpufreq_frequency_table *freq_table;
+> +	int (*set_voltage)(unsigned int index);
+> +	int (*init)(void);
+> +};
 > +
-> +	TP_ARGS(devfreq),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(unsigned long, freq)
-> +		__field(unsigned long, busy_time)
-> +		__field(unsigned long, total_time)
-> +		__field(unsigned int, polling_ms)
-> +		__string(dev_name, dev_name(&devfreq->dev))
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->freq = devfreq->previous_freq;
-> +		__entry->busy_time = devfreq->last_status.busy_time;
-> +		__entry->total_time = devfreq->last_status.total_time;
-> +		__entry->polling_ms = devfreq->profile->polling_ms;
-> +		__assign_str(dev_name, dev_name(&devfreq->dev));
-> +	),
-> +
-> +	TP_printk("dev_name=%s freq=%lu polling_ms=%u load=%lu",
-> +		__get_str(dev_name), __entry->freq, __entry->polling_ms,
-> +		__entry->total_time == 0 ? 100 :
+> +#endif /* _MACH_DAVINCI_CPUFREQ_H */
 
-I case of __entry->total_time is zero,
-why do you show '100' instead of '0'(zero)?
-I think that it might make the some confusion for user.
-
-If it show the '100' in case of "__entry->total_time is zero",
-it cannot distinguish between the real 100% utilization
-and "total_time is zero".
-
-> +			(100 * __entry->busy_time) / __entry->total_time)
-> +);
-> +#endif /* _TRACE_DEVFREQ_H */
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
-> 
-
+Applied. Thanks.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
