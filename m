@@ -1,91 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v7 3/3] thermal: tegra: add get_trend ops
-Date: Mon, 18 Feb 2019 11:27:34 +0100
-Message-ID: <bae5b0c3-3d7f-0b60-da96-730c7e8c4e5c@linaro.org>
-References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
- <1546510369-28491-4-git-send-email-wni@nvidia.com>
+From: <Nicolas.Ferre@microchip.com>
+Subject: Re: [PATCH 1/3] power: reset: at91-poweroff: add RTT wakeup
+ capability
+Date: Mon, 18 Feb 2019 10:59:15 +0000
+Message-ID: <10737217-cbf5-765c-7bad-2d9f4b038f28@microchip.com>
+References: <1550143407-26109-1-git-send-email-claudiu.beznea@microchip.com>
+ <1550143407-26109-2-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546510369-28491-4-git-send-email-wni@nvidia.com>
+In-Reply-To: <1550143407-26109-2-git-send-email-claudiu.beznea@microchip.com>
 Content-Language: en-US
+Content-ID: <7F3E343DC83520438EF3A6C8A1D1E53B@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>, edubezval@gmail.com
-Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Claudiu.Beznea@microchip.com, robh+dt@kernel.org, mark.rutland@arm.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/01/2019 11:12, Wei Ni wrote:
-> Add support for get_trend ops that allows soctherm
-> sensors to be used with the step-wise governor.
-> 
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  drivers/thermal/tegra/soctherm.c | 34 ++++++++++++++++++++++++++++++++++
->  1 file changed, 34 insertions(+)
-> 
-> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-> index fd2703c0cfc5..864205af104b 100644
-> --- a/drivers/thermal/tegra/soctherm.c
-> +++ b/drivers/thermal/tegra/soctherm.c
-> @@ -488,9 +488,43 @@ static int tegra_thermctl_set_trip_temp(void *data, int trip, int temp)
->  	return 0;
->  }
->  
-> +static int tegra_thermctl_get_trend(void *data, int trip,
-> +				    enum thermal_trend *trend)
-> +{
-> +	struct tegra_thermctl_zone *zone = data;
-> +	struct thermal_zone_device *tz = zone->tz;
-> +	int trip_temp, temp, last_temp, ret;
-> +
-> +	if (!tz)
-> +		return -EINVAL;
-> +
-> +	ret = tz->ops->get_trip_temp(zone->tz, trip, &trip_temp);
-> +	if (ret)
-> +		return ret;
-> +
-> +	mutex_lock(&tz->lock);
-
-No need to use the mutex here.
-
-Why not ?
-
-temp = READ_ONCE(tz->temperature);
-last_temp = READ_ONCE(tz->last_temperature);
-
-> +	temp = tz->temperature;
-> +	last_temp = tz->last_temperature;
-> +	mutex_unlock(&tz->lock);
-> +
-> +	if (temp > trip_temp) {
-> +		if (temp >= last_temp)
-> +			*trend = THERMAL_TREND_RAISING;
-> +		else
-> +			*trend = THERMAL_TREND_STABLE;
-> +	} else if (temp < trip_temp) {
-> +		*trend = THERMAL_TREND_DROPPING;
-> +	} else {
-> +		*trend = THERMAL_TREND_STABLE;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static const struct thermal_zone_of_device_ops tegra_of_thermal_ops = {
->  	.get_temp = tegra_thermctl_get_temp,
->  	.set_trip_temp = tegra_thermctl_set_trip_temp,
-> +	.get_trend = tegra_thermctl_get_trend,
->  };
->  
->  static int get_hot_temp(struct thermal_zone_device *tz, int *trip, int *temp)
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+T24gMTQvMDIvMjAxOSBhdCAxMjoyNCwgQ2xhdWRpdSBCZXpuZWEgLSBNMTgwNjMgd3JvdGU6DQo+
+IEZyb206IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2NoaXAuY29tPg0KPiAN
+Cj4gQWRkIFJUVCB3YWtldXAgY2FwYWJpbGl0eS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IENsYXVk
+aXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2NoaXAuY29tPg0KDQpBY2tlZC1ieTogTmlj
+b2xhcyBGZXJyZSA8bmljb2xhcy5mZXJyZUBtaWNyb2NoaXAuY29tPg0KDQo+IC0tLQ0KPiAgIGRy
+aXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1zYW1hNWQyX3NoZHdjLmMgfCAxNCArKysrKysrKysrKysr
+Kw0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxNCBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXNhbWE1ZDJfc2hkd2MuYyBiL2RyaXZlcnMvcG93
+ZXIvcmVzZXQvYXQ5MS1zYW1hNWQyX3NoZHdjLmMNCj4gaW5kZXggMmI2ODZjNTViNzE3Li4wNzQ3
+ZTBjZGYzNTAgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1zYW1hNWQy
+X3NoZHdjLmMNCj4gKysrIGIvZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXNhbWE1ZDJfc2hkd2Mu
+Yw0KPiBAQCAtNTcsMTUgKzU3LDIxIEBADQo+ICAgDQo+ICAgI2RlZmluZSBTSERXX1dLX1BJTihy
+ZWcsIGNmZykJKChyZWcpICYgQVQ5MV9TSERXX1dLVVBJUygoY2ZnKS0+d2t1cF9waW5faW5wdXQp
+KQ0KPiAgICNkZWZpbmUgU0hEV19SVENXSyhyZWcsIGNmZykJKCgocmVnKSA+PiAoKGNmZyktPnNy
+X3J0Y3drX3NoaWZ0KSkgJiAweDEpDQo+ICsjZGVmaW5lIFNIRFdfUlRUV0socmVnLCBjZmcpCSgo
+KHJlZykgPj4gKChjZmcpLT5zcl9ydHR3a19zaGlmdCkpICYgMHgxKQ0KPiAgICNkZWZpbmUgU0hE
+V19SVENXS0VOKGNmZykJKDEgPDwgKChjZmcpLT5tcl9ydGN3a19zaGlmdCkpDQo+ICsjZGVmaW5l
+IFNIRFdfUlRUV0tFTihjZmcpCSgxIDw8ICgoY2ZnKS0+bXJfcnR0d2tfc2hpZnQpKQ0KPiAgIA0K
+PiAgICNkZWZpbmUgREJDX1BFUklPRF9VUyh4KQlESVZfUk9VTkRfVVBfVUxMKCgxMDAwMDAwICog
+KHgpKSwgXA0KPiAgIAkJCQkJCQlTTE9XX0NMT0NLX0ZSRVEpDQo+ICAgDQo+ICsjZGVmaW5lIFNI
+RFdfQ0ZHX05PVF9VU0VECSgzMikNCj4gKw0KPiAgIHN0cnVjdCBzaGR3Y19jb25maWcgew0KPiAg
+IAl1OCB3a3VwX3Bpbl9pbnB1dDsNCj4gICAJdTggbXJfcnRjd2tfc2hpZnQ7DQo+ICsJdTggbXJf
+cnR0d2tfc2hpZnQ7DQo+ICAgCXU4IHNyX3J0Y3drX3NoaWZ0Ow0KPiArCXU4IHNyX3J0dHdrX3No
+aWZ0Ow0KPiAgIH07DQo+ICAgDQo+ICAgc3RydWN0IHNoZHdjIHsNCj4gQEAgLTEwNCw2ICsxMTAs
+OCBAQCBzdGF0aWMgdm9pZCBfX2luaXQgYXQ5MV93YWtldXBfc3RhdHVzKHN0cnVjdCBwbGF0Zm9y
+bV9kZXZpY2UgKnBkZXYpDQo+ICAgCQlyZWFzb24gPSAiV0tVUCBwaW4iOw0KPiAgIAllbHNlIGlm
+IChTSERXX1JUQ1dLKHJlZywgc2hkdy0+Y2ZnKSkNCj4gICAJCXJlYXNvbiA9ICJSVEMiOw0KPiAr
+CWVsc2UgaWYgKFNIRFdfUlRUV0socmVnLCBzaGR3LT5jZmcpKQ0KPiArCQlyZWFzb24gPSAiUlRU
+IjsNCj4gICANCj4gICAJcHJfaW5mbygiQVQ5MTogV2FrZS1VcCBzb3VyY2U6ICVzXG4iLCByZWFz
+b24pOw0KPiAgIH0NCj4gQEAgLTIyMSw2ICsyMjksOSBAQCBzdGF0aWMgdm9pZCBhdDkxX3NoZHdj
+X2R0X2NvbmZpZ3VyZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgIAlpZiAob2Zf
+cHJvcGVydHlfcmVhZF9ib29sKG5wLCAiYXRtZWwsd2FrZXVwLXJ0Yy10aW1lciIpKQ0KPiAgIAkJ
+bW9kZSB8PSBTSERXX1JUQ1dLRU4oc2hkdy0+Y2ZnKTsNCj4gICANCj4gKwlpZiAob2ZfcHJvcGVy
+dHlfcmVhZF9ib29sKG5wLCAiYXRtZWwsd2FrZXVwLXJ0dC10aW1lciIpKQ0KPiArCQltb2RlIHw9
+IFNIRFdfUlRUV0tFTihzaGR3LT5jZmcpOw0KPiArDQo+ICAgCWRldl9kYmcoJnBkZXYtPmRldiwg
+IiVzOiBtb2RlID0gJSN4XG4iLCBfX2Z1bmNfXywgbW9kZSk7DQo+ICAgCXdyaXRlbChtb2RlLCBz
+aGR3LT5zaGR3Y19iYXNlICsgQVQ5MV9TSERXX01SKTsNCj4gICANCj4gQEAgLTIzMSw3ICsyNDIs
+MTAgQEAgc3RhdGljIHZvaWQgYXQ5MV9zaGR3Y19kdF9jb25maWd1cmUoc3RydWN0IHBsYXRmb3Jt
+X2RldmljZSAqcGRldikNCj4gICBzdGF0aWMgY29uc3Qgc3RydWN0IHNoZHdjX2NvbmZpZyBzYW1h
+NWQyX3NoZHdjX2NvbmZpZyA9IHsNCj4gICAJLndrdXBfcGluX2lucHV0ID0gMCwNCj4gICAJLm1y
+X3J0Y3drX3NoaWZ0ID0gMTcsDQo+ICsJLm1yX3J0dHdrX3NoaWZ0CT0gU0hEV19DRkdfTk9UX1VT
+RUQsDQo+ICAgCS5zcl9ydGN3a19zaGlmdCA9IDUsDQo+ICsJLnNyX3J0dHdrX3NoaWZ0ID0gU0hE
+V19DRkdfTk9UX1VTRUQsDQo+ICt9Ow0KPiAgIH07DQo+ICAgDQo+ICAgc3RhdGljIGNvbnN0IHN0
+cnVjdCBvZl9kZXZpY2VfaWQgYXQ5MV9zaGR3Y19vZl9tYXRjaFtdID0gew0KPiANCg0KDQotLSAN
+Ck5pY29sYXMgRmVycmUNCg==
