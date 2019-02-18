@@ -1,44 +1,198 @@
 From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH RESEND v1 0/2] drivers/qcom: add additional functionality to RPMH
-Date: Mon, 18 Feb 2019 19:32:08 +0530
-Message-ID: <20190218140210.14631-1-rplsssn@codeaurora.org>
+Subject: [PATCH RESEND v1 2/2] drivers: qcom: rpmh: write PDC data
+Date: Mon, 18 Feb 2019 19:32:10 +0530
+Message-ID: <20190218140210.14631-3-rplsssn@codeaurora.org>
+References: <20190218140210.14631-1-rplsssn@codeaurora.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190218140210.14631-1-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Resending the patches which were reviewed befeore.
+From: Lina Iyer <ilina@codeaurora.org>
 
-The patches in this series were reviewed as part of "add additional
-functionality to RPMH"[1]. These patches are independent of other
-patches in the original series.
+The Power Domain Controller can be programmed to wakeup the RSC and
+setup the resources back in the active state, before the processor is
+woken up by a timer interrupt. The wakeup value from the timer hardware
+can be copied to the PDC which has its own timer and is in an always-on
+power domain. Programming the wakeup value is done through a separate
+register on the RSC.
 
-Changes done:
-  - Minor update to commit text for first patch[2].
-    - squashed two related "write PDC" patches[3][4] into single patch.
+Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/soc/qcom/rpmh-internal.h |  4 +++-
+ drivers/soc/qcom/rpmh-rsc.c      | 35 ++++++++++++++++++++++++++------
+ drivers/soc/qcom/rpmh.c          | 28 +++++++++++++++++++++++++
+ include/soc/qcom/rpmh.h          |  7 +++++++
+ 4 files changed, 67 insertions(+), 7 deletions(-)
 
-	Please consider reviewing this patch set.
-
-	[1] https://patchwork.kernel.org/cover/10546863/
-	[2] https://patchwork.kernel.org/patch/10546859/
-	[3] https://patchwork.kernel.org/patch/10546855/
-	[4] https://patchwork.kernel.org/patch/10546857/
-
-Lina Iyer (1):
-  drivers: qcom: rpmh: write PDC data
-
-Raju P.L.S.S.S.N (1):
-  drivers: qcom: rpmh-rsc: clear active mode configuration for wake TCS
-
- drivers/soc/qcom/rpmh-internal.h |   4 +-
- drivers/soc/qcom/rpmh-rsc.c      | 112 +++++++++++++++++++++++--------
- drivers/soc/qcom/rpmh.c          |  28 ++++++++
- include/soc/qcom/rpmh.h          |   7 ++
- 4 files changed, 121 insertions(+), 30 deletions(-)
-
+diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
+index a7bbbb67991c..8c316b4d36dc 100644
+--- a/drivers/soc/qcom/rpmh-internal.h
++++ b/drivers/soc/qcom/rpmh-internal.h
+@@ -85,6 +85,7 @@ struct rpmh_ctrlr {
+  * Resource State Coordinator controller (RSC)
+  *
+  * @name:       controller identifier
++ * @base:       start address of the RSC's DRV registers
+  * @tcs_base:   start address of the TCS registers in this controller
+  * @id:         instance id in the controller (Direct Resource Voter)
+  * @num_tcs:    number of TCSes in this DRV
+@@ -95,6 +96,7 @@ struct rpmh_ctrlr {
+  */
+ struct rsc_drv {
+ 	const char *name;
++	void __iomem *base;
+ 	void __iomem *tcs_base;
+ 	int id;
+ 	int num_tcs;
+@@ -108,7 +110,7 @@ int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg);
+ int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
+ 			     const struct tcs_request *msg);
+ int rpmh_rsc_invalidate(struct rsc_drv *drv);
+-
++int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg);
+ void rpmh_tx_done(const struct tcs_request *msg, int r);
+ 
+ #endif /* __RPM_INTERNAL_H__ */
+diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+index 6cc7f219ce48..73d5b9802a29 100644
+--- a/drivers/soc/qcom/rpmh-rsc.c
++++ b/drivers/soc/qcom/rpmh-rsc.c
+@@ -61,6 +61,11 @@
+ #define CMD_STATUS_ISSUED		BIT(8)
+ #define CMD_STATUS_COMPL		BIT(16)
+ 
++/* PDC wakeup */
++#define RSC_PDC_DATA_SIZE		2
++#define RSC_PDC_DRV_DATA		0x38
++#define RSC_PDC_DATA_OFFSET		0x08
++
+ static u32 read_tcs_reg(struct rsc_drv *drv, int reg, int tcs_id, int cmd_id)
+ {
+ 	return readl_relaxed(drv->tcs_base + reg + RSC_DRV_TCS_OFFSET * tcs_id +
+@@ -552,6 +557,25 @@ int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv, const struct tcs_request *msg)
+ 	return tcs_ctrl_write(drv, msg);
+ }
+ 
++int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg)
++{
++	int i;
++	void __iomem *addr = drv->base + RSC_PDC_DRV_DATA;
++
++	if (!msg || !msg->cmds || msg->num_cmds != RSC_PDC_DATA_SIZE)
++		return -EINVAL;
++
++	for (i = 0; i < msg->num_cmds; i++) {
++		/* Only data is write capable */
++		writel_relaxed(msg->cmds[i].data, addr);
++		trace_rpmh_send_msg(drv, RSC_PDC_DRV_DATA, i, 0,
++				    &msg->cmds[i]);
++		addr += RSC_PDC_DATA_OFFSET;
++	}
++
++	return 0;
++}
++
+ static int rpmh_probe_tcs_config(struct platform_device *pdev,
+ 				 struct rsc_drv *drv)
+ {
+@@ -564,21 +588,20 @@ static int rpmh_probe_tcs_config(struct platform_device *pdev,
+ 	int i, ret, n, st = 0;
+ 	struct tcs_group *tcs;
+ 	struct resource *res;
+-	void __iomem *base;
+ 	char drv_id[10] = {0};
+ 
+ 	snprintf(drv_id, ARRAY_SIZE(drv_id), "drv-%d", drv->id);
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, drv_id);
+-	base = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(base))
+-		return PTR_ERR(base);
++	drv->base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(drv->base))
++		return PTR_ERR(drv->base);
+ 
+ 	ret = of_property_read_u32(dn, "qcom,tcs-offset", &offset);
+ 	if (ret)
+ 		return ret;
+-	drv->tcs_base = base + offset;
++	drv->tcs_base = drv->base + offset;
+ 
+-	config = readl_relaxed(base + DRV_PRNT_CHLD_CONFIG);
++	config = readl_relaxed(drv->base + DRV_PRNT_CHLD_CONFIG);
+ 
+ 	max_tcs = config;
+ 	max_tcs &= DRV_NUM_TCS_MASK << (DRV_NUM_TCS_SHIFT * drv->id);
+diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+index c7beb6841289..71a76eaa4b63 100644
+--- a/drivers/soc/qcom/rpmh.c
++++ b/drivers/soc/qcom/rpmh.c
+@@ -413,6 +413,34 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
+ }
+ EXPORT_SYMBOL(rpmh_write_batch);
+ 
++/**
++ * rpmh_write_pdc_data: Write PDC data to the controller
++ *
++ * @dev: the device making the request
++ * @cmd: The payload data
++ * @n: The number of elements in payload
++ *
++ * Write PDC data to the controller. The messages are always sent async.
++ *
++ * May be called from atomic contexts.
++ */
++int rpmh_write_pdc_data(const struct device *dev,
++			const struct tcs_cmd *cmd, u32 n)
++{
++	DEFINE_RPMH_MSG_ONSTACK(dev, 0, NULL, rpm_msg);
++	struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
++
++	if (!n || n > MAX_RPMH_PAYLOAD)
++		return -EINVAL;
++
++	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
++	rpm_msg.msg.num_cmds = n;
++	rpm_msg.msg.wait_for_compl = false;
++
++	return rpmh_rsc_write_pdc_data(ctrlr_to_drv(ctrlr), &rpm_msg.msg);
++}
++EXPORT_SYMBOL(rpmh_write_pdc_data);
++
+ static int is_req_valid(struct cache_req *req)
+ {
+ 	return (req->sleep_val != UINT_MAX &&
+diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
+index 619e07c75da9..b05e31aaf047 100644
+--- a/include/soc/qcom/rpmh.h
++++ b/include/soc/qcom/rpmh.h
+@@ -24,6 +24,9 @@ int rpmh_flush(const struct device *dev);
+ 
+ int rpmh_invalidate(const struct device *dev);
+ 
++int rpmh_write_pdc_data(const struct device *dev,
++			const struct tcs_cmd *cmd, u32 n);
++
+ #else
+ 
+ static inline int rpmh_write(const struct device *dev, enum rpmh_state state,
+@@ -46,6 +49,10 @@ static inline int rpmh_flush(const struct device *dev)
+ static inline int rpmh_invalidate(const struct device *dev)
+ { return -ENODEV; }
+ 
++static inline int rpmh_write_pdc_data(const struct device *dev,
++				      const struct tcs_cmd *cmd, u32 n)
++{ return -ENODEV; }
++
+ #endif /* CONFIG_QCOM_RPMH */
+ 
+ #endif /* __SOC_QCOM_RPMH_H__ */
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of the Code Aurora Forum, hosted by The Linux Foundation.
