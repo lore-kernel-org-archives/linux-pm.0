@@ -1,141 +1,86 @@
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH RESEND v1 1/2] drivers: qcom: rpmh-rsc: clear active mode configuration for wake TCS
-Date: Mon, 18 Feb 2019 19:32:09 +0530
-Message-ID: <20190218140210.14631-2-rplsssn@codeaurora.org>
-References: <20190218140210.14631-1-rplsssn@codeaurora.org>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH 3/3] dt-bindings: arm: atmel: add binding for SAM9X60
+ shutdown controller
+Date: Mon, 18 Feb 2019 14:47:22 +0000
+Message-ID: <44adcef4-a3df-f906-2d69-f357af1ebfaf@microchip.com>
+References: <1550143407-26109-1-git-send-email-claudiu.beznea@microchip.com>
+ <1550143407-26109-4-git-send-email-claudiu.beznea@microchip.com>
+ <97af1d45-d74b-87d3-c934-baae80307e1d@microchip.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190218140210.14631-1-rplsssn@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <97af1d45-d74b-87d3-c934-baae80307e1d@microchip.com>
+Content-Language: en-US
+Content-ID: <B7B81ABD4F21E44BA0081B373E7CD1CA@namprd11.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Nicolas.Ferre@microchip.com, robh+dt@kernel.org, mark.rutland@arm.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-For RSCs that have sleep & wake TCS but no dedicated active TCS, wake
-TCS can be re-purposed to send active requests. Once the active requests
-are sent and response is received, the active mode configuration needs
-to be cleared so that controller can use wake TCS for sending wake
-requests.
 
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/soc/qcom/rpmh-rsc.c | 77 ++++++++++++++++++++++++++-----------
- 1 file changed, 54 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 75bd9a83aef0..6cc7f219ce48 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -201,6 +201,42 @@ static const struct tcs_request *get_req_from_tcs(struct rsc_drv *drv,
- 	return NULL;
- }
- 
-+static void __tcs_trigger(struct rsc_drv *drv, int tcs_id, bool trigger)
-+{
-+	u32 enable;
-+
-+	/*
-+	 * HW req: Clear the DRV_CONTROL and enable TCS again
-+	 * While clearing ensure that the AMC mode trigger is cleared
-+	 * and then the mode enable is cleared.
-+	 */
-+	enable = read_tcs_reg(drv, RSC_DRV_CONTROL, tcs_id, 0);
-+	enable &= ~TCS_AMC_MODE_TRIGGER;
-+	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
-+	enable &= ~TCS_AMC_MODE_ENABLE;
-+	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
-+
-+	if (trigger) {
-+		/* Enable the AMC mode on the TCS and then trigger the TCS */
-+		enable = TCS_AMC_MODE_ENABLE;
-+		write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
-+		enable |= TCS_AMC_MODE_TRIGGER;
-+		write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
-+	}
-+}
-+
-+static inline void enable_tcs_irq(struct rsc_drv *drv, int tcs_id, bool enable)
-+{
-+	u32 data;
-+
-+	data = read_tcs_reg(drv, RSC_DRV_IRQ_ENABLE, 0, 0);
-+	if (enable)
-+		data |= BIT(tcs_id);
-+	else
-+		data &= ~BIT(tcs_id);
-+	write_tcs_reg(drv, RSC_DRV_IRQ_ENABLE, 0, data);
-+}
-+
- /**
-  * tcs_tx_done: TX Done interrupt handler
-  */
-@@ -237,6 +273,21 @@ static irqreturn_t tcs_tx_done(int irq, void *p)
- 		}
- 
- 		trace_rpmh_tx_done(drv, i, req, err);
-+
-+		/*
-+		 * if wake tcs was re-purposed for sending active
-+		 * votes, clear AMC trigger & enable modes and
-+		 * disable interrupt for this TCS
-+		 */
-+		if (!drv->tcs[ACTIVE_TCS].num_tcs) {
-+			__tcs_trigger(drv, i, false);
-+			/*
-+			 * Disable interrupt for this TCS to avoid being
-+			 * spammed with interrupts coming when the solver
-+			 * sends its wake votes.
-+			 */
-+			enable_tcs_irq(drv, i, false);
-+		}
- skip:
- 		/* Reclaim the TCS */
- 		write_tcs_reg(drv, RSC_DRV_CMD_ENABLE, i, 0);
-@@ -285,28 +336,6 @@ static void __tcs_buffer_write(struct rsc_drv *drv, int tcs_id, int cmd_id,
- 	write_tcs_reg(drv, RSC_DRV_CMD_ENABLE, tcs_id, cmd_enable);
- }
- 
--static void __tcs_trigger(struct rsc_drv *drv, int tcs_id)
--{
--	u32 enable;
--
--	/*
--	 * HW req: Clear the DRV_CONTROL and enable TCS again
--	 * While clearing ensure that the AMC mode trigger is cleared
--	 * and then the mode enable is cleared.
--	 */
--	enable = read_tcs_reg(drv, RSC_DRV_CONTROL, tcs_id, 0);
--	enable &= ~TCS_AMC_MODE_TRIGGER;
--	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
--	enable &= ~TCS_AMC_MODE_ENABLE;
--	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
--
--	/* Enable the AMC mode on the TCS and then trigger the TCS */
--	enable = TCS_AMC_MODE_ENABLE;
--	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
--	enable |= TCS_AMC_MODE_TRIGGER;
--	write_tcs_reg_sync(drv, RSC_DRV_CONTROL, tcs_id, enable);
--}
--
- static int check_for_req_inflight(struct rsc_drv *drv, struct tcs_group *tcs,
- 				  const struct tcs_request *msg)
- {
-@@ -377,10 +406,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
- 
- 	tcs->req[tcs_id - tcs->offset] = msg;
- 	set_bit(tcs_id, drv->tcs_in_use);
-+	if (msg->state == RPMH_ACTIVE_ONLY_STATE && tcs->type != ACTIVE_TCS)
-+		enable_tcs_irq(drv, tcs_id, true);
- 	spin_unlock(&drv->lock);
- 
- 	__tcs_buffer_write(drv, tcs_id, 0, msg);
--	__tcs_trigger(drv, tcs_id);
-+	__tcs_trigger(drv, tcs_id, true);
- 
- done_write:
- 	spin_unlock_irqrestore(&tcs->lock, flags);
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of the Code Aurora Forum, hosted by The Linux Foundation.
+On 18.02.2019 13:01, Nicolas Ferre - M43238 wrote:
+> On 14/02/2019 at 12:24, Claudiu Beznea - M18063 wrote:
+>> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+>>
+>> Add documentation for SAM9X60 shutdown controller.
+>>
+>> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+>> ---
+>>   Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 6 +++++-
+>>   1 file changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+>> index 14f319f694b7..9711052c5800 100644
+>> --- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+>> +++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
+>> @@ -83,7 +83,7 @@ SHDWC SAMA5D2-Compatible Shutdown Controller
+>>   1) shdwc node
+>>   
+>>   required properties:
+>> -- compatible: should be "atmel,sama5d2-shdwc".
+>> +- compatible: should be "atmel,sama5d2-shdwc" or "microchip,sam9x60-shdwc".
+>>   - reg: should contain registers location and length
+>>   - clocks: phandle to input clock.
+>>   - #address-cells: should be one. The cell is the wake-up input index.
+>> @@ -95,6 +95,10 @@ optional properties:
+>>     microseconds. It's usually a board-related property.
+>>   - atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
+>>   
+>> +optional properties for microchip,sam9x60-shdwc:
+> 
+> is it for sam9x60 only or is the optional property "debounce-delay-us" 
+> applicable to this SoC?
+
+No, I meant only to RTC and RTT.
+
+> 
+>> +- atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
+>> +- atmel,wakeup-rtt-timer: boolean to enable Real-time Timer Wake-up.
+> 
+> Well, I would make clear that the only additional optional property is 
+> "atmel,wakeup-rtt-timer" while the 2 other optional properties still 
+> apply...
+
+Ok, I will take care of this in next version.
+
+Thank you,
+Claudiu Beznea
+
+> 
+> 
+>>   The node contains child nodes for each wake-up input that the platform uses.
+>>   
+>>   2) input nodes
+>>
+> 
+> 
