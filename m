@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH 04/12] thermal: qoriq: Don't pass platform_device to qoriq_tmu_calibration()
-Date: Mon, 18 Feb 2019 11:11:33 -0800
-Message-ID: <20190218191141.3729-5-andrew.smirnov@gmail.com>
+Subject: [PATCH 01/12] thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+Date: Mon, 18 Feb 2019 11:11:30 -0800
+Message-ID: <20190218191141.3729-2-andrew.smirnov@gmail.com>
 References: <20190218191141.3729-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,11 +12,8 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We can simplify error cleanup code if instead of passing a "struct
-platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
-pointers from it, we pass those pointers directly. This way we won't
-be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
-and consequently would be able to drop the "err_iomap" error path.
+Add devres wrapper for thermal_add_hwmon_sysfs() to simplify driver
+code.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -28,92 +25,70 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
+ drivers/thermal/thermal_hwmon.c | 28 ++++++++++++++++++++++++++++
+ drivers/thermal/thermal_hwmon.h |  7 +++++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index c24629b1b8c2..9bae001e8264 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -131,16 +131,16 @@ static int qoriq_tmu_get_sensor_id(void)
- 	return id;
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index 40c69a533b24..4e79524182e1 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -244,3 +244,31 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	kfree(hwmon);
  }
- 
--static int qoriq_tmu_calibration(struct platform_device *pdev)
-+static int qoriq_tmu_calibration(struct device *dev,
-+				 struct qoriq_tmu_data *data)
- {
- 	int i, val, len;
- 	u32 range[4];
- 	const u32 *calibration;
--	struct device_node *np = pdev->dev.of_node;
--	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+	struct device_node *np = dev->of_node;
- 
- 	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
--		dev_err(&pdev->dev, "missing calibration range.\n");
-+		dev_err(dev, "missing calibration range.\n");
- 		return -ENODEV;
- 	}
- 
-@@ -152,7 +152,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
- 
- 	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
- 	if (calibration == NULL || len % 8) {
--		dev_err(&pdev->dev, "invalid calibration data.\n");
-+		dev_err(dev, "invalid calibration data.\n");
- 		return -ENODEV;
- 	}
- 
-@@ -195,27 +195,23 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	if (!data)
- 		return -ENOMEM;
- 
--	platform_set_drvdata(pdev, data);
--
- 	data->little_endian = of_property_read_bool(np, "little-endian");
- 
- 	data->sensor_id = qoriq_tmu_get_sensor_id();
- 	if (data->sensor_id < 0) {
- 		dev_err(dev, "Failed to get sensor id\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		return -ENODEV;
- 	}
- 
- 	data->regs = of_iomap(np, 0);
- 	if (!data->regs) {
- 		dev_err(dev, "Failed to get memory region\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		return -ENODEV;
- 	}
- 
- 	qoriq_tmu_init_device(data);	/* TMU initialization */
- 
--	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-+	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
- 	if (ret < 0)
- 		goto err_tmu;
- 
-@@ -229,6 +225,8 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 		goto err_tmu;
- 	}
- 
-+	platform_set_drvdata(pdev, data);
+ EXPORT_SYMBOL_GPL(thermal_remove_hwmon_sysfs);
 +
- 	/* Enable monitoring */
- 	site = 0x1 << (15 - data->sensor_id);
- 	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
-@@ -238,9 +236,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- err_tmu:
- 	iounmap(data->regs);
++static void devm_thermal_hwmon_release(struct device *dev, void *res)
++{
++	thermal_remove_hwmon_sysfs(*(struct thermal_zone_device **)res);
++}
++
++int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
++{
++	struct thermal_zone_device **ptr;
++	int ret;
++
++	ptr = devres_alloc(devm_thermal_hwmon_release, sizeof(*ptr),
++			   GFP_KERNEL);
++	if (!ptr)
++		return -ENOMEM;
++
++	ret = thermal_add_hwmon_sysfs(tz);
++	if (ret) {
++		devres_free(ptr);
++		return ret;
++	}
++
++	*ptr = tz;
++	devres_add(&tz->device, ptr);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(devm_thermal_add_hwmon_sysfs);
+diff --git a/drivers/thermal/thermal_hwmon.h b/drivers/thermal/thermal_hwmon.h
+index a160b9d62dd0..1a9d65f6a6a8 100644
+--- a/drivers/thermal/thermal_hwmon.h
++++ b/drivers/thermal/thermal_hwmon.h
+@@ -17,6 +17,7 @@
  
--err_iomap:
--	platform_set_drvdata(pdev, NULL);
--
- 	return ret;
+ #ifdef CONFIG_THERMAL_HWMON
+ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
++int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
+ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz);
+ #else
+ static inline int
+@@ -25,6 +26,12 @@ thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	return 0;
  }
  
++static inline int
++devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
++{
++	return 0;
++}
++
+ static inline void
+ thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ {
 -- 
 2.20.1
