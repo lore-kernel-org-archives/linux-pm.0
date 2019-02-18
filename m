@@ -1,35 +1,30 @@
-From: Sekhar Nori <nsekhar@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: davinci: move configuration to
  include/linux/platform_data
-Date: Mon, 18 Feb 2019 11:56:29 +0530
-Message-ID: <979dd2f6-17dd-9569-42fe-9490c09be1bf@ti.com>
+Date: Mon, 18 Feb 2019 11:59:19 +0530
+Message-ID: <20190218062919.n3etewl6ln3shr42@vireshk-i7>
 References: <20190214170505.27251-1-brgl@bgdev.pl>
  <20190218061610.cwvwij7aoemi2gbe@vireshk-i7>
+ <979dd2f6-17dd-9569-42fe-9490c09be1bf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190218061610.cwvwij7aoemi2gbe@vireshk-i7>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <979dd2f6-17dd-9569-42fe-9490c09be1bf@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sekhar Nori <nsekhar@ti.com>
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 18/02/19 11:46 AM, Viresh Kumar wrote:
-> Applied. Thanks.
+On 18-02-19, 11:56, Sekhar Nori wrote:
+> On 18/02/19 11:46 AM, Viresh Kumar wrote:
+> > Applied. Thanks.
+> 
+> Here is a belated ack from my side.
+> 
+> Acked-by: Sekhar Nori <nsekhar@ti.com>
 
-Here is a belated ack from my side.
+Included that and pushed again :)
 
-Acked-by: Sekhar Nori <nsekhar@ti.com>
-
-Thanks,
-Sekhar
+-- 
+viresh
