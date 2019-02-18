@@ -1,14 +1,14 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v7 2/3] thermal: tegra: fix memory allocation
-Date: Mon, 18 Feb 2019 11:24:06 +0100
-Message-ID: <e02ad969-129f-1967-57c2-78533e2c7dbe@linaro.org>
+Subject: Re: [PATCH v7 3/3] thermal: tegra: add get_trend ops
+Date: Mon, 18 Feb 2019 11:27:34 +0100
+Message-ID: <bae5b0c3-3d7f-0b60-da96-730c7e8c4e5c@linaro.org>
 References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
- <1546510369-28491-3-git-send-email-wni@nvidia.com>
+ <1546510369-28491-4-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1546510369-28491-3-git-send-email-wni@nvidia.com>
+In-Reply-To: <1546510369-28491-4-git-send-email-wni@nvidia.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Wei Ni <wni@nvidia.com>, edubezval@gmail.com
@@ -16,34 +16,70 @@ Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, 
 List-Id: linux-pm@vger.kernel.org
 
 On 03/01/2019 11:12, Wei Ni wrote:
-> Fix memory allocation to store the pointers to
-> thermal_zone_device.
+> Add support for get_trend ops that allows soctherm
+> sensors to be used with the step-wise governor.
 > 
 > Signed-off-by: Wei Ni <wni@nvidia.com>
-> Acked-by: Thierry Reding <treding@nvidia.com>
 > ---
-
-Good catch
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-
->  drivers/thermal/tegra/soctherm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/thermal/tegra/soctherm.c | 34 ++++++++++++++++++++++++++++++++++
+>  1 file changed, 34 insertions(+)
 > 
 > diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-> index f07de8258e93..fd2703c0cfc5 100644
+> index fd2703c0cfc5..864205af104b 100644
 > --- a/drivers/thermal/tegra/soctherm.c
 > +++ b/drivers/thermal/tegra/soctherm.c
-> @@ -1339,7 +1339,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
->  	}
+> @@ -488,9 +488,43 @@ static int tegra_thermctl_set_trip_temp(void *data, int trip, int temp)
+>  	return 0;
+>  }
 >  
->  	tegra->thermctl_tzs = devm_kcalloc(&pdev->dev,
-> -					   soc->num_ttgs, sizeof(*z),
-> +					   soc->num_ttgs, sizeof(z),
->  					   GFP_KERNEL);
->  	if (!tegra->thermctl_tzs)
->  		return -ENOMEM;
+> +static int tegra_thermctl_get_trend(void *data, int trip,
+> +				    enum thermal_trend *trend)
+> +{
+> +	struct tegra_thermctl_zone *zone = data;
+> +	struct thermal_zone_device *tz = zone->tz;
+> +	int trip_temp, temp, last_temp, ret;
+> +
+> +	if (!tz)
+> +		return -EINVAL;
+> +
+> +	ret = tz->ops->get_trip_temp(zone->tz, trip, &trip_temp);
+> +	if (ret)
+> +		return ret;
+> +
+> +	mutex_lock(&tz->lock);
+
+No need to use the mutex here.
+
+Why not ?
+
+temp = READ_ONCE(tz->temperature);
+last_temp = READ_ONCE(tz->last_temperature);
+
+> +	temp = tz->temperature;
+> +	last_temp = tz->last_temperature;
+> +	mutex_unlock(&tz->lock);
+> +
+> +	if (temp > trip_temp) {
+> +		if (temp >= last_temp)
+> +			*trend = THERMAL_TREND_RAISING;
+> +		else
+> +			*trend = THERMAL_TREND_STABLE;
+> +	} else if (temp < trip_temp) {
+> +		*trend = THERMAL_TREND_DROPPING;
+> +	} else {
+> +		*trend = THERMAL_TREND_STABLE;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static const struct thermal_zone_of_device_ops tegra_of_thermal_ops = {
+>  	.get_temp = tegra_thermctl_get_temp,
+>  	.set_trip_temp = tegra_thermctl_set_trip_temp,
+> +	.get_trend = tegra_thermctl_get_trend,
+>  };
+>  
+>  static int get_hot_temp(struct thermal_zone_device *tz, int *trip, int *temp)
 > 
 
 
