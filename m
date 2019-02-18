@@ -1,30 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: davinci: move configuration to
- include/linux/platform_data
-Date: Mon, 18 Feb 2019 11:59:19 +0530
-Message-ID: <20190218062919.n3etewl6ln3shr42@vireshk-i7>
-References: <20190214170505.27251-1-brgl@bgdev.pl>
- <20190218061610.cwvwij7aoemi2gbe@vireshk-i7>
- <979dd2f6-17dd-9569-42fe-9490c09be1bf@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Arthur Demchenkov <spinal.by@gmail.com>
+Subject: [PATCH] bq27x00: use cached flags
+Date: Mon, 18 Feb 2019 09:59:20 +0300
+Message-ID: <20190218065920.16205-1-spinal.by@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <979dd2f6-17dd-9569-42fe-9490c09be1bf@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cc: Arthur Demchenkov <spinal.by@gmail.com>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-02-19, 11:56, Sekhar Nori wrote:
-> On 18/02/19 11:46 AM, Viresh Kumar wrote:
-> > Applied. Thanks.
-> 
-> Here is a belated ack from my side.
-> 
-> Acked-by: Sekhar Nori <nsekhar@ti.com>
+The flags were just read by bq27xxx_battery_update(),
+no need to read them again.
 
-Included that and pushed again :)
+Signed-off-by: Arthur Demchenkov <spinal.by@gmail.com>
+---
+ drivers/power/supply/bq27xxx_battery.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 6dbbe95844a3..29b3a4056865 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1555,27 +1555,14 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
+ 		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
+ }
+ 
+-/*
+- * Read flag register.
+- * Return < 0 if something fails.
+- */
+ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+ {
+-	int flags;
+-	bool has_singe_flag = di->opts & BQ27XXX_O_ZERO;
+-
+-	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
+-	if (flags < 0) {
+-		dev_err(di->dev, "error reading flag register:%d\n", flags);
+-		return flags;
+-	}
+-
+ 	/* Unlikely but important to return first */
+-	if (unlikely(bq27xxx_battery_overtemp(di, flags)))
++	if (unlikely(bq27xxx_battery_overtemp(di, di->cache.flags)))
+ 		return POWER_SUPPLY_HEALTH_OVERHEAT;
+-	if (unlikely(bq27xxx_battery_undertemp(di, flags)))
++	if (unlikely(bq27xxx_battery_undertemp(di, di->cache.flags)))
+ 		return POWER_SUPPLY_HEALTH_COLD;
+-	if (unlikely(bq27xxx_battery_dead(di, flags)))
++	if (unlikely(bq27xxx_battery_dead(di, di->cache.flags)))
+ 		return POWER_SUPPLY_HEALTH_DEAD;
+ 
+ 	return POWER_SUPPLY_HEALTH_GOOD;
+@@ -1612,6 +1599,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+ 			cache.capacity = bq27xxx_battery_read_soc(di);
+ 			if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
+ 				cache.energy = bq27xxx_battery_read_energy(di);
++			di->cache.flags = cache.flags;
+ 			cache.health = bq27xxx_battery_read_health(di);
+ 		}
+ 		if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
 -- 
-viresh
+2.11.0
