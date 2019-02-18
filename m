@@ -1,124 +1,44 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] driver core: Fix possible supplier PM-usage counter imbalance
-Date: Sun, 17 Feb 2019 22:33:56 +0100
-Message-ID: <CAJZ5v0gTfLxPsc_7ANSmmHk90Mx+fVscyzs6yLfxde+DQtBEfg@mail.gmail.com>
-References: <5510642.nRbR3bcduN@aspire.rjw.lan> <9351473.C2nPJoyFsE@aspire.rjw.lan>
- <2ed95b05-317c-59bb-498a-b5481e54bcf6@nvidia.com> <CAPDyKFoAtviRYuFxJLNrD_J0bGbMTca3O8EN8THg6+d3BNq3vQ@mail.gmail.com>
- <775fe187-ae04-91ee-44d6-1603e670df06@nvidia.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 1/3] PM / devfreq: rk3399_dmc: remove unneeded semicolon
+Date: Mon, 18 Feb 2019 09:34:57 +0900
+Message-ID: <9e7f9e6d-3b53-35f2-e945-13895385af31@samsung.com>
+References: <20190216151826.11584-1-tiny.windzz@gmail.com>
+ <CGME20190216152219epcas4p3ec89de91f9e158da7cc7cfeefb6e113e@epcas4p3.samsung.com>
+ <20190216151826.11584-2-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <775fe187-ae04-91ee-44d6-1603e670df06@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-tegra <linux-tegra@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20190216151826.11584-2-tiny.windzz-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Yangtao Li <tiny.windzz-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 15, 2019 at 5:44 PM Jon Hunter <jonathanh@nvidia.com> wrote:
->
->
-> On 15/02/2019 14:37, Ulf Hansson wrote:
-> > On Fri, 15 Feb 2019 at 12:00, Jon Hunter <jonathanh@nvidia.com> wrote:
-> >>
-> >> Hi Rafael,
-> >>
-> >> On 12/02/2019 12:08, Rafael J. Wysocki wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>
-> >>> If a stateless device link to a certain supplier with
-> >>> DL_FLAG_PM_RUNTIME set in the flags is added and then removed by the
-> >>> consumer driver's probe callback, the supplier's PM-runtime usage
-> >>> counter will be nonzero after that which effectively causes the
-> >>> supplier to remain "always on" going forward.
-> >>>
-> >>> Namely, device_link_add() called to add the link invokes
-> >>> device_link_rpm_prepare() which notices that the consumer driver is
-> >>> probing, so it increments the supplier's PM-runtime usage counter
-> >>> with the assumption that the link will stay around until
-> >>> pm_runtime_put_suppliers() is called by driver_probe_device(),
-> >>> but if the link goes away before that point, the supplier's
-> >>> PM-runtime usage counter will remain nonzero.
-> >>>
-> >>> To prevent that from happening, first rework pm_runtime_get_suppliers()
-> >>> and pm_runtime_put_suppliers() to use the rpm_active refounts of device
-> >>> links and make the latter only drop rpm_active and the supplier's
-> >>> PM-runtime usage counter for each link by one, unless rpm_active is
-> >>> one already for it.  Next, modify device_link_add() to bump up the
-> >>> new link's rpm_active refcount and the suppliers PM-runtime usage
-> >>> counter by two, to prevent pm_runtime_put_suppliers(), if it is
-> >>> called subsequently, from suspending the supplier prematurely (in
-> >>> case its PM-runtime usage counter goes down to 0 in there).
-> >>>
-> >>> Due to the way rpm_put_suppliers() works, this change does not
-> >>> affect runtime suspend of the consumer ends of new device links (or,
-> >>> generally, device links for which DL_FLAG_PM_RUNTIME has just been
-> >>> set).
-> >>>
-> >>> Fixes: e2f3cd831a28 ("driver core: Fix handling of runtime PM flags in device_link_add()")
-> >>> Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>> ---
-> >>>
-> >>> Note that the issue had been there before commit e2f3cd831a28, but it was
-> >>> overlooked by that commit and this change is a fix on top of it, so make
-> >>> the Fixes: tag point to commit e2f3cd831a28 (instead of an earlier one
-> >>> that the patch will not be applicable to).
-> >> I noticed that yesterday's and today's -next were no longer booting on
-> >> one of our Tegra boards (Tegra210 Jetson TX2) because networking is
-> >> failing. The ethernet chip is a USB device and looking at the bootlogs I
-> >> can see that the Tegra XHCI driver is failing ...
-> >>
-> >>  tegra-xusb 70090000.usb: xHCI host controller not responding, assume dead
-> >>  tegra-xusb 70090000.usb: HC died; cleaning up
-> >>
-> >> The Tegra XHCI driver uses multiple power-domains and uses
-> >> device_link_add() to attach them. So now I am wondering if there is
-> >> something that we have got wrong in our implementation. However, I don't
-> >> see the device being probed deferred on boot or anything like that.
-> >>
-> >> The driver in question is drivers/usb/host/xhci-tegra.c and we add the
-> >> links in the function tegra_xusb_powerdomain_init() which is before RPM
-> >> is enabled. Let me know if you have any thoughts.
-> >
-> > If you are willing to help debugging then I am offering my assistance.
-> >
-> > I would start by enabling CONFIG_PM_ADVANCED_DEBUG, which gives you
-> > some more information about the runtime PM state of the device, like
-> > the usage count for example.
-> > I would also add a couple of prints in
-> > tegra_xusb_runtime_suspend|resume() and in the ->power_on|off()
-> > callbacks for the corresponding genpds, to see when those gets called.
->
-> From the bootlog I see ...
->
-> [    4.445827] tegra_xusb_runtime_resume-788
-> [    4.508799] tegra-xusb 70090000.usb: Firmware timestamp: 2015-08-10 09:47:54 UTC
-> [    4.516223] tegra-xusb 70090000.usb: xHCI Host Controller
-> [    4.521622] tegra-xusb 70090000.usb: new USB bus registered, assigned bus number 1
-> [    4.530087] tegra-xusb 70090000.usb: hcc params 0x0184f525 hci version 0x100 quirks 0x0000000000010010
-> [    4.539398] tegra-xusb 70090000.usb: irq 69, io mem 0x70090000
-> [    4.553671] tegra-xusb 70090000.usb: xHCI Host Controller
-> [    4.559064] tegra-xusb 70090000.usb: new USB bus registered, assigned bus number 2
-> [    4.566622] tegra-xusb 70090000.usb: Host supports USB 3.0  SuperSpeed
-> [    4.595393] tegra-pmc: tegra_genpd_power_off-673: xusbc
-> [    4.600672] tegra-pmc: tegra_genpd_power_off-673: xusba
-> [    4.657346] tegra-xusb 70090000.usb: xHCI host controller not responding, assume dead
-> [    4.665157] tegra-xusb 70090000.usb: HC died; cleaning up
->
-> This shows the xusb controller is runtime resumed during probe but
-> then after probe the pm-domains, xusba and xusbc, are turned off
-> without it being runtime suspended. We never suspend it until it
-> is removed currently.
-
-As I said offline on Sat, I suspected that the suppliers (that would
-be xusba and xusbc if my understanding of the system is correct) were
-suspended prematurely during or after the consumer (xusb) probe, which
-previously had been prevented from occurring by the
-pm_runtime_get_noresume(supplier) removed by the $subject patch.
-
-What you said above seems to be in agreement with that theory, so it
-looks like you simply need to pass DL_FLAG_RPM_ACTICE to
-device_link_add() in both cases, as that would prevent the suppliers
-from being suspended until the consumer suspends (or its PM-runtime
-status is changed to "suspended").  And if the consumer never
-suspends, the suppliers will never suspend too then.
+SGksCgpPbiAxOS4gMi4gMTcuIOyYpOyghCAxMjoxOCwgWWFuZ3RhbyBMaSB3cm90ZToKPiBUaGUg
+c2VtaWNvbG9uIGlzIHVubmVlZGVkLCBzbyByZW1vdmUgaXQuCj4gCj4gU2lnbmVkLW9mZi1ieTog
+WWFuZ3RhbyBMaSA8dGlueS53aW5kenpAZ21haWwuY29tPgo+IC0tLQo+ICBkcml2ZXJzL2RldmZy
+ZXEvcmszMzk5X2RtYy5jIHwgMiArLQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyks
+IDEgZGVsZXRpb24oLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9k
+bWMuYyBiL2RyaXZlcnMvZGV2ZnJlcS9yazMzOTlfZG1jLmMKPiBpbmRleCBlNzk1YWQyYjNmNmIu
+LmEyMjhkYWQyYmVlNCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5j
+Cj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYwo+IEBAIC0zMjIsNyArMzIyLDcg
+QEAgc3RhdGljIGludCByazMzOTlfZG1jZnJlcV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNl
+ICpwZGV2KQo+ICAKPiAgCQlkZXZfZXJyKGRldiwgIkNhbm5vdCBnZXQgdGhlIGNsayBkbWNfY2xr
+XG4iKTsKPiAgCQlyZXR1cm4gUFRSX0VSUihkYXRhLT5kbWNfY2xrKTsKPiAtCX07Cj4gKwl9Cj4g
+IAo+ICAJZGF0YS0+ZWRldiA9IGRldmZyZXFfZXZlbnRfZ2V0X2VkZXZfYnlfcGhhbmRsZShkZXYs
+IDApOwo+ICAJaWYgKElTX0VSUihkYXRhLT5lZGV2KSkKPiAKClJldmlld2VkLWJ5OiBDaGFud29v
+IENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4KCi0tIApCZXN0IFJlZ2FyZHMsCkNoYW53b28g
+Q2hvaQpTYW1zdW5nIEVsZWN0cm9uaWNzCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGludXgtcm9ja2No
+aXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
