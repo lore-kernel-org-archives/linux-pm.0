@@ -1,67 +1,44 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 0/2] tracing: drivers: devfreq: add basic trace mechanism
-Date: Mon, 18 Feb 2019 19:21:07 +0100
-Message-ID: <1550514069-9237-1-git-send-email-l.luba@partner.samsung.com>
-References: <CGME20190218182128eucas1p1bac39e9f11572143697b5cb854b2eb87@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH 00/12] QorIQ TMU multi-sensor and HWMON support
+Date: Mon, 18 Feb 2019 11:11:29 -0800
+Message-ID: <20190218191141.3729-1-andrew.smirnov@gmail.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com, Lukasz Luba <l.luba@partner.samsung.com>
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Everyone:
 
-This is v3 which addresses suggestions from reviews.
+This series contains patches adding support for HWMON integration,
+multi-sensor support as well as a small fix and general improvements
+(hopefully) for TMU driver I made while working on it on i.MX8MQ.
 
-This patch set adds support for tracing in devfreq framework. It is related
-to the discussion regarding devfreq workqueue mechanism and wake-ups.
-These two tracing patches have been submitted in larger patch set, which
-needs more discussion. For the further discussion and development there
-is a need of measurements/testing, though. It was agreed that trace events
-would help. The whole discussion is here [1].
+Feedback is welcome!
 
-With these patches it is possible to capture current behaviour for the 
-devfreq subsystem and devices such as when and which workqueue is used,
-on which CPU, what is the load and frequency of the device.
+Thanks,
+Andrey Smirnov
 
-v3:
-- change 'load' value to 0 when 'total_time' is equal to 0,
-- re-base on top of v5.0-rc7
-v2:
-- simplified arguments list, according to Steven's comments, with only
-  one arg: 'devfreq' and the rest fields taken from there,
-v1:
-- moved long '/' operation to post-processing phase, according to Seven's
-  comments [2] 
-- re-ordered fields in the structure to avoid holes, according to Seven's
-  comments [3] 
-- removed unneeded variable, according to Chanwoo's comment [4]
-basic in larget patch set:
-- added support for trace events
+Andrey Smirnov (12):
+  thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+  thermal: qoriq: Remove unnecessary DT node is NULL check
+  thermal: qoriq: Add local struct device pointer in qoriq_tmu_probe()
+  thermal: qoriq: Don't pass platform_device to qoriq_tmu_calibration()
+  thermal: qoriq: Convert driver to use devm_ioremap()
+  thermal: qoriq: Add hwmon support
+  thermal: qoriq: Convert driver to use regmap API
+  thermal: qoriq: Enable monitoring before querying temperature
+  thermal: qoriq: Do not report invalid temperature reading
+  thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
+  thermal: qoriq: Be more strict when parsing "thermal-sensors"
+  thermal: qoriq: Add support for multiple thremal sites
 
-I did not dare to add 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>'
-for the 1st patch, which was in [5], since the code slightly changed.
-The 2nd patch has it. 
-
-Regards,
-Lukasz Luba
-
-[1] https://lkml.org/lkml/2019/2/12/1179
-[2] https://lkml.org/lkml/2019/2/12/1201
-[3] https://lkml.org/lkml/2019/2/13/532
-[4] https://lkml.org/lkml/2019/2/13/1587
-[5] https://lkml.org/lkml/2019/2/14/2
-
-Lukasz Luba (2):
-  trace: events: add devfreq trace event file
-  drivers: devfreq: add tracing for scheduling work
-
- MAINTAINERS                    |  1 +
- drivers/devfreq/devfreq.c      |  5 +++++
- include/trace/events/devfreq.h | 40 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 46 insertions(+)
- create mode 100644 include/trace/events/devfreq.h
+ drivers/thermal/qoriq_thermal.c | 326 ++++++++++++++++++--------------
+ drivers/thermal/thermal_hwmon.c |  28 +++
+ drivers/thermal/thermal_hwmon.h |   7 +
+ 3 files changed, 214 insertions(+), 147 deletions(-)
 
 -- 
-2.7.4
+2.20.1
