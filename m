@@ -1,53 +1,46 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 3/3] PM / devfreq: tegra: remove unneeded variable
-Date: Mon, 18 Feb 2019 09:38:03 +0900
-Message-ID: <7fe8f9ba-ffcc-55ed-38b0-f37538257c1b@samsung.com>
-References: <20190216151826.11584-1-tiny.windzz@gmail.com>
- <CGME20190216151918epcas1p25c2971b063cc66981fda6a67a8276585@epcas1p2.samsung.com>
- <20190216151826.11584-4-tiny.windzz@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Mark "name" const in
+ genpd_dev_pm_attach_by_name()
+Date: Mon, 18 Feb 2019 09:45:14 +0530
+Message-ID: <20190218041514.yn76qm65k77etedr@vireshk-i7>
+References: <20190214181249.2749-1-dianders@chromium.org>
+ <20190215030205.g6ntaiec3kscsaoi@vireshk-i7>
+ <CAD=FV=WH9zg62ME5Atk2NDXX8rLn0qMY3-P1U8jqDr4Th_BX_Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190216151826.11584-4-tiny.windzz@gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Yangtao Li <tiny.windzz@gmail.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, heiko@sntech.de, thierry.reding@gmail.com, jonathanh@nvidia.com
-Cc: linux-tegra@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=WH9zg62ME5Atk2NDXX8rLn0qMY3-P1U8jqDr4Th_BX_Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Stephen Boyd <swboyd@chromium.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTkuIDIuIDE3LiDsmKTsoIQgMTI6MTgsIFlhbmd0YW8gTGkgd3JvdGU6Cj4gVGhpcyB2YXJp
-YWJsZSBpcyBub3QgdXNlZCBhZnRlciBpbml0aWFsaXphdGlvbiwgc28KPiByZW1vdmUgaXQuIEFu
-ZCBpbiBvcmRlciB0byB1bmlmeSB0aGUgY29kZSBzdHlsZSwKPiBtb3ZlIHRoZSBsb2NhdGlvbiB3
-aGVyZSB0aGUgZGV2X2dldF9kcnZkYXRhIGlzIGNhbGxlZAo+IGJ5IHRoZSB3YXkuCj4gCj4gU2ln
-bmVkLW9mZi1ieTogWWFuZ3RhbyBMaSA8dGlueS53aW5kenpAZ21haWwuY29tPgo+IC0tLQo+ICBk
-cml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jIHwgNyArKy0tLS0tCj4gIDEgZmlsZSBjaGFu
-Z2VkLCAyIGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2
-ZnJlcS5jCj4gaW5kZXggYzU5ZDJlZWU1ZDMwLi5jODliYTdiODM0ZmYgMTAwNjQ0Cj4gLS0tIGEv
-ZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYwo+ICsrKyBiL2RyaXZlcnMvZGV2ZnJlcS90
-ZWdyYS1kZXZmcmVxLmMKPiBAQCAtNTczLDEwICs1NzMsNyBAQCBzdGF0aWMgaW50IHRlZ3JhX2dv
-dmVybm9yX2dldF90YXJnZXQoc3RydWN0IGRldmZyZXEgKmRldmZyZXEsCj4gIHN0YXRpYyBpbnQg
-dGVncmFfZ292ZXJub3JfZXZlbnRfaGFuZGxlcihzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcSwKPiAg
-CQkJCQl1bnNpZ25lZCBpbnQgZXZlbnQsIHZvaWQgKmRhdGEpCj4gIHsKPiAtCXN0cnVjdCB0ZWdy
-YV9kZXZmcmVxICp0ZWdyYTsKPiAtCWludCByZXQgPSAwOwo+IC0KPiAtCXRlZ3JhID0gZGV2X2dl
-dF9kcnZkYXRhKGRldmZyZXEtPmRldi5wYXJlbnQpOwo+ICsJc3RydWN0IHRlZ3JhX2RldmZyZXEg
-KnRlZ3JhID0gZGV2X2dldF9kcnZkYXRhKGRldmZyZXEtPmRldi5wYXJlbnQpOwo+ICAKPiAgCXN3
-aXRjaCAoZXZlbnQpIHsKPiAgCWNhc2UgREVWRlJFUV9HT1ZfU1RBUlQ6Cj4gQEAgLTYwMCw3ICs1
-OTcsNyBAQCBzdGF0aWMgaW50IHRlZ3JhX2dvdmVybm9yX2V2ZW50X2hhbmRsZXIoc3RydWN0IGRl
-dmZyZXEgKmRldmZyZXEsCj4gIAkJYnJlYWs7Cj4gIAl9Cj4gIAo+IC0JcmV0dXJuIHJldDsKPiAr
-CXJldHVybiAwOwo+ICB9Cj4gIAo+ICBzdGF0aWMgc3RydWN0IGRldmZyZXFfZ292ZXJub3IgdGVn
-cmFfZGV2ZnJlcV9nb3Zlcm5vciA9IHsKPiAKClJldmlld2VkLWJ5OiBDaGFud29vIENob2kgPGN3
-MDAuY2hvaUBzYW1zdW5nLmNvbT4KCi0tIApCZXN0IFJlZ2FyZHMsCkNoYW53b28gQ2hvaQpTYW1z
-dW5nIEVsZWN0cm9uaWNzCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
-c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 15-02-19, 07:47, Doug Anderson wrote:
+> Hi,
+> On Thu, Feb 14, 2019 at 7:02 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 14-02-19, 10:12, Douglas Anderson wrote:
+> > > The genpd_dev_pm_attach_by_name() simply takes the name and passes it
+> > > to of_property_match_string() where the argument is "const char *".
+> > > Adding a const here allows a later patch to add a const to
+> > > dev_pm_domain_attach_by_name() which allows drivers to pass in a name
+> > > that was declared "const" in a driver.
+> > >
+> > > Fixes: 5d6be70add65 ("PM / Domains: Introduce option to attach a device by name to genpd")
+> >
+> > Not sure if this should be counted as a fix.
+> 
+> I'm OK if the "Fixes" is stripped when applying or if someone tells me
+> to re-post without the Fixes--just let me know.  In general I do a lot
+> of cherry-picks from upstream and I appreciate the Fixes tag helping
+> to link patches together.  In this case if I picked the original patch
+> I'd definitely want this one too.  Certainly, though, CCing stable
+> would make no sense in this case.  ;-)
+
+I am not sure if this is being done right now or not, but I read/heard
+somewhere that stable has started picking "Fixes" patches directly as
+well even if they aren't cc'd to stable.
+
+-- 
+viresh
