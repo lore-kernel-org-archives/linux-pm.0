@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH 09/12] thermal: qoriq: Do not report invalid temperature reading
-Date: Mon, 18 Feb 2019 11:11:38 -0800
-Message-ID: <20190218191141.3729-10-andrew.smirnov@gmail.com>
+Subject: [PATCH 11/12] thermal: qoriq: Be more strict when parsing "thermal-sensors"
+Date: Mon, 18 Feb 2019 11:11:40 -0800
+Message-ID: <20190218191141.3729-12-andrew.smirnov@gmail.com>
 References: <20190218191141.3729-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,9 +12,11 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Before returning measured temperature data to upper layer we need to
-make sure that the reading was marked as "valid" to avoid reporting
-bogus data.
+As per Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+thermal-sensor-cells _must_ be 1, so there is no reason to be more
+lenient in the code and treat the absence of argument in
+thermal-sensors specifier as a valid DT code. Drop that special case
+to simplify sensor ID retreival code.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -26,32 +28,34 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/thermal/qoriq_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 6478d7a8168f..3d520d3b2da4 100644
+index d4f5e180e1ee..f746c62789b0 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -37,6 +37,7 @@
- #define REGS_TRITSR(n)	(0x100 + 16 * (n)) /* Immediate Temperature
- 					    * Site Register
- 					    */
-+#define TRITSR_V	BIT(31)
- #define REGS_TTRnCR(n)	(0xf10 + 4 * (n)) /* Temperature Range n
- 					   * Control Register
- 					   */
-@@ -55,8 +56,10 @@ static int tmu_get_temp(void *p, int *temp)
- 	struct qoriq_tmu_data *data = p;
+@@ -82,14 +82,14 @@ static int qoriq_tmu_get_sensor_id(void)
+ 		goto out;
+ 	}
  
- 	regmap_read(data->regmap, REGS_TRITSR(data->sensor_id), &val);
--	*temp = (val & 0xff) * 1000;
-+	if (!(val & TRITSR_V))
-+		return -ENODATA;
- 
-+	*temp = (val & 0xff) * 1000;
- 	return 0;
- }
- 
+-	if (sensor_specs.args_count >= 1) {
+-		id = sensor_specs.args[0];
+-		WARN(sensor_specs.args_count > 1,
+-				"%pOFn: too many cells in sensor specifier %d\n",
+-				sensor_specs.np, sensor_specs.args_count);
+-	} else {
+-		id = 0;
++	if (sensor_specs.args_count != 1) {
++		pr_err("%pOFn: Invalid number of cells in sensor specifier %d\n",
++		       sensor_specs.np, sensor_specs.args_count);
++		id = -EINVAL;
++		goto out;
+ 	}
++
++	id = sensor_specs.args[0];
+ out:
+ 	of_node_put(np);
+ 	of_node_put(sensor_np);
 -- 
 2.20.1
