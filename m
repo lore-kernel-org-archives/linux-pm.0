@@ -1,82 +1,53 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH 03/12] thermal: qoriq: Add local struct device pointer in qoriq_tmu_probe()
-Date: Mon, 18 Feb 2019 11:11:32 -0800
-Message-ID: <20190218191141.3729-4-andrew.smirnov@gmail.com>
-References: <20190218191141.3729-1-andrew.smirnov@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: intel_pstate: Rework iowait boosting to be less aggressive
+Date: Mon, 18 Feb 2019 23:03:03 +0100
+Message-ID: <2407408.YatPz1rZtD@aspire.rjw.lan>
+References: <2038590.kmssd2ZIyd@aspire.rjw.lan> <16144228.tcT5YVROcV@aspire.rjw.lan> <000c01d4c6f6$914a7f20$b3df7d60$@net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190218191141.3729-1-andrew.smirnov@gmail.com>
+In-Reply-To: <000c01d4c6f6$914a7f20$b3df7d60$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Linux PM' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Use a local "struct device *dev" for brevity. No functional change
-intended.
+On Sunday, February 17, 2019 8:25:37 PM CET Doug Smythies wrote:
+> On 2019.02.07 03:51 Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > The current iowait boosting mechanism in intel_pstate_update_util()
+> > is quite aggressive, as it goes to the maximum P-state right away,
+> > and may cause excessive amounts of energy to be used, which is not
+> > desirable and arguably isn't necessary too.
+> >
+> > Follow commit a5a0809bc58e ("cpufreq: schedutil: Make iowait boost
+> > more energy efficient") that reworked the analogous iowait boost
+> > mechanism in the schedutil governor and make the iowait boosting
+> > in intel_pstate_update_util() work along the same lines.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > -> v2:
+> >   * Follow the Doug's suggestion and drop the immediate jump to
+> >     max P-state if boost is max.  The code is simpler this way and
+> >     the perf impact should not be noticeable on average.
+> 
+> Hi Rafael,
+> 
+> Something has broken on my incoming e-mail sorting stuff, and I
+> missed this one (and some others).
+> 
+> This V2 is not actually what I was proposing. I was O.K. with
+> the immediate jump, but I didn't want the set_pstate step
+> by-passed if it was already at max because that would also
+> by-pass the trace sample, if it was enabled.
+> 
+> Anyway, this V2 seems O.K. to me. I tested it compared to V1
+> and, as you mentioned, wasn't able to detect any energy consumption
+> or performance differences.
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-imx@nxp.com
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/thermal/qoriq_thermal.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 3e147f856bf5..c24629b1b8c2 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -187,9 +187,10 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	int ret;
- 	struct qoriq_tmu_data *data;
- 	struct device_node *np = pdev->dev.of_node;
-+	struct device *dev = &pdev->dev;
- 	u32 site;
- 
--	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-+	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
- 			    GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
-@@ -200,14 +201,14 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 
- 	data->sensor_id = qoriq_tmu_get_sensor_id();
- 	if (data->sensor_id < 0) {
--		dev_err(&pdev->dev, "Failed to get sensor id\n");
-+		dev_err(dev, "Failed to get sensor id\n");
- 		ret = -ENODEV;
- 		goto err_iomap;
- 	}
- 
- 	data->regs = of_iomap(np, 0);
- 	if (!data->regs) {
--		dev_err(&pdev->dev, "Failed to get memory region\n");
-+		dev_err(dev, "Failed to get memory region\n");
- 		ret = -ENODEV;
- 		goto err_iomap;
- 	}
-@@ -218,13 +219,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto err_tmu;
- 
--	data->tz = devm_thermal_zone_of_sensor_register(&pdev->dev,
-+	data->tz = devm_thermal_zone_of_sensor_register(dev,
- 							data->sensor_id,
- 							data, &tmu_tz_ops);
- 	if (IS_ERR(data->tz)) {
- 		ret = PTR_ERR(data->tz);
--		dev_err(&pdev->dev,
--			"Failed to register thermal zone device %d\n", ret);
-+		dev_err(dev, "Failed to register thermal zone device %d\n",
-+			ret);
- 		goto err_tmu;
- 	}
- 
--- 
-2.20.1
+Thanks for the confirmation!
