@@ -1,82 +1,101 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [PATCH] gpu: drm: radeon: Set DPM_FLAG_NEVER_SKIP when enabling PM-runtime
-Date: Mon, 18 Feb 2019 17:21:19 -0500
-Message-ID: <CADnq5_O+2i5jC_0DRQvfkMtmfMGLgMzRDo+aSZHXeewhDPVhOg@mail.gmail.com>
-References: <2281684.8tZHfIXjiu@aspire.rjw.lan> <CADnq5_NmDYzZZPUh5Wp+a8bycRWFDt3Lhzf0AKx9BECJ_U-Kyg@mail.gmail.com>
- <20190216060058.gsiddsmj3f27e6v7@wunner.de> <CADnq5_OqaQA2HNcy+ZZvsN5MTEWLXoFEuirX4f4nzEOJ6NrdVA@mail.gmail.com>
- <CAJZ5v0g8-+cqQFspwYytTbzptZrt+GhT2RUX_nQnFD-rDbA7sA@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 1/2] trace: events: add devfreq trace event file
+Date: Tue, 19 Feb 2019 09:25:52 +0900
+Message-ID: <aef5a336-779f-3e9d-ec4e-cea1d78f7c09@samsung.com>
+References: <1550514069-9237-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190218182129eucas1p236fc8ccddd9a8cde25c15f7545276885@eucas1p2.samsung.com>
+        <1550514069-9237-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g8-+cqQFspwYytTbzptZrt+GhT2RUX_nQnFD-rDbA7sA@mail.gmail.com>
+In-Reply-To: <1550514069-9237-2-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alex Deucher <alexander.deucher@amd.com>, David Zhou <David1.Zhou@amd.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, amd-gfx list <amd-gfx@lists.freedesktop.org>, ?????????????? ???????????????? <ukrkyi@gmail.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 17, 2019 at 4:26 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Sun, Feb 17, 2019 at 12:37 AM Alex Deucher <alexdeucher@gmail.com> wrote:
-> >
-> > On Sat, Feb 16, 2019 at 1:01 AM Lukas Wunner <lukas@wunner.de> wrote:
-> > >
-> > > On Fri, Feb 15, 2019 at 11:01:04AM -0500, Alex Deucher wrote:
-> > > > On Fri, Feb 15, 2019 at 10:39 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > > > On HP ProBook 4540s, if PM-runtime is enabled in the radeon driver
-> > > > > and the direct-complete optimization is used for the radeon device
-> > > > > during system-wide suspend, the system doesn't resume.
-> > > > >
-> > > > > Preventing direct-complete from being used with the radeon device by
-> > > > > setting the DPM_FLAG_NEVER_SKIP driver flag for it makes the problem
-> > > > > go away, which indicates that direct-complete is not safe for the
-> > > > > radeon driver in general and should not be used with it (at least
-> > > > > for now).
-> > > > >
-> > > > > This fixes a regression introduced by commit c62ec4610c40
-> > > > > ("PM / core: Fix direct_complete handling for devices with no
-> > > > > callbacks") which allowed direct-complete to be applied to
-> > > > > devices without PM callbacks (again) which in turn unlocked
-> > > > > direct-complete for radeon on HP ProBook 4540s.
-> > > >
-> > > > Do other similar drivers like amdgpu and nouveau need the same fix?
-> > > > I'm not too familiar with the direct_complete feature in general.
-> > >
-> > > direct_complete means that a discrete GPU which is in D3cold upon
-> > > entering system sleep is left as is, i.e. it is not woken.  It is
-> > > also expected to still be in D3cold when resuming from system sleep
-> > > from the PM core's point of view.  (If it is in D0uninitialized, the
-> > > GPU's driver needs to ensure it is transitioned to D3cold again.)
-> > >
-> > > I know for a fact that resuming the discrete GPU is not necessary
-> > > on my MacBook Pro with Nvidia GPU.  I'd expect those with AMD GPUs
-> > > to behave the same.  The apple-gmux driver takes care of putting
-> > > the GPU into D3cold on resume from system sleep if it was in D3cold
-> > > when entering system sleep (see drivers/platform/x86/apple-gmux.c,
-> > > gmux_resume()).
-> > >
-> > > I think it is desirable to use direct_complete because it saves power
-> > > (no need to gratuitously wake the GPU upon entering system sleep,
-> > > only to immediately cut its power) and it also speeds up the suspend
-> > > process by about half a second.
-> >
-> > Thanks for the info.  It sounds like we need a similar patch for
-> > amdgpu.  With dGPUs controlled by the ACPI ATPX method, I believe the
-> > dGPU is powered by automatically on resume from S3/S4.  I think there
-> > may be a way to change that behavior in some revisions of ATPX (i.e.,
-> > to keep the state across suspend cycles), but it's not the default.
-> > I'm not sure about the newer _PR3 stuff in Hybrid Graphics laptops.  I
-> > think it retains state.  In both radeon and amdgpu we probably need to
-> > check if the system is using ATPX or _PR3 and disable direct complete
-> > for ATPX at least.
->
-> I would disable direct-complete entirely for them then and possibly
-> consider using DPM_FLAG_SMART_SUSPEND in the cases when that would be
-> safe.
->
-> Anyway, I posted this patch for radeon, because it addresses a
-> specific regression and I'm not super-familiar with GPU drivers in
-> general.
+Hi Lukasz,
 
-Thanks.  I've applied this patch and sent out a patch for amdgpu.
+On 19. 2. 19. 오전 3:21, Lukasz Luba wrote:
+> The patch adds a new file for with trace events for devfreq
+> framework. They are used for performance analysis of the framework.
+> It also contains updates in MAINTAINERS file adding new entry for
+> devfreq maintainers.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  MAINTAINERS                    |  1 +
+>  include/trace/events/devfreq.h | 40 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 41 insertions(+)
+>  create mode 100644 include/trace/events/devfreq.h
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 41ce5f4..9c44076 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4447,6 +4447,7 @@ S:	Maintained
+>  F:	drivers/devfreq/
+>  F:	include/linux/devfreq.h
+>  F:	Documentation/devicetree/bindings/devfreq/
+> +F:	include/trace/events/devfreq.h
+>  
+>  DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
+>  M:	Chanwoo Choi <cw00.choi@samsung.com>
+> diff --git a/include/trace/events/devfreq.h b/include/trace/events/devfreq.h
+> new file mode 100644
+> index 0000000..cf5b877
+> --- /dev/null
+> +++ b/include/trace/events/devfreq.h
+> @@ -0,0 +1,40 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM devfreq
+> +
+> +#if !defined(_TRACE_DEVFREQ_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_DEVFREQ_H
+> +
+> +#include <linux/devfreq.h>
+> +#include <linux/tracepoint.h>
+> +
+> +TRACE_EVENT(devfreq_monitor,
+> +	TP_PROTO(struct devfreq *devfreq),
+> +
+> +	TP_ARGS(devfreq),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(unsigned long, freq)
+> +		__field(unsigned long, busy_time)
+> +		__field(unsigned long, total_time)
+> +		__field(unsigned int, polling_ms)
+> +		__string(dev_name, dev_name(&devfreq->dev))
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->freq = devfreq->previous_freq;
+> +		__entry->busy_time = devfreq->last_status.busy_time;
+> +		__entry->total_time = devfreq->last_status.total_time;
+> +		__entry->polling_ms = devfreq->profile->polling_ms;
+> +		__assign_str(dev_name, dev_name(&devfreq->dev));
+> +	),
+> +
+> +	TP_printk("dev_name=%s freq=%lu polling_ms=%u load=%lu",
+> +		__get_str(dev_name), __entry->freq, __entry->polling_ms,
+> +		__entry->total_time == 0 ? 0 :
+> +			(100 * __entry->busy_time) / __entry->total_time)
+> +);
+> +#endif /* _TRACE_DEVFREQ_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> 
 
-Alex
+I think that it is necessary for devfreq. Looks good to me.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
