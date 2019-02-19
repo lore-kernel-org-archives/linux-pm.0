@@ -1,93 +1,171 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 11/11] hwmon/coretemp: Support multi-die/package
-Date: Tue, 19 Feb 2019 08:46:12 -0800
-Message-ID: <2e9ca4e1-d9ff-8f0c-c3c3-80f8b19bb7ee@roeck-us.net>
-References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
- <8ce75b95ef6105ebe5fb8c9e43b33f06516e3c16.1550545163.git.len.brown@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] driver core: Fix PM-runtime for links added during consumer probe
+Date: Tue, 19 Feb 2019 17:53:26 +0100
+Message-ID: <2442421.P6CTj2BjBs@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8ce75b95ef6105ebe5fb8c9e43b33f06516e3c16.1550545163.git.len.brown@intel.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/18/19 7:40 PM, Len Brown wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> This patch introduces coretemp driver support
-> for new dual-die/package systems.
-> 
-> On the new dual-die/package systems, the package temperature MSRs becomes
-> die-scope. Thus instead of one hwmon device per physical package, now
-> there should be one hwmon device for each die on these systems.
-> 
-> On the hardwares that do not have multi-die support,
-> topology_unique_die_id() equals topology_physical_package_id(), thus the
-> only difference is that physical package id is used as the coretemp
-> platform device id, instead of logical package id on these systems.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-hwmon@vger.kernel.org
-> Signed-off-by: Len Brown <len.brown@intel.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+Commit 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage
+counter imbalance") introduced a regression that causes suppliers
+to be suspended prematurely for device links added during consumer
+driver probe if the initial PM-runtime status of the consumer is
+"suspended" and the consumer is resumed after adding the link and
+before pm_runtime_put_suppliers() is called.  In that case,
+pm_runtime_put_suppliers() will drop the rpm_active refcount for
+the link by one and (since rpm_active is equal to two after the
+preceding consumer resume) the supplier's PM-runtime usage counter
+will be decremented, which may cause the supplier to suspend even
+though the consumer's PM-runtime status is "active".
 
-> ---
->   drivers/hwmon/coretemp.c | 9 +++++----
->   1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-> index 5d34f7271e67..a0b6b2247c3a 100644
-> --- a/drivers/hwmon/coretemp.c
-> +++ b/drivers/hwmon/coretemp.c
-> @@ -435,7 +435,7 @@ static int chk_ucode_version(unsigned int cpu)
->   
->   static struct platform_device *coretemp_get_pdev(unsigned int cpu)
->   {
-> -	int pkgid = topology_logical_package_id(cpu);
-> +	int pkgid = topology_unique_die_id(cpu);
->   
->   	if (pkgid >= 0 && pkgid < max_packages)
->   		return pkg_devices[pkgid];
-> @@ -579,7 +579,7 @@ static struct platform_driver coretemp_driver = {
->   
->   static struct platform_device *coretemp_device_add(unsigned int cpu)
->   {
-> -	int err, pkgid = topology_logical_package_id(cpu);
-> +	int err, pkgid = topology_unique_die_id(cpu);
->   	struct platform_device *pdev;
->   
->   	if (pkgid < 0)
-> @@ -703,7 +703,7 @@ static int coretemp_cpu_offline(unsigned int cpu)
->   	 * the rest.
->   	 */
->   	if (cpumask_empty(&pd->cpumask)) {
-> -		pkg_devices[topology_logical_package_id(cpu)] = NULL;
-> +		pkg_devices[topology_unique_die_id(cpu)] = NULL;
->   		platform_device_unregister(pdev);
->   		return 0;
->   	}
-> @@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
->   static int __init coretemp_init(void)
->   {
->   	int err;
-> +	struct cpuinfo_x86 *c = &cpu_data(0);
->   
->   	/*
->   	 * CPUID.06H.EAX[0] indicates whether the CPU has thermal
-> @@ -741,7 +742,7 @@ static int __init coretemp_init(void)
->   	if (!x86_match_cpu(coretemp_ids))
->   		return -ENODEV;
->   
-> -	max_packages = topology_max_packages();
-> +	max_packages = topology_max_packages() * c->x86_max_dies;
->   	pkg_devices = kcalloc(max_packages, sizeof(struct platform_device *),
->   			      GFP_KERNEL);
->   	if (!pkg_devices)
-> 
+For this reason, partially revert commit 4c06c4e6cf63 as the problem
+it tried to fix needs to be addressed somewhat differently, and
+change pm_runtime_get_suppliers() and pm_runtime_put_suppliers() so
+that the latter only drops rpm_active references acquired by the
+former.  [This requires adding a new field to struct device_link,
+but I coulnd't find a cleaner way to address the issue that would
+work in all cases.]
+
+This causes pm_runtime_put_suppliers() to effectively ignore device
+links added during consumer probe, so device_link_add() doesn't need
+to worry about ensuring that suppliers will remain active after
+pm_runtime_put_suppliers() for links created with DL_FLAG_RPM_ACTIVE
+set and it only needs to bump up rpm_active by one for those links,
+so pm_runtime_active_link() is not necessary any more.
+
+Fixes: 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage counter imbalance")
+Reported-by: Jon Hunter <jonathanh@nvidia.com>
+Tested-by: Jon Hunter <jonathanh@nvidia.com>
+Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+Changes from the RFC version:
+ - T-by and R-by tags from Jon and Ulf.
+ - More details in the changelog.
+
+---
+ drivers/base/core.c          |    4 ++--
+ drivers/base/power/runtime.c |   29 ++++++-----------------------
+ include/linux/device.h       |    1 +
+ include/linux/pm_runtime.h   |    4 ----
+ 4 files changed, 9 insertions(+), 29 deletions(-)
+
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -277,7 +277,7 @@ struct device_link *device_link_add(stru
+ 				link->flags |= DL_FLAG_PM_RUNTIME;
+ 			}
+ 			if (flags & DL_FLAG_RPM_ACTIVE)
+-				pm_runtime_active_link(link, supplier);
++				refcount_inc(&link->rpm_active);
+ 		}
+ 
+ 		if (flags & DL_FLAG_STATELESS) {
+@@ -310,7 +310,7 @@ struct device_link *device_link_add(stru
+ 
+ 	if (flags & DL_FLAG_PM_RUNTIME) {
+ 		if (flags & DL_FLAG_RPM_ACTIVE)
+-			pm_runtime_active_link(link, supplier);
++			refcount_inc(&link->rpm_active);
+ 
+ 		pm_runtime_new_link(consumer);
+ 	}
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1656,6 +1656,7 @@ void pm_runtime_get_suppliers(struct dev
+ 
+ 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+ 		if (link->flags & DL_FLAG_PM_RUNTIME) {
++			link->supplier_preactivated = true;
+ 			refcount_inc(&link->rpm_active);
+ 			pm_runtime_get_sync(link->supplier);
+ 		}
+@@ -1675,9 +1676,11 @@ void pm_runtime_put_suppliers(struct dev
+ 	idx = device_links_read_lock();
+ 
+ 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+-		if (link->flags & DL_FLAG_PM_RUNTIME &&
+-		    refcount_dec_not_one(&link->rpm_active))
+-			pm_runtime_put(link->supplier);
++		if (link->supplier_preactivated) {
++			link->supplier_preactivated = false;
++			if (refcount_dec_not_one(&link->rpm_active))
++				pm_runtime_put(link->supplier);
++		}
+ 
+ 	device_links_read_unlock(idx);
+ }
+@@ -1689,26 +1692,6 @@ void pm_runtime_new_link(struct device *
+ 	spin_unlock_irq(&dev->power.lock);
+ }
+ 
+-/**
+- * pm_runtime_active_link - Set up new device link as active for PM-runtime.
+- * @link: Device link to be set up as active.
+- * @supplier: Supplier end of the link.
+- *
+- * Add 2 to the rpm_active refcount of @link and increment the PM-runtime
+- * usage counter of @supplier once more in case the link is being added while
+- * the consumer driver is probing and pm_runtime_put_suppliers() will be called
+- * subsequently.
+- *
+- * Note that this doesn't prevent rpm_put_suppliers() from decreasing the link's
+- * rpm_active refcount down to one, so runtime suspend of the consumer end of
+- * @link is not affected.
+- */
+-void pm_runtime_active_link(struct device_link *link, struct device *supplier)
+-{
+-	refcount_add(2, &link->rpm_active);
+-	pm_runtime_get_noresume(supplier);
+-}
+-
+ void pm_runtime_drop_link(struct device *dev)
+ {
+ 	spin_lock_irq(&dev->power.lock);
+Index: linux-pm/include/linux/device.h
+===================================================================
+--- linux-pm.orig/include/linux/device.h
++++ linux-pm/include/linux/device.h
+@@ -861,6 +861,7 @@ struct device_link {
+ #ifdef CONFIG_SRCU
+ 	struct rcu_head rcu_head;
+ #endif
++	bool supplier_preactivated; /* Owned by consumer probe. */
+ };
+ 
+ /**
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -59,8 +59,6 @@ extern void pm_runtime_clean_up_links(st
+ extern void pm_runtime_get_suppliers(struct device *dev);
+ extern void pm_runtime_put_suppliers(struct device *dev);
+ extern void pm_runtime_new_link(struct device *dev);
+-extern void pm_runtime_active_link(struct device_link *link,
+-				   struct device *supplier);
+ extern void pm_runtime_drop_link(struct device *dev);
+ 
+ static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
+@@ -180,8 +178,6 @@ static inline void pm_runtime_clean_up_l
+ static inline void pm_runtime_get_suppliers(struct device *dev) {}
+ static inline void pm_runtime_put_suppliers(struct device *dev) {}
+ static inline void pm_runtime_new_link(struct device *dev) {}
+-static inline void pm_runtime_active_link(struct device_link *link,
+-					  struct device *supplier) {}
+ static inline void pm_runtime_drop_link(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM */
