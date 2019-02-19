@@ -1,110 +1,55 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 07/11] powercap/intel_rapl: simplify rapl_find_package()
-Date: Tue, 19 Feb 2019 10:11:37 +0100
-Message-ID: <CAJZ5v0i1LigqFyg3tFrcOyJRehJyKJOyn7CSePOok=q+3zewpg@mail.gmail.com>
-References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
- <c21fb21e1cd476b2806d5f88c96e8cc54d3fd08a.1550545163.git.len.brown@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: scmi: fix use-after-free in scmi_cpufreq_exit()
+Date: Tue, 19 Feb 2019 11:18:39 +0100
+Message-ID: <2386834.BKf6y2r8fF@aspire.rjw.lan>
+References: <20190216163148.12375-1-tiny.windzz@gmail.com> <20190218045330.zpiivw7mvv4hzctq@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c21fb21e1cd476b2806d5f88c96e8cc54d3fd08a.1550545163.git.len.brown@intel.com>
+In-Reply-To: <20190218045330.zpiivw7mvv4hzctq@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Yangtao Li <tiny.windzz@gmail.com>, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 19, 2019 at 4:41 AM Len Brown <lenb@kernel.org> wrote:
->
-> From: Zhang Rui <rui.zhang@intel.com>
->
-> Simplify how the code to discover a package is called.
-> Rename find_package_by_id() to rapl_find_package()
->
-> No functional change.
->
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Len Brown <len.brown@intel.com>
+On Monday, February 18, 2019 5:53:30 AM CET Viresh Kumar wrote:
+> On 16-02-19, 11:31, Yangtao Li wrote:
+> > This issue was detected with the help of Coccinelle. So
+> > change the order of function calls to fix it.
+> > 
+> > Fixes: 1690d8bb91e37 (cpufreq: scpi/scmi: Fix freeing of dynamic OPPs)
+> > 
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> >  drivers/cpufreq/scmi-cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+> > index 242c3370544e..9ed46d188cb5 100644
+> > --- a/drivers/cpufreq/scmi-cpufreq.c
+> > +++ b/drivers/cpufreq/scmi-cpufreq.c
+> > @@ -187,8 +187,8 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+> >  
+> >  	cpufreq_cooling_unregister(priv->cdev);
+> >  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+> > -	kfree(priv);
+> >  	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
+> > +	kfree(priv);
+> >  
+> >  	return 0;
+> >  }
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> @Rafael: Please pick it up for 5.0-rc8 as the bug was introduced
+> during 5.0 cycle only.
+> 
+> The patch it fixes had this tag:
+> 
+>     Cc: 4.20 <stable@vger.kernel.org> # v4.20
+> 
+> And so will get applied to 4.20.N, I guess we need to mark this patch
+> as well for stable then.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-> ---
->  drivers/powercap/intel_rapl.c | 18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 6cdb2c14eee4..6057d9695fed 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
->  static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
->
->  /* caller to ensure CPU hotplug lock is held */
-> -static struct rapl_package *find_package_by_id(int id)
-> +static struct rapl_package *rapl_find_package(int cpu)
->  {
-> +       int id = topology_physical_package_id(cpu);
->         struct rapl_package *rp;
->
->         list_for_each_entry(rp, &rapl_packages, plist) {
-> @@ -1298,7 +1299,7 @@ static int __init rapl_register_psys(void)
->         rd->rpl[0].name = pl1_name;
->         rd->rpl[1].prim_id = PL2_ENABLE;
->         rd->rpl[1].name = pl2_name;
-> -       rd->rp = find_package_by_id(0);
-> +       rd->rp = rapl_find_package(0);
->
->         power_zone = powercap_register_zone(&rd->power_zone, control_type,
->                                             "psys", NULL,
-> @@ -1454,8 +1455,9 @@ static void rapl_remove_package(struct rapl_package *rp)
->  }
->
->  /* called from CPU hotplug notifier, hotplug lock held */
-> -static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-> +static struct rapl_package *rapl_add_package(int cpu)
->  {
-> +       int id = topology_physical_package_id(cpu);
->         struct rapl_package *rp;
->         int ret;
->
-> @@ -1464,7 +1466,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
->                 return ERR_PTR(-ENOMEM);
->
->         /* add the new package to the list */
-> -       rp->id = pkgid;
-> +       rp->id = id;
->         rp->lead_cpu = cpu;
->
->         /* check if the package contains valid domains */
-> @@ -1495,12 +1497,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
->   */
->  static int rapl_cpu_online(unsigned int cpu)
->  {
-> -       int pkgid = topology_physical_package_id(cpu);
->         struct rapl_package *rp;
->
-> -       rp = find_package_by_id(pkgid);
-> +       rp = rapl_find_package(cpu);
->         if (!rp) {
-> -               rp = rapl_add_package(cpu, pkgid);
-> +               rp = rapl_add_package(cpu);
->                 if (IS_ERR(rp))
->                         return PTR_ERR(rp);
->         }
-> @@ -1510,11 +1511,10 @@ static int rapl_cpu_online(unsigned int cpu)
->
->  static int rapl_cpu_down_prep(unsigned int cpu)
->  {
-> -       int pkgid = topology_physical_package_id(cpu);
->         struct rapl_package *rp;
->         int lead_cpu;
->
-> -       rp = find_package_by_id(pkgid);
-> +       rp = rapl_find_package(cpu);
->         if (!rp)
->                 return 0;
->
-> --
-> 2.18.0-rc0
->
+Done now, thanks!
