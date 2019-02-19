@@ -1,99 +1,72 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] driver core: Fix PM-runtime for links added during
- consumer probe
-Date: Tue, 19 Feb 2019 18:07:04 +0100
-Message-ID: <20190219170704.GB14351@ulmo>
-References: <2442421.P6CTj2BjBs@aspire.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 2/7] x86, olpc: Use a correct version when making up a
+ battery node
+Date: Wed, 20 Feb 2019 00:15:31 +0100
+Message-ID: <20190219231530.ndmpcitemcjzf5xc@earth.universe>
+References: <20190110174005.1202564-1-lkundrak@v3.sk>
+ <20190110174005.1202564-3-lkundrak@v3.sk>
+ <20190123205627.nbddtfuy6qdo2bgb@earth.universe>
+ <0adff00d4c4797fe1f9d593a7ba7c772ac3312c4.camel@v3.sk>
+ <48f658a78ddcd6cc67f6eb280dc2c3aa3399c459.camel@v3.sk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="j4x3gsyaydkk6jd2"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2442421.P6CTj2BjBs@aspire.rjw.lan>
+In-Reply-To: <48f658a78ddcd6cc67f6eb280dc2c3aa3399c459.camel@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Lubomir Rintel <lkundrak@v3.sk>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
 
---XOIedfhf+7KOe/yw
+--j4x3gsyaydkk6jd2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 19, 2019 at 05:53:26PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> Commit 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage
-> counter imbalance") introduced a regression that causes suppliers
-> to be suspended prematurely for device links added during consumer
-> driver probe if the initial PM-runtime status of the consumer is
-> "suspended" and the consumer is resumed after adding the link and
-> before pm_runtime_put_suppliers() is called.  In that case,
-> pm_runtime_put_suppliers() will drop the rpm_active refcount for
-> the link by one and (since rpm_active is equal to two after the
-> preceding consumer resume) the supplier's PM-runtime usage counter
-> will be decremented, which may cause the supplier to suspend even
-> though the consumer's PM-runtime status is "active".
->=20
-> For this reason, partially revert commit 4c06c4e6cf63 as the problem
-> it tried to fix needs to be addressed somewhat differently, and
-> change pm_runtime_get_suppliers() and pm_runtime_put_suppliers() so
-> that the latter only drops rpm_active references acquired by the
-> former.  [This requires adding a new field to struct device_link,
-> but I coulnd't find a cleaner way to address the issue that would
-> work in all cases.]
->=20
-> This causes pm_runtime_put_suppliers() to effectively ignore device
-> links added during consumer probe, so device_link_add() doesn't need
-> to worry about ensuring that suppliers will remain active after
-> pm_runtime_put_suppliers() for links created with DL_FLAG_RPM_ACTIVE
-> set and it only needs to bump up rpm_active by one for those links,
-> so pm_runtime_active_link() is not necessary any more.
->=20
-> Fixes: 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage counter=
- imbalance")
-> Reported-by: Jon Hunter <jonathanh@nvidia.com>
-> Tested-by: Jon Hunter <jonathanh@nvidia.com>
-> Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->=20
-> Changes from the RFC version:
->  - T-by and R-by tags from Jon and Ulf.
->  - More details in the changelog.
->=20
-> ---
->  drivers/base/core.c          |    4 ++--
->  drivers/base/power/runtime.c |   29 ++++++-----------------------
->  include/linux/device.h       |    1 +
->  include/linux/pm_runtime.h   |    4 ----
->  4 files changed, 9 insertions(+), 29 deletions(-)
+[+cc Darren Hart, Andy Shevchenko]
 
-I'm sure Jon and Ulf have done much more extensive testing, but I've had
-this applied for most of today and haven't run into any issues, so:
+Hi Lubo,
 
-Tested-by: Thierry Reding <treding@nvidia.com>
+On Mon, Feb 11, 2019 at 12:37:19PM +0100, Lubomir Rintel wrote:
+> perhaps the message slipped through the cracks? I'm happy to do
+> whatever is needed to get the patch set into 5.1, but it seems I
+> need some help and clarifications.
 
---XOIedfhf+7KOe/yw
+The following patches should be merged through the power-supply
+tree, which is maintained by me. This one is not for my subsystem,
+so either I need an Acked-by from the x86 people (=they are ok
+with me merging the patch through the power-supply tree) or they
+merge it into the x86 platform tree. If it is merged through the
+x86 tree I need a pull-request from them, so that I can merge the
+other patches.
+
+TLDR: This needs interaction from the x86 platform maintainers
+(i.e. Darren Hart and Andy Shevchenko). Looks like you did not
+Cc them?
+
+https://patchwork.kernel.org/patch/10756459/
+
+-- Sebastian
+
+--j4x3gsyaydkk6jd2
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlxsN7gACgkQ3SOs138+
-s6Fm+xAAnvoSqdn6wZcWkWeG6qooOo7YeCJH5FRW4fU6hIXoj6So8VgX9Miqnn+j
-bDvvgviE6euyVqHSA2gokG35z0JQE8ZrIBcVwx2nZ7Qk8tGpYncvDtnnXCarnY6p
-z4tfFrLK15/c84R1tc/ighFWS+9HAdZ33Lp673bhKCioGS52oUKoHKPIfoSYzIhL
-oHcby4bCaWz91vwHVWfIF8vsBzvVPfs784D5Pc/nObvfOpa61ec1QkZvt+sdsC6L
-edN63P4bYUzFhASWyrsOSPDomahh535L1cnXnNObcZTIIeOigiI6/gMDAhQkHK6E
-QV6KtIPvj/uooTj9WHT5RqGHhQb+6fcyOzVwsJMJLpAdqErOzBTVlw1j1IuvGu2q
-uOu1n+pz0c3h2y0B1bRc+CWjEMvRoHYz+eIcfE6GNk9oA1oE2rmiO4K/OeNicbew
-hVrAuwBj02PgFmvEyfk9te08jhWwPEdApQB6A1bOazF+HHp/sHF/18F/1zochBcO
-2hiyTs8br4Sriv2f+AnYncGTEGGgTtcDI5006mut0QlKTkTJT03PNEpP4I8aKtic
-rrAfRIQbDA2BN6qcaBbjvAtgPZ6kVCRMcGBfp/yGg1fFh+6zbrROChQsiXrbbnDO
-PLgh+vZMsUpj2QjwLbWCfl9+5ye6vIMX+FeFXSDIkjzWZetK2dY=
-=hcNP
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxsjhAACgkQ2O7X88g7
++poXeg/9Fr3IwFdAmmBDYvdoaeAP5lLdEDe+W01Al2E7rjYyJ58Z48h5BqcTiaAf
+jTKqu5JmTfRwHs7oVe8KKPOOga/7gR68JPNdptrkLeVm/TPfQ/ZjQGcvydQm1RAI
+YgthK2/8hSTcheGFzHfJ5RuwpZYb8t/7wUQUGuNLqf0HXJ1eFCDmcOaRjs+kOngS
+XuSQBrLxG110tyo4jr3uRIGFvLbVSzV5wgGdT05ewTuP3GBxqvGkmBQEv9JfqvK0
+t5FMcuokwcXMsyA78RCpjYRJuRE3wpYz7SyM+ek5V57vRaX0kqr+Q6+NtACsc5EN
+3QpD+LZ29pDmZY2Si270t2sMv7hAJOR1xtziQG/bqtL1Jh3+/uXDOYqw5+1xxT9R
+03L8xUFdLdvygEtqIDSM+mhqlTpfApVrmhNY79ZWLV/eWnnLgEcjTCSf6iVhSZ+Q
+itg0w5wxwwl6HTw54kDImS1KVzjzvByt2yDS6tQ1rsVy3LNkLUCTQJ2X9VNmmdiW
+OGXgvGf/bv02K2KifZ5xiQK8YoN5vdXraN4W9v2rd/62lYsPiKPD5aKMDoqcc0/K
+Wqwz0U99VkpYc3TQ88dk5miGvWaPs1a7Kx0uGOBLAX1Pr3948pyVPSaYDd5K+kx8
+1xqjo6wMI5PRiyuGMrVaxwdssuBxDbDPOSrw7rEAROtDjZwD5Es=
+=5pzH
 -----END PGP SIGNATURE-----
 
---XOIedfhf+7KOe/yw--
+--j4x3gsyaydkk6jd2--
