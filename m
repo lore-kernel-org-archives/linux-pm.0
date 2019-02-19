@@ -1,171 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] driver core: Fix PM-runtime for links added during consumer probe
-Date: Tue, 19 Feb 2019 17:53:26 +0100
-Message-ID: <2442421.P6CTj2BjBs@aspire.rjw.lan>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] bq27x00: use cached flags
+Date: Tue, 19 Feb 2019 10:55:37 -0600
+Message-ID: <be028fd4-f05b-4357-d693-46e226b0f2c7@ti.com>
+References: <20190218065920.16205-1-spinal.by@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190218065920.16205-1-spinal.by@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Arthur Demchenkov <spinal.by@gmail.com>
+Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2/18/19 12:59 AM, Arthur Demchenkov wrote:
+> The flags were just read by bq27xxx_battery_update(),
+> no need to read them again.
+> 
+> Signed-off-by: Arthur Demchenkov <spinal.by@gmail.com>
+> ---
 
-Commit 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage
-counter imbalance") introduced a regression that causes suppliers
-to be suspended prematurely for device links added during consumer
-driver probe if the initial PM-runtime status of the consumer is
-"suspended" and the consumer is resumed after adding the link and
-before pm_runtime_put_suppliers() is called.  In that case,
-pm_runtime_put_suppliers() will drop the rpm_active refcount for
-the link by one and (since rpm_active is equal to two after the
-preceding consumer resume) the supplier's PM-runtime usage counter
-will be decremented, which may cause the supplier to suspend even
-though the consumer's PM-runtime status is "active".
+Nothing obviously wrong with this patch so:
 
-For this reason, partially revert commit 4c06c4e6cf63 as the problem
-it tried to fix needs to be addressed somewhat differently, and
-change pm_runtime_get_suppliers() and pm_runtime_put_suppliers() so
-that the latter only drops rpm_active references acquired by the
-former.  [This requires adding a new field to struct device_link,
-but I coulnd't find a cleaner way to address the issue that would
-work in all cases.]
+Reviewed-by: Andrew F. Davis <afd@ti.com>
 
-This causes pm_runtime_put_suppliers() to effectively ignore device
-links added during consumer probe, so device_link_add() doesn't need
-to worry about ensuring that suppliers will remain active after
-pm_runtime_put_suppliers() for links created with DL_FLAG_RPM_ACTIVE
-set and it only needs to bump up rpm_active by one for those links,
-so pm_runtime_active_link() is not necessary any more.
+At this point we have W1 regmap and so we now have everything we should
+need to convert this driver over to regmap. Then the caching comes for
+free and a lot of checks and such can be dropped.
 
-Fixes: 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage counter imbalance")
-Reported-by: Jon Hunter <jonathanh@nvidia.com>
-Tested-by: Jon Hunter <jonathanh@nvidia.com>
-Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Thanks,
+Andrew
 
-Changes from the RFC version:
- - T-by and R-by tags from Jon and Ulf.
- - More details in the changelog.
-
----
- drivers/base/core.c          |    4 ++--
- drivers/base/power/runtime.c |   29 ++++++-----------------------
- include/linux/device.h       |    1 +
- include/linux/pm_runtime.h   |    4 ----
- 4 files changed, 9 insertions(+), 29 deletions(-)
-
-Index: linux-pm/drivers/base/core.c
-===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -277,7 +277,7 @@ struct device_link *device_link_add(stru
- 				link->flags |= DL_FLAG_PM_RUNTIME;
- 			}
- 			if (flags & DL_FLAG_RPM_ACTIVE)
--				pm_runtime_active_link(link, supplier);
-+				refcount_inc(&link->rpm_active);
- 		}
- 
- 		if (flags & DL_FLAG_STATELESS) {
-@@ -310,7 +310,7 @@ struct device_link *device_link_add(stru
- 
- 	if (flags & DL_FLAG_PM_RUNTIME) {
- 		if (flags & DL_FLAG_RPM_ACTIVE)
--			pm_runtime_active_link(link, supplier);
-+			refcount_inc(&link->rpm_active);
- 
- 		pm_runtime_new_link(consumer);
- 	}
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -1656,6 +1656,7 @@ void pm_runtime_get_suppliers(struct dev
- 
- 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
- 		if (link->flags & DL_FLAG_PM_RUNTIME) {
-+			link->supplier_preactivated = true;
- 			refcount_inc(&link->rpm_active);
- 			pm_runtime_get_sync(link->supplier);
- 		}
-@@ -1675,9 +1676,11 @@ void pm_runtime_put_suppliers(struct dev
- 	idx = device_links_read_lock();
- 
- 	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
--		if (link->flags & DL_FLAG_PM_RUNTIME &&
--		    refcount_dec_not_one(&link->rpm_active))
--			pm_runtime_put(link->supplier);
-+		if (link->supplier_preactivated) {
-+			link->supplier_preactivated = false;
-+			if (refcount_dec_not_one(&link->rpm_active))
-+				pm_runtime_put(link->supplier);
-+		}
- 
- 	device_links_read_unlock(idx);
- }
-@@ -1689,26 +1692,6 @@ void pm_runtime_new_link(struct device *
- 	spin_unlock_irq(&dev->power.lock);
- }
- 
--/**
-- * pm_runtime_active_link - Set up new device link as active for PM-runtime.
-- * @link: Device link to be set up as active.
-- * @supplier: Supplier end of the link.
-- *
-- * Add 2 to the rpm_active refcount of @link and increment the PM-runtime
-- * usage counter of @supplier once more in case the link is being added while
-- * the consumer driver is probing and pm_runtime_put_suppliers() will be called
-- * subsequently.
-- *
-- * Note that this doesn't prevent rpm_put_suppliers() from decreasing the link's
-- * rpm_active refcount down to one, so runtime suspend of the consumer end of
-- * @link is not affected.
-- */
--void pm_runtime_active_link(struct device_link *link, struct device *supplier)
--{
--	refcount_add(2, &link->rpm_active);
--	pm_runtime_get_noresume(supplier);
--}
--
- void pm_runtime_drop_link(struct device *dev)
- {
- 	spin_lock_irq(&dev->power.lock);
-Index: linux-pm/include/linux/device.h
-===================================================================
---- linux-pm.orig/include/linux/device.h
-+++ linux-pm/include/linux/device.h
-@@ -861,6 +861,7 @@ struct device_link {
- #ifdef CONFIG_SRCU
- 	struct rcu_head rcu_head;
- #endif
-+	bool supplier_preactivated; /* Owned by consumer probe. */
- };
- 
- /**
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -59,8 +59,6 @@ extern void pm_runtime_clean_up_links(st
- extern void pm_runtime_get_suppliers(struct device *dev);
- extern void pm_runtime_put_suppliers(struct device *dev);
- extern void pm_runtime_new_link(struct device *dev);
--extern void pm_runtime_active_link(struct device_link *link,
--				   struct device *supplier);
- extern void pm_runtime_drop_link(struct device *dev);
- 
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
-@@ -180,8 +178,6 @@ static inline void pm_runtime_clean_up_l
- static inline void pm_runtime_get_suppliers(struct device *dev) {}
- static inline void pm_runtime_put_suppliers(struct device *dev) {}
- static inline void pm_runtime_new_link(struct device *dev) {}
--static inline void pm_runtime_active_link(struct device_link *link,
--					  struct device *supplier) {}
- static inline void pm_runtime_drop_link(struct device *dev) {}
- 
- #endif /* !CONFIG_PM */
+>  drivers/power/supply/bq27xxx_battery.c | 20 ++++----------------
+>  1 file changed, 4 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 6dbbe95844a3..29b3a4056865 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1555,27 +1555,14 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
+>  		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
+>  }
+>  
+> -/*
+> - * Read flag register.
+> - * Return < 0 if something fails.
+> - */
+>  static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+>  {
+> -	int flags;
+> -	bool has_singe_flag = di->opts & BQ27XXX_O_ZERO;
+> -
+> -	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
+> -	if (flags < 0) {
+> -		dev_err(di->dev, "error reading flag register:%d\n", flags);
+> -		return flags;
+> -	}
+> -
+>  	/* Unlikely but important to return first */
+> -	if (unlikely(bq27xxx_battery_overtemp(di, flags)))
+> +	if (unlikely(bq27xxx_battery_overtemp(di, di->cache.flags)))
+>  		return POWER_SUPPLY_HEALTH_OVERHEAT;
+> -	if (unlikely(bq27xxx_battery_undertemp(di, flags)))
+> +	if (unlikely(bq27xxx_battery_undertemp(di, di->cache.flags)))
+>  		return POWER_SUPPLY_HEALTH_COLD;
+> -	if (unlikely(bq27xxx_battery_dead(di, flags)))
+> +	if (unlikely(bq27xxx_battery_dead(di, di->cache.flags)))
+>  		return POWER_SUPPLY_HEALTH_DEAD;
+>  
+>  	return POWER_SUPPLY_HEALTH_GOOD;
+> @@ -1612,6 +1599,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>  			cache.capacity = bq27xxx_battery_read_soc(di);
+>  			if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
+>  				cache.energy = bq27xxx_battery_read_energy(di);
+> +			di->cache.flags = cache.flags;
+>  			cache.health = bq27xxx_battery_read_health(di);
+>  		}
+>  		if (di->regs[BQ27XXX_REG_CYCT] != INVALID_REG_ADDR)
+> 
