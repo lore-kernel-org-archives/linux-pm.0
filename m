@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/4] cpufreq: Fix two debug messages in cpufreq_set_policy()
-Date: Wed, 20 Feb 2019 00:25:18 +0100
-Message-ID: <2486777.RhoGZOM3Wg@aspire.rjw.lan>
+Subject: [PATCH 1/4] cpufreq: Add kerneldoc comments for two core functions
+Date: Wed, 20 Feb 2019 00:22:51 +0100
+Message-ID: <3161414.QiNJczLRHX@aspire.rjw.lan>
 References: <11668536.bBDtnvkYQE@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,33 +15,67 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Remove the redundant "cpufreq:" prefix from two debug messages in
-cpufreq_set_policy().
+Add kerneldoc comments describing cpufreq_set_policy() and
+cpufreq_update_policy() as they have not been properly documented
+so far and they really need to be documented.
+
+While at it, fix white space around the cpufreq_set_policy() header.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c |   32 ++++++++++++++++++++++++--------
+ 1 file changed, 24 insertions(+), 8 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2290,7 +2290,7 @@ static int cpufreq_set_policy(struct cpu
- 	}
+@@ -2218,12 +2218,25 @@ int cpufreq_get_policy(struct cpufreq_po
+ }
+ EXPORT_SYMBOL(cpufreq_get_policy);
  
- 	if (new_policy->governor == policy->governor) {
--		pr_debug("cpufreq: governor limits update\n");
-+		pr_debug("governor limits update\n");
- 		cpufreq_governor_limits(policy);
- 		return 0;
- 	}
-@@ -2311,7 +2311,7 @@ static int cpufreq_set_policy(struct cpu
- 	if (!ret) {
- 		ret = cpufreq_start_governor(policy);
- 		if (!ret) {
--			pr_debug("cpufreq: governor change\n");
-+			pr_debug("governor change\n");
- 			sched_cpufreq_governor_change(policy, old_gov);
- 			return 0;
- 		}
+-/*
+- * policy : current policy.
+- * new_policy: policy to be set.
++/**
++ * cpufreq_set_policy - Modify cpufreq policy parameters.
++ * @policy: Policy object to modify.
++ * @new_policy: New policy data.
++ *
++ * Pass @new_policy to the cpufreq driver's ->verify() callback, run the
++ * installed policy notifiers for it with the CPUFREQ_ADJUST value, pass it to
++ * the driver's ->verify() callback again and run the notifiers for it again
++ * with the CPUFREQ_NOTIFY value.  Next, copy the min and max parameters
++ * of @new_policy to @policy and either invoke the driver's ->setpolicy()
++ * callback (if present) or carry out a governor update for @policy.  That is,
++ * run the current governor's ->limits() callback (if the governor field in
++ * @new_policy points to the same object as the one in @policy) or replace the
++ * governor for @policy with the new one stored in @new_policy.
++ *
++ * The cpuinfo part of @policy is not updated by this function.
+  */
+ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+-				struct cpufreq_policy *new_policy)
++			      struct cpufreq_policy *new_policy)
+ {
+ 	struct cpufreq_governor *old_gov;
+ 	int ret;
+@@ -2319,11 +2332,14 @@ static int cpufreq_set_policy(struct cpu
+ }
+ 
+ /**
+- *	cpufreq_update_policy - re-evaluate an existing cpufreq policy
+- *	@cpu: CPU which shall be re-evaluated
++ * cpufreq_update_policy - Re-evaluate an existing cpufreq policy.
++ * @cpu: CPU to re-evaluate the policy for.
+  *
+- *	Useful for policy notifiers which have different necessities
+- *	at different times.
++ * Update the current frequency for the cpufreq policy of @cpu and use
++ * cpufreq_set_policy() to re-apply the min and max limits saved in the
++ * user_policy sub-structure of that policy, which triggers the evaluation
++ * of policy notifiers and the cpufreq driver's ->verify() callback for the
++ * policy in question, among other things.
+  */
+ void cpufreq_update_policy(unsigned int cpu)
+ {
