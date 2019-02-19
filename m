@@ -1,61 +1,60 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 2/2] drivers: devfreq: add tracing for scheduling
- work
-Date: Tue, 19 Feb 2019 09:28:20 +0900
-Message-ID: <2bc86822-9861-66d5-0a7e-d3d45494772c@samsung.com>
-References: <1550514069-9237-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190218182129eucas1p1804530445570fc73af89ed46b9a448b9@eucas1p1.samsung.com>
-        <1550514069-9237-3-git-send-email-l.luba@partner.samsung.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v7 1/3] thermal: tegra: remove unnecessary warnings
+Date: Tue, 19 Feb 2019 10:14:15 +0800
+Message-ID: <b47037a2-86de-eacd-e9f7-760744783835@nvidia.com>
+References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
+ <1546510369-28491-2-git-send-email-wni@nvidia.com>
+ <ec484530-0a07-b725-a376-43c65ca4a723@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550514069-9237-3-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <ec484530-0a07-b725-a376-43c65ca4a723@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
+Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
 
-On 19. 2. 19. 오전 3:21, Lukasz Luba wrote:
-> This patch add basic tracing of the devfreq workqueue and delayed work.
-> It aims to capture changes of the polling intervals and device state.
-> 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de7..660365a 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -29,6 +29,9 @@
->  #include <linux/of.h>
->  #include "governor.h"
->  
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/devfreq.h>
-> +
->  static struct class *devfreq_class;
->  
->  /*
-> @@ -394,6 +397,8 @@ static void devfreq_monitor(struct work_struct *work)
->  	queue_delayed_work(devfreq_wq, &devfreq->work,
->  				msecs_to_jiffies(devfreq->profile->polling_ms));
->  	mutex_unlock(&devfreq->lock);
-> +
-> +	trace_devfreq_monitor(devfreq);
->  }
->  
->  /**
-> 
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+On 18/2/2019 5:47 PM, Daniel Lezcano wrote:
+> On 03/01/2019 11:12, Wei Ni wrote:
+>> Convert warnings to info as not all platforms may
+>> have all the thresholds and sensors enabled.
+>>
+>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>> ---
+> 
+> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Daniel, thank you for your review.
+> 
+>>  drivers/thermal/tegra/soctherm.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+>> index ed28110a3535..f07de8258e93 100644
+>> --- a/drivers/thermal/tegra/soctherm.c
+>> +++ b/drivers/thermal/tegra/soctherm.c
+>> @@ -569,7 +569,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+>>  set_throttle:
+>>  	ret = get_hot_temp(tz, &trip, &temperature);
+>>  	if (ret) {
+>> -		dev_warn(dev, "throttrip: %s: missing hot temperature\n",
+>> +		dev_info(dev, "throttrip: %s: missing hot temperature\n",
+>>  			 sg->name);
+>>  		return 0;
+>>  	}
+>> @@ -600,7 +600,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+>>  	}
+>>  
+>>  	if (i == THROTTLE_SIZE)
+>> -		dev_warn(dev, "throttrip: %s: missing throttle cdev\n",
+>> +		dev_info(dev, "throttrip: %s: missing throttle cdev\n",
+>>  			 sg->name);
+>>  
+>>  	return 0;
+>>
+> 
+> 
