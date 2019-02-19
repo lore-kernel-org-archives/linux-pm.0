@@ -1,44 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Replace double NOT (!!) with single NOT (!)
-Date: Tue, 19 Feb 2019 11:20:12 +0100
-Message-ID: <2245714.fz2rs2yT5a@aspire.rjw.lan>
-References: <e0ea5fc21f9d3bd38eb4eb678d39359d66c8e79e.1550141092.git.viresh.kumar@linaro.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [RFT/RFC][PATCH] driver core: Fix PM-runtime for links added
+ during consumer probe
+Date: Tue, 19 Feb 2019 10:24:29 +0000
+Message-ID: <eeaa7369-31bb-293e-e585-6014e4bcdd14@nvidia.com>
+References: <14371356.imFjPFOrCi@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e0ea5fc21f9d3bd38eb4eb678d39359d66c8e79e.1550141092.git.viresh.kumar@linaro.org>
+In-Reply-To: <14371356.imFjPFOrCi@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Vetter <daniel@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Andrzej Hajda <a.hajda@samsung.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-tegra <linux-tegra@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, February 14, 2019 11:46:21 AM CET Viresh Kumar wrote:
-> Double NOT (!!) operation is normally done to convert a non-zero value
-> to 1 and keep zero as is, but that isn't the requirement in this case.
-> All we wanted was to make sure that only one of the two routines isn't
-> set, i.e. either both function pointers are set or both are unset.
-> 
-> This can be done with a single NOT (!) operation as well.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 55e9795801a4..ad4e9991c3cc 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2505,7 +2505,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->  		    driver_data->target) ||
->  	     (driver_data->setpolicy && (driver_data->target_index ||
->  		    driver_data->target)) ||
-> -	     (!!driver_data->get_intermediate != !!driver_data->target_intermediate) ||
-> +	     (!driver_data->get_intermediate != !driver_data->target_intermediate) ||
->  	     (!driver_data->online != !driver_data->offline))
->  		return -EINVAL;
->  
-> 
 
-Applied, thanks!
+On 18/02/2019 22:08, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage
+> counter imbalance") introduced a regression that causes suppliers
+> to be suspended prematurely for device links added during consumer
+> driver probe if the initial PM-runtime status of the consumer is
+> "suspended" and the consumer is resumed after adding the link and
+> before pm_runtime_put_suppliers() is called.  In that case,
+> pm_runtime_put_suppliers() will drop the rpm_active refcount for
+> the link by one and (since rpm_active is equal to two after the
+> preceding consumer resume) the supplier's PM-runtime usage counter
+> will be decremented, which may cause the supplier to suspend even
+> though the consumer's PM-runtime status is "active".
+> 
+> For this reason, partially revert commit 4c06c4e6cf63 as the problem
+> it tried to fix needs to be addressed somewhat differently, and
+> change pm_runtime_get_suppliers() and pm_runtime_put_suppliers() so
+> that the latter only drops rpm_active references acquired by the
+> former.  [This requires adding a new field to struct device_link,
+> but I coulnd't find a cleaner way to address the issue that would
+> work in all cases.]
+> 
+> Fixes: 4c06c4e6cf63 ("driver core: Fix possible supplier PM-usage counter imbalance")
+> Reported-by: Jon Hunter <jonathanh@nvidia.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> On top of driver-core/driver-core-next.
+> 
+> Jon, Ulf, please test!
+
+Thanks Rafael this works for me!
+
+Tested-by: Jon Hunter <jonathanh@nvidia.com>
+
+Cheers
+Jon
+
+-- 
+nvpublic
