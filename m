@@ -1,70 +1,37 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v4] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Tue, 19 Feb 2019 10:42:01 +0530
-Message-ID: <39d3a906-b734-9bb8-c60a-48948bb21338@codeaurora.org>
-References: <20181212135313.30268-1-sibis@codeaurora.org>
- <CGME20181212135338epcas5p12f7a8cd1c7aab5d5c936cbc5c33eee07@epcms1p6>
- <20181214014527epcms1p6c783b4cd1602bbcbcb6e725f840db479@epcms1p6>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2 0/6] General Key Derivation Function Support
+Date: Tue, 19 Feb 2019 13:44:58 +0800
+Message-ID: <20190219054458.ldwl26npnyg7ulic@gondor.apana.org.au>
+References: <20190103143227.9138-1-jlee@suse.com>
+ <1798550.XZem68xxzE@tauon.chronox.de>
+ <20190208080547.224fudg2m22d3a6d@gondor.apana.org.au>
+ <2047284.dgeq8KlW64@tauon.chronox.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181214014527epcms1p6c783b4cd1602bbcbcb6e725f840db479@epcms1p6>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <2047284.dgeq8KlW64@tauon.chronox.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm-owner@vger.kernel.org" <linux-arm-msm-owner@vger.kernel.org>, "skannan@codeaurora.org" <skannan@codeaurora.org>
+To: Stephan Mueller <smueller@chronox.de>
+Cc: Eric Biggers <ebiggers@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Andy Lutomirski <luto@amacapital.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, keyrings@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>, Randy Dunlap <rdunlap@infradead.org>, Jann Horn <jannh@google.com>, Andy Lutomirski <luto@kernel.org>, linux-crypto@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hey MyungJoo,
+On Fri, Feb 08, 2019 at 09:17:50AM +0100, Stephan Mueller wrote:
+> > 
+> > > Also, shall we add the signature verification enforcemnt to the helper as
+> > > well?
+> > 
+> > What do you mean by that?
+> 
+> We need to invoke the function crypto_check_module_sig when the module is 
+> loaded. Do you have any concerns invoking it from the module init function?
 
-On 12/14/18 7:15 AM, MyungJoo Ham wrote:
->> From: Saravana Kannan <skannan@codeaurora.org>
->>
->> If the new governor fails to start, switch back to old governor so that the
->> devfreq state is not left in some weird limbo.
->>
->> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
-> Hello,
-> 
-> In overall, the idea and the implementation looks good.
-> 
-> However, I have a question:
-> 
-> What if the following line fails?
-> 
-> +		df->governor->event_handler(df, DEVFREQ_GOV_START,
-> +					    NULL);
-> 
-> Don't we still need something to handle for such events?
+Which module's signature are you going to check? If it's the
+underlying crypto API modules then wouldn't they have been
+checked already when they were registered?
 
-The original discussion went as follows:
-governor_store is expected to be used only on cases
-where devfreq_add_device() succeeded i.e prev->governor
-is expected to be present and DEVFREQ_GOV_START is
-expected to succeed. Hence falling back to the previous
-governor seems like a sensible idea.
-
-This would also prevent DEVFREQ_GOV_STOP from being called
-on a governor were DEVFREQ_GOV_START had failed which is
-ideal.
-
-That being said DEVFREQ_GOV_START can still fail for the
-prev-governor due to some change in state of the system.
-Do you want to handle this case by clearing the state of
-governor rather than switching to previous governor?
-
-> 
-> Cheers,
-> MyungJoo
-> 
-> 
-
+Cheers,
 -- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
