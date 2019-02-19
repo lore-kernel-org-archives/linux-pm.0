@@ -1,102 +1,56 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 07/11] powercap/intel_rapl: simplify rapl_find_package()
-Date: Mon, 18 Feb 2019 22:40:09 -0500
-Message-ID: <c21fb21e1cd476b2806d5f88c96e8cc54d3fd08a.1550545163.git.len.brown@intel.com>
-References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH v8 0/3] Fixes for Tegra soctherm
+Date: Tue, 19 Feb 2019 12:27:01 +0800
+Message-ID: <1550550424-7979-1-git-send-email-wni@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, edubezval@gmail.com, linux-tegra@vger.kernel.org
+Cc: thierry.reding@gmail.com, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Wei Ni <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+This series fixed some issues for Tegra soctherm,
+and add get_trend().
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package()
+Main changes from v7:
+1. use READ_ONCE to get temperature in get_trend()
 
-No functional change.
+Main changes from v6:
+1. Per Eduardo's comment, we can remove the change:
+"thermal: tegra: parse sensor id before sensor register"
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+Main changes from v5:
+1. Move the get_trend() patch https://lkml.org/lkml/2018/11/20/643
+into this serial.
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 6cdb2c14eee4..6057d9695fed 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1298,7 +1299,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package(0);
- 
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1454,8 +1455,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
- 
-@@ -1464,7 +1466,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1495,12 +1497,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1510,11 +1511,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package(cpu);
- 	if (!rp)
- 		return 0;
- 
+Main changes from v4:
+1. fixed for the parsing sensor id.
+2. keep warning for missing critical trips.
+
+Main changes from v3:
+1. updated codes for parsing sensor id, per Thierry's comments
+
+Main changes from v2:
+1. add codes to parse sensor id to avoid registration
+failure.
+
+Main changes from v1:
+1. Acked by Thierry Reding <treding@nvidia.com> for the patch
+"thermal: tegra: fix memory allocation".
+2. Print out the sensor name when register failed.
+2. Remove patch "thermal: tegra: fix coverity defect"
+
+
+*** BLURB HERE ***
+
+Wei Ni (3):
+  thermal: tegra: remove unnecessary warnings
+  thermal: tegra: fix memory allocation
+  thermal: tegra: add get_trend ops
+
+ drivers/thermal/tegra/soctherm.c | 38 +++++++++++++++++++++++++++++++++++---
+ 1 file changed, 35 insertions(+), 3 deletions(-)
+
 -- 
-2.18.0-rc0
+2.7.4
