@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 4/4] cpufreq: Pass updated policy to driver ->setpolicy() callback
-Date: Wed, 20 Feb 2019 00:26:30 +0100
-Message-ID: <1982548.ex0OEcQ4PI@aspire.rjw.lan>
+Subject: [PATCH 3/4] cpufreq: Fix two debug messages in cpufreq_set_policy()
+Date: Wed, 20 Feb 2019 00:25:18 +0100
+Message-ID: <2486777.RhoGZOM3Wg@aspire.rjw.lan>
 References: <11668536.bBDtnvkYQE@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,32 +15,33 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The invocation of the ->setpolicy() cpufreq driver callback should
-be equivalent to calling cpufreq_governor_limits(policy) for drivers
-with internal governors, but in fact it isn't so, because the
-temporary new_policy object is passed to it instead of the updated
-policy.
-
-That is a bit confusing, so make cpufreq_set_policy() pass the
-updated policy to the driver ->setpolicy() callback.
-
-No intentional changes of behavior.
+Remove the redundant "cpufreq:" prefix from two debug messages in
+cpufreq_set_policy().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2286,7 +2286,7 @@ static int cpufreq_set_policy(struct cpu
- 	if (cpufreq_driver->setpolicy) {
- 		policy->policy = new_policy->policy;
- 		pr_debug("setting range\n");
--		return cpufreq_driver->setpolicy(new_policy);
-+		return cpufreq_driver->setpolicy(policy);
+@@ -2290,7 +2290,7 @@ static int cpufreq_set_policy(struct cpu
  	}
  
  	if (new_policy->governor == policy->governor) {
+-		pr_debug("cpufreq: governor limits update\n");
++		pr_debug("governor limits update\n");
+ 		cpufreq_governor_limits(policy);
+ 		return 0;
+ 	}
+@@ -2311,7 +2311,7 @@ static int cpufreq_set_policy(struct cpu
+ 	if (!ret) {
+ 		ret = cpufreq_start_governor(policy);
+ 		if (!ret) {
+-			pr_debug("cpufreq: governor change\n");
++			pr_debug("governor change\n");
+ 			sched_cpufreq_governor_change(policy, old_gov);
+ 			return 0;
+ 		}
