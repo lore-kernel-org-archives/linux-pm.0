@@ -1,47 +1,60 @@
-From: "Pan, Harry" <harry.pan@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v3] PM / suspend: measure the time of filesystem syncing
-Date: Wed, 20 Feb 2019 16:44:02 +0000
-Message-ID: <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
-References: <20190206154214.576-1-harry.pan@intel.com>
-         <20190214111543.22137-1-harry.pan@intel.com>
-         <2819109.DzhZvocLkm@aspire.rjw.lan>
+Date: Wed, 20 Feb 2019 22:45:24 +0100
+Message-ID: <CAJZ5v0gmFz8aK5_+0a36RwEiPScU=Z8BhD8pR50V1GRcmbXFgA@mail.gmail.com>
+References: <20190206154214.576-1-harry.pan@intel.com> <20190214111543.22137-1-harry.pan@intel.com>
+ <2819109.DzhZvocLkm@aspire.rjw.lan> <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2819109.DzhZvocLkm@aspire.rjw.lan>
-Content-Language: en-US
-Content-ID: <049D91B807C2F34CBA69D2B978011800@intel.com>
+In-Reply-To: <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Pan, Harry" <harry.pan@intel.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhhbmtzIGZvciBjb21tZW50cy4NCg0KPiA+ICsJaWYgKCFJU19FTkFCTEVEKENPTkZJR19TVVNQ
-RU5EX1NLSVBfU1lOQykpIHsNCj4gPiArCQlrdGltZV90IHN0YXJ0Ow0KPiA+ICsJCXVuc2lnbmVk
-IGludCBlbGFwc2VkX21zZWNzOw0KPiA+ICsNCj4gPiArCQl0cmFjZV9zdXNwZW5kX3Jlc3VtZShU
-UFMoInN5bmNfZmlsZXN5c3RlbXMiKSwgMCwgdHJ1ZSk7DQo+ID4gKwkJcHJfaW5mbygiU3luY2lu
-ZyBmaWxlc3lzdGVtcyAuLi4gIik7DQo+ID4gKwkJc3RhcnQgPSBrdGltZV9nZXQoKTsNCj4gPiAr
-CQlrc3lzX3N5bmMoKTsNCj4gPiArCQllbGFwc2VkX21zZWNzID0ga3RpbWVfdG9fbXMoa3RpbWVf
-c3ViKGt0aW1lX2dldCgpLA0KPiA+IHN0YXJ0KSk7DQo+ID4gKwkJcHJfY29udCgiKGVsYXBzZWQg
-JWQuJTAzZCBzZWNvbmRzKSBkb25lLlxuIiwNCj4gPiArCQkJZWxhcHNlZF9tc2VjcyAvIE1TRUNf
-UEVSX1NFQywNCj4gPiArCQkJZWxhcHNlZF9tc2VjcyAlIE1TRUNfUEVSX1NFQyk7DQo+IA0KPiBP
-bmUgbW9yZSBuaXQuDQo+IA0KPiBTaW5jZSB5b3UgYXJlIHByaW50aW5nIHRoZSBzeW5jIHRpbWUg
-YW55d2F5LCB0aGVyZSBpcyBhIGxpdHRsZSBzZW5zZQ0KPiB0bw0KPiBzcGxpdCB0aGUgbWVzc2Fn
-ZSB1c2luZyBwcl9jb250KCkgdGhhdCBtYXkgYmUgbWVzc2VkIHVwIHdpdGggYnkgYW55DQo+IGlu
-dGVydmVuaW5nIG1lc3NhZ2VzLCBzbyB3aHkgZG9uJ3QgeW91IGp1c3QgcHJpbnQgYSBvbmUtbGlu
-ZQ0KPiBwcl9pbmZvKCJGaWxlc3lzdGVtcyBzeW5jOiAlZC4lMDNkIHNlY29uZHNcbiIsIC4uLikg
-bWVzc2FnZT8NCj4gDQpZZXMsIEkgYWdyZWUuDQpJbiBwcmFjdGljYWwsIEkgZGlkIHNlZSBpbnRl
-cnZlbmluZyBtZXNzYWdlcyAoYmV0d2VlbiBwcl9pbmZvIGFuZA0KcHJfY29udCkgd2hlbiBpdCBj
-YW1lIHRvIGxvbmcgc3luYyBpbiBrZXJuZWwuDQpJIHdhcyBoZXNpdGF0ZWQgaW4gdGhpcyBjb25z
-aWRlcmluZyBub3QgZnVsbHkgdW5kZXJzdGFuZGluZyB0aGUNCmJhY2tkcm9wIG9mIHNwbGl0IG1l
-c3NhZ2VzIHVzaW5nIHByX2luZm8oKSB0aGVuIHByX2NvbnQoKS4NCg0KPiBBbHNvLCBpZiB5b3Ug
-Y2hhbmdlIGl0IGhlcmUsIEkgZ3Vlc3MgaXQgd291bGQgYmUgY29uc2lzdGVudCB0byBtYWtlDQo+
-IGFuIGFuYWxvZ291cyBjaGFuZ2UgZm9yIGhpYmVybmF0aW9uLg0KDQpPbmUgcG90ZW50aWFsIGxh
-c3QtbWlsZSBuZWVkIHlvdXIgd2lzZG9tLCB3aGljaCBpcyBhYm91dCB0aGUgc3dpdGNoDQpjYXNl
-IG9mIFNOQVBTSE9UX0ZSRUVaRSBvZiB0aGUgdXNlcnNwYWNlIGludGVyZmFjZSB5b3Ugd3JvdGUu
-DQpJIGFtIHlldCB0byB0b3VjaCBpdCwgbm9yIHVuZGVyc3RhbmQgaG93IHRvIHZhbGlkYXRlIGl0
-Lg0KDQpUaGF0IHNhaWQsIEkgYW0gZGlnZXN0aW5nIHlvdXIgZG9jdW1lbnRzIGFuZCBzb3VyY2U7
-IEkgdXNlZCB0aGUgcG1fdGVzdA0KZnJvbSB0aGUgZG9jIHRvIHZhbGlkYXRlIHRoZSBwYXRjaCBv
-biBoaWJlcm5hdGlvbiBwYXJ0aWFsbHkgZXZlbiBub24gb2YNCm15IGhhbmR5IGxhcHRvbnMgZnVs
-bHkgd29yayB3ZWxsIG9uIGl0Lg0KDQoNClNpbmNlcmVseSwNCkhhcnJ5DQo=
+On Wed, Feb 20, 2019 at 5:44 PM Pan, Harry <harry.pan@intel.com> wrote:
+>
+> Thanks for comments.
+>
+> > > +   if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
+> > > +           ktime_t start;
+> > > +           unsigned int elapsed_msecs;
+> > > +
+> > > +           trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+> > > +           pr_info("Syncing filesystems ... ");
+> > > +           start = ktime_get();
+> > > +           ksys_sync();
+> > > +           elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(),
+> > > start));
+> > > +           pr_cont("(elapsed %d.%03d seconds) done.\n",
+> > > +                   elapsed_msecs / MSEC_PER_SEC,
+> > > +                   elapsed_msecs % MSEC_PER_SEC);
+> >
+> > One more nit.
+> >
+> > Since you are printing the sync time anyway, there is a little sense
+> > to
+> > split the message using pr_cont() that may be messed up with by any
+> > intervening messages, so why don't you just print a one-line
+> > pr_info("Filesystems sync: %d.%03d seconds\n", ...) message?
+> >
+> Yes, I agree.
+> In practical, I did see intervening messages (between pr_info and
+> pr_cont) when it came to long sync in kernel.
+> I was hesitated in this considering not fully understanding the
+> backdrop of split messages using pr_info() then pr_cont().
+>
+> > Also, if you change it here, I guess it would be consistent to make
+> > an analogous change for hibernation.
+>
+> One potential last-mile need your wisdom, which is about the switch
+> case of SNAPSHOT_FREEZE of the userspace interface you wrote.
+> I am yet to touch it, nor understand how to validate it.
+
+Why don't you add a "sync" helper function in main.c with the timing
+and message that will be called from hibernate.c, user.c and suspend.c
+(in the last one conditional on
+!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC))?
+
+That would reduce some code duplication nicely.
