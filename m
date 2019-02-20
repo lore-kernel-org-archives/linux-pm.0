@@ -1,37 +1,51 @@
-From: <michael.kao@mediatek.com>
-Subject: [PATCH v2,6/7] dt-bindings: thermal: add binding document for mt8183 thermal controller
-Date: Wed, 20 Feb 2019 20:31:32 +0800
-Message-ID: <1550665893-22561-7-git-send-email-michael.kao@mediatek.com>
-References: <1550665893-22561-1-git-send-email-michael.kao@mediatek.com>
+From: David Arcari <darcari@redhat.com>
+Subject: Re: [PATCH] tools/power turbostat: return the exit status of a
+ command
+Date: Wed, 20 Feb 2019 08:55:31 -0500
+Message-ID: <1365e035-3218-aff5-6d86-05215ce25073@redhat.com>
+References: <1549982079-23516-1-git-send-email-darcari@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550665893-22561-1-git-send-email-michael.kao@mediatek.com>
+In-Reply-To: <1549982079-23516-1-git-send-email-darcari@redhat.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Michael Kao <michael.kao@mediatek.com>
+To: linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Jirka Hladky <jhladky@redhat.com>, linux-kernel@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Michael Kao <michael.kao@mediatek.com>
 
-This patch adds binding document for mt8183 thermal controller.
+ping -- just want to make sure this doesn't get lost.
 
-Signed-off-by: Michael Kao <michael.kao@mediatek.com>
----
- Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 1 +
- 1 file changed, 1 insertion(+)
+Thanks!
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-index 41d6a44..f8d7831 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -13,6 +13,7 @@ Required properties:
-   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
-   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
-   - "mediatek,mt7622-thermal" : For MT7622 SoC
-+  - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
- - reg: Address range of the thermal controller
- - interrupts: IRQ for the thermal controller
- - clocks, clock-names: Clocks needed for the thermal controller. required
--- 
-1.9.1
+On 02/12/2019 09:34 AM, David Arcari wrote:
+> turbostat failed to return a non-zero exit status even though the
+> supplied command (turbostat <command>) failed.  Currently when turbostat
+> forks a command it returns zero instead of the actual exit status of the
+> command.  Modify the code to return the exit status.
+> 
+> Signed-off-by: David Arcari <darcari@redhat.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Jirka Hladky <jhladky@redhat.com>
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index 9327c0d..c3fad06 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -5077,6 +5077,9 @@ int fork_it(char **argv)
+>  		signal(SIGQUIT, SIG_IGN);
+>  		if (waitpid(child_pid, &status, 0) == -1)
+>  			err(status, "waitpid");
+> +
+> +		if (WIFEXITED(status))
+> +			status = WEXITSTATUS(status);
+>  	}
+>  	/*
+>  	 * n.b. fork_it() does not check for errors from for_all_cpus()
+> 
