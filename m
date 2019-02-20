@@ -1,134 +1,311 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Tue, 19 Feb 2019 17:04:22 -0800
-Message-ID: <20190220010420.GA2811@localhost.localdomain>
-References: <1549532838-27025-1-git-send-email-Anson.Huang@nxp.com>
- <DB3PR0402MB39165EFE027405873E8AB4ECF5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <DB3PR0402MB3916C9B1A6F0E4C6352BA43CF57C0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+Subject: Re: [PATCH v1 21/24] drivers: thermal: tsens: Add generic support
+ for TSENS v1 IP
+Date: Tue, 19 Feb 2019 17:12:11 -0800
+Message-ID: <20190220011210.GC2811@localhost.localdomain>
+References: <cover.1549525708.git.amit.kucheria@linaro.org>
+ <8ecbfecbcd509b6285b8b74d217c17f118cf6816.1549525708.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <DB3PR0402MB3916C9B1A6F0E4C6352BA43CF57C0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+In-Reply-To: <8ecbfecbcd509b6285b8b74d217c17f118cf6816.1549525708.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Daniel Baluta <daniel.baluta@nxp.com>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 19, 2019 at 07:20:58AM +0000, Anson Huang wrote:
-> Ping...
-
-I will take a look on this.
-
+On Thu, Feb 07, 2019 at 04:19:39PM +0530, Amit Kucheria wrote:
+> qcs404 has a single TSENS IP block with 10 sensors. It uses version 1.4
+> of the TSENS IP, functionality for which is encapsulated inside the
+> qcom,tsens-v1 compatible.
 > 
-> Best Regards!
-> Anson Huang
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  drivers/thermal/qcom/Makefile   |   4 +-
+>  drivers/thermal/qcom/tsens-v1.c | 229 ++++++++++++++++++++++++++++++++
+>  drivers/thermal/qcom/tsens.c    |   3 +
+>  drivers/thermal/qcom/tsens.h    |   3 +
+>  4 files changed, 238 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/thermal/qcom/tsens-v1.c
 > 
-> > -----Original Message-----
-> > From: Anson Huang
-> > Sent: 2019年2月13日 13:36
-> > To: robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org;
-> > s.hauer@pengutronix.de; kernel@pengutronix.de; festevam@gmail.com;
-> > catalin.marinas@arm.com; will.deacon@arm.com; rui.zhang@intel.com;
-> > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng Dong
-> > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org; Daniel Baluta
-> > <daniel.baluta@nxp.com>; horms+renesas@verge.net.au; Andy Gross
-> > <andy.gross@linaro.org>; heiko@sntech.de; arnd@arndb.de;
-> > maxime.ripard@bootlin.com; jagan@amarulasolutions.com;
-> > bjorn.andersson@linaro.org; enric.balletbo@collabora.com;
-> > marc.w.gonzalez@free.fr; olof@lixom.net; devicetree@vger.kernel.org;
-> > linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
-> > pm@vger.kernel.org
-> > Cc: dl-linux-imx <linux-imx@nxp.com>
-> > Subject: RE: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
-> > 
-> > Gental ping...
-> > 
-> > Best Regards!
-> > Anson Huang
-> > 
-> > > -----Original Message-----
-> > > From: Anson Huang
-> > > Sent: 2019年2月7日 17:53
-> > > To: robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org;
-> > > s.hauer@pengutronix.de; kernel@pengutronix.de; festevam@gmail.com;
-> > > catalin.marinas@arm.com; will.deacon@arm.com; rui.zhang@intel.com;
-> > > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng Dong
-> > > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org; Daniel Baluta
-> > > <daniel.baluta@nxp.com>; horms+renesas@verge.net.au; Andy Gross
-> > > <andy.gross@linaro.org>; heiko@sntech.de; arnd@arndb.de;
-> > > maxime.ripard@bootlin.com; jagan@amarulasolutions.com;
-> > > bjorn.andersson@linaro.org; enric.balletbo@collabora.com;
-> > > marc.w.gonzalez@free.fr; olof@lixom.net; devicetree@vger.kernel.org;
-> > > linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
-> > > linux- pm@vger.kernel.org
-> > > Cc: dl-linux-imx <linux-imx@nxp.com>
-> > > Subject: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
-> > >
-> > > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as system
-> > > controller, the system controller is in charge of system power, clock
-> > > and thermal sensors etc. management, Linux kernel has to communicate
-> > > with system controller via MU (message unit) IPC to get temperature
-> > > from thermal sensors, this patch adds binding doc for i.MX system
-> > > controller thermal driver.
-> > >
-> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> > > Reviewed-by: Rob Herring <robh@kernel.org>
-> > > ---
-> > > ChangeLog since V5:
-> > > 	- add "imx,sensor-resource-id" in each thermal zone to pass resource
-> > > ID for thermal driver.
-> > > ---
-> > >  .../devicetree/bindings/arm/freescale/fsl,scu.txt    | 20
-> > > ++++++++++++++++++++
-> > >  1 file changed, 20 insertions(+)
-> > >
-> > > diff --git
-> > > a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > > b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > > index 72d481c..4b79751 100644
-> > > --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > > +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > > @@ -122,6 +122,20 @@ RTC bindings based on SCU Message Protocol
-> > > Required properties:
-> > >  - compatible: should be "fsl,imx8qxp-sc-rtc";
-> > >
-> > > +Thermal bindings based on SCU Message Protocol
-> > > +------------------------------------------------------------
-> > > +
-> > > +Required properties:
-> > > +- compatible : Must be "fsl,imx8qxp-sc-thermal";
-> > > +- tsens-num : Total number of thermal sensors supported;
-> > > +- #thermal-sensor-cells : Should be 1. See
-> > > +
-> > > Documentation/devicetree/bindings/thermal/thermal.txt
-> > > +			  for a description.
-> > > +- imx,sensor-resource-id : This property should be defined in each
-> > > +thermal
-> > > zone
-> > > +			   of thermal-zones node, it passes each thermal
-> > > zone's
-> > > +			   resource id for thermal driver to get temperature
-> > > via
-> > > +			   SCU IPC.
-> > > +
-> > >  Example (imx8qxp):
-> > >  -------------
-> > >  lsio_mu1: mailbox@5d1c0000 {
-> > > @@ -168,6 +182,12 @@ firmware {
-> > >  		rtc: rtc {
-> > >  			compatible = "fsl,imx8qxp-sc-rtc";
-> > >  		};
-> > > +
-> > > +		tsens: thermal-sensor {
-> > > +			compatible = "fsl,imx8qxp-sc-thermal";
-> > > +			tsens-num = <1>;
-> > > +			#thermal-sensor-cells = <1>;
-> > > +		};
-> > >  	};
-> > >  };
-> > >
-> > > --
-> > > 2.7.4
+> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+> index 7fa3cadce760..fc6fe50cdde4 100644
+> --- a/drivers/thermal/qcom/Makefile
+> +++ b/drivers/thermal/qcom/Makefile
+> @@ -1,3 +1,5 @@
+>  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
+> -qcom_tsens-y			+= tsens.o tsens-common.o tsens-v0_1.o tsens-8960.o tsens-v2.o
+> +
+> +qcom_tsens-y			+= tsens.o tsens-common.o tsens-v0_1.o \
+> +				   tsens-8960.o tsens-v2.o tsens-v1.o
+>  obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+> diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
+> new file mode 100644
+> index 000000000000..417e2c2de1a1
+> --- /dev/null
+> +++ b/drivers/thermal/qcom/tsens-v1.c
+> @@ -0,0 +1,229 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2019, Linaro Limited
+> + */
+> +
+> +#include <linux/bitops.h>
+> +#include <linux/regmap.h>
+> +#include <linux/delay.h>
+> +#include "tsens.h"
+> +
+> +/* ----- SROT ------ */
+> +#define SROT_HW_VER_OFF	0x0000
+> +#define SROT_CTRL_OFF		0x0004
+> +
+> +/* ----- TM ------ */
+> +#define TM_INT_EN_OFF				0x0000
+> +#define TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF	0x0004
+> +#define TM_Sn_STATUS_OFF			0x0044
+> +#define TM_TRDY_OFF				0x0084
+> +
+> +/* eeprom layout data for qcs404/405 (v1) */
+> +#define BASE0_MASK	0x000007f8
+> +#define BASE1_MASK	0x0007f800
+> +#define BASE0_SHIFT	3
+> +#define BASE1_SHIFT	11
+> +
+> +#define S0_P1_MASK	0x0000003f
+> +#define S1_P1_MASK	0x0003f000
+> +#define S2_P1_MASK	0x3f000000
+> +#define S3_P1_MASK	0x000003f0
+> +#define S4_P1_MASK	0x003f0000
+> +#define S5_P1_MASK	0x0000003f
+> +#define S6_P1_MASK	0x0003f000
+> +#define S7_P1_MASK	0x3f000000
+> +#define S8_P1_MASK	0x000003f0
+> +#define S9_P1_MASK	0x003f0000
+> +
+> +#define S0_P2_MASK	0x00000fc0
+> +#define S1_P2_MASK	0x00fc0000
+> +#define S2_P2_MASK_1_0	0xc0000000
+> +#define S2_P2_MASK_5_2	0x0000000f
+> +#define S3_P2_MASK	0x0000fc00
+> +#define S4_P2_MASK	0x0fc00000
+> +#define S5_P2_MASK	0x00000fc0
+> +#define S6_P2_MASK	0x00fc0000
+> +#define S7_P2_MASK_1_0	0xc0000000
+> +#define S7_P2_MASK_5_2	0x0000000f
+> +#define S8_P2_MASK	0x0000fc00
+> +#define S9_P2_MASK	0x0fc00000
+> +
+> +#define S0_P1_SHIFT	0
+> +#define S0_P2_SHIFT	6
+> +#define S1_P1_SHIFT	12
+> +#define S1_P2_SHIFT	18
+> +#define S2_P1_SHIFT	24
+> +#define S2_P2_SHIFT_1_0	30
+> +
+> +#define S2_P2_SHIFT_5_2	0
+> +#define S3_P1_SHIFT	4
+> +#define S3_P2_SHIFT	10
+> +#define S4_P1_SHIFT	16
+> +#define S4_P2_SHIFT	22
+> +
+> +#define S5_P1_SHIFT	0
+> +#define S5_P2_SHIFT	6
+> +#define S6_P1_SHIFT	12
+> +#define S6_P2_SHIFT	18
+> +#define S7_P1_SHIFT	24
+> +#define S7_P2_SHIFT_1_0	30
+> +
+> +#define S7_P2_SHIFT_5_2	0
+> +#define S8_P1_SHIFT	4
+> +#define S8_P2_SHIFT	10
+> +#define S9_P1_SHIFT	16
+> +#define S9_P2_SHIFT	22
+> +
+> +#define CAL_SEL_MASK	7
+
+Why not using the macros on bits.h?
+
+> +#define CAL_SEL_SHIFT	0
+> +
+> +static int calibrate_v1(struct tsens_priv *priv)
+> +{
+> +	u32 base0 = 0, base1 = 0;
+> +	u32 p1[10], p2[10];
+> +	u32 mode = 0, lsb = 0, msb = 0;
+> +	u32 *qfprom_cdata;
+> +	int i;
+> +
+> +	qfprom_cdata = (u32 *)qfprom_read(priv->dev, "calib");
+> +	if (IS_ERR(qfprom_cdata))
+> +		return PTR_ERR(qfprom_cdata);
+> +
+> +	mode = (qfprom_cdata[4] & CAL_SEL_MASK) >> CAL_SEL_SHIFT;
+> +	dev_dbg(priv->dev, "calibration mode is %d\n", mode);
+> +
+> +	switch (mode) {
+> +	case TWO_PT_CALIB:
+> +		base1 = (qfprom_cdata[4] & BASE1_MASK) >> BASE1_SHIFT;
+> +		p2[0] = (qfprom_cdata[0] & S0_P2_MASK) >> S0_P2_SHIFT;
+> +		p2[1] = (qfprom_cdata[0] & S1_P2_MASK) >> S1_P2_SHIFT;
+> +		/* This value is split over two registers, 2 bits and 4 bits */
+> +		lsb   = (qfprom_cdata[0] & S2_P2_MASK_1_0) >> S2_P2_SHIFT_1_0;
+> +		msb   = (qfprom_cdata[1] & S2_P2_MASK_5_2) >> S2_P2_SHIFT_5_2;
+> +		p2[2] = msb << 2 | lsb;
+> +		p2[3] = (qfprom_cdata[1] & S3_P2_MASK) >> S3_P2_SHIFT;
+> +		p2[4] = (qfprom_cdata[1] & S4_P2_MASK) >> S4_P2_SHIFT;
+> +		p2[5] = (qfprom_cdata[2] & S5_P2_MASK) >> S5_P2_SHIFT;
+> +		p2[6] = (qfprom_cdata[2] & S6_P2_MASK) >> S6_P2_SHIFT;
+> +		/* This value is split over two registers, 2 bits and 4 bits */
+> +		lsb   = (qfprom_cdata[2] & S7_P2_MASK_1_0) >> S7_P2_SHIFT_1_0;
+> +		msb   = (qfprom_cdata[3] & S7_P2_MASK_5_2) >> S7_P2_SHIFT_5_2;
+> +		p2[7] = msb << 2 | lsb;
+> +		p2[8] = (qfprom_cdata[3] & S8_P2_MASK) >> S8_P2_SHIFT;
+> +		p2[9] = (qfprom_cdata[3] & S9_P2_MASK) >> S9_P2_SHIFT;
+> +		for (i = 0; i < priv->num_sensors; i++)
+> +			p2[i] = ((base1 + p2[i]) << 2);
+> +		/* Fall through */
+> +	case ONE_PT_CALIB2:
+> +		base0 = (qfprom_cdata[4] & BASE0_MASK) >> BASE0_SHIFT;
+> +		p1[0] = (qfprom_cdata[0] & S0_P1_MASK) >> S0_P1_SHIFT;
+> +		p1[1] = (qfprom_cdata[0] & S1_P1_MASK) >> S1_P1_SHIFT;
+> +		p1[2] = (qfprom_cdata[0] & S2_P1_MASK) >> S2_P1_SHIFT;
+> +		p1[3] = (qfprom_cdata[1] & S3_P1_MASK) >> S3_P1_SHIFT;
+> +		p1[4] = (qfprom_cdata[1] & S4_P1_MASK) >> S4_P1_SHIFT;
+> +		p1[5] = (qfprom_cdata[2] & S5_P1_MASK) >> S5_P1_SHIFT;
+> +		p1[6] = (qfprom_cdata[2] & S6_P1_MASK) >> S6_P1_SHIFT;
+> +		p1[7] = (qfprom_cdata[2] & S7_P1_MASK) >> S7_P1_SHIFT;
+> +		p1[8] = (qfprom_cdata[3] & S8_P1_MASK) >> S8_P1_SHIFT;
+> +		p1[9] = (qfprom_cdata[3] & S9_P1_MASK) >> S9_P1_SHIFT;
+> +		for (i = 0; i < priv->num_sensors; i++)
+> +			p1[i] = (((base0) + p1[i]) << 2);
+> +		break;
+> +	default:
+> +		for (i = 0; i < priv->num_sensors; i++) {
+> +			p1[i] = 500;
+> +			p2[i] = 780;
+> +		}
+> +		break;
+> +	}
+> +
+> +	compute_intercept_slope(priv, p1, p2, mode);
+> +
+> +	return 0;
+> +}
+> +
+> +/* v1.x: qcs404,405 */
+> +
+> +const struct tsens_features tsens_v1_feat = {
+> +	.ver_info	= 1,
+> +	.crit_int	= 0,
+> +	.adc		= 1,
+> +	.srot_split	= 1,
+> +	.max_sensors	= 11,
+> +};
+> +
+> +const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
+> +	/* ----- SROT ------ */
+> +	/* VERSION */
+> +	[VER_MAJOR] = REG_FIELD(SROT_HW_VER_OFF, 28, 31),
+> +	[VER_MINOR] = REG_FIELD(SROT_HW_VER_OFF, 16, 27),
+> +	[VER_STEP]  = REG_FIELD(SROT_HW_VER_OFF,  0, 15),
+> +	/* CTRL_OFFSET */
+> +	[TSENS_EN]     = REG_FIELD(SROT_CTRL_OFF, 0,  0),
+> +	[TSENS_SW_RST] = REG_FIELD(SROT_CTRL_OFF, 1,  1),
+> +	[SENSOR_EN]    = REG_FIELD(SROT_CTRL_OFF, 3, 13),
+> +
+> +	/* ----- TM ------ */
+> +	/* UPPER_LOWER_INTERRUPT_CTRL */
+> +	[INT_EN]     = REG_FIELD(TM_INT_EN_OFF, 0, 0),
+> +	/* Sn_UPPER_LOWER_STATUS_CTRL */
+> +	REG_BANK(LOW_THRESH,  0, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF,       0,  9),
+> +	REG_BANK(LOW_THRESH,  1, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF +  4,  0,  9),
+> +	REG_BANK(LOW_THRESH,  2, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF +  8,  0,  9),
+> +	REG_BANK(LOW_THRESH,  3, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 12,  0,  9),
+> +	REG_BANK(LOW_THRESH,  4, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 16,  0,  9),
+> +	REG_BANK(LOW_THRESH,  5, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 20,  0,  9),
+> +	REG_BANK(LOW_THRESH,  6, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 24,  0,  9),
+> +	REG_BANK(LOW_THRESH,  7, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 28,  0,  9),
+> +	REG_BANK(LOW_THRESH,  8, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 32,  0,  9),
+> +	REG_BANK(LOW_THRESH,  9, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 36,  0,  9),
+> +	REG_BANK(LOW_THRESH, 10, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 40,  0,  9),
+> +	REG_BANK(UP_THRESH,   0, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF,      10, 19),
+> +	REG_BANK(UP_THRESH,   1, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF +  4, 10, 19),
+> +	REG_BANK(UP_THRESH,   2, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF +  8, 10, 19),
+> +	REG_BANK(UP_THRESH,   3, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 12, 10, 19),
+> +	REG_BANK(UP_THRESH,   4, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 16, 10, 19),
+> +	REG_BANK(UP_THRESH,   5, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 20, 10, 19),
+> +	REG_BANK(UP_THRESH,   6, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 24, 10, 19),
+> +	REG_BANK(UP_THRESH,   7, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 28, 10, 19),
+> +	REG_BANK(UP_THRESH,   8, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 32, 10, 19),
+> +	REG_BANK(UP_THRESH,   9, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 36, 10, 19),
+> +	REG_BANK(UP_THRESH,  10, TM_Sn_UPPER_LOWER_STATUS_CTRL_OFF + 40, 10, 19),
+> +	/* Sn_STATUS */
+> +	REG_BANK(LAST_TEMP,  0, TM_Sn_STATUS_OFF,       0, 9),
+> +	REG_BANK(LAST_TEMP,  1, TM_Sn_STATUS_OFF +  4,  0, 9),
+> +	REG_BANK(LAST_TEMP,  2, TM_Sn_STATUS_OFF +  8,  0, 9),
+> +	REG_BANK(LAST_TEMP,  3, TM_Sn_STATUS_OFF + 12,  0, 9),
+> +	REG_BANK(LAST_TEMP,  4, TM_Sn_STATUS_OFF + 16,  0, 9),
+> +	REG_BANK(LAST_TEMP,  5, TM_Sn_STATUS_OFF + 20,  0, 9),
+> +	REG_BANK(LAST_TEMP,  6, TM_Sn_STATUS_OFF + 24,  0, 9),
+> +	REG_BANK(LAST_TEMP,  7, TM_Sn_STATUS_OFF + 28,  0, 9),
+> +	REG_BANK(LAST_TEMP,  8, TM_Sn_STATUS_OFF + 32,  0, 9),
+> +	REG_BANK(LAST_TEMP,  9, TM_Sn_STATUS_OFF + 36,  0, 9),
+> +	REG_BANK(LAST_TEMP, 10, TM_Sn_STATUS_OFF + 40,  0, 9),
+> +	REG_BANK(VALID,      0, TM_Sn_STATUS_OFF,      14, 14),
+> +	REG_BANK(VALID,      1, TM_Sn_STATUS_OFF +  4, 14, 14),
+> +	REG_BANK(VALID,      2, TM_Sn_STATUS_OFF +  8, 14, 14),
+> +	REG_BANK(VALID,      3, TM_Sn_STATUS_OFF + 12, 14, 14),
+> +	REG_BANK(VALID,      4, TM_Sn_STATUS_OFF + 16, 14, 14),
+> +	REG_BANK(VALID,      5, TM_Sn_STATUS_OFF + 20, 14, 14),
+> +	REG_BANK(VALID,      6, TM_Sn_STATUS_OFF + 24, 14, 14),
+> +	REG_BANK(VALID,      7, TM_Sn_STATUS_OFF + 28, 14, 14),
+> +	REG_BANK(VALID,      8, TM_Sn_STATUS_OFF + 32, 14, 14),
+> +	REG_BANK(VALID,      9, TM_Sn_STATUS_OFF + 36, 14, 14),
+> +	REG_BANK(VALID,     10, TM_Sn_STATUS_OFF + 40, 14, 14),
+> +	/* TRDY */
+> +	[TRDY] = REG_FIELD(TM_TRDY_OFF, 0, 0),
+> +};
+> +
+> +static const struct tsens_ops ops_generic_v1 = {
+> +	.init		= init_common,
+> +	.calibrate	= calibrate_v1,
+> +	.get_temp	= get_temp_tsens_valid,
+> +};
+> +
+> +const struct tsens_plat_data data_tsens_v1 = {
+> +	.ops		= &ops_generic_v1,
+> +	.feat		= &tsens_v1_feat,
+> +	.fields	= tsens_v1_regfields,
+> +};
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> index fc44cac31fa5..36b0b52db524 100644
+> --- a/drivers/thermal/qcom/tsens.c
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -63,6 +63,9 @@ static const struct of_device_id tsens_table[] = {
+>  	}, {
+>  		.compatible = "qcom,msm8996-tsens",
+>  		.data = &data_8996,
+> +	}, {
+> +		.compatible = "qcom,tsens-v1",
+> +		.data = &data_tsens_v1,
+>  	}, {
+>  		.compatible = "qcom,tsens-v2",
+>  		.data = &data_tsens_v2,
+> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+> index 4b3d71b26c97..4ed07e607cbc 100644
+> --- a/drivers/thermal/qcom/tsens.h
+> +++ b/drivers/thermal/qcom/tsens.h
+> @@ -265,6 +265,9 @@ extern const struct tsens_plat_data data_8960;
+>  /* TSENS v0.1 targets */
+>  extern const struct tsens_plat_data data_8916, data_8974;
+>  
+> +/* TSENS v1 targets */
+> +extern const struct tsens_plat_data data_tsens_v1;
+> +
+>  /* TSENS v2 targets */
+>  extern const struct tsens_plat_data data_8996, data_tsens_v2;
+>  
+> -- 
+> 2.17.1
 > 
