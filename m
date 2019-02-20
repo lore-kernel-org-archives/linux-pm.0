@@ -1,39 +1,60 @@
-From: Erwan Velu <e.velu@criteo.com>
-Subject: Re: [PATCH] cpufreq: Report if CPU doesn't report boost technologies
-Date: Wed, 20 Feb 2019 10:52:17 +0000
-Message-ID: <1d9ff7a8-5f05-6554-d019-9665536aea84@criteo.com>
-References: <20190220101017.19587-1-e.velu@criteo.com>
- <CAJZ5v0i5BVFRKsCVxDwG90vBAuS3QYB=-GkC0pbGLy5DWDXuMg@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 08/11] powercap/intel_rapl: Support multi-die/package
+Date: Wed, 20 Feb 2019 12:02:00 +0100
+Message-ID: <20190220110200.GD17969@hirez.programming.kicks-ass.net>
+References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
+ <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i5BVFRKsCVxDwG90vBAuS3QYB=-GkC0pbGLy5DWDXuMg@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <DE710AE54F65B5489681AB953382DA7E@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Erwan Velu <erwanaliasr1@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:CPU FREQUENCY SCALING FRAMEWORK" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQpMZSAyMC8wMi8yMDE5IMOgIDExOjQxLCBSYWZhZWwgSi4gV3lzb2NraSBhIMOpY3JpdMKgOg0K
-PiBPbiBXZWQsIEZlYiAyMCwgMjAxOSBhdCAxMToxMSBBTSBFcndhbiBWZWx1IDxlcndhbmFsaWFz
-cjFAZ21haWwuY29tPiB3cm90ZToNCj4+IFRoZXJlIGlzIHNvbWUgcmFyZSBjYXNlcyB3aGVyZSBD
-UEIgKGFuZCBwb3NzaWJseSBJREEpIGFyZSBtaXNzaW5nIG9uIHByb2Nlc3NvcnMuDQo+PiBUaGlz
-IGlzIHRoZSBjYXNlIGZpeGVkIGJ5IGNvbW1pdCBmN2YzZGMwMGY2MTIgKCJ4ODYvY3B1L0FNRDog
-Rml4IGVycmF0dW0gMTA3NiAoQ1BCIGJpdCkiKSBhbmQgZm9sbG93aW5nLg0KPj4NCj4+IEluIHN1
-Y2ggY29udGV4dCwgdGhlIGJvb3N0IHN0YXR1cyBpc24ndCByZXBvcnRlZCBieSAvc3lzL2Rldmlj
-ZXMvc3lzdGVtL2NwdS9jcHVmcmVxL2Jvb3N0Lg0KPiBTbyBJJ20gbm90IHJlYWxseSBzdXJlIHdo
-eSB0aGUgZXh0cmEgbWVzc2FnZSBpcyBuZWVkZWQuICBJdCBsb29rcyBsaWtlDQo+IHRoaXMgbWVz
-c2FnZSB3aWxsIGFsd2F5cyBiZSBwcmludGVkICh3aXRoIGRlYnVnIG91dHB1dCBlbmFibGVkKSBp
-ZiB0aGUNCj4gY3VycmVudCBjcHVmcmVxIGRyaXZlciBpcyBhY3BpLWNwdWZyZXEgYW5kIHRoZSBi
-b29zdCBhdHRyaWJ1dGUgaXMgbm90DQo+IHByZXNlbnQgaW4gc3lzZnMsIHdoaWNoIG9ubHkgaXMg
-dGhlIGNhc2UgaWYgQ1BCL0lEQSBhcmVuJ3QgdGhlcmUuDQo+DQo+IERvZXMgaXQgcHJvdmlkZSBh
-bnkgYWRkaXRpb25hbCBpbmZvcm1hdGlvbiwgdGhlbj8NCg0KV2hlbiB5b3Uga25vdyBhbmQgcmVh
-ZCB0aGUgY29kZSwgeWVzIHRoaXMgcGF0Y2ggaXMgdG9vIG9idmlvdXMuDQoNCkFzIGEgdXNlciB3
-aGVuIEkgd2FzIHRyb3VibGVzaG9vdGluZyB3aHkgdGhlIGJvb3N0IGVudHJ5IHdhcyBfbm90XyAN
-CnBvcHVsYXRlZCBvbiBvbmUgQ1BVIGFuZCB3YXMgcG9wdWxhdGVkIG9uIGFub3RoZXIuDQoNClJ1
-bm5pbmcgYWNwaS1jcHVmcmVxIHdpdGggZHluZGJnLCBJIHdvdWxkIGhhdmUgZm91bmQgdXNlZnVs
-IHRvIGdldCB0aGF0IA0KaGludC4NCg0KU28gdGhhdCBjb3VsZCBoZWxwcyB1c2VycyB0aGF0IG5l
-dmVyIHJlYWQgdGhhdCBwYXJ0IG9mIHRoZSBjb2RlIGFuZCANCndoaWNoIGFyZSB0cmlja2VkIGlu
-dG8gdGhhdCBjb25maWd1cmF0aW9uLg0KDQpFcndhbiwNCg0KDQo=
+On Mon, Feb 18, 2019 at 10:40:10PM -0500, Len Brown wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> On the new dual-die/package systems, the RAPL MSR becomes die-scope.
+> Thus instead of one powercap device per physical package, now there
+> should be one powercap device for each unique die on these systems.
+> 
+> This patch introduces intel_rapl driver support for new
+> dual-die/package systems.
+> 
+> On the hardwares that do not have multi-die, topology_unique_die_id()
+> equals topology_physical_package_id(), thus there is no functional change.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/powercap/intel_rapl.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 6057d9695fed..e004707283da 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+>  /* caller to ensure CPU hotplug lock is held */
+>  static struct rapl_package *rapl_find_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_unique_die_id(cpu);
+>  	struct rapl_package *rp;
+>  
+>  	list_for_each_entry(rp, &rapl_packages, plist) {
+> @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+>  /* called from CPU hotplug notifier, hotplug lock held */
+>  static struct rapl_package *rapl_add_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_unique_die_id(cpu);
+>  	struct rapl_package *rp;
+>  	int ret;
+
+And now your new function names are misnomers.
