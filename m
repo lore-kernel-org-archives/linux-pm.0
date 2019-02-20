@@ -1,75 +1,86 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v1 13/24] drivers: thermal: tsens: Print IP version
-Date: Tue, 19 Feb 2019 17:17:19 -0800
-Message-ID: <20190220011718.GD2811@localhost.localdomain>
-References: <cover.1549525708.git.amit.kucheria@linaro.org>
- <ab6dd34ce0236de12ec1e9984931780c3df643f9.1549525708.git.amit.kucheria@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v7 0/3] Fixes for Tegra soctherm
+Date: Wed, 20 Feb 2019 10:14:01 +0800
+Message-ID: <1550628841.3372.1.camel@intel.com>
+References: <1546510369-28491-1-git-send-email-wni@nvidia.com>
+         <28d197f9-9b72-78ad-0769-7514d329b3c4@nvidia.com>
+         <1c0af72c-b8d5-9b2d-7bc1-86a2ae85c819@nvidia.com>
+         <df2493f3-4bbd-65d1-1205-073a30729a89@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <ab6dd34ce0236de12ec1e9984931780c3df643f9.1549525708.git.amit.kucheria@linaro.org>
+In-Reply-To: <df2493f3-4bbd-65d1-1205-073a30729a89@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>, daniel.lezcano@linaro.org, edubezval@gmail.com
+Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 07, 2019 at 04:19:31PM +0530, Amit Kucheria wrote:
-> On some TSENS IP, version is stored. Print that version at init.
+On 一, 2019-02-18 at 15:59 +0800, Wei Ni wrote:
+> Rui,
+> Will you take this serial?
 > 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/thermal/qcom/tsens-common.c | 23 ++++++++++++++++++++++-
->  1 file changed, 22 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-> index aae3d71d7eed..39cd5733fd44 100644
-> --- a/drivers/thermal/qcom/tsens-common.c
-> +++ b/drivers/thermal/qcom/tsens-common.c
-> @@ -121,7 +121,7 @@ int __init init_common(struct tsens_priv *priv)
->  	void __iomem *tm_base, *srot_base;
->  	struct device *dev = priv->dev;
->  	struct resource *res;
-> -	u32 enabled;
-> +	u32 enabled, maj_ver, min_ver;
->  	int ret, i, j;
->  	struct platform_device *op = of_find_device_by_node(priv->dev->of_node);
->  
-> @@ -155,6 +155,27 @@ int __init init_common(struct tsens_priv *priv)
->  	if (IS_ERR(priv->tm_map))
->  		return PTR_ERR(priv->tm_map);
->  
-> +	for (i = 0; i < MAX_REGFIELDS; i++) {
-> +		priv->rf[i] = NULL;
-> +	}
-> +
-> +	/* alloc regmap_fields in srot_map */
-> +	if (priv->feat->ver_info) {
-> +		for (i = 0, j = VER_MAJOR; i < 2; i++, j++) {
-> +			priv->rf[j] = devm_regmap_field_alloc(dev, priv->srot_map,
-> +							      priv->fields[j]);
-> +			if (IS_ERR(priv->rf[j]))
-> +				return PTR_ERR(priv->rf[j]);
-> +		}
-> +		ret = regmap_field_read(priv->rf[VER_MAJOR], &maj_ver);
-> +		if (ret)
-> +			return ret;
-> +		ret = regmap_field_read(priv->rf[VER_MINOR], &min_ver);
-> +		if (ret)
-> +			return ret;
-> +		dev_info(dev, "version: %d.%d\n", maj_ver, min_ver);
+it is already in my tree.
+I missed -rc6, thus I will queue them for 5.1-rc1.
 
-Is this really needed? Printing stuff into kernel log during boot can
-just add a lot of info that ends up just slowing down things. Besides,
-if this info is important shouldnt be available somewhere else as the
-kernel log is a circular buffer and eventually that line will get
-wrapped up?
+thanks,
+rui
 
-> +	}
-> +
->  	priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->srot_map,
->  						     priv->fields[TSENS_EN]);
->  	if (IS_ERR(priv->rf[TSENS_EN]))
-> -- 
-> 2.17.1
+> Thanks.
+> Wei.
 > 
+> On 21/1/2019 5:17 PM, Wei Ni wrote:
+> > 
+> > Does there have any comments?
+> > 
+> > Thanks.
+> > Wei.
+> > 
+> > On 11/1/2019 10:20 AM, Wei Ni wrote:
+> > > 
+> > > Hi Eduardo,
+> > > Do you have any more comments, will you take this serial?
+> > > 
+> > > Thanks.
+> > > Wei.
+> > > 
+> > > On 3/1/2019 6:12 PM, Wei Ni wrote:
+> > > > 
+> > > > This series fixed some issues for Tegra soctherm,
+> > > > and add get_trend().
+> > > > 
+> > > > Main changes from v6:
+> > > > 1. Per Eduardo's comment, we can remove the change:
+> > > > "thermal: tegra: parse sensor id before sensor register"
+> > > > 
+> > > > Main changes from v5:
+> > > > 1. Move the get_trend() patch https://lkml.org/lkml/2018/11/20/
+> > > > 643
+> > > > into this serial.
+> > > > 
+> > > > Main changes from v4:
+> > > > 1. fixed for the parsing sensor id.
+> > > > 2. keep warning for missing critical trips.
+> > > > 
+> > > > Main changes from v3:
+> > > > 1. updated codes for parsing sensor id, per Thierry's comments
+> > > > 
+> > > > Main changes from v2:
+> > > > 1. add codes to parse sensor id to avoid registration
+> > > > failure.
+> > > > 
+> > > > Main changes from v1:
+> > > > 1. Acked by Thierry Reding <treding@nvidia.com> for the patch
+> > > > "thermal: tegra: fix memory allocation".
+> > > > 2. Print out the sensor name when register failed.
+> > > > 2. Remove patch "thermal: tegra: fix coverity defect"
+> > > > 
+> > > > Wei Ni (3):
+> > > >   thermal: tegra: remove unnecessary warnings
+> > > >   thermal: tegra: fix memory allocation
+> > > >   thermal: tegra: add get_trend ops
+> > > > 
+> > > >  drivers/thermal/tegra/soctherm.c | 40
+> > > > +++++++++++++++++++++++++++++++++++++---
+> > > >  1 file changed, 37 insertions(+), 3 deletions(-)
+> > > > 
