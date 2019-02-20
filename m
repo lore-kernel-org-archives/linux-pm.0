@@ -1,60 +1,69 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 08/11] powercap/intel_rapl: Support multi-die/package
-Date: Wed, 20 Feb 2019 12:02:00 +0100
-Message-ID: <20190220110200.GD17969@hirez.programming.kicks-ass.net>
-References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
- <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: kyro: Reduce frame-size of qcom_cpufreq_kryo_probe()
+Date: Wed, 20 Feb 2019 16:44:34 +0530
+Message-ID: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, amit.kucheria@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 18, 2019 at 10:40:10PM -0500, Len Brown wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> On the new dual-die/package systems, the RAPL MSR becomes die-scope.
-> Thus instead of one powercap device per physical package, now there
-> should be one powercap device for each unique die on these systems.
-> 
-> This patch introduces intel_rapl driver support for new
-> dual-die/package systems.
-> 
-> On the hardwares that do not have multi-die, topology_unique_die_id()
-> equals topology_physical_package_id(), thus there is no functional change.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/powercap/intel_rapl.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 6057d9695fed..e004707283da 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
->  /* caller to ensure CPU hotplug lock is held */
->  static struct rapl_package *rapl_find_package(int cpu)
->  {
-> -	int id = topology_physical_package_id(cpu);
-> +	int id = topology_unique_die_id(cpu);
->  	struct rapl_package *rp;
->  
->  	list_for_each_entry(rp, &rapl_packages, plist) {
-> @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
->  /* called from CPU hotplug notifier, hotplug lock held */
->  static struct rapl_package *rapl_add_package(int cpu)
->  {
-> -	int id = topology_physical_package_id(cpu);
-> +	int id = topology_unique_die_id(cpu);
->  	struct rapl_package *rp;
->  	int ret;
+With the introduction of commit 846a415bf440 ("arm64: default NR_CPUS to
+256"), we have started getting following compilation warning:
 
-And now your new function names are misnomers.
+qcom-cpufreq-kryo.c:168:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
+
+Fix that by dynamically allocating opp_tables and freeing it later.
+
+Compile tested only.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/qcom-cpufreq-kryo.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+index 1c8583cc06a2..6888cb6db2ef 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+ 
+ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ {
+-	struct opp_table *opp_tables[NR_CPUS] = {0};
++	struct opp_table **opp_tables;
+ 	enum _msm8996_version msm8996_version;
+ 	struct nvmem_cell *speedbin_nvmem;
+ 	struct device_node *np;
+@@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 	}
+ 	kfree(speedbin);
+ 
++	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
++	if (!opp_tables)
++		return -ENOMEM;
++
+ 	for_each_possible_cpu(cpu) {
+ 		cpu_dev = get_cpu_device(cpu);
+ 		if (NULL == cpu_dev) {
+@@ -149,6 +153,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	kfree(opp_tables);
++
+ 	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+ 							  NULL, 0);
+ 	if (!IS_ERR(cpufreq_dt_pdev))
+@@ -163,6 +169,7 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 			break;
+ 		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+ 	}
++	kfree(opp_tables);
+ 
+ 	return ret;
+ }
+-- 
+2.21.0.rc0.269.g1a574e7a288b
