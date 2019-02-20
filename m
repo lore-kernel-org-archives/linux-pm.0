@@ -1,86 +1,47 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] cpufreq: kyro: Reduce frame-size of qcom_cpufreq_kryo_probe()
-Date: Wed, 20 Feb 2019 21:56:40 +0530
-Message-ID: <CAP245DWuJTXfAc3QyqXjePqy32GHQsEqHbuSvjiS4EE3-TV1PA@mail.gmail.com>
-References: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+From: "Pan, Harry" <harry.pan@intel.com>
+Subject: Re: [PATCH v3] PM / suspend: measure the time of filesystem syncing
+Date: Wed, 20 Feb 2019 16:44:02 +0000
+Message-ID: <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
+References: <20190206154214.576-1-harry.pan@intel.com>
+         <20190214111543.22137-1-harry.pan@intel.com>
+         <2819109.DzhZvocLkm@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+In-Reply-To: <2819109.DzhZvocLkm@aspire.rjw.lan>
+Content-Language: en-US
+Content-ID: <049D91B807C2F34CBA69D2B978011800@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 20, 2019 at 4:44 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> With the introduction of commit 846a415bf440 ("arm64: default NR_CPUS to
-> 256"), we have started getting following compilation warning:
->
-> qcom-cpufreq-kryo.c:168:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
->
-> Fix that by dynamically allocating opp_tables and freeing it later.
->
-> Compile tested only.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index 1c8583cc06a2..6888cb6db2ef 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
->
->  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  {
-> -       struct opp_table *opp_tables[NR_CPUS] = {0};
-> +       struct opp_table **opp_tables;
->         enum _msm8996_version msm8996_version;
->         struct nvmem_cell *speedbin_nvmem;
->         struct device_node *np;
-> @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->         }
->         kfree(speedbin);
->
-> +       opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
-> +       if (!opp_tables)
-> +               return -ENOMEM;
-> +
-
-Perhaps add a comment above that that actual opp_table is allocated in
-the loop below because of dev_pm_opp_set_supported_hw?
-
-I was staring at this for a few minutes wondering why you needed this
-kcalloc before I realised that opp_tables (missed the 's') is a
-temporary array of pointers. :-)
-
-Otherwise,
-
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
-
->         for_each_possible_cpu(cpu) {
->                 cpu_dev = get_cpu_device(cpu);
->                 if (NULL == cpu_dev) {
-> @@ -149,6 +153,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->                 }
->         }
->
-> +       kfree(opp_tables);
-> +
->         cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
->                                                           NULL, 0);
->         if (!IS_ERR(cpufreq_dt_pdev))
-> @@ -163,6 +169,7 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->                         break;
->                 dev_pm_opp_put_supported_hw(opp_tables[cpu]);
->         }
-> +       kfree(opp_tables);
->
->         return ret;
->  }
-> --
-> 2.21.0.rc0.269.g1a574e7a288b
->
+VGhhbmtzIGZvciBjb21tZW50cy4NCg0KPiA+ICsJaWYgKCFJU19FTkFCTEVEKENPTkZJR19TVVNQ
+RU5EX1NLSVBfU1lOQykpIHsNCj4gPiArCQlrdGltZV90IHN0YXJ0Ow0KPiA+ICsJCXVuc2lnbmVk
+IGludCBlbGFwc2VkX21zZWNzOw0KPiA+ICsNCj4gPiArCQl0cmFjZV9zdXNwZW5kX3Jlc3VtZShU
+UFMoInN5bmNfZmlsZXN5c3RlbXMiKSwgMCwgdHJ1ZSk7DQo+ID4gKwkJcHJfaW5mbygiU3luY2lu
+ZyBmaWxlc3lzdGVtcyAuLi4gIik7DQo+ID4gKwkJc3RhcnQgPSBrdGltZV9nZXQoKTsNCj4gPiAr
+CQlrc3lzX3N5bmMoKTsNCj4gPiArCQllbGFwc2VkX21zZWNzID0ga3RpbWVfdG9fbXMoa3RpbWVf
+c3ViKGt0aW1lX2dldCgpLA0KPiA+IHN0YXJ0KSk7DQo+ID4gKwkJcHJfY29udCgiKGVsYXBzZWQg
+JWQuJTAzZCBzZWNvbmRzKSBkb25lLlxuIiwNCj4gPiArCQkJZWxhcHNlZF9tc2VjcyAvIE1TRUNf
+UEVSX1NFQywNCj4gPiArCQkJZWxhcHNlZF9tc2VjcyAlIE1TRUNfUEVSX1NFQyk7DQo+IA0KPiBP
+bmUgbW9yZSBuaXQuDQo+IA0KPiBTaW5jZSB5b3UgYXJlIHByaW50aW5nIHRoZSBzeW5jIHRpbWUg
+YW55d2F5LCB0aGVyZSBpcyBhIGxpdHRsZSBzZW5zZQ0KPiB0bw0KPiBzcGxpdCB0aGUgbWVzc2Fn
+ZSB1c2luZyBwcl9jb250KCkgdGhhdCBtYXkgYmUgbWVzc2VkIHVwIHdpdGggYnkgYW55DQo+IGlu
+dGVydmVuaW5nIG1lc3NhZ2VzLCBzbyB3aHkgZG9uJ3QgeW91IGp1c3QgcHJpbnQgYSBvbmUtbGlu
+ZQ0KPiBwcl9pbmZvKCJGaWxlc3lzdGVtcyBzeW5jOiAlZC4lMDNkIHNlY29uZHNcbiIsIC4uLikg
+bWVzc2FnZT8NCj4gDQpZZXMsIEkgYWdyZWUuDQpJbiBwcmFjdGljYWwsIEkgZGlkIHNlZSBpbnRl
+cnZlbmluZyBtZXNzYWdlcyAoYmV0d2VlbiBwcl9pbmZvIGFuZA0KcHJfY29udCkgd2hlbiBpdCBj
+YW1lIHRvIGxvbmcgc3luYyBpbiBrZXJuZWwuDQpJIHdhcyBoZXNpdGF0ZWQgaW4gdGhpcyBjb25z
+aWRlcmluZyBub3QgZnVsbHkgdW5kZXJzdGFuZGluZyB0aGUNCmJhY2tkcm9wIG9mIHNwbGl0IG1l
+c3NhZ2VzIHVzaW5nIHByX2luZm8oKSB0aGVuIHByX2NvbnQoKS4NCg0KPiBBbHNvLCBpZiB5b3Ug
+Y2hhbmdlIGl0IGhlcmUsIEkgZ3Vlc3MgaXQgd291bGQgYmUgY29uc2lzdGVudCB0byBtYWtlDQo+
+IGFuIGFuYWxvZ291cyBjaGFuZ2UgZm9yIGhpYmVybmF0aW9uLg0KDQpPbmUgcG90ZW50aWFsIGxh
+c3QtbWlsZSBuZWVkIHlvdXIgd2lzZG9tLCB3aGljaCBpcyBhYm91dCB0aGUgc3dpdGNoDQpjYXNl
+IG9mIFNOQVBTSE9UX0ZSRUVaRSBvZiB0aGUgdXNlcnNwYWNlIGludGVyZmFjZSB5b3Ugd3JvdGUu
+DQpJIGFtIHlldCB0byB0b3VjaCBpdCwgbm9yIHVuZGVyc3RhbmQgaG93IHRvIHZhbGlkYXRlIGl0
+Lg0KDQpUaGF0IHNhaWQsIEkgYW0gZGlnZXN0aW5nIHlvdXIgZG9jdW1lbnRzIGFuZCBzb3VyY2U7
+IEkgdXNlZCB0aGUgcG1fdGVzdA0KZnJvbSB0aGUgZG9jIHRvIHZhbGlkYXRlIHRoZSBwYXRjaCBv
+biBoaWJlcm5hdGlvbiBwYXJ0aWFsbHkgZXZlbiBub24gb2YNCm15IGhhbmR5IGxhcHRvbnMgZnVs
+bHkgd29yayB3ZWxsIG9uIGl0Lg0KDQoNClNpbmNlcmVseSwNCkhhcnJ5DQo=
