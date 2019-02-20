@@ -1,89 +1,86 @@
-From: Harry Pan <harry.pan@intel.com>
-Subject: [PATCH v4] PM / suspend: measure the time of filesystem syncing
-Date: Thu, 21 Feb 2019 00:12:22 +0800
-Message-ID: <20190220161222.632-1-harry.pan@intel.com>
-References: <20190214111543.22137-1-harry.pan@intel.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] cpufreq: kyro: Reduce frame-size of qcom_cpufreq_kryo_probe()
+Date: Wed, 20 Feb 2019 21:56:40 +0530
+Message-ID: <CAP245DWuJTXfAc3QyqXjePqy32GHQsEqHbuSvjiS4EE3-TV1PA@mail.gmail.com>
+References: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190214111543.22137-1-harry.pan@intel.com>
+In-Reply-To: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch gives the reader an intuitive metric of the time cost by
-the kernel issuing a filesystem sync during suspend; although developer
-can guess by the timestamp of next log or enable the ftrace power event
-for manual calculation, this manner is easier to read and benefits the
-automatic script.
+On Wed, Feb 20, 2019 at 4:44 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> With the introduction of commit 846a415bf440 ("arm64: default NR_CPUS to
+> 256"), we have started getting following compilation warning:
+>
+> qcom-cpufreq-kryo.c:168:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
+>
+> Fix that by dynamically allocating opp_tables and freeing it later.
+>
+> Compile tested only.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/qcom-cpufreq-kryo.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> index 1c8583cc06a2..6888cb6db2ef 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+>
+>  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  {
+> -       struct opp_table *opp_tables[NR_CPUS] = {0};
+> +       struct opp_table **opp_tables;
+>         enum _msm8996_version msm8996_version;
+>         struct nvmem_cell *speedbin_nvmem;
+>         struct device_node *np;
+> @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>         }
+>         kfree(speedbin);
+>
+> +       opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
+> +       if (!opp_tables)
+> +               return -ENOMEM;
+> +
 
-v2: simplify the variables, apply the simplest form of ktime API.
-v3: reduce conditional compilation, rectify profiling in better syntax
-v4: avoid interposition, profile on hibernation, rectify printk format
+Perhaps add a comment above that that actual opp_table is allocated in
+the loop below because of dev_pm_opp_set_supported_hw?
 
-Signed-off-by: Harry Pan <harry.pan@intel.com>
----
- kernel/power/hibernate.c |  9 +++++++--
- kernel/power/suspend.c   | 20 +++++++++++++-------
- 2 files changed, 20 insertions(+), 9 deletions(-)
+I was staring at this for a few minutes wondering why you needed this
+kcalloc before I realised that opp_tables (missed the 's') is a
+temporary array of pointers. :-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index abef759de7c8..387703907827 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -688,6 +688,8 @@ int hibernate(void)
- {
- 	int error, nr_calls = 0;
- 	bool snapshot_test = false;
-+	ktime_t start;
-+	s64 elapsed_msecs;
- 
- 	if (!hibernation_available()) {
- 		pm_pr_dbg("Hibernation not available.\n");
-@@ -709,9 +711,12 @@ int hibernate(void)
- 		goto Exit;
- 	}
- 
--	pr_info("Syncing filesystems ... \n");
-+	start = ktime_get();
- 	ksys_sync();
--	pr_info("done.\n");
-+	elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
-+	pr_info("Filesystems sync: %lld.%03lld seconds\n",
-+		elapsed_msecs / MSEC_PER_SEC,
-+		elapsed_msecs % MSEC_PER_SEC);
- 
- 	error = freeze_processes();
- 	if (error)
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 0bd595a0b610..7fb5ba1314d3 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -568,13 +568,19 @@ static int enter_state(suspend_state_t state)
- 	if (state == PM_SUSPEND_TO_IDLE)
- 		s2idle_begin();
- 
--#ifndef CONFIG_SUSPEND_SKIP_SYNC
--	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
--	pr_info("Syncing filesystems ... ");
--	ksys_sync();
--	pr_cont("done.\n");
--	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
--#endif
-+	if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
-+		ktime_t start;
-+		s64 elapsed_msecs;
-+
-+		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-+		start = ktime_get();
-+		ksys_sync();
-+		elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
-+		pr_info("Filesystems sync: %lld.%03lld seconds\n",
-+			elapsed_msecs / MSEC_PER_SEC,
-+			elapsed_msecs % MSEC_PER_SEC);
-+		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
-+	}
- 
- 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
- 	pm_suspend_clear_flags();
--- 
-2.18.1
+Otherwise,
+
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+
+>         for_each_possible_cpu(cpu) {
+>                 cpu_dev = get_cpu_device(cpu);
+>                 if (NULL == cpu_dev) {
+> @@ -149,6 +153,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> +       kfree(opp_tables);
+> +
+>         cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+>                                                           NULL, 0);
+>         if (!IS_ERR(cpufreq_dt_pdev))
+> @@ -163,6 +169,7 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>                         break;
+>                 dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+>         }
+> +       kfree(opp_tables);
+>
+>         return ret;
+>  }
+> --
+> 2.21.0.rc0.269.g1a574e7a288b
+>
