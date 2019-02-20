@@ -1,74 +1,134 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v2 3/3] power: reset: at91-reset: add support for sam9x60
- SoC
-Date: Wed, 20 Feb 2019 00:43:17 +0100
-Message-ID: <20190219234317.2oyp3ktqp3cikh5l@earth.universe>
-References: <20190206181221.27914-1-nicolas.ferre@microchip.com>
- <20190206181221.27914-3-nicolas.ferre@microchip.com>
- <20190208152435.GC23062@piout.net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Tue, 19 Feb 2019 17:04:22 -0800
+Message-ID: <20190220010420.GA2811@localhost.localdomain>
+References: <1549532838-27025-1-git-send-email-Anson.Huang@nxp.com>
+ <DB3PR0402MB39165EFE027405873E8AB4ECF5660@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+ <DB3PR0402MB3916C9B1A6F0E4C6352BA43CF57C0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tkplu3agw26zk46b"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190208152435.GC23062@piout.net>
+In-Reply-To: <DB3PR0402MB3916C9B1A6F0E4C6352BA43CF57C0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Daniel Baluta <daniel.baluta@nxp.com>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Feb 19, 2019 at 07:20:58AM +0000, Anson Huang wrote:
+> Ping...
 
---tkplu3agw26zk46b
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I will take a look on this.
 
-Hi,
-
-On Fri, Feb 08, 2019 at 04:24:35PM +0100, Alexandre Belloni wrote:
-> On 06/02/2019 19:12:21+0100, Nicolas Ferre wrote:
-> > Add support for additional reset causes and the proper compatibility
-> > string for sam9x60 SoC. The restart function is the same as the samx7.
-> >=20
-> > Signed-off-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-> > Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> Reviewed-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
->=20
-> > ---
-> > v2: split series and collect tag
-> >=20
-> > Sebastian,
-> > I add your Acked-by tag here but as I would like that you take the 3 pa=
-tches on
-> > your tree now, I let you modify it on your side. I'm expecting Alexandr=
-e or
-> > Ludovic to have a look as well.
-> >=20
->=20
-> Sebastian, please take this series through your tree. Thanks!
-
-All right. I just merged them!
-
--- Sebastian
-
---tkplu3agw26zk46b
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlxslJIACgkQ2O7X88g7
-+ppA5A/+IgJmgk73r39b7sVQDIRJzLpLKH/r6ioaFSbPCcC4owKjc0U4O0V+peRz
-tZfwhfjeARci7EwVfrpmm9cXcoAtQ7A8uLrDjK/30zNZ6bIj/LymFzaF9YbuFo4P
-A6N/7HfGPSMjc6a0V09jYWkQ7nHuvdoxocr4TKDg8JREAZVdih4gKtUoWnc26iQQ
-gjWPx/yo4KAzHi9BbknO7z1LLxS4wmfjWlvLZTLJ6gv7oSEL48dM/KVsLXN5hWzn
-vvpeHgbLl87DWRxFNHLjhO7IDPfVh01lGWnThvqP+1+O/qjCq6w0QPvVbSU7ERPj
-qsyKE8ImbXOg8TBVswEord1chbOmCDbawL76vlOq7w1GN2B8Psedr/uu2vV+hS1c
-wvSvIEL8f5m8E2OsyfssRjbtJqS+rWHcTuucHdRZa/xY3M+/OscVX8dQ3FLgB9bQ
-2+V7AvAR7c8OHiXGF0nZZ4AHAwdb3XbkL/BUiD4+3ko3mpIHwId/EJXRCUlMPdCw
-0bGzo9IQSJx50FzIA/3s1Oih1nBto9Gr4qidCD8clRIMvbsyesDiiRgYUl+MqMTh
-RQd43y5CebvIchrYvIuM7xPnCHlwbb+7UM2wfHEaRMpoVVntr5HJcgaUlFRWavRs
-icJF/h7BInttqAm0OFCo6UoP4wyJvHXWOrNBxQ21EPjD8EqzO18=
-=oRbw
------END PGP SIGNATURE-----
-
---tkplu3agw26zk46b--
+> 
+> Best Regards!
+> Anson Huang
+> 
+> > -----Original Message-----
+> > From: Anson Huang
+> > Sent: 2019年2月13日 13:36
+> > To: robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org;
+> > s.hauer@pengutronix.de; kernel@pengutronix.de; festevam@gmail.com;
+> > catalin.marinas@arm.com; will.deacon@arm.com; rui.zhang@intel.com;
+> > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng Dong
+> > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org; Daniel Baluta
+> > <daniel.baluta@nxp.com>; horms+renesas@verge.net.au; Andy Gross
+> > <andy.gross@linaro.org>; heiko@sntech.de; arnd@arndb.de;
+> > maxime.ripard@bootlin.com; jagan@amarulasolutions.com;
+> > bjorn.andersson@linaro.org; enric.balletbo@collabora.com;
+> > marc.w.gonzalez@free.fr; olof@lixom.net; devicetree@vger.kernel.org;
+> > linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+> > pm@vger.kernel.org
+> > Cc: dl-linux-imx <linux-imx@nxp.com>
+> > Subject: RE: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
+> > 
+> > Gental ping...
+> > 
+> > Best Regards!
+> > Anson Huang
+> > 
+> > > -----Original Message-----
+> > > From: Anson Huang
+> > > Sent: 2019年2月7日 17:53
+> > > To: robh+dt@kernel.org; mark.rutland@arm.com; shawnguo@kernel.org;
+> > > s.hauer@pengutronix.de; kernel@pengutronix.de; festevam@gmail.com;
+> > > catalin.marinas@arm.com; will.deacon@arm.com; rui.zhang@intel.com;
+> > > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng Dong
+> > > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org; Daniel Baluta
+> > > <daniel.baluta@nxp.com>; horms+renesas@verge.net.au; Andy Gross
+> > > <andy.gross@linaro.org>; heiko@sntech.de; arnd@arndb.de;
+> > > maxime.ripard@bootlin.com; jagan@amarulasolutions.com;
+> > > bjorn.andersson@linaro.org; enric.balletbo@collabora.com;
+> > > marc.w.gonzalez@free.fr; olof@lixom.net; devicetree@vger.kernel.org;
+> > > linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
+> > > linux- pm@vger.kernel.org
+> > > Cc: dl-linux-imx <linux-imx@nxp.com>
+> > > Subject: [PATCH V6 1/4] dt-bindings: fsl: scu: add thermal binding
+> > >
+> > > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as system
+> > > controller, the system controller is in charge of system power, clock
+> > > and thermal sensors etc. management, Linux kernel has to communicate
+> > > with system controller via MU (message unit) IPC to get temperature
+> > > from thermal sensors, this patch adds binding doc for i.MX system
+> > > controller thermal driver.
+> > >
+> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > > Reviewed-by: Rob Herring <robh@kernel.org>
+> > > ---
+> > > ChangeLog since V5:
+> > > 	- add "imx,sensor-resource-id" in each thermal zone to pass resource
+> > > ID for thermal driver.
+> > > ---
+> > >  .../devicetree/bindings/arm/freescale/fsl,scu.txt    | 20
+> > > ++++++++++++++++++++
+> > >  1 file changed, 20 insertions(+)
+> > >
+> > > diff --git
+> > > a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > index 72d481c..4b79751 100644
+> > > --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > @@ -122,6 +122,20 @@ RTC bindings based on SCU Message Protocol
+> > > Required properties:
+> > >  - compatible: should be "fsl,imx8qxp-sc-rtc";
+> > >
+> > > +Thermal bindings based on SCU Message Protocol
+> > > +------------------------------------------------------------
+> > > +
+> > > +Required properties:
+> > > +- compatible : Must be "fsl,imx8qxp-sc-thermal";
+> > > +- tsens-num : Total number of thermal sensors supported;
+> > > +- #thermal-sensor-cells : Should be 1. See
+> > > +
+> > > Documentation/devicetree/bindings/thermal/thermal.txt
+> > > +			  for a description.
+> > > +- imx,sensor-resource-id : This property should be defined in each
+> > > +thermal
+> > > zone
+> > > +			   of thermal-zones node, it passes each thermal
+> > > zone's
+> > > +			   resource id for thermal driver to get temperature
+> > > via
+> > > +			   SCU IPC.
+> > > +
+> > >  Example (imx8qxp):
+> > >  -------------
+> > >  lsio_mu1: mailbox@5d1c0000 {
+> > > @@ -168,6 +182,12 @@ firmware {
+> > >  		rtc: rtc {
+> > >  			compatible = "fsl,imx8qxp-sc-rtc";
+> > >  		};
+> > > +
+> > > +		tsens: thermal-sensor {
+> > > +			compatible = "fsl,imx8qxp-sc-thermal";
+> > > +			tsens-num = <1>;
+> > > +			#thermal-sensor-cells = <1>;
+> > > +		};
+> > >  	};
+> > >  };
+> > >
+> > > --
+> > > 2.7.4
+> 
