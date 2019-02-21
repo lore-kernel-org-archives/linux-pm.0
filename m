@@ -1,71 +1,96 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH v5 06/10] Platform: OLPC: Add XO-1.75 EC driver
-Date: Wed, 20 Feb 2019 17:22:31 -0800
-Message-ID: <20190221012231.GC5838@wrath>
-References: <20190110175845.1203986-1-lkundrak@v3.sk>
- <20190110175845.1203986-7-lkundrak@v3.sk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: kyro: Reduce frame-size of
+ qcom_cpufreq_kryo_probe()
+Date: Thu, 21 Feb 2019 09:15:34 +0530
+Message-ID: <20190221034534.n5jli3bj4mwtoudd@vireshk-i7>
+References: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+ <CAP245DWuJTXfAc3QyqXjePqy32GHQsEqHbuSvjiS4EE3-TV1PA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190110175845.1203986-7-lkundrak@v3.sk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, platform-driver-x86@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Andy Shevchenko <andy@infradead.org>
+In-Reply-To: <CAP245DWuJTXfAc3QyqXjePqy32GHQsEqHbuSvjiS4EE3-TV1PA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2019 at 06:58:41PM +0100, Lubomir Rintel wrote:
-> It's based off the driver from the OLPC kernel sources. Somewhat
-> modernized and cleaned up, for better or worse.
+On 20-02-19, 21:56, Amit Kucheria wrote:
+> On Wed, Feb 20, 2019 at 4:44 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > With the introduction of commit 846a415bf440 ("arm64: default NR_CPUS to
+> > 256"), we have started getting following compilation warning:
+> >
+> > qcom-cpufreq-kryo.c:168:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
+> >
+> > Fix that by dynamically allocating opp_tables and freeing it later.
+> >
+> > Compile tested only.
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/qcom-cpufreq-kryo.c | 9 ++++++++-
+> >  1 file changed, 8 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > index 1c8583cc06a2..6888cb6db2ef 100644
+> > --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+> >
+> >  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+> >  {
+> > -       struct opp_table *opp_tables[NR_CPUS] = {0};
+> > +       struct opp_table **opp_tables;
+> >         enum _msm8996_version msm8996_version;
+> >         struct nvmem_cell *speedbin_nvmem;
+> >         struct device_node *np;
+> > @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+> >         }
+> >         kfree(speedbin);
+> >
+> > +       opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
+> > +       if (!opp_tables)
+> > +               return -ENOMEM;
+> > +
 > 
-> Modified to plug into the olpc-ec driver infrastructure (so that battery
-> interface and debugfs could be reused) and the SPI slave framework.
+> Perhaps add a comment above that that actual opp_table is allocated in
+> the loop below because of dev_pm_opp_set_supported_hw?
 > 
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> 
-> ---
-> Changes since v4:
-> - Chop off the reboot handler. Will be added back once it's clear how.
-> 
-> Changes since v3:
-> - Introduce CONFIG_OLPC_EC symbol to enable parts common to this driver
->   and the X86 OLPC EC machinery.
-> 
-> Changes since v1:
-> - Cosmetic style changes; whitespace, ordering of declarations and
->   #includes, remoted extra comas from sentinels
-> - Count the terminating NUL in LOG_BUF_SIZE
-> - Make olpc_xo175_ec_is_valid_cmd() return -EINVAL instead of -1
->   on error
-> - Spell keyboard/touchpad in full for CHAN_KEYBOARD/TOUCHPAD messages
-> - Use a #define for PM wakeup processing time
-> - Log a message on unknown event
-> - Escape logging payload with %*pE
-> - Replace an open-coded min()
-> - Correct an error code on short read
-> - replaced PM callback #ifdefs with __maybe_unusedm SET_RUNTIME_PM_OPS
->   and SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
-> - dev_get_drvdata() instead of a round-trip through platform device
-> - s/unsigned char x/u8 x/ in olpc_xo175_ec_resume()
-> - Use GENMASK() instead of 0xffff for the event mask
-> - Replace cmd tx/resp rx buffers with structures
-> - Turned suspend hint arguments into a struct, and tidied up the comment
-> 
-> Basically all of the above is based on the review by Andy Shevchenko.
+> I was staring at this for a few minutes wondering why you needed this
+> kcalloc before I realised that opp_tables (missed the 's') is a
+> temporary array of pointers. :-)
 
-Andy, I am happy to merge this series - but this patch includes a lot of changes
-driven by your feedback. Are you satisfied with the changes, would you like to
-add your Reviewed-by?
+I feel that you got confused because this patch didn't had the diff
+where the opp_tables thing is getting used. When we see the .c file
+itself, it is pretty much clear on what is going on and I believe the
+comment would be totally unnecessary and redundant.
+
+This is how it looks now, please lemme know if you still prefer the
+comment :)
+
+        opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
+        if (!opp_tables)
+                return -ENOMEM;
+
+        for_each_possible_cpu(cpu) {
+                cpu_dev = get_cpu_device(cpu);
+                if (NULL == cpu_dev) {
+                        ret = -ENODEV;
+                        goto free_opp;
+                }
+
+                opp_tables[cpu] = dev_pm_opp_set_supported_hw(cpu_dev,
+                                                              &versions, 1);
+                if (IS_ERR(opp_tables[cpu])) {
+                        ret = PTR_ERR(opp_tables[cpu]);
+                        dev_err(cpu_dev, "Failed to set supported hardware\n");
+                        goto free_opp;
+                }
+        }
+
+        kfree(opp_tables);
+
 
 -- 
-Darren Hart
-VMware Open Source Technology Center
+viresh
