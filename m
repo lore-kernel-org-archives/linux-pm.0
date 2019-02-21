@@ -1,170 +1,207 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/5] PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
-Date: Thu, 21 Feb 2019 16:59:27 +0530
-Message-ID: <b0485135cc355c3686761c2e20039dfd961fd560.1550748118.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 2/5] PM / QOS: Pass request type to dev_pm_qos_read_value()
+Date: Thu, 21 Feb 2019 16:59:28 +0530
+Message-ID: <fe4b74ff20d96586118c5d501fe968b0bc20eb91.1550748118.git.viresh.kumar@linaro.org>
 References: <cover.1550748118.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1550748118.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, Qais.Yousef@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In order to use the same set of routines to register notifiers for
-different request types, update the existing
-dev_pm_qos_{add|remove}_notifier() routines with an additional
-parameter: request-type.
+In order to use dev_pm_qos_read_value(), and other internal routines to
+it, to read values for different QoS requests, pass request type as a
+parameter to these routines.
 
 For now, it only supports resume-latency request type.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/power/pm_qos_interface.txt | 10 ++++++----
- drivers/base/power/domain.c              |  8 +++++---
- drivers/base/power/qos.c                 | 14 ++++++++++++--
- include/linux/pm_qos.h                   | 12 ++++++++----
- 4 files changed, 31 insertions(+), 13 deletions(-)
+ Documentation/power/pm_qos_interface.txt |  2 +-
+ drivers/base/power/domain_governor.c     |  4 +--
+ drivers/base/power/qos.c                 | 10 +++---
+ drivers/base/power/runtime.c             |  2 +-
+ drivers/cpuidle/governor.c               |  2 +-
+ include/linux/pm_qos.h                   | 41 +++++++++++++++++-------
+ 6 files changed, 40 insertions(+), 21 deletions(-)
 
 diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index 19c5f7b1a7ba..ec7d662d1707 100644
+index ec7d662d1707..cfcb1df39799 100644
 --- a/Documentation/power/pm_qos_interface.txt
 +++ b/Documentation/power/pm_qos_interface.txt
-@@ -164,12 +164,14 @@ directory.
- Notification mechanisms:
- The per-device PM QoS framework has a per-device notification tree.
+@@ -123,7 +123,7 @@ Will remove the element.  After removal it will update the aggregate target and
+ call the notification trees if the target was changed as a result of removing
+ the request.
  
--int dev_pm_qos_add_notifier(device, notifier):
--Adds a notification callback function for the device.
-+int dev_pm_qos_add_notifier(device, notifier, type):
-+Adds a notification callback function for the device for a particular request
-+type.
-+
- The callback is called when the aggregated value of the device constraints list
--is changed (for resume latency device PM QoS only).
-+is changed.
+-s32 dev_pm_qos_read_value(device):
++s32 dev_pm_qos_read_value(device, type):
+ Returns the aggregated value for a given device's constraints list.
  
--int dev_pm_qos_remove_notifier(device, notifier):
-+int dev_pm_qos_remove_notifier(device, notifier, type):
- Removes the notification callback function for the device.
+ enum pm_qos_flags_status dev_pm_qos_flags(device, mask)
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 99896fbf18e4..c36925adba69 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -32,7 +32,7 @@ static int dev_update_qos_constraint(struct device *dev, void *data)
+ 		 * take its current PM QoS constraint (that's the only thing
+ 		 * known at this point anyway).
+ 		 */
+-		constraint_ns = dev_pm_qos_read_value(dev);
++		constraint_ns = dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY);
+ 		constraint_ns *= NSEC_PER_USEC;
+ 	}
  
+@@ -65,7 +65,7 @@ static bool default_suspend_ok(struct device *dev)
+ 	td->constraint_changed = false;
+ 	td->cached_suspend_ok = false;
+ 	td->effective_constraint_ns = 0;
+-	constraint_ns = __dev_pm_qos_read_value(dev);
++	constraint_ns = __dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY);
  
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2c334c01fc43..d8c37945a26d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1486,7 +1486,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	if (ret)
- 		genpd_free_dev_data(dev, gpd_data);
- 	else
--		dev_pm_qos_add_notifier(dev, &gpd_data->nb);
-+		dev_pm_qos_add_notifier(dev, &gpd_data->nb,
-+					DEV_PM_QOS_RESUME_LATENCY);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
  
- 	return ret;
- }
-@@ -1519,7 +1520,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	pdd = dev->power.subsys_data->domain_data;
- 	gpd_data = to_gpd_data(pdd);
--	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
-+	dev_pm_qos_remove_notifier(dev, &gpd_data->nb,
-+				   DEV_PM_QOS_RESUME_LATENCY);
- 
- 	genpd_lock(genpd);
- 
-@@ -1546,7 +1548,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 
-  out:
- 	genpd_unlock(genpd);
--	dev_pm_qos_add_notifier(dev, &gpd_data->nb);
-+	dev_pm_qos_add_notifier(dev, &gpd_data->nb, DEV_PM_QOS_RESUME_LATENCY);
- 
- 	return ret;
- }
 diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 3382542b39b7..49672f9dc8c4 100644
+index 49672f9dc8c4..fda7266970e9 100644
 --- a/drivers/base/power/qos.c
 +++ b/drivers/base/power/qos.c
-@@ -471,6 +471,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
+@@ -96,27 +96,29 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_flags);
+ /**
+  * __dev_pm_qos_read_value - Get PM QoS constraint for a given device.
+  * @dev: Device to get the PM QoS constraint value for.
++ * @type: QoS request type.
   *
-  * @dev: target device for the constraint
-  * @notifier: notifier block managed by caller.
-+ * @type: request type.
-  *
-  * Will register the notifier into a notification chain that gets called
-  * upon changes to the target value for the device.
-@@ -478,10 +479,14 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
-  * If the device's constraints object doesn't exist when this routine is called,
-  * it will be created (or error code will be returned if that fails).
+  * This routine must be called with dev->power.lock held.
   */
--int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
-+int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
-+			    enum dev_pm_qos_req_type type)
+-s32 __dev_pm_qos_read_value(struct device *dev)
++s32 __dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
  {
- 	int ret = 0;
+ 	lockdep_assert_held(&dev->power.lock);
  
-+	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
-+		return -EINVAL;
-+
- 	mutex_lock(&dev_pm_qos_mtx);
+-	return dev_pm_qos_raw_read_value(dev);
++	return dev_pm_qos_raw_read_value(dev, type);
+ }
  
- 	if (IS_ERR(dev->power.qos))
-@@ -504,15 +509,20 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
-  *
-  * @dev: target device for the constraint
-  * @notifier: notifier block to be removed.
-+ * @type: request type.
-  *
-  * Will remove the notifier from the notification chain that gets called
-  * upon changes to the target value.
+ /**
+  * dev_pm_qos_read_value - Get PM QoS constraint for a given device (locked).
+  * @dev: Device to get the PM QoS constraint value for.
++ * @type: QoS request type.
   */
- int dev_pm_qos_remove_notifier(struct device *dev,
--			       struct notifier_block *notifier)
-+			       struct notifier_block *notifier,
-+			       enum dev_pm_qos_req_type type)
+-s32 dev_pm_qos_read_value(struct device *dev)
++s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
  {
- 	int retval = 0;
+ 	unsigned long flags;
+ 	s32 ret;
  
-+	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
-+		return -EINVAL;
-+
- 	mutex_lock(&dev_pm_qos_mtx);
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+-	ret = __dev_pm_qos_read_value(dev);
++	ret = __dev_pm_qos_read_value(dev, type);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
  
- 	/* Silently return if the constraints object is not present. */
+ 	return ret;
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 04407d9f76fd..997cd420accc 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -267,7 +267,7 @@ static int rpm_check_suspend_allowed(struct device *dev)
+ 	    || (dev->power.request_pending
+ 			&& dev->power.request == RPM_REQ_RESUME))
+ 		retval = -EAGAIN;
+-	else if (__dev_pm_qos_read_value(dev) == 0)
++	else if (__dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY) == 0)
+ 		retval = -EPERM;
+ 	else if (dev->power.runtime_status == RPM_SUSPENDED)
+ 		retval = 1;
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index bb93e5cf6a4a..251d3ef4a1e5 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -109,7 +109,7 @@ int cpuidle_governor_latency_req(unsigned int cpu)
+ {
+ 	int global_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	struct device *device = get_cpu_device(cpu);
+-	int device_req = dev_pm_qos_raw_read_value(device);
++	int device_req = dev_pm_qos_raw_read_value(device, DEV_PM_QOS_RESUME_LATENCY);
+ 
+ 	return device_req < global_req ? device_req : global_req;
+ }
 diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 6ea1ae373d77..1f4d456e8fff 100644
+index 1f4d456e8fff..55814d48c39c 100644
 --- a/include/linux/pm_qos.h
 +++ b/include/linux/pm_qos.h
-@@ -146,9 +146,11 @@ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+@@ -139,8 +139,8 @@ s32 pm_qos_read_value(struct pm_qos_constraints *c);
+ #ifdef CONFIG_PM
+ enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+ enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask);
+-s32 __dev_pm_qos_read_value(struct device *dev);
+-s32 dev_pm_qos_read_value(struct device *dev);
++s32 __dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type);
++s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type);
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   enum dev_pm_qos_req_type type, s32 value);
  int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
- int dev_pm_qos_remove_request(struct dev_pm_qos_request *req);
- int dev_pm_qos_add_notifier(struct device *dev,
--			    struct notifier_block *notifier);
-+			    struct notifier_block *notifier,
-+			    enum dev_pm_qos_req_type type);
- int dev_pm_qos_remove_notifier(struct device *dev,
--			       struct notifier_block *notifier);
-+			       struct notifier_block *notifier,
-+			       enum dev_pm_qos_req_type type);
- void dev_pm_qos_constraints_init(struct device *dev);
- void dev_pm_qos_constraints_destroy(struct device *dev);
- int dev_pm_qos_add_ancestor_request(struct device *dev,
-@@ -202,10 +204,12 @@ static inline int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- static inline int dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
- 			{ return 0; }
- static inline int dev_pm_qos_add_notifier(struct device *dev,
--					  struct notifier_block *notifier)
-+					  struct notifier_block *notifier,
-+					  enum dev_pm_qos_req_type type);
- 			{ return 0; }
- static inline int dev_pm_qos_remove_notifier(struct device *dev,
--					     struct notifier_block *notifier)
-+					     struct notifier_block *notifier,
-+					     enum dev_pm_qos_req_type type)
- 			{ return 0; }
- static inline void dev_pm_qos_constraints_init(struct device *dev)
+@@ -176,11 +176,19 @@ static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+ 	return dev->power.qos->flags_req->data.flr.flags;
+ }
+ 
+-static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
++static inline s32 dev_pm_qos_raw_read_value(struct device *dev,
++					    enum dev_pm_qos_req_type type)
  {
+-	return IS_ERR_OR_NULL(dev->power.qos) ?
+-		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+-		pm_qos_read_value(&dev->power.qos->resume_latency);
++	struct dev_pm_qos *qos = dev->power.qos;
++
++	switch (type) {
++	case DEV_PM_QOS_RESUME_LATENCY:
++		return IS_ERR_OR_NULL(qos) ? PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
++			: pm_qos_read_value(&qos->resume_latency);
++	default:
++		WARN_ON(1);
++		return 0;
++	}
+ }
+ #else
+ static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
+@@ -189,10 +197,6 @@ static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
+ static inline enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev,
+ 							s32 mask)
+ 			{ return PM_QOS_FLAGS_UNDEFINED; }
+-static inline s32 __dev_pm_qos_read_value(struct device *dev)
+-			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+-static inline s32 dev_pm_qos_read_value(struct device *dev)
+-			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+ static inline int dev_pm_qos_add_request(struct device *dev,
+ 					 struct dev_pm_qos_request *req,
+ 					 enum dev_pm_qos_req_type type,
+@@ -245,10 +249,23 @@ static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
+ 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ }
+ static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
+-static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
++
++static inline s32 dev_pm_qos_raw_read_value(struct device *dev,
++					    enum dev_pm_qos_req_type type)
+ {
+-	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
++	switch type {
++	case DEV_PM_QOS_RESUME_LATENCY:
++		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
++	default:
++		WARN_ON(1);
++		return 0;
++	}
+ }
++
++static inline s32 __dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
++			{ return dev_pm_qos_raw_read_value(dev, type); }
++static inline s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
++			{ return dev_pm_qos_raw_read_value(dev, type); }
+ #endif
+ 
+ #endif
 -- 
 2.21.0.rc0.269.g1a574e7a288b
