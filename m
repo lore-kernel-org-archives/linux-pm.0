@@ -1,47 +1,31 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH v1 2/2] drivers: soc: qcom: rpmh-rsc: Correct check for
- slot number
-Date: Thu, 21 Feb 2019 08:24:02 -0700
-Message-ID: <20190221152402.GB17102@codeaurora.org>
-References: <20190221124036.30535-1-rplsssn@codeaurora.org>
- <20190221124036.30535-3-rplsssn@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle: Add a predict callback for the governors
+Date: Thu, 21 Feb 2019 17:18:25 +0100
+Message-ID: <CAJZ5v0iCkMA=LVvV+-jqr8fCYz2mwaqtiKmNTfxf0dxZ=MvdiQ@mail.gmail.com>
+References: <20190221145631.26356-1-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190221124036.30535-3-rplsssn@codeaurora.org>
+In-Reply-To: <20190221145631.26356-1-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, Maulik Shah <mkshah@codeaurora.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 21 2019 at 05:42 -0700, Raju P.L.S.S.S.N wrote:
->From: Maulik Shah <mkshah@codeaurora.org>
+On Thu, Feb 21, 2019 at 3:56 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
 >
->The return index value from bitmap_find_next_zero_area can be higher
->than available slot. So correct the check to return error in such case.
+> Predicting the next event on the current CPU is implemented in the
+> idle state selection function, thus the selection logic and the
+> prediction are tied together and it is hard to decorrelate both.
 >
->Signed-off-by: Maulik Shah <mkshah@codeaurora.org>
->Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
->---
-> drivers/soc/qcom/rpmh-rsc.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> The following change introduces the cpuidle function to give the
+> opportunity to the governor to store the guess estimate of the
+> different source of wakeup and then reuse them in the selection
+> process. Consequently we end up with two separate operations clearly
+> identified.
 >
->diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
->index 10b3102298c7..3ff3bebd4d71 100644
->--- a/drivers/soc/qcom/rpmh-rsc.c
->+++ b/drivers/soc/qcom/rpmh-rsc.c
->@@ -491,7 +491,7 @@ static int find_slots(struct tcs_group *tcs, const struct tcs_request *msg,
-> 	do {
-> 		slot = bitmap_find_next_zero_area(tcs->slots, MAX_TCS_SLOTS,
-> 						  i, msg->num_cmds, 0);
->-		if (slot == tcs->num_tcs * tcs->ncpt)
->+		if (slot >= tcs->num_tcs * tcs->ncpt)
-> 			return -ENOMEM;
-> 		i += tcs->ncpt;
-> 	} while (slot + msg->num_cmds - 1 >= i);
->--
->QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->of the Code Aurora Forum, hosted by The Linux Foundation.
->
+> As the next events are stored in the cpuidle device structure it is
+> easy to propagate them in the different governor callbacks.
+
+Can you explain a bit how you would use this new callback in a governor?
