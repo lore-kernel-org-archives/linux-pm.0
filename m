@@ -1,54 +1,48 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: [PATCH v2 3/3] dt-bindings: arm: atmel: add binding for SAM9X60
+From: <Nicolas.Ferre@microchip.com>
+Subject: Re: [PATCH v2 3/3] dt-bindings: arm: atmel: add binding for SAM9X60
  shutdown controller
-Date: Thu, 21 Feb 2019 13:45:56 +0000
-Message-ID: <1550756716-3032-4-git-send-email-claudiu.beznea@microchip.com>
+Date: Thu, 21 Feb 2019 14:09:57 +0000
+Message-ID: <4d728bb8-cada-6656-204f-2ae766211f5e@microchip.com>
 References: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+ <1550756716-3032-4-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <1550756716-3032-4-git-send-email-claudiu.beznea@microchip.com>
 Content-Language: en-US
+Content-ID: <14B759396FBAD44AB926956191F84D69@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu.Beznea@microchip.com
+To: Claudiu.Beznea@microchip.com, robh+dt@kernel.org, mark.rutland@arm.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
-
-Add documentation for SAM9X60 shutdown controller.
-
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- Documentation/devicetree/bindings/arm/atmel-sysregs.txt | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt b/Docu=
-mentation/devicetree/bindings/arm/atmel-sysregs.txt
-index 14f319f694b7..50f282ccbcb7 100644
---- a/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-+++ b/Documentation/devicetree/bindings/arm/atmel-sysregs.txt
-@@ -83,7 +83,7 @@ SHDWC SAMA5D2-Compatible Shutdown Controller
- 1) shdwc node
-=20
- required properties:
--- compatible: should be "atmel,sama5d2-shdwc".
-+- compatible: should be "atmel,sama5d2-shdwc" or "microchip,sam9x60-shdwc"=
-.
- - reg: should contain registers location and length
- - clocks: phandle to input clock.
- - #address-cells: should be one. The cell is the wake-up input index.
-@@ -95,6 +95,9 @@ optional properties:
-   microseconds. It's usually a board-related property.
- - atmel,wakeup-rtc-timer: boolean to enable Real-Time Clock wake-up.
-=20
-+optional microchip,sam9x60-shdwc properties:
-+- atmel,wakeup-rtt-timer: boolean to enable Real-time Timer Wake-up.
-+
- The node contains child nodes for each wake-up input that the platform use=
-s.
-=20
- 2) input nodes
---=20
-2.7.4
+T24gMjEvMDIvMjAxOSBhdCAxNDo0NSwgQ2xhdWRpdSBCZXpuZWEgLSBNMTgwNjMgd3JvdGU6DQo+
+IEZyb206IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2NoaXAuY29tPg0KPiAN
+Cj4gQWRkIGRvY3VtZW50YXRpb24gZm9yIFNBTTlYNjAgc2h1dGRvd24gY29udHJvbGxlci4NCj4g
+DQo+IFNpZ25lZC1vZmYtYnk6IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2No
+aXAuY29tPg0KDQpBY2tlZC1ieTogTmljb2xhcyBGZXJyZSA8bmljb2xhcy5mZXJyZUBtaWNyb2No
+aXAuY29tPg0KDQpUaGFua3MgQ2xhdWRpdS4gUmVnYXJkcywNCiAgIE5pY29sYXMNCg0KPiAtLS0N
+Cj4gICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3Mu
+dHh0IHwgNSArKysrLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDEgZGVs
+ZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL2FybS9hdG1lbC1zeXNyZWdzLnR4dA0KPiBpbmRleCAxNGYzMTlmNjk0YjcuLjUwZjI4
+MmNjYmNiNyAxMDA2NDQNCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L2FybS9hdG1lbC1zeXNyZWdzLnR4dA0KPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0DQo+IEBAIC04Myw3ICs4Myw3IEBAIFNIRFdD
+IFNBTUE1RDItQ29tcGF0aWJsZSBTaHV0ZG93biBDb250cm9sbGVyDQo+ICAgMSkgc2hkd2Mgbm9k
+ZQ0KPiAgIA0KPiAgIHJlcXVpcmVkIHByb3BlcnRpZXM6DQo+IC0tIGNvbXBhdGlibGU6IHNob3Vs
+ZCBiZSAiYXRtZWwsc2FtYTVkMi1zaGR3YyIuDQo+ICstIGNvbXBhdGlibGU6IHNob3VsZCBiZSAi
+YXRtZWwsc2FtYTVkMi1zaGR3YyIgb3IgIm1pY3JvY2hpcCxzYW05eDYwLXNoZHdjIi4NCj4gICAt
+IHJlZzogc2hvdWxkIGNvbnRhaW4gcmVnaXN0ZXJzIGxvY2F0aW9uIGFuZCBsZW5ndGgNCj4gICAt
+IGNsb2NrczogcGhhbmRsZSB0byBpbnB1dCBjbG9jay4NCj4gICAtICNhZGRyZXNzLWNlbGxzOiBz
+aG91bGQgYmUgb25lLiBUaGUgY2VsbCBpcyB0aGUgd2FrZS11cCBpbnB1dCBpbmRleC4NCj4gQEAg
+LTk1LDYgKzk1LDkgQEAgb3B0aW9uYWwgcHJvcGVydGllczoNCj4gICAgIG1pY3Jvc2Vjb25kcy4g
+SXQncyB1c3VhbGx5IGEgYm9hcmQtcmVsYXRlZCBwcm9wZXJ0eS4NCj4gICAtIGF0bWVsLHdha2V1
+cC1ydGMtdGltZXI6IGJvb2xlYW4gdG8gZW5hYmxlIFJlYWwtVGltZSBDbG9jayB3YWtlLXVwLg0K
+PiAgIA0KPiArb3B0aW9uYWwgbWljcm9jaGlwLHNhbTl4NjAtc2hkd2MgcHJvcGVydGllczoNCj4g
+Ky0gYXRtZWwsd2FrZXVwLXJ0dC10aW1lcjogYm9vbGVhbiB0byBlbmFibGUgUmVhbC10aW1lIFRp
+bWVyIFdha2UtdXAuDQo+ICsNCj4gICBUaGUgbm9kZSBjb250YWlucyBjaGlsZCBub2RlcyBmb3Ig
+ZWFjaCB3YWtlLXVwIGlucHV0IHRoYXQgdGhlIHBsYXRmb3JtIHVzZXMuDQo+ICAgDQo+ICAgMikg
+aW5wdXQgbm9kZXMNCj4gDQoNCg0KLS0gDQpOaWNvbGFzIEZlcnJlDQo=
