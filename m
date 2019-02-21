@@ -1,66 +1,41 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: Add a predict callback for the governors
-Date: Thu, 21 Feb 2019 18:40:02 +0100
-Message-ID: <d315736a-2aa0-3c8d-f3cf-f73b60e7ebe0@linaro.org>
-References: <20190221145631.26356-1-daniel.lezcano@linaro.org>
- <CAJZ5v0iCkMA=LVvV+-jqr8fCYz2mwaqtiKmNTfxf0dxZ=MvdiQ@mail.gmail.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: Re: [PATCH 00/12] QorIQ TMU multi-sensor and HWMON support
+Date: Thu, 21 Feb 2019 10:45:40 -0800
+Message-ID: <CAHQ1cqFrTJeZStWJhnSEmzsHMV4a9+6E0+2YkhwFfJ+CG2TkgQ@mail.gmail.com>
+References: <20190218191141.3729-1-andrew.smirnov@gmail.com> <20190221005246.GB31479@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iCkMA=LVvV+-jqr8fCYz2mwaqtiKmNTfxf0dxZ=MvdiQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20190221005246.GB31479@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21/02/2019 17:18, Rafael J. Wysocki wrote:
-> On Thu, Feb 21, 2019 at 3:56 PM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> Predicting the next event on the current CPU is implemented in the
->> idle state selection function, thus the selection logic and the
->> prediction are tied together and it is hard to decorrelate both.
->>
->> The following change introduces the cpuidle function to give the
->> opportunity to the governor to store the guess estimate of the
->> different source of wakeup and then reuse them in the selection
->> process. Consequently we end up with two separate operations clearly
->> identified.
->>
->> As the next events are stored in the cpuidle device structure it is
->> easy to propagate them in the different governor callbacks.
-> 
-> Can you explain a bit how you would use this new callback in a governor?
+On Wed, Feb 20, 2019 at 4:52 PM Eduardo Valentin <edubezval@gmail.com> wrote:
+>
+> Hey Andrey
+>
+> On Mon, Feb 18, 2019 at 11:11:29AM -0800, Andrey Smirnov wrote:
+> > Everyone:
+> >
+> > This series contains patches adding support for HWMON integration,
+> > multi-sensor support as well as a small fix and general improvements
+> > (hopefully) for TMU driver I made while working on it on i.MX8MQ.
+> >
+> > Feedback is welcome!
+>
+> What branch is this patch series based off?
+>
 
-Sure.
+This was based on  v5.0-rc6
 
-Today we have the selection and the prediction tied together. The
-prediction is modulated with some inputs coming from the governor's
-policy (eg. performance multiplier).
+> Would you mind re-sending the series based off my -linus branch?
+> There has been an addition on qoriq driver to support multiple sensors
+> and the code has shifted and your series does not apply over there.
+>
 
-It is hard to know if the prediction is correct or not, hard to know the
-duration of the computation for the next event and hard to know if the
-idle state selection succeeded because of a good prediction or a good
-governor policy.
+Sure, will do in v2.
 
-I propose to provide the callback where we fill the guess estimated next
-events on the system, so we can trace them and benchmark the computation
-time.
-
-The selection of the idle state becomes an separate action where we can
-apply any specific governor heuristic or policy.
-
-By separating the selection and the prediction, we can identify where
-the weakness is in our test scenario: the prediction or the governor
-selection policy.
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Andrey Smirnov
