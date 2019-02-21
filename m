@@ -1,52 +1,46 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v5 06/10] Platform: OLPC: Add XO-1.75 EC driver
-Date: Thu, 21 Feb 2019 15:28:26 +0200
-Message-ID: <CAHp75VcWMf086oGrJHWOCgYFy-J-KLw+jzFoAwuXaHtS7dgdvA@mail.gmail.com>
-References: <20190110175845.1203986-1-lkundrak@v3.sk>
- <20190110175845.1203986-7-lkundrak@v3.sk>
- <20190221012231.GC5838@wrath>
+From: <Claudiu.Beznea@microchip.com>
+Subject: [PATCH v2 0/3] add support for SAM9X60's shutdown controller
+Date: Thu, 21 Feb 2019 13:45:44 +0000
+Message-ID: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190221012231.GC5838@wrath>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Darren Hart <dvhart@infradead.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, Platform Driver <platform-driver-x86@vger.kernel.org>, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Andy Shevchenko <andy@infradead.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: robh+dt@kernel.org, mark.rutland@arm.com, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu.Beznea@microchip.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 21, 2019 at 3:22 AM Darren Hart <dvhart@infradead.org> wrote:
->
-> On Thu, Jan 10, 2019 at 06:58:41PM +0100, Lubomir Rintel wrote:
-> > It's based off the driver from the OLPC kernel sources. Somewhat
-> > modernized and cleaned up, for better or worse.
-> >
-> > Modified to plug into the olpc-ec driver infrastructure (so that battery
-> > interface and debugfs could be reused) and the SPI slave framework.
+From: Claudiu Beznea <claudiu.beznea@microchip.com>
 
-> > Basically all of the above is based on the review by Andy Shevchenko.
->
-> Andy, I am happy to merge this series - but this patch includes a lot of changes
-> driven by your feedback. Are you satisfied with the changes, would you like to
-> add your Reviewed-by?
+Hi,
 
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+This series adapt SAMA5D2's shutdown controller driver to work for
+SAM9X60's shutdown controller. The difference is that SAM9X60 have
+option for RTT timer wakeup.
 
-Open minors:
- - u8 vs. unsigned char in a cases when it's about command to send to
-HW (including unnecessary & 0xff parts)
- - _TIMEOUT w/o units a bit odd (perhaps _TIMEOUT_MS ?)
+Thank you,
+Claudiu Beznea
 
-I think this may be addressed later on.
+Changes in v2:
+- collect Acked-by tags
+- in patch 3/3 use "optional microchip,sam9x60-shdwc properties"
+  string to specify that the introduced property is only for
+  microchip,sam9x60-shdwc as specified above in case of
+  atmel,<chip>-shdwc shutdown controllers
+- in patch 3/3 keep only the optional property introduced by
+  microchip,sam9x60-shwdwc (atmel,wakeup-rtt-timer)
 
--- 
-With Best Regards,
-Andy Shevchenko
+Claudiu Beznea (3):
+  power: reset: at91-poweroff: add RTT wakeup capability
+  power: reset: at91-poweroff: add support for SAM9X60
+  dt-bindings: arm: atmel: add binding for SAM9X60 shutdown controller
+
+ .../devicetree/bindings/arm/atmel-sysregs.txt      |  6 +++++-
+ drivers/power/reset/at91-sama5d2_shdwc.c           | 25 ++++++++++++++++++=
+++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+
+--=20
+2.7.4
