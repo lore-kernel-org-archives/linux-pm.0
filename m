@@ -1,48 +1,130 @@
-From: <Nicolas.Ferre@microchip.com>
-Subject: Re: [PATCH v2 3/3] dt-bindings: arm: atmel: add binding for SAM9X60
- shutdown controller
-Date: Thu, 21 Feb 2019 14:09:57 +0000
-Message-ID: <4d728bb8-cada-6656-204f-2ae766211f5e@microchip.com>
-References: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
- <1550756716-3032-4-git-send-email-claudiu.beznea@microchip.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle: Add a predict callback for the governors
+Date: Thu, 21 Feb 2019 15:56:31 +0100
+Message-ID: <20190221145631.26356-1-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550756716-3032-4-git-send-email-claudiu.beznea@microchip.com>
-Content-Language: en-US
-Content-ID: <14B759396FBAD44AB926956191F84D69@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com, robh+dt@kernel.org, mark.rutland@arm.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, sre@kernel.org
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjEvMDIvMjAxOSBhdCAxNDo0NSwgQ2xhdWRpdSBCZXpuZWEgLSBNMTgwNjMgd3JvdGU6DQo+
-IEZyb206IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2NoaXAuY29tPg0KPiAN
-Cj4gQWRkIGRvY3VtZW50YXRpb24gZm9yIFNBTTlYNjAgc2h1dGRvd24gY29udHJvbGxlci4NCj4g
-DQo+IFNpZ25lZC1vZmYtYnk6IENsYXVkaXUgQmV6bmVhIDxjbGF1ZGl1LmJlem5lYUBtaWNyb2No
-aXAuY29tPg0KDQpBY2tlZC1ieTogTmljb2xhcyBGZXJyZSA8bmljb2xhcy5mZXJyZUBtaWNyb2No
-aXAuY29tPg0KDQpUaGFua3MgQ2xhdWRpdS4gUmVnYXJkcywNCiAgIE5pY29sYXMNCg0KPiAtLS0N
-Cj4gICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3Mu
-dHh0IHwgNSArKysrLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDEgZGVs
-ZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL2FybS9hdG1lbC1zeXNyZWdzLnR4dA0KPiBpbmRleCAxNGYzMTlmNjk0YjcuLjUwZjI4
-MmNjYmNiNyAxMDA2NDQNCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
-L2FybS9hdG1lbC1zeXNyZWdzLnR4dA0KPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
-YmluZGluZ3MvYXJtL2F0bWVsLXN5c3JlZ3MudHh0DQo+IEBAIC04Myw3ICs4Myw3IEBAIFNIRFdD
-IFNBTUE1RDItQ29tcGF0aWJsZSBTaHV0ZG93biBDb250cm9sbGVyDQo+ICAgMSkgc2hkd2Mgbm9k
-ZQ0KPiAgIA0KPiAgIHJlcXVpcmVkIHByb3BlcnRpZXM6DQo+IC0tIGNvbXBhdGlibGU6IHNob3Vs
-ZCBiZSAiYXRtZWwsc2FtYTVkMi1zaGR3YyIuDQo+ICstIGNvbXBhdGlibGU6IHNob3VsZCBiZSAi
-YXRtZWwsc2FtYTVkMi1zaGR3YyIgb3IgIm1pY3JvY2hpcCxzYW05eDYwLXNoZHdjIi4NCj4gICAt
-IHJlZzogc2hvdWxkIGNvbnRhaW4gcmVnaXN0ZXJzIGxvY2F0aW9uIGFuZCBsZW5ndGgNCj4gICAt
-IGNsb2NrczogcGhhbmRsZSB0byBpbnB1dCBjbG9jay4NCj4gICAtICNhZGRyZXNzLWNlbGxzOiBz
-aG91bGQgYmUgb25lLiBUaGUgY2VsbCBpcyB0aGUgd2FrZS11cCBpbnB1dCBpbmRleC4NCj4gQEAg
-LTk1LDYgKzk1LDkgQEAgb3B0aW9uYWwgcHJvcGVydGllczoNCj4gICAgIG1pY3Jvc2Vjb25kcy4g
-SXQncyB1c3VhbGx5IGEgYm9hcmQtcmVsYXRlZCBwcm9wZXJ0eS4NCj4gICAtIGF0bWVsLHdha2V1
-cC1ydGMtdGltZXI6IGJvb2xlYW4gdG8gZW5hYmxlIFJlYWwtVGltZSBDbG9jayB3YWtlLXVwLg0K
-PiAgIA0KPiArb3B0aW9uYWwgbWljcm9jaGlwLHNhbTl4NjAtc2hkd2MgcHJvcGVydGllczoNCj4g
-Ky0gYXRtZWwsd2FrZXVwLXJ0dC10aW1lcjogYm9vbGVhbiB0byBlbmFibGUgUmVhbC10aW1lIFRp
-bWVyIFdha2UtdXAuDQo+ICsNCj4gICBUaGUgbm9kZSBjb250YWlucyBjaGlsZCBub2RlcyBmb3Ig
-ZWFjaCB3YWtlLXVwIGlucHV0IHRoYXQgdGhlIHBsYXRmb3JtIHVzZXMuDQo+ICAgDQo+ICAgMikg
-aW5wdXQgbm9kZXMNCj4gDQoNCg0KLS0gDQpOaWNvbGFzIEZlcnJlDQo=
+Predicting the next event on the current CPU is implemented in the
+idle state selection function, thus the selection logic and the
+prediction are tied together and it is hard to decorrelate both.
+
+The following change introduces the cpuidle function to give the
+opportunity to the governor to store the guess estimate of the
+different source of wakeup and then reuse them in the selection
+process. Consequently we end up with two separate operations clearly
+identified.
+
+As the next events are stored in the cpuidle device structure it is
+easy to propagate them in the different governor callbacks.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c | 16 ++++++++++++++++
+ include/linux/cpuidle.h   | 16 +++++++++++++++-
+ kernel/sched/idle.c       |  5 +++++
+ 3 files changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 7f108309e871..fc6976bd702b 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -296,6 +296,22 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	return entered_state;
+ }
+ 
++/**
++ * cpuidle_predict - guess estimate the next events on the current CPU
++ *
++ * @drv: the cpuidle driver
++ * @dev: the cpuidle device
++ *
++ * Returns 0 on success, < 0 in case of error. The error code depends on
++ * the governor.
++ */
++int cpuidle_predict(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++{
++	if (cpuidle_curr_governor->predict)
++		return cpuidle_curr_governor->predict(drv, dev);
++	return 0;
++}
++
+ /**
+  * cpuidle_select - ask the cpuidle framework to choose an idle state
+  *
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 3b39472324a3..8aba8b0a952d 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -77,6 +77,13 @@ struct cpuidle_device_kobj;
+ struct cpuidle_state_kobj;
+ struct cpuidle_driver_kobj;
+ 
++struct cpuidle_predict {
++	ktime_t next_hrtimer;
++	ktime_t next_timer;
++	ktime_t next_irq;
++	ktime_t next_resched;
++};
++
+ struct cpuidle_device {
+ 	unsigned int		registered:1;
+ 	unsigned int		enabled:1;
+@@ -89,6 +96,7 @@ struct cpuidle_device {
+ 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+ 	struct cpuidle_driver_kobj *kobj_driver;
+ 	struct cpuidle_device_kobj *kobj_dev;
++	struct cpuidle_predict predict;
+ 	struct list_head 	device_list;
+ 
+ #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+@@ -124,7 +132,8 @@ struct cpuidle_driver {
+ extern void disable_cpuidle(void);
+ extern bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 				  struct cpuidle_device *dev);
+-
++extern int cpuidle_predict(struct cpuidle_driver *drv,
++			   struct cpuidle_device *dev);
+ extern int cpuidle_select(struct cpuidle_driver *drv,
+ 			  struct cpuidle_device *dev,
+ 			  bool *stop_tick);
+@@ -158,6 +167,9 @@ static inline void disable_cpuidle(void) { }
+ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 					 struct cpuidle_device *dev)
+ {return true; }
++static inline int cpuidle_predict(struct cpuidle_driver *drv,
++				  struct cpuidle_device *dev)
++{return 0; }
+ static inline int cpuidle_select(struct cpuidle_driver *drv,
+ 				 struct cpuidle_device *dev, bool *stop_tick)
+ {return -ENODEV; }
+@@ -241,6 +253,8 @@ struct cpuidle_governor {
+ 	void (*disable)		(struct cpuidle_driver *drv,
+ 					struct cpuidle_device *dev);
+ 
++	int  (*predict)		(struct cpuidle_driver *drv,
++ 					struct cpuidle_device *dev);
+ 	int  (*select)		(struct cpuidle_driver *drv,
+ 					struct cpuidle_device *dev,
+ 					bool *stop_tick);
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index f5516bae0c1b..e0e9a81cfec3 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -185,6 +185,11 @@ static void cpuidle_idle_call(void)
+ 	} else {
+ 		bool stop_tick = true;
+ 
++		/*
++		 * Guess estimate the next events on the current CPU
++		 */
++		cpuidle_predict(drv, dev);
++
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-- 
+2.17.1
