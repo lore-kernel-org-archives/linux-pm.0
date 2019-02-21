@@ -1,60 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3] PM / suspend: measure the time of filesystem syncing
-Date: Wed, 20 Feb 2019 22:45:24 +0100
-Message-ID: <CAJZ5v0gmFz8aK5_+0a36RwEiPScU=Z8BhD8pR50V1GRcmbXFgA@mail.gmail.com>
-References: <20190206154214.576-1-harry.pan@intel.com> <20190214111543.22137-1-harry.pan@intel.com>
- <2819109.DzhZvocLkm@aspire.rjw.lan> <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 00/12] QorIQ TMU multi-sensor and HWMON support
+Date: Wed, 20 Feb 2019 16:52:48 -0800
+Message-ID: <20190221005246.GB31479@localhost.localdomain>
+References: <20190218191141.3729-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cf6926800899354808143bd48b4f943629c8cbe7.camel@intel.com>
+Content-Disposition: inline
+In-Reply-To: <20190218191141.3729-1-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Pan, Harry" <harry.pan@intel.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "gs0622@gmail.com" <gs0622@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 20, 2019 at 5:44 PM Pan, Harry <harry.pan@intel.com> wrote:
->
-> Thanks for comments.
->
-> > > +   if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
-> > > +           ktime_t start;
-> > > +           unsigned int elapsed_msecs;
-> > > +
-> > > +           trace_suspend_resume(TPS("sync_filesystems"), 0, true);
-> > > +           pr_info("Syncing filesystems ... ");
-> > > +           start = ktime_get();
-> > > +           ksys_sync();
-> > > +           elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(),
-> > > start));
-> > > +           pr_cont("(elapsed %d.%03d seconds) done.\n",
-> > > +                   elapsed_msecs / MSEC_PER_SEC,
-> > > +                   elapsed_msecs % MSEC_PER_SEC);
-> >
-> > One more nit.
-> >
-> > Since you are printing the sync time anyway, there is a little sense
-> > to
-> > split the message using pr_cont() that may be messed up with by any
-> > intervening messages, so why don't you just print a one-line
-> > pr_info("Filesystems sync: %d.%03d seconds\n", ...) message?
-> >
-> Yes, I agree.
-> In practical, I did see intervening messages (between pr_info and
-> pr_cont) when it came to long sync in kernel.
-> I was hesitated in this considering not fully understanding the
-> backdrop of split messages using pr_info() then pr_cont().
->
-> > Also, if you change it here, I guess it would be consistent to make
-> > an analogous change for hibernation.
->
-> One potential last-mile need your wisdom, which is about the switch
-> case of SNAPSHOT_FREEZE of the userspace interface you wrote.
-> I am yet to touch it, nor understand how to validate it.
+Hey Andrey
 
-Why don't you add a "sync" helper function in main.c with the timing
-and message that will be called from hibernate.c, user.c and suspend.c
-(in the last one conditional on
-!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC))?
+On Mon, Feb 18, 2019 at 11:11:29AM -0800, Andrey Smirnov wrote:
+> Everyone:
+> 
+> This series contains patches adding support for HWMON integration,
+> multi-sensor support as well as a small fix and general improvements
+> (hopefully) for TMU driver I made while working on it on i.MX8MQ.
+> 
+> Feedback is welcome!
 
-That would reduce some code duplication nicely.
+What branch is this patch series based off?
+
+Would you mind re-sending the series based off my -linus branch?
+There has been an addition on qoriq driver to support multiple sensors
+and the code has shifted and your series does not apply over there.
+
+> 
+> Thanks,
+> Andrey Smirnov
+> 
+> Andrey Smirnov (12):
+>   thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+>   thermal: qoriq: Remove unnecessary DT node is NULL check
+>   thermal: qoriq: Add local struct device pointer in qoriq_tmu_probe()
+>   thermal: qoriq: Don't pass platform_device to qoriq_tmu_calibration()
+>   thermal: qoriq: Convert driver to use devm_ioremap()
+>   thermal: qoriq: Add hwmon support
+>   thermal: qoriq: Convert driver to use regmap API
+>   thermal: qoriq: Enable monitoring before querying temperature
+>   thermal: qoriq: Do not report invalid temperature reading
+>   thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
+>   thermal: qoriq: Be more strict when parsing "thermal-sensors"
+>   thermal: qoriq: Add support for multiple thremal sites
+> 
+>  drivers/thermal/qoriq_thermal.c | 326 ++++++++++++++++++--------------
+>  drivers/thermal/thermal_hwmon.c |  28 +++
+>  drivers/thermal/thermal_hwmon.h |   7 +
+>  3 files changed, 214 insertions(+), 147 deletions(-)
+> 
+> -- 
+> 2.20.1
+> 
