@@ -1,266 +1,281 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS framework
-Date: Thu, 21 Feb 2019 16:59:30 +0530
-Message-ID: <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 3/5] PM / QoS: Add support for MIN/MAX frequency constraints
+Date: Thu, 21 Feb 2019 16:59:29 +0530
+Message-ID: <bf5dfb65ce605a11ded18edcd7c140c3d6a11d68.1550748118.git.viresh.kumar@linaro.org>
 References: <cover.1550748118.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1550748118.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, Qais.Yousef@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This registers the notifiers for min/max frequency constraints with the
-PM QoS framework. The constraints are also taken into consideration in
-cpufreq_set_policy().
-
-This also relocates cpufreq_policy_put_kobj() as it is required to be
-called from cpufreq_policy_alloc() now.
-
-No constraints are added until now though.
+This patch introduces the min-frequency and max-frequency device
+constraints, which will be used by the cpufreq core to begin with.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 135 +++++++++++++++++++++++++++++++-------
- include/linux/cpufreq.h   |   4 ++
- 2 files changed, 116 insertions(+), 23 deletions(-)
+ drivers/base/power/qos.c | 103 +++++++++++++++++++++++++++++++++------
+ include/linux/pm_qos.h   |  18 +++++++
+ 2 files changed, 107 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0e626b00053b..d615bf35ac00 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -26,6 +26,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/pm_qos.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
-@@ -1082,11 +1083,77 @@ static void handle_update(struct work_struct *work)
- 	cpufreq_update_policy(cpu);
- }
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index fda7266970e9..30fe1e98b343 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -155,6 +155,14 @@ static int apply_constraint(struct dev_pm_qos_request *req,
+ 			req->dev->power.set_latency_tolerance(req->dev, value);
+ 		}
+ 		break;
++	case DEV_PM_QOS_MIN_FREQUENCY:
++		ret = pm_qos_update_target(&qos->min_frequency,
++					   &req->data.pnode, action, value);
++		break;
++	case DEV_PM_QOS_MAX_FREQUENCY:
++		ret = pm_qos_update_target(&qos->max_frequency,
++					   &req->data.pnode, action, value);
++		break;
+ 	case DEV_PM_QOS_FLAGS:
+ 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
+ 					  action, value);
+@@ -183,12 +191,11 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 	if (!qos)
+ 		return -ENOMEM;
  
-+static void cpufreq_update_freq_work(struct work_struct *work)
-+{
-+	struct cpufreq_policy *policy =
-+		container_of(work, struct cpufreq_policy, req_work);
-+	struct cpufreq_policy new_policy = *policy;
-+
-+	/* We should read constraint values from QoS layer */
-+	new_policy.min = 0;
-+	new_policy.max = UINT_MAX;
-+
-+	down_write(&policy->rwsem);
-+
-+	if (!policy_is_inactive(policy))
-+		cpufreq_set_policy(policy, &new_policy);
-+
-+	up_write(&policy->rwsem);
-+}
-+
-+static int cpufreq_update_freq(struct cpufreq_policy *policy)
-+{
-+	schedule_work(&policy->req_work);
-+	return 0;
-+}
-+
-+static int cpufreq_notifier_min(struct notifier_block *nb, unsigned long freq,
-+				void *data)
-+{
-+	struct cpufreq_policy *policy = container_of(nb, struct cpufreq_policy, nb_min);
-+
-+	return cpufreq_update_freq(policy);
-+}
-+
-+static int cpufreq_notifier_max(struct notifier_block *nb, unsigned long freq,
-+				void *data)
-+{
-+	struct cpufreq_policy *policy = container_of(nb, struct cpufreq_policy, nb_max);
-+
-+	return cpufreq_update_freq(policy);
-+}
-+
-+static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
-+{
-+	struct kobject *kobj;
-+	struct completion *cmp;
-+
-+	down_write(&policy->rwsem);
-+	cpufreq_stats_free_table(policy);
-+	kobj = &policy->kobj;
-+	cmp = &policy->kobj_unregister;
-+	up_write(&policy->rwsem);
-+	kobject_put(kobj);
-+
-+	/*
-+	 * We need to make sure that the underlying kobj is
-+	 * actually not referenced anymore by anybody before we
-+	 * proceed with unloading.
-+	 */
-+	pr_debug("waiting for dropping of refcount\n");
-+	wait_for_completion(cmp);
-+	pr_debug("wait complete\n");
-+}
-+
- static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
-+	struct device *dev = get_cpu_device(cpu);
- 	int ret;
- 
-+	if (!dev)
-+		return NULL;
-+
- 	policy = kzalloc(sizeof(*policy), GFP_KERNEL);
- 	if (!policy)
- 		return NULL;
-@@ -1103,20 +1170,45 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
- 				   cpufreq_global_kobject, "policy%u", cpu);
- 	if (ret) {
--		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
-+		dev_err(dev, "%s: failed to init policy->kobj: %d\n", __func__, ret);
- 		goto err_free_real_cpus;
+-	n = kzalloc(sizeof(*n), GFP_KERNEL);
++	n = kzalloc(3 * sizeof(*n), GFP_KERNEL);
+ 	if (!n) {
+ 		kfree(qos);
+ 		return -ENOMEM;
  	}
+-	BLOCKING_INIT_NOTIFIER_HEAD(n);
  
-+	policy->nb_min.notifier_call = cpufreq_notifier_min;
-+	policy->nb_max.notifier_call = cpufreq_notifier_max;
+ 	c = &qos->resume_latency;
+ 	plist_head_init(&c->list);
+@@ -197,6 +204,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 	c->no_constraint_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ 	c->type = PM_QOS_MIN;
+ 	c->notifiers = n;
++	BLOCKING_INIT_NOTIFIER_HEAD(n);
+ 
+ 	c = &qos->latency_tolerance;
+ 	plist_head_init(&c->list);
+@@ -205,6 +213,24 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
+ 	c->type = PM_QOS_MIN;
+ 
++	c = &qos->min_frequency;
++	plist_head_init(&c->list);
++	c->target_value = PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
++	c->default_value = PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
++	c->no_constraint_value = PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
++	c->type = PM_QOS_MAX;
++	c->notifiers = ++n;
++	BLOCKING_INIT_NOTIFIER_HEAD(n);
 +
-+	ret = dev_pm_qos_add_notifier(dev, &policy->nb_min,
-+				      DEV_PM_QOS_MIN_FREQUENCY);
-+	if (ret) {
-+		dev_err(dev, "Failed to register MIN QoS notifier: %d (%*pbl)\n",
-+			ret, cpumask_pr_args(policy->cpus));
-+		goto err_kobj_remove;
++	c = &qos->max_frequency;
++	plist_head_init(&c->list);
++	c->target_value = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
++	c->default_value = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
++	c->no_constraint_value = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
++	c->type = PM_QOS_MIN;
++	c->notifiers = ++n;
++	BLOCKING_INIT_NOTIFIER_HEAD(n);
++
+ 	INIT_LIST_HEAD(&qos->flags.list);
+ 
+ 	spin_lock_irq(&dev->power.lock);
+@@ -258,11 +284,25 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+ 		memset(req, 0, sizeof(*req));
+ 	}
++
+ 	c = &qos->latency_tolerance;
+ 	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
+ 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+ 		memset(req, 0, sizeof(*req));
+ 	}
++
++	c = &qos->min_frequency;
++	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
++		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE);
++		memset(req, 0, sizeof(*req));
 +	}
 +
-+	ret = dev_pm_qos_add_notifier(dev, &policy->nb_max,
-+				      DEV_PM_QOS_MAX_FREQUENCY);
-+	if (ret) {
-+		dev_err(dev, "Failed to register MAX QoS notifier: %d (%*pbl)\n",
-+			ret, cpumask_pr_args(policy->cpus));
-+		goto err_min_qos_notifier;
++	c = &qos->max_frequency;
++	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
++		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE);
++		memset(req, 0, sizeof(*req));
 +	}
 +
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
- 	spin_lock_init(&policy->transition_lock);
- 	init_waitqueue_head(&policy->transition_wait);
- 	init_completion(&policy->kobj_unregister);
- 	INIT_WORK(&policy->update, handle_update);
-+	INIT_WORK(&policy->req_work, cpufreq_update_freq_work);
+ 	f = &qos->flags;
+ 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
+ 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+@@ -374,6 +414,8 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+ 	switch(req->type) {
+ 	case DEV_PM_QOS_RESUME_LATENCY:
+ 	case DEV_PM_QOS_LATENCY_TOLERANCE:
++	case DEV_PM_QOS_MIN_FREQUENCY:
++	case DEV_PM_QOS_MAX_FREQUENCY:
+ 		curr_value = req->data.pnode.prio;
+ 		break;
+ 	case DEV_PM_QOS_FLAGS:
+@@ -486,9 +528,6 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
+ {
+ 	int ret = 0;
  
- 	policy->cpu = cpu;
- 	return policy;
+-	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
+-		return -EINVAL;
+-
+ 	mutex_lock(&dev_pm_qos_mtx);
  
-+err_min_qos_notifier:
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_min,
-+				   DEV_PM_QOS_MIN_FREQUENCY);
-+err_kobj_remove:
-+	cpufreq_policy_put_kobj(policy);
- err_free_real_cpus:
- 	free_cpumask_var(policy->real_cpus);
- err_free_rcpumask:
-@@ -1129,30 +1221,9 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	return NULL;
+ 	if (IS_ERR(dev->power.qos))
+@@ -496,10 +535,28 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
+ 	else if (!dev->power.qos)
+ 		ret = dev_pm_qos_constraints_allocate(dev);
+ 
+-	if (!ret)
++	if (ret)
++		goto unlock;
++
++	switch (type) {
++	case DEV_PM_QOS_RESUME_LATENCY:
+ 		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
+ 						       notifier);
++		break;
++	case DEV_PM_QOS_MIN_FREQUENCY:
++		ret = blocking_notifier_chain_register(dev->power.qos->min_frequency.notifiers,
++						       notifier);
++		break;
++	case DEV_PM_QOS_MAX_FREQUENCY:
++		ret = blocking_notifier_chain_register(dev->power.qos->max_frequency.notifiers,
++						       notifier);
++		break;
++	default:
++		WARN_ON(1);
++		ret = -EINVAL;
++	}
+ 
++unlock:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	return ret;
  }
- 
--static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
--{
--	struct kobject *kobj;
--	struct completion *cmp;
--
--	down_write(&policy->rwsem);
--	cpufreq_stats_free_table(policy);
--	kobj = &policy->kobj;
--	cmp = &policy->kobj_unregister;
--	up_write(&policy->rwsem);
--	kobject_put(kobj);
--
--	/*
--	 * We need to make sure that the underlying kobj is
--	 * actually not referenced anymore by anybody before we
--	 * proceed with unloading.
--	 */
--	pr_debug("waiting for dropping of refcount\n");
--	wait_for_completion(cmp);
--	pr_debug("wait complete\n");
--}
--
- static void cpufreq_policy_free(struct cpufreq_policy *policy)
+@@ -520,20 +577,35 @@ int dev_pm_qos_remove_notifier(struct device *dev,
+ 			       struct notifier_block *notifier,
+ 			       enum dev_pm_qos_req_type type)
  {
-+	struct device *dev = get_cpu_device(policy->cpu);
- 	unsigned long flags;
- 	int cpu;
+-	int retval = 0;
+-
+-	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
+-		return -EINVAL;
++	int ret = 0;
  
-@@ -1164,6 +1235,10 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 		per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 	mutex_lock(&dev_pm_qos_mtx);
  
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_max,
-+				   DEV_PM_QOS_MAX_FREQUENCY);
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_min,
-+				   DEV_PM_QOS_MIN_FREQUENCY);
- 	cpufreq_policy_put_kobj(policy);
- 	free_cpumask_var(policy->real_cpus);
- 	free_cpumask_var(policy->related_cpus);
-@@ -2239,6 +2314,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 			      struct cpufreq_policy *new_policy)
- {
- 	struct cpufreq_governor *old_gov;
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	unsigned long min, max;
- 	int ret;
+ 	/* Silently return if the constraints object is not present. */
+-	if (!IS_ERR_OR_NULL(dev->power.qos))
+-		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
+-							    notifier);
++	if (IS_ERR_OR_NULL(dev->power.qos))
++		goto unlock;
  
- 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
-@@ -2253,11 +2330,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	if (new_policy->min > new_policy->max)
- 		return -EINVAL;
- 
-+	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-+	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
++	switch (type) {
++	case DEV_PM_QOS_RESUME_LATENCY:
++		ret = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
++							 notifier);
++		break;
++	case DEV_PM_QOS_MIN_FREQUENCY:
++		ret = blocking_notifier_chain_unregister(dev->power.qos->min_frequency.notifiers,
++							 notifier);
++		break;
++	case DEV_PM_QOS_MAX_FREQUENCY:
++		ret = blocking_notifier_chain_unregister(dev->power.qos->max_frequency.notifiers,
++							 notifier);
++		break;
++	default:
++		WARN_ON(1);
++		ret = -EINVAL;
++	}
 +
-+	if (min > new_policy->min)
-+		new_policy->min = min;
-+	if (max < new_policy->max)
-+		new_policy->max = max;
-+
- 	/* verify the cpu speed can be set within this limit */
- 	ret = cpufreq_driver->verify(new_policy);
- 	if (ret)
- 		return ret;
++unlock:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+-	return retval;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_notifier);
  
-+	/*
-+	 * The notifier-chain shall be removed once all the users of
-+	 * CPUFREQ_ADJUST are moved to use the QoS framework.
-+	 */
- 	/* adjust if necessary - all reasons */
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 			CPUFREQ_ADJUST, new_policy);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index b160e98076e3..f8f48d8a9b52 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -90,6 +90,7 @@ struct cpufreq_policy {
+@@ -593,6 +665,9 @@ static void __dev_pm_qos_drop_user_request(struct device *dev,
+ 		req = dev->power.qos->flags_req;
+ 		dev->power.qos->flags_req = NULL;
+ 		break;
++	default:
++		WARN_ON(1);
++		return;
+ 	}
+ 	__dev_pm_qos_remove_request(req);
+ 	kfree(req);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 55814d48c39c..3f994283a5ae 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -40,6 +40,8 @@ enum pm_qos_flags_status {
+ #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
+ #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS	PM_QOS_LATENCY_ANY_NS
+ #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
++#define PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE	0
++#define PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE	(-1)
+ #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
  
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
-+	struct work_struct	req_work;
- 
- 	struct cpufreq_user_policy user_policy;
- 	struct cpufreq_frequency_table	*freq_table;
-@@ -154,6 +155,9 @@ struct cpufreq_policy {
- 
- 	/* Pointer to the cooling device if used for thermal mitigation */
- 	struct thermal_cooling_device *cdev;
-+
-+	struct notifier_block nb_min;
-+	struct notifier_block nb_max;
+ #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
+@@ -58,6 +60,8 @@ struct pm_qos_flags_request {
+ enum dev_pm_qos_req_type {
+ 	DEV_PM_QOS_RESUME_LATENCY = 1,
+ 	DEV_PM_QOS_LATENCY_TOLERANCE,
++	DEV_PM_QOS_MIN_FREQUENCY,
++	DEV_PM_QOS_MAX_FREQUENCY,
+ 	DEV_PM_QOS_FLAGS,
  };
  
- /* Only for ACPI */
+@@ -99,10 +103,14 @@ struct pm_qos_flags {
+ struct dev_pm_qos {
+ 	struct pm_qos_constraints resume_latency;
+ 	struct pm_qos_constraints latency_tolerance;
++	struct pm_qos_constraints min_frequency;
++	struct pm_qos_constraints max_frequency;
+ 	struct pm_qos_flags flags;
+ 	struct dev_pm_qos_request *resume_latency_req;
+ 	struct dev_pm_qos_request *latency_tolerance_req;
+ 	struct dev_pm_qos_request *flags_req;
++	struct dev_pm_qos_request *min_frequency_req;
++	struct dev_pm_qos_request *max_frequency_req;
+ };
+ 
+ /* Action requested to pm_qos_update_target */
+@@ -185,6 +193,12 @@ static inline s32 dev_pm_qos_raw_read_value(struct device *dev,
+ 	case DEV_PM_QOS_RESUME_LATENCY:
+ 		return IS_ERR_OR_NULL(qos) ? PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
+ 			: pm_qos_read_value(&qos->resume_latency);
++	case DEV_PM_QOS_MIN_FREQUENCY:
++		return IS_ERR_OR_NULL(qos) ? PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE
++			: pm_qos_read_value(&qos->min_frequency);
++	case DEV_PM_QOS_MAX_FREQUENCY:
++		return IS_ERR_OR_NULL(qos) ? PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE
++			: pm_qos_read_value(&qos->max_frequency);
+ 	default:
+ 		WARN_ON(1);
+ 		return 0;
+@@ -256,6 +270,10 @@ static inline s32 dev_pm_qos_raw_read_value(struct device *dev,
+ 	switch type {
+ 	case DEV_PM_QOS_RESUME_LATENCY:
+ 		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
++	case DEV_PM_QOS_MIN_FREQUENCY:
++		return PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
++	case DEV_PM_QOS_MAX_FREQUENCY:
++		return PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
+ 	default:
+ 		WARN_ON(1);
+ 		return 0;
 -- 
 2.21.0.rc0.269.g1a574e7a288b
