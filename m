@@ -1,144 +1,77 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5] PM / sleep: measure the time of filesystem syncing
-Date: Fri, 22 Feb 2019 18:54:44 +0100
-Message-ID: <20190222175444.GA8264@amd>
-References: <20190220161840.994-1-harry.pan@intel.com>
- <20190222154904.6260-1-harry.pan@intel.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH v2 00/13] QorIQ TMU multi-sensor and HWMON support
+Date: Fri, 22 Feb 2019 12:04:55 -0800
+Message-ID: <20190222200508.26325-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190222154904.6260-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Harry Pan <harry.pan@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Everyone:
 
---RnlQjJ0d97Da+TV1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This series contains patches adding support for HWMON integration, bug
+fixes and general improvements (hopefully) for TMU driver I made while
+working on it on i.MX8MQ.
 
-On Fri 2019-02-22 23:49:04, Harry Pan wrote:
-> This patch gives the reader an intuitive metric of the time cost by
-> the kernel issuing a filesystem sync during system sleep; although
-> developer can guess by the timestamp of next log or enable the ftrace
-> power event for manual calculation, this manner is easier to read and
-> benefits the automatic script.
->=20
-> v2: simplify the variables, apply the simplest form of ktime API.
-> v3: reduce conditional compilation, rectify profiling in better syntax
-> v4: avoid interposition, profile on hibernation, rectify printk format
-> v5: introduce sync helper shared by suspend, hibernate, and snapshot
->=20
-> Signed-off-by: Harry Pan <harry.pan@intel.com>
-> ---
->  include/linux/suspend.h  |  3 +++
->  kernel/power/hibernate.c |  5 +----
->  kernel/power/main.c      | 15 +++++++++++++++
->  kernel/power/suspend.c   | 13 +++++--------
->  kernel/power/user.c      |  5 +----
->  5 files changed, 25 insertions(+), 16 deletions(-)
->=20
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 3f529ad9a9d2..6b3ea9ea6a9e 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -425,6 +425,7 @@ void restore_processor_state(void);
->  /* kernel/power/main.c */
->  extern int register_pm_notifier(struct notifier_block *nb);
->  extern int unregister_pm_notifier(struct notifier_block *nb);
-> +extern void ksys_sync_helper(void);
-> =20
->  #define pm_notifier(fn, pri) {				\
->  	static struct notifier_block fn##_nb =3D			\
-> @@ -462,6 +463,8 @@ static inline int unregister_pm_notifier(struct notif=
-ier_block *nb)
->  	return 0;
->  }
-> =20
-> +static inline void ksys_sync_helper(void) {}
-> +
->  #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
-> =20
->  static inline bool pm_wakeup_pending(void) { return false; }
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index abef759de7c8..cc105ecd9c07 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -14,7 +14,6 @@
-> =20
->  #include <linux/export.h>
->  #include <linux/suspend.h>
-> -#include <linux/syscalls.h>
->  #include <linux/reboot.h>
->  #include <linux/string.h>
->  #include <linux/device.h>
-> @@ -709,9 +708,7 @@ int hibernate(void)
->  		goto Exit;
->  	}
-> =20
-> -	pr_info("Syncing filesystems ... \n");
-> -	ksys_sync();
-> -	pr_info("done.\n");
-> +	ksys_sync_helper();
-> =20
->  	error =3D freeze_processes();
->  	if (error)
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 35b50823d83b..a08dcc743f31 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -16,6 +16,7 @@
->  #include <linux/debugfs.h>
->  #include <linux/seq_file.h>
->  #include <linux/suspend.h>
-> +#include <linux/syscalls.h>
-> =20
->  #include "power.h"
-> =20
-> @@ -51,6 +52,20 @@ void unlock_system_sleep(void)
->  }
->  EXPORT_SYMBOL_GPL(unlock_system_sleep);
-> =20
-> +void ksys_sync_helper(void)
-> +{
-> +	ktime_t start;
-> +	s64 elapsed_msecs;
-> +
-> +	start =3D ktime_get();
-> +	ksys_sync();
-> +	elapsed_msecs =3D ktime_to_ms(ktime_sub(ktime_get(), start));
-> +	pr_info("Filesystems sync: %lld.%03lld seconds\n",
-> +		elapsed_msecs / MSEC_PER_SEC,
-> +		elapsed_msecs % MSEC_PER_SEC);
-> +}
+Feedback is welcome!
 
-Sharing code is fine. Changing message, remove partial print before
-long operation is not.
+Thanks,
+Andrey Smirnov
 
-Adding timing is not, either. There are other ways to get that info.
+Changes since [v1]
 
-NAK.
-									Pavel
-							=09
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+    - Rebased on "linus" branch of
+      git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+      that included latest chagnes adding multi-sensors support
 
---RnlQjJ0d97Da+TV1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+    - Dropped
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+	thermal: qoriq: Add support for multiple thremal sites
+	thermal: qoriq: Be more strict when parsing
+	thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
 
-iEYEARECAAYFAlxwN2QACgkQMOfwapXb+vJvBQCgkMRk0v/vPSFG3A+Sbq19oee0
-8m8AnAsOmxyUQNmZVQPMn8p/jnaclXOJ
-=myIT
------END PGP SIGNATURE-----
+      since they are no longer relevant
 
---RnlQjJ0d97Da+TV1--
+    - Added
+
+	thermal: qoriq: Don't store struct thermal_zone_device reference
+	thermal: qoriq: Add local struct qoriq_sensor pointer
+	thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
+	thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+
+      to simplify latest codebase
+
+    - Changed "thermal: qoriq: Do not report invalid temperature
+      reading" to use regmap_read_poll_timeout() to make sure that
+      tmu_get_temp() waits for fist sample to be ready before
+      reporting it. This case is triggered on my setup if
+      qoriq_thermal is compiled as a module
+
+[v1] lore.kernel.org/lkml/20190218191141.3729-1-andrew.smirnov@gmail.com
+
+
+Andrey Smirnov (13):
+  thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+  thermal: qoriq: Remove unnecessary DT node is NULL check
+  thermal: qoriq: Add local struct device pointer
+  thermal: qoriq: Don't store struct thermal_zone_device reference
+  thermal: qoriq: Add local struct qoriq_sensor pointer
+  thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
+  thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+  thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
+  thermal: qoriq: Convert driver to use devm_ioremap()
+  thermal: qoriq: Convert driver to use regmap API
+  thermal: qoriq: Enable all sensors before registering them
+  thermal: qoriq: Do not report invalid temperature reading
+  thermal: qoriq: Add hwmon support
+
+ drivers/thermal/qoriq_thermal.c | 274 ++++++++++++++++----------------
+ drivers/thermal/thermal_hwmon.c |  28 ++++
+ drivers/thermal/thermal_hwmon.h |   7 +
+ 3 files changed, 169 insertions(+), 140 deletions(-)
+
+-- 
+2.20.1
