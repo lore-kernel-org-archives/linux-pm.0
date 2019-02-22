@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v2 04/13] thermal: qoriq: Don't store struct thermal_zone_device reference
-Date: Fri, 22 Feb 2019 12:04:59 -0800
-Message-ID: <20190222200508.26325-5-andrew.smirnov@gmail.com>
+Subject: [PATCH v2 09/13] thermal: qoriq: Convert driver to use devm_ioremap()
+Date: Fri, 22 Feb 2019 12:05:04 -0800
+Message-ID: <20190222200508.26325-10-andrew.smirnov@gmail.com>
 References: <20190222200508.26325-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,8 +12,8 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Struct thermal_zone_device reference stored as sensor's private data
-isn't really used anywhere in the code. Drop it.
+Convert driver to use devm_ioremap() to simplify memory deallocation
+and error handling code. No functional change intended.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -25,50 +25,69 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 91f9f49d2776..6d40b9788266 100644
+index a3ddb55740e4..4f9a2543f9c3 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -65,7 +65,6 @@ struct qoriq_tmu_data;
-  * Thermal zone data
-  */
- struct qoriq_sensor {
--	struct thermal_zone_device	*tzd;
- 	struct qoriq_tmu_data		*qdata;
- 	int				id;
- };
-@@ -114,6 +113,8 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
- 	int id, sites = 0;
+@@ -192,6 +192,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct device *dev = &pdev->dev;
++	struct resource *io;
  
- 	for (id = 0; id < SITES_MAX; id++) {
-+		struct thermal_zone_device *tzd;
+ 	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+ 			    GFP_KERNEL);
+@@ -200,7 +201,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
+ 
+-	data->regs = of_iomap(np, 0);
++	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!io) {
++		dev_err(dev, "Failed to get memory region\n");
++		return -ENODEV;
++	}
 +
- 		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
- 				sizeof(struct qoriq_sensor), GFP_KERNEL);
- 		if (!qdata->sensor[id])
-@@ -121,13 +122,15 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
++	data->regs = devm_ioremap(dev, io->start, resource_size(io));
+ 	if (!data->regs) {
+ 		dev_err(dev, "Failed to get memory region\n");
+ 		return -ENODEV;
+@@ -210,23 +217,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
- 		qdata->sensor[id]->id = id;
- 		qdata->sensor[id]->qdata = qdata;
--		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
--				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
--		if (IS_ERR(qdata->sensor[id]->tzd)) {
--			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
-+
-+		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
-+							   qdata->sensor[id],
-+							   &tmu_tz_ops);
-+		if (IS_ERR(tzd)) {
-+			if (PTR_ERR(tzd) == -ENODEV)
- 				continue;
- 			else
--				return PTR_ERR(qdata->sensor[id]->tzd);
-+				return PTR_ERR(tzd);
- 		}
+ 	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+ 	if (ret < 0)
+-		goto err_tmu;
++		return ret;
  
- 		sites |= 0x1 << (15 - id);
+ 	ret = qoriq_tmu_register_tmu_zone(dev, data);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Failed to register sensors\n");
+-		ret = -ENODEV;
+-		goto err_iomap;
++		return -ENODEV;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
+ 	return 0;
+-
+-err_tmu:
+-	iounmap(data->regs);
+-
+-	return ret;
+ }
+ 
+ static int qoriq_tmu_remove(struct platform_device *pdev)
+@@ -236,7 +237,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
+ 	/* Disable monitoring */
+ 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+ 
+-	iounmap(data->regs);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	return 0;
 -- 
 2.20.1
