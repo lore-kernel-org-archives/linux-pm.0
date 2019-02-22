@@ -1,56 +1,149 @@
-From: Qais Yousef <qais.yousef@arm.com>
-Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
- framework
-Date: Fri, 22 Feb 2019 11:44:46 +0000
-Message-ID: <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
-References: <cover.1550748118.git.viresh.kumar@linaro.org>
- <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Harry Pan <harry.pan@intel.com>
+Subject: [PATCH v5] PM / sleep: measure the time of filesystem syncing
+Date: Fri, 22 Feb 2019 22:54:45 +0800
+Message-ID: <20190222145445.12360-1-harry.pan@intel.com>
+References: <20190220161840.994-1-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
+In-Reply-To: <20190220161840.994-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: gs0622@gmail.com, Harry Pan <harry.pan@intel.com>, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Verish
+This patch gives the reader an intuitive metric of the time cost by
+the kernel issuing a filesystem sync during system sleep; although
+developer can guess by the timestamp of next log or enable the ftrace
+power event for manual calculation, this manner is easier to read and
+benefits the automatic script.
 
-On 02/21/19 16:59, Viresh Kumar wrote:
+v2: simplify the variables, apply the simplest form of ktime API.
+v3: reduce conditional compilation, rectify profiling in better syntax
+v4: avoid interposition, profile on hibernation, rectify printk format
+v5: introduce sync helper shared by suspend, hibernate, and snapshot
 
-[...]
+Signed-off-by: Harry Pan <harry.pan@intel.com>
+---
+ include/linux/suspend.h  |  3 +++
+ kernel/power/hibernate.c |  4 +---
+ kernel/power/main.c      | 15 +++++++++++++++
+ kernel/power/suspend.c   | 13 +++++--------
+ kernel/power/user.c      |  4 +---
+ 5 files changed, 25 insertions(+), 14 deletions(-)
 
-> @@ -2239,6 +2314,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  			      struct cpufreq_policy *new_policy)
->  {
->  	struct cpufreq_governor *old_gov;
-> +	struct device *cpu_dev = get_cpu_device(policy->cpu);
-> +	unsigned long min, max;
->  	int ret;
->  
->  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
-> @@ -2253,11 +2330,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	if (new_policy->min > new_policy->max)
->  		return -EINVAL;
->  
-> +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-> +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
-> +
-> +	if (min > new_policy->min)
-> +		new_policy->min = min;
-> +	if (max < new_policy->max)
-> +		new_policy->max = max;
-> +
-
-Assuming for example min and max range from 1-10, and thermal throttles max to
-5 using pm_qos to deal with temporary thermal pressure. But shortly after
-a driver thinks that max shouldn't be greater than 7 for one reason or another.
-
-What will happen after thermal pressure removes its constraint? Will we still
-remember the driver's request and apply it so max is set to 7 instead of 10?
-
-Thanks
-
---
-Qais Yousef
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 3f529ad9a9d2..6b3ea9ea6a9e 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -425,6 +425,7 @@ void restore_processor_state(void);
+ /* kernel/power/main.c */
+ extern int register_pm_notifier(struct notifier_block *nb);
+ extern int unregister_pm_notifier(struct notifier_block *nb);
++extern void ksys_sync_helper(void);
+ 
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+@@ -462,6 +463,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+ 	return 0;
+ }
+ 
++static inline void ksys_sync_helper(void) {}
++
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ 
+ static inline bool pm_wakeup_pending(void) { return false; }
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index abef759de7c8..895f43a5f10c 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -709,9 +709,7 @@ int hibernate(void)
+ 		goto Exit;
+ 	}
+ 
+-	pr_info("Syncing filesystems ... \n");
+-	ksys_sync();
+-	pr_info("done.\n");
++	ksys_sync_helper();
+ 
+ 	error = freeze_processes();
+ 	if (error)
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 35b50823d83b..a08dcc743f31 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -16,6 +16,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/suspend.h>
++#include <linux/syscalls.h>
+ 
+ #include "power.h"
+ 
+@@ -51,6 +52,20 @@ void unlock_system_sleep(void)
+ }
+ EXPORT_SYMBOL_GPL(unlock_system_sleep);
+ 
++void ksys_sync_helper(void)
++{
++	ktime_t start;
++	s64 elapsed_msecs;
++
++	start = ktime_get();
++	ksys_sync();
++	elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
++	pr_info("Filesystems sync: %lld.%03lld seconds\n",
++		elapsed_msecs / MSEC_PER_SEC,
++		elapsed_msecs % MSEC_PER_SEC);
++}
++EXPORT_SYMBOL_GPL(ksys_sync_helper);
++
+ /* Routines for PM-transition notifications */
+ 
+ static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0bd595a0b610..e39059dea38b 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -17,7 +17,6 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+-#include <linux/syscalls.h>
+ #include <linux/gfp.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+@@ -568,13 +567,11 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_TO_IDLE)
+ 		s2idle_begin();
+ 
+-#ifndef CONFIG_SUSPEND_SKIP_SYNC
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	pr_info("Syncing filesystems ... ");
+-	ksys_sync();
+-	pr_cont("done.\n");
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-#endif
++	if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
++		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
++		ksys_sync_helper();
++		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
++	}
+ 
+ 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+ 	pm_suspend_clear_flags();
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 2d8b60a3c86b..68dbd9eac8e1 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -228,9 +228,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		if (data->frozen)
+ 			break;
+ 
+-		printk("Syncing filesystems ... ");
+-		ksys_sync();
+-		printk("done.\n");
++		ksys_sync_helper();
+ 
+ 		error = freeze_processes();
+ 		if (error)
+-- 
+2.18.1
