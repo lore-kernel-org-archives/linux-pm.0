@@ -1,117 +1,144 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 5/7] drivers: devfreq: add longer polling interval in
- idle
-Date: Fri, 22 Feb 2019 17:03:02 +0100
-Message-ID: <dbde3366-a115-3fe0-abb4-65ef0d8b760d@partner.samsung.com>
-References: <e5e9c6f0-5a1e-8ba1-556a-74edb1782980@partner.samsung.com>
-        <1550010238-24002-6-git-send-email-l.luba@partner.samsung.com>
-        <1550010238-24002-1-git-send-email-l.luba@partner.samsung.com>
-        <20190218043311epcms1p33ccb2c312e871294025171d97bb87ac6@epcms1p3>
-        <CGME20190212222436eucas1p21eebc80796406787a2ebf9a84ee5b868@epcms1p7>
-        <20190221055601epcms1p7b87bba9a878683453f7e46c84ed032b9@epcms1p7>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v5] PM / sleep: measure the time of filesystem syncing
+Date: Fri, 22 Feb 2019 18:54:44 +0100
+Message-ID: <20190222175444.GA8264@amd>
+References: <20190220161840.994-1-harry.pan@intel.com>
+ <20190222154904.6260-1-harry.pan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190221055601epcms1p7b87bba9a878683453f7e46c84ed032b9@epcms1p7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190222154904.6260-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "tkjos@google.com" <tkjos@google.com>, "joel@joelfernandes.org" <joel@joelfernandes.org>, "chris.diamand@arm.com" <chris.diamand@arm.com>, "mka@chromium.org" <mka@chromium.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "mingo@redhat.com" <mingo@redhat.com>
+To: Harry Pan <harry.pan@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, gs0622@gmail.com, rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi MyungJoo,
 
-On 2/21/19 6:56 AM, MyungJoo Ham wrote:
->>>
->>> There are some requirements that you need to consider:
->>>
->>> Is 30% really applicable to ALL devfreq devices?
->> The 30% load while the device is on lowest OPP is to filter some noise.
->> It might be tunable over sysfs for each device if you like.
->>>       - What if some devices do not want such behaviors?
->> They can set polling_idle_ms and polling_ms the same value.
->>>       - What if some devices want different values (change behavors)?
->> Need of sysfs tunable here.
->>>       - What if some manufactures want different default values?
->> Like above (sysfs).
->>>       - What if some devices want to let the framework know that it's in idle?
->> There might be a filed in devfreq->state which could handle this.
->>>       - What if some other kernel context, device (drivers),
->>>       or userspace process want to notify that it's no more idling?This issue is more related to the new movement in the 'interconnect'
->> development. They have a goal for this kind of interactions and QoS
->> between devices or their clients. In devfreq it would be possible
->> to tackle this, but would require a lot of changes (notification chain,
->> state machines in devices,
->>
->>>
->>> As mentioned in the internal thread (tizen.org),
->>> I'm not convinced by the idea of assuming that a device can be considered "idling"
->>> if it has simply "low" utilization.
->>>
->>> You are going to deteriorate the UI response time of mobile devices significantly.
->> Current devfreq wake-up also does not guarantee that, maybe on a single
->> CPU platform does.
-> 
-> Yes, the current devfreq does not enhance UI response time in the sense
-> that it would keep the same reponse time anyway.
-> 
-> However, your current approach will surely deteriorate it by lengthen
-> the polling latency.
-> 
-> For mobile and wearable devices, in many cases I've been witnessing,
-> the device idles right before the user's input (launching an app,
-> scrolling messages or web pages, or press a play button).
-> For mitigation, we often relay UI inputs to DVFS mechanisms so that
-> we either increase frequency for any UI inputs for a short period or
-> shorten the polling latency for a short period.
-> When a highly user-interactive device is idling or operating a low frequency,
-> we should assume that it's going to be highly performing anytime;
-> loosening the checking period is not a good solution in that sense
-> although it is probable for servers or workstations.
-> But, I don't think servers/workstations do care power consumption of
-> DVFS checking loops anyway.
-It is not just mobiles or servers (I agree servers are not in scope).
-Devices like TVs, set-top-boxes, IP cameras, car IVI, they might care
-about DVFS, but they do not have batteries (maybe a big car battery...).
-They probably have more than 1 CPU and have some accelerators, which
-they might register devfreq devices.
-> 
-> 
-> 
->>
->> I will try to address your and Chanwoo's comments that the devfreq still
->> needs deferred polling in some platforms.
->> Would it be OK if we have two options: deferred and delayed work while
->> registering a wakeup for a device?
->> That would be a function like: polling_mode_init(devfreq) instead of
->> simple INIT_DEFERRED_WORK(), which will check the device's preference.
->> The device driver could set a filed in 'polling_mode' to enum:
->> POWER_EFFICIENT or RELIABLE_INTERVAL. For compatibility with old drivers
->> where the polling_mode = 0, SYSTEM_DEFAULT_POLLING_MODE (which is one
->> of these two) would be used.
->> Then the two-phase-polling-interval from this patch could only be used
->> for the RELIABLE_INTERVAL configuration or even dropped.
-> 
-> One thing I want to add is: let's not over-complicate it.
-> Do you have any experimental results on how much power is saved by doing this?
-> (and user response time losses)
-No I don't have such results. Maybe it is not even worth to add this
-two-phase-polling because the polling using DELAYED does not increase
-the power consumption too much. Like for the device mentioned above.
+--RnlQjJ0d97Da+TV1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Simplest first step.
-What would you say to add just the possibility of choosing between:
-INIT_DEFERRED_WORK() and INIT_DELAYED_WORK() in runtime via sysfs?
-There would be also Kconfig which sets default.
-No additional code for different custom polling modes.
+On Fri 2019-02-22 23:49:04, Harry Pan wrote:
+> This patch gives the reader an intuitive metric of the time cost by
+> the kernel issuing a filesystem sync during system sleep; although
+> developer can guess by the timestamp of next log or enable the ftrace
+> power event for manual calculation, this manner is easier to read and
+> benefits the automatic script.
+>=20
+> v2: simplify the variables, apply the simplest form of ktime API.
+> v3: reduce conditional compilation, rectify profiling in better syntax
+> v4: avoid interposition, profile on hibernation, rectify printk format
+> v5: introduce sync helper shared by suspend, hibernate, and snapshot
+>=20
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
+> ---
+>  include/linux/suspend.h  |  3 +++
+>  kernel/power/hibernate.c |  5 +----
+>  kernel/power/main.c      | 15 +++++++++++++++
+>  kernel/power/suspend.c   | 13 +++++--------
+>  kernel/power/user.c      |  5 +----
+>  5 files changed, 25 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 3f529ad9a9d2..6b3ea9ea6a9e 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -425,6 +425,7 @@ void restore_processor_state(void);
+>  /* kernel/power/main.c */
+>  extern int register_pm_notifier(struct notifier_block *nb);
+>  extern int unregister_pm_notifier(struct notifier_block *nb);
+> +extern void ksys_sync_helper(void);
+> =20
+>  #define pm_notifier(fn, pri) {				\
+>  	static struct notifier_block fn##_nb =3D			\
+> @@ -462,6 +463,8 @@ static inline int unregister_pm_notifier(struct notif=
+ier_block *nb)
+>  	return 0;
+>  }
+> =20
+> +static inline void ksys_sync_helper(void) {}
+> +
+>  #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+> =20
+>  static inline bool pm_wakeup_pending(void) { return false; }
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index abef759de7c8..cc105ecd9c07 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -14,7 +14,6 @@
+> =20
+>  #include <linux/export.h>
+>  #include <linux/suspend.h>
+> -#include <linux/syscalls.h>
+>  #include <linux/reboot.h>
+>  #include <linux/string.h>
+>  #include <linux/device.h>
+> @@ -709,9 +708,7 @@ int hibernate(void)
+>  		goto Exit;
+>  	}
+> =20
+> -	pr_info("Syncing filesystems ... \n");
+> -	ksys_sync();
+> -	pr_info("done.\n");
+> +	ksys_sync_helper();
+> =20
+>  	error =3D freeze_processes();
+>  	if (error)
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 35b50823d83b..a08dcc743f31 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/debugfs.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/suspend.h>
+> +#include <linux/syscalls.h>
+> =20
+>  #include "power.h"
+> =20
+> @@ -51,6 +52,20 @@ void unlock_system_sleep(void)
+>  }
+>  EXPORT_SYMBOL_GPL(unlock_system_sleep);
+> =20
+> +void ksys_sync_helper(void)
+> +{
+> +	ktime_t start;
+> +	s64 elapsed_msecs;
+> +
+> +	start =3D ktime_get();
+> +	ksys_sync();
+> +	elapsed_msecs =3D ktime_to_ms(ktime_sub(ktime_get(), start));
+> +	pr_info("Filesystems sync: %lld.%03lld seconds\n",
+> +		elapsed_msecs / MSEC_PER_SEC,
+> +		elapsed_msecs % MSEC_PER_SEC);
+> +}
 
-Regards,
-Lukasz
-> 
-> 
-> Cheers,
-> MyungJoo
-> 
-> 
-> 
+Sharing code is fine. Changing message, remove partial print before
+long operation is not.
+
+Adding timing is not, either. There are other ways to get that info.
+
+NAK.
+									Pavel
+							=09
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--RnlQjJ0d97Da+TV1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlxwN2QACgkQMOfwapXb+vJvBQCgkMRk0v/vPSFG3A+Sbq19oee0
+8m8AnAsOmxyUQNmZVQPMn8p/jnaclXOJ
+=myIT
+-----END PGP SIGNATURE-----
+
+--RnlQjJ0d97Da+TV1--
