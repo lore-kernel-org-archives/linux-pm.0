@@ -1,99 +1,56 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: Add a predict callback for the governors
-Date: Fri, 22 Feb 2019 11:35:58 +0100
-Message-ID: <CAJZ5v0ishtmAJ4vyosedTY6ZY+RcenpP_yzwVAgGybONGU6Zsw@mail.gmail.com>
-References: <20190221145631.26356-1-daniel.lezcano@linaro.org>
- <CAJZ5v0iCkMA=LVvV+-jqr8fCYz2mwaqtiKmNTfxf0dxZ=MvdiQ@mail.gmail.com> <d315736a-2aa0-3c8d-f3cf-f73b60e7ebe0@linaro.org>
+From: Qais Yousef <qais.yousef@arm.com>
+Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
+ framework
+Date: Fri, 22 Feb 2019 11:44:46 +0000
+Message-ID: <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
+References: <cover.1550748118.git.viresh.kumar@linaro.org>
+ <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d315736a-2aa0-3c8d-f3cf-f73b60e7ebe0@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 21, 2019 at 6:40 PM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
-> On 21/02/2019 17:18, Rafael J. Wysocki wrote:
-> > On Thu, Feb 21, 2019 at 3:56 PM Daniel Lezcano
-> > <daniel.lezcano@linaro.org> wrote:
-> >>
-> >> Predicting the next event on the current CPU is implemented in the
-> >> idle state selection function, thus the selection logic and the
-> >> prediction are tied together and it is hard to decorrelate both.
-> >>
-> >> The following change introduces the cpuidle function to give the
-> >> opportunity to the governor to store the guess estimate of the
-> >> different source of wakeup and then reuse them in the selection
-> >> process. Consequently we end up with two separate operations clearly
-> >> identified.
-> >>
-> >> As the next events are stored in the cpuidle device structure it is
-> >> easy to propagate them in the different governor callbacks.
-> >
-> > Can you explain a bit how you would use this new callback in a governor?
->
-> Sure.
->
-> Today we have the selection and the prediction tied together. The
-> prediction is modulated with some inputs coming from the governor's
-> policy (eg. performance multiplier).
->
-> It is hard to know if the prediction is correct or not, hard to know the
-> duration of the computation for the next event and hard to know if the
-> idle state selection succeeded because of a good prediction or a good
-> governor policy.
->
-> I propose to provide the callback where we fill the guess estimated next
-> events on the system, so we can trace them and benchmark the computation
-> time.
->
-> The selection of the idle state becomes an separate action where we can
-> apply any specific governor heuristic or policy.
->
-> By separating the selection and the prediction, we can identify where
-> the weakness is in our test scenario: the prediction or the governor
-> selection policy.
+Hi Verish
 
-I'm not quite convinced about the idea that the "prediction" and
-"selection" parts can be entirely separate.
+On 02/21/19 16:59, Viresh Kumar wrote:
 
-Besides, this new callback doesn't return anything, it goes before
-->select and the latter is invoked unconditionally anyway.  That's
-extra overhead (even if small) for no real gain.  I don't see why it
-is better to do the split in the core rather than in the governor
-itself.  You can always design a governor ->select() to call two
-separate functions, one after another, internally, so why to do that
-in the core and inflict that particular design choice on everybody?
+[...]
 
-For example, there's no "predict" part running before the "select" one
-in the TEO governor at all.  There is something like that in menu, but
-splitting it off would be rather artificial IMO.
+> @@ -2239,6 +2314,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>  			      struct cpufreq_policy *new_policy)
+>  {
+>  	struct cpufreq_governor *old_gov;
+> +	struct device *cpu_dev = get_cpu_device(policy->cpu);
+> +	unsigned long min, max;
+>  	int ret;
+>  
+>  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+> @@ -2253,11 +2330,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>  	if (new_policy->min > new_policy->max)
+>  		return -EINVAL;
+>  
+> +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
+> +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
+> +
+> +	if (min > new_policy->min)
+> +		new_policy->min = min;
+> +	if (max < new_policy->max)
+> +		new_policy->max = max;
+> +
 
-Next, the cpuidle_predict structure.  I'm not even sure why it is there at all.
+Assuming for example min and max range from 1-10, and thermal throttles max to
+5 using pm_qos to deal with temporary thermal pressure. But shortly after
+a driver thinks that max shouldn't be greater than 7 for one reason or another.
 
-Presumably, the purpose of it is to pass some data from ->predict to
-->select, but why does it have to be there in struct cpuidle_device?
-The governor appears to be the only user of it anyway, so wouldn't it
-be better to store that information in the governor's internal data
-structures if really needed?
+What will happen after thermal pressure removes its constraint? Will we still
+remember the driver's request and apply it so max is set to 7 instead of 10?
 
-Moreover, why does it include the next_hrtimer and next_timer fields?
-It looks like you'd need to do some nohz code surgery to separate the
-two and would that be useful even?  And even so, these values need not
-be predicted.  It is known when the next timer event is going to
-occur, both with and without the scheduler tick included, and that's
-why there is tick_nohz_get_sleep_length().
+Thanks
 
-If you want to do a similar thing for non-timer interrupts in order to
-use the IRQ stats, you can simply provide a function similar to
-tick_nohz_get_sleep_length() for that, but that's available already,
-isn't it?
-
-Also, I'm not really sure what next_resched is and how exactly it is
-going to be computed.
-
-Thanks,
-Rafael
+--
+Qais Yousef
