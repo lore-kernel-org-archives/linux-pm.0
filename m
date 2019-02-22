@@ -1,7 +1,7 @@
 From: Harry Pan <harry.pan@intel.com>
 Subject: [PATCH v5] PM / sleep: measure the time of filesystem syncing
-Date: Fri, 22 Feb 2019 22:54:45 +0800
-Message-ID: <20190222145445.12360-1-harry.pan@intel.com>
+Date: Fri, 22 Feb 2019 23:49:04 +0800
+Message-ID: <20190222154904.6260-1-harry.pan@intel.com>
 References: <20190220161840.994-1-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190220161840.994-1-harry.pan@intel.com>
@@ -24,11 +24,11 @@ v5: introduce sync helper shared by suspend, hibernate, and snapshot
 Signed-off-by: Harry Pan <harry.pan@intel.com>
 ---
  include/linux/suspend.h  |  3 +++
- kernel/power/hibernate.c |  4 +---
+ kernel/power/hibernate.c |  5 +----
  kernel/power/main.c      | 15 +++++++++++++++
  kernel/power/suspend.c   | 13 +++++--------
- kernel/power/user.c      |  4 +---
- 5 files changed, 25 insertions(+), 14 deletions(-)
+ kernel/power/user.c      |  5 +----
+ 5 files changed, 25 insertions(+), 16 deletions(-)
 
 diff --git a/include/linux/suspend.h b/include/linux/suspend.h
 index 3f529ad9a9d2..6b3ea9ea6a9e 100644
@@ -52,10 +52,18 @@ index 3f529ad9a9d2..6b3ea9ea6a9e 100644
  
  static inline bool pm_wakeup_pending(void) { return false; }
 diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index abef759de7c8..895f43a5f10c 100644
+index abef759de7c8..cc105ecd9c07 100644
 --- a/kernel/power/hibernate.c
 +++ b/kernel/power/hibernate.c
-@@ -709,9 +709,7 @@ int hibernate(void)
+@@ -14,7 +14,6 @@
+ 
+ #include <linux/export.h>
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -709,9 +708,7 @@ int hibernate(void)
  		goto Exit;
  	}
  
@@ -131,10 +139,18 @@ index 0bd595a0b610..e39059dea38b 100644
  	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
  	pm_suspend_clear_flags();
 diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 2d8b60a3c86b..68dbd9eac8e1 100644
+index 2d8b60a3c86b..cb24e840a3e6 100644
 --- a/kernel/power/user.c
 +++ b/kernel/power/user.c
-@@ -228,9 +228,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+@@ -10,7 +10,6 @@
+  */
+ 
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -228,9 +227,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
  		if (data->frozen)
  			break;
  
