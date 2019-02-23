@@ -1,156 +1,63 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH v1 07/13] devicetree: bindings: Document first ROHM
- BD70528 bindings
-Date: Fri, 22 Feb 2019 18:30:41 -0600
-Message-ID: <20190223003041.GA16670@bogus>
-References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <80de7a2b537ae3f414b0281736652256f38cf94c.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: UBSAN: Undefined behaviour in
+ ../drivers/cpuidle/governors/menu.c:229:21
+Date: Fri, 22 Feb 2019 17:07:13 -0800
+Message-ID: <01740a74-f663-9287-50c8-57d6e8f2bbba@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <80de7a2b537ae3f414b0281736652256f38cf94c.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, lee.jones@linaro.org, mark.rutland@arm.com, lgirdwood@gmail.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, linux@roeck-us.net, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, mikko.mutanen@fi.rohmeurope.com, heikki.haikola@fi.rohmeurope.com
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 22, 2019 at 11:45:38AM +0200, Matti Vaittinen wrote:
-> Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
-> drivers) and 4 GPIO pins which can be configured for I/O or
-> as interrupt sources withe configurable trigger levels.
+This is 5.0-rc7 on an old Toshiba Portege laptop.
 
-'dt-bindings: mfd: ...' for the subject.
 
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> ---
->  .../devicetree/bindings/mfd/rohm,bd70528-pmic.txt  | 104 +++++++++++++++++++++
->  1 file changed, 104 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> new file mode 100644
-> index 000000000000..21801440a53a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> @@ -0,0 +1,104 @@
-> +* ROHM BD70528 Power Management Integrated Circuit bindings
-> +
-> +BD70528MWV is an ultra-low Iq general purpose single-chip power management IC
-> +for battery-powered portable devices. The IC integrates 3 ultra-low current
-> +consumption buck converters, 3 LDOs and 2 LED Drivers. Also included are 4
-> +GPIOs, a real-time clock (RTC), a 32kHz clock gate, high-accuracy VREF
-> +for use with an external ADC, flexible dual-input power path, 10 bits SAR ADC
-> +for battery temperature monitor and 1S battery charger with scalable charge
-> +currents.
-> +
-> +Required properties:
-> + - compatible		: Should be "rohm,bd70528"
-> + - reg			: I2C slave address.
-> + - interrupt-parent	: Phandle to the parent interrupt controller.
+================================================================================
+[   51.898454] UBSAN: Undefined behaviour in ../drivers/cpuidle/governors/menu.c:229:21
+[   51.898467] signed integer overflow:
+[   51.898478] 3758096350 * 3758096350 cannot be represented in type 'long long int'
+[   51.898496] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G    B   W         5.0.0-rc7mod #3
+[   51.898507] Hardware name: TOSHIBA PORTEGE R835/Portable PC, BIOS Version 4.10   01/08/2013
+[   51.898519] Call Trace:
+[   51.898533]  dump_stack+0x7b/0xb5
+[   51.898544]  ubsan_epilogue+0xd/0x81
+[   51.898553]  handle_overflow+0x198/0x1d7
+[   51.898564]  ? __ubsan_handle_negate_overflow+0x195/0x195
+[   51.898575]  ? tick_nohz_get_sleep_length+0x121/0x1d0
+[   51.898588]  ? ipv6_icmp_error+0x755/0x7f0
+[   51.898597]  ? tick_nohz_next_event+0x1b3/0x4a0
+[   51.898607]  ? can_stop_idle_tick+0x260/0x260
+[   51.898617]  ? __switch_to_asm+0x40/0x70
+[   51.898628]  ? calibrate_delay+0x25/0x2341
+[   51.898637]  ? __switch_to_asm+0x34/0x70
+[   51.898646]  ? common_interrupt+0xa/0xf
+[   51.898658]  __ubsan_handle_mul_overflow+0xe/0x1c
+[   51.898669]  menu_select+0x13d0/0x1df0
+[   51.898682]  ? menu_enable_device+0x170/0x170
+[   51.898691]  ? sched_clock+0x9/0x10
+[   51.898701]  ? kasan_check_write+0x14/0x20
+[   51.898711]  ? rcu_dynticks_eqs_exit+0x2c/0x80
+[   51.898722]  cpuidle_select+0x5a/0xa0
+[   51.898732]  do_idle+0x2aa/0x3c0
+[   51.898742]  ? arch_cpu_idle_exit+0x40/0x40
+[   51.898751]  ? kasan_check_read+0x11/0x20
+[   51.898761]  ? do_raw_spin_unlock+0x54/0x220
+[   51.898773]  cpu_startup_entry+0x18/0x20
+[   51.898782]  rest_init+0x165/0x1a0
+[   51.898793]  arch_call_rest_init+0x9/0x11
+[   51.898803]  start_kernel+0x697/0x6bd
+[   51.898813]  ? mem_encrypt_init+0x6/0x6
+[   51.898822]  ? load_ucode_intel_bsp+0x53/0x8a
+[   51.898832]  ? init_intel_microcode+0x1a4/0x1a4
+[   51.898844]  ? load_ucode_bsp+0x1e8/0x21c
+[   51.898854]  x86_64_start_reservations+0x24/0x26
+[   51.898865]  x86_64_start_kernel+0x74/0x77
+[   51.898874]  secondary_startup_64+0xa4/0xb0
+[   51.898887] ================================================================================
 
-Don't need to document this. It is implied and could be in the parent.
 
-> + - interrupts		: The interrupt line the device is connected to.
-> + - interrupt-controller	: To indicate bd70528 acts as an interrupt controller.
-> + - #interrupt-cells	: Should be 2. usage is compliant to the 2 cells
-> +			  variant of ../interrupt-controller/interrupts.txt
-> + - gpio-controller	: To indicate bd70528 acts as a gpio controller.
-> + - #gpio-cells		: Should be 2. The first cell is the pin number and
-> +			  the second cell is used to specify flags. See
-> +			  ../gpio/gpio.txt for more information.
-> + - clock-frequency	: Should be 32768
-> + - #clock-cells		: Should be 0.
-> + - regulators:		: List of child nodes that specify the regulators.
-> +			  Please see ../regulator/rohm,bd70528-regulator.txt
-> +
-> +Optional properties:
-> + - clock-output-names	: Should contain name for output clock.
-> +
-> +Example:
-> +/* external oscillator */
-> +osc: oscillator {
-> +	compatible = "fixed-clock";
-> +	#clock-cells = <1>;
-> +	clock-frequency  = <32768>;
-> +	clock-output-names = "osc";
-> +};
-> +
-> +pmic: bd70528@4b {
-
-pmic@4b
-
-> +	compatible = "rohm,bd70528";
-> +	reg = <0x4b>;
-> +	interrupt-parent = <&gpio1>;
-> +	interrupts = <29 GPIO_ACTIVE_LOW>;
-> +	clocks = <&osc 0>;
-> +	#clock-cells = <0>;
-> +	clock-output-names = "bd70528-32k-out";
-> +	#gpio-cells = <2>;
-> +	gpio-controller;
-> +	interrupt-controller;
-> +	#interrupt-cells = <2>;
-> +
-> +	regulators {
-> +		buck1: BUCK1 {
-> +			regulator-name = "buck1";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3400000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck2: BUCK2 {
-> +			regulator-name = "buck2";
-> +			regulator-min-microvolt = <1200000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <125>;
-> +		};
-> +		buck3: BUCK3 {
-> +			regulator-name = "buck3";
-> +			regulator-min-microvolt = <800000>;
-> +			regulator-max-microvolt = <1800000>;
-> +			regulator-boot-on;
-> +			regulator-ramp-delay = <250>;
-> +		};
-> +		ldo1: LDO1 {
-> +			regulator-name = "ldo1";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +		ldo2: LDO2 {
-> +			regulator-name = "ldo2";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +			regulator-boot-on;
-> +		};
-> +
-> +		ldo3: LDO3 {
-> +			regulator-name = "ldo3";
-> +			regulator-min-microvolt = <1650000>;
-> +			regulator-max-microvolt = <3300000>;
-> +		};
-> +		led_ldo1: LED_LDO1 {
-> +			regulator-name = "led_ldo1";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +		led_ldo2: LED_LDO2 {
-> +			regulator-name = "led_ldo2";
-> +			regulator-min-microvolt = <200000>;
-> +			regulator-max-microvolt = <300000>;
-> +		};
-> +	};
-> +};
-> -- 
-> 2.14.3
-> 
-> 
-> -- 
-> Matti Vaittinen
-> ROHM Semiconductors
-> 
-> ~~~ "I don't think so," said Rene Descartes.  Just then, he vanished ~~~
+-- 
+~Randy
