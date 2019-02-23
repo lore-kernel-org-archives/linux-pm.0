@@ -1,74 +1,81 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 10/12] cpufreq: ap806: add missing of_node_put after
- of_device_is_available
-Date: Sat, 23 Feb 2019 14:20:41 +0100
-Message-ID: <1550928043-14889-11-git-send-email-Julia.Lawall@lip6.fr>
-References: <1550928043-14889-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V8 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Sat, 23 Feb 2019 13:38:00 -0800
+Message-ID: <20190223213759.GA1472@localhost.localdomain>
+References: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1550928043-14889-1-git-send-email-Julia.Lawall@lip6.fr>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@snte>
 List-Id: linux-pm@vger.kernel.org
 
-Add an of_node_put when a tested device node is not available.
+On Thu, Feb 21, 2019 at 06:38:30AM +0000, Anson Huang wrote:
+> NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
+> system controller, the system controller is in charge of system
+> power, clock and thermal sensors etc. management, Linux kernel
+> has to communicate with system controller via MU (message unit)
+> IPC to get temperature from thermal sensors, this patch adds
+> binding doc for i.MX system controller thermal driver.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> ---
+> Changes since V7:
+>         - remove unused property "tsens-num";
+>         - improve the compatible description;
+>         - update examples according to latest dts file.
+> ---
+>  .../devicetree/bindings/arm/freescale/fsl,scu.txt     | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> index 72d481c..d89147e 100644
+> --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> @@ -122,6 +122,19 @@ RTC bindings based on SCU Message Protocol
+>  Required properties:
+>  - compatible: should be "fsl,imx8qxp-sc-rtc";
+>  
+> +Thermal bindings based on SCU Message Protocol
+> +------------------------------------------------------------
+> +
+> +Required properties:
+> +- compatible:			Should be :
+> +				  "fsl,imx8qxp-sc-thermal"
+> +				followed by "fsl,imx-sc-thermal";
+> +
+> +- #thermal-sensor-cells:	See Documentation/devicetree/bindings/thermal/thermal.txt
+> +				for a description.
+> +
+> +- imx,sensor-resource-id: 	Property array to specify each thermal zone's sensor resource ID.
 
-The semantic patch that fixes this problem is as follows
-(http://coccinelle.lip6.fr):
+If this is an array...
 
-// <smpl>
-@@
-identifier f;
-local idexpression e;
-expression x;
-@@
+> +
+>  Example (imx8qxp):
+>  -------------
+>  lsio_mu1: mailbox@5d1c0000 {
+> @@ -168,6 +181,12 @@ firmware {
+>  		rtc: rtc {
+>  			compatible = "fsl,imx8qxp-sc-rtc";
+>  		};
+> +
+> +		tsens: thermal-sensor {
+> +			compatible = "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-thermal";
+> +			#thermal-sensor-cells = <0>;
+> +			imx,sensor-resource-id = <IMX_SC_R_SYSTEM>;
 
-e = f(...);
-... when != of_node_put(e)
-    when != x = e
-    when != e = x
-    when any
-if (<+...of_device_is_available(e)...+>) {
-  ... when != of_node_put(e)
-(
-  return e;
-|
-+ of_node_put(e);
-  return ...;
-)
-}
-// </smpl>
+then this example should have an array, to be better express how this is
+supposed to work. Can you please resend this with an array instead?
 
-Fixes: f525a670533d9 ("cpufreq: ap806: add cpufreq driver for Armada 8K")
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- drivers/cpufreq/armada-8k-cpufreq.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff -u -p a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
---- a/drivers/cpufreq/armada-8k-cpufreq.c
-+++ b/drivers/cpufreq/armada-8k-cpufreq.c
-@@ -128,8 +128,10 @@ static int __init armada_8k_cpufreq_init
- 	struct cpumask cpus;
- 
- 	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
--	if (!node || !of_device_is_available(node))
-+	if (!node || !of_device_is_available(node)) {
-+		of_node_put(node);
- 		return -ENODEV;
-+	}
- 
- 	nb_cpus = num_possible_cpus();
- 	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
+> +		};
+>  	};
+>  };
+>  
+> -- 
+> 2.7.4
+> 
