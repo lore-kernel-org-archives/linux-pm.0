@@ -1,194 +1,151 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V8 2/4] thermal: imx_sc: add i.MX system controller
- thermal support
-Date: Sun, 24 Feb 2019 02:58:06 +0000
-Message-ID: <DB3PR0402MB39168CA4597A88B9AF78AF99F5790@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
- <1550730831-14995-2-git-send-email-Anson.Huang@nxp.com>
- <20190223213858.GB1472@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190223213858.GB1472@localhost.localdomain>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "maxime.ripard@bootlin.com" <maxime.ripard@bootlin.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "festevam@gmail.com" <festevam@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>, Andy Gross <andy.gross@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, dl-linux-imx <linux-imx@nxp.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "olof@lixom.net" <olof@lixom.net>, "robh+dt@kernel.org" <robh>
+From: Harry Pan <harry.pan@intel.com>
+Subject: [PATCH v6 1/2] PM / sleep: refactor the filesystems sync to reduce duplication
+Date: Sun, 24 Feb 2019 14:17:52 +0800
+Message-ID: <20190224061753.17638-1-harry.pan@intel.com>
+References: <20190222154904.6260-1-harry.pan@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190222154904.6260-1-harry.pan@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: harry.pan@intel.com, gs0622@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksIEVkdWFyZG8NCg0KQmVzdCBSZWdhcmRzIQ0KQW5zb24gSHVhbmcNCg0KPiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFZHVhcmRvIFZhbGVudGluIFttYWlsdG86ZWR1YmV6
-dmFsQGdtYWlsLmNvbV0NCj4gU2VudDogMjAxOcTqMtTCMjTI1SA1OjM5DQo+IFRvOiBBbnNvbiBI
-dWFuZyA8YW5zb24uaHVhbmdAbnhwLmNvbT4NCj4gQ2M6IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFy
-ay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+IHMuaGF1ZXJAcGVuZ3V0
-cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21haWwuY29tOw0KPiBj
-YXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsgcnVpLnpoYW5nQGlu
-dGVsLmNvbTsNCj4gZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgQWlzaGVuZyBEb25nIDxhaXNo
-ZW5nLmRvbmdAbnhwLmNvbT47DQo+IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IHNib3lkQGtlcm5l
-bC5vcmc7IERhbmllbCBCYWx1dGENCj4gPGRhbmllbC5iYWx1dGFAbnhwLmNvbT47IEFuZHkgR3Jv
-c3MgPGFuZHkuZ3Jvc3NAbGluYXJvLm9yZz47DQo+IGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1
-OyBoZWlrb0BzbnRlY2guZGU7IGFybmRAYXJuZGIuZGU7DQo+IG1heGltZS5yaXBhcmRAYm9vdGxp
-bi5jb207IGJqb3JuLmFuZGVyc3NvbkBsaW5hcm8ub3JnOw0KPiBqYWdhbkBhbWFydWxhc29sdXRp
-b25zLmNvbTsgZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsNCj4gbWFyYy53LmdvbnphbGV6
-QGZyZWUuZnI7IG9sb2ZAbGl4b20ubmV0OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4g
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBkbC1saW51eC1pbXggPGxp
-bnV4LWlteEBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY4IDIvNF0gdGhlcm1hbDog
-aW14X3NjOiBhZGQgaS5NWCBzeXN0ZW0gY29udHJvbGxlcg0KPiB0aGVybWFsIHN1cHBvcnQNCj4g
-DQo+IEhleSBBbnNvbiwNCj4gDQo+IE9uIFRodSwgRmViIDIxLCAyMDE5IGF0IDA2OjM4OjM5QU0g
-KzAwMDAsIEFuc29uIEh1YW5nIHdyb3RlOg0KPiA+IGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3
-aGljaCBoYXMgYSBDb3J0ZXgtTTQgc3lzdGVtIGNvbnRyb2xsZXINCj4gPiBpbnNpZGUsIHRoZSBz
-eXN0ZW0gY29udHJvbGxlciBpcyBpbiBjaGFyZ2Ugb2YgY29udHJvbGxpbmcgcG93ZXIsIGNsb2Nr
-DQo+ID4gYW5kIHRoZXJtYWwgc2Vuc29ycyBldGMuLg0KPiA+DQo+ID4gVGhpcyBwYXRjaCBhZGRz
-IGkuTVggc3lzdGVtIGNvbnRyb2xsZXIgdGhlcm1hbCBkcml2ZXIgc3VwcG9ydCwgTGludXgNCj4g
-PiBrZXJuZWwgaGFzIHRvIGNvbW11bmljYXRlIHdpdGggc3lzdGVtIGNvbnRyb2xsZXIgdmlhIE1V
-IChtZXNzYWdlIHVuaXQpDQo+ID4gSVBDIHRvIGdldCBlYWNoIHRoZXJtYWwgc2Vuc29yJ3MgdGVt
-cGVyYXR1cmUsIGl0IHN1cHBvcnRzIG11bHRpcGxlDQo+ID4gc2Vuc29ycyB3aGljaCBhcmUgcGFz
-c2VkIGZyb20gZGV2aWNlIHRyZWUsIHBsZWFzZSBzZWUgdGhlIGJpbmRpbmcgZG9jDQo+ID4gZm9y
-IGRldGFpbHMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBBbnNvbiBIdWFuZyA8QW5zb24uSHVh
-bmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiBDaGFuZ2VzIHNpbmNlIFY3Og0KPiA+IAktIHJlbW92
-ZSB1bnVzZWQgc3RydWN0dXJlIGlteF9zY190aGVybWFsX2RhdGEgdG8gc2ltcGx5IHRoZSBkcml2
-ZXI7DQo+ID4gCS0gbW92ZSB0aGUgImlteCxzZW5zb3ItcmVzb3VyY2UtaWQiIHByb3BlcnR5IGZy
-b20gdGhlcm1hbCB6b25lDQo+IG5vZGUgdG8gc2N1IHRzZW5zIG5vZGUsIGFuZA0KPiA+IAkgIGdl
-dCB0aGlzIHByb3BlcnR5IHVzaW5nIHBoYW5kbGU7DQo+ID4gCS0gcmVtb3ZlIHVudXNlZCBzZW5z
-b3IgbnVtYmVyIGdvdCBmcm9tIGR0cywgbm93IGl0IGlzIG5vdCBuZWVkZWQuDQo+ID4gLS0tDQo+
-ID4gIGRyaXZlcnMvdGhlcm1hbC9LY29uZmlnICAgICAgICAgIHwgIDExICsrKw0KPiA+ICBkcml2
-ZXJzL3RoZXJtYWwvTWFrZWZpbGUgICAgICAgICB8ICAgMSArDQo+ID4gIGRyaXZlcnMvdGhlcm1h
-bC9pbXhfc2NfdGhlcm1hbC5jIHwgMTQ0DQo+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrDQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMTU2IGluc2VydGlvbnMoKykNCj4g
-PiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvdGhlcm1hbC9pbXhfc2NfdGhlcm1hbC5jDQo+
-ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL0tjb25maWcgYi9kcml2ZXJzL3Ro
-ZXJtYWwvS2NvbmZpZyBpbmRleA0KPiA+IDU4YmI3ZDcuLmZlYzBlZjUgMTAwNjQ0DQo+ID4gLS0t
-IGEvZHJpdmVycy90aGVybWFsL0tjb25maWcNCj4gPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvS2Nv
-bmZpZw0KPiA+IEBAIC0yMjMsNiArMjIzLDE3IEBAIGNvbmZpZyBJTVhfVEhFUk1BTA0KPiA+ICAJ
-ICBjcHVmcmVxIGlzIHVzZWQgYXMgdGhlIGNvb2xpbmcgZGV2aWNlIHRvIHRocm90dGxlIENQVXMg
-d2hlbiB0aGUNCj4gPiAgCSAgcGFzc2l2ZSB0cmlwIGlzIGNyb3NzZWQuDQo+ID4NCj4gPiArY29u
-ZmlnIElNWF9TQ19USEVSTUFMDQo+ID4gKwl0cmlzdGF0ZSAiVGVtcGVyYXR1cmUgc2Vuc29yIGRy
-aXZlciBmb3IgTlhQIGkuTVggU29DcyB3aXRoIFN5c3RlbQ0KPiBDb250cm9sbGVyIg0KPiA+ICsJ
-ZGVwZW5kcyBvbiAoQVJDSF9NWEMgJiYgSU1YX1NDVSkgfHwgQ09NUElMRV9URVNUDQo+ID4gKwlk
-ZXBlbmRzIG9uIE9GDQo+ID4gKwloZWxwDQo+ID4gKwkgIFN1cHBvcnQgZm9yIFRlbXBlcmF0dXJl
-IE1vbml0b3IgKFRFTVBNT04pIGZvdW5kIG9uIE5YUCBpLk1YDQo+IFNvQ3Mgd2l0aA0KPiA+ICsJ
-ICBzeXN0ZW0gY29udHJvbGxlciBpbnNpZGUsIExpbnV4IGtlcm5lbCBoYXMgdG8gY29tbXVuaWNh
-dGUgd2l0aA0KPiBzeXN0ZW0NCj4gPiArCSAgY29udHJvbGxlciB2aWEgTVUgKG1lc3NhZ2UgdW5p
-dCkgSVBDIHRvIGdldCB0ZW1wZXJhdHVyZSBmcm9tDQo+IHRoZXJtYWwNCj4gPiArCSAgc2Vuc29y
-LiBJdCBzdXBwb3J0cyBvbmUgY3JpdGljYWwgdHJpcCBwb2ludCBhbmQgb25lDQo+ID4gKwkgIHBh
-c3NpdmUgdHJpcCBwb2ludCBmb3IgZWFjaCB0aGVybWFsIHNlbnNvci4NCj4gPiArDQo+ID4gIGNv
-bmZpZyBNQVg3NzYyMF9USEVSTUFMDQo+ID4gIAl0cmlzdGF0ZSAiVGVtcGVyYXR1cmUgc2Vuc29y
-IGRyaXZlciBmb3IgTWF4aW0gTUFYNzc2MjAgUE1JQyINCj4gPiAgCWRlcGVuZHMgb24gTUZEX01B
-WDc3NjIwDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZSBiL2RyaXZl
-cnMvdGhlcm1hbC9NYWtlZmlsZSBpbmRleA0KPiA+IDQ4NmQ2ODIuLjQwNjI2MjcgMTAwNjQ0DQo+
-ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL01ha2VmaWxlDQo+ID4gKysrIGIvZHJpdmVycy90aGVy
-bWFsL01ha2VmaWxlDQo+ID4gQEAgLTQwLDYgKzQwLDcgQEAgb2JqLSQoQ09ORklHX0RCODUwMF9U
-SEVSTUFMKQkrPQ0KPiBkYjg1MDBfdGhlcm1hbC5vDQo+ID4gIG9iai0kKENPTkZJR19BUk1BREFf
-VEhFUk1BTCkJKz0gYXJtYWRhX3RoZXJtYWwubw0KPiA+ICBvYmotJChDT05GSUdfVEFOR09fVEhF
-Uk1BTCkJKz0gdGFuZ29fdGhlcm1hbC5vDQo+ID4gIG9iai0kKENPTkZJR19JTVhfVEhFUk1BTCkJ
-Kz0gaW14X3RoZXJtYWwubw0KPiA+ICtvYmotJChDT05GSUdfSU1YX1NDX1RIRVJNQUwpCSs9IGlt
-eF9zY190aGVybWFsLm8NCj4gPiAgb2JqLSQoQ09ORklHX01BWDc3NjIwX1RIRVJNQUwpCSs9IG1h
-eDc3NjIwX3RoZXJtYWwubw0KPiA+ICBvYmotJChDT05GSUdfUU9SSVFfVEhFUk1BTCkJKz0gcW9y
-aXFfdGhlcm1hbC5vDQo+ID4gIG9iai0kKENPTkZJR19EQTkwNjJfVEhFUk1BTCkJKz0gZGE5MDYy
-LXRoZXJtYWwubw0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvaW14X3NjX3RoZXJt
-YWwuYw0KPiA+IGIvZHJpdmVycy90aGVybWFsL2lteF9zY190aGVybWFsLmMNCj4gPiBuZXcgZmls
-ZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjE0NWU3M2INCj4gPiAtLS0gL2Rldi9u
-dWxsDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL2lteF9zY190aGVybWFsLmMNCj4gPiBAQCAt
-MCwwICsxLDE0NCBAQA0KPiA+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogR1BMLTIuMCsN
-Cj4gPiArLyoNCj4gPiArICogQ29weXJpZ2h0IDIwMTgtMjAxOSBOWFAuDQo+ID4gKyAqLw0KPiA+
-ICsNCj4gPiArI2luY2x1ZGUgPGxpbnV4L2Vyci5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvZmly
-bXdhcmUvaW14L3NjaS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ID4gKyNp
-bmNsdWRlIDxsaW51eC9vZi5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvb2ZfZGV2aWNlLmg+DQo+
-ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gPiArI2luY2x1ZGUgPGxp
-bnV4L3NsYWIuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3RoZXJtYWwuaD4NCj4gPiArDQo+ID4g
-KyNpbmNsdWRlICJ0aGVybWFsX2NvcmUuaCINCj4gPiArDQo+ID4gKyNkZWZpbmUgSU1YX1NDX01J
-U0NfRlVOQ19HRVRfVEVNUAkxMw0KPiA+ICsjZGVmaW5lIElNWF9TQ19DX1RFTVAJCQkwDQo+ID4g
-Kw0KPiA+ICtzdGF0aWMgc3RydWN0IGlteF9zY19pcGMgKnRoZXJtYWxfaXBjX2hhbmRsZTsNCj4g
-PiArDQo+ID4gK3N0cnVjdCBpbXhfc2Nfc2Vuc29yIHsNCj4gPiArCXN0cnVjdCB0aGVybWFsX3pv
-bmVfZGV2aWNlICp0emQ7DQo+ID4gKwl1MzIgcmVzb3VyY2VfaWQ7DQo+ID4gK307DQo+ID4gKw0K
-PiA+ICtzdHJ1Y3QgcmVxX2dldF90ZW1wIHsNCj4gPiArCXUxNiByZXNvdXJjZV9pZDsNCj4gPiAr
-CXU4IHR5cGU7DQo+ID4gK30gX19wYWNrZWQ7DQo+ID4gKw0KPiA+ICtzdHJ1Y3QgcmVzcF9nZXRf
-dGVtcCB7DQo+ID4gKwl1MTYgY2Vsc2l1czsNCj4gPiArCXU4IHRlbnRoczsNCj4gPiArfSBfX3Bh
-Y2tlZDsNCj4gPiArDQo+ID4gK3N0cnVjdCBpbXhfc2NfbXNnX21pc2NfZ2V0X3RlbXAgew0KPiA+
-ICsJc3RydWN0IGlteF9zY19ycGNfbXNnIGhkcjsNCj4gPiArCXVuaW9uIHsNCj4gPiArCQlzdHJ1
-Y3QgcmVxX2dldF90ZW1wIHJlcTsNCj4gPiArCQlzdHJ1Y3QgcmVzcF9nZXRfdGVtcCByZXNwOw0K
-PiA+ICsJfSBkYXRhOw0KPiA+ICt9IF9fcGFja2VkOw0KPiA+ICsNCj4gPiArc3RhdGljIGludCBp
-bXhfc2NfdGhlcm1hbF9nZXRfdGVtcCh2b2lkICpkYXRhLCBpbnQgKnRlbXApIHsNCj4gPiArCXN0
-cnVjdCBpbXhfc2NfbXNnX21pc2NfZ2V0X3RlbXAgbXNnOw0KPiA+ICsJc3RydWN0IGlteF9zY19y
-cGNfbXNnICpoZHIgPSAmbXNnLmhkcjsNCj4gPiArCXN0cnVjdCBpbXhfc2Nfc2Vuc29yICpzZW5z
-b3IgPSBkYXRhOw0KPiA+ICsJaW50IHJldDsNCj4gPiArDQo+ID4gKwltc2cuZGF0YS5yZXEucmVz
-b3VyY2VfaWQgPSBzZW5zb3ItPnJlc291cmNlX2lkOw0KPiA+ICsJbXNnLmRhdGEucmVxLnR5cGUg
-PSBJTVhfU0NfQ19URU1QOw0KPiA+ICsNCj4gPiArCWhkci0+dmVyID0gSU1YX1NDX1JQQ19WRVJT
-SU9OOw0KPiA+ICsJaGRyLT5zdmMgPSBJTVhfU0NfUlBDX1NWQ19NSVNDOw0KPiA+ICsJaGRyLT5m
-dW5jID0gSU1YX1NDX01JU0NfRlVOQ19HRVRfVEVNUDsNCj4gPiArCWhkci0+c2l6ZSA9IDI7DQo+
-ID4gKw0KPiA+ICsJcmV0ID0gaW14X3NjdV9jYWxsX3JwYyh0aGVybWFsX2lwY19oYW5kbGUsICZt
-c2csIHRydWUpOw0KPiA+ICsJaWYgKHJldCkgew0KPiA+ICsJCXByX2VycigicmVhZCB0ZW1wIHNl
-bnNvciAlZCBmYWlsZWQsIHJldCAlZFxuIiwNCj4gPiArCQkJc2Vuc29yLT5yZXNvdXJjZV9pZCwg
-cmV0KTsNCj4gPiArCQlyZXR1cm4gcmV0Ow0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCSp0ZW1wID0g
-bXNnLmRhdGEucmVzcC5jZWxzaXVzICogMTAwMCArIG1zZy5kYXRhLnJlc3AudGVudGhzICogMTAw
-Ow0KPiA+ICsNCj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgY29u
-c3Qgc3RydWN0IHRoZXJtYWxfem9uZV9vZl9kZXZpY2Vfb3BzIGlteF9zY190aGVybWFsX29wcyA9
-IHsNCj4gPiArCS5nZXRfdGVtcCA9IGlteF9zY190aGVybWFsX2dldF90ZW1wLCB9Ow0KPiA+ICsN
-Cj4gPiArc3RhdGljIGludCBpbXhfc2NfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2
-aWNlICpwZGV2KSB7DQo+ID4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLCAqc2Vuc29yX25wOw0K
-PiA+ICsJaW50IHJldCwgaSA9IDA7DQo+ID4gKw0KPiA+ICsJcmV0ID0gaW14X3NjdV9nZXRfaGFu
-ZGxlKCZ0aGVybWFsX2lwY19oYW5kbGUpOw0KPiA+ICsJaWYgKHJldCkNCj4gPiArCQlyZXR1cm4g
-cmV0Ow0KPiA+ICsNCj4gPiArCW5wID0gb2ZfZmluZF9ub2RlX2J5X25hbWUoTlVMTCwgInRoZXJt
-YWwtem9uZXMiKTsNCj4gPiArCWlmICghbnApDQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+IA0K
-PiBJIGFtIHN0aWxsIGZhaWxpbmcgdG8gdW5kZXJzdGFuZCB3aHkgeW91IG5lZWQgdG8gZG8gdGhl
-IHNlYXJjaCBhYm92ZSBhbmQgLi4NCg0KSSB1c2VkIHRoaXMgdG8gZGV0ZXJtaW5lIGhvdyBtYW55
-IHRoZXJtYWwgem9uZXMgd2lsbCBiZSBzdXBwb3J0ZWQgZnJvbSBkdHMsIGFuZA0KZ2V0IGVhY2gg
-dGhlcm1hbCB6b25lJ3MgcmVzb3VyY2UgSUQgZm9yIGNvbW11bmljYXRpbmcgd2l0aCBzeXN0ZW0g
-Y29udHJvbGxlciwgYnV0DQpub3cgSSBqdXN0IGZvdW5kIEkgY2FuIHVzZSB0aGUgICJpbXgsc2Vu
-c29yLXJlc291cmNlLWlkIiBwcm9wZXJ0eSdzIGVsZW1lbnQgY291bnQNCnRvIGRldGVybWluZSB0
-aGUgdGhlcm1hbCB6b25lIG51bWJlciwgc28gaW4gVjkgcGF0Y2ggc2VyaWVzLCBJIHJlbW92ZSB0
-aGlzIHNlYXJjaC4NCg0KPiANCj4gPiArDQo+ID4gKwlmb3JfZWFjaF9hdmFpbGFibGVfY2hpbGRf
-b2Zfbm9kZShucCwgc2Vuc29yX25wKSB7DQo+ID4gKwkJc3RydWN0IG9mX3BoYW5kbGVfYXJncyB0
-c2Vuc19hcmdzOw0KPiA+ICsJCXN0cnVjdCBpbXhfc2Nfc2Vuc29yICpzZW5zb3IgPQ0KPiA+ICsJ
-CQlkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwgc2l6ZW9mKCpzZW5zb3IpLA0KPiBHRlBfS0VSTkVM
-KTsNCj4gPiArCQlpZiAoIXNlbnNvcikNCj4gPiArCQkJcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0K
-PiA+ICsJCXJldCA9IG9mX3BhcnNlX3BoYW5kbGVfd2l0aF9hcmdzKHNlbnNvcl9ucCwgInRoZXJt
-YWwtDQo+IHNlbnNvcnMiLA0KPiA+ICsJCQkJIiN0aGVybWFsLXNlbnNvci1jZWxscyIsIGksICZ0
-c2Vuc19hcmdzKTsNCj4gDQo+IHRoZSBhYm92ZSBzaG91bGRudCBiZSBuZWVkZWQgdG9vLg0KDQpB
-bHJlYWR5IHJlbW92ZWQgaW4gVjkuDQoNCj4gDQo+ID4gKwkJaWYgKHJldCA8IDApDQo+ID4gKwkJ
-CXJldHVybiByZXQ7DQo+ID4gKw0KPiA+ICsJCXJldCA9IG9mX3Byb3BlcnR5X3JlYWRfdTMyX2lu
-ZGV4KHRzZW5zX2FyZ3MubnAsDQo+ID4gKwkJCSJpbXgsc2Vuc29yLXJlc291cmNlLWlkIiwgaSwg
-JnNlbnNvci0+cmVzb3VyY2VfaWQpOw0KPiANCj4gSWYgeW91IHB1dCAiaW14LHNlbnNvci1yZXNv
-dXJjZS1pZCIgaW5zaWRlIHRzZW5zIG5vZGUsIGxpa2UgZGVzY3JpYmVkIGluIHlvdXINCj4gcGF0
-Y2ggMDEsIHlvdSBzaG91bGQgYmUgYWJsZSB0byBnZXQgIG5wIGZyb20gcGRldi0+ZGV2Lm9mX25v
-ZGUsIHJpZ2h0Pw0KPiANCj4gVGhlbiB5b3Ugc2hvdWxkIGJlIGFibGUgdG8ganVzdCByZWFkIHRo
-ZSAiaW14LHNlbnNvci1yZXNvdXJjZS1pZCINCj4gZGlyZWN0bHkgZnJvbSBwZGV2LT5kZXYub2Zf
-bm9kZSwgbm8/DQoNCkFoLCB5ZXMsIEkganVzdCBkb24ndCByZW1lbWJlcmVkIHdoeSBJIG5lZWQg
-dG8gZ2V0IHRoZSBkZXZpY2Ugbm9kZSBmcm9tIHBoYW5kbGUsDQpzbyBzdHVwaWQgaW4gbGFzdCBw
-YXRjaCBzZXJpZXMuLi4gVGhhbmtzIGZvciB0aGUgY29tbWVudCwgcGxlYXNlIGhlbHAgcmV2aWV3
-IFY5IHBhdGNoIHNlcmllcy4NCg0KQW5zb24uDQoNCj4gDQo+ID4gKwkJaWYgKHJldCkgew0KPiA+
-ICsJCQlkZXZfZXJyKCZwZGV2LT5kZXYsDQo+ID4gKwkJCQkiZmFpbGVkIHRvIGdldCB2YWxpZCBz
-ZW5zb3IgcmVzb3VyY2UgaWQ6ICVkXG4iLA0KPiA+ICsJCQkJcmV0KTsNCj4gPiArCQkJYnJlYWs7
-DQo+ID4gKwkJfQ0KPiA+ICsNCj4gPiArCQlzZW5zb3ItPnR6ZCA9DQo+IGRldm1fdGhlcm1hbF96
-b25lX29mX3NlbnNvcl9yZWdpc3RlcigmcGRldi0+ZGV2LA0KPiA+ICsJCQkJCQkJCSAgIGkrKywN
-Cj4gPiArCQkJCQkJCQkgICBzZW5zb3IsDQo+ID4gKw0KPiAmaW14X3NjX3RoZXJtYWxfb3BzKTsN
-Cj4gPiArCQlpZiAoSVNfRVJSKHNlbnNvci0+dHpkKSkgew0KPiA+ICsJCQlkZXZfZXJyKCZwZGV2
-LT5kZXYsICJmYWlsZWQgdG8gcmVnaXN0ZXIgdGhlcm1hbA0KPiB6b25lXG4iKTsNCj4gPiArCQkJ
-cmV0ID0gUFRSX0VSUihzZW5zb3ItPnR6ZCk7DQo+ID4gKwkJCWJyZWFrOw0KPiA+ICsJCX0NCj4g
-PiArCX0NCj4gPiArDQo+ID4gKwlvZl9ub2RlX3B1dChucCk7DQo+ID4gKwlvZl9ub2RlX3B1dChz
-ZW5zb3JfbnApOw0KPiA+ICsNCj4gPiArCXJldHVybiByZXQ7DQo+ID4gK30NCj4gPiArDQo+ID4g
-K3N0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGlteF9zY190aGVybWFsX3RhYmxlW10g
-PSB7DQo+ID4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxpbXgtc2MtdGhlcm1hbCIsIH0sDQo+ID4g
-Kwl7fQ0KPiA+ICt9Ow0KPiA+ICtNT0RVTEVfREVWSUNFX1RBQkxFKG9mLCBpbXhfc2NfdGhlcm1h
-bF90YWJsZSk7DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBpbXhf
-c2NfdGhlcm1hbF9kcml2ZXIgPSB7DQo+ID4gKwkJLnByb2JlID0gaW14X3NjX3RoZXJtYWxfcHJv
-YmUsDQo+ID4gKwkJLmRyaXZlciA9IHsNCj4gPiArCQkJLm5hbWUgPSAiaW14LXNjLXRoZXJtYWwi
-LA0KPiA+ICsJCQkub2ZfbWF0Y2hfdGFibGUgPSBpbXhfc2NfdGhlcm1hbF90YWJsZSwNCj4gPiAr
-CQl9LA0KPiA+ICt9Ow0KPiA+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKGlteF9zY190aGVybWFs
-X2RyaXZlcik7DQo+ID4gKw0KPiA+ICtNT0RVTEVfQVVUSE9SKCJBbnNvbiBIdWFuZyA8QW5zb24u
-SHVhbmdAbnhwLmNvbT4iKTsNCj4gPiArTU9EVUxFX0RFU0NSSVBUSU9OKCJUaGVybWFsIGRyaXZl
-ciBmb3IgTlhQIGkuTVggU29DcyB3aXRoIHN5c3RlbQ0KPiA+ICtjb250cm9sbGVyIik7IE1PRFVM
-RV9MSUNFTlNFKCJHUEwgdjIiKTsNCj4gPiAtLQ0KPiA+IDIuNy40DQo+ID4NCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFp
-bGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
-dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+This patch creates a common helper to sync filesystems and shares
+to the suspend, hibernate, and snapshot.
+
+Signed-off-by: Harry Pan <harry.pan@intel.com>
+---
+ include/linux/suspend.h  |  3 +++
+ kernel/power/hibernate.c |  5 +----
+ kernel/power/main.c      |  9 +++++++++
+ kernel/power/suspend.c   | 13 +++++--------
+ kernel/power/user.c      |  5 +----
+ 5 files changed, 19 insertions(+), 16 deletions(-)
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 3f529ad9a9d2..6b3ea9ea6a9e 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -425,6 +425,7 @@ void restore_processor_state(void);
+ /* kernel/power/main.c */
+ extern int register_pm_notifier(struct notifier_block *nb);
+ extern int unregister_pm_notifier(struct notifier_block *nb);
++extern void ksys_sync_helper(void);
+ 
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+@@ -462,6 +463,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+ 	return 0;
+ }
+ 
++static inline void ksys_sync_helper(void) {}
++
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ 
+ static inline bool pm_wakeup_pending(void) { return false; }
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index abef759de7c8..cc105ecd9c07 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -14,7 +14,6 @@
+ 
+ #include <linux/export.h>
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -709,9 +708,7 @@ int hibernate(void)
+ 		goto Exit;
+ 	}
+ 
+-	pr_info("Syncing filesystems ... \n");
+-	ksys_sync();
+-	pr_info("done.\n");
++	ksys_sync_helper();
+ 
+ 	error = freeze_processes();
+ 	if (error)
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 35b50823d83b..a8a8e6ec57e6 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -16,6 +16,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/suspend.h>
++#include <linux/syscalls.h>
+ 
+ #include "power.h"
+ 
+@@ -51,6 +52,14 @@ void unlock_system_sleep(void)
+ }
+ EXPORT_SYMBOL_GPL(unlock_system_sleep);
+ 
++void ksys_sync_helper(void)
++{
++	pr_info("Syncing filesystems ... ");
++	ksys_sync();
++	pr_cont("done.\n");
++}
++EXPORT_SYMBOL_GPL(ksys_sync_helper);
++
+ /* Routines for PM-transition notifications */
+ 
+ static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0bd595a0b610..e39059dea38b 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -17,7 +17,6 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+-#include <linux/syscalls.h>
+ #include <linux/gfp.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+@@ -568,13 +567,11 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_TO_IDLE)
+ 		s2idle_begin();
+ 
+-#ifndef CONFIG_SUSPEND_SKIP_SYNC
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	pr_info("Syncing filesystems ... ");
+-	ksys_sync();
+-	pr_cont("done.\n");
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-#endif
++	if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
++		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
++		ksys_sync_helper();
++		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
++	}
+ 
+ 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+ 	pm_suspend_clear_flags();
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 2d8b60a3c86b..cb24e840a3e6 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -10,7 +10,6 @@
+  */
+ 
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -228,9 +227,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		if (data->frozen)
+ 			break;
+ 
+-		printk("Syncing filesystems ... ");
+-		ksys_sync();
+-		printk("done.\n");
++		ksys_sync_helper();
+ 
+ 		error = freeze_processes();
+ 		if (error)
+-- 
+2.18.1
