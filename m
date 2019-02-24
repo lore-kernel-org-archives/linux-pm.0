@@ -1,86 +1,93 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V8 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Sat, 23 Feb 2019 13:40:19 -0800
-Message-ID: <20190223214018.GC1472@localhost.localdomain>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH V8 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Sun, 24 Feb 2019 02:53:44 +0000
+Message-ID: <DB3PR0402MB39164677D09DA6CB3A6951B3F5790@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 References: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
  <20190223213759.GA1472@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20190223213759.GA1472@localhost.localdomain>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
+To: Eduardo Valentin <edubezval@gmail.com>
 Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@snte>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 23, 2019 at 01:38:00PM -0800, Eduardo Valentin wrote:
-> On Thu, Feb 21, 2019 at 06:38:30AM +0000, Anson Huang wrote:
-> > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
-> > system controller, the system controller is in charge of system
-> > power, clock and thermal sensors etc. management, Linux kernel
-> > has to communicate with system controller via MU (message unit)
-> > IPC to get temperature from thermal sensors, this patch adds
-> > binding doc for i.MX system controller thermal driver.
-> > 
-> > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> > Reviewed-by: Rob Herring <robh@kernel.org>
-> > ---
-> > Changes since V7:
-> >         - remove unused property "tsens-num";
-> >         - improve the compatible description;
-> >         - update examples according to latest dts file.
-> > ---
-> >  .../devicetree/bindings/arm/freescale/fsl,scu.txt     | 19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > index 72d481c..d89147e 100644
-> > --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> > @@ -122,6 +122,19 @@ RTC bindings based on SCU Message Protocol
-> >  Required properties:
-> >  - compatible: should be "fsl,imx8qxp-sc-rtc";
-> >  
-> > +Thermal bindings based on SCU Message Protocol
-> > +------------------------------------------------------------
-> > +
-> > +Required properties:
-> > +- compatible:			Should be :
-> > +				  "fsl,imx8qxp-sc-thermal"
-> > +				followed by "fsl,imx-sc-thermal";
-> > +
-> > +- #thermal-sensor-cells:	See Documentation/devicetree/bindings/thermal/thermal.txt
-> > +				for a description.
-> > +
-> > +- imx,sensor-resource-id: 	Property array to specify each thermal zone's sensor resource ID.
-> 
-> If this is an array...
-> 
-> > +
-> >  Example (imx8qxp):
-> >  -------------
-> >  lsio_mu1: mailbox@5d1c0000 {
-> > @@ -168,6 +181,12 @@ firmware {
-> >  		rtc: rtc {
-> >  			compatible = "fsl,imx8qxp-sc-rtc";
-> >  		};
-> > +
-> > +		tsens: thermal-sensor {
-> > +			compatible = "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-thermal";
-> > +			#thermal-sensor-cells = <0>;
-> > +			imx,sensor-resource-id = <IMX_SC_R_SYSTEM>;
-> 
-> then this example should have an array, to be better express how this is
-> supposed to work. Can you please resend this with an array instead?
-
-I mean this could be one example of an array with more than one element.
-
-> 
-> > +		};
-> >  	};
-> >  };
-> >  
-> > -- 
-> > 2.7.4
-> > 
+SGksIEVkdWFyZG8NCg0KQmVzdCBSZWdhcmRzIQ0KQW5zb24gSHVhbmcNCg0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFZHVhcmRvIFZhbGVudGluIFttYWlsdG86ZWR1YmV6
+dmFsQGdtYWlsLmNvbV0NCj4gU2VudDogMjAxOcTqMtTCMjTI1SA1OjM4DQo+IFRvOiBBbnNvbiBI
+dWFuZyA8YW5zb24uaHVhbmdAbnhwLmNvbT4NCj4gQ2M6IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFy
+ay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+IHMuaGF1ZXJAcGVuZ3V0
+cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21haWwuY29tOw0KPiBj
+YXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsgcnVpLnpoYW5nQGlu
+dGVsLmNvbTsNCj4gZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgQWlzaGVuZyBEb25nIDxhaXNo
+ZW5nLmRvbmdAbnhwLmNvbT47DQo+IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IHNib3lkQGtlcm5l
+bC5vcmc7IERhbmllbCBCYWx1dGENCj4gPGRhbmllbC5iYWx1dGFAbnhwLmNvbT47IEFuZHkgR3Jv
+c3MgPGFuZHkuZ3Jvc3NAbGluYXJvLm9yZz47DQo+IGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1
+OyBoZWlrb0BzbnRlY2guZGU7IGFybmRAYXJuZGIuZGU7DQo+IG1heGltZS5yaXBhcmRAYm9vdGxp
+bi5jb207IGJqb3JuLmFuZGVyc3NvbkBsaW5hcm8ub3JnOw0KPiBqYWdhbkBhbWFydWxhc29sdXRp
+b25zLmNvbTsgZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsNCj4gbWFyYy53LmdvbnphbGV6
+QGZyZWUuZnI7IG9sb2ZAbGl4b20ubmV0OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4g
+bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
+YWRlYWQub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBkbC1saW51eC1pbXggPGxp
+bnV4LWlteEBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY4IDEvNF0gZHQtYmluZGlu
+Z3M6IGZzbDogc2N1OiBhZGQgdGhlcm1hbCBiaW5kaW5nDQo+IA0KPiBPbiBUaHUsIEZlYiAyMSwg
+MjAxOSBhdCAwNjozODozMEFNICswMDAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4gPiBOWFAgaS5N
+WDhRWFAgaXMgYW4gQVJNdjggU29DIHdpdGggYSBDb3J0ZXgtTTQgY29yZSBpbnNpZGUgYXMgc3lz
+dGVtDQo+ID4gY29udHJvbGxlciwgdGhlIHN5c3RlbSBjb250cm9sbGVyIGlzIGluIGNoYXJnZSBv
+ZiBzeXN0ZW0gcG93ZXIsIGNsb2NrDQo+ID4gYW5kIHRoZXJtYWwgc2Vuc29ycyBldGMuIG1hbmFn
+ZW1lbnQsIExpbnV4IGtlcm5lbCBoYXMgdG8gY29tbXVuaWNhdGUNCj4gPiB3aXRoIHN5c3RlbSBj
+b250cm9sbGVyIHZpYSBNVSAobWVzc2FnZSB1bml0KSBJUEMgdG8gZ2V0IHRlbXBlcmF0dXJlDQo+
+ID4gZnJvbSB0aGVybWFsIHNlbnNvcnMsIHRoaXMgcGF0Y2ggYWRkcyBiaW5kaW5nIGRvYyBmb3Ig
+aS5NWCBzeXN0ZW0NCj4gPiBjb250cm9sbGVyIHRoZXJtYWwgZHJpdmVyLg0KPiA+DQo+ID4gU2ln
+bmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+ID4gUmV2aWV3
+ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+ID4gLS0tDQo+ID4gQ2hhbmdl
+cyBzaW5jZSBWNzoNCj4gPiAgICAgICAgIC0gcmVtb3ZlIHVudXNlZCBwcm9wZXJ0eSAidHNlbnMt
+bnVtIjsNCj4gPiAgICAgICAgIC0gaW1wcm92ZSB0aGUgY29tcGF0aWJsZSBkZXNjcmlwdGlvbjsN
+Cj4gPiAgICAgICAgIC0gdXBkYXRlIGV4YW1wbGVzIGFjY29yZGluZyB0byBsYXRlc3QgZHRzIGZp
+bGUuDQo+ID4gLS0tDQo+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUv
+ZnNsLHNjdS50eHQgICAgIHwgMTkNCj4gKysrKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGUg
+Y2hhbmdlZCwgMTkgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdA0KPiA+IGEvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUvZnNsLHNjdS50eHQN
+Cj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2Zz
+bCxzY3UudHh0DQo+ID4gaW5kZXggNzJkNDgxYy4uZDg5MTQ3ZSAxMDA2NDQNCj4gPiAtLS0gYS9E
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4
+dA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNj
+YWxlL2ZzbCxzY3UudHh0DQo+ID4gQEAgLTEyMiw2ICsxMjIsMTkgQEAgUlRDIGJpbmRpbmdzIGJh
+c2VkIG9uIFNDVSBNZXNzYWdlIFByb3RvY29sDQo+ID4gUmVxdWlyZWQgcHJvcGVydGllczoNCj4g
+PiAgLSBjb21wYXRpYmxlOiBzaG91bGQgYmUgImZzbCxpbXg4cXhwLXNjLXJ0YyI7DQo+ID4NCj4g
+PiArVGhlcm1hbCBiaW5kaW5ncyBiYXNlZCBvbiBTQ1UgTWVzc2FnZSBQcm90b2NvbA0KPiA+ICst
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0NCj4gPiArDQo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKy0gY29tcGF0aWJsZToJ
+CQlTaG91bGQgYmUgOg0KPiA+ICsJCQkJICAiZnNsLGlteDhxeHAtc2MtdGhlcm1hbCINCj4gPiAr
+CQkJCWZvbGxvd2VkIGJ5ICJmc2wsaW14LXNjLXRoZXJtYWwiOw0KPiA+ICsNCj4gPiArLSAjdGhl
+cm1hbC1zZW5zb3ItY2VsbHM6CVNlZQ0KPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvdGhlcm1hbC90aGVybWFsLnR4dA0KPiA+ICsJCQkJZm9yIGEgZGVzY3JpcHRpb24uDQo+ID4g
+Kw0KPiA+ICstIGlteCxzZW5zb3ItcmVzb3VyY2UtaWQ6IAlQcm9wZXJ0eSBhcnJheSB0byBzcGVj
+aWZ5IGVhY2ggdGhlcm1hbCB6b25lJ3MNCj4gc2Vuc29yIHJlc291cmNlIElELg0KPiANCj4gSWYg
+dGhpcyBpcyBhbiBhcnJheS4uLg0KPiANCj4gPiArDQo+ID4gIEV4YW1wbGUgKGlteDhxeHApOg0K
+PiA+ICAtLS0tLS0tLS0tLS0tDQo+ID4gIGxzaW9fbXUxOiBtYWlsYm94QDVkMWMwMDAwIHsNCj4g
+PiBAQCAtMTY4LDYgKzE4MSwxMiBAQCBmaXJtd2FyZSB7DQo+ID4gIAkJcnRjOiBydGMgew0KPiA+
+ICAJCQljb21wYXRpYmxlID0gImZzbCxpbXg4cXhwLXNjLXJ0YyI7DQo+ID4gIAkJfTsNCj4gPiAr
+DQo+ID4gKwkJdHNlbnM6IHRoZXJtYWwtc2Vuc29yIHsNCj4gPiArCQkJY29tcGF0aWJsZSA9ICJm
+c2wsaW14OHF4cC1zYy10aGVybWFsIiwgImZzbCxpbXgtc2MtDQo+IHRoZXJtYWwiOw0KPiA+ICsJ
+CQkjdGhlcm1hbC1zZW5zb3ItY2VsbHMgPSA8MD47DQo+ID4gKwkJCWlteCxzZW5zb3ItcmVzb3Vy
+Y2UtaWQgPSA8SU1YX1NDX1JfU1lTVEVNPjsNCj4gDQo+IHRoZW4gdGhpcyBleGFtcGxlIHNob3Vs
+ZCBoYXZlIGFuIGFycmF5LCB0byBiZSBiZXR0ZXIgZXhwcmVzcyBob3cgdGhpcyBpcw0KPiBzdXBw
+b3NlZCB0byB3b3JrLiBDYW4geW91IHBsZWFzZSByZXNlbmQgdGhpcyB3aXRoIGFuIGFycmF5IGlu
+c3RlYWQ/DQoNCk9uIGkuTVg4UVhQLCB0aGVyZSBpcyBPTkxZIDEgdGhlcm1hbCB6b25lIGF2YWls
+YWJsZSBjdXJyZW50bHksIGJ1dCB0aGUgdGhlcm1hbCBkcml2ZXINCmlzIHN1cHBvc2VkIHRvIHN1
+cHBvcnQgbXVsdGkgdGhlcm1hbCB6b25lcyBhcyB3ZWxsIGZvciBpLk1YOFFNLCBpbiBWOSBwYXRj
+aCBzZXQgSSBqdXN0DQpzZW50LCBJIHVzZSB0aGUgIiBpbXgsc2Vuc29yLXJlc291cmNlLWlkICIg
+ZWxlbWVudCBjb3VudCB0byBkZXRlcm1pbmUgaG93IG1hbnkgdGhlcm1hbA0Kc2Vuc29ycyB3aWxs
+IGJlIHN1cHBvcnRlZCwgc28gdGhhdCB3ZSBjYW4gYWxzbyBnZXQgcmlkIG9mIHNlYXJjaGluZyB0
+aGUgdGhlcm1hbC16b25lcycgY2hpbGQNCm5vZGUsIEkgaW1wcm92ZWQgdGhlIGRlc2NyaXB0aW9u
+IGFzIGJlbG93LCBpcyBpdCBPSz8gDQoNCiA0MSArLSBpbXgsc2Vuc29yLXJlc291cmNlLWlkOiAg
+ICAgIEEgc2luZ2xlIGludGVnZXIgZm9yIHNpbmdsZSB0aGVybWFsIHpvbmUncyByZXNvdXJjZSBJ
+RCBvcg0KIDQyICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYW4gYXJyYXkgb2YgaW50
+ZWdlcnMgdG8gc3BlY2lmeSBlYWNoIHRoZXJtYWwgem9uZSdzIHNlbnNvcg0KIDQzICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgcmVzb3VyY2UgSUQuDQoNCg0KVGhhbmtzLA0KQW5zb24u
+DQoNCj4gDQo+ID4gKwkJfTsNCj4gPiAgCX07DQo+ID4gIH07DQo+ID4NCj4gPiAtLQ0KPiA+IDIu
+Ny40DQo+ID4NCg==
