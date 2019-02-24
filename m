@@ -1,48 +1,49 @@
-From: Harry Pan <harry.pan@intel.com>
-Subject: [PATCH v6 2/2] PM / sleep: measure the time of filesystems syncing
-Date: Sun, 24 Feb 2019 14:17:54 +0800
-Message-ID: <20190224061753.17638-2-harry.pan@intel.com>
-References: <20190222154904.6260-1-harry.pan@intel.com>
- <20190224061753.17638-1-harry.pan@intel.com>
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] of: thermal: Improve print information
+Date: Sun, 24 Feb 2019 02:10:58 -0500
+Message-ID: <20190224071058.18329-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190224061753.17638-1-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: harry.pan@intel.com, gs0622@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch gives the reader an intuitive metric of the time cost by
-the kernel issuing filesystems sync during system sleep; although
-developer can guess by the timestamp of next log or enable the ftrace
-power event for manual calculation, this manner is easier to read and
-benefits the automation script.
+Define pr_fmt macro to add a prefix to the message,
+this can make the thermal log better recognized.
 
-Signed-off-by: Harry Pan <harry.pan@intel.com>
+Before:
+
+[    0.602672] nfc: nfc_init: NFC Core ver 0.1
+[    0.602828] NET: Registered protocol family 39
+[    0.603435] clocksource: Switched to clocksource mct-frc
+[    0.746216] failed to build thermal zone cpu-thermal: -22
+[    0.746451] NET: Registered protocol family 2
+
+After:
+
+[    0.602804] NET: Registered protocol family 39
+[    0.603463] clocksource: Switched to clocksource mct-frc
+[    0.746309] thermal_sys: failed to build thermal zone cpu-thermal: -22
+[    0.746545] NET: Registered protocol family 2
+
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- kernel/power/main.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/thermal/of-thermal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index a8a8e6ec57e6..a08dcc743f31 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -54,9 +54,15 @@ EXPORT_SYMBOL_GPL(unlock_system_sleep);
- 
- void ksys_sync_helper(void)
- {
--	pr_info("Syncing filesystems ... ");
-+	ktime_t start;
-+	s64 elapsed_msecs;
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 4bfdb4a1e47d..02b5e78f027b 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -5,6 +5,9 @@
+  *  Copyright (C) 2013 Texas Instruments
+  *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+  */
 +
-+	start = ktime_get();
- 	ksys_sync();
--	pr_cont("done.\n");
-+	elapsed_msecs = ktime_to_ms(ktime_sub(ktime_get(), start));
-+	pr_info("Filesystems sync: %lld.%03lld seconds\n",
-+		elapsed_msecs / MSEC_PER_SEC,
-+		elapsed_msecs % MSEC_PER_SEC);
- }
- EXPORT_SYMBOL_GPL(ksys_sync_helper);
- 
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
+ #include <linux/thermal.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
 -- 
-2.18.1
+2.17.0
