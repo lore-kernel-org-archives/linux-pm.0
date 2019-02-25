@@ -1,73 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 10/12] cpufreq: ap806: add missing of_node_put after
- of_device_is_available
-Date: Mon, 25 Feb 2019 09:59:41 +0530
-Message-ID: <20190225042941.wypmh4kikcgmebn3@vireshk-i7>
-References: <1550928043-14889-1-git-send-email-Julia.Lawall@lip6.fr>
- <1550928043-14889-11-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
+ framework
+Date: Mon, 25 Feb 2019 10:01:49 +0530
+Message-ID: <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
+References: <cover.1550748118.git.viresh.kumar@linaro.org>
+ <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
+ <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1550928043-14889-11-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Jason Cooper <jason@lakedaemon.net>, kernel-janitors@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Qais Yousef <qais.yousef@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23-02-19, 14:20, Julia Lawall wrote:
-> Add an of_node_put when a tested device node is not available.
+On 22-02-19, 11:44, Qais Yousef wrote:
+> Hi Verish
 > 
-> The semantic patch that fixes this problem is as follows
-> (http://coccinelle.lip6.fr):
+> On 02/21/19 16:59, Viresh Kumar wrote:
 > 
-> // <smpl>
-> @@
-> identifier f;
-> local idexpression e;
-> expression x;
-> @@
+> [...]
 > 
-> e = f(...);
-> ... when != of_node_put(e)
->     when != x = e
->     when != e = x
->     when any
-> if (<+...of_device_is_available(e)...+>) {
->   ... when != of_node_put(e)
-> (
->   return e;
-> |
-> + of_node_put(e);
->   return ...;
-> )
-> }
-> // </smpl>
+> > @@ -2239,6 +2314,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> >  			      struct cpufreq_policy *new_policy)
+> >  {
+> >  	struct cpufreq_governor *old_gov;
+> > +	struct device *cpu_dev = get_cpu_device(policy->cpu);
+> > +	unsigned long min, max;
+> >  	int ret;
+> >  
+> >  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+> > @@ -2253,11 +2330,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> >  	if (new_policy->min > new_policy->max)
+> >  		return -EINVAL;
+> >  
+> > +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
+> > +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
+> > +
+> > +	if (min > new_policy->min)
+> > +		new_policy->min = min;
+> > +	if (max < new_policy->max)
+> > +		new_policy->max = max;
+> > +
 > 
-> Fixes: f525a670533d9 ("cpufreq: ap806: add cpufreq driver for Armada 8K")
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Assuming for example min and max range from 1-10, and thermal throttles max to
+> 5 using pm_qos to deal with temporary thermal pressure. But shortly after
+> a driver thinks that max shouldn't be greater than 7 for one reason or another.
 > 
-> ---
->  drivers/cpufreq/armada-8k-cpufreq.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff -u -p a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
-> --- a/drivers/cpufreq/armada-8k-cpufreq.c
-> +++ b/drivers/cpufreq/armada-8k-cpufreq.c
-> @@ -128,8 +128,10 @@ static int __init armada_8k_cpufreq_init
->  	struct cpumask cpus;
->  
->  	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
-> -	if (!node || !of_device_is_available(node))
-> +	if (!node || !of_device_is_available(node)) {
-> +		of_node_put(node);
->  		return -ENODEV;
-> +	}
->  
->  	nb_cpus = num_possible_cpus();
->  	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
+> What will happen after thermal pressure removes its constraint? Will we still
+> remember the driver's request and apply it so max is set to 7 instead of 10?
 
-Applied. Thanks.
+Once everything comes via PM QoS, it will remember all the presently available
+requests and choose a target min/max frequency based on that.
+
+But even with this patchset, with half stuff done with PM QoS and half done with
+cpufreq notifiers, it should still work that way only.
 
 -- 
 viresh
