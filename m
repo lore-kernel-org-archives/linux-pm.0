@@ -1,89 +1,151 @@
-From: Qais Yousef <qais.yousef@arm.com>
-Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
- framework
-Date: Mon, 25 Feb 2019 12:14:58 +0000
-Message-ID: <20190225121458.fvdiiumgyhhdardw@e107158-lin.cambridge.arm.com>
-References: <cover.1550748118.git.viresh.kumar@linaro.org>
- <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
- <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
- <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
- <20190225085847.yvrtmxtwvk725b7v@e107158-lin.cambridge.arm.com>
- <20190225090955.suq4jw26d2brkjha@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Harry Pan <harry.pan@intel.com>
+Subject: [PATCH v7 1/2] PM / sleep: refactor the filesystems sync to reduce duplication
+Date: Mon, 25 Feb 2019 20:36:41 +0800
+Message-ID: <20190225123642.17111-1-harry.pan@intel.com>
+References: <20190224061753.17638-2-harry.pan@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190225090955.suq4jw26d2brkjha@vireshk-i7>
+In-Reply-To: <20190224061753.17638-2-harry.pan@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: harry.pan@intel.com, gs0622@gmail.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/25/19 14:39, Viresh Kumar wrote:
-> On 25-02-19, 08:58, Qais Yousef wrote:
-> > On 02/25/19 10:01, Viresh Kumar wrote:
-> > > > > +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-> > > > > +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
-> > > > > +
-> > > > > +	if (min > new_policy->min)
-> > > > > +		new_policy->min = min;
-> > > > > +	if (max < new_policy->max)
-> > > > > +		new_policy->max = max;
-> 
-> > And this is why we need to check here if the PM QoS value doesn't conflict with
-> > the current min/max, right? Until the current notifier code is removed they
-> > could trip over each others.
-> 
-> No. The above if/else block is already removed as part of patch 5/5. It was
-> required because of conflict between userspace specific min/max and qos min/max,
-> which are migrated to use qos by patc 5/5.
-> 
-> The cpufreq notifier mechanism already lets users play with min/max and that is
-> already safe from conflicts.
-> 
-> 
-> > It would be nice to add a comment here about PM QoS managing and remembering
-> > values
-> 
-> I am not sure if that would add any value. Some documentation update may be
-> useful for people looking for details though, that I shall do after all the
-> changes get in and things become a bit stable.
-> 
+This patch creates a common helper to sync filesystems and shares
+to the suspend, hibernate, and snapshot.
 
-Up to you. But not everyone is familiar with the code and a one line comment
-that points to where aggregation is happening would be helpful for someone
-scanning this code IMHO.
+Signed-off-by: Harry Pan <harry.pan@intel.com>
+---
+ include/linux/suspend.h  |  3 +++
+ kernel/power/hibernate.c |  5 +----
+ kernel/power/main.c      |  9 +++++++++
+ kernel/power/suspend.c   | 13 +++++--------
+ kernel/power/user.c      |  5 +----
+ 5 files changed, 19 insertions(+), 16 deletions(-)
 
-> > and that we need to be careful that both mechanisms don't trip over
-> > each others until this transient period is over.
-> 
-> The second mechanism will die very very soon once this is merged, migrating them
-> shouldn't be a big challenge AFAICT. I didn't attempt that because I didn't
-> wanted to waste time updating things in case this version also doesn't make
-> sense to others.
-> 
-> > I have a nit too. It would be nice to explicitly state this is
-> > CPU_{MIN,MAX}_FREQUENCY. I can see someone else adding {MIN,MAX}_FREQUENCY for
-> > something elsee (memory maybe?)
-> 
-> This is not CPU specific, but any device. The same interface shall be used by
-> devfreq as well, who wanted to use freq-constraints initially.
-> 
-
-I don't get that to be honest. I probably have to read more.
-
-Is what you're saying that when applying a MIN_FREQUENCY constraint the same
-value will be applied to both cpufreq and devfreq? Isn't this too coarse?
-
-> > Although I looked at the previous series briefly, but this one looks more
-> > compact and easier to follow, so +1 for that.
-> 
-> Thanks for looking into this Qais.
-> 
-> -- 
-> viresh
-
-Thanks
-
---
-Qais Yousef
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 3f529ad9a9d2..6b3ea9ea6a9e 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -425,6 +425,7 @@ void restore_processor_state(void);
+ /* kernel/power/main.c */
+ extern int register_pm_notifier(struct notifier_block *nb);
+ extern int unregister_pm_notifier(struct notifier_block *nb);
++extern void ksys_sync_helper(void);
+ 
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+@@ -462,6 +463,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+ 	return 0;
+ }
+ 
++static inline void ksys_sync_helper(void) {}
++
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+ 
+ static inline bool pm_wakeup_pending(void) { return false; }
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index abef759de7c8..cc105ecd9c07 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -14,7 +14,6 @@
+ 
+ #include <linux/export.h>
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -709,9 +708,7 @@ int hibernate(void)
+ 		goto Exit;
+ 	}
+ 
+-	pr_info("Syncing filesystems ... \n");
+-	ksys_sync();
+-	pr_info("done.\n");
++	ksys_sync_helper();
+ 
+ 	error = freeze_processes();
+ 	if (error)
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 35b50823d83b..a8a8e6ec57e6 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -16,6 +16,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/suspend.h>
++#include <linux/syscalls.h>
+ 
+ #include "power.h"
+ 
+@@ -51,6 +52,14 @@ void unlock_system_sleep(void)
+ }
+ EXPORT_SYMBOL_GPL(unlock_system_sleep);
+ 
++void ksys_sync_helper(void)
++{
++	pr_info("Syncing filesystems ... ");
++	ksys_sync();
++	pr_cont("done.\n");
++}
++EXPORT_SYMBOL_GPL(ksys_sync_helper);
++
+ /* Routines for PM-transition notifications */
+ 
+ static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0bd595a0b610..e39059dea38b 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -17,7 +17,6 @@
+ #include <linux/console.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+-#include <linux/syscalls.h>
+ #include <linux/gfp.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+@@ -568,13 +567,11 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_TO_IDLE)
+ 		s2idle_begin();
+ 
+-#ifndef CONFIG_SUSPEND_SKIP_SYNC
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	pr_info("Syncing filesystems ... ");
+-	ksys_sync();
+-	pr_cont("done.\n");
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-#endif
++	if (!IS_ENABLED(CONFIG_SUSPEND_SKIP_SYNC)) {
++		trace_suspend_resume(TPS("sync_filesystems"), 0, true);
++		ksys_sync_helper();
++		trace_suspend_resume(TPS("sync_filesystems"), 0, false);
++	}
+ 
+ 	pm_pr_dbg("Preparing system for sleep (%s)\n", mem_sleep_labels[state]);
+ 	pm_suspend_clear_flags();
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 2d8b60a3c86b..cb24e840a3e6 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -10,7 +10,6 @@
+  */
+ 
+ #include <linux/suspend.h>
+-#include <linux/syscalls.h>
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+ #include <linux/device.h>
+@@ -228,9 +227,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		if (data->frozen)
+ 			break;
+ 
+-		printk("Syncing filesystems ... ");
+-		ksys_sync();
+-		printk("done.\n");
++		ksys_sync_helper();
+ 
+ 		error = freeze_processes();
+ 		if (error)
+-- 
+2.18.1
