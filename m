@@ -1,194 +1,169 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 4/8] dt-bindings: devfreq: add DMC device description
-Date: Mon, 25 Feb 2019 07:49:13 -0600
-Message-ID: <20190225134913.GA32033@bogus>
-References: <CGME20190128192153eucas1p2d7a796cb89e68c1789069562e91296be@eucas1p2.samsung.com>
- <1548703299-15806-1-git-send-email-l.luba@partner.samsung.com>
- <1548703299-15806-5-git-send-email-l.luba@partner.samsung.com>
- <CAJKOXPd2g6rtZpK20emJ0tqHhq0D01=BWbU_9MP30313XHvPHg@mail.gmail.com>
- <79cd56c4-2415-7db1-be6f-73c03c0902bc@partner.samsung.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: Add a predict callback for the governors
+Date: Mon, 25 Feb 2019 16:01:09 +0100
+Message-ID: <e3421211-c59d-a372-2e27-68f452f4f8b1@linaro.org>
+References: <20190221145631.26356-1-daniel.lezcano@linaro.org>
+ <CAJZ5v0iCkMA=LVvV+-jqr8fCYz2mwaqtiKmNTfxf0dxZ=MvdiQ@mail.gmail.com>
+ <d315736a-2aa0-3c8d-f3cf-f73b60e7ebe0@linaro.org>
+ <CAJZ5v0ishtmAJ4vyosedTY6ZY+RcenpP_yzwVAgGybONGU6Zsw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <79cd56c4-2415-7db1-be6f-73c03c0902bc@partner.samsung.com>
+In-Reply-To: <CAJZ5v0ishtmAJ4vyosedTY6ZY+RcenpP_yzwVAgGybONGU6Zsw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, =?utf-8?Q?Bart=C5=82omiej_=C5=BBo=C5=82nierkiewicz?= <b.zolnierkie@samsung.com>, myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 29, 2019 at 05:02:49PM +0100, Lukasz Luba wrote:
-> Hi Krzysztof,
+
+Hi Rafael,
+
+On 22/02/2019 11:35, Rafael J. Wysocki wrote:
+> On Thu, Feb 21, 2019 at 6:40 PM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 21/02/2019 17:18, Rafael J. Wysocki wrote:
+>>> On Thu, Feb 21, 2019 at 3:56 PM Daniel Lezcano
+>>> <daniel.lezcano@linaro.org> wrote:
+>>>>
+>>>> Predicting the next event on the current CPU is implemented in the
+>>>> idle state selection function, thus the selection logic and the
+>>>> prediction are tied together and it is hard to decorrelate both.
+>>>>
+>>>> The following change introduces the cpuidle function to give the
+>>>> opportunity to the governor to store the guess estimate of the
+>>>> different source of wakeup and then reuse them in the selection
+>>>> process. Consequently we end up with two separate operations clearly
+>>>> identified.
+>>>>
+>>>> As the next events are stored in the cpuidle device structure it is
+>>>> easy to propagate them in the different governor callbacks.
+>>>
+>>> Can you explain a bit how you would use this new callback in a governor?
+>>
+>> Sure.
+>>
+>> Today we have the selection and the prediction tied together. The
+>> prediction is modulated with some inputs coming from the governor's
+>> policy (eg. performance multiplier).
+>>
+>> It is hard to know if the prediction is correct or not, hard to know the
+>> duration of the computation for the next event and hard to know if the
+>> idle state selection succeeded because of a good prediction or a good
+>> governor policy.
+>>
+>> I propose to provide the callback where we fill the guess estimated next
+>> events on the system, so we can trace them and benchmark the computation
+>> time.
+>>
+>> The selection of the idle state becomes an separate action where we can
+>> apply any specific governor heuristic or policy.
+>>
+>> By separating the selection and the prediction, we can identify where
+>> the weakness is in our test scenario: the prediction or the governor
+>> selection policy.
 > 
-> On 1/29/19 3:47 PM, Krzysztof Kozlowski wrote:
-> > On Mon, 28 Jan 2019 at 20:21, Lukasz Luba <l.luba@partner.samsung.com> wrote:
-> >>
-> >> The patch adds description for DT binding for a new Exynos5 Dynamic Memory
-> >> Controller device.
-> >> It also contains needed MAINTAINERS file updates.
-> >>
-> >> CC: MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> CC: Kyungmin Park <kyungmin.park@samsung.com>
-> >> CC: Chanwoo Choi <cw00.choi@samsung.com>
-> >> CC: Rob Herring <robh+dt@kernel.org>
-> >> CC: Mark Rutland <mark.rutland@arm.com>
-> >> CC: Kukjin Kim <kgene@kernel.org>
-> >> CC: Krzysztof Kozlowski <krzk@kernel.org>
-> >> CC: linux-pm@vger.kernel.org
-> >> CC: linux-samsung-soc@vger.kernel.org
-> >> CC: devicetree@vger.kernel.org
-> >> CC: linux-arm-kernel@lists.infradead.org
-> >> CC: linux-kernel@vger.kernel.org
-> >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> >> ---
-> >>   .../devicetree/bindings/devfreq/exynos5-dmc.txt    | 108 +++++++++++++++++++++
-> >>   MAINTAINERS                                        |   7 ++
-> >>   2 files changed, 115 insertions(+)
-> >>   create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> >> new file mode 100644
-> >> index 0000000..914bd85
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> >> @@ -0,0 +1,108 @@
-> >> +* Exynos5 frequency and voltage scaling for Dynamic Memory Controller device
-> >> +
-> >> +The Samsung Exynos5 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-> >> +memory chips are connected. The driver is to monitor the controller in runtime
-> >> +and switch frequency and voltage. To monitor the usage of the controller in
-> >> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-> >> +is able to measure the current load of the memory.
-> >> +When 'userspace' governor is used for the driver, an application is able to
-> >> +switch the DMC frequency.
-> >> +
-> >> +Required properties for DMC device for Exynos5422:
-> >> +- compatible: Should be "samsung,exynos5422-bus".
-> >> +- clock-names : the name of clock used by the bus, "bus".
-> >> +- clocks : phandles for clock specified in "clock-names" property.
-> >> +- devfreq-events : phandles for PPMU devices connected to this DMC.
-> >> +
-> >> +The example definition of a DMC and PPMU devices declared in DT is shown below:
-> >> +
-> >> +       ppmu_dmc0_0: ppmu_dmc0_0@10d00000 {
-> >> +               compatible = "samsung,exynos-ppmu";
-> >> +               reg = <0x10d00000 0x2000>;
-> >> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-> >> +               clock-names = "ppmu";
-> >> +               status = "okay";
-> >> +               events {
-> >> +                       ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-> >> +                               event-name = "ppmu-event3-dmc0_0";
-> >> +                       };
-> >> +               };
-> >> +       };
-> >> +
-> >> +
-> >> +       ppmu_dmc0_1: ppmu_dmc0_1@10d10000 {
-> >> +               compatible = "samsung,exynos-ppmu";
-> >> +               reg = <0x10d10000 0x2000>;
-> >> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
-> >> +               clock-names = "ppmu";
-> >> +               status = "okay";
-> >> +               events {
-> >> +                       ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
-> >> +                               event-name = "ppmu-event3-dmc0_1";
-> >> +                       };
-> >> +               };
-> >> +       };
-> >> +
-> >> +       ppmu_dmc1_0: ppmu_dmc1_0@10d10000 {
-> >> +               compatible = "samsung,exynos-ppmu";
-> >> +               reg = <0x10d60000 0x2000>;
-> >> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
-> >> +               clock-names = "ppmu";
-> >> +               status = "okay";
-> >> +               events {
-> >> +                       ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
-> >> +                               event-name = "ppmu-event3-dmc1_0";
-> >> +                       };
-> >> +               };
-> >> +       };
-> >> +
-> >> +       ppmu_dmc1_1: ppmu_dmc1_1@10d70000 {
-> >> +               compatible = "samsung,exynos-ppmu";
-> >> +               reg = <0x10d70000 0x2000>;
-> >> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
-> >> +               clock-names = "ppmu";
-> >> +               status = "okay";
-> >> +               events {
-> >> +                       ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
-> >> +                               event-name = "ppmu-event3-dmc1_1";
-> >> +                       };
-> >> +               };
-> >> +       };
-> >> +
-> >> +       dmc: dmc@10c20000 {
-> >> +               compatible = "samsung,exynos5422-dmc";
-> >> +               reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-> >> +                       <0x10030000 0x1000>, <0x10000000 0x1000>;
-> >> +               clocks =        <&clock CLK_FOUT_SPLL>,
-> >> +                               <&clock CLK_MOUT_SCLK_SPLL>,
-> >> +                               <&clock CLK_FF_DOUT_SPLL2>,
-> >> +                               <&clock CLK_FOUT_BPLL>,
-> >> +                               <&clock CLK_MOUT_BPLL>,
-> >> +                               <&clock CLK_SCLK_BPLL>,
-> >> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE>,
-> >> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-> >> +                               <&clock CLK_MOUT_MCLK_CDREX>,
-> >> +                               <&clock CLK_DOUT_CLK2X_PHY0>,
-> >> +                               <&clock CLK_CLKM_PHY0>,
-> >> +                               <&clock CLK_CLKM_PHY1>
-> >> +                       ;
-> > 
-> > Join with previous line.
-> > 
-> >> +               clock-names =   "fout_spll",
-> >> +                               "mout_sclk_spll",
-> >> +                               "ff_dout_spll2",
-> >> +                               "fout_bpll",
-> >> +                               "mout_bpll",
-> >> +                               "sclk_bpll",
-> >> +                               "mout_mx_mspll_ccore",
-> >> +                               "mout_mx_mspll_ccore_phy",
-> >> +                               "mout_mclk_cdrex",
-> >> +                               "dout_clk2x_phy0",
-> >> +                               "clkm_phy0",
-> >> +                               "clkm_phy1"
-> >> +                               ;
-> > 
-> > Ditto.
-> OK, I will fix it.
-> > 
-> >> +
-> >> +               status = "okay";
-> >> +               devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
-> >> +                               <&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
-> >> +       };
-> >> +
-> >> +
-> >> diff --git a/MAINTAINERS b/MAINTAINERS
-> >> index 9f64f8d..3581807 100644
-> >> --- a/MAINTAINERS
-> >> +++ b/MAINTAINERS
-> >> @@ -3310,6 +3310,13 @@ S:       Maintained
-> >>   F:     drivers/devfreq/exynos-bus.c
-> >>   F:     Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> >>
-> >> +DMC FREQUENCY DRIVER FOR SAMSUNG EXYNOS5
-> >> +M:     Lukasz Luba <l.luba@partner.samsung.com>
-> >> +L:     linux-pm@vger.kernel.org
-> >> +L:     linux-samsung-soc@vger.kernel.org
-> >> +S:     Maintained
-> >> +F:     Documentation/devicetree/bindings/devfreq/exynos5-dmc.txt
-> > 
-> > Maintainers change should go with the next change, I think. It looks
-> > unusual to add an entry for driver... without the driver.
-> Thank you for the review. I will move the dt-bindings in the patch set
-> after the dmc driver file. Then the MAINTAINERS file will be updated
-> only by one entry.
+> I'm not quite convinced about the idea that the "prediction" and
+> "selection" parts can be entirely separate.
+> 
+> Besides, this new callback doesn't return anything, it goes before
+> ->select and the latter is invoked unconditionally anyway.  That's
+> extra overhead (even if small) for no real gain.  I don't see why it
+> is better to do the split in the core rather than in the governor
+> itself.  You can always design a governor ->select() to call two
+> separate functions, one after another, internally, so why to do that
+> in the core and inflict that particular design choice on everybody?
 
-No, bindings should come first. Just move this hunk to the driver patch 
-including the line here for the binding.
+It is a way to clearly identify what is part of the prediction and what
+is part of the decision in order to easily spot the weakness of the
+governor. We may be doing good predictions but bad decisions or the
+opposite.
 
-Rob
+I agree we are not forced to create a new callback for this and we can
+create a prediction function directly inside the governor. I don't have
+a strong preference actually and I'm fine with your proposal.
+
+> For example, there's no "predict" part running before the "select" one
+> in the TEO governor at all.  There is something like that in menu, but
+> splitting it off would be rather artificial IMO.
+> 
+> Next, the cpuidle_predict structure.  I'm not even sure why it is there at all.
+> 
+> Presumably, the purpose of it is to pass some data from ->predict to
+> ->select, but why does it have to be there in struct cpuidle_device?
+> The governor appears to be the only user of it anyway, so wouldn't it
+> be better to store that information in the governor's internal data
+> structures if really needed?
+
+At one moment we will need the prediction information from the scheduler
+in order to optimize the cpu selection for the wakeup. I thought the
+cpuidle device structure can be a place where we can store it.
+
+There are a lot of optimizations we can do after knowing when a CPU is
+expected to wakeup.
+
+Do you have a suggestion where to store the next wakeup for a CPU?
+
+> Moreover, why does it include the next_hrtimer and next_timer fields?
+> It looks like you'd need to do some nohz code surgery to separate the
+> two and would that be useful even?  And even so, these values need not
+> be predicted. 
+
+I agree they don't need to be predicted but they are part of the sources
+of wake up with a deterministic behavior and fall under the prediction
+umbrella as they are part of the equation for the next event.
+
+The purpose of filling these fields is to give the select callback all
+the clues to take its decision.
+
+But regarding your POV, which is valid, we can consider using an
+internal prediction function and just export the next event without a
+full description of the different wake up source categories.
+
+> It is known when the next timer event is going to
+> occur, both with and without the scheduler tick included, and that's
+> why there is tick_nohz_get_sleep_length().
+
+The next hrtimer and the next timer are the deadline versions of
+tick_nohz_get_sleep_length(), respectively the delta_time parameter and
+the returned value.
+
+I massaged the tick_nohz_get_sleep_length() to return the deadline
+rather than the remaining time. The changes will come with the patches
+Ulf is about to send. IMHO, it helps to understand the code by splitting
+in two functions rather than passing an extra parameter.
+
+
+> If you want to do a similar thing for non-timer interrupts in order to
+> use the IRQ stats, you can simply provide a function similar to
+> tick_nohz_get_sleep_length() for that, but that's available already,
+> isn't it?
+
+Actually, I'm interested in deadlines not in relative remaining time
+because we need later to compare those when we are about to wake up a
+CPU or enter the cluster state.
+
+Indeed, the irq timings is already available but with the limitation of
+predicting regular intervals. I rewrote the code to handle both regular
+and repeating pattern. I'll post the series as soon as I have the numbers.
+
+
+> Also, I'm not really sure what next_resched is and how exactly it is
+> going to be computed.
+
+
+The next_resched estimation is to handle the situation where you have
+one CPU handling IO related interrupts for a specific device waking up
+another CPU with the io blocked task. It is very similar to the avg_idle
+value.
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
