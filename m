@@ -1,130 +1,83 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux
- Kernel III edition (OSPM-summit 2019)
-Date: Mon, 25 Feb 2019 08:43:33 +0100
-Message-ID: <20190225074333.GH21785@localhost.localdomain>
-References: <20190114161910.GB5581@localhost.localdomain>
+From: Qais Yousef <qais.yousef@arm.com>
+Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
+ framework
+Date: Mon, 25 Feb 2019 08:58:47 +0000
+Message-ID: <20190225085847.yvrtmxtwvk725b7v@e107158-lin.cambridge.arm.com>
+References: <cover.1550748118.git.viresh.kumar@linaro.org>
+ <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
+ <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
+ <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190114161910.GB5581@localhost.localdomain>
+In-Reply-To: <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On 02/25/19 10:01, Viresh Kumar wrote:
+> On 22-02-19, 11:44, Qais Yousef wrote:
+> > Hi Verish
+> > 
+> > On 02/21/19 16:59, Viresh Kumar wrote:
+> > 
+> > [...]
+> > 
+> > > @@ -2239,6 +2314,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > >  			      struct cpufreq_policy *new_policy)
+> > >  {
+> > >  	struct cpufreq_governor *old_gov;
+> > > +	struct device *cpu_dev = get_cpu_device(policy->cpu);
+> > > +	unsigned long min, max;
+> > >  	int ret;
+> > >  
+> > >  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
+> > > @@ -2253,11 +2330,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > >  	if (new_policy->min > new_policy->max)
+> > >  		return -EINVAL;
+> > >  
+> > > +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
+> > > +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
+> > > +
+> > > +	if (min > new_policy->min)
+> > > +		new_policy->min = min;
+> > > +	if (max < new_policy->max)
+> > > +		new_policy->max = max;
+> > > +
+> > 
+> > Assuming for example min and max range from 1-10, and thermal throttles max to
+> > 5 using pm_qos to deal with temporary thermal pressure. But shortly after
+> > a driver thinks that max shouldn't be greater than 7 for one reason or another.
+> > 
+> > What will happen after thermal pressure removes its constraint? Will we still
+> > remember the driver's request and apply it so max is set to 7 instead of 10?
+> 
+> Once everything comes via PM QoS, it will remember all the presently available
+> requests and choose a target min/max frequency based on that.
 
-A quick one to inform everybody that registrations are now open!
+OK I can see the logic now in kernel/power/qos.c now. Sorry I missed it and it
+was easier to ask :-)
 
-Although list of topics looks pretty good already, we are still
-accepting new ones. So, please don't hesitate to add your.
+> 
+> But even with this patchset, with half stuff done with PM QoS and half done with
+> cpufreq notifiers, it should still work that way only.
 
-Best,
+And this is why we need to check here if the PM QoS value doesn't conflict with
+the current min/max, right? Until the current notifier code is removed they
+could trip over each others.
 
-- Juri
+It would be nice to add a comment here about PM QoS managing and remembering
+values and that we need to be careful that both mechanisms don't trip over
+each others until this transient period is over.
 
-On 14/01/19 17:19, Juri Lelli wrote:
-> Power Management and Scheduling in the Linux Kernel (OSPM-summit) III edition
-> May 20-22, 2019
-> Scuola Superiore Sant'Anna
-> Pisa, Italy
-> 
-> ---
-> 
-> .:: FOCUS
-> 
-> The III edition of the Power Management and Scheduling in the Linux
-> Kernel (OSPM) summit aims at fostering discussions on power management
-> and (real-time) scheduling techniques. Summit will be held in Pisa
-> (Italy) on May 20-22, 2019.
-> 
-> Although scheduler techniques for reducing energy consumption while
-> meeting performance and latency requirements are the prime interest of
-> the summit, we welcome anybody interested in having discussions on the
-> broader scope of real-time systems, real-time and non-real-time
-> scheduling, tooling, debugging and tracing.
-> 
-> Feel free to have a look at what happened previous years:
-> 
->  I  edition - https://lwn.net/Articles/721573/
->  II edition - https://lwn.net/Articles/754923/
-> 
-> .:: FORMAT
-> 
-> The summit is organized to cover three days of discussions and talks.
-> 
-> The list of topics of interest includes (but it is not limited to):
-> 
->  * Power management techniques
->  * Real-time and non real-time scheduling techniques
->  * Energy consumption and CPU capacity aware scheduling
->  * Real-time virtualization
->  * Mobile/Server power management real-world use cases (successes and
->    failures)
->  * Power management and scheduling tooling (configuration, integration,
->    testing, etc.)
->  * Tracing
->  * Recap/lightning talks
-> 
-> Presentations can cover recently developed technologies, ongoing work
-> and new ideas. Please understand that this workshop is not intended for
-> presenting sales and marketing pitches.
-> 
-> .:: ATTENDING
-> 
-> Attending the OSPM-summit is free of charge, but registration to the
-> event is mandatory. The event can allow a maximum of 50 people (so, be
-> sure to register early!). Registrations open on February 22nd, 2019.
-> 
-> To register fill in the registration form available at
-> https://goo.gl/forms/33rgOC70ypRrrZV33.
-> 
-> While it is not strictly required to submit a topic/presentation (see
-> below), registrations with a topic/presentation proposal will take
-> precedence.
-> 
-> .:: SUBMIT A TOPIC/PRESENTATION
-> 
-> To submit a topic/presentation add its details to this list:
-> https://docs.google.com/spreadsheets/d/1s5JzAlPoISZFwvV6QajE3aPBGVaixdLb5ftamJ4Mn9U/edit?usp=sharing
-> 
-> (feel free to get inspired by last year list of accepted topics
-> https://docs.google.com/spreadsheets/d/1ZPfASW6zVOM3xQvOrcaDEf1c-Pxi1XnFukVYHHwGUq4/edit?usp=sharing)
-> 
-> Or, if you prefer, simply reply (only to me, please :) to this email
-> specifying:
-> 
-> - name/surname
-> - affiliation
-> - short bio
-> - email address
-> - title
-> - abstract
-> - 30min or 50min slot
-> 
-> Deadline for submitting topics/presentations is 8th of February 2019.
-> Notifications for accepted topics/presentations will be sent out on 22nd
-> of February 2019.
-> 
-> .:: VENUE
-> 
-> The workshop will take place at ReTiS Lab*, Scuola Superiore Sant'Anna,
-> Pisa, Italy. Pisa is a small town, walking distance from the city center
-> to the venue is 20 minutes, walking distance from the airport to the
-> city center is 30 minutes. More details are available from the summit
-> web page: http://retis.sssup.it/ospm-summit/#site
-> 
-> * https://goo.gl/maps/2pPXG2v7Lfp
-> 
-> .:: ORGANIZERS (in alphabetical order)
-> 
-> Luca Abeni (SSSA)
-> Patrick Bellasi (Arm)
-> Tommaso Cucinotta (SSSA)
-> Dietmar Eggemann (Arm)
-> Sudeep Holla (Arm)
-> Juri Lelli (Red Hat)
-> Lorenzo Pieralisi (Arm)
-> Morten Rasmussen (Arm)
-> Claudio Scordino (Evidence SRL)
+I have a nit too. It would be nice to explicitly state this is
+CPU_{MIN,MAX}_FREQUENCY. I can see someone else adding {MIN,MAX}_FREQUENCY for
+something elsee (memory maybe?)
+
+Although I looked at the previous series briefly, but this one looks more
+compact and easier to follow, so +1 for that.
+
+--
+Qais Yousef
