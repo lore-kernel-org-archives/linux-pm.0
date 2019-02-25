@@ -1,154 +1,73 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: [PATCH v2 4/9] power: supply: axp20x_usb_power: use
- polling to detect vbus status change
-Date: Mon, 25 Feb 2019 11:31:02 +0800
-Message-ID: <20190225033107.17326-5-wens@csie.org>
-References: <20190225033107.17326-1-wens@csie.org>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 10/12] cpufreq: ap806: add missing of_node_put after
+ of_device_is_available
+Date: Mon, 25 Feb 2019 09:59:41 +0530
+Message-ID: <20190225042941.wypmh4kikcgmebn3@vireshk-i7>
+References: <1550928043-14889-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1550928043-14889-11-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBCGDZXRQKGQEAYUCIGA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20190225033107.17326-1-wens-jdAy2FN1RRM@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1550928043-14889-11-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Jason Cooper <jason@lakedaemon.net>, kernel-janitors@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On AXP221 and later AXP PMICs that have the N_VBUSEN pin, when this pin
-is high, either due to the PMIC driving it high or as an input, the VBUS
-detection related interrupt mechanisms are disabled.
+On 23-02-19, 14:20, Julia Lawall wrote:
+> Add an of_node_put when a tested device node is not available.
+> 
+> The semantic patch that fixes this problem is as follows
+> (http://coccinelle.lip6.fr):
+> 
+> // <smpl>
+> @@
+> identifier f;
+> local idexpression e;
+> expression x;
+> @@
+> 
+> e = f(...);
+> ... when != of_node_put(e)
+>     when != x = e
+>     when != e = x
+>     when any
+> if (<+...of_device_is_available(e)...+>) {
+>   ... when != of_node_put(e)
+> (
+>   return e;
+> |
+> + of_node_put(e);
+>   return ...;
+> )
+> }
+> // </smpl>
+> 
+> Fixes: f525a670533d9 ("cpufreq: ap806: add cpufreq driver for Armada 8K")
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+>  drivers/cpufreq/armada-8k-cpufreq.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff -u -p a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
+> --- a/drivers/cpufreq/armada-8k-cpufreq.c
+> +++ b/drivers/cpufreq/armada-8k-cpufreq.c
+> @@ -128,8 +128,10 @@ static int __init armada_8k_cpufreq_init
+>  	struct cpumask cpus;
+>  
+>  	node = of_find_compatible_node(NULL, NULL, "marvell,ap806-cpu-clock");
+> -	if (!node || !of_device_is_available(node))
+> +	if (!node || !of_device_is_available(node)) {
+> +		of_node_put(node);
+>  		return -ENODEV;
+> +	}
+>  
+>  	nb_cpus = num_possible_cpus();
+>  	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
 
-Previously this was worked around in the phy-sun4i-usb driver, which
-needed to sense VBUS changes and report them to the musb driver in a
-timely matter. However this workaround was only for the A31 and A33 type
-USB PHYs. To support newer platforms we would have to enable it for
-almost all the post-A31 SoCs.
+Applied. Thanks.
 
-However, since this is actually the result of the PMIC's behavior, the
-workaround would be better if done in the PMIC driver, in this case the
-VBUS power supply driver.
-
-Add the same workqueue-based polling to the VBUS power supply driver.
-The polling interval is chosen to be the debounce interval from the USB
-PHY driver, as this short interval is needed in some cases, but the
-power supply driver would not know when.
-
-Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- drivers/power/supply/axp20x_usb_power.c | 53 +++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
-
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index e2f353906bb1..ac061bcdc056 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -24,6 +24,7 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/iio/consumer.h>
-+#include <linux/workqueue.h>
- 
- #define DRVNAME "axp20x-usb-power-supply"
- 
-@@ -46,6 +47,12 @@
- 
- #define AXP20X_VBUS_MON_VBUS_VALID	BIT(3)
- 
-+/*
-+ * Note do not raise the debounce time, we must report Vusb high within
-+ * 100ms otherwise we get Vbus errors in musb.
-+ */
-+#define DEBOUNCE_TIME			msecs_to_jiffies(50)
-+
- struct axp20x_usb_power {
- 	struct device_node *np;
- 	struct regmap *regmap;
-@@ -53,6 +60,8 @@ struct axp20x_usb_power {
- 	enum axp20x_variants axp20x_id;
- 	struct iio_channel *vbus_v;
- 	struct iio_channel *vbus_i;
-+	struct delayed_work vbus_detect;
-+	unsigned int old_status;
- };
- 
- static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
-@@ -64,6 +73,35 @@ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
- 	return IRQ_HANDLED;
- }
- 
-+static void axp20x_usb_power_poll_vbus(struct work_struct *work)
-+{
-+	struct axp20x_usb_power *power =
-+		container_of(work, struct axp20x_usb_power, vbus_detect.work);
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &val);
-+	if (ret)
-+		goto out;
-+
-+	val &= (AXP20X_PWR_STATUS_VBUS_PRESENT | AXP20X_PWR_STATUS_VBUS_USED);
-+	if (val != power->old_status)
-+		power_supply_changed(power->supply);
-+
-+	power->old_status = val;
-+
-+out:
-+	mod_delayed_work(system_wq, &power->vbus_detect, DEBOUNCE_TIME);
-+}
-+
-+static bool axp20x_usb_vbus_needs_polling(struct axp20x_usb_power *power)
-+{
-+	if (power->axp20x_id >= AXP221_ID)
-+		return true;
-+
-+	return false;
-+}
-+
- static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -362,6 +400,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 	if (!power)
- 		return -ENOMEM;
- 
-+	platform_set_drvdata(pdev, power);
- 	power->axp20x_id = (enum axp20x_variants)of_device_get_match_data(
- 								&pdev->dev);
- 
-@@ -420,6 +459,19 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 				 irq_names[i], ret);
- 	}
- 
-+	INIT_DELAYED_WORK(&power->vbus_detect, axp20x_usb_power_poll_vbus);
-+	if (axp20x_usb_vbus_needs_polling(power))
-+		queue_delayed_work(system_wq, &power->vbus_detect, 0);
-+
-+	return 0;
-+}
-+
-+static int axp20x_usb_power_remove(struct platform_device *pdev)
-+{
-+	struct axp20x_usb_power *power = platform_get_drvdata(pdev);
-+
-+	cancel_delayed_work_sync(&power->vbus_detect);
-+
- 	return 0;
- }
- 
-@@ -439,6 +491,7 @@ MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
- 
- static struct platform_driver axp20x_usb_power_driver = {
- 	.probe = axp20x_usb_power_probe,
-+	.remove = axp20x_usb_power_remove,
- 	.driver = {
- 		.name = DRVNAME,
- 		.of_match_table = axp20x_usb_power_match,
 -- 
-2.20.1
+viresh
