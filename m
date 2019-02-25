@@ -1,13 +1,13 @@
 From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: [PATCH v2 6/9] power: supply: axp20x_usb_power: add
- support for AXP813
-Date: Mon, 25 Feb 2019 11:31:04 +0800
-Message-ID: <20190225033107.17326-7-wens@csie.org>
+Subject: [PATCH v2 7/9] mfd: axp20x: add USB power supply mfd
+ cell to AXP813
+Date: Mon, 25 Feb 2019 11:31:05 +0800
+Message-ID: <20190225033107.17326-8-wens@csie.org>
 References: <20190225033107.17326-1-wens@csie.org>
 Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBB6DZXRQKGQE6EGLVVA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBCWDZXRQKGQE6NTELOQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20190225033107.17326-1-wens-jdAy2FN1RRM@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -22,133 +22,51 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 
-This adds support for AXP813 PMIC. It is almost the same as AXP22X but
-has a different current limit.
+The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
+supports this variant, we can add an mfd cell for it to use it.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+[wens-jdAy2FN1RRM@public.gmane.org: add commit message]
+Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- drivers/power/supply/axp20x_usb_power.c | 66 ++++++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index 90d06027bf98..d39c450b14c6 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -42,6 +42,11 @@
- #define AXP20X_VBUS_CLIMIT_100mA	2
- #define AXP20X_VBUS_CLIMIT_NONE		3
- 
-+#define AXP813_VBUS_CLIMIT_900mA	0
-+#define AXP813_VBUS_CLIMIT_1500mA	1
-+#define AXP813_VBUS_CLIMIT_2000mA	2
-+#define AXP813_VBUS_CLIMIT_2500mA	3
-+
- #define AXP20X_ADC_EN1_VBUS_CURR	BIT(2)
- #define AXP20X_ADC_EN1_VBUS_VOLT	BIT(3)
- 
-@@ -131,6 +136,31 @@ static int axp20x_get_current_max(struct axp20x_usb_power *power, int *val)
- 	return 0;
- }
- 
-+static int axp813_get_current_max(struct axp20x_usb_power *power, int *val)
-+{
-+	unsigned int v;
-+	int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
-+
-+	if (ret)
-+		return ret;
-+
-+	switch (v & AXP20X_VBUS_CLIMIT_MASK) {
-+	case AXP813_VBUS_CLIMIT_900mA:
-+		*val = 900000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_1500mA:
-+		*val = 1500000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_2000mA:
-+		*val = 2000000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_2500mA:
-+		*val = 2500000;
-+		break;
-+	}
-+	return 0;
-+}
-+
- static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -169,6 +199,8 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 		val->intval = ret * 1700; /* 1 step = 1.7 mV */
- 		return 0;
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		if (power->axp20x_id == AXP813_ID)
-+			return axp813_get_current_max(power, &val->intval);
- 		return axp20x_get_current_max(power, &val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-@@ -260,6 +292,31 @@ static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
- 	return -EINVAL;
- }
- 
-+static int axp813_usb_power_set_current_max(struct axp20x_usb_power *power,
-+					    int intval)
-+{
-+	int val;
-+
-+	switch (intval) {
-+	case 900000:
-+		return regmap_update_bits(power->regmap,
-+					  AXP20X_VBUS_IPSOUT_MGMT,
-+					  AXP20X_VBUS_CLIMIT_MASK,
-+					  AXP813_VBUS_CLIMIT_900mA);
-+	case 1500000:
-+	case 2000000:
-+	case 2500000:
-+		val = (intval - 1000000) / 500000;
-+		return regmap_update_bits(power->regmap,
-+					  AXP20X_VBUS_IPSOUT_MGMT,
-+					  AXP20X_VBUS_CLIMIT_MASK, val);
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static int axp20x_usb_power_set_current_max(struct axp20x_usb_power *power,
- 					    int intval)
- {
-@@ -299,6 +356,9 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- 		return axp20x_usb_power_set_voltage_min(power, val->intval);
- 
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		if (power->axp20x_id == AXP813_ID)
-+			return axp813_usb_power_set_current_max(power,
-+								val->intval);
- 		return axp20x_usb_power_set_current_max(power, val->intval);
- 
- 	default:
-@@ -434,7 +494,8 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 		usb_power_desc = &axp20x_usb_power_desc;
- 		irq_names = axp20x_irq_names;
- 	} else if (power->axp20x_id == AXP221_ID ||
--		   power->axp20x_id == AXP223_ID) {
-+		   power->axp20x_id == AXP223_ID ||
-+		   power->axp20x_id == AXP813_ID) {
- 		usb_power_desc = &axp22x_usb_power_desc;
- 		irq_names = axp22x_irq_names;
- 	} else {
-@@ -493,6 +554,9 @@ static const struct of_device_id axp20x_usb_power_match[] = {
- 	}, {
- 		.compatible = "x-powers,axp223-usb-power-supply",
- 		.data = (void *)AXP223_ID,
-+	}, {
-+		.compatible = "x-powers,axp813-usb-power-supply",
-+		.data = (void *)AXP813_ID,
- 	}, { /* sentinel */ }
+---
+
+Changes since v1:
+  - Made axp803_usb_power_supply_resources[] constant
+  - Added Lee's acked-by
+---
+ drivers/mfd/axp20x.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 3c97f2c0fdfe..902f9f27e748 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
+ 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
  };
- MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
+ 
++/* AXP803 and AXP813/AXP818 share the same interrupts */
++static const struct resource axp803_usb_power_supply_resources[] = {
++	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
++	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
++};
++
+ static const struct resource axp22x_pek_resources[] = {
+ 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_RIS_EDGE, "PEK_DBR"),
+ 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
+@@ -793,6 +799,11 @@ static const struct mfd_cell axp813_cells[] = {
+ 		.of_compatible	= "x-powers,axp813-ac-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
+ 		.resources	= axp20x_ac_power_supply_resources,
++	}, {
++		.name		= "axp20x-usb-power-supply",
++		.num_resources	= ARRAY_SIZE(axp803_usb_power_supply_resources),
++		.resources	= axp803_usb_power_supply_resources,
++		.of_compatible	= "x-powers,axp813-usb-power-supply",
+ 	},
+ };
+ 
 -- 
 2.20.1
