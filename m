@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v11 5/8] cpuidle: teo: Convert to tick_nohz_get_next_timer()
-Date: Tue, 26 Feb 2019 15:54:12 +0100
-Message-ID: <20190226145415.19411-6-ulf.hansson@linaro.org>
+Subject: [PATCH v11 3/8] time: tick-sched: Provide helpers to get the next timer expiration
+Date: Tue, 26 Feb 2019 15:54:10 +0100
+Message-ID: <20190226145415.19411-4-ulf.hansson@linaro.org>
 References: <20190226145415.19411-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190226145415.19411-1-ulf.hansson@linaro.org>
@@ -12,10 +12,18 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Rather than using tick_nohz_get_sleep_length(), let's convert to use the
-more flexible tick_nohz_get_next_timer|hrtimer() APIs. This should have no
-functional change, but allows following changes to later drop the
-tick_nohz_get_sleep_length() API.
+In the power control path with the interrupts disabled, cpuidle governors
+calls tick_nohz_get_sleep_length() to get the duration until the next timer
+expires.
+
+This is not always convenient when going forward, as the duration is a
+relative time to "now". To make it more flexible, let's instead provide two
+new functions tick_nohz_get_next_timer|hrtimer(), which provides the actual
+time for when the next timer is about to expire. The computation of the
+duration can then be done by the caller.
+
+For now, leave tick_nohz_get_sleep_length() as is. When users of it has
+converted to the new APIs, then we can remove it.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 [Ulf: Clarified information in changelog]
@@ -23,35 +31,137 @@ Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v11:
-	- New patch.
+	- New patch, replace "timer: Export next wakeup time of a CPU" from v10.
 
 ---
- drivers/cpuidle/governors/teo.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ include/linux/tick.h     |  7 +++++
+ kernel/time/tick-sched.c | 68 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 74 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
-index 7d05efdbd3c6..bef1e95c597e 100644
---- a/drivers/cpuidle/governors/teo.c
-+++ b/drivers/cpuidle/governors/teo.c
-@@ -244,6 +244,9 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	unsigned int duration_us, count;
- 	int max_early_idx, idx, i;
- 	ktime_t delta_tick;
-+	ktime_t now = ktime_get();
-+	ktime_t next_hrtimer = tick_nohz_get_next_hrtimer();
-+	ktime_t next_timer = tick_nohz_get_next_timer();
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 55388ab45fd4..5b10a0e4acbb 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -111,6 +111,8 @@ enum tick_dep_bits {
+ #define TICK_DEP_MASK_SCHED		(1 << TICK_DEP_BIT_SCHED)
+ #define TICK_DEP_MASK_CLOCK_UNSTABLE	(1 << TICK_DEP_BIT_CLOCK_UNSTABLE)
  
- 	if (cpu_data->last_state >= 0) {
- 		teo_update(drv, dev);
-@@ -252,7 +255,8 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
++extern ktime_t tick_nohz_get_next_hrtimer(void);
++
+ #ifdef CONFIG_NO_HZ_COMMON
+ extern bool tick_nohz_enabled;
+ extern bool tick_nohz_tick_stopped(void);
+@@ -123,6 +125,7 @@ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+ extern bool tick_nohz_idle_got_tick(void);
+ extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
++extern ktime_t tick_nohz_get_next_timer(void);
+ extern unsigned long tick_nohz_get_idle_calls(void);
+ extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+@@ -145,6 +148,10 @@ static inline void tick_nohz_idle_restart_tick(void) { }
+ static inline void tick_nohz_idle_enter(void) { }
+ static inline void tick_nohz_idle_exit(void) { }
+ static inline bool tick_nohz_idle_got_tick(void) { return false; }
++static inline ktime_t tick_nohz_get_next_timer(void)
++{
++	return tick_nohz_get_next_hrtimer();
++}
  
- 	cpu_data->time_span_ns = local_clock();
+ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
+ {
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 6fa52cd6df0b..9966be665074 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -443,6 +443,20 @@ void __init tick_nohz_init(void)
+ }
+ #endif
  
--	cpu_data->sleep_length_ns = tick_nohz_get_sleep_length(&delta_tick);
-+	cpu_data->sleep_length_ns = ktime_sub(next_timer, now);
-+	delta_tick = ktime_sub(next_hrtimer, now);
- 	duration_us = ktime_to_us(cpu_data->sleep_length_ns);
++/**
++ * tick_nohz_get_next_hrtimer - return the expected deadline for the
++ * next hrtimer
++ *
++ * Called from power state control code with interrupts disabled
++ *
++ * Returns a ktime_t based value giving the next deadline for the tick
++ * or an earlier hrtimer
++ */
++ktime_t tick_nohz_get_next_hrtimer(void)
++{
++	return __this_cpu_read(tick_cpu_device.evtdev)->next_event;
++}
++
+ /*
+  * NOHZ - aka dynamic tick functionality
+  */
+@@ -918,7 +932,7 @@ static void __tick_nohz_idle_stop_tick(struct tick_sched *ts)
+ 	int cpu = smp_processor_id();
  
- 	count = 0;
+ 	/*
+-	 * If tick_nohz_get_sleep_length() ran tick_nohz_next_event(), the
++	 * If tick_nohz_get_next_timer() ran tick_nohz_next_event(), the
+ 	 * tick timer expiration time is known already.
+ 	 */
+ 	if (ts->timer_expires_base)
+@@ -1022,6 +1036,58 @@ bool tick_nohz_idle_got_tick(void)
+ 	return false;
+ }
+ 
++/**
++ * tick_nohz_get_next_timer - return the earliest timer deadline
++ *
++ * Called from power state control code with interrupts disabled
++ *
++ * Returns a ktime_t based value giving the earliest timer
++ */
++ktime_t tick_nohz_get_next_timer(void)
++{
++
++	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
++	ktime_t next_tick, next_timer, next_hrtimer;
++	int cpu = smp_processor_id();
++
++	/*
++	 * Actually the function returns the next hrtimer which can
++	 * be the next tick or another hrtimer expiring before the tick.
++	 */
++	next_tick = tick_nohz_get_next_hrtimer();
++
++	/*
++	 * If we can not stop the tick, then in any case the next
++	 * timer is the earliest one expiring with the hrtimer.
++	 */
++	if (!can_stop_idle_tick(cpu, ts))
++		return next_tick;
++
++	/*
++	 * Get the next low resolution timer led by the hrtimer. If
++	 * there is no timer in this case, then we can rely on the
++	 * hrtimer next event only coming from the call above.
++	 */
++	next_timer = tick_nohz_next_event(ts, cpu);
++	if (!next_timer)
++		return next_tick;
++
++	/*
++	 * This function will return the next timer after the
++	 * sched_timer aka the tick. We know there is another hrtimer
++	 * because the tick_nohz_next_event() returned a non zero
++	 * deadline and we need a tick to make the lowres to expire.
++	 */
++	next_hrtimer = hrtimer_next_event_without(&ts->sched_timer);
++
++	/*
++	 * At this point, we have the next lowres timer and the next
++	 * hrtimer which is not the tick. We need to figure out which
++	 * one expires first.
++	 */
++	return min_t(u64, next_hrtimer, next_timer);
++}
++
+ /**
+  * tick_nohz_get_sleep_length - return the expected length of the current sleep
+  * @delta_next: duration until the next event if the tick cannot be stopped
 -- 
 2.17.1
