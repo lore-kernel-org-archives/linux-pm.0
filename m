@@ -1,73 +1,72 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v11 7/8] cpuidle: Pre-store next timer/tick before
- selecting an idle state
-Date: Wed, 27 Feb 2019 00:40:53 +0100
-Message-ID: <CAJZ5v0hPiQe_mrPAAqRwTTdb-X4=-WQAdfC-peWb9zsc_wU5yw@mail.gmail.com>
-References: <20190226145415.19411-1-ulf.hansson@linaro.org>
- <20190226145415.19411-8-ulf.hansson@linaro.org> <CAJZ5v0j=ddMEwvr8rt=PxxPpxoAHary7cYLYgTBbcuBuiGbTZA@mail.gmail.com>
- <CAPDyKFoFmnxWo7XhvAeB08xkDzSqUsmX_Zr=Zh6cmJWq=++0_Q@mail.gmail.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
+Date: Tue, 26 Feb 2019 15:44:23 -0800
+Message-ID: <20190226234422.GD174696@google.com>
+References: <20190224140426.3267-1-marc.zyngier@arm.com>
+ <CAKv+Gu9OOzOxx0rTAZqM8r4q_hRmOp3b=KP7fwgNeiu67FCApA@mail.gmail.com>
+ <5310b73b-4821-6dff-b9c0-34c59fb7fd72@arm.com>
+ <CAKv+Gu_=bQyVZqgUnJm9moCcaCcpDrag6NWGEpaR65=pMiTFJQ@mail.gmail.com>
+ <0c433a70-27f6-76ad-c46c-6015de1ffaa4@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoFmnxWo7XhvAeB08xkDzSqUsmX_Zr=Zh6cmJWq=++0_Q@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <0c433a70-27f6-76ad-c46c-6015de1ffaa4@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Amitkumar Karwar <amitkarwar@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Ganapathi Bhat <gbhat@marvell.com>, Heiko Stuebner <heiko@sntech.de>, Kalle Valo <kvalo@codeaurora.org>, Nishant Sarmukadam <nishants@marvell.com>, Rob Herring <robh+dt@kernel.org>, Xinming Hu <huxinming820@gmail.com>, Devicetree List <devicetree@vger.kernel.org>, "<netdev@vger.kernel.org>" <netdev@vger.kernel.org>, "<linux-wireless@vger.kernel.org>" <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-rockchip@lists.infradead.org, "David S. Miller" <davem@davemloft.net>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.o
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 27, 2019 at 12:16 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Tue, 26 Feb 2019 at 23:08, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Tue, Feb 26, 2019 at 3:54 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > A common piece of data used by cpuidle governors, is the information about
-> > > when the next timer/tick is going to fire. Rather than having each governor
-> > > calling tick_nohz_get_next_timer|hrtimer() separately, let's consolidate
-> > > the code by calling these functions before invoking the ->select() callback
-> > > of the governor - and store the output data in the struct cpuidle_device.
-> >
-> > That misses the point IMO.
-> >
-> > You don't need to store two values in struct cpuidle_device, but just
-> > one, and not before running ->select(), but before invoking the
-> > driver's ->enter() callback.
->
-> Okay! Thanks for letting me know!
->
-> >
-> > At that point, the decision on whether or not to stop the scheduler
-> > tick has been made already and it should be sufficient to store the
-> > return value of tick_nohz_get_next_hrtimer() introduced by patch
-> > [3/8], because that value represents the next timer regardless of what
-> > has been decided with respect to the tick.
->
-> Just to make sure I get this correctly, because it seems like I have
-> missed a few points here....
->
-> If we decided to keep the tick running, then
-> tick_nohz_get_next_hrtimer() gives the next tick or the next hrtimer,
-> whatever that comes first. There are no other timer that can expire
-> earlier than this, right!?
->
-> If we decided to stop the tick, then tick_nohz_get_next_hrtimer() will
-> give us the next hrtimer. Again, then there are no other timer that
-> can't expire earlier than this, right!?
+Hi,
 
-Right in both cases.
+On Tue, Feb 26, 2019 at 05:14:00PM +0000, Marc Zyngier wrote:
+> On 26/02/2019 16:21, Ard Biesheuvel wrote:
+> > On Mon, 25 Feb 2019 at 15:53, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> >> It outlines one thing: If you have to interpret per-device PCI
+> >> properties from DT, you're in for serious trouble. I should get some
+> >> better HW.
+> >>
+> > 
+> > Yeah, it obviously makes no sense at all for the interrupt parent of a
+> > PCI device to deviate from the host bridge's interrupt parent, and
+> > it's quite unfortunate that we can't simply ban it now that the cat is
+> > out of the bag already.
+> > 
+> > Arguably, the wake up widget is not part of the PCI device, but I have
+> > no opinion as to whether it is better modeling it as a sub device as
+> > you are proposing or as an entirely separate device referenced via a
+> > phandle.
+> 
+> It is not that clear. The widget seems to be an integral part of the
+> device, as it is the same basic IP that is used for SDIO and USB.
 
-IOW, that is the event that will wake up the CPU unless any other
-(non-timer) interrupts (or equivalent events) occur in the meantime.
+It's not really a widget specific to this IP. It's just a GPIO. It so
+happens that both SDIO and PCIe designs have wanted to use a GPIO for
+wakeup, as many other devices do. (Note: it's not just cheap ARM
+devices; pulling up some Intel Chromebook designs, I see the exact same
+WAKE# GPIO on their PCIe WiFi as well.)
 
-> >
-> > And you won't need the tick_nohz_get_next_timer() any more then.
->
-> Alright, this kind of brings this hole thing back closer to v10 - and
-> then we should stick to use tick_nohz_get_sleep_length() as is for the
-> cpuidle governors. That is what you are saying?
+> It looks like the good old pre-PCI-2.2 days, where you had to have a
+> separate cable between your network card and the base-board for the
+> wake-up interrupt to be delivered. Starting with PCI-2.2, the bus can
+> carry the signal just fine. With PCIe, it should just be an interrupt
+> TLP sent to the RC, but that's obviously not within the capabilities of
+> the HW.
 
-For the menu and teo governors - yes.  IMO
-tick_nohz_get_sleep_length() is as good as it gets in there.
+You should search the PCI Express specification for WAKE#. There is a
+clearly-documented "side-band wake" feature that is part of the
+standard, as an alternative to in-band TLP wakeup. While you claim this
+is an ancient thing, it in fact still in use on many systems -- it's
+just usually abstracted better by ACPI firmware, whereas the dirty
+laundry is aired a bit more on a Device Tree system. And we got it
+wrong.
 
-Cheers,
-Rafael
+> Anyway, it'd be good if the Marvell people could chime in and let us
+> know how they'd prefer to handle this.
+
+I'm not sure this is really a Marvell-specific problem. (Well, except
+for the marvell,wakeup-pin silliness, which is somewhat orthogonal.) In
+fact, if we cared a little more about Wake-on-WiFi, we'd be trying to
+support the same (out-of-band WAKE#) with other WiFi drivers.
+
+Brian
