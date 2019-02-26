@@ -1,138 +1,153 @@
-From: Artur Rojek <contact@artur-rojek.eu>
-Subject: [PATCH v2 2/2] power: supply: gpio-charger: Add support for charger status.
-Date: Tue, 26 Feb 2019 16:04:37 +0100
-Message-ID: <20190226150437.3704-2-contact@artur-rojek.eu>
-References: <20190226150437.3704-1-contact@artur-rojek.eu>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v4 8/9] PM / Domains: Support IRQ safe PM domains
+Date: Tue, 26 Feb 2019 16:52:20 +0100
+Message-ID: <CAMuHMdVDtP=Y=FWfy56d+azW4bJ=3ihmmwdVkzEX-K3W6Wc9zA@mail.gmail.com>
+References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
+ <1477347668-41901-9-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190226150437.3704-1-contact@artur-rojek.eu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1477347668-41901-9-git-send-email-lina.iyer@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Brendan Jackman <brendan.jackman@arm.com>, linux-arm-msm@vger.kernel.org, Andy Gross <andy.gross@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Introduce optional support of POWER_SUPPLY_PROP_STATUS for chargers
-which provide charging status GPIO.
+Hi Lina,
 
-Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
----
+Yes, this is a reply to an old patch.
+But it seems there are no upstream users of GENPD_FLAG_IRQ_SAFE yet...
 
-Changes:
+On Tue, Oct 25, 2016 at 12:21 AM Lina Iyer <lina.iyer@linaro.org> wrote:
+> Generic Power Domains currently support turning on/off only in process
+> context. This prevents the usage of PM domains for domains that could be
+> powered on/off in a context where IRQs are disabled. Many such domains
+> exist today and do not get powered off, when the IRQ safe devices in
+> that domain are powered off, because of this limitation.
+>
+> However, not all domains can operate in IRQ safe contexts. Genpd
+> therefore, has to support both cases where the domain may or may not
+> operate in IRQ safe contexts. Configuring genpd to use an appropriate
+> lock for that domain, would allow domains that have IRQ safe devices to
+> runtime suspend and resume, in atomic context.
+>
+> To achieve domain specific locking, set the domain's ->flag to
+> GENPD_FLAG_IRQ_SAFE while defining the domain. This indicates that genpd
+> should use a spinlock instead of a mutex for locking the domain. Locking
+> is abstracted through genpd_lock() and genpd_unlock() functions that use
+> the flag to determine the appropriate lock to be used for that domain.
+>
+> Domains that have lower latency to suspend and resume and can operate
+> with IRQs disabled may now be able to save power, when the component
+> devices and sub-domains are idle at runtime.
+>
+> The restriction this imposes on the domain hierarchy is that non-IRQ
+> safe domains may not have IRQ-safe subdomains, but IRQ safe domains may
+> have IRQ safe and non-IRQ safe subdomains and devices.
+>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 111 ++++++++++++++++++++++++++++++++++++++++----
+>  include/linux/pm_domain.h   |  10 +++-
+>  2 files changed, 110 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 1ad42f2..07ed835 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -74,11 +74,70 @@ static const struct genpd_lock_ops genpd_mtx_ops = {
+>         .unlock = genpd_unlock_mtx,
+>  };
+>
+> +static void genpd_lock_spin(struct generic_pm_domain *genpd)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&genpd->slock, flags);
+> +       genpd->lock_flags = flags;
+> +}
+> +
+> +static void genpd_lock_nested_spin(struct generic_pm_domain *genpd,
+> +                                       int depth)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave_nested(&genpd->slock, flags, depth);
+> +       genpd->lock_flags = flags;
 
-v2: no change
+I don't think this is correct: during the second or any subsequent call,
+the old genpd->lock_flags will be overwritten by the new one.
+As interrupts are already disabled when doing a second call, the new
+flags will reflect this, and calling genpd_unlock_spin() below will
+never re-enable interrupts again.
 
- drivers/power/supply/gpio-charger.c | 53 +++++++++++++++++++++++------
- 1 file changed, 42 insertions(+), 11 deletions(-)
+Note that changing the above to
 
-diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 7e4f11d5a230..ebe986f09472 100644
---- a/drivers/power/supply/gpio-charger.c
-+++ b/drivers/power/supply/gpio-charger.c
-@@ -29,11 +29,13 @@
- 
- struct gpio_charger {
- 	unsigned int irq;
-+	unsigned int status_irq;
- 	bool wakeup_enabled;
- 
- 	struct power_supply *charger;
- 	struct power_supply_desc charger_desc;
- 	struct gpio_desc *gpiod;
-+	struct gpio_desc *status;
- };
- 
- static irqreturn_t gpio_charger_irq(int irq, void *devid)
-@@ -59,6 +61,12 @@ static int gpio_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		val->intval = gpiod_get_value_cansleep(gpio_charger->gpiod);
- 		break;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (gpiod_get_value_cansleep(gpio_charger->status))
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -93,8 +101,29 @@ static enum power_supply_type gpio_charger_get_type(struct device *dev)
- 	return POWER_SUPPLY_TYPE_UNKNOWN;
- }
- 
-+static int gpio_charger_get_irq(struct device *dev, void *dev_id,
-+				struct gpio_desc *gpio)
-+{
-+	int ret, irq = gpiod_to_irq(gpio);
-+
-+	if (irq > 0) {
-+		ret = devm_request_any_context_irq(dev, irq, gpio_charger_irq,
-+						   IRQF_TRIGGER_RISING |
-+						   IRQF_TRIGGER_FALLING,
-+						   dev_name(dev),
-+						   dev_id);
-+		if (ret < 0) {
-+			dev_warn(dev, "Failed to request irq: %d\n", ret);
-+			irq = 0;
-+		}
-+	}
-+
-+	return irq;
-+}
-+
- static enum power_supply_property gpio_charger_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_STATUS /* Must always be last in the array. */
- };
- 
- static int gpio_charger_probe(struct platform_device *pdev)
-@@ -105,7 +134,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 	struct gpio_charger *gpio_charger;
- 	struct power_supply_desc *charger_desc;
- 	unsigned long flags;
--	int irq, ret;
-+	int ret;
- 
- 	if (!pdata && !dev->of_node) {
- 		dev_err(dev, "No platform data\n");
-@@ -151,9 +180,16 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(gpio_charger->gpiod);
- 	}
- 
-+	gpio_charger->status = devm_gpiod_get_optional(dev, "status", GPIOD_IN);
-+	if (IS_ERR(gpio_charger->status))
-+		return PTR_ERR(gpio_charger->status);
-+
- 	charger_desc = &gpio_charger->charger_desc;
- 	charger_desc->properties = gpio_charger_properties;
- 	charger_desc->num_properties = ARRAY_SIZE(gpio_charger_properties);
-+	/* Remove POWER_SUPPLY_PROP_STATUS from the supported properties. */
-+	if (!gpio_charger->status)
-+		charger_desc->num_properties -= 1;
- 	charger_desc->get_property = gpio_charger_get_property;
- 
- 	psy_cfg.of_node = dev->of_node;
-@@ -180,16 +216,11 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	irq = gpiod_to_irq(gpio_charger->gpiod);
--	if (irq > 0) {
--		ret = devm_request_any_context_irq(dev, irq, gpio_charger_irq,
--				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
--				dev_name(dev), gpio_charger->charger);
--		if (ret < 0)
--			dev_warn(dev, "Failed to request irq: %d\n", ret);
--		else
--			gpio_charger->irq = irq;
--	}
-+	gpio_charger->irq = gpio_charger_get_irq(dev, gpio_charger->charger,
-+						 gpio_charger->gpiod);
-+	gpio_charger->status_irq = gpio_charger_get_irq(dev,
-+							gpio_charger->charger,
-+							gpio_charger->status);
- 
- 	platform_set_drvdata(pdev, gpio_charger);
- 
+    if (!depth)
+            genpd->lock_flags = flags;
+
+won't help, as that means the first call to genpd_unlock_spin() will
+re-enable interrupts, which is too early.
+
+Using a single genpd->lock_flags can work only in case interrupts were
+already disabled before the first call.  But perhaps that's guaranteed?
+
+Apart from that, given depth is used as a lockdep subclass, and the
+following comment in include/linux/lockdep.h:
+
+    /*
+     * For trivial one-depth nesting of a lock-class, the following
+     * global define can be used. (Subsystems with multiple levels
+     * of nesting should define their own lock-nesting subclasses.)
+     */
+    #define SINGLE_DEPTH_NESTING                 1
+
+I'm wondering if depth > 1 actually works as expected.
+
+Am I missing something?
+
+Thanks!
+
+> +}
+> +
+> +static int genpd_lock_interruptible_spin(struct generic_pm_domain *genpd)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&genpd->slock, flags);
+> +       genpd->lock_flags = flags;
+> +       return 0;
+> +}
+> +
+> +static void genpd_unlock_spin(struct generic_pm_domain *genpd)
+> +       __releases(&genpd->slock)
+> +{
+> +       spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
+> +}
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.21.0
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
