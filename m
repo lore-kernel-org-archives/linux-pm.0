@@ -1,102 +1,86 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 07/14] powercap/intel_rapl: Simplify rapl_find_package()
-Date: Tue, 26 Feb 2019 01:20:05 -0500
-Message-ID: <4dd94a34999d6db4ced7a0759c02f7cd93729dc4.1551160674.git.len.brown@intel.com>
+Subject: [PATCH 11/14] hwmon/coretemp: Support multi-die/package
+Date: Tue, 26 Feb 2019 01:20:09 -0500
+Message-ID: <b91ef931b054bacf5b4a34799560062615ff4e25.1551160674.git.len.brown@intel.com>
 References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Syntax only, no functional or semantic change.
+This patch introduces coretemp driver support
+for new dual-die/package systems.
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package()
+On the new dual-die/package systems, the package temperature MSRs becomes
+die-scope. Thus instead of one hwmon device per physical package, now
+there should be one hwmon device for each die on these systems.
+
+On the hardwares that do not have multi-die support,
+topology_logical_die_id() equals topology_physical_package_id(), thus the
+only difference is that physical package id is used as the coretemp
+platform device id, instead of logical package id on these systems.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 Cc: linux-pm@vger.kernel.org
+Cc: linux-hwmon@vger.kernel.org
 ---
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/hwmon/coretemp.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 6cdb2c14eee4..6057d9695fed 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 5d34f7271e67..57f348d43819 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -435,7 +435,7 @@ static int chk_ucode_version(unsigned int cpu)
  
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package(int cpu)
+ static struct platform_device *coretemp_get_pdev(unsigned int cpu)
  {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
+-	int pkgid = topology_logical_package_id(cpu);
++	int pkgid = topology_logical_die_id(cpu);
  
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1298,7 +1299,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package(0);
+ 	if (pkgid >= 0 && pkgid < max_packages)
+ 		return pkg_devices[pkgid];
+@@ -579,7 +579,7 @@ static struct platform_driver coretemp_driver = {
  
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1454,8 +1455,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
+ static struct platform_device *coretemp_device_add(unsigned int cpu)
  {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
+-	int err, pkgid = topology_logical_package_id(cpu);
++	int err, pkgid = topology_logical_die_id(cpu);
+ 	struct platform_device *pdev;
  
-@@ -1464,7 +1466,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1495,12 +1497,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1510,11 +1511,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package(cpu);
- 	if (!rp)
+ 	if (pkgid < 0)
+@@ -703,7 +703,7 @@ static int coretemp_cpu_offline(unsigned int cpu)
+ 	 * the rest.
+ 	 */
+ 	if (cpumask_empty(&pd->cpumask)) {
+-		pkg_devices[topology_logical_package_id(cpu)] = NULL;
++		pkg_devices[topology_logical_die_id(cpu)] = NULL;
+ 		platform_device_unregister(pdev);
  		return 0;
+ 	}
+@@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
+ static int __init coretemp_init(void)
+ {
+ 	int err;
++	struct cpuinfo_x86 *c = &cpu_data(0);
  
+ 	/*
+ 	 * CPUID.06H.EAX[0] indicates whether the CPU has thermal
+@@ -741,7 +742,7 @@ static int __init coretemp_init(void)
+ 	if (!x86_match_cpu(coretemp_ids))
+ 		return -ENODEV;
+ 
+-	max_packages = topology_max_packages();
++	max_packages = topology_max_packages() * c->x86_max_dies;
+ 	pkg_devices = kcalloc(max_packages, sizeof(struct platform_device *),
+ 			      GFP_KERNEL);
+ 	if (!pkg_devices)
 -- 
 2.18.0-rc0
