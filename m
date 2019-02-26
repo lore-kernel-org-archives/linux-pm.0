@@ -1,66 +1,50 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v11 4/8] cpuidle: menu: Convert to tick_nohz_get_next_timer|hrtimer()
-Date: Tue, 26 Feb 2019 15:54:11 +0100
-Message-ID: <20190226145415.19411-5-ulf.hansson@linaro.org>
-References: <20190226145415.19411-1-ulf.hansson@linaro.org>
+From: Artur Rojek <contact@artur-rojek.eu>
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: gpio-charger: Add status-gpios property
+Date: Tue, 26 Feb 2019 16:04:36 +0100
+Message-ID: <20190226150437.3704-1-contact@artur-rojek.eu>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190226145415.19411-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 List-Id: linux-pm@vger.kernel.org
 
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Add documentation for the "status-gpios" property.
+Update the "gpios" property with a valid example.
 
-Rather than using tick_nohz_get_sleep_length(), let's convert to use the
-more flexible tick_nohz_get_next_timer|hrtimer() APIs. This should have no
-functional change, but allows following changes to later drop the
-tick_nohz_get_sleep_length() API.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-[Ulf: Clarified information in changelog]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
 ---
 
-Changes in v11:
-	- New patch.
+Changes:
 
----
- drivers/cpuidle/governors/menu.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+v2: - add a better description for the "status-gpios" property,
+    - add valid examples for the "gpios" and "status-gpios" properties
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 61316fc51548..95e9122d6047 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -286,14 +286,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	unsigned int predicted_us;
- 	unsigned long nr_iowaiters;
- 	ktime_t delta_next;
-+	ktime_t now = ktime_get();
-+	ktime_t next_hrtimer = tick_nohz_get_next_hrtimer();
-+	ktime_t next_timer = tick_nohz_get_next_timer();
+ .../devicetree/bindings/power/supply/gpio-charger.txt       | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+index adbb5dc5b6e9..999cc245543c 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+@@ -14,12 +14,16 @@ Required properties :
+      usb-cdp (USB charging downstream port)
+      usb-aca (USB accessory charger adapter)
  
- 	if (data->needs_update) {
- 		menu_update(drv, dev);
- 		data->needs_update = 0;
++Optional properties:
++ - status-gpios: GPIO indicating whether a battery is charging.
++
+ Example:
+ 
+ 	usb_charger: charger {
+ 		compatible = "gpio-charger";
+ 		charger-type = "usb-sdp";
+-		gpios = <&gpf0 2 0 0 0>;
++		gpios = <&gpd 28 GPIO_ACTIVE_LOW>;
++		status-gpios = <&gpc 27 GPIO_ACTIVE_LOW>;
  	}
  
--	/* determine the expected residency time, round up */
--	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
-+	/*
-+	 * Compute the duration before the next timer, whatever the origin
-+	 */
-+	delta_next = ktime_sub(next_timer, now);
-+	data->next_timer_us = ktime_to_us(delta_next);
-+
-+	/*
-+	 * Compute the duration before next hrtimer which is the tick
-+	 * or an earliest hrtimer
-+	 */
-+	delta_next = ktime_sub(next_hrtimer, now);
- 
- 	nr_iowaiters = nr_iowait_cpu(dev->cpu);
- 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
+ 	battery {
 -- 
-2.17.1
+2.21.0
