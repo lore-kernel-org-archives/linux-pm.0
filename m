@@ -1,93 +1,69 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: RE: [PATCH V8 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Tue, 26 Feb 2019 12:00:57 +0000
-Message-ID: <VI1PR04MB422261F6A295A58FF06E90DE807B0@VI1PR04MB4222.eurprd04.prod.outlook.com>
-References: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
- <20190223213759.GA1472@localhost.localdomain>
- <DB3PR0402MB39164677D09DA6CB3A6951B3F5790@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+From: Artur Rojek <contact@artur-rojek.eu>
+Subject: Re: [PATCH 1/2] dt-bindings: power: supply: gpio-charger: Add
+ status-gpios property
+Date: Tue, 26 Feb 2019 15:40:38 +0100
+Message-ID: <780b0ff3bb738ab36a5e729f74e6cfb2@artur-rojek.eu>
+References: <20190205190316.19296-1-contact@artur-rojek.eu>
+ <20190225215316.GA10117@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB3PR0402MB39164677D09DA6CB3A6951B3F5790@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-Content-Language: en-US
+In-Reply-To: <20190225215316.GA10117@bogus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.d>
+To: Rob Herring <robh@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
-> > On Thu, Feb 21, 2019 at 06:38:30AM +0000, Anson Huang wrote:
-> > > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as system
-> > > controller, the system controller is in charge of system power,
-> > > clock and thermal sensors etc. management, Linux kernel has to
-> > > communicate with system controller via MU (message unit) IPC to get
-> > > temperature from thermal sensors, this patch adds binding doc for
-> > > i.MX system controller thermal driver.
-> > >
-> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> > > Reviewed-by: Rob Herring <robh@kernel.org>
+Hi Rob.
 
-You need drop the former Reviewed-by once there's significant changes.
+Thanks for the review.
 
-> > > +Thermal bindings based on SCU Message Protocol
-> > > +------------------------------------------------------------
-> > > +
-> > > +Required properties:
-> > > +- compatible:			Should be :
-> > > +				  "fsl,imx8qxp-sc-thermal"
-> > > +				followed by "fsl,imx-sc-thermal";
-> > > +
-> > > +- #thermal-sensor-cells:	See
-> > Documentation/devicetree/bindings/thermal/thermal.txt
-> > > +				for a description.
-> > > +
-> > > +- imx,sensor-resource-id: 	Property array to specify each thermal
-> zone's
-> > sensor resource ID.
-> >
-> > If this is an array...
-> >
-> > > +
-> > >  Example (imx8qxp):
-> > >  -------------
-> > >  lsio_mu1: mailbox@5d1c0000 {
-> > > @@ -168,6 +181,12 @@ firmware {
-> > >  		rtc: rtc {
-> > >  			compatible =3D "fsl,imx8qxp-sc-rtc";
-> > >  		};
-> > > +
-> > > +		tsens: thermal-sensor {
-> > > +			compatible =3D "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-
-> > thermal";
-> > > +			#thermal-sensor-cells =3D <0>;
-> > > +			imx,sensor-resource-id =3D <IMX_SC_R_SYSTEM>;
-> >
-> > then this example should have an array, to be better express how this
-> > is supposed to work. Can you please resend this with an array instead?
->=20
-> On i.MX8QXP, there is ONLY 1 thermal zone available currently, but the th=
-ermal
-> driver is supposed to support multi thermal zones as well for i.MX8QM, in=
- V9
-> patch set I just sent, I use the " imx,sensor-resource-id " element count=
- to
-> determine how many thermal sensors will be supported, so that we can also
-> get rid of searching the thermal-zones' child node, I improved the descri=
-ption
-> as below, is it OK?
->=20
+On 2019-02-25 22:53, Rob Herring wrote:
+> On Tue, Feb 05, 2019 at 08:03:15PM +0100, Artur Rojek wrote:
+>> Add documentation for the "status-gpios" property.
+>> 
+>> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+>> ---
+>>  .../devicetree/bindings/power/supply/gpio-charger.txt         | 4 
+>> ++++
+>>  1 file changed, 4 insertions(+)
+>> 
+>> diff --git 
+>> a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt 
+>> b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+>> index adbb5dc5b6e9..b98a05a4973c 100644
+>> --- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+>> +++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+>> @@ -14,12 +14,16 @@ Required properties :
+>>       usb-cdp (USB charging downstream port)
+>>       usb-aca (USB accessory charger adapter)
+>> 
+>> +Optional properties:
+>> + - status-gpios: GPIO indicating the charger status
+> 
+> So when it is asserted it has 'status'? What does status mean?
+It is a GPIO indicating whether a battery is charging.
+I shall make the description more clear.
+> 
+>> +
+>>  Example:
+>> 
+>>  	usb_charger: charger {
+>>  		compatible = "gpio-charger";
+>>  		charger-type = "usb-sdp";
+>>  		gpios = <&gpf0 2 0 0 0>;
+>> +		status-gpios = <&gpf0 3 0 0 0>;
+> 
+> Humm, not sure what the thinking for 'gpios' was, but it's wrong and 
+> you
+> just copied it. If we follow the normal cell encoding with 2 cells, 
+> this
+> means the property takes 3 gpios (though the last 2 are marked not
+> present with 0).
+I will replace both of those properties with a valid example.
 
-Device tree is used to describe HW.
-#thermal-sensor-cells is less to be an optional parameter to me.
-If HW supports, then it should be 1 and update the example accordingly.
-
-Regards
-Dong Aisheng
-
->  41 +- imx,sensor-resource-id:      A single integer for single thermal z=
-one's
-> resource ID or
->  42 +                               an array of integers to specify each
-> thermal zone's sensor
->  43 +                               resource ID.
+Artur
+> 
+> Rob
