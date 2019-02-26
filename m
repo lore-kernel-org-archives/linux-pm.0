@@ -1,60 +1,102 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 08/11] powercap/intel_rapl: Support multi-die/package
-Date: Mon, 25 Feb 2019 23:41:58 -0500
-Message-ID: <CAJvTdKnCSPzpr7NqqaKLTaBc5LuXjd0mwR7WhEkUK=pPuzTGaA@mail.gmail.com>
-References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
- <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
- <20190220110200.GD17969@hirez.programming.kicks-ass.net> <CAJvTdKnpOdDiCaW9ntkNof+Ji7+HPaQqEk=ou-hWnw-BJxMGTQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Subject: [PATCH 07/14] powercap/intel_rapl: Simplify rapl_find_package()
+Date: Tue, 26 Feb 2019 01:20:05 -0500
+Message-ID: <4dd94a34999d6db4ced7a0759c02f7cd93729dc4.1551160674.git.len.brown@intel.com>
+References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKnpOdDiCaW9ntkNof+Ji7+HPaQqEk=ou-hWnw-BJxMGTQ@mail.gmail.com>
+In-Reply-To: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: X86 ML <x86@kernel.org>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 21, 2019 at 12:44 AM Len Brown <lenb@kernel.org> wrote:
->
-> On Wed, Feb 20, 2019 at 6:02 AM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> > >       list_for_each_entry(rp, &rapl_packages, plist) {
-> > > @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
-> > >  /* called from CPU hotplug notifier, hotplug lock held */
-> > >  static struct rapl_package *rapl_add_package(int cpu)
-> > >  {
-> > > -     int id = topology_physical_package_id(cpu);
-> > > +     int id = topology_unique_die_id(cpu);
-> > >       struct rapl_package *rp;
-> > >       int ret;
-> >
-> > And now your new function names are misnomers.
->
-> That is fair.
->
-> Seems that a subsequent re-name-only patch is appropriate.
+From: Zhang Rui <rui.zhang@intel.com>
 
-I'm not sure that re-naming these functions is a good idea.
+Syntax only, no functional or semantic change.
 
-Fundamentally, the reason stems from the SDM being in-consistent.
-And the reason that the SDM is inconsistent is for compatibility.
+Simplify how the code to discover a package is called.
+Rename find_package_by_id() to rapl_find_package()
 
-ie. the PACKAGE MSRs in the SDM are still called PACKAGE MSRs,
-even though on a multi-die system, they are DIE scoped.
-There is no plan to re-name all of those MSRs.
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/powercap/intel_rapl.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-And so what do you call a routine that parses a PACKAGE_RAPL domain?
-Well, it is still called PACKAGE MSR, even though the code is smart enough
-to know that on a multi-die system, its scope is die-scoped, not package-scoped.
-
-And yes, just to confuse things, there WILL be PACKAGE scope MSRs
-in the future that span multiple die on multi-die systems.  No, it will not
-be a surprise when they appear -- by definition, they will be different
-and incompatible with previous PACKAGE MSRs.  We will need to update
-some software to be smart about handling them -- no blind assumptions
-on using the word "package" in this context.
-
-So unless Rui disagrees, I'm inclined to leave these routine names alone.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 6cdb2c14eee4..6057d9695fed 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
+ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+ 
+ /* caller to ensure CPU hotplug lock is held */
+-static struct rapl_package *find_package_by_id(int id)
++static struct rapl_package *rapl_find_package(int cpu)
+ {
++	int id = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 
+ 	list_for_each_entry(rp, &rapl_packages, plist) {
+@@ -1298,7 +1299,7 @@ static int __init rapl_register_psys(void)
+ 	rd->rpl[0].name = pl1_name;
+ 	rd->rpl[1].prim_id = PL2_ENABLE;
+ 	rd->rpl[1].name = pl2_name;
+-	rd->rp = find_package_by_id(0);
++	rd->rp = rapl_find_package(0);
+ 
+ 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
+ 					    "psys", NULL,
+@@ -1454,8 +1455,9 @@ static void rapl_remove_package(struct rapl_package *rp)
+ }
+ 
+ /* called from CPU hotplug notifier, hotplug lock held */
+-static struct rapl_package *rapl_add_package(int cpu, int pkgid)
++static struct rapl_package *rapl_add_package(int cpu)
+ {
++	int id = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 	int ret;
+ 
+@@ -1464,7 +1466,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	/* add the new package to the list */
+-	rp->id = pkgid;
++	rp->id = id;
+ 	rp->lead_cpu = cpu;
+ 
+ 	/* check if the package contains valid domains */
+@@ -1495,12 +1497,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
+  */
+ static int rapl_cpu_online(unsigned int cpu)
+ {
+-	int pkgid = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 
+-	rp = find_package_by_id(pkgid);
++	rp = rapl_find_package(cpu);
+ 	if (!rp) {
+-		rp = rapl_add_package(cpu, pkgid);
++		rp = rapl_add_package(cpu);
+ 		if (IS_ERR(rp))
+ 			return PTR_ERR(rp);
+ 	}
+@@ -1510,11 +1511,10 @@ static int rapl_cpu_online(unsigned int cpu)
+ 
+ static int rapl_cpu_down_prep(unsigned int cpu)
+ {
+-	int pkgid = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 	int lead_cpu;
+ 
+-	rp = find_package_by_id(pkgid);
++	rp = rapl_find_package(cpu);
+ 	if (!rp)
+ 		return 0;
+ 
+-- 
+2.18.0-rc0
