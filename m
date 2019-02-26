@@ -1,94 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
- framework
-Date: Tue, 26 Feb 2019 08:00:16 +0530
-Message-ID: <20190226023016.ooyjsiopsyc6vg5s@vireshk-i7>
-References: <cover.1550748118.git.viresh.kumar@linaro.org>
- <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
- <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
- <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
- <20190225085847.yvrtmxtwvk725b7v@e107158-lin.cambridge.arm.com>
- <20190225090955.suq4jw26d2brkjha@vireshk-i7>
- <20190225121458.fvdiiumgyhhdardw@e107158-lin.cambridge.arm.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 08/11] powercap/intel_rapl: Support multi-die/package
+Date: Mon, 25 Feb 2019 23:41:58 -0500
+Message-ID: <CAJvTdKnCSPzpr7NqqaKLTaBc5LuXjd0mwR7WhEkUK=pPuzTGaA@mail.gmail.com>
+References: <635b2bf8b1151a191cd9299276b75791a818c0c2.1550545163.git.len.brown@intel.com>
+ <3349c9e551eecbfe849320c0e938daf4e0126734.1550545163.git.len.brown@intel.com>
+ <20190220110200.GD17969@hirez.programming.kicks-ass.net> <CAJvTdKnpOdDiCaW9ntkNof+Ji7+HPaQqEk=ou-hWnw-BJxMGTQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190225121458.fvdiiumgyhhdardw@e107158-lin.cambridge.arm.com>
+In-Reply-To: <CAJvTdKnpOdDiCaW9ntkNof+Ji7+HPaQqEk=ou-hWnw-BJxMGTQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Qais Yousef <qais.yousef@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: X86 ML <x86@kernel.org>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25-02-19, 12:14, Qais Yousef wrote:
-> On 02/25/19 14:39, Viresh Kumar wrote:
-> > On 25-02-19, 08:58, Qais Yousef wrote:
-> > > On 02/25/19 10:01, Viresh Kumar wrote:
-> > > > > > +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-> > > > > > +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
-> > > > > > +
-> > > > > > +	if (min > new_policy->min)
-> > > > > > +		new_policy->min = min;
-> > > > > > +	if (max < new_policy->max)
-> > > > > > +		new_policy->max = max;
-> > 
-> > > And this is why we need to check here if the PM QoS value doesn't conflict with
-> > > the current min/max, right? Until the current notifier code is removed they
-> > > could trip over each others.
-> > 
-> > No. The above if/else block is already removed as part of patch 5/5. It was
-> > required because of conflict between userspace specific min/max and qos min/max,
-> > which are migrated to use qos by patc 5/5.
-> > 
-> > The cpufreq notifier mechanism already lets users play with min/max and that is
-> > already safe from conflicts.
-> > 
-> > 
-> > > It would be nice to add a comment here about PM QoS managing and remembering
-> > > values
-> > 
-> > I am not sure if that would add any value. Some documentation update may be
-> > useful for people looking for details though, that I shall do after all the
-> > changes get in and things become a bit stable.
-> > 
-> 
-> Up to you. But not everyone is familiar with the code and a one line comment
-> that points to where aggregation is happening would be helpful for someone
-> scanning this code IMHO.
+On Thu, Feb 21, 2019 at 12:44 AM Len Brown <lenb@kernel.org> wrote:
+>
+> On Wed, Feb 20, 2019 at 6:02 AM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> > >       list_for_each_entry(rp, &rapl_packages, plist) {
+> > > @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+> > >  /* called from CPU hotplug notifier, hotplug lock held */
+> > >  static struct rapl_package *rapl_add_package(int cpu)
+> > >  {
+> > > -     int id = topology_physical_package_id(cpu);
+> > > +     int id = topology_unique_die_id(cpu);
+> > >       struct rapl_package *rp;
+> > >       int ret;
+> >
+> > And now your new function names are misnomers.
+>
+> That is fair.
+>
+> Seems that a subsequent re-name-only patch is appropriate.
 
-Okay, will add something then.
+I'm not sure that re-naming these functions is a good idea.
 
-> > > and that we need to be careful that both mechanisms don't trip over
-> > > each others until this transient period is over.
-> > 
-> > The second mechanism will die very very soon once this is merged, migrating them
-> > shouldn't be a big challenge AFAICT. I didn't attempt that because I didn't
-> > wanted to waste time updating things in case this version also doesn't make
-> > sense to others.
-> > 
-> > > I have a nit too. It would be nice to explicitly state this is
-> > > CPU_{MIN,MAX}_FREQUENCY. I can see someone else adding {MIN,MAX}_FREQUENCY for
-> > > something elsee (memory maybe?)
-> > 
-> > This is not CPU specific, but any device. The same interface shall be used by
-> > devfreq as well, who wanted to use freq-constraints initially.
-> > 
-> 
-> I don't get that to be honest. I probably have to read more.
-> 
-> Is what you're saying that when applying a MIN_FREQUENCY constraint the same
-> value will be applied to both cpufreq and devfreq? Isn't this too coarse?
+Fundamentally, the reason stems from the SDM being in-consistent.
+And the reason that the SDM is inconsistent is for compatibility.
 
-Oh no. A constraint with QoS is added like this:
+ie. the PACKAGE MSRs in the SDM are still called PACKAGE MSRs,
+even though on a multi-die system, they are DIE scoped.
+There is no plan to re-name all of those MSRs.
 
-        dev_pm_qos_add_request(dev, req, DEV_PM_QOS_MIN_FREQUENCY, min);
+And so what do you call a routine that parses a PACKAGE_RAPL domain?
+Well, it is still called PACKAGE MSR, even though the code is smart enough
+to know that on a multi-die system, its scope is die-scoped, not package-scoped.
 
-Now dev here can be any device struct, CPU's or GPU's or anything else. All the
-MIN freq requests are stored/processed per device and for a CPU in cpufreq all
-we will see is MIN requests for the CPUs. And so the macro is required to be a
-bit generic and shouldn't have CPU word within it.
+And yes, just to confuse things, there WILL be PACKAGE scope MSRs
+in the future that span multiple die on multi-die systems.  No, it will not
+be a surprise when they appear -- by definition, they will be different
+and incompatible with previous PACKAGE MSRs.  We will need to update
+some software to be smart about handling them -- no blind assumptions
+on using the word "package" in this context.
 
-Hope I was able to clarify your doubt a bit. Thanks.
+So unless Rui disagrees, I'm inclined to leave these routine names alone.
 
--- 
-viresh
+thanks,
+Len Brown, Intel Open Source Technology Center
