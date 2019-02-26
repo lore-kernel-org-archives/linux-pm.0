@@ -1,82 +1,61 @@
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v1 4/4] clk: qoriq: Add clockgen support for lx2160a
-Date: Tue, 26 Feb 2019 10:11:08 +0000
-Message-ID: <1551132245-6089-5-git-send-email-vabhav.sharma@nxp.com>
+Subject: [PATCH v1 2/4] soc/fsl/guts: Add definition for LX2160A
+Date: Tue, 26 Feb 2019 10:10:56 +0000
+Message-ID: <1551132245-6089-3-git-send-email-vabhav.sharma@nxp.com>
 References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
-Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, will.deacon@a
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Yinbo Zhu <yinbo.zhu@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Vabhav Sharma <vabhav.sharma@nxp.com>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+Adding compatible string "lx2160a-dcfg" to
+initialize guts driver for lx2160 and SoC die
+attribute definition for LX2160A
 
-Add clockgen support for lx2160a.
-Added entry for compat 'fsl,lx2160a-clockgen'.
-
-Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
 Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
+Acked-by: Li Yang <leoyang.li@nxp.com>
 ---
- drivers/clk/clk-qoriq.c         | 12 ++++++++++++
- drivers/cpufreq/qoriq-cpufreq.c |  1 +
- 2 files changed, 13 insertions(+)
+ drivers/soc/fsl/guts.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index e75194a..288e8f0c 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] =3D {
- 		.flags =3D CG_VER3 | CG_LITTLE_ENDIAN,
+diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+index 302e0c8..bcab1ee 100644
+--- a/drivers/soc/fsl/guts.c
++++ b/drivers/soc/fsl/guts.c
+@@ -100,6 +100,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
+ 	  .svr		= 0x87000000,
+ 	  .mask		= 0xfff70000,
  	},
- 	{
-+		.compat =3D "fsl,lx2160a-clockgen",
-+		.cmux_groups =3D {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.cmux_to_group =3D {
-+			0, 0, 0, 0, 1, 1, 1, 1, -1
-+		},
-+		.pll_mask =3D 0x37,
-+		.flags =3D CG_VER3 | CG_LITTLE_ENDIAN,
++	/* Die: LX2160A, SoC: LX2160A/LX2120A/LX2080A */
++	{ .die          = "LX2160A",
++	  .svr          = 0x87360000,
++	  .mask         = 0xff3f0000,
 +	},
-+	{
- 		.compat =3D "fsl,p2041-clockgen",
- 		.guts_compat =3D "fsl,qoriq-device-config-1.0",
- 		.init_periph =3D p2041_init_periph,
-@@ -1426,6 +1437,7 @@ CLK_OF_DECLARE(qoriq_clockgen_ls1043a, "fsl,ls1043a-c=
-lockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1046a, "fsl,ls1046a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_ls1088a, "fsl,ls1088a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_ls2080a, "fsl,ls2080a-clockgen", clockgen_in=
-it);
-+CLK_OF_DECLARE(qoriq_clockgen_lx2160a, "fsl,lx2160a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_p2041, "fsl,p2041-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_p3041, "fsl,p3041-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_p4080, "fsl,p4080-clockgen", clockgen_init);
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufre=
-q.c
-index 3d773f6..83921b7 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -295,6 +295,7 @@ static const struct of_device_id node_matches[] __initc=
-onst =3D {
- 	{ .compatible =3D "fsl,ls1046a-clockgen", },
- 	{ .compatible =3D "fsl,ls1088a-clockgen", },
- 	{ .compatible =3D "fsl,ls2080a-clockgen", },
-+	{ .compatible =3D "fsl,lx2160a-clockgen", },
- 	{ .compatible =3D "fsl,p4080-clockgen", },
- 	{ .compatible =3D "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible =3D "fsl,qoriq-clockgen-2.0", },
---=20
+ 	{ },
+ };
+ 
+@@ -222,6 +227,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
+ 	{ .compatible = "fsl,ls1088a-dcfg", },
+ 	{ .compatible = "fsl,ls1012a-dcfg", },
+ 	{ .compatible = "fsl,ls1046a-dcfg", },
++	{ .compatible = "fsl,lx2160a-dcfg", },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
+-- 
 2.7.4
