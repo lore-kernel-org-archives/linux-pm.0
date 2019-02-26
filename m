@@ -1,100 +1,62 @@
-From: Qais Yousef <qais.yousef@arm.com>
-Subject: Re: [PATCH V2 4/5] cpufreq: Register notifiers with the PM QoS
- framework
-Date: Tue, 26 Feb 2019 10:00:28 +0000
-Message-ID: <20190226100028.rfvth7r4j33qljrv@e107158-lin.cambridge.arm.com>
-References: <cover.1550748118.git.viresh.kumar@linaro.org>
- <e6969d79643c87af24895d508e5c6f7462b1c758.1550748118.git.viresh.kumar@linaro.org>
- <20190222114446.cmwoe7tanxvf2gxh@e107158-lin.cambridge.arm.com>
- <20190225043149.bfl5vdb57xaaje2w@vireshk-i7>
- <20190225085847.yvrtmxtwvk725b7v@e107158-lin.cambridge.arm.com>
- <20190225090955.suq4jw26d2brkjha@vireshk-i7>
- <20190225121458.fvdiiumgyhhdardw@e107158-lin.cambridge.arm.com>
- <20190226023016.ooyjsiopsyc6vg5s@vireshk-i7>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: RE: [PATCH 4/4] clk: qoriq: Add clockgen support for lx2160a
+Date: Tue, 26 Feb 2019 10:09:18 +0000
+Message-ID: <VI1PR04MB4800DE15F522A6B4782323D5F37B0@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1551126463-5341-1-git-send-email-vabhav.sharma@nxp.com>
+ <1551126463-5341-5-git-send-email-vabhav.sharma@nxp.com>
+ <07441256501ad8bd45b187cf6e25338b028bc9ac.camel@buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190226023016.ooyjsiopsyc6vg5s@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, mka@chromium.org, juri.lelli@gmail.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <07441256501ad8bd45b187cf6e25338b028bc9ac.camel@buserror.net>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Scott Wood <oss@buserror.net>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, will.deacon@arm.com
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/26/19 08:00, Viresh Kumar wrote:
-> On 25-02-19, 12:14, Qais Yousef wrote:
-> > On 02/25/19 14:39, Viresh Kumar wrote:
-> > > On 25-02-19, 08:58, Qais Yousef wrote:
-> > > > On 02/25/19 10:01, Viresh Kumar wrote:
-> > > > > > > +	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-> > > > > > > +	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
-> > > > > > > +
-> > > > > > > +	if (min > new_policy->min)
-> > > > > > > +		new_policy->min = min;
-> > > > > > > +	if (max < new_policy->max)
-> > > > > > > +		new_policy->max = max;
-> > > 
-> > > > And this is why we need to check here if the PM QoS value doesn't conflict with
-> > > > the current min/max, right? Until the current notifier code is removed they
-> > > > could trip over each others.
-> > > 
-> > > No. The above if/else block is already removed as part of patch 5/5. It was
-> > > required because of conflict between userspace specific min/max and qos min/max,
-> > > which are migrated to use qos by patc 5/5.
-> > > 
-> > > The cpufreq notifier mechanism already lets users play with min/max and that is
-> > > already safe from conflicts.
-> > > 
-> > > 
-> > > > It would be nice to add a comment here about PM QoS managing and remembering
-> > > > values
-> > > 
-> > > I am not sure if that would add any value. Some documentation update may be
-> > > useful for people looking for details though, that I shall do after all the
-> > > changes get in and things become a bit stable.
-> > > 
-> > 
-> > Up to you. But not everyone is familiar with the code and a one line comment
-> > that points to where aggregation is happening would be helpful for someone
-> > scanning this code IMHO.
-> 
-> Okay, will add something then.
-> 
-> > > > and that we need to be careful that both mechanisms don't trip over
-> > > > each others until this transient period is over.
-> > > 
-> > > The second mechanism will die very very soon once this is merged, migrating them
-> > > shouldn't be a big challenge AFAICT. I didn't attempt that because I didn't
-> > > wanted to waste time updating things in case this version also doesn't make
-> > > sense to others.
-> > > 
-> > > > I have a nit too. It would be nice to explicitly state this is
-> > > > CPU_{MIN,MAX}_FREQUENCY. I can see someone else adding {MIN,MAX}_FREQUENCY for
-> > > > something elsee (memory maybe?)
-> > > 
-> > > This is not CPU specific, but any device. The same interface shall be used by
-> > > devfreq as well, who wanted to use freq-constraints initially.
-> > > 
-> > 
-> > I don't get that to be honest. I probably have to read more.
-> > 
-> > Is what you're saying that when applying a MIN_FREQUENCY constraint the same
-> > value will be applied to both cpufreq and devfreq? Isn't this too coarse?
-> 
-> Oh no. A constraint with QoS is added like this:
-> 
->         dev_pm_qos_add_request(dev, req, DEV_PM_QOS_MIN_FREQUENCY, min);
-> 
-> Now dev here can be any device struct, CPU's or GPU's or anything else. All the
-> MIN freq requests are stored/processed per device and for a CPU in cpufreq all
-> we will see is MIN requests for the CPUs. And so the macro is required to be a
-> bit generic and shouldn't have CPU word within it.
-> 
-> Hope I was able to clarify your doubt a bit. Thanks.
 
-Ah I see yes it all makes sense now.
 
-Thanks!
-
---
-Qais Yousef
+> -----Original Message-----
+> From: Scott Wood <oss@buserror.net>
+> Sent: Tuesday, February 26, 2019 3:15 PM
+> To: Vabhav Sharma <vabhav.sharma@nxp.com>; sudeep.holla@arm.com;
+> linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> robh+dt@kernel.org; mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org;
+> linux-arm-kernel@lists.infradead.org; mturquette@baylibre.com;
+> sboyd@kernel.org; rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-
+> clk@vger.kernel.org; linux-pm@vger.kernel.org; linux-kernel-
+> owner@vger.kernel.org; catalin.marinas@arm.com; will.deacon@arm.com;
+> gregkh@linuxfoundation.org; arnd@arndb.de;
+> kstewart@linuxfoundation.org; yamada.masahiro@socionext.com; Leo Li
+> <leoyang.li@nxp.com>; shawnguo@kernel.org
+> Cc: linux@armlinux.org.uk; adrian.hunter@intel.com;
+> ulf.hansson@linaro.org; Yogesh Narayan Gaur
+> <yogeshnarayan.gaur@nxp.com>; Andy Tang <andy.tang@nxp.com>
+> Subject: Re: [PATCH 4/4] clk: qoriq: Add clockgen support for lx2160a
+> 
+> On Tue, 2019-02-26 at 08:34 +0000, Vabhav Sharma wrote:
+> > @@ -1435,6 +1446,7 @@ CLK_OF_DECLARE(qoriq_clockgen_t1023,
+> "fsl,t1023-
+> > clockgen", clockgen_init);  CLK_OF_DECLARE(qoriq_clockgen_t1040,
+> > "fsl,t1040-clockgen", clockgen_init);
+> > CLK_OF_DECLARE(qoriq_clockgen_t2080, "fsl,t2080-clockgen",
+> > clockgen_init);  CLK_OF_DECLARE(qoriq_clockgen_t4240,
+> > "fsl,t4240-clockgen", clockgen_init);
+> > +CLK_OF_DECLARE(qoriq_clockgen_lx2160a, "fsl,lx2160a-clockgen",
+> > clockgen_init);
+> 
+> The chips were previously in alphabetical order...
+Ok
+> 
+> -Scott
+> 
