@@ -1,61 +1,89 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Wed, 27 Feb 2019 17:54:55 -0600
-Message-ID: <20190227235455.GA15211@bogus>
-References: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PCI: PCIe: PME: Fix pcie_pme_remove()
+Date: Thu, 28 Feb 2019 00:56:41 +0100
+Message-ID: <1943648.NMEmlssb0J@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sn>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Dongdong Liu <liudongdong3@huawei.com>, Lukas Wunner <lukas@wunner.de>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 27, 2019 at 08:46:21AM +0000, Anson Huang wrote:
-> NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
-> system controller, the system controller is in charge of system
-> power, clock and thermal sensors etc. management, Linux kernel
-> has to communicate with system controller via MU (message unit)
-> IPC to get temperature from thermal sensors, this patch adds
-> binding doc for i.MX system controller thermal driver.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> ---
-> Changes since V9:
-> 	- change #thermal-sensor-cells value in example to 1, since there are other
-> 	  thermal sensors inside system controller, it is just because there are still
-> 	  some issue, so system controller does NOT expose them for now, they could
-> 	  be exposed later, so it should be 1 from HW perspective.
-> ---
->  .../devicetree/bindings/arm/freescale/fsl,scu.txt   | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> index 72d481c..855270b 100644
-> --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-> @@ -122,6 +122,21 @@ RTC bindings based on SCU Message Protocol
->  Required properties:
->  - compatible: should be "fsl,imx8qxp-sc-rtc";
->  
-> +Thermal bindings based on SCU Message Protocol
-> +------------------------------------------------------------
-> +
-> +Required properties:
-> +- compatible:			Should be :
-> +				  "fsl,imx8qxp-sc-thermal"
-> +				followed by "fsl,imx-sc-thermal";
-> +
-> +- #thermal-sensor-cells:	See Documentation/devicetree/bindings/thermal/thermal.txt
-> +				for a description.
-> +
-> +- imx,sensor-resource-id: 	A single integer for single thermal zone's resource ID or
-> +				an array of integers to specify each thermal zone's sensor
-> +				resource ID.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Can't you put the resource ids in the thermal-sensor cells? Why do you 
-need to list them here?
+It is incorrect to call pcie_pme_suspend() from pcie_pme_remove() for
+two reasons.
 
-Rob
+First, pcie_pme_suspend() calls synchronize_irq() that will wait for
+the native hotplug interrupt handler as well as for the PME one,
+because they share one IRQ (as per the spec).  That may deadlock if
+hotplug is signaled while pcie_pme_remove() is running and the latter
+calls pci_lock_rescan_remove() before the former.
+
+Second, if pcie_pme_suspend() figures out that wakeup needs to be
+enabled for the port, it will return without disabling the interrupt
+as expected by pcie_pme_remove() which was overlooked by commit
+c7b5a4e6e8fb ("PCI / PM: Fix native PME handling during system
+suspend/resume").
+
+To fix that, rework pcie_pme_remove() to disable the PME interrupt,
+clear its status and prevent the PME worker function from re-enabling it
+before calling free_irq() on it which should be sufficient.
+
+Fixes: c7b5a4e6e8fb ("PCI / PM: Fix native PME handling during system suspend/resume")
+Reported-by: Dongdong Liu <liudongdong3@huawei.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pcie/pme.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
+
+Index: linux-pm/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/pme.c
++++ linux-pm/drivers/pci/pcie/pme.c
+@@ -363,6 +363,16 @@ static bool pcie_pme_check_wakeup(struct
+ 	return false;
+ }
+ 
++static void pcie_pme_disable_interrupt(struct pci_dev *port,
++				       struct pcie_pme_service_data *data)
++{
++	spin_lock_irq(&data->lock);
++	pcie_pme_interrupt_enable(port, false);
++	pcie_clear_root_pme_status(port);
++	data->noirq = true;
++	spin_unlock_irq(&data->lock);
++}
++
+ /**
+  * pcie_pme_suspend - Suspend PCIe PME service device.
+  * @srv: PCIe service device to suspend.
+@@ -387,11 +397,7 @@ static int pcie_pme_suspend(struct pcie_
+ 			return 0;
+ 	}
+ 
+-	spin_lock_irq(&data->lock);
+-	pcie_pme_interrupt_enable(port, false);
+-	pcie_clear_root_pme_status(port);
+-	data->noirq = true;
+-	spin_unlock_irq(&data->lock);
++	pcie_pme_disable_interrupt(port, data);
+ 
+ 	synchronize_irq(srv->irq);
+ 
+@@ -427,9 +433,11 @@ static int pcie_pme_resume(struct pcie_d
+  */
+ static void pcie_pme_remove(struct pcie_device *srv)
+ {
+-	pcie_pme_suspend(srv);
++	struct pcie_pme_service_data *data = get_service_data(srv);
++
++	pcie_pme_disable_interrupt(srv->port, data);
+ 	free_irq(srv->irq, srv);
+-	kfree(get_service_data(srv));
++	kfree(data);
+ }
+ 
+ static int pcie_pme_runtime_suspend(struct pcie_device *srv)
