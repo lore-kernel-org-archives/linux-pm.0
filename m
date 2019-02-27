@@ -1,80 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v11 7/8] cpuidle: Pre-store next timer/tick before
- selecting an idle state
-Date: Wed, 27 Feb 2019 01:07:39 +0100
-Message-ID: <CAPDyKFoNJhfxMEa+HpjupUWaT3-JQ2dUgy6iBwqjxFergUzPaw@mail.gmail.com>
-References: <20190226145415.19411-1-ulf.hansson@linaro.org>
- <20190226145415.19411-8-ulf.hansson@linaro.org> <CAJZ5v0j=ddMEwvr8rt=PxxPpxoAHary7cYLYgTBbcuBuiGbTZA@mail.gmail.com>
- <CAPDyKFoFmnxWo7XhvAeB08xkDzSqUsmX_Zr=Zh6cmJWq=++0_Q@mail.gmail.com> <CAJZ5v0hPiQe_mrPAAqRwTTdb-X4=-WQAdfC-peWb9zsc_wU5yw@mail.gmail.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH RESEND v3 2/3] drivers: qcom: rpmh-rsc: return if the controller is idle
+Date: Tue, 26 Feb 2019 16:49:26 -0800
+Message-ID: <155122856693.260864.16771523196413005158@swboyd.mtv.corp.google.com>
+References: <20190221121827.32427-1-rplsssn@codeaurora.org> <20190221121827.32427-3-rplsssn@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hPiQe_mrPAAqRwTTdb-X4=-WQAdfC-peWb9zsc_wU5yw@mail.gmail.com>
+In-Reply-To: <20190221121827.32427-3-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
+To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 27 Feb 2019 at 00:41, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Wed, Feb 27, 2019 at 12:16 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Tue, 26 Feb 2019 at 23:08, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Tue, Feb 26, 2019 at 3:54 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > > >
-> > > > A common piece of data used by cpuidle governors, is the information about
-> > > > when the next timer/tick is going to fire. Rather than having each governor
-> > > > calling tick_nohz_get_next_timer|hrtimer() separately, let's consolidate
-> > > > the code by calling these functions before invoking the ->select() callback
-> > > > of the governor - and store the output data in the struct cpuidle_device.
-> > >
-> > > That misses the point IMO.
-> > >
-> > > You don't need to store two values in struct cpuidle_device, but just
-> > > one, and not before running ->select(), but before invoking the
-> > > driver's ->enter() callback.
-> >
-> > Okay! Thanks for letting me know!
-> >
-> > >
-> > > At that point, the decision on whether or not to stop the scheduler
-> > > tick has been made already and it should be sufficient to store the
-> > > return value of tick_nohz_get_next_hrtimer() introduced by patch
-> > > [3/8], because that value represents the next timer regardless of what
-> > > has been decided with respect to the tick.
-> >
-> > Just to make sure I get this correctly, because it seems like I have
-> > missed a few points here....
-> >
-> > If we decided to keep the tick running, then
-> > tick_nohz_get_next_hrtimer() gives the next tick or the next hrtimer,
-> > whatever that comes first. There are no other timer that can expire
-> > earlier than this, right!?
-> >
-> > If we decided to stop the tick, then tick_nohz_get_next_hrtimer() will
-> > give us the next hrtimer. Again, then there are no other timer that
-> > can't expire earlier than this, right!?
->
-> Right in both cases.
->
-> IOW, that is the event that will wake up the CPU unless any other
-> (non-timer) interrupts (or equivalent events) occur in the meantime.
->
-> > >
-> > > And you won't need the tick_nohz_get_next_timer() any more then.
-> >
-> > Alright, this kind of brings this hole thing back closer to v10 - and
-> > then we should stick to use tick_nohz_get_sleep_length() as is for the
-> > cpuidle governors. That is what you are saying?
->
-> For the menu and teo governors - yes.  IMO
-> tick_nohz_get_sleep_length() is as good as it gets in there.
+Quoting Raju P.L.S.S.S.N (2019-02-21 04:18:26)
+> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+> index d6b834eeeb37..9cc303e88a06 100644
+> --- a/drivers/soc/qcom/rpmh-rsc.c
+> +++ b/drivers/soc/qcom/rpmh-rsc.c
+> @@ -524,6 +524,30 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const=
+ struct tcs_request *msg)
+>         return ret;
+>  }
+> =20
+> +/**
+> + *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
+> + *
+> + *  @drv: The controller
+> + *
+> + *  Returns true if the TCSes are engaged in handling requests.
+> + */
+> +bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv)
+> +{
 
-Okay, got it! Thanks for your helpful answers!
+This API seems inherently racy. How do we know that nothing else is
+going to be inserted into the TCS after this function returns true? Do
+you have a user of this API? It would be good to know how it is used
+instead of adding some code that never gets called.
 
-I will post a v12 as soon as I can, so we can look into the other
-parts of the series.
-
-Kind regards
-Uffe
+> +       int m;
+> +       struct tcs_group *tcs =3D get_tcs_of_type(drv, ACTIVE_TCS);
+> +
+> +       spin_lock(&drv->lock);
+> +       for (m =3D tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
+> +               if (!tcs_is_free(drv, m)) {
+> +                       spin_unlock(&drv->lock);
+> +                       return false;
+> +               }
+> +       }
+> +       spin_unlock(&drv->lock);
+> +
+> +       return true;
+> +}
+> +
+>  /**
+>   * rpmh_rsc_write_ctrl_data: Write request to the controller
+>   *
