@@ -1,87 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: kyro: Reduce frame-size of
- qcom_cpufreq_kryo_probe()
-Date: Wed, 27 Feb 2019 13:22:22 +0530
-Message-ID: <20190227075222.ib7qg6ycrwyztms5@vireshk-i7>
-References: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH V8 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Wed, 27 Feb 2019 08:47:00 +0000
+Message-ID: <DB3PR0402MB3916B83ED9B460ED36B52248F5740@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1550730831-14995-1-git-send-email-Anson.Huang@nxp.com>
+ <20190223213759.GA1472@localhost.localdomain>
+ <DB3PR0402MB39164677D09DA6CB3A6951B3F5790@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+ <VI1PR04MB422261F6A295A58FF06E90DE807B0@VI1PR04MB4222.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5919a74b74f466e803e07f70136517119dcd4560.1550661235.git.viresh.kumar@linaro.org>
+In-Reply-To: <VI1PR04MB422261F6A295A58FF06E90DE807B0@VI1PR04MB4222.eurprd04.prod.outlook.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, amit.kucheria@linaro.org, linux-kernel@vger.kernel.org
+To: Aisheng Dong <aisheng.dong@nxp.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, "arnd@arndb.de" <arnd@arndb.d>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-02-19, 16:44, Viresh Kumar wrote:
-> With the introduction of commit 846a415bf440 ("arm64: default NR_CPUS to
-> 256"), we have started getting following compilation warning:
-> 
-> qcom-cpufreq-kryo.c:168:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
-> 
-> Fix that by dynamically allocating opp_tables and freeing it later.
-> 
-> Compile tested only.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index 1c8583cc06a2..6888cb6db2ef 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
->  
->  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  {
-> -	struct opp_table *opp_tables[NR_CPUS] = {0};
-> +	struct opp_table **opp_tables;
->  	enum _msm8996_version msm8996_version;
->  	struct nvmem_cell *speedbin_nvmem;
->  	struct device_node *np;
-> @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  	}
->  	kfree(speedbin);
->  
-> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
-> +	if (!opp_tables)
-> +		return -ENOMEM;
-> +
->  	for_each_possible_cpu(cpu) {
->  		cpu_dev = get_cpu_device(cpu);
->  		if (NULL == cpu_dev) {
-> @@ -149,6 +153,8 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  		}
->  	}
->  
-> +	kfree(opp_tables);
-> +
->  	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
->  							  NULL, 0);
->  	if (!IS_ERR(cpufreq_dt_pdev))
-
-We can fail here and then we will try to use opp_tables which is already freed.
-
-I wonder how this stupid patch made it through the reviews :)
-
-> @@ -163,6 +169,7 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  			break;
->  		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
->  	}
-> +	kfree(opp_tables);
->  
->  	return ret;
->  }
-
-Having said that, there is another problem which I just noticed in the remove()
-path where we don't call dev_pm_opp_put_supported_hw(). That will create
-problems if we try to remove module of this driver and then reinstall it as the
-OPP table was never freed. The fix for that problem needs to go into stable
-kernels past 4.18 and so I will abandon this patch and send a new fix which will
-fix the issues of $subject patch as well.
-
--- 
-viresh
+DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCj4gRnJvbTogQWlzaGVuZyBEb25nDQo+IFNlbnQ6IDIwMTnE6jLUwjI2yNUgMjA6MDEN
+Cj4gVG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgRWR1YXJkbyBWYWxlbnRp
+bg0KPiA8ZWR1YmV6dmFsQGdtYWlsLmNvbT4NCj4gQ2M6IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFy
+ay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+IHMuaGF1ZXJAcGVuZ3V0
+cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21haWwuY29tOw0KPiBj
+YXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsgcnVpLnpoYW5nQGlu
+dGVsLmNvbTsNCj4gZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgdWxmLmhhbnNzb25AbGluYXJv
+Lm9yZzsgc2JveWRAa2VybmVsLm9yZzsNCj4gRGFuaWVsIEJhbHV0YSA8ZGFuaWVsLmJhbHV0YUBu
+eHAuY29tPjsgQW5keSBHcm9zcw0KPiA8YW5keS5ncm9zc0BsaW5hcm8ub3JnPjsgaG9ybXMrcmVu
+ZXNhc0B2ZXJnZS5uZXQuYXU7IGhlaWtvQHNudGVjaC5kZTsNCj4gYXJuZEBhcm5kYi5kZTsgbWF4
+aW1lLnJpcGFyZEBib290bGluLmNvbTsgYmpvcm4uYW5kZXJzc29uQGxpbmFyby5vcmc7DQo+IGph
+Z2FuQGFtYXJ1bGFzb2x1dGlvbnMuY29tOyBlbnJpYy5iYWxsZXRib0Bjb2xsYWJvcmEuY29tOw0K
+PiBtYXJjLncuZ29uemFsZXpAZnJlZS5mcjsgb2xvZkBsaXhvbS5uZXQ7IGRldmljZXRyZWVAdmdl
+ci5rZXJuZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0t
+a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5vcmc7
+IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0gg
+VjggMS80XSBkdC1iaW5kaW5nczogZnNsOiBzY3U6IGFkZCB0aGVybWFsIGJpbmRpbmcNCj4gDQo+
+IFsuLi5dDQo+ID4gPiBPbiBUaHUsIEZlYiAyMSwgMjAxOSBhdCAwNjozODozMEFNICswMDAwLCBB
+bnNvbiBIdWFuZyB3cm90ZToNCj4gPiA+ID4gTlhQIGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3
+aXRoIGEgQ29ydGV4LU00IGNvcmUgaW5zaWRlIGFzDQo+ID4gPiA+IHN5c3RlbSBjb250cm9sbGVy
+LCB0aGUgc3lzdGVtIGNvbnRyb2xsZXIgaXMgaW4gY2hhcmdlIG9mIHN5c3RlbQ0KPiA+ID4gPiBw
+b3dlciwgY2xvY2sgYW5kIHRoZXJtYWwgc2Vuc29ycyBldGMuIG1hbmFnZW1lbnQsIExpbnV4IGtl
+cm5lbCBoYXMNCj4gPiA+ID4gdG8gY29tbXVuaWNhdGUgd2l0aCBzeXN0ZW0gY29udHJvbGxlciB2
+aWEgTVUgKG1lc3NhZ2UgdW5pdCkgSVBDIHRvDQo+ID4gPiA+IGdldCB0ZW1wZXJhdHVyZSBmcm9t
+IHRoZXJtYWwgc2Vuc29ycywgdGhpcyBwYXRjaCBhZGRzIGJpbmRpbmcgZG9jDQo+ID4gPiA+IGZv
+ciBpLk1YIHN5c3RlbSBjb250cm9sbGVyIHRoZXJtYWwgZHJpdmVyLg0KPiA+ID4gPg0KPiA+ID4g
+PiBTaWduZWQtb2ZmLWJ5OiBBbnNvbiBIdWFuZyA8QW5zb24uSHVhbmdAbnhwLmNvbT4NCj4gPiA+
+ID4gUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+IA0KPiBZb3Ug
+bmVlZCBkcm9wIHRoZSBmb3JtZXIgUmV2aWV3ZWQtYnkgb25jZSB0aGVyZSdzIHNpZ25pZmljYW50
+IGNoYW5nZXMuDQo+IA0KPiA+ID4gPiArVGhlcm1hbCBiaW5kaW5ncyBiYXNlZCBvbiBTQ1UgTWVz
+c2FnZSBQcm90b2NvbA0KPiA+ID4gPiArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gPiA+ICsNCj4gPiA+ID4gK1JlcXVpcmVk
+IHByb3BlcnRpZXM6DQo+ID4gPiA+ICstIGNvbXBhdGlibGU6CQkJU2hvdWxkIGJlIDoNCj4gPiA+
+ID4gKwkJCQkgICJmc2wsaW14OHF4cC1zYy10aGVybWFsIg0KPiA+ID4gPiArCQkJCWZvbGxvd2Vk
+IGJ5ICJmc2wsaW14LXNjLXRoZXJtYWwiOw0KPiA+ID4gPiArDQo+ID4gPiA+ICstICN0aGVybWFs
+LXNlbnNvci1jZWxsczoJU2VlDQo+ID4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvdGhlcm1hbC90aGVybWFsLnR4dA0KPiA+ID4gPiArCQkJCWZvciBhIGRlc2NyaXB0aW9uLg0K
+PiA+ID4gPiArDQo+ID4gPiA+ICstIGlteCxzZW5zb3ItcmVzb3VyY2UtaWQ6IAlQcm9wZXJ0eSBh
+cnJheSB0byBzcGVjaWZ5IGVhY2gNCj4gdGhlcm1hbA0KPiA+IHpvbmUncw0KPiA+ID4gc2Vuc29y
+IHJlc291cmNlIElELg0KPiA+ID4NCj4gPiA+IElmIHRoaXMgaXMgYW4gYXJyYXkuLi4NCj4gPiA+
+DQo+ID4gPiA+ICsNCj4gPiA+ID4gIEV4YW1wbGUgKGlteDhxeHApOg0KPiA+ID4gPiAgLS0tLS0t
+LS0tLS0tLQ0KPiA+ID4gPiAgbHNpb19tdTE6IG1haWxib3hANWQxYzAwMDAgew0KPiA+ID4gPiBA
+QCAtMTY4LDYgKzE4MSwxMiBAQCBmaXJtd2FyZSB7DQo+ID4gPiA+ICAJCXJ0YzogcnRjIHsNCj4g
+PiA+ID4gIAkJCWNvbXBhdGlibGUgPSAiZnNsLGlteDhxeHAtc2MtcnRjIjsNCj4gPiA+ID4gIAkJ
+fTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCQl0c2VuczogdGhlcm1hbC1zZW5zb3Igew0KPiA+ID4g
+PiArCQkJY29tcGF0aWJsZSA9ICJmc2wsaW14OHF4cC1zYy10aGVybWFsIiwgImZzbCxpbXgtc2Mt
+DQo+ID4gPiB0aGVybWFsIjsNCj4gPiA+ID4gKwkJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDww
+PjsNCj4gPiA+ID4gKwkJCWlteCxzZW5zb3ItcmVzb3VyY2UtaWQgPSA8SU1YX1NDX1JfU1lTVEVN
+PjsNCj4gPiA+DQo+ID4gPiB0aGVuIHRoaXMgZXhhbXBsZSBzaG91bGQgaGF2ZSBhbiBhcnJheSwg
+dG8gYmUgYmV0dGVyIGV4cHJlc3MgaG93DQo+ID4gPiB0aGlzIGlzIHN1cHBvc2VkIHRvIHdvcmsu
+IENhbiB5b3UgcGxlYXNlIHJlc2VuZCB0aGlzIHdpdGggYW4gYXJyYXkNCj4gaW5zdGVhZD8NCj4g
+Pg0KPiA+IE9uIGkuTVg4UVhQLCB0aGVyZSBpcyBPTkxZIDEgdGhlcm1hbCB6b25lIGF2YWlsYWJs
+ZSBjdXJyZW50bHksIGJ1dCB0aGUNCj4gPiB0aGVybWFsIGRyaXZlciBpcyBzdXBwb3NlZCB0byBz
+dXBwb3J0IG11bHRpIHRoZXJtYWwgem9uZXMgYXMgd2VsbCBmb3INCj4gPiBpLk1YOFFNLCBpbiBW
+OSBwYXRjaCBzZXQgSSBqdXN0IHNlbnQsIEkgdXNlIHRoZSAiDQo+ID4gaW14LHNlbnNvci1yZXNv
+dXJjZS1pZCAiIGVsZW1lbnQgY291bnQgdG8gZGV0ZXJtaW5lIGhvdyBtYW55IHRoZXJtYWwNCj4g
+PiBzZW5zb3JzIHdpbGwgYmUgc3VwcG9ydGVkLCBzbyB0aGF0IHdlIGNhbiBhbHNvIGdldCByaWQg
+b2Ygc2VhcmNoaW5nDQo+ID4gdGhlIHRoZXJtYWwtem9uZXMnIGNoaWxkIG5vZGUsIEkgaW1wcm92
+ZWQgdGhlIGRlc2NyaXB0aW9uIGFzIGJlbG93LCBpcyBpdCBPSz8NCj4gPg0KPiANCj4gRGV2aWNl
+IHRyZWUgaXMgdXNlZCB0byBkZXNjcmliZSBIVy4NCj4gI3RoZXJtYWwtc2Vuc29yLWNlbGxzIGlz
+IGxlc3MgdG8gYmUgYW4gb3B0aW9uYWwgcGFyYW1ldGVyIHRvIG1lLg0KPiBJZiBIVyBzdXBwb3J0
+cywgdGhlbiBpdCBzaG91bGQgYmUgMSBhbmQgdXBkYXRlIHRoZSBleGFtcGxlIGFjY29yZGluZ2x5
+Lg0KDQpPSywgSSBjaGFuZ2VkIGl0IHRvICIxIiBpbiBWMTAgcGF0Y2ggc2VyaWVzLg0KDQpUaGFu
+a3MsDQpBbnNvbi4NCg0KPiANCj4gUmVnYXJkcw0KPiBEb25nIEFpc2hlbmcNCj4gDQo+ID4gIDQx
+ICstIGlteCxzZW5zb3ItcmVzb3VyY2UtaWQ6ICAgICAgQSBzaW5nbGUgaW50ZWdlciBmb3Igc2lu
+Z2xlIHRoZXJtYWwgem9uZSdzDQo+ID4gcmVzb3VyY2UgSUQgb3INCj4gPiAgNDIgKyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICBhbiBhcnJheSBvZiBpbnRlZ2VycyB0byBzcGVjaWZ5IGVh
+Y2gNCj4gPiB0aGVybWFsIHpvbmUncyBzZW5zb3INCj4gPiAgNDMgKyAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICByZXNvdXJjZSBJRC4NCg0K
