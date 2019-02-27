@@ -1,116 +1,44 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: kyro: Release OPP tables on module removal
-Date: Wed, 27 Feb 2019 15:10:18 +0200
-Message-ID: <23ab0431-de19-4f5d-219f-dbfa890b7946@linaro.org>
-References: <78f96969448b17e95b0b21cb78194bb9f709a897.1551261748.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpuidle: menu: Avoid overflows when computing variance
+Date: Wed, 27 Feb 2019 14:35:50 +0100
+Message-ID: <13496310.XaNEd20TYL@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <78f96969448b17e95b0b21cb78194bb9f709a897.1551261748.git.viresh.kumar@linaro.org>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, amit.kucheria@linaro.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Randy Dunlap <rdunlap@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2/27/19 12:04, Viresh Kumar wrote:
-> Commit 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit") made
-> it possible to build the kyro cpufreq driver as a module, but it failed
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Nit: s/kyro/kryo/ above and in the subject
+The variance computation in get_typical_interval() may overflow if
+the square of the value of diff exceeds the maximum for the int64_t
+data type value which basically is the case when it is of the order
+of UINT_MAX.
 
-> to release all the resources, i.e. OPP tables, when the module is
-> unloaded.
-> 
-> This patch fixes it by releasing the OPP tables, by calling
-> dev_pm_opp_put_supported_hw() for them, from the
-> qcom_cpufreq_kryo_remove() routine. The array of pointers to the OPP
-> tables is also allocated dynamically now in qcom_cpufreq_kryo_probe(),
-> as the pointers will be required while releasing the resources.
-> 
-> Compile tested only.
-> 
-> Cc: 4.18+ <stable@vger.kernel.org> # v4.18+
-> Fixes: 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> V1->V2:
-> - The previous version targeted a compile time issue of frame size but
->   this fixes a bug in the driver and needs to get applied to 4.18+
->   kernels.
-> - This may go in 5.0 release.
-> - Haven't included any Reviewed-by tags as there were many changes in
->   this version.
-> 
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index 2a3675c24032..65edbfd4d4a5 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
->  
->  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  {
-> -	struct opp_table *opp_tables[NR_CPUS] = {0};
-> +	struct opp_table **opp_tables;
->  	enum _msm8996_version msm8996_version;
->  	struct nvmem_cell *speedbin_nvmem;
->  	struct device_node *np;
-> @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  	}
->  	kfree(speedbin);
->  
-> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
-> +	if (!opp_tables)
-> +		return -ENOMEM;
-> +
->  	for_each_possible_cpu(cpu) {
->  		cpu_dev = get_cpu_device(cpu);
->  		if (NULL == cpu_dev) {
-> @@ -151,8 +155,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  
->  	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
->  							  NULL, 0);
-> -	if (!IS_ERR(cpufreq_dt_pdev))
-> +	if (!IS_ERR(cpufreq_dt_pdev)) {
-> +		platform_set_drvdata(pdev, opp_tables);
->  		return 0;
-> +	}
->  
->  	ret = PTR_ERR(cpufreq_dt_pdev);
->  	dev_err(cpu_dev, "Failed to register platform device\n");
-> @@ -163,13 +169,23 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
->  			break;
->  		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
->  	}
-> +	kfree(opp_tables);
->  
->  	return ret;
->  }
->  
->  static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
->  {
-> +	struct opp_table **opp_tables = platform_get_drvdata(pdev);
-> +	unsigned cpu;
+However, data points so far in the future don't matter for idle
+state selection anyway, so change the initial threshold value in
+get_typical_interval() to INT_MAX which will cause more "outlying"
+data points to be discarded without affecting the selection result.
 
-Nit: unsigned int
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> +
->  	platform_device_unregister(cpufreq_dt_pdev);
-> +
-> +	for_each_possible_cpu(cpu)
-> +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
-> +
-> +	kfree(opp_tables);
-> +
->  	return 0;
->  }
->  
-
-Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
-
-Thanks,
-Georgi
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -186,7 +186,7 @@ static unsigned int get_typical_interval
+ 	unsigned int min, max, thresh, avg;
+ 	uint64_t sum, variance;
+ 
+-	thresh = UINT_MAX; /* Discard outliers above this value */
++	thresh = INT_MAX; /* Discard outliers above this value */
+ 
+ again:
+ 
