@@ -1,85 +1,116 @@
-From: Ard Biesheuvel <ard.biesheuvel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
-Date: Wed, 27 Feb 2019 11:16:12 +0100
-Message-ID: <CAKv+Gu_fZK7dUqrrVPCejAZNWyUeMUX2ojQ=vQ3hiMkGF6e6tw@mail.gmail.com>
-References: <20190224140426.3267-1-marc.zyngier@arm.com> <20190226232822.GA174696@google.com>
- <d67512fe-42b4-513f-d27a-fed85c19e9c2@arm.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: kyro: Release OPP tables on module removal
+Date: Wed, 27 Feb 2019 15:10:18 +0200
+Message-ID: <23ab0431-de19-4f5d-219f-dbfa890b7946@linaro.org>
+References: <78f96969448b17e95b0b21cb78194bb9f709a897.1551261748.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <d67512fe-42b4-513f-d27a-fed85c19e9c2-5wv7dgnIgG8@public.gmane.org>
-Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
-Cc: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Ganapathi Bhat <gbhat-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Devicetree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Xinming Hu <huxinming820-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "<netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>" <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "<linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>" <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Amitkumar Karwar <amitkarwar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Nishant Sarmukadam <nishants-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Lo
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <78f96969448b17e95b0b21cb78194bb9f709a897.1551261748.git.viresh.kumar@linaro.org>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, amit.kucheria@linaro.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 27 Feb 2019 at 11:02, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org> wrote:
->
-> + Lorenzo
->
-> Hi Brian,
->
-> On 26/02/2019 23:28, Brian Norris wrote:
-> > + others
-> >
-> > Hi Marc,
-> >
-> > Thanks for the series. I have a few bits of history to add to this, and
-> > some comments.
-> >
-> > On Sun, Feb 24, 2019 at 02:04:22PM +0000, Marc Zyngier wrote:
-> >> For quite some time, I wondered why the PCI mwifiex device built in my
-> >> Chromebook was unable to use the good old legacy interrupts. But as MSIs
-> >> were working fine, I never really bothered investigating. I finally had a
-> >> look, and the result isn't very pretty.
-> >>
-> >> On this machine (rk3399-based kevin), the wake-up interrupt is described as
-> >> such:
-> >>
-> >> &pci_rootport {
-> >>      mvl_wifi: wifi@0,0 {
-> >>              compatible = "pci1b4b,2b42";
-> >>              reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
-> >>                     0x83010000 0x0 0x00100000 0x0 0x00100000>;
-> >>              interrupt-parent = <&gpio0>;
-> >>              interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
-> >>              pinctrl-names = "default";
-> >>              pinctrl-0 = <&wlan_host_wake_l>;
-> >>              wakeup-source;
-> >>      };
-> >> };
-> >>
-> >> Note how the interrupt is part of the properties directly attached to the
-> >> PCI node. And yet, this interrupt has nothing to do with a PCI legacy
-> >> interrupt, as it is attached to the wake-up widget that bypasses the PCIe RC
-> >> altogether (Yay for the broken design!). This is in total violation of the
-> >> IEEE Std 1275-1994 spec[1], which clearly documents that such interrupt
-> >> specifiers describe the PCI device interrupts, and must obey the
-> >> INT-{A,B,C,D} mapping. Oops!
-> >
-> > You're not the first person to notice this. All the motivations are not
-> > necessarily painted clearly in their cover letter, but here are some
-> > previous attempts at solving this problem:
-> >
-> > [RFC PATCH v11 0/5] PCI: rockchip: Move PCIe WAKE# handling into pci core
-> > https://lkml.kernel.org/lkml/20171225114742.18920-1-jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org/
-> > http://lkml.kernel.org/lkml/20171226023646.17722-1-jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org/
-> >
-> > As you can see by the 12th iteration, it wasn't left unsolved for lack
-> > of trying...
->
-> I wasn't aware of this. That's definitely a better approach than my
-> hack, and I would really like this to be revived.
->
+On 2/27/19 12:04, Viresh Kumar wrote:
+> Commit 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit") made
+> it possible to build the kyro cpufreq driver as a module, but it failed
 
-I don't think this approach is entirely sound either.
+Nit: s/kyro/kryo/ above and in the subject
 
->From the side of the PCI device, WAKE# is just a GPIO line, and how it
-is wired into the system is an entirely separate matter. So I don't
-think it is justified to overload the notion of legacy interrupts with
-some other pin that may behave in a way that is vaguely similar to how
-a true wake-up capable interrupt works.
+> to release all the resources, i.e. OPP tables, when the module is
+> unloaded.
+> 
+> This patch fixes it by releasing the OPP tables, by calling
+> dev_pm_opp_put_supported_hw() for them, from the
+> qcom_cpufreq_kryo_remove() routine. The array of pointers to the OPP
+> tables is also allocated dynamically now in qcom_cpufreq_kryo_probe(),
+> as the pointers will be required while releasing the resources.
+> 
+> Compile tested only.
+> 
+> Cc: 4.18+ <stable@vger.kernel.org> # v4.18+
+> Fixes: 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V1->V2:
+> - The previous version targeted a compile time issue of frame size but
+>   this fixes a bug in the driver and needs to get applied to 4.18+
+>   kernels.
+> - This may go in 5.0 release.
+> - Haven't included any Reviewed-by tags as there were many changes in
+>   this version.
+> 
+>  drivers/cpufreq/qcom-cpufreq-kryo.c | 20 ++++++++++++++++++--
+>  1 file changed, 18 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> index 2a3675c24032..65edbfd4d4a5 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> @@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+>  
+>  static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  {
+> -	struct opp_table *opp_tables[NR_CPUS] = {0};
+> +	struct opp_table **opp_tables;
+>  	enum _msm8996_version msm8996_version;
+>  	struct nvmem_cell *speedbin_nvmem;
+>  	struct device_node *np;
+> @@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  	}
+>  	kfree(speedbin);
+>  
+> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
+> +	if (!opp_tables)
+> +		return -ENOMEM;
+> +
+>  	for_each_possible_cpu(cpu) {
+>  		cpu_dev = get_cpu_device(cpu);
+>  		if (NULL == cpu_dev) {
+> @@ -151,8 +155,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  
+>  	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+>  							  NULL, 0);
+> -	if (!IS_ERR(cpufreq_dt_pdev))
+> +	if (!IS_ERR(cpufreq_dt_pdev)) {
+> +		platform_set_drvdata(pdev, opp_tables);
+>  		return 0;
+> +	}
+>  
+>  	ret = PTR_ERR(cpufreq_dt_pdev);
+>  	dev_err(cpu_dev, "Failed to register platform device\n");
+> @@ -163,13 +169,23 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  			break;
+>  		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+>  	}
+> +	kfree(opp_tables);
+>  
+>  	return ret;
+>  }
+>  
+>  static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
+>  {
+> +	struct opp_table **opp_tables = platform_get_drvdata(pdev);
+> +	unsigned cpu;
 
-So I'd argue that we should add an optional 'wake-gpio' DT property
-instead to the generic PCI device binding, and leave the interrupt
-binding and discovery alone.
+Nit: unsigned int
+
+> +
+>  	platform_device_unregister(cpufreq_dt_pdev);
+> +
+> +	for_each_possible_cpu(cpu)
+> +		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+> +
+> +	kfree(opp_tables);
+> +
+>  	return 0;
+>  }
+>  
+
+Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
+
+Thanks,
+Georgi
