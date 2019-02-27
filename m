@@ -1,176 +1,126 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v12 4/4] PM / Domains: Add genpd governor for CPUs
-Date: Wed, 27 Feb 2019 20:58:36 +0100
-Message-ID: <20190227195836.24739-5-ulf.hansson@linaro.org>
-References: <20190227195836.24739-1-ulf.hansson@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190227195836.24739-1-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
+Date: Wed, 27 Feb 2019 12:51:46 -0800
+Message-ID: <20190227205139.GE174696@google.com>
+References: <20190224140426.3267-1-marc.zyngier@arm.com>
+ <20190226232822.GA174696@google.com>
+ <d67512fe-42b4-513f-d27a-fed85c19e9c2@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <d67512fe-42b4-513f-d27a-fed85c19e9c2@arm.com>
+Sender: netdev-owner@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Amitkumar Karwar <amitkarwar@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Ganapathi Bhat <gbhat@marvell.com>, Heiko Stuebner <heiko@sntech.de>, Kalle Valo <kvalo@codeaurora.org>, Nishant Sarmukadam <nishants@marvell.com>, Rob Herring <robh+dt@kernel.org>, Xinming Hu <huxinming820@gmail.com>, "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pm@vger.kernel.org, Jeffy Chen <jeffy.chen@rock-chips.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-As it's now perfectly possible that a PM domain managed by genpd contains
-devices belonging to CPUs, we should start to take into account the
-residency values for the idle states during the state selection process.
-The residency value specifies the minimum duration of time, the CPU or a
-group of CPUs, needs to spend in an idle state to not waste energy entering
-it.
+Hi Marc,
 
-To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
-may be used for a PM domain that have CPU devices attached or if the CPUs
-are attached through subdomains.
+On Wed, Feb 27, 2019 at 10:02:16AM +0000, Marc Zyngier wrote:
+> On 26/02/2019 23:28, Brian Norris wrote:
+> > On Sun, Feb 24, 2019 at 02:04:22PM +0000, Marc Zyngier wrote:
+> >> Note how the interrupt is part of the properties directly attached to the
+> >> PCI node. And yet, this interrupt has nothing to do with a PCI legacy
+> >> interrupt, as it is attached to the wake-up widget that bypasses the PCIe RC
+> >> altogether (Yay for the broken design!). This is in total violation of the
+> >> IEEE Std 1275-1994 spec[1], which clearly documents that such interrupt
+> >> specifiers describe the PCI device interrupts, and must obey the
+> >> INT-{A,B,C,D} mapping. Oops!
+> > 
+> > You're not the first person to notice this. All the motivations are not
+> > necessarily painted clearly in their cover letter, but here are some
+> > previous attempts at solving this problem:
+> > 
+> > [RFC PATCH v11 0/5] PCI: rockchip: Move PCIe WAKE# handling into pci core
+> > https://lkml.kernel.org/lkml/20171225114742.18920-1-jeffy.chen@rock-chips.com/
+> > http://lkml.kernel.org/lkml/20171226023646.17722-1-jeffy.chen@rock-chips.com/
+> > 
+> > As you can see by the 12th iteration, it wasn't left unsolved for lack
+> > of trying...
+> 
+> I wasn't aware of this. That's definitely a better approach than my
+> hack, and I would really like this to be revived.
 
-The new governor computes the minimum expected idle duration time for the
-online CPUs being attached to the PM domain and its subdomains. Then in the
-state selection process, trying the deepest state first, it verifies that
-the idle duration time satisfies the state's residency value.
+Well, in some respects it may be better (mostly, handling in the PCI
+core rather than each driver). But I'm still unsure about the DT
+binding.
 
-It should be noted that, when computing the minimum expected idle duration
-time, we use the information about the next timer/tick that is stored in
-the per CPU variable, cpuidle_devices, for the related CPUs. Future wise,
-this deserves to be improved, as there are obviously more reasons to why a
-CPU may be woken up from idle.
+And while perhaps I could find time to revive it, it's probably more
+expedient to kill the bad binding first.
 
-Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+> > Frankly, if a proper DT replacement to the admittedly bad binding isn't
+> > agreed upon quickly, I'd be very happy to just have WAKE# support
+> > removed from the DTS for now, and the existing mwifiex binding should
+> > just be removed. (Wake-on-WiFi was never properly vetted on these
+> > platforms anyway.) It mostly serves to just cause problems like you've
+> > noticed.
+> 
+> Agreed. If there is no actual use for this, and that we can build a case
+> for a better solution, let's remove the wakeup support from the Gru DT
+> (it is invalid anyway), and bring it back if and when we get the right
+> level of support.
 
-Changes in v12:
-	- Rebased.
++1
 
----
- drivers/base/power/domain_governor.c | 62 +++++++++++++++++++++++++++-
- include/linux/pm_domain.h            |  3 ++
- 2 files changed, 64 insertions(+), 1 deletion(-)
+Today, something simple like NL80211_WOWLAN_TRIG_DISCONNECT and
+NL80211_WOWLAN_TRIG_NET_DETECT may work OK, but I'm not confident that
+anything more complicated is really a compelling story today (well,
+outside of Android, which has a massively more complicated--and not
+upstream--setup for this stuff).
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 99896fbf18e4..fb8fd21e69a7 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -10,6 +10,9 @@
- #include <linux/pm_domain.h>
- #include <linux/pm_qos.h>
- #include <linux/hrtimer.h>
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/ktime.h>
- 
- static int dev_update_qos_constraint(struct device *dev, void *data)
- {
-@@ -211,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
- 
--	if (!genpd->max_off_time_changed)
-+	if (!genpd->max_off_time_changed) {
-+		genpd->state_idx = genpd->cached_power_down_state_idx;
- 		return genpd->cached_power_down_ok;
-+	}
- 
- 	/*
- 	 * We have to invalidate the cached results for the masters, so
-@@ -237,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		genpd->state_idx--;
- 	}
- 
-+	genpd->cached_power_down_state_idx = genpd->state_idx;
- 	return genpd->cached_power_down_ok;
- }
- 
-@@ -245,6 +251,55 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- 	return false;
- }
- 
-+static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	struct cpuidle_device *dev;
-+	ktime_t domain_wakeup;
-+	s64 idle_duration_ns;
-+	int cpu, i;
-+
-+	/* Validate dev PM QoS constraints. */
-+	if (!default_power_down_ok(pd))
-+		return false;
-+
-+	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-+		return true;
-+
-+	/*
-+	 * Find the next wakeup for any of the online CPUs within the PM domain
-+	 * and its subdomains. Note, we only need the genpd->cpus, as it already
-+	 * contains a mask of all CPUs from subdomains.
-+	 */
-+	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-+	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-+		dev = per_cpu(cpuidle_devices, cpu);
-+		if (dev && ktime_before(dev->next_hrtimer, domain_wakeup))
-+			domain_wakeup = dev->next_hrtimer;
-+	}
-+
-+	/* The minimum idle duration is from now - until the next wakeup. */
-+	idle_duration_ns = ktime_to_ns(ktime_sub(domain_wakeup, ktime_get()));
-+	if (idle_duration_ns <= 0)
-+		return false;
-+
-+	/*
-+	 * Find the deepest idle state that has its residency value satisfied
-+	 * and by also taking into account the power off latency for the state.
-+	 * Start at the state picked by the dev PM QoS constraint validation.
-+	 */
-+	i = genpd->state_idx;
-+	do {
-+		if (idle_duration_ns >= (genpd->states[i].residency_ns +
-+		    genpd->states[i].power_off_latency_ns)) {
-+			genpd->state_idx = i;
-+			return true;
-+		}
-+	} while (--i >= 0);
-+
-+	return false;
-+}
-+
- struct dev_power_governor simple_qos_governor = {
- 	.suspend_ok = default_suspend_ok,
- 	.power_down_ok = default_power_down_ok,
-@@ -257,3 +312,8 @@ struct dev_power_governor pm_domain_always_on_gov = {
- 	.power_down_ok = always_on_power_down_ok,
- 	.suspend_ok = default_suspend_ok,
- };
-+
-+struct dev_power_governor pm_domain_cpu_gov = {
-+	.suspend_ok = default_suspend_ok,
-+	.power_down_ok = cpu_power_down_ok,
-+};
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index a6e251fe9deb..ae7061556a26 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -118,6 +118,7 @@ struct generic_pm_domain {
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
- 	bool cached_power_down_ok;
-+	bool cached_power_down_state_idx;
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
-@@ -202,6 +203,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-+extern struct dev_power_governor pm_domain_cpu_gov;
- #else
- 
- static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
-@@ -245,6 +247,7 @@ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
- 
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
-+#define pm_domain_cpu_gov		(*(struct dev_power_governor *)(NULL))
- #endif
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
--- 
-2.17.1
+> [...]
+> 
+> > One problem Rockchip authors were also trying to resolve here is that
+> > PCIe WAKE# handling should not really be something the PCI device driver
+> > has to handle directly. Despite your complaints about not using in-band
+> > TLP wakeup, a separate WAKE# pin is in fact a documented part of the
+> > PCIe standard, and it so happens that the Rockchip RC does not support
+> > handling TLPs in S3, if you want to have decent power consumption. (Your
+> > "bad hardware" complaints could justifiably fall here, I suppose.)
+> > 
+> > Additionally, I've had pushback from PCI driver authors/maintainers on
+> > adding more special handling for this sort of interrupt property (not
+> > the binding specifically, but just the concept of handling WAKE# in the
+> > driver), as they claim this should be handled by the system firmware,
+> > when they set the appropriate wakeup flags, which filter down to
+> > __pci_enable_wake() -> platform_pci_set_wakeup(). That's how x86 systems
+> > do it (note: I know for a fact that many have a very similar
+> > architecture -- WAKE# is not routed to the RC, because, why does it need
+> > to? and they *don't* use TLP wakeup either -- they just hide it in
+> > firmware better), and it Just Works.
+> 
+> Even on an arm64 platform, there is no reason why a wakeup interrupt
+> couldn't be handled by FW rather than the OS. It just need to be wired
+> to the right spot (so that it generates a secure interrupt that can be
+> handled by FW).
+
+True...but then you also need a configuration (enable/disable) API for
+it too. I don't think we have such a per-device API? So it would be a
+pretty similar problem to solve anyway.
+
+> > So, we basically concluded that we should standardize on a way to
+> > describe WAKE# interrupts such that PCI drivers don't have to deal with
+> > it at all, and the PCI core can do it for us. 12 revisions later
+> > and...we still never agreed on a good device tree binding for this.
+> 
+> Is the DT binding the only problem? Do we have an agreement for the core
+> code?
+
+I'll have to re-read the old threads. I don't really remember where we
+got bogged down... I think one outstanding question was whether WAKE#
+should be associated with the port vs. the device. That might have been
+might fault for confusing that one though.
+
+> > IOW, maybe your wake-up sub-node is the best way to side-step the
+> > problems of conflicting with the OF PCI spec. But I'd still really like
+> > to avoid parsing it in mwifiex, if at all possible.
+> 
+> Honestly, my solution is just a terrible hack. I wasn't aware that this
+> was a more general problem, and I'd love it to be addressed in the core
+> PCI code.
+
+Ack, so we agree.
+
+Thanks,
+Brian
