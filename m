@@ -1,44 +1,111 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: menu: Avoid overflows when computing variance
-Date: Wed, 27 Feb 2019 14:35:50 +0100
-Message-ID: <13496310.XaNEd20TYL@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v12 0/4] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
+Date: Wed, 27 Feb 2019 20:58:32 +0100
+Message-ID: <20190227195836.24739-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Randy Dunlap <rdunlap@infradead.org>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Changes in v12:
+ - Drop the patches for restructuring tick_nohz_get_sleep_length(). Instead
+replace them all with a new timer/cpuidle patch, according to suggestions by
+Rafael.
+ - The entire v12 series, including the PSCI/ARM changes are available in a
+git branch [2].
 
-The variance computation in get_typical_interval() may overflow if
-the square of the value of diff exceeds the maximum for the int64_t
-data type value which basically is the case when it is of the order
-of UINT_MAX.
+Changes in v11:
+ - This version contains only the infrastructure changes that is needed for
+deployment. The PSCI/ARM changes have also been updated and tested, but I will
+post them separately. Still, to provide completeness, I have published a branch
+containing everything to a git tree [1], feel free to have a look and test.
+ - The v10 series contained a patch, "timer: Export next wakeup time of a CPU",
+which has been replaced by a couple of new patches, whom reworks the existing
+tick_nohz_get_sleep_length() function, to provide the next timer expiration
+instead of the duration.
+ - More changelogs are available per patch.
 
-However, data points so far in the future don't matter for idle
-state selection anyway, so change the initial threshold value in
-get_typical_interval() to INT_MAX which will cause more "outlying"
-data points to be discarded without affecting the selection result.
+Changes in v10:
+ - Quite significant changes have been to the PSCI driver deployment. According
+   to an agreement with Lorenzo, the hierarchical CPU layout for PSCI should be
+   orthogonal to whether the PSCI FW supports OSI or not. This has been taken
+   care of in this version.
+ - Drop the generic attach/detach helpers of CPUs to genpd, instead make that
+   related code internal to PSCI, for now.
+ - Fix "BUG: sleeping for invalid context" for hotplug, as reported by Raju.
+ - Addressed various comments from version 8 and 9.
+ - Clarified changelogs and re-wrote the cover-letter to better explain the
+   motivations behind these changes.
 
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Background:
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -186,7 +186,7 @@ static unsigned int get_typical_interval
- 	unsigned int min, max, thresh, avg;
- 	uint64_t sum, variance;
- 
--	thresh = UINT_MAX; /* Discard outliers above this value */
-+	thresh = INT_MAX; /* Discard outliers above this value */
- 
- again:
- 
+For ARM64/ARM based platforms CPUs are often arranged in a hierarchical manner.
+>From a CPU idle state perspective, this means some states may be shared among a
+group of CPUs (aka CPU cluster).
+
+To deal with idle management of a group of CPUs, sometimes the kernel needs to
+be involved to manage the last-man standing algorithm, simply because it can't
+rely solely on power management FWs to deal with this. Depending on the
+platform, of course.
+
+There are a couple of typical scenarios for when the kernel needs to be in
+control, dealing with synchronization of when the last CPU in a cluster is about
+to enter a deep idle state.
+
+1)
+The kernel needs to carry out so called last-man activities before the
+CPU cluster can enter a deep idle state. This may for example involve to
+configure external logics for wakeups, as the GIC may no longer be functional
+once a deep cluster idle state have been entered. Likewise, these operations
+may need to be restored, when the first CPU wakes up.
+
+2)
+Other more generic I/O devices, such as an MMC controller for example, may be a
+part of the same power domain as the CPU cluster, due to a shared power-rail.
+For these scenarios, when the MMC controller is in use dealing with an MMC
+request, a deeper idle state of the CPU cluster may needs to be temporarily
+disabled. This is needed to retain the MMC controller in a functional state,
+else it may loose its register-context in the middle of serving a request.
+
+In this series, we are extending the generic PM domain (aka genpd) to be used
+for also CPU devices. Hence the goal is to re-use much of its current code to
+help us manage the last-man standing synchronization. Moreover, as we already
+use genpd to model power domains for generic I/O devices, both 1) and 2) can be
+address with its help.
+
+Moreover, to address these problems for ARM64 DT based platforms, we are
+deploying support for genpd and runtime PM to the PSCI FW driver - and finally
+we make some updates to two ARM64 DTBs, as to deploy the new PSCI CPU topology
+layout.
+
+The series has been tested on a Qcom 410c dragonboard and on a Hisilicon Hikey
+board. The first one uses PSCI OS-initiated mode, while the second uses the PSCI
+Platform-Coordinated mode.
+
+Kind regards
+Ulf Hansson
+
+[1]
+git.linaro.org/people/ulf.hansson/linux-pm.git next_v11
+[2]
+git.linaro.org/people/ulf.hansson/linux-pm.git next_v12
+
+Ulf Hansson (4):
+  PM / Domains: Add a generic data pointer to the genpd_power_state
+    struct
+  PM / Domains: Add support for CPU devices to genpd
+  cpuidle: Export the next timer/tick expiration for a CPU
+  PM / Domains: Add genpd governor for CPUs
+
+ drivers/base/power/domain.c          | 78 ++++++++++++++++++++++++++--
+ drivers/base/power/domain_governor.c | 62 +++++++++++++++++++++-
+ drivers/cpuidle/cpuidle.c            |  8 +++
+ include/linux/cpuidle.h              |  1 +
+ include/linux/pm_domain.h            | 20 ++++++-
+ include/linux/tick.h                 |  7 ++-
+ kernel/time/tick-sched.c             | 12 +++++
+ 7 files changed, 182 insertions(+), 6 deletions(-)
+
+-- 
+2.17.1
