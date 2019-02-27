@@ -1,72 +1,148 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
-Date: Tue, 26 Feb 2019 15:44:23 -0800
-Message-ID: <20190226234422.GD174696@google.com>
-References: <20190224140426.3267-1-marc.zyngier@arm.com>
- <CAKv+Gu9OOzOxx0rTAZqM8r4q_hRmOp3b=KP7fwgNeiu67FCApA@mail.gmail.com>
- <5310b73b-4821-6dff-b9c0-34c59fb7fd72@arm.com>
- <CAKv+Gu_=bQyVZqgUnJm9moCcaCcpDrag6NWGEpaR65=pMiTFJQ@mail.gmail.com>
- <0c433a70-27f6-76ad-c46c-6015de1ffaa4@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 8/9] PM / Domains: Support IRQ safe PM domains
+Date: Wed, 27 Feb 2019 01:00:35 +0100
+Message-ID: <CAPDyKFq1xma+vi_T0qyPo0FNUEUOSiog2WGhEkgZLN4j-0z6aQ@mail.gmail.com>
+References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
+ <1477347668-41901-9-git-send-email-lina.iyer@linaro.org>
+ <CAMuHMdVDtP=Y=FWfy56d+azW4bJ=3ihmmwdVkzEX-K3W6Wc9zA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0c433a70-27f6-76ad-c46c-6015de1ffaa4@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Amitkumar Karwar <amitkarwar@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Ganapathi Bhat <gbhat@marvell.com>, Heiko Stuebner <heiko@sntech.de>, Kalle Valo <kvalo@codeaurora.org>, Nishant Sarmukadam <nishants@marvell.com>, Rob Herring <robh+dt@kernel.org>, Xinming Hu <huxinming820@gmail.com>, Devicetree List <devicetree@vger.kernel.org>, "<netdev@vger.kernel.org>" <netdev@vger.kernel.org>, "<linux-wireless@vger.kernel.org>" <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-rockchip@lists.infradead.org, "David S. Miller" <davem@davemloft.net>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.o
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMuHMdVDtP=Y=FWfy56d+azW4bJ=3ihmmwdVkzEX-K3W6Wc9zA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Brendan Jackman <brendan.jackman@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, 26 Feb 2019 at 16:52, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>
+> Hi Lina,
+>
+> Yes, this is a reply to an old patch.
+> But it seems there are no upstream users of GENPD_FLAG_IRQ_SAFE yet...
 
-On Tue, Feb 26, 2019 at 05:14:00PM +0000, Marc Zyngier wrote:
-> On 26/02/2019 16:21, Ard Biesheuvel wrote:
-> > On Mon, 25 Feb 2019 at 15:53, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> >> It outlines one thing: If you have to interpret per-device PCI
-> >> properties from DT, you're in for serious trouble. I should get some
-> >> better HW.
-> >>
-> > 
-> > Yeah, it obviously makes no sense at all for the interrupt parent of a
-> > PCI device to deviate from the host bridge's interrupt parent, and
-> > it's quite unfortunate that we can't simply ban it now that the cat is
-> > out of the bag already.
-> > 
-> > Arguably, the wake up widget is not part of the PCI device, but I have
-> > no opinion as to whether it is better modeling it as a sub device as
-> > you are proposing or as an entirely separate device referenced via a
-> > phandle.
-> 
-> It is not that clear. The widget seems to be an integral part of the
-> device, as it is the same basic IP that is used for SDIO and USB.
+Correct. But I are working on adding the first ones, as you probably know.
 
-It's not really a widget specific to this IP. It's just a GPIO. It so
-happens that both SDIO and PCIe designs have wanted to use a GPIO for
-wakeup, as many other devices do. (Note: it's not just cheap ARM
-devices; pulling up some Intel Chromebook designs, I see the exact same
-WAKE# GPIO on their PCIe WiFi as well.)
+>
+> On Tue, Oct 25, 2016 at 12:21 AM Lina Iyer <lina.iyer@linaro.org> wrote:
+> > Generic Power Domains currently support turning on/off only in process
+> > context. This prevents the usage of PM domains for domains that could be
+> > powered on/off in a context where IRQs are disabled. Many such domains
+> > exist today and do not get powered off, when the IRQ safe devices in
+> > that domain are powered off, because of this limitation.
+> >
+> > However, not all domains can operate in IRQ safe contexts. Genpd
+> > therefore, has to support both cases where the domain may or may not
+> > operate in IRQ safe contexts. Configuring genpd to use an appropriate
+> > lock for that domain, would allow domains that have IRQ safe devices to
+> > runtime suspend and resume, in atomic context.
+> >
+> > To achieve domain specific locking, set the domain's ->flag to
+> > GENPD_FLAG_IRQ_SAFE while defining the domain. This indicates that genpd
+> > should use a spinlock instead of a mutex for locking the domain. Locking
+> > is abstracted through genpd_lock() and genpd_unlock() functions that use
+> > the flag to determine the appropriate lock to be used for that domain.
+> >
+> > Domains that have lower latency to suspend and resume and can operate
+> > with IRQs disabled may now be able to save power, when the component
+> > devices and sub-domains are idle at runtime.
+> >
+> > The restriction this imposes on the domain hierarchy is that non-IRQ
+> > safe domains may not have IRQ-safe subdomains, but IRQ safe domains may
+> > have IRQ safe and non-IRQ safe subdomains and devices.
+> >
+> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > Cc: Kevin Hilman <khilman@kernel.org>
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> > Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/base/power/domain.c | 111 ++++++++++++++++++++++++++++++++++++++++----
+> >  include/linux/pm_domain.h   |  10 +++-
+> >  2 files changed, 110 insertions(+), 11 deletions(-)
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 1ad42f2..07ed835 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -74,11 +74,70 @@ static const struct genpd_lock_ops genpd_mtx_ops = {
+> >         .unlock = genpd_unlock_mtx,
+> >  };
+> >
+> > +static void genpd_lock_spin(struct generic_pm_domain *genpd)
+> > +       __acquires(&genpd->slock)
+> > +{
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave(&genpd->slock, flags);
+> > +       genpd->lock_flags = flags;
+> > +}
+> > +
+> > +static void genpd_lock_nested_spin(struct generic_pm_domain *genpd,
+> > +                                       int depth)
+> > +       __acquires(&genpd->slock)
+> > +{
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave_nested(&genpd->slock, flags, depth);
+> > +       genpd->lock_flags = flags;
+>
+> I don't think this is correct: during the second or any subsequent call,
+> the old genpd->lock_flags will be overwritten by the new one.
+> As interrupts are already disabled when doing a second call, the new
+> flags will reflect this, and calling genpd_unlock_spin() below will
+> never re-enable interrupts again.
 
-> It looks like the good old pre-PCI-2.2 days, where you had to have a
-> separate cable between your network card and the base-board for the
-> wake-up interrupt to be delivered. Starting with PCI-2.2, the bus can
-> carry the signal just fine. With PCIe, it should just be an interrupt
-> TLP sent to the RC, but that's obviously not within the capabilities of
-> the HW.
+That seems like a correct observation, at least as far as I can tell.
+Thanks for looking into this!
 
-You should search the PCI Express specification for WAKE#. There is a
-clearly-documented "side-band wake" feature that is part of the
-standard, as an alternative to in-band TLP wakeup. While you claim this
-is an ancient thing, it in fact still in use on many systems -- it's
-just usually abstracted better by ACPI firmware, whereas the dirty
-laundry is aired a bit more on a Device Tree system. And we got it
-wrong.
+>
+> Note that changing the above to
+>
+>     if (!depth)
+>             genpd->lock_flags = flags;
+>
+> won't help, as that means the first call to genpd_unlock_spin() will
+> re-enable interrupts, which is too early.
+>
+> Using a single genpd->lock_flags can work only in case interrupts were
+> already disabled before the first call.  But perhaps that's guaranteed?
 
-> Anyway, it'd be good if the Marvell people could chime in and let us
-> know how they'd prefer to handle this.
+So far, the only user case I have been playing with, is for CPUs. In
+that case, this code in executed in the cpuidle path and thus IRQs are
+disabled, so yes then it works.
 
-I'm not sure this is really a Marvell-specific problem. (Well, except
-for the marvell,wakeup-pin silliness, which is somewhat orthogonal.) In
-fact, if we cared a little more about Wake-on-WiFi, we'd be trying to
-support the same (out-of-band WAKE#) with other WiFi drivers.
+>
+> Apart from that, given depth is used as a lockdep subclass, and the
+> following comment in include/linux/lockdep.h:
+>
+>     /*
+>      * For trivial one-depth nesting of a lock-class, the following
+>      * global define can be used. (Subsystems with multiple levels
+>      * of nesting should define their own lock-nesting subclasses.)
+>      */
+>     #define SINGLE_DEPTH_NESTING                 1
+>
+> I'm wondering if depth > 1 actually works as expected.
+>
+> Am I missing something?
 
-Brian
+I don't think so, we need to fix this problem, in one way or the other.
+
+Clearly this code hasn't been executed enough, probably only by me and
+Lina and for CPUs. Ideally, we should try to make it work for the
+generic case, as I think there are more potential users of it.
+
+[...]
+
+Kind regards
+Uffe
