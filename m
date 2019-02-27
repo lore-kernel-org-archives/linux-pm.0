@@ -1,140 +1,102 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
-Date: Wed, 27 Feb 2019 10:02:16 +0000
-Message-ID: <d67512fe-42b4-513f-d27a-fed85c19e9c2@arm.com>
-References: <20190224140426.3267-1-marc.zyngier@arm.com>
- <20190226232822.GA174696@google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: kyro: Release OPP tables on module removal
+Date: Wed, 27 Feb 2019 15:34:27 +0530
+Message-ID: <78f96969448b17e95b0b21cb78194bb9f709a897.1551261748.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190226232822.GA174696@google.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Amitkumar Karwar <amitkarwar@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Ganapathi Bhat <gbhat@marvell.com>, Heiko Stuebner <heiko@sntech.de>, Kalle Valo <kvalo@codeaurora.org>, Nishant Sarmukadam <nishants@marvell.com>, Rob Herring <robh+dt@kernel.org>, Xinming Hu <huxinming820@gmail.com>, "David S. Miller" <davem@davemloft.net>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pm@vger.kernel.org, Jeffy Chen <jeffy.chen@rock-chips.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ilia Lin <ilia.lin@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Arnd Bergmann <arnd@arndb.de>, amit.kucheria@linaro.org, "4 . 18+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-+ Lorenzo
+Commit 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit") made
+it possible to build the kyro cpufreq driver as a module, but it failed
+to release all the resources, i.e. OPP tables, when the module is
+unloaded.
 
-Hi Brian,
+This patch fixes it by releasing the OPP tables, by calling
+dev_pm_opp_put_supported_hw() for them, from the
+qcom_cpufreq_kryo_remove() routine. The array of pointers to the OPP
+tables is also allocated dynamically now in qcom_cpufreq_kryo_probe(),
+as the pointers will be required while releasing the resources.
 
-On 26/02/2019 23:28, Brian Norris wrote:
-> + others
-> 
-> Hi Marc,
-> 
-> Thanks for the series. I have a few bits of history to add to this, and
-> some comments.
-> 
-> On Sun, Feb 24, 2019 at 02:04:22PM +0000, Marc Zyngier wrote:
->> For quite some time, I wondered why the PCI mwifiex device built in my
->> Chromebook was unable to use the good old legacy interrupts. But as MSIs
->> were working fine, I never really bothered investigating. I finally had a
->> look, and the result isn't very pretty.
->>
->> On this machine (rk3399-based kevin), the wake-up interrupt is described as
->> such:
->>
->> &pci_rootport {
->> 	mvl_wifi: wifi@0,0 {
->> 		compatible = "pci1b4b,2b42";
->> 		reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
->> 		       0x83010000 0x0 0x00100000 0x0 0x00100000>;
->> 		interrupt-parent = <&gpio0>;
->> 		interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
->> 		pinctrl-names = "default";
->> 		pinctrl-0 = <&wlan_host_wake_l>;
->> 		wakeup-source;
->> 	};
->> };
->>
->> Note how the interrupt is part of the properties directly attached to the
->> PCI node. And yet, this interrupt has nothing to do with a PCI legacy
->> interrupt, as it is attached to the wake-up widget that bypasses the PCIe RC
->> altogether (Yay for the broken design!). This is in total violation of the
->> IEEE Std 1275-1994 spec[1], which clearly documents that such interrupt
->> specifiers describe the PCI device interrupts, and must obey the
->> INT-{A,B,C,D} mapping. Oops!
-> 
-> You're not the first person to notice this. All the motivations are not
-> necessarily painted clearly in their cover letter, but here are some
-> previous attempts at solving this problem:
-> 
-> [RFC PATCH v11 0/5] PCI: rockchip: Move PCIe WAKE# handling into pci core
-> https://lkml.kernel.org/lkml/20171225114742.18920-1-jeffy.chen@rock-chips.com/
-> http://lkml.kernel.org/lkml/20171226023646.17722-1-jeffy.chen@rock-chips.com/
-> 
-> As you can see by the 12th iteration, it wasn't left unsolved for lack
-> of trying...
+Compile tested only.
 
-I wasn't aware of this. That's definitely a better approach than my
-hack, and I would really like this to be revived.
+Cc: 4.18+ <stable@vger.kernel.org> # v4.18+
+Fixes: 5ad7346b4ae2 ("cpufreq: kryo: Add module remove and exit")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- The previous version targeted a compile time issue of frame size but
+  this fixes a bug in the driver and needs to get applied to 4.18+
+  kernels.
+- This may go in 5.0 release.
+- Haven't included any Reviewed-by tags as there were many changes in
+  this version.
 
-> 
-> Frankly, if a proper DT replacement to the admittedly bad binding isn't
-> agreed upon quickly, I'd be very happy to just have WAKE# support
-> removed from the DTS for now, and the existing mwifiex binding should
-> just be removed. (Wake-on-WiFi was never properly vetted on these
-> platforms anyway.) It mostly serves to just cause problems like you've
-> noticed.
+ drivers/cpufreq/qcom-cpufreq-kryo.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-Agreed. If there is no actual use for this, and that we can build a case
-for a better solution, let's remove the wakeup support from the Gru DT
-(it is invalid anyway), and bring it back if and when we get the right
-level of support.
-
-[...]
-
-> One problem Rockchip authors were also trying to resolve here is that
-> PCIe WAKE# handling should not really be something the PCI device driver
-> has to handle directly. Despite your complaints about not using in-band
-> TLP wakeup, a separate WAKE# pin is in fact a documented part of the
-> PCIe standard, and it so happens that the Rockchip RC does not support
-> handling TLPs in S3, if you want to have decent power consumption. (Your
-> "bad hardware" complaints could justifiably fall here, I suppose.)
-> 
-> Additionally, I've had pushback from PCI driver authors/maintainers on
-> adding more special handling for this sort of interrupt property (not
-> the binding specifically, but just the concept of handling WAKE# in the
-> driver), as they claim this should be handled by the system firmware,
-> when they set the appropriate wakeup flags, which filter down to
-> __pci_enable_wake() -> platform_pci_set_wakeup(). That's how x86 systems
-> do it (note: I know for a fact that many have a very similar
-> architecture -- WAKE# is not routed to the RC, because, why does it need
-> to? and they *don't* use TLP wakeup either -- they just hide it in
-> firmware better), and it Just Works.
-
-Even on an arm64 platform, there is no reason why a wakeup interrupt
-couldn't be handled by FW rather than the OS. It just need to be wired
-to the right spot (so that it generates a secure interrupt that can be
-handled by FW).
-
-> So, we basically concluded that we should standardize on a way to
-> describe WAKE# interrupts such that PCI drivers don't have to deal with
-> it at all, and the PCI core can do it for us. 12 revisions later
-> and...we still never agreed on a good device tree binding for this.
-
-Is the DT binding the only problem? Do we have an agreement for the core
-code?
-
-> IOW, maybe your wake-up sub-node is the best way to side-step the
-> problems of conflicting with the OF PCI spec. But I'd still really like
-> to avoid parsing it in mwifiex, if at all possible.
-
-Honestly, my solution is just a terrible hack. I wasn't aware that this
-was a more general problem, and I'd love it to be addressed in the core
-PCI code.
-
-> (We'd still be left with the marvell,wakeup-pin propery to parse
-> specifically in mwifiex, which sadly has to exist because....well,
-> Samsung decided to do chip-on-board, and then they failed to use the
-> correct pin on Marvell's side when wiring up WAKE#. Sigh.)
-
-Oh well...
-
-Thanks,
-
-	M.
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+index 2a3675c24032..65edbfd4d4a5 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -75,7 +75,7 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+ 
+ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ {
+-	struct opp_table *opp_tables[NR_CPUS] = {0};
++	struct opp_table **opp_tables;
+ 	enum _msm8996_version msm8996_version;
+ 	struct nvmem_cell *speedbin_nvmem;
+ 	struct device_node *np;
+@@ -133,6 +133,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 	}
+ 	kfree(speedbin);
+ 
++	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
++	if (!opp_tables)
++		return -ENOMEM;
++
+ 	for_each_possible_cpu(cpu) {
+ 		cpu_dev = get_cpu_device(cpu);
+ 		if (NULL == cpu_dev) {
+@@ -151,8 +155,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 
+ 	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+ 							  NULL, 0);
+-	if (!IS_ERR(cpufreq_dt_pdev))
++	if (!IS_ERR(cpufreq_dt_pdev)) {
++		platform_set_drvdata(pdev, opp_tables);
+ 		return 0;
++	}
+ 
+ 	ret = PTR_ERR(cpufreq_dt_pdev);
+ 	dev_err(cpu_dev, "Failed to register platform device\n");
+@@ -163,13 +169,23 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 			break;
+ 		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
+ 	}
++	kfree(opp_tables);
+ 
+ 	return ret;
+ }
+ 
+ static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
+ {
++	struct opp_table **opp_tables = platform_get_drvdata(pdev);
++	unsigned cpu;
++
+ 	platform_device_unregister(cpufreq_dt_pdev);
++
++	for_each_possible_cpu(cpu)
++		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
++
++	kfree(opp_tables);
++
+ 	return 0;
+ }
+ 
 -- 
-Jazz is not dead. It just smells funny...
+2.21.0.rc0.269.g1a574e7a288b
