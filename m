@@ -1,68 +1,118 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
-Date: Thu, 28 Feb 2019 23:41:34 +0100
-Message-ID: <ca30d998-2fe1-7ec9-8387-99c8d3e313bc@linaro.org>
-References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-6-ulf.hansson@linaro.org>
- <a66689f2-51ba-6358-f161-66778daa1f09@linaro.org>
- <CAPDyKFrdwkERTGOkfjCZv-cb0sTvDqtNWY6kKyaeWLHSumRp1A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2][RFC v2] ACPI: Update cpuinfo.max after bootup if necessary
+Date: Thu, 28 Feb 2019 23:56:48 +0100
+Message-ID: <CAJZ5v0g4CGfAMH0pM-wWSt6pXZrw3ckqBbbUzNwjqScwRjrK3g@mail.gmail.com>
+References: <cover.1551375162.git.yu.c.chen@intel.com> <bd3c5e04e882e5a4c977211a8d268440b36276a4.1551375162.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrdwkERTGOkfjCZv-cb0sTvDqtNWY6kKyaeWLHSumRp1A@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <bd3c5e04e882e5a4c977211a8d268440b36276a4.1551375162.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lina Iyer <ilina@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yu Chen <yu.chen.surf@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/02/2019 23:26, Ulf Hansson wrote:
-> On Thu, 28 Feb 2019 at 16:40, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>
->> On 28/02/2019 14:59, Ulf Hansson wrote:
->>> Instead of iterating through all the state nodes in DT, to find out how
->>> many states that needs to be allocated, let's use the number already known
->>> by the cpuidle driver. In this way we can drop the iteration altogether.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> ---
->>>  drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
->>>  1 file changed, 12 insertions(+), 13 deletions(-)
->>>
->>> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
->>> index d50b46a0528f..cbfc936d251c 100644
->>> --- a/drivers/firmware/psci/psci.c
->>> +++ b/drivers/firmware/psci/psci.c
->>> @@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
->>>  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
->>>                       struct device_node *cpu_node, int cpu)
->>>  {
->>> -     int i, ret = 0, count = 0;
->>> +     int i, ret = 0, num_state_nodes = drv->state_count - 1;
->>
->> why -1 ?
-> 
-> Because of the WFI state. The cpuidle-arm driver always carries this
-> state at index 0, which also is never used in
-> psci_cpu_suspend_enter(), where the similar is taken into account.
-> 
-> It's a bit of magic, so perhaps someone should post a patch that
-> documents this a bit better in the code, wherever it makes sense.
+On Thu, Feb 28, 2019 at 6:59 PM Chen Yu <yu.c.chen@intel.com> wrote:
+>
+> On Dell Inc. XPS13 9333, the BIOS changes the value of
+> MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> the power source changes), the maximum frequency of the
+> CPU is not updated accordingly. This is due to the policy's
+> cpuinfo.max is not updated when _PPC notifier fires.
+>
+> Fix this problem by updating the policy's cpuinfo.max when
+> necessary.
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c      |  2 ++
+>  drivers/cpufreq/intel_pstate.c | 15 +++++++++++++--
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e35a886e00bc..95e08816b512 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>
+>         policy->min = new_policy->min;
+>         policy->max = new_policy->max;
+> +       policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> +       policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+>         trace_cpu_frequency_limits(policy);
+>
+>         policy->cached_target_freq = UINT_MAX;
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index dd66decf2087..841c74f69f66 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2081,11 +2081,17 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+>
+>  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+>  {
+> +       int max_freq;
+>         struct cpudata *cpu = all_cpu_data[policy->cpu];
+>
+>         update_turbo_state();
+> +       max_freq = intel_pstate_get_max_freq(cpu);
+> +
+> +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
+> +               policy->cpuinfo.max_freq = policy->max = max_freq;
 
-Ah yes, right. The first state is already filled with the WFI state in
-the cpuidle-arm.c driver and we must infer the index passed to
-dt_init_idle_driver is 1 because of that.
+Updating cpuinfo.max_freq here only causes the current limit to be
+reported via sysfs, because intel_pstate doesn't actually use
+cpuinfo.max_freq for anything and the core doesn't enforce it as a
+limit.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+All of the computations in the active mode in the driver actually use
+the current limit anyway AFAICS.
 
+> +
+>         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> -                                    intel_pstate_get_max_freq(cpu));
+> +                                    max_freq);
+>
+>         if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+>             policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+> @@ -2192,11 +2198,16 @@ static struct cpufreq_driver intel_pstate = {
+>
+>  static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
+>  {
+> +       int max_freq;
+>         struct cpudata *cpu = all_cpu_data[policy->cpu];
+>
+>         update_turbo_state();
+> +       max_freq = intel_pstate_get_max_freq(cpu);
+> +
+> +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
+> +               policy->cpuinfo.max_freq = policy->max = max_freq;
 
-[ ... ]
+In this case (passive mode) updating cpuinfo.max_freq will actually
+cause governors to use the new value in computations, so the P-state
+selection will work somewhat differently, but that isn't really
+consistent with what acpi-cpufreq does and with setting no_turbo in
+the intel_pstate sysfs to 1 without this patch.
 
+With acpi-cpufreq cpuinfo.max_freq is always the max frequency in the
+_PSS table regardless of what the _PSS limit is.  Also setting
+no_turbo to 1 in intel_pstate without this patch doesn't cause
+cpuinfo.max_freq to change and I don't really think that it should.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+I would be tempted to always initialize cpuinfo.max_freq to the max
+turbo frequency, but there is a concern about systems in which
+MSR_IA32_MISC_ENABLE_TURBO_DISABLE is never set on the fly (just in
+the BIOS setup as it should be) and where it doesn't make sense to
+consider turbo frequencies at all.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> -                                    intel_pstate_get_max_freq(cpu));
+> +                                    max_freq);
+>
+>         intel_pstate_adjust_policy_max(policy, cpu);
+>
+> --
+
+It looks like I need to think about this a bit more.
