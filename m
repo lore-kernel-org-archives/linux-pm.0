@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 12/24] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
-Date: Thu, 28 Feb 2019 17:51:02 +0530
-Message-ID: <d5ca6c7f3ab156cbb0ed57a4bcaed6b45fbdbcb5.1551355503.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 13/24] drivers: thermal: tsens: Track IP version
+Date: Thu, 28 Feb 2019 17:51:03 +0530
+Message-ID: <4a91bf86d985129397312c25dec1f1f559c1ab53.1551355503.git.amit.kucheria@linaro.org>
 References: <cover.1551355503.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1551355503.git.amit.kucheria@linaro.org>
@@ -12,34 +12,34 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We print a calibration failure message on -EPROBE_DEFER from
-nvmem/qfprom as follows:
-[    3.003090] qcom-tsens 4a9000.thermal-sensor: version: 1.4
-[    3.005376] qcom-tsens 4a9000.thermal-sensor: tsens calibration failed
-[    3.113248] qcom-tsens 4a9000.thermal-sensor: version: 1.4
-
-This confuses people when, in fact, calibration succeeds later when
-nvmem/qfprom device is available. Don't print this message on a
--EPROBE_DEFER.
+Version information is available on some TSENS IP. Allow reading it by
+allocating memory for the regmap_field.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/qcom/tsens-common.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index b91a0b88d33c..057b33353ba3 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -159,7 +159,8 @@ static int tsens_probe(struct platform_device *pdev)
- 	if (priv->ops->calibrate) {
- 		ret = priv->ops->calibrate(priv);
- 		if (ret < 0) {
--			dev_err(dev, "tsens calibration failed\n");
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(dev, "tsens calibration failed\n");
- 			return ret;
- 		}
- 	}
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index aae3d71d7eed..8d632de2c7f8 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -155,6 +155,16 @@ int __init init_common(struct tsens_priv *priv)
+ 	if (IS_ERR(priv->tm_map))
+ 		return PTR_ERR(priv->tm_map);
+ 
++	/* alloc regmap_fields in srot_map */
++	if (priv->feat->ver_info) {
++		for (i = 0, j = VER_MAJOR; i < 2; i++, j++) {
++			priv->rf[j] = devm_regmap_field_alloc(dev, priv->srot_map,
++							      priv->fields[j]);
++			if (IS_ERR(priv->rf[j]))
++				return PTR_ERR(priv->rf[j]);
++		}
++	}
++
+ 	priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->srot_map,
+ 						     priv->fields[TSENS_EN]);
+ 	if (IS_ERR(priv->rf[TSENS_EN]))
 -- 
 2.17.1
