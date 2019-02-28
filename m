@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 16/24] drivers: thermal: tsens: Introduce IP-specific max_sensor count
-Date: Thu, 28 Feb 2019 17:51:06 +0530
-Message-ID: <ffe64aeed1eccd7ce5271611b5fed2b2d32dfbfc.1551355503.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 17/24] drivers: thermal: tsens: simplify get_temp_tsens_v2 routine
+Date: Thu, 28 Feb 2019 17:51:07 +0530
+Message-ID: <854ae4178dffabaec0274127fca1fe59a3be1199.1551355503.git.amit.kucheria@linaro.org>
 References: <cover.1551355503.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1551355503.git.amit.kucheria@linaro.org>
@@ -12,82 +12,96 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The IP can support 'm' sensors while the platform can enable 'n' sensors
-of the 'm' where n <= m.
+The current implementation is based on an algorithm published in the
+docs. Instead of reading the temperature thrice w/o any explanation,
+improve the algorithm.
 
-Track maximum sensors supported by the IP so that we can correctly track
-what subset of the sensors are supported on the platform.
+This will become the basis for a common get_temp routine in the future.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 4 ++--
- drivers/thermal/qcom/tsens-v0_1.c   | 1 +
- drivers/thermal/qcom/tsens-v2.c     | 1 +
- drivers/thermal/qcom/tsens.h        | 2 ++
- 4 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/thermal/qcom/tsens-v2.c | 55 ++++++++++-----------------------
+ 1 file changed, 17 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index c58ba4c200bc..5f838fd798c3 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -197,13 +197,13 @@ int __init init_common(struct tsens_priv *priv)
- 		return PTR_ERR(priv->rf[SENSOR_EN]);
- 
- 	/* now alloc regmap_fields in tm_map */
--	for (i = 0, j = LAST_TEMP_0; i < priv->num_sensors; i++, j++) {
-+	for (i = 0, j = LAST_TEMP_0; i < priv->feat->max_sensors; i++, j++) {
- 		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
- 						      priv->fields[j]);
- 		if (IS_ERR(priv->rf[j]))
- 			return PTR_ERR(priv->rf[j]);
- 	}
--	for (i = 0, j = VALID_0; i < priv->num_sensors; i++, j++) {
-+	for (i = 0, j = VALID_0; i < priv->feat->max_sensors; i++, j++) {
- 		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
- 						      priv->fields[j]);
- 		if (IS_ERR(priv->rf[j]))
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index 837e7872e512..03c0f2e11eaf 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -324,6 +324,7 @@ const struct tsens_features tsens_v0_1_feat = {
- 	.crit_int	= 0,
- 	.adc		= 1,
- 	.srot_split	= 1,
-+	.max_sensors	= 11,
- };
- 
- /* v0.1: 8916, 8974 */
 diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 7346bfc9efe6..55fe00f90b22 100644
+index 55fe00f90b22..e180e80f533c 100644
 --- a/drivers/thermal/qcom/tsens-v2.c
 +++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -88,6 +88,7 @@ const struct tsens_features tsens_v2_feat = {
- 	.crit_int	= 1,
- 	.adc		= 0,
- 	.srot_split	= 1,
-+	.max_sensors	= 16,
- };
+@@ -25,58 +25,37 @@
+ #define TM_Sn_STATUS_OFF		0x00a0
+ #define TM_TRDY_OFF			0x00e4
  
- const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index a20725b1cc67..eb988c1d17c4 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -297,12 +297,14 @@ enum regfield_ids {
-  * @adc:      do the sensors only output adc code (instead of temperature)?
-  * @srot_split: does the IP neatly splits the register space into SROT and TM,
-  *              with SROT only being available to secure boot firmware?
-+ * @max_sensors: maximum sensors supported by this version of the IP
-  */
- struct tsens_features {
- 	unsigned int ver_info:1;
- 	unsigned int crit_int:1;
- 	unsigned int adc:1;
- 	unsigned int srot_split:1;
-+	unsigned int max_sensors;
- };
+-#define LAST_TEMP_MASK		0xfff
+-
+-static int get_temp_tsens_v2(struct tsens_priv *priv, int id, int *temp)
++static int get_temp_tsens_v2(struct tsens_priv *priv, int i, int *temp)
+ {
+-	struct tsens_sensor *s = &priv->sensor[id];
++	struct tsens_sensor *s = &priv->sensor[i];
+ 	u32 temp_idx = LAST_TEMP_0 + s->hw_id;
+ 	u32 valid_idx = VALID_0 + s->hw_id;
+-	u32 last_temp = 0, last_temp2 = 0, last_temp3 = 0, valid;
++	u32 last_temp = 0, valid, mask;
+ 	int ret;
  
- /**
+-	ret = regmap_field_read(priv->rf[temp_idx], &last_temp);
+-	if (ret)
+-		return ret;
+-
+ 	ret = regmap_field_read(priv->rf[valid_idx], &valid);
+ 	if (ret)
+ 		return ret;
+-
+-	if (valid)
+-		goto done;
+-
+-	/* Try a second time */
+-	ret = regmap_field_read(priv->rf[valid_idx], &valid);
+-	if (ret)
+-		return ret;
+-	ret = regmap_field_read(priv->rf[temp_idx], &last_temp2);
+-	if (ret)
+-		return ret;
+-	if (valid) {
+-		last_temp = last_temp2;
+-		goto done;
++	while (!valid) {
++		/* Valid bit is 0 for 6 AHB clock cycles.
++		 * At 19.2MHz, 1 AHB clock is ~60ns.
++		 * We should enter this loop very, very rarely.
++		 */
++		ndelay(400);
++		ret = regmap_field_read(priv->rf[valid_idx], &valid);
++		if (ret)
++			return ret;
+ 	}
+ 
+-	/* Try a third/last time */
+-	ret = regmap_field_read(priv->rf[valid_idx], &valid);
+-	if (ret)
+-		return ret;
+-	ret = regmap_field_read(priv->rf[temp_idx], &last_temp3);
++	/* Valid bit is set, OK to read the temperature */
++	ret = regmap_field_read(priv->rf[temp_idx], &last_temp);
+ 	if (ret)
+ 		return ret;
+-	if (valid) {
+-		last_temp = last_temp3;
+-		goto done;
+-	}
+ 
+-	if (last_temp == last_temp2)
+-		last_temp = last_temp2;
+-	else if (last_temp2 == last_temp3)
+-		last_temp = last_temp3;
+-done:
++	mask = GENMASK(priv->fields[LAST_TEMP_0].msb,
++		       priv->fields[LAST_TEMP_0].lsb);
+ 	/* Convert temperature from deciCelsius to milliCelsius */
+-	*temp = sign_extend32(last_temp, fls(LAST_TEMP_MASK) - 1) * 100;
++	*temp = sign_extend32(last_temp, fls(mask) - 1) * 100;
+ 
+ 	return 0;
+ }
 -- 
 2.17.1
