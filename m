@@ -1,89 +1,181 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
-Date: Thu, 28 Feb 2019 16:40:04 +0100
-Message-ID: <a66689f2-51ba-6358-f161-66778daa1f09@linaro.org>
-References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-6-ulf.hansson@linaro.org>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH][RFC] ACPI: add "processor.broadcast_ppc" hook to
+ broadcast  _PPC to all online CPUs
+Date: Fri, 1 Mar 2019 01:52:30 +0800
+Message-ID: <20190228175230.GA31788@chenyu-office.sh.intel.com>
+References: <20190209120232.21582-1-yu.c.chen@intel.com>
+ <20190211103307.rccddkso3f5s3yko@vireshk-i7>
+ <20190213165538.GB30385@chenyu-office.sh.intel.com>
+ <20190214070648.pvsavc46iivub4hy@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190228135919.3747-6-ulf.hansson@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190214070648.pvsavc46iivub4hy@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28/02/2019 14:59, Ulf Hansson wrote:
-> Instead of iterating through all the state nodes in DT, to find out how
-> many states that needs to be allocated, let's use the number already known
-> by the cpuidle driver. In this way we can drop the iteration altogether.
+On Thu, Feb 14, 2019 at 12:36:48PM +0530, Viresh Kumar wrote:
+> On 14-02-19, 00:55, Yu Chen wrote:
+> > Hi Viresh,
+> > On Mon, Feb 11, 2019 at 04:03:07PM +0530, Viresh Kumar wrote:
+> > > On 09-02-19, 20:02, Chen Yu wrote:
+> > > > On Dell Inc. XPS13 9333, the BIOS changes the value of
+> > > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> > > > the power source changes), the maximum frequency of the
+> > > > CPU is not updated accordingly. This is due to the policy's
+> > > > cpuinfo.max is not updated when _PPC notifier fires.
+> > > > 
+> > > > Fix this problem by updating the policy's cpuinfo.max
+> > > > and broadcast the _PPC notifier to all online CPUs.
+> > > > 
+> > > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> > > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> > > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > > ---
+> > > >  drivers/acpi/processor_perflib.c | 16 ++++++++++++++--
+> > > >  drivers/cpufreq/cpufreq.c        |  2 ++
+> > > >  drivers/cpufreq/intel_pstate.c   | 15 ++++++++++++++-
+> > > >  3 files changed, 30 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> > > > index a303fd0e108c..737dbf5aa7f7 100644
+> > > > --- a/drivers/acpi/processor_perflib.c
+> > > > +++ b/drivers/acpi/processor_perflib.c
+> > > > @@ -63,6 +63,10 @@ module_param(ignore_ppc, int, 0644);
+> > > >  MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+> > > >  		 "limited by BIOS, this should help");
+> > > >  
+> > > > +static int broadcast_ppc;
+> > > > +module_param(broadcast_ppc, int, 0644);
+> > > > +MODULE_PARM_DESC(broadcast_ppc, "Broadcast the ppc to all online CPUs");
+> > > > +
+> > > >  #define PPC_REGISTERED   1
+> > > >  #define PPC_IN_USE       2
+> > > >  
+> > > > @@ -180,8 +184,16 @@ void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+> > > >  		else
+> > > >  			acpi_processor_ppc_ost(pr->handle, 0);
+> > > >  	}
+> > > > -	if (ret >= 0)
+> > > > -		cpufreq_update_policy(pr->id);
+> > > > +	if (ret >= 0) {
+> > > > +		if (broadcast_ppc) {
+> > > > +			int cpu;
+> > > > +
+> > > > +			for_each_possible_cpu(cpu)
+> > > > +				cpufreq_update_policy(cpu);
+> > > > +		} else {
+> > > > +			cpufreq_update_policy(pr->id);
+> > > > +		}
+> > > > +	}
+> > > >  }
+> > > >  
+> > > >  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> > > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > > index e35a886e00bc..95e08816b512 100644
+> > > > --- a/drivers/cpufreq/cpufreq.c
+> > > > +++ b/drivers/cpufreq/cpufreq.c
+> > > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > > >  
+> > > >  	policy->min = new_policy->min;
+> > > >  	policy->max = new_policy->max;
+> > > > +	policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> > > > +	policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+> > > >  	trace_cpu_frequency_limits(policy);
+> > > >  
+> > > >  	policy->cached_target_freq = UINT_MAX;
+> > > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > > > index dd66decf2087..e1881313c396 100644
+> > > > --- a/drivers/cpufreq/intel_pstate.c
+> > > > +++ b/drivers/cpufreq/intel_pstate.c
+> > > > @@ -2081,11 +2081,24 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+> > > >  
+> > > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+> > > >  {
+> > > > +	int max_freq;
+> > > >  	struct cpudata *cpu = all_cpu_data[policy->cpu];
+> > > >  
+> > > >  	update_turbo_state();
+> > > > +	max_freq = intel_pstate_get_max_freq(cpu);
+> > > > +
+> > > > +	if (acpi_ppc && policy->max == policy->cpuinfo.max_freq &&
+> > > 
+> > > Why do have this check for policy->max here ?
+> > >
+> > Thanks for looking at this change, I've replied to another email in detail of
+> > the scenario that, this is due to corner case that if the system boots
+> > with battery and plug the AC after boot up, the cpufreq max limit will not
+> > increase even the turbo has been enabled after the AC plugged.
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
+> Yeah, but I asked a different question I believe, why is this
+> comparison necessary ?
+>
+Sorry for late response, I was caught in another issue.
+
+The reason for why checking if policy->max equals to policy->cpuinfo.max_freq
+is to bypass unnecessary assignment(it turns out to be a hacky
+logic here):
+
+Say, if the system boots up with AC attached, after bootup the cpuinfo.max
+is always the highest, and there is no need to reassign the cpuinfo.max.
+
+However if the system boots up with AC deattached, then the cpuinfo.max
+will not scale up if the AC is attached after bootup.
+
+Thus in former case, the cpuinfo.max does not equals to policy.max, and
+we don't need to update cpuinfo.max. While in latter case, the cpuinfo.max
+might equal to policy.max, and in this situation we need to update the
+cpuinfo.max.
+
+
+Case 1: Boot up AC attached, cpuinfo.max does not equal to policy.max
+
+# Unplug
+
+[   25.775643] CPU 0: _PPC is 6 - frequency  limited
+[   25.775660] intel_pstate: set_policy cpuinfo.max 3000000 policy->max 1700000
+[   25.775666] intel_pstate: cpu:0 max_state 17 min_policy_perf:8 max_policy_perf:17
+[   25.775670] intel_pstate: cpu:0 global_min:8 global_max:30
+[   25.775674] intel_pstate: cpu:0 max_perf_ratio:17 min_perf_ratio:8
+
+"REDUCED FREQUENCY ABOVE AFTER UNPLUG"
+
+
+# Re-plug
+
+[   36.979264] CPU 0: _PPC is 6 - frequency  limited
+[   36.979276] intel_pstate: policy->max > max non turbo frequency
+[   36.979280] intel_pstate: set_policy cpuinfo.max 3000000 policy->max 3000000
+[   36.979283] intel_pstate: cpu:0 max_state 30 min_policy_perf:8 max_policy_perf:30
+[   36.979286] intel_pstate: cpu:0 global_min:8 global_max:30
+[   36.979289] intel_pstate: cpu:0 max_perf_ratio:30 min_perf_ratio:8
+
+
+Case 2: boot up without AC attached, cpuinfo.max equals to policy.max:
+
+
+# Plug
+
+[   52.158810] CPU 0: _PPC is 6 - frequency  limited
+[   52.158822] intel_pstate: set_policy cpuinfo.max 1700000 policy->max 1700000
+[   52.158825] intel_pstate: cpu:0 max_state 30 min_policy_perf:8 max_policy_perf:17
+[   52.158827] intel_pstate: cpu:0 global_min:8 global_max:30
+[   52.158829] intel_pstate: cpu:0 max_perf_ratio:17 min_perf_ratio:8
+
+
+As we see, the check is a little hacky, because it does not do with the logic
+on how to check if the system's cpuinfo.max is abnormal. In v2 version, I've
+removed this check to make the code easier to be understood.
+
+
+Best,
+Yu
+
+> policy->max == policy->cpuinfo.max_freq
 > 
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index d50b46a0528f..cbfc936d251c 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
->  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
->  			struct device_node *cpu_node, int cpu)
->  {
-> -	int i, ret = 0, count = 0;
-> +	int i, ret = 0, num_state_nodes = drv->state_count - 1;
-
-why -1 ?
-
->  	u32 *psci_states;
->  	struct device_node *state_node;
->  
-> -	/* Count idle states */
-> -	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
-> -					      count))) {
-> -		count++;
-> -		of_node_put(state_node);
-> -	}
-> -
-> -	if (!count)
-> -		return -ENODEV;
-> -
-> -	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-> +	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
-> +			GFP_KERNEL);
->  	if (!psci_states)
->  		return -ENOMEM;
->  
-> -	for (i = 0; i < count; i++) {
-> +	for (i = 0; i < num_state_nodes; i++) {
->  		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		if (!state_node)
-> +			break;
-> +
->  		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
->  		of_node_put(state_node);
->  
-> @@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
->  		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
->  	}
->  
-> +	if (i != num_state_nodes) {
-> +		ret = -ENODEV;
-> +		goto free_mem;
-> +	}
-> +
->  	/* Idle states parsed correctly, initialize per-cpu pointer */
->  	per_cpu(psci_power_state, cpu) = psci_states;
->  	return 0;
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> -- 
+> viresh
