@@ -1,47 +1,89 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH v1 07/13] devicetree: bindings: Document first ROHM
- BD70528 bindings
-Date: Thu, 28 Feb 2019 09:37:43 -0600
-Message-ID: <CAL_JsqKBUyygGu9FRb+hye+1DyRgdATm_64+XfsvwEa8AvZhJg@mail.gmail.com>
-References: <cover.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <80de7a2b537ae3f414b0281736652256f38cf94c.1548149337.git.matti.vaittinen@fi.rohmeurope.com>
- <20190223003041.GA16670@bogus> <20190228064923.GA3773@localhost.localdomain>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
+Date: Thu, 28 Feb 2019 16:40:04 +0100
+Message-ID: <a66689f2-51ba-6358-f161-66778daa1f09@linaro.org>
+References: <20190228135919.3747-1-ulf.hansson@linaro.org>
+ <20190228135919.3747-6-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190228064923.GA3773@localhost.localdomain>
+In-Reply-To: <20190228135919.3747-6-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: Matti Vaittinen <mazziesaccount@gmail.com>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-c>
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 28, 2019 at 12:49 AM Matti Vaittinen
-<matti.vaittinen@fi.rohmeurope.com> wrote:
->
-> Hello Rob, All
->
-> Sorry for long delay - I was ill for a few days. Back at the business
-> now =)
->
-> Rob, maybe dropping the RFC tag has messed your book keeping? This
-> is the latest version:
-> https://lore.kernel.org/lkml/90c3b820baf072a7cc3a21aa50c661774a045158.1550148989.git.matti.vaittinen@fi.rohmeurope.com/
-> and I thought it already had the Reviewed-by tag from you :)
+On 28/02/2019 14:59, Ulf Hansson wrote:
+> Instead of iterating through all the state nodes in DT, to find out how
+> many states that needs to be allocated, let's use the number already known
+> by the cpuidle driver. In this way we can drop the iteration altogether.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
+>  1 file changed, 12 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> index d50b46a0528f..cbfc936d251c 100644
+> --- a/drivers/firmware/psci/psci.c
+> +++ b/drivers/firmware/psci/psci.c
+> @@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+>  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+>  			struct device_node *cpu_node, int cpu)
+>  {
+> -	int i, ret = 0, count = 0;
+> +	int i, ret = 0, num_state_nodes = drv->state_count - 1;
 
-I thought I ignored RFC tag, but could be that. My script (and memory)
-aren't perfect.
+why -1 ?
 
-> On Fri, Feb 22, 2019 at 06:30:41PM -0600, Rob Herring wrote:
-> > On Tue, Jan 22, 2019 at 11:45:38AM +0200, Matti Vaittinen wrote:
-> > > Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
-> > > drivers) and 4 GPIO pins which can be configured for I/O or
-> > > as interrupt sources withe configurable trigger levels.
-> >
-> > 'dt-bindings: mfd: ...' for the subject.
->
-> I see at least the patch subject comment is still valid though. Do you
-> want me to change it and resubmit the series?
+>  	u32 *psci_states;
+>  	struct device_node *state_node;
+>  
+> -	/* Count idle states */
+> -	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+> -					      count))) {
+> -		count++;
+> -		of_node_put(state_node);
+> -	}
+> -
+> -	if (!count)
+> -		return -ENODEV;
+> -
+> -	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
+> +	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
+> +			GFP_KERNEL);
+>  	if (!psci_states)
+>  		return -ENOMEM;
+>  
+> -	for (i = 0; i < count; i++) {
+> +	for (i = 0; i < num_state_nodes; i++) {
+>  		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
+> +		if (!state_node)
+> +			break;
+> +
+>  		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
+>  		of_node_put(state_node);
+>  
+> @@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+>  		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
+>  	}
+>  
+> +	if (i != num_state_nodes) {
+> +		ret = -ENODEV;
+> +		goto free_mem;
+> +	}
+> +
+>  	/* Idle states parsed correctly, initialize per-cpu pointer */
+>  	per_cpu(psci_power_state, cpu) = psci_states;
+>  	return 0;
+> 
 
-No, if that's the only thing, it's not important.
 
-Rob
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
