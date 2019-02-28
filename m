@@ -1,73 +1,135 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
-Date: Thu, 28 Feb 2019 14:59:17 +0100
-Message-ID: <20190228135919.3747-6-ulf.hansson@linaro.org>
+Subject: [PATCH 1/7] drivers: firmware: psci: Move psci to separate directory
+Date: Thu, 28 Feb 2019 14:59:13 +0100
+Message-ID: <20190228135919.3747-2-ulf.hansson@linaro.org>
 References: <20190228135919.3747-1-ulf.hansson@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20190228135919.3747-1-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Instead of iterating through all the state nodes in DT, to find out how
-many states that needs to be allocated, let's use the number already known
-by the cpuidle driver. In this way we can drop the iteration altogether.
+Some following changes extends the PSCI driver with some additional new
+files.  Let's avoid to continue cluttering the toplevel firmware directory
+and first move the PSCI files into a PSCI sub-directory.
 
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ drivers/firmware/Kconfig                   | 15 +--------------
+ drivers/firmware/Makefile                  |  3 +--
+ drivers/firmware/psci/Kconfig              | 13 +++++++++++++
+ drivers/firmware/psci/Makefile             |  4 ++++
+ drivers/firmware/{ => psci}/psci.c         |  0
+ drivers/firmware/{ => psci}/psci_checker.c |  0
+ 6 files changed, 19 insertions(+), 16 deletions(-)
+ create mode 100644 drivers/firmware/psci/Kconfig
+ create mode 100644 drivers/firmware/psci/Makefile
+ rename drivers/firmware/{ => psci}/psci.c (100%)
+ rename drivers/firmware/{ => psci}/psci_checker.c (100%)
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index d50b46a0528f..cbfc936d251c 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
- static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 			struct device_node *cpu_node, int cpu)
- {
--	int i, ret = 0, count = 0;
-+	int i, ret = 0, num_state_nodes = drv->state_count - 1;
- 	u32 *psci_states;
- 	struct device_node *state_node;
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index f754578414f0..e1385f47d4ac 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -5,20 +5,6 @@
  
--	/* Count idle states */
--	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--					      count))) {
--		count++;
--		of_node_put(state_node);
--	}
+ menu "Firmware Drivers"
+ 
+-config ARM_PSCI_FW
+-	bool
 -
--	if (!count)
--		return -ENODEV;
+-config ARM_PSCI_CHECKER
+-	bool "ARM PSCI checker"
+-	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
+-	help
+-	  Run the PSCI checker during startup. This checks that hotplug and
+-	  suspend operations work correctly when using PSCI.
 -
--	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-+	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
-+			GFP_KERNEL);
- 	if (!psci_states)
- 		return -ENOMEM;
+-	  The torture tests may interfere with the PSCI checker by turning CPUs
+-	  on and off through hotplug, so for now torture tests and PSCI checker
+-	  are mutually exclusive.
+-
+ config ARM_SCMI_PROTOCOL
+ 	bool "ARM System Control and Management Interface (SCMI) Message Protocol"
+ 	depends on ARM || ARM64 || COMPILE_TEST
+@@ -270,6 +256,7 @@ config TI_SCI_PROTOCOL
+ config HAVE_ARM_SMCCC
+ 	bool
  
--	for (i = 0; i < count; i++) {
-+	for (i = 0; i < num_state_nodes; i++) {
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		if (!state_node)
-+			break;
++source "drivers/firmware/psci/Kconfig"
+ source "drivers/firmware/broadcom/Kconfig"
+ source "drivers/firmware/google/Kconfig"
+ source "drivers/firmware/efi/Kconfig"
+diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+index 80feb635120f..9a3909a22682 100644
+--- a/drivers/firmware/Makefile
++++ b/drivers/firmware/Makefile
+@@ -2,8 +2,6 @@
+ #
+ # Makefile for the linux kernel.
+ #
+-obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
+-obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+ obj-$(CONFIG_ARM_SCPI_PROTOCOL)	+= arm_scpi.o
+ obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pm_domain.o
+ obj-$(CONFIG_ARM_SDE_INTERFACE)	+= arm_sdei.o
+@@ -25,6 +23,7 @@ CFLAGS_qcom_scm-32.o :=$(call as-instr,.arch armv7-a\n.arch_extension sec,-DREQU
+ obj-$(CONFIG_TI_SCI_PROTOCOL)	+= ti_sci.o
+ 
+ obj-$(CONFIG_ARM_SCMI_PROTOCOL)	+= arm_scmi/
++obj-y				+= psci/
+ obj-y				+= broadcom/
+ obj-y				+= meson/
+ obj-$(CONFIG_GOOGLE_FIRMWARE)	+= google/
+diff --git a/drivers/firmware/psci/Kconfig b/drivers/firmware/psci/Kconfig
+new file mode 100644
+index 000000000000..26a3b32bf7ab
+--- /dev/null
++++ b/drivers/firmware/psci/Kconfig
+@@ -0,0 +1,13 @@
++config ARM_PSCI_FW
++	bool
 +
- 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
- 		of_node_put(state_node);
- 
-@@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
- 	}
- 
-+	if (i != num_state_nodes) {
-+		ret = -ENODEV;
-+		goto free_mem;
-+	}
++config ARM_PSCI_CHECKER
++	bool "ARM PSCI checker"
++	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
++	help
++	  Run the PSCI checker during startup. This checks that hotplug and
++	  suspend operations work correctly when using PSCI.
 +
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
++	  The torture tests may interfere with the PSCI checker by turning CPUs
++	  on and off through hotplug, so for now torture tests and PSCI checker
++	  are mutually exclusive.
+diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+new file mode 100644
+index 000000000000..1956b882470f
+--- /dev/null
++++ b/drivers/firmware/psci/Makefile
+@@ -0,0 +1,4 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
++obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci/psci.c
+similarity index 100%
+rename from drivers/firmware/psci.c
+rename to drivers/firmware/psci/psci.c
+diff --git a/drivers/firmware/psci_checker.c b/drivers/firmware/psci/psci_checker.c
+similarity index 100%
+rename from drivers/firmware/psci_checker.c
+rename to drivers/firmware/psci/psci_checker.c
 -- 
 2.17.1
