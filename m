@@ -1,31 +1,169 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A SoC
-Date: Wed, 27 Feb 2019 16:01:28 -0800
-Message-ID: <155131208867.260864.6630901066653352400@swboyd.mtv.corp.google.com>
-References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: Re: broken probe deferred for power-domains
+Date: Thu, 28 Feb 2019 01:26:16 +0100
+Message-ID: <20190228002616.GB19221@centauri.lan>
+References: <20190227021841.GA26337@centauri.lan>
+ <CAL_JsqKY3UHOf7w0o+8t7qwhOb3h8_MKVQQw-_xXL12gzb=iOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqKY3UHOf7w0o+8t7qwhOb3h8_MKVQQw-_xXL12gzb=iOQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "arnd@arndb.de" <arnd@arndb.de>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, oss@buserror
-Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Alexander Graf <agraf@suse.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Vabhav Sharma (2019-02-26 02:10:46)
-> These patches were reviewed and acked but dropped during merge window.
-> Patchwork link was https://lore.kernel.org/patchwork/cover/1004155/
->=20
-> Changes for v1:
-> - Updated lx2160a clockgen in alphabetical order
->=20
-> Vabhav Sharma (2):
->   dt-bindings: arm64: add compatible for LX2160A
->   soc/fsl/guts: Add definition for LX2160A
->=20
-> Yogesh Gaur (2):
->   clk: qoriq: increase array size of cmux_to_group
->   clk: qoriq: Add clockgen support for lx2160a
+On Wed, Feb 27, 2019 at 05:32:14PM -0600, Rob Herring wrote:
+> On Tue, Feb 26, 2019 at 8:18 PM Niklas Cassel <niklas.cassel@linaro.org> wrote:
+> >
+> > Hello Rob,
+> >
+> > Your patch e01afc325025 ("PM / Domains: Stop deferring probe
+> > at the end of initcall") breaks deferred probe for power domains.
+> 
+> With all the dependencies built-in, right?
 
-Who do you want to apply these patches?
+Yep
+
+> 
+> What board in case I have one?
+
+You probably do :) Dragonboard 410c.
+
+It is reproducible very easily with branch: initcalls-for-robh
+from this git:
+https://git.linaro.org/people/niklas.cassel/kernel.git
+
+ARCH=arm64 make defconfig
+
+I recommend you to use trace_printk() when debugging drivers/base/dd.c,
+since I've seen that printk can affect the timing so much that the issue
+goes away :) (So don't forget to enable CONFIG_FTRACE).
+
+> 
+> > The patch looks like this:
+> >
+> > +++ b/drivers/base/power/domain.c
+> > @@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+> >                 mutex_unlock(&gpd_list_lock);
+> >                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+> >                         __func__, PTR_ERR(pd));
+> > -               return -EPROBE_DEFER;
+> > +               return driver_deferred_probe_check_state(dev);
+> >         }
+> >
+> >
+> > Having two drivers (both using module_platform_driver),
+> > one being a PD provider and one being a PD consumer.
+> >
+> > Before your patch:
+> > The PD consumer driver calls dev_pm_domain_attach(),
+> > and gets EPROBE_DEFER until the PD provider driver
+> > has been probed successfully.
+> >
+> > (The PD provider driver needs some regulators, so it
+> > is only successfully probed after the regulator driver
+> > has been probed successfully.)
+> >
+> > Anyway, dev_pm_domain_attach() returned success after
+> > the some deferred probes.
+> >
+> >
+> > After your patch:
+> > dev_pm_domain_attach() return ENODEV,
+> > which comes from driver_deferred_probe_check_state().
+> > Since it returns ENODEV rather than EPROBE_DEFER,
+> > the PD consumer driver fails to probe.
+> >
+> >
+> > The problem is related to your other patch 25b4e70dcce9
+> > ("driver core: allow stopping deferred probe after init").
+> >
+> > driver_deferred_probe_check_state() returns ENODEV if
+> > initcalls_done == true.
+> >
+> > initcalls_done is set from late_initcall(deferred_probe_initcall),
+> > in drivers/base/dd.c:
+> >        driver_deferred_probe_trigger();
+> >        flush_work(&deferred_probe_work);
+> >        initcalls_done = true;
+> >
+> > This does not seem very robust, since
+> >
+> > #1 It does not handle the case where two drivers have been
+> > deferred (put in the deferred probe pending list),
+> > where additionally one of the drivers has to be probed
+> > before the other.
+> >
+> > (We would need to call driver_deferred_probe_trigger() + flush_work()
+> > at least twice to handle this.)
+> >
+> > #2 Since this code is run from late_initcall(),
+> > initcalls_done might get set before other drivers using late_initcall()
+> > have even had a chance to run.
+> 
+> IMO, we should not have drivers using late_initcall. We need some
+> level just to do things at the end of boot. The same fragility exists
+> with the clock and regulator disabling.
+> 
+> > I can imagine that a driver using late_initcall() + EPROBE_DEFER
+> > will absolutely not work with this code.
+> >
+> >
+> > This patch fixes #1, but not #2.
+> > However, I assume that even this change would not work if we have 3
+> > drivers, where each driver a > b > c has to be probed, in that order.
+> > (and all of them were placed in the deferred probe pending list).
+> 
+> I thought a successful probe would trigger a retry too. I need to look
+> at it again.
+
+That is true, a successful probe does trigger a retry,
+driver_bound() has a call to driver_deferred_probe_trigger(),
+which calls schedule_work(&deferred_probe_work).
+
+I guess what is missing is a call to flush_work(&deferred_probe_work)
+after the work has been scheduled.
+
+But since the flush_work() waits, I guess the additional flush_work()
+has to be in deferred_probe_initcall(), and not in driver_bound().
+
+
+Kind regards,
+Niklas
+
+> 
+> Maybe it would be more robust to re-trigger probe until the pending
+> list doesn't change. Then we could handle any length of dependencies.
+> 
+> >
+> > Suggestions and patches are welcome.
+> >
+> >
+> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > index a823f469e53f..3443cb78be9b 100644
+> > --- a/drivers/base/dd.c
+> > +++ b/drivers/base/dd.c
+> > @@ -288,7 +288,6 @@ static int deferred_probe_initcall(void)
+> >         driver_deferred_probe_trigger();
+> >         /* Sort as many dependencies as possible before exiting initcalls */
+> >         flush_work(&deferred_probe_work);
+> > -       initcalls_done = true;
+> >
+> >         /*
+> >          * Trigger deferred probe again, this time we won't defer anything
+> > @@ -297,6 +296,8 @@ static int deferred_probe_initcall(void)
+> >         driver_deferred_probe_trigger();
+> >         flush_work(&deferred_probe_work);
+> >
+> > +       initcalls_done = true;
+> > +
+> >         if (deferred_probe_timeout > 0) {
+> >                 schedule_delayed_work(&deferred_probe_timeout_work,
+> >                         deferred_probe_timeout * HZ);
+> >
+> >
+> >
+> > Kind regards,
+> > Niklas
