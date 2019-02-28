@@ -1,56 +1,122 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v10 0/9] support ROHM BD70528 PMIC
-Date: Thu, 28 Feb 2019 11:40:26 +0000
-Message-ID: <20190228114026.GA6802@sirena.org.uk>
-References: <cover.1550148989.git.matti.vaittinen@fi.rohmeurope.com>
- <20190228070450.GB3773@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 00/24] thermal: tsens: Refactor to use regmap_field
+Date: Thu, 28 Feb 2019 17:50:50 +0530
+Message-ID: <cover.1551355503.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190228070450.GB3773@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, bogdan-petru.chircu-mare@nxp.com
+To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Changes since v1:
+- Anything not being throttled in the kernel converted to a hot trip point (no
+  cooling-maps)
+- Don't print version number of the IP at boot
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes pending from review of v1:
+- Using macros from bits.h as suggested by Eduardo. I'd like to defer this
+  change to a separate series where I can convert over all the files (v0.1,
+  v1, v2) together. This series is getting quite long as it is.
 
-On Thu, Feb 28, 2019 at 09:04:50AM +0200, Matti Vaittinen wrote:
-> On Thu, Feb 14, 2019 at 03:02:37PM +0200, Matti Vaittinen wrote:
+Short term bandaid fixes to add support for more versions of the TSENS IP
+is not proving to be very scalable. Here is a series to finally convert the
+driver's core to use regmap_fields so that register addresses and bitfields
+can be abstracted away from the code.
 
->> Patch series introducing support for ROHM BD70528 PMIC
->=20
-> I was wondering if there is anything that could be done to allow the MFD
-> part of this series to end up in upstream without having to wait the
-> regmap-irq changes
-> (https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regmap.git/commi=
-t/?h=3Dtopic/irq)
->  to be merged from Linus' tree to MFD tree? If I see it correctly, the
-> regmap-irq (main-irq-reg support) changes are not targeted to linux 5.1.
-> To me it looks like getting them to MFD via Linus' tree will take a while.
+This series is posted as one to give a complete view of where I'm going
+with this refactor. We can probably split it into smaller sets if required.
+Currently it consists of the following parts:
 
-They're targeted for v5.1 and I sent a pull request to Lee for that
-branch IIRC.
+- Patch 01-06: Style changes to make code easier to read (mostly naming
+  related). This has no functional change in the driver, it is a series of
+  search and replace operations. Ideally this will get merged first,
+  otherwise everything else will become painful :-)
 
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature; name="signature.asc"
+- Patch 07-09: Merge the 8916 and 8974 source files into a single one
+  called v0_1.c denoting the version of the IP and open up more
+  opportunities for reuse.
 
------BEGIN PGP SIGNATURE-----
+- Patch 10: This is the core patch that adds IP-specific data based on two
+  data structures: tsens_features has bit flags to identify if a certain
+  feature is available in a version or not and an array of reg_field
+  pointers.
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlx3yKcACgkQJNaLcl1U
-h9D7LQgAgBAtFp4ti3bwtZh4iVfn9N4nYX2Sy8YynfGs/Nfwxm+m+KAl+IiOOo6C
-S1kWALtElOcido6myPacabi0EAyre1Q+Ne7tqUITOb4HQL0dGDpi/a1llthziX7d
-ZG6Slh0JGjOlPVZ8dMyxqXzySEjtwbKUMY4FqMd9LpkQ64FCmo5WdI9R6dnu0BZn
-DJjdUbHmqAbgNoxJ9M/U6mqDTXEviO2eqPhUCAnISc6GvabHA7UdRUxIzi770HjM
-Zi+AFlBE8mWAGvzn3C5u0h+4dnZxCMxMpSpyGokXkL25v5MzHB7lXOpi7a37Zpvo
-VBkTW0n5LezH7ejhsiqf90PtqfUptQ==
-=/nOu
------END PGP SIGNATURE-----
+  regfield_ids list the important fields across IP versions and are used as
+  an index.
 
---ibTvN161/egqYuK8--
+  This patch converts over all platforms except 8960 which currently
+  doesn't use DT data for tsens and has custom functions for everything. We
+  will get to it eventually, but it's conversion is not necessary for this
+  series to be merged.
+
+- Patch 11-16: Clean ups and new functionality based on regmap_field
+
+- Patch 17-19: Refactor the get_temp routine. We expect to have a single
+  get_temp routine once all the conversion is finished.
+
+- Patch 20-23: Introduce qcs404 support using new regmap infrastructure.
+
+Testing
+-------
+
+Since these changes affect every platform using TSENS, it should be
+clarified that I have only been focussing on developing/testing this on
+sdm845, msm8916, qcs404.
+
+Future work
+-----------
+
+a. Get rid of get_temp_common in favour of get_temp_tsens_valid
+b. irq support
+c. Convert over 8960 to use regmap_field and as a result common functions
+
+Amit Kucheria (24):
+  drivers: thermal: tsens: Document the data structures
+  drivers: thermal: tsens: Rename tsens_data
+  drivers: thermal: tsens: Rename tsens_device
+  drivers: thermal: tsens: Rename variable tmdev
+  drivers: thermal: tsens: Use consistent names for variables
+  drivers: thermal: tsens: Function prototypes should have argument
+    names
+  drivers: thermal: tsens: Rename tsens-8916 to prepare to merge with
+    tsens-8974
+  drivers: thermal: tsens: Rename constants to prepare to merge with
+    tsens-8974
+  drivers: thermal: tsens: Merge tsens-8974 into tsens-v0_1
+  drivers: thermal: tsens: Introduce reg_fields to deal with register
+    description
+  drivers: thermal: tsens: Save reference to the device pointer and use
+    it
+  drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
+  drivers: thermal: tsens: Track IP version
+  drivers: thermal: tsens: Add new operation to check if a sensor is
+    enabled
+  drivers: thermal: tsens: change data type for sensor IDs
+  drivers: thermal: tsens: Introduce IP-specific max_sensor count
+  drivers: thermal: tsens: simplify get_temp_tsens_v2 routine
+  drivers: thermal: tsens: Move get_temp_tsens_v2 to allow sharing
+  drivers: thermal: tsens: Common get_temp() learns to do ADC conversion
+  dt: thermal: tsens: Add bindings for qcs404
+  drivers: thermal: tsens: Add generic support for TSENS v1 IP
+  arm64: dts: qcom: qcs404: Add tsens controller
+  arm64: dts: qcom: qcs404: Add thermal zones for each sensor
+  drivers: thermal: tsens: Move calibration constants to header file
+
+ .../bindings/thermal/qcom-tsens.txt           |  14 +
+ arch/arm64/boot/dts/qcom/qcs404.dtsi          | 272 ++++++++++++++
+ drivers/thermal/qcom/Makefile                 |   4 +-
+ drivers/thermal/qcom/tsens-8916.c             | 105 ------
+ drivers/thermal/qcom/tsens-8960.c             |  84 ++---
+ drivers/thermal/qcom/tsens-common.c           | 165 ++++++---
+ .../qcom/{tsens-8974.c => tsens-v0_1.c}       | 158 +++++++-
+ drivers/thermal/qcom/tsens-v1.c               | 194 ++++++++++
+ drivers/thermal/qcom/tsens-v2.c               | 124 ++++---
+ drivers/thermal/qcom/tsens.c                  | 100 ++---
+ drivers/thermal/qcom/tsens.h                  | 346 ++++++++++++++++--
+ 11 files changed, 1232 insertions(+), 334 deletions(-)
+ delete mode 100644 drivers/thermal/qcom/tsens-8916.c
+ rename drivers/thermal/qcom/{tsens-8974.c => tsens-v0_1.c} (58%)
+ create mode 100644 drivers/thermal/qcom/tsens-v1.c
+
+-- 
+2.17.1
