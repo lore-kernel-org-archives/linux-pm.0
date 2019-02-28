@@ -1,116 +1,129 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/7] drivers: firmware: psci: Split
- psci_dt_cpu_init_idle()
-Date: Thu, 28 Feb 2019 15:42:53 +0100
-Message-ID: <02a96f2c-dde1-73be-683d-b51d8c6b1b03@linaro.org>
-References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-4-ulf.hansson@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Thu, 28 Feb 2019 08:49:10 -0600
+Message-ID: <CAL_JsqJct4BztHEak+=iNK3G7dwYR-pQPeUqb4kBnEdRQMLr6A@mail.gmail.com>
+References: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
+ <20190227235455.GA15211@bogus> <DB3PR0402MB391673518C43A0ABE9BDB55FF5750@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190228135919.3747-4-ulf.hansson@linaro.org>
-Content-Language: en-US
+In-Reply-To: <DB3PR0402MB391673518C43A0ABE9BDB55FF5750@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sn>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/02/2019 14:59, Ulf Hansson wrote:
-> Let's split the psci_dt_cpu_init_idle() function into two functions. This
-> makes the code clearer and provides better re-usability.
-> 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Wed, Feb 27, 2019 at 6:48 PM Anson Huang <anson.huang@nxp.com> wrote:
+>
+> Hi, Rob
+>
+> Best Regards!
+> Anson Huang
+>
+> > -----Original Message-----
+> > From: Rob Herring [mailto:robh@kernel.org]
+> > Sent: 2019=E5=B9=B42=E6=9C=8828=E6=97=A5 7:55
+> > To: Anson Huang <anson.huang@nxp.com>
+> > Cc: mark.rutland@arm.com; shawnguo@kernel.org;
+> > s.hauer@pengutronix.de; kernel@pengutronix.de; festevam@gmail.com;
+> > catalin.marinas@arm.com; will.deacon@arm.com; rui.zhang@intel.com;
+> > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng Dong
+> > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org; sboyd@kernel.org;
+> > Daniel Baluta <daniel.baluta@nxp.com>; Andy Gross
+> > <andy.gross@linaro.org>; horms+renesas@verge.net.au; heiko@sntech.de;
+> > arnd@arndb.de; maxime.ripard@bootlin.com; bjorn.andersson@linaro.org;
+> > jagan@amarulasolutions.com; enric.balletbo@collabora.com;
+> > marc.w.gonzalez@free.fr; olof@lixom.net; devicetree@vger.kernel.org;
+> > linux-kernel@vger.kernel.org; linux-arm-kernel@lists.infradead.org; lin=
+ux-
+> > pm@vger.kernel.org; dl-linux-imx <linux-imx@nxp.com>
+> > Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
+> >
+> > On Wed, Feb 27, 2019 at 08:46:21AM +0000, Anson Huang wrote:
+> > > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as system
+> > > controller, the system controller is in charge of system power, clock
+> > > and thermal sensors etc. management, Linux kernel has to communicate
+> > > with system controller via MU (message unit) IPC to get temperature
+> > > from thermal sensors, this patch adds binding doc for i.MX system
+> > > controller thermal driver.
+> > >
+> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > > ---
+> > > Changes since V9:
+> > >     - change #thermal-sensor-cells value in example to 1, since there=
+ are
+> > other
+> > >       thermal sensors inside system controller, it is just because th=
+ere are
+> > still
+> > >       some issue, so system controller does NOT expose them for now,
+> > they could
+> > >       be exposed later, so it should be 1 from HW perspective.
+> > > ---
+> > >  .../devicetree/bindings/arm/freescale/fsl,scu.txt   | 21
+> > +++++++++++++++++++++
+> > >  1 file changed, 21 insertions(+)
+> > >
+> > > diff --git
+> > > a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > index 72d481c..855270b 100644
+> > > --- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > +++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+> > > @@ -122,6 +122,21 @@ RTC bindings based on SCU Message Protocol
+> > > Required properties:
+> > >  - compatible: should be "fsl,imx8qxp-sc-rtc";
+> > >
+> > > +Thermal bindings based on SCU Message Protocol
+> > > +------------------------------------------------------------
+> > > +
+> > > +Required properties:
+> > > +- compatible:                      Should be :
+> > > +                             "fsl,imx8qxp-sc-thermal"
+> > > +                           followed by "fsl,imx-sc-thermal";
+> > > +
+> > > +- #thermal-sensor-cells:   See
+> > Documentation/devicetree/bindings/thermal/thermal.txt
+> > > +                           for a description.
+> > > +
+> > > +- imx,sensor-resource-id:  A single integer for single thermal zone'=
+s
+> > resource ID or
+> > > +                           an array of integers to specify each ther=
+mal
+> > zone's sensor
+> > > +                           resource ID.
+> >
+> > Can't you put the resource ids in the thermal-sensor cells? Why do you =
+need
+> > to list them here?
+>
+> For the thermal-sensor cells, if you meant the argument of tsens phandle,=
+ then
+> the reason is that argument is for sensor index starting from 0, previous=
+ I use
+> it for our resource ID, but it looks confused, since user will think ther=
+e are many
+> sensors there per Eduardo's comment.
+>
+> +                       thermal-sensors =3D <&tsens 0>;
+>
+> If you meant putting it in each thermal sensor node instead of "tsens" no=
+de, then
+> in previous patch series, I put this " imx,sensor-resource-id " property =
+in each thermal
+> sensor node, but the thermal sensor nodes are parsed by common thermal fr=
+amework,
+> thermal driver will need to find the thermal zone node and go through eve=
+ry child node
+> to get the resource id again, so Eduardo suggested to put it in our platf=
+orm tsens node, that makes
+> our thermal driver code much more simple.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+The phandle args are meant to be an id typically. There's absolutely
+no requirement they are 0-N based. They often are because things like
+interrupts are 0-N or clocks have no h/w id. If you already have an
+id, use it. Don't invent your own.
 
-but one question below.
-
-
-> ---
->  drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
->  1 file changed, 23 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index c80ec1d03274..9788bfc1cf8b 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -270,9 +270,26 @@ static int __init psci_features(u32 psci_func_id)
->  #ifdef CONFIG_CPU_IDLE
->  static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
->  
-> +static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
-> +{
-> +	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
-> +
-> +	if (err) {
-> +		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
-> +		return err;
-> +	}
-> +
-> +	if (!psci_power_state_is_valid(*state)) {
-> +		pr_warn("Invalid PSCI power state %#x\n", *state);
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
->  {
-> -	int i, ret, count = 0;
-> +	int i, ret = 0, count = 0;
-
-Why do you need to intialize the ret variable? If the count is zero we
-go directly to return 0, otherwise we enter in the loop and ret is
-affected with the new function call.
-
->  	u32 *psci_states;
->  	struct device_node *state_node;
->  
-> @@ -291,29 +308,16 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
->  		return -ENOMEM;
->  
->  	for (i = 0; i < count; i++) {
-> -		u32 state;
-> -
->  		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
-> +		of_node_put(state_node);
->  
-> -		ret = of_property_read_u32(state_node,
-> -					   "arm,psci-suspend-param",
-> -					   &state);
-> -		if (ret) {
-> -			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
-> -				state_node);
-> -			of_node_put(state_node);
-> +		if (ret)
->  			goto free_mem;
-> -		}
->  
-> -		of_node_put(state_node);
-> -		pr_debug("psci-power-state %#x index %d\n", state, i);
-> -		if (!psci_power_state_is_valid(state)) {
-> -			pr_warn("Invalid PSCI power state %#x\n", state);
-> -			ret = -EINVAL;
-> -			goto free_mem;
-> -		}
-> -		psci_states[i] = state;
-> +		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
->  	}
-> +
->  	/* Idle states parsed correctly, initialize per-cpu pointer */
->  	per_cpu(psci_power_state, cpu) = psci_states;
->  	return 0;
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Rob
