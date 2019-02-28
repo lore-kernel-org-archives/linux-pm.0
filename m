@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/7] drivers: firmware: psci: Split psci_dt_cpu_init_idle()
-Date: Thu, 28 Feb 2019 14:59:15 +0100
-Message-ID: <20190228135919.3747-4-ulf.hansson@linaro.org>
+Subject: [PATCH 6/7] drivers: firmware: psci: Simplify error path of psci_dt_init()
+Date: Thu, 28 Feb 2019 14:59:18 +0100
+Message-ID: <20190228135919.3747-7-ulf.hansson@linaro.org>
 References: <20190228135919.3747-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190228135919.3747-1-ulf.hansson@linaro.org>
@@ -10,82 +10,89 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Let's split the psci_dt_cpu_init_idle() function into two functions. This
-makes the code clearer and provides better re-usability.
+Instead of having each psci init function taking care of the of_node_put(),
+let's deal with that from psci_dt_init(), as this enables a bit simpler
+error path for each psci init function.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
- 1 file changed, 23 insertions(+), 19 deletions(-)
+ drivers/firmware/psci/psci.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index c80ec1d03274..9788bfc1cf8b 100644
+index cbfc936d251c..14d25b54b9f2 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -270,9 +270,26 @@ static int __init psci_features(u32 psci_func_id)
- #ifdef CONFIG_CPU_IDLE
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
+@@ -609,9 +609,9 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	int err;
  
-+static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
-+{
-+	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
-+
-+	if (err) {
-+		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
-+		return err;
-+	}
-+
-+	if (!psci_power_state_is_valid(*state)) {
-+		pr_warn("Invalid PSCI power state %#x\n", *state);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- {
--	int i, ret, count = 0;
-+	int i, ret = 0, count = 0;
- 	u32 *psci_states;
- 	struct device_node *state_node;
- 
-@@ -291,29 +308,16 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- 		return -ENOMEM;
- 
- 	for (i = 0; i < count; i++) {
--		u32 state;
+ 	err = get_set_conduit_method(np);
 -
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
-+		of_node_put(state_node);
- 
--		ret = of_property_read_u32(state_node,
--					   "arm,psci-suspend-param",
--					   &state);
--		if (ret) {
--			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
--				state_node);
--			of_node_put(state_node);
-+		if (ret)
- 			goto free_mem;
--		}
- 
--		of_node_put(state_node);
--		pr_debug("psci-power-state %#x index %d\n", state, i);
--		if (!psci_power_state_is_valid(state)) {
--			pr_warn("Invalid PSCI power state %#x\n", state);
--			ret = -EINVAL;
--			goto free_mem;
--		}
--		psci_states[i] = state;
-+		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
- 	}
+ 	if (err)
+-		goto out_put_node;
++		return err;
 +
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
+ 	/*
+ 	 * Starting with v0.2, the PSCI specification introduced a call
+ 	 * (PSCI_VERSION) that allows probing the firmware version, so
+@@ -619,11 +619,7 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	 * can be carried out according to the specific version reported
+ 	 * by firmware
+ 	 */
+-	err = psci_probe();
+-
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return psci_probe();
+ }
+ 
+ /*
+@@ -635,9 +631,8 @@ static int __init psci_0_1_init(struct device_node *np)
+ 	int err;
+ 
+ 	err = get_set_conduit_method(np);
+-
+ 	if (err)
+-		goto out_put_node;
++		return err;
+ 
+ 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
+ 
+@@ -661,9 +656,7 @@ static int __init psci_0_1_init(struct device_node *np)
+ 		psci_ops.migrate = psci_migrate;
+ 	}
+ 
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return 0;
+ }
+ 
+ static const struct of_device_id psci_of_match[] __initconst = {
+@@ -678,6 +671,7 @@ int __init psci_dt_init(void)
+ 	struct device_node *np;
+ 	const struct of_device_id *matched_np;
+ 	psci_initcall_t init_fn;
++	int ret;
+ 
+ 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
+ 
+@@ -685,7 +679,10 @@ int __init psci_dt_init(void)
+ 		return -ENODEV;
+ 
+ 	init_fn = (psci_initcall_t)matched_np->data;
+-	return init_fn(np);
++	ret = init_fn(np);
++
++	of_node_put(np);
++	return ret;
+ }
+ 
+ #ifdef CONFIG_ACPI
 -- 
 2.17.1
