@@ -1,89 +1,31 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI: PCIe: PME: Fix pcie_pme_remove()
-Date: Thu, 28 Feb 2019 00:56:41 +0100
-Message-ID: <1943648.NMEmlssb0J@aspire.rjw.lan>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A SoC
+Date: Wed, 27 Feb 2019 16:01:28 -0800
+Message-ID: <155131208867.260864.6630901066653352400@swboyd.mtv.corp.google.com>
+References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Dongdong Liu <liudongdong3@huawei.com>, Lukas Wunner <lukas@wunner.de>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "arnd@arndb.de" <arnd@arndb.de>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, oss@buserror
+Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Quoting Vabhav Sharma (2019-02-26 02:10:46)
+> These patches were reviewed and acked but dropped during merge window.
+> Patchwork link was https://lore.kernel.org/patchwork/cover/1004155/
+>=20
+> Changes for v1:
+> - Updated lx2160a clockgen in alphabetical order
+>=20
+> Vabhav Sharma (2):
+>   dt-bindings: arm64: add compatible for LX2160A
+>   soc/fsl/guts: Add definition for LX2160A
+>=20
+> Yogesh Gaur (2):
+>   clk: qoriq: increase array size of cmux_to_group
+>   clk: qoriq: Add clockgen support for lx2160a
 
-It is incorrect to call pcie_pme_suspend() from pcie_pme_remove() for
-two reasons.
-
-First, pcie_pme_suspend() calls synchronize_irq() that will wait for
-the native hotplug interrupt handler as well as for the PME one,
-because they share one IRQ (as per the spec).  That may deadlock if
-hotplug is signaled while pcie_pme_remove() is running and the latter
-calls pci_lock_rescan_remove() before the former.
-
-Second, if pcie_pme_suspend() figures out that wakeup needs to be
-enabled for the port, it will return without disabling the interrupt
-as expected by pcie_pme_remove() which was overlooked by commit
-c7b5a4e6e8fb ("PCI / PM: Fix native PME handling during system
-suspend/resume").
-
-To fix that, rework pcie_pme_remove() to disable the PME interrupt,
-clear its status and prevent the PME worker function from re-enabling it
-before calling free_irq() on it which should be sufficient.
-
-Fixes: c7b5a4e6e8fb ("PCI / PM: Fix native PME handling during system suspend/resume")
-Reported-by: Dongdong Liu <liudongdong3@huawei.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pci/pcie/pme.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/pci/pcie/pme.c
-===================================================================
---- linux-pm.orig/drivers/pci/pcie/pme.c
-+++ linux-pm/drivers/pci/pcie/pme.c
-@@ -363,6 +363,16 @@ static bool pcie_pme_check_wakeup(struct
- 	return false;
- }
- 
-+static void pcie_pme_disable_interrupt(struct pci_dev *port,
-+				       struct pcie_pme_service_data *data)
-+{
-+	spin_lock_irq(&data->lock);
-+	pcie_pme_interrupt_enable(port, false);
-+	pcie_clear_root_pme_status(port);
-+	data->noirq = true;
-+	spin_unlock_irq(&data->lock);
-+}
-+
- /**
-  * pcie_pme_suspend - Suspend PCIe PME service device.
-  * @srv: PCIe service device to suspend.
-@@ -387,11 +397,7 @@ static int pcie_pme_suspend(struct pcie_
- 			return 0;
- 	}
- 
--	spin_lock_irq(&data->lock);
--	pcie_pme_interrupt_enable(port, false);
--	pcie_clear_root_pme_status(port);
--	data->noirq = true;
--	spin_unlock_irq(&data->lock);
-+	pcie_pme_disable_interrupt(port, data);
- 
- 	synchronize_irq(srv->irq);
- 
-@@ -427,9 +433,11 @@ static int pcie_pme_resume(struct pcie_d
-  */
- static void pcie_pme_remove(struct pcie_device *srv)
- {
--	pcie_pme_suspend(srv);
-+	struct pcie_pme_service_data *data = get_service_data(srv);
-+
-+	pcie_pme_disable_interrupt(srv->port, data);
- 	free_irq(srv->irq, srv);
--	kfree(get_service_data(srv));
-+	kfree(data);
- }
- 
- static int pcie_pme_runtime_suspend(struct pcie_device *srv)
+Who do you want to apply these patches?
