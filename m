@@ -1,89 +1,85 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Thu, 28 Feb 2019 00:47:56 +0000
-Message-ID: <DB3PR0402MB391673518C43A0ABE9BDB55FF5750@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
- <20190227235455.GA15211@bogus>
+From: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH 0/4] mwifiex PCI/wake-up interrupt fixes
+Date: Wed, 27 Feb 2019 18:29:21 -0800
+Message-ID: <CA+ASDXNT9Taqfoz7R1Z926Vi1fMNNLYg5vqcZTw2m6JvXk+75w@mail.gmail.com>
+References: <20190224140426.3267-1-marc.zyngier@arm.com>
+ <20190226232822.GA174696@google.com>
+ <d67512fe-42b4-513f-d27a-fed85c19e9c2@arm.com>
+ <CAKv+Gu_fZK7dUqrrVPCejAZNWyUeMUX2ojQ=vQ3hiMkGF6e6tw@mail.gmail.com>
+ <20190227205754.GF174696@google.com>
+ <CAJZ5v0gZFDdtbKQ6y52x+X8yoiPhP6BhGYZO=R_varx2nwuv5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190227235455.GA15211@bogus>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, Daniel Baluta <daniel.baluta@nxp.com>, Andy Gross <andy.gross@linaro.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sn>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <CAJZ5v0gZFDdtbKQ6y52x+X8yoiPhP6BhGYZO=R_varx2nwuv5g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Amitkumar Karwar <amitkarwar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Devicetree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Nishant Sarmukadam <nishants-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ganapathi Bhat <gbhat-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Ard Biesheuvel <ard.biesheuvel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Xinming Hu <huxinming820-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "<netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>" <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "<linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>" <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux
 List-Id: linux-pm@vger.kernel.org
 
-SGksIFJvYg0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+IEZyb206IFJvYiBIZXJyaW5nIFttYWlsdG86cm9iaEBrZXJuZWwub3Jn
-XQ0KPiBTZW50OiAyMDE5xOoy1MIyOMjVIDc6NTUNCj4gVG86IEFuc29uIEh1YW5nIDxhbnNvbi5o
-dWFuZ0BueHAuY29tPg0KPiBDYzogbWFyay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5l
-bC5vcmc7DQo+IHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU7IGtlcm5lbEBwZW5ndXRyb25peC5kZTsg
-ZmVzdGV2YW1AZ21haWwuY29tOw0KPiBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFj
-b25AYXJtLmNvbTsgcnVpLnpoYW5nQGludGVsLmNvbTsNCj4gZWR1YmV6dmFsQGdtYWlsLmNvbTsg
-ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgQWlzaGVuZyBEb25nDQo+IDxhaXNoZW5nLmRvbmdA
-bnhwLmNvbT47IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IHNib3lkQGtlcm5lbC5vcmc7DQo+IERh
-bmllbCBCYWx1dGEgPGRhbmllbC5iYWx1dGFAbnhwLmNvbT47IEFuZHkgR3Jvc3MNCj4gPGFuZHku
-Z3Jvc3NAbGluYXJvLm9yZz47IGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1OyBoZWlrb0BzbnRl
-Y2guZGU7DQo+IGFybmRAYXJuZGIuZGU7IG1heGltZS5yaXBhcmRAYm9vdGxpbi5jb207IGJqb3Ju
-LmFuZGVyc3NvbkBsaW5hcm8ub3JnOw0KPiBqYWdhbkBhbWFydWxhc29sdXRpb25zLmNvbTsgZW5y
-aWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsNCj4gbWFyYy53LmdvbnphbGV6QGZyZWUuZnI7IG9s
-b2ZAbGl4b20ubmV0OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBs
-aW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAu
-Y29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFYxMCAxLzRdIGR0LWJpbmRpbmdzOiBmc2w6IHNj
-dTogYWRkIHRoZXJtYWwgYmluZGluZw0KPiANCj4gT24gV2VkLCBGZWIgMjcsIDIwMTkgYXQgMDg6
-NDY6MjFBTSArMDAwMCwgQW5zb24gSHVhbmcgd3JvdGU6DQo+ID4gTlhQIGkuTVg4UVhQIGlzIGFu
-IEFSTXY4IFNvQyB3aXRoIGEgQ29ydGV4LU00IGNvcmUgaW5zaWRlIGFzIHN5c3RlbQ0KPiA+IGNv
-bnRyb2xsZXIsIHRoZSBzeXN0ZW0gY29udHJvbGxlciBpcyBpbiBjaGFyZ2Ugb2Ygc3lzdGVtIHBv
-d2VyLCBjbG9jaw0KPiA+IGFuZCB0aGVybWFsIHNlbnNvcnMgZXRjLiBtYW5hZ2VtZW50LCBMaW51
-eCBrZXJuZWwgaGFzIHRvIGNvbW11bmljYXRlDQo+ID4gd2l0aCBzeXN0ZW0gY29udHJvbGxlciB2
-aWEgTVUgKG1lc3NhZ2UgdW5pdCkgSVBDIHRvIGdldCB0ZW1wZXJhdHVyZQ0KPiA+IGZyb20gdGhl
-cm1hbCBzZW5zb3JzLCB0aGlzIHBhdGNoIGFkZHMgYmluZGluZyBkb2MgZm9yIGkuTVggc3lzdGVt
-DQo+ID4gY29udHJvbGxlciB0aGVybWFsIGRyaXZlci4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IEFuc29uIEh1YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMg
-c2luY2UgVjk6DQo+ID4gCS0gY2hhbmdlICN0aGVybWFsLXNlbnNvci1jZWxscyB2YWx1ZSBpbiBl
-eGFtcGxlIHRvIDEsIHNpbmNlIHRoZXJlIGFyZQ0KPiBvdGhlcg0KPiA+IAkgIHRoZXJtYWwgc2Vu
-c29ycyBpbnNpZGUgc3lzdGVtIGNvbnRyb2xsZXIsIGl0IGlzIGp1c3QgYmVjYXVzZSB0aGVyZSBh
-cmUNCj4gc3RpbGwNCj4gPiAJICBzb21lIGlzc3VlLCBzbyBzeXN0ZW0gY29udHJvbGxlciBkb2Vz
-IE5PVCBleHBvc2UgdGhlbSBmb3Igbm93LA0KPiB0aGV5IGNvdWxkDQo+ID4gCSAgYmUgZXhwb3Nl
-ZCBsYXRlciwgc28gaXQgc2hvdWxkIGJlIDEgZnJvbSBIVyBwZXJzcGVjdGl2ZS4NCj4gPiAtLS0N
-Cj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4dCAg
-IHwgMjENCj4gKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyMSBp
-bnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0DQo+ID4gYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4dA0KPiA+IGIvRG9jdW1l
-bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUvZnNsLHNjdS50eHQNCj4g
-PiBpbmRleCA3MmQ0ODFjLi44NTUyNzBiIDEwMDY0NA0KPiA+IC0tLSBhL0RvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0DQo+ID4gKysrIGIv
-RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUvZnNsLHNjdS50
-eHQNCj4gPiBAQCAtMTIyLDYgKzEyMiwyMSBAQCBSVEMgYmluZGluZ3MgYmFzZWQgb24gU0NVIE1l
-c3NhZ2UgUHJvdG9jb2wNCj4gPiBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ICAtIGNvbXBhdGli
-bGU6IHNob3VsZCBiZSAiZnNsLGlteDhxeHAtc2MtcnRjIjsNCj4gPg0KPiA+ICtUaGVybWFsIGJp
-bmRpbmdzIGJhc2VkIG9uIFNDVSBNZXNzYWdlIFByb3RvY29sDQo+ID4gKy0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiA+ICsNCj4g
-PiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiArLSBjb21wYXRpYmxlOgkJCVNob3VsZCBiZSA6
-DQo+ID4gKwkJCQkgICJmc2wsaW14OHF4cC1zYy10aGVybWFsIg0KPiA+ICsJCQkJZm9sbG93ZWQg
-YnkgImZzbCxpbXgtc2MtdGhlcm1hbCI7DQo+ID4gKw0KPiA+ICstICN0aGVybWFsLXNlbnNvci1j
-ZWxsczoJU2VlDQo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3Ro
-ZXJtYWwudHh0DQo+ID4gKwkJCQlmb3IgYSBkZXNjcmlwdGlvbi4NCj4gPiArDQo+ID4gKy0gaW14
-LHNlbnNvci1yZXNvdXJjZS1pZDogCUEgc2luZ2xlIGludGVnZXIgZm9yIHNpbmdsZSB0aGVybWFs
-IHpvbmUncw0KPiByZXNvdXJjZSBJRCBvcg0KPiA+ICsJCQkJYW4gYXJyYXkgb2YgaW50ZWdlcnMg
-dG8gc3BlY2lmeSBlYWNoIHRoZXJtYWwNCj4gem9uZSdzIHNlbnNvcg0KPiA+ICsJCQkJcmVzb3Vy
-Y2UgSUQuDQo+IA0KPiBDYW4ndCB5b3UgcHV0IHRoZSByZXNvdXJjZSBpZHMgaW4gdGhlIHRoZXJt
-YWwtc2Vuc29yIGNlbGxzPyBXaHkgZG8geW91IG5lZWQNCj4gdG8gbGlzdCB0aGVtIGhlcmU/DQoN
-CkZvciB0aGUgdGhlcm1hbC1zZW5zb3IgY2VsbHMsIGlmIHlvdSBtZWFudCB0aGUgYXJndW1lbnQg
-b2YgdHNlbnMgcGhhbmRsZSwgdGhlbg0KdGhlIHJlYXNvbiBpcyB0aGF0IGFyZ3VtZW50IGlzIGZv
-ciBzZW5zb3IgaW5kZXggc3RhcnRpbmcgZnJvbSAwLCBwcmV2aW91cyBJIHVzZQ0KaXQgZm9yIG91
-ciByZXNvdXJjZSBJRCwgYnV0IGl0IGxvb2tzIGNvbmZ1c2VkLCBzaW5jZSB1c2VyIHdpbGwgdGhp
-bmsgdGhlcmUgYXJlIG1hbnkNCnNlbnNvcnMgdGhlcmUgcGVyIEVkdWFyZG8ncyBjb21tZW50Lg0K
-DQorCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0c2VucyAwPjsNCg0KSWYgeW91IG1lYW50IHB1dHRp
-bmcgaXQgaW4gZWFjaCB0aGVybWFsIHNlbnNvciBub2RlIGluc3RlYWQgb2YgInRzZW5zIiBub2Rl
-LCB0aGVuDQppbiBwcmV2aW91cyBwYXRjaCBzZXJpZXMsIEkgcHV0IHRoaXMgIiBpbXgsc2Vuc29y
-LXJlc291cmNlLWlkICIgcHJvcGVydHkgaW4gZWFjaCB0aGVybWFsDQpzZW5zb3Igbm9kZSwgYnV0
-IHRoZSB0aGVybWFsIHNlbnNvciBub2RlcyBhcmUgcGFyc2VkIGJ5IGNvbW1vbiB0aGVybWFsIGZy
-YW1ld29yaywNCnRoZXJtYWwgZHJpdmVyIHdpbGwgbmVlZCB0byBmaW5kIHRoZSB0aGVybWFsIHpv
-bmUgbm9kZSBhbmQgZ28gdGhyb3VnaCBldmVyeSBjaGlsZCBub2RlDQp0byBnZXQgdGhlIHJlc291
-cmNlIGlkIGFnYWluLCBzbyBFZHVhcmRvIHN1Z2dlc3RlZCB0byBwdXQgaXQgaW4gb3VyIHBsYXRm
-b3JtIHRzZW5zIG5vZGUsIHRoYXQgbWFrZXMNCm91ciB0aGVybWFsIGRyaXZlciBjb2RlIG11Y2gg
-bW9yZSBzaW1wbGUuDQoNClRoYW5rcywNCkFuc29uLg0KDQo+IA0KPiBSb2INCg==
+Hi Rafael,
+
+On Wed, Feb 27, 2019 at 3:04 PM Rafael J. Wysocki <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Wed, Feb 27, 2019 at 9:58 PM Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+> > On Wed, Feb 27, 2019 at 11:16:12AM +0100, Ard Biesheuvel wrote:
+> > > So I'd argue that we should add an optional 'wake-gpio' DT property
+> > > instead to the generic PCI device binding, and leave the interrupt
+> > > binding and discovery alone.
+> >
+> > So I think Mark Rutland already shot that one down; it's conceptually an
+> > interrupt from the device's perspective.
+
+Perhaps I shouldn't speak for Mark, but I am basically quoting him off IRC.
+
+> Which device are you talking about?  The one that signals wakeup?  If
+> so, then I beg to differ.
+
+Yes, the endpoint device.
+
+> On ACPI platforms WAKE# is represented as an ACPI GPE that is signaled
+> through SCI and handled at a different level (on HW-reduced ACPI it
+> actually can be a GPIO interrupt, but it still is handled with the
+> help of AML).  The driver of the device signaling wakeup need not even
+> be aware that WAKE# has been asserted.
+
+Frankly, ACPI is not relevant to how we represent WAKE# in DT, IMO.
+Also, we're talking about the *device*, not the driver. When talking
+about Device Tree, that distinction is relevant.
+
+So while the driver need not be aware (and I agree! it only needs to
+care about enabling/disabling wake), *something* should be aware, and
+the signal that "something" should be receiving is simply "did WAKE
+happen"? That sounds basically like the device is signalling an
+interrupt to me.
+
+Maybe this goes back to some confusion we had elsewhere: what is the
+meaning of "interrupt" in device tree?
+
+> > We just need to figure out a good way of representing it that doesn't stomp on the existing INTx
+> > definitions.
+>
+> WAKE# is a signal that is converted into an interrupt, but that
+> interrupt may arrive at some place your driver has nothing to do with.
+
+I could agree with that, perhaps. But that's also what Device Tree is
+all about, really. We describe the relation between devices. So some
+other <foo> handles events that are triggered by <bar>, so we use a
+phandle to relate <bar> to <foo>.
+
+> It generally doesn't make sense to represent it as an interrupt for
+> the target device.
+
+What would you suggest then? I'm not clearly understanding how you
+think we should (a) describe (in DT) and (b) implement this WAKE#
+handling.
+
+Brian
