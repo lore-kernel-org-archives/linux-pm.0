@@ -1,24 +1,26 @@
 From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 2/7] MAINTAINERS: Update files for PSCI
-Date: Fri, 1 Mar 2019 17:04:15 +0000
-Message-ID: <20190301170415.GP15517@lakrids.cambridge.arm.com>
+Subject: Re: [PATCH 3/7] drivers: firmware: psci: Split
+ psci_dt_cpu_init_idle()
+Date: Fri, 1 Mar 2019 17:07:21 +0000
+Message-ID: <20190301170721.GQ15517@lakrids.cambridge.arm.com>
 References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-3-ulf.hansson@linaro.org>
+ <20190228135919.3747-4-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190228135919.3747-3-ulf.hansson@linaro.org>
+In-Reply-To: <20190228135919.3747-4-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 28, 2019 at 02:59:14PM +0100, Ulf Hansson wrote:
-> The files for the PSCI firmware driver were moved to a sub-directory, let's
-> update MAINTAINERS to reflect that.
+On Thu, Feb 28, 2019 at 02:59:15PM +0100, Ulf Hansson wrote:
+> Let's split the psci_dt_cpu_init_idle() function into two functions. This
+> makes the code clearer and provides better re-usability.
 > 
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Acked-by: Mark Rutland <mark.rutland@arm.com>
@@ -26,22 +28,76 @@ Acked-by: Mark Rutland <mark.rutland@arm.com>
 Mark.
 
 > ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
+>  1 file changed, 23 insertions(+), 19 deletions(-)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 32b76cb95f57..ff998605b773 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12182,7 +12182,7 @@ M:	Mark Rutland <mark.rutland@arm.com>
->  M:	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->  L:	linux-arm-kernel@lists.infradead.org
->  S:	Maintained
-> -F:	drivers/firmware/psci*.c
-> +F:	drivers/firmware/psci/
->  F:	include/linux/psci.h
->  F:	include/uapi/linux/psci.h
+> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> index c80ec1d03274..9788bfc1cf8b 100644
+> --- a/drivers/firmware/psci/psci.c
+> +++ b/drivers/firmware/psci/psci.c
+> @@ -270,9 +270,26 @@ static int __init psci_features(u32 psci_func_id)
+>  #ifdef CONFIG_CPU_IDLE
+>  static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
 >  
+> +static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+> +{
+> +	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
+> +
+> +	if (err) {
+> +		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
+> +		return err;
+> +	}
+> +
+> +	if (!psci_power_state_is_valid(*state)) {
+> +		pr_warn("Invalid PSCI power state %#x\n", *state);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+>  {
+> -	int i, ret, count = 0;
+> +	int i, ret = 0, count = 0;
+>  	u32 *psci_states;
+>  	struct device_node *state_node;
+>  
+> @@ -291,29 +308,16 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+>  		return -ENOMEM;
+>  
+>  	for (i = 0; i < count; i++) {
+> -		u32 state;
+> -
+>  		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
+> +		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
+> +		of_node_put(state_node);
+>  
+> -		ret = of_property_read_u32(state_node,
+> -					   "arm,psci-suspend-param",
+> -					   &state);
+> -		if (ret) {
+> -			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
+> -				state_node);
+> -			of_node_put(state_node);
+> +		if (ret)
+>  			goto free_mem;
+> -		}
+>  
+> -		of_node_put(state_node);
+> -		pr_debug("psci-power-state %#x index %d\n", state, i);
+> -		if (!psci_power_state_is_valid(state)) {
+> -			pr_warn("Invalid PSCI power state %#x\n", state);
+> -			ret = -EINVAL;
+> -			goto free_mem;
+> -		}
+> -		psci_states[i] = state;
+> +		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
+>  	}
+> +
+>  	/* Idle states parsed correctly, initialize per-cpu pointer */
+>  	per_cpu(psci_power_state, cpu) = psci_states;
+>  	return 0;
 > -- 
 > 2.17.1
 > 
