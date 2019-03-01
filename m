@@ -1,240 +1,136 @@
-From: shuah <shuah@kernel.org>
-Subject: [GIT PULL] cpupower update for Linux 5.1-rc1
-Date: Fri, 1 Mar 2019 09:47:47 -0700
-Message-ID: <cc753578-75ba-2030-553d-f7d7d16955ef@kernel.org>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 1/7] drivers: firmware: psci: Move psci to separate
+ directory
+Date: Fri, 1 Mar 2019 17:03:54 +0000
+Message-ID: <20190301170354.GO15517@lakrids.cambridge.arm.com>
+References: <20190228135919.3747-1-ulf.hansson@linaro.org>
+ <20190228135919.3747-2-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------39D89896C1EFD2AB028F8C2B"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190228135919.3747-2-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, shuah <shuah@kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------39D89896C1EFD2AB028F8C2B
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Feb 28, 2019 at 02:59:13PM +0100, Ulf Hansson wrote:
+> Some following changes extends the PSCI driver with some additional new
+> files.  Let's avoid to continue cluttering the toplevel firmware directory
+> and first move the PSCI files into a PSCI sub-directory.
+> 
+> Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi Rafael,
+Acked-by: Mark Rutland <mark.rutland@arm.com>
 
-Please pull the following cpupower update for Linux 5.1-rc1.
+Mark.
 
-This cpupower update for Linux 5.1-rc1 consists of a patch to add
-support to display boost frequency separately from Abhishek Goel.
-
-diff is attached.
-
-thanks,
--- Shuah
-
-
-----------------------------------------------------------------
-The following changes since commit d13937116f1e82bf508a6325111b322c30c85eb9:
-
-   Linux 5.0-rc6 (2019-02-10 14:42:20 -0800)
-
-are available in the Git repository at:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux 
-tags/linux-cpupower-5.1-rc1
-
-for you to fetch changes up to ae2917093fb60bdc1ed3e5757b74801420569a9a:
-
-   tools/power/cpupower: Display boost frequency separately (2019-02-13 
-09:26:17 -0700)
-
-----------------------------------------------------------------
-linux-cpupower-5.1-rc1
-
-This cpupower update for Linux 5.1-rc1 consists of a patch to add
-support to display boost frequency separately from Abhishek Goel.
-
-----------------------------------------------------------------
-Abhishek Goel (1):
-       tools/power/cpupower: Display boost frequency separately
-
-  tools/power/cpupower/lib/cpufreq.c        | 19 ++++++++------
-  tools/power/cpupower/lib/cpufreq.h        | 16 ++++++------
-  tools/power/cpupower/utils/cpufreq-info.c | 42 
-+++++++++++++++++++++++--------
-  3 files changed, 50 insertions(+), 27 deletions(-)
-----------------------------------------------------------------
-
---------------39D89896C1EFD2AB028F8C2B
-Content-Type: text/x-patch;
- name="linux-cpupower-5.1-rc1.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="linux-cpupower-5.1-rc1.diff"
-
-diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
-index 0c0f3e3f0d80..80650497fb80 100644
---- a/tools/power/cpupower/lib/cpufreq.c
-+++ b/tools/power/cpupower/lib/cpufreq.c
-@@ -333,17 +333,20 @@ void cpufreq_put_available_governors(struct cpufreq_available_governors *any)
- }
- 
- 
--struct cpufreq_available_frequencies
--*cpufreq_get_available_frequencies(unsigned int cpu)
-+struct cpufreq_frequencies
-+*cpufreq_get_frequencies(const char *type, unsigned int cpu)
- {
--	struct cpufreq_available_frequencies *first = NULL;
--	struct cpufreq_available_frequencies *current = NULL;
-+	struct cpufreq_frequencies *first = NULL;
-+	struct cpufreq_frequencies *current = NULL;
- 	char one_value[SYSFS_PATH_MAX];
- 	char linebuf[MAX_LINE_LEN];
-+	char fname[MAX_LINE_LEN];
- 	unsigned int pos, i;
- 	unsigned int len;
- 
--	len = sysfs_cpufreq_read_file(cpu, "scaling_available_frequencies",
-+	snprintf(fname, MAX_LINE_LEN, "scaling_%s_frequencies", type);
-+
-+	len = sysfs_cpufreq_read_file(cpu, fname,
- 				linebuf, sizeof(linebuf));
- 	if (len == 0)
- 		return NULL;
-@@ -389,9 +392,9 @@ struct cpufreq_available_frequencies
- 	return NULL;
- }
- 
--void cpufreq_put_available_frequencies(struct cpufreq_available_frequencies
--				*any) {
--	struct cpufreq_available_frequencies *tmp, *next;
-+void cpufreq_put_frequencies(struct cpufreq_frequencies *any)
-+{
-+	struct cpufreq_frequencies *tmp, *next;
- 
- 	if (!any)
- 		return;
-diff --git a/tools/power/cpupower/lib/cpufreq.h b/tools/power/cpupower/lib/cpufreq.h
-index 60beaf5ed2ea..775738269cbf 100644
---- a/tools/power/cpupower/lib/cpufreq.h
-+++ b/tools/power/cpupower/lib/cpufreq.h
-@@ -28,10 +28,10 @@ struct cpufreq_available_governors {
- 	struct cpufreq_available_governors *first;
- };
- 
--struct cpufreq_available_frequencies {
-+struct cpufreq_frequencies {
- 	unsigned long frequency;
--	struct cpufreq_available_frequencies *next;
--	struct cpufreq_available_frequencies *first;
-+	struct cpufreq_frequencies *next;
-+	struct cpufreq_frequencies *first;
- };
- 
- 
-@@ -129,14 +129,14 @@ void cpufreq_put_available_governors(
-  *
-  * Only present on _some_ ->target() cpufreq drivers. For information purposes
-  * only. Please free allocated memory by calling
-- * cpufreq_put_available_frequencies after use.
-+ * cpufreq_put_frequencies after use.
-  */
- 
--struct cpufreq_available_frequencies
--*cpufreq_get_available_frequencies(unsigned int cpu);
-+struct cpufreq_frequencies
-+*cpufreq_get_frequencies(const char *type, unsigned int cpu);
- 
--void cpufreq_put_available_frequencies(
--		struct cpufreq_available_frequencies *first);
-+void cpufreq_put_frequencies(
-+		struct cpufreq_frequencies *first);
- 
- 
- /* determine affected CPUs
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index c3f39d5128ee..10290b308797 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -161,19 +161,12 @@ static void print_duration(unsigned long duration)
- 	return;
- }
- 
--/* --boost / -b */
--
--static int get_boost_mode(unsigned int cpu)
-+static int get_boost_mode_x86(unsigned int cpu)
- {
- 	int support, active, b_states = 0, ret, pstate_no, i;
- 	/* ToDo: Make this more global */
- 	unsigned long pstates[MAX_HW_PSTATES] = {0,};
- 
--	if (cpupower_cpu_info.vendor != X86_VENDOR_AMD &&
--	    cpupower_cpu_info.vendor != X86_VENDOR_HYGON &&
--	    cpupower_cpu_info.vendor != X86_VENDOR_INTEL)
--		return 0;
--
- 	ret = cpufreq_has_boost_support(cpu, &support, &active, &b_states);
- 	if (ret) {
- 		printf(_("Error while evaluating Boost Capabilities"
-@@ -248,6 +241,33 @@ static int get_boost_mode(unsigned int cpu)
- 	return 0;
- }
- 
-+/* --boost / -b */
-+
-+static int get_boost_mode(unsigned int cpu)
-+{
-+	struct cpufreq_frequencies *freqs;
-+
-+	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD ||
-+	    cpupower_cpu_info.vendor == X86_VENDOR_HYGON ||
-+	    cpupower_cpu_info.vendor == X86_VENDOR_INTEL)
-+		return get_boost_mode_x86(cpu);
-+
-+	freqs = cpufreq_get_frequencies("boost", cpu);
-+	if (freqs) {
-+		printf(_("  boost frequency steps: "));
-+		while (freqs->next) {
-+			print_speed(freqs->frequency);
-+			printf(", ");
-+			freqs = freqs->next;
-+		}
-+		print_speed(freqs->frequency);
-+		printf("\n");
-+		cpufreq_put_frequencies(freqs);
-+	}
-+
-+	return 0;
-+}
-+
- /* --freq / -f */
- 
- static int get_freq_kernel(unsigned int cpu, unsigned int human)
-@@ -456,7 +476,7 @@ static int get_latency(unsigned int cpu, unsigned int human)
- 
- static void debug_output_one(unsigned int cpu)
- {
--	struct cpufreq_available_frequencies *freqs;
-+	struct cpufreq_frequencies *freqs;
- 
- 	get_driver(cpu);
- 	get_related_cpus(cpu);
-@@ -464,7 +484,7 @@ static void debug_output_one(unsigned int cpu)
- 	get_latency(cpu, 1);
- 	get_hardware_limits(cpu, 1);
- 
--	freqs = cpufreq_get_available_frequencies(cpu);
-+	freqs = cpufreq_get_frequencies("available", cpu);
- 	if (freqs) {
- 		printf(_("  available frequency steps:  "));
- 		while (freqs->next) {
-@@ -474,7 +494,7 @@ static void debug_output_one(unsigned int cpu)
- 		}
- 		print_speed(freqs->frequency);
- 		printf("\n");
--		cpufreq_put_available_frequencies(freqs);
-+		cpufreq_put_frequencies(freqs);
- 	}
- 
- 	get_available_governors(cpu);
-
---------------39D89896C1EFD2AB028F8C2B--
+> ---
+>  drivers/firmware/Kconfig                   | 15 +--------------
+>  drivers/firmware/Makefile                  |  3 +--
+>  drivers/firmware/psci/Kconfig              | 13 +++++++++++++
+>  drivers/firmware/psci/Makefile             |  4 ++++
+>  drivers/firmware/{ => psci}/psci.c         |  0
+>  drivers/firmware/{ => psci}/psci_checker.c |  0
+>  6 files changed, 19 insertions(+), 16 deletions(-)
+>  create mode 100644 drivers/firmware/psci/Kconfig
+>  create mode 100644 drivers/firmware/psci/Makefile
+>  rename drivers/firmware/{ => psci}/psci.c (100%)
+>  rename drivers/firmware/{ => psci}/psci_checker.c (100%)
+> 
+> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+> index f754578414f0..e1385f47d4ac 100644
+> --- a/drivers/firmware/Kconfig
+> +++ b/drivers/firmware/Kconfig
+> @@ -5,20 +5,6 @@
+>  
+>  menu "Firmware Drivers"
+>  
+> -config ARM_PSCI_FW
+> -	bool
+> -
+> -config ARM_PSCI_CHECKER
+> -	bool "ARM PSCI checker"
+> -	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
+> -	help
+> -	  Run the PSCI checker during startup. This checks that hotplug and
+> -	  suspend operations work correctly when using PSCI.
+> -
+> -	  The torture tests may interfere with the PSCI checker by turning CPUs
+> -	  on and off through hotplug, so for now torture tests and PSCI checker
+> -	  are mutually exclusive.
+> -
+>  config ARM_SCMI_PROTOCOL
+>  	bool "ARM System Control and Management Interface (SCMI) Message Protocol"
+>  	depends on ARM || ARM64 || COMPILE_TEST
+> @@ -270,6 +256,7 @@ config TI_SCI_PROTOCOL
+>  config HAVE_ARM_SMCCC
+>  	bool
+>  
+> +source "drivers/firmware/psci/Kconfig"
+>  source "drivers/firmware/broadcom/Kconfig"
+>  source "drivers/firmware/google/Kconfig"
+>  source "drivers/firmware/efi/Kconfig"
+> diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+> index 80feb635120f..9a3909a22682 100644
+> --- a/drivers/firmware/Makefile
+> +++ b/drivers/firmware/Makefile
+> @@ -2,8 +2,6 @@
+>  #
+>  # Makefile for the linux kernel.
+>  #
+> -obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
+> -obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+>  obj-$(CONFIG_ARM_SCPI_PROTOCOL)	+= arm_scpi.o
+>  obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pm_domain.o
+>  obj-$(CONFIG_ARM_SDE_INTERFACE)	+= arm_sdei.o
+> @@ -25,6 +23,7 @@ CFLAGS_qcom_scm-32.o :=$(call as-instr,.arch armv7-a\n.arch_extension sec,-DREQU
+>  obj-$(CONFIG_TI_SCI_PROTOCOL)	+= ti_sci.o
+>  
+>  obj-$(CONFIG_ARM_SCMI_PROTOCOL)	+= arm_scmi/
+> +obj-y				+= psci/
+>  obj-y				+= broadcom/
+>  obj-y				+= meson/
+>  obj-$(CONFIG_GOOGLE_FIRMWARE)	+= google/
+> diff --git a/drivers/firmware/psci/Kconfig b/drivers/firmware/psci/Kconfig
+> new file mode 100644
+> index 000000000000..26a3b32bf7ab
+> --- /dev/null
+> +++ b/drivers/firmware/psci/Kconfig
+> @@ -0,0 +1,13 @@
+> +config ARM_PSCI_FW
+> +	bool
+> +
+> +config ARM_PSCI_CHECKER
+> +	bool "ARM PSCI checker"
+> +	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
+> +	help
+> +	  Run the PSCI checker during startup. This checks that hotplug and
+> +	  suspend operations work correctly when using PSCI.
+> +
+> +	  The torture tests may interfere with the PSCI checker by turning CPUs
+> +	  on and off through hotplug, so for now torture tests and PSCI checker
+> +	  are mutually exclusive.
+> diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+> new file mode 100644
+> index 000000000000..1956b882470f
+> --- /dev/null
+> +++ b/drivers/firmware/psci/Makefile
+> @@ -0,0 +1,4 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +#
+> +obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
+> +obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci/psci.c
+> similarity index 100%
+> rename from drivers/firmware/psci.c
+> rename to drivers/firmware/psci/psci.c
+> diff --git a/drivers/firmware/psci_checker.c b/drivers/firmware/psci/psci_checker.c
+> similarity index 100%
+> rename from drivers/firmware/psci_checker.c
+> rename to drivers/firmware/psci/psci_checker.c
+> -- 
+> 2.17.1
+> 
