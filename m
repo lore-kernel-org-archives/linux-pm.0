@@ -1,95 +1,44 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
-Date: Fri, 1 Mar 2019 17:28:10 +0000
-Message-ID: <20190301172810.GR15517@lakrids.cambridge.arm.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH 7/7] drivers: firmware: psci: Announce support for OS
+ initiated suspend mode
+Date: Fri, 01 Mar 2019 09:28:19 -0800
+Message-ID: <155146129938.16805.4528027710288083607@swboyd.mtv.corp.google.com>
 References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-6-ulf.hansson@linaro.org>
+ <20190228135919.3747-8-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190228135919.3747-6-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190228135919.3747-8-ulf.hansson@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 28, 2019 at 02:59:17PM +0100, Ulf Hansson wrote:
-> Instead of iterating through all the state nodes in DT, to find out how
-> many states that needs to be allocated, let's use the number already known
-> by the cpuidle driver. In this way we can drop the iteration altogether.
+Quoting Ulf Hansson (2019-02-28 05:59:19)
+> PSCI firmware v1.0+, supports two different modes for CPU_SUSPEND. The
+> Platform Coordinated mode, which is the default and mandatory mode, while
+> support for the OS initiated (OSI) mode is optional.
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index d50b46a0528f..cbfc936d251c 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
->  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
->  			struct device_node *cpu_node, int cpu)
->  {
-> -	int i, ret = 0, count = 0;
-> +	int i, ret = 0, num_state_nodes = drv->state_count - 1;
->  	u32 *psci_states;
->  	struct device_node *state_node;
->  
-> -	/* Count idle states */
-> -	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
-> -					      count))) {
-> -		count++;
-> -		of_node_put(state_node);
-> -	}
-> -
+> In some cases it's interesting for the user/developer to know if the OSI
+> mode is supported by the PSCI FW. Therefore, let's print a message to the
+> log, if that is the case.
 
-To be honest, I'd rather not tighten the coupling with the cpuidle
-driver here. For example, I'm not that happy with the PSCI backend
-having to know the driver has a specific WFI state.
-
-IIUC we could get rid of the explicit counting with something like:
-
-	count = of_parse_phandle_with_args(cpu_node, "cpu-idle-states", NULL);
-
-... but I'm not sure that the overall change is a simplification.
-
-Does this change make it easier to plumb in something in future?
-
-Thanks,
-Mark.
-
-> -	if (!count)
-> -		return -ENODEV;
-> -
-> -	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-> +	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
-> +			GFP_KERNEL);
->  	if (!psci_states)
->  		return -ENOMEM;
->  
-> -	for (i = 0; i < count; i++) {
-> +	for (i = 0; i < num_state_nodes; i++) {
->  		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		if (!state_node)
-> +			break;
-> +
->  		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
->  		of_node_put(state_node);
->  
-> @@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
->  		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
->  	}
->  
-> +	if (i != num_state_nodes) {
-> +		ret = -ENODEV;
-> +		goto free_mem;
-> +	}
-> +
->  	/* Idle states parsed correctly, initialize per-cpu pointer */
->  	per_cpu(psci_power_state, cpu) = psci_states;
->  	return 0;
-> -- 
-> 2.17.1
-> 
+I don't see anything wrong with the patch besides the potential for the
+logs to wrap and the informational message to be lost, but would it be
+possible to express the PSCI features that are supported in sysfs at
+/sys/firmware/psci/ somehow? It may be useful for a user to know that
+their firmware has PSCI support and that it has a certain set of
+features available, like OSI vs. PC, or both. I don't know of any use
+that userspace would have though, besides maybe the CPU state residency
+counters being used by some sort of statistics collecting program or
+just plain knowing that certain PSCI features are present, so perhaps it
+could just be done in debugfs for now until a real user exists.
