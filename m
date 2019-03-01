@@ -1,61 +1,75 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Fri, 01 Mar 2019 09:39:27 -0800
-Message-ID: <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH RESEND v3 2/3] drivers: qcom: rpmh-rsc: return if the controller is idle
+Date: Fri, 01 Mar 2019 09:58:48 -0800
+Message-ID: <155146312862.16805.13188707704058408931@swboyd.mtv.corp.google.com>
+References: <20190221121827.32427-1-rplsssn@codeaurora.org> <20190221121827.32427-3-rplsssn@codeaurora.org> <155122856693.260864.16771523196413005158@swboyd.mtv.corp.google.com> <20190227222913.GA10971@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+In-Reply-To: <20190227222913.GA10971@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> This is how I would fix the issue reported in BZ 200759 (see this
-> patch series
-> from Yu too: https://marc.info/?l=linux-pm&m=155137672924029&w=2).
-> 
-> Patch [1/2] causes intel_pstate to update all policies if it gets a
-> _PPC change
-> notification and sees a global turbo disable/enable change.
-> 
-> Patch [2/2] makes it update cpuinfo.max_freq for all policies in
-> those cases.
-> 
-> The patches here have not been tested yet, so testing would be much
-> appreciated.
-> 
-> Of course, comments are welcome too!
+Quoting Lina Iyer (2019-02-27 14:29:13)
+> Hi Stephen,
+>=20
+> On Tue, Feb 26 2019 at 17:49 -0700, Stephen Boyd wrote:
+> >Quoting Raju P.L.S.S.S.N (2019-02-21 04:18:26)
+> >> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+> >> index d6b834eeeb37..9cc303e88a06 100644
+> >> --- a/drivers/soc/qcom/rpmh-rsc.c
+> >> +++ b/drivers/soc/qcom/rpmh-rsc.c
+> >> @@ -524,6 +524,30 @@ static int tcs_ctrl_write(struct rsc_drv *drv, co=
+nst struct tcs_request *msg)
+> >>         return ret;
+> >>  }
+> >>
+> >> +/**
+> >> + *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
+> >> + *
+> >> + *  @drv: The controller
+> >> + *
+> >> + *  Returns true if the TCSes are engaged in handling requests.
 
-This is the only platform, someone reported such issue.
-Can we solve this by some udev rules and offline/online cpu 1-3 on
-power source change?
+By the way, this says AMCs are busy and then TCSes are engaged. Which
+one is it?
 
-There are examples of changing governors on power source change.
-https://bbs.archlinux.org/viewtopic.php?id=207186
+> >> + */
+> >> +bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv)
+> >> +{
+> >
+> >This API seems inherently racy. How do we know that nothing else is
+> >going to be inserted into the TCS after this function returns true? Do
+> >you have a user of this API? It would be good to know how it is used
+> >instead of adding some code that never gets called.
+> >
+> This API is called from the last CPU that is powering down in an
+> interrupt locked context (say during suspend). If we are waiting on a
+> request, we would bail out of the suspend process. There can be no issue
+> requested during the last step in suspend. The PM driver itself does not
+> make any TCS request. Currently, this API is used by the downstream code
+> in its last man activities. The usage by platform coordinated mode is
+> still under discussion.
+>=20
 
-Here instead of changing governor just
-echo 0 > /sys/devices/system/cpu/cpu1/online
-echo 1 > /sys/devices/system/cpu/cpu1/online
-echo 0 >
-/sys/devices/system/cpu/cpu2/online
-echo 1 >
-/sys/devices/system/cpu/cpu2/online
-echo 0 >
-/sys/devices/system/cpu/cpu3/online
-echo 1 >
-/sys/devices/system/cpu/cpu3/online
+Ok, can you explain why it's even a problem for the TCSes to be active
+during suspend? I would hope that for suspend/resume, if this is
+actually a problem, the RPMh driver itself can block suspend with a
+driver suspend callback that checks for idleness. But I suspect that in
+the system wide suspend/resume case, any callers that could make TCS
+requests are child devices of the RPMh controller and therefore they
+would already be suspended if they didn't have anything pending they're
+waiting for a response on or they would be blocking suspend themselves
+if they're waiting for the response. So why are we even checking the
+TCSes in system suspend path at all? Assume that callers know what
+they're doing and will block suspend if they care?
 
-Thanks,
-Srinivas
-
-> 
-> Thanks,
-> Rafael
-> 
+Following that same logic, is this more of an API that is planned for
+use by CPU idle? Where the case is much more of a runtime PM design.
+Even then, I don't get it. A device that's runtime active and making
+RPMh requests might need to block some forms of CPU idle states because
+a request hasn't been processed yet that may change the decision for
+certain deep idle states?
