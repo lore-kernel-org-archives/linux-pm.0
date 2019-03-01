@@ -1,56 +1,159 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system
- resume
-Date: Fri, 01 Mar 2019 13:51:54 +0100
-Message-ID: <3687330.FyvvPAkb64@aspire.rjw.lan>
+Subject: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU frequency on global turbo changes
+Date: Fri, 01 Mar 2019 13:57:06 +0100
+Message-ID: <3017597.CVkTxgYgAs@aspire.rjw.lan>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan> <2046937.YMVy5Qh3Pm@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/ath10k/>
-List-Post: <mailto:ath10k@lists.infradead.org>
-List-Help: <mailto:ath10k-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=subscribe>
-Sender: "ath10k" <ath10k-bounces@lists.infradead.org>
-Errors-To: ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org
-To: Kalle Valo <kvalo@codeaurora.org>
-Cc: Todd Brandt <todd.e.brandt@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, ath10k@lists.infradead.org, Linux PM <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2046937.YMVy5Qh3Pm@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-ath10k_mac_vif_chan() always returns an error for the given vif
-during system-wide resume which reliably triggers two WARN_ON()s
-in ath10k_bss_info_changed() and they are not particularly
-useful in that code path, so drop them.
+While the cpuinfo.max_freq value doesn't really matter for
+intel_pstate in the active mode, in the passive mode it is used by
+governors as the maximum physical frequency of the CPU and the
+results of governor computations generally depend on it.  Also it
+is made available to user space via sysfs and it should match the
+current HW configuration.
 
+For this reason, make intel_pstate update cpuinfo.max_freq for all
+CPUs if it detects a global change of turbo frequency settings from
+"disable" to "enable" or the other way associated with a _PPC change
+notification from the platform firmware.
+
+Note that policy_is_inactive() and cpufreq_set_policy() need to be
+made available to it for this purpose.
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+Reported-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/net/wireless/ath/ath10k/mac.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/net/wireless/ath/ath10k/mac.c
+Update, because the patch sent previously doesn't build, due to an extra
+arg declared for intel_pstate_update_max_freq().
+
+---
+ drivers/cpufreq/cpufreq.c      |   12 ++----------
+ drivers/cpufreq/intel_pstate.c |   33 ++++++++++++++++++++++++++++++++-
+ include/linux/cpufreq.h        |    7 +++++++
+ 3 files changed, 41 insertions(+), 11 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/drivers/net/wireless/ath/ath10k/mac.c
-+++ linux-pm/drivers/net/wireless/ath/ath10k/mac.c
-@@ -5705,7 +5705,7 @@ static void ath10k_bss_info_changed(stru
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -897,6 +897,36 @@ static void intel_pstate_update_policies
+ 		cpufreq_update_policy(cpu);
+ }
+ 
++static void intel_pstate_update_max_freq(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++	struct cpufreq_policy new_policy;
++	struct cpudata *cpudata;
++
++	if (!policy)
++		return;
++
++	down_write(&policy->rwsem);
++
++	if (policy_is_inactive(policy))
++		goto unlock;
++
++	cpudata = all_cpu_data[cpu];
++	policy->cpuinfo.max_freq = global.turbo_disabled_upd ?
++			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
++
++	memcpy(&new_policy, policy, sizeof(*policy));
++	new_policy.max = min(policy->user_policy.max, policy->cpuinfo.max_freq);
++	new_policy.min = min(policy->user_policy.min, new_policy.max);
++
++	cpufreq_set_policy(policy, &new_policy);
++
++unlock:
++	up_write(&policy->rwsem);
++
++	cpufreq_cpu_put(policy);
++}
++
+ static void intel_pstate_update_limits(unsigned int cpu)
+ {
+ 	mutex_lock(&intel_pstate_driver_lock);
+@@ -908,7 +938,8 @@ static void intel_pstate_update_limits(u
+ 	 */
+ 	if (global.turbo_disabled_upd != global.turbo_disabled) {
+ 		global.turbo_disabled_upd = global.turbo_disabled;
+-		intel_pstate_update_policies();
++		for_each_possible_cpu(cpu)
++			intel_pstate_update_max_freq(cpu);
+ 	} else {
+ 		cpufreq_update_policy(cpu);
  	}
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -34,11 +34,6 @@
  
- 	if (changed & BSS_CHANGED_MCAST_RATE &&
--	    !WARN_ON(ath10k_mac_vif_chan(arvif->vif, &def))) {
-+	    !ath10k_mac_vif_chan(arvif->vif, &def)) {
- 		band = def.chan->band;
- 		rateidx = vif->bss_conf.mcast_rate[band] - 1;
+ static LIST_HEAD(cpufreq_policy_list);
  
-@@ -5743,7 +5743,7 @@ static void ath10k_bss_info_changed(stru
- 	}
+-static inline bool policy_is_inactive(struct cpufreq_policy *policy)
+-{
+-	return cpumask_empty(policy->cpus);
+-}
+-
+ /* Macros to iterate over CPU policies */
+ #define for_each_suitable_policy(__policy, __active)			 \
+ 	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
+@@ -675,9 +670,6 @@ static ssize_t show_scaling_cur_freq(str
+ 	return ret;
+ }
  
- 	if (changed & BSS_CHANGED_BASIC_RATES) {
--		if (WARN_ON(ath10k_mac_vif_chan(vif, &def))) {
-+		if (ath10k_mac_vif_chan(vif, &def)) {
- 			mutex_unlock(&ar->conf_mutex);
- 			return;
- 		}
+-static int cpufreq_set_policy(struct cpufreq_policy *policy,
+-				struct cpufreq_policy *new_policy);
+-
+ /**
+  * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
+  */
+@@ -2235,8 +2227,8 @@ EXPORT_SYMBOL(cpufreq_get_policy);
+  *
+  * The cpuinfo part of @policy is not updated by this function.
+  */
+-static int cpufreq_set_policy(struct cpufreq_policy *policy,
+-			      struct cpufreq_policy *new_policy)
++int cpufreq_set_policy(struct cpufreq_policy *policy,
++		       struct cpufreq_policy *new_policy)
+ {
+ 	struct cpufreq_governor *old_gov;
+ 	int ret;
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -178,6 +178,11 @@ static inline struct cpufreq_policy *cpu
+ static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
+ #endif
+ 
++static inline bool policy_is_inactive(struct cpufreq_policy *policy)
++{
++	return cpumask_empty(policy->cpus);
++}
++
+ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ {
+ 	return cpumask_weight(policy->cpus) > 1;
+@@ -194,6 +199,8 @@ void disable_cpufreq(void);
+ 
+ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
++int cpufreq_set_policy(struct cpufreq_policy *policy,
++		       struct cpufreq_policy *new_policy);
+ void cpufreq_update_policy(unsigned int cpu);
+ void cpufreq_update_limits(unsigned int cpu);
+ bool have_governor_per_policy(void);
