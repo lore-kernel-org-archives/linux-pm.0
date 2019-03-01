@@ -1,108 +1,61 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 7/7] drivers: firmware: psci: Announce support for OS
- initiated suspend mode
-Date: Fri, 1 Mar 2019 17:32:39 +0000
-Message-ID: <20190301173238.GT15517@lakrids.cambridge.arm.com>
-References: <20190228135919.3747-1-ulf.hansson@linaro.org>
- <20190228135919.3747-8-ulf.hansson@linaro.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
+ global turbo disable/enable
+Date: Fri, 01 Mar 2019 09:39:27 -0800
+Message-ID: <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190228135919.3747-8-ulf.hansson@linaro.org>
+In-Reply-To: <9956076.F4luUDm1Dq@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 28, 2019 at 02:59:19PM +0100, Ulf Hansson wrote:
-> PSCI firmware v1.0+, supports two different modes for CPU_SUSPEND. The
-> Platform Coordinated mode, which is the default and mandatory mode, while
-> support for the OS initiated (OSI) mode is optional.
+On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
+> Hi All,
 > 
-> In some cases it's interesting for the user/developer to know if the OSI
-> mode is supported by the PSCI FW. Therefore, let's print a message to the
-> log, if that is the case.
+> This is how I would fix the issue reported in BZ 200759 (see this
+> patch series
+> from Yu too: https://marc.info/?l=linux-pm&m=155137672924029&w=2).
 > 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Acked-by: Mark Rutland <mark.rutland@arm.com>
-
-Mark.
-
-> ---
->  drivers/firmware/psci/psci.c | 21 ++++++++++++++++++++-
->  include/uapi/linux/psci.h    |  5 +++++
->  2 files changed, 25 insertions(+), 1 deletion(-)
+> Patch [1/2] causes intel_pstate to update all policies if it gets a
+> _PPC change
+> notification and sees a global turbo disable/enable change.
 > 
-> diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> index 14d25b54b9f2..417d43886948 100644
-> --- a/drivers/firmware/psci/psci.c
-> +++ b/drivers/firmware/psci/psci.c
-> @@ -95,6 +95,11 @@ static inline bool psci_has_ext_power_state(void)
->  				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
->  }
->  
-> +static inline bool psci_has_osi_support(void)
-> +{
-> +	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
-> +}
-> +
->  static inline bool psci_power_state_loses_context(u32 state)
->  {
->  	const u32 mask = psci_has_ext_power_state() ?
-> @@ -659,10 +664,24 @@ static int __init psci_0_1_init(struct device_node *np)
->  	return 0;
->  }
->  
-> +static int __init psci_1_0_init(struct device_node *np)
-> +{
-> +	int err;
-> +
-> +	err = psci_0_2_init(np);
-> +	if (err)
-> +		return err;
-> +
-> +	if (psci_has_osi_support())
-> +		pr_info("OSI mode supported.\n");
-> +
-> +	return 0;
-> +}
-> +
->  static const struct of_device_id psci_of_match[] __initconst = {
->  	{ .compatible = "arm,psci",	.data = psci_0_1_init},
->  	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
-> -	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
-> +	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
->  	{},
->  };
->  
-> diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-> index b3bcabe380da..581f72085c33 100644
-> --- a/include/uapi/linux/psci.h
-> +++ b/include/uapi/linux/psci.h
-> @@ -49,6 +49,7 @@
->  
->  #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
->  #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
-> +#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
->  
->  #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
->  
-> @@ -97,6 +98,10 @@
->  #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
->  			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
->  
-> +#define PSCI_1_0_OS_INITIATED			BIT(0)
-> +#define PSCI_1_0_SUSPEND_MODE_PC		0
-> +#define PSCI_1_0_SUSPEND_MODE_OSI		1
-> +
->  /* PSCI return values (inclusive of all PSCI versions) */
->  #define PSCI_RET_SUCCESS			0
->  #define PSCI_RET_NOT_SUPPORTED			-1
-> -- 
-> 2.17.1
+> Patch [2/2] makes it update cpuinfo.max_freq for all policies in
+> those cases.
+> 
+> The patches here have not been tested yet, so testing would be much
+> appreciated.
+> 
+> Of course, comments are welcome too!
+
+This is the only platform, someone reported such issue.
+Can we solve this by some udev rules and offline/online cpu 1-3 on
+power source change?
+
+There are examples of changing governors on power source change.
+https://bbs.archlinux.org/viewtopic.php?id=207186
+
+Here instead of changing governor just
+echo 0 > /sys/devices/system/cpu/cpu1/online
+echo 1 > /sys/devices/system/cpu/cpu1/online
+echo 0 >
+/sys/devices/system/cpu/cpu2/online
+echo 1 >
+/sys/devices/system/cpu/cpu2/online
+echo 0 >
+/sys/devices/system/cpu/cpu3/online
+echo 1 >
+/sys/devices/system/cpu/cpu3/online
+
+Thanks,
+Srinivas
+
+> 
+> Thanks,
+> Rafael
 > 
