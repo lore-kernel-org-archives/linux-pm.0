@@ -1,103 +1,43 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH] arm64: dts: ls1088a: add one more thermal zone node
-Date: Fri, 1 Mar 2019 21:38:07 +0800
-Message-ID: <20190301133805.GQ26041@dragon>
-References: <20190225030049.20401-1-andy.tang@nxp.com>
+From: Kalle Valo <kvalo@codeaurora.org>
+Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system
+ resume
+Date: Fri, 01 Mar 2019 15:45:29 +0200
+Message-ID: <87h8cmhfnq.fsf@kamboji.qca.qualcomm.com>
+References: <3687330.FyvvPAkb64@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190225030049.20401-1-andy.tang@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yuantian Tang <andy.tang@nxp.com>
-Cc: leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com, edubezval@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org>
+In-Reply-To: <3687330.FyvvPAkb64@aspire.rjw.lan> (Rafael J. Wysocki's message
+ of "Fri, 01 Mar 2019 13:51:54 +0100")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/ath10k>,
+ <mailto:ath10k-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/ath10k/>
+List-Post: <mailto:ath10k@lists.infradead.org>
+List-Help: <mailto:ath10k-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/ath10k>,
+ <mailto:ath10k-request@lists.infradead.org?subject=subscribe>
+Sender: "ath10k" <ath10k-bounces@lists.infradead.org>
+Errors-To: ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Todd Brandt <todd.e.brandt@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, ath10k@lists.infradead.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 25, 2019 at 11:00:49AM +0800, Yuantian Tang wrote:
-> Ls1088a has 2 thermal sensors. This patch adds the second node
-> to dts to enable it.
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-Can you elaborate on these 2 thermal sensors/zones, ccu and plt?
+> rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Shawn
+'F' chraracter is missing.
 
-> 
-> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> ---
->  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43 +++++++++++++++++++++--
->  1 files changed, 39 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> index 661137f..9f52bc9 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> @@ -129,19 +129,19 @@
->  	};
->  
->  	thermal-zones {
-> -		cpu_thermal: cpu-thermal {
-> +		ccu {
->  			polling-delay-passive = <1000>;
->  			polling-delay = <5000>;
->  			thermal-sensors = <&tmu 0>;
->  
->  			trips {
-> -				cpu_alert: cpu-alert {
-> +				ccu_alert: ccu-alert {
->  					temperature = <85000>;
->  					hysteresis = <2000>;
->  					type = "passive";
->  				};
->  
-> -				cpu_crit: cpu-crit {
-> +				ccu_crit: ccu-crit {
->  					temperature = <95000>;
->  					hysteresis = <2000>;
->  					type = "critical";
-> @@ -150,7 +150,42 @@
->  
->  			cooling-maps {
->  				map0 {
-> -					trip = <&cpu_alert>;
-> +					trip = <&ccu_alert>;
-> +					cooling-device =
-> +						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +				};
-> +			};
-> +		};
-> +
-> +		plt {
-> +			polling-delay-passive = <1000>;
-> +			polling-delay = <5000>;
-> +			thermal-sensors = <&tmu 1>;
-> +
-> +			trips {
-> +				plt_alert: plt-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				plt_crit: plt-crit {
-> +					temperature = <95000>;
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&plt_alert>;
->  					cooling-device =
->  						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
->  						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> -- 
-> 1.7.1
-> 
+> ath10k_mac_vif_chan() always returns an error for the given vif
+> during system-wide resume which reliably triggers two WARN_ON()s
+> in ath10k_bss_info_changed() and they are not particularly
+> useful in that code path, so drop them.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+And could you CC linux-wireless, please? That way the patchwork will see
+it and I can take it directly from there.
+
+-- 
+Kalle Valo
