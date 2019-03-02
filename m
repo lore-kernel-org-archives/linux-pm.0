@@ -1,71 +1,156 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Sat, 2 Mar 2019 18:30:08 +0800
-Message-ID: <20190302103008.GA7086@chenyu-office.sh.intel.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
- <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+From: Arvind Sankar <niveditas98@gmail.com>
+Subject: [PATCH] igb: Fix WARN_ONCE on runtime suspend
+Date: Sat, 2 Mar 2019 11:01:17 -0500
+Message-ID: <20190302160115.GA6172@rani.riverdale.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: intel-wired-lan@lists.osuosl.org
+Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 01, 2019 at 09:39:27AM -0800, Srinivas Pandruvada wrote:
-> On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
-> > Hi All,
-> > 
-> > This is how I would fix the issue reported in BZ 200759 (see this
-> > patch series
-> > from Yu too: https://marc.info/?l=linux-pm&m=155137672924029&w=2).
-> > 
-> > Patch [1/2] causes intel_pstate to update all policies if it gets a
-> > _PPC change
-> > notification and sees a global turbo disable/enable change.
-> > 
-> > Patch [2/2] makes it update cpuinfo.max_freq for all policies in
-> > those cases.
-> > 
-> > The patches here have not been tested yet, so testing would be much
-> > appreciated.
-> > 
-> > Of course, comments are welcome too!
-> 
-> This is the only platform, someone reported such issue.
-> Can we solve this by some udev rules and offline/online cpu 1-3 on
-> power source change?
->
-Sound reasonable, we can deal with this BIOS problem in user space
-too. But if cpu0 could not be offline, how could cpu0's policy
-be updated?
+The runtime_suspend device callbacks are not supposed to save
+configuration state or change the power state. Commit fb29f76cc566
+("igb: Fix an issue that PME is not enabled during runtime suspend")
+changed the driver to not save configuration state during runtime
+suspend, however the driver callback still put the device into a
+low-power state. This causes a warning in the pci pm core and results in
+pci_pm_runtime_suspend not calling pci_save_state or pci_finish_runtime_suspend.
 
-Thanks,
-Yu
+Fix this by not changing the power state either, leaving that to pci pm
+core, and make the same change for suspend callback as well.
 
-> There are examples of changing governors on power source change.
-> https://bbs.archlinux.org/viewtopic.php?id=207186
-> 
-> Here instead of changing governor just
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> echo 1 > /sys/devices/system/cpu/cpu1/online
-> echo 0 >
-> /sys/devices/system/cpu/cpu2/online
-> echo 1 >
-> /sys/devices/system/cpu/cpu2/online
-> echo 0 >
-> /sys/devices/system/cpu/cpu3/online
-> echo 1 >
-> /sys/devices/system/cpu/cpu3/online
-> 
-> Thanks,
-> Srinivas
-> 
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> 
+Also move a couple of defines into the appropriate header file instead
+of inline in the .c file.
+
+Fixes: fb29f76cc566 ("igb: Fix an issue that PME is not enabled during runtime suspend")
+Signed-off-by: Arvind Sankar <niveditas98@gmail.com>
+---
+ .../net/ethernet/intel/igb/e1000_defines.h    |  2 +
+ drivers/net/ethernet/intel/igb/igb_main.c     | 57 +++----------------
+ 2 files changed, 10 insertions(+), 49 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index 8a28f3388f69..dca671591ef6 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -194,6 +194,8 @@
+ /* enable link status from external LINK_0 and LINK_1 pins */
+ #define E1000_CTRL_SWDPIN0  0x00040000  /* SWDPIN 0 value */
+ #define E1000_CTRL_SWDPIN1  0x00080000  /* SWDPIN 1 value */
++#define E1000_CTRL_ADVD3WUC 0x00100000  /* D3 WUC */
++#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000 /* PHY PM enable */
+ #define E1000_CTRL_SDP0_DIR 0x00400000  /* SDP0 Data direction */
+ #define E1000_CTRL_SDP1_DIR 0x00800000  /* SDP1 Data direction */
+ #define E1000_CTRL_RST      0x04000000  /* Global reset */
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 93f150784cfc..c2b3a2ff1471 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -8754,9 +8754,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 ctrl, rctl, status;
+ 	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
+-#ifdef CONFIG_PM
+-	int retval = 0;
+-#endif
++	bool wake;
+ 
+ 	rtnl_lock();
+ 	netif_device_detach(netdev);
+@@ -8769,14 +8767,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	igb_clear_interrupt_scheme(adapter);
+ 	rtnl_unlock();
+ 
+-#ifdef CONFIG_PM
+-	if (!runtime) {
+-		retval = pci_save_state(pdev);
+-		if (retval)
+-			return retval;
+-	}
+-#endif
+-
+ 	status = rd32(E1000_STATUS);
+ 	if (status & E1000_STATUS_LU)
+ 		wufc &= ~E1000_WUFC_LNKC;
+@@ -8793,10 +8783,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 		}
+ 
+ 		ctrl = rd32(E1000_CTRL);
+-		/* advertise wake from D3Cold */
+-		#define E1000_CTRL_ADVD3WUC 0x00100000
+-		/* phy power management enable */
+-		#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000
+ 		ctrl |= E1000_CTRL_ADVD3WUC;
+ 		wr32(E1000_CTRL, ctrl);
+ 
+@@ -8810,12 +8796,15 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 		wr32(E1000_WUFC, 0);
+ 	}
+ 
+-	*enable_wake = wufc || adapter->en_mng_pt;
+-	if (!*enable_wake)
++	wake = wufc || adapter->en_mng_pt;
++	if (!wake)
+ 		igb_power_down_link(adapter);
+ 	else
+ 		igb_power_up_link(adapter);
+ 
++	if (enable_wake)
++		*enable_wake = wake;
++
+ 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+ 	 * would have already happened in close and is redundant.
+ 	 */
+@@ -8858,22 +8847,7 @@ static void igb_deliver_wake_packet(struct net_device *netdev)
+ 
+ static int __maybe_unused igb_suspend(struct device *dev)
+ {
+-	int retval;
+-	bool wake;
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-
+-	retval = __igb_shutdown(pdev, &wake, 0);
+-	if (retval)
+-		return retval;
+-
+-	if (wake) {
+-		pci_prepare_to_sleep(pdev);
+-	} else {
+-		pci_wake_from_d3(pdev, false);
+-		pci_set_power_state(pdev, PCI_D3hot);
+-	}
+-
+-	return 0;
++	return __igb_shutdown(to_pci_dev(dev), NULL, 0);
+ }
+ 
+ static int __maybe_unused igb_resume(struct device *dev)
+@@ -8944,22 +8918,7 @@ static int __maybe_unused igb_runtime_idle(struct device *dev)
+ 
+ static int __maybe_unused igb_runtime_suspend(struct device *dev)
+ {
+-	struct pci_dev *pdev = to_pci_dev(dev);
+-	int retval;
+-	bool wake;
+-
+-	retval = __igb_shutdown(pdev, &wake, 1);
+-	if (retval)
+-		return retval;
+-
+-	if (wake) {
+-		pci_prepare_to_sleep(pdev);
+-	} else {
+-		pci_wake_from_d3(pdev, false);
+-		pci_set_power_state(pdev, PCI_D3hot);
+-	}
+-
+-	return 0;
++	return __igb_shutdown(to_pci_dev(dev), NULL, 1);
+ }
+ 
+ static int __maybe_unused igb_runtime_resume(struct device *dev)
+-- 
+2.19.2
