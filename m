@@ -1,46 +1,135 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Sun, 3 Mar 2019 18:03:52 +0100
-Message-ID: <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan> <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+Subject: Re: [PATCH 2/2][RFC v2] ACPI: Update cpuinfo.max after bootup if necessary
+Date: Sun, 3 Mar 2019 18:04:26 +0100
+Message-ID: <CAJZ5v0jkMDXQOheu9yVzZt-E=_YHrVvYwuWVREO4GxV8WdsSXQ@mail.gmail.com>
+References: <cover.1551375162.git.yu.c.chen@intel.com> <bd3c5e04e882e5a4c977211a8d268440b36276a4.1551375162.git.yu.c.chen@intel.com>
+ <CAJZ5v0g4CGfAMH0pM-wWSt6pXZrw3ckqBbbUzNwjqScwRjrK3g@mail.gmail.com> <20190302100420.GA7044@chenyu-office.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+In-Reply-To: <20190302100420.GA7044@chenyu-office.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yu Chen <yu.chen.surf@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 1, 2019 at 6:39 PM Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
+On Sat, Mar 2, 2019 at 10:55 AM Yu Chen <yu.c.chen@intel.com> wrote:
 >
-> On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
-> > Hi All,
+> On Thu, Feb 28, 2019 at 11:56:48PM +0100, Rafael J. Wysocki wrote:
+> > On Thu, Feb 28, 2019 at 6:59 PM Chen Yu <yu.c.chen@intel.com> wrote:
+> > >
+> > > On Dell Inc. XPS13 9333, the BIOS changes the value of
+> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
+> > > the power source changes), the maximum frequency of the
+> > > CPU is not updated accordingly. This is due to the policy's
+> > > cpuinfo.max is not updated when _PPC notifier fires.
+> > >
+> > > Fix this problem by updating the policy's cpuinfo.max when
+> > > necessary.
+> > >
+> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > ---
+> > >  drivers/cpufreq/cpufreq.c      |  2 ++
+> > >  drivers/cpufreq/intel_pstate.c | 15 +++++++++++++--
+> > >  2 files changed, 15 insertions(+), 2 deletions(-)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index e35a886e00bc..95e08816b512 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> > >
+> > >         policy->min = new_policy->min;
+> > >         policy->max = new_policy->max;
+> > > +       policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
+> > > +       policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
+> > >         trace_cpu_frequency_limits(policy);
+> > >
+> > >         policy->cached_target_freq = UINT_MAX;
+> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > > index dd66decf2087..841c74f69f66 100644
+> > > --- a/drivers/cpufreq/intel_pstate.c
+> > > +++ b/drivers/cpufreq/intel_pstate.c
+> > > @@ -2081,11 +2081,17 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
+> > >
+> > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
+> > >  {
+> > > +       int max_freq;
+> > >         struct cpudata *cpu = all_cpu_data[policy->cpu];
+> > >
+> > >         update_turbo_state();
+> > > +       max_freq = intel_pstate_get_max_freq(cpu);
+> > > +
+> > > +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
+> > > +               policy->cpuinfo.max_freq = policy->max = max_freq;
 > >
-> > This is how I would fix the issue reported in BZ 200759 (see this
-> > patch series
-> > from Yu too: https://marc.info/?l=linux-pm&m=155137672924029&w=2).
+> > Updating cpuinfo.max_freq here only causes the current limit to be
+> > reported via sysfs, because intel_pstate doesn't actually use
+> > cpuinfo.max_freq for anything and the core doesn't enforce it as a
+> > limit.
 > >
-> > Patch [1/2] causes intel_pstate to update all policies if it gets a
-> > _PPC change
-> > notification and sees a global turbo disable/enable change.
+> > All of the computations in the active mode in the driver actually use
+> > the current limit anyway AFAICS.
 > >
-> > Patch [2/2] makes it update cpuinfo.max_freq for all policies in
-> > those cases.
+> Yes, but it looks like we should also take care of the cpuinfo.max
+> if it changes, I searched the code, it seems that other components
+> might use the policy's cpuinfo.max for some purpose. They might use
+> cpufreq_cpu_get() to get the policy, and use the cpuinfo.max_freq
+> directly, no matter what the mode intel_pstate is in. Such as kvm
+> might use it as the max tsc khz if the tsc is not constant. And i915
+> might consider the cpuinfo.max_freq to adjust the IA frequency on
+> gen6 platforms. So changing cpuinfo.max might also impact not only
+> cpufreq but also other components too.
+> > > +
+> > >         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> > > -                                    intel_pstate_get_max_freq(cpu));
+> > > +                                    max_freq);
+> > >
+> > >         if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
+> > >             policy->policy != CPUFREQ_POLICY_PERFORMANCE)
+> > > @@ -2192,11 +2198,16 @@ static struct cpufreq_driver intel_pstate = {
+> > >
+> > >  static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
+> > >  {
+> > > +       int max_freq;
+> > >         struct cpudata *cpu = all_cpu_data[policy->cpu];
+> > >
+> > >         update_turbo_state();
+> > > +       max_freq = intel_pstate_get_max_freq(cpu);
+> > > +
+> > > +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
+> > > +               policy->cpuinfo.max_freq = policy->max = max_freq;
 > >
-> > The patches here have not been tested yet, so testing would be much
-> > appreciated.
+> > In this case (passive mode) updating cpuinfo.max_freq will actually
+> > cause governors to use the new value in computations, so the P-state
+> > selection will work somewhat differently, but that isn't really
+> > consistent with what acpi-cpufreq does and with setting no_turbo in
+> > the intel_pstate sysfs to 1 without this patch.
 > >
-> > Of course, comments are welcome too!
->
-> This is the only platform, someone reported such issue.
+> > With acpi-cpufreq cpuinfo.max_freq is always the max frequency in the
+> > _PSS table regardless of what the _PSS limit is.  Also setting
+> > no_turbo to 1 in intel_pstate without this patch doesn't cause
+> > cpuinfo.max_freq to change and I don't really think that it should.
+> >
+> > I would be tempted to always initialize cpuinfo.max_freq to the max
+> > turbo frequency, but there is a concern about systems in which
+> > MSR_IA32_MISC_ENABLE_TURBO_DISABLE is never set on the fly (just in
+> > the BIOS setup as it should be) and where it doesn't make sense to
+> > consider turbo frequencies at all.
+> Ok, maybe we can check the bit during boot(consider BIOS's setting)?
+> >
+> > >         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+> > > -                                    intel_pstate_get_max_freq(cpu));
+> > > +                                    max_freq);
+> > >
+> > >         intel_pstate_adjust_policy_max(policy, cpu);
+> > >
+> > > --
+> >
+> > It looks like I need to think about this a bit more.
+> Ok, I'll test the patch you sent out.
 
-I don't think this matters.
-
-First, it doesn't mean that no other problems have this problem.
-
-Second, the current handling of MSR_IA32_MISC_ENABLE_TURBO_DISABLE
-changes in intel_pstate is not sufficient if the changes is from set
-to unset anyway.
+Please do.
