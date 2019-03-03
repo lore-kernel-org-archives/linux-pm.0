@@ -1,303 +1,311 @@
-From: Daniel Golle <daniel@makrotopia.org>
-Subject: [PATCH] power: reset: introduce oxnas-restart
-Date: Sun, 3 Mar 2019 17:32:37 +0100
-Message-ID: <20190303163229.GA9246@makrotopia.org>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [PATCH 5/7] power: supply: add Ingenic JZ47xx battery driver.
+Date: Sun, 3 Mar 2019 16:53:03 +0000
+Message-ID: <20190303165303.5e5c07bd@archlinux>
+References: <20190217142914.17433-1-contact@artur-rojek.eu>
+        <20190217142914.17433-5-contact@artur-rojek.eu>
+        <20190220111441.585eb3eb@archlinux>
+        <a53ba58dddea94c011d2ec839d438c51@artur-rojek.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Neil Armstrong <narmstrong@baylibre.com>
-Cc: linux-oxnas@groups.io, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <a53ba58dddea94c011d2ec839d438c51@artur-rojek.eu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Artur Rojek <contact@artur-rojek.eu>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 List-Id: linux-pm@vger.kernel.org
 
-Add reboot handler for OXNAS OX820 chips as reboot currenly hangs on
-those boards. Code is based on ox820_assert_system_reset() found in
-https://github.com/kref/linux-oxnas/blob/master/arch/arm/mach-oxnas/mach-ox820.c#L181
+On Thu, 21 Feb 2019 20:18:36 +0100
+Artur Rojek <contact@artur-rojek.eu> wrote:
 
-Signed-off-by: Daniel Golle <daniel@makrotopia.org>
----
- drivers/power/reset/Kconfig         |   9 ++
- drivers/power/reset/Makefile        |   1 +
- drivers/power/reset/oxnas-restart.c | 229 ++++++++++++++++++++++++++++
- 3 files changed, 239 insertions(+)
- create mode 100644 drivers/power/reset/oxnas-restart.c
+> On 2019-02-20 12:14, Jonathan Cameron wrote:
+> > On Sun, 17 Feb 2019 15:29:14 +0100
+> > Artur Rojek <contact@artur-rojek.eu> wrote:
+> >   
+> >> Add a driver for battery present on Ingenic JZ47xx SoCs.
+> >> 
+> >> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>  
+> > A few things inline.
+> > 
+> > thanks,
+> > 
+> > Jonathan  
+> Hi Jonathan.
+> 
+> One thing inline.
+> 
+> Artur
+> >   
+> >> ---
+> >>  drivers/power/supply/Kconfig           |  11 ++
+> >>  drivers/power/supply/Makefile          |   1 +
+> >>  drivers/power/supply/ingenic-battery.c | 182 
+> >> +++++++++++++++++++++++++
+> >>  3 files changed, 194 insertions(+)
+> >>  create mode 100644 drivers/power/supply/ingenic-battery.c
+> >> 
+> >> diff --git a/drivers/power/supply/Kconfig 
+> >> b/drivers/power/supply/Kconfig
+> >> index e901b9879e7e..9bfb1637ec28 100644
+> >> --- a/drivers/power/supply/Kconfig
+> >> +++ b/drivers/power/supply/Kconfig
+> >> @@ -169,6 +169,17 @@ config BATTERY_COLLIE
+> >>  	  Say Y to enable support for the battery on the Sharp Zaurus
+> >>  	  SL-5500 (collie) models.
+> >> 
+> >> +config BATTERY_INGENIC
+> >> +	tristate "Ingenic JZ47xx SoCs battery driver"
+> >> +	depends on MIPS || COMPILE_TEST
+> >> +	depends on INGENIC_ADC
+> >> +	help
+> >> +	  Choose this option if you want to monitor battery status on
+> >> +	  Ingenic JZ47xx SoC based devices.
+> >> +
+> >> +	  This driver can also be built as a module. If so, the module will 
+> >> be
+> >> +	  called ingenic-battery.
+> >> +
+> >>  config BATTERY_IPAQ_MICRO
+> >>  	tristate "iPAQ Atmel Micro ASIC battery driver"
+> >>  	depends on MFD_IPAQ_MICRO
+> >> diff --git a/drivers/power/supply/Makefile 
+> >> b/drivers/power/supply/Makefile
+> >> index b731c2a9b695..9e2c481d0187 100644
+> >> --- a/drivers/power/supply/Makefile
+> >> +++ b/drivers/power/supply/Makefile
+> >> @@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+> >>  obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
+> >>  obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
+> >>  obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
+> >> +obj-$(CONFIG_BATTERY_INGENIC)	+= ingenic-battery.o
+> >>  obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
+> >>  obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
+> >>  obj-$(CONFIG_BATTERY_SBS)	+= sbs-battery.o
+> >> diff --git a/drivers/power/supply/ingenic-battery.c 
+> >> b/drivers/power/supply/ingenic-battery.c
+> >> new file mode 100644
+> >> index 000000000000..4ee75c1ac241
+> >> --- /dev/null
+> >> +++ b/drivers/power/supply/ingenic-battery.c
+> >> @@ -0,0 +1,182 @@
+> >> +// SPDX-License-Identifier: GPL-2.0
+> >> +/*
+> >> + * Battery driver for the Ingenic JZ47xx SoCs
+> >> + * Copyright (c) 2019 Artur Rojek <contact@artur-rojek.eu>
+> >> + *
+> >> + * based on drivers/power/supply/jz4740-battery.c  
+> > 
+> > What is the relationship between this driver and the older one?
+> >   
+> >> + */
+> >> +
+> >> +#include <linux/iio/consumer.h>
+> >> +#include <linux/module.h>
+> >> +#include <linux/of.h>
+> >> +#include <linux/platform_device.h>
+> >> +#include <linux/power_supply.h>
+> >> +#include <linux/property.h>
+> >> +
+> >> +struct ingenic_battery {
+> >> +	struct device *dev;
+> >> +	struct iio_channel *channel;
+> >> +	struct power_supply_desc desc;
+> >> +	struct power_supply *battery;
+> >> +	struct power_supply_battery_info info;
+> >> +};
+> >> +
+> >> +static int ingenic_battery_get_property(struct power_supply *psy,
+> >> +					enum power_supply_property psp,
+> >> +					union power_supply_propval *val)
+> >> +{
+> >> +	struct ingenic_battery *bat = power_supply_get_drvdata(psy);
+> >> +	struct power_supply_battery_info *info = &bat->info;
+> >> +	int ret = 0;
+> >> +
+> >> +	switch (psp) {
+> >> +	case POWER_SUPPLY_PROP_HEALTH:
+> >> +		ret = iio_read_channel_processed(bat->channel, &val->intval);
+> >> +		val->intval *= 1000;
+> >> +		if (val->intval < info->voltage_min_design_uv)
+> >> +			val->intval = POWER_SUPPLY_HEALTH_DEAD;
+> >> +		else if (val->intval > info->voltage_max_design_uv)
+> >> +			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> >> +		else
+> >> +			val->intval = POWER_SUPPLY_HEALTH_GOOD;
+> >> +	break;
+> >> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> >> +		ret = iio_read_channel_processed(bat->channel, &val->intval);
+> >> +		val->intval *= 1000;
+> >> +	break;
+> >> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+> >> +		val->intval = info->voltage_min_design_uv;
+> >> +	break;
+> >> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> >> +		val->intval = info->voltage_max_design_uv;
+> >> +	break;
+> >> +	default:
+> >> +		return -EINVAL;
+> >> +	};
+> >> +  
+> > Can't get here, so drop.  
+> Execution actually does reach this point.
+> Would you rather have me return in individual switch cases instead?
+good point. I'm clearly blind ;)
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 6533aa560aa1..6d5f2a3810ed 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -122,6 +122,15 @@ config POWER_RESET_OCELOT_RESET
- 	help
- 	  This driver supports restart for Microsemi Ocelot SoC.
- 
-+config POWER_RESET_OXNAS
-+	bool "OXNAS OX820 SoC restart driver"
-+	depends on ARM || COMPILE_TEST
-+	depends on OF
-+	select MFD_SYSCON
-+	default ARCH_OXNAS
-+	help
-+	  Restart support for OXNAS OX820 boards.
-+
- config POWER_RESET_PIIX4_POWEROFF
- 	tristate "Intel PIIX4 power-off driver"
- 	depends on PCI
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 0aebee954ac1..1420a20370a3 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
- obj-$(CONFIG_POWER_RESET_QCOM_PON) += qcom-pon.o
- obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
-+obj-$(CONFIG_POWER_RESET_OXNAS) += oxnas-restart.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-diff --git a/drivers/power/reset/oxnas-restart.c b/drivers/power/reset/oxnas-restart.c
-new file mode 100644
-index 000000000000..5664914ea489
---- /dev/null
-+++ b/drivers/power/reset/oxnas-restart.c
-@@ -0,0 +1,229 @@
-+// SPDX-License-Identifier: (GPL-2.0)
-+/*
-+ * oxnas SoC reset driver
-+ * based on:
-+ * Microsemi MIPS SoC reset driver
-+ * and ox820_assert_system_reset() written by Ma Hajun <mahaijuns@gmail.com>
-+ *
-+ * License: GPL
-+ * Copyright (c) 2013 Ma Hajun <mahaijuns@gmail.com>
-+ * Copyright (c) 2017 Microsemi Corporation
-+ * Copyright (c) 2019 Daniel Golle <daniel@makrotopia.org>
-+ */
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/notifier.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/of_address.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
-+
-+/* bit numbers of reset control register */
-+#define SYS_CTRL_RST_SCU                0
-+#define SYS_CTRL_RST_COPRO              1
-+#define SYS_CTRL_RST_ARM0               2
-+#define SYS_CTRL_RST_ARM1               3
-+#define SYS_CTRL_RST_USBHS              4
-+#define SYS_CTRL_RST_USBHSPHYA          5
-+#define SYS_CTRL_RST_MACA               6
-+#define SYS_CTRL_RST_MAC                SYS_CTRL_RST_MACA
-+#define SYS_CTRL_RST_PCIEA              7
-+#define SYS_CTRL_RST_SGDMA              8
-+#define SYS_CTRL_RST_CIPHER             9
-+#define SYS_CTRL_RST_DDR                10
-+#define SYS_CTRL_RST_SATA               11
-+#define SYS_CTRL_RST_SATA_LINK          12
-+#define SYS_CTRL_RST_SATA_PHY           13
-+#define SYS_CTRL_RST_PCIEPHY            14
-+#define SYS_CTRL_RST_STATIC             15
-+#define SYS_CTRL_RST_GPIO               16
-+#define SYS_CTRL_RST_UART1              17
-+#define SYS_CTRL_RST_UART2              18
-+#define SYS_CTRL_RST_MISC               19
-+#define SYS_CTRL_RST_I2S                20
-+#define SYS_CTRL_RST_SD                 21
-+#define SYS_CTRL_RST_MACB               22
-+#define SYS_CTRL_RST_PCIEB              23
-+#define SYS_CTRL_RST_VIDEO              24
-+#define SYS_CTRL_RST_DDR_PHY            25
-+#define SYS_CTRL_RST_USBHSPHYB          26
-+#define SYS_CTRL_RST_USBDEV             27
-+#define SYS_CTRL_RST_ARMDBG             29
-+#define SYS_CTRL_RST_PLLA               30
-+#define SYS_CTRL_RST_PLLB               31
-+
-+/* bit numbers of clock control register */
-+#define SYS_CTRL_CLK_COPRO              0
-+#define SYS_CTRL_CLK_DMA                1
-+#define SYS_CTRL_CLK_CIPHER             2
-+#define SYS_CTRL_CLK_SD                 3
-+#define SYS_CTRL_CLK_SATA               4
-+#define SYS_CTRL_CLK_I2S                5
-+#define SYS_CTRL_CLK_USBHS              6
-+#define SYS_CTRL_CLK_MACA               7
-+#define SYS_CTRL_CLK_MAC                SYS_CTRL_CLK_MACA
-+#define SYS_CTRL_CLK_PCIEA              8
-+#define SYS_CTRL_CLK_STATIC             9
-+#define SYS_CTRL_CLK_MACB               10
-+#define SYS_CTRL_CLK_PCIEB              11
-+#define SYS_CTRL_CLK_REF600             12
-+#define SYS_CTRL_CLK_USBDEV             13
-+#define SYS_CTRL_CLK_DDR                14
-+#define SYS_CTRL_CLK_DDRPHY             15
-+#define SYS_CTRL_CLK_DDRCK              16
-+
-+/* Regmap offsets */
-+#define CLK_SET_REGOFFSET               0x2c
-+#define CLK_CLR_REGOFFSET               0x30
-+#define RST_SET_REGOFFSET               0x34
-+#define RST_CLR_REGOFFSET               0x38
-+#define SECONDARY_SEL_REGOFFSET         0x14
-+#define TERTIARY_SEL_REGOFFSET          0x8c
-+#define QUATERNARY_SEL_REGOFFSET        0x94
-+#define DEBUG_SEL_REGOFFSET             0x9c
-+#define ALTERNATIVE_SEL_REGOFFSET       0xa4
-+#define PULLUP_SEL_REGOFFSET            0xac
-+#define SEC_SECONDARY_SEL_REGOFFSET     0x100014
-+#define SEC_TERTIARY_SEL_REGOFFSET      0x10008c
-+#define SEC_QUATERNARY_SEL_REGOFFSET    0x100094
-+#define SEC_DEBUG_SEL_REGOFFSET         0x10009c
-+#define SEC_ALTERNATIVE_SEL_REGOFFSET   0x1000a4
-+#define SEC_PULLUP_SEL_REGOFFSET        0x1000ac
-+
-+
-+struct oxnas_restart_context {
-+	struct regmap *sys_ctrl;
-+	struct notifier_block restart_handler;
-+};
-+
-+static int oxnas_restart_handle(struct notifier_block *this,
-+				 unsigned long mode, void *cmd)
-+{
-+	struct oxnas_restart_context *ctx = container_of(this, struct
-+							oxnas_restart_context,
-+							restart_handler);
-+	u32 value;
-+
-+	/* Assert reset to cores as per power on defaults
-+	 * Don't touch the DDR interface as things will come to an impromptu stop
-+	 * NB Possibly should be asserting reset for PLLB, but there are timing
-+	 *    concerns here according to the docs */
-+	value = BIT(SYS_CTRL_RST_COPRO)		|
-+		BIT(SYS_CTRL_RST_USBHS)		|
-+		BIT(SYS_CTRL_RST_USBHSPHYA)	|
-+		BIT(SYS_CTRL_RST_MACA)		|
-+		BIT(SYS_CTRL_RST_PCIEA)		|
-+		BIT(SYS_CTRL_RST_SGDMA)		|
-+		BIT(SYS_CTRL_RST_CIPHER)	|
-+		BIT(SYS_CTRL_RST_SATA)		|
-+		BIT(SYS_CTRL_RST_SATA_LINK)	|
-+		BIT(SYS_CTRL_RST_SATA_PHY)	|
-+		BIT(SYS_CTRL_RST_PCIEPHY)	|
-+		BIT(SYS_CTRL_RST_STATIC)	|
-+		BIT(SYS_CTRL_RST_UART1)		|
-+		BIT(SYS_CTRL_RST_UART2)		|
-+		BIT(SYS_CTRL_RST_MISC)		|
-+		BIT(SYS_CTRL_RST_I2S)		|
-+		BIT(SYS_CTRL_RST_SD)		|
-+		BIT(SYS_CTRL_RST_MACB)		|
-+		BIT(SYS_CTRL_RST_PCIEB)		|
-+		BIT(SYS_CTRL_RST_VIDEO)		|
-+		BIT(SYS_CTRL_RST_USBHSPHYB)	|
-+		BIT(SYS_CTRL_RST_USBDEV);
-+
-+	regmap_write(ctx->sys_ctrl, RST_SET_REGOFFSET, value);
-+
-+	/* Release reset to cores as per power on defaults */
-+	regmap_write(ctx->sys_ctrl, RST_CLR_REGOFFSET, BIT(SYS_CTRL_RST_GPIO));
-+
-+	/* Disable clocks to cores as per power-on defaults - must leave DDR
-+	 * related clocks enabled otherwise we'll stop rather abruptly. */
-+	value =
-+		BIT(SYS_CTRL_CLK_COPRO)		|
-+		BIT(SYS_CTRL_CLK_DMA)		|
-+		BIT(SYS_CTRL_CLK_CIPHER)	|
-+		BIT(SYS_CTRL_CLK_SD)		|
-+		BIT(SYS_CTRL_CLK_SATA)		|
-+		BIT(SYS_CTRL_CLK_I2S)		|
-+		BIT(SYS_CTRL_CLK_USBHS)		|
-+		BIT(SYS_CTRL_CLK_MAC)		|
-+		BIT(SYS_CTRL_CLK_PCIEA)		|
-+		BIT(SYS_CTRL_CLK_STATIC)	|
-+		BIT(SYS_CTRL_CLK_MACB)		|
-+		BIT(SYS_CTRL_CLK_PCIEB)		|
-+		BIT(SYS_CTRL_CLK_REF600)	|
-+		BIT(SYS_CTRL_CLK_USBDEV);
-+
-+	regmap_write(ctx->sys_ctrl, CLK_CLR_REGOFFSET, value);
-+
-+	/* Enable clocks to cores as per power-on defaults */
-+
-+	/* Set sys-control pin mux'ing as per power-on defaults */
-+	regmap_write(ctx->sys_ctrl, SECONDARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, TERTIARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, QUATERNARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, DEBUG_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, ALTERNATIVE_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, PULLUP_SEL_REGOFFSET, 0);
-+
-+	regmap_write(ctx->sys_ctrl, SEC_SECONDARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, SEC_TERTIARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, SEC_QUATERNARY_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, SEC_DEBUG_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, SEC_ALTERNATIVE_SEL_REGOFFSET, 0);
-+	regmap_write(ctx->sys_ctrl, SEC_PULLUP_SEL_REGOFFSET, 0);
-+
-+	/* No need to save any state, as the ROM loader can determine whether
-+	 * reset is due to power cycling or programatic action, just hit the
-+	 * (self-clearing) CPU reset bit of the block reset register */
-+	value =
-+		BIT(SYS_CTRL_RST_SCU) |
-+		BIT(SYS_CTRL_RST_ARM0) |
-+		BIT(SYS_CTRL_RST_ARM1);
-+
-+	regmap_write(ctx->sys_ctrl, RST_SET_REGOFFSET, value);
-+
-+	pr_emerg("Unable to restart system\n");
-+	return NOTIFY_DONE;
-+}
-+
-+static int oxnas_restart_probe(struct platform_device *pdev)
-+{
-+	struct oxnas_restart_context *ctx;
-+	struct regmap *sys_ctrl;
-+	struct device *dev = &pdev->dev;
-+	int err = 0;
-+
-+	sys_ctrl = syscon_regmap_lookup_by_compatible("oxsemi,ox820-sys-ctrl");
-+	if (IS_ERR(sys_ctrl))
-+		return PTR_ERR(sys_ctrl);
-+
-+	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->sys_ctrl = sys_ctrl;
-+	ctx->restart_handler.notifier_call = oxnas_restart_handle;
-+	ctx->restart_handler.priority = 192;
-+	err = register_restart_handler(&ctx->restart_handler);
-+	if (err)
-+		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
-+
-+	return err;
-+}
-+
-+static const struct of_device_id oxnas_restart_of_match[] = {
-+	{ .compatible = "oxsemi,ox820-sys-ctrl" },
-+	{}
-+};
-+
-+static struct platform_driver oxnas_restart_driver = {
-+	.probe = oxnas_restart_probe,
-+	.driver = {
-+		.name = "oxnas-chip-reset",
-+		.of_match_table = oxnas_restart_of_match,
-+	},
-+};
-+builtin_platform_driver(oxnas_restart_driver);
--- 
-2.21.0
+Yes, return in each case would probably be cleaner for consistency
+with the default case.  Either that or set ret and break in that
+path as well.
+
+> >   
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +/* Set the most appropriate IIO channel voltage reference scale
+> >> + * based on the battery's max voltage.
+> >> + */
+> >> +static int ingenic_battery_set_scale(struct ingenic_battery *bat)
+> >> +{
+> >> +	const int *scale_raw;
+> >> +	int scale_len, scale_type, best_idx = -1, best_mV, max_raw, i, ret;
+> >> +	u64 max_mV;
+> >> +
+> >> +	ret = iio_read_max_channel_raw(bat->channel, &max_raw);
+> >> +	if (ret) {
+> >> +		dev_err(bat->dev, "Unable to read max raw channel value\n");
+> >> +		return ret;
+> >> +	}
+> >> +
+> >> +	ret = iio_read_avail_channel_attribute(bat->channel, &scale_raw,
+> >> +					       &scale_type, &scale_len,
+> >> +					       IIO_CHAN_INFO_SCALE);
+> >> +	if (ret < 0) {
+> >> +		dev_err(bat->dev, "Unable to read channel avail scale\n");
+> >> +		return ret;
+> >> +	}  
+> > This works under the constraints of knowing what ADC we are talking to, 
+> > but
+> > this isn't generic.  The relationship between scale and the range isn't 
+> > always
+> > direct.  i.e. there are devices where you sample the same range at a 
+> > lower
+> > scale to be able to read it faster (can be thought of as oversampling, 
+> > or
+> > just not running the last stages of a pipelined ADC).
+> > Anyhow, doesn't matter here as I assume this is fine on this part.
+> >   
+> >> +	if (ret != IIO_AVAIL_LIST || scale_type != IIO_VAL_FRACTIONAL_LOG2)
+> >> +		return -EINVAL;
+> >> +
+> >> +	max_mV = bat->info.voltage_max_design_uv / 1000;
+> >> +
+> >> +	for (i = 1; i < scale_len; i += 2) {
+> >> +		u64 scale_mV = (max_raw * scale_raw[i - 1]) >> scale_raw[i];  
+> > Not keen on the offset in the index being backwards.
+> > 
+> > This would be clearer I think as
+> > 
+> > for (i = 0; i < scale_len; i+= 2) {
+> > 	u64 scale_mv = (max_raw * scale_raw[i]) >> scale_raw[i + 1];
+> > 	...
+> > 	best_idx = i;
+> > }
+> >   
+> >> +
+> >> +		if (scale_mV < max_mV)
+> >> +			continue;
+> >> +
+> >> +		if (best_idx >= 0 && scale_mV > best_mV)
+> >> +			continue;
+> >> +
+> >> +		best_mV = scale_mV;
+> >> +		best_idx = i - 1;
+> >> +	}
+> >> +
+> >> +	if (best_idx < 0) {
+> >> +		dev_err(bat->dev, "Unable to find matching voltage scale\n");
+> >> +		return -EINVAL;
+> >> +	}
+> >> +
+> >> +	return iio_write_channel_attribute(bat->channel,
+> >> +					   scale_raw[best_idx],
+> >> +					   scale_raw[best_idx+1],  
+> > 
+> > Spacing around that +.
+> >   
+> >> +					   IIO_CHAN_INFO_SCALE);
+> >> +}
+> >> +
+> >> +static enum power_supply_property ingenic_battery_properties[] = {
+> >> +	POWER_SUPPLY_PROP_HEALTH,
+> >> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> >> +	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+> >> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+> >> +};
+> >> +
+> >> +static int ingenic_battery_probe(struct platform_device *pdev)
+> >> +{
+> >> +	struct device *dev = &pdev->dev;
+> >> +	struct ingenic_battery *bat;
+> >> +	struct power_supply_config psy_cfg = {};
+> >> +	struct power_supply_desc *desc;
+> >> +	int ret;
+> >> +
+> >> +	bat = devm_kzalloc(dev, sizeof(*bat), GFP_KERNEL);
+> >> +	if (!bat)
+> >> +		return -ENOMEM;
+> >> +
+> >> +	bat->dev = dev;
+> >> +	bat->channel = devm_iio_channel_get(dev, "battery");
+> >> +	if (IS_ERR(bat->channel))
+> >> +		return PTR_ERR(bat->channel);
+> >> +
+> >> +	desc = &bat->desc;
+> >> +	desc->name = "jz-battery";
+> >> +	desc->type = POWER_SUPPLY_TYPE_BATTERY;
+> >> +	desc->properties = ingenic_battery_properties;
+> >> +	desc->num_properties = ARRAY_SIZE(ingenic_battery_properties);
+> >> +	desc->get_property = ingenic_battery_get_property;
+> >> +	psy_cfg.drv_data = bat;
+> >> +	psy_cfg.of_node = dev->of_node;
+> >> +
+> >> +	bat->battery = devm_power_supply_register(dev, desc, &psy_cfg);
+> >> +	if (IS_ERR(bat->battery)) {
+> >> +		dev_err(dev, "Unable to register battery\n");
+> >> +		return PTR_ERR(bat->battery);
+> >> +	}
+> >> +
+> >> +	ret = power_supply_get_battery_info(bat->battery, &bat->info);
+> >> +	if (ret) {
+> >> +		dev_err(dev, "Unable to get battery info: %d\n", ret);
+> >> +		return ret;
+> >> +	}
+> >> +	if (bat->info.voltage_min_design_uv < 0) {
+> >> +		dev_err(dev, "Unable to get voltage min design\n");
+> >> +		return bat->info.voltage_min_design_uv;
+> >> +	}
+> >> +	if (bat->info.voltage_max_design_uv < 0) {
+> >> +		dev_err(dev, "Unable to get voltage max design\n");
+> >> +		return bat->info.voltage_max_design_uv;
+> >> +	}
+> >> +
+> >> +	return ingenic_battery_set_scale(bat);
+> >> +}
+> >> +
+> >> +#ifdef CONFIG_OF
+> >> +static const struct of_device_id ingenic_battery_of_match[] = {
+> >> +	{ .compatible = "ingenic,jz4740-battery", },
+> >> +	{ },
+> >> +};
+> >> +MODULE_DEVICE_TABLE(of, ingenic_battery_of_match);
+> >> +#endif
+> >> +
+> >> +static struct platform_driver ingenic_battery_driver = {
+> >> +	.driver = {
+> >> +		.name = "ingenic-battery",
+> >> +		.of_match_table = of_match_ptr(ingenic_battery_of_match),
+> >> +	},
+> >> +	.probe = ingenic_battery_probe,
+> >> +};
+> >> +module_platform_driver(ingenic_battery_driver);  
+> 
