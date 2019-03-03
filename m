@@ -1,135 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2][RFC v2] ACPI: Update cpuinfo.max after bootup if necessary
-Date: Sun, 3 Mar 2019 18:04:26 +0100
-Message-ID: <CAJZ5v0jkMDXQOheu9yVzZt-E=_YHrVvYwuWVREO4GxV8WdsSXQ@mail.gmail.com>
-References: <cover.1551375162.git.yu.c.chen@intel.com> <bd3c5e04e882e5a4c977211a8d268440b36276a4.1551375162.git.yu.c.chen@intel.com>
- <CAJZ5v0g4CGfAMH0pM-wWSt6pXZrw3ckqBbbUzNwjqScwRjrK3g@mail.gmail.com> <20190302100420.GA7044@chenyu-office.sh.intel.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system resume
+Date: Sun, 03 Mar 2019 18:24:33 +0100
+Message-ID: <2884043.Jv1Mn93hE8@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190302100420.GA7044@chenyu-office.sh.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yu Chen <yu.chen.surf@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 2, 2019 at 10:55 AM Yu Chen <yu.c.chen@intel.com> wrote:
->
-> On Thu, Feb 28, 2019 at 11:56:48PM +0100, Rafael J. Wysocki wrote:
-> > On Thu, Feb 28, 2019 at 6:59 PM Chen Yu <yu.c.chen@intel.com> wrote:
-> > >
-> > > On Dell Inc. XPS13 9333, the BIOS changes the value of
-> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE at runtime (e.g., when
-> > > the power source changes), the maximum frequency of the
-> > > CPU is not updated accordingly. This is due to the policy's
-> > > cpuinfo.max is not updated when _PPC notifier fires.
-> > >
-> > > Fix this problem by updating the policy's cpuinfo.max when
-> > > necessary.
-> > >
-> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-> > > Reported-and-tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-> > > Originally-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > ---
-> > >  drivers/cpufreq/cpufreq.c      |  2 ++
-> > >  drivers/cpufreq/intel_pstate.c | 15 +++++++++++++--
-> > >  2 files changed, 15 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index e35a886e00bc..95e08816b512 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -2237,6 +2237,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> > >
-> > >         policy->min = new_policy->min;
-> > >         policy->max = new_policy->max;
-> > > +       policy->cpuinfo.max_freq = new_policy->cpuinfo.max_freq;
-> > > +       policy->cpuinfo.min_freq = new_policy->cpuinfo.min_freq;
-> > >         trace_cpu_frequency_limits(policy);
-> > >
-> > >         policy->cached_target_freq = UINT_MAX;
-> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > > index dd66decf2087..841c74f69f66 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -2081,11 +2081,17 @@ static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
-> > >
-> > >  static int intel_pstate_verify_policy(struct cpufreq_policy *policy)
-> > >  {
-> > > +       int max_freq;
-> > >         struct cpudata *cpu = all_cpu_data[policy->cpu];
-> > >
-> > >         update_turbo_state();
-> > > +       max_freq = intel_pstate_get_max_freq(cpu);
-> > > +
-> > > +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
-> > > +               policy->cpuinfo.max_freq = policy->max = max_freq;
-> >
-> > Updating cpuinfo.max_freq here only causes the current limit to be
-> > reported via sysfs, because intel_pstate doesn't actually use
-> > cpuinfo.max_freq for anything and the core doesn't enforce it as a
-> > limit.
-> >
-> > All of the computations in the active mode in the driver actually use
-> > the current limit anyway AFAICS.
-> >
-> Yes, but it looks like we should also take care of the cpuinfo.max
-> if it changes, I searched the code, it seems that other components
-> might use the policy's cpuinfo.max for some purpose. They might use
-> cpufreq_cpu_get() to get the policy, and use the cpuinfo.max_freq
-> directly, no matter what the mode intel_pstate is in. Such as kvm
-> might use it as the max tsc khz if the tsc is not constant. And i915
-> might consider the cpuinfo.max_freq to adjust the IA frequency on
-> gen6 platforms. So changing cpuinfo.max might also impact not only
-> cpufreq but also other components too.
-> > > +
-> > >         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-> > > -                                    intel_pstate_get_max_freq(cpu));
-> > > +                                    max_freq);
-> > >
-> > >         if (policy->policy != CPUFREQ_POLICY_POWERSAVE &&
-> > >             policy->policy != CPUFREQ_POLICY_PERFORMANCE)
-> > > @@ -2192,11 +2198,16 @@ static struct cpufreq_driver intel_pstate = {
-> > >
-> > >  static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
-> > >  {
-> > > +       int max_freq;
-> > >         struct cpudata *cpu = all_cpu_data[policy->cpu];
-> > >
-> > >         update_turbo_state();
-> > > +       max_freq = intel_pstate_get_max_freq(cpu);
-> > > +
-> > > +       if (acpi_ppc && max_freq != policy->cpuinfo.max_freq)
-> > > +               policy->cpuinfo.max_freq = policy->max = max_freq;
-> >
-> > In this case (passive mode) updating cpuinfo.max_freq will actually
-> > cause governors to use the new value in computations, so the P-state
-> > selection will work somewhat differently, but that isn't really
-> > consistent with what acpi-cpufreq does and with setting no_turbo in
-> > the intel_pstate sysfs to 1 without this patch.
-> >
-> > With acpi-cpufreq cpuinfo.max_freq is always the max frequency in the
-> > _PSS table regardless of what the _PSS limit is.  Also setting
-> > no_turbo to 1 in intel_pstate without this patch doesn't cause
-> > cpuinfo.max_freq to change and I don't really think that it should.
-> >
-> > I would be tempted to always initialize cpuinfo.max_freq to the max
-> > turbo frequency, but there is a concern about systems in which
-> > MSR_IA32_MISC_ENABLE_TURBO_DISABLE is never set on the fly (just in
-> > the BIOS setup as it should be) and where it doesn't make sense to
-> > consider turbo frequencies at all.
-> Ok, maybe we can check the bit during boot(consider BIOS's setting)?
-> >
-> > >         cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
-> > > -                                    intel_pstate_get_max_freq(cpu));
-> > > +                                    max_freq);
-> > >
-> > >         intel_pstate_adjust_policy_max(policy, cpu);
-> > >
-> > > --
-> >
-> > It looks like I need to think about this a bit more.
-> Ok, I'll test the patch you sent out.
+From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-Please do.
+ath10k_mac_vif_chan() always returns an error for the given vif
+during system-wide resume which reliably triggers two WARN_ON()s
+in ath10k_bss_info_changed() and they are not particularly
+useful in that code path, so drop them.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+---
+ drivers/net/wireless/ath/ath10k/mac.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/net/wireless/ath/ath10k/mac.c
+===================================================================
+--- linux-pm.orig/drivers/net/wireless/ath/ath10k/mac.c
++++ linux-pm/drivers/net/wireless/ath/ath10k/mac.c
+@@ -5705,7 +5705,7 @@ static void ath10k_bss_info_changed(stru
+ 	}
+ 
+ 	if (changed & BSS_CHANGED_MCAST_RATE &&
+-	    !WARN_ON(ath10k_mac_vif_chan(arvif->vif, &def))) {
++	    !ath10k_mac_vif_chan(arvif->vif, &def)) {
+ 		band = def.chan->band;
+ 		rateidx = vif->bss_conf.mcast_rate[band] - 1;
+ 
+@@ -5743,7 +5743,7 @@ static void ath10k_bss_info_changed(stru
+ 	}
+ 
+ 	if (changed & BSS_CHANGED_BASIC_RATES) {
+-		if (WARN_ON(ath10k_mac_vif_chan(vif, &def))) {
++		if (ath10k_mac_vif_chan(vif, &def)) {
+ 			mutex_unlock(&ar->conf_mutex);
+ 			return;
+ 		}
