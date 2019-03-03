@@ -1,43 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system
- resume
-Date: Sun, 03 Mar 2019 18:24:55 +0100
-Message-ID: <2109586.0yxO8rlmZ5@aspire.rjw.lan>
-References: <3687330.FyvvPAkb64@aspire.rjw.lan>
- <87h8cmhfnq.fsf@kamboji.qca.qualcomm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
+ global turbo disable/enable
+Date: Sun, 03 Mar 2019 13:20:40 -0800
+Message-ID: <f214b0d82fce14c374aa6b548742c999513d9046.camel@linux.intel.com>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+         <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+         <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org>
-In-Reply-To: <87h8cmhfnq.fsf@kamboji.qca.qualcomm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/ath10k/>
-List-Post: <mailto:ath10k@lists.infradead.org>
-List-Help: <mailto:ath10k-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=subscribe>
-Sender: "ath10k" <ath10k-bounces@lists.infradead.org>
-Errors-To: ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org
-To: Kalle Valo <kvalo@codeaurora.org>
-Cc: Todd Brandt <todd.e.brandt@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, ath10k@lists.infradead.org, Linux PM <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 1, 2019 2:45:29 PM CET Kalle Valo wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+On Sun, 2019-03-03 at 18:03 +0100, Rafael J. Wysocki wrote:
+> On Fri, Mar 1, 2019 at 6:39 PM Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
+> > > Hi All,
+> > > 
+> > > This is how I would fix the issue reported in BZ 200759 (see this
+> > > patch series
+> > > from Yu too: https://marc.info/?l=linux-pm&m=155137672924029&w=2)
+> > > .
+> > > 
+> > > Patch [1/2] causes intel_pstate to update all policies if it gets
+> > > a
+> > > _PPC change
+> > > notification and sees a global turbo disable/enable change.
+> > > 
+> > > Patch [2/2] makes it update cpuinfo.max_freq for all policies in
+> > > those cases.
+> > > 
+> > > The patches here have not been tested yet, so testing would be
+> > > much
+> > > appreciated.
+> > > 
+> > > Of course, comments are welcome too!
+> > 
+> > This is the only platform, someone reported such issue.
 > 
-> > rom: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> I don't think this matters.
 > 
-> 'F' chraracter is missing.
+> First, it doesn't mean that no other problems have this problem.
 > 
-> > ath10k_mac_vif_chan() always returns an error for the given vif
-> > during system-wide resume which reliably triggers two WARN_ON()s
-> > in ath10k_bss_info_changed() and they are not particularly
-> > useful in that code path, so drop them.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> And could you CC linux-wireless, please? That way the patchwork will see
-> it and I can take it directly from there.
-
-Done, thank you!
+> Second, the current handling of MSR_IA32_MISC_ENABLE_TURBO_DISABLE
+> changes in intel_pstate is not sufficient if the changes is from set
+> to unset anyway.
+Any platform with HWP, you can't even notify of this change. So any
+platform beyond SKL is not useful.
+Fixing is always good :-) 
