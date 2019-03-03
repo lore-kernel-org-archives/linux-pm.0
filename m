@@ -1,7 +1,7 @@
 From: Talel Shenhar <talel@amazon.com>
-Subject: [PATCH 1/2] dt-bindings: thermal: thermal_mmio: Add binding documentation
-Date: Sun, 3 Mar 2019 10:49:25 +0200
-Message-ID: <1551602966-2334-2-git-send-email-talel@amazon.com>
+Subject: [PATCH 2/2] thermal: Introduce thermal MMIO
+Date: Sun, 3 Mar 2019 10:49:26 +0200
+Message-ID: <1551602966-2334-3-git-send-email-talel@amazon.com>
 References: <1551602966-2334-1-git-send-email-talel@amazon.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -11,192 +11,278 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, talel@amazon.com, hhhawa@amazon.com, jonnyc@amazon.com, ronenk@amazon.com, hanochu@amazon.com
 List-Id: linux-pm@vger.kernel.org
 
-Add thermal binding documentation for thermal MMIO driver.
+This patch introduces a generic thermal driver, which enables easy
+connectivity between "simple" thermal HW devices and the thermal
+subsystem.
+
+"simple" may be any system that allows temperature reading via a single
+memory-mapped read, be it register or shared memory, and that doesn't
+require any HW configuration to be done by the driver.
+Such "simple" HW is a candidate to work with this driver.
 
 Signed-off-by: Talel Shenhar <talel@amazon.com>
 ---
- .../devicetree/bindings/thermal/thermal_mmio.txt   | 173 +++++++++++++++++++++
- 1 file changed, 173 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal_mmio.txt
+ drivers/thermal/Kconfig        |  11 +++
+ drivers/thermal/Makefile       |   3 +
+ drivers/thermal/thermal_mmio.c | 214 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 228 insertions(+)
+ create mode 100644 drivers/thermal/thermal_mmio.c
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal_mmio.txt b/Documentation/devicetree/bindings/thermal/thermal_mmio.txt
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 1775d44..0033ba2 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -199,6 +199,17 @@ config THERMAL_EMULATION
+ 	  because userland can easily disable the thermal policy by simply
+ 	  flooding this sysfs node with low temperature values.
+ 
++config THERMAL_MMIO
++	bool
++	depends on OF || COMPILE_TEST
++	prompt "mmio thermal driver"
++	help
++	  This option enables the generic thermal MMIO driver that will use
++	  memory-mapped reads to get the temperature.  Any HW/System that
++	  allows temperature reading by a single memory-mapped reading, be it
++	  register or shared memory, is a potential candidate to work with this
++	  driver.
++
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on ARCH_HISI || COMPILE_TEST
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 82bb50d..beec616 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -27,6 +27,9 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
+ # devfreq cooling
+ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+ 
++# generic memory mapped thermal driver
++thermal_sys-$(CONFIG_THERMAL_MMIO)	+= thermal_mmio.o
++
+ # platform thermal drivers
+ obj-y				+= broadcom/
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
 new file mode 100644
-index 0000000..1f4d738
+index 0000000..1119e71
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/thermal_mmio.txt
-@@ -0,0 +1,173 @@
-+Generic Thermal MMIO Driver
++++ b/drivers/thermal/thermal_mmio.c
+@@ -0,0 +1,214 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
++ */
 +
-+The generic thermal driver enables easy connectivity between "simple"
-+thermal HW devices to the thermal subsystem. "simple" - thermal HW that
-+doesn't need any configuration (such as power reset or clock enable) by a
-+driver and only exports the temperature via simple MMIO access, or,
-+alternatively, all the configuration is done by other entity (e.g.
-+bootloader).
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
 +
-+Any system that allows temperature reading via a single memory map read, be
-+it register or shared memory, is a potential candidate to work with this
-+driver.
-+This driver allows manipulations on the read value in order to allow some
-+flexibility for the various thermal HW, e.g. sensor-factor which will be
-+multiplied by the read value.
++#define THERMAL_MMIO_DEFAULT_SENSOR_WIDTH sizeof(u32)
++#define THERMAL_MMIO_DEFAULT_SENSOR_FACTOR 1
++#define THERMAL_MMIO_DEFAULT_SENSOR_BIAS 0
++#define THERMAL_MMIO_DEFAULT_SENSOR_DIVIDER 1
 +
-+This driver is most suitable for cases such as the following:
-+- The entire thermal HW setup (e.g. configure the thermal HW to work in
-+  continuous mode) is done by another SW entity (e.g. bootloader) and all
-+  that is left is to read the current temperature from a register
-+- The thermal reading is done by an external CPU (e.g. micro-controller)
-+  and that CPU is exporting the reading via a shared memory
-+- The thermal HW setup and reading is done via CPLD, which exports the
-+  current temperature to the system via a register
-+- The thermal HW is working out-of-the-box and only reports temperature via
-+  a single register access
++struct thermal_mmio {
++	void __iomem *mmio_base;
++	u32 (*read_mmio)(void __iomem *mmio_base);
++	int width;
++	u32 mask;
++	int factor;
++	int bias;
++	int divider;
++};
 +
-+Some examples for cases that this driver is not suitable for:
-+- Your HW need clock enabling to be done by thermal driver
-+- Your HW need some registers configurations in order to start reporting
-+  temperatures and it is not doable by other entities (e.g. bootloader)
-+- Your HW allows reading of temperatures only between ADCs (or any other
-+  timing constrains)
-+- In case your HW was configured by a bootloader and it lose the
-+  configuration as part of low-power-state and need to be reconfigured.
-+  (bootloader configuration typically is not sustained across low power
-+  states)
-+- In case the reading from the MMIO require any type of locking
++static u32 thermal_mmio_readb(void __iomem *mmio_base)
++{
++	return readb(mmio_base);
++}
 +
-+So the only operation this driver will do is MMIO read for the temperature.
-+In case you are using HW that require some configurations this driver is
-+not suitable (you can decide to move all the configuration logic into your
-+bootloader and only leave the temperature reading to this driver but this
-+is up to you).
++static u32 thermal_mmio_readw(void __iomem *mmio_base)
++{
++	return readw(mmio_base);
++}
 +
-+An example of a system that uses this driver is the Amazon Nitro SoC in
-+which there is the main CPU and micro-controller:
-+(1) The micro-controller accesses an SBUS controller to read the thermal
-+    sensor from an SBUS slave called Avago Technologies digital
-+    Temperature/Voltage Sensor (ip16_SENS_thermvolt25_0)
-+(2) Once the micro-controller gathers the temperature it relays it to the
-+    main CPU via a Shared Integrated RAM which is MMIO accessible by the CPU
-+(3) The thermal_mmio driver that runs on the main CPU will read the
-+    temperature via an MMIO access to the Shared RAM
++static u32 thermal_mmio_readl(void __iomem *mmio_base)
++{
++	return readl(mmio_base);
++}
 +
-++------------------+      +----------------+
-+|                  | (3)  |                |
-+|     Main CPU     +----->+ Integrated RAM |
-+|                  |      |                |
-++------------------+      +---------^------+
-+                                    |(2)
-++-----------------+       +------------------+
-+|                 |  (1)  |                  |
-+| SBUS controller <-------+ micro-controller |
-+|                 |       |                  |
-++--------+--------+       +------------------+
-+         |
-++--------v---------------------+
-+|                              |
-+|  Avago Technologies digital  |
-+|  Temperature/Voltage Sensor  |
-+|  (ip16_SENS_thermvolt25_0)   |
-+|                              |
-++------------------------------+
++static int thermal_mmio_get_temperature(void *private, int *temp)
++{
++	int t;
++	struct thermal_mmio *sensor =
++		(struct thermal_mmio *)private;
 +
-+Required properties:
-+- compatible: "thermal-mmio".
-+- reg: The physical base address and length of the sensor's registers.
-+- #thermal-sensor-cells: Must be 1. See ./thermal.txt for a description.
++	t = sensor->read_mmio(sensor->mmio_base) & sensor->mask;
++	t *= sensor->factor;
++	t += sensor->bias;
++	t /= sensor->divider;
 +
-+Optional properties:
-+- sensor-width: Width (in bytes) of each consecutive sensor.
-+		 Supported: 1, 2, 4.
-+		 (Default = 4)
-+- sensor-mask: Mask to be applied on the raw read value before any
-+	       calculation.
-+	       (Default = 0xFFFFFFFF)
-+- sensor-factor: Scale value by which to multiple the masked read value
-+		 This is a signed 32 bit value.
-+		 (Default = 1)
-+- sensor-bias: Bias value to be added to the scaled value.
-+	       This is a signed 32 bit value.
-+	       (Default = 0)
-+- sensor-divider: Dividing value by which to divide the calculated value.
-+		  Diving will be Integer Division.
-+		  This is a unsigned 32 bit value.
-+		  (Default = 1)
++	*temp = t;
 +
-+Conversion formula from HW MMIO read value to millidegrees (Celsius):
-+T_millidegrees = (bias + (T_raw & mask)*factor)/divider
++	return 0;
++}
 +
-+Example 1, two thermal devices with one thermal sensor each, that uses only
-+the required properties (uses default):
++static struct thermal_zone_of_device_ops thermal_mmio_ops = {
++	.get_temp = thermal_mmio_get_temperature,
++};
 +
-+	thermal_d1: thermal_d1 {
-+		compatible = "thermal-mmio";
-+		reg = <0x0 0x05002860 0x0 0x4>;
-+		#thermal-sensor-cells = <0x1>;
-+	};
++static int thermal_mmio_parse_dt(struct platform_device *pdev,
++				 struct thermal_mmio *sensor)
++{
++	struct resource *resource;
++	int ret;
 +
-+	thermal_d2: thermal_d2 {
-+		compatible = "thermal-mmio";
-+		reg = <0x0 0x05000730 0x0 0x4>;
-+		#thermal-sensor-cells = <0x1>;
-+	};
++	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (IS_ERR(resource)) {
++		dev_err(&pdev->dev,
++			"fail to get platform memory resource (%ld)\n",
++			PTR_ERR(resource));
++		return PTR_ERR(resource);
++	}
 +
-+	thermal-zones {
-+		thermal_d1_z0 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&thermal_d1 0>;
-+			trips {
-+				thermal_d1_z0_crit {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
++	sensor->mmio_base = devm_ioremap_resource(&pdev->dev, resource);
++	if (IS_ERR(sensor->mmio_base)) {
++		dev_err(&pdev->dev, "failed to ioremap memory (%ld)\n",
++			PTR_ERR(sensor->mmio_base));
++		return PTR_ERR(sensor->mmio_base);
++	}
 +
-+		};
++	ret = of_property_read_u32(pdev->dev.of_node, "sensor-width",
++				   &sensor->width);
++	if (ret < 0) {
++		sensor->width = THERMAL_MMIO_DEFAULT_SENSOR_WIDTH;
++		dev_dbg(&pdev->dev,
++			"sensor-width undefined (%d) - using default: %d\n",
++			ret, sensor->width);
++	}
 +
-+		thermal_d2_z0 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&thermal_d2 0>;
-+			trips {
-+				thermal_d2_z0_crit {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
++	ret = of_property_read_u32(pdev->dev.of_node, "sensor-mask",
++				   &sensor->mask);
++	if (ret < 0) {
++		sensor->mask = GENMASK(sizeof(u32) * BITS_PER_BYTE - 1, 0);
++		dev_dbg(&pdev->dev,
++			"sensor-mask undefined (%d) - using default: 0x%x\n",
++			ret, sensor->mask);
++	}
 +
-+Example 2, one thermal device with two sensors of 6 bits each each, that
-+has a factor of -5, bias of 23 and dividing of 2:
++	ret = of_property_read_s32(pdev->dev.of_node, "sensor-factor",
++				   &sensor->factor);
++	if (ret < 0) {
++		sensor->factor = THERMAL_MMIO_DEFAULT_SENSOR_FACTOR;
++		dev_dbg(&pdev->dev,
++			"sensor-factor undefined (%d) - using default: %d\n",
++			ret, sensor->factor);
++	}
 +
-+	thermal_d3: thermal_d3 {
-+		compatible = "thermal-mmio";
-+		reg = <0x0 0x05005700 0x0 0x2>;
-+		#thermal-sensor-cells = <0x1>;
-+		sensor-width = <1>;
-+		sensor-mask = <0x3F>;
-+		sensor-factor = <(-5)>;
-+		sensor-bias = <23>;
-+		sensor-divider = <2>;
-+	};
++	ret = of_property_read_s32(pdev->dev.of_node, "sensor-bias",
++				   &sensor->bias);
++	if (ret < 0) {
++		sensor->bias = THERMAL_MMIO_DEFAULT_SENSOR_BIAS;
++		dev_dbg(&pdev->dev,
++			"sensor-bias undefined (%d) - using default: %d\n",
++			ret, sensor->bias);
++	}
 +
-+	thermal-zones {
-+		thermal_d3 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&thermal_d3 0>;
-+			trips {
-+				thermal_d3_z0_crit {
-+					temperature = <105000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
++	ret = of_property_read_u32(pdev->dev.of_node, "sensor-divider",
++				   &sensor->divider);
++	if (ret < 0) {
++		sensor->divider = THERMAL_MMIO_DEFAULT_SENSOR_DIVIDER;
++		dev_dbg(&pdev->dev,
++			"sensor-divider undefined (%d) - using default: %d\n",
++			ret, sensor->divider);
++	}
++
++	/* configuration value sanity */
++	if (sensor->width > resource_size(resource)) {
++		dev_err(&pdev->dev,
++			"too small MMIO size, expected (%d) < supplied (%d)\n",
++			sensor->width, (int)resource_size(resource));
++		return -EINVAL;
++	}
++
++	dev_dbg(&pdev->dev,
++		"width=%d, mask=0x%x factor=%d bias=%d divider=%d\n",
++		sensor->width, sensor->mask, sensor->factor, sensor->bias,
++		sensor->divider);
++
++	return 0;
++}
++
++static int thermal_mmio_probe(struct platform_device *pdev)
++{
++	struct thermal_mmio *sensor;
++	struct thermal_zone_device *thermal_zone;
++	int ret;
++	int temperature;
++
++	sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
++	if (!sensor)
++		return -ENOMEM;
++
++	ret = thermal_mmio_parse_dt(pdev, sensor);
++	if (ret) {
++		dev_err(&pdev->dev, "fail to parse dt\n");
++		return ret;
++	}
++
++	switch (sensor->width) {
++	case sizeof(u8):
++		sensor->read_mmio = thermal_mmio_readb;
++		break;
++	case sizeof(u16):
++		sensor->read_mmio = thermal_mmio_readw;
++		break;
++	case sizeof(u32):
++		sensor->read_mmio = thermal_mmio_readl;
++		break;
++	default:
++		dev_err(&pdev->dev, "bad sensor-width property supplied: %d\n",
++			sensor->width);
++		return -EINVAL;
++	}
++
++	thermal_zone = devm_thermal_zone_of_sensor_register(&pdev->dev,
++							    0,
++							    sensor,
++							    &thermal_mmio_ops);
++	if (IS_ERR(thermal_zone)) {
++		dev_err(&pdev->dev,
++			"failed to register sensor (%ld)\n",
++			PTR_ERR(thermal_zone));
++		return PTR_ERR(thermal_zone);
++	}
++
++	thermal_mmio_get_temperature(sensor, &temperature);
++	dev_info(&pdev->dev,
++		 "thermal mmio sensor %s registered, current temperature: %d\n",
++		 pdev->name, temperature);
++
++	return 0;
++}
++
++static const struct of_device_id thermal_mmio_id_table[] = {
++	{ .compatible = "thermal-mmio" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, thermal_mmio_id_table);
++
++static struct platform_driver thermal_mmio_driver = {
++	.probe = thermal_mmio_probe,
++	.driver = {
++		.name = "thermal-mmio",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(thermal_mmio_id_table),
++	},
++};
++
++module_platform_driver(thermal_mmio_driver);
++
++MODULE_AUTHOR("Talel Shenhar <talel@amazon.com>");
++MODULE_DESCRIPTION("Thermal MMIO Driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.7.4
