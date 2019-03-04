@@ -1,109 +1,90 @@
-From: Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
-Date: Mon,  4 Mar 2019 11:21:11 +0800
-Message-ID: <20190304032111.21770-1-andy.tang@nxp.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
+ global turbo disable/enable
+Date: Sun, 03 Mar 2019 20:06:57 -0800
+Message-ID: <47ce61b9df7701e047ef6f59afd54c854db8a538.camel@linux.intel.com>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+         <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+         <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
+         <f214b0d82fce14c374aa6b548742c999513d9046.camel@linux.intel.com>
+         <CAJZ5v0huRALvfFBeo067dNMyUJn+Oyp8eFR3JRR+C9g7QhaekA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: shawnguo@kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Yuantian Tang <andy.tang@nxp.com>, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0huRALvfFBeo067dNMyUJn+Oyp8eFR3JRR+C9g7QhaekA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-sensor is used to monitor the temperature of core and SoC platform is for
-platform. The current dts only support the first sensor.
-This patch adds the second sensor node to dts to enable it.
+On Sun, 2019-03-03 at 22:51 +0100, Rafael J. Wysocki wrote:
+> On Sun, Mar 3, 2019 at 10:20 PM Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > On Sun, 2019-03-03 at 18:03 +0100, Rafael J. Wysocki wrote:
+> > > On Fri, Mar 1, 2019 at 6:39 PM Srinivas Pandruvada
+> > > <srinivas.pandruvada@linux.intel.com> wrote:
+> > > > 
+> > > > On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
+> > > > > Hi All,
+> > > > > 
+> > > > > This is how I would fix the issue reported in BZ 200759 (see
+> > > > > thisdev
+> > > > > patch series
+> > > > > from Yu too: 
+> > > > > https://marc.info/?l=linux-pm&m=155137672924029&w=2)
+> > > > > .
+> > > > > 
+> > > > > Patch [1/2] causes intel_pstate to update all policies if it
+> > > > > gets
+> > > > > a
+> > > > > _PPC change
+> > > > > notification and sees a global turbo disable/enable change.
+> > > > > 
+> > > > > Patch [2/2] makes it update cpuinfo.max_freq for all policies
+> > > > > in
+> > > > > those cases.
+> > > > > 
+> > > > > The patches here have not been tested yet, so testing would
+> > > > > be
+> > > > > much
+> > > > > appreciated.
+> > > > > 
+> > > > > Of course, comments are welcome too!
+> > > > 
+> > > > This is the only platform, someone reported such issue.
+> > > 
+> > > I don't think this matters.
+> > > 
+> > > First, it doesn't mean that no other problems have this problem.
+> > > 
+> > > Second, the current handling of
+> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE
+> > > changes in intel_pstate is not sufficient if the changes is from
+> > > set
+> > > to unset anyway.
+> > 
+> > Any platform with HWP, you can't even notify of this change. So any
+> > platform beyond SKL is not useful.
+> 
+> Do you mean that HWP platforms don't supply _PPS (as a rule) and so
+> they don't send _PPC notifications?  Is there anything they do
+> instead
+> of it?
+There are other methods like PL1 budget limit for such cases. FW can
+just change the config TDP level.
 
-Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
----
-v2:
-	- Add more information about sensors to description
-PS: In order to keep consistency to the first thermal-zone node, there will
-be "WARNING: line over 80 characters" warnings.
+> 
+> That's fair enough, but the point is that the driver doesn'dev_t do
+> the
+> right thing even if the platform does send a _PPC notification.
+_PPC notification is to indicate levels in _PSS not to disable/enable
+turbo via IA32_MISC_*. The platform could have just set _PPC to 1 or to
+TAR-1. Here _PPC is sent for somthing more than just changing _PSS max
+level. Do we have bug in if _PPC just changes performance level?
 
- arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43 +++++++++++++++++++++--
- 1 files changed, 39 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index 661137f..9f52bc9 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -129,19 +129,19 @@
- 	};
- 
- 	thermal-zones {
--		cpu_thermal: cpu-thermal {
-+		ccu {
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
- 			thermal-sensors = <&tmu 0>;
- 
- 			trips {
--				cpu_alert: cpu-alert {
-+				ccu_alert: ccu-alert {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
- 
--				cpu_crit: cpu-crit {
-+				ccu_crit: ccu-crit {
- 					temperature = <95000>;
- 					hysteresis = <2000>;
- 					type = "critical";
-@@ -150,7 +150,42 @@
- 
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu_alert>;
-+					trip = <&ccu_alert>;
-+					cooling-device =
-+						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		plt {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&tmu 1>;
-+
-+			trips {
-+				plt_alert: plt-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				plt_crit: plt-crit {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&plt_alert>;
- 					cooling-device =
- 						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--- 
-1.7.1
+> 
+> > Fixing is always good :-)
+> 
+> Well, I can only agree with that ...
