@@ -1,80 +1,58 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Mon, 04 Mar 2019 15:04:07 -0800
-Message-ID: <edab7c9f77e682c701c58a02e7b6af70a57abf25.camel@linux.intel.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
-         <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
-         <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
-         <f214b0d82fce14c374aa6b548742c999513d9046.camel@linux.intel.com>
-         <CAJZ5v0huRALvfFBeo067dNMyUJn+Oyp8eFR3JRR+C9g7QhaekA@mail.gmail.com>
-         <47ce61b9df7701e047ef6f59afd54c854db8a538.camel@linux.intel.com>
-         <CAJZ5v0iCVhj-HmToGnSBuYE99LMn0BZpB-Ax48Aqh9hVc1+qwQ@mail.gmail.com>
-         <9099672e17ea9fc7711b34e92ce5a016afb43a0c.camel@linux.intel.com>
-         <CAJZ5v0jzRyz4gZFwJ36feppeEMEzOPJ5Y8weV3pz=+S5ijnEVw@mail.gmail.com>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH resend] thermal: bcm2835: Fix crash in bcm2835_thermal_debugfs
+Date: Mon, 04 Mar 2019 15:58:31 -0800
+Message-ID: <8736o2qjiw.fsf@anholt.net>
+References: <1548755757-79270-1-git-send-email-phil@raspberrypi.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jzRyz4gZFwJ36feppeEMEzOPJ5Y8weV3pz=+S5ijnEVw@mail.gmail.com>
+In-Reply-To: <1548755757-79270-1-git-send-email-phil@raspberrypi.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: Phil Elwell <phil@raspberrypi.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, bcm-kernel-feedback-list@broadcom.com, Stefan Wahren <stefan.wahren@i2se.com>, Geert Uytterhoeven <geert+renesas@glider.be>Phil Elwell <phil@raspberrypi.org>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2019-03-04 at 22:57 +0100, Rafael J. Wysocki wrote:
-> On Mon, Mar 4, 2019 at 7:06 PM Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > 
-> > [...]
-> > > > There are other methods like PL1 budget limit for such cases.
-> > > > FW
-> > > > can
-> > > > just change the config TDP level.
-> > > 
-> > > OK, but that would be done without notification I suppose?
-> > 
-> > There is a notification via processor PCI device (B0D4). This is
-> > passed
-> > to user space to change the power limits. The new element is called
-> > PPCC and it is exposed via sysfs.
-> 
-> What do you mean by "new element" and how exactly is it exposed?
-This is part of DPTF processor ACPI object (INT3401 or B0D4). They are
-exposed in sysfs 
-E.g, /sys/bus/platform/devices/INT3401:00/power_limits/
-There is a thermal uevent sent when they change. Both dptf daemon and
-thermald listen and use to set rapl power-constraints including step
-sizes for control. Someone can write a udev rule to do the same.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > Disabling turbo is not very interesting as there can be more turbo
-> > than
-> > non turbo. So you loose lots of performance. So instead you can
-> > control
-> > power in turbo region to give you more control. _PPC is even less
-> > interesting as you can't control uncore power.
-> 
-> I guess that designers should know about that.  The kernel is on the
-> receiving end here. :-)
-I think they know. Hence you don't see this issue of enable/disable of
-turbo by firmware quite often. This laptop here I guess released in
-beginning of 2014 with Haswell.
+Phil Elwell <phil@raspberrypi.org> writes:
 
-> 
-> > > 
-[...]
+> "cat /sys/kernel/debug/bcm2835_thermal/regset" causes a NULL pointer
+> dereference in bcm2835_thermal_debugfs. The driver makes use of the
+> implementation details of the thermal framework to retrieve a pointer
+> to its private data from a struct thermal_zone_device, and gets it
+> wrong - leading to the crash. Instead, store its private data as the
+> drvdata and retrieve the thermal_zone_device pointer from it.
+>
+> Fixes: bcb7dd9ef206 ("thermal: bcm2835: add thermal driver for bcm2835 So=
+C")
+>
+> Signed-off-by: Phil Elwell <phil@raspberrypi.org>
 
-> 
-> I guess that you are talking about intel_pstate_update_max_freq()
-> which acquires policy->rwsem.  If so, what exactly is the problem
-> with
-> it?
-I was suggesting to use an API/define in cpufreq.h which does operation
-on policy->rwsem for better abstraction. This is the first time it was
-used outside core cpufreq.c. As more places it will be used in future,
-common function will help debug, if in some path there is a bug in
-aquire/release of semaphore. But you can ignore this.
+Acked-by: Eric Anholt <eric@anholt.net>
 
-Thanks,
-Srinivas
+From=20the thread that missed Ccing the maintainers there was also:
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE/JuuFDWp9/ZkuCBXtdYpNtH8nugFAlx9u6cACgkQtdYpNtH8
+nuhpSQ//feRJqNfXmXK1TTSvE4FlARA8oPQVS+whGt9s9uTUiFn9jKwfstx2krTr
+vEeod0LslKwR6bzPDkdti93SOf7WtGCIYl6olQtfkSMW7JxFPCwpTsZMqWxxde4L
+29iiTJiKWsraGTiSQeudfJfARCi69+s0PdVIIQxeoENwOCOXoARcotFvIJNMp+i/
+JH5iJLgch5lADC1naf4mz21WQnY6OsfiIgt+tLe0xHzfdLINhSLaQFHQneSvjZE/
+EW0zwZ6ZNMa93IUN3lGXDFx5c/9q9CCdC+Gv4bY9oUxu06rOydPwrC5ZXF9VQtap
+4uAO9OzQaDitWZNZKhEBlr2fJsFrg1xIRDam/0sTosGiX+V65ZiO6KLCcXR8qbng
+UuQQnsFCuudL4BioiGNWB+dUZ1UuWOw6SYTfbVwc+bmYZ2E5G+BuObBkQM3nYcVX
+aY6SKJabbIVZGJQ+0s+zIYm+3qG00u1WFWJcvTUTTaBn3q0DN3O873QZHWMNzKQE
+VOmCiRobHCq/SQ0oMWBkqHG5isdsrsXJ1X7vIxS3u80ttM7Qupah2x6raneE+A8M
+GES7uBtz67L4m6juya5GCdglR75vch9J0XwAVgbmh5Uf/KiINy56RYRn1pzgWHw+
+Rb3nB02b4u5NUIxBfmS5Qo50Hu644kQXKX/x3Dl8QMUf3XoWJ20=
+=BorT
+-----END PGP SIGNATURE-----
+--=-=-=--
