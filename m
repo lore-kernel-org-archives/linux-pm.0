@@ -1,77 +1,170 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v4] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Mon, 04 Mar 2019 13:51:53 +0530
-Message-ID: <946aa4e13aec4f84e6ae2d91e772fb1f@codeaurora.org>
-References: <20181212135313.30268-1-sibis@codeaurora.org>
- <CGME20181212135338epcas5p12f7a8cd1c7aab5d5c936cbc5c33eee07@epcms1p6>
- <20181214014527epcms1p6c783b4cd1602bbcbcb6e725f840db479@epcms1p6>
- <39d3a906-b734-9bb8-c60a-48948bb21338@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+From: Kai Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH] igb: Fix WARN_ONCE on runtime suspend
+Date: Mon, 4 Mar 2019 16:31:45 +0800
+Message-ID: <E8841527-C294-4E2D-BB19-3C0B1F1EBBC7@canonical.com>
+References: <20190302160115.GA6172@rani.riverdale.lan>
+Mime-Version: 1.0 (Mac OS X Mail 12.2 \(3445.102.3\))
+Content-Type: text/plain;
+        charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <39d3a906-b734-9bb8-c60a-48948bb21338@codeaurora.org>
+In-Reply-To: <20190302160115.GA6172@rani.riverdale.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, skannan@codeaurora.org
+To: Arvind Sankar <niveditas98@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hey MyungJoo, Kyungmin
-Did you get a chance to think about how you
-want this fix implemented?
 
-On 2019-02-19 10:42, Sibi Sankar wrote:
-> Hey MyungJoo,
-> 
-> On 12/14/18 7:15 AM, MyungJoo Ham wrote:
->>> From: Saravana Kannan <skannan@codeaurora.org>
->>> 
->>> If the new governor fails to start, switch back to old governor so 
->>> that the
->>> devfreq state is not left in some weird limbo.
->>> 
->>> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
->>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> 
->> Hello,
->> 
->> In overall, the idea and the implementation looks good.
->> 
->> However, I have a question:
->> 
->> What if the following line fails?
->> 
->> +		df->governor->event_handler(df, DEVFREQ_GOV_START,
->> +					    NULL);
->> 
->> Don't we still need something to handle for such events?
-> 
-> The original discussion went as follows:
-> governor_store is expected to be used only on cases
-> where devfreq_add_device() succeeded i.e prev->governor
-> is expected to be present and DEVFREQ_GOV_START is
-> expected to succeed. Hence falling back to the previous
-> governor seems like a sensible idea.
-> 
-> This would also prevent DEVFREQ_GOV_STOP from being called
-> on a governor were DEVFREQ_GOV_START had failed which is
-> ideal.
-> 
-> That being said DEVFREQ_GOV_START can still fail for the
-> prev-governor due to some change in state of the system.
-> Do you want to handle this case by clearing the state of
-> governor rather than switching to previous governor?
-> 
->> 
->> Cheers,
->> MyungJoo
->> 
->> 
 
--- 
--- Sibi Sankar --
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project.
+> On Mar 3, 2019, at 12:01 AM, Arvind Sankar <niveditas98@gmail.com> wrote:
+> 
+> The runtime_suspend device callbacks are not supposed to save
+> configuration state or change the power state. Commit fb29f76cc566
+> ("igb: Fix an issue that PME is not enabled during runtime suspend")
+> changed the driver to not save configuration state during runtime
+> suspend, however the driver callback still put the device into a
+> low-power state. This causes a warning in the pci pm core and results in
+> pci_pm_runtime_suspend not calling pci_save_state or pci_finish_runtime_suspend.
+> 
+> Fix this by not changing the power state either, leaving that to pci pm
+> core, and make the same change for suspend callback as well.
+> 
+> Also move a couple of defines into the appropriate header file instead
+> of inline in the .c file.
+
+Header changes can be a separate patch, but that’s just a small nit.
+
+> 
+> Fixes: fb29f76cc566 ("igb: Fix an issue that PME is not enabled during runtime suspend")
+> Signed-off-by: Arvind Sankar <niveditas98@gmail.com>
+
+Reviewed-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+
+> ---
+> .../net/ethernet/intel/igb/e1000_defines.h    |  2 +
+> drivers/net/ethernet/intel/igb/igb_main.c     | 57 +++----------------
+> 2 files changed, 10 insertions(+), 49 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> index 8a28f3388f69..dca671591ef6 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> @@ -194,6 +194,8 @@
+> /* enable link status from external LINK_0 and LINK_1 pins */
+> #define E1000_CTRL_SWDPIN0  0x00040000  /* SWDPIN 0 value */
+> #define E1000_CTRL_SWDPIN1  0x00080000  /* SWDPIN 1 value */
+> +#define E1000_CTRL_ADVD3WUC 0x00100000  /* D3 WUC */
+> +#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000 /* PHY PM enable */
+> #define E1000_CTRL_SDP0_DIR 0x00400000  /* SDP0 Data direction */
+> #define E1000_CTRL_SDP1_DIR 0x00800000  /* SDP1 Data direction */
+> #define E1000_CTRL_RST      0x04000000  /* Global reset */
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 93f150784cfc..c2b3a2ff1471 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -8754,9 +8754,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+> 	struct e1000_hw *hw = &adapter->hw;
+> 	u32 ctrl, rctl, status;
+> 	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
+> -#ifdef CONFIG_PM
+> -	int retval = 0;
+> -#endif
+> +	bool wake;
+> 
+> 	rtnl_lock();
+> 	netif_device_detach(netdev);
+> @@ -8769,14 +8767,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+> 	igb_clear_interrupt_scheme(adapter);
+> 	rtnl_unlock();
+> 
+> -#ifdef CONFIG_PM
+> -	if (!runtime) {
+> -		retval = pci_save_state(pdev);
+> -		if (retval)
+> -			return retval;
+> -	}
+> -#endif
+> -
+> 	status = rd32(E1000_STATUS);
+> 	if (status & E1000_STATUS_LU)
+> 		wufc &= ~E1000_WUFC_LNKC;
+> @@ -8793,10 +8783,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+> 		}
+> 
+> 		ctrl = rd32(E1000_CTRL);
+> -		/* advertise wake from D3Cold */
+> -		#define E1000_CTRL_ADVD3WUC 0x00100000
+> -		/* phy power management enable */
+> -		#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000
+> 		ctrl |= E1000_CTRL_ADVD3WUC;
+> 		wr32(E1000_CTRL, ctrl);
+> 
+> @@ -8810,12 +8796,15 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+> 		wr32(E1000_WUFC, 0);
+> 	}
+> 
+> -	*enable_wake = wufc || adapter->en_mng_pt;
+> -	if (!*enable_wake)
+> +	wake = wufc || adapter->en_mng_pt;
+> +	if (!wake)
+> 		igb_power_down_link(adapter);
+> 	else
+> 		igb_power_up_link(adapter);
+> 
+> +	if (enable_wake)
+> +		*enable_wake = wake;
+> +
+> 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+> 	 * would have already happened in close and is redundant.
+> 	 */
+> @@ -8858,22 +8847,7 @@ static void igb_deliver_wake_packet(struct net_device *netdev)
+> 
+> static int __maybe_unused igb_suspend(struct device *dev)
+> {
+> -	int retval;
+> -	bool wake;
+> -	struct pci_dev *pdev = to_pci_dev(dev);
+> -
+> -	retval = __igb_shutdown(pdev, &wake, 0);
+> -	if (retval)
+> -		return retval;
+> -
+> -	if (wake) {
+> -		pci_prepare_to_sleep(pdev);
+> -	} else {
+> -		pci_wake_from_d3(pdev, false);
+> -		pci_set_power_state(pdev, PCI_D3hot);
+> -	}
+> -
+> -	return 0;
+> +	return __igb_shutdown(to_pci_dev(dev), NULL, 0);
+> }
+> 
+> static int __maybe_unused igb_resume(struct device *dev)
+> @@ -8944,22 +8918,7 @@ static int __maybe_unused igb_runtime_idle(struct device *dev)
+> 
+> static int __maybe_unused igb_runtime_suspend(struct device *dev)
+> {
+> -	struct pci_dev *pdev = to_pci_dev(dev);
+> -	int retval;
+> -	bool wake;
+> -
+> -	retval = __igb_shutdown(pdev, &wake, 1);
+> -	if (retval)
+> -		return retval;
+> -
+> -	if (wake) {
+> -		pci_prepare_to_sleep(pdev);
+> -	} else {
+> -		pci_wake_from_d3(pdev, false);
+> -		pci_set_power_state(pdev, PCI_D3hot);
+> -	}
+> -
+> -	return 0;
+> +	return __igb_shutdown(to_pci_dev(dev), NULL, 1);
+> }
+> 
+> static int __maybe_unused igb_runtime_resume(struct device *dev)
+> -- 
+> 2.19.2
+> 
