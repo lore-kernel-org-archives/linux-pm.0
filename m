@@ -1,176 +1,204 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
- frequency on global turbo changes
-Date: Mon, 4 Mar 2019 22:39:28 +0800
-Message-ID: <20190304143928.GA13701@chenyu-office.sh.intel.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
- <2046937.YMVy5Qh3Pm@aspire.rjw.lan>
- <3017597.CVkTxgYgAs@aspire.rjw.lan>
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH] power: Add and use pr_fmt
+Date: Mon, 04 Mar 2019 09:14:38 -0800
+Message-ID: <06d16c65a81d28016643d714f8aa3dfd7a2ad3ed.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3017597.CVkTxgYgAs@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 01, 2019 at 01:57:06PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> While the cpuinfo.max_freq value doesn't really matter for
-> intel_pstate in the active mode, in the passive mode it is used by
-> governors as the maximum physical frequency of the CPU and the
-> results of governor computations generally depend on it.  Also it
-> is made available to user space via sysfs and it should match the
-> current HW configuration.
-> 
-> For this reason, make intel_pstate update cpuinfo.max_freq for all
-> CPUs if it detects a global change of turbo frequency settings from
-> "disable" to "enable" or the other way associated with a _PPC change
-> notification from the platform firmware.
-> 
-> Note that policy_is_inactive() and cpufreq_set_policy() need to be
-> made available to it for this purpose.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-> Reported-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Update, because the patch sent previously doesn't build, due to an extra
-> arg declared for intel_pstate_update_max_freq().
-> 
-> ---
->  drivers/cpufreq/cpufreq.c      |   12 ++----------
->  drivers/cpufreq/intel_pstate.c |   33 ++++++++++++++++++++++++++++++++-
->  include/linux/cpufreq.h        |    7 +++++++
->  3 files changed, 41 insertions(+), 11 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -897,6 +897,36 @@ static void intel_pstate_update_policies
->  		cpufreq_update_policy(cpu);
->  }
->  
-> +static void intel_pstate_update_max_freq(unsigned int cpu)
-> +{
-> +	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-> +	struct cpufreq_policy new_policy;
-> +	struct cpudata *cpudata;
-> +
-> +	if (!policy)
-> +		return;
-> +
-> +	down_write(&policy->rwsem);
-> +
-> +	if (policy_is_inactive(policy))
-> +		goto unlock;
-> +
-> +	cpudata = all_cpu_data[cpu];
-> +	policy->cpuinfo.max_freq = global.turbo_disabled_upd ?
-> +			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
-> +
-> +	memcpy(&new_policy, policy, sizeof(*policy));
-> +	new_policy.max = min(policy->user_policy.max, policy->cpuinfo.max_freq);
-> +	new_policy.min = min(policy->user_policy.min, new_policy.max);
-> +
-> +	cpufreq_set_policy(policy, &new_policy);
-> +
-> +unlock:
-> +	up_write(&policy->rwsem);
-> +
-> +	cpufreq_cpu_put(policy);
-> +}
-> +
-I tried to test on a macbook in hand however I did not see the _PPC
-notifier on this machine so it might not cover the code path in
-this patch. I checked the cpufreq with this patch using
-different load and the cpufreq scales well.
+Prefix all printk/pr_<level> messages with "PM: " to make the
+logging a bit more consistent.
 
->  static void intel_pstate_update_limits(unsigned int cpu)
->  {
->  	mutex_lock(&intel_pstate_driver_lock);
-> @@ -908,7 +938,8 @@ static void intel_pstate_update_limits(u
->  	 */
->  	if (global.turbo_disabled_upd != global.turbo_disabled) {
->  		global.turbo_disabled_upd = global.turbo_disabled;
-> -		intel_pstate_update_policies();
-> +		for_each_possible_cpu(cpu)
-> +			intel_pstate_update_max_freq(cpu);
->  	} else {
->  		cpufreq_update_policy(cpu);
->  	}
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -34,11 +34,6 @@
->  
->  static LIST_HEAD(cpufreq_policy_list);
->  
-> -static inline bool policy_is_inactive(struct cpufreq_policy *policy)
-> -{
-> -	return cpumask_empty(policy->cpus);
-> -}
-> -
->  /* Macros to iterate over CPU policies */
->  #define for_each_suitable_policy(__policy, __active)			 \
->  	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
-> @@ -675,9 +670,6 @@ static ssize_t show_scaling_cur_freq(str
->  	return ret;
->  }
->  
-> -static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> -				struct cpufreq_policy *new_policy);
-> -
->  /**
->   * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
->   */
-> @@ -2235,8 +2227,8 @@ EXPORT_SYMBOL(cpufreq_get_policy);
->   *
->   * The cpuinfo part of @policy is not updated by this function.
->   */
-There first seems to be some patching error when applying this on
-top of upstream 5.0, but I realized that this patch is based on
-intel-next.
+Miscellanea:
 
-Thanks,
-Ryan
+o Convert a few printks to pr_<level>
+o Whitespace to align to open parentheses
+o Remove embedded "PM: " from pr_debugs as pr_fmt adds it
 
-> -static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> -			      struct cpufreq_policy *new_policy)
-> +int cpufreq_set_policy(struct cpufreq_policy *policy,
-> +		       struct cpufreq_policy *new_policy)
->  {
->  	struct cpufreq_governor *old_gov;
->  	int ret;
-> Index: linux-pm/include/linux/cpufreq.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/cpufreq.h
-> +++ linux-pm/include/linux/cpufreq.h
-> @@ -178,6 +178,11 @@ static inline struct cpufreq_policy *cpu
->  static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
->  #endif
->  
-> +static inline bool policy_is_inactive(struct cpufreq_policy *policy)
-> +{
-> +	return cpumask_empty(policy->cpus);
-> +}
-> +
->  static inline bool policy_is_shared(struct cpufreq_policy *policy)
->  {
->  	return cpumask_weight(policy->cpus) > 1;
-> @@ -194,6 +199,8 @@ void disable_cpufreq(void);
->  
->  u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
->  int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
-> +int cpufreq_set_policy(struct cpufreq_policy *policy,
-> +		       struct cpufreq_policy *new_policy);
->  void cpufreq_update_policy(unsigned int cpu);
->  void cpufreq_update_limits(unsigned int cpu);
->  bool have_governor_per_policy(void);
-> 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/base/power/domain.c | 12 +++++++-----
+ drivers/base/power/main.c   | 21 +++++++++++----------
+ drivers/base/power/trace.c  |  2 ++
+ drivers/base/power/wakeup.c |  4 +++-
+ 4 files changed, 23 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 2c334c01fc43..764e0f28979e 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -6,6 +6,8 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/delay.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+@@ -1657,8 +1659,8 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+ 	genpd_lock_nested(genpd, SINGLE_DEPTH_NESTING);
+ 
+ 	if (!list_empty(&subdomain->master_links) || subdomain->device_count) {
+-		pr_warn("%s: unable to remove subdomain %s\n", genpd->name,
+-			subdomain->name);
++		pr_warn("%s: unable to remove subdomain %s\n",
++			genpd->name, subdomain->name);
+ 		ret = -EBUSY;
+ 		goto out;
+ 	}
+@@ -1767,7 +1769,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		if (ret)
+ 			return ret;
+ 	} else if (!gov) {
+-		pr_warn("%s : no governor for states\n", genpd->name);
++		pr_warn("%s: no governor for states\n", genpd->name);
+ 	}
+ 
+ 	device_initialize(&genpd->dev);
+@@ -2514,7 +2516,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+ 						&entry_latency);
+ 	if (err) {
+ 		pr_debug(" * %pOF missing entry-latency-us property\n",
+-						state_node);
++			 state_node);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -2522,7 +2524,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+ 						&exit_latency);
+ 	if (err) {
+ 		pr_debug(" * %pOF missing exit-latency-us property\n",
+-						state_node);
++			 state_node);
+ 		return -EINVAL;
+ 	}
+ 
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5a8149829ab3..f80d298de3fa 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -17,6 +17,8 @@
+  * subsystem list maintains.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/device.h>
+ #include <linux/export.h>
+ #include <linux/mutex.h>
+@@ -128,7 +130,7 @@ void device_pm_add(struct device *dev)
+ 	if (device_pm_not_required(dev))
+ 		return;
+ 
+-	pr_debug("PM: Adding info for %s:%s\n",
++	pr_debug("Adding info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+ 	device_pm_check_callbacks(dev);
+ 	mutex_lock(&dpm_list_mtx);
+@@ -149,7 +151,7 @@ void device_pm_remove(struct device *dev)
+ 	if (device_pm_not_required(dev))
+ 		return;
+ 
+-	pr_debug("PM: Removing info for %s:%s\n",
++	pr_debug("Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+ 	complete_all(&dev->power.completion);
+ 	mutex_lock(&dpm_list_mtx);
+@@ -168,7 +170,7 @@ void device_pm_remove(struct device *dev)
+  */
+ void device_pm_move_before(struct device *deva, struct device *devb)
+ {
+-	pr_debug("PM: Moving %s:%s before %s:%s\n",
++	pr_debug("Moving %s:%s before %s:%s\n",
+ 		 deva->bus ? deva->bus->name : "No Bus", dev_name(deva),
+ 		 devb->bus ? devb->bus->name : "No Bus", dev_name(devb));
+ 	/* Delete deva from dpm_list and reinsert before devb. */
+@@ -182,7 +184,7 @@ void device_pm_move_before(struct device *deva, struct device *devb)
+  */
+ void device_pm_move_after(struct device *deva, struct device *devb)
+ {
+-	pr_debug("PM: Moving %s:%s after %s:%s\n",
++	pr_debug("Moving %s:%s after %s:%s\n",
+ 		 deva->bus ? deva->bus->name : "No Bus", dev_name(deva),
+ 		 devb->bus ? devb->bus->name : "No Bus", dev_name(devb));
+ 	/* Delete deva from dpm_list and reinsert after devb. */
+@@ -195,7 +197,7 @@ void device_pm_move_after(struct device *deva, struct device *devb)
+  */
+ void device_pm_move_last(struct device *dev)
+ {
+-	pr_debug("PM: Moving %s:%s to end of list\n",
++	pr_debug("Moving %s:%s to end of list\n",
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+ 	list_move_tail(&dev->power.entry, &dpm_list);
+ }
+@@ -418,8 +420,8 @@ static void pm_dev_dbg(struct device *dev, pm_message_t state, const char *info)
+ static void pm_dev_err(struct device *dev, pm_message_t state, const char *info,
+ 			int error)
+ {
+-	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
+-		dev_name(dev), pm_verb(state.event), info, error);
++	pr_err("Device %s failed to %s%s: error %d\n",
++	       dev_name(dev), pm_verb(state.event), info, error);
+ }
+ 
+ static void dpm_show_time(ktime_t starttime, pm_message_t state, int error,
+@@ -2022,8 +2024,7 @@ int dpm_prepare(pm_message_t state)
+ 				error = 0;
+ 				continue;
+ 			}
+-			printk(KERN_INFO "PM: Device %s not prepared "
+-				"for power transition: code %d\n",
++			pr_info("Device %s not prepared for power transition: code %d\n",
+ 				dev_name(dev), error);
+ 			put_device(dev);
+ 			break;
+@@ -2062,7 +2063,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
+ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+ 	if (ret)
+-		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
++		pr_err("%s(): %pF returns %d\n", function, fn, ret);
+ }
+ EXPORT_SYMBOL_GPL(__suspend_report_result);
+ 
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index b11f47a1e819..2bd9d2c744ca 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -7,6 +7,8 @@
+  * devices may be working.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/pm-trace.h>
+ #include <linux/export.h>
+ #include <linux/rtc.h>
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index f1fee72ed970..d0e77d56c1d9 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -6,6 +6,8 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/device.h>
+ #include <linux/slab.h>
+ #include <linux/sched/signal.h>
+@@ -853,7 +855,7 @@ bool pm_wakeup_pending(void)
+ 	raw_spin_unlock_irqrestore(&events_lock, flags);
+ 
+ 	if (ret) {
+-		pr_debug("PM: Wakeup pending, aborting suspend\n");
++		pr_debug("Wakeup pending, aborting suspend\n");
+ 		pm_print_active_wakeup_sources();
+ 	}
+ 
