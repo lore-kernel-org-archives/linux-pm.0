@@ -1,47 +1,123 @@
-From: Dave Young <dyoung@redhat.com>
-Subject: Re: [PATCH v2 0/8] mm/kdump: allow to exclude pages that are
- logically offline
-Date: Mon, 4 Mar 2019 14:21:18 +0800
-Message-ID: <20190304062118.GA31037@dhcp-128-65.nay.redhat.com>
-References: <20181122100627.5189-1-david@redhat.com>
- <20190227053214.GA12302@dhcp-128-65.nay.redhat.com>
- <20190228114535.150dfaebbe4d00ae48716bf0@linux-foundation.org>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Mon, 4 Mar 2019 14:21:16 +0800
+Message-ID: <20190304062115.GB26041@dragon>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20190228114535.150dfaebbe4d00ae48716bf0@linux-foundation.org>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pankaj gupta <pagupta@redhat.com>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, linux-doc@vger.kernel.org, pv-drivers@vmware.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, Pavel Machek <pavel@ucw.cz>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Omar Sandoval <osandov@fb.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Stefano Stabellini <sstabellini@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@redhat.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Matthew Wilcox <willy@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org, Alexey Dobriyan <adobriyan@gmail.com>, Len Brown <len.brown@intel.com>
+In-Reply-To: <20190304032111.21770-1-andy.tang@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Yuantian Tang <andy.tang@nxp.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/28/19 at 11:45am, Andrew Morton wrote:
-> On Wed, 27 Feb 2019 13:32:14 +0800 Dave Young <dyoung@redhat.com> wrote:
+On Mon, Mar 04, 2019 at 11:21:11AM +0800, Yuantian Tang wrote:
+> Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
+> sensor is used to monitor the temperature of core and SoC platform is for
+> platform. The current dts only support the first sensor.
+> This patch adds the second sensor node to dts to enable it.
 > 
-> > This series have been in -next for some days, could we get this in
-> > mainline? 
+> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+> ---
+> v2:
+> 	- Add more information about sensors to description
+> PS: In order to keep consistency to the first thermal-zone node, there will
+> be "WARNING: line over 80 characters" warnings.
 > 
-> It's been in -next for two months?
+>  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43 +++++++++++++++++++++--
+>  1 files changed, 39 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> index 661137f..9f52bc9 100644
+> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> @@ -129,19 +129,19 @@
+>  	};
+>  
+>  	thermal-zones {
+> -		cpu_thermal: cpu-thermal {
+> +		ccu {
 
-Should be around 3 months
+Is this change really necessary?  What does 'ccu' stand for?
 
-> 
-> > Andrew, do you have plan about them, maybe next release?
-> 
-> They're all reviewed except for "xen/balloon: mark inflated pages
-> PG_offline". 
-> (https://ozlabs.org/~akpm/mmotm/broken-out/xen-balloon-mark-inflated-pages-pg_offline.patch).
-> Yes, I plan on sending these to Linus during the merge window for 5.1
-> 
+>  			polling-delay-passive = <1000>;
+>  			polling-delay = <5000>;
+>  			thermal-sensors = <&tmu 0>;
+>  
+>  			trips {
+> -				cpu_alert: cpu-alert {
+> +				ccu_alert: ccu-alert {
+>  					temperature = <85000>;
+>  					hysteresis = <2000>;
+>  					type = "passive";
+>  				};
+>  
+> -				cpu_crit: cpu-crit {
+> +				ccu_crit: ccu-crit {
+>  					temperature = <95000>;
+>  					hysteresis = <2000>;
+>  					type = "critical";
+> @@ -150,7 +150,42 @@
+>  
+>  			cooling-maps {
+>  				map0 {
+> -					trip = <&cpu_alert>;
+> +					trip = <&ccu_alert>;
+> +					cooling-device =
+> +						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> +						<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> +				};
+> +			};
+> +		};
+> +
+> +		plt {
 
-Thanks!
+What about 'platform-thermal' for node name, platform-alert and
+platform-crit for trip nodes below?
+
+Shawn
+
+> +			polling-delay-passive = <1000>;
+> +			polling-delay = <5000>;
+> +			thermal-sensors = <&tmu 1>;
+> +
+> +			trips {
+> +				plt_alert: plt-alert {
+> +					temperature = <85000>;
+> +					hysteresis = <2000>;
+> +					type = "passive";
+> +				};
+> +
+> +				plt_crit: plt-crit {
+> +					temperature = <95000>;
+> +					hysteresis = <2000>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +				map0 {
+> +					trip = <&plt_alert>;
+>  					cooling-device =
+>  						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+>  						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+> -- 
+> 1.7.1
+> 
