@@ -1,170 +1,111 @@
-From: Kai Heng Feng <kai.heng.feng@canonical.com>
-Subject: Re: [PATCH] igb: Fix WARN_ONCE on runtime suspend
-Date: Mon, 4 Mar 2019 16:31:45 +0800
-Message-ID: <E8841527-C294-4E2D-BB19-3C0B1F1EBBC7@canonical.com>
-References: <20190302160115.GA6172@rani.riverdale.lan>
-Mime-Version: 1.0 (Mac OS X Mail 12.2 \(3445.102.3\))
-Content-Type: text/plain;
-        charset=utf-8
-Content-Transfer-Encoding: 8BIT
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
+ global turbo disable/enable
+Date: Mon, 4 Mar 2019 10:41:22 +0100
+Message-ID: <CAJZ5v0iCVhj-HmToGnSBuYE99LMn0BZpB-Ax48Aqh9hVc1+qwQ@mail.gmail.com>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan> <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
+ <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
+ <f214b0d82fce14c374aa6b548742c999513d9046.camel@linux.intel.com>
+ <CAJZ5v0huRALvfFBeo067dNMyUJn+Oyp8eFR3JRR+C9g7QhaekA@mail.gmail.com> <47ce61b9df7701e047ef6f59afd54c854db8a538.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190302160115.GA6172@rani.riverdale.lan>
+In-Reply-To: <47ce61b9df7701e047ef6f59afd54c854db8a538.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arvind Sankar <niveditas98@gmail.com>
-Cc: intel-wired-lan@lists.osuosl.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Mar 4, 2019 at 5:06 AM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> On Sun, 2019-03-03 at 22:51 +0100, Rafael J. Wysocki wrote:
+> > On Sun, Mar 3, 2019 at 10:20 PM Srinivas Pandruvada
+> > <srinivas.pandruvada@linux.intel.com> wrote:
+> > >
+> > > On Sun, 2019-03-03 at 18:03 +0100, Rafael J. Wysocki wrote:
+> > > > On Fri, Mar 1, 2019 at 6:39 PM Srinivas Pandruvada
+> > > > <srinivas.pandruvada@linux.intel.com> wrote:
+> > > > >
+> > > > > On Fri, 2019-03-01 at 13:43 +0100, Rafael J. Wysocki wrote:
+> > > > > > Hi All,
+> > > > > >
+> > > > > > This is how I would fix the issue reported in BZ 200759 (see
+> > > > > > thisdev
+> > > > > > patch series
+> > > > > > from Yu too:
+> > > > > > https://marc.info/?l=linux-pm&m=155137672924029&w=2)
+> > > > > > .
+> > > > > >
+> > > > > > Patch [1/2] causes intel_pstate to update all policies if it
+> > > > > > gets
+> > > > > > a
+> > > > > > _PPC change
+> > > > > > notification and sees a global turbo disable/enable change.
+> > > > > >
+> > > > > > Patch [2/2] makes it update cpuinfo.max_freq for all policies
+> > > > > > in
+> > > > > > those cases.
+> > > > > >
+> > > > > > The patches here have not been tested yet, so testing would
+> > > > > > be
+> > > > > > much
+> > > > > > appreciated.
+> > > > > >
+> > > > > > Of course, comments are welcome too!
+> > > > >
+> > > > > This is the only platform, someone reported such issue.
+> > > >
+> > > > I don't think this matters.
+> > > >
+> > > > First, it doesn't mean that no other problems have this problem.
+> > > >
+> > > > Second, the current handling of
+> > > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE
+> > > > changes in intel_pstate is not sufficient if the changes is from
+> > > > set
+> > > > to unset anyway.
+> > >
+> > > Any platform with HWP, you can't even notify of this change. So any
+> > > platform beyond SKL is not useful.
+> >
+> > Do you mean that HWP platforms don't supply _PPS (as a rule) and so
+> > they don't send _PPC notifications?  Is there anything they do
+> > instead
+> > of it?
+>
+> There are other methods like PL1 budget limit for such cases. FW can
+> just change the config TDP level.
 
+OK, but that would be done without notification I suppose?
 
-> On Mar 3, 2019, at 12:01 AM, Arvind Sankar <niveditas98@gmail.com> wrote:
-> 
-> The runtime_suspend device callbacks are not supposed to save
-> configuration state or change the power state. Commit fb29f76cc566
-> ("igb: Fix an issue that PME is not enabled during runtime suspend")
-> changed the driver to not save configuration state during runtime
-> suspend, however the driver callback still put the device into a
-> low-power state. This causes a warning in the pci pm core and results in
-> pci_pm_runtime_suspend not calling pci_save_state or pci_finish_runtime_suspend.
-> 
-> Fix this by not changing the power state either, leaving that to pci pm
-> core, and make the same change for suspend callback as well.
-> 
-> Also move a couple of defines into the appropriate header file instead
-> of inline in the .c file.
+> > That's fair enough, but the point is that the driver doesn'dev_t do
+> > the right thing even if the platform does send a _PPC notification.
+>
+> _PPC notification is to indicate levels in _PSS not to disable/enable
+> turbo via IA32_MISC_*.
 
-Header changes can be a separate patch, but that’s just a small nit.
+I was not talking about notifications, but about what the driver does
+when MSR_IA32_MISC_ENABLE_TURBO_DISABLE is set or unset by FW on the
+fly: this only really works if the change is from unset to set,
+because the range of frequencies to use is restricted then, even
+though user-visible policy limits are not updated.  However, if the
+change is from set to unset, the update of policy limits is actually
+necessary for the change to really take effect (otherwise the user
+policy max prevents turbo frequencies from being requested).  HWP
+seems to be affected too, for that matter, because the upper limit in
+the MSR is not updated too then AFAICS.
 
-> 
-> Fixes: fb29f76cc566 ("igb: Fix an issue that PME is not enabled during runtime suspend")
-> Signed-off-by: Arvind Sankar <niveditas98@gmail.com>
+> The platform could have just set _PPC to 1 or to TAR-1. Here _PPC is sent for somthing more than just changing _PSS max
+> level. Do we have bug in if _PPC just changes performance level?
 
-Reviewed-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+I think that we just need to live with the fact that _PPC may be
+triggered for something more than changing _PSS max.
 
-> ---
-> .../net/ethernet/intel/igb/e1000_defines.h    |  2 +
-> drivers/net/ethernet/intel/igb/igb_main.c     | 57 +++----------------
-> 2 files changed, 10 insertions(+), 49 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-> index 8a28f3388f69..dca671591ef6 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-> @@ -194,6 +194,8 @@
-> /* enable link status from external LINK_0 and LINK_1 pins */
-> #define E1000_CTRL_SWDPIN0  0x00040000  /* SWDPIN 0 value */
-> #define E1000_CTRL_SWDPIN1  0x00080000  /* SWDPIN 1 value */
-> +#define E1000_CTRL_ADVD3WUC 0x00100000  /* D3 WUC */
-> +#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000 /* PHY PM enable */
-> #define E1000_CTRL_SDP0_DIR 0x00400000  /* SDP0 Data direction */
-> #define E1000_CTRL_SDP1_DIR 0x00800000  /* SDP1 Data direction */
-> #define E1000_CTRL_RST      0x04000000  /* Global reset */
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 93f150784cfc..c2b3a2ff1471 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -8754,9 +8754,7 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
-> 	struct e1000_hw *hw = &adapter->hw;
-> 	u32 ctrl, rctl, status;
-> 	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
-> -#ifdef CONFIG_PM
-> -	int retval = 0;
-> -#endif
-> +	bool wake;
-> 
-> 	rtnl_lock();
-> 	netif_device_detach(netdev);
-> @@ -8769,14 +8767,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
-> 	igb_clear_interrupt_scheme(adapter);
-> 	rtnl_unlock();
-> 
-> -#ifdef CONFIG_PM
-> -	if (!runtime) {
-> -		retval = pci_save_state(pdev);
-> -		if (retval)
-> -			return retval;
-> -	}
-> -#endif
-> -
-> 	status = rd32(E1000_STATUS);
-> 	if (status & E1000_STATUS_LU)
-> 		wufc &= ~E1000_WUFC_LNKC;
-> @@ -8793,10 +8783,6 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
-> 		}
-> 
-> 		ctrl = rd32(E1000_CTRL);
-> -		/* advertise wake from D3Cold */
-> -		#define E1000_CTRL_ADVD3WUC 0x00100000
-> -		/* phy power management enable */
-> -		#define E1000_CTRL_EN_PHY_PWR_MGMT 0x00200000
-> 		ctrl |= E1000_CTRL_ADVD3WUC;
-> 		wr32(E1000_CTRL, ctrl);
-> 
-> @@ -8810,12 +8796,15 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
-> 		wr32(E1000_WUFC, 0);
-> 	}
-> 
-> -	*enable_wake = wufc || adapter->en_mng_pt;
-> -	if (!*enable_wake)
-> +	wake = wufc || adapter->en_mng_pt;
-> +	if (!wake)
-> 		igb_power_down_link(adapter);
-> 	else
-> 		igb_power_up_link(adapter);
-> 
-> +	if (enable_wake)
-> +		*enable_wake = wake;
-> +
-> 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
-> 	 * would have already happened in close and is redundant.
-> 	 */
-> @@ -8858,22 +8847,7 @@ static void igb_deliver_wake_packet(struct net_device *netdev)
-> 
-> static int __maybe_unused igb_suspend(struct device *dev)
-> {
-> -	int retval;
-> -	bool wake;
-> -	struct pci_dev *pdev = to_pci_dev(dev);
-> -
-> -	retval = __igb_shutdown(pdev, &wake, 0);
-> -	if (retval)
-> -		return retval;
-> -
-> -	if (wake) {
-> -		pci_prepare_to_sleep(pdev);
-> -	} else {
-> -		pci_wake_from_d3(pdev, false);
-> -		pci_set_power_state(pdev, PCI_D3hot);
-> -	}
-> -
-> -	return 0;
-> +	return __igb_shutdown(to_pci_dev(dev), NULL, 0);
-> }
-> 
-> static int __maybe_unused igb_resume(struct device *dev)
-> @@ -8944,22 +8918,7 @@ static int __maybe_unused igb_runtime_idle(struct device *dev)
-> 
-> static int __maybe_unused igb_runtime_suspend(struct device *dev)
-> {
-> -	struct pci_dev *pdev = to_pci_dev(dev);
-> -	int retval;
-> -	bool wake;
-> -
-> -	retval = __igb_shutdown(pdev, &wake, 1);
-> -	if (retval)
-> -		return retval;
-> -
-> -	if (wake) {
-> -		pci_prepare_to_sleep(pdev);
-> -	} else {
-> -		pci_wake_from_d3(pdev, false);
-> -		pci_set_power_state(pdev, PCI_D3hot);
-> -	}
-> -
-> -	return 0;
-> +	return __igb_shutdown(to_pci_dev(dev), NULL, 1);
-> }
-> 
-> static int __maybe_unused igb_runtime_resume(struct device *dev)
-> -- 
-> 2.19.2
-> 
+Note that the driver could trigger policy updates on
+MSR_IA32_MISC_ENABLE_TURBO_DISABLE changes even without _PPC
+notifications, but that would require more intrusive changes, because
+work items cannot be queued up from scheduler context.  It would need
+to use irq_work for that and with some extra synchronization etc, and
+for the time being it looks like we can piggy back on the _PPC change
+notification mechanism.
