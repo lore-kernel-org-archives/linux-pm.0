@@ -1,204 +1,96 @@
-From: Joe Perches <joe@perches.com>
-Subject: [PATCH] power: Add and use pr_fmt
-Date: Mon, 04 Mar 2019 09:14:38 -0800
-Message-ID: <06d16c65a81d28016643d714f8aa3dfd7a2ad3ed.camel@perches.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH RESEND v3 2/3] drivers: qcom: rpmh-rsc: return if the
+ controller is idle
+Date: Mon, 4 Mar 2019 10:14:50 -0700
+Message-ID: <20190304171450.GB10971@codeaurora.org>
+References: <20190221121827.32427-1-rplsssn@codeaurora.org>
+ <20190221121827.32427-3-rplsssn@codeaurora.org>
+ <155122856693.260864.16771523196413005158@swboyd.mtv.corp.google.com>
+ <20190227222913.GA10971@codeaurora.org>
+ <155146312862.16805.13188707704058408931@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <155146312862.16805.13188707704058408931@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Tony Luck <tony.luck@intel.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <swboyd@chromium.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Prefix all printk/pr_<level> messages with "PM: " to make the
-logging a bit more consistent.
+On Fri, Mar 01 2019 at 10:58 -0700, Stephen Boyd wrote:
+>Quoting Lina Iyer (2019-02-27 14:29:13)
+>> Hi Stephen,
+>>
+>> On Tue, Feb 26 2019 at 17:49 -0700, Stephen Boyd wrote:
+>> >Quoting Raju P.L.S.S.S.N (2019-02-21 04:18:26)
+>> >> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+>> >> index d6b834eeeb37..9cc303e88a06 100644
+>> >> --- a/drivers/soc/qcom/rpmh-rsc.c
+>> >> +++ b/drivers/soc/qcom/rpmh-rsc.c
+>> >> @@ -524,6 +524,30 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
+>> >>         return ret;
+>> >>  }
+>> >>
+>> >> +/**
+>> >> + *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
+>> >> + *
+>> >> + *  @drv: The controller
+>> >> + *
+>> >> + *  Returns true if the TCSes are engaged in handling requests.
+>
+>By the way, this says AMCs are busy and then TCSes are engaged. Which
+>one is it?
+>
+>> >> + */
+>> >> +bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv)
+>> >> +{
+>> >
+>> >This API seems inherently racy. How do we know that nothing else is
+>> >going to be inserted into the TCS after this function returns true? Do
+>> >you have a user of this API? It would be good to know how it is used
+>> >instead of adding some code that never gets called.
+>> >
+>> This API is called from the last CPU that is powering down in an
+>> interrupt locked context (say during suspend). If we are waiting on a
+>> request, we would bail out of the suspend process. There can be no issue
+>> requested during the last step in suspend. The PM driver itself does not
+>> make any TCS request. Currently, this API is used by the downstream code
+>> in its last man activities. The usage by platform coordinated mode is
+>> still under discussion.
+>>
+>
+>Ok, can you explain why it's even a problem for the TCSes to be active
+>during suspend? I would hope that for suspend/resume, if this is
+>actually a problem, the RPMh driver itself can block suspend with a
+>driver suspend callback that checks for idleness.
+The RSC can transmit TCS executed from Linux and when all the CPUs have
+powered down, could execute a firmware in the RSC to deliver the sleep
+state requests. The firmware cannot run when there are active requests
+being processed. To ensure that case, we bail out of sleep or suspend,
+when the last CPU is powering down, if there are active requests.
 
-Miscellanea:
+>But I suspect that in
+>the system wide suspend/resume case, any callers that could make TCS
+>requests are child devices of the RPMh controller and therefore they
+>would already be suspended if they didn't have anything pending they're
+>waiting for a response on or they would be blocking suspend themselves
+>if they're waiting for the response. So why are we even checking the
+>TCSes in system suspend path at all? Assume that callers know what
+>they're doing and will block suspend if they care?
+>
+In suspend, they probably would do what you mention above. All CPUs
+might conincidentally be idle at the same idle, when a request is being
+processed.
 
-o Convert a few printks to pr_<level>
-o Whitespace to align to open parentheses
-o Remove embedded "PM: " from pr_debugs as pr_fmt adds it
+>Following that same logic, is this more of an API that is planned for
+>use by CPU idle? Where the case is much more of a runtime PM design.
+>Even then, I don't get it. A device that's runtime active and making
+>RPMh requests might need to block some forms of CPU idle states because
+>a request hasn't been processed yet that may change the decision for
+>certain deep idle states?
+>
+A process waiting on a RPMH request, may let the CPU go to sleep and
+therefore this is a possibility.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/base/power/domain.c | 12 +++++++-----
- drivers/base/power/main.c   | 21 +++++++++++----------
- drivers/base/power/trace.c  |  2 ++
- drivers/base/power/wakeup.c |  4 +++-
- 4 files changed, 23 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2c334c01fc43..764e0f28979e 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -6,6 +6,8 @@
-  * This file is released under the GPLv2.
-  */
- 
-+#define pr_fmt(fmt) "PM: " fmt
-+
- #include <linux/delay.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
-@@ -1657,8 +1659,8 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 	genpd_lock_nested(genpd, SINGLE_DEPTH_NESTING);
- 
- 	if (!list_empty(&subdomain->master_links) || subdomain->device_count) {
--		pr_warn("%s: unable to remove subdomain %s\n", genpd->name,
--			subdomain->name);
-+		pr_warn("%s: unable to remove subdomain %s\n",
-+			genpd->name, subdomain->name);
- 		ret = -EBUSY;
- 		goto out;
- 	}
-@@ -1767,7 +1769,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		if (ret)
- 			return ret;
- 	} else if (!gov) {
--		pr_warn("%s : no governor for states\n", genpd->name);
-+		pr_warn("%s: no governor for states\n", genpd->name);
- 	}
- 
- 	device_initialize(&genpd->dev);
-@@ -2514,7 +2516,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
- 						&entry_latency);
- 	if (err) {
- 		pr_debug(" * %pOF missing entry-latency-us property\n",
--						state_node);
-+			 state_node);
- 		return -EINVAL;
- 	}
- 
-@@ -2522,7 +2524,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
- 						&exit_latency);
- 	if (err) {
- 		pr_debug(" * %pOF missing exit-latency-us property\n",
--						state_node);
-+			 state_node);
- 		return -EINVAL;
- 	}
- 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 5a8149829ab3..f80d298de3fa 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -17,6 +17,8 @@
-  * subsystem list maintains.
-  */
- 
-+#define pr_fmt(fmt) "PM: " fmt
-+
- #include <linux/device.h>
- #include <linux/export.h>
- #include <linux/mutex.h>
-@@ -128,7 +130,7 @@ void device_pm_add(struct device *dev)
- 	if (device_pm_not_required(dev))
- 		return;
- 
--	pr_debug("PM: Adding info for %s:%s\n",
-+	pr_debug("Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
- 	device_pm_check_callbacks(dev);
- 	mutex_lock(&dpm_list_mtx);
-@@ -149,7 +151,7 @@ void device_pm_remove(struct device *dev)
- 	if (device_pm_not_required(dev))
- 		return;
- 
--	pr_debug("PM: Removing info for %s:%s\n",
-+	pr_debug("Removing info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
- 	complete_all(&dev->power.completion);
- 	mutex_lock(&dpm_list_mtx);
-@@ -168,7 +170,7 @@ void device_pm_remove(struct device *dev)
-  */
- void device_pm_move_before(struct device *deva, struct device *devb)
- {
--	pr_debug("PM: Moving %s:%s before %s:%s\n",
-+	pr_debug("Moving %s:%s before %s:%s\n",
- 		 deva->bus ? deva->bus->name : "No Bus", dev_name(deva),
- 		 devb->bus ? devb->bus->name : "No Bus", dev_name(devb));
- 	/* Delete deva from dpm_list and reinsert before devb. */
-@@ -182,7 +184,7 @@ void device_pm_move_before(struct device *deva, struct device *devb)
-  */
- void device_pm_move_after(struct device *deva, struct device *devb)
- {
--	pr_debug("PM: Moving %s:%s after %s:%s\n",
-+	pr_debug("Moving %s:%s after %s:%s\n",
- 		 deva->bus ? deva->bus->name : "No Bus", dev_name(deva),
- 		 devb->bus ? devb->bus->name : "No Bus", dev_name(devb));
- 	/* Delete deva from dpm_list and reinsert after devb. */
-@@ -195,7 +197,7 @@ void device_pm_move_after(struct device *deva, struct device *devb)
-  */
- void device_pm_move_last(struct device *dev)
- {
--	pr_debug("PM: Moving %s:%s to end of list\n",
-+	pr_debug("Moving %s:%s to end of list\n",
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
- 	list_move_tail(&dev->power.entry, &dpm_list);
- }
-@@ -418,8 +420,8 @@ static void pm_dev_dbg(struct device *dev, pm_message_t state, const char *info)
- static void pm_dev_err(struct device *dev, pm_message_t state, const char *info,
- 			int error)
- {
--	printk(KERN_ERR "PM: Device %s failed to %s%s: error %d\n",
--		dev_name(dev), pm_verb(state.event), info, error);
-+	pr_err("Device %s failed to %s%s: error %d\n",
-+	       dev_name(dev), pm_verb(state.event), info, error);
- }
- 
- static void dpm_show_time(ktime_t starttime, pm_message_t state, int error,
-@@ -2022,8 +2024,7 @@ int dpm_prepare(pm_message_t state)
- 				error = 0;
- 				continue;
- 			}
--			printk(KERN_INFO "PM: Device %s not prepared "
--				"for power transition: code %d\n",
-+			pr_info("Device %s not prepared for power transition: code %d\n",
- 				dev_name(dev), error);
- 			put_device(dev);
- 			break;
-@@ -2062,7 +2063,7 @@ EXPORT_SYMBOL_GPL(dpm_suspend_start);
- void __suspend_report_result(const char *function, void *fn, int ret)
- {
- 	if (ret)
--		printk(KERN_ERR "%s(): %pF returns %d\n", function, fn, ret);
-+		pr_err("%s(): %pF returns %d\n", function, fn, ret);
- }
- EXPORT_SYMBOL_GPL(__suspend_report_result);
- 
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index b11f47a1e819..2bd9d2c744ca 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -7,6 +7,8 @@
-  * devices may be working.
-  */
- 
-+#define pr_fmt(fmt) "PM: " fmt
-+
- #include <linux/pm-trace.h>
- #include <linux/export.h>
- #include <linux/rtc.h>
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index f1fee72ed970..d0e77d56c1d9 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -6,6 +6,8 @@
-  * This file is released under the GPLv2.
-  */
- 
-+#define pr_fmt(fmt) "PM: " fmt
-+
- #include <linux/device.h>
- #include <linux/slab.h>
- #include <linux/sched/signal.h>
-@@ -853,7 +855,7 @@ bool pm_wakeup_pending(void)
- 	raw_spin_unlock_irqrestore(&events_lock, flags);
- 
- 	if (ret) {
--		pr_debug("PM: Wakeup pending, aborting suspend\n");
-+		pr_debug("Wakeup pending, aborting suspend\n");
- 		pm_print_active_wakeup_sources();
- 	}
- 
+--Lina
