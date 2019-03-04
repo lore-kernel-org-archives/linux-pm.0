@@ -1,98 +1,68 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
-Date: Mon, 4 Mar 2019 06:46:32 +0000
-Message-ID: <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Mon, 4 Mar 2019 14:53:03 +0800
+Message-ID: <20190304065302.GD26041@dragon>
 References: <20190304032111.21770-1-andy.tang@nxp.com>
  <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190304062115.GB26041@dragon>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawnguo@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Tang <andy.tang@nxp.com>
 Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2hhd24gR3VvIDxzaGF3
-bmd1b0BrZXJuZWwub3JnPg0KPiBTZW50OiAyMDE5xOoz1MI0yNUgMTQ6MjENCj4gVG86IEFuZHkg
-VGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNv
-bT47IHJvYmgrZHRAa2VybmVsLm9yZzsgbWFyay5ydXRsYW5kQGFybS5jb207DQo+IGxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7
-DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-ZzsNCj4gZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1
-YmV6dmFsQGdtYWlsLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyXSBhcm02NDogZHRzOiBs
-czEwODhhOiBhZGQgb25lIG1vcmUgdGhlcm1hbCB6b25lIG5vZGUNCj4gDQo+IE9uIE1vbiwgTWFy
-IDA0LCAyMDE5IGF0IDExOjIxOjExQU0gKzA4MDAsIFl1YW50aWFuIFRhbmcgd3JvdGU6DQo+ID4g
-THMxMDg4YSBoYXMgMiB0aGVybWFsIHNlbnNvcnMsIGNvcmUgY2x1c3RlciBhbmQgU29DIHBsYXRm
-b3JtLiBDb3JlDQo+ID4gY2x1c3RlciBzZW5zb3IgaXMgdXNlZCB0byBtb25pdG9yIHRoZSB0ZW1w
-ZXJhdHVyZSBvZiBjb3JlIGFuZCBTb0MNCj4gPiBwbGF0Zm9ybSBpcyBmb3IgcGxhdGZvcm0uIFRo
-ZSBjdXJyZW50IGR0cyBvbmx5IHN1cHBvcnQgdGhlIGZpcnN0IHNlbnNvci4NCj4gPiBUaGlzIHBh
-dGNoIGFkZHMgdGhlIHNlY29uZCBzZW5zb3Igbm9kZSB0byBkdHMgdG8gZW5hYmxlIGl0Lg0KPiA+
-DQo+ID4gU2lnbmVkLW9mZi1ieTogWXVhbnRpYW4gVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+
-ID4gLS0tDQo+ID4gdjI6DQo+ID4gCS0gQWRkIG1vcmUgaW5mb3JtYXRpb24gYWJvdXQgc2Vuc29y
-cyB0byBkZXNjcmlwdGlvbg0KPiA+IFBTOiBJbiBvcmRlciB0byBrZWVwIGNvbnNpc3RlbmN5IHRv
-IHRoZSBmaXJzdCB0aGVybWFsLXpvbmUgbm9kZSwgdGhlcmUNCj4gPiB3aWxsIGJlICJXQVJOSU5H
-OiBsaW5lIG92ZXIgODAgY2hhcmFjdGVycyIgd2FybmluZ3MuDQo+ID4NCj4gPiAgYXJjaC9hcm02
-NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaSB8ICAgNDMNCj4gKysrKysrKysr
-KysrKysrKysrKysrLS0NCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCAzOSBpbnNlcnRpb25zKCspLCA0
-IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMv
-ZnJlZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kNCj4gPiBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJl
-ZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kNCj4gPiBpbmRleCA2NjExMzdmLi45ZjUyYmM5IDEwMDY0
-NA0KPiA+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczEwODhhLmR0
-c2kNCj4gPiArKysgYi9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMxMDg4YS5k
-dHNpDQo+ID4gQEAgLTEyOSwxOSArMTI5LDE5IEBADQo+ID4gIAl9Ow0KPiA+DQo+ID4gIAl0aGVy
-bWFsLXpvbmVzIHsNCj4gPiAtCQljcHVfdGhlcm1hbDogY3B1LXRoZXJtYWwgew0KPiA+ICsJCWNj
-dSB7DQo+IA0KPiBJcyB0aGlzIGNoYW5nZSByZWFsbHkgbmVjZXNzYXJ5PyAgV2hhdCBkb2VzICdj
-Y3UnIHN0YW5kIGZvcj8NCkkgdGhpbmsgc28uIGNjdSBzdGFuZHMgZm9yIGNvcmUgY2x1c3RlciB1
-bml0LiBjcHUgaXMgdG9vIGdlbmVyYWwuDQpPbiBzb21lIHBsYXRmb3JtcywgdGhlcmUgYXJlIG1v
-cmUgdGhhbiBvbmUgY29yZSBjbHVzdGVycy4NCkF0IGxlYXN0IHdlIHNob3VsZCBjaGFuZ2UgaXQg
-dG8gImNvcmUgY2x1c3RlciIgaWYgc2hvcnQgZm9ybSBpcyBub3QgYXBwcm9wcmlhdGUuDQoNCj4g
-DQo+ID4gIAkJCXBvbGxpbmctZGVsYXktcGFzc2l2ZSA9IDwxMDAwPjsNCj4gPiAgCQkJcG9sbGlu
-Zy1kZWxheSA9IDw1MDAwPjsNCj4gPiAgCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0bXUgMD47DQo+
-ID4NCj4gPiAgCQkJdHJpcHMgew0KPiA+IC0JCQkJY3B1X2FsZXJ0OiBjcHUtYWxlcnQgew0KPiA+
-ICsJCQkJY2N1X2FsZXJ0OiBjY3UtYWxlcnQgew0KPiA+ICAJCQkJCXRlbXBlcmF0dXJlID0gPDg1
-MDAwPjsNCj4gPiAgCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICAJCQkJCXR5cGUgPSAi
-cGFzc2l2ZSI7DQo+ID4gIAkJCQl9Ow0KPiA+DQo+ID4gLQkJCQljcHVfY3JpdDogY3B1LWNyaXQg
-ew0KPiA+ICsJCQkJY2N1X2NyaXQ6IGNjdS1jcml0IHsNCj4gPiAgCQkJCQl0ZW1wZXJhdHVyZSA9
-IDw5NTAwMD47DQo+ID4gIAkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsNCj4gPiAgCQkJCQl0eXBl
-ID0gImNyaXRpY2FsIjsNCj4gPiBAQCAtMTUwLDcgKzE1MCw0MiBAQA0KPiA+DQo+ID4gIAkJCWNv
-b2xpbmctbWFwcyB7DQo+ID4gIAkJCQltYXAwIHsNCj4gPiAtCQkJCQl0cmlwID0gPCZjcHVfYWxl
-cnQ+Ow0KPiA+ICsJCQkJCXRyaXAgPSA8JmNjdV9hbGVydD47DQo+ID4gKwkJCQkJY29vbGluZy1k
-ZXZpY2UgPQ0KPiA+ICsJCQkJCQk8JmNwdTAgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05P
-X0xJTUlUPiwNCj4gPiArCQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9O
-T19MSU1JVD4sDQo+ID4gKwkJCQkJCTwmY3B1MiBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxf
-Tk9fTElNSVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTMgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFM
-X05PX0xJTUlUPiwNCj4gPiArCQkJCQkJPCZjcHU0IFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1B
-TF9OT19MSU1JVD4sDQo+ID4gKwkJCQkJCTwmY3B1NSBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJN
-QUxfTk9fTElNSVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTYgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVS
-TUFMX05PX0xJTUlUPiwNCj4gPiArCQkJCQkJPCZjcHU3IFRIRVJNQUxfTk9fTElNSVQNCj4gVEhF
-Uk1BTF9OT19MSU1JVD47DQo+ID4gKwkJCQl9Ow0KPiA+ICsJCQl9Ow0KPiA+ICsJCX07DQo+ID4g
-Kw0KPiA+ICsJCXBsdCB7DQo+IA0KPiBXaGF0IGFib3V0ICdwbGF0Zm9ybS10aGVybWFsJyBmb3Ig
-bm9kZSBuYW1lLCBwbGF0Zm9ybS1hbGVydCBhbmQgcGxhdGZvcm0tY3JpdA0KPiBmb3IgdHJpcCBu
-b2RlcyBiZWxvdz8NCk9LLCB3aWxsIHVzZSBsb25nIG5hbWUgZm9ybS4NCg0KQlIsDQpBbmR5DQo+
-IA0KPiBTaGF3bg0KPiANCj4gPiArCQkJcG9sbGluZy1kZWxheS1wYXNzaXZlID0gPDEwMDA+Ow0K
-PiA+ICsJCQlwb2xsaW5nLWRlbGF5ID0gPDUwMDA+Ow0KPiA+ICsJCQl0aGVybWFsLXNlbnNvcnMg
-PSA8JnRtdSAxPjsNCj4gPiArDQo+ID4gKwkJCXRyaXBzIHsNCj4gPiArCQkJCXBsdF9hbGVydDog
-cGx0LWFsZXJ0IHsNCj4gPiArCQkJCQl0ZW1wZXJhdHVyZSA9IDw4NTAwMD47DQo+ID4gKwkJCQkJ
-aHlzdGVyZXNpcyA9IDwyMDAwPjsNCj4gPiArCQkJCQl0eXBlID0gInBhc3NpdmUiOw0KPiA+ICsJ
-CQkJfTsNCj4gPiArDQo+ID4gKwkJCQlwbHRfY3JpdDogcGx0LWNyaXQgew0KPiA+ICsJCQkJCXRl
-bXBlcmF0dXJlID0gPDk1MDAwPjsNCj4gPiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+
-ICsJCQkJCXR5cGUgPSAiY3JpdGljYWwiOw0KPiA+ICsJCQkJfTsNCj4gPiArCQkJfTsNCj4gPiAr
-DQo+ID4gKwkJCWNvb2xpbmctbWFwcyB7DQo+ID4gKwkJCQltYXAwIHsNCj4gPiArCQkJCQl0cmlw
-ID0gPCZwbHRfYWxlcnQ+Ow0KPiA+ICAJCQkJCWNvb2xpbmctZGV2aWNlID0NCj4gPiAgCQkJCQkJ
-PCZjcHUwIFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9OT19MSU1JVD4sDQo+ID4gIAkJCQkJ
-CTwmY3B1MSBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxfTk9fTElNSVQ+LA0KPiA+IC0tDQo+
-ID4gMS43LjENCj4gPg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtYXJtLWtlcm5lbAo=
+On Mon, Mar 04, 2019 at 06:46:32AM +0000, Andy Tang wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Shawn Guo <shawnguo@kernel.org>
+> > Sent: 2019年3月4日 14:21
+> > To: Andy Tang <andy.tang@nxp.com>
+> > Cc: Leo Li <leoyang.li@nxp.com>; robh+dt@kernel.org; mark.rutland@arm.com;
+> > linux-arm-kernel@lists.infradead.org; devicetree@vger.kernel.org;
+> > linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org;
+> > daniel.lezcano@linaro.org; rui.zhang@intel.com; edubezval@gmail.com
+> > Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+> > 
+> > On Mon, Mar 04, 2019 at 11:21:11AM +0800, Yuantian Tang wrote:
+> > > Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core
+> > > cluster sensor is used to monitor the temperature of core and SoC
+> > > platform is for platform. The current dts only support the first sensor.
+> > > This patch adds the second sensor node to dts to enable it.
+> > >
+> > > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+> > > ---
+> > > v2:
+> > > 	- Add more information about sensors to description
+> > > PS: In order to keep consistency to the first thermal-zone node, there
+> > > will be "WARNING: line over 80 characters" warnings.
+> > >
+> > >  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43
+> > +++++++++++++++++++++--
+> > >  1 files changed, 39 insertions(+), 4 deletions(-)
+> > >
+> > > diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > index 661137f..9f52bc9 100644
+> > > --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+> > > @@ -129,19 +129,19 @@
+> > >  	};
+> > >
+> > >  	thermal-zones {
+> > > -		cpu_thermal: cpu-thermal {
+> > > +		ccu {
+> > 
+> > Is this change really necessary?  What does 'ccu' stand for?
+> I think so. ccu stands for core cluster unit. cpu is too general.
+> On some platforms, there are more than one core clusters.
+> At least we should change it to "core cluster" if short form is not appropriate.
+
+Yes, please give it a more descriptive name.
+
+Shawn
