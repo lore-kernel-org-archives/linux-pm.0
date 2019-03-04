@@ -1,100 +1,77 @@
-From: Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH v3] arm64: dts: ls1088a: add one more thermal zone node
-Date: Mon,  4 Mar 2019 15:50:50 +0800
-Message-ID: <20190304075050.33432-1-andy.tang@nxp.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: Re: [PATCH v4] PM / devfreq: Restart previous governor if new
+ governor fails to start
+Date: Mon, 04 Mar 2019 13:51:53 +0530
+Message-ID: <946aa4e13aec4f84e6ae2d91e772fb1f@codeaurora.org>
+References: <20181212135313.30268-1-sibis@codeaurora.org>
+ <CGME20181212135338epcas5p12f7a8cd1c7aab5d5c936cbc5c33eee07@epcms1p6>
+ <20181214014527epcms1p6c783b4cd1602bbcbcb6e725f840db479@epcms1p6>
+ <39d3a906-b734-9bb8-c60a-48948bb21338@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <39d3a906-b734-9bb8-c60a-48948bb21338@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: shawnguo@kernel.org
-Cc: leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
+To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, skannan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-sensor is used to monitor the temperature of core and SoC platform is for
-platform. The current dts only support the first sensor.
-This patch adds the second sensor node to dts to enable it.
+Hey MyungJoo, Kyungmin
+Did you get a chance to think about how you
+want this fix implemented?
 
-Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
----
-v3:
-	- use more descriptive name for each zone
-v2:
-	- Add more information about sensors to description
-PS: In order to keep consistency to the first thermal-zone node, there will
-be "WARNING: line over 80 characters" warnings.
+On 2019-02-19 10:42, Sibi Sankar wrote:
+> Hey MyungJoo,
+> 
+> On 12/14/18 7:15 AM, MyungJoo Ham wrote:
+>>> From: Saravana Kannan <skannan@codeaurora.org>
+>>> 
+>>> If the new governor fails to start, switch back to old governor so 
+>>> that the
+>>> devfreq state is not left in some weird limbo.
+>>> 
+>>> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> 
+>> Hello,
+>> 
+>> In overall, the idea and the implementation looks good.
+>> 
+>> However, I have a question:
+>> 
+>> What if the following line fails?
+>> 
+>> +		df->governor->event_handler(df, DEVFREQ_GOV_START,
+>> +					    NULL);
+>> 
+>> Don't we still need something to handle for such events?
+> 
+> The original discussion went as follows:
+> governor_store is expected to be used only on cases
+> where devfreq_add_device() succeeded i.e prev->governor
+> is expected to be present and DEVFREQ_GOV_START is
+> expected to succeed. Hence falling back to the previous
+> governor seems like a sensible idea.
+> 
+> This would also prevent DEVFREQ_GOV_STOP from being called
+> on a governor were DEVFREQ_GOV_START had failed which is
+> ideal.
+> 
+> That being said DEVFREQ_GOV_START can still fail for the
+> prev-governor due to some change in state of the system.
+> Do you want to handle this case by clearing the state of
+> governor rather than switching to previous governor?
+> 
+>> 
+>> Cheers,
+>> MyungJoo
+>> 
+>> 
 
- arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43 +++++++++++++++++++++--
- 1 files changed, 39 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index 661137f..54f973b 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -129,19 +129,19 @@
- 	};
- 
- 	thermal-zones {
--		cpu_thermal: cpu-thermal {
-+		core_cluster_thermal {
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
- 			thermal-sensors = <&tmu 0>;
- 
- 			trips {
--				cpu_alert: cpu-alert {
-+				core_cluster_alert: core_cluster-alert {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
- 
--				cpu_crit: cpu-crit {
-+				core_cluster_crit: core_cluster-crit {
- 					temperature = <95000>;
- 					hysteresis = <2000>;
- 					type = "critical";
-@@ -150,7 +150,42 @@
- 
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu_alert>;
-+					trip = <&core_cluster_alert>;
-+					cooling-device =
-+						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+						<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		platform-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&tmu 1>;
-+
-+			trips {
-+				platform_alert: platform-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				platform_crit: platform-crit {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&platform_alert>;
- 					cooling-device =
- 						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
 -- 
-1.7.1
+-- Sibi Sankar --
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project.
