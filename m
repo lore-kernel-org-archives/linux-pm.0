@@ -1,80 +1,230 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
- frequency on global turbo changes
-Date: Tue, 5 Mar 2019 11:01:37 +0000
-Message-ID: <20190305110135.jdgc6vtdivs5rdjv@queper01-lin>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
- <3017597.CVkTxgYgAs@aspire.rjw.lan>
- <20190305104256.7kvedlttuovmptpc@queper01-lin>
- <2336151.IZk3Z8DVvP@aspire.rjw.lan>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v5 4/8] dt-bindings: devfreq: add Exynos5422 DMC device description
+Date: Tue, 5 Mar 2019 12:35:53 +0100
+Message-ID: <CAJKOXPchn1nFH2FvvCTKoEen2+9EgTfHKbmzEfgKFxGmKGH8Pw@mail.gmail.com>
+References: <CGME20190305101926eucas1p2eee36b9cb50cbcf511fab7bae59e24bb@eucas1p2.samsung.com>
+ <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com> <1551781151-5562-5-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2336151.IZk3Z8DVvP@aspire.rjw.lan>
+In-Reply-To: <1551781151-5562-5-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, peterz@infradead.org
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 05 Mar 2019 at 11:50:56 (+0100), Rafael J. Wysocki wrote:
-> On Tuesday, March 5, 2019 11:42:59 AM CET Quentin Perret wrote:
-> > > +static void intel_pstate_update_max_freq(unsigned int cpu)
-> > > +{
-> > > +	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-> > > +	struct cpufreq_policy new_policy;
-> > > +	struct cpudata *cpudata;
-> > > +
-> > > +	if (!policy)
-> > > +		return;
-> > > +
-> > > +	down_write(&policy->rwsem);
-> > > +
-> > > +	if (policy_is_inactive(policy))
-> > > +		goto unlock;
-> > > +
-> > > +	cpudata = all_cpu_data[cpu];
-> > > +	policy->cpuinfo.max_freq = global.turbo_disabled_upd ?
-> > > +			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
-> > > +
-> > > +	memcpy(&new_policy, policy, sizeof(*policy));
-> > > +	new_policy.max = min(policy->user_policy.max, policy->cpuinfo.max_freq);
-> > > +	new_policy.min = min(policy->user_policy.min, new_policy.max);
-> > > +
-> > > +	cpufreq_set_policy(policy, &new_policy);
-> > 
-> > Do you want to force-restart the governor here ?
-> 
-> cpufreq_set_policy() is expected to take care of the governor.
-> If it doesn't, there is a bug somewhere.
+On Tue, 5 Mar 2019 at 11:19, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>
+> The patch adds description for DT binding for a new Exynos5422 Dynamic
+> Memory Controller device.
+>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  .../devicetree/bindings/devfreq/exynos5422-dmc.txt | 177 +++++++++++++++++++++
+>  1 file changed, 177 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+>
+> diff --git a/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+> new file mode 100644
+> index 0000000..0e73e98
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+> @@ -0,0 +1,177 @@
+> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
+> +
+> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
+> +memory chips are connected. The driver is to monitor the controller in runtime
+> +and switch frequency and voltage. To monitor the usage of the controller in
+> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
+> +is able to measure the current load of the memory.
+> +When 'userspace' governor is used for the driver, an application is able to
+> +switch the DMC frequency.
+> +
+> +Required properties for DMC device for Exynos5422:
+> +- compatible: Should be "samsung,exynos5422-bus".
+> +- clock-names : the name of clock used by the bus, "bus".
+> +- clocks : phandles for clock specified in "clock-names" property.
+> +- devfreq-events : phandles for PPMU devices connected to this DMC.
+> +
+> +The example definition of a DMC and PPMU devices declared in DT is shown below:
+> +
+> +       ppmu_dmc0_0: ppmu@10d00000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d00000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
+> +                               event-name = "ppmu-event3-dmc0_0";
+> +                       };
+> +               };
+> +       };
+> +
+> +
+> +       ppmu_dmc0_1: ppmu@10d10000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d10000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc0_1: ppmu-event3-dmc0_1 {
+> +                               event-name = "ppmu-event3-dmc0_1";
+> +                       };
+> +               };
+> +       };
+> +
+> +       ppmu_dmc1_0: ppmu@10d10000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d60000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc1_0: ppmu-event3-dmc1_0 {
+> +                               event-name = "ppmu-event3-dmc1_0";
+> +                       };
+> +               };
+> +       };
+> +
+> +       ppmu_dmc1_1: ppmu@10d70000 {
+> +               compatible = "samsung,exynos-ppmu";
+> +               reg = <0x10d70000 0x2000>;
+> +               clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
+> +               clock-names = "ppmu";
+> +               status = "okay";
+> +               events {
+> +                       ppmu_event_dmc1_1: ppmu-event3-dmc1_1 {
+> +                               event-name = "ppmu-event3-dmc1_1";
+> +                       };
+> +               };
+> +       };
+> +
+> +       dmc: memory-controller@10c20000 {
+> +               compatible = "samsung,exynos5422-dmc";
+> +               reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
+> +                       <0x10000000 0x1000>;
+> +               clocks =        <&clock CLK_FOUT_SPLL>,
+> +                               <&clock CLK_MOUT_SCLK_SPLL>,
+> +                               <&clock CLK_FF_DOUT_SPLL2>,
+> +                               <&clock CLK_FOUT_BPLL>,
+> +                               <&clock CLK_MOUT_BPLL>,
+> +                               <&clock CLK_SCLK_BPLL>,
+> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE>,
+> +                               <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
+> +                               <&clock CLK_MOUT_MCLK_CDREX>,
+> +                               <&clock CLK_DOUT_CLK2X_PHY0>,
+> +                               <&clock CLK_CLKM_PHY0>,
+> +                               <&clock CLK_CLKM_PHY1>,
+> +                               <&clock CLK_CDREX_PAUSE>,
+> +                               <&clock CLK_CDREX_TIMING_SET>;
+> +               clock-names =   "fout_spll",
+> +                               "mout_sclk_spll",
+> +                               "ff_dout_spll2",
+> +                               "fout_bpll",
+> +                               "mout_bpll",
+> +                               "sclk_bpll",
+> +                               "mout_mx_mspll_ccore",
+> +                               "mout_mx_mspll_ccore_phy",
+> +                               "mout_mclk_cdrex",
+> +                               "dout_clk2x_phy0",
+> +                               "clkm_phy0",
+> +                               "clkm_phy1",
+> +                               "clk_cdrex_pause",
+> +                               "clk_cdrex_timing_set";
+> +               status = "okay";
+> +               operating-points-v2 = <&dmc_opp_table>;
+> +               devfreq-events = <&ppmu_dmc0_0>, <&ppmu_dmc0_1>,
+> +                               <&ppmu_dmc1_0>, <&ppmu_dmc1_1>;
+> +       };
+> +
+> +The needed timings of DRAM memory are stored in dedicated nodes.
+> +There are two nodes with regular timings and for bypass mode.
+> +
+> +       dmc_bypass_mode: bypass_mode {
+> +               compatible = "samsung,dmc-bypass-mode";
 
-Yes, it does something when there is a governor change, but that's not
-the case here IIUC.
+This looks like an example, not bindings.
 
-> > Schedutil caches cpuinfo.max_freq for the iowait stuff in sugov_start() [1].
-> 
-> If it does so, it should update the cached value in sugov_limits().
-> 
-> I guess I can add a patch updating it to this series.
+> +
+> +               freq-hz = <400000000>;
+> +               volt-uv = <887500>;
 
-Right, I think we've been under the assumption that unlike policy->max,
-cpuinfo.max_freq should be constant, so there was no need to update the
-value at run time. But if that assumption doesn't hold any more, then
-yeah we'll need something more dynamic I guess.
+-microvolt
+Documentation/devicetree/bindings/property-units.txt
 
-> 
-> > I'm not sure about the other governors.
-> 
-> They don't do that AFAICS.
+> +               dram-timing-row = <0x365a9713>;
+> +               dram-timing-data = <0x4740085e>;
+> +               dram-timing-power = <0x543a0446>;
+> +       };
+> +
+> +       dram_timing: timing {
+> +               compatible = "samsung,dram-timing";
 
-OK
+Probably you should use timings from Documentation/devicetree/bindings/lpddr2/
+If not, all the fields below should be described.
 
-> > And just removing sg_cpu->iowait_boost_max to use the cpuinfo struct
-> > instead will conflict with [2], I think.
-> 
-> Thanks for pointing this out.
+All these bindings (memory-controller, timings) look like description
+of memory controller so maybe they should go into
+Documentation/devicetree/bindings/memory-controllers ?
 
-N/p :-)
+Best regards,
+Krzysztof
 
-Thanks,
-Quentin
+> +
+> +               dram-timing-names = "165MHz", "206MHz", "275MHz", "413MHz",
+> +                                   "543MHz", "633MHz", "728MHz", "825MHz";
+> +               dram-timing-row = <0x11223185>, <0x112331C6>, <0x12244287>,
+> +                                 <0x1B35538A>, <0x244764CD>, <0x2A48758F>,
+> +                                 <0x30598651>, <0x365A9713>;
+> +               dram-timing-data = <0x2720085E>, <0x2720085E>, <0x2720085E>,
+> +                                  <0x2720085E>, <0x3730085E>, <0x3730085E>,
+> +                                  <0x3730085E>, <0x4740085E>;
+> +               dram-timing-power = <0x140C0225>, <0x180F0225>, <0x1C140225>,
+> +                                   <0x2C1D0225>, <0x38270335>, <0x402D0335>,
+> +                                   <0x4C330336>, <0x543A0446>;
+> +       };
+> +
+> +The frequencies supported by the DMC are stored in OPP table v2.
+> +
+> +       dmc_opp_table: opp_table2 {
+> +               compatible = "operating-points-v2";
+> +
+> +               opp00 {
+> +                       opp-hz = /bits/ 64 <165000000>;
+> +                       opp-microvolt = <875000>;
+> +               };
+> +               opp01 {
+> +                       opp-hz = /bits/ 64 <206000000>;
+> +                       opp-microvolt = <875000>;
+> +               };
+> +               opp02 {
+> +                       opp-hz = /bits/ 64 <275000000>;
+> +                       opp-microvolt = <875000>;
+> +               };
+> +               opp03 {
+> +                       opp-hz = /bits/ 64 <413000000>;
+> +                       opp-microvolt = <887500>;
+> +               };
+> +               opp04 {
+> +                       opp-hz = /bits/ 64 <543000000>;
+> +                       opp-microvolt = <937500>;
+> +               };
+> +               opp05 {
+> +                       opp-hz = /bits/ 64 <633000000>;
+> +                       opp-microvolt = <1012500>;
+> +               };
+> +               opp06 {
+> +                       opp-hz = /bits/ 64 <728000000>;
+> +                       opp-microvolt = <1037500>;
+> +               };
+> +               opp07 {
+> +                       opp-hz = /bits/ 64 <825000000>;
+> +                       opp-microvolt = <1050000>;
+> +               };
+> +       };
+> +
+> --
+> 2.7.4
+>
