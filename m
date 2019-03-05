@@ -1,56 +1,105 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v5 3/8] clk: samsung: add BPLL rate table for Exynos 5422
- SoC
-Date: Tue,  5 Mar 2019 11:19:06 +0100
-Message-ID: <1551781151-5562-4-git-send-email-l.luba@partner.samsung.com>
-References: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190305101926eucas1p158d6241bd6851b3d98ed9aae6cba502c@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
+ frequency on global turbo changes
+Date: Tue, 5 Mar 2019 10:42:59 +0000
+Message-ID: <20190305104256.7kvedlttuovmptpc@queper01-lin>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+ <2046937.YMVy5Qh3Pm@aspire.rjw.lan>
+ <3017597.CVkTxgYgAs@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <3017597.CVkTxgYgAs@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, peterz@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
-Controller frequencies for driver's DRAM timings.
+Hi Rafael,
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/clk/samsung/clk-exynos5420.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
++CC Peter since we were talking about cpuinfo.*_freq recently.
 
-diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
-index 6da5875..6f5db70 100644
---- a/drivers/clk/samsung/clk-exynos5420.c
-+++ b/drivers/clk/samsung/clk-exynos5420.c
-@@ -1331,6 +1331,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
- 	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
- };
- 
-+static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
-+	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
-+	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
-+	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
-+	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
-+};
-+
- static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
- 	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
- 	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
-@@ -1473,7 +1484,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
- 		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
- 		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
- 		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
--		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-+		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
- 	}
- 
- 	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
--- 
-2.7.4
+On Friday 01 Mar 2019 at 13:57:06 (+0100), Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> While the cpuinfo.max_freq value doesn't really matter for
+> intel_pstate in the active mode, in the passive mode it is used by
+> governors as the maximum physical frequency of the CPU and the
+> results of governor computations generally depend on it. Also it
+> is made available to user space via sysfs and it should match the
+> current HW configuration.
+> 
+> For this reason, make intel_pstate update cpuinfo.max_freq for all
+> CPUs if it detects a global change of turbo frequency settings from
+> "disable" to "enable" or the other way associated with a _PPC change
+> notification from the platform firmware.
+> 
+> Note that policy_is_inactive() and cpufreq_set_policy() need to be
+> made available to it for this purpose.
+> 
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
+> Reported-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Update, because the patch sent previously doesn't build, due to an extra
+> arg declared for intel_pstate_update_max_freq().
+> 
+> ---
+>  drivers/cpufreq/cpufreq.c      |   12 ++----------
+>  drivers/cpufreq/intel_pstate.c |   33 ++++++++++++++++++++++++++++++++-
+>  include/linux/cpufreq.h        |    7 +++++++
+>  3 files changed, 41 insertions(+), 11 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -897,6 +897,36 @@ static void intel_pstate_update_policies
+>  		cpufreq_update_policy(cpu);
+>  }
+>  
+> +static void intel_pstate_update_max_freq(unsigned int cpu)
+> +{
+> +	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> +	struct cpufreq_policy new_policy;
+> +	struct cpudata *cpudata;
+> +
+> +	if (!policy)
+> +		return;
+> +
+> +	down_write(&policy->rwsem);
+> +
+> +	if (policy_is_inactive(policy))
+> +		goto unlock;
+> +
+> +	cpudata = all_cpu_data[cpu];
+> +	policy->cpuinfo.max_freq = global.turbo_disabled_upd ?
+> +			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
+> +
+> +	memcpy(&new_policy, policy, sizeof(*policy));
+> +	new_policy.max = min(policy->user_policy.max, policy->cpuinfo.max_freq);
+> +	new_policy.min = min(policy->user_policy.min, new_policy.max);
+> +
+> +	cpufreq_set_policy(policy, &new_policy);
+
+Do you want to force-restart the governor here ? Schedutil caches
+cpuinfo.max_freq for the iowait stuff in sugov_start() [1]. I'm not sure
+about the other governors.
+
+And just removing sg_cpu->iowait_boost_max to use the cpuinfo struct
+instead will conflict with [2], I think.
+
+Thanks,
+Quentin
+
+[1] https://elixir.bootlin.com/linux/latest/source/kernel/sched/cpufreq_schedutil.c#L840
+[2] https://lore.kernel.org/lkml/1550831866-32749-1-git-send-email-chunyan.zhang@unisoc.com/
+
+> +
+> +unlock:
+> +	up_write(&policy->rwsem);
+> +
+> +	cpufreq_cpu_put(policy);
+> +}
