@@ -1,74 +1,153 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
- frequency on global turbo changes
-Date: Tue, 5 Mar 2019 17:37:48 +0000
-Message-ID: <20190305173746.p32xolcpueudlzwn@queper01-lin>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
- <20190305104256.7kvedlttuovmptpc@queper01-lin>
- <2336151.IZk3Z8DVvP@aspire.rjw.lan>
- <6357319.Iupbu3ldGQ@aspire.rjw.lan>
- <20190305114406.GV32494@hirez.programming.kicks-ass.net>
- <20190305120040.y2vmnxrch6kgya3e@queper01-lin>
- <CAJZ5v0hYU763Jx0Ku0HsNMd261z7E0PhZ88_PH6MT=OLYYUAaQ@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 5.1
+Date: Tue, 5 Mar 2019 23:04:47 +0100
+Message-ID: <20190305220447.e3rb3yu544kcix7m@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="42u6dioqh4w4nc63"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hYU763Jx0Ku0HsNMd261z7E0PhZ88_PH6MT=OLYYUAaQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 05 Mar 2019 at 18:02:25 (+0100), Rafael J. Wysocki wrote:
-> But that 128 needs to be compared to
-> 
-> (SCHED_CAPACITY_SCALE * cpuinfo.min_freq) / cpuinfo.max_freq
-> 
-> so with SCHED_CAPACITY_SCALE equal to 1024 this means max_freq 8x
-> higher than min_freq.  That is not totally unreasonable IMO and
-> because sg_cpu->iowait_boost grows exponentially, the difference
-> between 8x and, say, 4x is one iteration.
-> 
-> > The first steps will all be below the min freq, so they'll just be
-> > transparent, while right now the iowait boost kicks in much faster :/
-> 
-> There can be one iteration of a difference this way or that way AFAICS
-> and I'm not even sure how much of a performance difference that makes
-> in practice.
 
-Yeah I don't expect that to have a huge impact TBH but it'd be nice to
-actually get numbers to verify that, that's all I'm saying :-)
+--42u6dioqh4w4nc63
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You have 'funny' platforms like Juno r0 out there where the min/max
-frequencies are 450MHz/850Mhz. In this case, starting from 128 you'll
-need 3 wake-ups to reach what is currently the starting point. I'm not
-sure if the impact is visible or not, but it's worth checking.
+Hi Linus,
 
-> OTOH I fundamentally don't see why the iowait boost should ramp up
-> faster on CPUs having a higher max_freq to min_freq ratio.  Say you
-> have two platforms, both with max_freq of 2 GHz and with min_freq
-> equal to 250 MHz and 500 MHz, respectively.  The ratios in question
-> will be 8 and 4 then, so the first one will reliably react 50% slower
-> to iowait than the second one for no particular reason at all.
->
-> > OTOH, you also have platforms like the recent Snapdragons with 30+ OPPs,
-> > and for them starting at 128 will speed things up.
-> >
-> > So maybe what you want is to start at max(min, 128) ?
-> 
-> That's not just min, though, or is it?
+Nothing too fancy in the power-supply subsystem this time. There are
+less patches than usual, since I did not have enough time to review
+them in time. The good news is, that all patches have been in
+linux-next for more than two weeks and there are no complicated
+cross-subsystem patchsets this time!
 
-I'm not sure to get the question, so just to make sure it's clearer, I
-was suggesting to do something along the lines of:
+-- Sebastian
 
-	sg_cpu->min = max(min_freq * 1024 / max_freq, 128);
+The following changes since commit bfeffd155283772bbe78c6a05dec7c0128ee500c:
 
-That basically just prevents you from starting too low -- some boards,
-unlike juno, have tons of OPPs on the lower end of the curve so these
-might benefit from getting a higher starting point. But then perhaps
-this is in fact a good illustration of the issue of having different
-ramp-up speeds depending on the min_freq so ... :-)
+  Linux 5.0-rc1 (2019-01-06 17:08:20 -0800)
 
-Thanks,
-Quentin
+are available in the Git repository at:
+
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-su=
+pply.git tags/for-v5.1
+
+for you to fetch changes up to 655ab0bc462d1ae2aa344b1ecf35ca1a3ed726dc:
+
+  power: reset: at91-reset: add support for sam9x60 SoC (2019-02-20 00:41:0=
+1 +0100)
+
+----------------------------------------------------------------
+power supply and reset changes for the v5.1 series
+
+* at91-reset: add sam9x60 support
+* sc27xx: improve capacity logic
+* goldfish_battery: enhance driver by adding many new properties
+* isp1704: drop platform data and migrate to gpiod
+* misc. small fixes and improvements
+
+----------------------------------------------------------------
+Arthur Demchenkov (1):
+      bq27x00: use cached flags
+
+Artur Rojek (2):
+      dt-bindings: power: supply: Add voltage-max-design-microvolt property
+      power: supply: core: Add a field to support battery max voltage
+
+Baolin Wang (3):
+      dt-bindings: power: sc27xx: Add one IIO channel to read charge voltage
+      power: supply: sc27xx: Add one property to read charge voltage
+      power: supply: sc27xx: Fix the incorrect formula when converting capa=
+city to coulomb counter
+
+Kangjie Lu (1):
+      power: twl4030: fix a missing check of return value
+
+Krzysztof Kozlowski (1):
+      power: supply: charger-manager: Fix trivial language typos
+
+Micha=C5=82 Miros=C5=82aw (1):
+      power: supply: bq25890: show max charge current/voltage as configured
+
+Nicolas Ferre (3):
+      dt-bindings: arm: atmel: add missing samx7 to reset controller
+      dt-bindings: arm: atmel: add new sam9x60 reset controller binding
+      power: reset: at91-reset: add support for sam9x60 SoC
+
+Pavel Machek (1):
+      cpcap-charger: generate events for userspace
+
+Roman Kiryanov (6):
+      drivers: power: supply: goldfish_battery: Put an SPDX tag
+      drivers: power: supply: goldfish_battery: Fix "line over 80 character=
+s"
+      drivers: power: supply: goldfish_battery: Retire a redundant variable
+      drivers: power: supply: goldfish_battery: Fix alignment
+      drivers: power: supply: goldfish_battery: Use tabs for alignment
+      drivers: power: supply: goldfish_battery: Add support for reading mor=
+e properties
+
+Sebastian Reichel (1):
+      power: supply: isp1704: switch to gpiod API
+
+Sven Van Asbroeck (2):
+      power: supply: ds2782: fix possible use-after-free on remove
+      max17042_battery: fix potential use-after-free on device remove
+
+Yangtao Li (2):
+      power: supply: axp288_fuel_gauge: Change to use DEFINE_SHOW_ATTRIBUTE=
+ macro
+      power: supply: remove some duplicated includes
+
+Yuanjiang Yu (1):
+      power: supply: sc27xx: Fix capacity saving function
+
+ .../devicetree/bindings/arm/atmel-sysregs.txt      |  3 +-
+ .../devicetree/bindings/power/supply/battery.txt   |  2 +
+ .../devicetree/bindings/power/supply/sc27xx-fg.txt |  8 +-
+ drivers/power/reset/at91-reset.c                   | 13 +++
+ drivers/power/supply/axp288_fuel_gauge.c           | 14 +---
+ drivers/power/supply/bq25890_charger.c             |  4 +-
+ drivers/power/supply/bq27xxx_battery.c             | 20 +----
+ drivers/power/supply/charger-manager.c             | 18 ++--
+ drivers/power/supply/cpcap-charger.c               |  1 +
+ drivers/power/supply/ds2782_battery.c              |  8 +-
+ drivers/power/supply/goldfish_battery.c            | 88 +++++++++++++-----=
+--
+ drivers/power/supply/isp1704_charger.c             | 60 +++-----------
+ drivers/power/supply/max17042_battery.c            | 10 +++
+ drivers/power/supply/power_supply_core.c           |  5 +-
+ drivers/power/supply/sc27xx_fuel_gauge.c           | 95 ++++++++++++++++++=
+++--
+ drivers/power/supply/twl4030_charger.c             |  4 +-
+ include/linux/power/isp1704_charger.h              | 30 -------
+ include/linux/power_supply.h                       |  1 +
+ 18 files changed, 221 insertions(+), 163 deletions(-)
+ delete mode 100644 include/linux/power/isp1704_charger.h
+
+--42u6dioqh4w4nc63
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlx+8n4ACgkQ2O7X88g7
++poNmQ//Rv5dSMf2wGPI2eioEnE4VazCJhEuWtNrhVu490CGbQoQlQjPYvsLc+/v
+NxbyWvMhpFfyVxnFnwbuwdrdtdnOhikSkZeoVNyIrRJ//62Z3mjiDa77eOTVWF/V
+FS7hSKb8mGm7ws8crTyorzOHsCM7xOBSwhXRRAiYH60jagMDAbvhhjmt3Co0Kgqr
+uImyhy7bh7vThJ9U+JSkHNPOz0x6mODeX3J3robv3ac9qApSHg/NAAWQC4Y3c7UY
+cOtuS678W3ts0lS0Th6e4Ok4pS6c+K4rm6cszjDLcqFyde4N5i5ZG+pPltUD8u3Z
+I/S8IEkqD5ICeOCKE1nDYvr2wDpTk3i6FHb/FuhuBae3dwPR38SpnP0jBVw/3l1b
+J1Yable78FctVDlbgei8AwzPhYvXHKLdAHavZ3ARVrU2UMpWo54rhWdHk9W/eqzs
+liMEt/u+kHWdzxcGaUGkhQlTTzgp0hpShCMB/SVwrBeEvImCgC2fX4vq6EUw+FSp
+Oq/lqbukT2HfrzJKabgWCKeqOLMs2fNag+wJDKHQHqfKsNFXSatX7eKNkgBdJOep
+b4dPsWyxCqurujtn+5CbjX3d1fEEITfc6f+qAF1kkkjli9ClAp2VeXEsk92tEky/
+Vj2OUQTSAcH4a0NyeIpVM0A0szr9IRsU8j0Vm9PKrFQD1g+2D7Q=
+=855+
+-----END PGP SIGNATURE-----
+
+--42u6dioqh4w4nc63--
