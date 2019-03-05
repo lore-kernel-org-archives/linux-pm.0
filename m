@@ -1,94 +1,83 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH 0/2] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Tue, 5 Mar 2019 09:40:45 +0100
-Message-ID: <CAJZ5v0gFmzsEZ=KC=6HVn4tVcBaTJri2iw6UXwAdEbRbrBx53A@mail.gmail.com>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan> <fa5e3e09eb32f5197bef2a50ced952850bf70748.camel@linux.intel.com>
- <CAJZ5v0ik6oHCXD23tURsRXRj1-C-Z=S6y+KEiRxe0zJpGrKa+Q@mail.gmail.com>
- <f214b0d82fce14c374aa6b548742c999513d9046.camel@linux.intel.com>
- <CAJZ5v0huRALvfFBeo067dNMyUJn+Oyp8eFR3JRR+C9g7QhaekA@mail.gmail.com>
- <47ce61b9df7701e047ef6f59afd54c854db8a538.camel@linux.intel.com>
- <CAJZ5v0iCVhj-HmToGnSBuYE99LMn0BZpB-Ax48Aqh9hVc1+qwQ@mail.gmail.com>
- <9099672e17ea9fc7711b34e92ce5a016afb43a0c.camel@linux.intel.com>
- <CAJZ5v0jzRyz4gZFwJ36feppeEMEzOPJ5Y8weV3pz=+S5ijnEVw@mail.gmail.com> <edab7c9f77e682c701c58a02e7b6af70a57abf25.camel@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v5 0/8] Exynos5 Dynamic Memory Controller driver
+Date: Tue,  5 Mar 2019 11:19:03 +0100
+Message-ID: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190305101924eucas1p24a058fcc034cc95bc33888087412ab48@eucas1p2.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <edab7c9f77e682c701c58a02e7b6af70a57abf25.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 5, 2019 at 12:04 AM Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> On Mon, 2019-03-04 at 22:57 +0100, Rafael J. Wysocki wrote:
-> > On Mon, Mar 4, 2019 at 7:06 PM Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > >
-> > > [...]
-> > > > > There are other methods like PL1 budget limit for such cases.
-> > > > > FW
-> > > > > can
-> > > > > just change the config TDP level.
-> > > >
-> > > > OK, but that would be done without notification I suppose?
-> > >
-> > > There is a notification via processor PCI device (B0D4). This is
-> > > passed
-> > > to user space to change the power limits. The new element is called
-> > > PPCC and it is exposed via sysfs.
-> >
-> > What do you mean by "new element" and how exactly is it exposed?
->
-> This is part of DPTF processor ACPI object (INT3401 or B0D4). They are
-> exposed in sysfs
-> E.g, /sys/bus/platform/devices/INT3401:00/power_limits/
->
-> There is a thermal uevent sent when they change. Both dptf daemon and
-> thermald listen and use to set rapl power-constraints including step
-> sizes for control. Someone can write a udev rule to do the same.
+Hi all,
 
-But the measure at hand here is a power one, not a thermal one AFAICS.
+This is v5 of the patch set which adds support of Dynamic Memory Controller
+for Exynos5422 SoC.
+The driver supports Dynamic Voltage and Frequency Scalling
+for the DMC and DRAM. It also provides needed timings for different
+speed operations of the DRAM memory.
 
-> > > Disabling turbo is not very interesting as there can be more turbo
-> > > than
-> > > non turbo. So you loose lots of performance. So instead you can
-> > > control
-> > > power in turbo region to give you more control. _PPC is even less
-> > > interesting as you can't control uncore power.
-> >
-> > I guess that designers should know about that.  The kernel is on the
-> > receiving end here. :-)
->
-> I think they know. Hence you don't see this issue of enable/disable of
-> turbo by firmware quite often. This laptop here I guess released in
-> beginning of 2014 with Haswell.
+changes:
+v5:
+- removed unneeded wrapper functions i.e. for regulator_set_voltage
+- removed unused defines
+- removed direct access to clock register base and used CCF for
+  pause and timing set usage
+- switched to OPP coming from DT according to Chanowoo's comments
+- switched to timings coming from DT, added parsing function
+- extended dt-binding with description of OPPs and timings
+- according to Rob Herring comment, moved dt-binding file before driver code
+  in the patch set.
+- re-based on top of v5.0
+v4:
+- removed unneeded DPLL and G3D clocks IDs
+- changed names of parent clocks for mout_mx_mspll_ccore_phy_p
+  and added one more parent: mout_sclk_epll
+- removed 933Mhz and 138MHz from the BPLL ratio table
+v3:
+- in DTS align to proper indent the clocks and clock-names entries
+v2:
+- changed file name exynos5-dmc.c -> exynos5422-dmc.c
+  and related entries in other files
+- changed dt-binding file name
+- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
+- removed sysfs and print info messages (print only one line)
+- removed function exynos5_read_chip_info and compact code
+- changed dt-binding patch and move it up in the patch set
+- new entries in MAINTAINERS are added with the driver c code
+- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
+  entries moved to suggested location (before nocp nodes or after),
+  moved according to alfabetical order, compacted clocks names with right indent.
 
-In this particular case, the battery is probably to weak to sustain
-the currents associated with using high turbo P-states, so turbo needs
-to be disabled altogether in order to avoid using turbo P-states at
-all.
+Regards,
+Lukasz Luba
 
-I guess this still would be the case on a contemporary system with a
-sufficiently small battery.
 
-> > > >
-> [...]
->
-> >
-> > I guess that you are talking about intel_pstate_update_max_freq()
-> > which acquires policy->rwsem.  If so, what exactly is the problem
-> > with
-> > it?
-> I was suggesting to use an API/define in cpufreq.h which does operation
-> on policy->rwsem for better abstraction. This is the first time it was
-> used outside core cpufreq.c. As more places it will be used in future,
-> common function will help debug, if in some path there is a bug in
-> aquire/release of semaphore. But you can ignore this.
+Lukasz Luba (8):
+  clk: samsung: add needed IDs for DMC clocks in Exynos5420
+  clk: samsung: add new clocks for DMC for Exynos5422 SoC
+  clk: samsung: add BPLL rate table for Exynos 5422 SoC
+  dt-bindings: devfreq: add Exynos5422 DMC device description
+  drivers: devfreq: add DMC driver for Exynos5422
+  DT: arm: exynos: add DMC device for exynos5422
+  drivers: devfreq: events: add Exynos PPMU new events
+  ARM: exynos_defconfig: enable DMC driver
 
-Well, I guess I could introduce something like
-cpufreq_cpu_acquire/release() that will lock/unlock policy->rwsem in
-addition to getting the policy.  That sequence is used in a couple of
-places already.
+ .../devicetree/bindings/devfreq/exynos5422-dmc.txt |  177 +++
+ MAINTAINERS                                        |    8 +
+ arch/arm/boot/dts/exynos5420.dtsi                  |   83 ++
+ arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |   87 ++
+ arch/arm/configs/exynos_defconfig                  |    1 +
+ drivers/clk/samsung/clk-exynos5420.c               |   67 +-
+ drivers/devfreq/Kconfig                            |   13 +
+ drivers/devfreq/Makefile                           |    1 +
+ drivers/devfreq/event/exynos-ppmu.c                |    6 +
+ drivers/devfreq/exynos5422-dmc.c                   | 1154 ++++++++++++++++++++
+ include/dt-bindings/clock/exynos5420.h             |   18 +-
+ 11 files changed, 1609 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/exynos5422-dmc.txt
+ create mode 100644 drivers/devfreq/exynos5422-dmc.c
+
+-- 
+2.7.4
