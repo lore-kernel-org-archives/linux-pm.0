@@ -1,12 +1,14 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 0/2] PM / Domains: Support enter deepest state during suspend
- and probe failure
-Date: Wed, 6 Mar 2019 13:35:16 +0000
-Message-ID: <1551878926-8455-1-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 1/2] PM / Domains: Support enter deepest state for multiple
+ states domains
+Date: Wed, 6 Mar 2019 13:35:20 +0000
+Message-ID: <1551878926-8455-2-git-send-email-aisheng.dong@nxp.com>
+References: <1551878926-8455-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1551878926-8455-1-git-send-email-aisheng.dong@nxp.com>
 Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -33,16 +35,69 @@ intermediate low power state during system suspend.
 Then genpd_sync_power_off will keep it at the low power state instead
 of completely gate off it.
 
-And for the probe failture case, if there's no devices using it, we can
-fully gate off the domain instead of enter an intermediate state.
+Let's give the power domain a chance to switch to the deepest state in
+case it's already off but in an intermediate low power state.
 
-Dong Aisheng (2):
-  PM / Domains: Support enter deepest state for multiple states domains
-  PM / Domains: Choose the deepest state to enter if no devices using it
-
- drivers/base/power/domain.c | 22 +++++++++++++++++++++-
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+ drivers/base/power/domain.c | 18 +++++++++++++++++-
  include/linux/pm_domain.h   |  1 +
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 61cd500..847a69e 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -959,7 +959,17 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+ {
+ 	struct gpd_link *link;
+ 
+-	if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
++	/*
++	 * Give the power domain a chance to switch to the deepest state in
++	 * case it's already off but in an intermediate low power state.
++	 */
++	genpd->state_idx_saved = genpd->state_idx;
++
++	if (genpd_is_always_on(genpd))
++		return;
++
++	if (!genpd_status_on(genpd) &&
++	    genpd->state_idx == (genpd->state_count - 1))
+ 		return;
+ 
+ 	if (genpd->suspended_count != genpd->device_count)
+@@ -970,6 +980,9 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+ 	if (_genpd_power_off(genpd, false))
+ 		return;
+ 
++	if (genpd->status == GPD_STATE_POWER_OFF)
++		return;
++
+ 	genpd->status = GPD_STATE_POWER_OFF;
+ 
+ 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
+@@ -1017,6 +1030,9 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
+ 
+ 	_genpd_power_on(genpd, false);
+ 
++	/* restore save power domain state after resume */
++	genpd->state_idx = genpd->state_idx_saved;
++
+ 	genpd->status = GPD_STATE_ACTIVE;
+ }
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 1ed5874..95db21f 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -124,6 +124,7 @@ struct generic_pm_domain {
+ 		};
+ 	};
+ 
++	unsigned int state_idx_saved; /* saved power state for recovery after system suspend/resume */
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
 -- 
 2.7.4
