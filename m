@@ -1,43 +1,56 @@
-From: shuah <shuah@kernel.org>
-Subject: Re: [GIT PULL] cpupower update for Linux 5.1-rc1
-Date: Wed, 6 Mar 2019 07:28:53 -0700
-Message-ID: <e51b561d-bb96-39f6-dbe0-6a7316f28544@kernel.org>
-References: <cc753578-75ba-2030-553d-f7d7d16955ef@kernel.org>
- <CAJZ5v0jg5Z6RZJjeuftWb+MBxvhUc5mdKQLfea+e29TQDRuxVw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 6/6] PM / domains: Remove one unnecessary blank line
+Date: Wed, 6 Mar 2019 15:29:39 +0100
+Message-ID: <CAPDyKFpiR8Ywm75E6CW1vWLXuHa=HMRLihcXf3s3tJbaKZGG-A@mail.gmail.com>
+References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
+ <1551878302-8146-7-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jg5Z6RZJjeuftWb+MBxvhUc5mdKQLfea+e29TQDRuxVw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, shuah <shuah@kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1551878302-8146-7-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Aisheng Dong <aisheng.dong@nxp.com>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com> wrote:
+>
+> Remove one unnecessary blank line
+>
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> ---
+>  drivers/base/power/domain_governor.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index 99896fb..4d07e38 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -128,7 +128,6 @@ static bool __default_power_down_ok(struct dev_pm_domain *pd,
+>         off_on_time_ns = genpd->states[state].power_off_latency_ns +
+>                 genpd->states[state].power_on_latency_ns;
+>
+> -
 
-On 3/6/19 2:44 AM, Rafael J. Wysocki wrote:
-> Hi Shuah,
-> 
-> On Fri, Mar 1, 2019 at 5:47 PM shuah <shuah@kernel.org> wrote:
->>
->> Hi Rafael,
->>
->> Please pull the following cpupower update for Linux 5.1-rc1.
->>
->> This cpupower update for Linux 5.1-rc1 consists of a patch to add
->> support to display boost frequency separately from Abhishek Goel.
->>
->> diff is attached.
-> 
-> Pulled, but since my own pull requests have been sent already, this
-> will have to wait for the second half of the merge window.
-> 
-> Thanks!
+Normally I would do these kind of cleanups while working on some
+closely related code. However, I have no problem with it, if Rafael
+want's to pick it up.
+
+>         min_off_time_ns = -1;
+>         /*
+>          * Check if subdomains can be off for enough time.
+> --
+> 2.7.4
 >
 
-Second half of the merge window works just fine.
-
-thanks,
--- Shuah
+Kind regards
+Uffe
