@@ -1,7 +1,7 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 5/6] PM / QoS: Fix a typo in file description
-Date: Wed, 6 Mar 2019 13:25:25 +0000
-Message-ID: <1551878302-8146-6-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 6/6] PM / domains: Remove one unnecessary blank line
+Date: Wed, 6 Mar 2019 13:25:29 +0000
+Message-ID: <1551878302-8146-7-git-send-email-aisheng.dong@nxp.com>
 References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,25 +22,24 @@ To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Fix a typo in file description
+Remove one unnecessary blank line
 
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/base/power/qos.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/domain_governor.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 3382542..f80e402 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -22,7 +22,7 @@
-  * per-device constraint data struct.
-  *
-  * Note about the per-device constraint data struct allocation:
-- * . The per-device constraints data struct ptr is tored into the device
-+ * . The per-device constraints data struct ptr is stored into the device
-  *    dev_pm_info.
-  * . To minimize the data usage by the per-device constraints, the data struct
-  *   is only allocated at the first call to dev_pm_qos_add_request.
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 99896fb..4d07e38 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -128,7 +128,6 @@ static bool __default_power_down_ok(struct dev_pm_domain *pd,
+ 	off_on_time_ns = genpd->states[state].power_off_latency_ns +
+ 		genpd->states[state].power_on_latency_ns;
+ 
+-
+ 	min_off_time_ns = -1;
+ 	/*
+ 	 * Check if subdomains can be off for enough time.
 -- 
 2.7.4
