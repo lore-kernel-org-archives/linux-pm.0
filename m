@@ -1,75 +1,86 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 2/2] PM / Domains: Choose the deepest state to enter if no
- devices using it
-Date: Wed, 6 Mar 2019 15:46:01 +0000
-Message-ID: <AM0PR04MB4211711C18C2F9361286383B80730@AM0PR04MB4211.eurprd04.prod.outlook.com>
-References: <1551878926-8455-1-git-send-email-aisheng.dong@nxp.com>
- <1551878926-8455-3-git-send-email-aisheng.dong@nxp.com>
- <CAPDyKFoWgDAvpwJdLhzVOy3MUoM8Rmf+qinw_EZY4dXd+pp68Q@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management changes for v5.1-rc1
+Date: Wed, 6 Mar 2019 08:12:09 -0800
+Message-ID: <20190306161207.GA7365@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFoWgDAvpwJdLhzVOy3MUoM8Rmf+qinw_EZY4dXd+pp68Q@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
-> Sent: Wednesday, March 6, 2019 11:11 PM
-> On Wed, 6 Mar 2019 at 14:35, Aisheng Dong <aisheng.dong@nxp.com>
-> wrote:
-> >
-> > For a domain has no working devices anymore, let's choose the deepest
-> > state to enter to save power. e.g. driver probe failure.
-> >
-> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > ---
-> >  drivers/base/power/domain.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > index 847a69e..d3f57c2 100644
-> > --- a/drivers/base/power/domain.c
-> > +++ b/drivers/base/power/domain.c
-> > @@ -550,6 +550,10 @@ static int genpd_power_off(struct
-> generic_pm_domain *genpd, bool one_dev_on,
-> >         if (!genpd->gov)
-> >                 genpd->state_idx = 0;
-> >
-> > +       /* Choose the deepest state if no devices using this domain */
-> > +       if (!genpd->device_count)
-> > +               genpd->state_idx = genpd->state_count - 1;
-> > +
-> 
-> This doesn't work, sorry.
-> 
-> For example, there may be a sub-domain with devices in it and which have
-> constraints applicable also for the master (current) domain.
+Hello Linus,
 
-Okay, got your point.
-Then how about make it for no governor case only?
+Please consider the following thermal soc changes for v5.1-rc1.
 
-Regards
-Dong Aisheng
+The following changes since commit 8834f5600cf3c8db365e18a3d5cac2c2780c81e5:
 
-> 
-> >         /*
-> >          * If sd_count > 0 at this point, one of the subdomains hasn't
-> >          * managed to call genpd_power_on() for the master yet after
-> > --
-> > 2.7.4
-> >
-> 
-> Kind regards
-> Uffe
+  Linux 5.0-rc5 (2019-02-03 13:48:04 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+
+for you to fetch changes up to 6269e9f790e8d442b3e1529bf3b3de452dd4ac92:
+
+  thermal: rcar_gen3_thermal: Register hwmon sysfs interface (2019-02-20 17:23:40 -0800)
+
+Kernel CI output:
+Full Boot Summary: https://kernelci.org/boot/all/job/evalenti/branch/for-kernelci/kernel/v5.0-rc5-15-g6269e9f790e8/
+Full Build Summary: https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v5.0-rc5-15-g6269e9f790e8/
+
+Specifics:
+- mediatek thermal now supports MT8183
+- broadcom thermal now supports Stingray
+- qoirq now supports multiple sensors
+- fixes on different drivers: rcar, tsens, tegra
+
+Some new drivers are still pending further review and I chose to leave them
+for the next merge window while still sending this material.
+
+BR,
+
+----------------------------------------------------------------
+Marek Vasut (1):
+      thermal: rcar_gen3_thermal: Register hwmon sysfs interface
+
+Michael Kao (7):
+      thermal: mediatek: fix register index error
+      thermal: mediatek: add common index of vts settings.
+      thermal: mediatek: add calibration item
+      thermal: mediatek: add thermal controller offset
+      thermal: mediatek: add flag for bank selection
+      dt-bindings: thermal: add binding document for mt8183 thermal controller
+      thermal: mediatek: add support for MT8183
+
+Peng Hao (1):
+      thermal/qcom/tsens-common : fix possible object reference leak
+
+Pramod Kumar (2):
+      dt-bindings: thermal: Add binding document for SR thermal
+      thermal: broadcom: Add Stingray thermal driver
+
+Wei Ni (3):
+      thermal: tegra: remove unnecessary warnings
+      thermal: tegra: fix memory allocation
+      thermal: tegra: add get_trend ops
+
+Yuantian Tang (1):
+      thermal: qoriq: add multiple sensors support
+
+ .../bindings/thermal/brcm,sr-thermal.txt           | 105 +++++++
+ .../bindings/thermal/mediatek-thermal.txt          |   1 +
+ drivers/thermal/Kconfig                            |   3 +-
+ drivers/thermal/broadcom/Kconfig                   |   9 +
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/sr-thermal.c              | 121 ++++++++
+ drivers/thermal/mtk_thermal.c                      | 316 +++++++++++++++++----
+ drivers/thermal/qcom/tsens-common.c                |  33 ++-
+ drivers/thermal/qoriq_thermal.c                    | 104 +++----
+ drivers/thermal/rcar_gen3_thermal.c                |  19 ++
+ drivers/thermal/tegra/soctherm.c                   |  38 ++-
+ 11 files changed, 620 insertions(+), 130 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,sr-thermal.txt
+ create mode 100644 drivers/thermal/broadcom/sr-thermal.c
