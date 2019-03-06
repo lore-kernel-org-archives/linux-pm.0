@@ -1,39 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 0/3] cpufreq: intel_pstate: Handle _PPC updates on
- global turbo disable/enable
-Date: Wed, 6 Mar 2019 16:31:40 +0530
-Message-ID: <20190306110140.weyktajj7ty7vuxn@vireshk-i7>
-References: <1755407.S0oJirvq9V@aspire.rjw.lan>
+From: Aisheng Dong <aisheng.dong@nxp.com>
+Subject: [PATCH 0/6] PM / Domains: A few clean up and minor fixes
+Date: Wed, 6 Mar 2019 13:25:08 +0000
+Message-ID: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1755407.S0oJirvq9V@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05-03-19, 11:23, Rafael J. Wysocki wrote:
-> Hi All,
-> 
-> This is a follow-up to the RFT patch set posted previously:
-> https://lore.kernel.org/lkml/9956076.F4luUDm1Dq@aspire.rjw.lan/
-> 
-> Patch [1/3] causes intel_pstate to update all policies if it gets a _PPC change
-> notification and sees a global turbo disable/enable change.
-> 
-> Patch [2/3] adds cpufreq_cpu_acquire() and cpufreq_cpu_release() to reduce
-> code duplication after the next patch a bit (and Srinivas wanted the rwsem
-> manipulation to not be done directly by the driver).
-> 
-> Patch [3/3] makes intel_pstate update cpuinfo.max_freq for all policies in
-> those cases.
-> 
-> I've atted Tested-by tags to patches [1/3] and [3/3], because there are only
-> cosmetic differences between them and what has been tested.
+A few clean up and minor fixes
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Dong Aisheng (6):
+  PM / Domains: Improve warn for multiple states but no governor in
+    genpd
+  PM / Domains: Return for all error cases in _genpd_power_off
+  PM / Domains: Remove the unnecessary ->power_off() check in
+    genpd_power_off
+  PM / Domains: Move the Subdomain check into _genpd_power_off
+  PM / QoS: Fix a typo in file description
+  PM / domains: Remove one unnecessary blank line
+
+ drivers/base/power/domain.c          | 44 ++++++++++++++++--------------------
+ drivers/base/power/domain_governor.c |  1 -
+ drivers/base/power/qos.c             |  2 +-
+ 3 files changed, 21 insertions(+), 26 deletions(-)
 
 -- 
-viresh
+2.7.4
