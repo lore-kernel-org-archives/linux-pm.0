@@ -1,83 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/6] PM / Domains: Move the Subdomain check into
- _genpd_power_off
-Date: Wed, 6 Mar 2019 15:26:43 +0100
-Message-ID: <CAPDyKFpptBCgkY=e6tK22eM9syAE3c1TJ6PNLst6FOF0AM4HRw@mail.gmail.com>
-References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
- <1551878302-8146-5-git-send-email-aisheng.dong@nxp.com>
+From: shuah <shuah@kernel.org>
+Subject: Re: [GIT PULL] cpupower update for Linux 5.1-rc1
+Date: Wed, 6 Mar 2019 07:28:53 -0700
+Message-ID: <e51b561d-bb96-39f6-dbe0-6a7316f28544@kernel.org>
+References: <cc753578-75ba-2030-553d-f7d7d16955ef@kernel.org>
+ <CAJZ5v0jg5Z6RZJjeuftWb+MBxvhUc5mdKQLfea+e29TQDRuxVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1551878302-8146-5-git-send-email-aisheng.dong@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Aisheng Dong <aisheng.dong@nxp.com>
-Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jg5Z6RZJjeuftWb+MBxvhUc5mdKQLfea+e29TQDRuxVw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Renninger <trenn@suse.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, shuah <shuah@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com> wrote:
->
-> Move the Subdomain check into _genpd_power_off, then the caller does
-> not have to check it each time. This also ensures a double check
-> of &genpd->sd_count before really power off domain in case it's
-> increased asynchronously by subdomains. This is the same behavior
-> as the original genpd_power_off() does.
->
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+Hi Rafael,
 
-Please squash this with patch 3, as to avoid an intermediate change in behavior.
+On 3/6/19 2:44 AM, Rafael J. Wysocki wrote:
+> Hi Shuah,
+> 
+> On Fri, Mar 1, 2019 at 5:47 PM shuah <shuah@kernel.org> wrote:
+>>
+>> Hi Rafael,
+>>
+>> Please pull the following cpupower update for Linux 5.1-rc1.
+>>
+>> This cpupower update for Linux 5.1-rc1 consists of a patch to add
+>> support to display boost frequency separately from Abhishek Goel.
+>>
+>> diff is attached.
+> 
+> Pulled, but since my own pull requests have been sent already, this
+> will have to wait for the second half of the merge window.
+> 
+> Thanks!
+>
 
-Otherwise both patch 3 and patch4 looks good to me.
+Second half of the merge window works just fine.
 
-Kind regards
-Uffe
-
-> ---
->  drivers/base/power/domain.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 591f37f..61cd500 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -452,6 +452,9 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
->         if (!genpd->power_off)
->                 return 0;
->
-> +       if (atomic_read(&genpd->sd_count) > 0)
-> +               return -EBUSY;
-> +
->         if (!timed)
->                 return genpd->power_off(genpd);
->
-> @@ -547,9 +550,6 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
->         if (!genpd->gov)
->                 genpd->state_idx = 0;
->
-> -       if (atomic_read(&genpd->sd_count) > 0)
-> -               return -EBUSY;
-> -
->         /*
->          * If sd_count > 0 at this point, one of the subdomains hasn't
->          * managed to call genpd_power_on() for the master yet after
-> @@ -962,8 +962,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
->         if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
->                 return;
->
-> -       if (genpd->suspended_count != genpd->device_count
-> -           || atomic_read(&genpd->sd_count) > 0)
-> +       if (genpd->suspended_count != genpd->device_count)
->                 return;
->
->         /* Choose the deepest state when suspending */
-> --
-> 2.7.4
->
+thanks,
+-- Shuah
