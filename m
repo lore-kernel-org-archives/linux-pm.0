@@ -1,11 +1,14 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 0/6] PM / Domains: A few clean up and minor fixes
-Date: Wed, 6 Mar 2019 13:25:08 +0000
-Message-ID: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 1/6] PM / Domains: Improve warn for multiple states but no
+ governor in genpd
+Date: Wed, 6 Mar 2019 13:25:12 +0000
+Message-ID: <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
+References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -20,22 +23,26 @@ To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-A few clean up and minor fixes
+It's possible a PM domain defines only one state and it does not need
+a governor to work. For such case, a warning actually is not necessary.
 
-Dong Aisheng (6):
-  PM / Domains: Improve warn for multiple states but no governor in
-    genpd
-  PM / Domains: Return for all error cases in _genpd_power_off
-  PM / Domains: Remove the unnecessary ->power_off() check in
-    genpd_power_off
-  PM / Domains: Move the Subdomain check into _genpd_power_off
-  PM / QoS: Fix a typo in file description
-  PM / domains: Remove one unnecessary blank line
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/base/power/domain.c          | 44 ++++++++++++++++--------------------
- drivers/base/power/domain_governor.c |  1 -
- drivers/base/power/qos.c             |  2 +-
- 3 files changed, 21 insertions(+), 26 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 2c334c0..394f9da 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1766,7 +1766,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		ret = genpd_set_default_power_state(genpd);
+ 		if (ret)
+ 			return ret;
+-	} else if (!gov) {
++	} else if (!gov && genpd->state_count > 1) {
+ 		pr_warn("%s : no governor for states\n", genpd->name);
+ 	}
+ 
 -- 
 2.7.4
