@@ -1,74 +1,58 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v4 4/8] drivers: devfreq: add DMC driver for Exynos5422
-Date: Wed, 06 Mar 2019 14:44:28 +0100
-Message-ID: <94e169cf-4dc2-82ec-1385-852bc7853931@samsung.com>
-References: <CGME20190201164720eucas1p13aac6550399d240b261a2cbe489d3dfc@eucas1p1.samsung.com>
-        <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
-        <1549039612-28905-5-git-send-email-l.luba@partner.samsung.com>
-        <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/6] PM / Domains: Improve warn for multiple states but no
+ governor in genpd
+Date: Wed, 6 Mar 2019 15:17:08 +0100
+Message-ID: <CAPDyKFqPwF4k3x+yBxMRsR_ahz_+0pwaXxT2csRWEQ_d9Uu8dg@mail.gmail.com>
+References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
+ <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
-Content-language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: cwchoi00@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
-Cc: devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Aisheng Dong <aisheng.dong@nxp.com>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com> wrote:
+>
+> It's possible a PM domain defines only one state and it does not need
+> a governor to work. For such case, a warning actually is not necessary.
+>
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-On 2/3/19 13:23, Chanwoo Choi wrote:
+Fixes: 2c9b7f877203 ("PM / Domains: Deal with multiple states but no
+governor in genpd")
+Cc: stable@vger.kernel.org
 
-> 2019년 2월 2일 (토) 오전 2:42, Lukasz Luba <l.luba@partner.samsung.com>님이 작성:
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
->> +/**
->> + * exynos5_dmc_pause_on_switching() - Controls a pause feature in DMC
->> + * @dmc:       device which is used for changing this feature
->> + * @set:       a boolean state passing enable/disable request
->> + *
->> + * There is a need of pausing DREX DMC when divider or MUX in clock tree
->> + * changes its configuration. In such situation access to the memory is blocked
->> + * in DMC automatically. This feature is used when clock frequency change
->> + * request appears and touches clock tree.
->> + */
->> +static int exynos5_dmc_pause_on_switching(struct exynos5_dmc *dmc, bool set)
-> 
-> Don't need to make it as the separate function. It is only used on
-> probe() function.
-
-It seems fine to me to have this functionality in a separate function, 
-it's self-contained and it's now pretty well documented.
-
->> +{
->> +       unsigned int val;
->> +
->> +       val = readl(dmc->base_clk + DMC_PAUSE_CTRL);
->> +       if (set)
->> +               val |= DMC_PAUSE_ENABLE;
->> +       else
->> +               val &= ~DMC_PAUSE_ENABLE;
->> +       writel(val, dmc->base_clk + DMC_PAUSE_CTRL);
-> 
-> The dt-binding file doesn't explain the 'reg' property for 'base_clk'.
-> You are missing.
-> When I tried to find what are the base address, it is the register map
-> of clock-controller.
-> This driver accesed the register of clock controller without any
-> functions of CCF
-> (common clock framework). It is wrong.
-> 
-> If you need to get the some information of clock, must have to use the CCF.
-We talked a little about this issue with Lukasz in person and it looks
-like there are some DMC related registers in the clock controller register 
-region, I'd say those registers are better handled by the DMC driver rather
-than the clocks controller driver. Moreover, we should avoid abusing clk API
-for not strictly clocks related functionality as it appears to be above.
-It might be more appropriate to add in the dmc DT node a phandle to a regmap
-exposed by the clock-controller node. It seems there will be even no single
-register that would be shared between the DMC and the clock controller.
-
--- 
-Regards,
-Sylwester
+> ---
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 2c334c0..394f9da 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1766,7 +1766,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>                 ret = genpd_set_default_power_state(genpd);
+>                 if (ret)
+>                         return ret;
+> -       } else if (!gov) {
+> +       } else if (!gov && genpd->state_count > 1) {
+>                 pr_warn("%s : no governor for states\n", genpd->name);
+>         }
+>
+> --
+> 2.7.4
+>
