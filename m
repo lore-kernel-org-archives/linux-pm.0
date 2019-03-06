@@ -1,8 +1,8 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 3/6] PM / Domains: Remove the unnecessary ->power_off() check
- in genpd_power_off
-Date: Wed, 6 Mar 2019 13:25:18 +0000
-Message-ID: <1551878302-8146-4-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 4/6] PM / Domains: Move the Subdomain check into
+ _genpd_power_off
+Date: Wed, 6 Mar 2019 13:25:22 +0000
+Message-ID: <1551878302-8146-5-git-send-email-aisheng.dong@nxp.com>
 References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,63 +23,50 @@ To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-There's already a check in _genpd_power_off, so caller can directly call it
-without checking.
+Move the Subdomain check into _genpd_power_off, then the caller does
+not have to check it each time. This also ensures a double check
+of &genpd->sd_count before really power off domain in case it's
+increased asynchronously by subdomains. This is the same behavior
+as the original genpd_power_off() does.
 
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/base/power/domain.c | 31 ++++++++++++++-----------------
- 1 file changed, 14 insertions(+), 17 deletions(-)
+ drivers/base/power/domain.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index f012576..591f37f 100644
+index 591f37f..61cd500 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -501,6 +501,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
- 	unsigned int not_suspended = 0;
-+	int ret;
+@@ -452,6 +452,9 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+ 	if (!genpd->power_off)
+ 		return 0;
  
- 	/*
- 	 * Do not try to power off the domain in the following situations:
-@@ -546,24 +547,20 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
++	if (atomic_read(&genpd->sd_count) > 0)
++		return -EBUSY;
++
+ 	if (!timed)
+ 		return genpd->power_off(genpd);
+ 
+@@ -547,9 +550,6 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
  	if (!genpd->gov)
  		genpd->state_idx = 0;
  
--	if (genpd->power_off) {
--		int ret;
+-	if (atomic_read(&genpd->sd_count) > 0)
+-		return -EBUSY;
 -
--		if (atomic_read(&genpd->sd_count) > 0)
--			return -EBUSY;
-+	if (atomic_read(&genpd->sd_count) > 0)
-+		return -EBUSY;
+ 	/*
+ 	 * If sd_count > 0 at this point, one of the subdomains hasn't
+ 	 * managed to call genpd_power_on() for the master yet after
+@@ -962,8 +962,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+ 	if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
+ 		return;
  
--		/*
--		 * If sd_count > 0 at this point, one of the subdomains hasn't
--		 * managed to call genpd_power_on() for the master yet after
--		 * incrementing it.  In that case genpd_power_on() will wait
--		 * for us to drop the lock, so we can call .power_off() and let
--		 * the genpd_power_on() restore power for us (this shouldn't
--		 * happen very often).
--		 */
--		ret = _genpd_power_off(genpd, true);
--		if (ret)
--			return ret;
--	}
-+	/*
-+	 * If sd_count > 0 at this point, one of the subdomains hasn't
-+	 * managed to call genpd_power_on() for the master yet after
-+	 * incrementing it.  In that case genpd_power_on() will wait
-+	 * for us to drop the lock, so we can call .power_off() and let
-+	 * the genpd_power_on() restore power for us (this shouldn't
-+	 * happen very often).
-+	 */
-+	ret = _genpd_power_off(genpd, true);
-+	if (ret)
-+		return ret;
+-	if (genpd->suspended_count != genpd->device_count
+-	    || atomic_read(&genpd->sd_count) > 0)
++	if (genpd->suspended_count != genpd->device_count)
+ 		return;
  
- 	genpd->status = GPD_STATE_POWER_OFF;
- 	genpd_update_accounting(genpd);
+ 	/* Choose the deepest state when suspending */
 -- 
 2.7.4
