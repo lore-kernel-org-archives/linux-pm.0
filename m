@@ -1,8 +1,8 @@
 From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: [PATCH 2/6] PM / Domains: Return for all error cases in
- _genpd_power_off
-Date: Wed, 6 Mar 2019 13:25:15 +0000
-Message-ID: <1551878302-8146-3-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 3/6] PM / Domains: Remove the unnecessary ->power_off() check
+ in genpd_power_off
+Date: Wed, 6 Mar 2019 13:25:18 +0000
+Message-ID: <1551878302-8146-4-git-send-email-aisheng.dong@nxp.com>
 References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,44 +23,63 @@ To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 Cc: Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-It is strange to only return early for -EBUSY state and left other
-errors to be still measured execution time.
-
-As for error cases, the elapsed_ns computed actually is not quite
-accurate and meaningful for governor to use. So let's simply return
-for all error cases.
+There's already a check in _genpd_power_off, so caller can directly call it
+without checking.
 
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/base/power/domain.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/power/domain.c | 31 ++++++++++++++-----------------
+ 1 file changed, 14 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 394f9da..f012576 100644
+index f012576..591f37f 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -457,19 +457,19 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+@@ -501,6 +501,7 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+ 	struct pm_domain_data *pdd;
+ 	struct gpd_link *link;
+ 	unsigned int not_suspended = 0;
++	int ret;
  
- 	time_start = ktime_get();
- 	ret = genpd->power_off(genpd);
--	if (ret == -EBUSY)
+ 	/*
+ 	 * Do not try to power off the domain in the following situations:
+@@ -546,24 +547,20 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+ 	if (!genpd->gov)
+ 		genpd->state_idx = 0;
+ 
+-	if (genpd->power_off) {
+-		int ret;
+-
+-		if (atomic_read(&genpd->sd_count) > 0)
+-			return -EBUSY;
++	if (atomic_read(&genpd->sd_count) > 0)
++		return -EBUSY;
+ 
+-		/*
+-		 * If sd_count > 0 at this point, one of the subdomains hasn't
+-		 * managed to call genpd_power_on() for the master yet after
+-		 * incrementing it.  In that case genpd_power_on() will wait
+-		 * for us to drop the lock, so we can call .power_off() and let
+-		 * the genpd_power_on() restore power for us (this shouldn't
+-		 * happen very often).
+-		 */
+-		ret = _genpd_power_off(genpd, true);
+-		if (ret)
+-			return ret;
+-	}
++	/*
++	 * If sd_count > 0 at this point, one of the subdomains hasn't
++	 * managed to call genpd_power_on() for the master yet after
++	 * incrementing it.  In that case genpd_power_on() will wait
++	 * for us to drop the lock, so we can call .power_off() and let
++	 * the genpd_power_on() restore power for us (this shouldn't
++	 * happen very often).
++	 */
++	ret = _genpd_power_off(genpd, true);
 +	if (ret)
- 		return ret;
++		return ret;
  
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
- 	if (elapsed_ns <= genpd->states[state_idx].power_off_latency_ns)
--		return ret;
-+		return 0;
- 
- 	genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
- 		 genpd->name, "off", elapsed_ns);
- 
--	return ret;
-+	return 0;
- }
- 
- /**
+ 	genpd->status = GPD_STATE_POWER_OFF;
+ 	genpd_update_accounting(genpd);
 -- 
 2.7.4
