@@ -1,55 +1,74 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 0/3] firmware: imx: scu-pd: generalize the implementation
-Date: Wed, 6 Mar 2019 13:43:11 +0000
-Message-ID: <AM0PR04MB42115A4F92866794A7AF902380730@AM0PR04MB4211.eurprd04.prod.outlook.com>
-References: <1550673013-21462-1-git-send-email-aisheng.dong@nxp.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v4 4/8] drivers: devfreq: add DMC driver for Exynos5422
+Date: Wed, 06 Mar 2019 14:44:28 +0100
+Message-ID: <94e169cf-4dc2-82ec-1385-852bc7853931@samsung.com>
+References: <CGME20190201164720eucas1p13aac6550399d240b261a2cbe489d3dfc@eucas1p1.samsung.com>
+        <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
+        <1549039612-28905-5-git-send-email-l.luba@partner.samsung.com>
+        <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1550673013-21462-1-git-send-email-aisheng.dong@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
+Content-language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: cwchoi00@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Gently Ping.
+Hi,
 
-> -----Original Message-----
-> From: Aisheng Dong
-> Sent: Wednesday, February 20, 2019 10:38 PM
-> To: linux-arm-kernel@lists.infradead.org
-> Cc: dongas86@gmail.com; kernel@pengutronix.de; shawnguo@kernel.org;
-> Fabio Estevam <fabio.estevam@nxp.com>; dl-linux-imx <linux-imx@nxp.com>;
-> rjw@rjwysocki.net; ulf.hansson@linaro.org; khilman@kernel.org;
-> linux-pm@vger.kernel.org; Aisheng Dong <aisheng.dong@nxp.com>
-> Subject: [PATCH 0/3] firmware: imx: scu-pd: generalize the implementation
+On 2/3/19 13:23, Chanwoo Choi wrote:
+
+> 2019년 2월 2일 (토) 오전 2:42, Lukasz Luba <l.luba@partner.samsung.com>님이 작성:
+
+>> +/**
+>> + * exynos5_dmc_pause_on_switching() - Controls a pause feature in DMC
+>> + * @dmc:       device which is used for changing this feature
+>> + * @set:       a boolean state passing enable/disable request
+>> + *
+>> + * There is a need of pausing DREX DMC when divider or MUX in clock tree
+>> + * changes its configuration. In such situation access to the memory is blocked
+>> + * in DMC automatically. This feature is used when clock frequency change
+>> + * request appears and touches clock tree.
+>> + */
+>> +static int exynos5_dmc_pause_on_switching(struct exynos5_dmc *dmc, bool set)
 > 
-> This patch series used to further generalize the driver implementation for
-> better adding new SCU based platforms. e.g. imx8qm which is mostly the same
-> as imx8qxp except a minor SS name and resource avaliability difference.
-> e.g.
-> QXP has ADMA SS while QM has DMA and Audio SS separately.
-> So we decouple the SS information from domain names.
+> Don't need to make it as the separate function. It is only used on
+> probe() function.
+
+It seems fine to me to have this functionality in a separate function, 
+it's self-contained and it's now pretty well documented.
+
+>> +{
+>> +       unsigned int val;
+>> +
+>> +       val = readl(dmc->base_clk + DMC_PAUSE_CTRL);
+>> +       if (set)
+>> +               val |= DMC_PAUSE_ENABLE;
+>> +       else
+>> +               val &= ~DMC_PAUSE_ENABLE;
+>> +       writel(val, dmc->base_clk + DMC_PAUSE_CTRL);
 > 
-> Dong Aisheng (3):
->   firmware: imx: scu-pd: use bool to set postfix
->   firmware: imx: scu-pd: add specifying the base of domain name index
->     support
->   firmware: imx: scu-pd: decouple the SS information from domain names
+> The dt-binding file doesn't explain the 'reg' property for 'base_clk'.
+> You are missing.
+> When I tried to find what are the base address, it is the register map
+> of clock-controller.
+> This driver accesed the register of clock controller without any
+> functions of CCF
+> (common clock framework). It is wrong.
 > 
->  drivers/firmware/imx/scu-pd.c | 121
-> ++++++++++++++++++++++--------------------
->  1 file changed, 64 insertions(+), 57 deletions(-)
-> 
-> --
-> 2.7.4
+> If you need to get the some information of clock, must have to use the CCF.
+We talked a little about this issue with Lukasz in person and it looks
+like there are some DMC related registers in the clock controller register 
+region, I'd say those registers are better handled by the DMC driver rather
+than the clocks controller driver. Moreover, we should avoid abusing clk API
+for not strictly clocks related functionality as it appears to be above.
+It might be more appropriate to add in the dmc DT node a phandle to a regmap
+exposed by the clock-controller node. It seems there will be even no single
+register that would be shared between the DMC and the clock controller.
+
+-- 
+Regards,
+Sylwester
