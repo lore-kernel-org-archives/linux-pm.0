@@ -1,15 +1,15 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/6] PM / Domains: Improve warn for multiple states but no
- governor in genpd
-Date: Wed, 6 Mar 2019 15:17:08 +0100
-Message-ID: <CAPDyKFqPwF4k3x+yBxMRsR_ahz_+0pwaXxT2csRWEQ_d9Uu8dg@mail.gmail.com>
+Subject: Re: [PATCH 2/6] PM / Domains: Return for all error cases in
+ _genpd_power_off
+Date: Wed, 6 Mar 2019 15:17:28 +0100
+Message-ID: <CAPDyKFoNMFW+b0wa9O6pQMOLFukKKLGouL3FFGq6G_B1LcZQNQ@mail.gmail.com>
 References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
- <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
+ <1551878302-8146-3-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1551878302-8146-3-git-send-email-aisheng.dong@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,34 +25,48 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com> wrote:
 >
-> It's possible a PM domain defines only one state and it does not need
-> a governor to work. For such case, a warning actually is not necessary.
+> It is strange to only return early for -EBUSY state and left other
+> errors to be still measured execution time.
+>
+> As for error cases, the elapsed_ns computed actually is not quite
+> accurate and meaningful for governor to use. So let's simply return
+> for all error cases.
 >
 > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-
-Fixes: 2c9b7f877203 ("PM / Domains: Deal with multiple states but no
-governor in genpd")
-Cc: stable@vger.kernel.org
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 > ---
->  drivers/base/power/domain.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/base/power/domain.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 2c334c0..394f9da 100644
+> index 394f9da..f012576 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -1766,7 +1766,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->                 ret = genpd_set_default_power_state(genpd);
->                 if (ret)
->                         return ret;
-> -       } else if (!gov) {
-> +       } else if (!gov && genpd->state_count > 1) {
->                 pr_warn("%s : no governor for states\n", genpd->name);
->         }
+> @@ -457,19 +457,19 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
 >
+>         time_start = ktime_get();
+>         ret = genpd->power_off(genpd);
+> -       if (ret == -EBUSY)
+> +       if (ret)
+>                 return ret;
+>
+>         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
+>         if (elapsed_ns <= genpd->states[state_idx].power_off_latency_ns)
+> -               return ret;
+> +               return 0;
+>
+>         genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
+>         genpd->max_off_time_changed = true;
+>         pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
+>                  genpd->name, "off", elapsed_ns);
+>
+> -       return ret;
+> +       return 0;
+>  }
+>
+>  /**
 > --
 > 2.7.4
 >
