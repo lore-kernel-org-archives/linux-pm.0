@@ -1,24 +1,74 @@
-From: pr-tracker-bot@kernel.org
-Subject: Re: [GIT PULL] ACPI updates for v5.1-rc1
-Date: Wed, 06 Mar 2019 22:00:12 +0000
-Message-ID: <155190961288.11982.11231753445202184888.pr-tracker-bot@kernel.org>
-References: <CAJZ5v0gTvVCn6O63+TnU9QueyMgowNRd7dQC0oO18eXJVUMLsQ@mail.gmail.com>
+From: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Subject: [PATCH v2] drivers: thermal: Kconfig: pedantic cleanups
+Date: Wed,  6 Mar 2019 23:05:24 +0100
+Message-ID: <1551909924-25233-1-git-send-email-info@metux.net>
+References: <1551898342-19308-1-git-send-email-info@metux.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gTvVCn6O63+TnU9QueyMgowNRd7dQC0oO18eXJVUMLsQ@mail.gmail.com>
+In-Reply-To: <1551898342-19308-1-git-send-email-info@metux.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The pull request you sent on Mon, 4 Mar 2019 14:23:08 +0100:
+Formatting of Kconfig files doesn't look so pretty, so just
+take damp cloth and clean it up.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.1-rc1
+Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
+---
+ drivers/thermal/st/Kconfig    | 22 +++++++++++-----------
+ drivers/thermal/tegra/Kconfig |  4 ++--
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/d276709ce6c90b9eceecdbd01a0c083ab04d3a52
-
-Thank you!
-
+diff --git a/drivers/thermal/st/Kconfig b/drivers/thermal/st/Kconfig
+index b80f9a9..d8b1a45 100644
+--- a/drivers/thermal/st/Kconfig
++++ b/drivers/thermal/st/Kconfig
+@@ -3,9 +3,9 @@
+ #
+ 
+ config ST_THERMAL
+-       tristate "Thermal sensors on STMicroelectronics STi series of SoCs"
+-       help
+-         Support for thermal sensors on STMicroelectronics STi series of SoCs.
++	tristate "Thermal sensors on STMicroelectronics STi series of SoCs"
++	help
++	  Support for thermal sensors on STMicroelectronics STi series of SoCs.
+ 
+ config ST_THERMAL_SYSCFG
+ 	select ST_THERMAL
+@@ -16,11 +16,11 @@ config ST_THERMAL_MEMMAP
+ 	tristate "STi series memory mapped access based thermal sensors"
+ 
+ config STM32_THERMAL
+-       tristate "Thermal framework support on STMicroelectronics STM32 series of SoCs"
+-       depends on MACH_STM32MP157
+-       default y
+-       help
+-	Support for thermal framework on STMicroelectronics STM32 series of
+-	SoCs. This thermal driver allows to access to general thermal framework
+-	functionalities and to acces to SoC sensor functionalities. This
+-	configuration is fully dependent of MACH_STM32MP157.
++	tristate "Thermal framework support on STMicroelectronics STM32 series of SoCs"
++	depends on MACH_STM32MP157
++	default y
++	help
++	  Support for thermal framework on STMicroelectronics STM32 series of
++	  SoCs. This thermal driver allows to access to general thermal framework
++	  functionalities and to acces to SoC sensor functionalities. This
++	  configuration is fully dependent of MACH_STM32MP157.
+diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+index f8740f7..fc0b33b 100644
+--- a/drivers/thermal/tegra/Kconfig
++++ b/drivers/thermal/tegra/Kconfig
+@@ -14,7 +14,7 @@ config TEGRA_BPMP_THERMAL
+ 	tristate "Tegra BPMP thermal sensing"
+ 	depends on TEGRA_BPMP || COMPILE_TEST
+ 	help
+-	 Enable this option for support for sensing system temperature of NVIDIA
+-	 Tegra systems-on-chip with the BPMP coprocessor (Tegra186).
++	  Enable this option for support for sensing system temperature of NVIDIA
++	  Tegra systems-on-chip with the BPMP coprocessor (Tegra186).
+ 
+ endmenu
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+1.9.1
