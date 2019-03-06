@@ -1,15 +1,15 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/6] PM / Domains: Return for all error cases in
+Subject: Re: [PATCH 4/6] PM / Domains: Move the Subdomain check into
  _genpd_power_off
-Date: Wed, 6 Mar 2019 15:17:28 +0100
-Message-ID: <CAPDyKFoNMFW+b0wa9O6pQMOLFukKKLGouL3FFGq6G_B1LcZQNQ@mail.gmail.com>
+Date: Wed, 6 Mar 2019 15:26:43 +0100
+Message-ID: <CAPDyKFpptBCgkY=e6tK22eM9syAE3c1TJ6PNLst6FOF0AM4HRw@mail.gmail.com>
 References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
- <1551878302-8146-3-git-send-email-aisheng.dong@nxp.com>
+ <1551878302-8146-5-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1551878302-8146-3-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1551878302-8146-5-git-send-email-aisheng.dong@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,48 +25,59 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com> wrote:
 >
-> It is strange to only return early for -EBUSY state and left other
-> errors to be still measured execution time.
->
-> As for error cases, the elapsed_ns computed actually is not quite
-> accurate and meaningful for governor to use. So let's simply return
-> for all error cases.
+> Move the Subdomain check into _genpd_power_off, then the caller does
+> not have to check it each time. This also ensures a double check
+> of &genpd->sd_count before really power off domain in case it's
+> increased asynchronously by subdomains. This is the same behavior
+> as the original genpd_power_off() does.
 >
 > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Please squash this with patch 3, as to avoid an intermediate change in behavior.
+
+Otherwise both patch 3 and patch4 looks good to me.
+
+Kind regards
+Uffe
 
 > ---
->  drivers/base/power/domain.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/base/power/domain.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 394f9da..f012576 100644
+> index 591f37f..61cd500 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -457,19 +457,19 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+> @@ -452,6 +452,9 @@ static int _genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+>         if (!genpd->power_off)
+>                 return 0;
 >
->         time_start = ktime_get();
->         ret = genpd->power_off(genpd);
-> -       if (ret == -EBUSY)
-> +       if (ret)
->                 return ret;
+> +       if (atomic_read(&genpd->sd_count) > 0)
+> +               return -EBUSY;
+> +
+>         if (!timed)
+>                 return genpd->power_off(genpd);
 >
->         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
->         if (elapsed_ns <= genpd->states[state_idx].power_off_latency_ns)
-> -               return ret;
-> +               return 0;
+> @@ -547,9 +550,6 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+>         if (!genpd->gov)
+>                 genpd->state_idx = 0;
 >
->         genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
->         genpd->max_off_time_changed = true;
->         pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
->                  genpd->name, "off", elapsed_ns);
+> -       if (atomic_read(&genpd->sd_count) > 0)
+> -               return -EBUSY;
+> -
+>         /*
+>          * If sd_count > 0 at this point, one of the subdomains hasn't
+>          * managed to call genpd_power_on() for the master yet after
+> @@ -962,8 +962,7 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
+>         if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
+>                 return;
 >
-> -       return ret;
-> +       return 0;
->  }
+> -       if (genpd->suspended_count != genpd->device_count
+> -           || atomic_read(&genpd->sd_count) > 0)
+> +       if (genpd->suspended_count != genpd->device_count)
+>                 return;
 >
->  /**
+>         /* Choose the deepest state when suspending */
 > --
 > 2.7.4
 >
