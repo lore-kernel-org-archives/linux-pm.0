@@ -1,69 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/6+] cpufreq: Use struct kobj_attribute instead of
- struct global_attr
-Date: Thu, 7 Mar 2019 20:53:30 +0530
-Message-ID: <20190307152330.bvmkp7muc7td33rx@vireshk-i7>
-References: <81e2be4499ef1a3c315c4c406f25ea12ea197ae5.1551957754.git.viresh.kumar@linaro.org>
- <20190307122115.GB21325@kroah.com>
- <20190307140807.32th3altinvvv7dj@vireshk-i7>
- <20190307151827.GA4215@kroah.com>
+From: Nathan Chancellor <natechancellor@gmail.com>
+Subject: Re: [PATCH] cpufreq: pxa2xx: remove incorrect __init annotation
+Date: Thu, 7 Mar 2019 08:26:33 -0700
+Message-ID: <20190307152633.GH20201@archlinux-ryzen>
+References: <20190307102250.1140038-1-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190307151827.GA4215@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: "4 . 6+" <stable@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+In-Reply-To: <20190307102250.1140038-1-arnd@arndb.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Nick Desaulniers <ndesaulniers@google.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-03-19, 16:18, Greg KH wrote:
-> On Thu, Mar 07, 2019 at 07:38:07PM +0530, Viresh Kumar wrote:
-> > On 07-03-19, 13:21, Greg KH wrote:
-> > > On Thu, Mar 07, 2019 at 04:52:52PM +0530, Viresh Kumar wrote:
-> > > > commit 625c85a62cb7d3c79f6e16de3cfa972033658250 upstream.
-> > > > 
-> > > > The cpufreq_global_kobject is created using kobject_create_and_add()
-> > > > helper, which assigns the kobj_type as dynamic_kobj_ktype and show/store
-> > > > routines are set to kobj_attr_show() and kobj_attr_store().
-> > > > 
-> > > > These routines pass struct kobj_attribute as an argument to the
-> > > > show/store callbacks. But all the cpufreq files created using the
-> > > > cpufreq_global_kobject expect the argument to be of type struct
-> > > > attribute. Things work fine currently as no one accesses the "attr"
-> > > > argument. We may not see issues even if the argument is used, as struct
-> > > > kobj_attribute has struct attribute as its first element and so they
-> > > > will both get same address.
-> > > > 
-> > > > But this is logically incorrect and we should rather use struct
-> > > > kobj_attribute instead of struct global_attr in the cpufreq core and
-> > > > drivers and the show/store callbacks should take struct kobj_attribute
-> > > > as argument instead.
-> > > > 
-> > > > This bug is caught using CFI CLANG builds in android kernel which
-> > > > catches mismatch in function prototypes for such callbacks.
-> > > > 
-> > > > Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
-> > > > Reported-by: Donghee Han <dh.han@samsung.com>
-> > > > Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
-> > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > ---
-> > > > This needs to be applied from v4.6 to v4.9 (including both).
-> > > 
-> > > Does not apply to the 4.9.y stable queue :(
-> > > 
-> > > Are you sure you backported this correctly?  No need to care about 4.6.
-> > 
-> > Same as 4.4, attached is the patch which I just now applied on
-> > 4.9.161. Git cherry-pick was able to figure it out just fine.
+On Thu, Mar 07, 2019 at 11:22:41AM +0100, Arnd Bergmann wrote:
+> pxa_cpufreq_init_voltages() is marked __init but usually inlined into
+> the non-__init pxa_cpufreq_init() function. When building with clang,
+> it can stay as a standalone function in a discarded section, and produce
+> this warning:
 > 
-> I can not use git cherry-pick when you give me a patch to apply :(
+> WARNING: vmlinux.o(.text+0x616a00): Section mismatch in reference from the function pxa_cpufreq_init() to the function .init.text:pxa_cpufreq_init_voltages()
+> The function pxa_cpufreq_init() references
+> the function __init pxa_cpufreq_init_voltages().
+> This is often because pxa_cpufreq_init lacks a __init
+> annotation or the annotation of pxa_cpufreq_init_voltages is wrong.
+> 
+> Fixes: 50e77fcd790e ("ARM: pxa: remove __init from cpufreq_driver->init()")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Yeah, I just expected git am to be smart enough to not report errors
-where git cherry-pick works fine. Thanks for applying the patches
-though.
+Reviewed-by: Nathan Chancellor <natechancellor@gmail.com>
 
--- 
-viresh
+> ---
+>  drivers/cpufreq/pxa2xx-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+> index 46254e583982..74e0e0c20c46 100644
+> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
+> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+> @@ -143,7 +143,7 @@ static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
+>  	return ret;
+>  }
+>  
+> -static void __init pxa_cpufreq_init_voltages(void)
+> +static void pxa_cpufreq_init_voltages(void)
+>  {
+>  	vcc_core = regulator_get(NULL, "vcc_core");
+>  	if (IS_ERR(vcc_core)) {
+> @@ -159,7 +159,7 @@ static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
+>  	return 0;
+>  }
+>  
+> -static void __init pxa_cpufreq_init_voltages(void) { }
+> +static void pxa_cpufreq_init_voltages(void) { }
+>  #endif
+>  
+>  static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
+> -- 
+> 2.20.0
+> 
