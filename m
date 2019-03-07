@@ -1,39 +1,50 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v4 4/8] drivers: devfreq: add DMC driver for Exynos5422
-Date: Thu, 07 Mar 2019 09:41:00 +0100
-Message-ID: <84c06add-8375-55a6-01d6-ebbc6af011a9@samsung.com>
-References: <CGME20190201164720eucas1p13aac6550399d240b261a2cbe489d3dfc@eucas1p1.samsung.com>
-        <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
-        <1549039612-28905-5-git-send-email-l.luba@partner.samsung.com>
-        <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
-        <94e169cf-4dc2-82ec-1385-852bc7853931@samsung.com>
-        <4bbc0f61-952e-bcdb-4645-2644a122ac99@samsung.com>
+From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v2] makedumpfile: exclude pages that are logically offline
+Date: Thu, 7 Mar 2019 09:41:15 +0100
+Message-ID: <7c9d6d5c-d6cf-00a7-7f23-bf28cbb382af@redhat.com>
+References: <20181122100627.5189-1-david@redhat.com>
+ <20181122100938.5567-1-david@redhat.com>
+ <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <4bbc0f61-952e-bcdb-4645-2644a122ac99@samsung.com>
-Content-language: en-GB
+In-Reply-To: <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: cwchoi00@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, kexec-ml <kexec@lists.infradead.org>, "pv-drivers@vmware.com" <pv-drivers@vmware.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+On 27.11.18 17:32, Kazuhito Hagio wrote:
+>> Linux marks pages that are logically offline via a page flag (map count).
+>> Such pages e.g. include pages infated as part of a balloon driver or
+>> pages that were not actually onlined when onlining the whole section.
+>>
+>> While the hypervisor usually allows to read such inflated memory, we
+>> basically read and dump data that is completely irrelevant. Also, this
+>> might result in quite some overhead in the hypervisor. In addition,
+>> we saw some problems under Hyper-V, whereby we can crash the kernel by
+>> dumping, when reading memory of a partially onlined memory segment
+>> (for memory added by the Hyper-V balloon driver).
+>>
+>> Therefore, don't read and dump pages that are marked as being logically
+>> offline.
+>>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+> 
+> Thanks for the v2 update.
+> I'm going to merge this patch after the kernel patches are merged
+> and it tests fine with the kernel.
+> 
+> Kazu
 
-On 3/7/19 02:10, Chanwoo Choi wrote:
-> This patch has the another quetion about the clocks in
-> exynos5_dmc_init_clks(). This functions used 'clk_set_parent'
-> to make the hierarchy between clocks. I think it is possible to make
-> the relation of clocks in DT by using the 'assigned-clocks'.
+Hi Kazu,
 
-I'm fine either way, AFAICS it is a matter of setting parent of just
-one clock - "mout_mx_mspll_ccore".  The driver needs to get that clock
-anyway to enable/disable it as required.  So we will not gain much from
-using assigned-clocks I'd say. I don't really have a strong opinion here
-as I don't know detailed requirements of the DMC clock configuration
-sequence. I'm inclined to keep it in driver as it would be more flexible.
+the patches are now upstream. Thanks!
 
 -- 
-Regards,
-Sylwester
+
+Thanks,
+
+David / dhildenb
