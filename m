@@ -1,60 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: pxa2xx: remove incorrect __init annotation
-Date: Thu, 7 Mar 2019 16:08:37 +0530
-Message-ID: <20190307103837.zuva5f6y2gexxjk6@vireshk-i7>
-References: <20190307102250.1140038-1-arnd@arndb.de>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
+ frequency on global turbo changes
+Date: Thu, 7 Mar 2019 11:02:58 +0000
+Message-ID: <20190307110256.padefvq4e52ly3nm@queper01-lin>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
+ <20190305104256.7kvedlttuovmptpc@queper01-lin>
+ <2336151.IZk3Z8DVvP@aspire.rjw.lan>
+ <6357319.Iupbu3ldGQ@aspire.rjw.lan>
+ <20190305114406.GV32494@hirez.programming.kicks-ass.net>
+ <20190305120040.y2vmnxrch6kgya3e@queper01-lin>
+ <CAJZ5v0hYU763Jx0Ku0HsNMd261z7E0PhZ88_PH6MT=OLYYUAaQ@mail.gmail.com>
+ <20190305173746.p32xolcpueudlzwn@queper01-lin>
+ <CAJZ5v0jJxMw6_6Ep=fee8VGEbqpFKQtA2kX5t1scNwX3GhaTTg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190307102250.1140038-1-arnd@arndb.de>
+In-Reply-To: <CAJZ5v0jJxMw6_6Ep=fee8VGEbqpFKQtA2kX5t1scNwX3GhaTTg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nick Desaulniers <ndesaulniers@google.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-03-19, 11:22, Arnd Bergmann wrote:
-> pxa_cpufreq_init_voltages() is marked __init but usually inlined into
-> the non-__init pxa_cpufreq_init() function. When building with clang,
-> it can stay as a standalone function in a discarded section, and produce
-> this warning:
-> 
-> WARNING: vmlinux.o(.text+0x616a00): Section mismatch in reference from the function pxa_cpufreq_init() to the function .init.text:pxa_cpufreq_init_voltages()
-> The function pxa_cpufreq_init() references
-> the function __init pxa_cpufreq_init_voltages().
-> This is often because pxa_cpufreq_init lacks a __init
-> annotation or the annotation of pxa_cpufreq_init_voltages is wrong.
-> 
-> Fixes: 50e77fcd790e ("ARM: pxa: remove __init from cpufreq_driver->init()")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/pxa2xx-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-> index 46254e583982..74e0e0c20c46 100644
-> --- a/drivers/cpufreq/pxa2xx-cpufreq.c
-> +++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-> @@ -143,7 +143,7 @@ static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
->  	return ret;
->  }
->  
-> -static void __init pxa_cpufreq_init_voltages(void)
-> +static void pxa_cpufreq_init_voltages(void)
->  {
->  	vcc_core = regulator_get(NULL, "vcc_core");
->  	if (IS_ERR(vcc_core)) {
-> @@ -159,7 +159,7 @@ static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
->  	return 0;
->  }
->  
-> -static void __init pxa_cpufreq_init_voltages(void) { }
-> +static void pxa_cpufreq_init_voltages(void) { }
->  #endif
->  
->  static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
+Hi Rafael,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Wednesday 06 Mar 2019 at 11:05:47 (+0100), Rafael J. Wysocki wrote:
+> Please recall that the iowait boosting algo was different to start
+> with, though: it jumped to the max right away and then backed off.
+> That turned out to be overly aggressive in general and led to some
+> undesired "jittery" behavior, which is why it was changed.
+> 
+> Thus it looks like the platforms on which it still jumps to the max
+> right away may actually benefit from changing it to more steps. :-)
 
--- 
-viresh
+On the energy side of things at least ... ;-)
+
+> In turn, the platforms where it takes more than 3 steps for the boost
+> to get to the max would get a slight performance improvement from this
+> changes and I'm not sure why that could be bad.
+
+For energy possibly ? IIUC this thread:
+
+    https://patchwork.kernel.org/patch/9735885/
+
+the original intent of the ramp thing for the iowait boost was to reduce
+power consumption.
+
+> Moreover, it didn't depend on the min originally, just on the max and
+> just because I wanted the number of backoff steps needed to go back
+> down to zero to be independent of the platform IIRC.  The dependency
+> on the min is sort of artificial here and leads to arbitrary
+> differences in behavior between different platforms which isn't
+> particularly fortunate.
+
+It's a question of perspective I would say. Right now you can say the
+behaviour is somewhat coherent across platforms: getting an IOWAIT boost
+means you'll run twice as fast regardless of your board. With the '128
+approach', you may or may not run faster, depending on your set of OPPs.
+
+Also on recent big little SoCs, the capacity ratio can be pretty high.
+You can get little CPUs with 300 of capacity or so. The arbitrary 128
+thing is basically gonna go near max freq in one step, although the CPUs
+actually 20 available OPPs or so. And I guess that's a shame.
+
+For these reasons, I feel like it's not completely idiotic to have a
+platform-dependent starting point, although arguably min_freq might not
+always be the best choice.
+
+> With all of that in mind, I would go right away to making the boost
+> independent of min and max (the final number of steps to reach the max
+> is TBD in practice, but 3 looks like a good enough compromise to me).
+
+Perhaps the energy model could help find a good starting point, and a
+good number of steps ?
+
+FWIW there should be a slot at OSPM to discuss how sugov could be made
+smarter using the EM :-).
+
+> FWIW, the internal governor in intel_pstate has been changed along
+> these lines already (the changes is waiting for Linus to pull it ATM).
+
+Thanks,
+Quentin
