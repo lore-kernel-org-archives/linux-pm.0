@@ -1,12 +1,12 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4.18+] cpufreq: Use struct kobj_attribute instead of struct global_attr
-Date: Thu,  7 Mar 2019 16:50:48 +0530
-Message-ID: <03b2be9ff971da005978fe5fab6181c6bcbbee1e.1551957547.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4.11+] cpufreq: Use struct kobj_attribute instead of struct global_attr
+Date: Thu,  7 Mar 2019 16:51:41 +0530
+Message-ID: <2fe3a119ea8fccd301677b43b585925abf7217af.1551957675.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <stable-owner@vger.kernel.org>
 Sender: stable-owner@vger.kernel.org
-To: "4 . 18+" <stable@vger.kernel.org>
+To: "4 . 11+" <stable@vger.kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
@@ -32,25 +32,25 @@ as argument instead.
 This bug is caught using CFI CLANG builds in android kernel which
 catches mismatch in function prototypes for such callbacks.
 
-Cc: 4.18+ <stable@vger.kernel.org> # 4.18+
+Cc: 4.11+ <stable@vger.kernel.org> # 4.11+
 Reported-by: Donghee Han <dh.han@samsung.com>
 Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 ---
-This needs to be applied to all kernels past v4.18.
+This needs to be applied from v4.11 to v4.17 (including both).
 ---
  drivers/cpufreq/cpufreq.c      |  6 +++---
- drivers/cpufreq/intel_pstate.c | 23 ++++++++++++-----------
+ drivers/cpufreq/intel_pstate.c | 18 +++++++++---------
  include/linux/cpufreq.h        | 12 ++----------
- 3 files changed, 17 insertions(+), 24 deletions(-)
+ 3 files changed, 14 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b0dfd3222013..8f9cef1ccad8 100644
+index 0e3f6496524d..698e8e053fc8 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -545,13 +545,13 @@ EXPORT_SYMBOL_GPL(cpufreq_policy_transition_delay_us);
+@@ -528,13 +528,13 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
   *                          SYSFS INTERFACE                          *
   *********************************************************************/
  static ssize_t show_boost(struct kobject *kobj,
@@ -68,10 +68,10 @@ index b0dfd3222013..8f9cef1ccad8 100644
  	int ret, enable;
  
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index d4ed0022b0dd..1d133df9cb99 100644
+index 283491f742d3..83cefd267feb 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -836,7 +836,7 @@ static void intel_pstate_update_policies(void)
+@@ -1042,7 +1042,7 @@ static void intel_pstate_debug_hide_params(void)
  /************************** sysfs begin ************************/
  #define show_one(file_name, object)					\
  	static ssize_t show_##file_name					\
@@ -80,7 +80,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  	{								\
  		return sprintf(buf, "%u\n", global.object);		\
  	}
-@@ -845,7 +845,7 @@ static ssize_t intel_pstate_show_status(char *buf);
+@@ -1051,7 +1051,7 @@ static ssize_t intel_pstate_show_status(char *buf);
  static int intel_pstate_update_status(const char *buf, size_t size);
  
  static ssize_t show_status(struct kobject *kobj,
@@ -89,7 +89,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  {
  	ssize_t ret;
  
-@@ -856,7 +856,7 @@ static ssize_t show_status(struct kobject *kobj,
+@@ -1062,7 +1062,7 @@ static ssize_t show_status(struct kobject *kobj,
  	return ret;
  }
  
@@ -98,7 +98,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  			    const char *buf, size_t count)
  {
  	char *p = memchr(buf, '\n', count);
-@@ -870,7 +870,7 @@ static ssize_t store_status(struct kobject *a, struct attribute *b,
+@@ -1076,7 +1076,7 @@ static ssize_t store_status(struct kobject *a, struct attribute *b,
  }
  
  static ssize_t show_turbo_pct(struct kobject *kobj,
@@ -107,7 +107,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  {
  	struct cpudata *cpu;
  	int total, no_turbo, turbo_pct;
-@@ -896,7 +896,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
+@@ -1102,7 +1102,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
  }
  
  static ssize_t show_num_pstates(struct kobject *kobj,
@@ -116,7 +116,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  {
  	struct cpudata *cpu;
  	int total;
-@@ -917,7 +917,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
+@@ -1123,7 +1123,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
  }
  
  static ssize_t show_no_turbo(struct kobject *kobj,
@@ -125,7 +125,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  {
  	ssize_t ret;
  
-@@ -939,7 +939,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
+@@ -1145,7 +1145,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
  	return ret;
  }
  
@@ -134,7 +134,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  			      const char *buf, size_t count)
  {
  	unsigned int input;
-@@ -986,7 +986,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+@@ -1183,7 +1183,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
  	return count;
  }
  
@@ -143,7 +143,7 @@ index d4ed0022b0dd..1d133df9cb99 100644
  				  const char *buf, size_t count)
  {
  	unsigned int input;
-@@ -1016,7 +1016,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+@@ -1217,7 +1217,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
  	return count;
  }
  
@@ -152,27 +152,11 @@ index d4ed0022b0dd..1d133df9cb99 100644
  				  const char *buf, size_t count)
  {
  	unsigned int input;
-@@ -1048,12 +1048,13 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- }
- 
- static ssize_t show_hwp_dynamic_boost(struct kobject *kobj,
--				struct attribute *attr, char *buf)
-+				struct kobj_attribute *attr, char *buf)
- {
- 	return sprintf(buf, "%u\n", hwp_boost);
- }
- 
--static ssize_t store_hwp_dynamic_boost(struct kobject *a, struct attribute *b,
-+static ssize_t store_hwp_dynamic_boost(struct kobject *a,
-+				       struct kobj_attribute *b,
- 				       const char *buf, size_t count)
- {
- 	unsigned int input;
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 882a9b9e34bc..72f59e8321e7 100644
+index 87165f06a307..36d157552540 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -254,20 +254,12 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
+@@ -238,20 +238,12 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
  static struct freq_attr _name =			\
  __ATTR(_name, 0200, NULL, store_##_name)
  
