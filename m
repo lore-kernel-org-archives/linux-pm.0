@@ -1,27 +1,27 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4.0+] cpufreq: Use struct kobj_attribute instead of
+Subject: Re: [PATCH 4/6+] cpufreq: Use struct kobj_attribute instead of
  struct global_attr
-Date: Thu, 7 Mar 2019 19:35:53 +0530
-Message-ID: <20190307140553.dsji4oopatcyl2uk@vireshk-i7>
-References: <4f8ea1c92397b7d88aa8e0fe825b3e14b70ef85c.1551957797.git.viresh.kumar@linaro.org>
- <20190307122218.GC21325@kroah.com>
+Date: Thu, 7 Mar 2019 19:38:07 +0530
+Message-ID: <20190307140807.32th3altinvvv7dj@vireshk-i7>
+References: <81e2be4499ef1a3c315c4c406f25ea12ea197ae5.1551957754.git.viresh.kumar@linaro.org>
+ <20190307122115.GB21325@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="mk4hzvc3esaauiei"
+Content-Type: multipart/mixed; boundary="p77q3pz6h4e3seiv"
 Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190307122218.GC21325@kroah.com>
+In-Reply-To: <20190307122115.GB21325@kroah.com>
 Sender: stable-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: "4 . 0+" <stable@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: Greg KH <greg@kroah.com>
+Cc: "4 . 6+" <stable@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---mk4hzvc3esaauiei
+--p77q3pz6h4e3seiv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On 07-03-19, 13:22, Greg KH wrote:
-> On Thu, Mar 07, 2019 at 04:53:33PM +0530, Viresh Kumar wrote:
+On 07-03-19, 13:21, Greg KH wrote:
+> On Thu, Mar 07, 2019 at 04:52:52PM +0530, Viresh Kumar wrote:
 > > commit 625c85a62cb7d3c79f6e16de3cfa972033658250 upstream.
 > > 
 > > The cpufreq_global_kobject is created using kobject_create_and_add()
@@ -44,32 +44,31 @@ On 07-03-19, 13:22, Greg KH wrote:
 > > This bug is caught using CFI CLANG builds in android kernel which
 > > catches mismatch in function prototypes for such callbacks.
 > > 
-> > Cc: 4.0+ <stable@vger.kernel.org> # 4.0+
+> > Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
 > > Reported-by: Donghee Han <dh.han@samsung.com>
 > > Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
 > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
 > > ---
-> > This needs to be applied from v4.0 to v4.5 (including both).
+> > This needs to be applied from v4.6 to v4.9 (including both).
 > 
-> Does not apply to 4.4.y either :(
+> Does not apply to the 4.9.y stable queue :(
+> 
+> Are you sure you backported this correctly?  No need to care about 4.6.
 
-Hmm. I didn't rebase on the stable versions but just the released
-kernels, i.e. 4.4 and I used git cherry-pick to apply them not git am.
-
-I tried it again on 4.4.176 and it works just fine.
-
-Attaching the applied patch from 4.4.176.
+Same as 4.4, attached is the patch which I just now applied on
+4.9.161. Git cherry-pick was able to figure it out just fine.
 
 -- 
 viresh
 
---mk4hzvc3esaauiei
+--p77q3pz6h4e3seiv
 Content-Type: text/x-diff; charset=us-ascii
 Content-Disposition: attachment; filename="0001-cpufreq-Use-struct-kobj_attribute-instead-of-struct-.patch"
 
->From 82000f75ef3f8d3fa888f1e56730192314b38add Mon Sep 17 00:00:00 2001
-Message-Id: <82000f75ef3f8d3fa888f1e56730192314b38add.1551967462.git.viresh.kumar@linaro.org>
+>From 19da10ba3bfdd8b3e5e7e64ef880903762437164 Mon Sep 17 00:00:00 2001
+Message-Id: <19da10ba3bfdd8b3e5e7e64ef880903762437164.1551967645.git.viresh.kumar@linaro.org>
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Date: Fri, 25 Jan 2019 12:53:07 +0530
 Subject: [PATCH] cpufreq: Use struct kobj_attribute instead of struct
@@ -97,25 +96,25 @@ as argument instead.
 This bug is caught using CFI CLANG builds in android kernel which
 catches mismatch in function prototypes for such callbacks.
 
-Cc: 4.0+ <stable@vger.kernel.org> # 4.0+
+Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
 Reported-by: Donghee Han <dh.han@samsung.com>
 Reported-by: Sangkyu Kim <skwith.kim@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
 ---
-This needs to be applied from v4.0 to v4.5 (including both).
+This needs to be applied from v4.6 to v4.9 (including both).
 ---
- drivers/cpufreq/cpufreq.c          |  6 +++---
- drivers/cpufreq/cpufreq_governor.h | 10 +++++-----
- drivers/cpufreq/intel_pstate.c     | 14 +++++++-------
- include/linux/cpufreq.h            | 12 ++----------
- 4 files changed, 17 insertions(+), 25 deletions(-)
+ drivers/cpufreq/cpufreq.c      |  6 +++---
+ drivers/cpufreq/intel_pstate.c | 14 +++++++-------
+ include/linux/cpufreq.h        | 12 ++----------
+ 3 files changed, 12 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 68b604ad8413..205df72ee873 100644
+index 61fe4bbc6dc0..a38a23f0b3f4 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -474,13 +474,13 @@ EXPORT_SYMBOL_GPL(cpufreq_freq_transition_end);
+@@ -528,13 +528,13 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
   *                          SYSFS INTERFACE                          *
   *********************************************************************/
  static ssize_t show_boost(struct kobject *kobj,
@@ -132,56 +131,11 @@ index 68b604ad8413..205df72ee873 100644
  {
  	int ret, enable;
  
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 5621bb03e874..f7b340c27ff2 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -48,11 +48,11 @@ enum {OD_NORMAL_SAMPLE, OD_SUB_SAMPLE};
- 
- /* Create attributes */
- #define gov_sys_attr_ro(_name)						\
--static struct global_attr _name##_gov_sys =				\
-+static struct kobj_attribute _name##_gov_sys =				\
- __ATTR(_name, 0444, show_##_name##_gov_sys, NULL)
- 
- #define gov_sys_attr_rw(_name)						\
--static struct global_attr _name##_gov_sys =				\
-+static struct kobj_attribute _name##_gov_sys =				\
- __ATTR(_name, 0644, show_##_name##_gov_sys, store_##_name##_gov_sys)
- 
- #define gov_pol_attr_ro(_name)						\
-@@ -74,7 +74,7 @@ __ATTR(_name, 0644, show_##_name##_gov_pol, store_##_name##_gov_pol)
- /* Create show/store routines */
- #define show_one(_gov, file_name)					\
- static ssize_t show_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, char *buf)		\
-+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)		\
- {									\
- 	struct _gov##_dbs_tuners *tuners = _gov##_dbs_cdata.gdbs_data->tuners; \
- 	return sprintf(buf, "%u\n", tuners->file_name);			\
-@@ -90,7 +90,7 @@ static ssize_t show_##file_name##_gov_pol				\
- 
- #define store_one(_gov, file_name)					\
- static ssize_t store_##file_name##_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count) \
-+(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count) \
- {									\
- 	struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;		\
- 	return store_##file_name(dbs_data, buf, count);			\
-@@ -254,7 +254,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
- 
- #define declare_show_sampling_rate_min(_gov)				\
- static ssize_t show_sampling_rate_min_gov_sys				\
--(struct kobject *kobj, struct attribute *attr, char *buf)		\
-+(struct kobject *kobj, struct kobj_attribute *attr, char *buf)		\
- {									\
- 	struct dbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;		\
- 	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 88728d997088..15fcf2cac971 100644
+index a59ae8e24d3d..f690085b1ad9 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -368,13 +368,13 @@ static void __init intel_pstate_debug_expose_params(void)
+@@ -659,13 +659,13 @@ static void __init intel_pstate_debug_expose_params(void)
  /************************** sysfs begin ************************/
  #define show_one(file_name, object)					\
  	static ssize_t show_##file_name					\
@@ -197,7 +151,7 @@ index 88728d997088..15fcf2cac971 100644
  {
  	struct cpudata *cpu;
  	int total, no_turbo, turbo_pct;
-@@ -390,7 +390,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
+@@ -681,7 +681,7 @@ static ssize_t show_turbo_pct(struct kobject *kobj,
  }
  
  static ssize_t show_num_pstates(struct kobject *kobj,
@@ -206,7 +160,7 @@ index 88728d997088..15fcf2cac971 100644
  {
  	struct cpudata *cpu;
  	int total;
-@@ -401,7 +401,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
+@@ -692,7 +692,7 @@ static ssize_t show_num_pstates(struct kobject *kobj,
  }
  
  static ssize_t show_no_turbo(struct kobject *kobj,
@@ -215,7 +169,7 @@ index 88728d997088..15fcf2cac971 100644
  {
  	ssize_t ret;
  
-@@ -414,7 +414,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
+@@ -705,7 +705,7 @@ static ssize_t show_no_turbo(struct kobject *kobj,
  	return ret;
  }
  
@@ -224,7 +178,7 @@ index 88728d997088..15fcf2cac971 100644
  			      const char *buf, size_t count)
  {
  	unsigned int input;
-@@ -438,7 +438,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+@@ -729,7 +729,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
  	return count;
  }
  
@@ -233,7 +187,7 @@ index 88728d997088..15fcf2cac971 100644
  				  const char *buf, size_t count)
  {
  	unsigned int input;
-@@ -463,7 +463,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+@@ -753,7 +753,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
  	return count;
  }
  
@@ -243,10 +197,10 @@ index 88728d997088..15fcf2cac971 100644
  {
  	unsigned int input;
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 177c7680c1a8..e684a9ba98a3 100644
+index 32dc0cbd51ca..9d9e0b54f831 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -203,20 +203,12 @@ __ATTR(_name, _perm, show_##_name, NULL)
+@@ -234,20 +234,12 @@ __ATTR(_name, _perm, show_##_name, NULL)
  static struct freq_attr _name =			\
  __ATTR(_name, 0644, show_##_name, store_##_name)
  
@@ -273,4 +227,4 @@ index 177c7680c1a8..e684a9ba98a3 100644
 2.21.0.rc0.269.g1a574e7a288b
 
 
---mk4hzvc3esaauiei--
+--p77q3pz6h4e3seiv--
