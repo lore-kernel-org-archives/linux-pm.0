@@ -1,77 +1,50 @@
-From: Aisheng Dong <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 1/6] PM / Domains: Improve warn for multiple states but no
- governor in genpd
-Date: Thu, 7 Mar 2019 13:57:04 +0000
-Message-ID: <AM0PR04MB421133ACBFB25A3394FA607D804C0@AM0PR04MB4211.eurprd04.prod.outlook.com>
-References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
- <1551878302-8146-2-git-send-email-aisheng.dong@nxp.com>
- <CAPDyKFqPwF4k3x+yBxMRsR_ahz_+0pwaXxT2csRWEQ_d9Uu8dg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4.10] cpufreq: Use struct kobj_attribute instead of
+ struct global_attr
+Date: Thu, 7 Mar 2019 19:30:40 +0530
+Message-ID: <20190307140040.bq5aehafseme5e5m@vireshk-i7>
+References: <a77cd87e1c27367cee2cbdf10d775ad59af9e554.1551957712.git.viresh.kumar@linaro.org>
+ <20190307122011.GA21325@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFqPwF4k3x+yBxMRsR_ahz_+0pwaXxT2csRWEQ_d9Uu8dg@mail.gmail.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190307122011.GA21325@kroah.com>
+Sender: stable-owner@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: "4 . 10" <stable@vger.kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
-> Sent: Wednesday, March 6, 2019 10:17 PM
-> On Wed, 6 Mar 2019 at 14:25, Aisheng Dong <aisheng.dong@nxp.com>
-> wrote:
-> >
-> > It's possible a PM domain defines only one state and it does not need
-> > a governor to work. For such case, a warning actually is not necessary.
-> >
-> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+On 07-03-19, 13:20, Greg KH wrote:
+> On Thu, Mar 07, 2019 at 04:52:20PM +0530, Viresh Kumar wrote:
+> > commit 625c85a62cb7d3c79f6e16de3cfa972033658250 upstream.
+> > 
+> > The cpufreq_global_kobject is created using kobject_create_and_add()
+> > helper, which assigns the kobj_type as dynamic_kobj_ktype and show/store
+> > routines are set to kobj_attr_show() and kobj_attr_store().
+> > 
+> > These routines pass struct kobj_attribute as an argument to the
+> > show/store callbacks. But all the cpufreq files created using the
+> > cpufreq_global_kobject expect the argument to be of type struct
+> > attribute. Things work fine currently as no one accesses the "attr"
+> > argument. We may not see issues even if the argument is used, as struct
+> > kobj_attribute has struct attribute as its first element and so they
+> > will both get same address.
+> > 
+> > But this is logically incorrect and we should rather use struct
+> > kobj_attribute instead of struct global_attr in the cpufreq core and
+> > drivers and the show/store callbacks should take struct kobj_attribute
+> > as argument instead.
+> > 
+> > This bug is caught using CFI CLANG builds in android kernel which
+> > catches mismatch in function prototypes for such callbacks.
+> > 
+> > Cc: 4.10 <stable@vger.kernel.org> # 4.10
 > 
-> Fixes: 2c9b7f877203 ("PM / Domains: Deal with multiple states but no
-> governor in genpd")
-> Cc: stable@vger.kernel.org
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
+> Why 4.10?  that's a long-dead kernel version :(
 
-One question, this patch applies for current situation, but when we add two states
-support with no governor (see my another patch series to support enter
-deepest state for suspend but intermediate state for runtime pm), 
-here will still warn.
+I just backported it on all kernels without looking for which stables
+are supported. Just ignore it :)
 
-Do you think if we should totally remove this warning or keep this patch
-but change to use another simple governor later for multi states?
-e.g. fixed intermediate state for runtime pm?
-
-Regards
-Dong Aisheng
-
-> > ---
-> >  drivers/base/power/domain.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > index 2c334c0..394f9da 100644
-> > --- a/drivers/base/power/domain.c
-> > +++ b/drivers/base/power/domain.c
-> > @@ -1766,7 +1766,7 @@ int pm_genpd_init(struct generic_pm_domain
-> *genpd,
-> >                 ret = genpd_set_default_power_state(genpd);
-> >                 if (ret)
-> >                         return ret;
-> > -       } else if (!gov) {
-> > +       } else if (!gov && genpd->state_count > 1) {
-> >                 pr_warn("%s : no governor for states\n", genpd->name);
-> >         }
-> >
-> > --
-> > 2.7.4
-> >
+-- 
+viresh
