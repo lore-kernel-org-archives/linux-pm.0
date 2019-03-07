@@ -1,48 +1,86 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [RFT][Update][PATCH 2/2] cpufreq: intel_pstate: Update max CPU
  frequency on global turbo changes
-Date: Thu, 7 Mar 2019 12:23:44 +0100
-Message-ID: <20190307112344.GC32477@hirez.programming.kicks-ass.net>
-References: <9956076.F4luUDm1Dq@aspire.rjw.lan>
- <20190305104256.7kvedlttuovmptpc@queper01-lin>
- <2336151.IZk3Z8DVvP@aspire.rjw.lan>
- <6357319.Iupbu3ldGQ@aspire.rjw.lan>
- <20190305114406.GV32494@hirez.programming.kicks-ass.net>
- <20190305120040.y2vmnxrch6kgya3e@queper01-lin>
+Date: Thu, 7 Mar 2019 12:25:10 +0100
+Message-ID: <CAJZ5v0hDBPBciBKEKpS_HBTHLiiZ0gKKkzGYPJ6fafNNMn48ew@mail.gmail.com>
+References: <9956076.F4luUDm1Dq@aspire.rjw.lan> <20190305104256.7kvedlttuovmptpc@queper01-lin>
+ <2336151.IZk3Z8DVvP@aspire.rjw.lan> <6357319.Iupbu3ldGQ@aspire.rjw.lan>
+ <20190305114406.GV32494@hirez.programming.kicks-ass.net> <20190305120040.y2vmnxrch6kgya3e@queper01-lin>
  <CAJZ5v0hYU763Jx0Ku0HsNMd261z7E0PhZ88_PH6MT=OLYYUAaQ@mail.gmail.com>
- <20190305173746.p32xolcpueudlzwn@queper01-lin>
- <CAJZ5v0jJxMw6_6Ep=fee8VGEbqpFKQtA2kX5t1scNwX3GhaTTg@mail.gmail.com>
+ <20190305173746.p32xolcpueudlzwn@queper01-lin> <CAJZ5v0jJxMw6_6Ep=fee8VGEbqpFKQtA2kX5t1scNwX3GhaTTg@mail.gmail.com>
  <20190307110256.padefvq4e52ly3nm@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20190307110256.padefvq4e52ly3nm@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 07, 2019 at 11:02:58AM +0000, Quentin Perret wrote:
+On Thu, Mar 7, 2019 at 12:03 PM Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Hi Rafael,
+>
+> On Wednesday 06 Mar 2019 at 11:05:47 (+0100), Rafael J. Wysocki wrote:
+> > Please recall that the iowait boosting algo was different to start
+> > with, though: it jumped to the max right away and then backed off.
+> > That turned out to be overly aggressive in general and led to some
+> > undesired "jittery" behavior, which is why it was changed.
+> >
+> > Thus it looks like the platforms on which it still jumps to the max
+> > right away may actually benefit from changing it to more steps. :-)
+>
+> On the energy side of things at least ... ;-)
+>
+> > In turn, the platforms where it takes more than 3 steps for the boost
+> > to get to the max would get a slight performance improvement from this
+> > changes and I'm not sure why that could be bad.
+>
+> For energy possibly ? IIUC this thread:
+>
+>     https://patchwork.kernel.org/patch/9735885/
+>
+> the original intent of the ramp thing for the iowait boost was to reduce
+> power consumption.
+>
+> > Moreover, it didn't depend on the min originally, just on the max and
+> > just because I wanted the number of backoff steps needed to go back
+> > down to zero to be independent of the platform IIRC.  The dependency
+> > on the min is sort of artificial here and leads to arbitrary
+> > differences in behavior between different platforms which isn't
+> > particularly fortunate.
+>
+> It's a question of perspective I would say. Right now you can say the
+> behaviour is somewhat coherent across platforms: getting an IOWAIT boost
+> means you'll run twice as fast regardless of your board. With the '128
+> approach', you may or may not run faster, depending on your set of OPPs.
+>
 > Also on recent big little SoCs, the capacity ratio can be pretty high.
 > You can get little CPUs with 300 of capacity or so. The arbitrary 128
 > thing is basically gonna go near max freq in one step, although the CPUs
 > actually 20 available OPPs or so. And I guess that's a shame.
 
-Ah, but remember; with the latest patch the iowait_boost is scaled on
-max. So in order to hit that 300, you first have to hit 1024.
+OK, you seem to be arguing that on some platforms there is a little
+difference between 128 and 1024 in terms of power, while there may be
+a lot of difference between, say, 64 and 128.
 
-+       boost = (sg_cpu->iowait_boost * max) >> SCHED_CAPACITY_SHIFT;
-+       return max(boost, util);
+I can buy that, but then it also makes sense to boost quickly enough,
+so maybe it could start at the min and jump from there to 256 right
+away in the first step?
 
-So iowait_boost goes from 128 to 1024 in 4 wakeups (the first sets 128,
-the next 3 get it to 1024), but the effective value is, given @max ==
-300:
+> For these reasons, I feel like it's not completely idiotic to have a
+> platform-dependent starting point, although arguably min_freq might not
+> always be the best choice.
+>
+> > With all of that in mind, I would go right away to making the boost
+> > independent of min and max (the final number of steps to reach the max
+> > is TBD in practice, but 3 looks like a good enough compromise to me).
+>
+> Perhaps the energy model could help find a good starting point, and a
+> good number of steps ?
+>
+> FWIW there should be a slot at OSPM to discuss how sugov could be made
+> smarter using the EM :-).
 
-  128 -> 37
-  256 -> 75
-  512 -> 150
- 1024 -> 300
-
-so irrespective of the number of OPPs and their spread, it takes 4
-wakeups to get to max.
+Well, if you can make a case for that. :-)
