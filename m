@@ -1,68 +1,39 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH v5 2/7] x86, olpc: Use a correct version when making up a
- battery node
-Date: Wed, 6 Mar 2019 21:01:00 -0800
-Message-ID: <20190307050100.GA44339@wrath>
-References: <20190110174005.1202564-1-lkundrak@v3.sk>
- <20190110174005.1202564-3-lkundrak@v3.sk>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v4 4/8] drivers: devfreq: add DMC driver for Exynos5422
+Date: Thu, 07 Mar 2019 09:41:00 +0100
+Message-ID: <84c06add-8375-55a6-01d6-ebbc6af011a9@samsung.com>
+References: <CGME20190201164720eucas1p13aac6550399d240b261a2cbe489d3dfc@eucas1p1.samsung.com>
+        <1549039612-28905-1-git-send-email-l.luba@partner.samsung.com>
+        <1549039612-28905-5-git-send-email-l.luba@partner.samsung.com>
+        <CAGTfZH0o6dHQj00vHwZBn05AT-Z_oAWHfBX0eATQ12NPmfw4fg@mail.gmail.com>
+        <94e169cf-4dc2-82ec-1385-852bc7853931@samsung.com>
+        <4bbc0f61-952e-bcdb-4645-2644a122ac99@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190110174005.1202564-3-lkundrak@v3.sk>
+In-reply-to: <4bbc0f61-952e-bcdb-4645-2644a122ac99@samsung.com>
+Content-language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: cwchoi00@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2019 at 06:40:00PM +0100, Lubomir Rintel wrote:
-> The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-> ambient temperature. Add a different compatible string to the 1.5
-> battery.
+Hi Chanwoo,
 
-Hi Lubomir,
+On 3/7/19 02:10, Chanwoo Choi wrote:
+> This patch has the another quetion about the clocks in
+> exynos5_dmc_init_clks(). This functions used 'clk_set_parent'
+> to make the hierarchy between clocks. I think it is possible to make
+> the relation of clocks in DT by using the 'assigned-clocks'.
 
-Thanks for the recent Cc and pointer to here. In general, I have no
-problem with the net changes. I do have some concerns from a
-reviewability and change documentation perspective.
-
-You document your intent above, but you also made several other changes
-to get there which aren't documented, so when reviewing they stand out
-as "why is this here?".
-
->From what I can tell, this change contains:
-
-1) Cleanup of olpc_dt_interpret() calls to avoid splitting string
-literals (noted in the patch history, but not called out as an
-intentional change)
-
-2) Refactoring of logic and breaking out the check for the compatible
-property into olpc_dt_compatible_match
-
-3) Addition of "we're running very old firmware if this is missing"
-checks - I'm not sure how this relates to the stated problem and
-the intended fix.
-
-4) The addition of the xo1.5 compatible property.
-
-All the other things makes it very difficult to determine if this patch
-does what you describe - and only what you describe.
-
-In general please:
-a) Cleanup code
-b) Refactor code
-c) Change functionality
-
-In that order - that way the new functionality is what show up when
-someone does a git blame on the file (rather than a cleanup patch, which
-isn't as useful in defect analysis).
-
-And always document in your commit messages the approach you take to fix
-the reported issue.
-
-Thanks,
-
+I'm fine either way, AFAICS it is a matter of setting parent of just
+one clock - "mout_mx_mspll_ccore".  The driver needs to get that clock
+anyway to enable/disable it as required.  So we will not gain much from
+using assigned-clocks I'd say. I don't really have a strong opinion here
+as I don't know detailed requirements of the DMC clock configuration
+sequence. I'm inclined to keep it in driver as it would be more flexible.
 
 -- 
-Darren Hart
-VMware Open Source Technology Center
+Regards,
+Sylwester
