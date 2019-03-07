@@ -1,50 +1,105 @@
-From: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v2] makedumpfile: exclude pages that are logically offline
-Date: Thu, 7 Mar 2019 09:41:15 +0100
-Message-ID: <7c9d6d5c-d6cf-00a7-7f23-bf28cbb382af@redhat.com>
-References: <20181122100627.5189-1-david@redhat.com>
- <20181122100938.5567-1-david@redhat.com>
- <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Thu, 7 Mar 2019 10:14:44 +0100
+Message-ID: <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
+ <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
+Content-Type: text/plain; charset="gbk"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, kexec-ml <kexec@lists.infradead.org>, "pv-drivers@vmware.com" <pv-drivers@vmware.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Andy Tang <andy.tang@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 27.11.18 17:32, Kazuhito Hagio wrote:
->> Linux marks pages that are logically offline via a page flag (map count).
->> Such pages e.g. include pages infated as part of a balloon driver or
->> pages that were not actually onlined when onlining the whole section.
->>
->> While the hypervisor usually allows to read such inflated memory, we
->> basically read and dump data that is completely irrelevant. Also, this
->> might result in quite some overhead in the hypervisor. In addition,
->> we saw some problems under Hyper-V, whereby we can crash the kernel by
->> dumping, when reading memory of a partially onlined memory segment
->> (for memory added by the Hyper-V balloon driver).
->>
->> Therefore, don't read and dump pages that are marked as being logically
->> offline.
->>
->> Signed-off-by: David Hildenbrand <david@redhat.com>
-> 
-> Thanks for the v2 update.
-> I'm going to merge this patch after the kernel patches are merged
-> and it tests fine with the kernel.
-> 
-> Kazu
-
-Hi Kazu,
-
-the patches are now upstream. Thanks!
-
--- 
-
-Thanks,
-
-David / dhildenb
+T24gMDQvMDMvMjAxOSAwNzo0NiwgQW5keSBUYW5nIHdyb3RlOgo+IAo+IAo+PiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQo+PiBGcm9tOiBTaGF3biBHdW8gPHNoYXduZ3VvQGtlcm5lbC5vcmc+
+Cj4+IFNlbnQ6IDIwMTnE6jPUwjTI1SAxNDoyMQo+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdA
+bnhwLmNvbT4KPj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBrZXJu
+ZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsKPj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsKPj4gbGludXgta2VybmVs
+QHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOwo+PiBkYW5pZWwubGV6
+Y2Fub0BsaW5hcm8ub3JnOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29t
+Cj4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUg
+bW9yZSB0aGVybWFsIHpvbmUgbm9kZQo+Pgo+PiBPbiBNb24sIE1hciAwNCwgMjAxOSBhdCAxMToy
+MToxMUFNICswODAwLCBZdWFudGlhbiBUYW5nIHdyb3RlOgo+Pj4gTHMxMDg4YSBoYXMgMiB0aGVy
+bWFsIHNlbnNvcnMsIGNvcmUgY2x1c3RlciBhbmQgU29DIHBsYXRmb3JtLiBDb3JlCj4+PiBjbHVz
+dGVyIHNlbnNvciBpcyB1c2VkIHRvIG1vbml0b3IgdGhlIHRlbXBlcmF0dXJlIG9mIGNvcmUgYW5k
+IFNvQwo+Pj4gcGxhdGZvcm0gaXMgZm9yIHBsYXRmb3JtLiBUaGUgY3VycmVudCBkdHMgb25seSBz
+dXBwb3J0IHRoZSBmaXJzdCBzZW5zb3IuCj4+PiBUaGlzIHBhdGNoIGFkZHMgdGhlIHNlY29uZCBz
+ZW5zb3Igbm9kZSB0byBkdHMgdG8gZW5hYmxlIGl0Lgo+Pj4KPj4+IFNpZ25lZC1vZmYtYnk6IFl1
+YW50aWFuIFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPgo+Pj4gLS0tCj4+PiB2MjoKPj4+IAktIEFk
+ZCBtb3JlIGluZm9ybWF0aW9uIGFib3V0IHNlbnNvcnMgdG8gZGVzY3JpcHRpb24KPj4+IFBTOiBJ
+biBvcmRlciB0byBrZWVwIGNvbnNpc3RlbmN5IHRvIHRoZSBmaXJzdCB0aGVybWFsLXpvbmUgbm9k
+ZSwgdGhlcmUKPj4+IHdpbGwgYmUgIldBUk5JTkc6IGxpbmUgb3ZlciA4MCBjaGFyYWN0ZXJzIiB3
+YXJuaW5ncy4KPj4+Cj4+PiAgYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4
+OGEuZHRzaSB8ICAgNDMKPj4gKysrKysrKysrKysrKysrKysrKysrLS0KPj4+ICAxIGZpbGVzIGNo
+YW5nZWQsIDM5IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pCj4+Pgo+Pj4gZGlmZiAtLWdp
+dCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kKPj4+IGIv
+YXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQo+Pj4gaW5kZXgg
+NjYxMTM3Zi4uOWY1MmJjOSAxMDA2NDQKPj4+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJl
+ZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kKPj4+ICsrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJl
+ZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kKPj4+IEBAIC0xMjksMTkgKzEyOSwxOSBAQAo+Pj4gIAl9
+Owo+Pj4KPj4+ICAJdGhlcm1hbC16b25lcyB7Cj4+PiAtCQljcHVfdGhlcm1hbDogY3B1LXRoZXJt
+YWwgewo+Pj4gKwkJY2N1IHsKPj4KPj4gSXMgdGhpcyBjaGFuZ2UgcmVhbGx5IG5lY2Vzc2FyeT8g
+IFdoYXQgZG9lcyAnY2N1JyBzdGFuZCBmb3I/Cj4gSSB0aGluayBzby4gY2N1IHN0YW5kcyBmb3Ig
+Y29yZSBjbHVzdGVyIHVuaXQuIGNwdSBpcyB0b28gZ2VuZXJhbC4KPiBPbiBzb21lIHBsYXRmb3Jt
+cywgdGhlcmUgYXJlIG1vcmUgdGhhbiBvbmUgY29yZSBjbHVzdGVycy4KPiBBdCBsZWFzdCB3ZSBz
+aG91bGQgY2hhbmdlIGl0IHRvICJjb3JlIGNsdXN0ZXIiIGlmIHNob3J0IGZvcm0gaXMgbm90IGFw
+cHJvcHJpYXRlLgoKSWYgdGhlIHNlbnNvciBpcyBhIHRoZSBjbHVzdGVyIGxldmVsLCAnY2x1c3Rl
+cicgaXMgZW5vdWdoLiBJTUhPLCBubyBuZWVkCnRvIGdpdmUgYSBkZXNjcmlwdGlvbiBvZiB3aGF0
+IGNvbnRhaW5zIHRoZSBjbHVzdGVyLCBvdGhlcndpc2UgeW91IHdpbGwKZW5kIHVwIHdpdGggYSAn
+Y29yZS1ncHUtY2x1c3Rlci1sMicgbmFtZS4KCj4+Cj4+PiAgCQkJcG9sbGluZy1kZWxheS1wYXNz
+aXZlID0gPDEwMDA+Owo+Pj4gIAkJCXBvbGxpbmctZGVsYXkgPSA8NTAwMD47Cj4+PiAgCQkJdGhl
+cm1hbC1zZW5zb3JzID0gPCZ0bXUgMD47Cj4+Pgo+Pj4gIAkJCXRyaXBzIHsKPj4+IC0JCQkJY3B1
+X2FsZXJ0OiBjcHUtYWxlcnQgewo+Pj4gKwkJCQljY3VfYWxlcnQ6IGNjdS1hbGVydCB7Cj4+PiAg
+CQkJCQl0ZW1wZXJhdHVyZSA9IDw4NTAwMD47Cj4+PiAgCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+
+Owo+Pj4gIAkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKPj4+ICAJCQkJfTsKPj4+Cj4+PiAtCQkJCWNw
+dV9jcml0OiBjcHUtY3JpdCB7Cj4+PiArCQkJCWNjdV9jcml0OiBjY3UtY3JpdCB7Cj4+PiAgCQkJ
+CQl0ZW1wZXJhdHVyZSA9IDw5NTAwMD47Cj4+PiAgCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Owo+
+Pj4gIAkJCQkJdHlwZSA9ICJjcml0aWNhbCI7Cj4+PiBAQCAtMTUwLDcgKzE1MCw0MiBAQAo+Pj4K
+Pj4+ICAJCQljb29saW5nLW1hcHMgewo+Pj4gIAkJCQltYXAwIHsKPj4+IC0JCQkJCXRyaXAgPSA8
+JmNwdV9hbGVydD47Cj4+PiArCQkJCQl0cmlwID0gPCZjY3VfYWxlcnQ+Owo+Pj4gKwkJCQkJY29v
+bGluZy1kZXZpY2UgPQo+Pj4gKwkJCQkJCTwmY3B1MCBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1MSBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1MiBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1NCBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1NSBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1NiBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+LAo+Pj4gKwkJCQkJCTwmY3B1NyBUSEVSTUFMX05PX0xJTUlUCj4+IFRIRVJN
+QUxfTk9fTElNSVQ+Owo+Pj4gKwkJCQl9Owo+Pj4gKwkJCX07Cj4+PiArCQl9Owo+Pj4gKwo+Pj4g
+KwkJcGx0IHsKPj4KPj4gV2hhdCBhYm91dCAncGxhdGZvcm0tdGhlcm1hbCcgZm9yIG5vZGUgbmFt
+ZSwgcGxhdGZvcm0tYWxlcnQgYW5kIHBsYXRmb3JtLWNyaXQKPj4gZm9yIHRyaXAgbm9kZXMgYmVs
+b3c/Cj4gT0ssIHdpbGwgdXNlIGxvbmcgbmFtZSBmb3JtLgo+IAo+IEJSLAo+IEFuZHkKPj4KPj4g
+U2hhd24KPj4KPj4+ICsJCQlwb2xsaW5nLWRlbGF5LXBhc3NpdmUgPSA8MTAwMD47Cj4+PiArCQkJ
+cG9sbGluZy1kZWxheSA9IDw1MDAwPjsKPj4+ICsJCQl0aGVybWFsLXNlbnNvcnMgPSA8JnRtdSAx
+PjsKPj4+ICsKPj4+ICsJCQl0cmlwcyB7Cj4+PiArCQkJCXBsdF9hbGVydDogcGx0LWFsZXJ0IHsK
+Pj4+ICsJCQkJCXRlbXBlcmF0dXJlID0gPDg1MDAwPjsKPj4+ICsJCQkJCWh5c3RlcmVzaXMgPSA8
+MjAwMD47Cj4+PiArCQkJCQl0eXBlID0gInBhc3NpdmUiOwo+Pj4gKwkJCQl9Owo+Pj4gKwo+Pj4g
+KwkJCQlwbHRfY3JpdDogcGx0LWNyaXQgewo+Pj4gKwkJCQkJdGVtcGVyYXR1cmUgPSA8OTUwMDA+
+Owo+Pj4gKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsKPj4+ICsJCQkJCXR5cGUgPSAiY3JpdGlj
+YWwiOwo+Pj4gKwkJCQl9Owo+Pj4gKwkJCX07Cj4+PiArCj4+PiArCQkJY29vbGluZy1tYXBzIHsK
+Pj4+ICsJCQkJbWFwMCB7Cj4+PiArCQkJCQl0cmlwID0gPCZwbHRfYWxlcnQ+Owo+Pj4gIAkJCQkJ
+Y29vbGluZy1kZXZpY2UgPQo+Pj4gIAkJCQkJCTwmY3B1MCBUSEVSTUFMX05PX0xJTUlUCj4+IFRI
+RVJNQUxfTk9fTElNSVQ+LAo+Pj4gIAkJCQkJCTwmY3B1MSBUSEVSTUFMX05PX0xJTUlUCj4+IFRI
+RVJNQUxfTk9fTElNSVQ+LAo+Pj4gLS0KPj4+IDEuNy4xCj4+PgoKCi0tIAogPGh0dHA6Ly93d3cu
+bGluYXJvLm9yZy8+IExpbmFyby5vcmcgqaYgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBT
+b0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFy
+bz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8
+CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
