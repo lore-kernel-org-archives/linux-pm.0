@@ -1,133 +1,182 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
-Date: Fri, 8 Mar 2019 09:57:09 +0000
-Message-ID: <VI1PR04MB43338294C193D1AB4F577E92F34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190304032111.21770-1-andy.tang@nxp.com>
- <20190304062115.GB26041@dragon>
- <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
- <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 5/7] drivers: firmware: psci: Simplify state node parsing
+Date: Fri, 8 Mar 2019 11:36:49 +0100
+Message-ID: <CAPDyKFrbu4rFyohv+YJkG7O03_r3+3gn1vib_FJUW0t-4REgTw@mail.gmail.com>
+References: <20190228135919.3747-1-ulf.hansson@linaro.org> <20190228135919.3747-6-ulf.hansson@linaro.org>
+ <20190301172810.GR15517@lakrids.cambridge.arm.com> <CAPDyKFrqp6_NkTBVXZTa3j+-6y+m7aX2y6t=nH=Tjdo4BgMDtQ@mail.gmail.com>
+ <20190306181519.GA3355@e107981-ln.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190306181519.GA3355@e107981-ln.cambridge.arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-PGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnE6jPUwjjI1SAxNzoyOA0K
-PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8c2hhd25ndW9A
-a2VybmVsLm9yZz4NCj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBr
-ZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2Vy
-bmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhhbmdA
-aW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
-djJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsIHpvbmUgbm9kZQ0K
-PiANCj4gT24gMDgvMDMvMjAxOSAwMzowNywgQW5keSBUYW5nIHdyb3RlOg0KPiA+DQo+ID4NCj4g
-Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-PGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+ID4+IFNlbnQ6IDIwMTnE6jPUwjfI1SAxNzox
-NQ0KPiA+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8c2hh
-d25ndW9Aa2VybmVsLm9yZz4NCj4gPj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsg
-cm9iaCtkdEBrZXJuZWwub3JnOw0KPiA+PiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgbGludXgtYXJt
-LWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiA+PiBkZXZpY2V0cmVlQHZnZXIua2VybmVs
-Lm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPj4gbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4+
-IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9y
-ZSB0aGVybWFsDQo+ID4+IHpvbmUgbm9kZQ0KPiA+Pg0KPiA+Pj4+PiBQUzogSW4gb3JkZXIgdG8g
-a2VlcCBjb25zaXN0ZW5jeSB0byB0aGUgZmlyc3QgdGhlcm1hbC16b25lIG5vZGUsDQo+ID4+Pj4+
-IHRoZXJlIHdpbGwgYmUgIldBUk5JTkc6IGxpbmUgb3ZlciA4MCBjaGFyYWN0ZXJzIiB3YXJuaW5n
-cy4NCj4gPj4+Pj4NCj4gPj4+Pj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1s
-czEwODhhLmR0c2kgfCAgIDQzDQo+ID4+Pj4gKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPj4+
-Pj4gIDEgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4g
-Pj4+Pj4NCj4gPj4+Pj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxl
-L2ZzbC1sczEwODhhLmR0c2kNCj4gPj4+Pj4gYi9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2Fs
-ZS9mc2wtbHMxMDg4YS5kdHNpDQo+ID4+Pj4+IGluZGV4IDY2MTEzN2YuLjlmNTJiYzkgMTAwNjQ0
-DQo+ID4+Pj4+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczEwODhh
-LmR0c2kNCj4gPj4+Pj4gKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxz
-MTA4OGEuZHRzaQ0KPiA+Pj4+PiBAQCAtMTI5LDE5ICsxMjksMTkgQEANCj4gPj4+Pj4gIAl9Ow0K
-PiA+Pj4+Pg0KPiA+Pj4+PiAgCXRoZXJtYWwtem9uZXMgew0KPiA+Pj4+PiAtCQljcHVfdGhlcm1h
-bDogY3B1LXRoZXJtYWwgew0KPiA+Pj4+PiArCQljY3Ugew0KPiA+Pj4+DQo+ID4+Pj4gSXMgdGhp
-cyBjaGFuZ2UgcmVhbGx5IG5lY2Vzc2FyeT8gIFdoYXQgZG9lcyAnY2N1JyBzdGFuZCBmb3I/DQo+
-ID4+PiBJIHRoaW5rIHNvLiBjY3Ugc3RhbmRzIGZvciBjb3JlIGNsdXN0ZXIgdW5pdC4gY3B1IGlz
-IHRvbyBnZW5lcmFsLg0KPiA+Pj4gT24gc29tZSBwbGF0Zm9ybXMsIHRoZXJlIGFyZSBtb3JlIHRo
-YW4gb25lIGNvcmUgY2x1c3RlcnMuDQo+ID4+PiBBdCBsZWFzdCB3ZSBzaG91bGQgY2hhbmdlIGl0
-IHRvICJjb3JlIGNsdXN0ZXIiIGlmIHNob3J0IGZvcm0gaXMgbm90DQo+IGFwcHJvcHJpYXRlLg0K
-PiA+Pg0KPiA+PiBJZiB0aGUgc2Vuc29yIGlzIGEgdGhlIGNsdXN0ZXIgbGV2ZWwsICdjbHVzdGVy
-JyBpcyBlbm91Z2guIElNSE8sIG5vDQo+ID4+IG5lZWQgdG8gZ2l2ZSBhIGRlc2NyaXB0aW9uIG9m
-IHdoYXQgY29udGFpbnMgdGhlIGNsdXN0ZXIsIG90aGVyd2lzZQ0KPiA+PiB5b3Ugd2lsbCBlbmQg
-dXAgd2l0aCBhICdjb3JlLWdwdS1jbHVzdGVyLWwyJyBuYW1lLg0KPiA+IElmIGNsdXN0ZXIgaXMg
-c3BlY2lmaWMgdG8gY29yZSwgd2UgY2FuIHVzZSBjbHVzdGVyIGluc3RlYWQuIEJ1dCBJIGRvbid0
-IHRoaW5rIHNvLg0KPiA+IENsdXN0ZXIgbWF5IHJlZmVyIHRvICJjb3JlIGNsdXN0ZXIiLCAiR1BV
-IGNsdXN0ZXIiIGV0Yy4NCj4gPiBTbywgSSB0aGluayAiY29yZS1jbHVzdGVyIiBpcyBvay4NCj4g
-PiBJZiBjb3JlIHdhcyBkaXZpZGVkIHRvIHNldmVyYWwgY2x1c3RlcnMsIHdlIGNhbiBuYW1lIGl0
-IGFzICJjb3JlLWNsdXN0ZXIxIiwNCj4gImNvcmUtY2x1c3RlcjIiIGV0Yy4NCj4gPiBJZiBHUFUg
-d2FzIGRpdmlkZWQgdG8gc2V2ZXJhbCBjbHVzdGVycyB3ZSBjYW4gbmFtZSBpdCBhcyAiZ3B1LWNs
-dXN0ZXIxIiwNCj4gImdwdS1jbHVzdGVyMiIgZXRjLg0KPiANCj4gDQo+IEhpIEFuZHksDQo+IA0K
-PiBJIHRoaW5rIHRoZXJlIGlzIGEgY29uZnVzaW9uIGFyb3VuZCB0aGUgJ2NwdScgdGVybSBhbmQg
-J2NsdXN0ZXInLg0KPiANCj4gQVJNIHdvdWxkIGxpa2UgdG8gc2VlIHRoZSAnY2x1c3Rlcicgd29y
-ZCB0byBkaXNhcHBlYXIsIHNvIHdoZW5ldmVyIHBvc3NpYmxlIHdlDQo+IHNob3VsZCBhdm9pZCBp
-dC4NCj4gDQo+IEZyb20gdGhlIGhhcmR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0
-byBkZXNjcmliZSB0aGUgcGh5c2ljYWwgY2hpcA0KPiBjb250YWluaW5nIHRoZSBjb3JlcytjYWNo
-ZS4NCj4gDQo+IEZyb20gdGhlIHNvZnR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0
-byBkZXNjcmliZSB0aGUgbG9naWNhbCBwcm9jZXNzDQo+IHVuaXQsIGFrYSBhIGNvcmUgb3IgYSBo
-eXBlci10aHJlYWQuDQo+IA0KPiBBcyB3ZSBhcmUgaW4gdGhlIERULCBzbyBkZXNjcmliaW5nIHRo
-ZSBoYXJkd2FyZSwgdGhlIENQVSByZWZlcnMgdG8gdGhlIGdyb3VwDQo+IGNvcmVzK2NhY2hlcy4N
-Cj4gDQo+IEZyb20gbXkgUE9WLCB1c2luZyAnY3B1JyBmb3IgdGhlIGdyb3VwIG9mIGNvcmVzIGFu
-ZCAnZ3B1JyBmb3IgdGhlIGdyYXBoaWMNCj4gc291bmRzIG9rLCBhbmQgc28gZmFyIHRoYXQgaXMg
-d2hhdCBpcyB1c2VkIGZvciB0aGUgb3RoZXIgcGxhdGZvcm1zLg0KPiANCj4gSWYgeW91IGNoYW5n
-ZSB0aGUgbmFtZSwgdGhhdCBtYXkgZ2l2ZSB0aGUgZmVlbGluZyB0aGVyZSBpcyBzb21ldGhpbmcg
-c3BlY2lhbA0KPiB3aXRoIHRob3NlIHRoZXJtYWwgem9uZXMuDQoNClRoYW5rcyBEYW5pZWwgZm9y
-IHlvdXIgZGV0YWlsZWQgZXhwbGFuYXRpb25zLg0KDQpCdXQgYXMgeW91IHNhaWQgJ0NQVScgaXMg
-dXN1YWxseSB1c2VkIHRvIGRlc2NyaWJlIHRoZSBwaHlzaWNhbCBjaGlwLg0KU28gaWYgd2UgbmFt
-ZSBpdCBhcyBDUFUsIGl0IHNvdW5kcyBsaWtlIHRoaXMgdGVtcGVyYXR1cmUgc2Vuc29yIGlzIG1v
-bml0b3JpbmcgdGhlIHdob2xlIGNoaXAuDQpUaGF0J3Mgbm90IHRydWUgaW4gb3VyIGNhc2UuDQoN
-ClRha2UgbHMyMDg4YSBmb3IgZXhhbXBsZToNCkluIGxzMjA4OGEgU29DLCB0aGVyZSBhcmUgNyB0
-ZW1wZXJhdHVyZSBzZW5zb3JzLiBQbGVhc2Ugbm90ZSB0aGF0IHRoZXkgYXJlIGFsbCBsb2NhdGVk
-IGluIFNvQy4NClRoZSBwbGFjZW1lbnQgb2YgdGhlIHRlbXBlcmF0dXJlIHNlbnNvcnMgYXJlIHNo
-b3dlZCBiZWxvdzoNCg0KU2Vuc29yIElECQlwbGFjZW1lbnQNCjEJCQlERFIgY29udHJvbGxlciAx
-DQoyCQkJRERSIGNvbnRyb2xsZXIgMg0KMwkJCUREUiBjb250cm9sbGVyIDMNCjQJCQljb3JlIGNs
-dXN0ZXIgMQ0KNSAJCQljb3JlIGNsdXN0ZXIgMg0KNiAJCQljb3JlIGNsdXN0ZXIgMw0KNyAJCQlj
-b3JlIGNsdXN0ZXIgNA0KDQpBcHBhcmVudGx5IHVzaW5nIENQVSBvciBDUFUtY2x1c3RlciBpcyBu
-b3QgYXBwcm9wcmlhdGUuIENvcmUtY2x1c3RlciBpcyBiZXR0ZXIuDQoNCldoYXQgZG8geW91IHRo
-aW5rPw0KDQpCUiwNCkFuZHkNCj4gDQo+IA0KPiANCj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6Ly9l
-bWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJG
-d3d3LmwNCj4gaW5hcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbmclNDBueHAu
-Y29tJTdDMDYxOWQyYzg3ZTUNCj4gYTQxMmQ4OGQxMDhkNmEzYTg2NTBlJTdDNjg2ZWExZDNiYzJi
-NGM2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMA0KPiAlN0M2MzY4NzYzNDA5Nzk1Mjc1MDMmYW1w
-O3NkYXRhPWpYZElLaENJd1B4bVRsbUtvVmU0aUhDcHZwTXhMVkZaDQo+IFViTEIzOWlUUlo4JTNE
-JmFtcDtyZXNlcnZlZD0wPiBMaW5hcm8ub3JnIKmmIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvcg0K
-PiBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVs
-aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy4NCj4gZmFj
-ZWJvb2suY29tJTJGcGFnZXMlMkZMaW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0
-MG54cC5jDQo+IG9tJTdDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFk
-M2JjMmI0YzZmYTkyY2Q5OWM1DQo+IGMzMDE2MzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUw
-MyZhbXA7c2RhdGE9eW5acnI0ZnJNUFhYd2VnUQ0KPiB3SjBrQVN4c0s4UWpoQ2ZCN09rMkQ1WjF5
-RWMlM0QmYW1wO3Jlc2VydmVkPTA+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVs
-aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aXR0ZQ0KPiBy
-LmNvbSUyRiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54
-cC5jb20lNw0KPiBDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFkM2Jj
-MmI0YzZmYTkyY2Q5OWM1YzMwMTYNCj4gMzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUwMyZh
-bXA7c2RhdGE9cVBRRk1wbnpoZ1lkUzFJWGJQMEZjDQo+IHdKb005cjVxMEwxQlg4SkxUS1dXbzgl
-M0QmYW1wO3Jlc2VydmVkPTA+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtz
-LnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3LmwNCj4gaW5hcm8u
-b3JnJTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54cC5j
-b20lNw0KPiBDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFkM2JjMmI0
-YzZmYTkyY2Q5OWM1YzMwMTYNCj4gMzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUwMyZhbXA7
-c2RhdGE9VTVIMFdjMmh3a0hFMG9LVEE2SA0KPiBWYlE0UWRFbUJmWiUyRkMlMkZIbDJpdDBiek5V
-JTNEJmFtcDtyZXNlcnZlZD0wPiBCbG9nDQoNCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+Lorenzo, Mark,
+
+On Wed, 6 Mar 2019 at 19:15, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+>
+> On Mon, Mar 04, 2019 at 11:14:18AM +0100, Ulf Hansson wrote:
+> > On Fri, 1 Mar 2019 at 18:28, Mark Rutland <mark.rutland@arm.com> wrote:
+> > >
+> > > On Thu, Feb 28, 2019 at 02:59:17PM +0100, Ulf Hansson wrote:
+> > > > Instead of iterating through all the state nodes in DT, to find out how
+> > > > many states that needs to be allocated, let's use the number already known
+> > > > by the cpuidle driver. In this way we can drop the iteration altogether.
+> > > >
+> > > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > > > ---
+> > > >  drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
+> > > >  1 file changed, 12 insertions(+), 13 deletions(-)
+> > > >
+> > > > diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> > > > index d50b46a0528f..cbfc936d251c 100644
+> > > > --- a/drivers/firmware/psci/psci.c
+> > > > +++ b/drivers/firmware/psci/psci.c
+> > > > @@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+> > > >  static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+> > > >                       struct device_node *cpu_node, int cpu)
+> > > >  {
+> > > > -     int i, ret = 0, count = 0;
+> > > > +     int i, ret = 0, num_state_nodes = drv->state_count - 1;
+> > > >       u32 *psci_states;
+> > > >       struct device_node *state_node;
+> > > >
+> > > > -     /* Count idle states */
+> > > > -     while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+> > > > -                                           count))) {
+> > > > -             count++;
+> > > > -             of_node_put(state_node);
+> > > > -     }
+> > > > -
+> > >
+> > > To be honest, I'd rather not tighten the coupling with the cpuidle
+> > > driver here. For example, I'm not that happy with the PSCI backend
+> > > having to know the driver has a specific WFI state.
+> >
+> > If you ask me, the coupling is already there, only that it's hidden by
+> > taking assumptions about the WFI state in the code.
+>
+> There is no assumption taken - I wrote it down here:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/arm/idle-states.txt?h=v5.0
+>
+>
+> > However, I certainly agree with you, that this isn't very nice.
+>
+> The idea behind the generic ARM CPU idle driver is as follows:
+>
+> - A generic front-end in drivers/cpuidle/cpuidle-arm.c
+> - An arch back-end (that is defined by the enable-method), on ARM64
+>   it is PSCI
+>
+> As usual with the ARM CPUidle mess, there must be logic connecting
+> the front-end and the back-end. An idle state index was used since
+> I saw no other generic way. If there are better ideas they are welcome.
+>
+> Otherwise we must go back to having a PSCI specific CPUIdle driver
+> and, on arch/arm, platform specific CPUidle drivers.
+
+To be clear, I am not proposing to change into this. But, since Mark
+pointed out his concerns about the specifics around the WFI state, I
+just wanted to share what has been on my mind in regards to this as
+well.
+
+There are positive/negative consequences with any design, it's not
+more than that. If we want to re-design all this, there should be good
+reasons and benefits for doing it. Maybe there is, I can't tell at
+this point, without further exploring it.
+
+More importantly, so far, I have been able fit my changes to the PSCI
+code into the existing model - and with quite limited churns I think.
+However, I do need the handle to the struct cpuidle_driver *, that we
+use during initialization as patch4 and $subject patch suggests, for
+future steps.
+
+>
+> The aim was to simplify but to do that we need a connection logic
+> between drivers<->arch code, that's the only way we can have a generic
+> idle driver and corresponding boilerplate.
+>
+> > > IIUC we could get rid of the explicit counting with something like:
+> > >
+> > >         count = of_parse_phandle_with_args(cpu_node, "cpu-idle-states", NULL);
+> > >
+> > > ... but I'm not sure that the overall change is a simplification.
+> >
+> > In my opinion, no it doesn't.
+> >
+> > To me, it seems a kind of silly (and in-efficient) to do an OF parsing
+> > that has already been done and given the information we need.
+>
+> Yeah. It is boot path with idle states in the order of (max) dozens,
+> silly and inefficient, maybe but that should be fine.
+
+Yes, it certainly works as is today.
+
+>
+> See above.
+>
+> > > Does this change make it easier to plumb in something in future?
+> >
+> > Yes, I need this for additional changes on top.
+> >
+> > Note that, patch4 also provides the opportunity to do a similar
+> > cleanup of the initialization code in drivers/soc/qcom/spm.c. I
+> > haven't made that part of this series though.
+> >
+> > I guess in the end, we need to accept that part of the psci driver is
+> > really a cpuidle driver. Trying to keep them entirely separate,
+> > doesn't come without complexity/churns.
+>
+> PSCI driver is a kernel interface to firmware, it is not a CPUidle
+> driver per-se, we tried to decouple firmware interfaces from kernel
+> data structures as much as possible, again, see above.
+
+I fully agree the PSCI firmware driver/code is not a CPUidle driver,
+just wanted point out that *part* of that code, is in immediate
+connection with CPUidle.
+
+>
+> > While working on psci changes in the recent series I have posted, I
+> > was even considering adding a completely new cpuidle driver for psci
+> > (in drivers/cpuidle/*) and instead define a number of psci interface
+> > functions, which that driver could call. That would probably be a
+> > better split, but requires quite some changes.
+>
+> It can be done but with it the whole generic ARM CPUidle driver
+> infrastructure must go with it (and you will still have a standard wfi
+> state in the PSCI idle state array anyway).
+>
+> The idea behind ARM64 cpu_ops clashes a bit with this approach so
+> there is a discussion to be had here.
+
+I am open to discuss whatever suggestion there is on the table. But is
+there any? :-)
+
+>
+> > So, what do you want me to do with this?
+>
+> We need to answer the question above.
+
+So, at this point, I am not suggesting to re-design the cpuidle-arm
+driver into a psci cpuidle driver.
+
+Instead, my suggestion is according to what I propose in patch 4 and
+$subject patch, which means minor adjustments to be able to pass the
+struct cpuidle_driver * to the init functions. This, I need it for
+next steps, but already at this point it improves things as it avoids
+some of the OF parsing, and that's good, isn't it?
+
+>
+> Thanks,
+> Lorenzo
+>
+
+Thanks for you comments!
+
+Kind regards
+Uffe
