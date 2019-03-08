@@ -1,17 +1,17 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: RE: [PATCH 1/2] PM / Domains: Support enter deepest state for
- multiple states domains
-Date: Fri, 08 Mar 2019 01:01:21 +0900
-Message-ID: <7htvgeekry.fsf@baylibre.com>
-References: <1551878926-8455-1-git-send-email-aisheng.dong@nxp.com>
- <1551878926-8455-2-git-send-email-aisheng.dong@nxp.com>
- <CAPDyKFoMymoG1yUsA+aqZpYq-wNwuWQnA43kgb0SsY=p0JKgCQ@mail.gmail.com>
- <AM0PR04MB42119819041F85FC41510D9180730@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Fri, 8 Mar 2019 02:07:30 +0000
+Message-ID: <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
+ <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <AM0PR04MB42119819041F85FC41510D9180730@AM0PR04MB4211.eurprd04.prod.outlook.com>
+In-Reply-To: <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
+Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,143 +21,111 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Aisheng Dong <aisheng.dong@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Aisheng Dong <aisheng.dong@nxp.com> writes:
-
->> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
->> Sent: Wednesday, March 6, 2019 11:18 PM> 
->> On Wed, 6 Mar 2019 at 14:35, Aisheng Dong <aisheng.dong@nxp.com>
->> wrote:
->> >
->> > Currently the generic power domain will power off the domain if all
->> > devices in it have been stopped during system suspend.
->> >
->> > It is done by checking if the domain is active in
->> > genpd_sync_power_off, then disable it. However, for power domains
->> > supporting multiple low power states, it may have already entered an
->> > intermediate low power state by runtime PM before system suspend and
->> > the status is already GPD_STATE_POWER_OFF which results in then the
->> > power domain stay at an intermediate low power state during system
->> suspend.
->> > Then genpd_sync_power_off will keep it at the low power state instead
->> > of completely gate off it.
->> 
->> I agree that this could be a concern. However, before we look for a solution, do
->> you have practical use case where you observes this?
->> 
->
-> Yes, this solution[1] is used by NXP internally for former releases that we have two
-> Level states for power Domains[2].
-> We use state 0 (Low Power Mode with state retention) for device runtime pm support
-> and state 1 (power off with no state retention) for system suspend resume case.
->
-> Without [1], we will meet the issue that all domains runtime suspended will stay at
-> low power mode instead of power off during system suspend which consumes more power.
->
-> 1. https://source.codeaurora.org/external/imx/linux-imx/log/drivers/base/power?h=imx_4.14.78_1.0.0_ga
-> 2. https://source.codeaurora.org/external/imx/linux-imx/tree/drivers/soc/imx/pm-domains.c?h=imx_4.14.78_1.0.0_ga#n325
->
->> >
->> > Let's give the power domain a chance to switch to the deepest state in
->> > case it's already off but in an intermediate low power state.
->> >
->> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
->> > ---
->> >  drivers/base/power/domain.c | 18 +++++++++++++++++-
->> >  include/linux/pm_domain.h   |  1 +
->> >  2 files changed, 18 insertions(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> > index 61cd500..847a69e 100644
->> > --- a/drivers/base/power/domain.c
->> > +++ b/drivers/base/power/domain.c
->> > @@ -959,7 +959,17 @@ static void genpd_sync_power_off(struct
->> > generic_pm_domain *genpd, bool use_lock,  {
->> >         struct gpd_link *link;
->> >
->> > -       if (!genpd_status_on(genpd) || genpd_is_always_on(genpd))
->> > +       /*
->> > +        * Give the power domain a chance to switch to the deepest state
->> in
->> > +        * case it's already off but in an intermediate low power state.
->> > +        */
->> > +       genpd->state_idx_saved = genpd->state_idx;
->> > +
->> > +       if (genpd_is_always_on(genpd))
->> > +               return;
->> > +
->> > +       if (!genpd_status_on(genpd) &&
->> > +           genpd->state_idx == (genpd->state_count - 1))
->> >                 return;
->> 
->> This means that the ->power_off() callback may be called twice in a raw, for
->> the genpd in question and in cases of multiple idle states.
->> It could be a problem.
->> 
->> Well, currently it may not be a real issue, as I doubt there is rather few genpd
->> backend drivers supporting multiple idle states, but still.
->> 
->
-> So far, I've no idea what the problem could be as there's no multi states power domain
-> drivers in tree.
-
-A problem could arise if the drivers need to do something before they
-can switch from retention to OFF (e.g. save context).
-
-AFAICT without seeing the affected drivers in your solution, I can't
-tell if the drivers have an opportunity to save context to prepare for
-off-mode.
-
-> For IMX, there's no problem as the driver could handle it well.
-
-In that case, I guess you're assuming that system suspsend will always
-hit off-mode, so all your drivers always save context in their suspend
-callbacks?
-
-> The core code just provides an interface for driver to handle such requirement.
-
-I think we're up against a terminology problem/confusion since we added
-multiple states around what does "off" really mean.  For example, should
-"off" mean in the deepest, possible state, or does it mean idle in the
-last selected state?  
-
-Before we had multiple states, it always meant the former, and the code
-was built around the idea of really, truly off (zero volts, no
-retention.)  With multiple states, it's now a bit ambigious.  In this
-series, you're using it to mean both, which is part of the confusion.
-
-Stated differently, while we technically have support for mulitple
-states, in the core we still just have 2:
-
-enum gpd_status {
-    GPD_STATE_ACTIVE = 0,   /* PM domain is active */
-    GPD_STATE_POWER_OFF,    /* PM domain is off */
-};
-
-So bascially we have to make a decsion whether retention is _ACTIVE or
-_OFF.  This series is assuming it should be _OFF, but when we were
-adding multiple states, I had always assumed retention states would be
-considered _ACTIVE.  Yes, I know tha neither "active" nor "off"
-accurately defines retention, but since there is still voltage applied,
-it may not be active, but it's definitely not off.
-
-When we were adding multiple states, I had always imagined domains with
-multiple states would handle this kind of thing with a governor.
-Retention states whould leave the domain in GPD_STATE_ACTIVE, and the
-governor would then determine when to switch to the real off state.
-
-Note that this gets you more flexiblity than just switching to off in
-suspend.  You could also use the governor to let the domain switch to
-off based on other criteria such as long idle time, or QoS criteria.
-
-It seems you may be the first upstream solution to start really
-exercising the multiple states, so we may still have some kinks to work
-out, but thanks for pushing your changes upstream so we can work all
-this out together.
-
-Thanks,
-
-Kevin
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+PGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnE6jPUwjfI1SAxNzoxNQ0K
+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8c2hhd25ndW9A
+a2VybmVsLm9yZz4NCj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBr
+ZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2Vy
+bmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhhbmdA
+aW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+djJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsIHpvbmUgbm9kZQ0K
+PiANCj4gPj4+IFBTOiBJbiBvcmRlciB0byBrZWVwIGNvbnNpc3RlbmN5IHRvIHRoZSBmaXJzdCB0
+aGVybWFsLXpvbmUgbm9kZSwNCj4gPj4+IHRoZXJlIHdpbGwgYmUgIldBUk5JTkc6IGxpbmUgb3Zl
+ciA4MCBjaGFyYWN0ZXJzIiB3YXJuaW5ncy4NCj4gPj4+DQo+ID4+PiAgYXJjaC9hcm02NC9ib290
+L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaSB8ICAgNDMNCj4gPj4gKysrKysrKysrKysr
+KysrKysrKysrLS0NCj4gPj4+ICAxIGZpbGVzIGNoYW5nZWQsIDM5IGluc2VydGlvbnMoKyksIDQg
+ZGVsZXRpb25zKC0pDQo+ID4+Pg0KPiA+Pj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9k
+dHMvZnJlZXNjYWxlL2ZzbC1sczEwODhhLmR0c2kNCj4gPj4+IGIvYXJjaC9hcm02NC9ib290L2R0
+cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+Pj4gaW5kZXggNjYxMTM3Zi4uOWY1MmJj
+OSAxMDA2NDQNCj4gPj4+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1s
+czEwODhhLmR0c2kNCj4gPj4+ICsrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2Zz
+bC1sczEwODhhLmR0c2kNCj4gPj4+IEBAIC0xMjksMTkgKzEyOSwxOSBAQA0KPiA+Pj4gIAl9Ow0K
+PiA+Pj4NCj4gPj4+ICAJdGhlcm1hbC16b25lcyB7DQo+ID4+PiAtCQljcHVfdGhlcm1hbDogY3B1
+LXRoZXJtYWwgew0KPiA+Pj4gKwkJY2N1IHsNCj4gPj4NCj4gPj4gSXMgdGhpcyBjaGFuZ2UgcmVh
+bGx5IG5lY2Vzc2FyeT8gIFdoYXQgZG9lcyAnY2N1JyBzdGFuZCBmb3I/DQo+ID4gSSB0aGluayBz
+by4gY2N1IHN0YW5kcyBmb3IgY29yZSBjbHVzdGVyIHVuaXQuIGNwdSBpcyB0b28gZ2VuZXJhbC4N
+Cj4gPiBPbiBzb21lIHBsYXRmb3JtcywgdGhlcmUgYXJlIG1vcmUgdGhhbiBvbmUgY29yZSBjbHVz
+dGVycy4NCj4gPiBBdCBsZWFzdCB3ZSBzaG91bGQgY2hhbmdlIGl0IHRvICJjb3JlIGNsdXN0ZXIi
+IGlmIHNob3J0IGZvcm0gaXMgbm90IGFwcHJvcHJpYXRlLg0KPiANCj4gSWYgdGhlIHNlbnNvciBp
+cyBhIHRoZSBjbHVzdGVyIGxldmVsLCAnY2x1c3RlcicgaXMgZW5vdWdoLiBJTUhPLCBubyBuZWVk
+IHRvIGdpdmUgYQ0KPiBkZXNjcmlwdGlvbiBvZiB3aGF0IGNvbnRhaW5zIHRoZSBjbHVzdGVyLCBv
+dGhlcndpc2UgeW91IHdpbGwgZW5kIHVwIHdpdGggYQ0KPiAnY29yZS1ncHUtY2x1c3Rlci1sMicg
+bmFtZS4NCklmIGNsdXN0ZXIgaXMgc3BlY2lmaWMgdG8gY29yZSwgd2UgY2FuIHVzZSBjbHVzdGVy
+IGluc3RlYWQuIEJ1dCBJIGRvbid0IHRoaW5rIHNvLg0KQ2x1c3RlciBtYXkgcmVmZXIgdG8gImNv
+cmUgY2x1c3RlciIsICJHUFUgY2x1c3RlciIgZXRjLg0KU28sIEkgdGhpbmsgImNvcmUtY2x1c3Rl
+ciIgaXMgb2suDQpJZiBjb3JlIHdhcyBkaXZpZGVkIHRvIHNldmVyYWwgY2x1c3RlcnMsIHdlIGNh
+biBuYW1lIGl0IGFzICJjb3JlLWNsdXN0ZXIxIiwgImNvcmUtY2x1c3RlcjIiIGV0Yy4NCklmIEdQ
+VSB3YXMgZGl2aWRlZCB0byBzZXZlcmFsIGNsdXN0ZXJzIHdlIGNhbiBuYW1lIGl0IGFzICJncHUt
+Y2x1c3RlcjEiLCAiZ3B1LWNsdXN0ZXIyIiBldGMuIA0KDQpCUiwNCkFuZHkNCj4gDQo+ID4+DQo+
+ID4+PiAgCQkJcG9sbGluZy1kZWxheS1wYXNzaXZlID0gPDEwMDA+Ow0KPiA+Pj4gIAkJCXBvbGxp
+bmctZGVsYXkgPSA8NTAwMD47DQo+ID4+PiAgCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0bXUgMD47
+DQo+ID4+Pg0KPiA+Pj4gIAkJCXRyaXBzIHsNCj4gPj4+IC0JCQkJY3B1X2FsZXJ0OiBjcHUtYWxl
+cnQgew0KPiA+Pj4gKwkJCQljY3VfYWxlcnQ6IGNjdS1hbGVydCB7DQo+ID4+PiAgCQkJCQl0ZW1w
+ZXJhdHVyZSA9IDw4NTAwMD47DQo+ID4+PiAgCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+
+Pj4gIAkJCQkJdHlwZSA9ICJwYXNzaXZlIjsNCj4gPj4+ICAJCQkJfTsNCj4gPj4+DQo+ID4+PiAt
+CQkJCWNwdV9jcml0OiBjcHUtY3JpdCB7DQo+ID4+PiArCQkJCWNjdV9jcml0OiBjY3UtY3JpdCB7
+DQo+ID4+PiAgCQkJCQl0ZW1wZXJhdHVyZSA9IDw5NTAwMD47DQo+ID4+PiAgCQkJCQloeXN0ZXJl
+c2lzID0gPDIwMDA+Ow0KPiA+Pj4gIAkJCQkJdHlwZSA9ICJjcml0aWNhbCI7DQo+ID4+PiBAQCAt
+MTUwLDcgKzE1MCw0MiBAQA0KPiA+Pj4NCj4gPj4+ICAJCQljb29saW5nLW1hcHMgew0KPiA+Pj4g
+IAkJCQltYXAwIHsNCj4gPj4+IC0JCQkJCXRyaXAgPSA8JmNwdV9hbGVydD47DQo+ID4+PiArCQkJ
+CQl0cmlwID0gPCZjY3VfYWxlcnQ+Ow0KPiA+Pj4gKwkJCQkJY29vbGluZy1kZXZpY2UgPQ0KPiA+
+Pj4gKwkJCQkJCTwmY3B1MCBUSEVSTUFMX05PX0xJTUlUDQo+ID4+IFRIRVJNQUxfTk9fTElNSVQ+
+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1MSBUSEVSTUFMX05PX0xJTUlUDQo+ID4+IFRIRVJNQUxfTk9f
+TElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1MiBUSEVSTUFMX05PX0xJTUlUDQo+ID4+IFRIRVJN
+QUxfTk9fTElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUDQo+ID4+
+IFRIRVJNQUxfTk9fTElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1NCBUSEVSTUFMX05PX0xJTUlU
+DQo+ID4+IFRIRVJNQUxfTk9fTElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1NSBUSEVSTUFMX05P
+X0xJTUlUDQo+ID4+IFRIRVJNQUxfTk9fTElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1NiBUSEVS
+TUFMX05PX0xJTUlUDQo+ID4+IFRIRVJNQUxfTk9fTElNSVQ+LA0KPiA+Pj4gKwkJCQkJCTwmY3B1
+NyBUSEVSTUFMX05PX0xJTUlUDQo+ID4+IFRIRVJNQUxfTk9fTElNSVQ+Ow0KPiA+Pj4gKwkJCQl9
+Ow0KPiA+Pj4gKwkJCX07DQo+ID4+PiArCQl9Ow0KPiA+Pj4gKw0KPiA+Pj4gKwkJcGx0IHsNCj4g
+Pj4NCj4gPj4gV2hhdCBhYm91dCAncGxhdGZvcm0tdGhlcm1hbCcgZm9yIG5vZGUgbmFtZSwgcGxh
+dGZvcm0tYWxlcnQgYW5kDQo+ID4+IHBsYXRmb3JtLWNyaXQgZm9yIHRyaXAgbm9kZXMgYmVsb3c/
+DQo+ID4gT0ssIHdpbGwgdXNlIGxvbmcgbmFtZSBmb3JtLg0KPiA+DQo+ID4gQlIsDQo+ID4gQW5k
+eQ0KPiA+Pg0KPiA+PiBTaGF3bg0KPiA+Pg0KPiA+Pj4gKwkJCXBvbGxpbmctZGVsYXktcGFzc2l2
+ZSA9IDwxMDAwPjsNCj4gPj4+ICsJCQlwb2xsaW5nLWRlbGF5ID0gPDUwMDA+Ow0KPiA+Pj4gKwkJ
+CXRoZXJtYWwtc2Vuc29ycyA9IDwmdG11IDE+Ow0KPiA+Pj4gKw0KPiA+Pj4gKwkJCXRyaXBzIHsN
+Cj4gPj4+ICsJCQkJcGx0X2FsZXJ0OiBwbHQtYWxlcnQgew0KPiA+Pj4gKwkJCQkJdGVtcGVyYXR1
+cmUgPSA8ODUwMDA+Ow0KPiA+Pj4gKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsNCj4gPj4+ICsJ
+CQkJCXR5cGUgPSAicGFzc2l2ZSI7DQo+ID4+PiArCQkJCX07DQo+ID4+PiArDQo+ID4+PiArCQkJ
+CXBsdF9jcml0OiBwbHQtY3JpdCB7DQo+ID4+PiArCQkJCQl0ZW1wZXJhdHVyZSA9IDw5NTAwMD47
+DQo+ID4+PiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+Pj4gKwkJCQkJdHlwZSA9ICJj
+cml0aWNhbCI7DQo+ID4+PiArCQkJCX07DQo+ID4+PiArCQkJfTsNCj4gPj4+ICsNCj4gPj4+ICsJ
+CQljb29saW5nLW1hcHMgew0KPiA+Pj4gKwkJCQltYXAwIHsNCj4gPj4+ICsJCQkJCXRyaXAgPSA8
+JnBsdF9hbGVydD47DQo+ID4+PiAgCQkJCQljb29saW5nLWRldmljZSA9DQo+ID4+PiAgCQkJCQkJ
+PCZjcHUwIFRIRVJNQUxfTk9fTElNSVQNCj4gPj4gVEhFUk1BTF9OT19MSU1JVD4sDQo+ID4+PiAg
+CQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9fTElNSVQNCj4gPj4gVEhFUk1BTF9OT19MSU1JVD4sDQo+
+ID4+PiAtLQ0KPiA+Pj4gMS43LjENCj4gPj4+DQo+IA0KPiANCj4gLS0NCj4gDQo+IDxodHRwczov
+L2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYl
+MkZ3d3cubA0KPiBpbmFyby5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54
+cC5jb20lN0M1OTczODEwNWUyMw0KPiAyNDM2ZTBjODgwOGQ2YTJkZDU4M2IlN0M2ODZlYTFkM2Jj
+MmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzAlN0MwDQo+ICU3QzYzNjg3NTQ2ODg4MjEyMDM1NyZh
+bXA7c2RhdGE9anhZWFloYzNUYzQwN2ExMFdnT2NieUlYN09DbDFlU2NvSg0KPiBkZXV0WCUyQnRu
+ayUzRCZhbXA7cmVzZXJ2ZWQ9MD4gTGluYXJvLm9yZyCppiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBm
+b3INCj4gQVJNIFNvQ3MNCj4gDQo+IEZvbGxvdyBMaW5hcm86DQo+IDxodHRwczovL2VtZWEwMS5z
+YWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cuDQo+
+IGZhY2Vib29rLmNvbSUyRnBhZ2VzJTJGTGluYXJvJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
+bmclNDBueHAuYw0KPiBvbSU3QzU5NzM4MTA1ZTIzMjQzNmUwYzg4MDhkNmEyZGQ1ODNiJTdDNjg2
+ZWExZDNiYzJiNGM2ZmE5MmNkOTljNQ0KPiBjMzAxNjM1JTdDMCU3QzAlN0M2MzY4NzU0Njg4ODIx
+MjAzNTcmYW1wO3NkYXRhPXZpa0VtN1lyViUyRjhSdlENCj4gJTJGR3NYaDNPMzYxSFpSM1JxRGNk
+dnE0dVRnQjU4dyUzRCZhbXA7cmVzZXJ2ZWQ9MD4gRmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9lbWVh
+MDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGdHdp
+dHRlDQo+IHIuY29tJTJGJTIzISUyRmxpbmFyb29yZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50
+YW5nJTQwbnhwLmNvbSU3DQo+IEM1OTczODEwNWUyMzI0MzZlMGM4ODA4ZDZhMmRkNTgzYiU3QzY4
+NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNg0KPiAzNSU3QzAlN0MwJTdDNjM2ODc1NDY4ODgy
+MTIwMzU3JmFtcDtzZGF0YT1kQmRDZ0Zmc082dUZTJTJGTGw1bE5IDQo+IGFZQjJtT3JlZG05V2R0
+ZjFhV1Q4U2k4JTNEJmFtcDtyZXNlcnZlZD0wPiBUd2l0dGVyIHwNCj4gPGh0dHBzOi8vZW1lYTAx
+LnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy5s
+DQo+IGluYXJvLm9yZyUyRmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
+bmclNDBueHAuY29tJTcNCj4gQzU5NzM4MTA1ZTIzMjQzNmUwYzg4MDhkNmEyZGQ1ODNiJTdDNjg2
+ZWExZDNiYzJiNGM2ZmE5MmNkOTljNWMzMDE2DQo+IDM1JTdDMCU3QzAlN0M2MzY4NzU0Njg4ODIx
+MjAzNTcmYW1wO3NkYXRhPUZDYmRrYndkVVBWeUNqUGR4Y1U1VQ0KPiBnVWZGVlp6TUV4ZGFPcHNa
+RDNTQ21RJTNEJmFtcDtyZXNlcnZlZD0wPiBCbG9nDQoNCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cmxp
+bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFk
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
