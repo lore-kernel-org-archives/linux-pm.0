@@ -1,21 +1,21 @@
 From: pr-tracker-bot@kernel.org
-Subject: Re: [GIT PULL] Thermal-SoC management changes for v5.1-rc1
-Date: Fri, 08 Mar 2019 18:35:26 +0000
-Message-ID: <155207012695.7904.15535583986932491916.pr-tracker-bot@kernel.org>
-References: <20190306161207.GA7365@localhost.localdomain>
+Subject: Re: [GIT PULL] power-supply changes for 5.1
+Date: Fri, 08 Mar 2019 18:35:23 +0000
+Message-ID: <155207012351.7904.9110310174364226903.pr-tracker-bot@kernel.org>
+References: <20190305220447.e3rb3yu544kcix7m@earth.universe>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190306161207.GA7365@localhost.localdomain>
+In-Reply-To: <20190305220447.e3rb3yu544kcix7m@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The pull request you sent on Wed, 6 Mar 2019 08:12:09 -0800:
+The pull request you sent on Tue, 5 Mar 2019 23:04:47 +0100:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.1
 
 has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/9f24a81e2e5daf8820c8654afcd8512e797c41f2
+https://git.kernel.org/torvalds/c/1cabd3e0bd88d7ba9854cbb9213ef40eccad603b
 
 Thank you!
 
