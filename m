@@ -1,89 +1,112 @@
-From: Evan Green <evgreen@chromium.org>
-Subject: Re: [PATCH v1 1/2] interconnect: Add support for path tags
-Date: Fri, 8 Mar 2019 10:40:40 -0800
-Message-ID: <CAE=gft7uKN_EXqkuPvu+sSmJU69Le18yfqHcfmFApUHQyaBZ-Q@mail.gmail.com>
-References: <20190208172152.1807-1-georgi.djakov@linaro.org> <20190208172152.1807-2-georgi.djakov@linaro.org>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v6 0/3] Stingray thermal driver support
+Date: Fri, 8 Mar 2019 10:44:15 -0800
+Message-ID: <4b8324a6-1d02-983c-7d4c-d824b57d8675@gmail.com>
+References: <1546505734-24527-1-git-send-email-srinath.mannam@broadcom.com>
+ <a6113115-453c-4606-f99d-c79263d8f4bb@broadcom.com>
+ <20190205235811.GA19687@localhost.localdomain>
+ <CABe79T4bcNs9efLRt1OsTekT+9PHq837x0fngf0kGUdkC5mMsA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208172152.1807-2-georgi.djakov@linaro.org>
+In-Reply-To: <CABe79T4bcNs9efLRt1OsTekT+9PHq837x0fngf0kGUdkC5mMsA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: linux-pm@vger.kernel.org, daidavid1@codeaurora.org, Vincent Guittot <vincent.guittot@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, Doug Anderson <dianders@chromium.org>, Sean Sweeney <seansw@qti.qualcomm.com>, Michael Turquette <mturquette@baylibre.com>, Alexandre Bailon <abailon@baylibre.com>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, LKML <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>
+To: Srinath Mannam <srinath.mannam@broadcom.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Ray Jui <ray.jui@broadcom.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2019 at 9:21 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> Consumers may have use cases with different bandwidth requirements based
-> on the system or driver state. The consumer driver can append a specific
-> tag to the path and pass this information to the interconnect platform
-> driver to do the aggregation based on this state.
->
-> Introduce icc_set_tag() function that will allow the consumers to append
-> an optional tag to each path. The aggregation of these tagged paths is
-> platform specific.
->
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  drivers/interconnect/core.c           | 27 +++++++++++++++++++++++----
->  drivers/interconnect/qcom/sdm845.c    |  2 +-
->  include/linux/interconnect-provider.h |  4 ++--
->  include/linux/interconnect.h          |  5 +++++
->  4 files changed, 31 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-> index 6005a1c189f6..31eacd0f5349 100644
-> --- a/drivers/interconnect/core.c
-> +++ b/drivers/interconnect/core.c
-> @@ -42,10 +42,12 @@ struct icc_req {
->
->  /**
->   * struct icc_path - interconnect path structure
-> + * @tag: path tag (optional)
->   * @num_nodes: number of hops (nodes)
->   * @reqs: array of the requests applicable to this path of nodes
->   */
->  struct icc_path {
-> +       u32 tag;
->         size_t num_nodes;
->         struct icc_req reqs[];
->  };
-> @@ -206,7 +208,7 @@ static struct icc_path *path_find(struct device *dev, struct icc_node *src,
->   * implementing its own aggregate() function.
->   */
->
-> -static int aggregate_requests(struct icc_node *node)
-> +static int aggregate_requests(struct icc_node *node, u32 tag)
->  {
->         struct icc_provider *p = node->provider;
->         struct icc_req *r;
-> @@ -215,7 +217,7 @@ static int aggregate_requests(struct icc_node *node)
->         node->peak_bw = 0;
+On 2/14/19 8:20 PM, Srinath Mannam wrote:
+> Hi Eduardo,
+> 
+> Could you please provide your review comments?
 
-For my suggestion in patch 2, this is where you'd need the callback to
-reset the SLEEP/WAKE shadow aggregation buckets that the provider is
-keeping, since the core just reset the values here. I wonder if you'd
-want to pass the &node->avg_bw and &node->peak_bw in with this
-callback as well... not sure if that's useful. Something like:
+So it sounds like this driver was included in a pull request to Linus
+for 5.1 [1], although I did not see a response to that patch series,
+which would have helped synchronize the Device Tree changes and send
+them to Linus as well... I will see if the ARM SoC folks will accept a
+late request, most likely they would not.
 
-        if (p->begin_aggregation)
-                p->begin_aggregation(node);
+Eduardo, can you include replies to patches when you applies those to
+your tree that way we know whether/when to take the corresponding DTS
+changes? Thank you.
 
->
->         hlist_for_each_entry(r, &node->req_list, req_node)
-> -               p->aggregate(node, r->avg_bw, r->peak_bw,
-> +               p->aggregate(node, tag, r->avg_bw, r->peak_bw,
->                              &node->avg_bw, &node->peak_bw);
+[1]:
+https://git.kernel.org/torvalds/c/9f24a81e2e5daf8820c8654afcd8512e797c41f2
 
-Wait I'm confused. The tag is associated with a particular path. But
-now aren't you looping over all the other requests and coloring them
-with whatever tag this is? Don't you need to store the tag with the
-request, and then pass r->tag for each r rather than the tag from
-whichever request happened to initiate the re-aggregation?
+> 
+> Regards,
+> Srinath.
+> 
+> On Wed, Feb 6, 2019 at 5:28 AM Eduardo Valentin <edubezval@gmail.com> wrote:
+>>
+>> Hello,
+>>
+>> On Mon, Feb 04, 2019 at 04:16:19PM -0800, Ray Jui wrote:
+>>> Hi Zhang/Eduardo,
+>>>
+>>> Can this patch series be merged? It looks like Srinath has addressed all
+>>> review comments?
+>>
+>> I will take a look. Side note, thermal patches are reviewed on
+>> linux-pm@vger.kernel.org. Copying that list it does help because that
+>> is how the patches get assigned in patchwork.kernel.org.
+>>
+>>>
+>>> The following tag should be added to the binding document patch:
+>>>
+>>> Reviewed-by: Rob Herring <robh@kernel.org>
+>>>
+>>> Thanks,
+>>>
+>>> Ray
+>>>
+>>> On 1/3/2019 12:55 AM, Srinath Mannam wrote:
+>>>> These patches adds the stingray thermal driver and its
+>>>> corresponding DT nodes with documentation.
+>>>>
+>>>> Changes from v5
+>>>>   - Addressed Eduardo Valentin comments.
+>>>>
+>>>> Changes from v4
+>>>>   - Addressed Rob Herring comments on DT parameters and
+>>>>     thermal driver architecture.
+>>>>   - Removed brcm,max-crit-temp DT parameter
+>>>>   - Changed driver to thermal sensor registration model.
+>>>>   - Added trip DT properties.
+>>>>
+>>>> Changes from v3
+>>>>   - Addressed Daniel lezcano comments.
+>>>>   - Elaborated commit description of thermal driver patch.
+>>>>   - Added brcm,max-crit-temp DT parameter.
+>>>>
+>>>> Changes from v2:
+>>>>   - All stingray TMON DT nodes are combine together into single.
+>>>>     Temperature registers are combined into one mem resource.
+>>>>     brcm,tmon-mask parameter has available TMONs mask value.
+>>>>   - All available TMONs are initialized together in single
+>>>>     instance of driver probe call.
+>>>>
+>>>> Changes from v1:
+>>>>   - Fixed auto build sparce warning.
+>>>>
+>>>> Pramod Kumar (3):
+>>>>   dt-bindings: thermal: Add binding document for SR thermal
+>>>>   thermal: broadcom: Add Stingray thermal driver
+>>>>   arm64: dts: stingray: Add Stingray Thermal DT support.
+>>>>
+>>>>  .../bindings/thermal/brcm,sr-thermal.txt           | 105 ++++++++++++++++++
+>>>>  .../arm64/boot/dts/broadcom/stingray/stingray.dtsi |  89 +++++++++++++++
+>>>>  drivers/thermal/Kconfig                            |   3 +-
+>>>>  drivers/thermal/broadcom/Kconfig                   |   9 ++
+>>>>  drivers/thermal/broadcom/Makefile                  |   1 +
+>>>>  drivers/thermal/broadcom/sr-thermal.c              | 122 +++++++++++++++++++++
+>>>>  6 files changed, 328 insertions(+), 1 deletion(-)
+>>>>  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,sr-thermal.txt
+>>>>  create mode 100644 drivers/thermal/broadcom/sr-thermal.c
+>>>>
 
->
->         return 0;
-> @@ -396,6 +398,23 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
->  }
->  EXPORT_SYMBOL_GPL(of_icc_get);
->
+
+-- 
+Florian
