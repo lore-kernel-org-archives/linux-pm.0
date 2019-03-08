@@ -1,67 +1,49 @@
 From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH 1/2] cpufreq: armada-37xx: fix clock parenting
-Date: Fri,  8 Mar 2019 17:47:09 +0100
-Message-ID: <20190308164710.10597-2-gregory.clement@bootlin.com>
-References: <20190308164710.10597-1-gregory.clement@bootlin.com>
+Subject: [PATCH 0/2] Fix various issue on CPU freq for Armada 37xx
+Date: Fri,  8 Mar 2019 17:47:08 +0100
+Message-ID: <20190308164710.10597-1-gregory.clement@bootlin.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190308164710.10597-1-gregory.clement@bootlin.com>
-Sender: stable-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Christian Neubert <christian.neubert.86@gmail.com>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Christian Neubert <christian.neubert.86@gmail.com>
+Hello,
 
-The clock parenting was not setup properly when DVFS was enabled. It was
-expected that the same clock source was used with and without DVFS which
-was not the case.
+A few weeks ago an issue was reported on the cpufreq driver, in the
+meantime Christian Neubert got the same issue on a ambian kernel and
+proposed a patch to fix it.
 
-This patch fixes this issue, allowing to make the cpufreq support work
-when the CPU clock source are not the default ones.
+His fix seemed to address the issue seen, and I only added more context
+about what was done.
 
-Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-Cc: <stable@vger.kernel.org>
-[gregory: extract from a larger patch, modify comments and commit log]
-Signed-off-by: Christian Neubert <christian.neubert.86@gmail.com>
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
- drivers/cpufreq/armada-37xx-cpufreq.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+Christian also reported an other issue about the way the frequency was
+calculated. This issue is visible only when the default frequency was
+low (600MHz). Based on this I proposed to no more use the CPU
+frequency as base for the calculation but on the parent clock
+frequency
 
-diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-index 75491fc841a6..ad4463e4266e 100644
---- a/drivers/cpufreq/armada-37xx-cpufreq.c
-+++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-@@ -162,11 +162,25 @@ static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
- 	}
- 
- 	/*
--	 * Set cpu clock source, for all the level we keep the same
--	 * clock source that the one already configured. For this one
--	 * we need to use the clock framework
-+	 * Set CPU clock source, for all the level we keep the same
-+	 * clock source that the one already configured with DVS
-+	 * disabled. For this one we need to use the clock framework
- 	 */
- 	parent = clk_get_parent(clk);
-+
-+	/*
-+	 * Unset parent clock to force the clock framework setting again
-+	 * the clock parent
-+	 */
-+	clk_set_parent(clk, NULL);
-+
-+	/*
-+	 * For the Armada 37xx CPU clocks, setting the parent will
-+	 * actually configure the parent when DVFS is enabled. At
-+	 * hardware level it will be a different register from the one
-+	 * read when doing clk_get_parent that will be set with
-+	 * clk_set_parent.
-+	 */
- 	clk_set_parent(clk, parent);
- }
- 
+Gregory
+
+Christian Neubert (1):
+  cpufreq: armada-37xx: fix clock parenting
+
+Gregory CLEMENT (1):
+  cpufreq: armada-37xx: fix frequency calculation for opp
+
+ drivers/cpufreq/armada-37xx-cpufreq.c | 42 +++++++++++++++++++++++----
+ 1 file changed, 36 insertions(+), 6 deletions(-)
+
 -- 
 2.20.1
