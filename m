@@ -1,47 +1,133 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] PM / wakeup: Clear timer.function in wakeup_source_remove()
-Date: Fri,  8 Mar 2019 15:23:12 +0530
-Message-ID: <40efd56ec468837baabd062f1c0b2fb748a9fc5c.1552038717.git.viresh.kumar@linaro.org>
-References: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Fri, 8 Mar 2019 09:57:09 +0000
+Message-ID: <VI1PR04MB43338294C193D1AB4F577E92F34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
+ <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
+ <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sunzhaosheng@hisilicon.com, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-wakeup_source_activate() performs a check to see if the wakeup source is
-registered or not. It works fine for a newly added wakeup source which
-may not have been registered but fails to catch the case where a wakeup
-source is unregistered as the timer.function is still valid.
-
-Fix it by setting the timer.function to NULL from
-wakeup_source_remove().
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/wakeup.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 18333962e3da..3699faca24af 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -206,6 +206,13 @@ void wakeup_source_remove(struct wakeup_source *ws)
- 	synchronize_srcu(&wakeup_srcu);
- 
- 	del_timer_sync(&ws->timer);
-+
-+	/*
-+	 * Clear timer.function so that wakeup_source_not_registered() can
-+	 * detect an unregistered wakeup source.
-+	 */
-+	ws->timer.function = NULL;
-+
- }
- EXPORT_SYMBOL_GPL(wakeup_source_remove);
- 
--- 
-2.21.0.rc0.269.g1a574e7a288b
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+PGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnE6jPUwjjI1SAxNzoyOA0K
+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8c2hhd25ndW9A
+a2VybmVsLm9yZz4NCj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBr
+ZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2Vy
+bmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhhbmdA
+aW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+djJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsIHpvbmUgbm9kZQ0K
+PiANCj4gT24gMDgvMDMvMjAxOSAwMzowNywgQW5keSBUYW5nIHdyb3RlOg0KPiA+DQo+ID4NCj4g
+Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+PGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+ID4+IFNlbnQ6IDIwMTnE6jPUwjfI1SAxNzox
+NQ0KPiA+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8c2hh
+d25ndW9Aa2VybmVsLm9yZz4NCj4gPj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsg
+cm9iaCtkdEBrZXJuZWwub3JnOw0KPiA+PiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgbGludXgtYXJt
+LWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiA+PiBkZXZpY2V0cmVlQHZnZXIua2VybmVs
+Lm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPj4gbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9y
+ZSB0aGVybWFsDQo+ID4+IHpvbmUgbm9kZQ0KPiA+Pg0KPiA+Pj4+PiBQUzogSW4gb3JkZXIgdG8g
+a2VlcCBjb25zaXN0ZW5jeSB0byB0aGUgZmlyc3QgdGhlcm1hbC16b25lIG5vZGUsDQo+ID4+Pj4+
+IHRoZXJlIHdpbGwgYmUgIldBUk5JTkc6IGxpbmUgb3ZlciA4MCBjaGFyYWN0ZXJzIiB3YXJuaW5n
+cy4NCj4gPj4+Pj4NCj4gPj4+Pj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1s
+czEwODhhLmR0c2kgfCAgIDQzDQo+ID4+Pj4gKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPj4+
+Pj4gIDEgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4g
+Pj4+Pj4NCj4gPj4+Pj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxl
+L2ZzbC1sczEwODhhLmR0c2kNCj4gPj4+Pj4gYi9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2Fs
+ZS9mc2wtbHMxMDg4YS5kdHNpDQo+ID4+Pj4+IGluZGV4IDY2MTEzN2YuLjlmNTJiYzkgMTAwNjQ0
+DQo+ID4+Pj4+IC0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczEwODhh
+LmR0c2kNCj4gPj4+Pj4gKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxz
+MTA4OGEuZHRzaQ0KPiA+Pj4+PiBAQCAtMTI5LDE5ICsxMjksMTkgQEANCj4gPj4+Pj4gIAl9Ow0K
+PiA+Pj4+Pg0KPiA+Pj4+PiAgCXRoZXJtYWwtem9uZXMgew0KPiA+Pj4+PiAtCQljcHVfdGhlcm1h
+bDogY3B1LXRoZXJtYWwgew0KPiA+Pj4+PiArCQljY3Ugew0KPiA+Pj4+DQo+ID4+Pj4gSXMgdGhp
+cyBjaGFuZ2UgcmVhbGx5IG5lY2Vzc2FyeT8gIFdoYXQgZG9lcyAnY2N1JyBzdGFuZCBmb3I/DQo+
+ID4+PiBJIHRoaW5rIHNvLiBjY3Ugc3RhbmRzIGZvciBjb3JlIGNsdXN0ZXIgdW5pdC4gY3B1IGlz
+IHRvbyBnZW5lcmFsLg0KPiA+Pj4gT24gc29tZSBwbGF0Zm9ybXMsIHRoZXJlIGFyZSBtb3JlIHRo
+YW4gb25lIGNvcmUgY2x1c3RlcnMuDQo+ID4+PiBBdCBsZWFzdCB3ZSBzaG91bGQgY2hhbmdlIGl0
+IHRvICJjb3JlIGNsdXN0ZXIiIGlmIHNob3J0IGZvcm0gaXMgbm90DQo+IGFwcHJvcHJpYXRlLg0K
+PiA+Pg0KPiA+PiBJZiB0aGUgc2Vuc29yIGlzIGEgdGhlIGNsdXN0ZXIgbGV2ZWwsICdjbHVzdGVy
+JyBpcyBlbm91Z2guIElNSE8sIG5vDQo+ID4+IG5lZWQgdG8gZ2l2ZSBhIGRlc2NyaXB0aW9uIG9m
+IHdoYXQgY29udGFpbnMgdGhlIGNsdXN0ZXIsIG90aGVyd2lzZQ0KPiA+PiB5b3Ugd2lsbCBlbmQg
+dXAgd2l0aCBhICdjb3JlLWdwdS1jbHVzdGVyLWwyJyBuYW1lLg0KPiA+IElmIGNsdXN0ZXIgaXMg
+c3BlY2lmaWMgdG8gY29yZSwgd2UgY2FuIHVzZSBjbHVzdGVyIGluc3RlYWQuIEJ1dCBJIGRvbid0
+IHRoaW5rIHNvLg0KPiA+IENsdXN0ZXIgbWF5IHJlZmVyIHRvICJjb3JlIGNsdXN0ZXIiLCAiR1BV
+IGNsdXN0ZXIiIGV0Yy4NCj4gPiBTbywgSSB0aGluayAiY29yZS1jbHVzdGVyIiBpcyBvay4NCj4g
+PiBJZiBjb3JlIHdhcyBkaXZpZGVkIHRvIHNldmVyYWwgY2x1c3RlcnMsIHdlIGNhbiBuYW1lIGl0
+IGFzICJjb3JlLWNsdXN0ZXIxIiwNCj4gImNvcmUtY2x1c3RlcjIiIGV0Yy4NCj4gPiBJZiBHUFUg
+d2FzIGRpdmlkZWQgdG8gc2V2ZXJhbCBjbHVzdGVycyB3ZSBjYW4gbmFtZSBpdCBhcyAiZ3B1LWNs
+dXN0ZXIxIiwNCj4gImdwdS1jbHVzdGVyMiIgZXRjLg0KPiANCj4gDQo+IEhpIEFuZHksDQo+IA0K
+PiBJIHRoaW5rIHRoZXJlIGlzIGEgY29uZnVzaW9uIGFyb3VuZCB0aGUgJ2NwdScgdGVybSBhbmQg
+J2NsdXN0ZXInLg0KPiANCj4gQVJNIHdvdWxkIGxpa2UgdG8gc2VlIHRoZSAnY2x1c3Rlcicgd29y
+ZCB0byBkaXNhcHBlYXIsIHNvIHdoZW5ldmVyIHBvc3NpYmxlIHdlDQo+IHNob3VsZCBhdm9pZCBp
+dC4NCj4gDQo+IEZyb20gdGhlIGhhcmR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0
+byBkZXNjcmliZSB0aGUgcGh5c2ljYWwgY2hpcA0KPiBjb250YWluaW5nIHRoZSBjb3JlcytjYWNo
+ZS4NCj4gDQo+IEZyb20gdGhlIHNvZnR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0
+byBkZXNjcmliZSB0aGUgbG9naWNhbCBwcm9jZXNzDQo+IHVuaXQsIGFrYSBhIGNvcmUgb3IgYSBo
+eXBlci10aHJlYWQuDQo+IA0KPiBBcyB3ZSBhcmUgaW4gdGhlIERULCBzbyBkZXNjcmliaW5nIHRo
+ZSBoYXJkd2FyZSwgdGhlIENQVSByZWZlcnMgdG8gdGhlIGdyb3VwDQo+IGNvcmVzK2NhY2hlcy4N
+Cj4gDQo+IEZyb20gbXkgUE9WLCB1c2luZyAnY3B1JyBmb3IgdGhlIGdyb3VwIG9mIGNvcmVzIGFu
+ZCAnZ3B1JyBmb3IgdGhlIGdyYXBoaWMNCj4gc291bmRzIG9rLCBhbmQgc28gZmFyIHRoYXQgaXMg
+d2hhdCBpcyB1c2VkIGZvciB0aGUgb3RoZXIgcGxhdGZvcm1zLg0KPiANCj4gSWYgeW91IGNoYW5n
+ZSB0aGUgbmFtZSwgdGhhdCBtYXkgZ2l2ZSB0aGUgZmVlbGluZyB0aGVyZSBpcyBzb21ldGhpbmcg
+c3BlY2lhbA0KPiB3aXRoIHRob3NlIHRoZXJtYWwgem9uZXMuDQoNClRoYW5rcyBEYW5pZWwgZm9y
+IHlvdXIgZGV0YWlsZWQgZXhwbGFuYXRpb25zLg0KDQpCdXQgYXMgeW91IHNhaWQgJ0NQVScgaXMg
+dXN1YWxseSB1c2VkIHRvIGRlc2NyaWJlIHRoZSBwaHlzaWNhbCBjaGlwLg0KU28gaWYgd2UgbmFt
+ZSBpdCBhcyBDUFUsIGl0IHNvdW5kcyBsaWtlIHRoaXMgdGVtcGVyYXR1cmUgc2Vuc29yIGlzIG1v
+bml0b3JpbmcgdGhlIHdob2xlIGNoaXAuDQpUaGF0J3Mgbm90IHRydWUgaW4gb3VyIGNhc2UuDQoN
+ClRha2UgbHMyMDg4YSBmb3IgZXhhbXBsZToNCkluIGxzMjA4OGEgU29DLCB0aGVyZSBhcmUgNyB0
+ZW1wZXJhdHVyZSBzZW5zb3JzLiBQbGVhc2Ugbm90ZSB0aGF0IHRoZXkgYXJlIGFsbCBsb2NhdGVk
+IGluIFNvQy4NClRoZSBwbGFjZW1lbnQgb2YgdGhlIHRlbXBlcmF0dXJlIHNlbnNvcnMgYXJlIHNo
+b3dlZCBiZWxvdzoNCg0KU2Vuc29yIElECQlwbGFjZW1lbnQNCjEJCQlERFIgY29udHJvbGxlciAx
+DQoyCQkJRERSIGNvbnRyb2xsZXIgMg0KMwkJCUREUiBjb250cm9sbGVyIDMNCjQJCQljb3JlIGNs
+dXN0ZXIgMQ0KNSAJCQljb3JlIGNsdXN0ZXIgMg0KNiAJCQljb3JlIGNsdXN0ZXIgMw0KNyAJCQlj
+b3JlIGNsdXN0ZXIgNA0KDQpBcHBhcmVudGx5IHVzaW5nIENQVSBvciBDUFUtY2x1c3RlciBpcyBu
+b3QgYXBwcm9wcmlhdGUuIENvcmUtY2x1c3RlciBpcyBiZXR0ZXIuDQoNCldoYXQgZG8geW91IHRo
+aW5rPw0KDQpCUiwNCkFuZHkNCj4gDQo+IA0KPiANCj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6Ly9l
+bWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJG
+d3d3LmwNCj4gaW5hcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbmclNDBueHAu
+Y29tJTdDMDYxOWQyYzg3ZTUNCj4gYTQxMmQ4OGQxMDhkNmEzYTg2NTBlJTdDNjg2ZWExZDNiYzJi
+NGM2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMA0KPiAlN0M2MzY4NzYzNDA5Nzk1Mjc1MDMmYW1w
+O3NkYXRhPWpYZElLaENJd1B4bVRsbUtvVmU0aUhDcHZwTXhMVkZaDQo+IFViTEIzOWlUUlo4JTNE
+JmFtcDtyZXNlcnZlZD0wPiBMaW5hcm8ub3JnIKmmIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvcg0K
+PiBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVs
+aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy4NCj4gZmFj
+ZWJvb2suY29tJTJGcGFnZXMlMkZMaW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0
+MG54cC5jDQo+IG9tJTdDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFk
+M2JjMmI0YzZmYTkyY2Q5OWM1DQo+IGMzMDE2MzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUw
+MyZhbXA7c2RhdGE9eW5acnI0ZnJNUFhYd2VnUQ0KPiB3SjBrQVN4c0s4UWpoQ2ZCN09rMkQ1WjF5
+RWMlM0QmYW1wO3Jlc2VydmVkPTA+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVs
+aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aXR0ZQ0KPiBy
+LmNvbSUyRiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54
+cC5jb20lNw0KPiBDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFkM2Jj
+MmI0YzZmYTkyY2Q5OWM1YzMwMTYNCj4gMzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUwMyZh
+bXA7c2RhdGE9cVBRRk1wbnpoZ1lkUzFJWGJQMEZjDQo+IHdKb005cjVxMEwxQlg4SkxUS1dXbzgl
+M0QmYW1wO3Jlc2VydmVkPTA+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtz
+LnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3LmwNCj4gaW5hcm8u
+b3JnJTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54cC5j
+b20lNw0KPiBDMDYxOWQyYzg3ZTVhNDEyZDg4ZDEwOGQ2YTNhODY1MGUlN0M2ODZlYTFkM2JjMmI0
+YzZmYTkyY2Q5OWM1YzMwMTYNCj4gMzUlN0MwJTdDMCU3QzYzNjg3NjM0MDk3OTUyNzUwMyZhbXA7
+c2RhdGE9VTVIMFdjMmh3a0hFMG9LVEE2SA0KPiBWYlE0UWRFbUJmWiUyRkMlMkZIbDJpdDBiek5V
+JTNEJmFtcDtyZXNlcnZlZD0wPiBCbG9nDQoNCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
+bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
