@@ -1,86 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
-Date: Fri, 8 Mar 2019 10:28:12 +0100
-Message-ID: <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
-References: <20190304032111.21770-1-andy.tang@nxp.com>
- <20190304062115.GB26041@dragon>
- <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
- <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] PM / wakeup: Remove timer from wakeup_source_remove()
+Date: Fri,  8 Mar 2019 15:23:11 +0530
+Message-ID: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gbk"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andy Tang <andy.tang@nxp.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sunzhaosheng@hisilicon.com, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDgvMDMvMjAxOSAwMzowNywgQW5keSBUYW5nIHdyb3RlOgo+IAo+IAo+PiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQo+PiBGcm9tOiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9A
-bGluYXJvLm9yZz4KPj4gU2VudDogMjAxOcTqM9TCN8jVIDE3OjE1Cj4+IFRvOiBBbmR5IFRhbmcg
-PGFuZHkudGFuZ0BueHAuY29tPjsgU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJuZWwub3JnPgo+PiBD
-YzogTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsu
-cnV0bGFuZEBhcm0uY29tOwo+PiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7
-IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOwo+PiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwu
-b3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb207Cj4+IGVk
-dWJlenZhbEBnbWFpbC5jb20KPj4gU3ViamVjdDogUmU6IFtQQVRDSCB2Ml0gYXJtNjQ6IGR0czog
-bHMxMDg4YTogYWRkIG9uZSBtb3JlIHRoZXJtYWwgem9uZSBub2RlCj4+Cj4+Pj4+IFBTOiBJbiBv
-cmRlciB0byBrZWVwIGNvbnNpc3RlbmN5IHRvIHRoZSBmaXJzdCB0aGVybWFsLXpvbmUgbm9kZSwK
-Pj4+Pj4gdGhlcmUgd2lsbCBiZSAiV0FSTklORzogbGluZSBvdmVyIDgwIGNoYXJhY3RlcnMiIHdh
-cm5pbmdzLgo+Pj4+Pgo+Pj4+PiAgYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxz
-MTA4OGEuZHRzaSB8ICAgNDMKPj4+PiArKysrKysrKysrKysrKysrKysrKystLQo+Pj4+PiAgMSBm
-aWxlcyBjaGFuZ2VkLCAzOSBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+Pj4+Pgo+Pj4+
-PiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEu
-ZHRzaQo+Pj4+PiBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczEwODhhLmR0
-c2kKPj4+Pj4gaW5kZXggNjYxMTM3Zi4uOWY1MmJjOSAxMDA2NDQKPj4+Pj4gLS0tIGEvYXJjaC9h
-cm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQo+Pj4+PiArKysgYi9hcmNo
-L2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMxMDg4YS5kdHNpCj4+Pj4+IEBAIC0xMjks
-MTkgKzEyOSwxOSBAQAo+Pj4+PiAgCX07Cj4+Pj4+Cj4+Pj4+ICAJdGhlcm1hbC16b25lcyB7Cj4+
-Pj4+IC0JCWNwdV90aGVybWFsOiBjcHUtdGhlcm1hbCB7Cj4+Pj4+ICsJCWNjdSB7Cj4+Pj4KPj4+
-PiBJcyB0aGlzIGNoYW5nZSByZWFsbHkgbmVjZXNzYXJ5PyAgV2hhdCBkb2VzICdjY3UnIHN0YW5k
-IGZvcj8KPj4+IEkgdGhpbmsgc28uIGNjdSBzdGFuZHMgZm9yIGNvcmUgY2x1c3RlciB1bml0LiBj
-cHUgaXMgdG9vIGdlbmVyYWwuCj4+PiBPbiBzb21lIHBsYXRmb3JtcywgdGhlcmUgYXJlIG1vcmUg
-dGhhbiBvbmUgY29yZSBjbHVzdGVycy4KPj4+IEF0IGxlYXN0IHdlIHNob3VsZCBjaGFuZ2UgaXQg
-dG8gImNvcmUgY2x1c3RlciIgaWYgc2hvcnQgZm9ybSBpcyBub3QgYXBwcm9wcmlhdGUuCj4+Cj4+
-IElmIHRoZSBzZW5zb3IgaXMgYSB0aGUgY2x1c3RlciBsZXZlbCwgJ2NsdXN0ZXInIGlzIGVub3Vn
-aC4gSU1ITywgbm8gbmVlZCB0byBnaXZlIGEKPj4gZGVzY3JpcHRpb24gb2Ygd2hhdCBjb250YWlu
-cyB0aGUgY2x1c3Rlciwgb3RoZXJ3aXNlIHlvdSB3aWxsIGVuZCB1cCB3aXRoIGEKPj4gJ2NvcmUt
-Z3B1LWNsdXN0ZXItbDInIG5hbWUuCj4gSWYgY2x1c3RlciBpcyBzcGVjaWZpYyB0byBjb3JlLCB3
-ZSBjYW4gdXNlIGNsdXN0ZXIgaW5zdGVhZC4gQnV0IEkgZG9uJ3QgdGhpbmsgc28uCj4gQ2x1c3Rl
-ciBtYXkgcmVmZXIgdG8gImNvcmUgY2x1c3RlciIsICJHUFUgY2x1c3RlciIgZXRjLgo+IFNvLCBJ
-IHRoaW5rICJjb3JlLWNsdXN0ZXIiIGlzIG9rLgo+IElmIGNvcmUgd2FzIGRpdmlkZWQgdG8gc2V2
-ZXJhbCBjbHVzdGVycywgd2UgY2FuIG5hbWUgaXQgYXMgImNvcmUtY2x1c3RlcjEiLCAiY29yZS1j
-bHVzdGVyMiIgZXRjLgo+IElmIEdQVSB3YXMgZGl2aWRlZCB0byBzZXZlcmFsIGNsdXN0ZXJzIHdl
-IGNhbiBuYW1lIGl0IGFzICJncHUtY2x1c3RlcjEiLCAiZ3B1LWNsdXN0ZXIyIiBldGMuIAoKCkhp
-IEFuZHksCgpJIHRoaW5rIHRoZXJlIGlzIGEgY29uZnVzaW9uIGFyb3VuZCB0aGUgJ2NwdScgdGVy
-bSBhbmQgJ2NsdXN0ZXInLgoKQVJNIHdvdWxkIGxpa2UgdG8gc2VlIHRoZSAnY2x1c3Rlcicgd29y
-ZCB0byBkaXNhcHBlYXIsIHNvIHdoZW5ldmVyCnBvc3NpYmxlIHdlIHNob3VsZCBhdm9pZCBpdC4K
-CkZyb20gdGhlIGhhcmR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0byBkZXNjcmli
-ZSB0aGUgcGh5c2ljYWwKY2hpcCBjb250YWluaW5nIHRoZSBjb3JlcytjYWNoZS4KCkZyb20gdGhl
-IHNvZnR3YXJlIHNpZGUsICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0byBkZXNjcmliZSB0aGUgbG9n
-aWNhbApwcm9jZXNzIHVuaXQsIGFrYSBhIGNvcmUgb3IgYSBoeXBlci10aHJlYWQuCgpBcyB3ZSBh
-cmUgaW4gdGhlIERULCBzbyBkZXNjcmliaW5nIHRoZSBoYXJkd2FyZSwgdGhlIENQVSByZWZlcnMg
-dG8gdGhlCmdyb3VwIGNvcmVzK2NhY2hlcy4KCkZyb20gbXkgUE9WLCB1c2luZyAnY3B1JyBmb3Ig
-dGhlIGdyb3VwIG9mIGNvcmVzIGFuZCAnZ3B1JyBmb3IgdGhlCmdyYXBoaWMgc291bmRzIG9rLCBh
-bmQgc28gZmFyIHRoYXQgaXMgd2hhdCBpcyB1c2VkIGZvciB0aGUgb3RoZXIgcGxhdGZvcm1zLgoK
-SWYgeW91IGNoYW5nZSB0aGUgbmFtZSwgdGhhdCBtYXkgZ2l2ZSB0aGUgZmVlbGluZyB0aGVyZSBp
-cyBzb21ldGhpbmcKc3BlY2lhbCB3aXRoIHRob3NlIHRoZXJtYWwgem9uZXMuCgoKCgotLSAKIDxo
-dHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIKmmIE9wZW4gc291cmNlIHNvZnR3YXJl
-IGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9w
-YWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+
-IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1r
-ZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpo
-dHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJu
-ZWwK
+wakeup_source_remove() is the counterpart of wakeup_source_add() helper
+and must undo the initializations done by wakeup_source_add(). Currently
+the timer is initialized by wakeup_source_add() but removed from
+wakeup_source_drop(), which doesn't look logically correct. Also it
+should be okay to call wakeup_source_add() right after calling
+wakeup_source_remove(), and in that case we may end up calling
+timer_setup() for a potentially scheduled timer which is surely
+incorrect.
+
+Move the timer removal part to wakeup_source_remove() instead.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/wakeup.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index f1fee72ed970..18333962e3da 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -118,7 +118,6 @@ void wakeup_source_drop(struct wakeup_source *ws)
+ 	if (!ws)
+ 		return;
+ 
+-	del_timer_sync(&ws->timer);
+ 	__pm_relax(ws);
+ }
+ EXPORT_SYMBOL_GPL(wakeup_source_drop);
+@@ -205,6 +204,8 @@ void wakeup_source_remove(struct wakeup_source *ws)
+ 	list_del_rcu(&ws->entry);
+ 	raw_spin_unlock_irqrestore(&events_lock, flags);
+ 	synchronize_srcu(&wakeup_srcu);
++
++	del_timer_sync(&ws->timer);
+ }
+ EXPORT_SYMBOL_GPL(wakeup_source_remove);
+ 
+-- 
+2.21.0.rc0.269.g1a574e7a288b
