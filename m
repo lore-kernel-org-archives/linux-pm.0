@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH 04/10] x86, olpc: Use a correct version when making up a battery node
-Date: Sun, 10 Mar 2019 17:24:13 +0100
-Message-ID: <20190310162419.11861-5-lkundrak@v3.sk>
+Subject: [PATCH 08/10] power: supply: olpc_battery: Avoid using platform_info
+Date: Sun, 10 Mar 2019 17:24:17 +0100
+Message-ID: <20190310162419.11861-9-lkundrak@v3.sk>
 References: <20190310162419.11861-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -9,129 +9,93 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190310162419.11861-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-ambient temperature. We need to use a different compatible string for the
-XO-1.5 battery.
+This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
+n
+directly from the EC driver instead.
 
-Previously olpc_dt_fixup() used the presence od the battery node's
-compatible property to decide whether the DT is up to date. Now we need
-to look for a particular value in the compatible string, to decide
+This removes x86 specific bits that would prevent this driver from being
+used with the EC of ARM-based OLPC XO 1.75.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
 Changes since v5:
-- Split the "x86, olpc: Don't split string literals when fixing up the DT=
-"
-  and "x86, olpc: trivial code move in DT fixup" parts off from this
-- Clarify some comments
+- Turn new_proto into a bool
+
+Changes since v2:
+- Move the priv data allocation hunk from this patch to a proper place
 
 Changes since v1:
-- Avoid splitting string literals
+- Use uint8_t instead of unsigned char [1] for ecver
 
- arch/x86/platform/olpc/olpc_dt.c | 64 +++++++++++++++++++++++++-------
- 1 file changed, 50 insertions(+), 14 deletions(-)
+ drivers/power/supply/olpc_battery.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/ol=
-pc_dt.c
-index adf98b5623c0..1728f8992850 100644
---- a/arch/x86/platform/olpc/olpc_dt.c
-+++ b/arch/x86/platform/olpc/olpc_dt.c
-@@ -217,10 +217,28 @@ static u32 __init olpc_dt_get_board_revision(void)
- 	return be32_to_cpu(rev);
- }
+diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+index d83c77c2a0ec..8be44c717d85 100644
+--- a/drivers/power/supply/olpc_battery.c
++++ b/drivers/power/supply/olpc_battery.c
+@@ -57,6 +57,7 @@ struct olpc_battery_data {
+ 	struct power_supply *olpc_ac;
+ 	struct power_supply *olpc_bat;
+ 	char bat_serial[17];
++	bool new_proto;
+ };
 =20
-+int olpc_dt_compatible_match(phandle node, const char *compat)
-+{
-+	char buf[64];
-+	int plen;
-+	char *p;
-+	int len;
-+
-+	plen =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
-+	if (plen <=3D 0)
-+		return 0;
-+
-+	len =3D strlen(compat);
-+	for (p =3D buf; p < buf + plen; p +=3D strlen(p) + 1) {
-+		if (strcmp(p, compat) =3D=3D 0)
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- void __init olpc_dt_fixup(void)
+ /*********************************************************************
+@@ -100,7 +101,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
  {
--	int r;
--	char buf[64];
- 	phandle node;
- 	u32 board_rev;
+ static int olpc_bat_get_status(struct olpc_battery_data *data,
+ 		union power_supply_propval *val, uint8_t ec_byte)
+ {
+-	if (olpc_platform_info.ecver > 0x44) {
++	if (data->new_proto) {
+ 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
+ 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
+ 		else if (ec_byte & BAT_STAT_DISCHARGING)
+@@ -608,6 +609,7 @@ static int olpc_battery_probe(struct platform_device =
+*pdev)
+ 	struct power_supply_config psy_cfg =3D {};
+ 	struct olpc_battery_data *data;
+ 	uint8_t status;
++	uint8_t ecver;
+ 	int ret;
 =20
-@@ -228,22 +246,30 @@ void __init olpc_dt_fixup(void)
- 	if (!node)
- 		return;
+ 	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+@@ -615,13 +617,21 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
+ 		return -ENOMEM;
+ 	platform_set_drvdata(pdev, data);
 =20
 -	/*
--	 * If the battery node has a compatible property, we are running a new
--	 * enough firmware and don't have fixups to make.
+-	 * We've seen a number of EC protocol changes; this driver requires
+-	 * the latest EC protocol, supported by 0x44 and above.
 -	 */
--	r =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
--	if (r > 0)
--		return;
--
--	pr_info("PROM DT: Old firmware detected, applying fixes\n");
--
- 	board_rev =3D olpc_dt_get_board_revision();
- 	if (!board_rev)
- 		return;
+-	if (olpc_platform_info.ecver < 0x44) {
++	/* See if the EC is already there and get the EC revision */
++	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
++	if (ret)
++		return ret;
++
++	if (ecver > 0x44) {
++		/* XO 1 or 1.5 with a new EC firmware. */
++		data->new_proto =3D true;
++	} else if (ecver < 0x44) {
++		/*
++		 * We've seen a number of EC protocol changes; this driver
++		 * requires the latest EC protocol, supported by 0x44 and above.
++		 */
+ 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
+-			"battery driver.\n", olpc_platform_info.ecver);
++			"battery driver.\n", ecver);
+ 		return -ENXIO;
+ 	}
 =20
- 	if (board_rev >=3D olpc_board_pre(0xd0)) {
--		/* XO-1.5: add dcon device */
-+		/* XO-1.5 */
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1.5-battery"))
-+			return;
-+
-+		/* Add olpc,xo1.5-battery compatible marker to battery node */
-+		olpc_dt_interpret("\" /battery@0\" find-device");
-+		olpc_dt_interpret("  \" olpc,xo1.5-battery\" +compatible");
-+		olpc_dt_interpret("device-end");
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-+			/* If we have a olpc,xo1-battery compatible, then we're
-+			 * running a new enough firmware that already has
-+			 * the dcon node.
-+			 */
-+			return;
-+		}
-+
-+		/* Add dcon device */
- 		olpc_dt_interpret("\" /pci/display@1\" find-device");
- 		olpc_dt_interpret("  new-device");
- 		olpc_dt_interpret("    \" dcon\" device-name");
-@@ -251,7 +277,17 @@ void __init olpc_dt_fixup(void)
- 		olpc_dt_interpret("  finish-device");
- 		olpc_dt_interpret("device-end");
- 	} else {
--		/* XO-1: add dcon device, mark RTC as olpc,xo1-rtc */
-+		/* XO-1 */
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-+			/* If we have a olpc,xo1-battery compatible, then we're
-+			 * running a new enough firmware that already has
-+			 * the dcon and RTC nodes.
-+			 */
-+			return;
-+		}
-+
-+		/* Add dcon device, mark RTC as olpc,xo1-rtc */
- 		olpc_dt_interpret("\" /pci/display@1,1\" find-device");
- 		olpc_dt_interpret("  new-device");
- 		olpc_dt_interpret("    \" dcon\" device-name");
 --=20
 2.20.1
