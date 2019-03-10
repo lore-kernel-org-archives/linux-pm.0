@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH 07/10] power: supply: olpc_battery: Use devm_power_supply_register()
-Date: Sun, 10 Mar 2019 17:24:16 +0100
-Message-ID: <20190310162419.11861-8-lkundrak@v3.sk>
+Subject: [PATCH 05/10] power: supply: olpc_battery: Use DT to get battery version
+Date: Sun, 10 Mar 2019 17:24:14 +0100
+Message-ID: <20190310162419.11861-6-lkundrak@v3.sk>
 References: <20190310162419.11861-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -9,84 +9,73 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190310162419.11861-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Andy Shevchenko <andy.shevchenko@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-This simplifies the error handling.
+Avoid using the x86 OLPC platform specific call to get the board
+version. That wouldn't work on FDT-based ARM MMP2 platform.
+
+Add the XO 1.5 compatible string too. This is actually not completely
+necessary as the battery nodes on XO 1.5 claim to be compatible with
+"olpc,xo1-battery", but there are, in fact, differencies.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
-Changes since v1:
-- This was split off the "power: supply: olpc_battery: Move priv data to
-  a struct" patch.
+Changes since v5:
+- Use of_device_is_compatible() instead of
+  of_property_match_string("compatible")
 
- drivers/power/supply/olpc_battery.c | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+Changes since v2:
+- Clarify the XO 1 compatibility in the commit message.
+
+Changes since v1:
+- Sort the new include a bit higher
+
+ drivers/power/supply/olpc_battery.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index f7bb9bedd893..d83c77c2a0ec 100644
+index 5a97e42a3547..3dcf5e19f329 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -634,7 +634,7 @@ static int olpc_battery_probe(struct platform_device =
-*pdev)
- 	psy_cfg.of_node =3D pdev->dev.of_node;
- 	psy_cfg.drv_data =3D data;
-=20
--	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
-_cfg);
-+	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,=
- &psy_cfg);
- 	if (IS_ERR(data->olpc_ac))
- 		return PTR_ERR(data->olpc_ac);
-=20
-@@ -648,15 +648,13 @@ static int olpc_battery_probe(struct platform_devic=
+@@ -14,6 +14,7 @@
+ #include <linux/types.h>
+ #include <linux/err.h>
+ #include <linux/device.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/jiffies.h>
+@@ -622,11 +623,12 @@ static int olpc_battery_probe(struct platform_devic=
 e *pdev)
+ 	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
+ 	if (IS_ERR(olpc_ac))
+ 		return PTR_ERR(olpc_ac);
+-
+-	if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5 */
++	if (of_device_is_compatible(pdev->dev.of_node, "olpc,xo1.5-battery")) {
++		/* XO-1.5 */
+ 		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
+ 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo15_bat_props);
+-	} else { /* XO-1 */
++	} else {
++		/* XO-1 */
+ 		olpc_bat_desc.properties =3D olpc_xo1_bat_props;
  		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
  	}
-=20
--	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
-sy_cfg);
--	if (IS_ERR(data->olpc_bat)) {
--		ret =3D PTR_ERR(data->olpc_bat);
--		goto battery_failed;
--	}
-+	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
-c, &psy_cfg);
-+	if (IS_ERR(data->olpc_bat))
-+		return PTR_ERR(data->olpc_bat);
-=20
- 	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
- 	if (ret)
--		goto eeprom_failed;
-+		return ret;
-=20
- 	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	if (ret)
-@@ -671,10 +669,6 @@ static int olpc_battery_probe(struct platform_device=
+@@ -672,6 +674,7 @@ static int olpc_battery_remove(struct platform_device=
  *pdev)
 =20
- error_failed:
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--eeprom_failed:
--	power_supply_unregister(data->olpc_bat);
--battery_failed:
--	power_supply_unregister(data->olpc_ac);
- 	return ret;
- }
-=20
-@@ -684,9 +678,6 @@ static int olpc_battery_remove(struct platform_device=
- *pdev)
-=20
- 	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--	power_supply_unregister(data->olpc_bat);
--	power_supply_unregister(data->olpc_ac);
--
- 	return 0;
- }
-=20
+ static const struct of_device_id olpc_battery_ids[] =3D {
+ 	{ .compatible =3D "olpc,xo1-battery" },
++	{ .compatible =3D "olpc,xo1.5-battery" },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, olpc_battery_ids);
 --=20
 2.20.1
