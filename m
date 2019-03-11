@@ -1,102 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / wakeup: Drop wakeup_source_drop()
-Date: Mon, 11 Mar 2019 12:53:59 +0100
-Message-ID: <2820276.PxaWYKrF8K@aspire.rjw.lan>
+Subject: [PATCH] cpufreq: intel_pstate: Fix up iowait_boost computation
+Date: Mon, 11 Mar 2019 12:57:25 +0100
+Message-ID: <2396291.FVDonix7jd@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After commit d856f39ac1cc ("PM / wakeup: Rework wakeup source timer
-cancellation") wakeup_source_drop() is a trivial wrapper around
-__pm_relax() and it has no users except for wakeup_source_destroy()
-and wakeup_source_trash() which also has no users, so drop it along
-with the latter and make wakeup_source_destroy() call __pm_relax()
-directly.
+After commit b8bd1581aa61 ("cpufreq: intel_pstate: Rework iowait
+boosting to be less aggressive") the handling of the case when
+the SCHED_CPUFREQ_IOWAIT flag is set again after a few iterations of
+intel_pstate_update_util() is a bit inconsistent, because the
+new value of cpu->iowait_boost may be lower than ONE_EIGHTH_FP
+if it was set before, but has not dropped down to zero just yet.
 
+Fix that up by ensuring that the new value of cpu->iowait_boost
+will always be at least ONE_EIGHTH_FP then.
+
+Fixes: b8bd1581aa61 ("cpufreq: intel_pstate: Rework iowait boosting to be less aggressive")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/cpufreq/intel_pstate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Commit d856f39ac1cc is in the bleeding-edge branch of the linux-pm.git tree.
-
----
- drivers/base/power/wakeup.c |   18 +-----------------
- include/linux/pm_wakeup.h   |    9 ---------
- 2 files changed, 1 insertion(+), 26 deletions(-)
-
-Index: linux-pm/include/linux/pm_wakeup.h
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/include/linux/pm_wakeup.h
-+++ linux-pm/include/linux/pm_wakeup.h
-@@ -96,7 +96,6 @@ static inline void device_set_wakeup_pat
- /* drivers/base/power/wakeup.c */
- extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
- extern struct wakeup_source *wakeup_source_create(const char *name);
--extern void wakeup_source_drop(struct wakeup_source *ws);
- extern void wakeup_source_destroy(struct wakeup_source *ws);
- extern void wakeup_source_add(struct wakeup_source *ws);
- extern void wakeup_source_remove(struct wakeup_source *ws);
-@@ -134,8 +133,6 @@ static inline struct wakeup_source *wake
- 	return NULL;
- }
- 
--static inline void wakeup_source_drop(struct wakeup_source *ws) {}
--
- static inline void wakeup_source_destroy(struct wakeup_source *ws) {}
- 
- static inline void wakeup_source_add(struct wakeup_source *ws) {}
-@@ -204,12 +201,6 @@ static inline void wakeup_source_init(st
- 	wakeup_source_add(ws);
- }
- 
--static inline void wakeup_source_trash(struct wakeup_source *ws)
--{
--	wakeup_source_remove(ws);
--	wakeup_source_drop(ws);
--}
--
- static inline void __pm_wakeup_event(struct wakeup_source *ws, unsigned int msec)
- {
- 	return pm_wakeup_ws_event(ws, msec, false);
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -106,22 +106,6 @@ struct wakeup_source *wakeup_source_crea
- }
- EXPORT_SYMBOL_GPL(wakeup_source_create);
- 
--/**
-- * wakeup_source_drop - Prepare a struct wakeup_source object for destruction.
-- * @ws: Wakeup source to prepare for destruction.
-- *
-- * Callers must ensure that __pm_stay_awake() or __pm_wakeup_event() will never
-- * be run in parallel with this function for the same wakeup source object.
-- */
--void wakeup_source_drop(struct wakeup_source *ws)
--{
--	if (!ws)
--		return;
--
--	__pm_relax(ws);
--}
--EXPORT_SYMBOL_GPL(wakeup_source_drop);
--
- /*
-  * Record wakeup_source statistics being deleted into a dummy wakeup_source.
-  */
-@@ -161,7 +145,7 @@ void wakeup_source_destroy(struct wakeup
- 	if (!ws)
- 		return;
- 
--	wakeup_source_drop(ws);
-+	__pm_relax(ws);
- 	wakeup_source_record(ws);
- 	kfree_const(ws->name);
- 	kfree(ws);
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1806,7 +1806,7 @@ static void intel_pstate_update_util(str
+ 		/* Start over if the CPU may have been idle. */
+ 		if (delta_ns > TICK_NSEC) {
+ 			cpu->iowait_boost = ONE_EIGHTH_FP;
+-		} else if (cpu->iowait_boost) {
++		} else if (cpu->iowait_boost >= ONE_EIGHTH_FP) {
+ 			cpu->iowait_boost <<= 1;
+ 			if (cpu->iowait_boost > int_tofp(1))
+ 				cpu->iowait_boost = int_tofp(1);
