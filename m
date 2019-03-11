@@ -1,83 +1,88 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: armada-37xx: fix clock parenting
-Date: Mon, 11 Mar 2019 11:01:30 +0530
-Message-ID: <20190311053130.qrobxd2wn75nrgbf@vireshk-i7>
+Subject: Re: [PATCH 2/2] cpufreq: armada-37xx: fix frequency calculation for
+ opp
+Date: Mon, 11 Mar 2019 11:03:39 +0530
+Message-ID: <20190311053339.diahdwvp3fukpsvr@vireshk-i7>
 References: <20190308164710.10597-1-gregory.clement@bootlin.com>
- <20190308164710.10597-2-gregory.clement@bootlin.com>
+ <20190308164710.10597-3-gregory.clement@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190308164710.10597-2-gregory.clement@bootlin.com>
+In-Reply-To: <20190308164710.10597-3-gregory.clement@bootlin.com>
 Sender: stable-owner@vger.kernel.org
 To: Gregory CLEMENT <gregory.clement@bootlin.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On 08-03-19, 17:47, Gregory CLEMENT wrote:
-> From: Christian Neubert <christian.neubert.86@gmail.com>
+> The frequency calculation was based on the current(max) frequency of the
+> CPU. However for low frequency, the value used was already the parent
+> frequency divided by a factor of 2.
 > 
-> The clock parenting was not setup properly when DVFS was enabled. It was
-> expected that the same clock source was used with and without DVFS which
-> was not the case.
-> 
-> This patch fixes this issue, allowing to make the cpufreq support work
-> when the CPU clock source are not the default ones.
+> Instead of using this frequency, this fix directly get the frequency from
+> the parent clock.
 > 
 > Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
 > Cc: <stable@vger.kernel.org>
-> [gregory: extract from a larger patch, modify comments and commit log]
-> Signed-off-by: Christian Neubert <christian.neubert.86@gmail.com>
+> Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
 > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
 > ---
->  drivers/cpufreq/armada-37xx-cpufreq.c | 20 +++++++++++++++++---
->  1 file changed, 17 insertions(+), 3 deletions(-)
+>  drivers/cpufreq/armada-37xx-cpufreq.c | 22 +++++++++++++++++++---
+>  1 file changed, 19 insertions(+), 3 deletions(-)
 > 
 > diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> index 75491fc841a6..ad4463e4266e 100644
+> index ad4463e4266e..a0962463805e 100644
 > --- a/drivers/cpufreq/armada-37xx-cpufreq.c
 > +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> @@ -162,11 +162,25 @@ static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
+> @@ -373,11 +373,11 @@ static int __init armada37xx_cpufreq_driver_init(void)
+>  	struct armada_37xx_dvfs *dvfs;
+>  	struct platform_device *pdev;
+>  	unsigned long freq;
+> -	unsigned int cur_frequency;
+> +	unsigned int cur_frequency, base_frequency;
+>  	struct regmap *nb_pm_base, *avs_base;
+>  	struct device *cpu_dev;
+>  	int load_lvl, ret;
+> -	struct clk *clk;
+> +	struct clk *clk, *parent;
+>  
+>  	nb_pm_base =
+>  		syscon_regmap_lookup_by_compatible("marvell,armada-3700-nb-pm");
+> @@ -413,6 +413,22 @@ static int __init armada37xx_cpufreq_driver_init(void)
+>  		return PTR_ERR(clk);
 >  	}
 >  
->  	/*
-> -	 * Set cpu clock source, for all the level we keep the same
-> -	 * clock source that the one already configured. For this one
-> -	 * we need to use the clock framework
-> +	 * Set CPU clock source, for all the level we keep the same
-> +	 * clock source that the one already configured with DVS
-
-                                                             DVFS ?
-
-> +	 * disabled. For this one we need to use the clock framework
-
-Please add a full-stop (.) at the end.
-
->  	 */
->  	parent = clk_get_parent(clk);
+> +	parent = clk_get_parent(clk);
+> +	if (IS_ERR(parent)) {
+> +		dev_err(cpu_dev, "Cannot get parent clock for CPU0\n");
+> +		clk_put(clk);
+> +		return PTR_ERR(parent);
+> +	}
 > +
-> +	/*
-> +	 * Unset parent clock to force the clock framework setting again
-> +	 * the clock parent
-> +	 */
-> +	clk_set_parent(clk, NULL);
+> +	/* Get parent CPU frequency */
+> +	base_frequency =  clk_get_rate(parent);
 > +
-> +	/*
-> +	 * For the Armada 37xx CPU clocks, setting the parent will
-> +	 * actually configure the parent when DVFS is enabled. At
-> +	 * hardware level it will be a different register from the one
-> +	 * read when doing clk_get_parent that will be set with
-> +	 * clk_set_parent.
-> +	 */
->  	clk_set_parent(clk, parent);
->  }
+> +	if (!base_frequency) {
+> +		dev_err(cpu_dev, "Failed to get parent clock rate for CPU\n");
+> +		clk_put(clk);
+> +		return -EINVAL;
+> +	}
+> +
+>  	/* Get nominal (current) CPU frequency */
+>  	cur_frequency = clk_get_rate(clk);
+>  	if (!cur_frequency) {
+> @@ -445,7 +461,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+>  	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
+>  	     load_lvl++) {
+>  		unsigned long u_volt = avs_map[dvfs->avs[load_lvl]] * 1000;
+> -		freq = cur_frequency / dvfs->divider[load_lvl];
+> +		freq = base_frequency / dvfs->divider[load_lvl];
+>  		ret = dev_pm_opp_add(cpu_dev, freq, u_volt);
+>  		if (ret)
+>  			goto remove_opp;
 
-Maybe this should be done right from the clock driver instead? As cpufreq may or
-maynot be enabled by default (Surely most of the people will always enable it,
-but I am just trying to find the right place for doing this). The way we are
-setting the clock parent isn't that great, and looks a bit hacky just because of
-the way clock framework is. Maybe doing it directly, without getting clock
-framework in between, from the clock driver may look sane ?
+Great. I was wondering on why the top frequency was skipped :)
 
 -- 
 viresh
