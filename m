@@ -1,38 +1,81 @@
-From: Dave Young <dyoung@redhat.com>
-Subject: Re: [PATCH v2 3/8] kexec: export PG_offline to VMCOREINFO
-Date: Mon, 11 Mar 2019 18:04:38 +0800
-Message-ID: <20190311100438.GA12545@dhcp-128-65.nay.redhat.com>
-References: <20181122100627.5189-1-david@redhat.com>
- <20181122100627.5189-4-david@redhat.com>
- <20190311090402.GA12071@dhcp-128-65.nay.redhat.com>
- <d9e578c3-5ae6-5e82-a0a8-14c7e12c729f@redhat.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: [PATCH v5] PM / devfreq: Restart previous governor if new governor fails to start
+Date: Mon, 11 Mar 2019 15:36:30 +0530
+Message-ID: <20190311100630.12952-1-sibis@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d9e578c3-5ae6-5e82-a0a8-14c7e12c729f@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>, Lianbo Jiang <lijiang@redhat.com>, Borislav Petkov <bp@alien8.de>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, Saravana Kannan <skannan@codeaurora.org>, Sibi Sankar <sibis@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > The patch has been merged, would you mind to send a documentation patch
-> > for the vmcoreinfo, which is added recently in Documentation/kdump/vmcoreinfo.txt
-> > 
-> > A brief description about how this vmcoreinfo field is used is good to
-> > have.
-> > 
-> 
-> Turns out, it was already documented
-> 
-> PG_lru|PG_private|PG_swapcache|PG_swapbacked|PG_slab|PG_hwpoision
-> |PG_head_mask|PAGE_BUDDY_MAPCOUNT_VALUE(~PG_buddy)
-> |PAGE_OFFLINE_MAPCOUNT_VALUE(~PG_offline)
-> -----------------------------------------------------------------
-> 
-> Page attributes. These flags are used to filter various unnecessary for
-> dumping pages.
+From: Saravana Kannan <skannan@codeaurora.org>
 
-Good enough, just ignore the request!
+If the new governor fails to start, switch back to old governor so that the
+devfreq state is not left in some weird limbo.
 
-Thanks!
+[Mjungjoo: assume fatal on revert failure and set df->governor to NULL]
+Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+V5:
+* assume fatal on revert failure and set df->governor to NULL
+
+V4:
+* Removed prev_governor check.
+
+V3:
+* Fix NULL deref for real this time.
+* Addressed some style preferences.
+
+V2:
+* Fixed typo in commit text
+* Fixed potential NULL deref
+
+ drivers/devfreq/devfreq.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 428a1de81008..37490235ec34 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1124,7 +1124,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 	struct devfreq *df = to_devfreq(dev);
+ 	int ret;
+ 	char str_governor[DEVFREQ_NAME_LEN + 1];
+-	struct devfreq_governor *governor;
++	const struct devfreq_governor *governor, *prev_governor;
+ 
+ 	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+ 	if (ret != 1)
+@@ -1153,12 +1153,24 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 			goto out;
+ 		}
+ 	}
++	prev_governor = df->governor;
+ 	df->governor = governor;
+ 	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+ 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+-	if (ret)
++	if (ret) {
+ 		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+ 			 __func__, df->governor->name, ret);
++		df->governor = prev_governor;
++		strncpy(df->governor_name, prev_governor->name,
++			DEVFREQ_NAME_LEN);
++		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
++		if (ret) {
++			dev_warn(dev,
++				 "%s: reverting to Governor %s failed (%d)\n",
++				 __func__, df->governor_name, ret);
++			df->governor = NULL;
++		}
++	}
+ out:
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
