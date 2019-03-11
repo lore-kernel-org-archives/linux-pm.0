@@ -1,43 +1,32 @@
-From: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-Subject: RE: [PATCH v2] makedumpfile: exclude pages that are logically
- offline
-Date: Mon, 11 Mar 2019 16:40:30 +0000
-Message-ID: <4AE2DC15AC0B8543882A74EA0D43DBEC03569C9C@BPXM09GP.gisp.nec.co.jp>
-References: <20181122100627.5189-1-david@redhat.com>
- <20181122100938.5567-1-david@redhat.com>
- <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
- <7c9d6d5c-d6cf-00a7-7f23-bf28cbb382af@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 1/8] clk: samsung: add needed IDs for DMC clocks in
+  Exynos5420
+Date: Mon, 11 Mar 2019 17:06:50 -0500
+Message-ID: <20190311220650.GB4082@bogus>
+References: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
+ <CGME20190305101924eucas1p1147e3895a89a72c9db7d128d90dd3daa@eucas1p1.samsung.com>
+ <1551781151-5562-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7c9d6d5c-d6cf-00a7-7f23-bf28cbb382af@redhat.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1551781151-5562-2-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, kexec-ml <kexec@lists.infradead.org>, "pv-drivers@vmware.com" <pv-drivers@vmware.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gT24gMjcuMTEuMTggMTc6MzIsIEthenVoaXRv
-IEhhZ2lvIHdyb3RlOg0KPiA+PiBMaW51eCBtYXJrcyBwYWdlcyB0aGF0IGFyZSBsb2dpY2FsbHkg
-b2ZmbGluZSB2aWEgYSBwYWdlIGZsYWcgKG1hcCBjb3VudCkuDQo+ID4+IFN1Y2ggcGFnZXMgZS5n
-LiBpbmNsdWRlIHBhZ2VzIGluZmF0ZWQgYXMgcGFydCBvZiBhIGJhbGxvb24gZHJpdmVyIG9yDQo+
-ID4+IHBhZ2VzIHRoYXQgd2VyZSBub3QgYWN0dWFsbHkgb25saW5lZCB3aGVuIG9ubGluaW5nIHRo
-ZSB3aG9sZSBzZWN0aW9uLg0KPiA+Pg0KPiA+PiBXaGlsZSB0aGUgaHlwZXJ2aXNvciB1c3VhbGx5
-IGFsbG93cyB0byByZWFkIHN1Y2ggaW5mbGF0ZWQgbWVtb3J5LCB3ZQ0KPiA+PiBiYXNpY2FsbHkg
-cmVhZCBhbmQgZHVtcCBkYXRhIHRoYXQgaXMgY29tcGxldGVseSBpcnJlbGV2YW50LiBBbHNvLCB0
-aGlzDQo+ID4+IG1pZ2h0IHJlc3VsdCBpbiBxdWl0ZSBzb21lIG92ZXJoZWFkIGluIHRoZSBoeXBl
-cnZpc29yLiBJbiBhZGRpdGlvbiwNCj4gPj4gd2Ugc2F3IHNvbWUgcHJvYmxlbXMgdW5kZXIgSHlw
-ZXItViwgd2hlcmVieSB3ZSBjYW4gY3Jhc2ggdGhlIGtlcm5lbCBieQ0KPiA+PiBkdW1waW5nLCB3
-aGVuIHJlYWRpbmcgbWVtb3J5IG9mIGEgcGFydGlhbGx5IG9ubGluZWQgbWVtb3J5IHNlZ21lbnQN
-Cj4gPj4gKGZvciBtZW1vcnkgYWRkZWQgYnkgdGhlIEh5cGVyLVYgYmFsbG9vbiBkcml2ZXIpLg0K
-PiA+Pg0KPiA+PiBUaGVyZWZvcmUsIGRvbid0IHJlYWQgYW5kIGR1bXAgcGFnZXMgdGhhdCBhcmUg
-bWFya2VkIGFzIGJlaW5nIGxvZ2ljYWxseQ0KPiA+PiBvZmZsaW5lLg0KPiA+Pg0KPiA+PiBTaWdu
-ZWQtb2ZmLWJ5OiBEYXZpZCBIaWxkZW5icmFuZCA8ZGF2aWRAcmVkaGF0LmNvbT4NCj4gPg0KPiA+
-IFRoYW5rcyBmb3IgdGhlIHYyIHVwZGF0ZS4NCj4gPiBJJ20gZ29pbmcgdG8gbWVyZ2UgdGhpcyBw
-YXRjaCBhZnRlciB0aGUga2VybmVsIHBhdGNoZXMgYXJlIG1lcmdlZA0KPiA+IGFuZCBpdCB0ZXN0
-cyBmaW5lIHdpdGggdGhlIGtlcm5lbC4NCj4gPg0KPiA+IEthenUNCj4gDQo+IEhpIEthenUsDQo+
-IA0KPiB0aGUgcGF0Y2hlcyBhcmUgbm93IHVwc3RyZWFtLiBUaGFua3MhDQoNClRlc3RlZCBPSyBh
-dCBteSBlbmQsIHRvby4gQXBwbGllZCB0byB0aGUgZGV2ZWwgYnJhbmNoLg0KDQogICAgT2ZmbGlu
-ZSBwYWdlcyAgICAgICAgICAgOiAweDAwMDAwMDAwMDAwMDI0MDANCg0KVGhhbmsgeW91IQ0KS2F6
-dQ0KDQo+IA0KPiAtLQ0KPiANCj4gVGhhbmtzLA0KPiANCj4gRGF2aWQgLyBkaGlsZGVuYg0KDQo=
+On Tue,  5 Mar 2019 11:19:04 +0100, Lukasz Luba wrote:
+> Define new IDs for clocks used by Dynamic Memory Controller in
+> Exynos5422 SoC.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
+>  1 file changed, 17 insertions(+), 1 deletion(-)
+> 
+
+Please add Acked-by/Reviewed-by tags when posting new versions. However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for acks received on the version they apply.
+
+If a tag was not added on purpose, please state why and what changed.
