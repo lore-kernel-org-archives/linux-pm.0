@@ -1,88 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: armada-37xx: fix frequency calculation for
- opp
-Date: Mon, 11 Mar 2019 11:03:39 +0530
-Message-ID: <20190311053339.diahdwvp3fukpsvr@vireshk-i7>
-References: <20190308164710.10597-1-gregory.clement@bootlin.com>
- <20190308164710.10597-3-gregory.clement@bootlin.com>
+From: Dave Young <dyoung@redhat.com>
+Subject: Re: [PATCH v2 3/8] kexec: export PG_offline to VMCOREINFO
+Date: Mon, 11 Mar 2019 17:04:02 +0800
+Message-ID: <20190311090402.GA12071@dhcp-128-65.nay.redhat.com>
+References: <20181122100627.5189-1-david@redhat.com>
+ <20181122100627.5189-4-david@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190308164710.10597-3-gregory.clement@bootlin.com>
-Sender: stable-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+In-Reply-To: <20181122100627.5189-4-david@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>, Lianbo Jiang <lijiang@redhat.com>, Borislav Petkov <bp@alien8.de>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08-03-19, 17:47, Gregory CLEMENT wrote:
-> The frequency calculation was based on the current(max) frequency of the
-> CPU. However for low frequency, the value used was already the parent
-> frequency divided by a factor of 2.
+Hi David,
+On 11/22/18 at 11:06am, David Hildenbrand wrote:
+> Right now, pages inflated as part of a balloon driver will be dumped
+> by dump tools like makedumpfile. While XEN is able to check in the
+> crash kernel whether a certain pfn is actuall backed by memory in the
+> hypervisor (see xen_oldmem_pfn_is_ram) and optimize this case, dumps of
+> other balloon inflated memory will essentially result in zero pages getting
+> allocated by the hypervisor and the dump getting filled with this data.
 > 
-> Instead of using this frequency, this fix directly get the frequency from
-> the parent clock.
+> The allocation and reading of zero pages can directly be avoided if a
+> dumping tool could know which pages only contain stale information not to
+> be dumped.
 > 
-> Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-> Cc: <stable@vger.kernel.org>
-> Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+> We now have PG_offline which can be (and already is by virtio-balloon)
+> used for marking pages as logically offline. Follow up patches will
+> make use of this flag also in other balloon implementations.
+> 
+> Let's export PG_offline via PAGE_OFFLINE_MAPCOUNT_VALUE, so
+> makedumpfile can directly skip pages that are logically offline and the
+> content therefore stale. (we export is as a macro to match how it is
+> done for PG_buddy. This way it is clearer that this is not actually a flag
+> but only a very specific mapcount value to represent page types).
+> 
+> Please note that this is also helpful for a problem we were seeing under
+> Hyper-V: Dumping logically offline memory (pages kept fake offline while
+> onlining a section via online_page_callback) would under some condicions
+> result in a kernel panic when dumping them.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Dave Young <dyoung@redhat.com>
+> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> Cc: Baoquan He <bhe@redhat.com>
+> Cc: Omar Sandoval <osandov@fb.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Matthew Wilcox <willy@infradead.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Lianbo Jiang <lijiang@redhat.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Acked-by: Michael S. Tsirkin <mst@redhat.com>
+> Acked-by: Dave Young <dyoung@redhat.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 > ---
->  drivers/cpufreq/armada-37xx-cpufreq.c | 22 +++++++++++++++++++---
->  1 file changed, 19 insertions(+), 3 deletions(-)
+>  kernel/crash_core.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> index ad4463e4266e..a0962463805e 100644
-> --- a/drivers/cpufreq/armada-37xx-cpufreq.c
-> +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> @@ -373,11 +373,11 @@ static int __init armada37xx_cpufreq_driver_init(void)
->  	struct armada_37xx_dvfs *dvfs;
->  	struct platform_device *pdev;
->  	unsigned long freq;
-> -	unsigned int cur_frequency;
-> +	unsigned int cur_frequency, base_frequency;
->  	struct regmap *nb_pm_base, *avs_base;
->  	struct device *cpu_dev;
->  	int load_lvl, ret;
-> -	struct clk *clk;
-> +	struct clk *clk, *parent;
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 933cb3e45b98..093c9f917ed0 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -464,6 +464,8 @@ static int __init crash_save_vmcoreinfo_init(void)
+>  	VMCOREINFO_NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE);
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  	VMCOREINFO_NUMBER(HUGETLB_PAGE_DTOR);
+> +#define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
+> +	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
+>  #endif
 >  
->  	nb_pm_base =
->  		syscon_regmap_lookup_by_compatible("marvell,armada-3700-nb-pm");
-> @@ -413,6 +413,22 @@ static int __init armada37xx_cpufreq_driver_init(void)
->  		return PTR_ERR(clk);
->  	}
->  
-> +	parent = clk_get_parent(clk);
-> +	if (IS_ERR(parent)) {
-> +		dev_err(cpu_dev, "Cannot get parent clock for CPU0\n");
-> +		clk_put(clk);
-> +		return PTR_ERR(parent);
-> +	}
-> +
-> +	/* Get parent CPU frequency */
-> +	base_frequency =  clk_get_rate(parent);
-> +
-> +	if (!base_frequency) {
-> +		dev_err(cpu_dev, "Failed to get parent clock rate for CPU\n");
-> +		clk_put(clk);
-> +		return -EINVAL;
-> +	}
-> +
->  	/* Get nominal (current) CPU frequency */
->  	cur_frequency = clk_get_rate(clk);
->  	if (!cur_frequency) {
-> @@ -445,7 +461,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
->  	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
->  	     load_lvl++) {
->  		unsigned long u_volt = avs_map[dvfs->avs[load_lvl]] * 1000;
-> -		freq = cur_frequency / dvfs->divider[load_lvl];
-> +		freq = base_frequency / dvfs->divider[load_lvl];
->  		ret = dev_pm_opp_add(cpu_dev, freq, u_volt);
->  		if (ret)
->  			goto remove_opp;
+>  	arch_crash_save_vmcoreinfo();
 
-Great. I was wondering on why the top frequency was skipped :)
+The patch has been merged, would you mind to send a documentation patch
+for the vmcoreinfo, which is added recently in Documentation/kdump/vmcoreinfo.txt
 
--- 
-viresh
+A brief description about how this vmcoreinfo field is used is good to
+have.
+
+Thanks
+Dave
