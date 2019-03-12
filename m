@@ -1,43 +1,89 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] PM / Domains: A few clean up and minor fixes
-Date: Tue, 12 Mar 2019 10:38:15 +0100
-Message-ID: <3110829.dntMgzSNtC@aspire.rjw.lan>
-References: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Runtime: Consolidate code to get
+ active/suspended time
+Date: Tue, 12 Mar 2019 10:59:30 +0100
+Message-ID: <CAPDyKFpOgbuK_0GcgpM52HR0bCtMAkaXgmo3bNjhubY2FNZPPQ@mail.gmail.com>
+References: <20190305125526.21360-1-ulf.hansson@linaro.org> <1896578.0Ev3Nro9jJ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1551878302-8146-1-git-send-email-aisheng.dong@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Aisheng Dong <aisheng.dong@nxp.com>
-Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1896578.0Ev3Nro9jJ@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 6, 2019 2:25:08 PM CET Aisheng Dong wrote:
-> A few clean up and minor fixes
-> 
-> Dong Aisheng (6):
->   PM / Domains: Improve warn for multiple states but no governor in
->     genpd
->   PM / Domains: Return for all error cases in _genpd_power_off
->   PM / Domains: Remove the unnecessary ->power_off() check in
->     genpd_power_off
->   PM / Domains: Move the Subdomain check into _genpd_power_off
->   PM / QoS: Fix a typo in file description
->   PM / domains: Remove one unnecessary blank line
-> 
->  drivers/base/power/domain.c          | 44 ++++++++++++++++--------------------
->  drivers/base/power/domain_governor.c |  1 -
->  drivers/base/power/qos.c             |  2 +-
->  3 files changed, 21 insertions(+), 26 deletions(-)
+On Mon, 11 Mar 2019 at 13:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Tuesday, March 5, 2019 1:55:26 PM CET Ulf Hansson wrote:
+> > In a step to consolidate code around fetching the runtime PM active/suspend
+> > time for a device, let's re-factor the existing pm_runtime_suspended_time()
+> > and add a new corresponding pm_runtime_active_time(). Make the latter
+> > shared internally to the PM core, as in following changes it starts making
+> > use of it.
+> >
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/base/power/power.h   |  1 +
+> >  drivers/base/power/runtime.c | 14 ++++++++++++--
+> >  2 files changed, 13 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+> > index c511def48b48..ec33fbdb919b 100644
+> > --- a/drivers/base/power/power.h
+> > +++ b/drivers/base/power/power.h
+> > @@ -21,6 +21,7 @@ static inline void pm_runtime_early_init(struct device *dev)
+> >  extern void pm_runtime_init(struct device *dev);
+> >  extern void pm_runtime_reinit(struct device *dev);
+> >  extern void pm_runtime_remove(struct device *dev);
+> > +extern u64 pm_runtime_active_time(struct device *dev);
+> >
+> >  #define WAKE_IRQ_DEDICATED_ALLOCATED BIT(0)
+> >  #define WAKE_IRQ_DEDICATED_MANAGED   BIT(1)
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 78937c45278c..d1908fc422cc 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -98,7 +98,7 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+> >       dev->power.runtime_status = status;
+> >  }
+> >
+> > -u64 pm_runtime_suspended_time(struct device *dev)
+> > +static u64 rpm_account_time(struct device *dev, bool suspend)
+> >  {
+> >       u64 time;
+> >       unsigned long flags;
+> > @@ -106,12 +106,22 @@ u64 pm_runtime_suspended_time(struct device *dev)
+> >       spin_lock_irqsave(&dev->power.lock, flags);
+> >
+> >       update_pm_runtime_accounting(dev);
+> > -     time = dev->power.suspended_time;
+> > +     time = suspend ? dev->power.suspended_time : dev->power.active_time;
+> >
+> >       spin_unlock_irqrestore(&dev->power.lock, flags);
+> >
+> >       return time;
+> >  }
+> > +
+> > +u64 pm_runtime_active_time(struct device *dev)
+> > +{
+> > +     return rpm_account_time(dev, false);
+> > +}
+> > +
+> > +u64 pm_runtime_suspended_time(struct device *dev)
+> > +{
+> > +     return rpm_account_time(dev, true);
+> > +}
+> >  EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
+> >
+> >  /**
+> >
+>
+> Both [1-2/2] applied with some manual changes (please see linux-next
+> tomorrow).
+>
 
-I've applied patches [1-2/6] (with tags from Ulf) and [5-6/6] from this series
-and I'm expecting an update to replace patches [3-4/6].
+Looks good, thanks!
+
+Kind regards
+Uffe
