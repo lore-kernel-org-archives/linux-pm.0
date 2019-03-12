@@ -1,77 +1,68 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] PM / wakeup: Remove timer from wakeup_source_remove()
-Date: Tue, 12 Mar 2019 10:04:30 +0100
-Message-ID: <20190312090430.GA28905@amd>
-References: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
- <3100371.t8xxUOTPUa@aspire.rjw.lan>
- <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v5 1/8] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Tue, 12 Mar 2019 10:18:14 +0100
+Message-ID: <a8eafa27-1dc5-f4cf-9c1d-b4cbce80ec62@partner.samsung.com>
+References: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190305101924eucas1p1147e3895a89a72c9db7d128d90dd3daa@eucas1p1.samsung.com>
+        <1551781151-5562-2-git-send-email-l.luba@partner.samsung.com>
+        <20190311220650.GB4082@bogus>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
+In-Reply-To: <20190311220650.GB4082@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sunzhaosheng@hisilicon.com, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rob,
 
---VS++wcV0S1rZb1Fb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 3/11/19 11:06 PM, Rob Herring wrote:
+> On Tue,  5 Mar 2019 11:19:04 +0100, Lukasz Luba wrote:
+>> Define new IDs for clocks used by Dynamic Memory Controller in
+>> Exynos5422 SoC.
+>>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>> ---
+>>   include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
+>>   1 file changed, 17 insertions(+), 1 deletion(-)
+>>
+> 
+> Please add Acked-by/Reviewed-by tags when posting new versions. However,
+> there's no need to repost patches *only* to add the tags. The upstream
+> maintainer will do that for acks received on the version they apply.
+> 
+> If a tag was not added on purpose, please state why and what changed.
+I have skipped your ACK because of the hack which is implemented in v5
+clocks. Chanwoo refused the driver code because it uses 2 registers from
+the clock register set without Common Clock Framework API.
+He said that he will not accept this code and I have to figure out new
+approach using CCF.
+Thus, I have modeled these two registers as 'gates', but these registers
+are for Dynamic Memory Controller PAUSE feature (which stops
+transactions) and the other is for switching between
+two set of registers with timings for the LPDDR3 memory (normal
+operation and alternative clock source operation aka 'bypass').
+These registers should be (in my opinion) in the DMC registers and not
+in the clocks.
 
-On Tue 2019-03-12 08:58:02, Viresh Kumar wrote:
-> On 11-03-19, 13:05, Rafael J. Wysocki wrote:
-> > On Friday, March 8, 2019 10:53:11 AM CET Viresh Kumar wrote:
-> > > wakeup_source_remove() is the counterpart of wakeup_source_add() help=
-er
-> > > and must undo the initializations done by wakeup_source_add(). Curren=
-tly
-> > > the timer is initialized by wakeup_source_add() but removed from
-> > > wakeup_source_drop(), which doesn't look logically correct. Also it
-> > > should be okay to call wakeup_source_add() right after calling
-> > > wakeup_source_remove(), and in that case we may end up calling
-> > > timer_setup() for a potentially scheduled timer which is surely
-> > > incorrect.
-> > >=20
-> > > Move the timer removal part to wakeup_source_remove() instead.
+Sylwester pointed out offline that it could be done using regmap.
+These are the problematic clocks added in v5:
++#define CLK_CDREX_PAUSE		531
++#define CLK_CDREX_TIMING_SET	532
 
-> >=20
-> > I've merged it with the [2/2], rewritten the subject and changelog and
-> > queued the result as commit d856f39ac1cc ("PM / wakeup: Rework wakeup
-> > source timer cancellation").
->=20
-> Okay, thanks. We (Android guys) want this to be backported into 4.4+
-> kernels via the stable tree. Can we mark this for stable in the commit
-> itself ? Else I would be required to send this separately for all the
-> kernels. I should have marked it for stable initially though, sorry
-> about forgetting then.
+I have mentioned about it in the cover letter, but you are right I could
+also add a comment for this particular patch that I have skipped your
+ACK.
+Thank you for sharing the information about the process.
+I will keep it in mind next time and will add a comment below the commit
+message for a particular patch and explicit information in cover letter
+that I am not including an ACK.
 
-Greg is normally pretty agressive about backporting everything
-remotely looking like a fix...
-
-But better changelog would help. How is the bug actually affecting
-users?
-
-Best regards,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---VS++wcV0S1rZb1Fb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlyHdh4ACgkQMOfwapXb+vJ2DQCfeIWIJeroQm4LfPM3u2gQrOpD
-mYMAoIWzIxYGUBarjk7KX845DqhcO8Gw
-=Yb7p
------END PGP SIGNATURE-----
-
---VS++wcV0S1rZb1Fb--
+Regards,
+Lukasz
+> 
+> 
