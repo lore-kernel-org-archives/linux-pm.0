@@ -1,58 +1,69 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v5] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Tue, 12 Mar 2019 16:17:14 +0900
-Message-ID: <20190312071714epcms1p20e78a537f8cb0d7d04e4fd077916fd51@epcms1p2>
-References: <20190311100630.12952-1-sibis@codeaurora.org>
-        <CGME20190311100759epcas5p41fc634cd67a99b39cd25c4129e489c4c@epcms1p2>
-Reply-To: myungjoo.ham@samsung.com
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] PM / wakeup: Remove timer from wakeup_source_remove()
+Date: Tue, 12 Mar 2019 10:03:13 +0100
+Message-ID: <CAJZ5v0iP5Gv2i36qUx9NFJ4YjrcsvGiwu0gO7i79L0K2LOQZzA@mail.gmail.com>
+References: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
+ <3100371.t8xxUOTPUa@aspire.rjw.lan> <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190311100630.12952-1-sibis@codeaurora.org>
+In-Reply-To: <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Sibi Sankar <sibis@codeaurora.org>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm-owner@vger.kernel.org" <linux-arm-msm-owner@vger.kernel.org>, Saravana Kannan <skannan@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Zhaosheng Sun <sunzhaosheng@hisilicon.com>, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
->From: Saravana Kannan <skannan@codeaurora.org>
+On Tue, Mar 12, 2019 at 4:28 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
->If the new governor fails to start, switch back to old governor so that the
->devfreq state is not left in some weird limbo.
+> On 11-03-19, 13:05, Rafael J. Wysocki wrote:
+> > On Friday, March 8, 2019 10:53:11 AM CET Viresh Kumar wrote:
+> > > wakeup_source_remove() is the counterpart of wakeup_source_add() helper
+> > > and must undo the initializations done by wakeup_source_add(). Currently
+> > > the timer is initialized by wakeup_source_add() but removed from
+> > > wakeup_source_drop(), which doesn't look logically correct. Also it
+> > > should be okay to call wakeup_source_add() right after calling
+> > > wakeup_source_remove(), and in that case we may end up calling
+> > > timer_setup() for a potentially scheduled timer which is surely
+> > > incorrect.
+> > >
+> > > Move the timer removal part to wakeup_source_remove() instead.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > >  drivers/base/power/wakeup.c | 3 ++-
+> > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> > > index f1fee72ed970..18333962e3da 100644
+> > > --- a/drivers/base/power/wakeup.c
+> > > +++ b/drivers/base/power/wakeup.c
+> > > @@ -118,7 +118,6 @@ void wakeup_source_drop(struct wakeup_source *ws)
+> > >     if (!ws)
+> > >             return;
+> > >
+> > > -   del_timer_sync(&ws->timer);
+> > >     __pm_relax(ws);
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(wakeup_source_drop);
+> > > @@ -205,6 +204,8 @@ void wakeup_source_remove(struct wakeup_source *ws)
+> > >     list_del_rcu(&ws->entry);
+> > >     raw_spin_unlock_irqrestore(&events_lock, flags);
+> > >     synchronize_srcu(&wakeup_srcu);
+> > > +
+> > > +   del_timer_sync(&ws->timer);
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(wakeup_source_remove);
+> > >
+> > >
+> >
+> > I've merged it with the [2/2], rewritten the subject and changelog and
+> > queued the result as commit d856f39ac1cc ("PM / wakeup: Rework wakeup
+> > source timer cancellation").
 >
->[Mjungjoo: assume fatal on revert failure and set df->governor to NULL]
->Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
->Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Okay, thanks. We (Android guys) want this to be backported into 4.4+
+> kernels via the stable tree. Can we mark this for stable in the commit
+> itself ? Else I would be required to send this separately for all the
+> kernels. I should have marked it for stable initially though, sorry
+> about forgetting then.
 
-I'll modify WARN->ERROR for the case when it's fatal:
-
->+		if (ret) {
->+			dev_warn(dev,
->+				 "%s: reverting to Governor %s failed (%d)\n",
->+				 __func__, df->governor_name, ret);
->+			df->governor = NULL;
->+		}
-
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-
-
->---
->V5:
->* assume fatal on revert failure and set df->governor to NULL
->
->V4:
->* Removed prev_governor check.
->
->V3:
->* Fix NULL deref for real this time.
->* Addressed some style preferences.
->
->V2:
->* Fixed typo in commit text
->* Fixed potential NULL deref
->
-> drivers/devfreq/devfreq.c | 16 ++++++++++++++--
-> 1 file changed, 14 insertions(+), 2 deletions(-)
->
+Queued up with a CC-stable tag for 4.4 an later, thanks!
