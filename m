@@ -1,68 +1,74 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v5 1/8] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date: Tue, 12 Mar 2019 10:18:14 +0100
-Message-ID: <a8eafa27-1dc5-f4cf-9c1d-b4cbce80ec62@partner.samsung.com>
-References: <1551781151-5562-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190305101924eucas1p1147e3895a89a72c9db7d128d90dd3daa@eucas1p1.samsung.com>
-        <1551781151-5562-2-git-send-email-l.luba@partner.samsung.com>
-        <20190311220650.GB4082@bogus>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] OPP: Fix handling of multiple power domains
+Date: Tue, 12 Mar 2019 10:36:06 +0100
+Message-ID: <1695972.KL8iO62iuq@aspire.rjw.lan>
+References: <20190306040726.1930-1-rnayak@codeaurora.org> <20190308043712.3aca6lygz2oya3lc@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190311220650.GB4082@bogus>
-Content-Language: en-US
+In-Reply-To: <20190308043712.3aca6lygz2oya3lc@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-On 3/11/19 11:06 PM, Rob Herring wrote:
-> On Tue,  5 Mar 2019 11:19:04 +0100, Lukasz Luba wrote:
->> Define new IDs for clocks used by Dynamic Memory Controller in
->> Exynos5422 SoC.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
->>   1 file changed, 17 insertions(+), 1 deletion(-)
->>
+On Friday, March 8, 2019 5:37:12 AM CET Viresh Kumar wrote:
+> On 06-03-19, 09:37, Rajendra Nayak wrote:
+> > We seem to rely on the number of phandles specified in the
+> > 'required-opps' property to identify cases where a device is
+> > associated with multiple power domains and hence would have
+> > multiple virtual devices that have to be dealt with.
+> > 
+> > In cases where we do have devices with multiple power domains
+> > but with only one of them being scalable, this logic seems to
+> > fail.
+> > 
+> > Instead read the number of power domains from DT to identify
+> > such cases.
+> > 
+> > Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> > ---
+> >  drivers/opp/of.c | 16 ++++++++++++++--
+> >  1 file changed, 14 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> > index 06f0f632ec47..443c305ae100 100644
+> > --- a/drivers/opp/of.c
+> > +++ b/drivers/opp/of.c
+> > @@ -172,7 +172,7 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+> >  	struct opp_table **required_opp_tables;
+> >  	struct device **genpd_virt_devs = NULL;
+> >  	struct device_node *required_np, *np;
+> > -	int count, i;
+> > +	int count, count_pd, i;
+> >  
+> >  	/* Traversing the first OPP node is all we need */
+> >  	np = of_get_next_available_child(opp_np, NULL);
+> > @@ -185,7 +185,19 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+> >  	if (!count)
+> >  		goto put_np;
+> >  
+> > -	if (count > 1) {
+> > +	/*
+> > +	 * Check the number of power-domains to know if we need to deal
+> > +	 * with virtual devices. In some cases we have devices with multiple
+> > +	 * power domains but with only one of them being scalable, hence
+> > +	 * 'count' could be 1, but we still have to deal with multiple genpds
+> > +	 * and virtual devices.
+> > +	 */
+> > +	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
+> > +					      "#power-domain-cells");
+> > +	if (!count_pd)
+> > +		goto put_np;
+> > +
+> > +	if (count_pd > 1) {
+> >  		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
+> >  					GFP_KERNEL);
+> >  		if (!genpd_virt_devs)
 > 
-> Please add Acked-by/Reviewed-by tags when posting new versions. However,
-> there's no need to repost patches *only* to add the tags. The upstream
-> maintainer will do that for acks received on the version they apply.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> If a tag was not added on purpose, please state why and what changed.
-I have skipped your ACK because of the hack which is implemented in v5
-clocks. Chanwoo refused the driver code because it uses 2 registers from
-the clock register set without Common Clock Framework API.
-He said that he will not accept this code and I have to figure out new
-approach using CCF.
-Thus, I have modeled these two registers as 'gates', but these registers
-are for Dynamic Memory Controller PAUSE feature (which stops
-transactions) and the other is for switching between
-two set of registers with timings for the LPDDR3 memory (normal
-operation and alternative clock source operation aka 'bypass').
-These registers should be (in my opinion) in the DMC registers and not
-in the clocks.
+> @Rafael, please pick this up for 5.1-rc2 directly. Thanks.
 
-Sylwester pointed out offline that it could be done using regmap.
-These are the problematic clocks added in v5:
-+#define CLK_CDREX_PAUSE		531
-+#define CLK_CDREX_TIMING_SET	532
-
-I have mentioned about it in the cover letter, but you are right I could
-also add a comment for this particular patch that I have skipped your
-ACK.
-Thank you for sharing the information about the process.
-I will keep it in mind next time and will add a comment below the commit
-message for a particular patch and explicit information in cover letter
-that I am not including an ACK.
-
-Regards,
-Lukasz
-> 
-> 
+Done, thanks!
