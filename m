@@ -1,39 +1,69 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / wakeup: Drop wakeup_source_drop()
-Date: Tue, 12 Mar 2019 08:55:16 +0530
-Message-ID: <20190312032516.dme2wea6zt3v7eiu@vireshk-i7>
-References: <2820276.PxaWYKrF8K@aspire.rjw.lan>
+Subject: Re: [PATCH 1/2] PM / wakeup: Remove timer from wakeup_source_remove()
+Date: Tue, 12 Mar 2019 08:58:02 +0530
+Message-ID: <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
+References: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
+ <3100371.t8xxUOTPUa@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2820276.PxaWYKrF8K@aspire.rjw.lan>
+In-Reply-To: <3100371.t8xxUOTPUa@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sunzhaosheng@hisilicon.com, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11-03-19, 12:53, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 11-03-19, 13:05, Rafael J. Wysocki wrote:
+> On Friday, March 8, 2019 10:53:11 AM CET Viresh Kumar wrote:
+> > wakeup_source_remove() is the counterpart of wakeup_source_add() helper
+> > and must undo the initializations done by wakeup_source_add(). Currently
+> > the timer is initialized by wakeup_source_add() but removed from
+> > wakeup_source_drop(), which doesn't look logically correct. Also it
+> > should be okay to call wakeup_source_add() right after calling
+> > wakeup_source_remove(), and in that case we may end up calling
+> > timer_setup() for a potentially scheduled timer which is surely
+> > incorrect.
+> > 
+> > Move the timer removal part to wakeup_source_remove() instead.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/base/power/wakeup.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> > index f1fee72ed970..18333962e3da 100644
+> > --- a/drivers/base/power/wakeup.c
+> > +++ b/drivers/base/power/wakeup.c
+> > @@ -118,7 +118,6 @@ void wakeup_source_drop(struct wakeup_source *ws)
+> >  	if (!ws)
+> >  		return;
+> >  
+> > -	del_timer_sync(&ws->timer);
+> >  	__pm_relax(ws);
+> >  }
+> >  EXPORT_SYMBOL_GPL(wakeup_source_drop);
+> > @@ -205,6 +204,8 @@ void wakeup_source_remove(struct wakeup_source *ws)
+> >  	list_del_rcu(&ws->entry);
+> >  	raw_spin_unlock_irqrestore(&events_lock, flags);
+> >  	synchronize_srcu(&wakeup_srcu);
+> > +
+> > +	del_timer_sync(&ws->timer);
+> >  }
+> >  EXPORT_SYMBOL_GPL(wakeup_source_remove);
+> >  
+> > 
 > 
-> After commit d856f39ac1cc ("PM / wakeup: Rework wakeup source timer
-> cancellation") wakeup_source_drop() is a trivial wrapper around
-> __pm_relax() and it has no users except for wakeup_source_destroy()
-> and wakeup_source_trash() which also has no users, so drop it along
-> with the latter and make wakeup_source_destroy() call __pm_relax()
-> directly.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Commit d856f39ac1cc is in the bleeding-edge branch of the linux-pm.git tree.
-> 
-> ---
->  drivers/base/power/wakeup.c |   18 +-----------------
->  include/linux/pm_wakeup.h   |    9 ---------
->  2 files changed, 1 insertion(+), 26 deletions(-)
+> I've merged it with the [2/2], rewritten the subject and changelog and
+> queued the result as commit d856f39ac1cc ("PM / wakeup: Rework wakeup
+> source timer cancellation").
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Okay, thanks. We (Android guys) want this to be backported into 4.4+
+kernels via the stable tree. Can we mark this for stable in the commit
+itself ? Else I would be required to send this separately for all the
+kernels. I should have marked it for stable initially though, sorry
+about forgetting then.
 
 -- 
 viresh
