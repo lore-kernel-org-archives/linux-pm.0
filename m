@@ -1,90 +1,104 @@
-From: Jorge Ramirez <jorge.ramirez-ortiz@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Update performance state when freq == old_freq
-Date: Tue, 12 Mar 2019 07:27:48 +0100
-Message-ID: <288203c2-c822-b918-ce72-e2271125d374@linaro.org>
-References: <5a0c96bebb52c1ae34a2d0df63517b2d2938369c.1552366620.git.viresh.kumar@linaro.org>
+From: Jiada Wang <jiada_wang@mentor.com>
+Subject: [PATCH 1/1] PM / Domains: Avoid a potential deadlock
+Date: Tue, 12 Mar 2019 15:51:28 +0900
+Message-ID: <20190312065128.24994-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <5a0c96bebb52c1ae34a2d0df63517b2d2938369c.1552366620.git.viresh.kumar@linaro.org>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "v5 . 0" <stable@vger.kernel.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com, geert@linux-m68k.org, jiada_wang@mentor.com
 List-Id: linux-pm@vger.kernel.org
 
-On 3/12/19 05:57, Viresh Kumar wrote:
-> At boot up, CPUfreq core performs a sanity check to see if the system is
-> running at a frequency defined in the frequency table of the CPU. If so,
-> we try to find a valid frequency (lowest frequency greater than the
-> currently programmed frequency) from the table and set it. When the call
-> reaches dev_pm_opp_set_rate(), it calls _find_freq_ceil(opp_table,
-> &old_freq) to find the previously configured OPP and this call also
-> updates the old_freq. This eventually sets the old_freq == freq (new
-> target requested by cpufreq core) and we skip updating the performance
-> state in this case.
-> 
-> Fix this by also updating the performance state when the old_freq ==
-> freq.
-> 
-> Fixes: ca1b5d77b1c6 ("OPP: Configure all required OPPs")
-> Cc: v5.0 <stable@vger.kernel.org> # v5.0
-> Reported-by: Niklas Cassel <niklas.cassel@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Lockdep warns that prepare_lock and genpd->mlock can cause a deadlock
+the deadlock scenario is like following:
+First thread is probing cs2000
+cs2000_probe()
+  clk_register()
+    __clk_core_init()
+      clk_prepare_lock()                            ----> acquires prepare_lock
+        cs2000_recalc_rate()
+          i2c_smbus_read_byte_data()
+            rcar_i2c_master_xfer()
+              dma_request_chan()
+                rcar_dmac_of_xlate()
+                  rcar_dmac_alloc_chan_resources()
+                    pm_runtime_get_sync()
+                      __pm_runtime_resume()
+                        rpm_resume()
+                          rpm_callback()
+                            genpd_runtime_resume()   ----> acquires genpd->mlock
 
-Tested-by: Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+Second thread is attaching any device to the same PM domain
+genpd_add_device()
+  genpd_lock()                                       ----> acquires genpd->mlock
+    cpg_mssr_attach_dev()
+      of_clk_get_from_provider()
+        __of_clk_get_from_provider()
+          __clk_create_clk()
+            clk_prepare_lock()                       ----> acquires prepare_lock
 
-> ---
->  drivers/opp/core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index d7f97167cac3..0420f7e8ad5b 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -760,7 +760,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  		old_freq, freq);
->  
->  	/* Scaling up? Configure required OPPs before frequency */
-> -	if (freq > old_freq) {
-> +	if (freq >= old_freq) {
->  		ret = _set_required_opps(dev, opp_table, opp);
->  		if (ret)
->  			goto put_opp;
-> 
+Since currently no PM provider access genpd's critical section
+in .attach_dev, and .detach_dev callbacks, so there is no need to protect
+these two callbacks with genpd->mlock.
+This patch avoids a potential deadlock by moving out .attach_dev and .detach_dev
+from genpd->mlock, so that genpd->mlock won't be held when prepare_lock is acquired
+in .attach_dev and .detach_dev
 
+Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+---
+ drivers/base/power/domain.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-[    3.048579] Loading compiled-in X.509 certificates
-[    3.064282] cpufreq: cpufreq_online: CPU0: Running at unlisted freq:
-1113600 KHz
-[    3.064510] cpufreq: cpufreq_online: CPU0: Unlisted initial frequency
-changed to: 1248000 KHz
-[    3.072072] hctosys: unable to open rtc device (rtc0)
-
-
-...
-
-and the ftrace on the registered driver handling the performance change
-to state 2
-
-     kworker/3:0-26    [003] ....     3.063824: cpr_pd_attach_dev:
-reg[0x100] = 0x00000014
-     kworker/3:0-26    [003] ....     3.063845: cpr_corner_restore:
-reg[0x100] = 0x00000014
-     kworker/3:0-26    [003] ....     3.063848: cpr_corner_restore: gcnt
-= 0x000132ab, ctl = 0x31000428, irq = 0x00000014
-     kworker/3:0-26    [003] ....     3.063851: cpr_ctl_enable.part.15:
-reg[0x100] = 0x00000014
-     kworker/3:0-26    [003] ....     3.064352: cpr_set_performance:
-cpr_set_performance: setting performance state: 2 (prev state: 0)
-     kworker/3:0-26    [003] ....     3.064355: cpr_ctl_disable.part.16:
-reg[0x100] = 0x00000000
-     kworker/3:0-26    [003] ....     3.064410: cpr_corner_restore:
-reg[0x100] = 0x00000014
-     kworker/3:0-26    [003] ....     3.064413: cpr_corner_restore: gcnt
-= 0x000132f5, ctl = 0x31000428, irq = 0x00000014
-     kworker/3:0-26    [003] ....     3.064416: cpr_ctl_enable.part.15:
-reg[0x100] = 0x00000014
-      irq/29-cpr-1320  [000] ....     3.079189: cpr_irq_handler:
-IRQ_STATUS = 0x5
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 500de1dee967..a00ca6b8117b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1467,12 +1467,12 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (IS_ERR(gpd_data))
+ 		return PTR_ERR(gpd_data);
+ 
+-	genpd_lock(genpd);
+-
+ 	ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
+ 	if (ret)
+ 		goto out;
+ 
++	genpd_lock(genpd);
++
+ 	dev_pm_domain_set(dev, &genpd->domain);
+ 
+ 	genpd->device_count++;
+@@ -1480,9 +1480,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 
+ 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+ 
+- out:
+ 	genpd_unlock(genpd);
+-
++ out:
+ 	if (ret)
+ 		genpd_free_dev_data(dev, gpd_data);
+ 	else
+@@ -1531,15 +1530,15 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd->device_count--;
+ 	genpd->max_off_time_changed = true;
+ 
+-	if (genpd->detach_dev)
+-		genpd->detach_dev(genpd, dev);
+-
+ 	dev_pm_domain_set(dev, NULL);
+ 
+ 	list_del_init(&pdd->list_node);
+ 
+ 	genpd_unlock(genpd);
+ 
++	if (genpd->detach_dev)
++		genpd->detach_dev(genpd, dev);
++
+ 	genpd_free_dev_data(dev, gpd_data);
+ 
+ 	return 0;
+-- 
+2.19.2
