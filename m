@@ -1,69 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] PM / wakeup: Remove timer from wakeup_source_remove()
-Date: Tue, 12 Mar 2019 08:58:02 +0530
-Message-ID: <20190312032802.gsheaosu2dtawiyu@vireshk-i7>
-References: <621452804d6d22f72438614b6687f37282d883f5.1552038717.git.viresh.kumar@linaro.org>
- <3100371.t8xxUOTPUa@aspire.rjw.lan>
+Subject: [PATCH] PM / OPP: Update performance state when freq == old_freq
+Date: Tue, 12 Mar 2019 10:27:18 +0530
+Message-ID: <5a0c96bebb52c1ae34a2d0df63517b2d2938369c.1552366620.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3100371.t8xxUOTPUa@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sunzhaosheng@hisilicon.com, jean.xupeng@hisilicon.com, yuwei3@hisilicon.com, gengyanping@hisilicon.com, peter.panshilin@hisilicon.com, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, jorge.ramirez-ortiz@linaro.org, "v5 . 0" <stable@vger.kernel.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11-03-19, 13:05, Rafael J. Wysocki wrote:
-> On Friday, March 8, 2019 10:53:11 AM CET Viresh Kumar wrote:
-> > wakeup_source_remove() is the counterpart of wakeup_source_add() helper
-> > and must undo the initializations done by wakeup_source_add(). Currently
-> > the timer is initialized by wakeup_source_add() but removed from
-> > wakeup_source_drop(), which doesn't look logically correct. Also it
-> > should be okay to call wakeup_source_add() right after calling
-> > wakeup_source_remove(), and in that case we may end up calling
-> > timer_setup() for a potentially scheduled timer which is surely
-> > incorrect.
-> > 
-> > Move the timer removal part to wakeup_source_remove() instead.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/base/power/wakeup.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> > index f1fee72ed970..18333962e3da 100644
-> > --- a/drivers/base/power/wakeup.c
-> > +++ b/drivers/base/power/wakeup.c
-> > @@ -118,7 +118,6 @@ void wakeup_source_drop(struct wakeup_source *ws)
-> >  	if (!ws)
-> >  		return;
-> >  
-> > -	del_timer_sync(&ws->timer);
-> >  	__pm_relax(ws);
-> >  }
-> >  EXPORT_SYMBOL_GPL(wakeup_source_drop);
-> > @@ -205,6 +204,8 @@ void wakeup_source_remove(struct wakeup_source *ws)
-> >  	list_del_rcu(&ws->entry);
-> >  	raw_spin_unlock_irqrestore(&events_lock, flags);
-> >  	synchronize_srcu(&wakeup_srcu);
-> > +
-> > +	del_timer_sync(&ws->timer);
-> >  }
-> >  EXPORT_SYMBOL_GPL(wakeup_source_remove);
-> >  
-> > 
-> 
-> I've merged it with the [2/2], rewritten the subject and changelog and
-> queued the result as commit d856f39ac1cc ("PM / wakeup: Rework wakeup
-> source timer cancellation").
+At boot up, CPUfreq core performs a sanity check to see if the system is
+running at a frequency defined in the frequency table of the CPU. If so,
+we try to find a valid frequency (lowest frequency greater than the
+currently programmed frequency) from the table and set it. When the call
+reaches dev_pm_opp_set_rate(), it calls _find_freq_ceil(opp_table,
+&old_freq) to find the previously configured OPP and this call also
+updates the old_freq. This eventually sets the old_freq == freq (new
+target requested by cpufreq core) and we skip updating the performance
+state in this case.
 
-Okay, thanks. We (Android guys) want this to be backported into 4.4+
-kernels via the stable tree. Can we mark this for stable in the commit
-itself ? Else I would be required to send this separately for all the
-kernels. I should have marked it for stable initially though, sorry
-about forgetting then.
+Fix this by also updating the performance state when the old_freq ==
+freq.
 
+Fixes: ca1b5d77b1c6 ("OPP: Configure all required OPPs")
+Cc: v5.0 <stable@vger.kernel.org> # v5.0
+Reported-by: Niklas Cassel <niklas.cassel@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index d7f97167cac3..0420f7e8ad5b 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -760,7 +760,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		old_freq, freq);
+ 
+ 	/* Scaling up? Configure required OPPs before frequency */
+-	if (freq > old_freq) {
++	if (freq >= old_freq) {
+ 		ret = _set_required_opps(dev, opp_table, opp);
+ 		if (ret)
+ 			goto put_opp;
 -- 
-viresh
+2.21.0.rc0.269.g1a574e7a288b
