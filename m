@@ -1,24 +1,32 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Tue, 12 Mar 2019 16:20:59 +0100
-Message-ID: <20190312152059.GA5922@hirez.programming.kicks-ass.net>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-2-patrick.bellasi@arm.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: supply: gpio-charger: Add
+ status-gpios property
+Date: Tue, 12 Mar 2019 10:50:21 -0500
+Message-ID: <20190312155021.GA23277@bogus>
+References: <20190226150437.3704-1-contact@artur-rojek.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190208100554.32196-2-patrick.bellasi@arm.com>
+In-Reply-To: <20190226150437.3704-1-contact@artur-rojek.eu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 08, 2019 at 10:05:40AM +0000, Patrick Bellasi wrote:
-> +/* Integer ceil-rounded range for each bucket */
-> +#define UCLAMP_BUCKET_DELTA ((SCHED_CAPACITY_SCALE / UCLAMP_BUCKETS) + 1)
+On Tue, 26 Feb 2019 16:04:36 +0100, Artur Rojek wrote:
+> Add documentation for the "status-gpios" property.
+> Update the "gpios" property with a valid example.
+> 
+> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+> ---
+> 
+> Changes:
+> 
+> v2: - add a better description for the "status-gpios" property,
+>     - add valid examples for the "gpios" and "status-gpios" properties
+> 
+>  .../devicetree/bindings/power/supply/gpio-charger.txt       | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
 
-Uhm, should that not me ((x+y-1)/y), aka. DIV_ROUND_UP(x,y) ?
-
-The above would give 4 for 9/3, which is clearly buggered.
+Reviewed-by: Rob Herring <robh@kernel.org>
