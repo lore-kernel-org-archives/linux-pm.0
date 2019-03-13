@@ -1,52 +1,59 @@
 From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for cpu clocks
-Date: Wed, 13 Mar 2019 17:35:58 +0100
-Message-ID: <20190313163558.6705-1-gregory.clement@bootlin.com>
+Subject: Re: [PATCH 1/2] cpufreq: armada-37xx: fix clock parenting
+Date: Wed, 13 Mar 2019 17:39:36 +0100
+Message-ID: <87pnquvid3.fsf@FE-laptop>
+References: <20190308164710.10597-1-gregory.clement@bootlin.com> <20190308164710.10597-2-gregory.clement@bootlin.com> <20190311053130.qrobxd2wn75nrgbf@vireshk-i7>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20190311053130.qrobxd2wn75nrgbf@vireshk-i7>
 Sender: stable-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The clock parenting was not setup properly when DVFS was enabled. It was
-expected that the same clock source was used with and without DVFS which
-was not the case.
-
-This patch fixes this issue, allowing to make the cpufreq support work
-when the CPU clocks source are not the default ones.
-
-Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-Cc: <stable@vger.kernel.org>
-Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
-Reported-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
- drivers/clk/mvebu/armada-37xx-periph.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/clk/mvebu/armada-37xx-periph.c b/drivers/clk/mvebu/armada-37xx-periph.c
-index 1f1cff428d78..26ed3c18a239 100644
---- a/drivers/clk/mvebu/armada-37xx-periph.c
-+++ b/drivers/clk/mvebu/armada-37xx-periph.c
-@@ -671,6 +671,17 @@ static int armada_3700_add_composite_clk(const struct clk_periph_data *data,
- 		map = syscon_regmap_lookup_by_compatible(
- 				"marvell,armada-3700-nb-pm");
- 		pmcpu_clk->nb_pm_base = map;
-+
-+		/*
-+		 * Use the same parent when DVFS is enabled that the
-+		 * default parent received at boot time. When this
-+		 * function is called, DVFS is not enabled yet, so we
-+		 * get the default parent and we can set the parent
-+		 * for DVFS.
-+		 */
-+		if (clk_pm_cpu_set_parent(muxrate_hw,
-+					  clk_pm_cpu_get_parent(muxrate_hw)))
-+			dev_warn(dev, "Failed to setup default parent clock for DVFS\n");
- 	}
+Hi Viresh,
  
- 	*hw = clk_hw_register_composite(dev, data->name, data->parent_names,
+ On lun., mars 11 2019, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+
+> On 08-03-19, 17:47, Gregory CLEMENT wrote:
+[...]
+
+>>  	parent = clk_get_parent(clk);
+>> +
+>> +	/*
+>> +	 * Unset parent clock to force the clock framework setting again
+>> +	 * the clock parent
+>> +	 */
+>> +	clk_set_parent(clk, NULL);
+>> +
+>> +	/*
+>> +	 * For the Armada 37xx CPU clocks, setting the parent will
+>> +	 * actually configure the parent when DVFS is enabled. At
+>> +	 * hardware level it will be a different register from the one
+>> +	 * read when doing clk_get_parent that will be set with
+>> +	 * clk_set_parent.
+>> +	 */
+>>  	clk_set_parent(clk, parent);
+>>  }
+>
+> Maybe this should be done right from the clock driver instead? As cpufreq may or
+> maynot be enabled by default (Surely most of the people will always enable it,
+> but I am just trying to find the right place for doing this). The way we are
+> setting the clock parent isn't that great, and looks a bit hacky just because of
+> the way clock framework is. Maybe doing it directly, without getting clock
+> framework in between, from the clock driver may look sane ?
+
+I've just sent a patch following your suggestion to the clock mailing
+but keeping you in CC too.
+
+Gregory
+
+>
+> -- 
+> viresh
+
 -- 
-2.20.1
+Gregory Clement, Bootlin
+Embedded Linux and Kernel engineering
+http://bootlin.com
