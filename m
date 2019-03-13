@@ -1,70 +1,118 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v5] PM / devfreq: Restart previous governor if new
- governor fails to start
-Date: Wed, 13 Mar 2019 11:31:01 +0530
-Message-ID: <2b78582a74ae7a17ed2f27187f3f32f4@codeaurora.org>
-References: <20190311100630.12952-1-sibis@codeaurora.org>
- <CGME20190311100759epcas5p41fc634cd67a99b39cd25c4129e489c4c@epcms1p2>
- <20190312071714epcms1p20e78a537f8cb0d7d04e4fd077916fd51@epcms1p2>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/1] PM / Domains: Avoid a potential deadlock
+Date: Wed, 13 Mar 2019 08:35:02 +0100
+Message-ID: <CAPDyKFodmgkpLkJDiMqh3vm+Ynuo852biZkY7uB5sm9UeAJ63A@mail.gmail.com>
+References: <20190312065128.24994-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190312071714epcms1p20e78a537f8cb0d7d04e4fd077916fd51@epcms1p2>
+In-Reply-To: <20190312065128.24994-1-jiada_wang@mentor.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, Saravana Kannan <skannan@codeaurora.org>
+To: Jiada Wang <jiada_wang@mentor.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Morimoto <kuninori.morimoto.gx@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2019-03-12 12:47, MyungJoo Ham wrote:
->> From: Saravana Kannan <skannan@codeaurora.org>
->> 
->> If the new governor fails to start, switch back to old governor so 
->> that the
->> devfreq state is not left in some weird limbo.
->> 
->> [Mjungjoo: assume fatal on revert failure and set df->governor to 
->> NULL]
->> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
-> I'll modify WARN->ERROR for the case when it's fatal:
+On Tue, 12 Mar 2019 at 07:51, Jiada Wang <jiada_wang@mentor.com> wrote:
+>
+> Lockdep warns that prepare_lock and genpd->mlock can cause a deadlock
+> the deadlock scenario is like following:
+> First thread is probing cs2000
+> cs2000_probe()
+>   clk_register()
+>     __clk_core_init()
+>       clk_prepare_lock()                            ----> acquires prepare_lock
+>         cs2000_recalc_rate()
+>           i2c_smbus_read_byte_data()
+>             rcar_i2c_master_xfer()
+>               dma_request_chan()
+>                 rcar_dmac_of_xlate()
+>                   rcar_dmac_alloc_chan_resources()
+>                     pm_runtime_get_sync()
+>                       __pm_runtime_resume()
+>                         rpm_resume()
+>                           rpm_callback()
+>                             genpd_runtime_resume()   ----> acquires genpd->mlock
+>
+> Second thread is attaching any device to the same PM domain
+> genpd_add_device()
+>   genpd_lock()                                       ----> acquires genpd->mlock
+>     cpg_mssr_attach_dev()
+>       of_clk_get_from_provider()
+>         __of_clk_get_from_provider()
+>           __clk_create_clk()
+>             clk_prepare_lock()                       ----> acquires prepare_lock
+>
+> Since currently no PM provider access genpd's critical section
+> in .attach_dev, and .detach_dev callbacks, so there is no need to protect
+> these two callbacks with genpd->mlock.
+> This patch avoids a potential deadlock by moving out .attach_dev and .detach_dev
+> from genpd->mlock, so that genpd->mlock won't be held when prepare_lock is acquired
+> in .attach_dev and .detach_dev
 
-Sure, thanks.
+Thanks for the detailed description, this seems like a reasonable change to me!
 
-> 
->> +		if (ret) {
->> +			dev_warn(dev,
->> +				 "%s: reverting to Governor %s failed (%d)\n",
->> +				 __func__, df->governor_name, ret);
->> +			df->governor = NULL;
->> +		}
-> 
-> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> 
-> 
->> ---
->> V5:
->> * assume fatal on revert failure and set df->governor to NULL
->> 
->> V4:
->> * Removed prev_governor check.
->> 
->> V3:
->> * Fix NULL deref for real this time.
->> * Addressed some style preferences.
->> 
->> V2:
->> * Fixed typo in commit text
->> * Fixed potential NULL deref
->> 
->> drivers/devfreq/devfreq.c | 16 ++++++++++++++--
->> 1 file changed, 14 insertions(+), 2 deletions(-)
->> 
+>
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 
--- 
--- Sibi Sankar --
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+
+> ---
+>  drivers/base/power/domain.c | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 500de1dee967..a00ca6b8117b 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1467,12 +1467,12 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>         if (IS_ERR(gpd_data))
+>                 return PTR_ERR(gpd_data);
+>
+> -       genpd_lock(genpd);
+> -
+>         ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
+>         if (ret)
+>                 goto out;
+>
+> +       genpd_lock(genpd);
+> +
+>         dev_pm_domain_set(dev, &genpd->domain);
+>
+>         genpd->device_count++;
+> @@ -1480,9 +1480,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>
+>         list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+>
+> - out:
+>         genpd_unlock(genpd);
+> -
+> + out:
+>         if (ret)
+>                 genpd_free_dev_data(dev, gpd_data);
+>         else
+> @@ -1531,15 +1530,15 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+>         genpd->device_count--;
+>         genpd->max_off_time_changed = true;
+>
+> -       if (genpd->detach_dev)
+> -               genpd->detach_dev(genpd, dev);
+> -
+>         dev_pm_domain_set(dev, NULL);
+>
+>         list_del_init(&pdd->list_node);
+>
+>         genpd_unlock(genpd);
+>
+> +       if (genpd->detach_dev)
+> +               genpd->detach_dev(genpd, dev);
+> +
+>         genpd_free_dev_data(dev, gpd_data);
+>
+>         return 0;
+> --
+> 2.19.2
+>
