@@ -1,77 +1,56 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Wed, 13 Mar 2019 09:19:58 +0100
-Message-ID: <20190313081958.GA5996@hirez.programming.kicks-ass.net>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-2-patrick.bellasi@arm.com>
- <20190312152059.GA5922@hirez.programming.kicks-ass.net>
- <20190312155043.vj3fiutnsovjti2x@e110439-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 0/5] drivers: firmware: psci: Some cleanup and refactoring
+Date: Wed, 13 Mar 2019 09:36:54 +0100
+Message-ID: <20190313083659.7100-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190312155043.vj3fiutnsovjti2x@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 12, 2019 at 03:50:43PM +0000, Patrick Bellasi wrote:
-> On 12-Mar 16:20, Peter Zijlstra wrote:
-> > On Fri, Feb 08, 2019 at 10:05:40AM +0000, Patrick Bellasi wrote:
-> > > +/* Integer ceil-rounded range for each bucket */
+Changes in v2:
+	- Drop two patches from the series.
+	- Added acks and other tags, no other changes.
 
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+All of these patches have been sent earlier, but part of a bigger series [1].
+Instead of waiting for that series to get reviewed and accepted, I have split
+it up, such that these trivial independent cleanups can go in as a first step.
 
-> > > +#define UCLAMP_BUCKET_DELTA ((SCHED_CAPACITY_SCALE / UCLAMP_BUCKETS) + 1)
+The only intentional function change, should be the last patch, where we start
+checking if PSCI OSI mode is supported in the PSCI FW and print a message about
+it, as that is quite useful information for the user/developer.
 
-                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Rafael, discussions between me and Lorenzo for v1 concluded that these are ready
+to be queued for v5.2 - and if possible, we would like this to go via your
+linux-pm tree. Can you please pick it up?
 
-simply do not match.
+Kind regards
+Ulf Hansson
 
-> > Uhm, should that not me ((x+y-1)/y), aka. DIV_ROUND_UP(x,y) ?
-> 
-> Well, there is certainly some rounding to be done...
-> 
-> > The above would give 4 for 9/3, which is clearly buggered.
-> 
-> .. still the math above should work fine within the boundaries we
-> define for UCLAMP_BUCKET_DELTA (5..20 groups) and considering that
-> SCHED_CAPACITY_SCALE will never be smaller then 1024.
+[1]
+https://lkml.org/lkml/2018/11/29/1801
 
-That's a very poor reason to write utter nonsense :-)
+Ulf Hansson (5):
+  drivers: firmware: psci: Move psci to separate directory
+  MAINTAINERS: Update files for PSCI
+  drivers: firmware: psci: Split psci_dt_cpu_init_idle()
+  drivers: firmware: psci: Simplify error path of psci_dt_init()
+  drivers: firmware: psci: Announce support for OS initiated suspend
+    mode
 
-> The above is designed to shrink the topmost bucket wrt all the others
-> but it will never be smaller than ~30%.
+ MAINTAINERS                                |  2 +-
+ drivers/firmware/Kconfig                   | 15 +---
+ drivers/firmware/Makefile                  |  3 +-
+ drivers/firmware/psci/Kconfig              | 13 ++++
+ drivers/firmware/psci/Makefile             |  4 +
+ drivers/firmware/{ => psci}/psci.c         | 86 +++++++++++++---------
+ drivers/firmware/{ => psci}/psci_checker.c |  0
+ include/uapi/linux/psci.h                  |  5 ++
+ 8 files changed, 78 insertions(+), 50 deletions(-)
+ create mode 100644 drivers/firmware/psci/Kconfig
+ create mode 100644 drivers/firmware/psci/Makefile
+ rename drivers/firmware/{ => psci}/psci.c (93%)
+ rename drivers/firmware/{ => psci}/psci_checker.c (100%)
 
-30% sounds like a lot, esp. for this range.
-
-> Here are the start values computed for each bucket using the math
-> above and the computed shrinking percentage for the topmost bucket:
-
-If you use a regular rounding, the error is _much_ smaller:
-
-$ for ((x=5;x<21;x++)) ; do let d=(1024+x/2)/x; let s=(x-1)*d; let e=1024-s; let p=100*(d-e)/d; echo $x $d $s $e $p%; done
-5 205 820 204 0%
-6 171 855 169 1%
-7 146 876 148 -1%
-8 128 896 128 0%
-9 114 912 112 1%
-10 102 918 106 -3%
-11 93 930 94 -1%
-12 85 935 89 -4%
-13 79 948 76 3%
-14 73 949 75 -2%
-15 68 952 72 -5%
-16 64 960 64 0%
-17 60 960 64 -6%
-18 57 969 55 3%
-19 54 972 52 3%
-20 51 969 55 -7%
-
-Funnily enough, we have a helper for that too: DIV_ROUND_CLOSEST().
-
-Now, if we go further, the error will obviously increase because we run
-out of precision, but even there, regular rounding will be better than
-either floor or ceil.
+-- 
+2.17.1
