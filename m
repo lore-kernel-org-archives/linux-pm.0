@@ -1,45 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Wed, 13 Mar 2019 20:30:56 +0100
-Message-ID: <20190313193056.GP2482@worktop.programming.kicks-ass.net>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-2-patrick.bellasi@arm.com>
- <20190313135238.GC5922@hirez.programming.kicks-ass.net>
- <20190313155954.jse2tyn5iqxm6wle@e110439-lin>
+From: Alexandre Bailon <abailon@baylibre.com>
+Subject: [RFC PATCH 0/3] Add support of busfreq
+Date: Wed, 13 Mar 2019 20:34:05 +0100
+Message-ID: <20190313193408.23740-1-abailon@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190313155954.jse2tyn5iqxm6wle@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-pm@vger.kernel.org, georgi.djakov@linaro.org
+Cc: mturquette@baylibre.com, ptitiano@baylibre.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, zening.wang@nxp.com, aisheng.dong@nxp.com, khilman@baylibre.com, ccaione@baylibre.com, Alexandre Bailon <abailon@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 13, 2019 at 03:59:54PM +0000, Patrick Bellasi wrote:
-> On 13-Mar 14:52, Peter Zijlstra wrote:
-> > > +static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
-> > > +				    unsigned int clamp_id)
-> > > +{
-> > > +	unsigned int bucket_id = p->uclamp[clamp_id].bucket_id;
-> > > +	unsigned int rq_clamp, bkt_clamp;
-> > > +
-> > > +	SCHED_WARN_ON(!rq->uclamp[clamp_id].bucket[bucket_id].tasks);
-> > > +	if (likely(rq->uclamp[clamp_id].bucket[bucket_id].tasks))
-> > > +		rq->uclamp[clamp_id].bucket[bucket_id].tasks--;
-> > > +
-> > > +	/*
-> > > +	 * Keep "local clamping" simple and accept to (possibly) overboost
-> > > +	 * still RUNNABLE tasks in the same bucket.
-> > > +	 */
-> > > +	if (likely(rq->uclamp[clamp_id].bucket[bucket_id].tasks))
-> > > +		return;
-> > 
-> > (Oh man, I hope that generates semi sane code; long live CSE passes I
-> > suppose)
-> 
-> What do you mean ?
+This series implements busfreq, a framework used in MXP's
+tree to scale the interconnect and dram frequencies.
+In the vendor tree, device's driver request for a
+performance level, which is used to scale the frequencies.
+This series implements it using the interconnect framework.
+Devices' driver request for bandwidth which is use by busfreq
+to determine a performance level, and then scale the frequency.
 
-that does: 'rq->uclamp[clamp_id].bucket[bucket_id].tasks' three times in
-a row. And yes the compiler _should_ dtrt, but....
+Busfreq is quite generic. It could be used for any i.MX SoC.
+A busfreq platform driver just have to define a list of
+interconnect nodes, and some OPPs.
+
+This series is sent as RFC mostly because the current support
+of i.MX SoC won't benefit of busfreq framework, because the
+clocks' driver don't support interconnect / dram frequency
+scaling.
+As exemple, this series implements busfreq for i.MX8MM whose
+upstreaming is in progress. Because this relies on ATF to
+do the frequency scaling, it won't be hard make it work.
+
+As exemple, this series implements busfreq for 
+Alexandre Bailon (3):
+  drivers: interconnect: Add a driver for i.MX SoC
+  drivers: interconnect: imx: Add support of i.MX8MM
+  dt-bindings: interconnect: Document fsl,busfreq-imx8mm bindings
+
+ .../bindings/interconnect/imx8mm.txt          |  24 +
+ drivers/interconnect/Kconfig                  |   1 +
+ drivers/interconnect/Makefile                 |   1 +
+ drivers/interconnect/imx/Kconfig              |  17 +
+ drivers/interconnect/imx/Makefile             |   2 +
+ drivers/interconnect/imx/busfreq-imx8mm.c     | 132 ++++
+ drivers/interconnect/imx/busfreq.c            | 570 ++++++++++++++++++
+ drivers/interconnect/imx/busfreq.h            | 123 ++++
+ include/dt-bindings/interconnect/imx8mm.h     |  37 ++
+ 9 files changed, 907 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/imx8mm.txt
+ create mode 100644 drivers/interconnect/imx/Kconfig
+ create mode 100644 drivers/interconnect/imx/Makefile
+ create mode 100644 drivers/interconnect/imx/busfreq-imx8mm.c
+ create mode 100644 drivers/interconnect/imx/busfreq.c
+ create mode 100644 drivers/interconnect/imx/busfreq.h
+ create mode 100644 include/dt-bindings/interconnect/imx8mm.h
+
+-- 
+2.19.2
