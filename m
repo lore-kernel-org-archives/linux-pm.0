@@ -1,46 +1,52 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v7 02/15] sched/core: uclamp: Enforce last task UCLAMP_MAX
-Date: Wed, 13 Mar 2019 16:20:51 +0000
-Message-ID: <20190313162051.djiu5dwc5ahp5p5p@e110439-lin>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-3-patrick.bellasi@arm.com>
- <20190313141008.GF5922@hirez.programming.kicks-ass.net>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for cpu clocks
+Date: Wed, 13 Mar 2019 17:35:58 +0100
+Message-ID: <20190313163558.6705-1-gregory.clement@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190313141008.GF5922@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Mar 15:10, Peter Zijlstra wrote:
-> On Fri, Feb 08, 2019 at 10:05:41AM +0000, Patrick Bellasi wrote:
-> > +uclamp_idle_value(struct rq *rq, unsigned int clamp_id, unsigned int clamp_value)
-> > +{
-> > +	/*
-> > +	 * Avoid blocked utilization pushing up the frequency when we go
-> > +	 * idle (which drops the max-clamp) by retaining the last known
-> > +	 * max-clamp.
-> > +	 */
-> > +	if (clamp_id == UCLAMP_MAX) {
-> > +		rq->uclamp_flags |= UCLAMP_FLAG_IDLE;
-> > +		return clamp_value;
-> > +	}
-> > +
-> > +	return uclamp_none(UCLAMP_MIN);
-> 
-> That's a very complicated way or writing: return 0, right?
+The clock parenting was not setup properly when DVFS was enabled. It was
+expected that the same clock source was used with and without DVFS which
+was not the case.
 
-In my mind it's just a simple way to hardcode values in just one place.
+This patch fixes this issue, allowing to make the cpufreq support work
+when the CPU clocks source are not the default ones.
 
-In the current implementation uclamp_none(UCLAMP_MIN) is 0 and the
-compiler is not in trubles to inline a 0 there.
+Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
+Cc: <stable@vger.kernel.org>
+Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
+Reported-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+---
+ drivers/clk/mvebu/armada-37xx-periph.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Is it really so disgusting ?
-
+diff --git a/drivers/clk/mvebu/armada-37xx-periph.c b/drivers/clk/mvebu/armada-37xx-periph.c
+index 1f1cff428d78..26ed3c18a239 100644
+--- a/drivers/clk/mvebu/armada-37xx-periph.c
++++ b/drivers/clk/mvebu/armada-37xx-periph.c
+@@ -671,6 +671,17 @@ static int armada_3700_add_composite_clk(const struct clk_periph_data *data,
+ 		map = syscon_regmap_lookup_by_compatible(
+ 				"marvell,armada-3700-nb-pm");
+ 		pmcpu_clk->nb_pm_base = map;
++
++		/*
++		 * Use the same parent when DVFS is enabled that the
++		 * default parent received at boot time. When this
++		 * function is called, DVFS is not enabled yet, so we
++		 * get the default parent and we can set the parent
++		 * for DVFS.
++		 */
++		if (clk_pm_cpu_set_parent(muxrate_hw,
++					  clk_pm_cpu_get_parent(muxrate_hw)))
++			dev_warn(dev, "Failed to setup default parent clock for DVFS\n");
+ 	}
+ 
+ 	*hw = clk_hw_register_composite(dev, data->name, data->parent_names,
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.20.1
