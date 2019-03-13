@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH 1/4] dt-bindings: opp: Introduce opp-bw-MBs bindings
-Date: Wed, 13 Mar 2019 11:00:07 +0200
-Message-ID: <20190313090010.20534-2-georgi.djakov@linaro.org>
+Subject: [PATCH 3/4] OPP: Update the bandwidth on OPP frequency changes
+Date: Wed, 13 Mar 2019 11:00:09 +0200
+Message-ID: <20190313090010.20534-4-georgi.djakov@linaro.org>
 References: <20190313090010.20534-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,77 +12,26 @@ To: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.ru
 Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-In addition to frequency and voltage, some devices may have bandwidth
-requirements for their interconnect throughput - for example a CPU
-or GPU may also need to increase or decrease their bandwidth to DDR
-memory based on the current operating performance point.
-
-Extend the OPP tables with additional property to describe the bandwidth
-needs of a device. The average and peak bandwidth values depend on the
-hardware and its properties.
+If the OPP bandwidth values are populated, we want to switch also the
+interconnect bandwidth in addition to frequency and voltage.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 45 +++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ drivers/opp/core.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 76b6c79604a5..fa598264615f 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -129,6 +129,9 @@ Optional properties:
- - opp-microamp-<name>: Named opp-microamp property. Similar to
-   opp-microvolt-<name> property, but for microamp instead.
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 4b019cecaa07..99e7c4cf6c34 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -781,6 +781,10 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+ 	}
  
-+- opp-bw-MBs: The interconnect bandwidth is specified with an array containing
-+  the two integer values for average and peak bandwidth in megabytes per second.
++	if (!ret && !IS_ERR_OR_NULL(opp_table->path) && opp->bandwidth)
++		icc_set_bw(opp_table->path, opp->bandwidth->avg,
++			   opp->bandwidth->peak);
 +
- - opp-level: A value representing the performance level of the device,
-   expressed as a 32-bit integer.
- 
-@@ -546,3 +549,45 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
- 		};
- 	};
- };
-+
-+Example 7: opp-bw-MBs:
-+(example: average and peak bandwidth values are defined for each OPP and the
-+interconnect between CPU and DDR memory is scaled together with CPU frequency)
-+
-+/ {
-+	cpus {
-+		CPU0: cpu@0 {
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			...
-+			operating-points-v2 = <&cpu_opp_table>;
-+			/* path between the CPU and DDR memory */
-+			interconnects = <&rpm_bimc MASTER_AMPSS_M0
-+					&rpm_bimc SLAVE_EBI_CH0>;
-+		};
-+	};
-+
-+	cpu_opp_table: cpu_opp_table {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			/* 457 MB/s average and 1525 MB/s peak bandwidth */
-+			opp-bw-MBs = <457 1525>;
-+		};
-+		opp-400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			/* 915 MB/s average and 3051 MB/s peak bandwidth */
-+			opp-bw-MBs = <915 3051>;
-+		};
-+		opp-800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			/* 1830 MB/s average and 6103 MB/s peak bandwidth */
-+			opp-bw-MBs = <1830 6103>;
-+		};
-+		opp-998400000 {
-+			opp-hz = /bits/ 64 <998400000>;
-+			/* 2282 MB/s average and 7614 MB/s peak bandwidth */
-+			opp-bw-MBs = <2284 7614>;
-+		};
-+	};
+ 	/* Scaling down? Configure required OPPs after frequency */
+ 	if (!ret && freq < old_freq) {
+ 		ret = _set_required_opps(dev, opp_table, opp);
