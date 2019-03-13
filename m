@@ -1,92 +1,53 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH 4/4] cpufreq: dt: Add support for interconnect bandwidth scaling
-Date: Wed, 13 Mar 2019 11:00:10 +0200
-Message-ID: <20190313090010.20534-5-georgi.djakov@linaro.org>
-References: <20190313090010.20534-1-georgi.djakov@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / OPP: Update performance state when freq == old_freq
+Date: Wed, 13 Mar 2019 10:56:44 +0100
+Message-ID: <12337613.44RoPr5aty@aspire.rjw.lan>
+References: <5a0c96bebb52c1ae34a2d0df63517b2d2938369c.1552366620.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190313090010.20534-1-georgi.djakov@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
-Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <5a0c96bebb52c1ae34a2d0df63517b2d2938369c.1552366620.git.viresh.kumar@linaro.org>
+Sender: stable-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, jorge.ramirez-ortiz@linaro.org, "v5 . 0" <stable@vger.kernel.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In addition to clocks and regulators, some devices can scale the bandwidth
-of their on-chip interconnect - for example between CPU and DDR memory. Add
-support for that, so that platforms which support it can make use of it.
+On Tuesday, March 12, 2019 5:57:18 AM CET Viresh Kumar wrote:
+> At boot up, CPUfreq core performs a sanity check to see if the system is
+> running at a frequency defined in the frequency table of the CPU. If so,
+> we try to find a valid frequency (lowest frequency greater than the
+> currently programmed frequency) from the table and set it. When the call
+> reaches dev_pm_opp_set_rate(), it calls _find_freq_ceil(opp_table,
+> &old_freq) to find the previously configured OPP and this call also
+> updates the old_freq. This eventually sets the old_freq == freq (new
+> target requested by cpufreq core) and we skip updating the performance
+> state in this case.
+> 
+> Fix this by also updating the performance state when the old_freq ==
+> freq.
+> 
+> Fixes: ca1b5d77b1c6 ("OPP: Configure all required OPPs")
+> Cc: v5.0 <stable@vger.kernel.org> # v5.0
+> Reported-by: Niklas Cassel <niklas.cassel@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/opp/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index d7f97167cac3..0420f7e8ad5b 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -760,7 +760,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+>  		old_freq, freq);
+>  
+>  	/* Scaling up? Configure required OPPs before frequency */
+> -	if (freq > old_freq) {
+> +	if (freq >= old_freq) {
+>  		ret = _set_required_opps(dev, opp_table, opp);
+>  		if (ret)
+>  			goto put_opp;
+> 
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/cpufreq/cpufreq-dt.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index e58bfcb1169e..30fed0fc266d 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -17,6 +17,7 @@
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/err.h>
-+#include <linux/interconnect.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/pm_opp.h>
-@@ -100,6 +101,7 @@ static int resources_available(void)
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
-+	struct icc_path *cpu_path;
- 	int ret = 0;
- 	const char *name;
- 
-@@ -126,6 +128,19 @@ static int resources_available(void)
- 
- 	clk_put(cpu_clk);
- 
-+	cpu_path = of_icc_get(cpu_dev, NULL);
-+	ret = PTR_ERR_OR_ZERO(cpu_path);
-+	if (ret) {
-+		if (ret == -EPROBE_DEFER)
-+			dev_dbg(cpu_dev, "defer icc path: %d\n", ret);
-+		else
-+			dev_err(cpu_dev, "failed to get icc path: %d\n", ret);
-+
-+		return ret;
-+	}
-+
-+	icc_put(cpu_path);
-+
- 	name = find_supply_name(cpu_dev);
- 	/* Platform doesn't require regulator */
- 	if (!name)
-@@ -205,10 +220,18 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		}
- 	}
- 
-+	opp_table = dev_pm_opp_set_path(cpu_dev, NULL);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		dev_err(cpu_dev, "Failed to set interconnect path for cpu%d: %d\n",
-+			policy->cpu, ret);
-+		goto out_put_regulator;
-+	}
-+
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv) {
- 		ret = -ENOMEM;
--		goto out_put_regulator;
-+		goto out_put_path;
- 	}
- 
- 	priv->reg_name = name;
-@@ -288,6 +311,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	if (priv->have_static_opps)
- 		dev_pm_opp_of_cpumask_remove_table(policy->cpus);
- 	kfree(priv);
-+out_put_path:
-+	dev_pm_opp_put_path(opp_table);
- out_put_regulator:
- 	if (name)
- 		dev_pm_opp_put_regulators(opp_table);
+Applied, thanks!
