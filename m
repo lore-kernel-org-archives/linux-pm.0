@@ -1,66 +1,74 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [RESEND PATCH] PM / devfreq: Fix static checker warning in try_then_request_governor
-Date: Wed, 13 Mar 2019 13:22:53 +0100
-Message-ID: <20190313122253.24355-1-enric.balletbo@collabora.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Wed, 13 Mar 2019 14:40:22 +0100
+Message-ID: <20190313134022.GB5922@hirez.programming.kicks-ass.net>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190208100554.32196-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Dan Carpenter <dan.carpenter@oracle.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-The patch 23c7b54ca1cd: "PM / devfreq: Fix devfreq_add_device() when
-drivers are built as modules." leads to the following static checker
-warning:
+On Fri, Feb 08, 2019 at 10:05:40AM +0000, Patrick Bellasi wrote:
+> +static inline unsigned int uclamp_bucket_id(unsigned int clamp_value)
+> +{
+> +	return clamp_value / UCLAMP_BUCKET_DELTA;
+> +}
+> +
+> +static inline unsigned int uclamp_bucket_value(unsigned int clamp_value)
+> +{
+> +	return UCLAMP_BUCKET_DELTA * uclamp_bucket_id(clamp_value);
 
-    drivers/devfreq/devfreq.c:1043 governor_store()
-    warn: 'governor' can also be NULL
+	return clamp_value - (clamp_value % UCLAMP_BUCKET_DELTA);
 
-The reason is that the try_then_request_governor() function returns both
-error pointers and NULL. It should just return error pointers, so fix
-this by returning a ERR_PTR to the error intead of returning NULL.
+might generate better code; just a single division, instead of a div and
+mult.
 
-Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
----
-Hi,
+> +}
+> +
+> +static inline unsigned int uclamp_none(int clamp_id)
+> +{
+> +	if (clamp_id == UCLAMP_MIN)
+> +		return 0;
+> +	return SCHED_CAPACITY_SCALE;
+> +}
+> +
+> +static inline void uclamp_rq_update(struct rq *rq, unsigned int clamp_id)
+> +{
+> +	struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+> +	unsigned int max_value = uclamp_none(clamp_id);
+> +	unsigned int bucket_id;
+> +
+> +	/*
+> +	 * Both min and max clamps are MAX aggregated, thus the topmost
+> +	 * bucket with some tasks defines the rq's clamp value.
+> +	 */
+> +	bucket_id = UCLAMP_BUCKETS;
+> +	do {
+> +		--bucket_id;
+> +		if (!rq->uclamp[clamp_id].bucket[bucket_id].tasks)
+> +			continue;
+> +		max_value = bucket[bucket_id].value;
+> +		break;
 
-This is a resend of [1] as seems that got lost at some point and I just
-noticed that was never merged.
+If you flip the if condition the code will be nicer.
 
-Thanks,
- Enric
+> +	} while (bucket_id);
 
-[1] https://lkml.org/lkml/2018/10/16/744
+But you can also use a for loop:
 
+	for (i = UCLAMP_BUCKETS-1; i>=0; i--) {
+		if (rq->uclamp[clamp_id].bucket[i].tasks) {
+			max_value = bucket[i].value;
+			break;
+		}
+	}
 
- drivers/devfreq/devfreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0ae3de76833b..839621b044f4 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -228,7 +228,7 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
-  * if is not found. This can happen when both drivers (the governor driver
-  * and the driver that call devfreq_add_device) are built as modules.
-  * devfreq_list_lock should be held by the caller. Returns the matched
-- * governor's pointer.
-+ * governor's pointer or an error pointer.
-  */
- static struct devfreq_governor *try_then_request_governor(const char *name)
- {
-@@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
- 		/* Restore previous state before return */
- 		mutex_lock(&devfreq_list_lock);
- 		if (err)
--			return NULL;
-+			return ERR_PTR(err);
- 
- 		governor = find_devfreq_governor(name);
- 	}
--- 
-2.20.1
+> +	WRITE_ONCE(rq->uclamp[clamp_id].value, max_value);
+> +}
