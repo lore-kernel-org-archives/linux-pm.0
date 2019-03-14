@@ -1,282 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/4] OPP: Add support for parsing the interconnect
- bandwidth
-Date: Thu, 14 Mar 2019 12:00:47 +0530
-Message-ID: <20190314063047.urmzez52bdyrkdsu@vireshk-i7>
-References: <20190313090010.20534-1-georgi.djakov@linaro.org>
- <20190313090010.20534-3-georgi.djakov@linaro.org>
+Subject: [PATCH 0/7] cpufreq: Call transition notifier only once for each policy
+Date: Thu, 14 Mar 2019 12:12:46 +0530
+Message-ID: <cover.1552545525.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190313090010.20534-3-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Borislav Petkov <bp@alien8.de>, "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, Russell King <linux@armlinux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-03-19, 11:00, Georgi Djakov wrote:
-> The OPP bindings now support bandwidth values, so add support to parse it
-> from device tree and store it into the new dev_pm_opp_icc_bw struct, which
-> is part of the dev_pm_opp.
-> 
-> Also add and export the dev_pm_opp_set_path() and dev_pm_opp_put_path()
-> helpers, to set (and release) an interconnect path to a device. The
-> bandwidth of this path will be updated when the OPPs are switched.
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  drivers/opp/core.c     | 67 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/opp/of.c       | 44 +++++++++++++++++++++++++++
->  drivers/opp/opp.h      |  6 ++++
->  include/linux/pm_opp.h | 14 +++++++++
->  4 files changed, 131 insertions(+)
-> 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index e06a0ab05ad6..4b019cecaa07 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -19,6 +19,7 @@
->  #include <linux/slab.h>
->  #include <linux/device.h>
->  #include <linux/export.h>
-> +#include <linux/interconnect.h>
->  #include <linux/pm_domain.h>
->  #include <linux/regulator/consumer.h>
->  
-> @@ -1645,6 +1646,72 @@ void dev_pm_opp_put_clkname(struct opp_table *opp_table)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_put_clkname);
->  
-> +/**
-> + * dev_pm_opp_set_path() - Set interconnect path for a device
-> + * @dev: Device for which interconnect path is being set.
-> + * @name: Interconnect path name or NULL.
-> + *
-> + * This must be called before any OPPs are initialized for the device.
-> + */
-> +struct opp_table *dev_pm_opp_set_path(struct device *dev, const char *name)
+Currently we call the cpufreq transition notifiers once for each CPU of
+the policy->cpus cpumask, which isn't that efficient. This patchset
+tries to simplify that by adding another field in struct cpufreq_freqs,
+cpus, so the callback has all the information available with a single
+call for each policy.
 
-Maybe the OPP core can do it itself in a similar way to how we do
-clk_get() today ?
+I have tested this on arm64 platform and is compile tested for other
+platforms. This has gone through 0-day testing as well, I have pushed my
+branch over a week back to the public tree which gets tested by 0-day
+bot.
 
-> +{
-> +	struct opp_table *opp_table;
-> +	int ret;
-> +
-> +	opp_table = dev_pm_opp_get_opp_table(dev);
-> +	if (!opp_table)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	/* This should be called before OPPs are initialized */
-> +	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
-> +		ret = -EBUSY;
-> +		goto err;
-> +	}
-> +
-> +	/* Another CPU that shares the OPP table has set the path */
-> +	if (opp_table->path)
-> +		return opp_table;
-> +
-> +	/* Find interconnect path for the device */
-> +	opp_table->path = of_icc_get(dev, name);
-> +	if (IS_ERR(opp_table->path)) {
-> +		ret = PTR_ERR(opp_table->clk);
-> +		if (ret != -EPROBE_DEFER) {
-> +			dev_err(dev, "%s: Couldn't find path: %d\n", __func__,
-> +				ret);
-> +		}
-> +		goto err;
-> +	}
-> +
-> +	return opp_table;
-> +
-> +err:
-> +	dev_pm_opp_put_opp_table(opp_table);
-> +
-> +	return ERR_PTR(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_set_path);
-> +
-> +/**
-> + * dev_pm_opp_put_path() - Release interconnect path resources
-> + * @opp_table: OPP table returned from dev_pm_opp_set_path().
-> + */
-> +void dev_pm_opp_put_path(struct opp_table *opp_table)
-> +{
-> +	if (!opp_table->path)
-> +		goto put_opp_table;
-> +
-> +	/* Make sure there are no concurrent readers while updating opp_table */
-> +	WARN_ON(!list_empty(&opp_table->opp_list));
-> +
-> +	icc_put(opp_table->path);
-> +	opp_table->path = NULL;
-> +
-> +put_opp_table:
-> +	dev_pm_opp_put_opp_table(opp_table);
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_put_path);
-> +
->  /**
->   * dev_pm_opp_register_set_opp_helper() - Register custom set OPP helper
->   * @dev: Device for which the helper is getting registered.
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 1779f2c93291..96fb7fdda8c7 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -16,6 +16,7 @@
->  #include <linux/cpu.h>
->  #include <linux/errno.h>
->  #include <linux/device.h>
-> +#include <linux/interconnect.h>
->  #include <linux/of_device.h>
->  #include <linux/pm_domain.h>
->  #include <linux/slab.h>
-> @@ -526,6 +527,45 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
->  	return ret;
->  }
->  
-> +static int opp_parse_icc_bw(struct dev_pm_opp *opp, struct device *dev,
-> +			    struct opp_table *opp_table)
-> +{
-> +	struct property *prop = NULL;
-> +	char name[NAME_MAX];
-> +	int count;
-> +	u32 avg = 0;
-> +	u32 peak = 0;
+FWIW, it maybe possible to make the callback implementation more
+efficient now that they are called only once for each policy, but this
+patchset only did the minimum amount of changes to make sure we don't
+end up breaking otherwise working code.
 
-Why init to 0 ?
+--
+viresh
 
-> +
-> +	/* Search for "opp-bw-MBs" */
-> +	sprintf(name, "opp-bw-MBs");
-> +	prop = of_find_property(opp->np, name, NULL);
-> +
-> +	/* Missing property is not a problem */
-> +	if (!prop) {
-> +		dev_dbg(dev, "%s: Missing opp-bw-MBs\n", __func__);
-> +		return 0;
-> +	}
-> +
-> +	count = of_property_count_u32_elems(opp->np, name);
-> +	if (count != 2) {
-> +		dev_err(dev, "%s: Invalid number of elements in %s property\n",
-> +			__func__, name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	opp->bandwidth = kzalloc(sizeof(*opp->bandwidth), GFP_KERNEL);
+Viresh Kumar (7):
+  cpufreq: Pass policy->related_cpus to transition notifiers
+  ARM: smp: Update cpufreq transition notifier to handle multiple CPUs
+  ARM: twd: Update cpufreq transition notifier to handle multiple CPUs
+  sparc64: Update cpufreq transition notifier to handle multiple CPUs
+  x86/tsc: Update cpufreq transition notifier to handle multiple CPUs
+  KVM: x86: Update cpufreq transition notifier to handle multiple CPUs
+  cpufreq: Call transition notifiers only once for each policy
 
-You forgot to free it.
-
-> +	if (!opp->bandwidth)
-> +		return -ENOMEM;
-> +
-> +	of_property_read_u32_index(opp->np, name, 0, &avg);
-> +	of_property_read_u32_index(opp->np, name, 1, &peak);
-> +
-> +	opp->bandwidth->avg = MBps_to_icc(avg);
-> +	opp->bandwidth->peak = MBps_to_icc(peak);
-> +
-> +	return 0;
-> +}
-> +
->  /**
->   * dev_pm_opp_of_remove_table() - Free OPP table entries created from static DT
->   *				  entries
-> @@ -619,6 +659,10 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
->  	if (ret)
->  		goto free_required_opps;
->  
-> +	ret = opp_parse_icc_bw(new_opp, dev, opp_table);
-> +	if (ret)
-> +		goto free_required_opps;
-> +
->  	if (opp_table->is_genpd)
->  		new_opp->pstate = pm_genpd_opp_to_performance_state(dev, new_opp);
->  
-> diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-> index 4458175aa661..b4287d065c24 100644
-> --- a/drivers/opp/opp.h
-> +++ b/drivers/opp/opp.h
-> @@ -24,6 +24,7 @@
->  
->  struct clk;
->  struct regulator;
-> +struct icc_path;
->  
->  /* Lock to allow exclusive modification to the device and opp lists */
->  extern struct mutex opp_table_lock;
-> @@ -62,6 +63,7 @@ extern struct list_head opp_tables;
->   * @rate:	Frequency in hertz
->   * @level:	Performance level
->   * @supplies:	Power supplies voltage/current values
-> + * @bandwidth:	Interconnect bandwidth values
->   * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
->   *		frequency from any other OPP's frequency.
->   * @required_opps: List of OPPs that are required by this OPP.
-> @@ -85,6 +87,8 @@ struct dev_pm_opp {
->  
->  	struct dev_pm_opp_supply *supplies;
->  
-> +	struct dev_pm_opp_icc_bw *bandwidth;
-> +
->  	unsigned long clock_latency_ns;
->  
->  	struct dev_pm_opp **required_opps;
-> @@ -152,6 +156,7 @@ enum opp_table_access {
->   * property).
->   * @genpd_performance_state: Device's power domain support performance state.
->   * @is_genpd: Marks if the OPP table belongs to a genpd.
-> + * @path: Interconnect path handle
->   * @set_opp: Platform specific set_opp callback
->   * @set_opp_data: Data to be passed to set_opp callback
->   * @dentry:	debugfs dentry pointer of the real device directory (not links).
-> @@ -196,6 +201,7 @@ struct opp_table {
->  	int regulator_count;
->  	bool genpd_performance_state;
->  	bool is_genpd;
-> +	struct icc_path *path;
->  
->  	int (*set_opp)(struct dev_pm_set_opp_data *data);
->  	struct dev_pm_set_opp_data *set_opp_data;
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 900359342965..5edce71a15d6 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -43,6 +43,18 @@ struct dev_pm_opp_supply {
->  	unsigned long u_amp;
->  };
->  
-> +/**
-> + * struct dev_pm_opp_icc_bw - Interconnect bandwidth values
-> + * @avg:	Average bandwidth corresponding to this OPP (in icc units)
-> + * @peak:	Peak bandwidth corresponding to this OPP (in icc units)
-> + *
-> + * This structure stores the bandwidth values for a single interconnect path.
-> + */
-> +struct dev_pm_opp_icc_bw {
-> +	u32 avg;
-> +	u32 peak;
-> +};
-
-There is only one user of this structure, maybe we can directly add
-the elements in teh dev_pm_opp structure.
-
-> +
->  /**
->   * struct dev_pm_opp_info - OPP freq/voltage/current values
->   * @rate:	Target clk rate in hz
-> @@ -127,6 +139,8 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * con
->  void dev_pm_opp_put_regulators(struct opp_table *opp_table);
->  struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
->  void dev_pm_opp_put_clkname(struct opp_table *opp_table);
-> +struct opp_table *dev_pm_opp_set_path(struct device *dev, const char *name);
-> +void dev_pm_opp_put_path(struct opp_table *opp_table);
->  struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
->  void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
->  struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
+ arch/arm/kernel/smp.c       | 23 ++++++++++++++---------
+ arch/arm/kernel/smp_twd.c   |  9 ++++++---
+ arch/sparc/kernel/time_64.c | 28 ++++++++++++++++------------
+ arch/x86/kernel/tsc.c       | 31 ++++++++++++++++++++-----------
+ arch/x86/kvm/x86.c          | 31 ++++++++++++++++++++-----------
+ drivers/cpufreq/cpufreq.c   | 19 ++++++++++---------
+ include/linux/cpufreq.h     |  2 +-
+ 7 files changed, 87 insertions(+), 56 deletions(-)
 
 -- 
-viresh
+2.21.0.rc0.269.g1a574e7a288b
