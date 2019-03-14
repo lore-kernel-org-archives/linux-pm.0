@@ -1,62 +1,58 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/7] cpufreq: Pass policy->related_cpus to transition notifiers
-Date: Thu, 14 Mar 2019 12:12:47 +0530
-Message-ID: <3b6663b03fe837615ba608aff50b4b2a27ab2ab3.1552545525.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/7] ARM: twd: Update cpufreq transition notifier to handle multiple CPUs
+Date: Thu, 14 Mar 2019 12:12:49 +0530
+Message-ID: <3c977305886032ba871bd266d555ede47b4576fc.1552545525.git.viresh.kumar@linaro.org>
 References: <cover.1552545525.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1552545525.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we call these notifiers once for each CPU of the policy->cpus
-cpumask, which isn't that efficient.
+The cpufreq core currently calls the cpufreq transition notifier
+callback once for each affected CPU. This is going to change soon and
+the cpufreq core will call the callback only once for each cpufreq
+policy. The callback must look at the newly added field in struct
+cpufreq_freqs, "cpus", which contains policy->related_cpus (both
+online/offline CPUs) and perform per-cpu actions for them if any.
 
-This patch adds a cpumask pointer to struct cpufreq_freqs and copies
-policy->related_cpus to it. The notifiers will have information about
-all the affected CPUs now with the first call itself and once all the
-notifier callbacks are updated to use the new field, we can remove the
-"cpu" field from struct cpufreq_freqs and call the notifier only once
-per policy.
-
-Some of the transition notifier users use per-cpu data to read and store
-their data and they rely on it being correct. With CPU offline/online
-sequences we may end up with using stale data for those CPUs (which are
-offlined/onlined). In order to avoid such corner cases, this patch uses
-policy->related_cpus instead of policy->cpus.
+This patch updates twd_cpufreq_transition() to use the new "cpus" field
+and run twd_update_frequency() for each online CPU present in the
+freqs->cpus.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 1 +
- include/linux/cpufreq.h   | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm/kernel/smp_twd.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0e626b00053b..b1b012169f00 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -311,6 +311,7 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 	if (cpufreq_disabled())
- 		return;
+diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
+index b30eafeef096..df7db45d931b 100644
+--- a/arch/arm/kernel/smp_twd.c
++++ b/arch/arm/kernel/smp_twd.c
+@@ -162,15 +162,18 @@ static int twd_cpufreq_transition(struct notifier_block *nb,
+ 	unsigned long state, void *data)
+ {
+ 	struct cpufreq_freqs *freqs = data;
++	int cpu;
  
-+	freqs->cpus = policy->related_cpus;
- 	freqs->flags = cpufreq_driver->flags;
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		 state, freqs->new);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index b160e98076e3..dd318363dfc2 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -43,6 +43,7 @@ enum cpufreq_table_sorting {
- };
+ 	/*
+ 	 * The twd clock events must be reprogrammed to account for the new
+ 	 * frequency.  The timer is local to a cpu, so cross-call to the
+ 	 * changing cpu.
+ 	 */
+-	if (state == CPUFREQ_POSTCHANGE)
+-		smp_call_function_single(freqs->cpu, twd_update_frequency,
+-			NULL, 1);
++	if (state != CPUFREQ_POSTCHANGE)
++		return NOTIFY_OK;
++
++	for_each_cpu_and(cpu, freqs->cpus, cpu_online_mask)
++		smp_call_function_single(cpu, twd_update_frequency, NULL, 1);
  
- struct cpufreq_freqs {
-+	struct cpumask *cpus;
- 	unsigned int cpu;	/* cpu nr */
- 	unsigned int old;
- 	unsigned int new;
+ 	return NOTIFY_OK;
+ }
 -- 
 2.21.0.rc0.269.g1a574e7a288b
