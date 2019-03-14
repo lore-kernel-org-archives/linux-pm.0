@@ -1,92 +1,139 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Date: Thu, 14 Mar 2019 11:18:49 +0000
-Message-ID: <20190314111849.gx6bl6myfjtaan7r@e110439-lin>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-2-patrick.bellasi@arm.com>
- <20190313135238.GC5922@hirez.programming.kicks-ass.net>
- <20190313155954.jse2tyn5iqxm6wle@e110439-lin>
- <20190313193916.GQ2482@worktop.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More power management updates for v5.1-rc1
+Date: Thu, 14 Mar 2019 12:34:51 +0100
+Message-ID: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190313193916.GQ2482@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Mar 20:39, Peter Zijlstra wrote:
-> On Wed, Mar 13, 2019 at 03:59:54PM +0000, Patrick Bellasi wrote:
-> > On 13-Mar 14:52, Peter Zijlstra wrote:
-> 
-> > Because of backetization, we potentially end up tracking tasks with
-> > different requested clamp values in the same bucket.
-> > 
-> > For example, with 20% bucket size, we can have:
-> >   Task1: util_min=25%
-> >   Task2: util_min=35%
-> > accounted in the same bucket.
-> 
-> > > Given all that, what is to stop the bucket value to climbing to
-> > > uclamp_bucket_value(+1)-1 and staying there (provided there's someone
-> > > runnable)?
-> > 
-> > Nothing... but that's an expected consequence of bucketization.
-> 
-> No, it is not.
-> 
-> > > Why are we doing this... ?
-> > 
-> > You can either decide to:
-> > 
-> >  a) always boost tasks to just the bucket nominal value
-> >     thus always penalizing both Task1 and Task2 of the example above
-> 
-> This is the expected behaviour. When was the last time your histogram
-> did something like b?
+Hi Linus,
 
-Right, I see what you mean... strictly speaking histograms always do a
-floor aggregation.
+Please pull from the tag
 
-> >  b) always boost tasks to the bucket "max" value
-> >     thus always overboosting both Task1 and Task2 of the example above
-> > 
-> > The solution above instead has a very good property: in systems
-> > where you have only few and well defined clamp values we always
-> > provide the exact boost.
-> > 
-> > For example, if your system requires only 23% and 47% boost values
-> > (totally random numbers), then you can always get the exact boost
-> > required using just 3 bucksts or ~33% size each.
-> > 
-> > In systems where you don't know which boost values you will have, you
-> > can still defined the maximum overboost granularity you accept for
-> > each task by just tuning the number of clamp groups. For example, with
-> > 20 groups you can have a 5% max overboost.
-> 
-> Maybe, but this is not a direct concequence of buckets, but an
-> additional heuristic that might work well in this case.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.1-rc1-2
 
-Right... that's the point.
+with top-most commit b444e1aa3e48e13aea22162918bd6140c85142de
 
-We started with mapping to be able to track exact clamp values.
-Then we switched to linear mapping to remove the complexity of
-mapping, but we would like to still have the possibility to track
-exact numbers whenever possible.
+ Merge branches 'pm-opp' and 'pm-tools'
 
-> Maybe split this out in a separate patch? So start with the trivial
-> bucket, and then do this change on top with the above few paragraphs as
-> changelog?
+on top of commit ef8006846a3a97d9d8bf49e63dba948d0d2dbbf0
 
-That's doable, otherwise maybe we can just add the above paragraphs to
-the changelog of this patch. But give your comment above I assume you
-prefer to split it out... just let me know otherwise.
+ Merge tag 'pm-5.1-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+to receive additional power management updates for 5.1-rc1.
+
+These are mostly fixes and cleanups on top of the previously merged
+power management material for 5.1-rc1 with one cpupower utility
+update that wasn't pushed earlier due to unfortunate timing.
+
+Specifics:
+
+ - Fix registration of new cpuidle governors partially broken during
+   the 5.0 development cycle by mistake (Rafael Wysocki).
+
+ - Avoid integer overflows in the menu cpuidle governor by making
+   it discard the overflowing data points upfront (Rafael Wysocki).
+
+ - Fix minor mistake in the recent update of the iowait boost
+   computation in the intel_pstate driver (Rafael Wysocki).
+
+ - Drop incorrect __init annotation from one function in the pxa2xx
+   cpufreq driver (Arnd Bergmann).
+
+ - Fix the operating performance points (OPP) framework
+   initialization for devices in multiple power domains if
+   only one of them is scalable (Rajendra Nayak).
+
+ - Fix mistake in dev_pm_opp_set_rate() which causes it to skip
+   updating the performance state if the new frequency is the same
+   as the old one (Viresh Kumar).
+
+ - Rework the cancellation of wakeup source timers to avoid
+   potential issues with it and do some cleanups unlocked by
+   that change (Viresh Kumar, Rafael Wysocki).
+
+ - Clean up the code computing the active/suspended time of devices
+   in the PM-runtime framework after recent changes (Ulf Hansson).
+
+ - Make the power management infrastructure code use pr_fmt()
+   consistently (Joe Perches).
+
+ - Clean up the generic power domains (genpd) framework somewhat
+   (Aisheng Dong).
+
+ - Improve kerneldoc comments for two functions in the cpufreq core
+   (Rafael Wysocki).
+
+ - Fix typo in a PM QoS file description comment (Aisheng Dong).
+
+ - Update the handling of CPU boost frequencies in the cpupower
+   utility (Abhishek Goel).
+
+Thanks!
 
 
--- 
-#include <best/regards.h>
+---------------
 
-Patrick Bellasi
+Abhishek Goel (1):
+      tools/power/cpupower: Display boost frequency separately
+
+Aisheng Dong (4):
+      PM / QoS: Fix typo in file description
+      PM / Domains: Improve warn for multiple states but no governor
+      PM / Domains: Return early for all errors in _genpd_power_off()
+      PM / domains: Remove one unnecessary blank line
+
+Arnd Bergmann (1):
+      cpufreq: pxa2xx: remove incorrect __init annotation
+
+Joe Perches (1):
+      PM: Add and use pr_fmt()
+
+Rafael J. Wysocki (5):
+      cpuidle: menu: Avoid overflows when computing variance
+      cpufreq: Improve kerneldoc comments for cpufreq_cpu_get/put()
+      PM / wakeup: Drop wakeup_source_drop()
+      cpufreq: intel_pstate: Fix up iowait_boost computation
+      cpuidle: governor: Add new governors to cpuidle_governors again
+
+Rajendra Nayak (1):
+      OPP: Fix handling of multiple power domains
+
+Ulf Hansson (2):
+      PM-runtime: Consolidate code to get active/suspended time
+      PM-runtime: Call pm_runtime_active|suspended_time() from sysfs
+
+Viresh Kumar (2):
+      PM / wakeup: Rework wakeup source timer cancellation
+      PM / OPP: Update performance state when freq == old_freq
+
+---------------
+
+ drivers/base/power/domain.c               | 20 ++++++++-------
+ drivers/base/power/domain_governor.c      |  1 -
+ drivers/base/power/main.c                 | 21 ++++++++--------
+ drivers/base/power/power.h                |  1 +
+ drivers/base/power/qos.c                  |  2 +-
+ drivers/base/power/runtime.c              | 16 +++++++++---
+ drivers/base/power/sysfs.c                | 12 ++-------
+ drivers/base/power/trace.c                |  2 ++
+ drivers/base/power/wakeup.c               | 30 ++++++++--------------
+ drivers/cpufreq/cpufreq.c                 | 24 +++++++-----------
+ drivers/cpufreq/intel_pstate.c            |  2 +-
+ drivers/cpufreq/pxa2xx-cpufreq.c          |  4 +--
+ drivers/cpuidle/governor.c                |  1 +
+ drivers/cpuidle/governors/menu.c          |  2 +-
+ drivers/opp/core.c                        |  2 +-
+ drivers/opp/of.c                          | 16 ++++++++++--
+ include/linux/pm.h                        |  1 -
+ include/linux/pm_wakeup.h                 |  9 -------
+ tools/power/cpupower/lib/cpufreq.c        | 19 ++++++++------
+ tools/power/cpupower/lib/cpufreq.h        | 16 ++++++------
+ tools/power/cpupower/utils/cpufreq-info.c | 42 +++++++++++++++++++++++--------
+ 21 files changed, 131 insertions(+), 112 deletions(-)
