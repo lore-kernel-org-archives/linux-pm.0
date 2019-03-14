@@ -1,139 +1,85 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] More power management updates for v5.1-rc1
-Date: Thu, 14 Mar 2019 12:34:51 +0100
-Message-ID: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Thu, 14 Mar 2019 11:45:51 +0000
+Message-ID: <20190314114551.6kfozh6rpw5mornb@e110439-lin>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-2-patrick.bellasi@arm.com>
+ <20190313140925.GE5922@hirez.programming.kicks-ass.net>
+ <20190313152359.lkyzel7fakjoi5hu@e110439-lin>
+ <20190313194619.GR2482@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190313194619.GR2482@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On 13-Mar 20:46, Peter Zijlstra wrote:
+> On Wed, Mar 13, 2019 at 03:23:59PM +0000, Patrick Bellasi wrote:
+> > On 13-Mar 15:09, Peter Zijlstra wrote:
+> > > On Fri, Feb 08, 2019 at 10:05:40AM +0000, Patrick Bellasi wrote:
+> 
+> > > > +static inline void uclamp_rq_update(struct rq *rq, unsigned int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+> > > > +	unsigned int max_value = uclamp_none(clamp_id);
+> > > 
+> > > That's 1024 for uclamp_max
+> > > 
+> > > > +	unsigned int bucket_id;
+> > > > +
+> > > > +	/*
+> > > > +	 * Both min and max clamps are MAX aggregated, thus the topmost
+> > > > +	 * bucket with some tasks defines the rq's clamp value.
+> > > > +	 */
+> > > > +	bucket_id = UCLAMP_BUCKETS;
+> > > > +	do {
+> > > > +		--bucket_id;
+> > > > +		if (!rq->uclamp[clamp_id].bucket[bucket_id].tasks)
+> > > > +			continue;
+> > > > +		max_value = bucket[bucket_id].value;
+> > > 
+> > > but this will then _lower_ it. That's not a MAX aggregate.
+> > 
+> > For uclamp_max we want max_value=1024 when there are no active tasks,
+> > which means: no max clamp enforced on CFS/RT "idle" cpus.
+> > 
+> > If instead there are active RT/CFS tasks then we want the clamp value
+> > of the max group, which means: MAX aggregate active clamps.
+> > 
+> > That's what the code above does and the comment says.
+> 
+> That's (obviously) not how I read it.... maybe something like:
+> 
+> static inline void uclamp_rq_update(struct rq *rq, unsigned int clamp_id)
+> {
+> 	struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+> 	int i;
+> 
+> 	/*
+> 	 * Since both min and max clamps are max aggregated, find the
+> 	 * top most bucket with tasks in.
+> 	 */
+> 	for (i = UCLMAP_BUCKETS-1; i>=0; i--) {
+> 		if (!bucket[i].tasks)
+> 			continue;
+> 		return bucket[i].value;
+> 	}
+> 
+> 	/* No tasks -- default clamp value */
+> 	return uclamp_none(clamp_id);
+> }
+> 
+> would make it clearer?
 
-Please pull from the tag
+Fine for me, I'll then change the name in something else since that's
+not more an "_update" by moving the WRITE_ONCE into the caller.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.1-rc1-2
+-- 
+#include <best/regards.h>
 
-with top-most commit b444e1aa3e48e13aea22162918bd6140c85142de
-
- Merge branches 'pm-opp' and 'pm-tools'
-
-on top of commit ef8006846a3a97d9d8bf49e63dba948d0d2dbbf0
-
- Merge tag 'pm-5.1-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-to receive additional power management updates for 5.1-rc1.
-
-These are mostly fixes and cleanups on top of the previously merged
-power management material for 5.1-rc1 with one cpupower utility
-update that wasn't pushed earlier due to unfortunate timing.
-
-Specifics:
-
- - Fix registration of new cpuidle governors partially broken during
-   the 5.0 development cycle by mistake (Rafael Wysocki).
-
- - Avoid integer overflows in the menu cpuidle governor by making
-   it discard the overflowing data points upfront (Rafael Wysocki).
-
- - Fix minor mistake in the recent update of the iowait boost
-   computation in the intel_pstate driver (Rafael Wysocki).
-
- - Drop incorrect __init annotation from one function in the pxa2xx
-   cpufreq driver (Arnd Bergmann).
-
- - Fix the operating performance points (OPP) framework
-   initialization for devices in multiple power domains if
-   only one of them is scalable (Rajendra Nayak).
-
- - Fix mistake in dev_pm_opp_set_rate() which causes it to skip
-   updating the performance state if the new frequency is the same
-   as the old one (Viresh Kumar).
-
- - Rework the cancellation of wakeup source timers to avoid
-   potential issues with it and do some cleanups unlocked by
-   that change (Viresh Kumar, Rafael Wysocki).
-
- - Clean up the code computing the active/suspended time of devices
-   in the PM-runtime framework after recent changes (Ulf Hansson).
-
- - Make the power management infrastructure code use pr_fmt()
-   consistently (Joe Perches).
-
- - Clean up the generic power domains (genpd) framework somewhat
-   (Aisheng Dong).
-
- - Improve kerneldoc comments for two functions in the cpufreq core
-   (Rafael Wysocki).
-
- - Fix typo in a PM QoS file description comment (Aisheng Dong).
-
- - Update the handling of CPU boost frequencies in the cpupower
-   utility (Abhishek Goel).
-
-Thanks!
-
-
----------------
-
-Abhishek Goel (1):
-      tools/power/cpupower: Display boost frequency separately
-
-Aisheng Dong (4):
-      PM / QoS: Fix typo in file description
-      PM / Domains: Improve warn for multiple states but no governor
-      PM / Domains: Return early for all errors in _genpd_power_off()
-      PM / domains: Remove one unnecessary blank line
-
-Arnd Bergmann (1):
-      cpufreq: pxa2xx: remove incorrect __init annotation
-
-Joe Perches (1):
-      PM: Add and use pr_fmt()
-
-Rafael J. Wysocki (5):
-      cpuidle: menu: Avoid overflows when computing variance
-      cpufreq: Improve kerneldoc comments for cpufreq_cpu_get/put()
-      PM / wakeup: Drop wakeup_source_drop()
-      cpufreq: intel_pstate: Fix up iowait_boost computation
-      cpuidle: governor: Add new governors to cpuidle_governors again
-
-Rajendra Nayak (1):
-      OPP: Fix handling of multiple power domains
-
-Ulf Hansson (2):
-      PM-runtime: Consolidate code to get active/suspended time
-      PM-runtime: Call pm_runtime_active|suspended_time() from sysfs
-
-Viresh Kumar (2):
-      PM / wakeup: Rework wakeup source timer cancellation
-      PM / OPP: Update performance state when freq == old_freq
-
----------------
-
- drivers/base/power/domain.c               | 20 ++++++++-------
- drivers/base/power/domain_governor.c      |  1 -
- drivers/base/power/main.c                 | 21 ++++++++--------
- drivers/base/power/power.h                |  1 +
- drivers/base/power/qos.c                  |  2 +-
- drivers/base/power/runtime.c              | 16 +++++++++---
- drivers/base/power/sysfs.c                | 12 ++-------
- drivers/base/power/trace.c                |  2 ++
- drivers/base/power/wakeup.c               | 30 ++++++++--------------
- drivers/cpufreq/cpufreq.c                 | 24 +++++++-----------
- drivers/cpufreq/intel_pstate.c            |  2 +-
- drivers/cpufreq/pxa2xx-cpufreq.c          |  4 +--
- drivers/cpuidle/governor.c                |  1 +
- drivers/cpuidle/governors/menu.c          |  2 +-
- drivers/opp/core.c                        |  2 +-
- drivers/opp/of.c                          | 16 ++++++++++--
- include/linux/pm.h                        |  1 -
- include/linux/pm_wakeup.h                 |  9 -------
- tools/power/cpupower/lib/cpufreq.c        | 19 ++++++++------
- tools/power/cpupower/lib/cpufreq.h        | 16 ++++++------
- tools/power/cpupower/utils/cpufreq-info.c | 42 +++++++++++++++++++++++--------
- 21 files changed, 131 insertions(+), 112 deletions(-)
+Patrick Bellasi
