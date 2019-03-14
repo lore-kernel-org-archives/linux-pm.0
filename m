@@ -1,49 +1,94 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/7] cpufreq: Call transition notifier only once for each
- policy
-Date: Thu, 14 Mar 2019 10:28:49 +0100
-Message-ID: <CAJZ5v0gER+aJaQmk89VSVBtHgQ+WPDdAxUW6eJ4JCB=emC85dg@mail.gmail.com>
-References: <cover.1552545525.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/7] x86/tsc: Update cpufreq transition notifier to handle
+ multiple CPUs
+Date: Thu, 14 Mar 2019 10:33:04 +0100
+Message-ID: <CAJZ5v0i=QoToW0WCaL50t0qe5sKSe6J3W+EnFTvYuVCp6MvZDA@mail.gmail.com>
+References: <cover.1552545525.git.viresh.kumar@linaro.org> <8a27342332bc467242f6ccdb4d4bd4d10f8aa552.1552545525.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1552545525.git.viresh.kumar@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8a27342332bc467242f6ccdb4d4bd4d10f8aa552.1552545525.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, kvm@vger.kernel.org, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "David S. Miller" <davem@davemloft.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Mar 14, 2019 at 7:43 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> Currently we call the cpufreq transition notifiers once for each CPU of
-> the policy->cpus cpumask, which isn't that efficient.
+> The cpufreq core currently calls the cpufreq transition notifier
+> callback once for each affected CPU. This is going to change soon and
+> the cpufreq core will call the callback only once for each cpufreq
+> policy. The callback must look at the newly added field in struct
+> cpufreq_freqs, "cpus", which contains policy->related_cpus (both
+> online/offline CPUs) and perform per-cpu actions for them if any.
+>
+> This patch updates time_cpufreq_notifier() to use the new "cpus" field,
+> update per-cpu data for all the related CPUs and call set_cyc2ns_scale()
+> for all online related_cpus.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/x86/kernel/tsc.c | 31 ++++++++++++++++++++-----------
+>  1 file changed, 20 insertions(+), 11 deletions(-)
+>
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index 3fae23834069..587a6aa72f38 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -956,28 +956,37 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>                                 void *data)
+>  {
+>         struct cpufreq_freqs *freq = data;
+> -       unsigned long *lpj;
+> -
+> -       lpj = &boot_cpu_data.loops_per_jiffy;
+> -#ifdef CONFIG_SMP
+> -       if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> -               lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> -#endif
+> +       bool boot_cpu = !IS_ENABLED(CONFIG_SMP) || freq->flags & CPUFREQ_CONST_LOOPS;
+> +       unsigned long lpj;
+> +       int cpu;
+>
+>         if (!ref_freq) {
+>                 ref_freq = freq->old;
+> -               loops_per_jiffy_ref = *lpj;
+>                 tsc_khz_ref = tsc_khz;
+> +
+> +               if (boot_cpu)
+> +                       loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+> +               else
+> +                       loops_per_jiffy_ref = cpu_data(cpumask_first(freq->cpus)).loops_per_jiffy;
+>         }
+> +
+>         if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+>                         (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> -               *lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> -
+> +               lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+>                 tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+> +
+>                 if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+>                         mark_tsc_unstable("cpufreq changes");
+>
+> -               set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
+> +               if (boot_cpu) {
+> +                       boot_cpu_data.loops_per_jiffy = lpj;
+> +               } else {
+> +                       for_each_cpu(cpu, freq->cpus)
 
-Why isn't it efficient?
+This needs to iterate over policy->cpus or you change the behavior.
 
-Transitions are per-policy anyway, so if something needs to be done
-for each CPU in the policy, it doesn't matter too much which part of
-the code carries out the iteration.
+Not that it will matter a lot (x86 in one CPU per policy anyway in the
+vast majority of cases), but it is a change nevertheless.  Moreover,
+I'm not even sure if doing that for offline CPUs makes sense.
 
-I guess some notifiers need to know what other CPUs there are in the
-policy?  If so, then why?
-
-> This patchset tries to simplify that by adding another field in struct cpufreq_freqs,
-> cpus, so the callback has all the information available with a single
-> call for each policy.
-
-Well, you can argue that the core is simplified by it somewhat, but
-the notifiers aren't.  They actually get more complex, conceptually
-too, because they now need to worry about offline vs online CPUs etc.
-
-Also I wonder why you decided to pass a cpumask in freqs instead of
-just passing a policy pointer.  If you change things from per-CPU to
-per-policy, passing the whole policy seems more natural.
+> +                               cpu_data(cpu).loops_per_jiffy = lpj;
+> +               }
+> +
+> +               for_each_cpu_and(cpu, freq->cpus, cpu_online_mask)
+> +                       set_cyc2ns_scale(tsc_khz, cpu, rdtsc());
+>         }
+>
+>         return 0;
+> --
