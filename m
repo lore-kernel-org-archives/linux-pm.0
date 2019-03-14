@@ -1,135 +1,165 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for cpu clocks
-Date: Thu, 14 Mar 2019 15:20:37 +0100
-Message-ID: <874l85v8p6.fsf@FE-laptop>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com> <20190314121541.GB19385@apalos> <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com> <20190314134428.GA24768@apalos>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] [RESEND] Do not modify perf bias performance setting by default at boot
+Date: Thu, 14 Mar 2019 15:42:16 +0100
+Message-ID: <6369897.qxlu8PgE1t@house>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190314134428.GA24768@apalos>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ilias Apalodimas <ilias.apalodimas@linaro.org>, Christian Neubert <christian.neubert.86@gmail.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Rafael Wysocki <rafael@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ilias,
+This is a revert of mainline git commits:
+commit b51ef52df71cb28e9d90cd1d48b79bf19f0bab06
+commit 17edf2d79f1ea6dfdb4c444801d928953b9f98d6
+commit abe48b108247e9b90b4c6739662a2e5c765ed114
+
+It is about this kernel message showing up on quite a lot servers:
+[    0.072652] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
+[    0.076003] ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)
+
+The background afaik were some BIOS which "forgot to set a default value".
+Certainly some (one?) broken laptop BIOS was meant, because
+the value zero (performance) is quite a reasonable default value on server systems
+and this is how a lot CPUs typically come up there.
+
+Another sever bug with above patches:
+If you really set performance BIAS MSR value to 'performance'
+as mentioned in kernel boot log, it is reset on next CPU offline/online cycle
+(see below). Unfortunately one does not see this in the logs anymore, because
+of the printk_once() usage:
+
+dmesg |grep -i bias
+[    0.026642] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
+[    0.028002] ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)
+liszt:~/:[0]# x86_energy_perf_policy 
+cpu0: EPB 6
+cpu1: EPB 6
+cpu2: EPB 6
+cpu3: EPB 6
+liszt:~/:[0]# x86_energy_perf_policy 0
+liszt:~/:[0]# x86_energy_perf_policy 
+cpu0: EPB 0
+cpu1: EPB 0
+cpu2: EPB 0
+cpu3: EPB 0
+liszt:~/:[0]# echo offline > /sys/devices/system/cpu/cpu1/online
+liszt:~/:[0]# echo online > /sys/devices/system/cpu/cpu1/online
+liszt:~/:[0]# x86_energy_perf_policy 
+cpu0: EPB 0
+cpu1: EPB 6
+cpu2: EPB 0
+cpu3: EPB 0
+
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Tested-by: Simon Schricker <sschricker@suse.de>
+
+Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/common.c
+===================================================================
+--- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/common.c	2019-03-13 17:33:06.849890801 +0100
++++ do_not_modify_perf_bias/arch/x86/kernel/cpu/common.c	2019-03-13 18:01:54.781983906 +0100
+@@ -18,7 +18,6 @@
+ #include <linux/kgdb.h>
+ #include <linux/smp.h>
+ #include <linux/io.h>
+-#include <linux/syscore_ops.h>
  
- On jeu., mars 14 2019, Ilias Apalodimas <ilias.apalodimas@linaro.org> wrote:
-
-> Hello Christian,
->> Hi,
->> 
->> I assume you use the 1000 MHz firmware. This does also not work on my Rev 7
->> board. But I'm pretty sure this is not a problem of the patches, because if
->> I take a newer kernel (4.19.20/27) without the patches it also does not
->> work. A kernel 4.19.17 does work for me. My opinion on that is that this is
->> another problem which does just occure now because now the cpu frequency
->> scaling is working with the right frequencies.
-> I am not sure which firmware i am running, i did all my tests on 5.0.0 and
-> changing between governors worked fine without the patches
-
-Curently my espressobin is broken so I tested the patches on the Armada
-3700 DB and I didn't observe the issue you had.
-
-The 3700 DB I used is configured to run at 800MHz.
-
-Could you apply the following patch and sent me the boot log?
-
-diff --git a/drivers/clk/mvebu/armada-37xx-periph.c b/drivers/clk/mvebu/armada-37xx-periph.c
-index 26ed3c18a239..f814ade5cd80 100644
---- a/drivers/clk/mvebu/armada-37xx-periph.c
-+++ b/drivers/clk/mvebu/armada-37xx-periph.c
-@@ -452,14 +452,17 @@ static int clk_pm_cpu_set_parent(struct clk_hw *hw, u8 index)
- 
-        /* Set the parent clock for all the load level */
-        for (load_level = 0; load_level < LOAD_LEVEL_NR; load_level++) {
--               unsigned int reg, mask,  val,
-+               unsigned int reg, mask,  val, old,
-                        offset = ARMADA_37XX_NB_TBG_SEL_OFF;
- 
-                armada_3700_pm_dvfs_update_regs(load_level, &reg, &offset);
- 
-                val = index << offset;
-                mask = ARMADA_37XX_NB_TBG_SEL_MASK << offset;
-+               regmap_read(base, reg, &old);
-                regmap_update_bits(base, reg, mask, val);
-+               pr_err("%s old=%X -> val=0x%X load_level=%d\n",
-+                      __func__, old,  val, load_level);
-        }
-        return 0;
+ #include <asm/stackprotector.h>
+ #include <asm/perf_event.h>
+@@ -1864,23 +1863,6 @@ void cpu_init(void)
  }
-
-
-
->
-> Regards
-> /Ilias
->> 
->> Ilias Apalodimas <ilias.apalodimas@linaro.org> schrieb am Do., 14. März
->> 2019, 13:15:
->> 
->> > Hi Gregory,
->> > > The clock parenting was not setup properly when DVFS was enabled. It was
->> > > expected that the same clock source was used with and without DVFS which
->> > > was not the case.
->> > >
->> > > This patch fixes this issue, allowing to make the cpufreq support work
->> > > when the CPU clocks source are not the default ones.
->> > >
->> > > Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
->> > > Cc: <stable@vger.kernel.org>
->> > > Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
->> > > Reported-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
->> > > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
->> > > ---
->> > >  drivers/clk/mvebu/armada-37xx-periph.c | 11 +++++++++++
->> > >  1 file changed, 11 insertions(+)
->> > >
->> > > diff --git a/drivers/clk/mvebu/armada-37xx-periph.c
->> > b/drivers/clk/mvebu/armada-37xx-periph.c
->> > > index 1f1cff428d78..26ed3c18a239 100644
->> > > --- a/drivers/clk/mvebu/armada-37xx-periph.c
->> > > +++ b/drivers/clk/mvebu/armada-37xx-periph.c
->> > > @@ -671,6 +671,17 @@ static int armada_3700_add_composite_clk(const
->> > struct clk_periph_data *data,
->> > >               map = syscon_regmap_lookup_by_compatible(
->> > >                               "marvell,armada-3700-nb-pm");
->> > >               pmcpu_clk->nb_pm_base = map;
->> > > +
->> > > +             /*
->> > > +              * Use the same parent when DVFS is enabled that the
->> > > +              * default parent received at boot time. When this
->> > > +              * function is called, DVFS is not enabled yet, so we
->> > > +              * get the default parent and we can set the parent
->> > > +              * for DVFS.
->> > > +              */
->> > > +             if (clk_pm_cpu_set_parent(muxrate_hw,
->> > > +
->> >  clk_pm_cpu_get_parent(muxrate_hw)))
->> > > +                     dev_warn(dev, "Failed to setup default parent
->> > clock for DVFS\n");
->> > >       }
->> > >
->> > >       *hw = clk_hw_register_composite(dev, data->name,
->> > data->parent_names,
->> > > --
->> > > 2.20.1
->> > >
->> > Applied this and selected only
->> >
->> > CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
->> > CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->> > CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->> >
->> > After changing the governor from 'powersave' to 'performance' the board
->> > completely froze (i even lost access to the serial port)
->> >
->> > Cheers
->> > /Ilias
->> >
-
--- 
-Gregory Clement, Bootlin
-Embedded Linux and Kernel engineering
-http://bootlin.com
+ #endif
+ 
+-static void bsp_resume(void)
+-{
+-	if (this_cpu->c_bsp_resume)
+-		this_cpu->c_bsp_resume(&boot_cpu_data);
+-}
+-
+-static struct syscore_ops cpu_syscore_ops = {
+-	.resume		= bsp_resume,
+-};
+-
+-static int __init init_cpu_syscore(void)
+-{
+-	register_syscore_ops(&cpu_syscore_ops);
+-	return 0;
+-}
+-core_initcall(init_cpu_syscore);
+-
+ /*
+  * The microcode loader calls this upon late microcode load to recheck features,
+  * only when microcode has been updated. Caller holds microcode_mutex and CPU
+Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/cpu.h
+===================================================================
+--- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/cpu.h	2019-03-13 17:33:06.849890801 +0100
++++ do_not_modify_perf_bias/arch/x86/kernel/cpu/cpu.h	2019-03-13 18:01:53.973983863 +0100
+@@ -14,7 +14,6 @@ struct cpu_dev {
+ 	void		(*c_init)(struct cpuinfo_x86 *);
+ 	void		(*c_identify)(struct cpuinfo_x86 *);
+ 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
+-	void		(*c_bsp_resume)(struct cpuinfo_x86 *);
+ 	int		c_x86_vendor;
+ #ifdef CONFIG_X86_32
+ 	/* Optional vendor specific routine to obtain the cache size. */
+Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/intel.c	2019-03-13 17:33:06.853890801 +0100
++++ do_not_modify_perf_bias/arch/x86/kernel/cpu/intel.c	2019-03-13 18:01:52.789983799 +0100
+@@ -596,36 +596,6 @@ detect_keyid_bits:
+ 	c->x86_phys_bits -= keyid_bits;
+ }
+ 
+-static void init_intel_energy_perf(struct cpuinfo_x86 *c)
+-{
+-	u64 epb;
+-
+-	/*
+-	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+-	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
+-	 */
+-	if (!cpu_has(c, X86_FEATURE_EPB))
+-		return;
+-
+-	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+-		return;
+-
+-	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+-	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
+-	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+-	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-}
+-
+-static void intel_bsp_resume(struct cpuinfo_x86 *c)
+-{
+-	/*
+-	 * MSR_IA32_ENERGY_PERF_BIAS is lost across suspend/resume,
+-	 * so reinitialize it properly like during bootup:
+-	 */
+-	init_intel_energy_perf(c);
+-}
+-
+ static void init_cpuid_fault(struct cpuinfo_x86 *c)
+ {
+ 	u64 msr;
+@@ -763,8 +733,6 @@ static void init_intel(struct cpuinfo_x8
+ 	if (cpu_has(c, X86_FEATURE_TME))
+ 		detect_tme(c);
+ 
+-	init_intel_energy_perf(c);
+-
+ 	init_intel_misc_features(c);
+ }
+ 
+@@ -1023,7 +991,6 @@ static const struct cpu_dev intel_cpu_de
+ 	.c_detect_tlb	= intel_detect_tlb,
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
+-	.c_bsp_resume	= intel_bsp_resume,
+ 	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+ 
