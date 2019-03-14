@@ -1,33 +1,24 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 4/7] sparc64: Update cpufreq transition notifier to
- handle multiple CPUs
-Date: Thu, 14 Mar 2019 10:27:17 -0700 (PDT)
-Message-ID: <20190314.102717.1146763900493083907.davem@davemloft.net>
-References: <cover.1552545525.git.viresh.kumar@linaro.org>
-        <f4eb2ed1e473ca9bb4c0a9ace27d816f4840f531.1552545525.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+From: pr-tracker-bot@kernel.org
+Subject: Re: [GIT PULL] More power management updates for v5.1-rc1
+Date: Thu, 14 Mar 2019 17:55:20 +0000
+Message-ID: <155258612026.11723.16627701451155820577.pr-tracker-bot@kernel.org>
+References: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f4eb2ed1e473ca9bb4c0a9ace27d816f4840f531.1552545525.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, vincent.guittot@linaro.org, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Thu, 14 Mar 2019 12:12:50 +0530
+The pull request you sent on Thu, 14 Mar 2019 12:34:51 +0100:
 
-> The cpufreq core currently calls the cpufreq transition notifier
-> callback once for each affected CPU. This is going to change soon and
-> the cpufreq core will call the callback only once for each cpufreq
-> policy. The callback must look at the newly added field in struct
-> cpufreq_freqs, "cpus", which contains policy->related_cpus (both
-> online/offline CPUs) and perform per-cpu actions for them if any.
-> 
-> This patch updates sparc64_cpufreq_notifier() to use the new "cpus" field
-> and update per-cpu data for all the related CPUs.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.1-rc1-2
 
-Acked-by: David S. Miller <davem@davemloft.net>
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/9352ca585b2ac7b67d2119b9386573b2a4c0ef4b
+
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
