@@ -1,69 +1,126 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Date: Thu, 14 Mar 2019 14:15:41 +0200
-Message-ID: <20190314121541.GB19385@apalos>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Thu, 14 Mar 2019 12:22:56 +0000
+Message-ID: <20190314122256.7wb3ydswpkfmntvf@e110439-lin>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-2-patrick.bellasi@arm.com>
+ <20190313140925.GE5922@hirez.programming.kicks-ass.net>
+ <20190313152359.lkyzel7fakjoi5hu@e110439-lin>
+ <20190313194619.GR2482@worktop.programming.kicks-ass.net>
+ <CAJuCfpHy0+6f9mRd+cF-oQrrUWJ4m8mOQJ7XMzkDL4mhfYyj2g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190313163558.6705-1-gregory.clement@bootlin.com>
-Sender: stable-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+In-Reply-To: <CAJuCfpHy0+6f9mRd+cF-oQrrUWJ4m8mOQJ7XMzkDL4mhfYyj2g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Gregory, 
-> The clock parenting was not setup properly when DVFS was enabled. It was
-> expected that the same clock source was used with and without DVFS which
-> was not the case.
+On 13-Mar 14:08, Suren Baghdasaryan wrote:
+> On Wed, Mar 13, 2019 at 12:46 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > On Wed, Mar 13, 2019 at 03:23:59PM +0000, Patrick Bellasi wrote:
+> > > On 13-Mar 15:09, Peter Zijlstra wrote:
+> > > > On Fri, Feb 08, 2019 at 10:05:40AM +0000, Patrick Bellasi wrote:
+> >
+> > > > > +static inline void uclamp_rq_update(struct rq *rq, unsigned int clamp_id)
+> > > > > +{
+> > > > > + struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+> > > > > + unsigned int max_value = uclamp_none(clamp_id);
+> > > >
+> > > > That's 1024 for uclamp_max
+> > > >
+> > > > > + unsigned int bucket_id;
+> > > > > +
+> > > > > + /*
+> > > > > +  * Both min and max clamps are MAX aggregated, thus the topmost
+> > > > > +  * bucket with some tasks defines the rq's clamp value.
+> > > > > +  */
+> > > > > + bucket_id = UCLAMP_BUCKETS;
+> > > > > + do {
+> > > > > +         --bucket_id;
+> > > > > +         if (!rq->uclamp[clamp_id].bucket[bucket_id].tasks)
+> > > > > +                 continue;
+> > > > > +         max_value = bucket[bucket_id].value;
+> > > >
+> > > > but this will then _lower_ it. That's not a MAX aggregate.
+> > >
+> > > For uclamp_max we want max_value=1024 when there are no active tasks,
+> > > which means: no max clamp enforced on CFS/RT "idle" cpus.
+> > >
+> > > If instead there are active RT/CFS tasks then we want the clamp value
+> > > of the max group, which means: MAX aggregate active clamps.
+> > >
+> > > That's what the code above does and the comment says.
+> >
+> > That's (obviously) not how I read it... maybe something like:
+> >
+> > static inline void uclamp_rq_update(struct rq *rq, unsigned int clamp_id)
+> > {
+> >         struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+> >         int i;
+> >
+> >         /*
+> >          * Since both min and max clamps are max aggregated, find the
+> >          * top most bucket with tasks in.
+> >          */
+> >         for (i = UCLMAP_BUCKETS-1; i>=0; i--) {
+> >                 if (!bucket[i].tasks)
+> >                         continue;
+> >                 return bucket[i].value;
+> >         }
+> >
+> >         /* No tasks -- default clamp values */
+> >         return uclamp_none(clamp_id);
+> > }
+> >
+> > would make it clearer?
 > 
-> This patch fixes this issue, allowing to make the cpufreq support work
-> when the CPU clocks source are not the default ones.
-> 
-> Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-> Cc: <stable@vger.kernel.org>
-> Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
-> Reported-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> ---
->  drivers/clk/mvebu/armada-37xx-periph.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/drivers/clk/mvebu/armada-37xx-periph.c b/drivers/clk/mvebu/armada-37xx-periph.c
-> index 1f1cff428d78..26ed3c18a239 100644
-> --- a/drivers/clk/mvebu/armada-37xx-periph.c
-> +++ b/drivers/clk/mvebu/armada-37xx-periph.c
-> @@ -671,6 +671,17 @@ static int armada_3700_add_composite_clk(const struct clk_periph_data *data,
->  		map = syscon_regmap_lookup_by_compatible(
->  				"marvell,armada-3700-nb-pm");
->  		pmcpu_clk->nb_pm_base = map;
-> +
-> +		/*
-> +		 * Use the same parent when DVFS is enabled that the
-> +		 * default parent received at boot time. When this
-> +		 * function is called, DVFS is not enabled yet, so we
-> +		 * get the default parent and we can set the parent
-> +		 * for DVFS.
-> +		 */
-> +		if (clk_pm_cpu_set_parent(muxrate_hw,
-> +					  clk_pm_cpu_get_parent(muxrate_hw)))
-> +			dev_warn(dev, "Failed to setup default parent clock for DVFS\n");
->  	}
->  
->  	*hw = clk_hw_register_composite(dev, data->name, data->parent_names,
-> -- 
-> 2.20.1
-> 
-Applied this and selected only
+> This way it's also more readable/obvious when it's used inside
+> uclamp_rq_dec_id, assuming uclamp_rq_update is renamed into smth like
+> get_max_rq_uclamp.
 
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+Rightm, I have now something like that:
 
-After changing the governor from 'powersave' to 'performance' the board
-completely froze (i even lost access to the serial port)
+---8<---
+static inline unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
+{
+	struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
+	int bucket_id;
 
-Cheers
-/Ilias
+	/*
+	 * Since both min and max clamps are max aggregated, find the
+	 * top most bucket with tasks in.
+	 */
+	for (bucket_id = UCLMAP_BUCKETS-1; bucket_id >= 0; bucket_id--) {
+		if (!bucket[bucket_id].tasks)
+			continue;
+		return bucket[bucket_id].value;
+	}
+
+	/* No tasks -- default clamp value */
+	return uclamp_none(clamp_id);
+}
+
+static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
+				    unsigned int clamp_id)
+{
+        //...
+	if (bucket->value >= rq_clamp) {
+		/*
+		 * Reset rq's clamp bucket value to its nominal value whenever
+		 * there are anymore RUNNABLE tasks refcounting it.
+		 */
+		bucket->value = uclamp_bucket_nominal_value(rq_clamp);
+		WRITE_ONCE(uc_rq->value, uclamp_rq_max_value(rq, clamp_id));
+	}
+}
+---8<---
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
