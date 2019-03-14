@@ -1,24 +1,54 @@
-From: pr-tracker-bot@kernel.org
-Subject: Re: [GIT PULL] More power management updates for v5.1-rc1
-Date: Thu, 14 Mar 2019 17:55:20 +0000
-Message-ID: <155258612026.11723.16627701451155820577.pr-tracker-bot@kernel.org>
-References: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Thu, 14 Mar 2019 20:18:49 +0100
+Message-ID: <20190314191849.GB6058@hirez.programming.kicks-ass.net>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-2-patrick.bellasi@arm.com>
+ <20190313134022.GB5922@hirez.programming.kicks-ass.net>
+ <20190313161229.pkib2tmjass5chtb@e110439-lin>
+ <20190313194838.GS2482@worktop.programming.kicks-ass.net>
+ <20190314121315.juqpsqu5cwouuqpp@e110439-lin>
+ <20190314133211.GJ5996@hirez.programming.kicks-ass.net>
+ <20190314150753.lzu6uftirxnhdv4y@e110439-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h0y40_bVqOyD-+hkCQmVv1vruO0donzjE7FOZ8jteubQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190314150753.lzu6uftirxnhdv4y@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-The pull request you sent on Thu, 14 Mar 2019 12:34:51 +0100:
+On Thu, Mar 14, 2019 at 03:07:53PM +0000, Patrick Bellasi wrote:
+> On 14-Mar 14:32, Peter Zijlstra wrote:
+> > On Thu, Mar 14, 2019 at 12:13:15PM +0000, Patrick Bellasi wrote:
+> > > > I'd be most impressed if they pull this off. Check the generated code
+> > > > and see I suppose :-)
+> > > 
+> > > On x86 the code generated looks exactly the same:
+> > > 
+> > >    https://godbolt.org/z/PjmA7k
+> > 
+> > Argh, they do mult by inverse to avoid the division, and can do this
+> > because its a constant.
+> > 
+> > And then yes, your arm version looks worse.
+> 
+> your "arm version" is worst then x86, or "your version" is worse?
+> 
+> IOW, should I keep the code as the original? Do you prefer your
+> version? Or... we don't really care...
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.1-rc1-2
+Yeah, keep the original, it didn't matter on x86 and arm regressed with
+my version.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/9352ca585b2ac7b67d2119b9386573b2a4c0ef4b
+> > It does what I expected with -Os, but as Rutland said the other day,
+> > that stands for Optimize for Sadness.
+> 
+> Yes, I guess we cannot optimize for all flags... however, just let me
+> know what you prefer and I'll put that version in ;)
 
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+Yeah, don't bother optimizing for -Os, it generally creates atrocious
+crap, hence Rutland calling it 'Optimize for Sadness'.
