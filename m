@@ -1,165 +1,143 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] [RESEND] Do not modify perf bias performance setting by default at boot
-Date: Thu, 14 Mar 2019 15:42:16 +0100
-Message-ID: <6369897.qxlu8PgE1t@house>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v7 01/15] sched/core: uclamp: Add CPU's clamp buckets
+ refcounting
+Date: Thu, 14 Mar 2019 14:46:00 +0000
+Message-ID: <20190314144600.2ulpeipad7jbxyiy@e110439-lin>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-2-patrick.bellasi@arm.com>
+ <CAJuCfpGAZ6XxJj=e-wVzGx3zmRRLPs=wXm8K0BcjWOm5hM0FcQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJuCfpGAZ6XxJj=e-wVzGx3zmRRLPs=wXm8K0BcjWOm5hM0FcQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Rafael Wysocki <rafael@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a revert of mainline git commits:
-commit b51ef52df71cb28e9d90cd1d48b79bf19f0bab06
-commit 17edf2d79f1ea6dfdb4c444801d928953b9f98d6
-commit abe48b108247e9b90b4c6739662a2e5c765ed114
+On 13-Mar 14:32, Suren Baghdasaryan wrote:
+> On Fri, Feb 8, 2019 at 2:06 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> >
+> > Utilization clamping allows to clamp the CPU's utilization within a
+> > [util_min, util_max] range, depending on the set of RUNNABLE tasks on
+> > that CPU. Each task references two "clamp buckets" defining its minimum
+> > and maximum (util_{min,max}) utilization "clamp values". A CPU's clamp
+> > bucket is active if there is at least one RUNNABLE tasks enqueued on
+> > that CPU and refcounting that bucket.
+> >
+> > When a task is {en,de}queued {on,from} a rq, the set of active clamp
+> > buckets on that CPU can change. Since each clamp bucket enforces a
+> > different utilization clamp value, when the set of active clamp buckets
+> > changes, a new "aggregated" clamp value is computed for that CPU.
+> >
+> > Clamp values are always MAX aggregated for both util_min and util_max.
+> > This ensures that no tasks can affect the performance of other
+> > co-scheduled tasks which are more boosted (i.e. with higher util_min
+> > clamp) or less capped (i.e. with higher util_max clamp).
+> >
+> > Each task has a:
+> >    task_struct::uclamp[clamp_id]::bucket_id
+> > to track the "bucket index" of the CPU's clamp bucket it refcounts while
+> > enqueued, for each clamp index (clamp_id).
+> >
+> > Each CPU's rq has a:
+> >    rq::uclamp[clamp_id]::bucket[bucket_id].tasks
+> > to track how many tasks, currently RUNNABLE on that CPU, refcount each
+> > clamp bucket (bucket_id) of a clamp index (clamp_id).
+> >
+> > Each CPU's rq has also a:
+> >    rq::uclamp[clamp_id]::bucket[bucket_id].value
+> > to track the clamp value of each clamp bucket (bucket_id) of a clamp
+> > index (clamp_id).
+> >
+> > The rq::uclamp::bucket[clamp_id][] array is scanned every time we need
+> > to find a new MAX aggregated clamp value for a clamp_id. This operation
+> > is required only when we dequeue the last task of a clamp bucket
+> > tracking the current MAX aggregated clamp value. In these cases, the CPU
+> > is either entering IDLE or going to schedule a less boosted or more
+> > clamped task.
+> > The expected number of different clamp values, configured at build time,
+> > is small enough to fit the full unordered array into a single cache
+> > line.
+> 
+> I assume you are talking about "struct uclamp_rq uclamp[UCLAMP_CNT]"
+> here.
 
-It is about this kernel message showing up on quite a lot servers:
-[    0.072652] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
-[    0.076003] ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)
+No, I'm talking about the rq::uclamp::bucket[clamp_id][], which is an
+array of:
 
-The background afaik were some BIOS which "forgot to set a default value".
-Certainly some (one?) broken laptop BIOS was meant, because
-the value zero (performance) is quite a reasonable default value on server systems
-and this is how a lot CPUs typically come up there.
+   struct uclamp_bucket {
+	unsigned long value : bits_per(SCHED_CAPACITY_SCALE);
+	unsigned long tasks : BITS_PER_LONG - bits_per(SCHED_CAPACITY_SCALE);
+   };
 
-Another sever bug with above patches:
-If you really set performance BIAS MSR value to 'performance'
-as mentioned in kernel boot log, it is reset on next CPU offline/online cycle
-(see below). Unfortunately one does not see this in the logs anymore, because
-of the printk_once() usage:
+defined as part of:
 
-dmesg |grep -i bias
-[    0.026642] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
-[    0.028002] ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)
-liszt:~/:[0]# x86_energy_perf_policy 
-cpu0: EPB 6
-cpu1: EPB 6
-cpu2: EPB 6
-cpu3: EPB 6
-liszt:~/:[0]# x86_energy_perf_policy 0
-liszt:~/:[0]# x86_energy_perf_policy 
-cpu0: EPB 0
-cpu1: EPB 0
-cpu2: EPB 0
-cpu3: EPB 0
-liszt:~/:[0]# echo offline > /sys/devices/system/cpu/cpu1/online
-liszt:~/:[0]# echo online > /sys/devices/system/cpu/cpu1/online
-liszt:~/:[0]# x86_energy_perf_policy 
-cpu0: EPB 0
-cpu1: EPB 6
-cpu2: EPB 0
-cpu3: EPB 0
+   struct uclamp_rq {
+	unsigned int value;
+	struct uclamp_bucket bucket[UCLAMP_BUCKETS];
+   };
 
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-Tested-by: Simon Schricker <sschricker@suse.de>
+So, it's an array of UCLAMP_BUCKETS (value, tasks) pairs.
 
-Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/common.c
-===================================================================
---- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/common.c	2019-03-13 17:33:06.849890801 +0100
-+++ do_not_modify_perf_bias/arch/x86/kernel/cpu/common.c	2019-03-13 18:01:54.781983906 +0100
-@@ -18,7 +18,6 @@
- #include <linux/kgdb.h>
- #include <linux/smp.h>
- #include <linux/io.h>
--#include <linux/syscore_ops.h>
- 
- #include <asm/stackprotector.h>
- #include <asm/perf_event.h>
-@@ -1864,23 +1863,6 @@ void cpu_init(void)
- }
- #endif
- 
--static void bsp_resume(void)
--{
--	if (this_cpu->c_bsp_resume)
--		this_cpu->c_bsp_resume(&boot_cpu_data);
--}
--
--static struct syscore_ops cpu_syscore_ops = {
--	.resume		= bsp_resume,
--};
--
--static int __init init_cpu_syscore(void)
--{
--	register_syscore_ops(&cpu_syscore_ops);
--	return 0;
--}
--core_initcall(init_cpu_syscore);
--
- /*
-  * The microcode loader calls this upon late microcode load to recheck features,
-  * only when microcode has been updated. Caller holds microcode_mutex and CPU
-Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/cpu.h
-===================================================================
---- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/cpu.h	2019-03-13 17:33:06.849890801 +0100
-+++ do_not_modify_perf_bias/arch/x86/kernel/cpu/cpu.h	2019-03-13 18:01:53.973983863 +0100
-@@ -14,7 +14,6 @@ struct cpu_dev {
- 	void		(*c_init)(struct cpuinfo_x86 *);
- 	void		(*c_identify)(struct cpuinfo_x86 *);
- 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
--	void		(*c_bsp_resume)(struct cpuinfo_x86 *);
- 	int		c_x86_vendor;
- #ifdef CONFIG_X86_32
- 	/* Optional vendor specific routine to obtain the cache size. */
-Index: do_not_modify_perf_bias/arch/x86/kernel/cpu/intel.c
-===================================================================
---- do_not_modify_perf_bias.orig/arch/x86/kernel/cpu/intel.c	2019-03-13 17:33:06.853890801 +0100
-+++ do_not_modify_perf_bias/arch/x86/kernel/cpu/intel.c	2019-03-13 18:01:52.789983799 +0100
-@@ -596,36 +596,6 @@ detect_keyid_bits:
- 	c->x86_phys_bits -= keyid_bits;
- }
- 
--static void init_intel_energy_perf(struct cpuinfo_x86 *c)
--{
--	u64 epb;
--
--	/*
--	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
--	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
--	 */
--	if (!cpu_has(c, X86_FEATURE_EPB))
--		return;
--
--	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
--	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
--		return;
--
--	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
--	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
--	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
--	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
--}
--
--static void intel_bsp_resume(struct cpuinfo_x86 *c)
--{
--	/*
--	 * MSR_IA32_ENERGY_PERF_BIAS is lost across suspend/resume,
--	 * so reinitialize it properly like during bootup:
--	 */
--	init_intel_energy_perf(c);
--}
--
- static void init_cpuid_fault(struct cpuinfo_x86 *c)
- {
- 	u64 msr;
-@@ -763,8 +733,6 @@ static void init_intel(struct cpuinfo_x8
- 	if (cpu_has(c, X86_FEATURE_TME))
- 		detect_tme(c);
- 
--	init_intel_energy_perf(c);
--
- 	init_intel_misc_features(c);
- }
- 
-@@ -1023,7 +991,6 @@ static const struct cpu_dev intel_cpu_de
- 	.c_detect_tlb	= intel_detect_tlb,
- 	.c_early_init   = early_init_intel,
- 	.c_init		= init_intel,
--	.c_bsp_resume	= intel_bsp_resume,
- 	.c_x86_vendor	= X86_VENDOR_INTEL,
- };
- 
+> uclamp_rq size depends on UCLAMP_BUCKETS configurable to be up
+> to 20. sizeof(long)*20 is already more than 64 bytes. What am I
+> missing?
+
+Right, the comment above refers to the default configuration, which is
+5 buckets. With that configuration we have:
+
+
+$> pahole kernel/sched/core.o
+
+---8<---
+   struct uclamp_bucket {
+           long unsigned int          value:11;             /*     0:53  8 */
+           long unsigned int          tasks:53;             /*     0: 0  8 */
+
+           /* size: 8, cachelines: 1, members: 2 */
+           /* last cacheline: 8 bytes */
+   };
+
+   struct uclamp_rq {
+           unsigned int               value;                /*     0     4 */
+
+           /* XXX 4 bytes hole, try to pack */
+
+           struct uclamp_bucket       bucket[5];            /*     8    40 */
+
+           /* size: 48, cachelines: 1, members: 2 */
+           /* sum members: 44, holes: 1, sum holes: 4 */
+           /* last cacheline: 48 bytes */
+   };
+
+   struct rq {
+           // ...
+           /* --- cacheline 2 boundary (128 bytes) --- */
+           struct uclamp_rq           uclamp[2];            /*   128    96 */
+           /* --- cacheline 3 boundary (192 bytes) was 32 bytes ago --- */
+           // ...
+   };
+---8<---
+
+Where you see the array fits into a single cache line.
+
+Actually I notice now that, since when we removed the bucket dedicated
+to the default values, we now have some spare space and we can
+probably increase the default (and minimum) value of UCLAMP_BUCKETS to
+be 7.
+
+This will uses two full cache lines in struct rq, one for each clamp
+index...  Although 7 it's a bit of a odd number and gives by default
+buckets of ~14% size instead of the ~20%.
+
+Thoughts ?
+
+[...]
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
