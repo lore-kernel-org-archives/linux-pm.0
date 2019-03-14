@@ -1,327 +1,161 @@
-From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v7 12/15] sched/core: uclamp: Propagate parent clamps
-Date: Thu, 14 Mar 2019 09:17:57 -0700
-Message-ID: <CAJuCfpHTtokPFHu3KHYGj9arbPYn6ZZ=-qNpmVPrDwhPvnA9Ow@mail.gmail.com>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com> <20190208100554.32196-13-patrick.bellasi@arm.com>
+From: Evan Green <evgreen@chromium.org>
+Subject: Re: [PATCH v1 2/2] interconnect: qcom: Add tagging and wake/sleep
+ support for sdm845
+Date: Thu, 14 Mar 2019 09:35:57 -0700
+Message-ID: <CAE=gft52W2+-_FxNMyWkBKNQQDGWSB9-PzhBxqZARzQ50ER1EA@mail.gmail.com>
+References: <20190208172152.1807-1-georgi.djakov@linaro.org>
+ <20190208172152.1807-3-georgi.djakov@linaro.org> <CAE=gft47bF-zJReobnUnsVGtiMCMqz4jWZLDWdMJ5qRUL+PH7g@mail.gmail.com>
+ <9b93d5e4-2f68-06ee-82b9-29ccffc961e1@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190208100554.32196-13-patrick.bellasi@arm.com>
+In-Reply-To: <9b93d5e4-2f68-06ee-82b9-29ccffc961e1@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: David Dai <daidavid1@codeaurora.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, Doug Anderson <dianders@chromium.org>, Sean Sweeney <seansw@qti.qualcomm.com>, Michael Turquette <mturquette@baylibre.com>, Alexandre Bailon <abailon@baylibre.com>, Thierry Reding <thierry.reding@gmail.com>, ksitaraman@nvidia.com, sanjayc@nvidia.com, henryc.chen@mediatek.com, LKML <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2019 at 2:06 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+On Wed, Mar 13, 2019 at 6:00 PM David Dai <daidavid1@codeaurora.org> wrote:
 >
-> In order to properly support hierarchical resources control, the cgroup
-> delegation model requires that attribute writes from a child group never
-> fail but still are (potentially) constrained based on parent's assigned
-> resources. This requires to properly propagate and aggregate parent
-> attributes down to its descendants.
 >
-> Let's implement this mechanism by adding a new "effective" clamp value
-> for each task group. The effective clamp value is defined as the smaller
-> value between the clamp value of a group and the effective clamp value
-> of its parent. This is the actual clamp value enforced on tasks in a
-> task group.
+> On 3/8/2019 10:35 AM, Evan Green wrote:
+> > On Fri, Feb 8, 2019 at 9:22 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+> >> From: David Dai <daidavid1@codeaurora.org>
+> >>
+> >> Add support for wake and sleep commands by using a tag to indicate
+> >> whether or not the aggregate and set requests are active only or
+> >> dual context for a particular path.
+> >>
+> >> Signed-off-by: David Dai <daidavid1@codeaurora.org>
+> >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> >> ---
+> >>   drivers/interconnect/qcom/sdm845.c | 101 +++++++++++++++++++++--------
+> >>   1 file changed, 75 insertions(+), 26 deletions(-)
+> >>
+> >> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+> >> index fb526004c82e..13499f681160 100644
+> >> --- a/drivers/interconnect/qcom/sdm845.c
+> >> +++ b/drivers/interconnect/qcom/sdm845.c
+> >> @@ -65,6 +65,12 @@ struct bcm_db {
+> >>   #define SDM845_MAX_BCMS                30
+> >>   #define SDM845_MAX_BCM_PER_NODE        2
+> >>   #define SDM845_MAX_VCD         10
+> >> +#define SDM845_MAX_CTX         2
+> >> +#define SDM845_EE_STATE                2
+> >> +#define EE_STATE_WAKE          0
+> >> +#define EE_STATE_SLEEP         1
+> >> +#define AO_CTX                 0
+> >> +#define DUAL_CTX               1
+> >>
+> > I get really lost with these two sets of numbers here. I think this
+> > needs some explanation in the comments. From staring at this what I've
+> > understood so far is:
+> > 1) Clients pass in a tag that buckets their requests into either AO or
+> > DUAL within the node. (Although, the requests all seem to get
+> > aggregated together no matter what the tag is, more on that later).
+> > 2) During icc_set(), we go through the many-to-many mapping of BCMs to
+> > nodes. For each BCM, we aggregate all the nodes it has, bucketed again
+> > by AO or DUAL.
+> > 3) The actual votes sent to RPMh are in terms of WAKE and SLEEP.
+> > 4) The mapping from AO/DUAL to WAKE/SLEEP for a particular BCM is:
+> > WAKE = AO+DUAL, SLEEP=DUAL.
+> > 5) qcom_icc_set() sends EE_STATE_WAKE stuff to RPMH_ACTIVE_ONLY_STATE.
+> > 6) If there's any difference between SLEEP and WAKE, then the
+> > EE_STATE_WAKE commands are gathered together and sent to
+> > RPMH_WAKE_ONLY_STATE, and all the EE_STATE_SLEEP commands are sent to
+> > RPMH_SLEEP_STATE.
+> >
+> > So ultimately the muxing ends up like
+> > RPMH_ACTIVE_ONLY_STATE <-- EE_STATE_WAKE <-- AO+DUAL
+> > RPMH_SLEEP_STATE <-- EE_STATE_SLEEP <-- DUAL
+> > RPMH_WAKE_ONLY_STATE <-- EE_STATE_WAKE <-- AO+DUAL
+> This muxing explanation is correct, there's also an inherent limitation
+> in this muxing where RPMH_ACTIVE cannot differ from RPMH_WAKE.
+> >
+> > Why do we need this complicated muxing to happen? Is it because we're
+> > trying to avoid requiring drivers to specify three different paths in
+> > the simple case, when all they care about is "use this bandwidth all
+> > the time"?
+> That's a part of it, I don't have strong justification for this legacy
+> way of supporting wake/sleep, so I'm open to new suggestions.
+> > What I think would make more sense would be to use the "tag" as a
+> > bitfield instead. So you'd have
+> >
+> > #define QCOM_ICC_TAG_ACTIVE_ONLY 0x00000001
+> > #define QCOM_ICC_TAG_SLEEP 0x00000002
+> > #define QCOM_ICC_TAG_WAKE 0x00000004
+> > #define QCOM_ICC_TAG_ALL_TIMES (QCOM_ICC_TAG_ACTIVE_ONLY |
+> > QCOM_ICC_TAG_SLEEP | QCOM_ICC_TAG_WAKE)
+> >
+> > Drivers that don't care about sleep/wake sets would just not set a
+> > tag, or set a tag of QCOM_ICC_TAG_ALL_TIMES. Then in
+> > qcom_icc_aggregate(), you aggregate the same values up to three times,
+> > one for each bit they have set. Finally in qcom_icc_set, you can pass
+> > the votes directly down in their buckets, without doing a weird
+> > mapping from AO/DUAL to SLEEP/WAKE/ACTIVE_ONLY.
+> Works for me, I'd still want to optimize out the WAKE/SLEEP commands
+> that are equal to each other though.
 
-In patch 10 in this series you mentioned "b) do not enforce any
-constraints and/or dependencies between the parent and its child
-nodes"
+Yeah, that makes sense.
 
-This patch seems to change that behavior. If so, should it be documented?
+> > The sticky part about this is that now rather than one set of sum/peak
+> > values, there are now three independent ones, corresponding to each of
+> > the tag bits. It seems like the interconnect core wouldn't want to
+> > mandate whether providers use the tag as a bitfield or a value. So the
+> > provider would need to keep not only the official set of aggregates
+> > that are returned back to the core (probably ACTIVE_ONLY, or maybe a
+> > max of the three), but also the two shadow copies internally for SLEEP
+> > and WAKE.
+> I would ideally like to return the most accurate current state of the
+> system which may be ACTIVE_ONLY or WAKE. We might also run into some
+> confusion when printing out the summaries for each node. In a case where
+> the votes for WAKE != ACTIVE(assuming one or more multiple consumers are
+> intentionally doing this with multiple paths), the state of system will
+> change depending on whether or not we've completed a sleep cycle(If it's
+> prior to sleep, the ACTIVE_ONLY vote will be accurate, and post waking
+> up the WAKE request will be correct) but this is more of a book keeping
+> concern than anything else, as long as consumers understand that this is
 
-> Since it can be interesting for userspace, e.g. system management
-> software, to know exactly what the currently propagated/enforced
-> configuration is, the effective clamp values are exposed to user-space
-> by means of a new pair of read-only attributes
-> cpu.util.{min,max}.effective.
->
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Tejun Heo <tj@kernel.org>
->
-> ---
-> Changes in v7:
->  Others:
->  - ensure clamp values are not tunable at root cgroup level
-> ---
->  Documentation/admin-guide/cgroup-v2.rst |  19 ++++
->  kernel/sched/core.c                     | 118 +++++++++++++++++++++++-
->  2 files changed, 133 insertions(+), 4 deletions(-)
->
-> diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-> index 47710a77f4fa..7aad2435e961 100644
-> --- a/Documentation/admin-guide/cgroup-v2.rst
-> +++ b/Documentation/admin-guide/cgroup-v2.rst
-> @@ -990,6 +990,16 @@ All time durations are in microseconds.
->          values similar to the sched_setattr(2). This minimum utilization
->          value is used to clamp the task specific minimum utilization clamp.
->
-> +  cpu.util.min.effective
-> +        A read-only single value file which exists on non-root cgroups and
-> +        reports minimum utilization clamp value currently enforced on a task
-> +        group.
-> +
-> +        The actual minimum utilization in the range [0, 1024].
-> +
-> +        This value can be lower then cpu.util.min in case a parent cgroup
-> +        allows only smaller minimum utilization values.
-> +
->    cpu.util.max
->          A read-write single value file which exists on non-root cgroups.
->          The default is "1024". i.e. no utilization capping
-> @@ -1000,6 +1010,15 @@ All time durations are in microseconds.
->          values similar to the sched_setattr(2). This maximum utilization
->          value is used to clamp the task specific maximum utilization clamp.
->
-> +  cpu.util.max.effective
-> +        A read-only single value file which exists on non-root cgroups and
-> +        reports maximum utilization clamp value currently enforced on a task
-> +        group.
-> +
-> +        The actual maximum utilization in the range [0, 1024].
-> +
-> +        This value can be lower then cpu.util.max in case a parent cgroup
-> +        is enforcing a more restrictive clamping on max utilization.
->
->
->  Memory
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 122ab069ade5..1e54517acd58 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -720,6 +720,18 @@ static void set_load_weight(struct task_struct *p, bool update_load)
->  }
->
->  #ifdef CONFIG_UCLAMP_TASK
-> +/*
-> + * Serializes updates of utilization clamp values
-> + *
-> + * The (slow-path) user-space triggers utilization clamp value updates which
-> + * can require updates on (fast-path) scheduler's data structures used to
-> + * support enqueue/dequeue operations.
-> + * While the per-CPU rq lock protects fast-path update operations, user-space
-> + * requests are serialized using a mutex to reduce the risk of conflicting
-> + * updates or API abuses.
-> + */
-> +static DEFINE_MUTEX(uclamp_mutex);
-> +
->  /* Max allowed minimum utilization */
->  unsigned int sysctl_sched_uclamp_util_min = SCHED_CAPACITY_SCALE;
->
-> @@ -1127,6 +1139,8 @@ static void __init init_uclamp(void)
->         unsigned int value;
->         int cpu;
->
-> +       mutex_init(&uclamp_mutex);
-> +
->         for_each_possible_cpu(cpu) {
->                 memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
->                 cpu_rq(cpu)->uclamp_flags = 0;
-> @@ -6758,6 +6772,10 @@ static inline int alloc_uclamp_sched_group(struct task_group *tg,
->                         parent->uclamp[clamp_id].value;
->                 tg->uclamp[clamp_id].bucket_id =
->                         parent->uclamp[clamp_id].bucket_id;
-> +               tg->uclamp[clamp_id].effective.value =
-> +                       parent->uclamp[clamp_id].effective.value;
-> +               tg->uclamp[clamp_id].effective.bucket_id =
-> +                       parent->uclamp[clamp_id].effective.bucket_id;
->         }
->  #endif
->
-> @@ -7011,6 +7029,53 @@ static void cpu_cgroup_attach(struct cgroup_taskset *tset)
->  }
->
->  #ifdef CONFIG_UCLAMP_TASK_GROUP
-> +static void cpu_util_update_hier(struct cgroup_subsys_state *css,
+Yeah, I thought about that too and agree it would be ideal if the
+framework could report the actual state, rather than a guess. Maybe
+someday when we have a clearer picture of what sort of automatic
+switching other SoCs are capable of doing we could try to enlighten
+the framework about these dynamic changes.
 
-s/cpu_util_update_hier/cpu_util_update_heir ?
+I had suggested reporting the max of the three buckets back to the
+framework since I'm guessing most of the debugging will come down to
+votes accidentally left on, so seeing an on vote might be helpful. But
+then I guess that masks issues with votes not being set high enough,
+or not being high enough after a resume... sigh.
 
-> +                                unsigned int clamp_id, unsigned int bucket_id,
-> +                                unsigned int value)
-> +{
-> +       struct cgroup_subsys_state *top_css = css;
-> +       struct uclamp_se *uc_se, *uc_parent;
-> +
-> +       css_for_each_descendant_pre(css, top_css) {
-> +               /*
-> +                * The first visited task group is top_css, which clamp value
-> +                * is the one passed as parameter. For descendent task
-> +                * groups we consider their current value.
-> +                */
-> +               uc_se = &css_tg(css)->uclamp[clamp_id];
-> +               if (css != top_css) {
-> +                       value = uc_se->value;
-> +                       bucket_id = uc_se->effective.bucket_id;
-> +               }
-> +               uc_parent = NULL;
-> +               if (css_tg(css)->parent)
-> +                       uc_parent = &css_tg(css)->parent->uclamp[clamp_id];
-> +
-> +               /*
-> +                * Skip the whole subtrees if the current effective clamp is
-> +                * already matching the TG's clamp value.
-> +                * In this case, all the subtrees already have top_value, or a
-> +                * more restrictive value, as effective clamp.
-> +                */
-> +               if (uc_se->effective.value == value &&
-> +                   uc_parent && uc_parent->effective.value >= value) {
-> +                       css = css_rightmost_descendant(css);
-> +                       continue;
-> +               }
-> +
-> +               /* Propagate the most restrictive effective value */
-> +               if (uc_parent && uc_parent->effective.value < value) {
-> +                       value = uc_parent->effective.value;
-> +                       bucket_id = uc_parent->effective.bucket_id;
-> +               }
-> +               if (uc_se->effective.value == value)
-> +                       continue;
-> +
-> +               uc_se->effective.value = value;
-> +               uc_se->effective.bucket_id = bucket_id;
-> +       }
-> +}
-> +
->  static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
->                                   struct cftype *cftype, u64 min_value)
->  {
-> @@ -7020,6 +7085,7 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
->         if (min_value > SCHED_CAPACITY_SCALE)
->                 return -ERANGE;
+> the expected behavior. On a side note, I don't like the ACTIVE_ONLY name
+> designation for this which was brought over from the rpmh driver, it
+> really means let's set the current state immediately and it has no
+> association with the execution environment state unlike the other
+> WAKE/SLEEP types.
+
+I agree, it's very confusing. I'd be okay with another define like
+SET_NOW whose value defines to ACTIVE_ONLY.
+
+> >
+> > If you organized the tag that way, the only extra thing you'd need is
+> > a callback to the provider just before the core starts aggregation, so
+> > that the provider can reset the shadow buckets to 0 the same way the
+> > core resets the main sum/peak to 0 before looping.With this, we've
+> > plumbed out the full abilities of RPMh to the client drivers, but
+> > without complicating the simple case of "set this bandwidth all the
+> > time". What do you think?
 >
-> +       mutex_lock(&uclamp_mutex);
->         rcu_read_lock();
->
->         tg = css_tg(css);
-> @@ -7038,8 +7104,13 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
->         tg->uclamp[UCLAMP_MIN].value = min_value;
->         tg->uclamp[UCLAMP_MIN].bucket_id = uclamp_bucket_id(min_value);
->
-> +       /* Update effective clamps to track the most restrictive value */
-> +       cpu_util_update_hier(css, UCLAMP_MIN, tg->uclamp[UCLAMP_MIN].bucket_id,
-> +                            min_value);
-> +
->  out:
->         rcu_read_unlock();
-> +       mutex_unlock(&uclamp_mutex);
->
->         return ret;
->  }
-> @@ -7053,6 +7124,7 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
->         if (max_value > SCHED_CAPACITY_SCALE)
->                 return -ERANGE;
->
-> +       mutex_lock(&uclamp_mutex);
->         rcu_read_lock();
->
->         tg = css_tg(css);
-> @@ -7071,21 +7143,29 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
->         tg->uclamp[UCLAMP_MAX].value = max_value;
->         tg->uclamp[UCLAMP_MAX].bucket_id = uclamp_bucket_id(max_value);
->
-> +       /* Update effective clamps to track the most restrictive value */
-> +       cpu_util_update_hier(css, UCLAMP_MAX, tg->uclamp[UCLAMP_MAX].bucket_id,
-> +                            max_value);
-> +
->  out:
->         rcu_read_unlock();
-> +       mutex_unlock(&uclamp_mutex);
->
->         return ret;
->  }
->
->  static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
-> -                                 enum uclamp_id clamp_id)
-> +                                 enum uclamp_id clamp_id,
-> +                                 bool effective)
->  {
->         struct task_group *tg;
->         u64 util_clamp;
->
->         rcu_read_lock();
->         tg = css_tg(css);
-> -       util_clamp = tg->uclamp[clamp_id].value;
-> +       util_clamp = effective
-> +               ? tg->uclamp[clamp_id].effective.value
-> +               : tg->uclamp[clamp_id].value;
->         rcu_read_unlock();
->
->         return util_clamp;
-> @@ -7094,13 +7174,25 @@ static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
->  static u64 cpu_util_min_read_u64(struct cgroup_subsys_state *css,
->                                  struct cftype *cft)
->  {
-> -       return cpu_uclamp_read(css, UCLAMP_MIN);
-> +       return cpu_uclamp_read(css, UCLAMP_MIN, false);
->  }
->
->  static u64 cpu_util_max_read_u64(struct cgroup_subsys_state *css,
->                                  struct cftype *cft)
->  {
-> -       return cpu_uclamp_read(css, UCLAMP_MAX);
-> +       return cpu_uclamp_read(css, UCLAMP_MAX, false);
-> +}
-> +
-> +static u64 cpu_util_min_effective_read_u64(struct cgroup_subsys_state *css,
-> +                                          struct cftype *cft)
-> +{
-> +       return cpu_uclamp_read(css, UCLAMP_MIN, true);
-> +}
-> +
-> +static u64 cpu_util_max_effective_read_u64(struct cgroup_subsys_state *css,
-> +                                          struct cftype *cft)
-> +{
-> +       return cpu_uclamp_read(css, UCLAMP_MAX, true);
->  }
->  #endif /* CONFIG_UCLAMP_TASK_GROUP */
->
-> @@ -7448,11 +7540,19 @@ static struct cftype cpu_legacy_files[] = {
->                 .read_u64 = cpu_util_min_read_u64,
->                 .write_u64 = cpu_util_min_write_u64,
->         },
-> +       {
-> +               .name = "util.min.effective",
-> +               .read_u64 = cpu_util_min_effective_read_u64,
-> +       },
->         {
->                 .name = "util.max",
->                 .read_u64 = cpu_util_max_read_u64,
->                 .write_u64 = cpu_util_max_write_u64,
->         },
-> +       {
-> +               .name = "util.max.effective",
-> +               .read_u64 = cpu_util_max_effective_read_u64,
-> +       },
->  #endif
->         { }     /* Terminate */
->  };
-> @@ -7628,12 +7728,22 @@ static struct cftype cpu_files[] = {
->                 .read_u64 = cpu_util_min_read_u64,
->                 .write_u64 = cpu_util_min_write_u64,
->         },
-> +       {
-> +               .name = "util.min.effective",
-> +               .flags = CFTYPE_NOT_ON_ROOT,
-> +               .read_u64 = cpu_util_min_effective_read_u64,
-> +       },
->         {
->                 .name = "util.max",
->                 .flags = CFTYPE_NOT_ON_ROOT,
->                 .read_u64 = cpu_util_max_read_u64,
->                 .write_u64 = cpu_util_max_write_u64,
->         },
-> +       {
-> +               .name = "util.max.effective",
-> +               .flags = CFTYPE_NOT_ON_ROOT,
-> +               .read_u64 = cpu_util_max_effective_read_u64,
-> +       },
->  #endif
->         { }     /* terminate */
->  };
-> --
-> 2.20.1
->
+> I really like this idea for the most part, it certainly simplifies some
+> of the muxing that happens underneath the layer and makes the
+> aggregation to the RPMH driver a lot more transparent. Though we should
+> probably just reset the shadow buckets to 0 at the end of a call into
+> provider icc_set as part of cleaning up the state after we've committed
+> some requests into hardware? I don't see a need to have to add another
+> call back into the provider before aggregation.
+
+Sure, that would work too. It bakes in a little bit of assumption
+about how the framework is going to call the callbacks (ie it assumes
+we will always do a set() following aggregate()), so it would be nice
+to at least call that out in a comment when you aggregate in the
+buckets.
