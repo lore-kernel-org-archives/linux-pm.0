@@ -1,96 +1,85 @@
-From: Alexandre Bailon <abailon@baylibre.com>
-Subject: Re: [RFC PATCH 0/3] Add support of busfreq
-Date: Fri, 15 Mar 2019 10:31:40 +0100
-Message-ID: <56e96a3a-4901-c79c-e91d-6b6a0690e5b7@baylibre.com>
-References: <20190313193408.23740-1-abailon@baylibre.com>
- <AM0PR04MB421150DF12C869161E7ED4C180440@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each
+ policy
+Date: Fri, 15 Mar 2019 13:29:52 +0100
+Message-ID: <20190315122952.GF6058@hirez.programming.kicks-ass.net>
+References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AM0PR04MB421150DF12C869161E7ED4C180440@AM0PR04MB4211.eurprd04.prod.outlook.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Aisheng Dong <aisheng.dong@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "georgi.djakov@linaro.org" <georgi.djakov@linaro.org>
-Cc: "mturquette@baylibre.com" <mturquette@baylibre.com>, "ptitiano@baylibre.com" <ptitiano@baylibre.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Zening Wang <zening.wang@nxp.com>, "khilman@baylibre.com" <khilman@baylibre.com>, "ccaione@baylibre.com" <ccaione@baylibre.com>, Jacky Bai <ping.bai@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, Ranjani Vaidyanathan <ranjani.vaidyanathan@nxp.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, kvm@vger.kernel.org, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, x86@kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Aisheng
+On Fri, Mar 15, 2019 at 02:43:07PM +0530, Viresh Kumar wrote:
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index 3fae23834069..cff8779fc0d2 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -956,28 +956,38 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>  				void *data)
+>  {
+>  	struct cpufreq_freqs *freq = data;
+> -	unsigned long *lpj;
+> -
+> -	lpj = &boot_cpu_data.loops_per_jiffy;
+> -#ifdef CONFIG_SMP
+> -	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> -		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> -#endif
+> +	struct cpumask *cpus = freq->policy->cpus;
+> +	bool boot_cpu = !IS_ENABLED(CONFIG_SMP) || freq->flags & CPUFREQ_CONST_LOOPS;
+> +	unsigned long lpj;
+> +	int cpu;
+>  
+>  	if (!ref_freq) {
+>  		ref_freq = freq->old;
+> -		loops_per_jiffy_ref = *lpj;
+>  		tsc_khz_ref = tsc_khz;
+> +
+> +		if (boot_cpu)
+> +			loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+> +		else
+> +			loops_per_jiffy_ref = cpu_data(cpumask_first(cpus)).loops_per_jiffy;
+>  	}
+> +
+>  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+>  			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> -		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> -
+> +		lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+>  		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+> +
+>  		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+>  			mark_tsc_unstable("cpufreq changes");
+>  
+> -		set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
+> +		if (boot_cpu) {
+> +			boot_cpu_data.loops_per_jiffy = lpj;
+> +		} else {
+> +			for_each_cpu(cpu, cpus)
+> +				cpu_data(cpu).loops_per_jiffy = lpj;
+> +		}
+> +
+> +		for_each_cpu(cpu, cpus)
+> +			set_cyc2ns_scale(tsc_khz, cpu, rdtsc());
 
-On 3/15/19 3:39 AM, Aisheng Dong wrote:
-> +Jacky and Leonard, Ranjani
-> 
-> Hi Alexandre,
-> 
->> From: Alexandre Bailon [mailto:abailon@baylibre.com]
->>
->> This series implements busfreq, a framework used in MXP's tree to scale the
->> interconnect and dram frequencies.
->> In the vendor tree, device's driver request for a performance level, which is
->> used to scale the frequencies.
->> This series implements it using the interconnect framework.
->> Devices' driver request for bandwidth which is use by busfreq to determine a
->> performance level, and then scale the frequency.
->>
->> Busfreq is quite generic. It could be used for any i.MX SoC.
->> A busfreq platform driver just have to define a list of interconnect nodes, and
->> some OPPs.
->>
-> 
-> It's really great to see this patch series.
-> And it should be the correct direction we're heading to upstream busfreq support.
-> 
->> This series is sent as RFC mostly because the current support of i.MX SoC won't
->> benefit of busfreq framework, because the clocks' driver don't support
->> interconnect / dram frequency scaling.
->> As exemple, this series implements busfreq for i.MX8MM whose upstreaming
->> is in progress. Because this relies on ATF to do the frequency scaling, it won't
->> be hard make it work.
->>
-> 
-> How can I test this patch series?
-> Any additional patches you can share with us?
-> Or what else we need to do to test it? We can help with it.
-Many other patches will be required to test the series.
-There are a couple of patches that updates i.MX device drivers to 
-request for bandwidth (does similar thing as bus_freq_request and 
-bus_freq_release).
-In addition, a patch to that allow to scale the DRAM
-frequency using CCF is required. I'm still working on this patch. It 
-works correctly on 4.14, but since I rebased it on linux-next/master, it 
-stopped to work. I'm trying to fix it now.
-I will share all this patches ASAP.
+This code doesn't make sense, the rdtsc() _must_ be called on the CPU in
+question. That's part of the whole problem here, TSC isn't sync'ed when
+it's subject to CPUFREQ.
 
-Best Regards,
-Alexandre
-> 
-> Regards
-> Dong Aisheng
-> 
->> As exemple, this series implements busfreq for Alexandre Bailon (3):
->>    drivers: interconnect: Add a driver for i.MX SoC
->>    drivers: interconnect: imx: Add support of i.MX8MM
->>    dt-bindings: interconnect: Document fsl,busfreq-imx8mm bindings
->>
->>   .../bindings/interconnect/imx8mm.txt          |  24 +
->>   drivers/interconnect/Kconfig                  |   1 +
->>   drivers/interconnect/Makefile                 |   1 +
->>   drivers/interconnect/imx/Kconfig              |  17 +
->>   drivers/interconnect/imx/Makefile             |   2 +
->>   drivers/interconnect/imx/busfreq-imx8mm.c     | 132 ++++
->>   drivers/interconnect/imx/busfreq.c            | 570
->> ++++++++++++++++++
->>   drivers/interconnect/imx/busfreq.h            | 123 ++++
->>   include/dt-bindings/interconnect/imx8mm.h     |  37 ++
->>   9 files changed, 907 insertions(+)
->>   create mode 100644
->> Documentation/devicetree/bindings/interconnect/imx8mm.txt
->>   create mode 100644 drivers/interconnect/imx/Kconfig  create mode
->> 100644 drivers/interconnect/imx/Makefile  create mode 100644
->> drivers/interconnect/imx/busfreq-imx8mm.c
->>   create mode 100644 drivers/interconnect/imx/busfreq.c
->>   create mode 100644 drivers/interconnect/imx/busfreq.h
->>   create mode 100644 include/dt-bindings/interconnect/imx8mm.h
->>
->> --
->> 2.19.2
+>  	}
+>  
+>  	return 0;
