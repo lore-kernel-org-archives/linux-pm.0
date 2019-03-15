@@ -1,65 +1,179 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [RFC PATCH 0/3] Add support of busfreq
-Date: Fri, 15 Mar 2019 17:17:53 +0000
-Message-ID: <VI1PR04MB55334013173D78F365CA5E19EE440@VI1PR04MB5533.eurprd04.prod.outlook.com>
-References: <20190313193408.23740-1-abailon@baylibre.com>
- <AM0PR04MB421150DF12C869161E7ED4C180440@AM0PR04MB4211.eurprd04.prod.outlook.com>
- <56e96a3a-4901-c79c-e91d-6b6a0690e5b7@baylibre.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: Re: [PATCH 0/4] Introduce OPP bandwidth bindings
+Date: Sat, 16 Mar 2019 00:32:49 +0530
+Message-ID: <460be20a-0baa-cf9c-2d5c-ea825aa34bc4@codeaurora.org>
+References: <20190313090010.20534-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190313090010.20534-1-georgi.djakov@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Bailon <abailon@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "georgi.djakov@linaro.org" <georgi.djakov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "ptitiano@baylibre.com" <ptitiano@baylibre.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Zening Wang <zening.wang@nxp.com>, "khilman@baylibre.com" <khilman@baylibre.com>, "ccaione@baylibre.com" <ccaione@baylibre.com>, Jacky Bai <ping.bai@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, Ranjani Vaidyanathan <ranjani.vaidyanathan@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, myungjoo.ham@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/15/19 11:31 AM, Alexandre Bailon wrote:=0A=
->>> This series is sent as RFC mostly because the current support of i.MX S=
-oC won't=0A=
->>> benefit of busfreq framework, because the clocks' driver don't support=
-=0A=
->>> interconnect / dram frequency scaling.=0A=
->>> As exemple, this series implements busfreq for i.MX8MM whose upstreamin=
-g=0A=
->>> is in progress. Because this relies on ATF to do the frequency scaling,=
- it won't=0A=
->>> be hard make it work.=0A=
-=0A=
->> How can I test this patch series?=0A=
->> Any additional patches you can share with us?=0A=
->> Or what else we need to do to test it? We can help with it.=0A=
-=0A=
-> Many other patches will be required to test the series.=0A=
-> There are a couple of patches that updates i.MX device drivers to=0A=
-> request for bandwidth (does similar thing as bus_freq_request and=0A=
-> bus_freq_release).=0A=
-=0A=
-The interconnect framework asks for bandwidth in bytes/second but in NXP =
-=0A=
-tree most requests are of the form "request_bus_freq(BUS_FREQ_HIGH);". =0A=
-In many cases (ethernet) it doesn't seem you can calculate a specific =0A=
-bandwidth usefully.=0A=
-=0A=
-Instead of asking for "infinite bandwidth zero latency" to force =0A=
-everything to "high" it would be nicer to "request an opp".=0A=
-=0A=
-Power-domain bindings mentioned that consumer-devices can specify a =0A=
-"required-opps" property but I've found zero users in tree. Maybe some =0A=
-helpers could be written to parse that property and automatically =0A=
-request ICC opp on device suspend/resume via device-links?=0A=
-=0A=
-I know that stuff was written for genpd but it looks like a very good =0A=
-fit to me.=0A=
-=0A=
-> In addition, a patch to that allow to scale the DRAM=0A=
-> frequency using CCF is required. I'm still working on this patch.=0A=
-=0A=
-I'm not sure what you mean here, do you want a clk set_rate to change =0A=
-the DRAM freq? It makes sense for DDRC to be a node in the interconnect =0A=
-framework and switch OPP inside icc implementation via an ATF call.=0A=
-=0A=
---=0A=
-Regards,=0A=
-Leonard=0A=
+
+
+On 3/13/19 2:30 PM, Georgi Djakov wrote:
+> Here is a proposal to extend the OPP bindings with bandwidth based on
+> a previous discussion [1].
+> 
+> Every functional block on a SoC can contribute to the system power
+> efficiency by expressing its own bandwidth needs (to memory or other SoC
+> modules). This will allow the system to save power when high throughput
+> is not required (and also provide maximum throughput when needed).
+> 
+> There are at least three ways for a device to determine its bandwidth
+> needs:
+> 	1. The device can dynamically calculate the needed bandwidth
+> based on some known variable. For example: UART (baud rate), I2C (fast
+> mode, high-speed mode, etc), USB (specification version, data transfer
+> type), SDHC (SD standard, clock rate, bus-width), Video Encoder/Decoder
+> (video format, resolution, frame-rate)
+> 
+> 	2. There is a hardware specific value. For example: hardware
+> specific constant value (e.g. for PRNG) or use-case specific value that
+> is hard-coded.
+> 
+> 	3. Predefined SoC/board specific bandwidth values. For example:
+> CPU or GPU bandwidth is related to the current core frequency and both
+> bandwidth and frequency are scaled together.
+> 
+> This patchset is trying to address point 3 above by extending the OPP
+> bindings to support predefined SoC/board bandwidth values and adds
+> support in cpufreq-dt to scale the interconnect between the CPU and the
+> DDR together with frequency and voltage.
+
+Hey Georgi,
+Having opp-bw-MBps as a part of cpu opp does greatly simplify the
+problem of scaling multiple interconnect devices with change in cpu
+frequency. But there is still a need to scale other devices (non 
+interconnect based) according to cpu frequency. Having a devfreq
+governor for the same would help to have the same generic solution
+across SoCs (msm8916/8996/qcs405/sdm845). The devfreq maintainer did
+like the idea but wanted it incorporated into the passive governor.
+
+* 
+https://lore.kernel.org/lkml/20180528060014epcms1p87ec68a4d44f9447b06f979a87e545b7d@epcms1p8/
+
+* 
+https://lore.kernel.org/lkml/20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3/
+
+I have a RFC series implementing ddr scaling with passive governor for 
+sdm845 with the following bindings, will post it early next week.
+
+cpus {
+	...
+
+	CPU0: cpu@0 {
+		...
+		operating-points-v2 = <&cpu0_opp_table>;
+		...
+	};
+         ....
+
+	CPU4: cpu@400 {
+		...
+		operating-points-v2 = <&cpu4_opp_table>;
+		...
+	};
+         ...
+};
+
+cpu0_opp_table: cpu0_opp_table {
+	compatible = "operating-points-v2";
+	opp-shared;
+
+	cpu0_opp1: opp-300000000 {
+		opp-hz = /bits/ 64 <300000000>;
+	};
+
+	...
+
+	cpu0_opp16: opp-1612800000 {
+		opp-hz = /bits/ 64 <1612800000>;
+	};
+
+	...
+};
+
+cpu4_opp_table: cpu4_opp_table {
+	compatible = "operating-points-v2";
+	opp-shared;
+
+	...
+
+	cpu4_opp4: opp-1056000000 {
+		opp-hz = /bits/ 64 <1056000000>;
+	};
+
+	cpu4_opp5: opp-1209600000 {
+		opp-hz = /bits/ 64 <1209600000>;
+	};
+
+	...
+};
+
+bw_opp_table: bw-opp-table {
+	compatible = "operating-points-v2";
+
+	opp-200  {
+		opp-hz = /bits/ 64 < 200000000 >; /* 200 MHz */
+		required-opps = <&cpu0_opp1>;
+		/* 0 MB/s average and 762 MB/s peak bandwidth */
+		opp-bw-MBs = <0 762>;
+	};
+
+	opp-300 {
+		opp-hz = /bits/ 64 < 300000000 >; /* 300 MHz */
+		/* 0 MB/s average and 1144 MB/s peak bandwidth */
+		opp-bw-MBs = <0 1144>;
+	};
+
+	...
+
+	opp-768 {
+		opp-hz = /bits/ 64 < 768000000 >; /* 768 MHz */
+		/* 0 MB/s average and 2929 MB/s peak bandwidth */
+		opp-bw-MBs = <0 2929>;
+		required-opps = <&cpu4_opp4>;
+	};
+
+	opp-1017 {
+		opp-hz = /bits/ 64 < 1017000000 >; /* 1017 MHz */
+		/* 0 MB/s average and 3879 MB/s peak bandwidth */
+		opp-bw-MBs = <0 3879>;
+		required-opps = <&cpu0_opp16>, <&cpu4_opp5>;
+	};
+};
+
+cpubw {
+	compatible = "devfreq-icbw";
+	interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
+	operating-points-v2 = <&bw_opp_table>;
+};
+
+
+> > [1] https://patchwork.kernel.org/patch/10577315/
+> 
+> Georgi Djakov (4):
+>    dt-bindings: opp: Introduce opp-bw-MBs bindings
+>    OPP: Add support for parsing the interconnect bandwidth
+>    OPP: Update the bandwidth on OPP frequency changes
+>    cpufreq: dt: Add support for interconnect bandwidth scaling
+> 
+>   Documentation/devicetree/bindings/opp/opp.txt | 45 ++++++++++++
+>   drivers/cpufreq/cpufreq-dt.c                  | 27 ++++++-
+>   drivers/opp/core.c                            | 71 +++++++++++++++++++
+>   drivers/opp/of.c                              | 44 ++++++++++++
+>   drivers/opp/opp.h                             |  6 ++
+>   include/linux/pm_opp.h                        | 14 ++++
+>   6 files changed, 206 insertions(+), 1 deletion(-)
+> 
+
+-- 
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
