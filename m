@@ -1,7 +1,7 @@
 From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH 1/4] PM / core: Introduce dpm_async_fn() helper
-Date: Sat, 16 Mar 2019 00:59:25 -0400
-Message-ID: <20190316045928.31934-2-tiny.windzz@gmail.com>
+Subject: [PATCH 3/4] PM / core: Introduce ASYNC_RESUME_FUNC() helper macro
+Date: Sat, 16 Mar 2019 00:59:27 -0400
+Message-ID: <20190316045928.31934-4-tiny.windzz@gmail.com>
 References: <20190316045928.31934-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190316045928.31934-1-tiny.windzz@gmail.com>
@@ -10,141 +10,99 @@ To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-When we want to execute device pm functions asynchronously, we'll
-do the following for the device:
+The async_resume_noirq, async_resume_early, async_resume functions
+are basically the same. As we have seen:
 
-  1) reinit_completion(&dev->power.completion);
-  2) Check if the device enables asynchronous suspend.
-  3) If necessary, execute the corresponding function asynchronously.
+static void async_xxx(void *data, async_cookie_t cookie)
+{
+	struct device *dev = (struct device *)data;
+	int error;
 
-There are a lot of such repeated operations here, in fact we can avoid
-this. So introduce dpm_async_fn() to have better code readability and
-reuse.
+	error = device_xxx(dev, pm_transition, true);
+	if (error)
+		pm_dev_err(dev, pm_transition, " async", error);
+	put_device(dev);
+}
 
-And use this function to do some cleanup.
+The ASYNC_RESUME_FUNC() helper macro can decrease code duplication.
 
 Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- drivers/base/power/main.c | 62 +++++++++++++++------------------------
- 1 file changed, 23 insertions(+), 39 deletions(-)
+ drivers/base/power/main.c | 46 +++++++++++++--------------------------
+ 1 file changed, 15 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index eddb54057ed6..cb44bb6b2b66 100644
+index 6026bda5e787..d512bee9d9ca 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -706,6 +706,19 @@ static bool is_async(struct device *dev)
- 		&& !pm_trace_is_enabled();
+@@ -728,18 +728,21 @@ static int __func(struct device *dev) 					\
+ 	return __device_ ## __name(dev, pm_transition, false);		\
  }
  
-+static bool dpm_async_fn(struct device *dev, async_func_t func)
-+{
-+	reinit_completion(&dev->power.completion);
-+
-+	if (is_async(dev)) {
-+		get_device(dev);
-+		async_schedule(func, dev);
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
- static void async_resume_noirq(void *data, async_cookie_t cookie)
- {
- 	struct device *dev = (struct device *)data;
-@@ -732,13 +745,8 @@ void dpm_noirq_resume_devices(pm_message_t state)
- 	 * in case the starting of async threads is
- 	 * delayed by non-async resuming devices.
- 	 */
--	list_for_each_entry(dev, &dpm_noirq_list, power.entry) {
--		reinit_completion(&dev->power.completion);
--		if (is_async(dev)) {
--			get_device(dev);
--			async_schedule_dev(async_resume_noirq, dev);
--		}
--	}
-+	list_for_each_entry(dev, &dpm_noirq_list, power.entry)
-+		dpm_async_fn(dev, async_resume_noirq);
- 
- 	while (!list_empty(&dpm_noirq_list)) {
- 		dev = to_device(dpm_noirq_list.next);
-@@ -889,13 +897,8 @@ void dpm_resume_early(pm_message_t state)
- 	 * in case the starting of async threads is
- 	 * delayed by non-async resuming devices.
- 	 */
--	list_for_each_entry(dev, &dpm_late_early_list, power.entry) {
--		reinit_completion(&dev->power.completion);
--		if (is_async(dev)) {
--			get_device(dev);
--			async_schedule_dev(async_resume_early, dev);
--		}
--	}
-+	list_for_each_entry(dev, &dpm_late_early_list, power.entry)
-+		dpm_async_fn(dev, async_resume_early);
- 
- 	while (!list_empty(&dpm_late_early_list)) {
- 		dev = to_device(dpm_late_early_list.next);
-@@ -1053,13 +1056,8 @@ void dpm_resume(pm_message_t state)
- 	pm_transition = state;
- 	async_error = 0;
- 
--	list_for_each_entry(dev, &dpm_suspended_list, power.entry) {
--		reinit_completion(&dev->power.completion);
--		if (is_async(dev)) {
--			get_device(dev);
--			async_schedule_dev(async_resume, dev);
--		}
--	}
-+	list_for_each_entry(dev, &dpm_suspended_list, power.entry)
-+		dpm_async_fn(dev, async_resume);
- 
- 	while (!list_empty(&dpm_suspended_list)) {
- 		dev = to_device(dpm_suspended_list.next);
-@@ -1373,13 +1371,9 @@ static void async_suspend_noirq(void *data, async_cookie_t cookie)
- 
- static int device_suspend_noirq(struct device *dev)
- {
--	reinit_completion(&dev->power.completion);
+-static void async_resume_noirq(void *data, async_cookie_t cookie)
+-{
+-	struct device *dev = (struct device *)data;
+-	int error;
 -
--	if (is_async(dev)) {
--		get_device(dev);
--		async_schedule_dev(async_suspend_noirq, dev);
-+	if (dpm_async_fn(dev, async_suspend_noirq))
- 		return 0;
--	}
+-	error = device_resume_noirq(dev, pm_transition, true);
+-	if (error)
+-		pm_dev_err(dev, pm_transition, " async", error);
+-
+-	put_device(dev);
++#define ASYNC_RESUME_FUNC(__func, __name)				\
++static void __func(void *data, async_cookie_t cookie)			\
++{									\
++	struct device *dev = (struct device *)data;			\
++	int error;							\
++									\
++	error = device_ ## __name(dev, pm_transition, true);		\
++	if (error)							\
++		pm_dev_err(dev, pm_transition, " async", error);	\
++									\
++	put_device(dev);						\
+ }
+ 
++ASYNC_RESUME_FUNC(async_resume_noirq, resume_noirq);
 +
- 	return __device_suspend_noirq(dev, pm_transition, false);
- }
- 
-@@ -1576,13 +1570,8 @@ static void async_suspend_late(void *data, async_cookie_t cookie)
- 
- static int device_suspend_late(struct device *dev)
+ void dpm_noirq_resume_devices(pm_message_t state)
  {
--	reinit_completion(&dev->power.completion);
--
--	if (is_async(dev)) {
--		get_device(dev);
--		async_schedule_dev(async_suspend_late, dev);
-+	if (dpm_async_fn(dev, async_suspend_late))
- 		return 0;
--	}
- 
- 	return __device_suspend_late(dev, pm_transition, false);
+ 	struct device *dev;
+@@ -876,17 +879,7 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+ 	return error;
  }
-@@ -1842,13 +1831,8 @@ static void async_suspend(void *data, async_cookie_t cookie)
  
- static int device_suspend(struct device *dev)
- {
--	reinit_completion(&dev->power.completion);
+-static void async_resume_early(void *data, async_cookie_t cookie)
+-{
+-	struct device *dev = (struct device *)data;
+-	int error;
 -
--	if (is_async(dev)) {
--		get_device(dev);
--		async_schedule_dev(async_suspend, dev);
-+	if (dpm_async_fn(dev, async_suspend))
- 		return 0;
--	}
+-	error = device_resume_early(dev, pm_transition, true);
+-	if (error)
+-		pm_dev_err(dev, pm_transition, " async", error);
+-
+-	put_device(dev);
+-}
++ASYNC_RESUME_FUNC(async_resume_early, resume_early);
  
- 	return __device_suspend(dev, pm_transition, false);
+ /**
+  * dpm_resume_early - Execute "early resume" callbacks for all devices.
+@@ -1035,16 +1028,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	return error;
  }
+ 
+-static void async_resume(void *data, async_cookie_t cookie)
+-{
+-	struct device *dev = (struct device *)data;
+-	int error;
+-
+-	error = device_resume(dev, pm_transition, true);
+-	if (error)
+-		pm_dev_err(dev, pm_transition, " async", error);
+-	put_device(dev);
+-}
++ASYNC_RESUME_FUNC(async_resume, resume);
+ 
+ /**
+  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
 -- 
 2.17.0
