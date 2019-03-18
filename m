@@ -1,124 +1,115 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by default at boot
-Date: Mon, 18 Mar 2019 12:15:43 +0100
-Message-ID: <2616815.TtRSCVe66q@house>
-References: <6369897.qxlu8PgE1t@house> <2947538.dvgdW3vLlg@house> <CAJZ5v0jS=9+O1J9w=a1K4U5UbXPKegVM-xKKwZN9XY4ObkQJkQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each policy
+Date: Mon, 18 Mar 2019 12:20:00 +0100
+Message-ID: <CAJZ5v0guJoSanBRs232aVdHgiBRysdLs+LFhSnKaPbeKSrrtzA@mail.gmail.com>
+References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
+ <20190315122952.GF6058@hirez.programming.kicks-ass.net> <20190318023514.67gxypb4w7llcmha@vireshk-i7>
+ <20190318105356.GM6058@hirez.programming.kicks-ass.net> <CAJZ5v0h5k72Oer0v6iaqfzNU6fNfoPK+YLsKxi6ZE14P_rWD1Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jS=9+O1J9w=a1K4U5UbXPKegVM-xKKwZN9XY4ObkQJkQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0h5k72Oer0v6iaqfzNU6fNfoPK+YLsKxi6ZE14P_rWD1Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 18, 2019 11:26:10 AM CET Rafael J. Wysocki wrote:
-> On Fri, Mar 15, 2019 at 4:36 PM Thomas Renninger <trenn@suse.de> wrote:
-> > Hi Rafael,
+On Mon, Mar 18, 2019 at 12:09 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Mon, Mar 18, 2019 at 11:54 AM Peter Zijlstra <peterz@infradead.org> wrote:
 > >
- 
-...
+> > On Mon, Mar 18, 2019 at 08:05:14AM +0530, Viresh Kumar wrote:
+> > > On 15-03-19, 13:29, Peter Zijlstra wrote:
+> > > > On Fri, Mar 15, 2019 at 02:43:07PM +0530, Viresh Kumar wrote:
+> > > > > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > > > > index 3fae23834069..cff8779fc0d2 100644
+> > > > > --- a/arch/x86/kernel/tsc.c
+> > > > > +++ b/arch/x86/kernel/tsc.c
+> > > > > @@ -956,28 +956,38 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > > >                           void *data)
+> > > > >  {
+> > > > >   struct cpufreq_freqs *freq = data;
+> > > > > - unsigned long *lpj;
+> > > > > -
+> > > > > - lpj = &boot_cpu_data.loops_per_jiffy;
+> > > > > -#ifdef CONFIG_SMP
+> > > > > - if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> > > > > -         lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> > > > > -#endif
+> > > > > + struct cpumask *cpus = freq->policy->cpus;
+> > > > > + bool boot_cpu = !IS_ENABLED(CONFIG_SMP) || freq->flags & CPUFREQ_CONST_LOOPS;
+> > > > > + unsigned long lpj;
+> > > > > + int cpu;
+> > > > >
+> > > > >   if (!ref_freq) {
+> > > > >           ref_freq = freq->old;
+> > > > > -         loops_per_jiffy_ref = *lpj;
+> > > > >           tsc_khz_ref = tsc_khz;
+> > > > > +
+> > > > > +         if (boot_cpu)
+> > > > > +                 loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+> > > > > +         else
+> > > > > +                 loops_per_jiffy_ref = cpu_data(cpumask_first(cpus)).loops_per_jiffy;
+> > > > >   }
+> > > > > +
+> > > > >   if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+> > > > >                   (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> > > > > -         *lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> > > > > -
+> > > > > +         lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> > > > >           tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+> > > > > +
+> > > > >           if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> > > > >                   mark_tsc_unstable("cpufreq changes");
+> > > > >
+> > > > > -         set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
+> > > > > +         if (boot_cpu) {
+> > > > > +                 boot_cpu_data.loops_per_jiffy = lpj;
+> > > > > +         } else {
+> > > > > +                 for_each_cpu(cpu, cpus)
+> > > > > +                         cpu_data(cpu).loops_per_jiffy = lpj;
+> > > > > +         }
+> > > > > +
+> > > > > +         for_each_cpu(cpu, cpus)
+> > > > > +                 set_cyc2ns_scale(tsc_khz, cpu, rdtsc());
+> > > >
+> > > > This code doesn't make sense, the rdtsc() _must_ be called on the CPU in
+> > > > question.
+> > >
+> > > You mean rdtsc() must be locally on that CPU? The cpufreq core never guaranteed
+> > > that and it was left for the notifier to do. This patch doesn't change the
+> > > behavior at all, just that it moves the for-loop to the notifier instead of the
+> > > cpufreq core.
+> >
+> > Yuck..
+> >
+> > Rafael; how does this work in practise? Earlier you said that on x86 the
+> > policies typically have a single cpu in them anyway.
+>
+> Yes.
+>
+> > Is the freq change also notified from _that_ cpu?
+>
+> May not be, depending on what CPU runs the work item/thread changing
+> the freq.  It generally is not guaranteed to always be the same as the
+> target CPU.
 
-> > On my workstation the BIOS initializes perf bias to:
-> > cpupower info
-> > analyzing CPU 0:
-> > perf-bias: 7
-> > 
-> > I could grep through quite some dozens of machines..., but these are
-> > mostly
-> > servers and probably show either "zero"/"performance" or "6"/"normal"
-> > because the Linux kernel overrides the INTENDED performance perf bias
-> > value to 6.
-> The perf bias Intended by whom?
+Actually, scratch that.
 
-The instance who should be in charge to set/init such a value:
-BIOS?
- 
-> Yes, the kernel replaces whatever the original BIOS setting is with
-> its own one.
+On x86, with one CPU per cpufreq policy, that will always be the target CPU.
 
-No, it only replaces the "performance" (0) value with "normal" (6).
-This does not makes sense and is broken.
+> > I don't think I have old enough hardware around anymore to test any of
+> > this. This was truly ancient p6 era stuff IIRC.
+> >
+> > Because in that case, I'm all for not doing the changes to this notifier
+> > Viresh is proposing but simply adding something like:
+> >
+> >
+> >         WARN_ON_ONCE(cpumask_weight(cpuc) != 1);
+> >         WARN_ON_ONCE(cpumask_first(cpuc) != smp_processor_id());
+> >
+> > And leave it at that.
+>
+> That may not work I'm afraid.
 
-> It may not match every setup perfectly, but at least it
-> is consistent.  Why exactly is it worse than whatever the BIOS has
-> set?
-
-Because there may be BIOS settings for the CPU which justify initialization
-of the Perf BIAS value by BIOS.
-
-What sense does it make to unconditionally set perf BIAS value from
-performance to balanced?
-Why is this done?
- 
-> > So we (SUSE) are going with this patch forever.
-> > 
-> > Otherwise we would run into a similar support nightmare we ran into, when
-> > Intel decided to ignore CPU idle states as exported by BIOS through ACPI.
-> > BIOS documentation of all big server vendors mentioned "performance"
-> > settings. With a kernel update these BIOS C states settings have been
-> > ignored (some long latency once were not exported on purpose).
-> > 
-> > The list of breaking conventions and specifications is long...
-> > People mostly blame the "bad BIOS developer". In this case things have
-> > been
-> > broke by the kernel.
-> 
-> I agree that the kernel should not modify the EPB on system-wide
-> resume and on CPU online, but I don't see why changing the BIOS
-> setting at init time is a problem really.
-
-I would agree if we differ a tablet/laptop system and set the performance
-value to normal/powersave.
-And on a server we set it from normal/powersave to performance.
-
-But we should not touch this value anyway.
-Again: Why should the kernel touch it?
-
-There may be BIOSes initialzing it via BIOS options. And this is a very valid 
-thing to do.
-
-> > It's now (with the resume patch) broken in way, that "performance" setting
-> 
-> So the point seems to be that the BIOS setting should be preserved or
-> people are not able to configure the systems for performance through
-> setting things in the BIOS.
-> However, that only means that setting
-> things in the BIOS is not sufficient to configure a system for
-> performance and that has always been the case AFAICS, with or without
-> the EPB.
-
-?!?
-If the kernel unconditionally, without documentation overrides such values...
-(and in this case only because of a workaround of some buggy BIOSes not 
-initialzing this value)...
-
-> If you want to configure a system for performance, you need to do that
-> not just in the BIOS, but also in the OS (and, quite arguably, I would
-> expect the latter to be sufficient).
-
-No. You must not ignore BIOS settings. Even worse, you must not override
-these without any sane reason.
-
-Your assumption above might be right. But we want to do it better, right?
-
-...
- 
-> The system-wide resume part will still not be working properly after
-> the reverts.
-
-But it must never blindly (unconditionally) be set to specific value.
-Correct?
-
-You mean the kernel should store the pre-hibernation perf BIAS value
-in NVRAM and write it back when waking up again?
-This would make sense.
-
-It would also mean perf BIAS never really worked, at least did not survive
-suspend. On servers (no hibernation) it would works but is overridden
-to a value you typically do not want to have on a server...
-So the current situation is rather broken in the kernel.
-
-
-      Thomas
+So something like that could work.
