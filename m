@@ -1,217 +1,217 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [RESEND PATCH v6 00/11] mfd: add support for max77650 PMIC
-Date: Mon, 18 Mar 2019 18:44:18 +0100
-Message-ID: <CAMRc=Mf5itrBMdgAUaMLJ8tWKByPSstZbdKvEhw=_qnsKXdKAg@mail.gmail.com>
-References: <20190318174040.17899-1-brgl@bgdev.pl>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by
+ default at boot
+Date: Mon, 18 Mar 2019 23:57:08 +0100
+Message-ID: <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
+References: <6369897.qxlu8PgE1t@house> <2616815.TtRSCVe66q@house>
+ <CAJZ5v0jAY8OcTMKu4fn7NKVn0E+MqnWSUbSBLUjg0+2adnJ+7Q@mail.gmail.com> <3100343.nkNWlhakcz@house>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190318174040.17899-1-brgl@bgdev.pl>
+In-Reply-To: <3100343.nkNWlhakcz@house>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-pon., 18 mar 2019 o 18:40 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(=
-a):
+On Mon, Mar 18, 2019 at 2:22 PM Thomas Renninger <trenn@suse.de> wrote:
 >
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> On Monday, March 18, 2019 12:40:46 PM CET Rafael J. Wysocki wrote:
+> > On Mon, Mar 18, 2019 at 12:15 PM Thomas Renninger <trenn@suse.de> wrote:
 >
-> This series missed the last merge window so resending rebased on top
-> of v5.1-rc1 with no functional changes.
+> ...
 >
-> ---
+> > And who's BIOS, really?  I guess you mean the OEM?  Note, however,
+> > that the user and the OEM may not agree on that, but whatever.
 >
-> This series adds support for max77650 ultra low-power PMIC. It provides
-> the core mfd driver and a set of five sub-drivers for the regulator,
-> power supply, gpio, leds and input subsystems.
+> I mean both!
+> The OEM.
+> And the user who might choose a "performance" BIOS setting.
 >
-> Patches 1-4 add the DT binding documents. Patch 5 documents mfd_add_devic=
-es().
-> Patches 6-10 add all drivers. Last patch adds a MAINTAINERS entry for thi=
-s
-> device.
+> > > > Yes, the kernel replaces whatever the original BIOS setting is with
+> > > > its own one.
+> > >
+> > > No, it only replaces the "performance" (0) value with "normal" (6).
+> > > This does not makes sense and is broken.
 >
-> The regulator part is already upstream.
+> Both know it better than this...
 >
-> v1 -> v2:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > OK, fair enough.
+> >
+> > I guess it would have been better to set it to 6 unconditionally.
 >
-> General:
-> - use C++ style comments for the SPDX license identifier and the
->   copyright header
-> - s/MODULE_LICENSE("GPL")/MODULE_LICENSE("GPL v2")/
-> - lookup the virtual interrupt numbers in the MFD driver, setup
->   resources for child devices and use platform_get_irq_byname()
->   in sub-drivers
-> - picked up review tags
-> - use devm_request_any_context_irq() for interrupt requests
->
-> LEDs:
-> - changed the max77650_leds_ prefix to max77650_led_
-> - drop the max77650_leds structure as the only field it held was the
->   regmap pointer, move said pointer to struct max77650_led
-> - change the driver name to "max77650-led"
-> - drop the last return value check and return the result of
->   regmap_write() directly
-> - change the labeling scheme to one consistent with other LED drivers
->
-> ONKEY:
-> - drop the key reporting helper and call the input functions directly
->   from interrupt handlers
-> - rename the rv local variable to error
-> - drop parent device asignment
->
-> Regulator:
-> - drop the unnecessary init_data lookup from the driver code
-> - drop unnecessary include
->
-> Charger:
-> - disable the charger on driver remove
-> - change the power supply type to POWER_SUPPLY_TYPE_USB
->
-> GPIO:
-> - drop interrupt support until we have correct implementation of hierarch=
-ical
->   irqs in gpiolib
->
-> v2 -> v3:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> General:
-> - dropped regulator patches as they're already in Mark Brown's branch
->
-> LED:
-> - fix the compatible string in the DT binding example
-> - use the max_brightness property
-> - use a common prefix ("MAX77650_LED") for all defines in the driver
->
-> MFD:
-> - add the MODULE_DEVICE_TABLE()
-> - add a sentinel to the of_device_id array
-> - constify the pointers to irq names
-> - use an enum instead of defines for interrupt indexes
->
-> v3 -> v4:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> GPIO:
-> - as discussed with Linus Walleij: the gpio-controller is now part of
->   the core mfd module (we don't spawn a sub-node anymore), the binding
->   document for GPIO has been dropped, the GPIO properties have been
->   defined in the binding document for the mfd core, the interrupt
->   functionality has been reintroduced with the irq directly passed from
->   the mfd part
-> - due to the above changes the Reviewed-by tag from Linus was dropped
->
-> v4 -> v5:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> General:
-> - add a patch documenting mfd_add_devices()
->
-> MFD:
-> - pass the regmap irq_chip irq domain to mfd over mfd_add_devices so that
->   the hw interrupts from resources can be correctly mapped to virtual irq=
-s
-> - remove the enum listing cell indexes
-> - extend Kconfig help
-> - add a link to the programming manual
-> - use REGMAP_IRQ_REG() for regmap interrupts (except for GPI which has
->   is composed of two hw interrupts for rising and falling edge)
-> - add error messages in probe
-> - use PLATFORM_DEVID_NONE constant in devm_mfd_add_devices()
-> - set irq_base to 0 in regmap_add_irq_chip() as other users to, it's only
->   relevant if it's > 0
->
-> Charger:
-> - use non-maxim specific property names for minimum input voltage and cur=
-rent
->   limit
-> - code shrink by using the enable/disable charger helpers everywhere
-> - use more descriptive names for constants
->
-> Onkey:
-> - use EV_SW event type for slide mode
->
-> LED:
-> - remove stray " from Kconfig help
->
-> v5 -> v6:
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> MFD:
-> - remove stray spaces in the binding document
-> - rename the example dt node
-> - remove unnecessary interrupt-parent property from the bindings
->
-> LED:
-> - add a missing dependency on LEDS_CLASS to Kconfig
->
-> Onkey:
-> - use boolean for the slide button property
->
-> Charger:
-> - fix the property names in DT example
-> - make constants even more readable
->
-> Bartosz Golaszewski (11):
->   dt-bindings: mfd: add DT bindings for max77650
->   dt-bindings: power: supply: add DT bindings for max77650
->   dt-bindings: leds: add DT bindings for max77650
->   dt-bindings: input: add DT bindings for max77650
->   mfd: core: document mfd_add_devices()
->   mfd: max77650: new core mfd driver
->   power: supply: max77650: add support for battery charger
->   gpio: max77650: add GPIO support
->   leds: max77650: add LEDs support
->   input: max77650: add onkey support
->   MAINTAINERS: add an entry for max77650 mfd driver
->
->  .../bindings/input/max77650-onkey.txt         |  26 ++
->  .../bindings/leds/leds-max77650.txt           |  57 +++
->  .../devicetree/bindings/mfd/max77650.txt      |  46 +++
->  .../power/supply/max77650-charger.txt         |  27 ++
->  MAINTAINERS                                   |  14 +
->  drivers/gpio/Kconfig                          |   7 +
->  drivers/gpio/Makefile                         |   1 +
->  drivers/gpio/gpio-max77650.c                  | 190 +++++++++
->  drivers/input/misc/Kconfig                    |   9 +
->  drivers/input/misc/Makefile                   |   1 +
->  drivers/input/misc/max77650-onkey.c           | 121 ++++++
->  drivers/leds/Kconfig                          |   6 +
->  drivers/leds/Makefile                         |   1 +
->  drivers/leds/leds-max77650.c                  | 147 +++++++
->  drivers/mfd/Kconfig                           |  14 +
->  drivers/mfd/Makefile                          |   1 +
->  drivers/mfd/max77650.c                        | 234 +++++++++++
->  drivers/mfd/mfd-core.c                        |  14 +
->  drivers/power/supply/Kconfig                  |   7 +
->  drivers/power/supply/Makefile                 |   1 +
->  drivers/power/supply/max77650-charger.c       | 366 ++++++++++++++++++
->  include/linux/mfd/max77650.h                  |  59 +++
->  22 files changed, 1349 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/input/max77650-onke=
-y.txt
->  create mode 100644 Documentation/devicetree/bindings/leds/leds-max77650.=
-txt
->  create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
->  create mode 100644 Documentation/devicetree/bindings/power/supply/max776=
-50-charger.txt
->  create mode 100644 drivers/gpio/gpio-max77650.c
->  create mode 100644 drivers/input/misc/max77650-onkey.c
->  create mode 100644 drivers/leds/leds-max77650.c
->  create mode 100644 drivers/mfd/max77650.c
->  create mode 100644 drivers/power/supply/max77650-charger.c
->  create mode 100644 include/linux/mfd/max77650.h
->
-> --
-> 2.20.1
->
+> No, I guess keeping the original value is the only sane thing to do.
+> Sorry, Rafael, I have to insist on this.
 
-Sorry for spamming - I got a strange error from git send-email:
+Which doesn't make your argument more convincing at all.
 
-Died at /<snip!>libexec/git-core/git-send-email line 1542.
+> There might be secrets Len and you cannot share with public, but you
+> should at least explain this privately then in a way that the current
+> code could somehow make sense. I absolutely cannot see that.
 
-Bart
+Anyway, I just wanted to say that using the same initial value in all
+cases would have been more consistent than what the current code does.
+
+> > What about the systems that will misbehave when it is left at 0?
+>
+> Good question.
+> What exactly happens there? The CPU is faster in general?
+> And may consume a tiny bit more of power.
+> I had reports that Turbo Mode is not entered on some server CPUs when
+> perf BIAS is switched back to normal mode.
+> It is hard to identify what Intel implemented in microcode, but it's not
+> that much altogether. It would be nice if Intel would be a bit more verbose
+> about this and show some performance vs powersave figures.
+
+Can you please stop insinuating things? That really doesn't help or
+make the discussion clearer.
+
+> > > > It may not match every setup perfectly, but at least it
+> > > > is consistent.  Why exactly is it worse than whatever the BIOS has
+> > > > set?
+> > >
+> > > Because there may be BIOS settings for the CPU which justify
+> > > initialization
+> > > of the Perf BIAS value by BIOS.
+> >
+> > Well, the EPB is there for users to set it via the OS.  The BIOS
+> > setting is not guaranteed to work for all users anyway.
+>
+> Who says that?
+
+I do.
+
+If users have different needs, the single BIOS-provided value may not
+work for all of them just as well as the value set by the kernel
+doesn't.  IOW, it really doesn't matter who sets the initial value,
+the BIOS or the kernel.  In both cases it may not work for everybody.
+
+> Is this documented?
+>
+> I would say it is exactly the other way around. Energy Perf BIAS hint is
+> a MSR which must be changed in Ring 0 kernel environment.
+>
+> x86_energy_perf_policy is a nice tool to play with and to try out what
+> this value is for. But for example in secure boot mode userspace must not
+> modify this HW setting in any way.
+> So it would not be possible for a secure booted server to switch this
+> setting back to performance mode.
+
+I suspect that this was the real motivation for the reverts. :-)
+
+Well, if x86_energy_perf_policy doesn't work in hardened environments,
+then this is a problem, but making all systems use BIOS-provided
+values is not the most straightforward way to address it in my view.
+
+> > > What sense does it make to unconditionally set perf BIAS value from
+> > > performance to balanced?
+> > > Why is this done?
+> >
+> > Basically, for HW health reasons AFAICS.
+> >
+> > Apparently, on some systems EPB=0 is (was?) special and means (meant?)
+> > very aggressive use of turbo etc. which is not healthy in general.
+>
+> Hmm, maybe you want to explain this privately.
+> Performance is a valid setting.
+> x86_energy_perf_policy tool has a "performance" string for this and I expect it is very used.
+> I would switch to it if I am constantly connected to AC.
+> man x86_energy_perf_policy
+> also does not tell the user anything about "be careful with performance setting"
+>
+> And until today every CPU online/offline cycle or machine resume cycle switches
+> the value back to performance (if kernel tried to switch to 6).
+>
+> ...
+>
+> > > There may be BIOSes initialzing it via BIOS options. And this is a very
+> > > valid thing to do.
+> >
+> > Yes, and there may be BIOSes leaving it at 0 with the assumption that
+> > the OS will adjust it.  The kernel cannot know which is the case.
+>
+> Correct. The kernel cannot know.
+>
+> You know this better than anyone else:
+> - A specific Microsoft version is doing it wrong.
+> - We adopt.
+> - Microsoft is doing it correctly with the next version
+> - We are busted
+>
+> I am ok with leaving the message as a hint, I would still check
+> ACPI prefered profile variable that we are not running on a server.
+> On these systems the message would be wrong rather sure and performance is intended.
+
+So yes, ACPI profiles could be used in there as they also are used
+elsewhere in a similar context.
+
+>
+> ...
+>
+> > > No. You must not ignore BIOS settings. Even worse, you must not override
+> > > these without any sane reason.
+> >
+> > While there are BIOS settings that better should not be overridden,
+> > the EPB is not one of them.
+>
+> Again: Why or where is this documented?
+
+In the SDM if you will, under "Performance and Energy Bias Hint support":
+
+"Software can use whatever criteria it sees fit to program the MSR
+with an appropriate value."
+
+If that doesn't mean "Yes, the OS can override the BIOS setting", then
+I'm not sure what would.
+
+> > > Your assumption above might be right. But we want to do it better, right?
+> > >
+> > > ...
+> > >
+> > > > The system-wide resume part will still not be working properly after
+> > > > the reverts.
+> > >
+> > > But it must never blindly (unconditionally) be set to specific value.
+> > > Correct?
+> >
+> > Yes.  I've already said that.
+>
+> How about below solution then for the initial boot up sequence?
+
+The MSR would never be written to with that change, is that intentional?
+
+> > > You mean the kernel should store the pre-hibernation perf BIAS value
+> > > in NVRAM and write it back when waking up again?
+> >
+> > Or in the image and yes, it should write it back.
+>
+> Can you point me to a similar case where a variable is stored through
+> hibernation?
+> If it's not too much I can try to come up with an (compiled but untested) patch.
+>
+> > > This would make sense.
+> > >
+> > > It would also mean perf BIAS never really worked, at least did not survive
+> > > suspend.
+> >
+> > Right.
+> >
+> > > On servers (no hibernation) it would works but is overridden
+> > > to a value you typically do not want to have on a server...
+> > > So the current situation is rather broken in the kernel.
+> >
+> > Well, you can say so, but fixing it really means something more than
+> > reverting the commits that your patch is reverting and *that* is my
+> > point.
+> >
+> > Yes, I think that this needs to be fixed.
+> >
+> > No, I don't think that the reverts you are proposing are the way to go here.
+>
+> Why?
+> It is the first step to go.
+
+Well, I'll just go and fix the real problems here I guess, that will
+be way more productive than just talking about them ...
+
+And then we can get back to the initial setting discussion.
