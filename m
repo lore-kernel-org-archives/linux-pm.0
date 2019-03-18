@@ -1,70 +1,40 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / core: fix kerneldoc comment for
- device_pm_wait_for_dev
-Date: Mon, 18 Mar 2019 13:17:10 +0100
-Message-ID: <20190318121710.GG6101@amd>
-References: <20190316034841.31451-1-tiny.windzz@gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v7 03/15] sched/core: uclamp: Add system default clamps
+Date: Mon, 18 Mar 2019 12:18:04 +0000
+Message-ID: <20190318121804.tr3myhtgczvovmkq@e110439-lin>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-4-patrick.bellasi@arm.com>
+ <20190313201821.GW2482@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Qf1oXS95uex85X0R"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190316034841.31451-1-tiny.windzz@gmail.com>
+In-Reply-To: <20190313201821.GW2482@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 13-Mar 21:18, Peter Zijlstra wrote:
+> On Fri, Feb 08, 2019 at 10:05:42AM +0000, Patrick Bellasi wrote:
+> > +static void uclamp_fork(struct task_struct *p)
+> > +{
+> > +	unsigned int clamp_id;
+> > +
+> > +	if (unlikely(!p->sched_class->uclamp_enabled))
+> > +		return;
+> > +
+> > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
+> > +		p->uclamp[clamp_id].active = false;
+> > +}
+> 
+> Because in that case .active == false, and copy_process() will have done
+> thr right thing?
 
---Qf1oXS95uex85X0R
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Don't really get what you mean here? :/
 
-On Fri 2019-03-15 23:48:41, Yangtao Li wrote:
-> Rearrange comment to make the comment style consistent, the previous
-> function parameters are described first.
->=20
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+-- 
+#include <best/regards.h>
 
-> ---
->  drivers/base/power/main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 0cff68bd7b4b..eddb54057ed6 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -2069,8 +2069,8 @@ EXPORT_SYMBOL_GPL(__suspend_report_result);
-> =20
->  /**
->   * device_pm_wait_for_dev - Wait for suspend/resume of a device to compl=
-ete.
-> - * @dev: Device to wait for.
->   * @subordinate: Device that needs to wait for @dev.
-> + * @dev: Device to wait for.
->   */
->  int device_pm_wait_for_dev(struct device *subordinate, struct device *de=
-v)
->  {
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---Qf1oXS95uex85X0R
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlyPjEYACgkQMOfwapXb+vKiIACfaImgNuI9nyp2zWc1zjI6P1Uy
-ZaEAmwQIqDMH/OWJjyg5gexXKeWlaLlN
-=FNoo
------END PGP SIGNATURE-----
-
---Qf1oXS95uex85X0R--
+Patrick Bellasi
