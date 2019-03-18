@@ -1,89 +1,64 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Date: Mon, 18 Mar 2019 14:21:13 +0200
-Message-ID: <20190318122113.GA4834@apalos>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
- <20190314121541.GB19385@apalos>
- <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
- <20190314134428.GA24768@apalos>
- <874l85v8p6.fsf@FE-laptop>
- <20190318112844.GA1708@apalos>
- <87h8c0s955.fsf@FE-laptop>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v7 06/15] sched/core: uclamp: Reset uclamp values on
+ RESET_ON_FORK
+Date: Mon, 18 Mar 2019 12:58:44 +0000
+Message-ID: <20190318125844.ajhjpaqlcgxn7qkq@e110439-lin>
+References: <20190208100554.32196-1-patrick.bellasi@arm.com>
+ <20190208100554.32196-7-patrick.bellasi@arm.com>
+ <20190313205235.GX2482@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87h8c0s955.fsf@FE-laptop>
+In-Reply-To: <20190313205235.GX2482@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Christian Neubert <christian.neubert.86@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Gregory, 
-
-> >> 
-> > [   14.909524] clk_pm_cpu_set_parent old=28004840 -> val=0x6000000 load_level=0
-> > [   14.916424] clk_pm_cpu_set_parent old=2E004840 -> val=0x600 load_level=1
-> > [   14.923315] clk_pm_cpu_set_parent old=8880A8C0 -> val=0x6000000 load_level=2
-> > [   14.930572] clk_pm_cpu_set_parent old=8E80A8C0 -> val=0x600 load_level=3
-> >
-> >
-> > Let me know if you need anything else
+On 13-Mar 21:52, Peter Zijlstra wrote:
+> On Fri, Feb 08, 2019 at 10:05:45AM +0000, Patrick Bellasi wrote:
+> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> > index 070caa1f72eb..8b282616e9c9 100644
+> > --- a/kernel/sched/core.c
+> > +++ b/kernel/sched/core.c
+> > @@ -1071,7 +1071,7 @@ static void __setscheduler_uclamp(struct task_struct *p,
+> >  	}
+> >  }
+> >  
+> > -static void uclamp_fork(struct task_struct *p)
+> > +static void uclamp_fork(struct task_struct *p, bool reset)
+> >  {
+> >  	unsigned int clamp_id;
+> >  
+> > @@ -1080,6 +1080,17 @@ static void uclamp_fork(struct task_struct *p)
 > 
-> Could you show me the output of "cat /sys/kernel/debug/clk/clk_summary"
-> 
-root@localhost ~ # cat /sys/kernel/debug/clk/clk_summary
-                                 enable  prepare  protect                                duty
-   clock                          count    count    count        rate   accuracy phase  cycle
----------------------------------------------------------------------------------------------
- xtal                                 2        3        0    25000000          0     0  50000
-    i2c_1                             0        0        0    25000000          0     0  50000
-    i2c_2                             0        0        0    25000000          0     0  50000
-    avs                               0        0        0    25000000          0     0  50000
-    TBG-B-S                           2        2        0  1000000000          0     0  50000
-       cpu                            0        0        0   200000000          0     0  50000
-       usb32_ss_sys                   1        1        0   125000000          0     0  50000
-       usb32_usb2_sys                 0        0        0   100000000          0     0  50000
-       gbe_125                        0        0        0   125000000          0     0  50000
-          gbe0_125                    0        0        0   125000000          0     0  50000
-          gbe1_125                    0        0        0   125000000          0     0  50000
-       gbe_core                       1        1        0   250000000          0     0  50000
-          gbe_bm                      0        0        0   250000000          0     0  50000
-          gbe0_core                   1        1        0   250000000          0     0  50000
-          gbe1_core                   0        0        0   250000000          0     0  50000
-       eip97                          0        0        0   500000000          0     0  50000
-       trace                          0        0        0  1000000000          0     0  50000
-       ddr_fclk                       0        0        0   125000000          0     0  50000
-       pwm                            0        0        0    50000000          0     0  50000
-       tscem_tmx                      0        0        0  1000000000          0     0  50000
-       sec_dap                        0        0        0   100000000          0     0  50000
-       sec_at                         0        0        0   200000000          0     0  50000
-    TBG-A-S                           0        0        0  1600000000          0     0  50000
-       sdio                           0        0        0   400000000          0     0  50000
-       ddr_phy                        0        0        0   400000000          0     0  50000
-       mmc                            0        0        0   400000000          0     0  50000
-    TBG-B-P                           0        0        0   500000000          0     0  50000
-       gbe_50                         0        0        0    50000000          0     0  50000
-          gbe0_50                     0        0        0    50000000          0     0  50000
-          gbe1_50                     0        0        0    50000000          0     0  50000
-    TBG-A-P                           0        1        0   800000000          0     0  50000
-       counter                        0        0        0   160000000          0     0  50000
-       sqf                            0        1        0   200000000          0     0  50000
-       tscem                          0        0        0   200000000          0     0  50000
-       sata_host                      0        0        0   200000000          0     0  50000
-root@localhost ~ # 
+> IIRC there's an early return here if the class doesn't have uclamp
+> support, which I think is wrong now. You want the reset irrespective of
+> whether the class supports it, no?
 
-> Also, during this week-end, Christian suggested that the issue might
-> come from the AVS support.
-> 
-> Could you disable it and check you still have the issue?
-> 
-> For this, you just have to remove the avs node in
-> arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
-Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
- once i return
+Yep, actually... since in this method we are always and only resetting
+certain values, it's probably better to just remove the check on class
+support and unconditionally do the required ones.
 
+> >  	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
+> >  		p->uclamp[clamp_id].active = false;
+> > +
+> > +	if (likely(!reset))
+> > +		return;
+> > +
+> > +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> > +		unsigned int clamp_value = uclamp_none(clamp_id);
+> > +
+> > +		p->uclamp[clamp_id].user_defined = false;
+> > +		p->uclamp[clamp_id].value = clamp_value;
+> > +		p->uclamp[clamp_id].bucket_id = uclamp_bucket_id(clamp_value);
+> > +	}
+> >  }
+> 
+> 
 
-Cheers
-/Ilias
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
