@@ -1,169 +1,220 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by
- default at boot
-Date: Mon, 18 Mar 2019 12:40:46 +0100
-Message-ID: <CAJZ5v0jAY8OcTMKu4fn7NKVn0E+MqnWSUbSBLUjg0+2adnJ+7Q@mail.gmail.com>
-References: <6369897.qxlu8PgE1t@house> <2947538.dvgdW3vLlg@house>
- <CAJZ5v0jS=9+O1J9w=a1K4U5UbXPKegVM-xKKwZN9XY4ObkQJkQ@mail.gmail.com> <2616815.TtRSCVe66q@house>
+Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each policy
+Date: Mon, 18 Mar 2019 12:49:13 +0100
+Message-ID: <CAJZ5v0jr-XJ6VbNf3ipYQuycah-GNZKLgGe5wGknkWF7bKSY2w@mail.gmail.com>
+References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2616815.TtRSCVe66q@house>
+In-Reply-To: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 18, 2019 at 12:15 PM Thomas Renninger <trenn@suse.de> wrote:
+On Fri, Mar 15, 2019 at 10:13 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On Monday, March 18, 2019 11:26:10 AM CET Rafael J. Wysocki wrote:
-> > On Fri, Mar 15, 2019 at 4:36 PM Thomas Renninger <trenn@suse.de> wrote:
-> > > Hi Rafael,
-> > >
+> Currently we call these notifiers once for each CPU of the policy->cpus
+> cpumask. It would be more optimal if the notifier can be called only
+> once and all the relevant information be provided to it. Out of the 24
+> drivers that register for the transition notifiers today, only 5 of them
+> do per-cpu updates and the callback for the rest can be called only once
+> for the policy without any impact.
 >
-> ...
+> This would also avoid multiple function calls to the notifier callbacks
+> and reduce multiple iterations of notifier core's code (which does
+> locking as well).
 >
-> > > On my workstation the BIOS initializes perf bias to:
-> > > cpupower info
-> > > analyzing CPU 0:
-> > > perf-bias: 7
-> > >
-> > > I could grep through quite some dozens of machines..., but these are
-> > > mostly
-> > > servers and probably show either "zero"/"performance" or "6"/"normal"
-> > > because the Linux kernel overrides the INTENDED performance perf bias
-> > > value to 6.
-> > The perf bias Intended by whom?
+> This patch adds pointer to the cpufreq policy to the struct
+> cpufreq_freqs, so the notifier callback has all the information
+> available to it with a single call. The five drivers which perform
+> per-cpu updates are updated to use the cpufreq policy. The freqs->cpu
+> field is redundant now and is removed.
 >
-> The instance who should be in charge to set/init such a value:
-> BIOS?
-
-And who's BIOS, really?  I guess you mean the OEM?  Note, however,
-that the user and the OEM may not agree on that, but whatever.
-
-> > Yes, the kernel replaces whatever the original BIOS setting is with
-> > its own one.
+> Acked-by: David S. Miller <davem@davemloft.net> (sparc)
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V1->V2:
+> - Add cpufreq policy instead of cpus in struct cpufreq_freqs.
+> - Use policy->cpus instead of related_cpus everywhere in order not to
+>   change the existing behavior.
+> - Merged all 7 patches into a single patch.
+> - Updated changlog and included Ack from David.
 >
-> No, it only replaces the "performance" (0) value with "normal" (6).
-> This does not makes sense and is broken.
-
-OK, fair enough.
-
-I guess it would have been better to set it to 6 unconditionally.
-
-What about the systems that will misbehave when it is left at 0?
-
-> > It may not match every setup perfectly, but at least it
-> > is consistent.  Why exactly is it worse than whatever the BIOS has
-> > set?
+>  arch/arm/kernel/smp.c       | 24 +++++++++++++++---------
+>  arch/arm/kernel/smp_twd.c   |  9 ++++++---
+>  arch/sparc/kernel/time_64.c | 28 ++++++++++++++++------------
+>  arch/x86/kernel/tsc.c       | 32 +++++++++++++++++++++-----------
+>  arch/x86/kvm/x86.c          | 31 ++++++++++++++++++++-----------
+>  drivers/cpufreq/cpufreq.c   | 19 ++++++++++---------
+>  include/linux/cpufreq.h     | 14 +++++++-------
+>  7 files changed, 95 insertions(+), 62 deletions(-)
 >
-> Because there may be BIOS settings for the CPU which justify initialization
-> of the Perf BIAS value by BIOS.
-
-Well, the EPB is there for users to set it via the OS.  The BIOS
-setting is not guaranteed to work for all users anyway.
-
-> What sense does it make to unconditionally set perf BIAS value from
-> performance to balanced?
-> Why is this done?
-
-Basically, for HW health reasons AFAICS.
-
-Apparently, on some systems EPB=0 is (was?) special and means (meant?)
-very aggressive use of turbo etc. which is not healthy in general.
-
-> > > So we (SUSE) are going with this patch forever.
-> > >
-> > > Otherwise we would run into a similar support nightmare we ran into, when
-> > > Intel decided to ignore CPU idle states as exported by BIOS through ACPI.
-> > > BIOS documentation of all big server vendors mentioned "performance"
-> > > settings. With a kernel update these BIOS C states settings have been
-> > > ignored (some long latency once were not exported on purpose).
-> > >
-> > > The list of breaking conventions and specifications is long...
-> > > People mostly blame the "bad BIOS developer". In this case things have
-> > > been
-> > > broke by the kernel.
-> >
-> > I agree that the kernel should not modify the EPB on system-wide
-> > resume and on CPU online, but I don't see why changing the BIOS
-> > setting at init time is a problem really.
+> diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+> index 1d6f5ea522f4..6f6b981fecda 100644
+> --- a/arch/arm/kernel/smp.c
+> +++ b/arch/arm/kernel/smp.c
+> @@ -758,15 +758,20 @@ static int cpufreq_callback(struct notifier_block *nb,
+>                                         unsigned long val, void *data)
+>  {
+>         struct cpufreq_freqs *freq = data;
+> -       int cpu = freq->cpu;
+> +       struct cpumask *cpus = freq->policy->cpus;
+> +       int cpu, first = cpumask_first(cpus);
+> +       unsigned int lpj;
 >
-> I would agree if we differ a tablet/laptop system and set the performance
-> value to normal/powersave.
-> And on a server we set it from normal/powersave to performance.
+>         if (freq->flags & CPUFREQ_CONST_LOOPS)
+>                 return NOTIFY_OK;
 >
-> But we should not touch this value anyway.
-> Again: Why should the kernel touch it?
+> -       if (!per_cpu(l_p_j_ref, cpu)) {
+> -               per_cpu(l_p_j_ref, cpu) =
+> -                       per_cpu(cpu_data, cpu).loops_per_jiffy;
+> -               per_cpu(l_p_j_ref_freq, cpu) = freq->old;
+> +       if (!per_cpu(l_p_j_ref, first)) {
+> +               for_each_cpu(cpu, cpus) {
+> +                       per_cpu(l_p_j_ref, cpu) =
+> +                               per_cpu(cpu_data, cpu).loops_per_jiffy;
+> +                       per_cpu(l_p_j_ref_freq, cpu) = freq->old;
+> +               }
+> +
+>                 if (!global_l_p_j_ref) {
+>                         global_l_p_j_ref = loops_per_jiffy;
+>                         global_l_p_j_ref_freq = freq->old;
+> @@ -778,10 +783,11 @@ static int cpufreq_callback(struct notifier_block *nb,
+>                 loops_per_jiffy = cpufreq_scale(global_l_p_j_ref,
+>                                                 global_l_p_j_ref_freq,
+>                                                 freq->new);
+> -               per_cpu(cpu_data, cpu).loops_per_jiffy =
+> -                       cpufreq_scale(per_cpu(l_p_j_ref, cpu),
+> -                                       per_cpu(l_p_j_ref_freq, cpu),
+> -                                       freq->new);
+> +
+> +               lpj = cpufreq_scale(per_cpu(l_p_j_ref, first),
+> +                                   per_cpu(l_p_j_ref_freq, first), freq->new);
+> +               for_each_cpu(cpu, cpus)
+> +                       per_cpu(cpu_data, cpu).loops_per_jiffy = lpj;
+>         }
+>         return NOTIFY_OK;
+>  }
+> diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
+> index b30eafeef096..495cc7282096 100644
+> --- a/arch/arm/kernel/smp_twd.c
+> +++ b/arch/arm/kernel/smp_twd.c
+> @@ -162,15 +162,18 @@ static int twd_cpufreq_transition(struct notifier_block *nb,
+>         unsigned long state, void *data)
+>  {
+>         struct cpufreq_freqs *freqs = data;
+> +       int cpu;
 >
-> There may be BIOSes initialzing it via BIOS options. And this is a very valid
-> thing to do.
-
-Yes, and there may be BIOSes leaving it at 0 with the assumption that
-the OS will adjust it.  The kernel cannot know which is the case.
-
-> > > It's now (with the resume patch) broken in way, that "performance" setting
-> >
-> > So the point seems to be that the BIOS setting should be preserved or
-> > people are not able to configure the systems for performance through
-> > setting things in the BIOS.
-> > However, that only means that setting
-> > things in the BIOS is not sufficient to configure a system for
-> > performance and that has always been the case AFAICS, with or without
-> > the EPB.
+>         /*
+>          * The twd clock events must be reprogrammed to account for the new
+>          * frequency.  The timer is local to a cpu, so cross-call to the
+>          * changing cpu.
+>          */
+> -       if (state == CPUFREQ_POSTCHANGE)
+> -               smp_call_function_single(freqs->cpu, twd_update_frequency,
+> -                       NULL, 1);
+> +       if (state != CPUFREQ_POSTCHANGE)
+> +               return NOTIFY_OK;
+> +
+> +       for_each_cpu(cpu, freqs->policy->cpus)
+> +               smp_call_function_single(cpu, twd_update_frequency, NULL, 1);
 >
-> ?!?
-> If the kernel unconditionally, without documentation overrides such values...
-> (and in this case only because of a workaround of some buggy BIOSes not
-> initialzing this value)...
-
-I acknowledge that the lack of documentation is a problem.
-
-> > If you want to configure a system for performance, you need to do that
-> > not just in the BIOS, but also in the OS (and, quite arguably, I would
-> > expect the latter to be sufficient).
+>         return NOTIFY_OK;
+>  }
+> diff --git a/arch/sparc/kernel/time_64.c b/arch/sparc/kernel/time_64.c
+> index 3eb77943ce12..89fb05f90609 100644
+> --- a/arch/sparc/kernel/time_64.c
+> +++ b/arch/sparc/kernel/time_64.c
+> @@ -653,19 +653,23 @@ static int sparc64_cpufreq_notifier(struct notifier_block *nb, unsigned long val
+>                                     void *data)
+>  {
+>         struct cpufreq_freqs *freq = data;
+> -       unsigned int cpu = freq->cpu;
+> -       struct freq_table *ft = &per_cpu(sparc64_freq_table, cpu);
+> +       unsigned int cpu;
+> +       struct freq_table *ft;
 >
-> No. You must not ignore BIOS settings. Even worse, you must not override
-> these without any sane reason.
-
-While there are BIOS settings that better should not be overridden,
-the EPB is not one of them.
-
-> Your assumption above might be right. But we want to do it better, right?
+> -       if (!ft->ref_freq) {
+> -               ft->ref_freq = freq->old;
+> -               ft->clock_tick_ref = cpu_data(cpu).clock_tick;
+> -       }
+> -       if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+> -           (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> -               cpu_data(cpu).clock_tick =
+> -                       cpufreq_scale(ft->clock_tick_ref,
+> -                                     ft->ref_freq,
+> -                                     freq->new);
+> +       for_each_cpu(cpu, freq->policy->cpus) {
+> +               ft = &per_cpu(sparc64_freq_table, cpu);
+> +
+> +               if (!ft->ref_freq) {
+> +                       ft->ref_freq = freq->old;
+> +                       ft->clock_tick_ref = cpu_data(cpu).clock_tick;
+> +               }
+> +
+> +               if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+> +                   (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> +                       cpu_data(cpu).clock_tick =
+> +                               cpufreq_scale(ft->clock_tick_ref, ft->ref_freq,
+> +                                             freq->new);
+> +               }
+>         }
 >
-> ...
+>         return 0;
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index 3fae23834069..cff8779fc0d2 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -956,28 +956,38 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>                                 void *data)
+>  {
+>         struct cpufreq_freqs *freq = data;
+> -       unsigned long *lpj;
+> -
+> -       lpj = &boot_cpu_data.loops_per_jiffy;
+> -#ifdef CONFIG_SMP
+> -       if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> -               lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> -#endif
+> +       struct cpumask *cpus = freq->policy->cpus;
+> +       bool boot_cpu = !IS_ENABLED(CONFIG_SMP) || freq->flags & CPUFREQ_CONST_LOOPS;
+> +       unsigned long lpj;
+> +       int cpu;
 >
-> > The system-wide resume part will still not be working properly after
-> > the reverts.
+>         if (!ref_freq) {
+>                 ref_freq = freq->old;
+> -               loops_per_jiffy_ref = *lpj;
+>                 tsc_khz_ref = tsc_khz;
+> +
+> +               if (boot_cpu)
+> +                       loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+> +               else
+> +                       loops_per_jiffy_ref = cpu_data(cpumask_first(cpus)).loops_per_jiffy;
+>         }
+> +
+>         if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+>                         (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> -               *lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> -
+> +               lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+>                 tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+> +
+>                 if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+>                         mark_tsc_unstable("cpufreq changes");
 >
-> But it must never blindly (unconditionally) be set to specific value.
-> Correct?
+> -               set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
+> +               if (boot_cpu) {
+> +                       boot_cpu_data.loops_per_jiffy = lpj;
+> +               } else {
+> +                       for_each_cpu(cpu, cpus)
+> +                               cpu_data(cpu).loops_per_jiffy = lpj;
+> +               }
+> +
+> +               for_each_cpu(cpu, cpus)
+> +                       set_cyc2ns_scale(tsc_khz, cpu, rdtsc());
 
-Yes.  I've already said that.
-
-> You mean the kernel should store the pre-hibernation perf BIAS value
-> in NVRAM and write it back when waking up again?
-
-Or in the image and yes, it should write it back.
-
-> This would make sense.
->
-> It would also mean perf BIAS never really worked, at least did not survive
-> suspend.
-
-Right.
-
-> On servers (no hibernation) it would works but is overridden
-> to a value you typically do not want to have on a server...
-> So the current situation is rather broken in the kernel.
-
-Well, you can say so, but fixing it really means something more than
-reverting the commits that your patch is reverting and *that* is my
-point.
-
-Yes, I think that this needs to be fixed.
-
-No, I don't think that the reverts you are proposing are the way to go here.
-
-Thanks,
-Rafael
+To summarize, I think that it would be sufficient to do this just for
+policy->cpu and, as Peter said, warn once if there are more CPUs in
+the policy or policy->cpu is not the CPU running this code.  And mark
+the TSC as unstable in both of these cases.
