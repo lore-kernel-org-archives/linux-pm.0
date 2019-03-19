@@ -1,70 +1,96 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v7 11/15] sched/core: uclamp: Extend CPU's cgroup
- controller
-Date: Tue, 19 Mar 2019 10:00:35 +0000
-Message-ID: <20190319100035.mzuuynaobp7hrbtf@e110439-lin>
-References: <20190208100554.32196-1-patrick.bellasi@arm.com>
- <20190208100554.32196-12-patrick.bellasi@arm.com>
- <20190214154817.GN50184@devbig004.ftw2.facebook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each
+ policy
+Date: Tue, 19 Mar 2019 16:19:33 +0530
+Message-ID: <20190319104933.vj6zcscubyp4gwxq@vireshk-i7>
+References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
+ <CAJZ5v0jr-XJ6VbNf3ipYQuycah-GNZKLgGe5wGknkWF7bKSY2w@mail.gmail.com>
+ <20190319055044.xbxr6ph5hl4zcucb@vireshk-i7>
+ <CAJZ5v0gzjXNizE=e+AdqMdJvE_-wYCq0kvzB-thE=SufKfyRrQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190214154817.GN50184@devbig004.ftw2.facebook.com>
+In-Reply-To: <CAJZ5v0gzjXNizE=e+AdqMdJvE_-wYCq0kvzB-thE=SufKfyRrQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14-Feb 07:48, Tejun Heo wrote:
-> Hello,
-
-Hi Tejun,
-
-> On Fri, Feb 08, 2019 at 10:05:50AM +0000, Patrick Bellasi wrote:
-> > a) are available only for non-root nodes, both on default and legacy
-> >    hierarchies, while system wide clamps are defined by a generic
-> >    interface which does not depends on cgroups
-> > 
-> > b) do not enforce any constraints and/or dependencies between the parent
-> >    and its child nodes, thus relying:
-> >    - on permission settings defined by the system management software,
-> >      to define if subgroups can configure their clamp values
-> >    - on the delegation model, to ensure that effective clamps are
-> >      updated to consider both subgroup requests and parent group
-> >      constraints
+On 19-03-19, 10:41, Rafael J. Wysocki wrote:
+> On Tue, Mar 19, 2019 at 6:50 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 18-03-19, 12:49, Rafael J. Wysocki wrote:
+> > > To summarize, I think that it would be sufficient to do this just for
+> > > policy->cpu and, as Peter said, warn once if there are more CPUs in
+> > > the policy or policy->cpu is not the CPU running this code.  And mark
+> > > the TSC as unstable in both of these cases.
+> >
+> > How about this ?
 > 
-> I'm not sure about this hierarchical behavior.
+> We guarantee that this will always run on policy->cpu IIRC, so it LGTM
 
-Yes, the above paragraph is misleading and it fails in properly
-document what the code really does.
+Yeah, the governor guarantees that unless dvfs_possible_from_any_cpu is set for
+the policy. But there are few direct invocations to cpufreq_driver_target() and
+__cpufreq_driver_target() which don't take that into account. First one is done
+from cpufreq_online(), which can get called on any CPU I believe. Other one is
+from cpufreq_generic_suspend(). But I think none of them gets called for x86 and
+so below code should be safe.
 
-I'll update it on v8 to be more clear.
+> overall, but the new message is missing "one".
 
+Talking about print message ?
+
+> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > index 3fae23834069..4d3681cfb6e0 100644
+> > --- a/arch/x86/kernel/tsc.c
+> > +++ b/arch/x86/kernel/tsc.c
+> > @@ -958,10 +958,13 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> >         struct cpufreq_freqs *freq = data;
+> >         unsigned long *lpj;
+> >
+> > +       if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1))
+> > +               mark_tsc_unstable("cpufreq policy has more than CPU");
 > 
-> > c) have higher priority than task-specific clamps, defined via
-> >    sched_setattr(), thus allowing to control and restrict task requests
-> 
-> and I have some other concerns about the interface, but let's discuss
-> them once the !cgroup portion is settled.
+> Also I would check policy->cpus here.  After all, we don't care about
+> CPUs that are never online.
 
-Sure, looking forward to get some more feedbacks from you on that
-part.
+Because the CPU isn't in the policy->cpus mask, we can't say it was *never*
+online. Just that it isn't online at that moment of time. I used related_cpus as
+the code here should be robust against any corner cases and shouldn't have
+different behavior based on value of policy->cpus.
 
-For the time being I'll keep adding the cgroups bits on top of
-the core ones just to follow the principle of "share early, share
-often" and to give interested people a more complete picture of our
-final goal.
+If the cpufreq driver is probed after all but one CPUs of a policy are offlined,
+then you won't see the warning if policy->cpus is used. But the warning will
+appear if any other CPU is onlined. For me that is wrong, we should have got the
+warning earlier as well as it was just wrong to not warn earlier.
 
-I'm sure Peter will let you know when it's worth for you to be
-more actively involved with the review ;)
+> And the message could be something like "cpufreq changes: related CPUs
+> affected".
 
-> Thanks.
+Sure.
 
-Cheers,
-Patrick
+I also forgot to add a "return" statement here. We shouldn't continue in this
+case, right ?
+
+> > +
+> >         lpj = &boot_cpu_data.loops_per_jiffy;
+> >  #ifdef CONFIG_SMP
+> >         if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> > -               lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> > +               lpj = &cpu_data(freq->policy->cpu).loops_per_jiffy;
+> >  #endif
+> >
+> >         if (!ref_freq) {
+> > @@ -977,7 +980,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> >                 if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> >                         mark_tsc_unstable("cpufreq changes");
+> >
+> > -               set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
+> > +               set_cyc2ns_scale(tsc_khz, freq->policy->cpu, rdtsc());
+> >         }
+> >
+> >         return 0;
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+viresh
