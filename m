@@ -1,96 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each
- policy
-Date: Tue, 19 Mar 2019 16:19:33 +0530
-Message-ID: <20190319104933.vj6zcscubyp4gwxq@vireshk-i7>
-References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
- <CAJZ5v0jr-XJ6VbNf3ipYQuycah-GNZKLgGe5wGknkWF7bKSY2w@mail.gmail.com>
- <20190319055044.xbxr6ph5hl4zcucb@vireshk-i7>
- <CAJZ5v0gzjXNizE=e+AdqMdJvE_-wYCq0kvzB-thE=SufKfyRrQ@mail.gmail.com>
+From: Aisheng Dong <aisheng.dong@nxp.com>
+Subject: RE: [PATCH 3/3] firmware: imx: scu-pd: decouple the SS information
+ from domain names
+Date: Tue, 19 Mar 2019 12:28:33 +0000
+Message-ID: <AM0PR04MB4211BA9F691DE18F3BFA426380400@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <1550673013-21462-1-git-send-email-aisheng.dong@nxp.com>
+ <1550673013-21462-4-git-send-email-aisheng.dong@nxp.com>
+ <20190319090441.GA28063@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gzjXNizE=e+AdqMdJvE_-wYCq0kvzB-thE=SufKfyRrQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190319090441.GA28063@dragon>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-03-19, 10:41, Rafael J. Wysocki wrote:
-> On Tue, Mar 19, 2019 at 6:50 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 18-03-19, 12:49, Rafael J. Wysocki wrote:
-> > > To summarize, I think that it would be sufficient to do this just for
-> > > policy->cpu and, as Peter said, warn once if there are more CPUs in
-> > > the policy or policy->cpu is not the CPU running this code.  And mark
-> > > the TSC as unstable in both of these cases.
-> >
-> > How about this ?
+> >  	/* HSIO SS */
+> > -	{ "hsio-pcie-b", IMX_SC_R_PCIE_B, 1, false, 0 },
+> > -	{ "hsio-serdes-1", IMX_SC_R_SERDES_1, 1, false, 0 },
+> > +	{ "pcie-b", IMX_SC_R_PCIE_B, 1, false, 0 },
+> > +	{ "serdes-1", IMX_SC_R_SERDES_1, 1, false, 0 },
+> >  	{ "hsio-gpio", IMX_SC_R_HSIO_GPIO, 1, false, 0 },
 > 
-> We guarantee that this will always run on policy->cpu IIRC, so it LGTM
-
-Yeah, the governor guarantees that unless dvfs_possible_from_any_cpu is set for
-the policy. But there are few direct invocations to cpufreq_driver_target() and
-__cpufreq_driver_target() which don't take that into account. First one is done
-from cpufreq_online(), which can get called on any CPU I believe. Other one is
-from cpufreq_generic_suspend(). But I think none of them gets called for x86 and
-so below code should be safe.
-
-> overall, but the new message is missing "one".
-
-Talking about print message ?
-
-> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> > index 3fae23834069..4d3681cfb6e0 100644
-> > --- a/arch/x86/kernel/tsc.c
-> > +++ b/arch/x86/kernel/tsc.c
-> > @@ -958,10 +958,13 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> >         struct cpufreq_freqs *freq = data;
-> >         unsigned long *lpj;
-> >
-> > +       if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1))
-> > +               mark_tsc_unstable("cpufreq policy has more than CPU");
+> Why is gpio so special that we need to keep the SS indicator?
 > 
-> Also I would check policy->cpus here.  After all, we don't care about
-> CPUs that are never online.
 
-Because the CPU isn't in the policy->cpus mask, we can't say it was *never*
-online. Just that it isn't online at that moment of time. I used related_cpus as
-the code here should be robust against any corner cases and shouldn't have
-different behavior based on value of policy->cpus.
+GPIO also exists on other SS like LSIO.
+For those special resources in special SS, we add the SS indicator,
+Just like how SC firmware does when defining resource ID.
 
-If the cpufreq driver is probed after all but one CPUs of a policy are offlined,
-then you won't see the warning if policy->cpus is used. But the warning will
-appear if any other CPU is onlined. For me that is wrong, we should have got the
-warning earlier as well as it was just wrong to not warn earlier.
+Regards
+Dong Aisheng
 
-> And the message could be something like "cpufreq changes: related CPUs
-> affected".
-
-Sure.
-
-I also forgot to add a "return" statement here. We shouldn't continue in this
-case, right ?
-
+> Shawn
+> 
+> >
+> > -	/* MIPI/LVDS SS */
+> > +	/* MIPI SS */
+> >  	{ "mipi0", IMX_SC_R_MIPI_0, 1, false, 0 },
+> >  	{ "mipi0-pwm0", IMX_SC_R_MIPI_0_PWM_0, 1, false, 0 },
+> >  	{ "mipi0-i2c", IMX_SC_R_MIPI_0_I2C_0, 2, true, 0 },
 > > +
-> >         lpj = &boot_cpu_data.loops_per_jiffy;
-> >  #ifdef CONFIG_SMP
-> >         if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> > -               lpj = &cpu_data(freq->cpu).loops_per_jiffy;
-> > +               lpj = &cpu_data(freq->policy->cpu).loops_per_jiffy;
-> >  #endif
+> > +	/* LVDS SS */
+> >  	{ "lvds0", IMX_SC_R_LVDS_0, 1, false, 0 },
 > >
-> >         if (!ref_freq) {
-> > @@ -977,7 +980,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> >                 if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> >                         mark_tsc_unstable("cpufreq changes");
+> >  	/* DC SS */
+> > --
+> > 2.7.4
 > >
-> > -               set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
-> > +               set_cyc2ns_scale(tsc_khz, freq->policy->cpu, rdtsc());
-> >         }
-> >
-> >         return 0;
-
--- 
-viresh
