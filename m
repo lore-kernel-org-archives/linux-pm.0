@@ -1,65 +1,57 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] dt-bindings: hwmon (pwm-fan) Remove dead
- "cooling-*-state" properties
-Date: Tue, 19 Mar 2019 16:06:27 +0100
-Message-ID: <CAJKOXPd12YPvL61nu0TDWze4pBuQK=KbJCrc5wh-tACsRQt37g@mail.gmail.com>
-References: <afde4ebd929821d63b5172c8e70e15f0725a4b49.1553006788.git.robin.murphy@arm.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] tools/power turbostat: return the exit status of a command
+Date: Tue, 19 Mar 2019 08:12:25 -0700
+Message-ID: <CAJvTdKnzLgx35KSxaZQt+YnTqSHZAX_maNu2D0R9ds8xYwW6NA@mail.gmail.com>
+References: <1549982079-23516-1-git-send-email-darcari@redhat.com> <1365e035-3218-aff5-6d86-05215ce25073@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <afde4ebd929821d63b5172c8e70e15f0725a4b49.1553006788.git.robin.murphy@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, jdelvare@suse.com, heiko@sntech.de, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, jonathanh@nvidia.com, thierry.reding@gmail.com, kgene@kernel.org, shawnguo@kernel.org, linux@roeck-us.net, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1365e035-3218-aff5-6d86-05215ce25073@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Arcari <darcari@redhat.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Jirka Hladky <jhladky@redhat.com>, linux-kernel@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Mar 2019 at 15:54, Robin Murphy <robin.murphy@arm.com> wrote:
->
-> The old "cooling-{min,max}-state" properties for thermal bindings were
-> ratified to "cooling-{min,max}-level" by commit eb168b70dea5 ("of:
-> thermal: Fix inconsitency between cooling-*-state and cooling-*-level"),
-> which were later removed entirely by commit e04907dbc259 ("dt-bindings:
-> thermal: Remove "cooling-{min|max}-level" properties").
->
-> The pwm-fan binding, however, was apparently in-flight in parallel with
-> that ratification, and so managed to introduce an example of the old
-> properties which escaped the scope of the later cleanup and has thus
-> continued to be dutifully copied for new boards despite being useless.
-> Clean up these remaining undocumented anachronisms to minimise any
-> further confusion.
->
-> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-> ---
->
-> Presented as one big hwmon patch for simplicity, but the DT changes
-> can quite easily be broken out by platform if maintainers prefer.
->
-> Robin.
->
->  Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 2 --
->  arch/arm/boot/dts/exynos4412-odroidu3.dts           | 2 --
->  arch/arm/boot/dts/exynos5410-odroidxu.dts           | 2 --
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi  | 2 --
+Acked-by: Len Brown <len.brown@intel.com>
 
-Probably you should send it directly to arm-soc maintainers so it
-would go with other DT changes. In such case:
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Best regards,
-Krzysztof
-
->  arch/arm/boot/dts/imx6qdl-emcon.dtsi                | 2 --
->  arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts  | 2 --
->  arch/arm64/boot/dts/rockchip/rk3368-lion.dtsi       | 2 --
->  arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi       | 2 --
->  8 files changed, 16 deletions(-)
+On Wed, Feb 20, 2019 at 5:55 AM David Arcari <darcari@redhat.com> wrote:
 >
+>
+> ping -- just want to make sure this doesn't get lost.
+>
+> Thanks!
+>
+> On 02/12/2019 09:34 AM, David Arcari wrote:
+> > turbostat failed to return a non-zero exit status even though the
+> > supplied command (turbostat <command>) failed.  Currently when turbostat
+> > forks a command it returns zero instead of the actual exit status of the
+> > command.  Modify the code to return the exit status.
+> >
+> > Signed-off-by: David Arcari <darcari@redhat.com>
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Jirka Hladky <jhladky@redhat.com>
+> > Cc: linux-kernel@vger.kernel.org
+> > ---
+> >  tools/power/x86/turbostat/turbostat.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> >
+> > diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> > index 9327c0d..c3fad06 100644
+> > --- a/tools/power/x86/turbostat/turbostat.c
+> > +++ b/tools/power/x86/turbostat/turbostat.c
+> > @@ -5077,6 +5077,9 @@ int fork_it(char **argv)
+> >               signal(SIGQUIT, SIG_IGN);
+> >               if (waitpid(child_pid, &status, 0) == -1)
+> >                       err(status, "waitpid");
+> > +
+> > +             if (WIFEXITED(status))
+> > +                     status = WEXITSTATUS(status);
+> >       }
+> >       /*
+> >        * n.b. fork_it() does not check for errors from for_all_cpus()
+> >
+>
+
+
+-- 
+Len Brown, Intel Open Source Technology Center
