@@ -1,217 +1,53 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by
- default at boot
-Date: Mon, 18 Mar 2019 23:57:08 +0100
-Message-ID: <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
-References: <6369897.qxlu8PgE1t@house> <2616815.TtRSCVe66q@house>
- <CAJZ5v0jAY8OcTMKu4fn7NKVn0E+MqnWSUbSBLUjg0+2adnJ+7Q@mail.gmail.com> <3100343.nkNWlhakcz@house>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: Call transition notifier only once for each
+ policy
+Date: Tue, 19 Mar 2019 11:20:44 +0530
+Message-ID: <20190319055044.xbxr6ph5hl4zcucb@vireshk-i7>
+References: <e2b56be446eeb67f1905d2ac6f8d82dd4389d0c5.1552640968.git.viresh.kumar@linaro.org>
+ <CAJZ5v0jr-XJ6VbNf3ipYQuycah-GNZKLgGe5wGknkWF7bKSY2w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3100343.nkNWlhakcz@house>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jr-XJ6VbNf3ipYQuycah-GNZKLgGe5wGknkWF7bKSY2w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 18, 2019 at 2:22 PM Thomas Renninger <trenn@suse.de> wrote:
->
-> On Monday, March 18, 2019 12:40:46 PM CET Rafael J. Wysocki wrote:
-> > On Mon, Mar 18, 2019 at 12:15 PM Thomas Renninger <trenn@suse.de> wrote:
->
-> ...
->
-> > And who's BIOS, really?  I guess you mean the OEM?  Note, however,
-> > that the user and the OEM may not agree on that, but whatever.
->
-> I mean both!
-> The OEM.
-> And the user who might choose a "performance" BIOS setting.
->
-> > > > Yes, the kernel replaces whatever the original BIOS setting is with
-> > > > its own one.
-> > >
-> > > No, it only replaces the "performance" (0) value with "normal" (6).
-> > > This does not makes sense and is broken.
->
-> Both know it better than this...
->
-> > OK, fair enough.
-> >
-> > I guess it would have been better to set it to 6 unconditionally.
->
-> No, I guess keeping the original value is the only sane thing to do.
-> Sorry, Rafael, I have to insist on this.
+On 18-03-19, 12:49, Rafael J. Wysocki wrote:
+> To summarize, I think that it would be sufficient to do this just for
+> policy->cpu and, as Peter said, warn once if there are more CPUs in
+> the policy or policy->cpu is not the CPU running this code.  And mark
+> the TSC as unstable in both of these cases.
 
-Which doesn't make your argument more convincing at all.
+How about this ?
 
-> There might be secrets Len and you cannot share with public, but you
-> should at least explain this privately then in a way that the current
-> code could somehow make sense. I absolutely cannot see that.
-
-Anyway, I just wanted to say that using the same initial value in all
-cases would have been more consistent than what the current code does.
-
-> > What about the systems that will misbehave when it is left at 0?
->
-> Good question.
-> What exactly happens there? The CPU is faster in general?
-> And may consume a tiny bit more of power.
-> I had reports that Turbo Mode is not entered on some server CPUs when
-> perf BIAS is switched back to normal mode.
-> It is hard to identify what Intel implemented in microcode, but it's not
-> that much altogether. It would be nice if Intel would be a bit more verbose
-> about this and show some performance vs powersave figures.
-
-Can you please stop insinuating things? That really doesn't help or
-make the discussion clearer.
-
-> > > > It may not match every setup perfectly, but at least it
-> > > > is consistent.  Why exactly is it worse than whatever the BIOS has
-> > > > set?
-> > >
-> > > Because there may be BIOS settings for the CPU which justify
-> > > initialization
-> > > of the Perf BIAS value by BIOS.
-> >
-> > Well, the EPB is there for users to set it via the OS.  The BIOS
-> > setting is not guaranteed to work for all users anyway.
->
-> Who says that?
-
-I do.
-
-If users have different needs, the single BIOS-provided value may not
-work for all of them just as well as the value set by the kernel
-doesn't.  IOW, it really doesn't matter who sets the initial value,
-the BIOS or the kernel.  In both cases it may not work for everybody.
-
-> Is this documented?
->
-> I would say it is exactly the other way around. Energy Perf BIAS hint is
-> a MSR which must be changed in Ring 0 kernel environment.
->
-> x86_energy_perf_policy is a nice tool to play with and to try out what
-> this value is for. But for example in secure boot mode userspace must not
-> modify this HW setting in any way.
-> So it would not be possible for a secure booted server to switch this
-> setting back to performance mode.
-
-I suspect that this was the real motivation for the reverts. :-)
-
-Well, if x86_energy_perf_policy doesn't work in hardened environments,
-then this is a problem, but making all systems use BIOS-provided
-values is not the most straightforward way to address it in my view.
-
-> > > What sense does it make to unconditionally set perf BIAS value from
-> > > performance to balanced?
-> > > Why is this done?
-> >
-> > Basically, for HW health reasons AFAICS.
-> >
-> > Apparently, on some systems EPB=0 is (was?) special and means (meant?)
-> > very aggressive use of turbo etc. which is not healthy in general.
->
-> Hmm, maybe you want to explain this privately.
-> Performance is a valid setting.
-> x86_energy_perf_policy tool has a "performance" string for this and I expect it is very used.
-> I would switch to it if I am constantly connected to AC.
-> man x86_energy_perf_policy
-> also does not tell the user anything about "be careful with performance setting"
->
-> And until today every CPU online/offline cycle or machine resume cycle switches
-> the value back to performance (if kernel tried to switch to 6).
->
-> ...
->
-> > > There may be BIOSes initialzing it via BIOS options. And this is a very
-> > > valid thing to do.
-> >
-> > Yes, and there may be BIOSes leaving it at 0 with the assumption that
-> > the OS will adjust it.  The kernel cannot know which is the case.
->
-> Correct. The kernel cannot know.
->
-> You know this better than anyone else:
-> - A specific Microsoft version is doing it wrong.
-> - We adopt.
-> - Microsoft is doing it correctly with the next version
-> - We are busted
->
-> I am ok with leaving the message as a hint, I would still check
-> ACPI prefered profile variable that we are not running on a server.
-> On these systems the message would be wrong rather sure and performance is intended.
-
-So yes, ACPI profiles could be used in there as they also are used
-elsewhere in a similar context.
-
->
-> ...
->
-> > > No. You must not ignore BIOS settings. Even worse, you must not override
-> > > these without any sane reason.
-> >
-> > While there are BIOS settings that better should not be overridden,
-> > the EPB is not one of them.
->
-> Again: Why or where is this documented?
-
-In the SDM if you will, under "Performance and Energy Bias Hint support":
-
-"Software can use whatever criteria it sees fit to program the MSR
-with an appropriate value."
-
-If that doesn't mean "Yes, the OS can override the BIOS setting", then
-I'm not sure what would.
-
-> > > Your assumption above might be right. But we want to do it better, right?
-> > >
-> > > ...
-> > >
-> > > > The system-wide resume part will still not be working properly after
-> > > > the reverts.
-> > >
-> > > But it must never blindly (unconditionally) be set to specific value.
-> > > Correct?
-> >
-> > Yes.  I've already said that.
->
-> How about below solution then for the initial boot up sequence?
-
-The MSR would never be written to with that change, is that intentional?
-
-> > > You mean the kernel should store the pre-hibernation perf BIAS value
-> > > in NVRAM and write it back when waking up again?
-> >
-> > Or in the image and yes, it should write it back.
->
-> Can you point me to a similar case where a variable is stored through
-> hibernation?
-> If it's not too much I can try to come up with an (compiled but untested) patch.
->
-> > > This would make sense.
-> > >
-> > > It would also mean perf BIAS never really worked, at least did not survive
-> > > suspend.
-> >
-> > Right.
-> >
-> > > On servers (no hibernation) it would works but is overridden
-> > > to a value you typically do not want to have on a server...
-> > > So the current situation is rather broken in the kernel.
-> >
-> > Well, you can say so, but fixing it really means something more than
-> > reverting the commits that your patch is reverting and *that* is my
-> > point.
-> >
-> > Yes, I think that this needs to be fixed.
-> >
-> > No, I don't think that the reverts you are proposing are the way to go here.
->
-> Why?
-> It is the first step to go.
-
-Well, I'll just go and fix the real problems here I guess, that will
-be way more productive than just talking about them ...
-
-And then we can get back to the initial setting discussion.
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 3fae23834069..4d3681cfb6e0 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -958,10 +958,13 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+        struct cpufreq_freqs *freq = data;
+        unsigned long *lpj;
+ 
++       if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1))
++               mark_tsc_unstable("cpufreq policy has more than CPU");
++
+        lpj = &boot_cpu_data.loops_per_jiffy;
+ #ifdef CONFIG_SMP
+        if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+-               lpj = &cpu_data(freq->cpu).loops_per_jiffy;
++               lpj = &cpu_data(freq->policy->cpu).loops_per_jiffy;
+ #endif
+ 
+        if (!ref_freq) {
+@@ -977,7 +980,7 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+                if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+                        mark_tsc_unstable("cpufreq changes");
+ 
+-               set_cyc2ns_scale(tsc_khz, freq->cpu, rdtsc());
++               set_cyc2ns_scale(tsc_khz, freq->policy->cpu, rdtsc());
+        }
+ 
+        return 0;
