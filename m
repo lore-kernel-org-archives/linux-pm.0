@@ -1,232 +1,191 @@
 From: =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-Subject: [PATCH v2 4/5] arm64: dts: rk3399: Add dfi and dmc nodes.
-Date: Tue, 19 Mar 2019 14:13:22 -0400
-Message-ID: <20190319181323.22804-5-gael.portay@collabora.com>
+Subject: [PATCH v2 3/5] devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.
+Date: Tue, 19 Mar 2019 14:13:21 -0400
+Message-ID: <20190319181323.22804-4-gael.portay@collabora.com>
 References: <20190319181323.22804-1-gael.portay@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190319181323.22804-1-gael.portay@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com, =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Lin Huang <hl@rock-chips.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-These are required to support DDR DVFS on rk3399 platform. The patch also
-introduces a new file with default DRAM settings.
+Trusted Firmware-A (TF-A) for rk3399 implements a SiP call to get the
+on-die termination (ODT) and auto power down parameters from kernel,
+this patch adds the functionality to do this. Also, if DDR clock
+frequency is lower than the on-die termination (ODT) disable frequency
+this driver should disable the DDR ODT.
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
 
-Changes in v2:
-- [PATCH 7/8] Reword the commit message to reflect the removal of
-              rk3390-dram-default-timing.dts in v1.
+Changes in v2: None
 
 Changes in v1:
-- [RFC 8/10] Move rk3399-dram.h to dt-includes.
-- [RFC 8/10] Put sdram default values under the dmc node.
-- [RFC 8/10] Removed rk3399-dram-default-timing.dts
+- [RFC 3/10] Add an explanation for platform SIP calls.
+- [RFC 3/10] Change if statement for a switch.
+- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
 
- .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 ++++++++
- arch/arm64/boot/dts/rockchip/rk3399.dtsi      | 49 +++++++++++++
- include/dt-bindings/power/rk3399-dram.h       | 73 +++++++++++++++++++
- 3 files changed, 151 insertions(+)
- create mode 100644 include/dt-bindings/power/rk3399-dram.h
+ drivers/devfreq/rk3399_dmc.c        | 74 ++++++++++++++++++++++++++++-
+ include/soc/rockchip/rockchip_sip.h |  1 +
+ 2 files changed, 74 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
-index 69cc9b05baa5..c9e7032b01a8 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
-@@ -110,6 +110,31 @@
- 			opp-microvolt = <1075000>;
- 		};
- 	};
-+
-+	dmc_opp_table: dmc_opp_table {
-+		compatible = "operating-points-v2";
-+
-+		opp00 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp01 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp02 {
-+			opp-hz = /bits/ 64 <666000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp03 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp04 {
-+			opp-hz = /bits/ 64 <928000000>;
-+			opp-microvolt = <900000>;
-+		};
-+	};
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index e795ad2b3f6b..c619dc4ac620 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -18,14 +18,17 @@
+ #include <linux/devfreq.h>
+ #include <linux/devfreq-event.h>
+ #include <linux/interrupt.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
++#include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/rwsem.h>
+ #include <linux/suspend.h>
+ 
++#include <soc/rockchip/rk3399_grf.h>
+ #include <soc/rockchip/rockchip_sip.h>
+ 
+ struct dram_timing {
+@@ -69,8 +72,11 @@ struct rk3399_dmcfreq {
+ 	struct mutex lock;
+ 	struct dram_timing timing;
+ 	struct regulator *vdd_center;
++	struct regmap *regmap_pmu;
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
++	unsigned int odt_dis_freq;
++	int odt_pd_arg0, odt_pd_arg1;
  };
  
- &cpu_l0 {
-@@ -139,3 +164,7 @@
- &gpu {
- 	operating-points-v2 = <&gpu_opp_table>;
- };
+ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+@@ -80,6 +86,8 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	struct dev_pm_opp *opp;
+ 	unsigned long old_clk_rate = dmcfreq->rate;
+ 	unsigned long target_volt, target_rate;
++	struct arm_smccc_res res;
++	bool odt_enable = false;
+ 	int err;
+ 
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+@@ -95,6 +103,19 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 
+ 	mutex_lock(&dmcfreq->lock);
+ 
++	if (target_rate >= dmcfreq->odt_dis_freq)
++		odt_enable = true;
 +
-+&dmc {
-+	operating-points-v2 = <&dmc_opp_table>;
-+};
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-index db9d948c0b03..8fe86a3e7658 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-@@ -8,6 +8,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/interrupt-controller/irq.h>
- #include <dt-bindings/pinctrl/rockchip.h>
-+#include <dt-bindings/power/rk3399-dram.h>
- #include <dt-bindings/power/rk3399-power.h>
- #include <dt-bindings/thermal/thermal.h>
++	/*
++	 * This makes a SMC call to the TF-A to set the DDR PD (power-down)
++	 * timings and to enable or disable the ODT (on-die termination)
++	 * resistors.
++	 */
++	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
++		      dmcfreq->odt_pd_arg1,
++		      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
++		      odt_enable, 0, 0, 0, &res);
++
+ 	/*
+ 	 * If frequency scaling from low to high, adjust voltage first.
+ 	 * If frequency scaling from high to low, adjust frequency first.
+@@ -294,11 +315,13 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ {
+ 	struct arm_smccc_res res;
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np = pdev->dev.of_node;
++	struct device_node *np = pdev->dev.of_node, *node;
+ 	struct rk3399_dmcfreq *data;
+ 	int ret, index, size;
+ 	uint32_t *timing;
+ 	struct dev_pm_opp *opp;
++	u32 ddr_type;
++	u32 val;
  
-@@ -1885,6 +1886,54 @@
- 		status = "disabled";
- 	};
+ 	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
+ 	if (!data)
+@@ -334,6 +357,34 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
  
-+	dfi: dfi@ff630000 {
-+		reg = <0x00 0xff630000 0x00 0x4000>;
-+		compatible = "rockchip,rk3399-dfi";
-+		rockchip,pmu = <&pmugrf>;
-+		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
-+		clocks = <&cru PCLK_DDR_MON>;
-+		clock-names = "pclk_ddr_mon";
-+		status = "disabled";
++	/* Try to find the optional reference to the pmu syscon */
++	node = of_parse_phandle(np, "rockchip,pmu", 0);
++	if (node) {
++		data->regmap_pmu = syscon_node_to_regmap(node);
++		if (IS_ERR(data->regmap_pmu))
++			return PTR_ERR(data->regmap_pmu);
++	}
++
++	/* Get DDR type */
++	regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
++	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
++		    RK3399_PMUGRF_DDRTYPE_MASK;
++
++	/* Get the odt_dis_freq parameter in function of the DDR type */
++	switch (ddr_type) {
++	case RK3399_PMUGRF_DDRTYPE_DDR3:
++		data->odt_dis_freq = data->timing.ddr3_odt_dis_freq;
++		break;
++	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
++		data->odt_dis_freq = data->timing.lpddr3_odt_dis_freq;
++		break;
++	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
++		data->odt_dis_freq = data->timing.lpddr4_odt_dis_freq;
++		break;
++	default:
++		return -EINVAL;
 +	};
 +
-+	dmc: dmc {
-+		compatible = "rockchip,rk3399-dmc";
-+		rockchip,pmu = <&pmugrf>;
-+		devfreq-events = <&dfi>;
-+		clocks = <&cru SCLK_DDRC>;
-+		clock-names = "dmc_clk";
-+		status = "disabled";
-+		rockchip,ddr3_speed_bin = <21>;
-+		rockchip,pd_idle = <0x40>;
-+		rockchip,sr_idle = <0x2>;
-+		rockchip,sr_mc_gate_idle = <0x3>;
-+		rockchip,srpd_lite_idle	= <0x4>;
-+		rockchip,standby_idle = <0x2000>;
-+		rockchip,dram_dll_dis_freq = <300000000>;
-+		rockchip,phy_dll_dis_freq = <125000000>;
-+		rockchip,auto_pd_dis_freq = <666000000>;
-+		rockchip,ddr3_odt_dis_freq = <333000000>;
-+		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-+		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-+		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
-+		rockchip,lpddr3_odt_dis_freq = <333000000>;
-+		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-+		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-+		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
-+		rockchip,lpddr4_odt_dis_freq = <333000000>;
-+		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-+		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-+		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-+		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-+		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-+		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
-+	};
+ 	/*
+ 	 * Get dram timing and pass it to arm trust firmware,
+ 	 * the dram drvier in arm trust firmware will get these
+@@ -358,6 +409,27 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		      ROCKCHIP_SIP_CONFIG_DRAM_INIT,
+ 		      0, 0, 0, 0, &res);
+ 
++	/*
++	 * In TF-A there is a platform SIP call to set the PD (power-down)
++	 * timings and to enable or disable the ODT (on-die termination).
++	 * This call needs three arguments as follows:
++	 *
++	 * arg0:
++	 *     bit[0-7]   : sr_idle
++	 *     bit[8-15]  : sr_mc_gate_idle
++	 *     bit[16-31] : standby idle
++	 * arg1:
++	 *     bit[0-11]  : pd_idle
++	 *     bit[16-27] : srpd_lite_idle
++	 * arg2:
++	 *     bit[0]     : odt enable
++	 */
++	data->odt_pd_arg0 = (data->timing.sr_idle & 0xff) |
++			    ((data->timing.sr_mc_gate_idle & 0xff) << 8) |
++			    ((data->timing.standby_idle & 0xffff) << 16);
++	data->odt_pd_arg1 = (data->timing.pd_idle & 0xfff) |
++			    ((data->timing.srpd_lite_idle & 0xfff) << 16);
 +
- 	pinctrl: pinctrl {
- 		compatible = "rockchip,rk3399-pinctrl";
- 		rockchip,grf = <&grf>;
-diff --git a/include/dt-bindings/power/rk3399-dram.h b/include/dt-bindings/power/rk3399-dram.h
-new file mode 100644
-index 000000000000..4b3d4a79923b
---- /dev/null
-+++ b/include/dt-bindings/power/rk3399-dram.h
-@@ -0,0 +1,73 @@
-+/* SPDX-License-Identifier: (GPL-2.0+ OR X11) */
-+/*
-+ * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * Author: Lin Huang <hl@rock-chips.com>
-+ */
-+
-+#ifndef _DTS_DRAM_ROCKCHIP_RK3399_H
-+#define _DTS_DRAM_ROCKCHIP_RK3399_H
-+
-+#define DDR3_DS_34ohm		34
-+#define DDR3_DS_40ohm		40
-+
-+#define DDR3_ODT_DIS		0
-+#define DDR3_ODT_40ohm		40
-+#define DDR3_ODT_60ohm		60
-+#define DDR3_ODT_120ohm		120
-+
-+#define LP2_DS_34ohm		34
-+#define LP2_DS_40ohm		40
-+#define LP2_DS_48ohm		48
-+#define LP2_DS_60ohm		60
-+#define LP2_DS_68_6ohm		68	/* optional */
-+#define LP2_DS_80ohm		80
-+#define LP2_DS_120ohm		120	/* optional */
-+
-+#define LP3_DS_34ohm		34
-+#define LP3_DS_40ohm		40
-+#define LP3_DS_48ohm		48
-+#define LP3_DS_60ohm		60
-+#define LP3_DS_80ohm		80
-+#define LP3_DS_34D_40U		3440
-+#define LP3_DS_40D_48U		4048
-+#define LP3_DS_34D_48U		3448
-+
-+#define LP3_ODT_DIS		0
-+#define LP3_ODT_60ohm		60
-+#define LP3_ODT_120ohm		120
-+#define LP3_ODT_240ohm		240
-+
-+#define LP4_PDDS_40ohm		40
-+#define LP4_PDDS_48ohm		48
-+#define LP4_PDDS_60ohm		60
-+#define LP4_PDDS_80ohm		80
-+#define LP4_PDDS_120ohm		120
-+#define LP4_PDDS_240ohm		240
-+
-+#define LP4_DQ_ODT_40ohm	40
-+#define LP4_DQ_ODT_48ohm	48
-+#define LP4_DQ_ODT_60ohm	60
-+#define LP4_DQ_ODT_80ohm	80
-+#define LP4_DQ_ODT_120ohm	120
-+#define LP4_DQ_ODT_240ohm	240
-+#define LP4_DQ_ODT_DIS		0
-+
-+#define LP4_CA_ODT_40ohm	40
-+#define LP4_CA_ODT_48ohm	48
-+#define LP4_CA_ODT_60ohm	60
-+#define LP4_CA_ODT_80ohm	80
-+#define LP4_CA_ODT_120ohm	120
-+#define LP4_CA_ODT_240ohm	240
-+#define LP4_CA_ODT_DIS		0
-+
-+#define PHY_DRV_ODT_Hi_Z	0
-+#define PHY_DRV_ODT_240		240
-+#define PHY_DRV_ODT_120		120
-+#define PHY_DRV_ODT_80		80
-+#define PHY_DRV_ODT_60		60
-+#define PHY_DRV_ODT_48		48
-+#define PHY_DRV_ODT_40		40
-+#define PHY_DRV_ODT_34_3	34
-+
-+#endif /* _DTS_DRAM_ROCKCHIP_RK3399_H */
+ 	/*
+ 	 * We add a devfreq driver to our parent since it has a device tree node
+ 	 * with operating points.
+diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
+index 7e28092c4d3d..ad9482c56797 100644
+--- a/include/soc/rockchip/rockchip_sip.h
++++ b/include/soc/rockchip/rockchip_sip.h
+@@ -23,5 +23,6 @@
+ #define ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE	0x05
+ #define ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ	0x06
+ #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
++#define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
+ 
+ #endif
 -- 
 2.21.0
