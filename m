@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 13/23] drivers: thermal: tsens: Add new operation to check if a sensor is enabled
-Date: Wed, 20 Mar 2019 18:47:53 +0530
-Message-ID: <4917d603944b606aa3a621ef6731d3dac7cca14c.1553086065.git.amit.kucheria@linaro.org>
+Subject: [PATCHv3 15/23] drivers: thermal: tsens: Introduce IP-specific max_sensor count
+Date: Wed, 20 Mar 2019 18:47:55 +0530
+Message-ID: <5cfa53072a0aa76b1a37c69b64d4ed74633f0000.1553086065.git.amit.kucheria@linaro.org>
 References: <cover.1553086065.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
@@ -12,95 +12,84 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-is_sensor_enabled() checks if the sensors are enabled on this platform.
-It is possible that the SoC might choose not to enable all the sensors
-that the IP block is capable of supporting.
+The IP can support 'm' sensors while the platform can enable 'n' sensors
+of the 'm' where n <= m.
+
+Track maximum sensors supported by the IP so that we can correctly track
+what subset of the sensors are supported on the platform.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 14 ++++++++++++++
- drivers/thermal/qcom/tsens-v0_1.c   |  1 +
- drivers/thermal/qcom/tsens-v2.c     |  1 +
- drivers/thermal/qcom/tsens.c        |  5 +++++
- drivers/thermal/qcom/tsens.h        |  1 +
- 5 files changed, 22 insertions(+)
+ drivers/thermal/qcom/tsens-common.c | 4 ++--
+ drivers/thermal/qcom/tsens-v0_1.c   | 1 +
+ drivers/thermal/qcom/tsens-v2.c     | 1 +
+ drivers/thermal/qcom/tsens.h        | 2 ++
+ 4 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 9d7a6c328ae0..c76f8cfb25a2 100644
+index c76f8cfb25a2..5607c5cc635c 100644
 --- a/drivers/thermal/qcom/tsens-common.c
 +++ b/drivers/thermal/qcom/tsens-common.c
-@@ -69,6 +69,20 @@ void compute_intercept_slope(struct tsens_priv *priv, u32 *p1,
+@@ -198,7 +198,7 @@ int __init init_common(struct tsens_priv *priv)
+ 		goto err_put_device;
  	}
- }
- 
-+bool is_sensor_enabled(struct tsens_priv *priv, u32 hw_id)
-+{
-+	u32 val;
-+	int ret;
-+
-+	if ((hw_id > (priv->num_sensors - 1)) || (hw_id < 0))
-+		return -EINVAL;
-+	ret = regmap_field_read(priv->rf[SENSOR_EN], &val);
-+	if (ret)
-+		return ret;
-+
-+	return val & (1 << hw_id);
-+}
-+
- static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
- {
- 	int degc, num, den;
+ 	/* now alloc regmap_fields in tm_map */
+-	for (i = 0, j = LAST_TEMP_0; i < priv->num_sensors; i++, j++) {
++	for (i = 0, j = LAST_TEMP_0; i < priv->feat->max_sensors; i++, j++) {
+ 		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
+ 						      priv->fields[j]);
+ 		if (IS_ERR(priv->rf[j])) {
+@@ -206,7 +206,7 @@ int __init init_common(struct tsens_priv *priv)
+ 			goto err_put_device;
+ 		}
+ 	}
+-	for (i = 0, j = VALID_0; i < priv->num_sensors; i++, j++) {
++	for (i = 0, j = VALID_0; i < priv->feat->max_sensors; i++, j++) {
+ 		priv->rf[j] = devm_regmap_field_alloc(dev, priv->tm_map,
+ 						      priv->fields[j]);
+ 		if (IS_ERR(priv->rf[j])) {
 diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index d171a4a8c454..431255bfd0ef 100644
+index 431255bfd0ef..b3a63d7b19ea 100644
 --- a/drivers/thermal/qcom/tsens-v0_1.c
 +++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -333,6 +333,7 @@ const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
- 	/* CTRL_OFFSET */
- 	[TSENS_EN]     = REG_FIELD(SROT_CTRL_OFF, 0,  0),
- 	[TSENS_SW_RST] = REG_FIELD(SROT_CTRL_OFF, 1,  1),
-+	[SENSOR_EN]    = REG_FIELD(SROT_CTRL_OFF, 3, 13),
+@@ -324,6 +324,7 @@ const struct tsens_features tsens_v0_1_feat = {
+ 	.crit_int	= 0,
+ 	.adc		= 1,
+ 	.srot_split	= 1,
++	.max_sensors	= 11,
+ };
  
- 	/* ----- TM ------ */
- 	/* INTERRUPT ENABLE */
+ const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
 diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index e15a302f7878..4b98dbe4e3c3 100644
+index 4b98dbe4e3c3..f3eb8661cf7a 100644
 --- a/drivers/thermal/qcom/tsens-v2.c
 +++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -99,6 +99,7 @@ const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
- 	/* CTRL_OFF */
- 	[TSENS_EN]     = REG_FIELD(SROT_CTRL_OFF,    0,  0),
- 	[TSENS_SW_RST] = REG_FIELD(SROT_CTRL_OFF,    1,  1),
-+	[SENSOR_EN]    = REG_FIELD(SROT_CTRL_OFF,    3, 18),
+@@ -88,6 +88,7 @@ const struct tsens_features tsens_v2_feat = {
+ 	.crit_int	= 1,
+ 	.adc		= 0,
+ 	.srot_split	= 1,
++	.max_sensors	= 16,
+ };
  
- 	/* ----- TM ------ */
- 	/* INTERRUPT ENABLE */
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 057b33353ba3..fc44cac31fa5 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -82,6 +82,11 @@ static int tsens_register(struct tsens_priv *priv)
- 	struct thermal_zone_device *tzd;
- 
- 	for (i = 0;  i < priv->num_sensors; i++) {
-+		if (!is_sensor_enabled(priv, priv->sensor[i].hw_id)) {
-+			dev_err(priv->dev, "sensor %d: disabled\n",
-+				priv->sensor[i].hw_id);
-+			continue;
-+		}
- 		priv->sensor[i].priv = priv;
- 		priv->sensor[i].id = i;
- 		tzd = devm_thermal_zone_of_sensor_register(priv->dev, i,
+ const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index a9390e06b4dd..a3bf7de88ae8 100644
+index 527c42cfd2d5..080e15a09ac2 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
-@@ -307,6 +307,7 @@ char *qfprom_read(struct device *dev, const char *cname);
- void compute_intercept_slope(struct tsens_priv *priv, u32 *pt1, u32 *pt2, u32 mode);
- int init_common(struct tsens_priv *priv);
- int get_temp_common(struct tsens_priv *priv, int i, int *temp);
-+bool is_sensor_enabled(struct tsens_priv *priv, u32 hw_id);
+@@ -242,12 +242,14 @@ enum regfield_ids {
+  * @adc:      do the sensors only output adc code (instead of temperature)?
+  * @srot_split: does the IP neatly splits the register space into SROT and TM,
+  *              with SROT only being available to secure boot firmware?
++ * @max_sensors: maximum sensors supported by this version of the IP
+  */
+ struct tsens_features {
+ 	unsigned int ver_major;
+ 	unsigned int crit_int:1;
+ 	unsigned int adc:1;
+ 	unsigned int srot_split:1;
++	unsigned int max_sensors;
+ };
  
- /* TSENS target */
- extern const struct tsens_plat_data data_8960;
+ /**
 -- 
 2.17.1
