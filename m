@@ -1,45 +1,96 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 12/23] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
-Date: Wed, 20 Mar 2019 18:47:52 +0530
-Message-ID: <71817f920176103fa387cad14e8d7d38b3636e6a.1553086065.git.amit.kucheria@linaro.org>
-References: <cover.1553086065.git.amit.kucheria@linaro.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by default at boot
+Date: Wed, 20 Mar 2019 15:17:00 +0100
+Message-ID: <2885751.XIsKOnZRY2@house>
+References: <6369897.qxlu8PgE1t@house> <3100343.nkNWlhakcz@house> <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
-References: <cover.1553086065.git.amit.kucheria@linaro.org>
+In-Reply-To: <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-We print a calibration failure message on -EPROBE_DEFER from
-nvmem/qfprom as follows:
-[    3.003090] qcom-tsens 4a9000.thermal-sensor: version: 1.4
-[    3.005376] qcom-tsens 4a9000.thermal-sensor: tsens calibration failed
-[    3.113248] qcom-tsens 4a9000.thermal-sensor: version: 1.4
+Rafael,
 
-This confuses people when, in fact, calibration succeeds later when
-nvmem/qfprom device is available. Don't print this message on a
--EPROBE_DEFER.
+I top post the general things and answer in only a few sentences embedded in 
+context below:
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I very much honour your work and your neutral opinions and reasoning and
+I always have.
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index b91a0b88d33c..057b33353ba3 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -159,7 +159,8 @@ static int tsens_probe(struct platform_device *pdev)
- 	if (priv->ops->calibrate) {
- 		ret = priv->ops->calibrate(priv);
- 		if (ret < 0) {
--			dev_err(dev, "tsens calibration failed\n");
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(dev, "tsens calibration failed\n");
- 			return ret;
- 		}
- 	}
--- 
-2.17.1
+This patch is a resend and while I try to come up with alternative hacks, 
+there still is no solution, not even a suggestion.
+
+I sent the patch 3 years ago:
+https://lkml.org/lkml/2016/2/26/675
+And I found this when doing performance analysis with Mel (Gorman).
+
+This time Hannes (Reinicke) stumbled over it, while he was working on 
+performance tests on NVE over fabrics.
+
+We need this fixed and I am going to repush this into our kernel(s) now.
+
+On Monday, March 18, 2019 11:57:08 PM CET Rafael J. Wysocki wrote:
+> On Mon, Mar 18, 2019 at 2:22 PM Thomas Renninger <trenn@suse.de> wrote:
+> > On Monday, March 18, 2019 12:40:46 PM CET Rafael J. Wysocki wrote:
+> > > On Mon, Mar 18, 2019 at 12:15 PM Thomas Renninger <trenn@suse.de> wrote:
+> > ...
+
+...
+
+> > > > > It may not match every setup perfectly, but at least it
+> > > > > is consistent.  Why exactly is it worse than whatever the BIOS has
+> > > > > set?
+> > > > 
+> > > > Because there may be BIOS settings for the CPU which justify
+> > > > initialization
+> > > > of the Perf BIAS value by BIOS.
+> > > 
+> > > Well, the EPB is there for users to set it via the OS.  The BIOS
+> > > setting is not guaranteed to work for all users anyway.
+> > 
+> > Who says that?
+> 
+> I do.
+
+And this is the reason you do not see much patches from myself anymore over
+the last years.
+It's certainly not your fault. I had quite some discussions with Len about
+specification and BIOS breakages.
+
+Especially in the CPU powersave area, idle states and cpufreq drivers, Intel
+was doing it differently all time long the last 5 years. Ignoring their own
+specifications, ignoring possible BIOS settings and changing kernel and 
+userspace interfaces all the time.
+
+And now I have the discussion again...
+While it is related to this patch, it gets off topic.
+I guess there should be a more general thread on lkml:
+"Do not change APIs every second day"
+Up to userspace, but also to BIOS.
+
+> And then we can get back to the initial setting discussion.
+
+Let's stick to this topic in this thread.
+There is no reason to not find a proper fix for this meanwhile.
+
+Overriding the BIOS setting should IMO only take place:
+- if lifetime of CPU could be affected as you mentioned. But in this case the
+  affected CPUs should be matched
+- if we expect that there are BIOSes which "want to set this value to 6,
+  but may have forgotten to do so", as mentioned in the original patch
+  from Len. BIOSes where this is the case should get a quirk to set it to 6.
+
+Still, ideally the whole overriding and the message should vanish IMO.
+
+Last time I sent this patch your answer was:
+"I need to talk to Len about that,"
+https://lkml.org/lkml/2016/3/4/371
+
+But as this is x86 kernel core code, I guess this should be discussed and 
+pushed by the general x86 maintainers anyway. Sigh.
+
+     Thomas
