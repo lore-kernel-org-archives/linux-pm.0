@@ -1,96 +1,43 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] [RESEND] Do not modify perf bias performance setting by default at boot
-Date: Wed, 20 Mar 2019 15:17:00 +0100
-Message-ID: <2885751.XIsKOnZRY2@house>
-References: <6369897.qxlu8PgE1t@house> <3100343.nkNWlhakcz@house> <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Wed, 20 Mar 2019 22:49:09 +0800
+Message-ID: <20190320144907.GC8337@dragon>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
+ <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
+ <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
+ <VI1PR04MB43338294C193D1AB4F577E92F34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <20190320081853.GE4980@dragon>
+ <VI1PR04MB433351C20A9863EEF21A2504F3410@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0if=ypE-0j6baq4uTkDp5Ew_WO68oqL0dOi+tZhoP-4mQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <VI1PR04MB433351C20A9863EEF21A2504F3410@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Hannes Reinecke <hare@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, Simon Schricker <sschricker@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>
+To: Andy Tang <andy.tang@nxp.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael,
-
-I top post the general things and answer in only a few sentences embedded in 
-context below:
-
-I very much honour your work and your neutral opinions and reasoning and
-I always have.
-
-This patch is a resend and while I try to come up with alternative hacks, 
-there still is no solution, not even a suggestion.
-
-I sent the patch 3 years ago:
-https://lkml.org/lkml/2016/2/26/675
-And I found this when doing performance analysis with Mel (Gorman).
-
-This time Hannes (Reinicke) stumbled over it, while he was working on 
-performance tests on NVE over fabrics.
-
-We need this fixed and I am going to repush this into our kernel(s) now.
-
-On Monday, March 18, 2019 11:57:08 PM CET Rafael J. Wysocki wrote:
-> On Mon, Mar 18, 2019 at 2:22 PM Thomas Renninger <trenn@suse.de> wrote:
-> > On Monday, March 18, 2019 12:40:46 PM CET Rafael J. Wysocki wrote:
-> > > On Mon, Mar 18, 2019 at 12:15 PM Thomas Renninger <trenn@suse.de> wrote:
-> > ...
-
-...
-
-> > > > > It may not match every setup perfectly, but at least it
-> > > > > is consistent.  Why exactly is it worse than whatever the BIOS has
-> > > > > set?
-> > > > 
-> > > > Because there may be BIOS settings for the CPU which justify
-> > > > initialization
-> > > > of the Perf BIAS value by BIOS.
-> > > 
-> > > Well, the EPB is there for users to set it via the OS.  The BIOS
-> > > setting is not guaranteed to work for all users anyway.
+On Wed, Mar 20, 2019 at 08:44:18AM +0000, Andy Tang wrote:
+> > > Sensor ID		placement
+> > > 1			DDR controller 1
+> > > 2			DDR controller 2
+> > > 3			DDR controller 3
+> > > 4			core cluster 1
+> > > 5 		core cluster 2
+> > > 6 		core cluster 3
+> > > 7 		core cluster 4
+> > >
+> > > Apparently using CPU or CPU-cluster is not appropriate. Core-cluster is better.
 > > 
-> > Who says that?
-> 
-> I do.
+> > So using CPU is appropriate for me, less confusing, more consistent with other
+> > platforms.
+> What about core cluster? We can't name it cpu0, cpu1 etc I think.
 
-And this is the reason you do not see much patches from myself anymore over
-the last years.
-It's certainly not your fault. I had quite some discussions with Len about
-specification and BIOS breakages.
+Hmm, yes, that would be even more confusing.  What about cpu-thermal-1,
+cpu-thermal-2 ...?
 
-Especially in the CPU powersave area, idle states and cpufreq drivers, Intel
-was doing it differently all time long the last 5 years. Ignoring their own
-specifications, ignoring possible BIOS settings and changing kernel and 
-userspace interfaces all the time.
-
-And now I have the discussion again...
-While it is related to this patch, it gets off topic.
-I guess there should be a more general thread on lkml:
-"Do not change APIs every second day"
-Up to userspace, but also to BIOS.
-
-> And then we can get back to the initial setting discussion.
-
-Let's stick to this topic in this thread.
-There is no reason to not find a proper fix for this meanwhile.
-
-Overriding the BIOS setting should IMO only take place:
-- if lifetime of CPU could be affected as you mentioned. But in this case the
-  affected CPUs should be matched
-- if we expect that there are BIOSes which "want to set this value to 6,
-  but may have forgotten to do so", as mentioned in the original patch
-  from Len. BIOSes where this is the case should get a quirk to set it to 6.
-
-Still, ideally the whole overriding and the message should vanish IMO.
-
-Last time I sent this patch your answer was:
-"I need to talk to Len about that,"
-https://lkml.org/lkml/2016/3/4/371
-
-But as this is x86 kernel core code, I guess this should be discussed and 
-pushed by the general x86 maintainers anyway. Sigh.
-
-     Thomas
+Shawn
