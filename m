@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 06/23] drivers: thermal: tsens: Function prototypes should have argument names
-Date: Wed, 20 Mar 2019 18:47:46 +0530
-Message-ID: <5789c6cda462269f443dfe05a561c098bd81c7ea.1553086065.git.amit.kucheria@linaro.org>
+Subject: [PATCHv3 07/23] drivers: thermal: tsens: Rename tsens-8916 to prepare to merge with tsens-8974
+Date: Wed, 20 Mar 2019 18:47:47 +0530
+Message-ID: <fa9063b2d4f0b8bea8163d3fd9880f450fc57bc4.1553086065.git.amit.kucheria@linaro.org>
 References: <cover.1553086065.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
@@ -12,60 +12,28 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-check_patch complains a lot as follows:
-
-WARNING: function definition argument 'struct tsens_priv *' should also have an identifier name
-+       int (*init)(struct tsens_priv *);
-
-Fix it.
+8916 and 8974 use v0.1.0 of the TSENS IP. Rename tsens-8916 to prepare
+it for merging with tsens-8974 in a later commit.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens.h | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/thermal/qcom/Makefile                       | 2 +-
+ drivers/thermal/qcom/{tsens-8916.c => tsens-v0_1.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/thermal/qcom/{tsens-8916.c => tsens-v0_1.c} (100%)
 
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 61ca2905ee7a..4d6a406f8dca 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -47,15 +47,15 @@ struct tsens_sensor {
-  */
- struct tsens_ops {
- 	/* mandatory callbacks */
--	int (*init)(struct tsens_priv *);
--	int (*calibrate)(struct tsens_priv *);
--	int (*get_temp)(struct tsens_priv *, int, int *);
-+	int (*init)(struct tsens_priv *priv);
-+	int (*calibrate)(struct tsens_priv *priv);
-+	int (*get_temp)(struct tsens_priv *priv, int i, int *temp);
- 	/* optional callbacks */
--	int (*enable)(struct tsens_priv *, int);
--	void (*disable)(struct tsens_priv *);
--	int (*suspend)(struct tsens_priv *);
--	int (*resume)(struct tsens_priv *);
--	int (*get_trend)(struct tsens_priv *, int, enum thermal_trend *);
-+	int (*enable)(struct tsens_priv *priv, int i);
-+	void (*disable)(struct tsens_priv *priv);
-+	int (*suspend)(struct tsens_priv *priv);
-+	int (*resume)(struct tsens_priv *priv);
-+	int (*get_trend)(struct tsens_priv *priv, int i, enum thermal_trend *trend);
- };
- 
- enum reg_list {
-@@ -111,10 +111,10 @@ struct tsens_priv {
- 	struct tsens_sensor		sensor[0];
- };
- 
--char *qfprom_read(struct device *, const char *);
--void compute_intercept_slope(struct tsens_priv *, u32 *, u32 *, u32);
--int init_common(struct tsens_priv *);
--int get_temp_common(struct tsens_priv *, int, int *);
-+char *qfprom_read(struct device *dev, const char *cname);
-+void compute_intercept_slope(struct tsens_priv *priv, u32 *pt1, u32 *pt2, u32 mode);
-+int init_common(struct tsens_priv *priv);
-+int get_temp_common(struct tsens_priv *priv, int i, int *temp);
- 
- /* TSENS v1 targets */
- extern const struct tsens_plat_data data_8916, data_8974, data_8960;
+diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+index 717a08600bb5..1f2fafd43dff 100644
+--- a/drivers/thermal/qcom/Makefile
++++ b/drivers/thermal/qcom/Makefile
+@@ -1,3 +1,3 @@
+ obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
+-qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-v2.o
++qcom_tsens-y			+= tsens.o tsens-common.o tsens-v0_1.o tsens-8974.o tsens-8960.o tsens-v2.o
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-v0_1.c
+similarity index 100%
+rename from drivers/thermal/qcom/tsens-8916.c
+rename to drivers/thermal/qcom/tsens-v0_1.c
 -- 
 2.17.1
