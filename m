@@ -1,123 +1,164 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
-Date: Wed, 20 Mar 2019 08:44:18 +0000
-Message-ID: <VI1PR04MB433351C20A9863EEF21A2504F3410@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190304032111.21770-1-andy.tang@nxp.com>
- <20190304062115.GB26041@dragon>
- <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
- <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
- <VI1PR04MB43338294C193D1AB4F577E92F34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <20190320081853.GE4980@dragon>
+From: Nicolas Boichat <drinkcat@chromium.org>
+Subject: Re: [RFC RESEND PATCH 1/7] dt-bindings: soc: Add DVFSRC driver bindings
+Date: Wed, 20 Mar 2019 16:52:03 +0800
+Message-ID: <CANMq1KDWZssSmvfMDZq5joFuhZx5+x1=wHiuw7Tki4+7MmdN8g@mail.gmail.com>
+References: <1546438198-1677-1-git-send-email-henryc.chen@mediatek.com>
+ <1546438198-1677-2-git-send-email-henryc.chen@mediatek.com>
+ <20190111160918.GA20480@bogus> <1550465732.32365.6.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190320081853.GE4980@dragon>
-Content-Language: en-US
+In-Reply-To: <1550465732.32365.6.camel@mtksdaap41>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Henry Chen <henryc.chen@mediatek.com>
+Cc: Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, James Liao <jamesjj.liao@mediatek.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kees Cook <keescook@chromium.org>, Weiyi Lu <weiyi.lu@mediatek.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, lkml <linux-kernel@vger.kernel.org>, Fan Chen <fan.chen@mediatek.com>, devicetree@vger.kernel.org, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Derek Basehore <dbasehore@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgU2hhd24sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2hhd24g
-R3VvIDxzaGF3bmd1b0BrZXJuZWwub3JnPg0KPiBTZW50OiAyMDE55bm0M+aciDIw5pelIDE2OjE5
-DQo+IFRvOiBBbmR5IFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPg0KPiBDYzogRGFuaWVsIExlemNh
-bm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+OyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4g
-ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4g
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+
-Ow0KPiBlZHViZXp2YWxAZ21haWwuY29tOyByb2JoK2R0QGtlcm5lbC5vcmc7IHJ1aS56aGFuZ0Bp
-bnRlbC5jb207DQo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiBTdWJq
-ZWN0OiBSZTogW1BBVENIIHYyXSBhcm02NDogZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUgdGhl
-cm1hbCB6b25lIG5vZGUNCj4gDQo+IE9uIEZyaSwgTWFyIDA4LCAyMDE5IGF0IDA5OjU3OjA5QU0g
-KzAwMDAsIEFuZHkgVGFuZyB3cm90ZToNCj4gPg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxp
-bmFyby5vcmc+DQo+ID4gPiBTZW50OiAyMDE55bm0M+aciDjml6UgMTc6MjgNCj4gPiA+IFRvOiBB
-bmR5IFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPjsgU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJuZWwu
-b3JnPg0KPiA+ID4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBrZXJu
-ZWwub3JnOw0KPiA+ID4gbWFyay5ydXRsYW5kQGFybS5jb207IGxpbnV4LWFybS1rZXJuZWxAbGlz
-dHMuaW5mcmFkZWFkLm9yZzsNCj4gPiA+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-OyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4gPiBTdWJqZWN0
-OiBSZTogW1BBVENIIHYyXSBhcm02NDogZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUgdGhlcm1h
-bA0KPiA+ID4gem9uZSBub2RlDQo+ID4gPg0KPiA+ID4gT24gMDgvMDMvMjAxOSAwMzowNywgQW5k
-eSBUYW5nIHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPg0KPiA+ID4gPj4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiA+ID4+IEZyb206IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fu
-b0BsaW5hcm8ub3JnPg0KPiA+ID4gPj4gU2VudDogMjAxOeW5tDPmnIg35pelIDE3OjE1DQo+ID4g
-PiA+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1bw0KPiA+ID4g
-Pj4gPHNoYXduZ3VvQGtlcm5lbC5vcmc+DQo+ID4gPiA+PiBDYzogTGVvIExpIDxsZW95YW5nLmxp
-QG54cC5jb20+OyByb2JoK2R0QGtlcm5lbC5vcmc7DQo+ID4gPiA+PiBtYXJrLnJ1dGxhbmRAYXJt
-LmNvbTsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiA+ID4gPj4gZGV2
-aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+
-ID4gPiA+PiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+
-ID4gPiA+PiBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4gPiA+PiBTdWJqZWN0OiBSZTogW1BBVENI
-IHYyXSBhcm02NDogZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUgdGhlcm1hbA0KPiA+ID4gPj4g
-em9uZSBub2RlDQo+ID4gPiA+Pg0KPiA+ID4gPj4+Pj4gUFM6IEluIG9yZGVyIHRvIGtlZXAgY29u
-c2lzdGVuY3kgdG8gdGhlIGZpcnN0IHRoZXJtYWwtem9uZQ0KPiA+ID4gPj4+Pj4gbm9kZSwgdGhl
-cmUgd2lsbCBiZSAiV0FSTklORzogbGluZSBvdmVyIDgwIGNoYXJhY3RlcnMiIHdhcm5pbmdzLg0K
-PiA+ID4gPj4+Pj4NCj4gPiA+ID4+Pj4+ICBhcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9m
-c2wtbHMxMDg4YS5kdHNpIHwgICA0Mw0KPiA+ID4gPj4+PiArKysrKysrKysrKysrKysrKysrKyst
-LQ0KPiA+ID4gPj4+Pj4gIDEgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKSwgNCBkZWxl
-dGlvbnMoLSkNCj4gPiA+ID4+Pj4+DQo+ID4gPiA+Pj4+PiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02
-NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+ID4gPj4+Pj4gYi9hcmNo
-L2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMxMDg4YS5kdHNpDQo+ID4gPiA+Pj4+PiBp
-bmRleCA2NjExMzdmLi45ZjUyYmM5IDEwMDY0NA0KPiA+ID4gPj4+Pj4gLS0tIGEvYXJjaC9hcm02
-NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+ID4gPj4+Pj4gKysrIGIv
-YXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+ID4gPj4+
-Pj4gQEAgLTEyOSwxOSArMTI5LDE5IEBADQo+ID4gPiA+Pj4+PiAgCX07DQo+ID4gPiA+Pj4+Pg0K
-PiA+ID4gPj4+Pj4gIAl0aGVybWFsLXpvbmVzIHsNCj4gPiA+ID4+Pj4+IC0JCWNwdV90aGVybWFs
-OiBjcHUtdGhlcm1hbCB7DQo+ID4gPiA+Pj4+PiArCQljY3Ugew0KPiA+ID4gPj4+Pg0KPiA+ID4g
-Pj4+PiBJcyB0aGlzIGNoYW5nZSByZWFsbHkgbmVjZXNzYXJ5PyAgV2hhdCBkb2VzICdjY3UnIHN0
-YW5kIGZvcj8NCj4gPiA+ID4+PiBJIHRoaW5rIHNvLiBjY3Ugc3RhbmRzIGZvciBjb3JlIGNsdXN0
-ZXIgdW5pdC4gY3B1IGlzIHRvbyBnZW5lcmFsLg0KPiA+ID4gPj4+IE9uIHNvbWUgcGxhdGZvcm1z
-LCB0aGVyZSBhcmUgbW9yZSB0aGFuIG9uZSBjb3JlIGNsdXN0ZXJzLg0KPiA+ID4gPj4+IEF0IGxl
-YXN0IHdlIHNob3VsZCBjaGFuZ2UgaXQgdG8gImNvcmUgY2x1c3RlciIgaWYgc2hvcnQgZm9ybSBp
-cw0KPiA+ID4gPj4+IG5vdA0KPiA+ID4gYXBwcm9wcmlhdGUuDQo+ID4gPiA+Pg0KPiA+ID4gPj4g
-SWYgdGhlIHNlbnNvciBpcyBhIHRoZSBjbHVzdGVyIGxldmVsLCAnY2x1c3RlcicgaXMgZW5vdWdo
-LiBJTUhPLA0KPiA+ID4gPj4gbm8gbmVlZCB0byBnaXZlIGEgZGVzY3JpcHRpb24gb2Ygd2hhdCBj
-b250YWlucyB0aGUgY2x1c3RlciwNCj4gPiA+ID4+IG90aGVyd2lzZSB5b3Ugd2lsbCBlbmQgdXAg
-d2l0aCBhICdjb3JlLWdwdS1jbHVzdGVyLWwyJyBuYW1lLg0KPiA+ID4gPiBJZiBjbHVzdGVyIGlz
-IHNwZWNpZmljIHRvIGNvcmUsIHdlIGNhbiB1c2UgY2x1c3RlciBpbnN0ZWFkLiBCdXQgSSBkb24n
-dCB0aGluaw0KPiBzby4NCj4gPiA+ID4gQ2x1c3RlciBtYXkgcmVmZXIgdG8gImNvcmUgY2x1c3Rl
-ciIsICJHUFUgY2x1c3RlciIgZXRjLg0KPiA+ID4gPiBTbywgSSB0aGluayAiY29yZS1jbHVzdGVy
-IiBpcyBvay4NCj4gPiA+ID4gSWYgY29yZSB3YXMgZGl2aWRlZCB0byBzZXZlcmFsIGNsdXN0ZXJz
-LCB3ZSBjYW4gbmFtZSBpdCBhcw0KPiA+ID4gPiAiY29yZS1jbHVzdGVyMSIsDQo+ID4gPiAiY29y
-ZS1jbHVzdGVyMiIgZXRjLg0KPiA+ID4gPiBJZiBHUFUgd2FzIGRpdmlkZWQgdG8gc2V2ZXJhbCBj
-bHVzdGVycyB3ZSBjYW4gbmFtZSBpdCBhcw0KPiA+ID4gPiAiZ3B1LWNsdXN0ZXIxIiwNCj4gPiA+
-ICJncHUtY2x1c3RlcjIiIGV0Yy4NCj4gPiA+DQo+ID4gPg0KPiA+ID4gSGkgQW5keSwNCj4gPiA+
-DQo+ID4gPiBJIHRoaW5rIHRoZXJlIGlzIGEgY29uZnVzaW9uIGFyb3VuZCB0aGUgJ2NwdScgdGVy
-bSBhbmQgJ2NsdXN0ZXInLg0KPiA+ID4NCj4gPiA+IEFSTSB3b3VsZCBsaWtlIHRvIHNlZSB0aGUg
-J2NsdXN0ZXInIHdvcmQgdG8gZGlzYXBwZWFyLCBzbyB3aGVuZXZlcg0KPiA+ID4gcG9zc2libGUg
-d2Ugc2hvdWxkIGF2b2lkIGl0Lg0KPiA+ID4NCj4gPiA+IEZyb20gdGhlIGhhcmR3YXJlIHNpZGUs
-ICdDUFUnIGlzIHVzdWFsbHkgdXNlZCB0byBkZXNjcmliZSB0aGUNCj4gPiA+IHBoeXNpY2FsIGNo
-aXAgY29udGFpbmluZyB0aGUgY29yZXMrY2FjaGUuDQo+ID4gPg0KPiA+ID4gRnJvbSB0aGUgc29m
-dHdhcmUgc2lkZSwgJ0NQVScgaXMgdXN1YWxseSB1c2VkIHRvIGRlc2NyaWJlIHRoZQ0KPiA+ID4g
-bG9naWNhbCBwcm9jZXNzIHVuaXQsIGFrYSBhIGNvcmUgb3IgYSBoeXBlci10aHJlYWQuDQo+ID4g
-Pg0KPiA+ID4gQXMgd2UgYXJlIGluIHRoZSBEVCwgc28gZGVzY3JpYmluZyB0aGUgaGFyZHdhcmUs
-IHRoZSBDUFUgcmVmZXJzIHRvDQo+ID4gPiB0aGUgZ3JvdXANCj4gPiA+IGNvcmVzK2NhY2hlcy4N
-Cj4gPiA+DQo+ID4gPiBGcm9tIG15IFBPViwgdXNpbmcgJ2NwdScgZm9yIHRoZSBncm91cCBvZiBj
-b3JlcyBhbmQgJ2dwdScgZm9yIHRoZQ0KPiA+ID4gZ3JhcGhpYyBzb3VuZHMgb2ssIGFuZCBzbyBm
-YXIgdGhhdCBpcyB3aGF0IGlzIHVzZWQgZm9yIHRoZSBvdGhlciBwbGF0Zm9ybXMuDQo+ID4gPg0K
-PiA+ID4gSWYgeW91IGNoYW5nZSB0aGUgbmFtZSwgdGhhdCBtYXkgZ2l2ZSB0aGUgZmVlbGluZyB0
-aGVyZSBpcyBzb21ldGhpbmcNCj4gPiA+IHNwZWNpYWwgd2l0aCB0aG9zZSB0aGVybWFsIHpvbmVz
-Lg0KPiA+DQo+ID4gVGhhbmtzIERhbmllbCBmb3IgeW91ciBkZXRhaWxlZCBleHBsYW5hdGlvbnMu
-DQo+ID4NCj4gPiBCdXQgYXMgeW91IHNhaWQgJ0NQVScgaXMgdXN1YWxseSB1c2VkIHRvIGRlc2Ny
-aWJlIHRoZSBwaHlzaWNhbCBjaGlwLg0KPiANCj4gSGVyZSBpcyBob3cgSSB3b3VsZCB1bmRlcnN0
-YW5kIERhbmllbCdzIGNvbW1lbnRzOg0KPiANCj4gICBDUFUgPSBjb3JlcyArIGNhY2hlcw0KPiAg
-IHBoeXNpY2FsIGNoaXAgPSBTb0MgPSBDUFUgKyBHUFUgKyBwZXJpcGhlcmFscyAuLi4NCg0KQWdy
-ZWUuDQoNCj4gDQo+ID4gU28gaWYgd2UgbmFtZSBpdCBhcyBDUFUsIGl0IHNvdW5kcyBsaWtlIHRo
-aXMgdGVtcGVyYXR1cmUgc2Vuc29yIGlzIG1vbml0b3JpbmcNCj4gdGhlIHdob2xlIGNoaXAuDQo+
-ID4gVGhhdCdzIG5vdCB0cnVlIGluIG91ciBjYXNlLg0KPiA+DQo+ID4gVGFrZSBsczIwODhhIGZv
-ciBleGFtcGxlOg0KPiA+IEluIGxzMjA4OGEgU29DLCB0aGVyZSBhcmUgNyB0ZW1wZXJhdHVyZSBz
-ZW5zb3JzLiBQbGVhc2Ugbm90ZSB0aGF0IHRoZXkgYXJlIGFsbA0KPiBsb2NhdGVkIGluIFNvQy4N
-Cj4gPiBUaGUgcGxhY2VtZW50IG9mIHRoZSB0ZW1wZXJhdHVyZSBzZW5zb3JzIGFyZSBzaG93ZWQg
-YmVsb3c6DQo+ID4NCj4gPiBTZW5zb3IgSUQJCXBsYWNlbWVudA0KPiA+IDEJCQlERFIgY29udHJv
-bGxlciAxDQo+ID4gMgkJCUREUiBjb250cm9sbGVyIDINCj4gPiAzCQkJRERSIGNvbnRyb2xsZXIg
-Mw0KPiA+IDQJCQljb3JlIGNsdXN0ZXIgMQ0KPiA+IDUgCQkJY29yZSBjbHVzdGVyIDINCj4gPiA2
-IAkJCWNvcmUgY2x1c3RlciAzDQo+ID4gNyAJCQljb3JlIGNsdXN0ZXIgNA0KPiA+DQo+ID4gQXBw
-YXJlbnRseSB1c2luZyBDUFUgb3IgQ1BVLWNsdXN0ZXIgaXMgbm90IGFwcHJvcHJpYXRlLiBDb3Jl
-LWNsdXN0ZXIgaXMgYmV0dGVyLg0KPiANCj4gU28gdXNpbmcgQ1BVIGlzIGFwcHJvcHJpYXRlIGZv
-ciBtZSwgbGVzcyBjb25mdXNpbmcsIG1vcmUgY29uc2lzdGVudCB3aXRoIG90aGVyDQo+IHBsYXRm
-b3Jtcy4NCldoYXQgYWJvdXQgY29yZSBjbHVzdGVyPyBXZSBjYW4ndCBuYW1lIGl0IGNwdTAsIGNw
-dTEgZXRjIEkgdGhpbmsuDQoNCkJSLA0KQW5keQ0KPiANCj4gU2hhd24NCg==
+On Mon, Feb 18, 2019 at 12:55 PM Henry Chen <henryc.chen@mediatek.com> wrote:
+>
+> Hi Rob,
+>
+> Sorry for late reply. I missed this mail before.
+>
+> On Fri, 2019-01-11 at 10:09 -0600, Rob Herring wrote:
+> > On Wed, Jan 02, 2019 at 10:09:52PM +0800, Henry Chen wrote:
+> > > Document the binding for enabling DVFSRC on MediaTek SoC.
+> > >
+> > > Signed-off-by: Henry Chen <henryc.chen@mediatek.com>
+> > > ---
+> > >  .../devicetree/bindings/soc/mediatek/dvfsrc.txt    | 26 ++++++++++++++++++++++
+> > >  include/dt-bindings/soc/mtk,dvfsrc.h               | 18 +++++++++++++++
+> > >  2 files changed, 44 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+> > >  create mode 100644 include/dt-bindings/soc/mtk,dvfsrc.h
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+> > > new file mode 100644
+> > > index 0000000..402c885
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/soc/mediatek/dvfsrc.txt
+> > > @@ -0,0 +1,26 @@
+> > > +MediaTek DVFSRC Driver
+> >
+> > Bindings are for h/w blocks, not drivers.
+> ok.
+> >
+> > > +The Dynamic Voltage and Frequency Scaling Resource Collector (DVFSRC) is a
+> > > +HW module which is used to collect all the requests from both software and
+> > > +hardware and turn into the decision of minimum operating voltage and minimum
+> > > +DRAM frequency to fulfill those requests.
+> >
+> > Seems like the OPP table should be a child of this instead of where you
+> > currently have it?
+> Do you means the opp table that I put on scpsys likes below?
+> I think this opp table is used for mapping the performance state of
+> power domain, so I put it on scpsys device tree document.
+>
+>                 dvfsrc_opp_table: opp-table {
+>                         compatible = "operating-points-v2-level";
+>
+>                         dvfsrc_vol_min: opp1 {
+>                                 opp,level = <MT8183_DVFSRC_LEVEL_1>;
+>                         };
+>
+>                         dvfsrc_freq_medium: opp2 {
+>                                 opp,level = <MT8183_DVFSRC_LEVEL_2>;
+>                         };
+>
+>                         dvfsrc_freq_max: opp3 {
+>                                 opp,level = <MT8183_DVFSRC_LEVEL_3>;
+>                         };
+>
+>                         dvfsrc_vol_max: opp4 {
+>                                 opp,level = <MT8183_DVFSRC_LEVEL_4>;
+>                         };
+>                 };
+>
+> >
+> > > +
+> > > +Required Properties:
+> > > +- compatible: Should be one of the following
+> > > +   - "mediatek,mt8183-dvfsrc": For MT8183 SoC
+> > > +- reg: Address range of the DVFSRC unit
+> > > +- dram_type: Refer to <include/dt-bindings/soc/mtk,dvfsrc.h> for the
+> > > +   different dram type support.
+> >
+> > This information should come from the DDR controller or memory nodes
+> > probably. And we already have some properties related to DDR type.
+> Sorry, I don't know that before, could you give some hint or example for
+> that?
+
+So, I'm really not sure either... One example I could find is
+Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt, but it still
+doesn't specify memory type (it just passes parameters to ATF). You
+can also look at
+Documentation/devicetree/bindings/memory-controllers/ti/emif.txt (but
+that only supports lpddr2 nodes, I guess we could add more types?).
+
+Some ideas:
+ 1. DDR controller: Maybe you can probe at runtime, what memory type
+is being used? After all the FW will have configured the memory
+controller properly, so you could read back that information, somehow.
+ 2. memory node: Either add a new lpddr3/4/4x node in device tree
+(like TI's emif), or add something to the memory node?
+memory@40000000 {
+device_type = "memory";
+reg = <0 0x40000000 0 0x80000000>;
+};
+I don't see a binding document for memory though, and no one ever
+seems to add anything but basic size information.
+
+
+
+> >
+> > > +- clock-names: Must include the following entries:
+> > > +   "dvfsrc": DVFSRC module clock
+> > > +- clocks: Must contain an entry for each entry in clock-names.
+> > > +
+> > > +Example:
+> > > +
+> > > +   dvfsrc_top@10012000 {
+> >
+> > Drop the '_top'. (Don't use '_' in node and property names)..
+> ok
+> >
+> > > +           compatible = "mediatek,mt8183-dvfsrc";
+> > > +           reg = <0 0x10012000 0 0x1000>;
+> > > +           clocks = <&infracfg CLK_INFRA_DVFSRC>;
+> > > +           clock-names = "dvfsrc";
+> > > +           dram_type = <MT8183_DVFSRC_OPP_LP4>;
+> > > +   };
+> > > diff --git a/include/dt-bindings/soc/mtk,dvfsrc.h b/include/dt-bindings/soc/mtk,dvfsrc.h
+> > > new file mode 100644
+> > > index 0000000..60b3497
+> > > --- /dev/null
+> > > +++ b/include/dt-bindings/soc/mtk,dvfsrc.h
+> > > @@ -0,0 +1,18 @@
+> > > +/* SPDX-License-Identifier: GPL-2.0
+> > > + *
+> > > + * Copyright (c) 2018 MediaTek Inc.
+> > > + */
+> > > +
+> > > +#ifndef _DT_BINDINGS_POWER_MTK_DVFSRC_H
+> > > +#define _DT_BINDINGS_POWER_MTK_DVFSRC_H
+> > > +
+> > > +#define MT8183_DVFSRC_OPP_LP4      0
+> > > +#define MT8183_DVFSRC_OPP_LP4X     1
+> > > +#define MT8183_DVFSRC_OPP_LP3      2
+> > > +
+> > > +#define MT8183_DVFSRC_LEVEL_1      1
+> > > +#define MT8183_DVFSRC_LEVEL_2      2
+> > > +#define MT8183_DVFSRC_LEVEL_3      3
+> > > +#define MT8183_DVFSRC_LEVEL_4      4
+> > > +
+> > > +#endif /* _DT_BINDINGS_POWER_MTK_DVFSRC_H */
+> > > --
+> > > 1.9.1
+> > >
+> >
+> > _______________________________________________
+> > Linux-mediatek mailing list
+> > Linux-mediatek@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-mediatek
+>
+>
