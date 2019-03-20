@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 23/23] drivers: thermal: tsens: Move calibration constants to header file
-Date: Wed, 20 Mar 2019 18:48:03 +0530
-Message-ID: <4e32e37db0a62dbf399dce6e7f7927823313d281.1553086065.git.amit.kucheria@linaro.org>
+Subject: [PATCHv3 18/23] drivers: thermal: tsens: Common get_temp() learns to do ADC conversion
+Date: Wed, 20 Mar 2019 18:47:58 +0530
+Message-ID: <389f9e70f715e2884418d77c9ff06fad6878eacc.1553086065.git.amit.kucheria@linaro.org>
 References: <cover.1553086065.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
@@ -12,46 +12,37 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This will allow calibration routines to correctly include the constants
-from anywhere and allow more code sharing.
+get_temp() learns to return temperature regardless of whether it is
+returned as ADC code or direct temperature.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 5 -----
- drivers/thermal/qcom/tsens.h        | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/qcom/tsens-common.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 92747ccb2850..928e8e81ba69 100644
+index 5adbf1a2e0fb..92747ccb2850 100644
 --- a/drivers/thermal/qcom/tsens-common.c
 +++ b/drivers/thermal/qcom/tsens-common.c
-@@ -12,11 +12,6 @@
- #include <linux/regmap.h>
- #include "tsens.h"
+@@ -129,10 +129,15 @@ int get_temp_tsens_valid(struct tsens_priv *priv, int i, int *temp)
+ 	if (ret)
+ 		return ret;
  
--#define CAL_DEGC_PT1		30
--#define CAL_DEGC_PT2		120
--#define SLOPE_FACTOR		1000
--#define SLOPE_DEFAULT		3200
--
- char *qfprom_read(struct device *dev, const char *cname)
- {
- 	struct nvmem_cell *cell;
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index d648fba235cf..eefe3844fb4e 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -9,6 +9,11 @@
- #define ONE_PT_CALIB		0x1
- #define ONE_PT_CALIB2		0x2
- #define TWO_PT_CALIB		0x3
-+#define CAL_DEGC_PT1		30
-+#define CAL_DEGC_PT2		120
-+#define SLOPE_FACTOR		1000
-+#define SLOPE_DEFAULT		3200
-+
+-	mask = GENMASK(priv->fields[LAST_TEMP_0].msb,
+-		       priv->fields[LAST_TEMP_0].lsb);
+-	/* Convert temperature from deciCelsius to milliCelsius */
+-	*temp = sign_extend32(last_temp, fls(mask) - 1) * 100;
++	if (priv->feat->adc) {
++		/* Convert temperature from ADC code to milliCelsius */
++		*temp = code_to_degc(last_temp, s) * 1000;
++	} else {
++		mask = GENMASK(priv->fields[LAST_TEMP_0].msb,
++			       priv->fields[LAST_TEMP_0].lsb);
++		/* Convert temperature from deciCelsius to milliCelsius */
++		*temp = sign_extend32(last_temp, fls(mask) - 1) * 100;
++	}
  
- #include <linux/thermal.h>
- #include <linux/regmap.h>
+ 	return 0;
+ }
 -- 
 2.17.1
