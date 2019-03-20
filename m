@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCHv3 05/23] drivers: thermal: tsens: Use consistent names for variables
-Date: Wed, 20 Mar 2019 18:47:45 +0530
-Message-ID: <3b4b55040759d823ae146e938e01be2e3a72257e.1553086065.git.amit.kucheria@linaro.org>
+Subject: [PATCHv3 06/23] drivers: thermal: tsens: Function prototypes should have argument names
+Date: Wed, 20 Mar 2019 18:47:46 +0530
+Message-ID: <5789c6cda462269f443dfe05a561c098bd81c7ea.1553086065.git.amit.kucheria@linaro.org>
 References: <cover.1553086065.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1553086065.git.amit.kucheria@linaro.org>
@@ -12,36 +12,60 @@ To: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, bjorn.andersson
 Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-tsens_get_temp() uses the name 'data' for the void pointer, use the same
-in tsens_get_trend() for consistency.
+check_patch complains a lot as follows:
 
-Remove a stray space while we're at it.
+WARNING: function definition argument 'struct tsens_priv *' should also have an identifier name
++       int (*init)(struct tsens_priv *);
+
+Fix it.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/qcom/tsens.h | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 4582d2b30e94..0b5be08d515f 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -20,13 +20,13 @@ static int tsens_get_temp(void *data, int *temp)
- 	return priv->ops->get_temp(priv, s->id, temp);
- }
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 61ca2905ee7a..4d6a406f8dca 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -47,15 +47,15 @@ struct tsens_sensor {
+  */
+ struct tsens_ops {
+ 	/* mandatory callbacks */
+-	int (*init)(struct tsens_priv *);
+-	int (*calibrate)(struct tsens_priv *);
+-	int (*get_temp)(struct tsens_priv *, int, int *);
++	int (*init)(struct tsens_priv *priv);
++	int (*calibrate)(struct tsens_priv *priv);
++	int (*get_temp)(struct tsens_priv *priv, int i, int *temp);
+ 	/* optional callbacks */
+-	int (*enable)(struct tsens_priv *, int);
+-	void (*disable)(struct tsens_priv *);
+-	int (*suspend)(struct tsens_priv *);
+-	int (*resume)(struct tsens_priv *);
+-	int (*get_trend)(struct tsens_priv *, int, enum thermal_trend *);
++	int (*enable)(struct tsens_priv *priv, int i);
++	void (*disable)(struct tsens_priv *priv);
++	int (*suspend)(struct tsens_priv *priv);
++	int (*resume)(struct tsens_priv *priv);
++	int (*get_trend)(struct tsens_priv *priv, int i, enum thermal_trend *trend);
+ };
  
--static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
-+static int tsens_get_trend(void *data, int trip, enum thermal_trend *trend)
- {
--	const struct tsens_sensor *s = p;
-+	const struct tsens_sensor *s = data;
- 	struct tsens_priv *priv = s->priv;
+ enum reg_list {
+@@ -111,10 +111,10 @@ struct tsens_priv {
+ 	struct tsens_sensor		sensor[0];
+ };
  
- 	if (priv->ops->get_trend)
--		return  priv->ops->get_trend(priv, s->id, trend);
-+		return priv->ops->get_trend(priv, s->id, trend);
+-char *qfprom_read(struct device *, const char *);
+-void compute_intercept_slope(struct tsens_priv *, u32 *, u32 *, u32);
+-int init_common(struct tsens_priv *);
+-int get_temp_common(struct tsens_priv *, int, int *);
++char *qfprom_read(struct device *dev, const char *cname);
++void compute_intercept_slope(struct tsens_priv *priv, u32 *pt1, u32 *pt2, u32 mode);
++int init_common(struct tsens_priv *priv);
++int get_temp_common(struct tsens_priv *priv, int i, int *temp);
  
- 	return -ENOTSUPP;
- }
+ /* TSENS v1 targets */
+ extern const struct tsens_plat_data data_8916, data_8974, data_8960;
 -- 
 2.17.1
