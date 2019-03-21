@@ -1,79 +1,57 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: exynos-bus: Suspend all devices on system
- shutdown
-Date: Thu, 21 Mar 2019 10:29:19 +0100
-Message-ID: <f41be303-0159-0730-501b-f465a1418861@samsung.com>
-References: <CGME20190321090120eucas1p1d5122777e84f4e3c965946a8c5aead8b@eucas1p1.samsung.com>
-        <20190321090110.26506-1-m.szyprowski@samsung.com>
-        <c2b39c36-a2f4-282e-1145-c61cfa18c6ce@samsung.com>
+From: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v3 3/9] power: supply: axp20x_usb_power:
+ allow disabling input current limiting
+Date: Thu, 21 Mar 2019 10:30:12 +0100
+Message-ID: <20190321093012.kg72voxs5kw5xtzu@flea>
+References: <20190321084850.20769-1-wens@kernel.org>
+ <20190321084850.20769-4-wens@kernel.org>
+Reply-To: maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c2b39c36-a2f4-282e-1145-c61cfa18c6ce@samsung.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Luba <l.luba@partner.samsung.com>, Markus Reichl <m.reichl@fivetechno.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="g72eht37btz5vbkz"
+Return-path: <linux-sunxi+bncBDSJBYGBRIMBBJ5TZXSAKGQEYWT2QJA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20190321084850.20769-4-wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
 
-On 2019-03-21 10:19, Chanwoo Choi wrote:
-> On 19. 3. 21. 오후 6:01, Marek Szyprowski wrote:
->> Force all Exynos buses to safe operation points before doing the system
->> reboot operation. There are board on which some aggressive power saving
->> operation points are behind the capabilities of the bootloader to properly
->> reset the hardware and boot the board. This way one can avoid board crash
->> early after reboot.
->>
->> This fixes reboot issue on OdroidU3 board both with eMMC and SD boot.
->>
->> Reported-by: Markus Reichl <m.reichl@fivetechno.de>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
->> This is an alternative to https://patchwork.kernel.org/patch/10781433/
->> limited only to Exynos-bus driver.
->> ---
->>   drivers/devfreq/exynos-bus.c | 8 ++++++++
->>   1 file changed, 8 insertions(+)
->>
->> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
->> index c25658b26598..486cc5b422f1 100644
->> --- a/drivers/devfreq/exynos-bus.c
->> +++ b/drivers/devfreq/exynos-bus.c
->> @@ -514,6 +514,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
->>   	return ret;
->>   }
->>   
->> +static void exynos_bus_shutdown(struct platform_device *pdev)
->> +{
->> +	struct exynos_bus *bus = dev_get_drvdata(&pdev->dev);
->> +
->> +	devfreq_suspend_device(bus->devfreq);
->> +}
->> +
->>   #ifdef CONFIG_PM_SLEEP
->>   static int exynos_bus_resume(struct device *dev)
->>   {
->> @@ -556,6 +563,7 @@ MODULE_DEVICE_TABLE(of, exynos_bus_of_match);
->>   
->>   static struct platform_driver exynos_bus_platdrv = {
->>   	.probe		= exynos_bus_probe,
->> +	.shutdown	= exynos_bus_shutdown,
->>   	.driver = {
->>   		.name	= "exynos-bus",
->>   		.pm	= &exynos_bus_pm,
->>
-> Actually, I already agreed the previous patch.
-> Also, it looks good to me.
+--g72eht37btz5vbkz
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 
-Yes, I know, but MyungJoo had some objections, that's why I prepared 
-alternative version.
+Hi,
 
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+The rest of the series is
+Acked-by: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+
+On Thu, Mar 21, 2019 at 04:48:44PM +0800, Chen-Yu Tsai wrote:
+> From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 >
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+> The AXP PMICs allow the user to disable current limiting on the VBUS
+> input. While read-out of this setting was already supported by the
+> driver, it did not allow the user to configure the PMIC to disable
+> current limiting.
+>
+> Add support for this.
+>
+> Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+
+Do we really want to do that though? That could have some pretty bad
+consequences.
+
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+--g72eht37btz5vbkz--
