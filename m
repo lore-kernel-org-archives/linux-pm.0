@@ -1,42 +1,38 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each
- policy
-Date: Thu, 21 Mar 2019 16:49:37 +0100 (CET)
-Message-ID: <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de>
-References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH] MAINTAINERS: Add mailing list for the interconnect API
+Date: Thu, 21 Mar 2019 17:50:50 +0200
+Message-ID: <20190321155050.25847-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, =?ISO-8859-2?Q?Radim_Kr=E8m=E1=F8?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 20 Mar 2019, Viresh Kumar wrote:
+Add a mailing list for patch reviews and discussions related to tuning
+the on-chip interconnects. For now i am not expecting a lot of traffic,
+so let's use the linux-pm@ list.
 
-> Currently we call these notifiers once for each CPU of the policy->cpus
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
 
-Nitpick: We call nothing. The notifiers are called ....
+Hi Rafael,
+Please ack the patch if you don't mind this.
+Thanks!
 
-> cpumask. It would be more optimal if the notifier can be called only
-> once and all the relevant information be provided to it. Out of the 23
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 3fae23834069..b2fe665878f7 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -958,10 +958,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
->  	struct cpufreq_freqs *freq = data;
->  	unsigned long *lpj;
->  
-> +	if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1)) {
-> +		mark_tsc_unstable("cpufreq changes: related CPUs affected");
-> +		return 0;
-> +	}
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-You might add a check which ensures that policy->cpu == smp_processor_id()
-because if this is not the case ....
-
-Thanks,
-
-	tglx
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e17ebf70b548..186439e7f846 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8046,6 +8046,7 @@ F:	drivers/gpio/gpio-intel-mid.c
+ 
+ INTERCONNECT API
+ M:	Georgi Djakov <georgi.djakov@linaro.org>
++L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/interconnect/
+ F:	Documentation/devicetree/bindings/interconnect/
