@@ -1,46 +1,230 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] MAINTAINERS: Add mailing list for the interconnect API
-Date: Thu, 21 Mar 2019 23:08:06 +0100
-Message-ID: <4114564.UGys5yUu8D@aspire.rjw.lan>
-References: <20190321155050.25847-1-georgi.djakov@linaro.org>
+Subject: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs interface
+Date: Thu, 21 Mar 2019 23:20:17 +0100
+Message-ID: <1762575.ER2xjzr9E1@aspire.rjw.lan>
+References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190321155050.25847-1-georgi.djakov@linaro.org>
+In-Reply-To: <1637073.gl2OfxWTjI@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: x86 <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 21, 2019 4:50:50 PM CET Georgi Djakov wrote:
-> Add a mailing list for patch reviews and discussions related to tuning
-> the on-chip interconnects. For now i am not expecting a lot of traffic,
-> so let's use the linux-pm@ list.
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The Performance and Energy Bias Hint (EPB) is expected to be set by
+user space through the generic MSR interface, but that interface is
+not particularly nice and there are security concerns regarding it,
+so it is not always available.
 
-> ---
-> 
-> Hi Rafael,
-> Please ack the patch if you don't mind this.
-> Thanks!
-> 
->  MAINTAINERS | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e17ebf70b548..186439e7f846 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -8046,6 +8046,7 @@ F:	drivers/gpio/gpio-intel-mid.c
->  
->  INTERCONNECT API
->  M:	Georgi Djakov <georgi.djakov@linaro.org>
-> +L:	linux-pm@vger.kernel.org
->  S:	Maintained
->  F:	Documentation/interconnect/
->  F:	Documentation/devicetree/bindings/interconnect/
-> 
+For this reason, add a sysfs interface for reading and updating the
+EPB, in the form of a new attribute, energy_perf_bias, located
+under /sys/devices/system/cpu/cpu#/power/ for online CPUs that
+support the EPB feature.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   18 ++++
+ Documentation/admin-guide/pm/intel_epb.rst         |   27 ++++++
+ arch/x86/kernel/cpu/intel_epb.c                    |   93 ++++++++++++++++++++-
+ 3 files changed, 134 insertions(+), 4 deletions(-)
+
+Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/intel_epb.c
++++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
+@@ -9,8 +9,12 @@
+  */
+ 
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu.h>
++#include <linux/device.h>
+ #include <linux/kernel.h>
++#include <linux/string.h>
+ #include <linux/syscore_ops.h>
++#include <linux/pm.h>
+ 
+ #include <asm/cpufeature.h>
+ #include <asm/msr.h>
+@@ -20,9 +24,9 @@
+  *
+  * The Performance and Energy Bias Hint (EPB) allows software to specify its
+  * preference with respect to the power-performance tradeoffs present in the
+- * processor.  Generally, the EPB is expected to be set by user space through
+- * the generic MSR interface (with the help of the x86_energy_perf_policy tool),
+- * but there are two reasons for the kernel to touch it.
++ * processor.  Generally, the EPB is expected to be set by user space (directly
++ * via sysfs or with the help of the x86_energy_perf_policy tool), but there are
++ * two reasons for the kernel to update it.
+  *
+  * First, there are systems where the platform firmware resets the EPB during
+  * system-wide transitions from sleep states back into the working state
+@@ -52,6 +56,7 @@ static DEFINE_PER_CPU(u8, saved_epb);
+ 
+ #define EPB_MASK	0x0fULL
+ #define EPB_SAVED	0x10ULL
++#define MAX_EPB		EPB_MASK
+ 
+ static int intel_epb_save(void)
+ {
+@@ -97,15 +102,95 @@ static struct syscore_ops intel_epb_sysc
+ 	.resume = intel_epb_restore,
+ };
+ 
++static const char * const energy_perf_strings[] = {
++	"performance",
++	"balance-performance",
++	"normal",
++	"balance-power",
++	"power"
++};
++static const u8 energ_perf_values[] = {
++	ENERGY_PERF_BIAS_PERFORMANCE,
++	ENERGY_PERF_BIAS_BALANCE_PERFORMANCE,
++	ENERGY_PERF_BIAS_NORMAL,
++	ENERGY_PERF_BIAS_BALANCE_POWERSAVE,
++	ENERGY_PERF_BIAS_POWERSAVE
++};
++
++static ssize_t energy_perf_bias_show(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	unsigned int cpu = dev->id;
++	u64 epb;
++	int ret;
++
++	ret = rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
++	if (ret < 0)
++		return ret;
++
++	return sprintf(buf, "%llu\n", epb);
++}
++
++static ssize_t energy_perf_bias_store(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
++{
++	unsigned int cpu = dev->id;
++	u64 epb, val;
++	int ret;
++
++	ret = __sysfs_match_string(energy_perf_strings,
++				   ARRAY_SIZE(energy_perf_strings), buf);
++	if (ret >= 0)
++		val = energ_perf_values[ret];
++	else if (kstrtou64(buf, 0, &val) || val > MAX_EPB)
++		return -EINVAL;
++
++	ret = rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
++	if (ret < 0)
++		return ret;
++
++	ret = wrmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS,
++			    (epb & ~EPB_MASK) | val);
++	if (ret < 0)
++		return ret;
++
++	return count;
++}
++
++static DEVICE_ATTR_RW(energy_perf_bias);
++
++static struct attribute *intel_epb_attrs[] = {
++	&dev_attr_energy_perf_bias.attr,
++	NULL
++};
++
++static const struct attribute_group intel_epb_attr_group = {
++	.name = power_group_name,
++	.attrs =  intel_epb_attrs
++};
++
+ static int intel_epb_online(unsigned int cpu)
+ {
++	struct device *cpu_dev = get_cpu_device(cpu);
++
+ 	intel_epb_restore();
++	if (!cpuhp_tasks_frozen)
++		sysfs_merge_group(&cpu_dev->kobj, &intel_epb_attr_group);
++
+ 	return 0;
+ }
+ 
+ static int intel_epb_offline(unsigned int cpu)
+ {
+-	return intel_epb_save();
++	struct device *cpu_dev = get_cpu_device(cpu);
++
++	if (!cpuhp_tasks_frozen)
++		sysfs_unmerge_group(&cpu_dev->kobj, &intel_epb_attr_group);
++
++	intel_epb_save();
++	return 0;
+ }
+ 
+ static __init int intel_epb_init(void)
+Index: linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/intel_epb.rst
++++ linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+@@ -4,3 +4,30 @@ Intel Performance and Energy Bias Hint
+ 
+ .. kernel-doc:: arch/x86/kernel/cpu/intel_epb.c
+    :doc: overview
++
++Intel Performance and Energy Bias Attribute in ``sysfs``
++========================================================
++
++The Intel Performance and Energy Bias Hint (EPB) value for a given (logical) CPU
++can be checked or updated through a ``sysfs`` attribute (file) under
++:file:`/sys/devices/system/cpu/cpu<N>/power/`, where the CPU number ``<N>``
++is allocated at the system initialization time:
++
++``energy_perf_bias``
++	Shows the current EPB value for the CPU in a sliding scale 0 - 15, where
++	a value of 0 corresponds to a hint preference for highest performance
++	and a value of 15 corresponds to the maximum energy savings.
++
++	In order to update the EPB value for the CPU, this attribute can be
++	written to, either with a number in the 0 - 15 sliding scale above, or
++	with one of the strings: "performance", "balance-performance", "normal",
++	"balance-power", "power" that represent values reflected by their
++	meaning.
++
++	This attribute is present for all online CPUs supporting the EPB
++	feature.
++
++Note that while the EPB interface to the processor is defined at the logical CPU
++level, the physical register backing it may be shared by multiple CPUs (for
++example, SMT siblings or cores in one package).  For this reason, updating the
++EPB value for one CPU may cause the EPB values for other CPUs to change.
+Index: linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+===================================================================
+--- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -518,3 +518,21 @@ Description:	Control Symetric Multi Thre
+ 
+ 			 If control status is "forceoff" or "notsupported" writes
+ 			 are rejected.
++
++What:		/sys/devices/system/cpu/cpu#/power/energy_perf_bias
++Date:		March 2019
++Contact:	linux-pm@vger.kernel.org
++Description:	Intel Energy and Performance Bias Hint (EPB)
++
++		EPB for the given CPU in a sliding scale 0 - 15, where a value
++		of 0 corresponds to a hint preference for highest performance
++		and a value of 15 corresponds to the maximum energy savings.
++
++		In order to change the EPB value for the CPU, write either
++		a number in the 0 - 15 sliding scale above, or one of the
++		strings: "performance", "balance-performance", "normal",
++		"balance-power", "power" (that represent values reflected by
++		their meaning), to this attribute.
++
++		This attribute is present for all online CPUs supporting the
++		Intel EPB feature.
