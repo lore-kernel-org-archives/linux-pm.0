@@ -1,354 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS handling
-Date: Thu, 21 Mar 2019 01:00:52 +0100
-Message-ID: <2816566.rddYshD6lm@aspire.rjw.lan>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH v2] arm64: dts: ls1088a: add one more thermal zone node
+Date: Thu, 21 Mar 2019 01:05:29 +0000
+Message-ID: <VI1PR04MB4333256C38E6DEDD3E0F303AF3420@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190304032111.21770-1-andy.tang@nxp.com>
+ <20190304062115.GB26041@dragon>
+ <VI1PR04MB433386B86A5E6AA804E9C3B5F3710@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <dc94e884-f5eb-fe07-27ef-6a94c3174acb@linaro.org>
+ <VI1PR04MB43330C6FAAD0D8EAE901C56FF34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <cb262e2c-7115-86a5-01ce-4a12d45ee019@linaro.org>
+ <VI1PR04MB43338294C193D1AB4F577E92F34D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <20190320081853.GE4980@dragon>
+ <VI1PR04MB433351C20A9863EEF21A2504F3410@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <20190320144907.GC8337@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: x86 <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190320144907.GC8337@dragon>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-The current handling of MSR_IA32_ENERGY_PERF_BIAS in the kernel is
-problematic, because it may cause changes made by user space to that
-MSR (with the help of the x86_energy_perf_policy tool, for example)
-to be lost every time a CPU goes offline and then back online as well
-as during system-wide power management transitions into sleep states
-and back into the working state.
-
-The first problem is that if the current EPB value for a CPU going
-online is 0 ('performance'), the kernel will change it to 6 ('normal')
-regardless of whether or not this is the first bring-up of that CPU.
-That also happens during system-wide resume from sleep states
-(including, but not limited to, hibernation).  However, the EPB may
-have been adjusted by user space this way and the kernel should not
-blindly override that setting.
-
-The second problem is that if the platform firmware resets the EPB
-values for any CPUs during system-wide resume from a sleep state,
-the kernel will not restore their previous EPB values that may
-have been set by user space before the preceding system-wide
-suspend transition.  Again, that behavior may at least be confusing
-from the user space perspective.
-
-In order to address these issues, rework the handling of
-MSR_IA32_ENERGY_PERF_BIAS so that the EPB value is saved on CPU
-offline and restored on CPU online as well as (for the boot CPU)
-during the syscore stages of system-wide suspend and resume
-transitions, respectively.
-
-However, retain the policy by which the EPB is set to 6 ('normal')
-on the first bring-up of each CPU if its initial value is 0, based
-on the observation that 0 may mean 'not initialized' just as well as
-'performance' in that case.
-
-While at it, move the MSR_IA32_ENERGY_PERF_BIAS handling code into
-a separate file and document it in Documentation/admin-guide.
-
-Fixes: abe48b108247 (x86, intel, power: Initialize MSR_IA32_ENERGY_PERF_BIAS)
-Fixes: b51ef52df71c (x86/cpu: Restore MSR_IA32_ENERGY_PERF_BIAS after resume)
-Reported-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-I do realize that this may be regarded as overly conservative, but
-I'm quite reluctant to change the policy choice made in 2011 and
-present since then without rock solid evidence that it would not
-introduce regressions anywhere.
-
----
- Documentation/admin-guide/pm/intel_epb.rst     |    6 +
- Documentation/admin-guide/pm/working-state.rst |    1 
- arch/x86/kernel/cpu/Makefile                   |    2 
- arch/x86/kernel/cpu/common.c                   |   17 ---
- arch/x86/kernel/cpu/cpu.h                      |    1 
- arch/x86/kernel/cpu/intel.c                    |   34 ------
- arch/x86/kernel/cpu/intel_epb.c                |  131 +++++++++++++++++++++++++
- include/linux/cpuhotplug.h                     |    1 
- 8 files changed, 140 insertions(+), 53 deletions(-)
-
-Index: linux-pm/include/linux/cpuhotplug.h
-===================================================================
---- linux-pm.orig/include/linux/cpuhotplug.h
-+++ linux-pm/include/linux/cpuhotplug.h
-@@ -147,6 +147,7 @@ enum cpuhp_state {
- 	CPUHP_AP_X86_VDSO_VMA_ONLINE,
- 	CPUHP_AP_IRQ_AFFINITY_ONLINE,
- 	CPUHP_AP_ARM_MVEBU_SYNC_CLOCKS,
-+	CPUHP_AP_X86_INTEL_EPB_ONLINE,
- 	CPUHP_AP_PERF_ONLINE,
- 	CPUHP_AP_PERF_X86_ONLINE,
- 	CPUHP_AP_PERF_X86_UNCORE_ONLINE,
-Index: linux-pm/arch/x86/kernel/cpu/intel.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/intel.c
-+++ linux-pm/arch/x86/kernel/cpu/intel.c
-@@ -596,36 +596,6 @@ detect_keyid_bits:
- 	c->x86_phys_bits -= keyid_bits;
- }
- 
--static void init_intel_energy_perf(struct cpuinfo_x86 *c)
--{
--	u64 epb;
--
--	/*
--	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
--	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
--	 */
--	if (!cpu_has(c, X86_FEATURE_EPB))
--		return;
--
--	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
--	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
--		return;
--
--	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
--	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
--	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
--	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
--}
--
--static void intel_bsp_resume(struct cpuinfo_x86 *c)
--{
--	/*
--	 * MSR_IA32_ENERGY_PERF_BIAS is lost across suspend/resume,
--	 * so reinitialize it properly like during bootup:
--	 */
--	init_intel_energy_perf(c);
--}
--
- static void init_cpuid_fault(struct cpuinfo_x86 *c)
- {
- 	u64 msr;
-@@ -763,8 +733,6 @@ static void init_intel(struct cpuinfo_x8
- 	if (cpu_has(c, X86_FEATURE_TME))
- 		detect_tme(c);
- 
--	init_intel_energy_perf(c);
--
- 	init_intel_misc_features(c);
- }
- 
-@@ -1023,9 +991,7 @@ static const struct cpu_dev intel_cpu_de
- 	.c_detect_tlb	= intel_detect_tlb,
- 	.c_early_init   = early_init_intel,
- 	.c_init		= init_intel,
--	.c_bsp_resume	= intel_bsp_resume,
- 	.c_x86_vendor	= X86_VENDOR_INTEL,
- };
- 
- cpu_dev_register(intel_cpu_dev);
--
-Index: linux-pm/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/common.c
-+++ linux-pm/arch/x86/kernel/cpu/common.c
-@@ -1864,23 +1864,6 @@ void cpu_init(void)
- }
- #endif
- 
--static void bsp_resume(void)
--{
--	if (this_cpu->c_bsp_resume)
--		this_cpu->c_bsp_resume(&boot_cpu_data);
--}
--
--static struct syscore_ops cpu_syscore_ops = {
--	.resume		= bsp_resume,
--};
--
--static int __init init_cpu_syscore(void)
--{
--	register_syscore_ops(&cpu_syscore_ops);
--	return 0;
--}
--core_initcall(init_cpu_syscore);
--
- /*
-  * The microcode loader calls this upon late microcode load to recheck features,
-  * only when microcode has been updated. Caller holds microcode_mutex and CPU
-Index: linux-pm/arch/x86/kernel/cpu/cpu.h
-===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/cpu.h
-+++ linux-pm/arch/x86/kernel/cpu/cpu.h
-@@ -14,7 +14,6 @@ struct cpu_dev {
- 	void		(*c_init)(struct cpuinfo_x86 *);
- 	void		(*c_identify)(struct cpuinfo_x86 *);
- 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
--	void		(*c_bsp_resume)(struct cpuinfo_x86 *);
- 	int		c_x86_vendor;
- #ifdef CONFIG_X86_32
- 	/* Optional vendor specific routine to obtain the cache size. */
-Index: linux-pm/arch/x86/kernel/cpu/Makefile
-===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/Makefile
-+++ linux-pm/arch/x86/kernel/cpu/Makefile
-@@ -28,7 +28,7 @@ obj-y			+= cpuid-deps.o
- obj-$(CONFIG_PROC_FS)	+= proc.o
- obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
- 
--obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o intel_pconfig.o
-+obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o intel_pconfig.o intel_epb.o
- obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
- obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
- obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
-Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
-===================================================================
---- /dev/null
-+++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
-@@ -0,0 +1,131 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Intel Performance and Energy Bias Hint support.
-+ *
-+ * Copyright (C) 2018 Intel Corporation
-+ *
-+ * Author:
-+ *	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+ */
-+
-+#include <linux/cpuhotplug.h>
-+#include <linux/kernel.h>
-+#include <linux/syscore_ops.h>
-+
-+#include <asm/cpufeature.h>
-+#include <asm/msr.h>
-+
-+/**
-+ * DOC: overview
-+ *
-+ * The Performance and Energy Bias Hint (EPB) allows software to specify its
-+ * preference with respect to the power-performance tradeoffs present in the
-+ * processor.  Generally, the EPB is expected to be set by user space through
-+ * the generic MSR interface (with the help of the x86_energy_perf_policy tool),
-+ * but there are two reasons for the kernel to touch it.
-+ *
-+ * First, there are systems where the platform firmware resets the EPB during
-+ * system-wide transitions from sleep states back into the working state
-+ * effectively causing the previous EPB updates by user space to be lost.
-+ * Thus the kernel needs to save the current EPB values for all CPUs during
-+ * system-wide transitions to sleep states and restore them on the way back to
-+ * the working state.  That can be achieved by saving EPB for secondary CPUs
-+ * when they are taken offline during transitions into system sleep states and
-+ * for the boot CPU in a syscore suspend operation, so that it can be restored
-+ * for the boot CPU in a syscore resume operation and for the other CPUs when
-+ * they are brought back online.  However, CPUs that are already offline when
-+ * a system-wide PM transition is started are not taken offline again, but their
-+ * EPB values may still be reset by the platform firmware during the transition,
-+ * so in fact it is necessary to save the EPB of any CPU taken offline and to
-+ * restore it when the given CPU goes back online at all times.
-+ *
-+ * Second, on many systems the initial EPB value coming from the platform
-+ * firmware is 0 ('performance') and at least on some of them that is because
-+ * the platform firmware does not initialize EPB at all with the assumption that
-+ * the OS will do that anyway.  That sometimes is problematic, as it may cause
-+ * the system battery to drain too fast, for example, so it is better to adjust
-+ * it on CPU bring-up and if the initial EPB value for a given CPU is 0, the
-+ * kernel changes it to 6 ('normal').
-+ */
-+
-+static DEFINE_PER_CPU(u8, saved_epb);
-+
-+#define EPB_MASK	((u8)0x0f)
-+#define EPB_SAVED	((u8)0x10)
-+
-+static int intel_epb_save(void)
-+{
-+	u64 epb;
-+
-+	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+	/*
-+	 * Ensure that saved_epb will always be nonzero after this write even if
-+	 * the EPB value read from the MSR is 0.
-+	 */
-+	this_cpu_write(saved_epb, ((u8)epb & EPB_MASK) | EPB_SAVED);
-+
-+	return 0;
-+}
-+
-+static void intel_epb_restore(void)
-+{
-+	u8 val = this_cpu_read(saved_epb);
-+	u64 epb;
-+
-+	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+	if (val) {
-+		val &= EPB_MASK;
-+	} else {
-+		/*
-+		 * Because intel_epb_save() has not run for the current CPU yet,
-+		 * it is going online for the first time, so if its EPB value is
-+		 * 0 ('performance') at this point, assume that it has not been
-+		 * initialized by the platform firmware and set it to 6
-+		 * ('normal').
-+		 */
-+		val = (u8)epb & EPB_MASK;
-+		if (val == ENERGY_PERF_BIAS_PERFORMANCE) {
-+			val = ENERGY_PERF_BIAS_NORMAL;
-+			pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
-+		}
-+	}
-+	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, (epb & ~(u64)EPB_MASK) | (u64)val);
-+}
-+
-+static struct syscore_ops intel_epb_syscore_ops = {
-+	.suspend = intel_epb_save,
-+	.resume = intel_epb_restore,
-+};
-+
-+static int intel_epb_online(unsigned int cpu)
-+{
-+	intel_epb_restore();
-+	return 0;
-+}
-+
-+static int intel_epb_offline(unsigned int cpu)
-+{
-+	return intel_epb_save();
-+}
-+
-+static __init int intel_epb_init(void)
-+{
-+	int ret;
-+
-+	if (!boot_cpu_has(X86_FEATURE_EPB))
-+		return -ENODEV;
-+
-+	ret = cpuhp_setup_state(CPUHP_AP_X86_INTEL_EPB_ONLINE,
-+				"x86/intel/epb:online", intel_epb_online,
-+				intel_epb_offline);
-+	if (ret < 0)
-+		goto err_out_online;
-+
-+	register_syscore_ops(&intel_epb_syscore_ops);
-+	return 0;
-+
-+err_out_online:
-+	cpuhp_remove_state(CPUHP_AP_X86_INTEL_EPB_ONLINE);
-+	return ret;
-+}
-+subsys_initcall(intel_epb_init);
-Index: linux-pm/Documentation/admin-guide/pm/intel_epb.rst
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/admin-guide/pm/intel_epb.rst
-@@ -0,0 +1,6 @@
-+======================================
-+Intel Performance and Energy Bias Hint
-+======================================
-+
-+.. kernel-doc:: arch/x86/kernel/cpu/intel_epb.c
-+   :doc: overview
-Index: linux-pm/Documentation/admin-guide/pm/working-state.rst
-===================================================================
---- linux-pm.orig/Documentation/admin-guide/pm/working-state.rst
-+++ linux-pm/Documentation/admin-guide/pm/working-state.rst
-@@ -8,3 +8,4 @@ Working-State Power Management
-    cpuidle
-    cpufreq
-    intel_pstate
-+   intel_epb
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2hhd24gR3VvIDxzaGF3
+bmd1b0BrZXJuZWwub3JnPg0KPiBTZW50OiAyMDE5xOoz1MIyMMjVIDIyOjQ5DQo+IFRvOiBBbmR5
+IFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPg0KPiBDYzogRGFuaWVsIExlemNhbm8gPGRhbmllbC5s
+ZXpjYW5vQGxpbmFyby5vcmc+OyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gZGV2aWNldHJlZUB2
+Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2VybmVs
+QHZnZXIua2VybmVsLm9yZzsgTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+Ow0KPiBlZHViZXp2
+YWxAZ21haWwuY29tOyByb2JoK2R0QGtlcm5lbC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+
+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIHYyXSBhcm02NDogZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUgdGhlcm1hbCB6b25lIG5v
+ZGUNCj4gDQo+IE9uIFdlZCwgTWFyIDIwLCAyMDE5IGF0IDA4OjQ0OjE4QU0gKzAwMDAsIEFuZHkg
+VGFuZyB3cm90ZToNCj4gPiA+ID4gU2Vuc29yIElECQlwbGFjZW1lbnQNCj4gPiA+ID4gMQkJCURE
+UiBjb250cm9sbGVyIDENCj4gPiA+ID4gMgkJCUREUiBjb250cm9sbGVyIDINCj4gPiA+ID4gMwkJ
+CUREUiBjb250cm9sbGVyIDMNCj4gPiA+ID4gNAkJCWNvcmUgY2x1c3RlciAxDQo+ID4gPiA+IDUg
+CQljb3JlIGNsdXN0ZXIgMg0KPiA+ID4gPiA2IAkJY29yZSBjbHVzdGVyIDMNCj4gPiA+ID4gNyAJ
+CWNvcmUgY2x1c3RlciA0DQo+ID4gPiA+DQo+ID4gPiA+IEFwcGFyZW50bHkgdXNpbmcgQ1BVIG9y
+IENQVS1jbHVzdGVyIGlzIG5vdCBhcHByb3ByaWF0ZS4gQ29yZS1jbHVzdGVyIGlzDQo+IGJldHRl
+ci4NCj4gPiA+DQo+ID4gPiBTbyB1c2luZyBDUFUgaXMgYXBwcm9wcmlhdGUgZm9yIG1lLCBsZXNz
+IGNvbmZ1c2luZywgbW9yZSBjb25zaXN0ZW50DQo+ID4gPiB3aXRoIG90aGVyIHBsYXRmb3Jtcy4N
+Cj4gPiBXaGF0IGFib3V0IGNvcmUgY2x1c3Rlcj8gV2UgY2FuJ3QgbmFtZSBpdCBjcHUwLCBjcHUx
+IGV0YyBJIHRoaW5rLg0KPiANCj4gSG1tLCB5ZXMsIHRoYXQgd291bGQgYmUgZXZlbiBtb3JlIGNv
+bmZ1c2luZy4gIFdoYXQgYWJvdXQgY3B1LXRoZXJtYWwtMSwNCj4gY3B1LXRoZXJtYWwtMiAuLi4/
+DQpDcHUtdGhlcm1hbC14IGNhbid0IGNoYW5nZSBhbnl0aGluZyBiZXR0ZXIgdGhhbiBjcHVYLiBJ
+dCBjYW4ndCByZWZsZWN0IHRoZSBjb25jZXB0IG9mIENMVVNURVIuDQpJIHByZWZlciB0byB1c2Ug
+Y29yZS1jbHVzdGVyLiBJdCBpcyBhIHdpbGQgYWNjZXB0ZWQgdGVybSBpbiBBUk0gZWNvc3lzdGVt
+Lg0KDQpCUiwNCkFuZHkNCj4gDQo+IFNoYXduDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
+cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
