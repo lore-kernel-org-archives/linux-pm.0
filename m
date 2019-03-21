@@ -1,44 +1,87 @@
-From: Chen-Yu Tsai <wens@kernel.org>
-Subject: [PATCH v3 1/9] dt-bindings: power: supply: axp20x_usb_power: add axp813 compatible
-Date: Thu, 21 Mar 2019 16:48:42 +0800
-Message-ID: <20190321084850.20769-2-wens@kernel.org>
+From: Chen-Yu Tsai <wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v3 9/9] ARM: dts: sun8i: a83t: Enable USB OTG
+ controller on some boards
+Date: Thu, 21 Mar 2019 16:48:50 +0800
+Message-ID: <20190321084850.20769-10-wens@kernel.org>
 References: <20190321084850.20769-1-wens@kernel.org>
+Reply-To: wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190321084850.20769-1-wens@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
-Cc: Chen-Yu Tsai <wens@csie.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBAFAZXSAKGQEZCDPJ6Y-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20190321084850.20769-1-wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chen-Yu Tsai <wens@csie.org>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 
-This adds the "x-powers,axp813-usb-power-supply" to the list of
-compatibles for AXP20X VBUS power supply driver.
+The Bananapi M3 and Cubietruck Plus both have USB OTG ports wired to the
+SoC and PMIC in the same way, with the N_VBUSEN pin on the PMIC
+controlling VBUS output, the PMIC's VBUS input for sensing VBUS, and
+PH11 on the SoC for sensing the ID pin.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+Enable OTG on both boards.
 
+Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 ---
-Changes since v2:
+ arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts     | 12 ++++++++++++
+ arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts | 12 ++++++++++++
+ 2 files changed, 24 insertions(+)
 
-  - Collected Rob's Reviewed-by
----
- .../devicetree/bindings/power/supply/axp20x_usb_power.txt        | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
-index ba8d35f66cbe..b2d4968fde7d 100644
---- a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
-@@ -4,6 +4,7 @@ Required Properties:
- -compatible: One of: "x-powers,axp202-usb-power-supply"
-                      "x-powers,axp221-usb-power-supply"
-                      "x-powers,axp223-usb-power-supply"
-+		     "x-powers,axp813-usb-power-supply"
+diff --git a/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts b/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
+index 838be7b3715f..9d34eabba121 100644
+--- a/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
++++ b/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
+@@ -389,7 +389,19 @@
+ 	};
+ };
  
- The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
- variations such as the former being able to set the VBUS power supply max
++&usb_otg {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb_power_supply {
++	status = "okay";
++};
++
+ &usbphy {
++	usb0_id_det-gpios = <&pio 7 11 GPIO_ACTIVE_HIGH>; /* PH11 */
++	usb0_vbus_power-supply = <&usb_power_supply>;
++	usb0_vbus-supply = <&reg_drivevbus>;
+ 	usb1_vbus-supply = <&reg_usb1_vbus>;
+ 	status = "okay";
+ };
+diff --git a/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts b/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
+index fcbec3d7ccd7..ea299d3d84d0 100644
+--- a/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
++++ b/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
+@@ -420,7 +420,19 @@
+ 	};
+ };
+ 
++&usb_otg {
++	dr_mode = "otg";
++	status = "okay";
++};
++
++&usb_power_supply {
++	status = "okay";
++};
++
+ &usbphy {
++	usb0_id_det-gpios = <&pio 7 11 GPIO_ACTIVE_HIGH>; /* PH11 */
++	usb0_vbus_power-supply = <&usb_power_supply>;
++	usb0_vbus-supply = <&reg_drivevbus>;
+ 	usb1_vbus-supply = <&reg_usb1_vbus>;
+ 	usb2_vbus-supply = <&reg_usb2_vbus>;
+ 	status = "okay";
 -- 
 2.20.1
