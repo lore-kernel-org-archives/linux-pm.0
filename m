@@ -1,13 +1,12 @@
 From: Chen-Yu Tsai <wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v3 7/9] mfd: axp20x: add USB power supply mfd
- cell to AXP813
-Date: Thu, 21 Mar 2019 16:48:48 +0800
-Message-ID: <20190321084850.20769-8-wens@kernel.org>
+Subject: [PATCH v3 8/9] ARM: dtsi: axp81x: add USB power supply node
+Date: Thu, 21 Mar 2019 16:48:49 +0800
+Message-ID: <20190321084850.20769-9-wens@kernel.org>
 References: <20190321084850.20769-1-wens@kernel.org>
 Reply-To: wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBA5AZXSAKGQE7RYIDKY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBAVAZXSAKGQERB34SPI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20190321084850.20769-1-wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -22,51 +21,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
 
-The AXP813 has a VBUS power input. Now that the axp20x_usb_power driver
-supports this variant, we can add an mfd cell for it to use it.
+The AXP813/818 has a VBUS power input. Add a device node for it, now
+that we support it.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
-[wens-jdAy2FN1RRM@public.gmane.org: add commit message]
-Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+[wens-jdAy2FN1RRM@public.gmane.org: Add commit message]
 Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-
 ---
+ arch/arm/boot/dts/axp81x.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Changes since v1:
-  - Made axp803_usb_power_supply_resources[] constant
-  - Added Lee's acked-by
----
- drivers/mfd/axp20x.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 3c97f2c0fdfe..902f9f27e748 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -198,6 +198,12 @@ static const struct resource axp22x_usb_power_supply_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
- };
- 
-+/* AXP803 and AXP813/AXP818 share the same interrupts */
-+static const struct resource axp803_usb_power_supply_resources[] = {
-+	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-+	DEFINE_RES_IRQ_NAMED(AXP803_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-+};
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index bd83962d3627..1dfeeceabf4c 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -171,4 +171,8 @@
+ 			status = "disabled";
+ 		};
+ 	};
 +
- static const struct resource axp22x_pek_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_RIS_EDGE, "PEK_DBR"),
- 	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_PEK_FAL_EDGE, "PEK_DBF"),
-@@ -793,6 +799,11 @@ static const struct mfd_cell axp813_cells[] = {
- 		.of_compatible	= "x-powers,axp813-ac-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
- 		.resources	= axp20x_ac_power_supply_resources,
-+	}, {
-+		.name		= "axp20x-usb-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp803_usb_power_supply_resources),
-+		.resources	= axp803_usb_power_supply_resources,
-+		.of_compatible	= "x-powers,axp813-usb-power-supply",
- 	},
++	usb_power_supply: usb-power-supply {
++		compatible = "x-powers,axp813-usb-power-supply";
++	};
  };
- 
 -- 
 2.20.1
