@@ -1,82 +1,354 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v3 2/2] [WIP] tools/power turbostat: Also read package
- power on AMD F17h (Zen)
-Date: Wed, 20 Mar 2019 19:36:55 -0400
-Message-ID: <CAJvTdKmXSQyY-Jdv7OkseHEE-76oDPLeJ8v8ShApDRKqWsukSQ@mail.gmail.com>
-References: <20180817163442.10065-1-calvin.walton@kepstin.ca> <20180817163442.10065-3-calvin.walton@kepstin.ca>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS handling
+Date: Thu, 21 Mar 2019 01:00:52 +0100
+Message-ID: <2816566.rddYshD6lm@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180817163442.10065-3-calvin.walton@kepstin.ca>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Calvin Walton <calvin.walton@kepstin.ca>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org
+To: x86 <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Calvin,
-I'm inclined to apply this -- because it will not break anything,
-and it would at least enable testing by people, who have this hardware.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-thoughts?
--Len
+The current handling of MSR_IA32_ENERGY_PERF_BIAS in the kernel is
+problematic, because it may cause changes made by user space to that
+MSR (with the help of the x86_energy_perf_policy tool, for example)
+to be lost every time a CPU goes offline and then back online as well
+as during system-wide power management transitions into sleep states
+and back into the working state.
 
-On Fri, Aug 17, 2018 at 12:35 PM Calvin Walton <calvin.walton@kepstin.ca> wrote:
->
-> The package power can also be read from an MSR. It's not clear exactly
-> what is included, and whether it's aggregated over all nodes or
-> reported separately.
->
-> It does look like this is reported separately per CCX (I get a single
-> value on the Ryzen R7 1700), but it might be reported separately per-
-> die (node?) on larger processors. If that's the case, it would have to
-> be recorded per node and aggregated for the socket.
->
-> Note that although Zen has these MSRs reporting power, it looks like
-> the actual RAPL configuration (power limits, configured TDP) is done
-> through PCI configuration space. I have not yet found any public
-> documentation for this.
->
-> Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
-> ---
->  tools/power/x86/turbostat/turbostat.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index 89d4e2e75774..675c894b8595 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -1973,6 +1973,11 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
->                         return -16;
->                 p->rapl_dram_perf_status = msr & 0xFFFFFFFF;
->         }
-> +       if (do_rapl & RAPL_AMD_F17H) {
-> +               if (get_msr(cpu, MSR_PKG_ENERGY_STAT, &msr))
-> +                       return -13;
-> +               p->energy_pkg = msr & 0xFFFFFFFF;
-> +       }
->         if (DO_BIC(BIC_PkgTmp)) {
->                 if (get_msr(cpu, MSR_IA32_PACKAGE_THERM_STATUS, &msr))
->                         return -17;
-> @@ -3986,10 +3991,13 @@ void rapl_probe_amd(unsigned int family, unsigned int model)
->         switch (family) {
->         case 0x17: /* Zen, Zen+ */
->                 do_rapl = RAPL_AMD_F17H | RAPL_PER_CORE_ENERGY;
-> -               if (rapl_joules)
-> +               if (rapl_joules) {
-> +                       BIC_PRESENT(BIC_Pkg_J);
->                         BIC_PRESENT(BIC_Cor_J);
-> -               else
-> +               } else {
-> +                       BIC_PRESENT(BIC_PkgWatt);
->                         BIC_PRESENT(BIC_CorWatt);
-> +               }
->                 break;
->         default:
->                 return;
-> --
-> 2.18.0
->
+The first problem is that if the current EPB value for a CPU going
+online is 0 ('performance'), the kernel will change it to 6 ('normal')
+regardless of whether or not this is the first bring-up of that CPU.
+That also happens during system-wide resume from sleep states
+(including, but not limited to, hibernation).  However, the EPB may
+have been adjusted by user space this way and the kernel should not
+blindly override that setting.
 
+The second problem is that if the platform firmware resets the EPB
+values for any CPUs during system-wide resume from a sleep state,
+the kernel will not restore their previous EPB values that may
+have been set by user space before the preceding system-wide
+suspend transition.  Again, that behavior may at least be confusing
+from the user space perspective.
 
--- 
-Len Brown, Intel Open Source Technology Center
+In order to address these issues, rework the handling of
+MSR_IA32_ENERGY_PERF_BIAS so that the EPB value is saved on CPU
+offline and restored on CPU online as well as (for the boot CPU)
+during the syscore stages of system-wide suspend and resume
+transitions, respectively.
+
+However, retain the policy by which the EPB is set to 6 ('normal')
+on the first bring-up of each CPU if its initial value is 0, based
+on the observation that 0 may mean 'not initialized' just as well as
+'performance' in that case.
+
+While at it, move the MSR_IA32_ENERGY_PERF_BIAS handling code into
+a separate file and document it in Documentation/admin-guide.
+
+Fixes: abe48b108247 (x86, intel, power: Initialize MSR_IA32_ENERGY_PERF_BIAS)
+Fixes: b51ef52df71c (x86/cpu: Restore MSR_IA32_ENERGY_PERF_BIAS after resume)
+Reported-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+I do realize that this may be regarded as overly conservative, but
+I'm quite reluctant to change the policy choice made in 2011 and
+present since then without rock solid evidence that it would not
+introduce regressions anywhere.
+
+---
+ Documentation/admin-guide/pm/intel_epb.rst     |    6 +
+ Documentation/admin-guide/pm/working-state.rst |    1 
+ arch/x86/kernel/cpu/Makefile                   |    2 
+ arch/x86/kernel/cpu/common.c                   |   17 ---
+ arch/x86/kernel/cpu/cpu.h                      |    1 
+ arch/x86/kernel/cpu/intel.c                    |   34 ------
+ arch/x86/kernel/cpu/intel_epb.c                |  131 +++++++++++++++++++++++++
+ include/linux/cpuhotplug.h                     |    1 
+ 8 files changed, 140 insertions(+), 53 deletions(-)
+
+Index: linux-pm/include/linux/cpuhotplug.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuhotplug.h
++++ linux-pm/include/linux/cpuhotplug.h
+@@ -147,6 +147,7 @@ enum cpuhp_state {
+ 	CPUHP_AP_X86_VDSO_VMA_ONLINE,
+ 	CPUHP_AP_IRQ_AFFINITY_ONLINE,
+ 	CPUHP_AP_ARM_MVEBU_SYNC_CLOCKS,
++	CPUHP_AP_X86_INTEL_EPB_ONLINE,
+ 	CPUHP_AP_PERF_ONLINE,
+ 	CPUHP_AP_PERF_X86_ONLINE,
+ 	CPUHP_AP_PERF_X86_UNCORE_ONLINE,
+Index: linux-pm/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/intel.c
++++ linux-pm/arch/x86/kernel/cpu/intel.c
+@@ -596,36 +596,6 @@ detect_keyid_bits:
+ 	c->x86_phys_bits -= keyid_bits;
+ }
+ 
+-static void init_intel_energy_perf(struct cpuinfo_x86 *c)
+-{
+-	u64 epb;
+-
+-	/*
+-	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if not already initialized.
+-	 * (x86_energy_perf_policy(8) is available to change it at run-time.)
+-	 */
+-	if (!cpu_has(c, X86_FEATURE_EPB))
+-		return;
+-
+-	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-	if ((epb & 0xF) != ENERGY_PERF_BIAS_PERFORMANCE)
+-		return;
+-
+-	pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+-	pr_warn_once("ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)\n");
+-	epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+-	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+-}
+-
+-static void intel_bsp_resume(struct cpuinfo_x86 *c)
+-{
+-	/*
+-	 * MSR_IA32_ENERGY_PERF_BIAS is lost across suspend/resume,
+-	 * so reinitialize it properly like during bootup:
+-	 */
+-	init_intel_energy_perf(c);
+-}
+-
+ static void init_cpuid_fault(struct cpuinfo_x86 *c)
+ {
+ 	u64 msr;
+@@ -763,8 +733,6 @@ static void init_intel(struct cpuinfo_x8
+ 	if (cpu_has(c, X86_FEATURE_TME))
+ 		detect_tme(c);
+ 
+-	init_intel_energy_perf(c);
+-
+ 	init_intel_misc_features(c);
+ }
+ 
+@@ -1023,9 +991,7 @@ static const struct cpu_dev intel_cpu_de
+ 	.c_detect_tlb	= intel_detect_tlb,
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
+-	.c_bsp_resume	= intel_bsp_resume,
+ 	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+ 
+ cpu_dev_register(intel_cpu_dev);
+-
+Index: linux-pm/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/common.c
++++ linux-pm/arch/x86/kernel/cpu/common.c
+@@ -1864,23 +1864,6 @@ void cpu_init(void)
+ }
+ #endif
+ 
+-static void bsp_resume(void)
+-{
+-	if (this_cpu->c_bsp_resume)
+-		this_cpu->c_bsp_resume(&boot_cpu_data);
+-}
+-
+-static struct syscore_ops cpu_syscore_ops = {
+-	.resume		= bsp_resume,
+-};
+-
+-static int __init init_cpu_syscore(void)
+-{
+-	register_syscore_ops(&cpu_syscore_ops);
+-	return 0;
+-}
+-core_initcall(init_cpu_syscore);
+-
+ /*
+  * The microcode loader calls this upon late microcode load to recheck features,
+  * only when microcode has been updated. Caller holds microcode_mutex and CPU
+Index: linux-pm/arch/x86/kernel/cpu/cpu.h
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/cpu.h
++++ linux-pm/arch/x86/kernel/cpu/cpu.h
+@@ -14,7 +14,6 @@ struct cpu_dev {
+ 	void		(*c_init)(struct cpuinfo_x86 *);
+ 	void		(*c_identify)(struct cpuinfo_x86 *);
+ 	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
+-	void		(*c_bsp_resume)(struct cpuinfo_x86 *);
+ 	int		c_x86_vendor;
+ #ifdef CONFIG_X86_32
+ 	/* Optional vendor specific routine to obtain the cache size. */
+Index: linux-pm/arch/x86/kernel/cpu/Makefile
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/Makefile
++++ linux-pm/arch/x86/kernel/cpu/Makefile
+@@ -28,7 +28,7 @@ obj-y			+= cpuid-deps.o
+ obj-$(CONFIG_PROC_FS)	+= proc.o
+ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
+ 
+-obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o intel_pconfig.o
++obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o intel_pconfig.o intel_epb.o
+ obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
+ obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
+ obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
+Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
+===================================================================
+--- /dev/null
++++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
+@@ -0,0 +1,131 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Intel Performance and Energy Bias Hint support.
++ *
++ * Copyright (C) 2018 Intel Corporation
++ *
++ * Author:
++ *	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++ */
++
++#include <linux/cpuhotplug.h>
++#include <linux/kernel.h>
++#include <linux/syscore_ops.h>
++
++#include <asm/cpufeature.h>
++#include <asm/msr.h>
++
++/**
++ * DOC: overview
++ *
++ * The Performance and Energy Bias Hint (EPB) allows software to specify its
++ * preference with respect to the power-performance tradeoffs present in the
++ * processor.  Generally, the EPB is expected to be set by user space through
++ * the generic MSR interface (with the help of the x86_energy_perf_policy tool),
++ * but there are two reasons for the kernel to touch it.
++ *
++ * First, there are systems where the platform firmware resets the EPB during
++ * system-wide transitions from sleep states back into the working state
++ * effectively causing the previous EPB updates by user space to be lost.
++ * Thus the kernel needs to save the current EPB values for all CPUs during
++ * system-wide transitions to sleep states and restore them on the way back to
++ * the working state.  That can be achieved by saving EPB for secondary CPUs
++ * when they are taken offline during transitions into system sleep states and
++ * for the boot CPU in a syscore suspend operation, so that it can be restored
++ * for the boot CPU in a syscore resume operation and for the other CPUs when
++ * they are brought back online.  However, CPUs that are already offline when
++ * a system-wide PM transition is started are not taken offline again, but their
++ * EPB values may still be reset by the platform firmware during the transition,
++ * so in fact it is necessary to save the EPB of any CPU taken offline and to
++ * restore it when the given CPU goes back online at all times.
++ *
++ * Second, on many systems the initial EPB value coming from the platform
++ * firmware is 0 ('performance') and at least on some of them that is because
++ * the platform firmware does not initialize EPB at all with the assumption that
++ * the OS will do that anyway.  That sometimes is problematic, as it may cause
++ * the system battery to drain too fast, for example, so it is better to adjust
++ * it on CPU bring-up and if the initial EPB value for a given CPU is 0, the
++ * kernel changes it to 6 ('normal').
++ */
++
++static DEFINE_PER_CPU(u8, saved_epb);
++
++#define EPB_MASK	((u8)0x0f)
++#define EPB_SAVED	((u8)0x10)
++
++static int intel_epb_save(void)
++{
++	u64 epb;
++
++	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
++	/*
++	 * Ensure that saved_epb will always be nonzero after this write even if
++	 * the EPB value read from the MSR is 0.
++	 */
++	this_cpu_write(saved_epb, ((u8)epb & EPB_MASK) | EPB_SAVED);
++
++	return 0;
++}
++
++static void intel_epb_restore(void)
++{
++	u8 val = this_cpu_read(saved_epb);
++	u64 epb;
++
++	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
++	if (val) {
++		val &= EPB_MASK;
++	} else {
++		/*
++		 * Because intel_epb_save() has not run for the current CPU yet,
++		 * it is going online for the first time, so if its EPB value is
++		 * 0 ('performance') at this point, assume that it has not been
++		 * initialized by the platform firmware and set it to 6
++		 * ('normal').
++		 */
++		val = (u8)epb & EPB_MASK;
++		if (val == ENERGY_PERF_BIAS_PERFORMANCE) {
++			val = ENERGY_PERF_BIAS_NORMAL;
++			pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
++		}
++	}
++	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, (epb & ~(u64)EPB_MASK) | (u64)val);
++}
++
++static struct syscore_ops intel_epb_syscore_ops = {
++	.suspend = intel_epb_save,
++	.resume = intel_epb_restore,
++};
++
++static int intel_epb_online(unsigned int cpu)
++{
++	intel_epb_restore();
++	return 0;
++}
++
++static int intel_epb_offline(unsigned int cpu)
++{
++	return intel_epb_save();
++}
++
++static __init int intel_epb_init(void)
++{
++	int ret;
++
++	if (!boot_cpu_has(X86_FEATURE_EPB))
++		return -ENODEV;
++
++	ret = cpuhp_setup_state(CPUHP_AP_X86_INTEL_EPB_ONLINE,
++				"x86/intel/epb:online", intel_epb_online,
++				intel_epb_offline);
++	if (ret < 0)
++		goto err_out_online;
++
++	register_syscore_ops(&intel_epb_syscore_ops);
++	return 0;
++
++err_out_online:
++	cpuhp_remove_state(CPUHP_AP_X86_INTEL_EPB_ONLINE);
++	return ret;
++}
++subsys_initcall(intel_epb_init);
+Index: linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+===================================================================
+--- /dev/null
++++ linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+@@ -0,0 +1,6 @@
++======================================
++Intel Performance and Energy Bias Hint
++======================================
++
++.. kernel-doc:: arch/x86/kernel/cpu/intel_epb.c
++   :doc: overview
+Index: linux-pm/Documentation/admin-guide/pm/working-state.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/working-state.rst
++++ linux-pm/Documentation/admin-guide/pm/working-state.rst
+@@ -8,3 +8,4 @@ Working-State Power Management
+    cpuidle
+    cpufreq
+    intel_pstate
++   intel_epb
