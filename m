@@ -1,43 +1,58 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v2] MAINTAINERS: Add mailing list for the interconnect API
-Date: Fri, 22 Mar 2019 12:04:41 +0200
-Message-ID: <20190322100441.6315-1-georgi.djakov@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v5.1-rc2
+Date: Fri, 22 Mar 2019 11:25:39 +0100
+Message-ID: <CAJZ5v0gTJn9fdpM_y2wL=y0vqGeJhvLKzoD_BfNj-yNkmepBnw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, georgi.djakov@linaro.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a mailing list for patch reviews and discussions related to tuning
-the on-chip interconnects. For now i am not expecting a lot of traffic,
-so let's use the linux-pm@ list.
+Hi Linus,
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
+Please pull from the tag
 
-Hi Greg,
-Can you please pick this fix for the next possible -rc, so people can
-know where to send patches. Thanks!
-Georgi
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.1-rc2
 
-Changes since v1 (https://lore.kernel.org/lkml/20190321155050.25847-1-georgi.djakov@linaro.org/)
-- Picked Rafael's Ack.
+with top-most commit 112a04f653ddf1d4246415e8e0d820002ebe8dca
 
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+ Merge branch 'pm-domains' into pm
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e17ebf70b548..186439e7f846 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8046,6 +8046,7 @@ F:	drivers/gpio/gpio-intel-mid.c
- 
- INTERCONNECT API
- M:	Georgi Djakov <georgi.djakov@linaro.org>
-+L:	linux-pm@vger.kernel.org
- S:	Maintained
- F:	Documentation/interconnect/
- F:	Documentation/devicetree/bindings/interconnect/
+on top of commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b
+
+ Linux 5.1-rc1
+
+to receive power management fixes for 5.1-rc2.
+
+These rearrange some code in the generic power domains (genpd)
+framework to avoid a potential deadlock and make the turbostat
+utility behave more as expected.
+
+Specifics:
+
+ - Rearrange the generic power domains (genpd) code to avoid a
+   potential deadlock possible due to its interactions with the
+   clock framework (Jiada Wang).
+
+ - Make turbostat return the exit status of the command run
+   under it if that command fails (David Arcari).
+
+Thanks!
+
+
+---------------
+
+David Arcari (1):
+      tools/power turbostat: return the exit status of a command
+
+Jiada Wang (1):
+      PM / Domains: Avoid a potential deadlock
+
+---------------
+
+ drivers/base/power/domain.c           | 13 ++++++-------
+ tools/power/x86/turbostat/turbostat.c |  3 +++
+ 2 files changed, 9 insertions(+), 7 deletions(-)
