@@ -1,94 +1,65 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
-Date: Fri, 22 Mar 2019 02:29:42 -0500
-Message-ID: <20190322072942.8038-3-huntbag@linux.vnet.ibm.com>
-References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
+From: Abhishek <huntbag@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/2] Auto-promotion logic for cpuidle states
+Date: Fri, 22 Mar 2019 13:08:49 +0530
+Message-ID: <6131c0d7-bb2f-04fb-9700-4c6655a1c56e@linux.vnet.ibm.com>
+References: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
+In-Reply-To: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au
 List-Id: linux-pm@vger.kernel.org
 
-This patch sets up flags for the state which needs to be auto-promoted.
-For powernv systems, lite states do not even lose user context. That
-information has been used to set the flag for lite states.
+Please ignore this set as this is incomplete. I have resent the patches.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/Kconfig             |  4 ++++
- drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+--Abhishek
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7e48eb5bf..0ece62684 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -26,6 +26,10 @@ config CPU_IDLE_GOV_MENU
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_AUTO_PROMOTION
-+	bool
-+	default y if PPC_POWERNV
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..e351f5f9c 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states & !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_AUTO_PROMOTION,
-+					  stop_loop, target_residency,
-+					  exit_latency, state->psscr_val,
-+					  state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
--					  state->psscr_val,
--					  state->psscr_mask);
-+					  state->psscr_val, state->psscr_mask);
- 		}
- 
- 		/*
--- 
-2.17.1
+On 03/22/2019 11:55 AM, Abhishek Goel wrote:
+> Currently, the cpuidle governors (menu/ladder) determine what idle state a
+> idling CPU should enter into based on heuristics that depend on the idle
+> history on that CPU. Given that no predictive heuristic is perfect, there
+> are cases where the governor predicts a shallow idle state, hoping that
+> the CPU will be busy soon. However, if no new workload is scheduled on
+> that CPU in the near future, the CPU will end up in the shallow state.
+>
+> Motivation
+> ----------
+> In case of POWER, this is problematic, when the predicted state in the
+> aforementioned scenario is a lite stop state, as such lite states will
+> inhibit SMT folding, thereby depriving the other threads in the core from
+> using the core resources.
+>
+> To address this, such lite states need to be autopromoted. The cpuidle-core
+> can queue timer to correspond with the residency value of the next
+> available state. Thus leading to auto-promotion to a deeper idle state as
+> soon as possible.
+>
+> Experiment
+> ----------
+> Without this patch -
+> It was seen that for a idle system, a cpu may remain in stop0_lite for few
+> seconds and then directly goes to a deeper state such as stop2.
+>
+> With this patch -
+> A cpu will not remain in stop0_lite for more than the residency of next
+> available state, and thus it will go to a deeper state in conservative
+> fashion. Using this, we may spent even less than 20 milliseconds if
+> susbsequent stop states are enabled. In the worst case, we may end up
+> spending more than a second, as was the case without this patch. The
+> worst case will occur in the scenario when no other shallow states are
+> enbaled, and only deep states are available for auto-promotion.
+>
+> Abhishek Goel (2):
+>    cpuidle : auto-promotion for cpuidle states
+>    cpuidle : Add auto-promotion flag to cpuidle flags
+>
+>   arch/powerpc/include/asm/opal-api.h |  1 +
+>   drivers/cpuidle/Kconfig             |  4 ++++
+>   drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
+>   drivers/cpuidle/cpuidle.c           |  3 ---
+>   4 files changed, 16 insertions(+), 5 deletions(-)
+>
