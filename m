@@ -1,73 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RESEND PATCH v6 04/11] dt-bindings: input: add DT bindings for
- max77650
-Date: Fri, 22 Mar 2019 10:59:21 +0100
-Message-ID: <20190322095920.GM27015@amd>
-References: <20190318174228.18194-1-brgl@bgdev.pl>
- <20190318174228.18194-5-brgl@bgdev.pl>
- <20190322090927.GG27015@amd>
- <CAMRc=Md0-UkY07vkf+irqUKwHFSj=Nq3fBYKFRqNG9nzWv9YRw@mail.gmail.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v2] MAINTAINERS: Add mailing list for the interconnect API
+Date: Fri, 22 Mar 2019 12:04:41 +0200
+Message-ID: <20190322100441.6315-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Nj4mAaUCx+wbOcQD"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMRc=Md0-UkY07vkf+irqUKwHFSj=Nq3fBYKFRqNG9nzWv9YRw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Rob Herring <robh@kernel.org>
+To: gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, georgi.djakov@linaro.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+Add a mailing list for patch reviews and discussions related to tuning
+the on-chip interconnects. For now i am not expecting a lot of traffic,
+so let's use the linux-pm@ list.
 
---Nj4mAaUCx+wbOcQD
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
 
-On Fri 2019-03-22 10:55:26, Bartosz Golaszewski wrote:
-> pt., 22 mar 2019 o 10:09 Pavel Machek <pavel@ucw.cz> napisa=C5=82(a):
-> >
-> > On Mon 2019-03-18 18:42:21, Bartosz Golaszewski wrote:
-> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > >
-> > > Add the DT binding document for the onkey module of max77650.
-> > >
-> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > Reviewed-by: Rob Herring <robh@kernel.org>
-> >
-> > > +     onkey {
-> > > +             compatible =3D "maxim,max77650-onkey";
-> > > +             linux,code =3D <KEY_END>;
-> > > +             maxim,onkey-slide;
-> > > +     };
-> >
-> > This is certainly wrong.
-> >
-> > "End" key is normal key on a keyboard, certainly not some kind of
-> > slider.
-> >
-> > And this controller is likely to be used for power key, not end key,
-> > right?
->=20
-> But this is just an example of available properties, not a real use-case.
+Hi Greg,
+Can you please pick this fix for the next possible -rc, so people can
+know where to send patches. Thanks!
+Georgi
 
-We can have example that makes sense, right?
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Changes since v1 (https://lore.kernel.org/lkml/20190321155050.25847-1-georgi.djakov@linaro.org/)
+- Picked Rafael's Ack.
 
---Nj4mAaUCx+wbOcQD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlyUsfgACgkQMOfwapXb+vL7oACfXt7TCBzA5aDs0AaHx7sSIh/y
-OG4An0Bi8Rmg2n4GKLzXGDB4YzPwb4Gu
-=DK14
------END PGP SIGNATURE-----
-
---Nj4mAaUCx+wbOcQD--
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e17ebf70b548..186439e7f846 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8046,6 +8046,7 @@ F:	drivers/gpio/gpio-intel-mid.c
+ 
+ INTERCONNECT API
+ M:	Georgi Djakov <georgi.djakov@linaro.org>
++L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/interconnect/
+ F:	Documentation/devicetree/bindings/interconnect/
