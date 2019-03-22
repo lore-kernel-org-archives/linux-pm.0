@@ -1,25 +1,49 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/2] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS
- handling
-Date: Fri, 22 Mar 2019 17:12:24 +0100 (CET)
-Message-ID: <alpine.DEB.2.21.1903221712020.1729@nanos.tec.linutronix.de>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan> <1605148.8jT99SsvVP@aspire.rjw.lan> <20190322142828.GA12472@zn.tnic> <alpine.DEB.2.21.1903221531080.1729@nanos.tec.linutronix.de> <20190322143525.GB12472@zn.tnic>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [BACKPORT 4.14.y 8/8] power: supply: charger-manager: Fix incorrect return value
+Date: Fri, 22 Mar 2019 17:17:23 +0100
+Message-ID: <20190322161727.1153278-9-arnd@arndb.de>
+References: <20190322161727.1153278-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322143525.GB12472@zn.tnic>
+In-Reply-To: <20190322161727.1153278-1-arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Hannes Reinecke <hare@suse.de>
+To: stable@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Sebastian Reichel <sebastian.reichel@collabora.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+From: Baolin Wang <baolin.wang@linaro.org>
 
-On Fri, 22 Mar 2019, Borislav Petkov wrote:
+Fix incorrect return value.
 
-> On Fri, Mar 22, 2019 at 03:31:54PM +0100, Thomas Gleixner wrote:
-> > We have no proper decision/recommendation about documentation
-> > licensing. That's being worked on.
-> 
-> Ok, I'm ignoring this checkpatch warning from now on.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+(cherry picked from commit f25a646fbe2051527ad9721853e892d13a99199e)
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/power/supply/charger-manager.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Only for Documentation/* files please.
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 6502fa7c2106..f60dfc213257 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1212,7 +1212,6 @@ static int charger_extcon_init(struct charger_manager *cm,
+ 	if (ret < 0) {
+ 		pr_info("Cannot register extcon_dev for %s(cable: %s)\n",
+ 			cable->extcon_name, cable->name);
+-		ret = -EINVAL;
+ 	}
+ 
+ 	return ret;
+@@ -1629,7 +1628,7 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 
+ 	if (IS_ERR(desc)) {
+ 		dev_err(&pdev->dev, "No platform data (desc) found\n");
+-		return -ENODEV;
++		return PTR_ERR(desc);
+ 	}
+ 
+ 	cm = devm_kzalloc(&pdev->dev, sizeof(*cm), GFP_KERNEL);
+-- 
+2.20.0
