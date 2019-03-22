@@ -1,54 +1,71 @@
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Subject: Re: [RESEND PATCH v6 09/11] leds: max77650: add LEDs support
-Date: Fri, 22 Mar 2019 20:40:44 +0100
-Message-ID: <f2963c2e-b4d0-1fae-3c7f-28fcdb545ee2@gmail.com>
-References: <20190318174228.18194-1-brgl@bgdev.pl>
- <20190318174228.18194-10-brgl@bgdev.pl> <20190322092124.GK27015@amd>
- <CAMRc=Mf1DxF1e63y+HsXtCFxZW8R0XWDLUXGy+4cp3zBS0_qhw@mail.gmail.com>
+From: "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
+Subject: [PATCH 0/6] CPPC optional registers AMD support
+Date: Fri, 22 Mar 2019 20:25:53 +0000
+Message-ID: <cover.1553285718.git.Janakarajan.Natarajan@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMRc=Mf1DxF1e63y+HsXtCFxZW8R0XWDLUXGy+4cp3zBS0_qhw@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Pavel Machek <pavel@ucw.cz>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/22/19 10:53 AM, Bartosz Golaszewski wrote:
-> pt., 22 mar 2019 o 10:21 Pavel Machek <pavel@ucw.cz> napisał(a):
->>
->> On Mon 2019-03-18 18:42:26, Bartosz Golaszewski wrote:
->>> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->>>
->>> This adds basic support for LEDs for the max77650 PMIC. The device has
->>> three current sinks for driving LEDs.
->>>
->>> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->>> Acked-by: Jacek Anaszewski <jacek.anaszewski@gmail.com>
->>
->> Acked-by: Pavel Machek <pavel@ucw.cz>
->>
->>> +             label = of_get_property(child, "label", NULL);
->>> +             if (!label) {
->>> +                     led->cdev.name = "max77650::";
->>> +             } else {
->>> +                     led->cdev.name = devm_kasprintf(dev, GFP_KERNEL,
->>> +                                                     "max77650:%s", label);
->>> +                     if (!led->cdev.name)
->>> +                             return -ENOMEM;
->>> +             }
->>
->> I'd rather not have the "max77650:" prefix in the LED name (as it is
->> useless).
->>
-> 
-> I was instructed to do so by the LED subsystem maintainer.
+CPPC (Collaborative Processor Performance Control) offers optional
+registers which can be used to tune the system based on energy and/or
+performance requirements.
 
-Yes, let's keep things consistent, we will convert it to use generic
-support for LED naming once that support is merged.
+Newer AMD processors add support for a subset of these optional CPPC
+registers, based on ACPI v6.1.
 
--- 
-Best regards,
-Jacek Anaszewski
+The following are the supported CPPC registers for which sysfs entries
+are created:
+* enable		(NEW)
+* max_perf		(NEW)
+* min_perf		(NEW)
+* energy_perf
+* lowest_perf
+* nominal_perf
+* desired_perf		(NEW)
+* feedback_ctrs
+* auto_sel_enable	(NEW)
+* lowest_nonlinear_perf
+
+The CPPC driver is updated to enable the OSPM and the userspace to access
+the newly supported registers.
+
+The purpose of exposing the registers via the sysfs entries is to allow
+the userspace to:
+* Tweak the values to fit its workload.
+* Apply a profile from AMD's optimization guides.
+
+Profiles will be documented in the performance/optimization guides.
+
+Note:
+* AMD systems will not have a policy applied in the kernel at this time.
+* By default, acpi_cpufreq will still be used.
+
+TODO:
+* Create a linux userspace tool that will help users generate a CPPC profil=
+e
+  for their target workload.
+* Create or update a driver to apply a general CPPC policy in the kernel.
+
+Janakarajan Natarajan (1):
+  acpi/cppc: Ensure only supported CPPC sysfs entries are created
+
+Yazen Ghannam (5):
+  acpi/cppc: Modify show_cppc_data macro
+  acpi/cppc: Rework cppc_set_perf() to use cppc_regs index
+  acpi/cppc: Add macros to define a R/W sysfs entry for CPPC registers
+  acpi/cppc: Add support for optional CPPC registers
+  acpi/cppc: Add support for CPPC Enable register
+
+ drivers/acpi/cppc_acpi.c       | 363 +++++++++++++++++++++++++++++----
+ drivers/cpufreq/cppc_cpufreq.c |   6 +-
+ include/acpi/cppc_acpi.h       |   6 +-
+ 3 files changed, 333 insertions(+), 42 deletions(-)
+
+--=20
+2.17.1
