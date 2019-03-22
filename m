@@ -1,49 +1,65 @@
-From: Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs
- interface
-Date: Fri, 22 Mar 2019 10:03:57 +0100
-Message-ID: <1fa29c73-c756-6942-76e5-0273efefd446@suse.de>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
- <1762575.ER2xjzr9E1@aspire.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RESEND PATCH v6 04/11] dt-bindings: input: add DT bindings for
+ max77650
+Date: Fri, 22 Mar 2019 10:09:28 +0100
+Message-ID: <20190322090927.GG27015@amd>
+References: <20190318174228.18194-1-brgl@bgdev.pl>
+ <20190318174228.18194-5-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="7uYPyRQQ5N0D02nI"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1762575.ER2xjzr9E1@aspire.rjw.lan>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190318174228.18194-5-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86 <x86@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Rob Herring <robh@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3/21/19 11:20 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The Performance and Energy Bias Hint (EPB) is expected to be set by
-> user space through the generic MSR interface, but that interface is
-> not particularly nice and there are security concerns regarding it,
-> so it is not always available.
-> 
-> For this reason, add a sysfs interface for reading and updating the
-> EPB, in the form of a new attribute, energy_perf_bias, located
-> under /sys/devices/system/cpu/cpu#/power/ for online CPUs that
-> support the EPB feature.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   Documentation/ABI/testing/sysfs-devices-system-cpu |   18 ++++
->   Documentation/admin-guide/pm/intel_epb.rst         |   27 ++++++
->   arch/x86/kernel/cpu/intel_epb.c                    |   93 ++++++++++++++++++++-
->   3 files changed, 134 insertions(+), 4 deletions(-)
-> 
-Reviewed-by: Hannes Reinecke <hare@suse.com>
 
-Cheers,
+--7uYPyRQQ5N0D02nI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hannes
--- 
-Dr. Hannes Reinecke		   Teamlead Storage & Networking
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Felix Imendörffer, Mary Higgins, Sri Rasiah
-HRB 21284 (AG Nürnberg)
+On Mon 2019-03-18 18:42:21, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>=20
+> Add the DT binding document for the onkey module of max77650.
+>=20
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+
+> +	onkey {
+> +		compatible =3D "maxim,max77650-onkey";
+> +		linux,code =3D <KEY_END>;
+> +		maxim,onkey-slide;
+> +	};
+
+This is certainly wrong.
+
+"End" key is normal key on a keyboard, certainly not some kind of
+slider.
+
+And this controller is likely to be used for power key, not end key,
+right?
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--7uYPyRQQ5N0D02nI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlyUpkcACgkQMOfwapXb+vI7+gCgtR9qsW4+U0xJMEpMLoLxGKYu
+itwAoKrO/g0S5nETSLnuZcIK4ohzqZ3i
+=INOr
+-----END PGP SIGNATURE-----
+
+--7uYPyRQQ5N0D02nI--
