@@ -1,49 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each
- policy
-Date: Fri, 22 Mar 2019 11:57:44 +0530
-Message-ID: <20190322062744.efpl4itnqtny7txf@vireshk-i7>
-References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
- <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] Auto-promotion logic for cpuidle states
+Date: Fri, 22 Mar 2019 02:29:40 -0500
+Message-ID: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-03-19, 16:49, Thomas Gleixner wrote:
-> On Wed, 20 Mar 2019, Viresh Kumar wrote:
-> >
-> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> > index 3fae23834069..b2fe665878f7 100644
-> > --- a/arch/x86/kernel/tsc.c
-> > +++ b/arch/x86/kernel/tsc.c
-> > @@ -958,10 +958,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> >  	struct cpufreq_freqs *freq = data;
-> >  	unsigned long *lpj;
-> >  
-> > +	if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1)) {
-> > +		mark_tsc_unstable("cpufreq changes: related CPUs affected");
-> > +		return 0;
-> > +	}
-> 
-> You might add a check which ensures that policy->cpu == smp_processor_id()
-> because if this is not the case ....
+Currently, the cpuidle governors (menu/ladder) determine what idle state a
+idling CPU should enter into based on heuristics that depend on the idle
+history on that CPU. Given that no predictive heuristic is perfect, there
+are cases where the governor predicts a shallow idle state, hoping that
+the CPU will be busy soon. However, if no new workload is scheduled on
+that CPU in the near future, the CPU will end up in the shallow state.
 
-How about something like this ?
+Motivation
+----------
+In case of POWER, this is problematic, when the predicted state in the
+aforementioned scenario is a lite stop state, as such lite states will
+inhibit SMT folding, thereby depriving the other threads in the core from
+using the core resources.
 
-	if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1 ||
-                         freq->policy->cpu != smp_processor_id())) {
-		mark_tsc_unstable("cpufreq changes: related CPUs affected");
-		return 0;
-	}
+To address this, such lite states need to be autopromoted. The cpuidle-core
+can queue timer to correspond with the residency value of the next
+available state. Thus leading to auto-promotion to a deeper idle state as
+soon as possible.
 
+Experiment
+----------
+Without this patch -
+It was seen that for a idle system, a cpu may remain in stop0_lite for few
+seconds and then directly goes to a deeper state such as stop2.
 
-Thanks for your feedback.
+With this patch -
+A cpu will not remain in stop0_lite for more than the residency of next
+available state, and thus it will go to a deeper state in conservative
+fashion. Using this, we may spent even less than 20 milliseconds if
+susbsequent stop states are enabled. In the worst case, we may end up
+spending more than a second, as was the case without this patch. The
+worst case will occur in the scenario when no other shallow states are
+enbaled, and only deep states are available for auto-promotion.
+
+Abhishek Goel (2):
+  cpuidle : auto-promotion for cpuidle states
+  cpuidle : Add auto-promotion flag to cpuidle flags
+
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/Kconfig             |  4 ++
+ drivers/cpuidle/cpuidle-powernv.c   | 13 ++++-
+ drivers/cpuidle/cpuidle.c           | 79 ++++++++++++++++++++++++++++-
+ drivers/cpuidle/governors/ladder.c  |  3 +-
+ drivers/cpuidle/governors/menu.c    | 23 ++++++++-
+ include/linux/cpuidle.h             | 12 +++--
+ 7 files changed, 127 insertions(+), 8 deletions(-)
 
 -- 
-viresh
+2.17.1
