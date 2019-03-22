@@ -1,63 +1,99 @@
-From: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH 0/2] Remove support for deprecated %pf and %pF in vsprintf
-Date: Fri, 22 Mar 2019 15:53:50 +0200
-Message-ID: <20190322135350.2btpno7vspvewxvk@paasikivi.fi.intel.com>
-References: <20190322132108.25501-1-sakari.ailus@linux.intel.com>
- <CAMuHMdVmqqjVx7As9AAywYxYXG=grijF5rF77OBn6TUjM9+xKw@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 1/2] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS
+ handling
+Date: Fri, 22 Mar 2019 15:28:28 +0100
+Message-ID: <20190322142828.GA12472@zn.tnic>
+References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
+ <1605148.8jT99SsvVP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdVmqqjVx7As9AAywYxYXG=grijF5rF77OBn6TUjM9+xKw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>, scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org" <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-um-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MMC List <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-f2fs-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sparclinux <sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, ceph-devel <ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux MM <linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org>, linux-btrfs <linux-btrfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lars Ellenberg <drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org>
+In-Reply-To: <1605148.8jT99SsvVP@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Hannes Reinecke <hare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
-
-On Fri, Mar 22, 2019 at 02:37:18PM +0100, Geert Uytterhoeven wrote:
-> Hi Sakari,
+On Thu, Mar 21, 2019 at 11:18:01PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> On Fri, Mar 22, 2019 at 2:25 PM Sakari Ailus
-> <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
-> > The printk family of functions supports %ps and %pS conversion specifiers
-> > to print function names. Yet the deprecated %pf and %pF conversion
-> > specifiers with equivalent functionality remain supported. A number of
-> > users of %pf and %pF remain.
-> >
-> > This patchsets converts the existing users of %pf and %pF to %ps and %pS,
-> > respectively, and removes support for the deprecated %pf and %pF.
-> >
-> > The patches apply cleanly both on 5.1-rc1 as well as on Linux-next. No new
-> > %pf or %pF users have been added in the meantime so the patch is
-> > sufficient as itself on linux-next, too.
+> The current handling of MSR_IA32_ENERGY_PERF_BIAS in the kernel is
+> problematic, because it may cause changes made by user space to that
+> MSR (with the help of the x86_energy_perf_policy tool, for example)
+
+One more reason to control MSR accesses from userspace. I'm working on
+a series to even completely forbid accesses to some MSRs over /dev/msr
+so I think accessing MSR_IA32_ENERGY_PERF_BIAS solely over the new
+interface in patch 2 would be much better.
+
+So, you're carrying those and you'd like to have an ACK from me?
+
+Btw, a couple of nitpicks below.
+
+> Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
+> @@ -0,0 +1,131 @@
+> +// SPDX-License-Identifier: GPL-2.0
+
+...
+
+> +static DEFINE_PER_CPU(u8, saved_epb);
+> +
+> +#define EPB_MASK	0x0fULL
+> +#define EPB_SAVED	0x10ULL
+> +
+> +static int intel_epb_save(void)
+
+I'd drop that "intel_epb_" prefix from those static functions, but your
+call...
+
+> +{
+> +	u64 epb;
+> +
+> +	rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> +	/*
+> +	 * Ensure that saved_epb will always be nonzero after this write even if
+> +	 * the EPB value read from the MSR is 0.
+> +	 */
+> +	this_cpu_write(saved_epb, (epb & EPB_MASK) | EPB_SAVED);
+> +
+> +	return 0;
+> +}
+
+...
+
+> Index: linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+> ===================================================================
+> --- /dev/null
+> +++ linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+
+WARNING: Missing or malformed SPDX-License-Identifier tag in line 1
+#345: FILE: Documentation/admin-guide/pm/intel_epb.rst:1:
++======================================
+
+> @@ -0,0 +1,6 @@
+> +======================================
+> +Intel Performance and Energy Bias Hint
+> +======================================
+> +
+> +.. kernel-doc:: arch/x86/kernel/cpu/intel_epb.c
+> +   :doc: overview
+> Index: linux-pm/Documentation/admin-guide/pm/working-state.rst
+> ===================================================================
+> --- linux-pm.orig/Documentation/admin-guide/pm/working-state.rst
+> +++ linux-pm/Documentation/admin-guide/pm/working-state.rst
+> @@ -8,3 +8,4 @@ Working-State Power Management
+>     cpuidle
+>     cpufreq
+>     intel_pstate
+> +   intel_epb
 > 
-> Do you know in which commit they became deprecated, so the backporters
-> know how far this can be backported safely?
-
-That appears to be 04b8eb7a4ccd
-("symbol lookup: introduce dereference_symbol_descriptor()"), the same
-patch that made %p[fF] and %p[sS] functionally equivalent.
-
-But my personal opinion would be not to backport the patch for two reasons:
-the sheer number of files it touches (those format strings change for
-various reasons) and the meager benefits it has on older kernels as any
-backported patch using %s or %S still works as such. Porting a patch
-forward should have no issues either as checkpatch.pl has been complaining
-of the use of %pf and %pF for a while now.
 
 -- 
-Kind regards,
+Regards/Gruss,
+    Boris.
 
-Sakari Ailus
-sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Good mailing practices for 400: avoid top-posting and trim the reply.
