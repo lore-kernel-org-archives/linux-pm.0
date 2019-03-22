@@ -1,44 +1,28 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 2/2] cpufreq: intel_pstate: Also use cppc nominal_perf for base_frequency
-Date: Fri, 22 Mar 2019 15:45:20 -0700
-Message-ID: <20190322224520.6740-3-srinivas.pandruvada@linux.intel.com>
-References: <20190322224520.6740-1-srinivas.pandruvada@linux.intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 02/10] x86, olpc: Don't split string literals when fixing
+ up the DT
+Date: Sat, 23 Mar 2019 00:18:35 +0100 (CET)
+Message-ID: <alpine.DEB.2.21.1903230017190.2157@nanos.tec.linutronix.de>
+References: <20190310162419.11861-1-lkundrak@v3.sk> <20190310162419.11861-3-lkundrak@v3.sk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322224520.6740-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20190310162419.11861-3-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "4 . 20+" <stable@vger.kernel.org>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-ACPI specifications stat that if the "Guaranteed Performance Register" is
-not implemented, OSPM assumes guaranteed performance is always equal to
-nominal performance. So for invalid and unimplemented guaranteed
-performance register, use nominal performance as guaranteed performance.
+On Sun, 10 Mar 2019, Lubomir Rintel wrote:
 
-This change will fallback to nominal_perf when guranteed_perf is invalid.
-If nominal_perf is also invalid, then fallback to existing implementation,
-which is to read from HWP Capabilities MSR.
+Please use 'x86/platform/olpc:' as prefix in the subject.
 
-Fixes: 86d333a8cc7f ("cpufreq: intel_pstate: Add base_frequency attribute")
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: 4.20+ <stable@vger.kernel.org> # 4.20+
----
- drivers/cpufreq/intel_pstate.c | 3 +++
- 1 file changed, 3 insertions(+)
+> It was pointed out in a review, and checkpatch.pl complains about this.
+> Breaking it down into multiple ofw evaluations works just as well, and
+> perhaps even reads better.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 7b4b0a7ac68b..e16dea241c55 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -385,6 +385,9 @@ static int intel_pstate_get_cppc_guranteed(int cpu)
- 	if (ret)
- 		return ret;
- 
-+	if (!cppc_perf.guaranteed_perf)
-+		return cppc_perf.nominal_perf;
-+
- 	return cppc_perf.guaranteed_perf;
- }
- 
--- 
-2.17.2
+perhaps?
+
+Other than that:
+
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
