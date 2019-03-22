@@ -1,94 +1,49 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
-Date: Fri, 22 Mar 2019 01:25:30 -0500
-Message-ID: <20190322062530.7586-3-huntbag@linux.vnet.ibm.com>
-References: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each
+ policy
+Date: Fri, 22 Mar 2019 11:57:44 +0530
+Message-ID: <20190322062744.efpl4itnqtny7txf@vireshk-i7>
+References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
+ <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch sets up flags for the state which needs to be auto-promoted.
-For powernv systems, lite states do not even lose user context. That
-information has been used to set the flag for lite states.
+On 21-03-19, 16:49, Thomas Gleixner wrote:
+> On Wed, 20 Mar 2019, Viresh Kumar wrote:
+> >
+> > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> > index 3fae23834069..b2fe665878f7 100644
+> > --- a/arch/x86/kernel/tsc.c
+> > +++ b/arch/x86/kernel/tsc.c
+> > @@ -958,10 +958,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> >  	struct cpufreq_freqs *freq = data;
+> >  	unsigned long *lpj;
+> >  
+> > +	if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1)) {
+> > +		mark_tsc_unstable("cpufreq changes: related CPUs affected");
+> > +		return 0;
+> > +	}
+> 
+> You might add a check which ensures that policy->cpu == smp_processor_id()
+> because if this is not the case ....
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/Kconfig             |  4 ++++
- drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+How about something like this ?
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7e48eb5bf..0ece62684 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -26,6 +26,10 @@ config CPU_IDLE_GOV_MENU
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_AUTO_PROMOTION
-+	bool
-+	default y if PPC_POWERNV
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..e351f5f9c 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states & !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_AUTO_PROMOTION,
-+					  stop_loop, target_residency,
-+					  exit_latency, state->psscr_val,
-+					  state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
--					  state->psscr_val,
--					  state->psscr_mask);
-+					  state->psscr_val, state->psscr_mask);
- 		}
- 
- 		/*
+	if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1 ||
+                         freq->policy->cpu != smp_processor_id())) {
+		mark_tsc_unstable("cpufreq changes: related CPUs affected");
+		return 0;
+	}
+
+
+Thanks for your feedback.
+
 -- 
-2.17.1
+viresh
