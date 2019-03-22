@@ -1,49 +1,44 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/2] ACPI / CPPC: Fix processing for guaranteed performance
-Date: Fri, 22 Mar 2019 15:45:19 -0700
-Message-ID: <20190322224520.6740-2-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: Also use cppc nominal_perf for base_frequency
+Date: Fri, 22 Mar 2019 15:45:20 -0700
+Message-ID: <20190322224520.6740-3-srinivas.pandruvada@linux.intel.com>
 References: <20190322224520.6740-1-srinivas.pandruvada@linux.intel.com>
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190322224520.6740-1-srinivas.pandruvada@linux.intel.com>
-Sender: stable-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "4 . 20+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-As per ACPI specification "Guaranteed Performance Register" is a "Buffer"
-field. It can't be "Integer" field. So treat "Integer" type as invalid and
-ignore "Guaranteed Performance Register".
-Also save one cpc_read() call, when "Guaranteed Performance Register" is
-not present, which means register defined as:
-"Register(SystemMemory, 0, 0, 0, 0)".
+ACPI specifications stat that if the "Guaranteed Performance Register" is
+not implemented, OSPM assumes guaranteed performance is always equal to
+nominal performance. So for invalid and unimplemented guaranteed
+performance register, use nominal performance as guaranteed performance.
 
-Fixes: 29523f095397 ("ACPI / CPPC: Add support for guaranteed performance")
+This change will fallback to nominal_perf when guranteed_perf is invalid.
+If nominal_perf is also invalid, then fallback to existing implementation,
+which is to read from HWP Capabilities MSR.
+
+Fixes: 86d333a8cc7f ("cpufreq: intel_pstate: Add base_frequency attribute")
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: 4.20+ <stable@vger.kernel.org> # 4.20+
 ---
- drivers/acpi/cppc_acpi.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 1b207fca1420..3f6c290e06af 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1150,8 +1150,14 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 	cpc_read(cpunum, nominal_reg, &nom);
- 	perf_caps->nominal_perf = nom;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 7b4b0a7ac68b..e16dea241c55 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -385,6 +385,9 @@ static int intel_pstate_get_cppc_guranteed(int cpu)
+ 	if (ret)
+ 		return ret;
  
--	cpc_read(cpunum, guaranteed_reg, &guaranteed);
--	perf_caps->guaranteed_perf = guaranteed;
-+	if (guaranteed_reg->type == ACPI_TYPE_INTEGER  ||
-+	    (guaranteed_reg->type == ACPI_TYPE_BUFFER &&
-+	     IS_NULL_REG(&guaranteed_reg->cpc_entry.reg))) {
-+		perf_caps->guaranteed_perf = 0;
-+	} else {
-+		cpc_read(cpunum, guaranteed_reg, &guaranteed);
-+		perf_caps->guaranteed_perf = guaranteed;
-+	}
++	if (!cppc_perf.guaranteed_perf)
++		return cppc_perf.nominal_perf;
++
+ 	return cppc_perf.guaranteed_perf;
+ }
  
- 	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
- 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
 -- 
 2.17.2
