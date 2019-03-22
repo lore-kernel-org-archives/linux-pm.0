@@ -1,60 +1,74 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RESEND PATCH v6 03/11] dt-bindings: leds: add DT bindings for
- max77650
-Date: Fri, 22 Mar 2019 10:02:09 +0100
-Message-ID: <20190322090208.GF27015@amd>
-References: <20190318174040.17899-1-brgl@bgdev.pl>
- <20190318174040.17899-4-brgl@bgdev.pl>
+From: Hannes Reinecke <hare@suse.de>
+Subject: Re: [PATCH 1/2] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS
+ handling
+Date: Fri, 22 Mar 2019 10:03:31 +0100
+Message-ID: <0754bf38-319e-f1a7-1ae6-fe2de548b882@suse.de>
+References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
+ <1605148.8jT99SsvVP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="bGR76rFJjkSxVeRa"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190318174040.17899-4-brgl@bgdev.pl>
+In-Reply-To: <1605148.8jT99SsvVP@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Rob Herring <robh@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86 <x86@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
+On 3/21/19 11:18 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The current handling of MSR_IA32_ENERGY_PERF_BIAS in the kernel is
+> problematic, because it may cause changes made by user space to that
+> MSR (with the help of the x86_energy_perf_policy tool, for example)
+> to be lost every time a CPU goes offline and then back online as well
+> as during system-wide power management transitions into sleep states
+> and back into the working state.
+> 
+> The first problem is that if the current EPB value for a CPU going
+> online is 0 ('performance'), the kernel will change it to 6 ('normal')
+> regardless of whether or not this is the first bring-up of that CPU.
+> That also happens during system-wide resume from sleep states
+> (including, but not limited to, hibernation).  However, the EPB may
+> have been adjusted by user space this way and the kernel should not
+> blindly override that setting.
+> 
+> The second problem is that if the platform firmware resets the EPB
+> values for any CPUs during system-wide resume from a sleep state,
+> the kernel will not restore their previous EPB values that may
+> have been set by user space before the preceding system-wide
+> suspend transition.  Again, that behavior may at least be confusing
+> from the user space perspective.
+> 
+> In order to address these issues, rework the handling of
+> MSR_IA32_ENERGY_PERF_BIAS so that the EPB value is saved on CPU
+> offline and restored on CPU online as well as (for the boot CPU)
+> during the syscore stages of system-wide suspend and resume
+> transitions, respectively.
+> 
+> However, retain the policy by which the EPB is set to 6 ('normal')
+> on the first bring-up of each CPU if its initial value is 0, based
+> on the observation that 0 may mean 'not initialized' just as well as
+> 'performance' in that case.
+> 
+> While at it, move the MSR_IA32_ENERGY_PERF_BIAS handling code into
+> a separate file and document it in Documentation/admin-guide.
+> 
+> Fixes: abe48b108247 (x86, intel, power: Initialize MSR_IA32_ENERGY_PERF_BIAS)
+> Fixes: b51ef52df71c (x86/cpu: Restore MSR_IA32_ENERGY_PERF_BIAS after resume)
+> Reported-by: Thomas Renninger <trenn@suse.de>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+Reviewed-by: Hannes Reinecke <hare@suse.com>
 
---bGR76rFJjkSxVeRa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cheers,
 
-On Mon 2019-03-18 18:40:32, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->=20
-> Add the DT binding document for the LEDs module of max77650.
->=20
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-> +		led@0 {
-> +			reg =3D <0>;
-> +			label =3D "blue:usr0";
-> +		};
-
-I'd rather not see these "usrX" things... Does it have some kind of
-real function?
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---bGR76rFJjkSxVeRa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlyUpJAACgkQMOfwapXb+vKDNACeNJqMgPx8GGv3sxEzok7QIZW0
-W1cAoI/kzBWIF4PObkvTiq9NUIiOu90c
-=8ecR
------END PGP SIGNATURE-----
-
---bGR76rFJjkSxVeRa--
+Hannes
+-- 
+Dr. Hannes Reinecke		   Teamlead Storage & Networking
+hare@suse.de			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Felix Imendörffer, Mary Higgins, Sri Rasiah
+HRB 21284 (AG Nürnberg)
