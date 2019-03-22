@@ -1,68 +1,46 @@
-From: "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-Subject: [PATCH 2/6] acpi/cppc: Modify show_cppc_data macro
-Date: Fri, 22 Mar 2019 20:26:00 +0000
-Message-ID: <5b049c67394c96a21f561399e577ff5dbf1fa0a4.1553285718.git.Janakarajan.Natarajan@amd.com>
-References: <cover.1553285718.git.Janakarajan.Natarajan@amd.com>
+From: Mike Rapoport <rppt-tEXmvtCZX7AybS5Ee8rs3A@public.gmane.org>
+Subject: Re: [PATCH 1/2] treewide: Switch printk users from %pf and %pF to
+ %ps and %pS, respectively
+Date: Fri, 22 Mar 2019 23:30:34 +0200
+Message-ID: <20190322213034.GA9303@rapoport-lnx>
+References: <20190322132108.25501-1-sakari.ailus@linux.intel.com>
+ <20190322132108.25501-2-sakari.ailus@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1553285718.git.Janakarajan.Natarajan@amd.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>, "Ghannam, Yazen" <Yazen.Ghannam@amd.com>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20190322132108.25501-2-sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-um-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-f2fs-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-btrfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Yazen Ghannam <Yazen.Ghannam@amd.com>
+On Fri, Mar 22, 2019 at 03:21:07PM +0200, Sakari Ailus wrote:
+> %pF and %pf are functionally equivalent to %pS and %ps conversion
+> specifiers. The former are deprecated, therefore switch the current users
+> to use the preferred variant.
+> 
+> The changes have been produced by the following command:
+> 
+> 	git grep -l '%p[fF]' | grep -v '^\(tools\|Documentation\)/' | \
+> 	while read i; do perl -i -pe 's/%pf/%ps/g; s/%pF/%pS/g;' $i; done
+> 
+> And verifying the result.
+> 
+> Signed-off-by: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> ---
 
-The show_cppc_data macro implicity uses define_one_cppc_ro. This will
-prevent the creation of an attribute with read and write permissions.
+For
 
-Create a separate macro that defines a show attribute and creates
-a read-only sysfs entry. This is in preparation for adding a macro
-to create sysfs entries with read+write permission.
+>  mm/memblock.c                           | 12 ++++++------
 
-Signed-off-by: Yazen Ghannam <Yazen.Ghannam@amd.com>
-[ carved out into a patch, cleaned up, productized ]
-Signed-off-by: Janakarajan Natarajan <Janakarajan.Natarajan@amd.com>
----
- drivers/acpi/cppc_acpi.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 66fad270376c..9daeb0b034d5 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -151,17 +151,20 @@ __ATTR(_name, 0444, show_##_name, NULL)
- 		return scnprintf(buf, PAGE_SIZE, "%llu\n",		\
- 				(u64)st_name.member_name);		\
- 	}								\
-+
-+#define show_cppc_data_ro(access_fn, struct_name, member_name)		\
-+	show_cppc_data(access_fn, struct_name, member_name)		\
- 	define_one_cppc_ro(member_name)
-=20
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, highest_perf);
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, lowest_perf);
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, nominal_perf);
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, lowest_nonlinear_perf);
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, lowest_freq);
--show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, nominal_freq);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, highest_perf);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, lowest_perf);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, nominal_perf);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, lowest_nonlinear_per=
-f);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, lowest_freq);
-+show_cppc_data_ro(cppc_get_perf_caps, cppc_perf_caps, nominal_freq);
-=20
--show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, reference_perf);
--show_cppc_data(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, wraparound_time);
-+show_cppc_data_ro(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, reference_perf);
-+show_cppc_data_ro(cppc_get_perf_ctrs, cppc_perf_fb_ctrs, wraparound_time);
-=20
- static ssize_t show_feedback_ctrs(struct kobject *kobj,
- 		struct attribute *attr, char *buf)
---=20
-2.17.1
+Acked-by: Mike Rapoport <rppt-tEXmvtCZX7AybS5Ee8rs3A@public.gmane.org>
