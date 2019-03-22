@@ -1,7 +1,7 @@
 From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] cpuidle : auto-promotion for cpuidle states
-Date: Fri, 22 Mar 2019 01:25:29 -0500
-Message-ID: <20190322062530.7586-2-huntbag@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
+Date: Fri, 22 Mar 2019 01:25:30 -0500
+Message-ID: <20190322062530.7586-3-huntbag@linux.vnet.ibm.com>
 References: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
@@ -10,43 +10,85 @@ To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.k
 Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, the cpuidle governors (menu /ladder) determine what idle state
-an idling CPU should enter into based on heuristics that depend on the
-idle history on that CPU. Given that no predictive heuristic is perfect,
-there are cases where the governor predicts a shallow idle state, hoping
-that the CPU will be busy soon. However, if no new workload is scheduled
-on that CPU in the near future, the CPU will end up in the shallow state.
-
-In case of POWER, this is problematic, when the predicted state in the
-aforementioned scenario is a lite stop state, as such lite states will
-inhibit SMT folding, thereby depriving the other threads in the core from
-using the core resources.
-
-To address this, such lite states need to be autopromoted. The cpuidle-
-core can queue timer to correspond with the residency value of the next
-available state. Thus leading to auto-promotion to a deeper idle state as
-soon as possible.
+This patch sets up flags for the state which needs to be auto-promoted.
+For powernv systems, lite states do not even lose user context. That
+information has been used to set the flag for lite states.
 
 Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle.c | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/Kconfig             |  4 ++++
+ drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 2406e2655..c4d1c1b38 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -584,11 +584,8 @@ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b23..735dec731 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -226,6 +226,7 @@
+  */
  
- static void __cpuidle_device_init(struct cpuidle_device *dev)
- {
--	int i;
- 	memset(dev->states_usage, 0, sizeof(dev->states_usage));
- 	dev->last_residency = 0;
--	for (i = 0; i < CPUIDLE_STATE_MAX; i++)
--               dev->states_usage[i].disable = true;
- }
+ #define OPAL_PM_TIMEBASE_STOP		0x00000002
++#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
+ #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
+ #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
+ #define OPAL_PM_NAP_ENABLED		0x00010000
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index 7e48eb5bf..0ece62684 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -26,6 +26,10 @@ config CPU_IDLE_GOV_MENU
+ config DT_IDLE_STATES
+ 	bool
  
- /**
++config CPU_IDLE_AUTO_PROMOTION
++	bool
++	default y if PPC_POWERNV
++
+ menu "ARM CPU Idle Drivers"
+ depends on ARM || ARM64
+ source "drivers/cpuidle/Kconfig.arm"
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 84b1ebe21..e351f5f9c 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 		unsigned int exit_latency, target_residency;
+ 		bool stops_timebase = false;
++		bool lose_user_context = false;
+ 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
+ 
+ 		/*
+@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
+ 		if (has_stop_states && !(state->valid))
+ 				continue;
+ 
++		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
++			lose_user_context = true;
++
+ 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
+ 			stops_timebase = true;
+ 
+@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
+ 			add_powernv_state(nr_idle_states, "Nap",
+ 					  CPUIDLE_FLAG_NONE, nap_loop,
+ 					  target_residency, exit_latency, 0, 0);
++		} else if (has_stop_states & !lose_user_context) {
++			add_powernv_state(nr_idle_states, state->name,
++					  CPUIDLE_FLAG_AUTO_PROMOTION,
++					  stop_loop, target_residency,
++					  exit_latency, state->psscr_val,
++					  state->psscr_mask);
+ 		} else if (has_stop_states && !stops_timebase) {
+ 			add_powernv_state(nr_idle_states, state->name,
+ 					  CPUIDLE_FLAG_NONE, stop_loop,
+ 					  target_residency, exit_latency,
+-					  state->psscr_val,
+-					  state->psscr_mask);
++					  state->psscr_val, state->psscr_mask);
+ 		}
+ 
+ 		/*
 -- 
 2.17.1
