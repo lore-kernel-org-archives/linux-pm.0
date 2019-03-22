@@ -1,60 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each policy
-Date: Fri, 22 Mar 2019 10:55:59 +0100
-Message-ID: <CAJZ5v0jN-TqFSXRweqhv8rnJni1r8awMjiAVNbn3RuBhLS1yvA@mail.gmail.com>
-References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
- <alpine.DEB.2.21.1903211645100.1784@nanos.tec.linutronix.de> <20190322062744.efpl4itnqtny7txf@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 0/5] drivers: firmware: psci: Some cleanup and refactoring
+Date: Fri, 22 Mar 2019 10:58:14 +0100
+Message-ID: <CAPDyKFoRM=2F5SubRL6+_uq_B3hO6eDeverhh5W2NShSn3X0Kg@mail.gmail.com>
+References: <20190313083659.7100-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322062744.efpl4itnqtny7txf@vireshk-i7>
+In-Reply-To: <20190313083659.7100-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lina Iyer <ilina@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 22, 2019 at 7:28 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Wed, 13 Mar 2019 at 09:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> On 21-03-19, 16:49, Thomas Gleixner wrote:
-> > On Wed, 20 Mar 2019, Viresh Kumar wrote:
-> > >
-> > > diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> > > index 3fae23834069..b2fe665878f7 100644
-> > > --- a/arch/x86/kernel/tsc.c
-> > > +++ b/arch/x86/kernel/tsc.c
-> > > @@ -958,10 +958,15 @@ static int time_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> > >     struct cpufreq_freqs *freq = data;
-> > >     unsigned long *lpj;
-> > >
-> > > +   if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1)) {
-> > > +           mark_tsc_unstable("cpufreq changes: related CPUs affected");
-> > > +           return 0;
-> > > +   }
-> >
-> > You might add a check which ensures that policy->cpu == smp_processor_id()
-> > because if this is not the case ....
+> Changes in v2:
+>         - Drop two patches from the series.
+>         - Added acks and other tags, no other changes.
 >
-> How about something like this ?
+> All of these patches have been sent earlier, but part of a bigger series [1].
+> Instead of waiting for that series to get reviewed and accepted, I have split
+> it up, such that these trivial independent cleanups can go in as a first step.
 >
->         if (WARN_ON_ONCE(cpumask_weight(freq->policy->related_cpus) != 1 ||
->                          freq->policy->cpu != smp_processor_id())) {
->                 mark_tsc_unstable("cpufreq changes: related CPUs affected");
->                 return 0;
->         }
+> The only intentional function change, should be the last patch, where we start
+> checking if PSCI OSI mode is supported in the PSCI FW and print a message about
+> it, as that is quite useful information for the user/developer.
 >
->
-> Thanks for your feedback.
+> Rafael, discussions between me and Lorenzo for v1 concluded that these are ready
+> to be queued for v5.2 - and if possible, we would like this to go via your
+> linux-pm tree. Can you please pick it up?
 
-Peter suggested something like this IIRC.
+Rafael, would you mind picking this up?
 
-Anyway, I'm still concerned that this approach in general
-fundamentally doesn't work on SMP with frequency synchronization,
-which is the case for the platforms affected by the problem it
-attempts to overcome.
+Kind regards
+Uffe
 
-The frequency has just been changed on one CPU, presumably to the
-requested value (so this cannot work when turbo is enabled anyway),
-but then it also has changed for all of the other CPUs in the system
-(or at least in the package), so it is not sufficient to update the
-single CPU here as it is only a messenger, so to speak.  However,
-updating the other CPUs from here would be fundamentally racy AFAICS.
+>
+> Kind regards
+> Ulf Hansson
+>
+> [1]
+> https://lkml.org/lkml/2018/11/29/1801
+>
+> Ulf Hansson (5):
+>   drivers: firmware: psci: Move psci to separate directory
+>   MAINTAINERS: Update files for PSCI
+>   drivers: firmware: psci: Split psci_dt_cpu_init_idle()
+>   drivers: firmware: psci: Simplify error path of psci_dt_init()
+>   drivers: firmware: psci: Announce support for OS initiated suspend
+>     mode
+>
+>  MAINTAINERS                                |  2 +-
+>  drivers/firmware/Kconfig                   | 15 +---
+>  drivers/firmware/Makefile                  |  3 +-
+>  drivers/firmware/psci/Kconfig              | 13 ++++
+>  drivers/firmware/psci/Makefile             |  4 +
+>  drivers/firmware/{ => psci}/psci.c         | 86 +++++++++++++---------
+>  drivers/firmware/{ => psci}/psci_checker.c |  0
+>  include/uapi/linux/psci.h                  |  5 ++
+>  8 files changed, 78 insertions(+), 50 deletions(-)
+>  create mode 100644 drivers/firmware/psci/Kconfig
+>  create mode 100644 drivers/firmware/psci/Makefile
+>  rename drivers/firmware/{ => psci}/psci.c (93%)
+>  rename drivers/firmware/{ => psci}/psci_checker.c (100%)
+>
+> --
+> 2.17.1
+>
