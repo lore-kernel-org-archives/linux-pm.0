@@ -1,34 +1,24 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 0/2] Remove support for deprecated %pf and %pF in vsprintf
-Date: Fri, 22 Mar 2019 19:05:50 +0200
-Message-ID: <20190322170550.GX9224@smile.fi.intel.com>
-References: <20190322132108.25501-1-sakari.ailus@linux.intel.com>
- <CAMuHMdVmqqjVx7As9AAywYxYXG=grijF5rF77OBn6TUjM9+xKw@mail.gmail.com>
- <20190322135350.2btpno7vspvewxvk@paasikivi.fi.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: pr-tracker-bot@kernel.org
+Subject: Re: [GIT PULL] Power management fixes for v5.1-rc2
+Date: Fri, 22 Mar 2019 19:15:11 +0000
+Message-ID: <155328211117.18163.5686802326510454962.pr-tracker-bot@kernel.org>
+References: <CAJZ5v0gTJn9fdpM_y2wL=y0vqGeJhvLKzoD_BfNj-yNkmepBnw@mail.gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190322135350.2btpno7vspvewxvk@paasikivi.fi.intel.com>
+In-Reply-To: <CAJZ5v0gTJn9fdpM_y2wL=y0vqGeJhvLKzoD_BfNj-yNkmepBnw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sakari Ailus <sakari.ailus@linux.intel.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Petr Mladek <pmladek@suse.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux MMC List <linux-mmc@vger.kernel.org>, "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>, linux-um@lists.infradead.org, linux-f2fs-devel@lists.sourceforge.net, linux-block@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, netdev <netdev@vger.kernel.org>, linux-btrfs <linux-btrfs@vger.kernel.org>, linux-pci <linux-pci@vger.kernel.org>, sparclinux <sparclinux@vger.kernel.org>, xen-devel@lists.xenproject.org, ceph-devel <ceph-devel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux ARM <linux-arm-kernel@l>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 22, 2019 at 03:53:50PM +0200, Sakari Ailus wrote:
+The pull request you sent on Fri, 22 Mar 2019 11:25:39 +0100:
 
-> Porting a patch
-> forward should have no issues either as checkpatch.pl has been complaining
-> of the use of %pf and %pF for a while now.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.1-rc2
 
-And that's exactly the reason why I think instead of removing warning on
-checkpatch, it makes sense to convert to an error for a while. People are
-tending read documentation on internet and thus might have outdated one. And
-yes, the compiler doesn't tell a thing about it.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/b44290a022dcffb5ca3b75300e571fad06214bc7
 
-P.S. Though, if majority of people will tell that I'm wrong, then it's okay to
-remove.
+Thank you!
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
