@@ -1,60 +1,84 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 04/10] x86, olpc: Use a correct version when making up
- a battery node
-Date: Sat, 23 Mar 2019 00:25:58 +0100 (CET)
-Message-ID: <alpine.DEB.2.21.1903230020270.2157@nanos.tec.linutronix.de>
-References: <20190310162419.11861-1-lkundrak@v3.sk> <20190310162419.11861-5-lkundrak@v3.sk>
+From: Artur Rojek <contact@artur-rojek.eu>
+Subject: [PATCH v2 1/4] iio: inkern: API for reading available iio channel attribute values
+Date: Sat, 23 Mar 2019 18:28:06 +0100
+Message-ID: <20190323172809.14407-1-contact@artur-rojek.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190310162419.11861-5-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+To: Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 10 Mar 2019, Lubomir Rintel wrote:
+Extend the inkern API with a function for reading available
+attribute values of iio channels.
 
-Subject prefix ...
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+---
 
-> The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-> ambient temperature. We need to use a different compatible string for the
-> XO-1.5 battery.
-> 
-> Previously olpc_dt_fixup() used the presence od the battery node's
+Changes:
 
-s/od/of/
+v2: no change
 
->  
-> +int olpc_dt_compatible_match(phandle node, const char *compat)
-> +{
-> +	char buf[64];
-> +	int plen;
-> +	char *p;
-> +	int len;
+ drivers/iio/inkern.c         | 20 ++++++++++++++++++++
+ include/linux/iio/consumer.h | 14 ++++++++++++++
+ 2 files changed, 34 insertions(+)
 
-Please coalesce variables of the same type. No point in wasting space.
-
-	char buf[64], *p;
-	int plen, len;
-
-Hmm?
-
-> +
-> +		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-> +			/* If we have a olpc,xo1-battery compatible, then we're
-> +			 * running a new enough firmware that already has
-> +			 * the dcon node.
-> +			 */
-
-Comment style:
-
-       		 	 /*
-			  * This is a proper multi line comment even
-			  * if networking people use that horrible style
-			  * above.
-			  */
-
-With those nitpicks fixed:
-
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
+index 06ca3f7fcc44..f19dbde3c945 100644
+--- a/drivers/iio/inkern.c
++++ b/drivers/iio/inkern.c
+@@ -733,6 +733,26 @@ static int iio_channel_read_avail(struct iio_channel *chan,
+ 						 vals, type, length, info);
+ }
+ 
++int iio_read_avail_channel_attribute(struct iio_channel *chan,
++				     const int **vals, int *type, int *length,
++				     enum iio_chan_info_enum attribute)
++{
++	int ret;
++
++	mutex_lock(&chan->indio_dev->info_exist_lock);
++	if (!chan->indio_dev->info) {
++		ret = -ENODEV;
++		goto err_unlock;
++	}
++
++	ret = iio_channel_read_avail(chan, vals, type, length, attribute);
++err_unlock:
++	mutex_unlock(&chan->indio_dev->info_exist_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(iio_read_avail_channel_attribute);
++
+ int iio_read_avail_channel_raw(struct iio_channel *chan,
+ 			       const int **vals, int *length)
+ {
+diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
+index 9887f4f8e2a8..b2d34831ed7c 100644
+--- a/include/linux/iio/consumer.h
++++ b/include/linux/iio/consumer.h
+@@ -290,6 +290,20 @@ int iio_read_max_channel_raw(struct iio_channel *chan, int *val);
+ int iio_read_avail_channel_raw(struct iio_channel *chan,
+ 			       const int **vals, int *length);
+ 
++/**
++ * iio_read_avail_channel_attribute() - read available channel attribute values
++ * @chan:		The channel being queried.
++ * @vals:		Available values read back.
++ * @type:		Type of values read back.
++ * @length:		Number of entries in vals.
++ * @attribute:		info attribute to be read back.
++ *
++ * Returns an error code, IIO_AVAIL_RANGE or IIO_AVAIL_LIST.
++ */
++int iio_read_avail_channel_attribute(struct iio_channel *chan,
++				     const int **vals, int *type, int *length,
++				     enum iio_chan_info_enum attribute);
++
+ /**
+  * iio_get_channel_type() - get the type of a channel
+  * @channel:		The channel being queried.
+-- 
+2.21.0
