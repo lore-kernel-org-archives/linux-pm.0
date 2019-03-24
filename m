@@ -1,277 +1,220 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery
- driver.
-Date: Sun, 24 Mar 2019 15:31:37 +0000
-Message-ID: <20190324153137.04857cdf@archlinux>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
-        <20190323172809.14407-4-contact@artur-rojek.eu>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/3] genirq/timings: Add array suffix computation code
+Date: Sun, 24 Mar 2019 18:44:41 +0100 (CET)
+Message-ID: <alpine.DEB.2.21.1903241825210.1798@nanos.tec.linutronix.de>
+References: <20190308212047.28767-1-daniel.lezcano@linaro.org> <20190308212047.28767-3-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190323172809.14407-4-contact@artur-rojek.eu>
+In-Reply-To: <20190308212047.28767-3-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Artur Rojek <contact@artur-rojek.eu>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 23 Mar 2019 18:28:09 +0100
-Artur Rojek <contact@artur-rojek.eu> wrote:
+Daniel,
 
-> Add a driver for battery present on Ingenic JZ47xx SoCs.
+On Fri, 8 Mar 2019, Daniel Lezcano wrote:
+
+> The previous variance was discarding values from the timings when they
+> were considered as anomalies as stated by the normal law statistical
+> model.
 > 
-> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
-The IIO parts look fine to me.
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> However in the interrupt life, we can have multiple anomalies due to
+> the nature of the device generating the interrupts, and most of the
+> time we can observe a repeating pattern, that is particulary true for
+> network, console, MMC or SSD devices.
+> 
+> With the variance approach, we miss the patterns and we can only deal with the
+> interrupt coming in regular intervals.
+> 
+> After a long investigation, this patch provides the array suffixes
+> derived algorithm where we can detect regular and repeating patterns
+> interrupt events.
 
-Sebastian, assuming you are happy with this version, do you have any
-preference for how we handle this series?
+'This patch', 'we' .... Documentation/process/submitting-patches.rst :)
 
-Probably needs one of us to do an immutable branch with just this
-in it.  I'm happy to do so once all the relevant Acks etc are in
-place, but don't mind if you want to!
+> +#define EMA_ALPHA_VAL		64
+> +#define EMA_ALPHA_SHIFT		7
+> +
+> +#define PREDICTION_PERIOD_MIN	2
+> +#define PREDICTION_PERIOD_MAX	5
+> +#define PREDICTION_FACTOR	4
+> +#define PREDICTION_MAX		10 /* 2 ^ PREDICTION_MAX useconds */
+> +#define PREDICTION_BUFFER_SIZE	16 /* slots for EMAs, hardly more than 16 */
+> +
+> +struct irqt_stat {
+> +	u64	last_ts;
+> +	int	ema_time[PREDICTION_BUFFER_SIZE];
+> +	int	timings[IRQ_TIMINGS_SIZE];
+> +	int	circ_timings[IRQ_TIMINGS_SIZE];
+> +	int	count;
+> +};
+> +
+> +/*
+> + * Exponential moving average computation
+> + */
+> +static int irq_timings_ema_new(s64 value, s64 ema_old)
+
+There is a mixed bag of s64/u64 all over this code. Please stay
+consistent. We had enough sign confusion bugs in the past.
+
+> +{
+> +	if (likely(ema_old))
+> +		return ema_old + (((value - ema_old) * EMA_ALPHA_VAL) >>
+> +				  EMA_ALPHA_SHIFT);
+
+Eew. really.
+
+> +	return value;
+
+What's wrong with doing:
+
+	if (unlikely(!ema_old))
+		return value;
+
+	value = (value - ema_old) * EMA_ALPHA_VAL;
+	return ema_old + value >> EMA_ALPHA_SHIFT;
+
+Hmm? Becomes too readable, right?
+
+> +}
+> +
+> +static int irq_timings_next_event_index(int *buffer, size_t len, int period_max)
+> +{
+> +	int i;
+> +
+> +	for (i = period_max; i >= PREDICTION_PERIOD_MIN ; i--) {
+> +
+> +		int *begin = &buffer[len - (i * 3)];
+> +		int *ptr = begin;
+> +
+> +		while (!memcmp(ptr, begin, i * sizeof(*ptr))) {
+> +			ptr += i;
+> +			if (ptr >= &buffer[len])
+> +				return begin[((i * 3) % i)];
+> +		}
+
+Some comment for these magic loops might be helpful.
+
+> +	}
+> +
+> +	return -1;
+> +}
+> +
+> +static u64 __irq_timings_next_event(struct irqt_stat *irqs, int irq, u64 now)
+> +{
+> +	int index, i;
+> +	int period_max;
+> +	int count, start;
+> +	int min = INT_MAX;
+
+Please coalesce same type variables in one line.
+
+> +
+> +	if ((now - irqs->last_ts) >= NSEC_PER_SEC) {
+> +		irqs->count = irqs->last_ts = 0;
+> +		return U64_MAX;
+> +	}
+> +
+> +	period_max = irqs->count > (3 * PREDICTION_PERIOD_MAX) ?
+> +		PREDICTION_PERIOD_MAX : irqs->count / 3;
+> +
+> +	if (period_max <= PREDICTION_PERIOD_MIN)
+> +		return U64_MAX;
+
+The above lacks a comment as it's confusing the casual reader.
+
+> +
+> +	/*
+> +	 * 'count' will depends if the circular buffer wrapped or not
+> +	 */
+> +	count = irqs->count < IRQ_TIMINGS_SIZE ?
+> +		irqs->count : IRQ_TIMINGS_SIZE;
+> +
+> +	start = irqs->count < IRQ_TIMINGS_SIZE ?
+> +		0 : (irqs->count & IRQ_TIMINGS_MASK);
+> +
+> +	/*
+> +	 * Copy the content of the circular buffer into another buffer
+> +	 * in order to linearize the buffer instead of dealing with
+> +	 * wrapping indexes and shifted array which will be prone to
+> +	 * error and extremelly difficult to debug.
+> +	 */
+> +	for (i = 0; i < count; i++) {
+> +		irqs->timings[i] = irqs->circ_timings[(start + i) &
+> +						      IRQ_TIMINGS_MASK];
+
+Using helper variables increases readability by avoiding the ugly line
+breaks.
+
+> +		min = min_t(int, irqs->timings[i], min);
+> +	}
+> +
+> +	index = irq_timings_next_event_index(irqs->timings, count, period_max);
+> +	if (index < 0)
+> +		return irqs->last_ts + min;
+
+Again type mismatch. return u64 + int 
+
+> +
+> +	return irqs->last_ts + irqs->ema_time[index];
+> +}
+> +
+>  /**
+>   * irq_timings_next_event - Return when the next event is supposed to arrive
+>   *
+> @@ -61,6 +434,12 @@ void irq_timings_disable(void)
+>   */
+>  u64 irq_timings_next_event(u64 now)
+>  {
+> +	struct irq_timings *irqts = this_cpu_ptr(&irq_timings);
+> +	struct irqt_stat *irqs;
+> +	struct irqt_stat __percpu *s;
+> +	u64 ts, next_evt = U64_MAX;
+> +	int i, irq = 0;
+> +
+>  	/*
+>  	 * This function must be called with the local irq disabled in
+>  	 * order to prevent the timings circular buffer to be updated
+> @@ -68,7 +447,50 @@ u64 irq_timings_next_event(u64 now)
+>  	 */
+>  	lockdep_assert_irqs_disabled();
+>  
+> -	return 0;
+> +	if (!irqts->count)
+> +		return next_evt;
+> +
+> +	/*
+> +	 * Number of elements in the circular buffer: If it happens it
+> +	 * was flushed before, then the number of elements could be
+> +	 * smaller than IRQ_TIMINGS_SIZE, so the count is used,
+> +	 * otherwise the array size is used as we wrapped. The index
+> +	 * begins from zero when we did not wrap. That could be done
+> +	 * in a nicer way with the proper circular array structure
+> +	 * type but with the cost of extra computation in the
+> +	 * interrupt handler hot path. We choose efficiency.
+> +	 *
+> +	 * Inject measured irq/timestamp to the pattern prediction
+> +	 * model while decrementing the counter because we consume the
+> +	 * data from our circular buffer.
+> +	 */
+> +	for (i = (irqts->count & IRQ_TIMINGS_MASK) - 1,
+> +		     irqts->count = min(IRQ_TIMINGS_SIZE, irqts->count);
+> +	     irqts->count > 0; irqts->count--, i = (i + 1) & IRQ_TIMINGS_MASK) {
+
+Uuurgh, this is unparseable. The initialization of i and irqts->coint can
+move before the loop and then the rest becomes readable.
+
+> +
+> +		irq = irq_timing_decode(irqts->values[i], &ts);
+> +		s = idr_find(&irqt_stats, irq);
+> +		if (s)
+> +			irq_timings_store(irq, this_cpu_ptr(s), ts);
+> +	}
+
+Other than that this looks good to me. Nice work!
 
 Thanks,
 
-Jonathan
-
-> ---
-> 
-> Changes:
-> 
-> v2: - rework the return logic in ingenic_battery_get_property,
->     - make index offsets point forward in ingenic_battery_set_scale,
->     - fix spacing around scale_raw[best_idx + 1]
-> 
->  drivers/power/supply/Kconfig           |  11 ++
->  drivers/power/supply/Makefile          |   1 +
->  drivers/power/supply/ingenic-battery.c | 180 +++++++++++++++++++++++++
->  3 files changed, 192 insertions(+)
->  create mode 100644 drivers/power/supply/ingenic-battery.c
-> 
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index e901b9879e7e..9bfb1637ec28 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -169,6 +169,17 @@ config BATTERY_COLLIE
->  	  Say Y to enable support for the battery on the Sharp Zaurus
->  	  SL-5500 (collie) models.
->  
-> +config BATTERY_INGENIC
-> +	tristate "Ingenic JZ47xx SoCs battery driver"
-> +	depends on MIPS || COMPILE_TEST
-> +	depends on INGENIC_ADC
-> +	help
-> +	  Choose this option if you want to monitor battery status on
-> +	  Ingenic JZ47xx SoC based devices.
-> +
-> +	  This driver can also be built as a module. If so, the module will be
-> +	  called ingenic-battery.
-> +
->  config BATTERY_IPAQ_MICRO
->  	tristate "iPAQ Atmel Micro ASIC battery driver"
->  	depends on MFD_IPAQ_MICRO
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index b731c2a9b695..9e2c481d0187 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
->  obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
->  obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
->  obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
-> +obj-$(CONFIG_BATTERY_INGENIC)	+= ingenic-battery.o
->  obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
->  obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
->  obj-$(CONFIG_BATTERY_SBS)	+= sbs-battery.o
-> diff --git a/drivers/power/supply/ingenic-battery.c b/drivers/power/supply/ingenic-battery.c
-> new file mode 100644
-> index 000000000000..822aee1c7b64
-> --- /dev/null
-> +++ b/drivers/power/supply/ingenic-battery.c
-> @@ -0,0 +1,180 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Battery driver for the Ingenic JZ47xx SoCs
-> + * Copyright (c) 2019 Artur Rojek <contact@artur-rojek.eu>
-> + *
-> + * based on drivers/power/supply/jz4740-battery.c
-> + */
-> +
-> +#include <linux/iio/consumer.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/property.h>
-> +
-> +struct ingenic_battery {
-> +	struct device *dev;
-> +	struct iio_channel *channel;
-> +	struct power_supply_desc desc;
-> +	struct power_supply *battery;
-> +	struct power_supply_battery_info info;
-> +};
-> +
-> +static int ingenic_battery_get_property(struct power_supply *psy,
-> +					enum power_supply_property psp,
-> +					union power_supply_propval *val)
-> +{
-> +	struct ingenic_battery *bat = power_supply_get_drvdata(psy);
-> +	struct power_supply_battery_info *info = &bat->info;
-> +	int ret;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_HEALTH:
-> +		ret = iio_read_channel_processed(bat->channel, &val->intval);
-> +		val->intval *= 1000;
-> +		if (val->intval < info->voltage_min_design_uv)
-> +			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-> +		else if (val->intval > info->voltage_max_design_uv)
-> +			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> +		else
-> +			val->intval = POWER_SUPPLY_HEALTH_GOOD;
-> +		return ret;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		ret = iio_read_channel_processed(bat->channel, &val->intval);
-> +		val->intval *= 1000;
-> +		return ret;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-> +		val->intval = info->voltage_min_design_uv;
-> +		return 0;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-> +		val->intval = info->voltage_max_design_uv;
-> +		return 0;
-> +	default:
-> +		return -EINVAL;
-> +	};
-> +}
-> +
-> +/* Set the most appropriate IIO channel voltage reference scale
-> + * based on the battery's max voltage.
-> + */
-> +static int ingenic_battery_set_scale(struct ingenic_battery *bat)
-> +{
-> +	const int *scale_raw;
-> +	int scale_len, scale_type, best_idx = -1, best_mV, max_raw, i, ret;
-> +	u64 max_mV;
-> +
-> +	ret = iio_read_max_channel_raw(bat->channel, &max_raw);
-> +	if (ret) {
-> +		dev_err(bat->dev, "Unable to read max raw channel value\n");
-> +		return ret;
-> +	}
-> +
-> +	ret = iio_read_avail_channel_attribute(bat->channel, &scale_raw,
-> +					       &scale_type, &scale_len,
-> +					       IIO_CHAN_INFO_SCALE);
-> +	if (ret < 0) {
-> +		dev_err(bat->dev, "Unable to read channel avail scale\n");
-> +		return ret;
-> +	}
-> +	if (ret != IIO_AVAIL_LIST || scale_type != IIO_VAL_FRACTIONAL_LOG2)
-> +		return -EINVAL;
-> +
-> +	max_mV = bat->info.voltage_max_design_uv / 1000;
-> +
-> +	for (i = 0; i < scale_len; i += 2) {
-> +		u64 scale_mV = (max_raw * scale_raw[i]) >> scale_raw[i + 1];
-> +
-> +		if (scale_mV < max_mV)
-> +			continue;
-> +
-> +		if (best_idx >= 0 && scale_mV > best_mV)
-> +			continue;
-> +
-> +		best_mV = scale_mV;
-> +		best_idx = i;
-> +	}
-> +
-> +	if (best_idx < 0) {
-> +		dev_err(bat->dev, "Unable to find matching voltage scale\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return iio_write_channel_attribute(bat->channel,
-> +					   scale_raw[best_idx],
-> +					   scale_raw[best_idx + 1],
-> +					   IIO_CHAN_INFO_SCALE);
-> +}
-> +
-> +static enum power_supply_property ingenic_battery_properties[] = {
-> +	POWER_SUPPLY_PROP_HEALTH,
-> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-> +};
-> +
-> +static int ingenic_battery_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct ingenic_battery *bat;
-> +	struct power_supply_config psy_cfg = {};
-> +	struct power_supply_desc *desc;
-> +	int ret;
-> +
-> +	bat = devm_kzalloc(dev, sizeof(*bat), GFP_KERNEL);
-> +	if (!bat)
-> +		return -ENOMEM;
-> +
-> +	bat->dev = dev;
-> +	bat->channel = devm_iio_channel_get(dev, "battery");
-> +	if (IS_ERR(bat->channel))
-> +		return PTR_ERR(bat->channel);
-> +
-> +	desc = &bat->desc;
-> +	desc->name = "jz-battery";
-> +	desc->type = POWER_SUPPLY_TYPE_BATTERY;
-> +	desc->properties = ingenic_battery_properties;
-> +	desc->num_properties = ARRAY_SIZE(ingenic_battery_properties);
-> +	desc->get_property = ingenic_battery_get_property;
-> +	psy_cfg.drv_data = bat;
-> +	psy_cfg.of_node = dev->of_node;
-> +
-> +	bat->battery = devm_power_supply_register(dev, desc, &psy_cfg);
-> +	if (IS_ERR(bat->battery)) {
-> +		dev_err(dev, "Unable to register battery\n");
-> +		return PTR_ERR(bat->battery);
-> +	}
-> +
-> +	ret = power_supply_get_battery_info(bat->battery, &bat->info);
-> +	if (ret) {
-> +		dev_err(dev, "Unable to get battery info: %d\n", ret);
-> +		return ret;
-> +	}
-> +	if (bat->info.voltage_min_design_uv < 0) {
-> +		dev_err(dev, "Unable to get voltage min design\n");
-> +		return bat->info.voltage_min_design_uv;
-> +	}
-> +	if (bat->info.voltage_max_design_uv < 0) {
-> +		dev_err(dev, "Unable to get voltage max design\n");
-> +		return bat->info.voltage_max_design_uv;
-> +	}
-> +
-> +	return ingenic_battery_set_scale(bat);
-> +}
-> +
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id ingenic_battery_of_match[] = {
-> +	{ .compatible = "ingenic,jz4740-battery", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, ingenic_battery_of_match);
-> +#endif
-> +
-> +static struct platform_driver ingenic_battery_driver = {
-> +	.driver = {
-> +		.name = "ingenic-battery",
-> +		.of_match_table = of_match_ptr(ingenic_battery_of_match),
-
-I guess we can be fairly sure no one will even user this with ACPI
-(magic DT) bindings?  That would make this a rare case where the
-of_match_pr protection and ifdef fun is still fine.
-
-
-> +	},
-> +	.probe = ingenic_battery_probe,
-> +};
-> +module_platform_driver(ingenic_battery_driver);
+	tglx
