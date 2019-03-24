@@ -1,253 +1,79 @@
-From: Artur Rojek <contact@artur-rojek.eu>
-Subject: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery driver.
-Date: Sat, 23 Mar 2019 18:28:09 +0100
-Message-ID: <20190323172809.14407-4-contact@artur-rojek.eu>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v5.1-rc2
+Date: Sun, 24 Mar 2019 18:28:03 +0800
+Message-ID: <1553423283.14989.6.camel@intel.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190323172809.14407-1-contact@artur-rojek.eu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a driver for battery present on Ingenic JZ47xx SoCs.
+Hi, Linus,
 
-Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
----
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-Changes:
+to receive the latest Thermal management updates for v5.1-rc2 with
+top-most commit 2d7c4e17811f766321b9c054609551fa40f0b445:
 
-v2: - rework the return logic in ingenic_battery_get_property,
-    - make index offsets point forward in ingenic_battery_set_scale,
-    - fix spacing around scale_raw[best_idx + 1]
+  Merge branches 'fixes' and 'thermal-intel' into next (2019-03-18
+22:37:44 +0800)
 
- drivers/power/supply/Kconfig           |  11 ++
- drivers/power/supply/Makefile          |   1 +
- drivers/power/supply/ingenic-battery.c | 180 +++++++++++++++++++++++++
- 3 files changed, 192 insertions(+)
- create mode 100644 drivers/power/supply/ingenic-battery.c
+on top of commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879e7e..9bfb1637ec28 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -169,6 +169,17 @@ config BATTERY_COLLIE
- 	  Say Y to enable support for the battery on the Sharp Zaurus
- 	  SL-5500 (collie) models.
- 
-+config BATTERY_INGENIC
-+	tristate "Ingenic JZ47xx SoCs battery driver"
-+	depends on MIPS || COMPILE_TEST
-+	depends on INGENIC_ADC
-+	help
-+	  Choose this option if you want to monitor battery status on
-+	  Ingenic JZ47xx SoC based devices.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called ingenic-battery.
-+
- config BATTERY_IPAQ_MICRO
- 	tristate "iPAQ Atmel Micro ASIC battery driver"
- 	depends on MFD_IPAQ_MICRO
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index b731c2a9b695..9e2c481d0187 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
- obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
- obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
- obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
-+obj-$(CONFIG_BATTERY_INGENIC)	+= ingenic-battery.o
- obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
- obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
- obj-$(CONFIG_BATTERY_SBS)	+= sbs-battery.o
-diff --git a/drivers/power/supply/ingenic-battery.c b/drivers/power/supply/ingenic-battery.c
-new file mode 100644
-index 000000000000..822aee1c7b64
---- /dev/null
-+++ b/drivers/power/supply/ingenic-battery.c
-@@ -0,0 +1,180 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Battery driver for the Ingenic JZ47xx SoCs
-+ * Copyright (c) 2019 Artur Rojek <contact@artur-rojek.eu>
-+ *
-+ * based on drivers/power/supply/jz4740-battery.c
-+ */
-+
-+#include <linux/iio/consumer.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/property.h>
-+
-+struct ingenic_battery {
-+	struct device *dev;
-+	struct iio_channel *channel;
-+	struct power_supply_desc desc;
-+	struct power_supply *battery;
-+	struct power_supply_battery_info info;
-+};
-+
-+static int ingenic_battery_get_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					union power_supply_propval *val)
-+{
-+	struct ingenic_battery *bat = power_supply_get_drvdata(psy);
-+	struct power_supply_battery_info *info = &bat->info;
-+	int ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = iio_read_channel_processed(bat->channel, &val->intval);
-+		val->intval *= 1000;
-+		if (val->intval < info->voltage_min_design_uv)
-+			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-+		else if (val->intval > info->voltage_max_design_uv)
-+			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		else
-+			val->intval = POWER_SUPPLY_HEALTH_GOOD;
-+		return ret;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = iio_read_channel_processed(bat->channel, &val->intval);
-+		val->intval *= 1000;
-+		return ret;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		val->intval = info->voltage_min_design_uv;
-+		return 0;
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		val->intval = info->voltage_max_design_uv;
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	};
-+}
-+
-+/* Set the most appropriate IIO channel voltage reference scale
-+ * based on the battery's max voltage.
-+ */
-+static int ingenic_battery_set_scale(struct ingenic_battery *bat)
-+{
-+	const int *scale_raw;
-+	int scale_len, scale_type, best_idx = -1, best_mV, max_raw, i, ret;
-+	u64 max_mV;
-+
-+	ret = iio_read_max_channel_raw(bat->channel, &max_raw);
-+	if (ret) {
-+		dev_err(bat->dev, "Unable to read max raw channel value\n");
-+		return ret;
-+	}
-+
-+	ret = iio_read_avail_channel_attribute(bat->channel, &scale_raw,
-+					       &scale_type, &scale_len,
-+					       IIO_CHAN_INFO_SCALE);
-+	if (ret < 0) {
-+		dev_err(bat->dev, "Unable to read channel avail scale\n");
-+		return ret;
-+	}
-+	if (ret != IIO_AVAIL_LIST || scale_type != IIO_VAL_FRACTIONAL_LOG2)
-+		return -EINVAL;
-+
-+	max_mV = bat->info.voltage_max_design_uv / 1000;
-+
-+	for (i = 0; i < scale_len; i += 2) {
-+		u64 scale_mV = (max_raw * scale_raw[i]) >> scale_raw[i + 1];
-+
-+		if (scale_mV < max_mV)
-+			continue;
-+
-+		if (best_idx >= 0 && scale_mV > best_mV)
-+			continue;
-+
-+		best_mV = scale_mV;
-+		best_idx = i;
-+	}
-+
-+	if (best_idx < 0) {
-+		dev_err(bat->dev, "Unable to find matching voltage scale\n");
-+		return -EINVAL;
-+	}
-+
-+	return iio_write_channel_attribute(bat->channel,
-+					   scale_raw[best_idx],
-+					   scale_raw[best_idx + 1],
-+					   IIO_CHAN_INFO_SCALE);
-+}
-+
-+static enum power_supply_property ingenic_battery_properties[] = {
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-+};
-+
-+static int ingenic_battery_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct ingenic_battery *bat;
-+	struct power_supply_config psy_cfg = {};
-+	struct power_supply_desc *desc;
-+	int ret;
-+
-+	bat = devm_kzalloc(dev, sizeof(*bat), GFP_KERNEL);
-+	if (!bat)
-+		return -ENOMEM;
-+
-+	bat->dev = dev;
-+	bat->channel = devm_iio_channel_get(dev, "battery");
-+	if (IS_ERR(bat->channel))
-+		return PTR_ERR(bat->channel);
-+
-+	desc = &bat->desc;
-+	desc->name = "jz-battery";
-+	desc->type = POWER_SUPPLY_TYPE_BATTERY;
-+	desc->properties = ingenic_battery_properties;
-+	desc->num_properties = ARRAY_SIZE(ingenic_battery_properties);
-+	desc->get_property = ingenic_battery_get_property;
-+	psy_cfg.drv_data = bat;
-+	psy_cfg.of_node = dev->of_node;
-+
-+	bat->battery = devm_power_supply_register(dev, desc, &psy_cfg);
-+	if (IS_ERR(bat->battery)) {
-+		dev_err(dev, "Unable to register battery\n");
-+		return PTR_ERR(bat->battery);
-+	}
-+
-+	ret = power_supply_get_battery_info(bat->battery, &bat->info);
-+	if (ret) {
-+		dev_err(dev, "Unable to get battery info: %d\n", ret);
-+		return ret;
-+	}
-+	if (bat->info.voltage_min_design_uv < 0) {
-+		dev_err(dev, "Unable to get voltage min design\n");
-+		return bat->info.voltage_min_design_uv;
-+	}
-+	if (bat->info.voltage_max_design_uv < 0) {
-+		dev_err(dev, "Unable to get voltage max design\n");
-+		return bat->info.voltage_max_design_uv;
-+	}
-+
-+	return ingenic_battery_set_scale(bat);
-+}
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id ingenic_battery_of_match[] = {
-+	{ .compatible = "ingenic,jz4740-battery", },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, ingenic_battery_of_match);
-+#endif
-+
-+static struct platform_driver ingenic_battery_driver = {
-+	.driver = {
-+		.name = "ingenic-battery",
-+		.of_match_table = of_match_ptr(ingenic_battery_of_match),
-+	},
-+	.probe = ingenic_battery_probe,
-+};
-+module_platform_driver(ingenic_battery_driver);
--- 
-2.21.0
+  Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
+
+Specifics:
+
+- Fix a wrong __percpu structure declaration in intel_powerclamp
+driver. (Luc Van Oostenryck)
+
+- Fix truncated name of the idle injection kthreads created by
+intel_powerclamp driver. (Zhang Rui)
+
+- Fix the missing UUID supports in int3400 thermal driver. (Matthew
+Garrett)
+
+- Fix a crash when accessing the debugfs of bcm2835 SoC thermal driver.
+(Phil Elwell)
+
+- A couple of trivial fixes/cleanups in some SoC thermal drivers.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Luc Van Oostenryck (1):
+      thermal/intel_powerclamp: fix __percpu declaration of worker_data
+
+Marek Szyprowski (1):
+      thermal: samsung: Fix incorrect check after code merge
+
+Matthew Garrett (2):
+      thermal/int340x_thermal: Add additional UUIDs
+      thermal/int340x_thermal: fix mode setting
+
+Phil Elwell (1):
+      thermal: bcm2835: Fix crash in bcm2835_thermal_debugfs
+
+Pi-Hsun Shih (1):
+      thermal: mtk: Allocate enough space for mtk_thermal.
+
+Shaokun Zhang (1):
+      thermal: cpu_cooling: Remove unused cur_freq variable
+
+Zhang Rui (2):
+      thermal/intel_powerclamp: fix truncated kthread name
+      Merge branches 'fixes' and 'thermal-intel' into next
+
+ drivers/thermal/broadcom/bcm2835_thermal.c          |  9 ++++-----
+ drivers/thermal/cpu_cooling.c                       |  3 +--
+ .../thermal/intel/int340x_thermal/int3400_thermal.c | 21
++++++++++++++++++----
+ drivers/thermal/intel/intel_powerclamp.c            |  4 ++--
+ drivers/thermal/mtk_thermal.c                       |  7 +++++--
+ drivers/thermal/samsung/exynos_tmu.c                |  2 +-
+ 6 files changed, 30 insertions(+), 16 deletions(-)
