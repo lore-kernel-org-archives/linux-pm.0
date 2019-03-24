@@ -1,62 +1,74 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2 2/4] iio: inkern: Convert iio_read_avail_channel_raw
- into a wrapper
-Date: Sun, 24 Mar 2019 15:27:50 +0000
-Message-ID: <20190324152750.43edf737@archlinux>
+Subject: Re: [PATCH v2 3/4] dt-bindings: power: supply: Add docs for Ingenic
+ JZ47xx SoCs battery.
+Date: Sun, 24 Mar 2019 15:30:18 +0000
+Message-ID: <20190324153018.2e4011c9@archlinux>
 References: <20190323172809.14407-1-contact@artur-rojek.eu>
-        <20190323172809.14407-2-contact@artur-rojek.eu>
+        <20190323172809.14407-3-contact@artur-rojek.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190323172809.14407-2-contact@artur-rojek.eu>
+In-Reply-To: <20190323172809.14407-3-contact@artur-rojek.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Artur Rojek <contact@artur-rojek.eu>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 23 Mar 2019 18:28:07 +0100
+On Sat, 23 Mar 2019 18:28:08 +0100
 Artur Rojek <contact@artur-rojek.eu> wrote:
 
-> Convert "iio_read_avail_channel_raw" over to a wrapper around
-> "iio_read_avail_channel_attribute".
-> 
-> With the introduction of "iio_read_avail_channel_attribute",
-> the necessity of having a separate call to read raw channel values
-> became redundant.
+> Add documentation for the ingenic-battery driver, used on JZ47xx SoCs.
 > 
 > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+Looks fine to me.
+
 Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 > ---
 > 
 > Changes:
 > 
-> v2: new patch
+> v2: no change
 > 
->  drivers/iio/inkern.c | 12 ++----------
->  1 file changed, 2 insertions(+), 10 deletions(-)
+>  .../bindings/power/supply/ingenic,battery.txt | 31 +++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
 > 
-> diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
-> index f19dbde3c945..4a5eff3f18bc 100644
-> --- a/drivers/iio/inkern.c
-> +++ b/drivers/iio/inkern.c
-> @@ -759,16 +759,8 @@ int iio_read_avail_channel_raw(struct iio_channel *chan,
->  	int ret;
->  	int type;
->  
-> -	mutex_lock(&chan->indio_dev->info_exist_lock);
-> -	if (!chan->indio_dev->info) {
-> -		ret = -ENODEV;
-> -		goto err_unlock;
-> -	}
-> -
-> -	ret = iio_channel_read_avail(chan,
-> -				     vals, &type, length, IIO_CHAN_INFO_RAW);
-> -err_unlock:
-> -	mutex_unlock(&chan->indio_dev->info_exist_lock);
-> +	ret = iio_read_avail_channel_attribute(chan, vals, &type, length,
-> +					 IIO_CHAN_INFO_RAW);
->  
->  	if (ret >= 0 && type != IIO_VAL_INT)
->  		/* raw values are assumed to be IIO_VAL_INT */
+> diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt b/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
+> new file mode 100644
+> index 000000000000..66430bf73815
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
+> @@ -0,0 +1,31 @@
+> +* Ingenic JZ47xx battery bindings
+> +
+> +Required properties:
+> +
+> +- compatible: Must be "ingenic,jz4740-battery".
+> +- io-channels: phandle and IIO specifier pair to the IIO device.
+> +  Format described in iio-bindings.txt.
+> +- monitored-battery: phandle to a "simple-battery" compatible node.
+> +
+> +The "monitored-battery" property must be a phandle to a node using the format
+> +described in battery.txt, with the following properties being required:
+> +
+> +- voltage-min-design-microvolt: Drained battery voltage.
+> +- voltage-max-design-microvolt: Fully charged battery voltage.
+> +
+> +Example:
+> +
+> +#include <dt-bindings/iio/adc/ingenic,adc.h>
+> +
+> +simple_battery: battery {
+> +	compatible = "simple-battery";
+> +	voltage-min-design-microvolt = <3600000>;
+> +	voltage-max-design-microvolt = <4200000>;
+> +};
+> +
+> +ingenic_battery {
+> +	compatible = "ingenic,jz4740-battery";
+> +	io-channels = <&adc INGENIC_ADC_BATTERY>;
+> +	io-channel-names = "battery";
+> +	monitored-battery = <&simple_battery>;
+> +};
