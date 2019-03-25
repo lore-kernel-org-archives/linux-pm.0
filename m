@@ -1,42 +1,62 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: Re: [PATCH v11 6/8] rtc: bd70528: Initial support for ROHM bd70528
- RTC
-Date: Mon, 25 Mar 2019 18:04:51 +0100
-Message-ID: <20190325170451.GQ30105@piout.net>
-References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <901900e12e2a06865b3649ec94af511fcc6443a3.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: [PATCH] PM / wakeup: Use pm_pr_dbg() instead of pr_debug()
+Date: Mon, 25 Mar 2019 10:24:56 -0700
+Message-ID: <20190325172456.227190-1-swboyd@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <901900e12e2a06865b3649ec94af511fcc6443a3.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurope.com, mikko.muta
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Wenkai Du <wenkai.du@intel.com>, Justin TerAvest <teravest@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25/03/2019 14:06:42+0200, Matti Vaittinen wrote:
-> Support RTC block in ROHM bd70528 power management IC. Support
-> getting and setting the time and date as well as arming an alarm
-> which can also be used to wake the PMIC from standby state.
-> 
-> HW supports wake interrupt only for the next 24 hours (sec, minute
-> and hour information only) so we limit also the alarm interrupt to
-> this 24 hours for the sake of consistency.
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+These prints are useful if we're doing PM suspend debugging. Having them
+at pr_debug() level means that we need to either enable DEBUG in this
+file, or compile the kernel with dynamic debug capabilities. Both of
+these options have drawbacks like custom compilation or opting into all
+debug statements being included into the kernel image. Given that we
+already have infrastructure to collect PM debugging information with
+CONFIG_PM_DEBUG and friends, let's change the pr_debug usage here to be
+pm_pr_dbg() instead so we can collect the wakeup information in the
+kernel logs.
 
-> +	r->time.hour |= BD70528_MASK_RTC_HOUR_24H;
-> +	r->day |= bin2bcd(t->tm_mday);
-> +	r->week |= bin2bcd(t->tm_wday);
-> +	r->month |= bin2bcd(t->tm_mon + 1);
-> +	r->year = bin2bcd(t->tm_year-100);
+Cc: Wenkai Du <wenkai.du@intel.com>
+Cc: Justin TerAvest <teravest@chromium.org>
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+---
+ drivers/base/power/wakeup.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-If you ever have to resend, please add spaces around that -
-
-
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index bb1ae175fae1..23c243a4c675 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -804,7 +804,7 @@ void pm_print_active_wakeup_sources(void)
+ 	srcuidx = srcu_read_lock(&wakeup_srcu);
+ 	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+ 		if (ws->active) {
+-			pr_debug("active wakeup source: %s\n", ws->name);
++			pm_pr_dbg("active wakeup source: %s\n", ws->name);
+ 			active = 1;
+ 		} else if (!active &&
+ 			   (!last_activity_ws ||
+@@ -815,7 +815,7 @@ void pm_print_active_wakeup_sources(void)
+ 	}
+ 
+ 	if (!active && last_activity_ws)
+-		pr_debug("last active wakeup source: %s\n",
++		pm_pr_dbg("last active wakeup source: %s\n",
+ 			last_activity_ws->name);
+ 	srcu_read_unlock(&wakeup_srcu, srcuidx);
+ }
+@@ -845,7 +845,7 @@ bool pm_wakeup_pending(void)
+ 	raw_spin_unlock_irqrestore(&events_lock, flags);
+ 
+ 	if (ret) {
+-		pr_debug("Wakeup pending, aborting suspend\n");
++		pm_pr_dbg("Wakeup pending, aborting suspend\n");
+ 		pm_print_active_wakeup_sources();
+ 	}
+ 
 -- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Sent by a computer through tubes
