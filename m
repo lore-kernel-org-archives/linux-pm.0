@@ -1,91 +1,73 @@
-From: Kyle Lin <linkyle0915@gmail.com>
-Subject: [PATCH] cpufreq: stats: Use lock by stat to replace global spin lock
-Date: Mon, 25 Mar 2019 15:29:33 +0800
-Message-ID: <20190325072933.215946-1-linkyle0915@gmail.com>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [PATCH v10 0/9] support ROHM BD70528 PMIC
+Date: Mon, 25 Mar 2019 09:36:41 +0200
+Message-ID: <20190325073640.GB6208@localhost.localdomain>
+References: <cover.1550148989.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190228070450.GB3773@localhost.localdomain>
+ <20190228081055.GL4118@dell>
+ <20190228082248.GC3773@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190228082248.GC3773@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linkyle0915@gmail.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: mazziesaccount@gmail.com, Guenter Roeck <linux@roeck-us.net>, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.rohmeurope.com, robh+dt@kernel.org, mark.rutland@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, rafael@kernel.org, mturquette@baylibre.com, sboyd@kernel.org, linus.walleij@linaro.org, bgolaszewski@baylibre.com, sre@kernel.org, lgirdwood@gmail.com, a.zummo@towertech.it, alexandre.belloni@bootlin.com, wim@linux-watchdog.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, bogdan-petru.chircu-mare@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
-Stats is updated by each policy, using the lock by stat can
-reduce the contention.
+Hello again Lee & all,
 
-Signed-off-by: Kyle Lin <linkyle0915@gmail.com>
----
- drivers/cpufreq/cpufreq_stats.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+On Thu, Feb 28, 2019 at 10:22:48AM +0200, Matti Vaittinen wrote:
+> On Thu, Feb 28, 2019 at 08:10:55AM +0000, Lee Jones wrote:
+> > On Thu, 28 Feb 2019, Matti Vaittinen wrote:
+> > 
+> > > Hello Lee and Mark,
+> > > 
+> > > On Thu, Feb 14, 2019 at 03:02:37PM +0200, Matti Vaittinen wrote:
+> > > > Patch series introducing support for ROHM BD70528 PMIC
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index e2db5581489a..17beb1bc7e16 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -14,7 +14,6 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- 
--static DEFINE_SPINLOCK(cpufreq_stats_lock);
- 
- struct cpufreq_stats {
- 	unsigned int total_trans;
-@@ -23,6 +22,7 @@ struct cpufreq_stats {
- 	unsigned int state_num;
- 	unsigned int last_index;
- 	u64 *time_in_state;
-+	spinlock_t lock;        /*spinlock for stats update*/
- 	unsigned int *freq_table;
- 	unsigned int *trans_table;
- };
-@@ -39,12 +39,12 @@ static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
- {
- 	unsigned int count = stats->max_state;
- 
--	spin_lock(&cpufreq_stats_lock);
-+	spin_lock(&stats->lock);
- 	memset(stats->time_in_state, 0, count * sizeof(u64));
- 	memset(stats->trans_table, 0, count * count * sizeof(int));
- 	stats->last_time = get_jiffies_64();
- 	stats->total_trans = 0;
--	spin_unlock(&cpufreq_stats_lock);
-+	spin_unlock(&stats->lock);
- }
- 
- static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
-@@ -62,9 +62,9 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
- 	if (policy->fast_switch_enabled)
- 		return 0;
- 
--	spin_lock(&cpufreq_stats_lock);
-+	spin_lock(&stats->lock);
- 	cpufreq_stats_update(stats);
--	spin_unlock(&cpufreq_stats_lock);
-+	spin_unlock(&stats->lock);
- 
- 	for (i = 0; i < stats->state_num; i++) {
- 		len += sprintf(buf + len, "%u %llu\n", stats->freq_table[i],
-@@ -211,6 +211,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	stats->state_num = i;
- 	stats->last_time = get_jiffies_64();
- 	stats->last_index = freq_table_get_index(stats, policy->cur);
-+	spin_lock_init(&stats->lock);
- 
- 	policy->stats = stats;
- 	ret = sysfs_create_group(&policy->kobj, &stats_attr_group);
-@@ -242,11 +243,11 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
- 	if (old_index == -1 || new_index == -1 || old_index == new_index)
- 		return;
- 
--	spin_lock(&cpufreq_stats_lock);
-+	spin_lock(&stats->lock);
- 	cpufreq_stats_update(stats);
- 
- 	stats->last_index = new_index;
- 	stats->trans_table[old_index * stats->max_state + new_index]++;
- 	stats->total_trans++;
--	spin_unlock(&cpufreq_stats_lock);
-+	spin_unlock(&stats->lock);
- }
+//snip
+
+> > > 
+> > > The MFD part depends on the regmap-irq changes and I think that most
+> > > other subsystems want to have the MFD changes in before taking rest of
+> > > the driver in their trees. So it will be a while untill all the changes
+> > > are in. It would really be nice to have the drive in-tree sooner - hence
+> > > I ask if theres a way. (I don't want to push, just ask if it is possible :])
+> > 
+> > It's possible, so long as there aren't any build-time dependencies
+> > between the subsystems.  Immediate acceptance however isn't possible
+> > due to the impending merge-window which opens in 3 days.
+> 
+> Thanks for reply Lee. So merge-window is opening - meaning the 5.1 is
+> being baked now(?) 
+> 
+> Anyays to make it clear - there is build time dependency between MFD and
+> regmap-irq changes. MFD part won't compile without the changes in regmap
+> tree. And theres no new Kconfig to depend on or other compile time
+> checks. So REGMAP changes are required for this MFD portion to compile.
+
+//snip
+
+> Rest of the subsystems (regulator, clk, watchdog, gpio) do all depend on
+> MFD - but they should have 'depends on' KConfig to MFD meaning they
+> won't be built without MFD.
+
+I see the 5.1-rc1 and 5.1-rc2 are out. Those contain the regmap-irq
+changes the BD70528 MFD driver depends on. Would you like me to rebase
+the series to some other tree (which tree/branch? I don't see updated
+for-mfd-next branch in kernel.org yet) and resend it? Original patch
+series was created on top of the regulator tree.
+
+Br,
+	Matti Vaittinen
+
 -- 
-2.21.0.392.gf8f6787159e-goog
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
+
+~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
