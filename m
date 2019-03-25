@@ -1,45 +1,47 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/1] treewide: Switch printk users from %pf and %pF to
- %ps and %pS, respectively
-Date: Mon, 25 Mar 2019 16:19:06 -0500
-Message-ID: <20190325211906.GA24180@google.com>
-References: <20190325193229.23390-1-sakari.ailus@linux.intel.com>
+From: Matthew Garrett <matthewgarrett@google.com>
+Subject: [PATCH 09/27] uswsusp: Disable when the kernel is locked down
+Date: Mon, 25 Mar 2019 15:09:36 -0700
+Message-ID: <20190325220954.29054-10-matthewgarrett@google.com>
+References: <20190325220954.29054-1-matthewgarrett@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20190325193229.23390-1-sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-um-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-f2fs-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-btrfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190325220954.29054-1-matthewgarrett@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, Matthew Garrett <mjg59@srcf.ucam.org>, James Morris <james.l.morris@oracle.com>, linux-pm@vger.kernel.org, pavel@ucw.cz, rjw@rjwysocki.net, Matthew Garrett <matthewgarrett@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 25, 2019 at 09:32:28PM +0200, Sakari Ailus wrote:
-> %pF and %pf are functionally equivalent to %pS and %ps conversion
-> specifiers. The former are deprecated, therefore switch the current users
-> to use the preferred variant.
-> 
-> The changes have been produced by the following command:
-> 
-> 	git grep -l '%p[fF]' | grep -v '^\(tools\|Documentation\)/' | \
-> 	while read i; do perl -i -pe 's/%pf/%ps/g; s/%pF/%pS/g;' $i; done
-> 
-> And verifying the result.
-> 
-> Signed-off-by: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> Acked-by: David Sterba <dsterba-IBi9RG/b67k@public.gmane.org> (for btrfs)
-> Acked-by: Mike Rapoport <rppt-tEXmvtCZX7AybS5Ee8rs3A@public.gmane.org> (for mm/memblock.c)
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Acked-by: Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org> (for drivers/pci)
+uswsusp allows a user process to dump and then restore kernel state, which
+makes it possible to modify the running kernel.  Disable this if the kernel
+is locked down.
 
-Thanks a lot for cleaning this up.  This has been annoying for a long time.
+Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Reviewed-by: James Morris <james.l.morris@oracle.com>
+cc: linux-pm@vger.kernel.org
+Cc: pavel@ucw.cz
+Cc: rjw@rjwysocki.net
+Signed-off-by: Matthew Garrett <matthewgarrett@google.com>
+---
+ kernel/power/user.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 2d8b60a3c86b..0305d513c274 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -52,6 +52,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	if (!hibernation_available())
+ 		return -EPERM;
+ 
++	if (kernel_is_locked_down("/dev/snapshot"))
++		return -EPERM;
++
+ 	lock_system_sleep();
+ 
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+-- 
+2.21.0.392.gf8f6787159e-goog
