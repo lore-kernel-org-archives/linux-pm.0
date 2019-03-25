@@ -1,102 +1,79 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs interface
-Date: Mon, 25 Mar 2019 11:01:08 +0100
-Message-ID: <CAJZ5v0iML0dvzLszSnZjBPKc=2fWp4aUxEjAYWjJnz41Kz8w1g@mail.gmail.com>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan> <1762575.ER2xjzr9E1@aspire.rjw.lan>
- <20190322144629.GC12472@zn.tnic>
+Subject: Re: [PATCH 1/2] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS handling
+Date: Mon, 25 Mar 2019 11:06:36 +0100
+Message-ID: <CAJZ5v0hBRXhQqqXp4wSe+EJNcsJRN5knx0DONnc5UTa+601mug@mail.gmail.com>
+References: <1637073.gl2OfxWTjI@aspire.rjw.lan> <1605148.8jT99SsvVP@aspire.rjw.lan>
+ <20190322142828.GA12472@zn.tnic>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190322144629.GC12472@zn.tnic>
+In-Reply-To: <20190322142828.GA12472@zn.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Borislav Petkov <bp@alien8.de>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Hannes Reinecke <hare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 22, 2019 at 3:46 PM Borislav Petkov <bp@alien8.de> wrote:
+On Fri, Mar 22, 2019 at 3:28 PM Borislav Petkov <bp@alien8.de> wrote:
 >
-> First of all, thanks a lot for doing that!
->
-> This is a good example for how we should convert all the /dev/msr
-> accessing tools.
->
-> Nitpicks below.
->
-> On Thu, Mar 21, 2019 at 11:20:17PM +0100, Rafael J. Wysocki wrote:
+> On Thu, Mar 21, 2019 at 11:18:01PM +0100, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > >
-> > The Performance and Energy Bias Hint (EPB) is expected to be set by
-> > user space through the generic MSR interface, but that interface is
-> > not particularly nice and there are security concerns regarding it,
-> > so it is not always available.
-> >
-> > For this reason, add a sysfs interface for reading and updating the
-> > EPB, in the form of a new attribute, energy_perf_bias, located
-> > under /sys/devices/system/cpu/cpu#/power/ for online CPUs that
-> > support the EPB feature.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  Documentation/ABI/testing/sysfs-devices-system-cpu |   18 ++++
-> >  Documentation/admin-guide/pm/intel_epb.rst         |   27 ++++++
-> >  arch/x86/kernel/cpu/intel_epb.c                    |   93 ++++++++++++++++++++-
-> >  3 files changed, 134 insertions(+), 4 deletions(-)
+> > The current handling of MSR_IA32_ENERGY_PERF_BIAS in the kernel is
+> > problematic, because it may cause changes made by user space to that
+> > MSR (with the help of the x86_energy_perf_policy tool, for example)
+>
+> One more reason to control MSR accesses from userspace. I'm working on
+> a series to even completely forbid accesses to some MSRs over /dev/msr
+> so I think accessing MSR_IA32_ENERGY_PERF_BIAS solely over the new
+> interface in patch 2 would be much better.
+>
+> So, you're carrying those and you'd like to have an ACK from me?
+>
+> Btw, a couple of nitpicks below.
+>
+> > Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
+> > @@ -0,0 +1,131 @@
+> > +// SPDX-License-Identifier: GPL-2.0
 >
 > ...
 >
-> > +static ssize_t energy_perf_bias_show(struct device *dev,
-> > +                                  struct device_attribute *attr,
-> > +                                  char *buf)
+> > +static DEFINE_PER_CPU(u8, saved_epb);
+> > +
+> > +#define EPB_MASK     0x0fULL
+> > +#define EPB_SAVED    0x10ULL
+> > +
+> > +static int intel_epb_save(void)
+>
+> I'd drop that "intel_epb_" prefix from those static functions, but your
+> call...
+
+They help indexing tools (elixir.bootlin.com and similar) a bit, so
+I'd rather retain them.
+
 > > +{
-> > +     unsigned int cpu = dev->id;
 > > +     u64 epb;
-> > +     int ret;
 > > +
-> > +     ret = rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
->
-> That's an IPI and an MSR read each time. You could dump saved_epb
-> instead, no?
-
-No, because the MSR can change in ways beyond control of this code sometimes.
-
-Generally, saved_epb only is the right value at the CPU online time.
-
-> > +     if (ret < 0)
-> > +             return ret;
+> > +     rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> > +     /*
+> > +      * Ensure that saved_epb will always be nonzero after this write even if
+> > +      * the EPB value read from the MSR is 0.
+> > +      */
+> > +     this_cpu_write(saved_epb, (epb & EPB_MASK) | EPB_SAVED);
 > > +
-> > +     return sprintf(buf, "%llu\n", epb);
-> > +}
-> > +
-> > +static ssize_t energy_perf_bias_store(struct device *dev,
-> > +                                   struct device_attribute *attr,
-> > +                                   const char *buf, size_t count)
-> > +{
-> > +     unsigned int cpu = dev->id;
-> > +     u64 epb, val;
-> > +     int ret;
-> > +
-> > +     ret = __sysfs_match_string(energy_perf_strings,
-> > +                                ARRAY_SIZE(energy_perf_strings), buf);
-> > +     if (ret >= 0)
-> > +             val = energ_perf_values[ret];
-> > +     else if (kstrtou64(buf, 0, &val) || val > MAX_EPB)
->
-> Range is 0 - 15 but u64? Maybe make it an u8? :)
-
-At the cost of an extra conversion below, right?
-
-> > +             return -EINVAL;
-> > +
-> > +     ret = rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
-> > +     if (ret < 0)
-> > +             return ret;
-> > +
-> > +     ret = wrmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS,
-> > +                         (epb & ~EPB_MASK) | val);
-> > +     if (ret < 0)
-> > +             return ret;
-> > +
-> > +     return count;
+> > +     return 0;
 > > +}
 >
-> --
+> ...
+>
+> > Index: linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-pm/Documentation/admin-guide/pm/intel_epb.rst
+>
+> WARNING: Missing or malformed SPDX-License-Identifier tag in line 1
+> #345: FILE: Documentation/admin-guide/pm/intel_epb.rst:1:
+
+Well, this is documentation, so ...
