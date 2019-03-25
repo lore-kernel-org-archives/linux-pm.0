@@ -1,56 +1,45 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RESEND PATCH v6 02/11] dt-bindings: power: supply: add DT
- bindings for max77650
-Date: Mon, 25 Mar 2019 15:46:09 -0500
-Message-ID: <20190325204609.GA29935@bogus>
-References: <20190318174228.18194-1-brgl@bgdev.pl>
- <20190318174228.18194-3-brgl@bgdev.pl>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/1] treewide: Switch printk users from %pf and %pF to
+ %ps and %pS, respectively
+Date: Mon, 25 Mar 2019 16:19:06 -0500
+Message-ID: <20190325211906.GA24180@google.com>
+References: <20190325193229.23390-1-sakari.ailus@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20190318174228.18194-3-brgl@bgdev.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+In-Reply-To: <20190325193229.23390-1-sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-um-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-f2fs-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-btrfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, drbd-dev-cunTk1MwBs8qoQakbn7OcQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 18, 2019 at 06:42:19PM +0100, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Mon, Mar 25, 2019 at 09:32:28PM +0200, Sakari Ailus wrote:
+> %pF and %pf are functionally equivalent to %pS and %ps conversion
+> specifiers. The former are deprecated, therefore switch the current users
+> to use the preferred variant.
 > 
-> Add the DT binding document for the battery charger module of max77650.
+> The changes have been produced by the following command:
 > 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
->  1 file changed, 27 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> 	git grep -l '%p[fF]' | grep -v '^\(tools\|Documentation\)/' | \
+> 	while read i; do perl -i -pe 's/%pf/%ps/g; s/%pF/%pS/g;' $i; done
 > 
-> diff --git a/Documentation/devicetree/bindings/power/supply/max77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-> new file mode 100644
-> index 000000000000..d25c95369616
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-> @@ -0,0 +1,27 @@
-> +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> +
-> +This module is part of the MAX77650 MFD device. For more details
-> +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> +
-> +The charger is represented as a sub-node of the PMIC node on the device tree.
-> +
-> +Required properties:
-> +--------------------
-> +- compatible:		Must be "maxim,max77650-charger"
-> +
-> +Optional properties:
-> +--------------------
-> +- min-microvolt:	Minimum CHGIN regulation voltage (in microvolts). Must be
-> +			one of: 4000000, 4100000, 4200000, 4300000, 4400000,
-> +			4500000, 4600000, 4700000.
-> +- curr-lim-microamp:	CHGIN input current limit (in microamps). Must be one of:
-> +			95000, 190000, 285000, 380000, 475000.
+> And verifying the result.
+> 
+> Signed-off-by: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> Acked-by: David Sterba <dsterba-IBi9RG/b67k@public.gmane.org> (for btrfs)
+> Acked-by: Mike Rapoport <rppt-tEXmvtCZX7AybS5Ee8rs3A@public.gmane.org> (for mm/memblock.c)
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-These should be common charger properties IMO.
+Acked-by: Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org> (for drivers/pci)
 
-Rob
+Thanks a lot for cleaning this up.  This has been annoying for a long time.
