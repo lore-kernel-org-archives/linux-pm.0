@@ -1,44 +1,62 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs
- interface
-Date: Mon, 25 Mar 2019 12:32:18 +0100
-Message-ID: <20190325113218.GG12016@zn.tnic>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
- <1762575.ER2xjzr9E1@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] ACPI / CPPC: Fix processing for guaranteed performance
+Date: Mon, 25 Mar 2019 12:49:59 +0100
+Message-ID: <CAJZ5v0g6=QZ7m8phjsYfZOxKNbc0Ny1ySPTScg=yzxOUsGk6HQ@mail.gmail.com>
+References: <20190322224520.6740-1-srinivas.pandruvada@linux.intel.com> <20190322224520.6740-2-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1762575.ER2xjzr9E1@aspire.rjw.lan>
+In-Reply-To: <20190322224520.6740-2-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Prashanth Prakash <pprakash@codeaurora.org>, Xiongfeng Wang <wangxiongfeng2@huawei.com>, "4 . 20+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 21, 2019 at 11:20:17PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The Performance and Energy Bias Hint (EPB) is expected to be set by
-> user space through the generic MSR interface, but that interface is
-> not particularly nice and there are security concerns regarding it,
-> so it is not always available.
-> 
-> For this reason, add a sysfs interface for reading and updating the
-> EPB, in the form of a new attribute, energy_perf_bias, located
-> under /sys/devices/system/cpu/cpu#/power/ for online CPUs that
-> support the EPB feature.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Mar 22, 2019 at 11:45 PM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+>
+> As per ACPI specification "Guaranteed Performance Register" is a "Buffer"
+> field. It can't be "Integer" field. So treat "Integer" type as invalid and
+> ignore "Guaranteed Performance Register".
+> Also save one cpc_read() call, when "Guaranteed Performance Register" is
+> not present, which means register defined as:
+> "Register(SystemMemory, 0, 0, 0, 0)".
+>
+> Fixes: 29523f095397 ("ACPI / CPPC: Add support for guaranteed performance")
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: 4.20+ <stable@vger.kernel.org> # 4.20+
 > ---
->  Documentation/ABI/testing/sysfs-devices-system-cpu |   18 ++++
->  Documentation/admin-guide/pm/intel_epb.rst         |   27 ++++++
->  arch/x86/kernel/cpu/intel_epb.c                    |   93 ++++++++++++++++++++-
->  3 files changed, 134 insertions(+), 4 deletions(-)
+>  drivers/acpi/cppc_acpi.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 1b207fca1420..3f6c290e06af 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -1150,8 +1150,14 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+>         cpc_read(cpunum, nominal_reg, &nom);
+>         perf_caps->nominal_perf = nom;
+>
+> -       cpc_read(cpunum, guaranteed_reg, &guaranteed);
+> -       perf_caps->guaranteed_perf = guaranteed;
+> +       if (guaranteed_reg->type == ACPI_TYPE_INTEGER  ||
+> +           (guaranteed_reg->type == ACPI_TYPE_BUFFER &&
+> +            IS_NULL_REG(&guaranteed_reg->cpc_entry.reg))) {
 
-Acked-by: Borislav Petkov <bp@suse.de>
+AFAICS anything different from a buffer should be rejected here, so
+why don't you do
 
--- 
-Regards/Gruss,
-    Boris.
+if (guaranteed_reg->type != ACPI_TYPE_BUFFER  ||
+IS_NULL_REG(&guaranteed_reg->cpc_entry.reg))
 
-Good mailing practices for 400: avoid top-posting and trim the reply.
+> +               perf_caps->guaranteed_perf = 0;
+> +       } else {
+> +               cpc_read(cpunum, guaranteed_reg, &guaranteed);
+> +               perf_caps->guaranteed_perf = guaranteed;
+> +       }
+>
+>         cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
+>         perf_caps->lowest_nonlinear_perf = min_nonlinear;
+> --
+> 2.17.2
+>
