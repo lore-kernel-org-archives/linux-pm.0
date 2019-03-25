@@ -1,42 +1,42 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 0/2] Correct the processing for base_frequency
-Date: Mon, 25 Mar 2019 09:04:38 -0700
-Message-ID: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Subject: Re: [PATCH v11 6/8] rtc: bd70528: Initial support for ROHM bd70528
+ RTC
+Date: Mon, 25 Mar 2019 18:04:51 +0100
+Message-ID: <20190325170451.GQ30105@piout.net>
+References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+ <901900e12e2a06865b3649ec94af511fcc6443a3.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <901900e12e2a06865b3649ec94af511fcc6443a3.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com, srinivas.pandruvada@linux.intel.com
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: mazziesaccount@gmail.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurope.com, mikko.muta
 List-Id: linux-pm@vger.kernel.org
 
-The base_frequency display in cpufreq sysfs for intel_pstate gets the
-guaranteed ratio by reading CPPC guaranteed performance register as a
-first preference before falling back to x86 MSR for Hardware P-state
-Capabilities. The current code in cppc_acpi.c assumed that "guaranteed
-performance register" can be an integer field, which is invalid as per
-ACPI spec. So this change explicitly check for INTEGER values for
-invalid BIOS/firmware and ignore. 
-Also guaranteed performance register field is optional and when not
-present, nominal performance can be used as the guaranteed performance.
-But spec calls that this is true only in non-autonomous mode. So
-no change is made in cppc_acpi.c to make nominal as guaranteed in this
-case to avoid dependency on autonomous and non-autonomous mode. Instead
-a change is added to intel_pstate driver, which is specific to x86 to
-make nominal as guaranteed when guaranteed performance field is absent
-or has invalid value.
-Also we are working to clarify this non-autonomous mode requirement
-through ACPI standard body.
+On 25/03/2019 14:06:42+0200, Matti Vaittinen wrote:
+> Support RTC block in ROHM bd70528 power management IC. Support
+> getting and setting the time and date as well as arming an alarm
+> which can also be used to wake the PMIC from standby state.
+> 
+> HW supports wake interrupt only for the next 24 hours (sec, minute
+> and hour information only) so we limit also the alarm interrupt to
+> this 24 hours for the sake of consistency.
+> 
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
-v2:
-Changes done as suggested by Rafael.
+> +	r->time.hour |= BD70528_MASK_RTC_HOUR_24H;
+> +	r->day |= bin2bcd(t->tm_mday);
+> +	r->week |= bin2bcd(t->tm_wday);
+> +	r->month |= bin2bcd(t->tm_mon + 1);
+> +	r->year = bin2bcd(t->tm_year-100);
 
+If you ever have to resend, please add spaces around that -
 
-Srinivas Pandruvada (2):
-  ACPI / CPPC: Fix processing for guaranteed performance
-  cpufreq: intel_pstate: Also use cppc nominal_perf for base_frequency
-
- drivers/acpi/cppc_acpi.c       | 9 +++++++--
- drivers/cpufreq/intel_pstate.c | 5 ++++-
- 2 files changed, 11 insertions(+), 3 deletions(-)
 
 -- 
-2.17.2
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
