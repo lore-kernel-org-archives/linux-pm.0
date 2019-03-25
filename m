@@ -1,69 +1,55 @@
-From: William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: [PATCH v12 11/11] gpio: 74x164: Utilize the for_each_set_clump8 macro
-Date: Mon, 25 Mar 2019 15:26:18 +0900
-Message-ID: <d3cc8680aa3d0d741649ac7402a213db1a789583.1553494625.git.vilhelm.gray@gmail.com>
-References: <cover.1553494625.git.vilhelm.gray@gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH v3 3/5] devfreq: rk3399_dmc: Pass ODT and auto power
+ down parameters to TF-A.
+Date: Mon, 25 Mar 2019 15:55:15 +0900
+Message-ID: <20190325065515epcms1p4743158f941064730272c8f976d844237@epcms1p4>
+References: <20190321231440.19031-4-gael.portay@collabora.com>
+        <20190321231440.19031-1-gael.portay@collabora.com>
+        <CGME20190321231449epcas1p4ea54b4862fd8552f207f81bce8cb706f@epcms1p4>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1553494625.git.vilhelm.gray@gmail.com>
+In-Reply-To: <20190321231440.19031-4-gael.portay@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linus.walleij@linaro.org, bgolaszewski@baylibre.com
-Cc: akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, William Breathitt Gray <vilhelm.gray@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infra>
+Cc: Mark Rutland <mark.rutland@arm.com>, =?UTF-8?B?R2HDq2wgUE9SVEFZ?= <gael.portay@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace verbose implementation in set_multiple callback with
-for_each_set_clump8 macro to simplify code and improve clarity.
+>From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>
+>Trusted Firmware-A (TF-A) for rk3399 implements a SiP call to get the
+>on-die termination (ODT) and auto power down parameters from kernel,
+>this patch adds the functionality to do this. Also, if DDR clock
+>frequency is lower than the on-die termination (ODT) disable frequency
+>this driver should disable the DDR ODT.
+>
+>Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>Signed-off-by: Gael PORTAY <gael.portay@collabora.com>
 
-Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Phil Reid <preid@electromag.com.au>
-Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
----
- drivers/gpio/gpio-74x164.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-diff --git a/drivers/gpio/gpio-74x164.c b/drivers/gpio/gpio-74x164.c
-index fb7b620763a2..e43a6de3b6eb 100644
---- a/drivers/gpio/gpio-74x164.c
-+++ b/drivers/gpio/gpio-74x164.c
-@@ -9,6 +9,7 @@
-  *  published by the Free Software Foundation.
-  */
- 
-+#include <linux/bitops.h>
- #include <linux/init.h>
- #include <linux/mutex.h>
- #include <linux/spi/spi.h>
-@@ -75,20 +76,19 @@ static void gen_74x164_set_multiple(struct gpio_chip *gc, unsigned long *mask,
- 				    unsigned long *bits)
- {
- 	struct gen_74x164_chip *chip = gpiochip_get_data(gc);
--	unsigned int i, idx, shift;
--	u8 bank, bankmask;
-+	unsigned int offset;
-+	unsigned long bankmask;
-+	const unsigned int ngpio = chip->registers * 8;
-+	size_t bank;
-+	unsigned int bitmask;
- 
- 	mutex_lock(&chip->lock);
--	for (i = 0, bank = chip->registers - 1; i < chip->registers;
--	     i++, bank--) {
--		idx = i / sizeof(*mask);
--		shift = i % sizeof(*mask) * BITS_PER_BYTE;
--		bankmask = mask[idx] >> shift;
--		if (!bankmask)
--			continue;
-+	for_each_set_clump8(offset, bankmask, mask, ngpio) {
-+		bank = (chip->registers - 1) - (offset / 8);
-+		bitmask = bitmap_get_value8(bits, ngpio, offset) & bankmask;
- 
- 		chip->buffer[bank] &= ~bankmask;
--		chip->buffer[bank] |= bankmask & (bits[idx] >> shift);
-+		chip->buffer[bank] |= bitmask;
- 	}
- 	__gen_74x164_write_config(chip);
- 	mutex_unlock(&chip->lock);
--- 
-2.21.0
+
+Cheers!
+MyungJoo
+
+>---
+>
+>Changes in v3:
+>- [PATCH v2 3/5] Add Signed-off-by: Gael PORTAY <gael.portay@collabora.com>.
+>		 Remove comments.
+>		 Move pmu dt parsing after dt-parsing of timings to fix
+>		  data->odt_dis_freq value.
+>
+>Changes in v2: None
+>
+>Changes in v1:
+>- [RFC 3/10] Add an explanation for platform SIP calls.
+>- [RFC 3/10] Change if statement for a switch.
+>- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
+>
+> drivers/devfreq/rk3399_dmc.c        | 71 ++++++++++++++++++++++++++++-
+> include/soc/rockchip/rockchip_sip.h |  1 +
+> 2 files changed, 71 insertions(+), 1 deletion(-)
