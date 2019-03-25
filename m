@@ -1,33 +1,49 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 0/2] Remove support for deprecated %pf and %pF in vsprintf
-Date: Mon, 25 Mar 2019 17:24:09 +0200
-Message-ID: <20190325152409.GF9224@smile.fi.intel.com>
-References: <20190322132108.25501-1-sakari.ailus@linux.intel.com>
- <CAMuHMdVmqqjVx7As9AAywYxYXG=grijF5rF77OBn6TUjM9+xKw@mail.gmail.com>
- <20190322135350.2btpno7vspvewxvk@paasikivi.fi.intel.com>
- <20190322170550.GX9224@smile.fi.intel.com>
- <20190324211008.lypghym3gqcp62th@mara.localdomain>
- <20190324211932.GK9224@smile.fi.intel.com>
- <20190325151259.2w22y4ijqilrbaxj@kekkonen.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190325151259.2w22y4ijqilrbaxj@kekkonen.localdomain>
-Sender: netdev-owner@vger.kernel.org
-To: Sakari Ailus <sakari.ailus@linux.intel.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Petr Mladek <pmladek@suse.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux MMC List <linux-mmc@vger.kernel.org>, "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>, linux-um@lists.infradead.org, linux-f2fs-devel@lists.sourceforge.net, linux-block@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, netdev <netdev@vger.kernel.org>, linux-btrfs <linux-btrfs@vger.kernel.org>, linux-pci <linux-pci@vger.kernel.org>, sparclinux <sparclinux@vger.kernel.org>, xen-devel@lists.xenproject.org, ceph-devel <ceph-devel@vger.kernel.org>, Linux MM <linux-mm@kvack.org>, Linux ARM <linux-arm-kernel@l>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 1/2] ACPI / CPPC: Fix processing for guaranteed performance
+Date: Mon, 25 Mar 2019 09:04:39 -0700
+Message-ID: <20190325160440.7575-2-srinivas.pandruvada@linux.intel.com>
+References: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com, srinivas.pandruvada@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 25, 2019 at 05:13:00PM +0200, Sakari Ailus wrote:
+As per ACPI specification "Guaranteed Performance Register" is a "Buffer"
+field. It can't be "Integer" field. So treat "Integer" type as invalid and
+ignore "Guaranteed Performance Register".
+Also save one cpc_read() call, when "Guaranteed Performance Register" is
+not present, which means register defined as:
+"Register(SystemMemory, 0, 0, 0, 0)".
 
-> All other invalid pointer conversion specifiers currently result into a
-> warning only. I see that as an orthogonal change to this set. I found
-> another issue in checkpatch.pl that may require some discussion; would you
-> be ok with addressing this in another set?
+Fixes: 29523f095397 ("ACPI / CPPC: Add support for guaranteed performance")
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: 4.20+ <stable@vger.kernel.org> # 4.20+
+---
+ drivers/acpi/cppc_acpi.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-If it looks better that way, I have no objection.
-
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 1b207fca1420..d4244e7d0e38 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1150,8 +1150,13 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	cpc_read(cpunum, nominal_reg, &nom);
+ 	perf_caps->nominal_perf = nom;
+ 
+-	cpc_read(cpunum, guaranteed_reg, &guaranteed);
+-	perf_caps->guaranteed_perf = guaranteed;
++	if (guaranteed_reg->type != ACPI_TYPE_BUFFER  ||
++	    IS_NULL_REG(&guaranteed_reg->cpc_entry.reg)) {
++		perf_caps->guaranteed_perf = 0;
++	} else {
++		cpc_read(cpunum, guaranteed_reg, &guaranteed);
++		perf_caps->guaranteed_perf = guaranteed;
++	}
+ 
+ 	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
+ 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
 -- 
-With Best Regards,
-Andy Shevchenko
+2.17.2
