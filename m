@@ -1,175 +1,103 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v12 01/11] bitops: Introduce the for_each_set_clump8 macro
-Date: Mon, 25 Mar 2019 15:12:36 +0200
-Message-ID: <20190325131236.GW9224@smile.fi.intel.com>
-References: <cover.1553494625.git.vilhelm.gray@gmail.com>
- <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v12 3/4] cpuidle: Export the next timer/tick expiration
+ for a CPU
+Date: Mon, 25 Mar 2019 15:23:27 +0100
+Message-ID: <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com>
+References: <20190227195836.24739-1-ulf.hansson@linaro.org>
+ <20190227195836.24739-4-ulf.hansson@linaro.org> <2942111.nn8VVVUCAL@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
+In-Reply-To: <2942111.nn8VVVUCAL@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Arnd Bergmann <arnd@arndb.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 25, 2019 at 03:22:23PM +0900, William Breathitt Gray wrote:
-> This macro iterates for each 8-bit group of bits (clump) with set bits,
-> within a bitmap memory region. For each iteration, "start" is set to the
-> bit offset of the found clump, while the respective clump value is
-> stored to the location pointed by "clump". Additionally, the
-> bitmap_get_value8 and bitmap_set_value8 functions are introduced to
-> respectively get and set an 8-bit value in a bitmap memory region.
+On Mon, 25 Mar 2019 at 13:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Wednesday, February 27, 2019 8:58:35 PM CET Ulf Hansson wrote:
+> > To be able to predict the sleep duration for a CPU that is entering idle,
+> > knowing when the next timer/tick is going to expire, is extremely useful.
+> > Both the teo and the menu cpuidle governors already makes use of this
+> > information, while selecting an idle state.
+> >
+> > Moving forward, the similar prediction needs to be done, but for a group of
+> > idle CPUs rather than for a single idle CPU. Following changes implements a
+> > new genpd governor, which needs this.
+> >
+> > Support this, by sharing a new function called
+> > tick_nohz_get_next_hrtimer(), which returns the next hrtimer or the next
+> > tick, whatever that expires first.
+> >
+> > Additionally, when cpuidle is about to invoke the ->enter() callback, then
+> > call tick_nohz_get_next_hrtimer() and store its return value in the per CPU
+> > struct cpuidle_device, as to make it available outside cpuidle.
+> >
+> > Do note, at the point when cpuidle calls tick_nohz_get_next_hrtimer(), the
+> > governor's ->select() callback has already made a decision whether to stop
+> > the tick or not. In this way, tick_nohz_get_next_hrtimer() actually returns
+> > the next timer expiration, whatever origin.
+> >
+> > Cc: Lina Iyer <ilina@codeaurora.org>
+> > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> > Co-developed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >
+> > Changes in v12:
+> >       - New patch.
+> >
+> > ---
+> >  drivers/cpuidle/cpuidle.c |  8 ++++++++
+> >  include/linux/cpuidle.h   |  1 +
+> >  include/linux/tick.h      |  7 ++++++-
+> >  kernel/time/tick-sched.c  | 12 ++++++++++++
+> >  4 files changed, 27 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index 7f108309e871..255365b1a6ab 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -328,6 +328,14 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> >  int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> >                 int index)
+> >  {
+> > +     /*
+> > +      * Store the next hrtimer, which becomes either next tick or the next
+> > +      * timer event, whatever expires first. Additionally, to make this data
+> > +      * useful for consumers outside cpuidle, we rely on that the governor's
+> > +      * ->select() callback have decided, whether to stop the tick or not.
+> > +      */
+> > +     dev->next_hrtimer = tick_nohz_get_next_hrtimer();
+>
+> I would use WRITE_ONCE() to set next_hrtimer here and READ_ONCE() for
+> reading that value in the next patch, as a matter of annotation if
+> nothing else.
 
+Okay!
 
-This seems to miss Randy's (IIRC) comment about too many const specifiers.
+>
+> > +
+> >       if (cpuidle_state_is_coupled(drv, index))
+> >               return cpuidle_enter_state_coupled(dev, drv, index);
+> >       return cpuidle_enter_state(dev, drv, index);
+>
+> Also I would clear next_hrtimer here to avoid dragging stale values
+> around.
 
-> Suggested-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Suggested-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: Andrew Morton <akpm@linux-foundation.org>
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
-> ---
->  include/asm-generic/bitops/find.h | 14 ++++++
->  include/linux/bitops.h            |  5 ++
->  lib/find_bit.c                    | 81 +++++++++++++++++++++++++++++++
->  3 files changed, 100 insertions(+)
-> 
-> diff --git a/include/asm-generic/bitops/find.h b/include/asm-generic/bitops/find.h
-> index 8a1ee10014de..9a76adff59c6 100644
-> --- a/include/asm-generic/bitops/find.h
-> +++ b/include/asm-generic/bitops/find.h
-> @@ -80,4 +80,18 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
->  
->  #endif /* CONFIG_GENERIC_FIND_FIRST_BIT */
->  
-> +unsigned long bitmap_get_value8(const unsigned long *const bitmap,
-> +				const unsigned int size,
-> +				const unsigned int start);
-> +
-> +void bitmap_set_value8(unsigned long *const bitmap, const unsigned int size,
-> +		       const unsigned long value, const unsigned int start);
-> +
-> +unsigned int find_next_clump8(unsigned long *const clump,
-> +			      const unsigned long *const addr,
-> +			      unsigned int offset, const unsigned int size);
-> +
-> +#define find_first_clump8(clump, bits, size) \
-> +	find_next_clump8((clump), (bits), 0, (size))
-> +
->  #endif /*_ASM_GENERIC_BITOPS_FIND_H_ */
-> diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-> index 602af23b98c7..f19a7bc8f559 100644
-> --- a/include/linux/bitops.h
-> +++ b/include/linux/bitops.h
-> @@ -40,6 +40,11 @@ extern unsigned long __sw_hweight64(__u64 w);
->  	     (bit) < (size);					\
->  	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
->  
-> +#define for_each_set_clump8(start, clump, bits, size) \
-> +	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
-> +	     (start) < (size); \
-> +	     (start) = find_next_clump8(&(clump), (bits), (start) + 8, (size)))
-> +
->  static inline int get_bitmask_order(unsigned int count)
->  {
->  	int order;
-> diff --git a/lib/find_bit.c b/lib/find_bit.c
-> index ee3df93ba69a..1b6f8a6f1957 100644
-> --- a/lib/find_bit.c
-> +++ b/lib/find_bit.c
-> @@ -218,3 +218,84 @@ EXPORT_SYMBOL(find_next_bit_le);
->  #endif
->  
->  #endif /* __BIG_ENDIAN */
-> +
-> +/**
-> + * bitmap_get_value8 - get an 8-bit value within a memory region
-> + * @bitmap: address to the bitmap memory region
-> + * @size: bitmap size in number of bits
-> + * @start: bit offset of the 8-bit value
-> + *
-> + * Returns the 8-bit value located at the @start bit offset within the @bitmap
-> + * memory region.
-> + */
-> +unsigned long bitmap_get_value8(const unsigned long *const bitmap,
-> +				const unsigned int size,
-> +				const unsigned int start)
-> +{
-> +	const size_t index = BIT_WORD(start);
-> +	const unsigned int offset = start % BITS_PER_LONG;
-> +	const unsigned int low_width = (offset + 8 > BITS_PER_LONG) ?
-> +				       BITS_PER_LONG - offset : 8;
-> +	const unsigned long low = bitmap[index] >> offset;
-> +	const unsigned long high = (low_width < 8 && start + 8 <= size) ?
-> +				   bitmap[index + 1] << low_width : 0;
-> +
-> +	return (low | high) & 0xFF;
-> +}
-> +EXPORT_SYMBOL(bitmap_get_value8);
-> +
-> +/**
-> + * bitmap_set_value8 - set an 8-bit value within a memory region
-> + * @bitmap: address to the bitmap memory region
-> + * @size: bitmap size in number of bits
-> + * @value: the 8-bit value; values wider than 8 bits may clobber bitmap
-> + * @start: bit offset of the 8-bit value
-> + */
-> +void bitmap_set_value8(unsigned long *const bitmap, const unsigned int size,
-> +		       const unsigned long value, const unsigned int start)
-> +{
-> +	const size_t index = BIT_WORD(start);
-> +	const unsigned int offset = start % BITS_PER_LONG;
-> +	const unsigned int low_width = (offset + 8 > BITS_PER_LONG) ?
-> +				       BITS_PER_LONG - offset : 8;
-> +	const unsigned long low_mask = GENMASK(low_width - 1, 0) << offset;
-> +	const unsigned int high_width = 8 - low_width;
-> +	const unsigned long high_mask = GENMASK(high_width - 1, 0);
-> +
-> +	/* set lower portion */
-> +	bitmap[index] &= ~low_mask;
-> +	bitmap[index] |= value << offset;
-> +
-> +	/* set higher portion if space available in bitmap */
-> +	if (high_width && start + 8 <= size) {
-> +		bitmap[index + 1] &= ~high_mask;
-> +		bitmap[index + 1] |= value >> low_width;
-> +	}
-> +}
-> +EXPORT_SYMBOL(bitmap_set_value8);
-> +
-> +/**
-> + * find_next_clump8 - find next 8-bit clump with set bits in a memory region
-> + * @clump: location to store copy of found clump
-> + * @addr: address to base the search on
-> + * @offset: bit offset at which to start searching
-> + * @size: bitmap size in number of bits
-> + *
-> + * Returns the bit offset for the next set clump; the found clump value is
-> + * copied to the location pointed by @clump. If no bits are set, returns @size.
-> + */
-> +unsigned int find_next_clump8(unsigned long *const clump,
-> +			      const unsigned long *const addr,
-> +			      unsigned int offset, const unsigned int size)
-> +{
-> +	for (; offset < size; offset += 8) {
-> +		*clump = bitmap_get_value8(addr, size, offset);
-> +		if (!*clump)
-> +			continue;
-> +
-> +		return offset;
-> +	}
-> +
-> +	return size;
-> +}
-> +EXPORT_SYMBOL(find_next_clump8);
-> -- 
-> 2.21.0
-> 
+Right, I can do that.
 
--- 
-With Best Regards,
-Andy Shevchenko
+However, at least in my case it would be an unnecessary update of the
+variable, as I am never in a path where the value can be "stale". Even
+if one theoretically could use a stale value, it's seems likely to not
+be an issue, don't you think? Anyway, if I don't hear from you, I do
+the change as you suggested.
+
+>
+> Apart from this the series LGTM.
+
+Great, thanks. I re-spin a new version.
+
+Kind regards
+Uffe
