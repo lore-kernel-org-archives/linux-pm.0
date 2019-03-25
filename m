@@ -1,43 +1,101 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v3 2/5] dt-bindings: devfreq: rk3399_dmc: Add
- rockchip,pmu phandle.
-Date: Mon, 25 Mar 2019 13:55:42 +0900
-Message-ID: <20190325045542epcms1p585d5cec9453adef9b4531ff2a2bf5be6@epcms1p5>
-References: <20190321231440.19031-3-gael.portay@collabora.com>
-        <20190321231440.19031-1-gael.portay@collabora.com>
-        <CGME20190321231447epcas2p4de5947e1eced053fee285ccd75d1d669@epcms1p5>
-Reply-To: myungjoo.ham@samsung.com
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: [PATCH v11 00/11] Introduce the for_each_set_clump8 macro
+Date: Mon, 25 Mar 2019 15:02:30 +0900
+Message-ID: <cover.1553492741.git.vilhelm.gray@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190321231440.19031-3-gael.portay@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infra>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, =?UTF-8?B?R2HDq2wgUE9SVEFZ?= <gael.portay@collabora.com>
+To: linus.walleij@linaro.org, bgolaszewski@baylibre.com
+Cc: akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, William Breathitt Gray <vilhelm.gray@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
->From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->
->The Rockchip DMC (Dynamic Memory Interface) needs to access to the PMU
->general register files to know the DRAM type, so add a phandle to the
->syscon that manages these registers.
->
->Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->Acked-by: Rob Herring <robh@kernel.org>
->Signed-off-by: Gael PORTAY <gael.portay@collabora.com>
->---
->
->Changes in v3:
->- [PATCH v2 2/5] Add Signed-off-by: Gael PORTAY <gael.portay@collabora.com>.
->
->Changes in v2: None
->
->Changes in v1:
->- [RFC 2/10] Add reviewed and acked tags from Chanwoo Choi and Rob Herring
->
-> Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt | 2 ++
-> 1 file changed, 2 insertions(+)
+Changes in v11:
+  - Reimplement low_mask definition in bitmap_set_value8 for a more
+    efficient bitmask generation by using a shift operation
+  - Fix typo in for_each_set_clump8 arguments list in the
+    add_dts_thermal_zone function to properly dereference ptps bitmap
+  - Utilize for_each_set_clump8 macro in drivers/gpio/gpio-74x164.c
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+While adding GPIO get_multiple/set_multiple callback support for various
+drivers, I noticed a pattern of looping manifesting that would be useful
+standardized as a macro.
+
+This patchset introduces the for_each_set_clump8 macro and utilizes it
+in several GPIO drivers. The for_each_set_clump macro8 facilitates a
+for-loop syntax that iterates over a memory region entire groups of set
+bits at a time.
+
+For example, suppose you would like to iterate over a 32-bit integer 8
+bits at a time, skipping over 8-bit groups with no set bit, where
+XXXXXXXX represents the current 8-bit group:
+
+    Example:        10111110 00000000 11111111 00110011
+    First loop:     10111110 00000000 11111111 XXXXXXXX
+    Second loop:    10111110 00000000 XXXXXXXX 00110011
+    Third loop:     XXXXXXXX 00000000 11111111 00110011
+
+Each iteration of the loop returns the next 8-bit group that has at
+least one set bit.
+
+The for_each_set_clump8 macro has four parameters:
+
+    * start: set to the bit offset of the current clump
+    * clump: set to the current clump value
+    * bits: bitmap to search within
+    * size: bitmap size in number of bits
+
+In this version of the patchset, the for_each_set_clump macro has been
+reimplemented and simplified based on the suggestions provided by Rasmus
+Villemoes and Andy Shevchenko in the version 4 submission.
+
+In particular, the function of the for_each_set_clump macro has been
+restricted to handle only 8-bit clumps; the drivers that use the
+for_each_set_clump macro only handle 8-bit ports so a generic
+for_each_set_clump implementation is not necessary. Thus, a solution for
+large clumps (i.e. those larger than the width of a bitmap word) can be
+postponed until a driver appears that actually requires such a generic
+for_each_set_clump implementation.
+
+For what it's worth, a semi-generic for_each_set_clump (i.e. for clumps
+smaller than the width of a bitmap word) can be implemented by simply
+replacing the hardcoded '8' and '0xFF' instances with respective
+variables. I have not yet had a need for such an implementation, and
+since it falls short of a true generic for_each_set_clump function, I
+have decided to forgo such an implementation for now.
+
+In addition, the bitmap_get_value8 and bitmap_set_value8 functions are
+introduced to get and set 8-bit values respectively. Their use is based
+on the behavior suggested in the patchset version 4 review.
+
+William Breathitt Gray (11):
+  bitops: Introduce the for_each_set_clump8 macro
+  lib/test_bitmap.c: Add for_each_set_clump8 test cases
+  gpio: 104-dio-48e: Utilize for_each_set_clump8 macro
+  gpio: 104-idi-48: Utilize for_each_set_clump8 macro
+  gpio: gpio-mm: Utilize for_each_set_clump8 macro
+  gpio: ws16c48: Utilize for_each_set_clump8 macro
+  gpio: pci-idio-16: Utilize for_each_set_clump8 macro
+  gpio: pcie-idio-24: Utilize for_each_set_clump8 macro
+  gpio: uniphier: Utilize for_each_set_clump8 macro
+  thermal: intel: intel_soc_dts_iosf: Utilize for_each_set_clump8 macro
+  gpio: 74x164: Utilize the for_each_set_clump8 macro
+
+ drivers/gpio/gpio-104-dio-48e.c            |  73 ++++----------
+ drivers/gpio/gpio-104-idi-48.c             |  37 ++-----
+ drivers/gpio/gpio-74x164.c                 |  20 ++--
+ drivers/gpio/gpio-gpio-mm.c                |  73 ++++----------
+ drivers/gpio/gpio-pci-idio-16.c            |  75 ++++++--------
+ drivers/gpio/gpio-pcie-idio-24.c           | 111 ++++++++-------------
+ drivers/gpio/gpio-uniphier.c               |  16 ++-
+ drivers/gpio/gpio-ws16c48.c                |  72 ++++---------
+ drivers/thermal/intel/intel_soc_dts_iosf.c |  29 +++---
+ drivers/thermal/intel/intel_soc_dts_iosf.h |   2 -
+ include/asm-generic/bitops/find.h          |  14 +++
+ include/linux/bitops.h                     |   5 +
+ lib/find_bit.c                             |  81 +++++++++++++++
+ lib/test_bitmap.c                          |  65 ++++++++++++
+ 14 files changed, 340 insertions(+), 333 deletions(-)
+
+-- 
+2.21.0
