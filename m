@@ -1,74 +1,65 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v12 01/11] bitops: Introduce the for_each_set_clump8 macro
-Date: Tue, 26 Mar 2019 13:42:52 +0200
-Message-ID: <20190326114252.GX9224@smile.fi.intel.com>
-References: <cover.1553494625.git.vilhelm.gray@gmail.com>
- <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
- <20190325131236.GW9224@smile.fi.intel.com>
- <20190326025459.GA3356@icarus>
+From: Leon Romanovsky <leon@kernel.org>
+Subject: [PATCH -next] x86/apic: Reduce print level of CPU limit announcement
+Date: Tue, 26 Mar 2019 14:02:13 +0200
+Message-ID: <20190326120213.28633-1-leon@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190326025459.GA3356@icarus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86 <x86@kernel.org>
+Cc: Leon Romanovsky <leonro@mellanox.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 26, 2019 at 11:54:59AM +0900, William Breathitt Gray wrote:
-> On Mon, Mar 25, 2019 at 03:12:36PM +0200, Andy Shevchenko wrote:
-> > On Mon, Mar 25, 2019 at 03:22:23PM +0900, William Breathitt Gray wrote:
-> > > This macro iterates for each 8-bit group of bits (clump) with set bits,
-> > > within a bitmap memory region. For each iteration, "start" is set to the
-> > > bit offset of the found clump, while the respective clump value is
-> > > stored to the location pointed by "clump". Additionally, the
-> > > bitmap_get_value8 and bitmap_set_value8 functions are introduced to
-> > > respectively get and set an 8-bit value in a bitmap memory region.
-> > 
-> > 
-> > This seems to miss Randy's (IIRC) comment about too many const specifiers.
-> 
-> I disagree with removing the const qualifiers; I believe they are useful
-> and do not significantly impact the clarity of the code (in fact, I'd
-> argue the opposite). 
+From: Leon Romanovsky <leonro@mellanox.com>
 
-Had you checked the assembly? I'm talking about const for values on the stack.
+Kernel is booted with less possible CPUs (possible_cpus kernel boot
+option) than available CPUs will have prints like this:
 
-I think if you put less const there compiler can keep something in the
-registers instead of using direct constants or accessing stack.
+[    1.131039] APIC: NR_CPUS/possible_cpus limit of 8 reached. Processor 55/0x1f ignored.
+[    1.132228] ACPI: Unable to map lapic to logical cpu number
 
-I might be mistaken, so, I can't argue without evidence of either.
+Those warnings are printed for every not-enabled CPU and on the systems
+with large number of such CPUs, we see a lot of those prints for default
+print level.
 
-> The const qualifiers make it clear these values are
-> constant, allowing readers at a glace to know these values never change
-> within this function. Although I believe GCC is smart enough in this
-> case to deduce implicitly that these are constant values, generally
-> speaking const qualifiers do make it easier for compilers to optimize
-> sections of code (OoO execution, algorithm simplification, etc.), so I
-> believe it's useful in a technical sense as well.
+Simple conversion of those prints to be in debug level removes them
+while leaving the option to debug system.
 
-Again, what the difference do you see in assembly if any?
+Signed-off-by: Leon Romanovsky <leonro@mellanox.com>
+---
+ arch/x86/kernel/acpi/boot.c | 2 +-
+ arch/x86/kernel/apic/apic.c | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-> I added the const qualifier to these variables because they really are
-> constant, and I believe there is merit in making it explicit in the
-> code. If the primary reason for removing the const qualifiers is for
-> aesthetics, then I must dissent with that decision.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 8dcbf6890714..3ef8ab89c02d 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -770,7 +770,7 @@ int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 acpi_id,
 
-The point is, if there is no difference, I would prefer one which will be
-better to read, otherwise check the assembly.
+ 	cpu = acpi_register_lapic(physid, acpi_id, ACPI_MADT_ENABLED);
+ 	if (cpu < 0) {
+-		pr_info(PREFIX "Unable to map lapic to logical cpu number\n");
++		pr_debug(PREFIX "Unable to map lapic to logical cpu number\n");
+ 		return cpu;
+ 	}
 
-> However, it is difficult to read the definitions that wrap around to a
-> second line. These definitions are long enough that even removing the
-> const qualifiers would not help prevent the wrapping, so perhaps it
-> would make to let these stay on a single line. Do you think it would
-> help to ignore the 80-character maximum line width coding style rule for
-> these cases here?
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index b7bcdd781651..8c2a487b5216 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2305,9 +2305,9 @@ int generic_processor_info(int apicid, int version)
+ 	if (num_processors >= nr_cpu_ids) {
+ 		int thiscpu = max + disabled_cpus;
 
-80-characters rule can be slightly bended depending on the context. Here, I
-think, we might continue discussing the matter after having an evidence how
-const qualifiers affect the code.
+-		pr_warning("APIC: NR_CPUS/possible_cpus limit of %i "
+-			   "reached. Processor %d/0x%x ignored.\n",
+-			   max, thiscpu, apicid);
++		pr_debug(
++			"APIC: NR_CPUS/possible_cpus limit of %i reached. Processor %d/0x%x ignored.\n",
++			max, thiscpu, apicid);
 
--- 
-With Best Regards,
-Andy Shevchenko
+ 		disabled_cpus++;
+ 		return -EINVAL;
+--
+2.20.1
