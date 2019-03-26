@@ -1,63 +1,57 @@
-From: William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: Re: [PATCH v12 01/11] bitops: Introduce the for_each_set_clump8 macro
-Date: Tue, 26 Mar 2019 19:28:43 +0900
-Message-ID: <20190326102843.GA10264@icarus>
-References: <cover.1553494625.git.vilhelm.gray@gmail.com>
- <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
- <20190325093854.jzkkwaksxi7zvtrg@wunner.de>
- <20190326031422.GB3356@icarus>
- <20190326094345.v7l7xjvfs2scbvbv@wunner.de>
- <20190326100743.GA10005@icarus>
- <20190326101933.GW9224@smile.fi.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v12 3/4] cpuidle: Export the next timer/tick expiration
+ for a CPU
+Date: Tue, 26 Mar 2019 11:36:29 +0100
+Message-ID: <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
+References: <20190227195836.24739-1-ulf.hansson@linaro.org>
+ <20190227195836.24739-4-ulf.hansson@linaro.org> <2942111.nn8VVVUCAL@aspire.rjw.lan>
+ <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190326101933.GW9224@smile.fi.intel.com>
+In-Reply-To: <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>, Lukas Wunner <lukas@wunner.de>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Arnd Bergmann <arnd@arndb.de>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 26, 2019 at 12:19:33PM +0200, Andy Shevchenko wrote:
-> On Tue, Mar 26, 2019 at 07:08:18PM +0900, William Breathitt Gray wrote:
-> > On Tue, Mar 26, 2019 at 10:43:45AM +0100, Lukas Wunner wrote:
-> > > On Tue, Mar 26, 2019 at 12:14:22PM +0900, William Breathitt Gray wrote:
-> 
-> > > Why is it so complicated, does it allow passing in a start value
-> > > that's not a multiple of 8?  Do you really need that?  I imagine
-> > > a simplification is possible if that assumption can be made (and
-> > > is spelled out in the kerneldoc).
-> > 
-> > That's a good point. Originally, I had envisioned the possibility of
-> > calling bitmap_get_value8/bitmap_set_value8 at odd start offsets; this
-> > would open up the possibility of a clump landing as a split between 2
-> > words, thus requiring this complicated case handling code. However, I'm
-> > not sure how often users would need this case; none of the drivers right
-> > now require clumps at odd offsets.
-> > 
-> > Andy, would you have any objection to restricting the start offset
-> > values for bitmap_get_value8/bitmap_set_value8 to multiples of 8? That
-> > would prevent the split word case, and thus allow the implementation for
-> > those functions to be a lot simpler.
-> 
-> No, I have no objection.
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
+On Mon, Mar 25, 2019 at 3:24 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Mon, 25 Mar 2019 at 13:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > On Wednesday, February 27, 2019 8:58:35 PM CET Ulf Hansson wrote:
+> > > To be able to predict the sleep duration for a CPU that is entering idle,
+> > > knowing when the next timer/tick is going to expire, is extremely useful.
+> > > Both the teo and the menu cpuidle governors already makes use of this
+> > > information, while selecting an idle state.
+> > >
 
-In this case, bitmap_get_value8 could be simplified to something like
-this:
+[cut]
 
-        index = BIT_WORD(start);
-        offset = start % BITS_PER_LONG;
-        return (bitmap[index] >> offset) & 0xFF;
+> >
+> > > +
+> > >       if (cpuidle_state_is_coupled(drv, index))
+> > >               return cpuidle_enter_state_coupled(dev, drv, index);
+> > >       return cpuidle_enter_state(dev, drv, index);
+> >
+> > Also I would clear next_hrtimer here to avoid dragging stale values
+> > around.
+>
+> Right, I can do that.
+>
+> However, at least in my case it would be an unnecessary update of the
+> variable, as I am never in a path where the value can be "stale".
 
-Or if you prefer a single line:
+It easily can AFAICS.  After all, cpu_power_down_ok() need not run on
+the same CPU that is setting next_hrtimer here.
 
-        (bitmap[BIT_WORD(start)] >> (start % BITS_PER_LONG)) & 0xFF;
+> Even if one theoretically could use a stale value, it's seems likely to not
+> be an issue, don't you think?
 
-Would it be better to define bitmap_get_value8 as a macro then?
+That would be because of the locking in the ->enter() callback I
+suppose?  But is it actually universally guaranteed that setting
+next_hrtimer will never be reordered with acquiring the lock?
 
-William Breathitt Gray
+Also, there is some overhead to be avoided if cpu_power_down_ok()
+checked the next_hrtimer of the other CPUs against 0 explicitly, isn't
+it?
