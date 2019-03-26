@@ -1,57 +1,37 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH v2 00/12] Add some functionalities for Tegra soctherm
-Date: Tue, 26 Mar 2019 10:17:14 +0800
-Message-ID: <31c0ee3b-a8a1-ded3-0cb6-cffab8db58d8@nvidia.com>
-References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [BACKPORT 4.14.y 0/8] candidates from spreadtrum 4.14 product
+ kernel
+Date: Tue, 26 Mar 2019 11:26:52 +0900
+Message-ID: <20190326022652.GB19395@kroah.com>
+References: <20190322161727.1153278-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550744327-4677-1-git-send-email-wni@nvidia.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190322161727.1153278-1-arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: daniel.lezcano@linaro.org, edubezval@gmail.com, robh@kernel.org
-Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: stable@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto <Joao.Pinto@synopsys.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Bjorn Helgaas <bhelgaas@google.com>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pci@v
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
-Does there have any comments on this serial?
+On Fri, Mar 22, 2019 at 05:17:15PM +0100, Arnd Bergmann wrote:
+> I took a scripted approach to look at some product kernels for patches
+> backported into vendor kernels. This is a set of (mostly) bugfixes I found
+> in Spreadtrum's linux-4.14 kernel that are missing in v4.14.107:
+> 
+> 83dc7e3dea76 scsi: ufs: fix wrong command type of UTRD for UFSHCI v2.1
+> 099a95f3591a PCI: designware-ep: dw_pcie_ep_set_msi() should only set MMC bits
+> 1cab826b30c6 PCI: designware-ep: Read-only registers need DBI_RO_WR_EN to be writable
+> b330104fa76d PCI: endpoint: Use EPC's device in dma_alloc_coherent()/dma_free_coherent()
+> 36d46cdb43ef rtc: Fix overflow when converting time64_t to rtc_time
+> 1b5d43cfb697 sched/cpufreq/schedutil: Fix error path mutex unlock
+> 5fb5caee92ba pwm-backlight: Enable/disable the PWM before/after LCD enable toggle.
+> f25a646fbe20 power: supply: charger-manager: Fix incorrect return value
+> 
+> Only a small number of patches here, the vendor tree is fairly close to
+> mainline. All commits apply cleanly through git-cherry-pick.
 
-Thanks.
-Wei.
+Thanks for these, now queued up to 4.14.y and a few other branches that
+needed them.
 
-On 21/2/2019 6:18 PM, Wei Ni wrote:
-> Move the hw/sw shutdown patches into this serial. There already have
-> some discussion for it in https://lkml.org/lkml/2018/12/7/225.
-> Support GPU HW throttle, thermal IRQ, set_trips(), EDP IRQ and OC
-> hw throttle.
-> 
-> Main change from v1:
-> 1. Use boolean for "nvidia,polarity-active-low".
-> 2. Add suffix "-us" for "nvidia,throttle-period".
-> 
-> 
-> Wei Ni (12):
->   of: Add bindings of thermtrip for Tegra soctherm
->   thermal: tegra: support hw and sw shutdown
->   arm64: dts: tegra210: set thermtrip
->   of: Add bindings of gpu hw throttle for Tegra soctherm
->   thermal: tegra: add support for gpu hw-throttle
->   arm64: dts: tegra210: set gpu hw throttle level
->   thermal: tegra: add support for thermal IRQ
->   thermal: tegra: add set_trips functionality
->   thermal: tegra: add support for EDP IRQ
->   arm64: dts: tegra210: set EDP interrupt line
->   of: Add bindings of OC hw throttle for Tegra soctherm
->   thermal: tegra: enable OC hw throttle
-> 
->  .../bindings/thermal/nvidia,tegra124-soctherm.txt  |  62 +-
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi           |  20 +-
->  drivers/thermal/tegra/soctherm.c                   | 961 +++++++++++++++++++--
->  drivers/thermal/tegra/soctherm.h                   |  16 +
->  drivers/thermal/tegra/tegra124-soctherm.c          |   7 +-
->  drivers/thermal/tegra/tegra132-soctherm.c          |   7 +-
->  drivers/thermal/tegra/tegra210-soctherm.c          |  15 +-
->  include/dt-bindings/thermal/tegra124-soctherm.h    |   8 +-
->  8 files changed, 1020 insertions(+), 76 deletions(-)
-> 
+greg k-h
