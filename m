@@ -1,36 +1,45 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 07/14] powercap/intel_rapl: Simplify rapl_find_package()
-Date: Tue, 26 Mar 2019 14:27:30 -0400
-Message-ID: <CAJvTdKmg4YwzYGfPZKdAFZCqA6hFROdSVT46iDk0mb1rL-TKvg@mail.gmail.com>
-References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
- <4dd94a34999d6db4ced7a0759c02f7cd93729dc4.1551160674.git.len.brown@intel.com> <20190226190658.GS2861@worktop.programming.kicks-ass.net>
+From: Matthew Garrett <matthewgarrett@google.com>
+Subject: [PATCH V31 09/25] uswsusp: Disable when the kernel is locked down
+Date: Tue, 26 Mar 2019 11:27:25 -0700
+Message-ID: <20190326182742.16950-10-matthewgarrett@google.com>
+References: <20190326182742.16950-1-matthewgarrett@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190226190658.GS2861@worktop.programming.kicks-ass.net>
+In-Reply-To: <20190326182742.16950-1-matthewgarrett@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: X86 ML <x86@kernel.org>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, linux-api@vger.kernel.org, luto@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>, Matthew Garrett <mjg59@google.com>, linux-pm@vger.kernel.org, pavel@ucw.cz, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 26, 2019 at 2:07 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Tue, Feb 26, 2019 at 01:20:05AM -0500, Len Brown wrote:
-> > -static struct rapl_package *find_package_by_id(int id)
-> > +static struct rapl_package *rapl_find_package(int cpu)
-> >  {
-> > +     int id = topology_physical_package_id(cpu);
-> >       struct rapl_package *rp;
->
-> Which you'll change to topology_physical_die_id() in the next patch.
->
-> If you respin the series again, could we pick a better name?
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Done.
-I called this routine "rapl_find_package_domain()" -- since that is
-what it does --
-it finds what RAPL calls a "Package Domain", no matter if that domain
-is implemented in the topology by a die or a physical package.
+uswsusp allows a user process to dump and then restore kernel state, which
+makes it possible to modify the running kernel.  Disable this if the kernel
+is locked down.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Matthew Garrett <mjg59@google.com>
+cc: linux-pm@vger.kernel.org
+Cc: pavel@ucw.cz
+Cc: rjw@rjwysocki.net
+---
+ kernel/power/user.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 2d8b60a3c86b..99e13fd13237 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -52,6 +52,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 	if (!hibernation_available())
+ 		return -EPERM;
+ 
++	if (kernel_is_locked_down("/dev/snapshot", LOCKDOWN_INTEGRITY))
++		return -EPERM;
++
+ 	lock_system_sleep();
+ 
+ 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+-- 
+2.21.0.392.gf8f6787159e-goog
