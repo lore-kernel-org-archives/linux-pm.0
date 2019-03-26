@@ -1,46 +1,57 @@
-From: Matthew Garrett <matthewgarrett@google.com>
-Subject: [PATCH 08/27] hibernate: Disable when the kernel is locked down
-Date: Mon, 25 Mar 2019 15:09:35 -0700
-Message-ID: <20190325220954.29054-9-matthewgarrett@google.com>
-References: <20190325220954.29054-1-matthewgarrett@google.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v2 00/12] Add some functionalities for Tegra soctherm
+Date: Tue, 26 Mar 2019 10:17:14 +0800
+Message-ID: <31c0ee3b-a8a1-ded3-0cb6-cffab8db58d8@nvidia.com>
+References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190325220954.29054-1-matthewgarrett@google.com>
+In-Reply-To: <1550744327-4677-1-git-send-email-wni@nvidia.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, Josh Boyer <jwboyer@fedoraproject.org>, rjw@rjwysocki.net, pavel@ucw.cz, linux-pm@vger.kernel.org, Matthew Garrett <matthewgarrett@google.com>
+To: daniel.lezcano@linaro.org, edubezval@gmail.com, robh@kernel.org
+Cc: thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Josh Boyer <jwboyer@fedoraproject.org>
+Hi all,
+Does there have any comments on this serial?
 
-There is currently no way to verify the resume image when returning
-from hibernate.  This might compromise the signed modules trust model,
-so until we can work with signed hibernate images we disable it when the
-kernel is locked down.
+Thanks.
+Wei.
 
-Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
-Cc: rjw@rjwysocki.net
-Cc: pavel@ucw.cz
-cc: linux-pm@vger.kernel.org
-Signed-off-by: Matthew Garrett <matthewgarrett@google.com>
----
- kernel/power/hibernate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index abef759de7c8..802795becb88 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -70,7 +70,7 @@ static const struct platform_hibernation_ops *hibernation_ops;
- 
- bool hibernation_available(void)
- {
--	return (nohibernate == 0);
-+	return nohibernate == 0 && !kernel_is_locked_down("Hibernation");
- }
- 
- /**
--- 
-2.21.0.392.gf8f6787159e-goog
+On 21/2/2019 6:18 PM, Wei Ni wrote:
+> Move the hw/sw shutdown patches into this serial. There already have
+> some discussion for it in https://lkml.org/lkml/2018/12/7/225.
+> Support GPU HW throttle, thermal IRQ, set_trips(), EDP IRQ and OC
+> hw throttle.
+> 
+> Main change from v1:
+> 1. Use boolean for "nvidia,polarity-active-low".
+> 2. Add suffix "-us" for "nvidia,throttle-period".
+> 
+> 
+> Wei Ni (12):
+>   of: Add bindings of thermtrip for Tegra soctherm
+>   thermal: tegra: support hw and sw shutdown
+>   arm64: dts: tegra210: set thermtrip
+>   of: Add bindings of gpu hw throttle for Tegra soctherm
+>   thermal: tegra: add support for gpu hw-throttle
+>   arm64: dts: tegra210: set gpu hw throttle level
+>   thermal: tegra: add support for thermal IRQ
+>   thermal: tegra: add set_trips functionality
+>   thermal: tegra: add support for EDP IRQ
+>   arm64: dts: tegra210: set EDP interrupt line
+>   of: Add bindings of OC hw throttle for Tegra soctherm
+>   thermal: tegra: enable OC hw throttle
+> 
+>  .../bindings/thermal/nvidia,tegra124-soctherm.txt  |  62 +-
+>  arch/arm64/boot/dts/nvidia/tegra210.dtsi           |  20 +-
+>  drivers/thermal/tegra/soctherm.c                   | 961 +++++++++++++++++++--
+>  drivers/thermal/tegra/soctherm.h                   |  16 +
+>  drivers/thermal/tegra/tegra124-soctherm.c          |   7 +-
+>  drivers/thermal/tegra/tegra132-soctherm.c          |   7 +-
+>  drivers/thermal/tegra/tegra210-soctherm.c          |  15 +-
+>  include/dt-bindings/thermal/tegra124-soctherm.h    |   8 +-
+>  8 files changed, 1020 insertions(+), 76 deletions(-)
+> 
