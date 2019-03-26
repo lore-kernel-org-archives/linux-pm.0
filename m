@@ -1,276 +1,204 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
-Date: Tue, 26 Mar 2019 02:44:40 +0000
-Message-ID: <DB3PR0402MB3916A75C03F131ED3B69A455F55F0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
- <20190227235455.GA15211@bogus>
- <DB3PR0402MB391673518C43A0ABE9BDB55FF5750@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <CAL_JsqJct4BztHEak+=iNK3G7dwYR-pQPeUqb4kBnEdRQMLr6A@mail.gmail.com>
- <DB3PR0402MB3916D67D2CA6C33D27371F58F5760@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <DB3PR0402MB39166061B0712B30E443DA07F5730@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <AM6PR0402MB39111B82FAE76449785EDF90F54A0@AM6PR0402MB3911.eurprd04.prod.outlook.com>
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: Re: [PATCH v12 01/11] bitops: Introduce the for_each_set_clump8 macro
+Date: Tue, 26 Mar 2019 11:54:59 +0900
+Message-ID: <20190326025459.GA3356@icarus>
+References: <cover.1553494625.git.vilhelm.gray@gmail.com>
+ <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
+ <20190325131236.GW9224@smile.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <AM6PR0402MB39111B82FAE76449785EDF90F54A0@AM6PR0402MB3911.eurprd04.prod.outlook.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "maxime.ripard@bootlin.com" <maxime.ripard@bootlin.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "festevam@gmail.com" <festevam@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>, Andy Gross <andy.gross@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, dl-linux-imx <linux-imx@nxp.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "edubezval@gmail.com" <edubezval@gmail.com>, olof@lixom.net
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190325131236.GW9224@smile.fi.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-UGluZy4uLg0KDQpIaSwgRWR1YXJkbw0KCVdoYXQgaXMgeW91ciBvcGluaW9uIGFib3V0IHdoZXJl
-IHRvIHB1dCB0aGUgSFcgcmVzb3VyY2UgSUQgaW4gRFQ/DQoNCkJlc3QgUmVnYXJkcyENCkFuc29u
-IEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW5zb24gSHVh
-bmcNCj4gU2VudDogMjAxOeW5tDPmnIgxM+aXpSAxNjoxMg0KPiBUbzogJ1JvYiBIZXJyaW5nJyA8
-cm9iaEBrZXJuZWwub3JnPjsgJ2VkdWJlenZhbEBnbWFpbC5jb20nDQo+IDxlZHViZXp2YWxAZ21h
-aWwuY29tPg0KPiBDYzogJ21hcmsucnV0bGFuZEBhcm0uY29tJyA8bWFyay5ydXRsYW5kQGFybS5j
-b20+Ow0KPiAnc2hhd25ndW9Aa2VybmVsLm9yZycgPHNoYXduZ3VvQGtlcm5lbC5vcmc+OyAncy5o
-YXVlckBwZW5ndXRyb25peC5kZScNCj4gPHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU+OyAna2VybmVs
-QHBlbmd1dHJvbml4LmRlJw0KPiA8a2VybmVsQHBlbmd1dHJvbml4LmRlPjsgJ2Zlc3RldmFtQGdt
-YWlsLmNvbScgPGZlc3RldmFtQGdtYWlsLmNvbT47DQo+ICdjYXRhbGluLm1hcmluYXNAYXJtLmNv
-bScgPGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tPjsNCj4gJ3dpbGwuZGVhY29uQGFybS5jb20nIDx3
-aWxsLmRlYWNvbkBhcm0uY29tPjsgJ3J1aS56aGFuZ0BpbnRlbC5jb20nDQo+IDxydWkuemhhbmdA
-aW50ZWwuY29tPjsgJ2VkdWJlenZhbEBnbWFpbC5jb20nIDxlZHViZXp2YWxAZ21haWwuY29tPjsN
-Cj4gJ2RhbmllbC5sZXpjYW5vQGxpbmFyby5vcmcnIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3Jn
-PjsgQWlzaGVuZyBEb25nDQo+IDxhaXNoZW5nLmRvbmdAbnhwLmNvbT47ICd1bGYuaGFuc3NvbkBs
-aW5hcm8ub3JnJw0KPiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz47ICdzYm95ZEBrZXJuZWwub3Jn
-JyA8c2JveWRAa2VybmVsLm9yZz47IERhbmllbA0KPiBCYWx1dGEgPGRhbmllbC5iYWx1dGFAbnhw
-LmNvbT47IEFuZHkgR3Jvc3MgPGFuZHkuZ3Jvc3NAbGluYXJvLm9yZz47DQo+ICdob3JtcytyZW5l
-c2FzQHZlcmdlLm5ldC5hdScgPGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1PjsNCj4gJ2hlaWtv
-QHNudGVjaC5kZScgPGhlaWtvQHNudGVjaC5kZT47ICdhcm5kQGFybmRiLmRlJyA8YXJuZEBhcm5k
-Yi5kZT47DQo+ICdtYXhpbWUucmlwYXJkQGJvb3RsaW4uY29tJyA8bWF4aW1lLnJpcGFyZEBib290
-bGluLmNvbT47DQo+ICdiam9ybi5hbmRlcnNzb25AbGluYXJvLm9yZycgPGJqb3JuLmFuZGVyc3Nv
-bkBsaW5hcm8ub3JnPjsNCj4gJ2phZ2FuQGFtYXJ1bGFzb2x1dGlvbnMuY29tJyA8amFnYW5AYW1h
-cnVsYXNvbHV0aW9ucy5jb20+Ow0KPiAnZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbScgPGVu
-cmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb20+Ow0KPiAnbWFyYy53LmdvbnphbGV6QGZyZWUuZnIn
-IDxtYXJjLncuZ29uemFsZXpAZnJlZS5mcj47ICdvbG9mQGxpeG9tLm5ldCcNCj4gPG9sb2ZAbGl4
-b20ubmV0PjsgJ2RldmljZXRyZWVAdmdlci5rZXJuZWwub3JnJw0KPiA8ZGV2aWNldHJlZUB2Z2Vy
-Lmtlcm5lbC5vcmc+OyAnbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZycgPGxpbnV4LQ0KPiBr
-ZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgJ2xpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFk
-Lm9yZycgPGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+OyAnbGludXgt
-cG1Admdlci5rZXJuZWwub3JnJyA8bGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZz47IGRsLWxp
-bnV4LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggVjEwIDEv
-NF0gZHQtYmluZGluZ3M6IGZzbDogc2N1OiBhZGQgdGhlcm1hbCBiaW5kaW5nDQo+IA0KPiBQaW5n
-Li4uDQo+IEhpLCBFZHVhcmRvDQo+IAlDYW4geW91IHRha2UgYSBsb29rIGF0IHRoaXMgdGhyZWFk
-PyBUaGFua3MuDQo+IA0KPiANCj4gQmVzdCBSZWdhcmRzIQ0KPiBBbnNvbiBIdWFuZw0KPiANCj4g
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IEFuc29uIEh1YW5nDQo+ID4g
-U2VudDogMjAxOeW5tDPmnIg25pelIDEzOjI3DQo+ID4gVG86ICdSb2IgSGVycmluZycgPHJvYmhA
-a2VybmVsLm9yZz47ICdlZHViZXp2YWxAZ21haWwuY29tJw0KPiA+IDxlZHViZXp2YWxAZ21haWwu
-Y29tPg0KPiA+IENjOiAnbWFyay5ydXRsYW5kQGFybS5jb20nIDxtYXJrLnJ1dGxhbmRAYXJtLmNv
-bT47DQo+ID4gJ3NoYXduZ3VvQGtlcm5lbC5vcmcnIDxzaGF3bmd1b0BrZXJuZWwub3JnPjsNCj4g
-J3MuaGF1ZXJAcGVuZ3V0cm9uaXguZGUnDQo+ID4gPHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU+OyAn
-a2VybmVsQHBlbmd1dHJvbml4LmRlJw0KPiA+IDxrZXJuZWxAcGVuZ3V0cm9uaXguZGU+OyAnZmVz
-dGV2YW1AZ21haWwuY29tJyA8ZmVzdGV2YW1AZ21haWwuY29tPjsNCj4gPiAnY2F0YWxpbi5tYXJp
-bmFzQGFybS5jb20nIDxjYXRhbGluLm1hcmluYXNAYXJtLmNvbT47DQo+ID4gJ3dpbGwuZGVhY29u
-QGFybS5jb20nIDx3aWxsLmRlYWNvbkBhcm0uY29tPjsgJ3J1aS56aGFuZ0BpbnRlbC5jb20nDQo+
-ID4gPHJ1aS56aGFuZ0BpbnRlbC5jb20+OyAnZWR1YmV6dmFsQGdtYWlsLmNvbScgPGVkdWJlenZh
-bEBnbWFpbC5jb20+Ow0KPiA+ICdkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnJyA8ZGFuaWVsLmxl
-emNhbm9AbGluYXJvLm9yZz47IEFpc2hlbmcgRG9uZw0KPiA+IDxhaXNoZW5nLmRvbmdAbnhwLmNv
-bT47ICd1bGYuaGFuc3NvbkBsaW5hcm8ub3JnJw0KPiA+IDx1bGYuaGFuc3NvbkBsaW5hcm8ub3Jn
-PjsgJ3Nib3lkQGtlcm5lbC5vcmcnIDxzYm95ZEBrZXJuZWwub3JnPjsNCj4gPiBEYW5pZWwgQmFs
-dXRhIDxkYW5pZWwuYmFsdXRhQG54cC5jb20+OyBBbmR5IEdyb3NzDQo+ID4gPGFuZHkuZ3Jvc3NA
-bGluYXJvLm9yZz47ICdob3JtcytyZW5lc2FzQHZlcmdlLm5ldC5hdScNCj4gPiA8aG9ybXMrcmVu
-ZXNhc0B2ZXJnZS5uZXQuYXU+OyAnaGVpa29Ac250ZWNoLmRlJyA8aGVpa29Ac250ZWNoLmRlPjsN
-Cj4gPiAnYXJuZEBhcm5kYi5kZScgPGFybmRAYXJuZGIuZGU+OyAnbWF4aW1lLnJpcGFyZEBib290
-bGluLmNvbScNCj4gPiA8bWF4aW1lLnJpcGFyZEBib290bGluLmNvbT47ICdiam9ybi5hbmRlcnNz
-b25AbGluYXJvLm9yZycNCj4gPiA8Ympvcm4uYW5kZXJzc29uQGxpbmFyby5vcmc+OyAnamFnYW5A
-YW1hcnVsYXNvbHV0aW9ucy5jb20nDQo+ID4gPGphZ2FuQGFtYXJ1bGFzb2x1dGlvbnMuY29tPjsg
-J2VucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb20nDQo+ID4gPGVucmljLmJhbGxldGJvQGNvbGxh
-Ym9yYS5jb20+OyAnbWFyYy53LmdvbnphbGV6QGZyZWUuZnInDQo+IDxtYXJjLncuZ29uemFsZXpA
-ZnJlZS5mcj47ICdvbG9mQGxpeG9tLm5ldCcNCj4gPiA8b2xvZkBsaXhvbS5uZXQ+OyAnZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmcnDQo+ID4gPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsg
-J2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcnIDxsaW51eC0NCj4gPiBrZXJuZWxAdmdlci5r
-ZXJuZWwub3JnPjsgJ2xpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZycNCj4gPiA8
-bGludXgtYXJtLSBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47ICdsaW51eC1wbUB2Z2VyLmtl
-cm5lbC5vcmcnDQo+ID4gPGxpbnV4LSBwbUB2Z2VyLmtlcm5lbC5vcmc+OyBkbC1saW51eC1pbXgg
-PGxpbnV4LWlteEBueHAuY29tPg0KPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggVjEwIDEvNF0gZHQt
-YmluZGluZ3M6IGZzbDogc2N1OiBhZGQgdGhlcm1hbA0KPiA+IGJpbmRpbmcNCj4gPg0KPiA+IFBp
-bmcuLi4NCj4gPg0KPiA+IEhpLCBFZHVhcmRvDQo+ID4gCUxvb2tzIGxpa2Ugd2UgYXJlIGdvaW5n
-IGFyb3VuZCBpbiBjaXJjbGUsIGNhbiB3ZSBtYWtlIGRlY2lzaW9uIG9mDQo+ID4gd2hpY2ggZGly
-ZWN0aW9uIHRvIGdvPw0KPiA+DQo+ID4gQmVzdCBSZWdhcmRzIQ0KPiA+IEFuc29uIEh1YW5nDQo+
-ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBBbnNvbiBI
-dWFuZw0KPiA+ID4gU2VudDogMjAxOeW5tDPmnIgx5pelIDk6NDENCj4gPiA+IFRvOiAnUm9iIEhl
-cnJpbmcnIDxyb2JoQGtlcm5lbC5vcmc+OyBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4gPiBDYzog
-bWFyay5ydXRsYW5kQGFybS5jb207IHNoYXduZ3VvQGtlcm5lbC5vcmc7DQo+ID4gcy5oYXVlckBw
-ZW5ndXRyb25peC5kZTsNCj4gPiA+IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21h
-aWwuY29tOw0KPiBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsNCj4gPiA+IHdpbGwuZGVhY29uQGFy
-bS5jb207IHJ1aS56aGFuZ0BpbnRlbC5jb207IGVkdWJlenZhbEBnbWFpbC5jb207DQo+ID4gPiBk
-YW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyBBaXNoZW5nIERvbmcgPGFpc2hlbmcuZG9uZ0BueHAu
-Y29tPjsNCj4gPiA+IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IHNib3lkQGtlcm5lbC5vcmc7IERh
-bmllbCBCYWx1dGENCj4gPiA+IDxkYW5pZWwuYmFsdXRhQG54cC5jb20+OyBBbmR5IEdyb3NzIDxh
-bmR5Lmdyb3NzQGxpbmFyby5vcmc+Ow0KPiA+ID4gaG9ybXMrcmVuZXNhc0B2ZXJnZS5uZXQuYXU7
-IGhlaWtvQHNudGVjaC5kZTsgYXJuZEBhcm5kYi5kZTsNCj4gPiA+IG1heGltZS5yaXBhcmRAYm9v
-dGxpbi5jb207IGJqb3JuLmFuZGVyc3NvbkBsaW5hcm8ub3JnOw0KPiA+ID4gamFnYW5AYW1hcnVs
-YXNvbHV0aW9ucy5jb207IGVucmljLmJhbGxldGJvQGNvbGxhYm9yYS5jb207DQo+ID4gPiBtYXJj
-LncuZ29uemFsZXpAZnJlZS5mcjsgb2xvZkBsaXhvbS5uZXQ7IGRldmljZXRyZWVAdmdlci5rZXJu
-ZWwub3JnOw0KPiA+ID4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLWtl
-cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiA+ID4gbGludXgtIHBtQHZnZXIua2VybmVsLm9y
-ZzsgZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT4NCj4gPiA+IFN1YmplY3Q6IFJFOiBb
-UEFUQ0ggVjEwIDEvNF0gZHQtYmluZGluZ3M6IGZzbDogc2N1OiBhZGQgdGhlcm1hbA0KPiA+ID4g
-YmluZGluZw0KPiA+ID4NCj4gPiA+IEhpLCBSb2IvRWR1YXJkbw0KPiA+ID4NCj4gPiA+IEJlc3Qg
-UmVnYXJkcyENCj4gPiA+IEFuc29uIEh1YW5nDQo+ID4gPg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiBGcm9tOiBSb2IgSGVycmluZyBbbWFpbHRvOnJvYmhAa2Vy
-bmVsLm9yZ10NCj4gPiA+ID4gU2VudDogMjAxOeW5tDLmnIgyOOaXpSAyMjo0OQ0KPiA+ID4gPiBU
-bzogQW5zb24gSHVhbmcgPGFuc29uLmh1YW5nQG54cC5jb20+DQo+ID4gPiA+IENjOiBtYXJrLnJ1
-dGxhbmRAYXJtLmNvbTsgc2hhd25ndW9Aa2VybmVsLm9yZzsNCj4gPiA+IHMuaGF1ZXJAcGVuZ3V0
-cm9uaXguZGU7DQo+ID4gPiA+IGtlcm5lbEBwZW5ndXRyb25peC5kZTsgZmVzdGV2YW1AZ21haWwu
-Y29tOw0KPiA+IGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tOw0KPiA+ID4gPiB3aWxsLmRlYWNvbkBh
-cm0uY29tOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tOw0KPiA+ID4g
-PiBkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyBBaXNoZW5nIERvbmcgPGFpc2hlbmcuZG9uZ0Bu
-eHAuY29tPjsNCj4gPiA+ID4gdWxmLmhhbnNzb25AbGluYXJvLm9yZzsgc2JveWRAa2VybmVsLm9y
-ZzsgRGFuaWVsIEJhbHV0YQ0KPiA+ID4gPiA8ZGFuaWVsLmJhbHV0YUBueHAuY29tPjsgQW5keSBH
-cm9zcyA8YW5keS5ncm9zc0BsaW5hcm8ub3JnPjsNCj4gPiA+ID4gaG9ybXMrcmVuZXNhc0B2ZXJn
-ZS5uZXQuYXU7IGhlaWtvQHNudGVjaC5kZTsgYXJuZEBhcm5kYi5kZTsNCj4gPiA+ID4gbWF4aW1l
-LnJpcGFyZEBib290bGluLmNvbTsgYmpvcm4uYW5kZXJzc29uQGxpbmFyby5vcmc7DQo+ID4gPiA+
-IGphZ2FuQGFtYXJ1bGFzb2x1dGlvbnMuY29tOyBlbnJpYy5iYWxsZXRib0Bjb2xsYWJvcmEuY29t
-Ow0KPiA+ID4gPiBtYXJjLncuZ29uemFsZXpAZnJlZS5mcjsgb2xvZkBsaXhvbS5uZXQ7DQo+ID4g
-PiA+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwu
-b3JnOw0KPiA+ID4gPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+ID4g
-PiA+IGxpbnV4LSBwbUB2Z2VyLmtlcm5lbC5vcmc7IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54
-cC5jb20+DQo+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjEwIDEvNF0gZHQtYmluZGluZ3M6
-IGZzbDogc2N1OiBhZGQgdGhlcm1hbA0KPiA+ID4gPiBiaW5kaW5nDQo+ID4gPiA+DQo+ID4gPiA+
-IE9uIFdlZCwgRmViIDI3LCAyMDE5IGF0IDY6NDggUE0gQW5zb24gSHVhbmcNCj4gPGFuc29uLmh1
-YW5nQG54cC5jb20+DQo+ID4gPiA+IHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gSGksIFJv
-Yg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gQmVzdCBSZWdhcmRzIQ0KPiA+ID4gPiA+IEFuc29uIEh1
-YW5nDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
-ID4gPiA+ID4gPiBGcm9tOiBSb2IgSGVycmluZyBbbWFpbHRvOnJvYmhAa2VybmVsLm9yZ10NCj4g
-PiA+ID4gPiA+IFNlbnQ6IDIwMTnlubQy5pyIMjjml6UgNzo1NQ0KPiA+ID4gPiA+ID4gVG86IEFu
-c29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPg0KPiA+ID4gPiA+ID4gQ2M6IG1hcmsucnV0
-bGFuZEBhcm0uY29tOyBzaGF3bmd1b0BrZXJuZWwub3JnOw0KPiA+ID4gPiA+ID4gcy5oYXVlckBw
-ZW5ndXRyb25peC5kZTsga2VybmVsQHBlbmd1dHJvbml4LmRlOw0KPiA+ID4gZmVzdGV2YW1AZ21h
-aWwuY29tOw0KPiA+ID4gPiA+ID4gY2F0YWxpbi5tYXJpbmFzQGFybS5jb207IHdpbGwuZGVhY29u
-QGFybS5jb207DQo+ID4gPiBydWkuemhhbmdAaW50ZWwuY29tOw0KPiA+ID4gPiA+ID4gZWR1YmV6
-dmFsQGdtYWlsLmNvbTsgZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsgQWlzaGVuZyBEb25nDQo+
-ID4gPiA+ID4gPiA8YWlzaGVuZy5kb25nQG54cC5jb20+OyB1bGYuaGFuc3NvbkBsaW5hcm8ub3Jn
-Ow0KPiA+ID4gPiA+ID4gc2JveWRAa2VybmVsLm9yZzsgRGFuaWVsIEJhbHV0YSA8ZGFuaWVsLmJh
-bHV0YUBueHAuY29tPjsgQW5keQ0KPiA+ID4gPiA+ID4gR3Jvc3MgPGFuZHkuZ3Jvc3NAbGluYXJv
-Lm9yZz47IGhvcm1zK3JlbmVzYXNAdmVyZ2UubmV0LmF1Ow0KPiA+ID4gPiA+ID4gaGVpa29Ac250
-ZWNoLmRlOyBhcm5kQGFybmRiLmRlOyBtYXhpbWUucmlwYXJkQGJvb3RsaW4uY29tOw0KPiA+ID4g
-PiA+ID4gYmpvcm4uYW5kZXJzc29uQGxpbmFyby5vcmc7IGphZ2FuQGFtYXJ1bGFzb2x1dGlvbnMu
-Y29tOw0KPiA+ID4gPiA+ID4gZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsgbWFyYy53Lmdv
-bnphbGV6QGZyZWUuZnI7DQo+ID4gPiA+ID4gPiBvbG9mQGxpeG9tLm5ldDsgZGV2aWNldHJlZUB2
-Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiA+ID4gPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
-Ow0KPiA+ID4gPiA+ID4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiA+
-ID4gPiA+ID4gbGludXgtIHBtQHZnZXIua2VybmVsLm9yZzsgZGwtbGludXgtaW14IDxsaW51eC1p
-bXhAbnhwLmNvbT4NCj4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjEwIDEvNF0gZHQt
-YmluZGluZ3M6IGZzbDogc2N1OiBhZGQNCj4gPiA+ID4gPiA+IHRoZXJtYWwgYmluZGluZw0KPiA+
-ID4gPiA+ID4NCj4gPiA+ID4gPiA+IE9uIFdlZCwgRmViIDI3LCAyMDE5IGF0IDA4OjQ2OjIxQU0g
-KzAwMDAsIEFuc29uIEh1YW5nIHdyb3RlOg0KPiA+ID4gPiA+ID4gPiBOWFAgaS5NWDhRWFAgaXMg
-YW4gQVJNdjggU29DIHdpdGggYSBDb3J0ZXgtTTQgY29yZSBpbnNpZGUgYXMNCj4gPiA+ID4gPiA+
-ID4gc3lzdGVtIGNvbnRyb2xsZXIsIHRoZSBzeXN0ZW0gY29udHJvbGxlciBpcyBpbiBjaGFyZ2Ug
-b2YNCj4gPiA+ID4gPiA+ID4gc3lzdGVtIHBvd2VyLCBjbG9jayBhbmQgdGhlcm1hbCBzZW5zb3Jz
-IGV0Yy4gbWFuYWdlbWVudCwNCj4gPiA+ID4gPiA+ID4gTGludXgga2VybmVsIGhhcyB0byBjb21t
-dW5pY2F0ZSB3aXRoIHN5c3RlbSBjb250cm9sbGVyIHZpYQ0KPiA+ID4gPiA+ID4gPiBNVSAobWVz
-c2FnZSB1bml0KSBJUEMgdG8gZ2V0IHRlbXBlcmF0dXJlIGZyb20gdGhlcm1hbA0KPiA+ID4gPiA+
-ID4gPiBzZW5zb3JzLCB0aGlzIHBhdGNoIGFkZHMgYmluZGluZyBkb2MgZm9yIGkuTVggc3lzdGVt
-DQo+ID4gPiA+ID4gPiA+IGNvbnRyb2xsZXIgdGhlcm1hbA0KPiA+IGRyaXZlci4NCj4gPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1
-YW5nQG54cC5jb20+DQo+ID4gPiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gPiBDaGFuZ2VzIHNp
-bmNlIFY5Og0KPiA+ID4gPiA+ID4gPiAgICAgLSBjaGFuZ2UgI3RoZXJtYWwtc2Vuc29yLWNlbGxz
-IHZhbHVlIGluIGV4YW1wbGUgdG8gMSwNCj4gPiA+ID4gPiA+ID4gc2luY2UgdGhlcmUgYXJlDQo+
-ID4gPiA+ID4gPiBvdGhlcg0KPiA+ID4gPiA+ID4gPiAgICAgICB0aGVybWFsIHNlbnNvcnMgaW5z
-aWRlIHN5c3RlbSBjb250cm9sbGVyLCBpdCBpcyBqdXN0DQo+ID4gPiA+ID4gPiA+IGJlY2F1c2Ug
-dGhlcmUgYXJlDQo+ID4gPiA+ID4gPiBzdGlsbA0KPiA+ID4gPiA+ID4gPiAgICAgICBzb21lIGlz
-c3VlLCBzbyBzeXN0ZW0gY29udHJvbGxlciBkb2VzIE5PVCBleHBvc2UgdGhlbQ0KPiA+ID4gPiA+
-ID4gPiBmb3Igbm93LA0KPiA+ID4gPiA+ID4gdGhleSBjb3VsZA0KPiA+ID4gPiA+ID4gPiAgICAg
-ICBiZSBleHBvc2VkIGxhdGVyLCBzbyBpdCBzaG91bGQgYmUgMSBmcm9tIEhXIHBlcnNwZWN0aXZl
-Lg0KPiA+ID4gPiA+ID4gPiAtLS0NCj4gPiA+ID4gPiA+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL2FybS9mcmVlc2NhbGUvZnNsLHNjdS50eHQgICB8IDIxDQo+ID4gPiA+ID4gPiArKysrKysr
-KysrKysrKysrKysrKysNCj4gPiA+ID4gPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRp
-b25zKCspDQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IGRpZmYgLS1naXQNCj4gPiA+ID4g
-PiA+ID4gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9m
-c2wsc2N1LnR4DQo+ID4gPiA+ID4gPiA+IHQNCj4gPiA+ID4gPiA+ID4gYi9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4DQo+ID4gPiA+ID4g
-PiA+IHQgaW5kZXggNzJkNDgxYy4uODU1MjcwYiAxMDA2NDQNCj4gPiA+ID4gPiA+ID4gLS0tDQo+
-ID4gPiA+ID4gPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVl
-c2NhbGUvZnNsLHNjdS50eA0KPiA+ID4gPiA+ID4gPiB0DQo+ID4gPiA+ID4gPiA+ICsrKyBiL0Rv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UuDQo+
-ID4gPiA+ID4gPiA+ICsrKyB0eA0KPiA+ID4gPiA+ID4gPiArKysgdA0KPiA+ID4gPiA+ID4gPiBA
-QCAtMTIyLDYgKzEyMiwyMSBAQCBSVEMgYmluZGluZ3MgYmFzZWQgb24gU0NVIE1lc3NhZ2UNCj4g
-PiA+IFByb3RvY29sDQo+ID4gPiA+ID4gPiA+IFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gPiA+
-ID4gPiA+ICAtIGNvbXBhdGlibGU6IHNob3VsZCBiZSAiZnNsLGlteDhxeHAtc2MtcnRjIjsNCj4g
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gK1RoZXJtYWwgYmluZGluZ3MgYmFzZWQgb24gU0NV
-IE1lc3NhZ2UgUHJvdG9jb2wNCj4gPiA+ID4gPiA+ID4gKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gPiA+ID4gPiA+ICstDQo+
-ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4g
-PiA+ID4gPiA+ICstIGNvbXBhdGlibGU6ICAgICAgICAgICAgICAgICAgICAgIFNob3VsZCBiZSA6
-DQo+ID4gPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJmc2wsaW14OHF4
-cC1zYy10aGVybWFsIg0KPiA+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
-Zm9sbG93ZWQgYnkNCj4gPiA+ID4gPiA+ID4gKyJmc2wsaW14LXNjLXRoZXJtYWwiOw0KPiA+ID4g
-PiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ICstICN0aGVybWFsLXNlbnNvci1jZWxsczogICBTZWUN
-Cj4gPiA+ID4gPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3Ro
-ZXJtYWwudHh0DQo+ID4gPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICBmb3Ig
-YSBkZXNjcmlwdGlvbi4NCj4gPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gPiArLSBpbXgsc2Vu
-c29yLXJlc291cmNlLWlkOiAgQSBzaW5nbGUgaW50ZWdlciBmb3Igc2luZ2xlDQo+ID4gPiA+ID4g
-PiA+ICt0aGVybWFsIHpvbmUncw0KPiA+ID4gPiA+ID4gcmVzb3VyY2UgSUQgb3INCj4gPiA+ID4g
-PiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgIGFuIGFycmF5IG9mIGludGVnZXJzIHRv
-IHNwZWNpZnkNCj4gPiA+ID4gPiA+ID4gKyBlYWNoIHRoZXJtYWwNCj4gPiA+ID4gPiA+IHpvbmUn
-cyBzZW5zb3INCj4gPiA+ID4gPiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc291
-cmNlIElELg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IENhbid0IHlvdSBwdXQgdGhlIHJlc291
-cmNlIGlkcyBpbiB0aGUgdGhlcm1hbC1zZW5zb3IgY2VsbHM/DQo+ID4gPiA+ID4gPiBXaHkgZG8g
-eW91IG5lZWQgdG8gbGlzdCB0aGVtIGhlcmU/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBGb3IgdGhl
-IHRoZXJtYWwtc2Vuc29yIGNlbGxzLCBpZiB5b3UgbWVhbnQgdGhlIGFyZ3VtZW50IG9mIHRzZW5z
-DQo+ID4gPiA+ID4gcGhhbmRsZSwgdGhlbiB0aGUgcmVhc29uIGlzIHRoYXQgYXJndW1lbnQgaXMg
-Zm9yIHNlbnNvciBpbmRleA0KPiA+ID4gPiA+IHN0YXJ0aW5nIGZyb20gMCwgcHJldmlvdXMgSSB1
-c2UgaXQgZm9yIG91ciByZXNvdXJjZSBJRCwgYnV0IGl0DQo+ID4gPiA+ID4gbG9va3MgY29uZnVz
-ZWQsIHNpbmNlIHVzZXIgd2lsbCB0aGluayB0aGVyZSBhcmUgbWFueSBzZW5zb3JzDQo+ID4gPiA+
-ID4gdGhlcmUgcGVyDQo+ID4gPiBFZHVhcmRvJ3MgY29tbWVudC4NCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHRoZXJtYWwtc2Vuc29ycyA9IDwmdHNlbnMgMD47
-DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJZiB5b3UgbWVhbnQgcHV0dGluZyBpdCBpbiBlYWNoIHRo
-ZXJtYWwgc2Vuc29yIG5vZGUgaW5zdGVhZCBvZiAidHNlbnMiDQo+ID4gPiA+ID4gbm9kZSwgdGhl
-biBpbiBwcmV2aW91cyBwYXRjaCBzZXJpZXMsIEkgcHV0IHRoaXMgIg0KPiA+ID4gPiA+IGlteCxz
-ZW5zb3ItcmVzb3VyY2UtaWQgIiBwcm9wZXJ0eSBpbiBlYWNoIHRoZXJtYWwgc2Vuc29yIG5vZGUs
-DQo+ID4gPiA+ID4gYnV0IHRoZSB0aGVybWFsIHNlbnNvciBub2RlcyBhcmUgcGFyc2VkIGJ5IGNv
-bW1vbiB0aGVybWFsDQo+ID4gPiA+ID4gZnJhbWV3b3JrLCB0aGVybWFsIGRyaXZlciB3aWxsIG5l
-ZWQgdG8gZmluZCB0aGUgdGhlcm1hbCB6b25lDQo+ID4gPiA+ID4gbm9kZSBhbmQgZ28gdGhyb3Vn
-aCBldmVyeSBjaGlsZCBub2RlIHRvIGdldCB0aGUgcmVzb3VyY2UgaWQNCj4gPiA+ID4gPiBhZ2Fp
-biwgc28gRWR1YXJkbyBzdWdnZXN0ZWQgdG8gcHV0IGl0IGluDQo+ID4gPiA+IG91ciBwbGF0Zm9y
-bSB0c2VucyBub2RlLCB0aGF0IG1ha2VzIG91ciB0aGVybWFsIGRyaXZlciBjb2RlIG11Y2gNCj4g
-PiA+ID4gbW9yZSBzaW1wbGUuDQo+ID4gPiA+DQo+ID4gPiA+IFRoZSBwaGFuZGxlIGFyZ3MgYXJl
-IG1lYW50IHRvIGJlIGFuIGlkIHR5cGljYWxseS4gVGhlcmUncw0KPiA+ID4gPiBhYnNvbHV0ZWx5
-IG5vIHJlcXVpcmVtZW50IHRoZXkgYXJlIDAtTiBiYXNlZC4gVGhleSBvZnRlbiBhcmUNCj4gPiA+
-ID4gYmVjYXVzZSB0aGluZ3MgbGlrZSBpbnRlcnJ1cHRzIGFyZSAwLU4gb3IgY2xvY2tzIGhhdmUg
-bm8gaC93IGlkLg0KPiA+ID4gPiBJZiB5b3UgYWxyZWFkeSBoYXZlIGFuIGlkLA0KPiA+IHVzZSBp
-dC4NCj4gPiA+ID4gRG9uJ3QgaW52ZW50IHlvdXIgb3duLg0KPiA+ID4NCj4gPiA+IEF0IHRoZSBi
-ZWdpbm5pbmcsIEkgcHV0IHRoZSBIVyByZXNvdXJjZSBJRCBpbiB0aGUgInRzZW5zIiBwaGFuZGxl
-DQo+ID4gPiBhcmd1bWVudCBvZiAidGhlcm1hbC1zZW5zb3JzIiBub2RlLCBzZWUgIGJlbG93IHBh
-dGNoIEkgc2VudCBiZWZvcmUsDQo+ID4gPiB0aGUgYmVuZWZpdCBpcyBJIGRvIE5PVCBuZWVkIHRv
-IGFkZCBuZXcgcHJvcGVydHkgZm9yIHBhc3NpbmcgSFcNCj4gPiA+IHJlc291cmNlIElEIHRvIGRy
-aXZlciwgdGhlIGRpc2FkdmFudGFnZSBpcywgSSBoYXZlIHRvIHBhcnNlIHRoZQ0KPiA+ID4gdGhl
-cm1hbF96b25lcycgZWFjaCBjaGlsZCBub2RlIGFuZCBnZXQgdGhlIEhXIHJlc291cmNlIElEIGZy
-b20NCj4gPiA+IHBoYW5kbGUgYXJndW1lbnQoc2VhcmluZyB0aGVybWFsX3pvbmVzIG5vZGUgYW5k
-IGdvIHRocm91Z2ggYWxsIGl0cw0KPiA+ID4gY2hpbGQgbm9kZSwgYW5kIGdldCB0aGUgcGhhbmRs
-ZSBhcmd1bWVudCksIHRoZXkgYXJlIGJ5IGRlZmF1bHQgT05MWQ0KPiA+ID4gcGFyc2VkIGJ5IHRo
-ZXJtYWwgY29yZSBkcml2ZXIuIFdoZW4gd2UgcmVnaXN0ZXIgdGhlcm1hbCB6b25lLCB3ZQ0KPiA+
-ID4gaGF2ZSB0byBwYXNzIHRoZSBIVyByZXNvdXJjZSBJRCB3aGVuIGNhbGxpbmcNCj4gPiA+IGRl
-dm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlcigpLCBpZiB3ZSBhZGQgb3VyIG93biBw
-cm9wZXJ0eQ0KPiA+ID4gdG8gcGFzcyB0aGUgSFcgcmVzb3VyY2UgSUQsIHRoZW4gbm8gbmVlZCB0
-byBkbyBzbywgd2UganVzdCBwYXNzIHRoZQ0KPiA+ID4gaW5kZXggMC1OIGZvciBlYWNoIHRoZXJt
-YWwgc2Vuc29ycyBpbiBkZXZpY2V0cmVlIHdoaWNoIGFsc28gd2l0aA0KPiA+ID4gcGhhbmRsZQ0K
-PiA+IGFyZ3VtZW50IDAtIE4uIFNvIHVzaW5nIG91ciBvd24gcHJvcGVydHkgbWFrZXMgdGhlIGRy
-aXZlciBtdWNoIG1vcmUNCj4gPiBzaW1wbGUuDQo+ID4gPg0KPiA+ID4gU28sIEBFZHVhcmRvLCB3
-aGljaCBkaXJlY3Rpb24gSSBzaG91bGQgZ28/IExvb2tzIGxpa2UgUm9iIHN1Z2dlc3RzDQo+ID4g
-PiBqdXN0IHB1dCB0aGUgSFcgcmVzb3VyY2UgSUQgaW4gdGhlIHBoYW5kbGUgYXJndW1lbnQgbGlr
-ZSB3aGF0IEkgZGlkDQo+ID4gPiBhdCB0aGUgYmVnaW5uaW5nLCBjYW4geW91IGFkdmlzZT8NCj4g
-PiA+DQo+ID4gPiBUaGFua3MsDQo+ID4gPiBBbnNvbi4NCj4gPiA+DQo+ID4gPiBodHRwczovL3Bh
-dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNzAzODQ5Lw0KPiA+ID4gPiArCXRoZXJtYWxfem9u
-ZXM6IHRoZXJtYWwtem9uZXMgew0KPiA+ID4gPiArCQljcHUtdGhlcm1hbDAgew0KPiA+ID4gPiAr
-CQkJcG9sbGluZy1kZWxheS1wYXNzaXZlID0gPDI1MD47DQo+ID4gPiA+ICsJCQlwb2xsaW5nLWRl
-bGF5ID0gPDIwMDA+Ow0KPiA+ID4gPiArCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0c2VucyAzNTU+
-Ow0KPiA+ID4gPiArCQkJdHJpcHMgew0KPiA+ID4gPiArCQkJCWNwdV9hbGVydDA6IHRyaXAwIHsN
-Cj4gPiA+ID4gKwkJCQkJdGVtcGVyYXR1cmUgPSA8MTA3MDAwPjsNCj4gPiA+ID4gKwkJCQkJaHlz
-dGVyZXNpcyA9IDwyMDAwPjsNCj4gPiA+ID4gKwkJCQkJdHlwZSA9ICJwYXNzaXZlIjsNCj4gPiA+
-ID4gKwkJCQl9Ow0KPiA+ID4NCj4gPiA+ID4NCj4gPiA+ID4gUm9iDQpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcg
-bGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmlu
-ZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Mon, Mar 25, 2019 at 03:12:36PM +0200, Andy Shevchenko wrote:
+> On Mon, Mar 25, 2019 at 03:22:23PM +0900, William Breathitt Gray wrote:
+> > This macro iterates for each 8-bit group of bits (clump) with set bits,
+> > within a bitmap memory region. For each iteration, "start" is set to the
+> > bit offset of the found clump, while the respective clump value is
+> > stored to the location pointed by "clump". Additionally, the
+> > bitmap_get_value8 and bitmap_set_value8 functions are introduced to
+> > respectively get and set an 8-bit value in a bitmap memory region.
+> 
+> 
+> This seems to miss Randy's (IIRC) comment about too many const specifiers.
+
+I disagree with removing the const qualifiers; I believe they are useful
+and do not significantly impact the clarity of the code (in fact, I'd
+argue the opposite). The const qualifiers make it clear these values are
+constant, allowing readers at a glace to know these values never change
+within this function. Although I believe GCC is smart enough in this
+case to deduce implicitly that these are constant values, generally
+speaking const qualifiers do make it easier for compilers to optimize
+sections of code (OoO execution, algorithm simplification, etc.), so I
+believe it's useful in a technical sense as well.
+
+I added the const qualifier to these variables because they really are
+constant, and I believe there is merit in making it explicit in the
+code. If the primary reason for removing the const qualifiers is for
+aesthetics, then I must dissent with that decision.
+
+However, it is difficult to read the definitions that wrap around to a
+second line. These definitions are long enough that even removing the
+const qualifiers would not help prevent the wrapping, so perhaps it
+would make to let these stay on a single line. Do you think it would
+help to ignore the 80-character maximum line width coding style rule for
+these cases here?
+
+William Breathitt Gray
+
+> 
+> > Suggested-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> > Suggested-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> > Cc: Arnd Bergmann <arnd@arndb.de>
+> > Acked-by: Andrew Morton <akpm@linux-foundation.org>
+> > Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> > Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+> > ---
+> >  include/asm-generic/bitops/find.h | 14 ++++++
+> >  include/linux/bitops.h            |  5 ++
+> >  lib/find_bit.c                    | 81 +++++++++++++++++++++++++++++++
+> >  3 files changed, 100 insertions(+)
+> > 
+> > diff --git a/include/asm-generic/bitops/find.h b/include/asm-generic/bitops/find.h
+> > index 8a1ee10014de..9a76adff59c6 100644
+> > --- a/include/asm-generic/bitops/find.h
+> > +++ b/include/asm-generic/bitops/find.h
+> > @@ -80,4 +80,18 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
+> >  
+> >  #endif /* CONFIG_GENERIC_FIND_FIRST_BIT */
+> >  
+> > +unsigned long bitmap_get_value8(const unsigned long *const bitmap,
+> > +				const unsigned int size,
+> > +				const unsigned int start);
+> > +
+> > +void bitmap_set_value8(unsigned long *const bitmap, const unsigned int size,
+> > +		       const unsigned long value, const unsigned int start);
+> > +
+> > +unsigned int find_next_clump8(unsigned long *const clump,
+> > +			      const unsigned long *const addr,
+> > +			      unsigned int offset, const unsigned int size);
+> > +
+> > +#define find_first_clump8(clump, bits, size) \
+> > +	find_next_clump8((clump), (bits), 0, (size))
+> > +
+> >  #endif /*_ASM_GENERIC_BITOPS_FIND_H_ */
+> > diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+> > index 602af23b98c7..f19a7bc8f559 100644
+> > --- a/include/linux/bitops.h
+> > +++ b/include/linux/bitops.h
+> > @@ -40,6 +40,11 @@ extern unsigned long __sw_hweight64(__u64 w);
+> >  	     (bit) < (size);					\
+> >  	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
+> >  
+> > +#define for_each_set_clump8(start, clump, bits, size) \
+> > +	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
+> > +	     (start) < (size); \
+> > +	     (start) = find_next_clump8(&(clump), (bits), (start) + 8, (size)))
+> > +
+> >  static inline int get_bitmask_order(unsigned int count)
+> >  {
+> >  	int order;
+> > diff --git a/lib/find_bit.c b/lib/find_bit.c
+> > index ee3df93ba69a..1b6f8a6f1957 100644
+> > --- a/lib/find_bit.c
+> > +++ b/lib/find_bit.c
+> > @@ -218,3 +218,84 @@ EXPORT_SYMBOL(find_next_bit_le);
+> >  #endif
+> >  
+> >  #endif /* __BIG_ENDIAN */
+> > +
+> > +/**
+> > + * bitmap_get_value8 - get an 8-bit value within a memory region
+> > + * @bitmap: address to the bitmap memory region
+> > + * @size: bitmap size in number of bits
+> > + * @start: bit offset of the 8-bit value
+> > + *
+> > + * Returns the 8-bit value located at the @start bit offset within the @bitmap
+> > + * memory region.
+> > + */
+> > +unsigned long bitmap_get_value8(const unsigned long *const bitmap,
+> > +				const unsigned int size,
+> > +				const unsigned int start)
+> > +{
+> > +	const size_t index = BIT_WORD(start);
+> > +	const unsigned int offset = start % BITS_PER_LONG;
+> > +	const unsigned int low_width = (offset + 8 > BITS_PER_LONG) ?
+> > +				       BITS_PER_LONG - offset : 8;
+> > +	const unsigned long low = bitmap[index] >> offset;
+> > +	const unsigned long high = (low_width < 8 && start + 8 <= size) ?
+> > +				   bitmap[index + 1] << low_width : 0;
+> > +
+> > +	return (low | high) & 0xFF;
+> > +}
+> > +EXPORT_SYMBOL(bitmap_get_value8);
+> > +
+> > +/**
+> > + * bitmap_set_value8 - set an 8-bit value within a memory region
+> > + * @bitmap: address to the bitmap memory region
+> > + * @size: bitmap size in number of bits
+> > + * @value: the 8-bit value; values wider than 8 bits may clobber bitmap
+> > + * @start: bit offset of the 8-bit value
+> > + */
+> > +void bitmap_set_value8(unsigned long *const bitmap, const unsigned int size,
+> > +		       const unsigned long value, const unsigned int start)
+> > +{
+> > +	const size_t index = BIT_WORD(start);
+> > +	const unsigned int offset = start % BITS_PER_LONG;
+> > +	const unsigned int low_width = (offset + 8 > BITS_PER_LONG) ?
+> > +				       BITS_PER_LONG - offset : 8;
+> > +	const unsigned long low_mask = GENMASK(low_width - 1, 0) << offset;
+> > +	const unsigned int high_width = 8 - low_width;
+> > +	const unsigned long high_mask = GENMASK(high_width - 1, 0);
+> > +
+> > +	/* set lower portion */
+> > +	bitmap[index] &= ~low_mask;
+> > +	bitmap[index] |= value << offset;
+> > +
+> > +	/* set higher portion if space available in bitmap */
+> > +	if (high_width && start + 8 <= size) {
+> > +		bitmap[index + 1] &= ~high_mask;
+> > +		bitmap[index + 1] |= value >> low_width;
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL(bitmap_set_value8);
+> > +
+> > +/**
+> > + * find_next_clump8 - find next 8-bit clump with set bits in a memory region
+> > + * @clump: location to store copy of found clump
+> > + * @addr: address to base the search on
+> > + * @offset: bit offset at which to start searching
+> > + * @size: bitmap size in number of bits
+> > + *
+> > + * Returns the bit offset for the next set clump; the found clump value is
+> > + * copied to the location pointed by @clump. If no bits are set, returns @size.
+> > + */
+> > +unsigned int find_next_clump8(unsigned long *const clump,
+> > +			      const unsigned long *const addr,
+> > +			      unsigned int offset, const unsigned int size)
+> > +{
+> > +	for (; offset < size; offset += 8) {
+> > +		*clump = bitmap_get_value8(addr, size, offset);
+> > +		if (!*clump)
+> > +			continue;
+> > +
+> > +		return offset;
+> > +	}
+> > +
+> > +	return size;
+> > +}
+> > +EXPORT_SYMBOL(find_next_clump8);
+> > -- 
+> > 2.21.0
+> > 
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
+> 
+> 
