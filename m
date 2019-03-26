@@ -1,77 +1,49 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v12 3/4] cpuidle: Export the next timer/tick expiration
- for a CPU
-Date: Tue, 26 Mar 2019 12:29:52 +0100
-Message-ID: <CAPDyKFrWF8x=G2Zz9z8nGNp0mmcnRUhKof=giOmcQbJ4BkLjsw@mail.gmail.com>
-References: <20190227195836.24739-1-ulf.hansson@linaro.org>
- <20190227195836.24739-4-ulf.hansson@linaro.org> <2942111.nn8VVVUCAL@aspire.rjw.lan>
- <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com> <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 0/2] Correct the processing for base_frequency
+Date: Tue, 26 Mar 2019 12:38:17 +0100
+Message-ID: <3574470.KuU4jANTQq@aspire.rjw.lan>
+References: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
+In-Reply-To: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: lenb@kernel.org, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 26 Mar 2019 at 11:36, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Mon, Mar 25, 2019 at 3:24 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Mon, 25 Mar 2019 at 13:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > On Wednesday, February 27, 2019 8:58:35 PM CET Ulf Hansson wrote:
-> > > > To be able to predict the sleep duration for a CPU that is entering idle,
-> > > > knowing when the next timer/tick is going to expire, is extremely useful.
-> > > > Both the teo and the menu cpuidle governors already makes use of this
-> > > > information, while selecting an idle state.
-> > > >
->
-> [cut]
->
-> > >
-> > > > +
-> > > >       if (cpuidle_state_is_coupled(drv, index))
-> > > >               return cpuidle_enter_state_coupled(dev, drv, index);
-> > > >       return cpuidle_enter_state(dev, drv, index);
-> > >
-> > > Also I would clear next_hrtimer here to avoid dragging stale values
-> > > around.
-> >
-> > Right, I can do that.
-> >
-> > However, at least in my case it would be an unnecessary update of the
-> > variable, as I am never in a path where the value can be "stale".
->
-> It easily can AFAICS.  After all, cpu_power_down_ok() need not run on
-> the same CPU that is setting next_hrtimer here.
+On Monday, March 25, 2019 5:04:38 PM CET Srinivas Pandruvada wrote:
+> The base_frequency display in cpufreq sysfs for intel_pstate gets the
+> guaranteed ratio by reading CPPC guaranteed performance register as a
+> first preference before falling back to x86 MSR for Hardware P-state
+> Capabilities. The current code in cppc_acpi.c assumed that "guaranteed
+> performance register" can be an integer field, which is invalid as per
+> ACPI spec. So this change explicitly check for INTEGER values for
+> invalid BIOS/firmware and ignore. 
+> Also guaranteed performance register field is optional and when not
+> present, nominal performance can be used as the guaranteed performance.
+> But spec calls that this is true only in non-autonomous mode. So
+> no change is made in cppc_acpi.c to make nominal as guaranteed in this
+> case to avoid dependency on autonomous and non-autonomous mode. Instead
+> a change is added to intel_pstate driver, which is specific to x86 to
+> make nominal as guaranteed when guaranteed performance field is absent
+> or has invalid value.
+> Also we are working to clarify this non-autonomous mode requirement
+> through ACPI standard body.
+> 
+> v2:
+> Changes done as suggested by Rafael.
+> 
+> 
+> Srinivas Pandruvada (2):
+>   ACPI / CPPC: Fix processing for guaranteed performance
+>   cpufreq: intel_pstate: Also use cppc nominal_perf for base_frequency
+> 
+>  drivers/acpi/cppc_acpi.c       | 9 +++++++--
+>  drivers/cpufreq/intel_pstate.c | 5 ++++-
+>  2 files changed, 11 insertions(+), 3 deletions(-)
+> 
+> 
 
-That's correct.
-
->
-> > Even if one theoretically could use a stale value, it's seems likely to not
-> > be an issue, don't you think?
->
-> That would be because of the locking in the ->enter() callback I
-> suppose?  But is it actually universally guaranteed that setting
-> next_hrtimer will never be reordered with acquiring the lock?
-
-In the PSCI case and for those CPUs that shares the same genpd
-governor (even hierarchically), then yes.
-
-Unfortunate, I haven't been able to explore this in that great detail
-for other legacy ARM32 platforms, so maybe it's just better to play
-safe, as you suggest and avoid a stale value.
-
->
-> Also, there is some overhead to be avoided if cpu_power_down_ok()
-> checked the next_hrtimer of the other CPUs against 0 explicitly, isn't
-> it?
-
-In regards to overhead and when using genpd for CPUs, there are a
-couple of things I have in mind that we could try to improve. Yes,
-checking for next_hrtimer against 0 could be one thing to consider.
-
-Kind regards
-Uffe
+Both applied, thanks!
