@@ -1,207 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 4/4] cpufreq: intel_pstate: Update max frequency on global turbo changes
-Date: Tue, 26 Mar 2019 12:19:52 +0100
-Message-ID: <5631958.Dv2x2rzsZ4@aspire.rjw.lan>
-References: <11953735.uMqeHy63Iu@aspire.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v12 3/4] cpuidle: Export the next timer/tick expiration
+ for a CPU
+Date: Tue, 26 Mar 2019 12:29:52 +0100
+Message-ID: <CAPDyKFrWF8x=G2Zz9z8nGNp0mmcnRUhKof=giOmcQbJ4BkLjsw@mail.gmail.com>
+References: <20190227195836.24739-1-ulf.hansson@linaro.org>
+ <20190227195836.24739-4-ulf.hansson@linaro.org> <2942111.nn8VVVUCAL@aspire.rjw.lan>
+ <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com> <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11953735.uMqeHy63Iu@aspire.rjw.lan>
+In-Reply-To: <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, 26 Mar 2019 at 11:36, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Mon, Mar 25, 2019 at 3:24 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Mon, 25 Mar 2019 at 13:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >
+> > > On Wednesday, February 27, 2019 8:58:35 PM CET Ulf Hansson wrote:
+> > > > To be able to predict the sleep duration for a CPU that is entering idle,
+> > > > knowing when the next timer/tick is going to expire, is extremely useful.
+> > > > Both the teo and the menu cpuidle governors already makes use of this
+> > > > information, while selecting an idle state.
+> > > >
+>
+> [cut]
+>
+> > >
+> > > > +
+> > > >       if (cpuidle_state_is_coupled(drv, index))
+> > > >               return cpuidle_enter_state_coupled(dev, drv, index);
+> > > >       return cpuidle_enter_state(dev, drv, index);
+> > >
+> > > Also I would clear next_hrtimer here to avoid dragging stale values
+> > > around.
+> >
+> > Right, I can do that.
+> >
+> > However, at least in my case it would be an unnecessary update of the
+> > variable, as I am never in a path where the value can be "stale".
+>
+> It easily can AFAICS.  After all, cpu_power_down_ok() need not run on
+> the same CPU that is setting next_hrtimer here.
 
-While the cpuinfo.max_freq value doesn't really matter for
-intel_pstate in the active mode, in the passive mode it is used by
-governors as the maximum physical frequency of the CPU and the
-results of governor computations generally depend on it.  Also it
-is made available to user space via sysfs and it should match the
-current HW configuration.
+That's correct.
 
-For this reason, make intel_pstate update cpuinfo.max_freq for all
-CPUs if it detects a global change of turbo frequency settings from
-"disable" to "enable" or the other way associated with a _PPC change
-notification from the platform firmware.
+>
+> > Even if one theoretically could use a stale value, it's seems likely to not
+> > be an issue, don't you think?
+>
+> That would be because of the locking in the ->enter() callback I
+> suppose?  But is it actually universally guaranteed that setting
+> next_hrtimer will never be reordered with acquiring the lock?
 
-Note that policy_is_inactive(),  cpufreq_cpu_acquire(),
-cpufreq_cpu_release(), and cpufreq_set_policy() need to be made
-available to it for this purpose.
+In the PSCI case and for those CPUs that shares the same genpd
+governor (even hierarchically), then yes.
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=200759
-Reported-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-Tested-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
+Unfortunate, I haven't been able to explore this in that great detail
+for other legacy ARM32 platforms, so maybe it's just better to play
+safe, as you suggest and avoid a stale value.
 
-v2 -> v3:
-  * Added Acked-by from Viresh.
+>
+> Also, there is some overhead to be avoided if cpu_power_down_ok()
+> checked the next_hrtimer of the other CPUs against 0 explicitly, isn't
+> it?
 
----
- drivers/cpufreq/cpufreq.c      |   16 ++++------------
- drivers/cpufreq/intel_pstate.c |   35 +++++++++++++++++++++++++++++------
- include/linux/cpufreq.h        |   10 ++++++++++
- 3 files changed, 43 insertions(+), 18 deletions(-)
+In regards to overhead and when using genpd for CPUs, there are a
+couple of things I have in mind that we could try to improve. Yes,
+checking for next_hrtimer against 0 could be one thing to consider.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -179,7 +179,7 @@ struct vid_data {
-  *			based on the MSR_IA32_MISC_ENABLE value and whether or
-  *			not the maximum reported turbo P-state is different from
-  *			the maximum reported non-turbo one.
-- * @turbo_disabled_s:	Saved @turbo_disabled value.
-+ * @turbo_disabled_mf:	The @turbo_disabled value reflected by cpuinfo.max_freq.
-  * @min_perf_pct:	Minimum capacity limit in percent of the maximum turbo
-  *			P-state capacity.
-  * @max_perf_pct:	Maximum capacity limit in percent of the maximum turbo
-@@ -188,7 +188,7 @@ struct vid_data {
- struct global_params {
- 	bool no_turbo;
- 	bool turbo_disabled;
--	bool turbo_disabled_s;
-+	bool turbo_disabled_mf;
- 	int max_perf_pct;
- 	int min_perf_pct;
- };
-@@ -896,6 +896,28 @@ static void intel_pstate_update_policies
- 		cpufreq_update_policy(cpu);
- }
- 
-+static void intel_pstate_update_max_freq(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = cpufreq_cpu_acquire(cpu);
-+	struct cpufreq_policy new_policy;
-+	struct cpudata *cpudata;
-+
-+	if (!policy)
-+		return;
-+
-+	cpudata = all_cpu_data[cpu];
-+	policy->cpuinfo.max_freq = global.turbo_disabled_mf ?
-+			cpudata->pstate.max_freq : cpudata->pstate.turbo_freq;
-+
-+	memcpy(&new_policy, policy, sizeof(*policy));
-+	new_policy.max = min(policy->user_policy.max, policy->cpuinfo.max_freq);
-+	new_policy.min = min(policy->user_policy.min, new_policy.max);
-+
-+	cpufreq_set_policy(policy, &new_policy);
-+
-+	cpufreq_cpu_release(policy);
-+}
-+
- static void intel_pstate_update_limits(unsigned int cpu)
- {
- 	mutex_lock(&intel_pstate_driver_lock);
-@@ -905,9 +927,10 @@ static void intel_pstate_update_limits(u
- 	 * If turbo has been turned on or off globally, policy limits for
- 	 * all CPUs need to be updated to reflect that.
- 	 */
--	if (global.turbo_disabled_s != global.turbo_disabled) {
--		global.turbo_disabled_s = global.turbo_disabled;
--		intel_pstate_update_policies();
-+	if (global.turbo_disabled_mf != global.turbo_disabled) {
-+		global.turbo_disabled_mf = global.turbo_disabled;
-+		for_each_possible_cpu(cpu)
-+			intel_pstate_update_max_freq(cpu);
- 	} else {
- 		cpufreq_update_policy(cpu);
- 	}
-@@ -2156,7 +2179,7 @@ static int __intel_pstate_cpu_init(struc
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
- 	update_turbo_state();
--	global.turbo_disabled_s = global.turbo_disabled;
-+	global.turbo_disabled_mf = global.turbo_disabled;
- 	policy->cpuinfo.max_freq = global.turbo_disabled ?
- 			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
- 	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -34,11 +34,6 @@
- 
- static LIST_HEAD(cpufreq_policy_list);
- 
--static inline bool policy_is_inactive(struct cpufreq_policy *policy)
--{
--	return cpumask_empty(policy->cpus);
--}
--
- /* Macros to iterate over CPU policies */
- #define for_each_suitable_policy(__policy, __active)			 \
- 	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
-@@ -254,7 +249,7 @@ EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
-  * cpufreq_cpu_release - Unlock a policy and decrement its usage counter.
-  * @policy: cpufreq policy returned by cpufreq_cpu_acquire().
-  */
--static void cpufreq_cpu_release(struct cpufreq_policy *policy)
-+void cpufreq_cpu_release(struct cpufreq_policy *policy)
- {
- 	if (WARN_ON(!policy))
- 		return;
-@@ -278,7 +273,7 @@ static void cpufreq_cpu_release(struct c
-  * cpufreq_cpu_release() in order to release its rwsem and balance its usage
-  * counter properly.
-  */
--static struct cpufreq_policy *cpufreq_cpu_acquire(unsigned int cpu)
-+struct cpufreq_policy *cpufreq_cpu_acquire(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 
-@@ -714,9 +709,6 @@ static ssize_t show_scaling_cur_freq(str
- 	return ret;
- }
- 
--static int cpufreq_set_policy(struct cpufreq_policy *policy,
--				struct cpufreq_policy *new_policy);
--
- /**
-  * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
-  */
-@@ -2274,8 +2266,8 @@ EXPORT_SYMBOL(cpufreq_get_policy);
-  *
-  * The cpuinfo part of @policy is not updated by this function.
-  */
--static int cpufreq_set_policy(struct cpufreq_policy *policy,
--			      struct cpufreq_policy *new_policy)
-+int cpufreq_set_policy(struct cpufreq_policy *policy,
-+		       struct cpufreq_policy *new_policy)
- {
- 	struct cpufreq_governor *old_gov;
- 	int ret;
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -178,6 +178,11 @@ static inline struct cpufreq_policy *cpu
- static inline void cpufreq_cpu_put(struct cpufreq_policy *policy) { }
- #endif
- 
-+static inline bool policy_is_inactive(struct cpufreq_policy *policy)
-+{
-+	return cpumask_empty(policy->cpus);
-+}
-+
- static inline bool policy_is_shared(struct cpufreq_policy *policy)
- {
- 	return cpumask_weight(policy->cpus) > 1;
-@@ -193,7 +198,12 @@ unsigned int cpufreq_quick_get_max(unsig
- void disable_cpufreq(void);
- 
- u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
-+
-+struct cpufreq_policy *cpufreq_cpu_acquire(unsigned int cpu);
-+void cpufreq_cpu_release(struct cpufreq_policy *policy);
- int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
-+int cpufreq_set_policy(struct cpufreq_policy *policy,
-+		       struct cpufreq_policy *new_policy);
- void cpufreq_update_policy(unsigned int cpu);
- void cpufreq_update_limits(unsigned int cpu);
- bool have_governor_per_policy(void);
+Kind regards
+Uffe
