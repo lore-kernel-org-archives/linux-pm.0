@@ -1,57 +1,97 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v12 3/4] cpuidle: Export the next timer/tick expiration
- for a CPU
-Date: Tue, 26 Mar 2019 11:36:29 +0100
-Message-ID: <CAJZ5v0gHpX0=Urwj5z+FS=PKibM1VO0B5ZEQvwnvqXbUV_=fpg@mail.gmail.com>
-References: <20190227195836.24739-1-ulf.hansson@linaro.org>
- <20190227195836.24739-4-ulf.hansson@linaro.org> <2942111.nn8VVVUCAL@aspire.rjw.lan>
- <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v3 3/4] cpufreq: schedutil: Simplify iowait boosting
+Date: Tue, 26 Mar 2019 12:18:00 +0100
+Message-ID: <2864116.v8IU97Resm@aspire.rjw.lan>
+References: <11953735.uMqeHy63Iu@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFr-zjhvQr-2FtiNyDig60zM=raY7+=G_dtA+H9g49RV8w@mail.gmail.com>
+In-Reply-To: <11953735.uMqeHy63Iu@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Quentin Perret <quentin.perret@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 25, 2019 at 3:24 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Mon, 25 Mar 2019 at 13:21, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > On Wednesday, February 27, 2019 8:58:35 PM CET Ulf Hansson wrote:
-> > > To be able to predict the sleep duration for a CPU that is entering idle,
-> > > knowing when the next timer/tick is going to expire, is extremely useful.
-> > > Both the teo and the menu cpuidle governors already makes use of this
-> > > information, while selecting an idle state.
-> > >
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-[cut]
+There is not reason for the minimum iowait boost value in the
+schedutil cpufreq governor to depend on the available range of CPU
+frequencies.  In fact, that dependency is generally confusing,
+because it causes the iowait boost to behave somewhat differently
+on CPUs with the same maximum frequency and different minimum
+frequencies, for example.
 
-> >
-> > > +
-> > >       if (cpuidle_state_is_coupled(drv, index))
-> > >               return cpuidle_enter_state_coupled(dev, drv, index);
-> > >       return cpuidle_enter_state(dev, drv, index);
-> >
-> > Also I would clear next_hrtimer here to avoid dragging stale values
-> > around.
->
-> Right, I can do that.
->
-> However, at least in my case it would be an unnecessary update of the
-> variable, as I am never in a path where the value can be "stale".
+For this reason, replace the min field in struct sugov_cpu
+with a constant and choose its values to be 1/8 of
+SCHED_CAPACITY_SCALE (for consistency with the intel_pstate
+driver's internal governor).
 
-It easily can AFAICS.  After all, cpu_power_down_ok() need not run on
-the same CPU that is setting next_hrtimer here.
+[Note that policy->cpuinfo.max_freq will not be a constant any more
+ after a subsequent change, so this change is depended on by it.]
 
-> Even if one theoretically could use a stale value, it's seems likely to not
-> be an issue, don't you think?
+Link: https://lore.kernel.org/lkml/20190305083202.GU32494@hirez.programming.kicks-ass.net/T/#ee20bdc98b7d89f6110c0d00e5c3ee8c2ced93c3d
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/sched/cpufreq_schedutil.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-That would be because of the locking in the ->enter() callback I
-suppose?  But is it actually universally guaranteed that setting
-next_hrtimer will never be reordered with acquiring the lock?
-
-Also, there is some overhead to be avoided if cpu_power_down_ok()
-checked the next_hrtimer of the other CPUs against 0 explicitly, isn't
-it?
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -13,6 +13,8 @@
+ #include <linux/sched/cpufreq.h>
+ #include <trace/events/power.h>
+ 
++#define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
++
+ struct sugov_tunables {
+ 	struct gov_attr_set	attr_set;
+ 	unsigned int		rate_limit_us;
+@@ -51,7 +53,6 @@ struct sugov_cpu {
+ 	u64			last_update;
+ 
+ 	unsigned long		bw_dl;
+-	unsigned long		min;
+ 	unsigned long		max;
+ 
+ 	/* The field below is for single-CPU policies only: */
+@@ -303,7 +304,7 @@ static bool sugov_iowait_reset(struct su
+ 	if (delta_ns <= TICK_NSEC)
+ 		return false;
+ 
+-	sg_cpu->iowait_boost = set_iowait_boost ? sg_cpu->min : 0;
++	sg_cpu->iowait_boost = set_iowait_boost ? IOWAIT_BOOST_MIN : 0;
+ 	sg_cpu->iowait_boost_pending = set_iowait_boost;
+ 
+ 	return true;
+@@ -349,7 +350,7 @@ static void sugov_iowait_boost(struct su
+ 	}
+ 
+ 	/* First wakeup after IO: start with minimum boost */
+-	sg_cpu->iowait_boost = sg_cpu->min;
++	sg_cpu->iowait_boost = IOWAIT_BOOST_MIN;
+ }
+ 
+ /**
+@@ -389,7 +390,7 @@ static unsigned long sugov_iowait_apply(
+ 		 * No boost pending; reduce the boost value.
+ 		 */
+ 		sg_cpu->iowait_boost >>= 1;
+-		if (sg_cpu->iowait_boost < sg_cpu->min) {
++		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
+ 			sg_cpu->iowait_boost = 0;
+ 			return util;
+ 		}
+@@ -826,9 +827,6 @@ static int sugov_start(struct cpufreq_po
+ 		memset(sg_cpu, 0, sizeof(*sg_cpu));
+ 		sg_cpu->cpu			= cpu;
+ 		sg_cpu->sg_policy		= sg_policy;
+-		sg_cpu->min			=
+-			(SCHED_CAPACITY_SCALE * policy->cpuinfo.min_freq) /
+-			policy->cpuinfo.max_freq;
+ 	}
+ 
+ 	for_each_cpu(cpu, policy->cpus) {
