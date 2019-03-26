@@ -1,147 +1,100 @@
-From: Leon Romanovsky <leon@kernel.org>
-Subject: Re: [PATCH -next] x86/apic: Reduce print level of CPU limit
- announcement
-Date: Tue, 26 Mar 2019 20:31:04 +0200
-Message-ID: <20190326183104.GL22899@mtr-leonro.mtl.com>
-References: <20190326120213.28633-1-leon@kernel.org>
- <CAJZ5v0jbb+fEWWHdnZEKNOhUy=ZTsDMxy7Rwahp8O-jpBy-K9w@mail.gmail.com>
- <20190326144137.GB22899@mtr-leonro.mtl.com>
- <CAJZ5v0h1w+ZWV24SnX0g9NZORuVWHnyOjZ9Jue2_yUvvFpJB6g@mail.gmail.com>
- <20190326153235.GH22899@mtr-leonro.mtl.com>
- <CAJZ5v0i2FKvKHZMttJjZR+FY_UGkku-C3=fg9FhNv-OWpu7ayA@mail.gmail.com>
- <20190326175338.GK22899@mtr-leonro.mtl.com>
- <CAJZ5v0iEfZKBGemHfc1iMK-qyo6t+h_yG-QOtmWY5ip0g21kdQ@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH] cpufreq: stats: Use lock by stat to replace global spin
+ lock
+Date: Tue, 26 Mar 2019 11:43:46 -0700
+Message-ID: <20190326184346.GY112750@google.com>
+References: <20190325072933.215946-1-linkyle0915@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="MPkR1dXiUZqK+927"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iEfZKBGemHfc1iMK-qyo6t+h_yG-QOtmWY5ip0g21kdQ@mail.gmail.com>
+In-Reply-To: <20190325072933.215946-1-linkyle0915@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86 <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Kyle Lin <linkyle0915@gmail.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Mar 25, 2019 at 03:29:33PM +0800, Kyle Lin wrote:
+> Stats is updated by each policy, using the lock by stat can
+> reduce the contention.
+> 
+> Signed-off-by: Kyle Lin <linkyle0915@gmail.com>
+> ---
+>  drivers/cpufreq/cpufreq_stats.c | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index e2db5581489a..17beb1bc7e16 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -14,7 +14,6 @@
+>  #include <linux/module.h>
+>  #include <linux/slab.h>
+>  
+> -static DEFINE_SPINLOCK(cpufreq_stats_lock);
+>  
+>  struct cpufreq_stats {
+>  	unsigned int total_trans;
+> @@ -23,6 +22,7 @@ struct cpufreq_stats {
+>  	unsigned int state_num;
+>  	unsigned int last_index;
+>  	u64 *time_in_state;
+> +	spinlock_t lock;        /*spinlock for stats update*/
 
---MPkR1dXiUZqK+927
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+nit: not sure if the comment adds much value. If it stay there it
+needs a blank after '/*' and another before '*/'
 
-On Tue, Mar 26, 2019 at 07:08:07PM +0100, Rafael J. Wysocki wrote:
-> On Tue, Mar 26, 2019 at 6:53 PM Leon Romanovsky <leon@kernel.org> wrote:
-> >
-> > On Tue, Mar 26, 2019 at 05:30:22PM +0100, Rafael J. Wysocki wrote:
-> > > On Tue, Mar 26, 2019 at 4:32 PM Leon Romanovsky <leon@kernel.org> wrote:
-> > > >
-> > > > On Tue, Mar 26, 2019 at 04:12:27PM +0100, Rafael J. Wysocki wrote:
-> > > > > On Tue, Mar 26, 2019 at 3:41 PM Leon Romanovsky <leon@kernel.org> wrote:
-> > > > > >
-> > > > > > On Tue, Mar 26, 2019 at 01:29:54PM +0100, Rafael J. Wysocki wrote:
-> > > > > > > On Tue, Mar 26, 2019 at 1:02 PM Leon Romanovsky <leon@kernel.org> wrote:
-> > > > > > > >
-> > > > > > > > From: Leon Romanovsky <leonro@mellanox.com>
-> > > > > > > >
-> > > > > > > > Kernel is booted with less possible CPUs (possible_cpus kernel boot
-> > > > > > > > option) than available CPUs will have prints like this:
-> > > > > > > >
-> > > > > > > > [    1.131039] APIC: NR_CPUS/possible_cpus limit of 8 reached. Processor 55/0x1f ignored.
-> > > > > > > > [    1.132228] ACPI: Unable to map lapic to logical cpu number
-> > > > > > > >
-> > > > > > > > Those warnings are printed for every not-enabled CPU and on the systems
-> > > > > > > > with large number of such CPUs, we see a lot of those prints for default
-> > > > > > > > print level.
-> > > > > > > >
-> > > > > > > > Simple conversion of those prints to be in debug level removes them
-> > > > > > > > while leaving the option to debug system.
-> > > > > > >
-> > > > > > > But generally dynamic debug must be enabled in order for pr_debug()
-> > > > > > > prints to be visible which is kind of cumbersome to do via the command
-> > > > > > > line.
-> > > > > >
-> > > > > > It is doable and documented pretty well, which is uncommon :)
-> > > > > > https://www.kernel.org/doc/html/latest/admin-guide/dynamic-debug-howto.html#debug-messages-during-boot-process
-> > > > >
-> > > > > I know.
-> > > > >
-> > > > > That's what I mean by "kind of cumbersome", because you need to know
-> > > > > which debug messages to enable upfront.
-> > > > >
-> > > > > > >
-> > > > > > > > Signed-off-by: Leon Romanovsky <leonro@mellanox.com>
-> > > > > > > > ---
-> > > > > > > >  arch/x86/kernel/acpi/boot.c | 2 +-
-> > > > > > > >  arch/x86/kernel/apic/apic.c | 6 +++---
-> > > > > > > >  2 files changed, 4 insertions(+), 4 deletions(-)
-> > > > > > > >
-> > > > > > > > diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> > > > > > > > index 8dcbf6890714..3ef8ab89c02d 100644
-> > > > > > > > --- a/arch/x86/kernel/acpi/boot.c
-> > > > > > > > +++ b/arch/x86/kernel/acpi/boot.c
-> > > > > > > > @@ -770,7 +770,7 @@ int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 acpi_id,
-> > > > > > > >
-> > > > > > > >         cpu = acpi_register_lapic(physid, acpi_id, ACPI_MADT_ENABLED);
-> > > > > > > >         if (cpu < 0) {
-> > > > > > > > -               pr_info(PREFIX "Unable to map lapic to logical cpu number\n");
-> > > > > > > > +               pr_debug(PREFIX "Unable to map lapic to logical cpu number\n");
-> > > > > > >
-> > > > > > > And this one is printed sometimes when something really goes wrong
-> > > > > > > which may be really hard to debug otherwise, so there is value in the
-> > > > > > > info level here.
-> > > > > > >
-> > > > > > > Would it be possible to avoid printing it just in some cases?
-> > > > > >
-> > > > > > This can do the trick:
-> > > > > >
-> > > > > > diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> > > > > > index 3ef8ab89c02d..00212b3991e0 100644
-> > > > > > --- a/arch/x86/kernel/acpi/boot.c
-> > > > > > +++ b/arch/x86/kernel/acpi/boot.c
-> > > > > > @@ -770,7 +770,10 @@ int acpi_map_cpu(acpi_handle handle, phys_cpuid_t physid, u32 acpi_id,
-> > > > > >
-> > > > > >         cpu = acpi_register_lapic(physid, acpi_id, ACPI_MADT_ENABLED);
-> > > > > >         if (cpu < 0) {
-> > > > > > -               pr_debug(PREFIX "Unable to map lapic to logical cpu number\n");
-> > > > > > +               if (cpu == -ENOENT)
-> > > > > > +                       pr_debug(PREFIX "Unable to map lapic to logical cpu number\n");
-> > > > >
-> > > > > I don't think it is necessary to print this in the -ENOENT case, as
-> > > > > there is a message for that case that will be printed anyway.
-> > > >
-> > > > Agree, how do you want me to progress? Should I resend patch?
-> > >
-> > > Yes, please.
-> >
-> > I looked in the code and seems like there is one place only in acpi_register_lapic() which returns
-> > EINVAL without any debug prints and that flow can't be because we are providing ACPI_MADT_ENABLED
-> > as an input.
-> >
-> > It looks like that we can safely remove the print from acpi_map_cpu().
->
-> What about generic_processor_info()?  That may return -EINVAL too silently.
+>  	unsigned int *freq_table;
+>  	unsigned int *trans_table;
+>  };
+> @@ -39,12 +39,12 @@ static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
+>  {
+>  	unsigned int count = stats->max_state;
+>  
+> -	spin_lock(&cpufreq_stats_lock);
+> +	spin_lock(&stats->lock);
+>  	memset(stats->time_in_state, 0, count * sizeof(u64));
+>  	memset(stats->trans_table, 0, count * count * sizeof(int));
+>  	stats->last_time = get_jiffies_64();
+>  	stats->total_trans = 0;
+> -	spin_unlock(&cpufreq_stats_lock);
+> +	spin_unlock(&stats->lock);
+>  }
+>  
+>  static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
+> @@ -62,9 +62,9 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+>  	if (policy->fast_switch_enabled)
+>  		return 0;
+>  
+> -	spin_lock(&cpufreq_stats_lock);
+> +	spin_lock(&stats->lock);
+>  	cpufreq_stats_update(stats);
+> -	spin_unlock(&cpufreq_stats_lock);
+> +	spin_unlock(&stats->lock);
+>  
+>  	for (i = 0; i < stats->state_num; i++) {
+>  		len += sprintf(buf + len, "%u %llu\n", stats->freq_table[i],
+> @@ -211,6 +211,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
+>  	stats->state_num = i;
+>  	stats->last_time = get_jiffies_64();
+>  	stats->last_index = freq_table_get_index(stats, policy->cur);
+> +	spin_lock_init(&stats->lock);
+>  
+>  	policy->stats = stats;
+>  	ret = sysfs_create_group(&policy->kobj, &stats_attr_group);
+> @@ -242,11 +243,11 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+>  	if (old_index == -1 || new_index == -1 || old_index == new_index)
+>  		return;
+>  
+> -	spin_lock(&cpufreq_stats_lock);
+> +	spin_lock(&stats->lock);
+>  	cpufreq_stats_update(stats);
+>  
+>  	stats->last_index = new_index;
+>  	stats->trans_table[old_index * stats->max_state + new_index]++;
+>  	stats->total_trans++;
+> -	spin_unlock(&cpufreq_stats_lock);
+> +	spin_unlock(&stats->lock);
+>  }
 
-It returns -EINVAL for failure in allocate_logical_cpuid() only and that
-function prints WARN_ONCE inside in such case. You won't miss it.
-
-Thanks
-
---MPkR1dXiUZqK+927
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBAgAGBQJcmm/oAAoJEORje4g2clinhE8QAMBx0BWRJO+WIA2qmjwww4HU
-dDwyrbGed3Vmd0gi0xwagXedgBf1f7ZxE1YviaZbVr9raJynlv6Ad+FYnJ7UZiIz
-WhJRp2wm+vAJ1aep8Mk1o/5PcCi3f5fTiqc8qhTrATXBBYlC6BCs48wpBFs9JJi0
-7rGv4p5GVyFSGUHPY8e+f+ten5fITeSFPkJlVUWbZ705+55Lbj0MNaCK3mh64+Pd
-k+U2WDXK0T5jO/oePuddIeRdz6WgVsbz2stvUIyUtkWlsDQ3Ua+dpaCruaDpzmVI
-6wRnHfYhGOvHqN3dekd+OXUlWxnjGJS5NTF1dQCCc71mG7f6VOQVtHII/5hFBo7A
-sn7tiiv4lVDP8jAzuWW/GKW/8PQNgKFXG5uTwwJWCglra/ON469+ikYpNDeWvQ95
-xk25VEZ8hnknr+G5JsUuFTnreK09Rx1gyEjiPFuJb1LS3cgqIWfvsc3jcbbFF0hb
-8heK+fTFjo0pNWa1Muve4CvCXRYT0PfzGwJ0zV0CggvOOl6XMB6v+2HpL37Z5RXK
-zHpsuFv+iChMCBequ478lxa+xDTgkWKF8widQag68o3+H/hTCxsK6BpQiTiWCjq5
-MtqFmAxL0lSBkeR53F20DaVc+JhR/uBps+MBA5baqc9uQbeSEY6xARriqoC/Hw7Y
-ptYbFHUBbVQEX/8lT/gP
-=nUBx
------END PGP SIGNATURE-----
-
---MPkR1dXiUZqK+927--
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
