@@ -1,7 +1,7 @@
 From: Matthew Garrett <matthewgarrett@google.com>
-Subject: [PATCH V31 09/25] uswsusp: Disable when the kernel is locked down
-Date: Tue, 26 Mar 2019 11:27:25 -0700
-Message-ID: <20190326182742.16950-10-matthewgarrett@google.com>
+Subject: [PATCH V31 08/25] hibernate: Disable when the kernel is locked down
+Date: Tue, 26 Mar 2019 11:27:24 -0700
+Message-ID: <20190326182742.16950-9-matthewgarrett@google.com>
 References: <20190326182742.16950-1-matthewgarrett@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
@@ -9,37 +9,39 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190326182742.16950-1-matthewgarrett@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, linux-api@vger.kernel.org, luto@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>, Matthew Garrett <mjg59@google.com>, linux-pm@vger.kernel.org, pavel@ucw.cz, rjw@rjwysocki.net
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, linux-api@vger.kernel.org, luto@kernel.org, Josh Boyer <jwboyer@fedoraproject.org>, Matthew Garrett <mjg59@google.com>, rjw@rjwysocki.net, pavel@ucw.cz, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Josh Boyer <jwboyer@fedoraproject.org>
 
-uswsusp allows a user process to dump and then restore kernel state, which
-makes it possible to modify the running kernel.  Disable this if the kernel
-is locked down.
+There is currently no way to verify the resume image when returning
+from hibernate.  This might compromise the signed modules trust model,
+so until we can work with signed hibernate images we disable it when the
+kernel is locked down.
 
+Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
 Signed-off-by: David Howells <dhowells@redhat.com>
 Signed-off-by: Matthew Garrett <mjg59@google.com>
-cc: linux-pm@vger.kernel.org
-Cc: pavel@ucw.cz
 Cc: rjw@rjwysocki.net
+Cc: pavel@ucw.cz
+cc: linux-pm@vger.kernel.org
 ---
- kernel/power/user.c | 3 +++
- 1 file changed, 3 insertions(+)
+ kernel/power/hibernate.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 2d8b60a3c86b..99e13fd13237 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -52,6 +52,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 	if (!hibernation_available())
- 		return -EPERM;
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index abef759de7c8..928b198cfa26 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -70,7 +70,8 @@ static const struct platform_hibernation_ops *hibernation_ops;
  
-+	if (kernel_is_locked_down("/dev/snapshot", LOCKDOWN_INTEGRITY))
-+		return -EPERM;
-+
- 	lock_system_sleep();
+ bool hibernation_available(void)
+ {
+-	return (nohibernate == 0);
++	return nohibernate == 0 && !kernel_is_locked_down("Hibernation",
++							  LOCKDOWN_INTEGRITY);
+ }
  
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
+ /**
 -- 
 2.21.0.392.gf8f6787159e-goog
