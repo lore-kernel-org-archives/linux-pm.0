@@ -1,49 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/2] Correct the processing for base_frequency
-Date: Tue, 26 Mar 2019 12:38:17 +0100
-Message-ID: <3574470.KuU4jANTQq@aspire.rjw.lan>
-References: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v12 01/11] bitops: Introduce the for_each_set_clump8 macro
+Date: Tue, 26 Mar 2019 13:42:52 +0200
+Message-ID: <20190326114252.GX9224@smile.fi.intel.com>
+References: <cover.1553494625.git.vilhelm.gray@gmail.com>
+ <9afc30a574ce3e6a86b51dd522146a1d2156dedd.1553494625.git.vilhelm.gray@gmail.com>
+ <20190325131236.GW9224@smile.fi.intel.com>
+ <20190326025459.GA3356@icarus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190325160440.7575-1-srinivas.pandruvada@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20190326025459.GA3356@icarus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: lenb@kernel.org, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, wangxiongfeng2@huawei.com
+To: William Breathitt Gray <vilhelm.gray@gmail.com>
+Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 25, 2019 5:04:38 PM CET Srinivas Pandruvada wrote:
-> The base_frequency display in cpufreq sysfs for intel_pstate gets the
-> guaranteed ratio by reading CPPC guaranteed performance register as a
-> first preference before falling back to x86 MSR for Hardware P-state
-> Capabilities. The current code in cppc_acpi.c assumed that "guaranteed
-> performance register" can be an integer field, which is invalid as per
-> ACPI spec. So this change explicitly check for INTEGER values for
-> invalid BIOS/firmware and ignore. 
-> Also guaranteed performance register field is optional and when not
-> present, nominal performance can be used as the guaranteed performance.
-> But spec calls that this is true only in non-autonomous mode. So
-> no change is made in cppc_acpi.c to make nominal as guaranteed in this
-> case to avoid dependency on autonomous and non-autonomous mode. Instead
-> a change is added to intel_pstate driver, which is specific to x86 to
-> make nominal as guaranteed when guaranteed performance field is absent
-> or has invalid value.
-> Also we are working to clarify this non-autonomous mode requirement
-> through ACPI standard body.
+On Tue, Mar 26, 2019 at 11:54:59AM +0900, William Breathitt Gray wrote:
+> On Mon, Mar 25, 2019 at 03:12:36PM +0200, Andy Shevchenko wrote:
+> > On Mon, Mar 25, 2019 at 03:22:23PM +0900, William Breathitt Gray wrote:
+> > > This macro iterates for each 8-bit group of bits (clump) with set bits,
+> > > within a bitmap memory region. For each iteration, "start" is set to the
+> > > bit offset of the found clump, while the respective clump value is
+> > > stored to the location pointed by "clump". Additionally, the
+> > > bitmap_get_value8 and bitmap_set_value8 functions are introduced to
+> > > respectively get and set an 8-bit value in a bitmap memory region.
+> > 
+> > 
+> > This seems to miss Randy's (IIRC) comment about too many const specifiers.
 > 
-> v2:
-> Changes done as suggested by Rafael.
-> 
-> 
-> Srinivas Pandruvada (2):
->   ACPI / CPPC: Fix processing for guaranteed performance
->   cpufreq: intel_pstate: Also use cppc nominal_perf for base_frequency
-> 
->  drivers/acpi/cppc_acpi.c       | 9 +++++++--
->  drivers/cpufreq/intel_pstate.c | 5 ++++-
->  2 files changed, 11 insertions(+), 3 deletions(-)
-> 
-> 
+> I disagree with removing the const qualifiers; I believe they are useful
+> and do not significantly impact the clarity of the code (in fact, I'd
+> argue the opposite). 
 
-Both applied, thanks!
+Had you checked the assembly? I'm talking about const for values on the stack.
+
+I think if you put less const there compiler can keep something in the
+registers instead of using direct constants or accessing stack.
+
+I might be mistaken, so, I can't argue without evidence of either.
+
+> The const qualifiers make it clear these values are
+> constant, allowing readers at a glace to know these values never change
+> within this function. Although I believe GCC is smart enough in this
+> case to deduce implicitly that these are constant values, generally
+> speaking const qualifiers do make it easier for compilers to optimize
+> sections of code (OoO execution, algorithm simplification, etc.), so I
+> believe it's useful in a technical sense as well.
+
+Again, what the difference do you see in assembly if any?
+
+> I added the const qualifier to these variables because they really are
+> constant, and I believe there is merit in making it explicit in the
+> code. If the primary reason for removing the const qualifiers is for
+> aesthetics, then I must dissent with that decision.
+
+The point is, if there is no difference, I would prefer one which will be
+better to read, otherwise check the assembly.
+
+> However, it is difficult to read the definitions that wrap around to a
+> second line. These definitions are long enough that even removing the
+> const qualifiers would not help prevent the wrapping, so perhaps it
+> would make to let these stay on a single line. Do you think it would
+> help to ignore the 80-character maximum line width coding style rule for
+> these cases here?
+
+80-characters rule can be slightly bended depending on the context. Here, I
+think, we might continue discussing the matter after having an evidence how
+const qualifiers affect the code.
+
+-- 
+With Best Regards,
+Andy Shevchenko
