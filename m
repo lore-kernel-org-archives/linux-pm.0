@@ -1,68 +1,79 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [RFC 0/7] cpuidle: Add poking mechanism to support non-IPI
- wakeup
-Date: Wed, 27 Mar 2019 17:06:07 +0100
-Message-ID: <1553702767.2561.40.camel@pengutronix.de>
-References: <1553692845-20983-1-git-send-email-abel.vesa@nxp.com>
-         <1553701479.2561.38.camel@pengutronix.de>
-         <564216aa-1144-71de-e887-00c58f466bf5@arm.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Subject: Re: [PATCH] dt-bindings: hwmon (pwm-fan) Remove dead
+ "cooling-*-state" properties
+Date: Wed, 27 Mar 2019 16:17:30 +0000
+Message-ID: <14a24871-f22d-a500-8f49-922d0374ddca@arm.com>
+References: <afde4ebd929821d63b5172c8e70e15f0725a4b49.1553006788.git.robin.murphy@arm.com>
+ <CAJKOXPd12YPvL61nu0TDWze4pBuQK=KbJCrc5wh-tACsRQt37g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <564216aa-1144-71de-e887-00c58f466bf5@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>, Abel Vesa <abel.vesa@nxp.com>, Sudeep Holla <sudeep.holla@arm.com>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, Aisheng Dong <aisheng.dong@nxp.com>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAJKOXPd12YPvL61nu0TDWze4pBuQK=KbJCrc5wh-tACsRQt37g@mail.gmail.com>
+Content-Language: en-GB
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: arnd@arndb.de, olof@lixom.net
+Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, jdelvare@suse.com, heiko@sntech.de, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, Krzysztof Kozlowski <krzk@kernel.org>, jonathanh@nvidia.com, kgene@kernel.org, thierry.reding@gmail.com, linux-arm-kernel@lists.infradead.org, shawnguo@kernel.org, linux@roeck-us.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi Marc,
+[ +Arnd, Olof ]
 
-Am Mittwoch, den 27.03.2019, 15:57 +0000 schrieb Marc Zyngier:
-> On 27/03/2019 15:44, Lucas Stach wrote:
-> > Hi Abel,
-> > 
-> > Am Mittwoch, den 27.03.2019, 13:21 +0000 schrieb Abel Vesa:
-> > > This work is a workaround I'm looking into (more as a background task)
-> > > in order to add support for cpuidle on i.MX8MQ based platforms.
-> > > 
-> > > The main idea here is getting around the missing GIC wake_request signal
-> > > (due to integration design issue) by waking up a each individual core through
-> > > some dedicated SW power-up bits inside the power controller (GPC) right before
-> > > every IPI is requested for that each individual core.
-> > 
-> > Just a general comment, without going into the details of this series:
-> > this issue is not only affecting IPIs, but also MSIs terminated at the
-> > GIC. Currently MSIs are terminated at the PCIe core, but terminating
-> > them at the GIC is clearly preferable, as this allows assigning CPU
-> > affinity to individual MSIs and lowers IRQ service overhead.
-> > 
-> > I'm not sure what the consequences are for upstream Linux support yet,
-> > but we should keep in mind that having a workaround for IPIs is only
-> > solving part of the issue.
+On 19/03/2019 15:06, Krzysztof Kozlowski wrote:
+> On Tue, 19 Mar 2019 at 15:54, Robin Murphy <robin.murphy@arm.com> wrote:
+>>
+>> The old "cooling-{min,max}-state" properties for thermal bindings were
+>> ratified to "cooling-{min,max}-level" by commit eb168b70dea5 ("of:
+>> thermal: Fix inconsitency between cooling-*-state and cooling-*-level"),
+>> which were later removed entirely by commit e04907dbc259 ("dt-bindings:
+>> thermal: Remove "cooling-{min|max}-level" properties").
+>>
+>> The pwm-fan binding, however, was apparently in-flight in parallel with
+>> that ratification, and so managed to introduce an example of the old
+>> properties which escaped the scope of the later cleanup and has thus
+>> continued to be dutifully copied for new boards despite being useless.
+>> Clean up these remaining undocumented anachronisms to minimise any
+>> further confusion.
+>>
+>> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+>> ---
+>>
+>> Presented as one big hwmon patch for simplicity, but the DT changes
+>> can quite easily be broken out by platform if maintainers prefer.
+>>
+>> Robin.
+>>
+>>   Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 2 --
+>>   arch/arm/boot/dts/exynos4412-odroidu3.dts           | 2 --
+>>   arch/arm/boot/dts/exynos5410-odroidxu.dts           | 2 --
+>>   arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi  | 2 --
 > 
-> If this erratum is affecting more than just IPIs, then indeed I don't
-> see how this patch series solves anything.
+> Probably you should send it directly to arm-soc maintainers so it
+> would go with other DT changes. In such case:
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Indeed, it had crossed my mind that routing this through arm-soc might 
+make sense - Arnd, Olof, would you agree? And if so, should I resend to 
+the arm-soc alias or might you be able to pick it directly?
+
+Thanks to everyone for the acks!
+
+Robin.
+
 > 
-> But the erratum documentation seems to imply that only SGIs are
-> affected, and goes as far as suggesting to use an external interrupt
-> would solve it. How comes this is not the case? Or is it that anything
-> directly routed to a redistributor is also affected? This would break
-> LPIs (and thus MSIs) and PPIs (the CPU timer, among others).
+> Best regards,
+> Krzysztof
 > 
-> What is the *exact* status of this thing? I have the ugly feeling that
-> the true workaround is just to disable cpuidle.
-
-As far as I understand the erratum, the basic issue is that the GIC
-wake_request signals are not connected to the GPC (the CPU/peripheral
-power sequencer). The SPIs are routed through the GPC and thus are
-visible as wakeup sources, which is why the workaround of using an
-external SPI as wakeup trigger for the IPI works.
-
-Anything that isn't visible to the GPC and requires the GIC
-wake_request signal to behave as specified is broken by this erratum.
-You probably know the GIC better than any of us to tell what this
-means.
-
-Regards,
-Lucas
+>>   arch/arm/boot/dts/imx6qdl-emcon.dtsi                | 2 --
+>>   arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts  | 2 --
+>>   arch/arm64/boot/dts/rockchip/rk3368-lion.dtsi       | 2 --
+>>   arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi       | 2 --
+>>   8 files changed, 16 deletions(-)
+>>
