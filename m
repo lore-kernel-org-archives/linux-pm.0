@@ -1,7 +1,7 @@
 From: Abel Vesa <abel.vesa@nxp.com>
-Subject: [RFC 4/7] psci: Add cpu_poke ops to support core poking
-Date: Wed, 27 Mar 2019 13:21:13 +0000
-Message-ID: <1553692845-20983-5-git-send-email-abel.vesa@nxp.com>
+Subject: [RFC 2/7] cpuidle: Add cpu poke support
+Date: Wed, 27 Mar 2019 13:21:09 +0000
+Message-ID: <1553692845-20983-3-git-send-email-abel.vesa@nxp.com>
 References: <1553692845-20983-1-git-send-email-abel.vesa@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -14,95 +14,101 @@ To: Sudeep Holla <sudeep.holla@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Ro
 Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Abel Vesa <abel.vesa@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-There can be platforms that need a dedicated work to be done
-in TF-A before the specified core can be woken up through an IPI.
-Allow those platforms to call into the TF-A to do that work
-by making use of the cpu_poke operation.
+Having a poke operation per state, allows each cpuidle driver to
+implement, for each state, different ways of waking up (poking) cores.
 
 Signed-off-by: Abel Vesa <abel.vesa@nxp.com>
 ---
- arch/arm64/include/asm/cpu_ops.h | 1 +
- arch/arm64/kernel/psci.c         | 1 +
- drivers/firmware/psci.c          | 6 ++++++
- include/linux/psci.h             | 1 +
- include/uapi/linux/psci.h        | 2 ++
- 5 files changed, 11 insertions(+)
+ drivers/cpuidle/cpuidle.c | 34 ++++++++++++++++++++++++++++++++++
+ include/linux/cpuidle.h   |  6 ++++++
+ 2 files changed, 40 insertions(+)
 
-diff --git a/arch/arm64/include/asm/cpu_ops.h b/arch/arm64/include/asm/cpu_=
-ops.h
-index 8f03446..913afef 100644
---- a/arch/arm64/include/asm/cpu_ops.h
-+++ b/arch/arm64/include/asm/cpu_ops.h
-@@ -60,6 +60,7 @@ struct cpu_operations {
- #ifdef CONFIG_CPU_IDLE
- 	int		(*cpu_init_idle)(unsigned int);
- 	int		(*cpu_suspend)(unsigned long);
-+	int		(*cpu_poke)(unsigned int);
- #endif
- };
-=20
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index 8cdaf25..53227eb 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -115,6 +115,7 @@ const struct cpu_operations cpu_psci_ops =3D {
- #ifdef CONFIG_CPU_IDLE
- 	.cpu_init_idle	=3D psci_cpu_init_idle,
- 	.cpu_suspend	=3D psci_cpu_suspend_enter,
-+	.cpu_poke	=3D psci_cpu_suspend_exit,
- #endif
- 	.cpu_init	=3D cpu_psci_cpu_init,
- 	.cpu_prepare	=3D cpu_psci_cpu_prepare,
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
-index c80ec1d..282bc47 100644
---- a/drivers/firmware/psci.c
-+++ b/drivers/firmware/psci.c
-@@ -73,6 +73,7 @@ enum psci_function {
- 	PSCI_FN_CPU_ON,
- 	PSCI_FN_CPU_OFF,
- 	PSCI_FN_MIGRATE,
-+	PSCI_FN_CPU_POKE,
- 	PSCI_FN_MAX,
- };
-=20
-@@ -424,6 +425,11 @@ int psci_cpu_suspend_enter(unsigned long index)
- 	return ret;
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 7f10830..fca5313 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -297,6 +297,29 @@ int cpuidle_enter_state(struct cpuidle_device *dev, st=
+ruct cpuidle_driver *drv,
  }
 =20
-+int psci_cpu_suspend_exit(unsigned int index)
+ /**
++ * cpuidle_poke_single - poke the specified cpu to wake up from
++ *		         current idle state
++ *
++ * @dev: cpuidle device for this cpu
++ * @drv: cpuidle driver for this cpu
++ * @cpu: the index of the cpu
++ */
++int cpuidle_poke_single(struct cpuidle_driver *drv, struct cpuidle_device =
+*dev,
++			int cpu)
 +{
-+	return invoke_psci_fn(PSCI_0_2_FN_CPU_POKE, index, 0, 0);
++	struct cpuidle_state *state;
++
++	if (cpuidle_disabled())
++		return 0;
++
++	state =3D sched_idle_get_state(cpu);
++	if (state && state->poke)
++		return state->poke(dev, drv, cpu);
++
++	return 0;
 +}
 +
- /* ARM specific CPU idle operations */
- #ifdef CONFIG_ARM
- static const struct cpuidle_ops psci_cpuidle_ops __initconst =3D {
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 8b1b3b5..d863733 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -24,6 +24,7 @@ bool psci_tos_resident_on(int cpu);
++/**
+  * cpuidle_select - ask the cpuidle framework to choose an idle state
+  *
+  * @drv: the cpuidle driver
+@@ -414,6 +437,17 @@ void cpuidle_resume(void)
+ 	mutex_unlock(&cpuidle_lock);
+ }
 =20
- int psci_cpu_init_idle(unsigned int cpu);
- int psci_cpu_suspend_enter(unsigned long index);
-+int psci_cpu_suspend_exit(unsigned int index);
++void cpuidle_poke(const struct cpumask *mask)
++{
++	struct cpuidle_device *dev =3D cpuidle_get_device();
++	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
++	int cpu;
++
++	for_each_cpu(cpu, mask) {
++		WARN_ON(cpuidle_poke_single(drv, dev, cpu));
++	}
++}
++
+ /**
+  * cpuidle_enable_device - enables idle PM for a CPU
+  * @dev: the CPU
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 88a9119..0270771 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -55,6 +55,10 @@ struct cpuidle_state {
+ 			struct cpuidle_driver *drv,
+ 			int index);
 =20
- enum psci_conduit {
- 	PSCI_CONDUIT_NONE,
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index b3bcabe..19e7481 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -40,8 +40,10 @@
- #define PSCI_0_2_FN_MIGRATE_INFO_UP_CPU		PSCI_0_2_FN(7)
- #define PSCI_0_2_FN_SYSTEM_OFF			PSCI_0_2_FN(8)
- #define PSCI_0_2_FN_SYSTEM_RESET		PSCI_0_2_FN(9)
-+#define PSCI_0_2_FN_CPU_POKE			PSCI_0_2_FN(11)
++	int (*poke)	(struct cpuidle_device *dev,
++			struct cpuidle_driver *drv,
++			int cpu);
++
+ 	int (*enter_dead) (struct cpuidle_device *dev, int index);
 =20
- #define PSCI_0_2_FN64_CPU_SUSPEND		PSCI_0_2_FN64(1)
-+#define PSCI_0_2_FN64_CPU_POKE			PSCI_0_2_FN64(11)
- #define PSCI_0_2_FN64_CPU_ON			PSCI_0_2_FN64(3)
- #define PSCI_0_2_FN64_AFFINITY_INFO		PSCI_0_2_FN64(4)
- #define PSCI_0_2_FN64_MIGRATE			PSCI_0_2_FN64(5)
+ 	/*
+@@ -145,6 +149,7 @@ extern void cpuidle_unregister(struct cpuidle_driver *d=
+rv);
+ extern void cpuidle_pause_and_lock(void);
+ extern void cpuidle_resume_and_unlock(void);
+ extern void cpuidle_pause(void);
++extern void cpuidle_poke(const struct cpumask *mask);
+ extern void cpuidle_resume(void);
+ extern int cpuidle_enable_device(struct cpuidle_device *dev);
+ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+@@ -181,6 +186,7 @@ static inline void cpuidle_unregister(struct cpuidle_dr=
+iver *drv) { }
+ static inline void cpuidle_pause_and_lock(void) { }
+ static inline void cpuidle_resume_and_unlock(void) { }
+ static inline void cpuidle_pause(void) { }
++static inline void cpuidle_poke(const struct cpumask *mask) { }
+ static inline void cpuidle_resume(void) { }
+ static inline int cpuidle_enable_device(struct cpuidle_device *dev)
+ {return -ENODEV; }
 --=20
 2.7.4
