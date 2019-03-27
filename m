@@ -1,57 +1,33 @@
-From: Niklas =?iso-8859-1?Q?S=F6derlund?=
-        <niklas.soderlund@ragnatech.se>
-Subject: Re: [RESEND PATCH] thermal: rcar_gen3_thermal: Fix init value of
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: RE: [RESEND PATCH] thermal: rcar_gen3_thermal: Fix init value of
  IRQCTL register
-Date: Wed, 27 Mar 2019 10:31:54 +0100
-Message-ID: <20190327093154.GA23466@bigcity.dyn.berto.se>
+Date: Wed, 27 Mar 2019 09:34:42 +0000
+Message-ID: <TY2PR01MB48128E8FFB7D26714A61BF62D8580@TY2PR01MB4812.jpnprd01.prod.outlook.com>
 References: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
+Content-Language: ja-JP
 Sender: linux-kernel-owner@vger.kernel.org
 To: Nguyen An Hoan <na-hoan@jinso.co.jp>
-Cc: linux-renesas-soc@vger.kernel.org, geert+renesas@glider.be, rui.zhang@intel.com, jslaby@suse.com, wsa+renesas@sang-engineering.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com, yoshihiro.shimoda.uh@renesas.com, h-inayoshi@jinso.co.jp, nv-dung@jinso.co.jp, cv-dong@jinso.co.jp
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "jslaby@suse.com" <jslaby@suse.com>, "wsa+renesas@sang-engineering.com" <wsa+renesas@sang-engineering.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, hideo inayoshi <h-inayoshi@jinso.co.jp>, "nv-dung@jinso.co.jp" <nv-dung@jinso.co.jp>, "cv-dong@jinso.co.jp" <cv-dong@jinso.co.jp>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "geert+renesas@glider.be" <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Hoan,
+Hi Hoan-san,
 
-Thanks for your work, and sorry for dropping the ball on this in v2.
-
-On 2019-03-27 18:03:18 +0900, Nguyen An Hoan wrote:
-> From: Hoan Nguyen An <na-hoan@jinso.co.jp>
-> 
+> From: Nguyen An Hoan, Sent: Wednesday, March 27, 2019 6:03 PM
+>=20
 > Fix setting value for IRQCTL register. We are setting the last 6 bits
 > of (IRQCTL) to be 1 (0x3f), this is only suitable for H3ES1.*, according
 > to Hardware manual values 1 are "setting prohibited" for Gen3.
-> 
+>=20
 > Signed-off-by: Hoan Nguyen An <na-hoan@jinso.co.jp>
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund@ragnatech.se>
+Thank you for the patch!
 
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 88fa41c..2482795 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -307,7 +307,7 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
->  
->  	usleep_range(1000, 2000);
->  
-> -	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0);
->  	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
->  	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
->  
-> -- 
-> 2.7.4
-> 
+Reviewed-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 
--- 
-Regards,
-Niklas Söderlund
+Best regards,
+Yoshihiro Shimoda
