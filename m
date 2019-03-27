@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 050/123] cpufreq: acpi-cpufreq: Report if CPU doesn't support boost technologies
-Date: Wed, 27 Mar 2019 14:15:14 -0400
-Message-ID: <20190327181628.15899-50-sashal@kernel.org>
-References: <20190327181628.15899-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 074/192] cpufreq: acpi-cpufreq: Report if CPU doesn't support boost technologies
+Date: Wed, 27 Mar 2019 14:08:26 -0400
+Message-ID: <20190327181025.13507-74-sashal@kernel.org>
+References: <20190327181025.13507-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190327181628.15899-1-sashal@kernel.org>
+In-Reply-To: <20190327181025.13507-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Erwan Velu <erwanaliasr1@gmail.com>, Erwan Velu <e.velu@criteo.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -39,10 +39,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index d0c34df0529c..51a3c15ace09 100644
+index b61f4ec43e06..aca30f45172e 100644
 --- a/drivers/cpufreq/acpi-cpufreq.c
 +++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -909,8 +909,10 @@ static void __init acpi_cpufreq_boost_init(void)
+@@ -911,8 +911,10 @@ static void __init acpi_cpufreq_boost_init(void)
  {
  	int ret;
  
