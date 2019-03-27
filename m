@@ -1,63 +1,48 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/1] thermal: stm32: simplify getting .driver_data
-Date: Wed, 27 Mar 2019 12:42:28 +0100
-Message-ID: <20190327114228.am642i64hscpfx2r@verge.net.au>
-References: <20190319163635.30891-1-wsa+renesas@sang-engineering.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH -next v1] x86/apic: Reduce print level of CPU limit
+ announcement
+Date: Wed, 27 Mar 2019 12:49:17 +0100
+Message-ID: <20190327114917.GD32571@zn.tnic>
+References: <20190327090905.5588-1-leon@kernel.org>
+ <fef570d91276280f055a0b1c2561b3dd8e20a0c3.camel@perches.com>
+ <20190327093844.GO22899@mtr-leonro.mtl.com>
+ <55774b1a8c82e94b2796c992889929f1da905d9b.camel@perches.com>
+ <20190327095337.GP22899@mtr-leonro.mtl.com>
+ <20190327101133.GQ22899@mtr-leonro.mtl.com>
+ <20190327101815.GB32571@zn.tnic>
+ <20190327105024.GR22899@mtr-leonro.mtl.com>
+ <20190327111452.GC32571@zn.tnic>
+ <20190327113628.GS22899@mtr-leonro.mtl.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190319163635.30891-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20190327113628.GS22899@mtr-leonro.mtl.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-renesas-soc@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
+To: Leon Romanovsky <leon@kernel.org>
+Cc: Joe Perches <joe@perches.com>, "Rafael J . Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, x86 <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 19, 2019 at 05:36:35PM +0100, Wolfram Sang wrote:
-> We should get 'driver_data' from 'struct device' directly. Going via
-> platform_device is an unneeded step back and forth.
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+On Wed, Mar 27, 2019 at 01:36:28PM +0200, Leon Romanovsky wrote:
+> At the end, it is reduced to our usage, we are running QEMU inside
+> docker to test kernel changes with limitation on number of CPUs to use.
+> The systems are optimized to boot kernel as soon as possible in order
+> to run tests and on my machine (64 CPUs) reduce is visible: from ~2.6
+> sec to ~2.3 sec from execution to kernel boot.
 
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+You're kidding, right?
 
-> ---
-> 
-> Build tested only. buildbot is happy.
-> 
->  drivers/thermal/st/stm_thermal.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-> index bbd73c5a4a4e..cf9ddc52f30e 100644
-> --- a/drivers/thermal/st/stm_thermal.c
-> +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
->  static int stm_thermal_suspend(struct device *dev)
->  {
->  	int ret;
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
-> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->  
->  	ret = stm_thermal_sensor_off(sensor);
->  	if (ret)
-> @@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device *dev)
->  static int stm_thermal_resume(struct device *dev)
->  {
->  	int ret;
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
-> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->  
->  	ret = stm_thermal_prepare(sensor);
->  	if (ret)
-> -- 
-> 2.11.0
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+0.3 sec boot time "improvement" for a kernel on which you run tests
+which take orders of magnitude longer (I assume). And you want to hide
+this message in the upstream kernel because you want to minimally speed
+up *your* *specific* usage ?
+
+And we still are wasting time talking about this?!
+
+Oh boy.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
