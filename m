@@ -1,97 +1,79 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
 Subject: Re: [RFC 0/7] cpuidle: Add poking mechanism to support non-IPI wakeup
-Date: Wed, 27 Mar 2019 18:13:20 +0000
-Message-ID: <0ac4b527-2f79-4d21-7408-18c87cadb512@arm.com>
+Date: Wed, 27 Mar 2019 18:40:07 +0000
+Message-ID: <cb2e5521cc0d29b7c3ac42a6717256ec2e8d35e6.camel@nxp.com>
 References: <1553692845-20983-1-git-send-email-abel.vesa@nxp.com>
- <1553701479.2561.38.camel@pengutronix.de>
- <564216aa-1144-71de-e887-00c58f466bf5@arm.com>
- <1553702767.2561.40.camel@pengutronix.de>
- <d31f84030f48f3dad9dd5d144724979543006406.camel@nxp.com>
+         <1553701479.2561.38.camel@pengutronix.de>
+         <564216aa-1144-71de-e887-00c58f466bf5@arm.com>
+         <1553702767.2561.40.camel@pengutronix.de>
+         <85c91392-9cbf-a5fc-b037-3d58f2b0ac9c@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <d31f84030f48f3dad9dd5d144724979543006406.camel@nxp.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <85c91392-9cbf-a5fc-b037-3d58f2b0ac9c@arm.com>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Peng Fan <peng.fan@nxp.com>, Jacky Bai <ping.bai@nxp.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Leo Zhang <leo.zhang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Mircea Pop <mircea.pop@nxp.com>, Robin Gong <yibin.gong@nxp.com>, "robh@kernel.org" <robh@kernel.org>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <anson.huang@nxp.com>, BOUGH CHEN <haibo.chen@nxp.com>, Shenwei Wang <shenwei.wang@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, Viorel Suman <viorel.suman@nxp.com>, Cosmin Samoila <cosmin.samoila@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Iuliana Prodan <iuliana.prodan@nxp.com>, Zening Wang <zening.wang@nxp.com>, Robert
+Content-ID: <8783C4B4E8222A499CD541DF8BB5C3CD@eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>, Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>
+Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Aisheng Dong <aisheng.dong@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "robh@kernel.org" <robh@kernel.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, Anson Huang <anson.huang@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 27/03/2019 17:00, Leonard Crestez wrote:
-> On Wed, 2019-03-27 at 17:06 +0100, Lucas Stach wrote:
->> Am Mittwoch, den 27.03.2019, 15:57 +0000 schrieb Marc Zyngier:
->>> On 27/03/2019 15:44, Lucas Stach wrote:
->>>> Am Mittwoch, den 27.03.2019, 13:21 +0000 schrieb Abel Vesa:
->>>>> This work is a workaround I'm looking into (more as a background task)
->>>>> in order to add support for cpuidle on i.MX8MQ based platforms.
->>>>>
->>>>> The main idea here is getting around the missing GIC wake_request signal
->>>>> (due to integration design issue) by waking up a each individual core through
->>>>> some dedicated SW power-up bits inside the power controller (GPC) right before
->>>>> every IPI is requested for that each individual core.
->>>>
->>>> Just a general comment, without going into the details of this series:
->>>> this issue is not only affecting IPIs, but also MSIs terminated at the
->>>> GIC. Currently MSIs are terminated at the PCIe core, but terminating
->>>> them at the GIC is clearly preferable, as this allows assigning CPU
->>>> affinity to individual MSIs and lowers IRQ service overhead.
->>>>
->>>> I'm not sure what the consequences are for upstream Linux support yet,
->>>> but we should keep in mind that having a workaround for IPIs is only
->>>> solving part of the issue.
->>>
->>> If this erratum is affecting more than just IPIs, then indeed I don't
->>> see how this patch series solves anything.
->>>
->>> But the erratum documentation seems to imply that only SGIs are
->>> affected, and goes as far as suggesting to use an external interrupt
->>> would solve it. How comes this is not the case? Or is it that anything
->>> directly routed to a redistributor is also affected? This would break
->>> LPIs (and thus MSIs) and PPIs (the CPU timer, among others).
->>>
->>> What is the *exact* status of this thing? I have the ugly feeling that
->>> the true workaround is just to disable cpuidle.
->>
->> As far as I understand the erratum, the basic issue is that the GIC
->> wake_request signals are not connected to the GPC (the CPU/peripheral
->> power sequencer). The SPIs are routed through the GPC and thus are
->> visible as wakeup sources, which is why the workaround of using an
->> external SPI as wakeup trigger for the IPI works.
-> 
-> We had a kernel workaround for IPIs in our internal tree for a long
-> time and I don't think we do anything special for PCI. Does PCI MSI
-> really bypass the GPC on 8mq?
-
-If you have an ITS, certainly. If you don't, it depends. MSIs can hit
-the distributor's MBI registers and generate non-wired SPIs, which I
-assume will bypass the GPC altogether.
-
-> Adding Richard/Jacky, they might know about this.
-> 
-> This seems like something of a corner case to me, don't many imx boards
-> ship without PCI; especially for low-power scenarios? If required it
-> might be reasonable to add an additional workaround to disable all
-> cpuidle if pci msis are used.
-
-Establishing a link between cpuidle and PCI in the kernel would be
-pretty invasive, and that would come on top of what this series also
-mandates.
-
-At that level of apparent brokenness, it is far safer to get cpuidle out
-of the picture altogether, and I'd rather see these patches in a vendor
-tree (for once).
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+T24gV2VkLCAyMDE5LTAzLTI3IGF0IDE3OjQ1ICswMDAwLCBNYXJjIFp5bmdpZXIgd3JvdGU6DQo+
+IE9uIDI3LzAzLzIwMTkgMTY6MDYsIEx1Y2FzIFN0YWNoIHdyb3RlOg0KPiA+IEFtIE1pdHR3b2No
+LCBkZW4gMjcuMDMuMjAxOSwgMTU6NTcgKzAwMDAgc2NocmllYiBNYXJjIFp5bmdpZXI6DQo+ID4g
+PiBPbiAyNy8wMy8yMDE5IDE1OjQ0LCBMdWNhcyBTdGFjaCB3cm90ZToNCj4gPiA+ID4gQW0gTWl0
+dHdvY2gsIGRlbiAyNy4wMy4yMDE5LCAxMzoyMSArMDAwMCBzY2hyaWViIEFiZWwgVmVzYToNCj4g
+PiA+ID4gPiBUaGlzIHdvcmsgaXMgYSB3b3JrYXJvdW5kIEknbSBsb29raW5nIGludG8gKG1vcmUg
+YXMgYSBiYWNrZ3JvdW5kIHRhc2spDQo+ID4gPiA+ID4gaW4gb3JkZXIgdG8gYWRkIHN1cHBvcnQg
+Zm9yIGNwdWlkbGUgb24gaS5NWDhNUSBiYXNlZCBwbGF0Zm9ybXMuDQo+ID4gPiA+ID4gDQo+ID4g
+PiA+ID4gVGhlIG1haW4gaWRlYSBoZXJlIGlzIGdldHRpbmcgYXJvdW5kIHRoZSBtaXNzaW5nIEdJ
+QyB3YWtlX3JlcXVlc3Qgc2lnbmFsDQo+ID4gPiA+ID4gKGR1ZSB0byBpbnRlZ3JhdGlvbiBkZXNp
+Z24gaXNzdWUpIGJ5IHdha2luZyB1cCBhIGVhY2ggaW5kaXZpZHVhbCBjb3JlIHRocm91Z2gNCj4g
+PiA+ID4gPiBzb21lIGRlZGljYXRlZCBTVyBwb3dlci11cCBiaXRzIGluc2lkZSB0aGUgcG93ZXIg
+Y29udHJvbGxlciAoR1BDKSByaWdodCBiZWZvcmUNCj4gPiA+ID4gPiBldmVyeSBJUEkgaXMgcmVx
+dWVzdGVkIGZvciB0aGF0IGVhY2ggaW5kaXZpZHVhbCBjb3JlLg0KPiA+ID4gPiANCj4gPiA+ID4g
+SnVzdCBhIGdlbmVyYWwgY29tbWVudCwgd2l0aG91dCBnb2luZyBpbnRvIHRoZSBkZXRhaWxzIG9m
+IHRoaXMgc2VyaWVzOg0KPiA+ID4gPiB0aGlzIGlzc3VlIGlzIG5vdCBvbmx5IGFmZmVjdGluZyBJ
+UElzLCBidXQgYWxzbyBNU0lzIHRlcm1pbmF0ZWQgYXQgdGhlDQo+ID4gPiA+IEdJQy4gQ3VycmVu
+dGx5IE1TSXMgYXJlIHRlcm1pbmF0ZWQgYXQgdGhlIFBDSWUgY29yZSwgYnV0IHRlcm1pbmF0aW5n
+DQo+ID4gPiA+IHRoZW0gYXQgdGhlIEdJQyBpcyBjbGVhcmx5IHByZWZlcmFibGUsIGFzIHRoaXMg
+YWxsb3dzIGFzc2lnbmluZyBDUFUNCj4gPiA+ID4gYWZmaW5pdHkgdG8gaW5kaXZpZHVhbCBNU0lz
+IGFuZCBsb3dlcnMgSVJRIHNlcnZpY2Ugb3ZlcmhlYWQuDQo+ID4gPiA+IA0KPiA+ID4gPiBJJ20g
+bm90IHN1cmUgd2hhdCB0aGUgY29uc2VxdWVuY2VzIGFyZSBmb3IgdXBzdHJlYW0gTGludXggc3Vw
+cG9ydCB5ZXQsDQo+ID4gPiA+IGJ1dCB3ZSBzaG91bGQga2VlcCBpbiBtaW5kIHRoYXQgaGF2aW5n
+IGEgd29ya2Fyb3VuZCBmb3IgSVBJcyBpcyBvbmx5DQo+ID4gPiA+IHNvbHZpbmcgcGFydCBvZiB0
+aGUgaXNzdWUuDQo+ID4gPiANCj4gPiA+IElmIHRoaXMgZXJyYXR1bSBpcyBhZmZlY3RpbmcgbW9y
+ZSB0aGFuIGp1c3QgSVBJcywgdGhlbiBpbmRlZWQgSSBkb24ndA0KPiA+ID4gc2VlIGhvdyB0aGlz
+IHBhdGNoIHNlcmllcyBzb2x2ZXMgYW55dGhpbmcuDQo+ID4gPiANCj4gPiA+IEJ1dCB0aGUgZXJy
+YXR1bSBkb2N1bWVudGF0aW9uIHNlZW1zIHRvIGltcGx5IHRoYXQgb25seSBTR0lzIGFyZQ0KPiA+
+ID4gYWZmZWN0ZWQsIGFuZCBnb2VzIGFzIGZhciBhcyBzdWdnZXN0aW5nIHRvIHVzZSBhbiBleHRl
+cm5hbCBpbnRlcnJ1cHQNCj4gPiA+IHdvdWxkIHNvbHZlIGl0LiBIb3cgY29tZXMgdGhpcyBpcyBu
+b3QgdGhlIGNhc2U/IE9yIGlzIGl0IHRoYXQgYW55dGhpbmcNCj4gPiA+IGRpcmVjdGx5IHJvdXRl
+ZCB0byBhIHJlZGlzdHJpYnV0b3IgaXMgYWxzbyBhZmZlY3RlZD8gVGhpcyB3b3VsZCBicmVhaw0K
+PiA+ID4gTFBJcyAoYW5kIHRodXMgTVNJcykgYW5kIFBQSXMgKHRoZSBDUFUgdGltZXIsIGFtb25n
+IG90aGVycykuDQo+ID4gDQo+ID4gQW55dGhpbmcgdGhhdCBpc24ndCB2aXNpYmxlIHRvIHRoZSBH
+UEMgYW5kIHJlcXVpcmVzIHRoZSBHSUMNCj4gPiB3YWtlX3JlcXVlc3Qgc2lnbmFsIHRvIGJlaGF2
+ZSBhcyBzcGVjaWZpZWQgaXMgYnJva2VuIGJ5IHRoaXMgZXJyYXR1bS4NCj4gDQo+IEkgcmVhbGx5
+IHdvbmRlciBob3cgYSB0aW1lciBpbnRlcnJ1cHQgKGEgUFBJLCBoZW5jZSBub3Qgcm91dGVkIHRo
+cm91Z2gNCj4gdGhlIEdQQykgY2FuIHdha2UgdXAgdGhlIENQVSBpbiB0aGlzIGNhc2UuIEl0IHJl
+YWxseSBmZWVscyBsaWtlDQo+IHNvbWV0aGluZyBsaWtlICJwcm9ncmFtIENOVFZfQ1ZBTF9FTDAg
+dG8gZXhwaXJlIGF0IHNvbWUgbGF0ZXIgcG9pbnQ7DQo+IFdGSSIgY291bGQgcmVzdWx0IGluIHRo
+ZSBDUFUgZ29pbmcgdG8gYSBkZWVwIHNsZWVwIHN0YXRlLCBhbmQgbm90DQo+IHdha2UtdXAgYXQg
+YWxsLg0KDQpUaGlzIGlzIGFscmVhZHkgYSBjb21tb24gaXNzdWUgZm9yIGNwdWlkbGUgaW1wbGVt
+ZW50aW9ucyBoYW5kbGVkIGJ5IHRoZQ0KImxvY2FsLXRpbWVyLXN0b3AiIHByb3BlcnR5LiBpbXgg
+aGFzIG90aGVyIHRpbWVyIGJsb2NrcyBpbiB0aGUgU09DLA0KdGhleSBnZW5lcmF0ZSBTUElzIHdo
+aWNoIGFyZSBjb25uZWN0ZWQgdG8gR1BDLg0KDQo+IFRoaXMgd291bGQgaW5kaWNhdGUgdGhhdCBu
+b3Qgb25seSBjcHVpZGxlIGlzIGJyb2tlbiB3aXRoIHRoaXMsIGJ1dA0KPiBhYnNvbHV0ZWx5IGV2
+ZXJ5IGludGVycnVwdCB0aGF0IGlzIG5vdCByb3V0ZWQgdGhyb3VnaCB0aGUgR1BDLg0KDQpZZXMs
+IGNwdWlkbGUgaXMgYnJva2VuIGZvciBpcnFzIG5vdCByb3V0ZWQgdGhyb3VnaCBHUEMuIEhvd2V2
+ZXI6DQoNCiogQWxsIFNQSXMgYXJlIGNvbm5lY3RlZCB0byBHUEMgaW4gYSAxOjEgbWFwcGluZw0K
+KiBUaGlzIHNlcmllcyBkZWFscyB3aXRoIFNHSXMNCiogVGhlIHRpbWVyIFBQSXMgYXJlIG5vdCBy
+ZXF1aXJlZDsgY292ZXJlZCBieSBsb2NhbC10aW1lci1zdG9wDQoqIExQSXMgYXJlIGN1cnJlbnRs
+eSB1bnVzZWQgKEkgdW5kZXJzdGFuZCBpbXgtcGNpIHVzZXMgU1BJIGJ5IGRlZmF1bHQNCmZyb20g
+THVjYXMpDQoNCkFueXRoaW5nIG1pc3Npbmc/DQoNCk15IHVuZGVyc3RhbmRpbmcgaXMgdGhhdCB0
+aGlzIHdha2UgcmVxdWVzdCBmZWF0dXJlIHZpYSBHSUMgaXMgbmV3IGluIHYzDQphbmQgdGhpcyBp
+cyBtYXliZSB3aHkgSFcgdGVhbSBtaXNzZWQgaXQgZHVyaW5nIGludGVncmF0aW9uLiBPbGRlcg0K
+aW14Ni83IGhhcyBHSUN2MiBhbmQgaGFzIGRlZXAgaWRsZSBzdGF0ZXMgd2hpY2ggYWx3YXlzIHJl
+bHkgb24gR1BDIHRvDQp3YWtldXAgc28gdGhlIGFwcHJvYWNoIGNhbiB3b3JrLg0KDQotLQ0KUmVn
+YXJkcywNCkxlb25hcmQNCg==
