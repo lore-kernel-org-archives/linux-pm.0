@@ -1,152 +1,209 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v13 3/4] cpuidle: Export the next timer/tick expiration for a CPU
-Date: Wed, 27 Mar 2019 15:35:47 +0100
-Message-ID: <20190327143548.25305-4-ulf.hansson@linaro.org>
-References: <20190327143548.25305-1-ulf.hansson@linaro.org>
+Subject: [PATCH v13 2/4] PM / Domains: Add support for CPU devices to genpd
+Date: Wed, 27 Mar 2019 15:40:23 +0100
+Message-ID: <20190327144023.25383-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190327143548.25305-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To be able to predict the sleep duration for a CPU that is entering idle,
-knowing when the next timer/tick is going to expire, is extremely useful.
-Both the teo and the menu cpuidle governors already makes use of this
-information, while selecting an idle state.
+To enable a device belonging to a CPU to be attached to a PM domain managed
+by genpd, let's do a few changes to it, as to make it convenient to manage
+the specifics around CPUs.
 
-Moving forward, the similar prediction needs to be done, but for a group of
-idle CPUs rather than for a single idle CPU. Following changes implements a
-new genpd governor, which needs this.
+To be able to quickly find out what CPUs that are attached to a genpd,
+which typically becomes useful from a genpd governor as following changes
+is about to show, let's add a cpumask to the struct generic_pm_domain. At
+the point when a CPU device gets attached to a genpd, let's update the
+genpd's cpumask. Moreover, let's also propagate changes to the cpumask
+upwards in the topology to the master PM domains. In this way, the cpumask
+for a genpd hierarchically reflects all CPUs attached to the topology below
+it.
 
-Support this, by sharing a new function called
-tick_nohz_get_next_hrtimer(), which returns the next hrtimer or the next
-tick, whatever that expires first.
-
-Additionally, when cpuidle is about to invoke the ->enter() callback, then
-call tick_nohz_get_next_hrtimer() and store its return value in the per CPU
-struct cpuidle_device, as to make it available outside cpuidle.
-
-Do note, at the point when cpuidle calls tick_nohz_get_next_hrtimer(), the
-governor's ->select() callback has already made a decision whether to stop
-the tick or not. In this way, tick_nohz_get_next_hrtimer() actually returns
-the next timer expiration, whatever origin.
+Finally, let's make this an opt-in feature, to avoid having to manage CPUs
+and the cpumask for a genpd that doesn't need it. For that reason, let's
+add a new genpd configuration bit, GENPD_FLAG_CPU_DOMAIN.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Co-developed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v13:
-	- As suggested by Rafael, use WRITE|READ_ONCE when writing/reading the
-	next_hrtimer variable and also avoid it from containing a stale value.
+	- None (re-based).
 
 ---
- drivers/cpuidle/cpuidle.c | 19 +++++++++++++++++--
- include/linux/cpuidle.h   |  1 +
- include/linux/tick.h      |  7 ++++++-
- kernel/time/tick-sched.c  | 12 ++++++++++++
- 4 files changed, 36 insertions(+), 3 deletions(-)
+ drivers/base/power/domain.c | 65 ++++++++++++++++++++++++++++++++++++-
+ include/linux/pm_domain.h   | 13 ++++++++
+ 2 files changed, 77 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 7f108309e871..0f4b7c45df3e 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -328,9 +328,23 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		  int index)
- {
-+	int ret = 0;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index ff6f992f7a1d..ecac03dcc9b2 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -22,6 +22,7 @@
+ #include <linux/sched.h>
+ #include <linux/suspend.h>
+ #include <linux/export.h>
++#include <linux/cpu.h>
+ 
+ #include "power.h"
+ 
+@@ -128,6 +129,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
+ #define genpd_is_always_on(genpd)	(genpd->flags & GENPD_FLAG_ALWAYS_ON)
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
++#define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+ 
+ static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+@@ -1454,6 +1456,56 @@ static void genpd_free_dev_data(struct device *dev,
+ 	dev_pm_put_subsys_data(dev);
+ }
+ 
++static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
++				   int cpu, bool set, unsigned int depth)
++{
++	struct gpd_link *link;
 +
-+	/*
-+	 * Store the next hrtimer, which becomes either next tick or the next
-+	 * timer event, whatever expires first. Additionally, to make this data
-+	 * useful for consumers outside cpuidle, we rely on that the governor's
-+	 * ->select() callback have decided, whether to stop the tick or not.
-+	 */
-+	WRITE_ONCE(dev->next_hrtimer, tick_nohz_get_next_hrtimer());
++	if (!genpd_is_cpu_domain(genpd))
++		return;
 +
- 	if (cpuidle_state_is_coupled(drv, index))
--		return cpuidle_enter_state_coupled(dev, drv, index);
--	return cpuidle_enter_state(dev, drv, index);
-+		ret = cpuidle_enter_state_coupled(dev, drv, index);
++	list_for_each_entry(link, &genpd->slave_links, slave_node) {
++		struct generic_pm_domain *master = link->master;
++
++		genpd_lock_nested(master, depth + 1);
++		__genpd_update_cpumask(master, cpu, set, depth + 1);
++		genpd_unlock(master);
++	}
++
++	if (set)
++		cpumask_set_cpu(cpu, genpd->cpus);
 +	else
-+		ret = cpuidle_enter_state(dev, drv, index);
-+
-+	WRITE_ONCE(dev->next_hrtimer, 0);
-+	return ret;
- }
- 
- /**
-@@ -511,6 +525,7 @@ static void __cpuidle_device_init(struct cpuidle_device *dev)
- {
- 	memset(dev->states_usage, 0, sizeof(dev->states_usage));
- 	dev->last_residency = 0;
-+	dev->next_hrtimer = 0;
- }
- 
- /**
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 3b39472324a3..bb9a0db89f1a 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -83,6 +83,7 @@ struct cpuidle_device {
- 	unsigned int		use_deepest_state:1;
- 	unsigned int		poll_time_limit:1;
- 	unsigned int		cpu;
-+	ktime_t			next_hrtimer;
- 
- 	int			last_residency;
- 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 55388ab45fd4..8891b5ac3e40 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -122,6 +122,7 @@ extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
- extern bool tick_nohz_idle_got_tick(void);
-+extern ktime_t tick_nohz_get_next_hrtimer(void);
- extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
- extern unsigned long tick_nohz_get_idle_calls(void);
- extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-@@ -145,7 +146,11 @@ static inline void tick_nohz_idle_restart_tick(void) { }
- static inline void tick_nohz_idle_enter(void) { }
- static inline void tick_nohz_idle_exit(void) { }
- static inline bool tick_nohz_idle_got_tick(void) { return false; }
--
-+static inline ktime_t tick_nohz_get_next_hrtimer(void)
-+{
-+	/* Next wake up is the tick period, assume it starts now */
-+	return ktime_add(ktime_get(), TICK_NSEC);
++		cpumask_clear_cpu(cpu, genpd->cpus);
 +}
- static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
++
++static void genpd_update_cpumask(struct generic_pm_domain *genpd,
++				 struct device *dev, bool set)
++{
++	int cpu;
++
++	if (!genpd_is_cpu_domain(genpd))
++		return;
++
++	for_each_possible_cpu(cpu) {
++		if (get_cpu_device(cpu) == dev) {
++			__genpd_update_cpumask(genpd, cpu, set, 0);
++			return;
++		}
++	}
++}
++
++static void genpd_set_cpumask(struct generic_pm_domain *genpd,
++			      struct device *dev)
++{
++	genpd_update_cpumask(genpd, dev, true);
++}
++
++static void genpd_clear_cpumask(struct generic_pm_domain *genpd,
++				struct device *dev)
++{
++	genpd_update_cpumask(genpd, dev, false);
++}
++
+ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 			    struct gpd_timing_data *td)
  {
- 	*delta_next = TICK_NSEC;
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 6fa52cd6df0b..8d18e03124ff 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -1022,6 +1022,18 @@ bool tick_nohz_idle_got_tick(void)
- 	return false;
- }
+@@ -1475,6 +1527,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
  
-+/**
-+ * tick_nohz_get_next_hrtimer - return the next expiration time for the hrtimer
-+ * or the tick, whatever that expires first. Note that, if the tick has been
-+ * stopped, it returns the next hrtimer.
+ 	genpd_lock(genpd);
+ 
++	genpd_set_cpumask(genpd, dev);
+ 	dev_pm_domain_set(dev, &genpd->domain);
+ 
+ 	genpd->device_count++;
+@@ -1532,6 +1585,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd->device_count--;
+ 	genpd->max_off_time_changed = true;
+ 
++	genpd_clear_cpumask(genpd, dev);
+ 	dev_pm_domain_set(dev, NULL);
+ 
+ 	list_del_init(&pdd->list_node);
+@@ -1768,11 +1822,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 	if (genpd_is_always_on(genpd) && !genpd_status_on(genpd))
+ 		return -EINVAL;
+ 
++	if (genpd_is_cpu_domain(genpd) &&
++	    !zalloc_cpumask_var(&genpd->cpus, GFP_KERNEL))
++		return -ENOMEM;
++
+ 	/* Use only one "off" state if there were no states declared */
+ 	if (genpd->state_count == 0) {
+ 		ret = genpd_set_default_power_state(genpd);
+-		if (ret)
++		if (ret) {
++			if (genpd_is_cpu_domain(genpd))
++				free_cpumask_var(genpd->cpus);
+ 			return ret;
++		}
+ 	} else if (!gov && genpd->state_count > 1) {
+ 		pr_warn("%s: no governor for states\n", genpd->name);
+ 	}
+@@ -1818,6 +1879,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+ 	list_del(&genpd->gpd_list_node);
+ 	genpd_unlock(genpd);
+ 	cancel_work_sync(&genpd->power_off_work);
++	if (genpd_is_cpu_domain(genpd))
++		free_cpumask_var(genpd->cpus);
+ 	if (genpd->free_states)
+ 		genpd->free_states(genpd->states, genpd->state_count);
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 8e1399231753..a6e251fe9deb 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -16,6 +16,7 @@
+ #include <linux/of.h>
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
++#include <linux/cpumask.h>
+ 
+ /*
+  * Flags to control the behaviour of a genpd.
+@@ -42,11 +43,22 @@
+  * GENPD_FLAG_ACTIVE_WAKEUP:	Instructs genpd to keep the PM domain powered
+  *				on, in case any of its attached devices is used
+  *				in the wakeup path to serve system wakeups.
 + *
-+ * Called from power state control code with interrupts disabled
-+ */
-+ktime_t tick_nohz_get_next_hrtimer(void)
-+{
-+	return __this_cpu_read(tick_cpu_device.evtdev)->next_event;
-+}
-+
- /**
-  * tick_nohz_get_sleep_length - return the expected length of the current sleep
-  * @delta_next: duration until the next event if the tick cannot be stopped
++ * GENPD_FLAG_CPU_DOMAIN:	Instructs genpd that it should expect to get
++ *				devices attached, which may belong to CPUs or
++ *				possibly have subdomains with CPUs attached.
++ *				This flag enables the genpd backend driver to
++ *				deploy idle power management support for CPUs
++ *				and groups of CPUs. Note that, the backend
++ *				driver must then comply with the so called,
++ *				last-man-standing algorithm, for the CPUs in the
++ *				PM domain.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+ #define GENPD_FLAG_ALWAYS_ON	 (1U << 2)
+ #define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3)
++#define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
+ 
+ enum gpd_status {
+ 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+@@ -94,6 +106,7 @@ struct generic_pm_domain {
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	unsigned int performance_state;	/* Aggregated max performance state */
++	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
+ 	struct opp_table *opp_table;	/* OPP table of the genpd */
 -- 
 2.17.1
