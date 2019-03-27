@@ -1,64 +1,105 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v2 3/5] devfreq: rk3399_dmc: Pass ODT and auto power down
- parameters to TF-A.
-Date: Tue, 26 Mar 2019 17:24:41 -0700
-Message-ID: <20190327002441.GB112750@google.com>
-References: <20190319181323.22804-1-gael.portay@collabora.com>
- <20190319181323.22804-4-gael.portay@collabora.com>
- <20190320003352.GN112750@google.com>
- <20190320215013.43zgvyn5frnb3yud@archlinux.localdomain>
- <20190320220223.GP112750@google.com>
- <20190321231055.j7z23f3k3rcngq4u@archlinux.localdomain>
- <20190322000107.GU112750@google.com>
- <20190322124525.ge5thq4a7c6ufcra@archlinux.localdomain>
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: [PATCH v13 00/11] Introduce the for_each_set_clump8 macro
+Date: Wed, 27 Mar 2019 13:57:55 +0900
+Message-ID: <cover.1553661964.git.vilhelm.gray@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190322124525.ge5thq4a7c6ufcra@archlinux.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?B?R2HDq2w=?= PORTAY <gael.portay@collabora.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-rockchip@lists.infradead.org, Randy Li <ayaka@soulik.info>, kernel@collabora.com, linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>
+To: linus.walleij@linaro.org, bgolaszewski@baylibre.com
+Cc: akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, William Breathitt Gray <vilhelm.gray@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 22, 2019 at 08:45:26AM -0400, Gaël PORTAY wrote:
-> Hi Matthias,
-> 
-> On Thu, Mar 21, 2019 at 05:01:07PM -0700, Matthias Kaehlcke wrote:
-> > > ...
-> > > 
-> > > So, for a reason that I ignore, if we try to save unecessary calls to
-> > > ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD (odt_enable has not changed since
-> > > last call), we get stalled in the call to ROCKCHIP_SIP_CONFIG_SET_RAGE
-> > > that follows. The function arm_smccc_smc never returns and the device
-> > > hard hang.
-> > 
-> > Thanks for giving it a try!
-> > 
-> > Did your code ensure to perform the SMC call for the first frequency
-> > change? If not the problem could be that the DDR PD timings and ODT
-> > resistors are not properly configured for the new frequency.
-> > 
-> 
-> The DRAM_ODT_PD SMC call is supposed to be performed before the
-> DRAM_SET_RATE; unless someone else is doing the set_rate.
+Changes in v13:
+  - Reimplement find_next_clump8 to leverage find_next_bit
+  - Restrict bitmap_get_value8/bitmap_set_value8 start argument to
+    values that are multiples of 8; this prevents cases where a clump
+    lands between word boundaries
+  - Trim const qualifiers from bitmap_get_value8, bitmap_set_value8, and
+    find_next_clump8; this should help improve readability of the code
+  - Redefine parameter list for bitmap_get_value8, bitmap_set_value8,
+    and find_next_clump8 to use unsigned long in order to match the
+    find_next_bit data types and naming conventions
 
-However earlier the call wasn't done at all, and that didn't cause
-problems.
+While adding GPIO get_multiple/set_multiple callback support for various
+drivers, I noticed a pattern of looping manifesting that would be useful
+standardized as a macro.
 
-> Does the ODT resistors should be configured for every existing
-> frequency?
+This patchset introduces the for_each_set_clump8 macro and utilizes it
+in several GPIO drivers. The for_each_set_clump macro8 facilitates a
+for-loop syntax that iterates over a memory region entire groups of set
+bits at a time.
 
-I don't have any background here. My initial assumption would be that
-it should be enough to re-configure them when the frequency passes the
-threshold in either direction.
+For example, suppose you would like to iterate over a 32-bit integer 8
+bits at a time, skipping over 8-bit groups with no set bit, where
+XXXXXXXX represents the current 8-bit group:
 
-Anyway, IIUC there shouldn't be more than 5 frequency changes per
-second (polling_ms = 200), and likely no all of them would pass the
-threshold, so it seems limiting the calls (if possible) would be a
-micro-optimization and is probably not worth the hassle :)
+    Example:        10111110 00000000 11111111 00110011
+    First loop:     10111110 00000000 11111111 XXXXXXXX
+    Second loop:    10111110 00000000 XXXXXXXX 00110011
+    Third loop:     XXXXXXXX 00000000 11111111 00110011
 
-Thanks
+Each iteration of the loop returns the next 8-bit group that has at
+least one set bit.
 
-Matthias
+The for_each_set_clump8 macro has four parameters:
+
+    * start: set to the bit offset of the current clump
+    * clump: set to the current clump value
+    * bits: bitmap to search within
+    * size: bitmap size in number of bits
+
+In this version of the patchset, the for_each_set_clump macro has been
+reimplemented and simplified based on the suggestions provided by Rasmus
+Villemoes and Andy Shevchenko in the version 4 submission.
+
+In particular, the function of the for_each_set_clump macro has been
+restricted to handle only 8-bit clumps; the drivers that use the
+for_each_set_clump macro only handle 8-bit ports so a generic
+for_each_set_clump implementation is not necessary. Thus, a solution for
+large clumps (i.e. those larger than the width of a bitmap word) can be
+postponed until a driver appears that actually requires such a generic
+for_each_set_clump implementation.
+
+For what it's worth, a semi-generic for_each_set_clump (i.e. for clumps
+smaller than the width of a bitmap word) can be implemented by simply
+replacing the hardcoded '8' and '0xFF' instances with respective
+variables. I have not yet had a need for such an implementation, and
+since it falls short of a true generic for_each_set_clump function, I
+have decided to forgo such an implementation for now.
+
+In addition, the bitmap_get_value8 and bitmap_set_value8 functions are
+introduced to get and set 8-bit values respectively. Their use is based
+on the behavior suggested in the patchset version 4 review.
+
+William Breathitt Gray (11):
+  bitops: Introduce the for_each_set_clump8 macro
+  lib/test_bitmap.c: Add for_each_set_clump8 test cases
+  gpio: 104-dio-48e: Utilize for_each_set_clump8 macro
+  gpio: 104-idi-48: Utilize for_each_set_clump8 macro
+  gpio: gpio-mm: Utilize for_each_set_clump8 macro
+  gpio: ws16c48: Utilize for_each_set_clump8 macro
+  gpio: pci-idio-16: Utilize for_each_set_clump8 macro
+  gpio: pcie-idio-24: Utilize for_each_set_clump8 macro
+  gpio: uniphier: Utilize for_each_set_clump8 macro
+  gpio: 74x164: Utilize the for_each_set_clump8 macro
+  thermal: intel: intel_soc_dts_iosf: Utilize for_each_set_clump8 macro
+
+ drivers/gpio/gpio-104-dio-48e.c            |  73 ++++----------
+ drivers/gpio/gpio-104-idi-48.c             |  36 ++-----
+ drivers/gpio/gpio-74x164.c                 |  19 ++--
+ drivers/gpio/gpio-gpio-mm.c                |  73 ++++----------
+ drivers/gpio/gpio-pci-idio-16.c            |  75 +++++---------
+ drivers/gpio/gpio-pcie-idio-24.c           | 109 ++++++++-------------
+ drivers/gpio/gpio-uniphier.c               |  16 ++-
+ drivers/gpio/gpio-ws16c48.c                |  73 ++++----------
+ drivers/thermal/intel/intel_soc_dts_iosf.c |  29 +++---
+ drivers/thermal/intel/intel_soc_dts_iosf.h |   2 -
+ include/asm-generic/bitops/find.h          |  11 +++
+ include/linux/bitops.h                     |   5 +
+ lib/find_bit.c                             |  58 +++++++++++
+ lib/test_bitmap.c                          |  65 ++++++++++++
+ 14 files changed, 307 insertions(+), 337 deletions(-)
+
+-- 
+2.21.0
