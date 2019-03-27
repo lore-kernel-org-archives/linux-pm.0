@@ -1,36 +1,64 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v13 10/11] gpio: 74x164: Utilize the for_each_set_clump8
- macro
-Date: Wed, 27 Mar 2019 14:33:14 +0200
-Message-ID: <20190327123314.GJ9224@smile.fi.intel.com>
-References: <cover.1553661964.git.vilhelm.gray@gmail.com>
- <645f16f1d1ad3f215e34a82f457e06725fcf8f56.1553661964.git.vilhelm.gray@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/1] thermal: stm32: simplify getting .driver_data
+Date: Wed, 27 Mar 2019 14:00:09 +0100
+Message-ID: <62d8b5a6-ed22-b0ec-ff3e-b545840b1210@linaro.org>
+References: <20190319163635.30891-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <645f16f1d1ad3f215e34a82f457e06725fcf8f56.1553661964.git.vilhelm.gray@gmail.com>
+In-Reply-To: <20190319163635.30891-1-wsa+renesas@sang-engineering.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, linux-pm@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 27, 2019 at 02:02:39PM +0900, William Breathitt Gray wrote:
-> Replace verbose implementation in set_multiple callback with
-> for_each_set_clump8 macro to simplify code and improve clarity.
+On 19/03/2019 17:36, Wolfram Sang wrote:
+> We should get 'driver_data' from 'struct device' directly. Going via
+> platform_device is an unneeded step back and forth.
+> 
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-> +	for_each_set_clump8(offset, bankmask, mask, chip->registers * 8) {
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-> +		bank = (chip->registers - 1) - (offset / 8);
-
-Excessive parens, but it's minor.
-
-> +		bitmask = bitmap_get_value8(bits, offset) & bankmask;
+> ---
+> 
+> Build tested only. buildbot is happy.
+> 
+>  drivers/thermal/st/stm_thermal.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
+> index bbd73c5a4a4e..cf9ddc52f30e 100644
+> --- a/drivers/thermal/st/stm_thermal.c
+> +++ b/drivers/thermal/st/stm_thermal.c
+> @@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
+>  static int stm_thermal_suspend(struct device *dev)
+>  {
+>  	int ret;
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
+> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
 >  
->  		chip->buffer[bank] &= ~bankmask;
-> +		chip->buffer[bank] |= bitmask;
->  	}
+>  	ret = stm_thermal_sensor_off(sensor);
+>  	if (ret)
+> @@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device *dev)
+>  static int stm_thermal_resume(struct device *dev)
+>  {
+>  	int ret;
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
+> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
+>  
+>  	ret = stm_thermal_prepare(sensor);
+>  	if (ret)
+> 
+
 
 -- 
-With Best Regards,
-Andy Shevchenko
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
