@@ -1,36 +1,45 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RESEND PATCH] thermal: rcar_gen3_thermal: Fix init value of
- IRQCTL register
-Date: Thu, 28 Mar 2019 09:05:27 +0100
-Message-ID: <CAMuHMdW8cRARXmGbCeuAzuY4XPyqmrKTKO_NrRiWudK-kQ4M9A@mail.gmail.com>
-References: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v13 10/11] gpio: 74x164: Utilize the for_each_set_clump8
+ macro
+Date: Thu, 28 Mar 2019 11:11:51 +0200
+Message-ID: <20190328091151.GU9224@smile.fi.intel.com>
+References: <cover.1553661964.git.vilhelm.gray@gmail.com>
+ <645f16f1d1ad3f215e34a82f457e06725fcf8f56.1553661964.git.vilhelm.gray@gmail.com>
+ <20190327123314.GJ9224@smile.fi.intel.com>
+ <20190328044004.GB3251@icarus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
+Content-Disposition: inline
+In-Reply-To: <20190328044004.GB3251@icarus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nguyen An Hoan <na-hoan@jinso.co.jp>
-Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Zhang Rui <rui.zhang@intel.com>, Jiri Slaby <jslaby@suse.com>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, =?UTF-8?B?56iy5ZCJ?= <h-inayoshi@jinso.co.jp>, =?UTF-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>, =?UTF-8?B?44Kr44Kq44O744O044Kh44Oz44O744OJ44Oz?= <cv-dong@jinso.co.jp>
+To: William Breathitt Gray <vilhelm.gray@gmail.com>
+Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 27, 2019 at 10:04 AM Nguyen An Hoan <na-hoan@jinso.co.jp> wrote:
-> From: Hoan Nguyen An <na-hoan@jinso.co.jp>
->
-> Fix setting value for IRQCTL register. We are setting the last 6 bits
-> of (IRQCTL) to be 1 (0x3f), this is only suitable for H3ES1.*, according
-> to Hardware manual values 1 are "setting prohibited" for Gen3.
->
-> Signed-off-by: Hoan Nguyen An <na-hoan@jinso.co.jp>
+On Thu, Mar 28, 2019 at 01:40:04PM +0900, William Breathitt Gray wrote:
+> On Wed, Mar 27, 2019 at 02:33:14PM +0200, Andy Shevchenko wrote:
+> > On Wed, Mar 27, 2019 at 02:02:39PM +0900, William Breathitt Gray wrote:
+> > > Replace verbose implementation in set_multiple callback with
+> > > for_each_set_clump8 macro to simplify code and improve clarity.
+> > 
+> > > +	for_each_set_clump8(offset, bankmask, mask, chip->registers * 8) {
+> > 
+> > > +		bank = (chip->registers - 1) - (offset / 8);
+> > 
+> > Excessive parens, but it's minor.
+> 
+> Fair point, this could do without parens around (chip->registers - 1).
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+And around division too.
 
-Gr{oetje,eeting}s,
+> Since this and renaming 'idx' to 'index' in find_bit.c are such a minor
+> changes, I'll wait first to see if something else comes up to be fixed
+> in this review. If so, I'll add these changes to the next version of
+> this patchset.
 
-                        Geert
+It seems inline proposal would going to be implemented.
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+With Best Regards,
+Andy Shevchenko
