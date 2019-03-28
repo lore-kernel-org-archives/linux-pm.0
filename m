@@ -1,7 +1,7 @@
 From: Sibi Sankar <sibis@codeaurora.org>
-Subject: [PATCH RFC 6/9] OPP: Add and export helper to update voltage
-Date: Thu, 28 Mar 2019 20:58:19 +0530
-Message-ID: <20190328152822.532-7-sibis@codeaurora.org>
+Subject: [PATCH RFC 7/9] cpufreq: qcom: Add support to update cpu node's OPP tables
+Date: Thu, 28 Mar 2019 20:58:20 +0530
+Message-ID: <20190328152822.532-8-sibis@codeaurora.org>
 References: <20190328152822.532-1-sibis@codeaurora.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,117 +12,79 @@ To: robh+dt@kernel.org, andy.gross@linaro.org, myungjoo.ham@samsung.com, kyungmi
 Cc: bjorn.andersson@linaro.org, david.brown@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, devicetree@vger.kernel.org, rnayak@codeaurora.org, cw00.choi@samsung.com, linux-pm@vger.kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, dianders@chromium.org, Sibi Sankar <sibis@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add and export 'dev_pm_opp_update_voltage' to find and update voltage
-of an opp for a given frequency. This will be useful to update the opps
-with voltages read back from firmware.
+Add support to parse and update OPP tables attached to the cpu nodes.
 
 Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 ---
- drivers/opp/core.c     | 62 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h | 10 +++++++
- 2 files changed, 72 insertions(+)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 29 +++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index addaf7aae9ae..c066cd120a33 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -2090,6 +2090,68 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 4b0b50403901..5c268dd2346c 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -73,6 +73,25 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+ 	return policy->freq_table[index].frequency;
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
  
-+static int _opp_update_voltage(struct device *dev, unsigned long freq,
-+			       unsigned long u_volt)
++static int qcom_find_update_opp(struct device *cpu_dev, unsigned long freq,
++				unsigned long volt)
 +{
-+	struct opp_table *opp_table;
-+	struct dev_pm_opp *tmp_opp, *opp = ERR_PTR(-ENODEV);
-+	int r = 0;
++	int ret;
++	struct dev_pm_opp *opp;
 +
-+	/* Find the opp_table */
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table)) {
-+		r = PTR_ERR(opp_table);
-+		dev_warn(dev, "%s: Device OPP not found (%d)\n", __func__, r);
-+		return r;
-+	}
-+
-+	mutex_lock(&opp_table->lock);
-+
-+	/* Do we have the frequency? */
-+	list_for_each_entry(tmp_opp, &opp_table->opp_list, node) {
-+		if (tmp_opp->rate == freq) {
-+			opp = tmp_opp;
-+			break;
-+		}
-+	}
-+
++	opp = dev_pm_opp_find_freq_exact(cpu_dev, freq, true);
 +	if (IS_ERR(opp)) {
-+		r = PTR_ERR(opp);
-+		goto unlock;
++		ret = dev_pm_opp_add(cpu_dev, freq, volt);
++	} else {
++		dev_pm_opp_disable(cpu_dev, freq);
++		ret = dev_pm_opp_update_voltage(cpu_dev, freq, volt);
++		dev_pm_opp_enable(cpu_dev, freq);
++		dev_pm_opp_put(opp);
 +	}
 +
-+	/* update only if the opp is disabled */
-+	if (opp->available)
-+		goto unlock;
-+
-+	opp->supplies[0].u_volt = u_volt;
-+
-+unlock:
-+	mutex_unlock(&opp_table->lock);
-+	dev_pm_opp_put_opp_table(opp_table);
-+	return r;
++	return ret;
 +}
 +
-+/**
-+ * dev_pm_opp_update_voltage() - find and update voltage of an opp
-+ *				 for a given frequency
-+ * @dev:	device for which we do this operation
-+ * @freq:	OPP frequency to update voltage
-+ * @u_volt:	voltage requested for this opp
-+ *
-+ * This is useful only for devices with single power supply.
-+ *
-+ * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-+ * copy operation, returns 0 if no modification was done OR modification was
-+ * successful.
-+ */
-+int dev_pm_opp_update_voltage(struct device *dev, unsigned long freq,
-+			      unsigned long u_volt)
-+{
-+	return _opp_update_voltage(dev, freq, u_volt);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_update_voltage);
+ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 				    struct cpufreq_policy *policy,
+ 				    void __iomem *base)
+@@ -81,11 +100,16 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 	u32 volt;
+ 	unsigned int max_cores = cpumask_weight(policy->cpus);
+ 	struct cpufreq_frequency_table	*table;
++	int ret;
+ 
+ 	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
+ 	if (!table)
+ 		return -ENOMEM;
+ 
++	ret = dev_pm_opp_of_add_table(cpu_dev);
++	if (ret)
++		dev_dbg(cpu_dev, "Couldn't add OPP table\n");
 +
- /**
-  * dev_pm_opp_register_notifier() - Register OPP notifier for the device
-  * @dev:	Device for which notifier needs to be registered
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index d7cb0e65c4f0..58490f6839ce 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -130,6 +130,9 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+ 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+ 		data = readl_relaxed(base + REG_FREQ_LUT +
+ 				      i * LUT_ROW_SIZE);
+@@ -104,7 +128,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
  
- int dev_pm_opp_disable(struct device *dev, unsigned long freq);
+ 		if (freq != prev_freq && core_count == max_cores) {
+ 			table[i].frequency = freq;
+-			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
++			qcom_find_update_opp(cpu_dev, freq * 1000, volt);
+ 			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
+ 				freq, core_count);
+ 		} else {
+@@ -125,7 +149,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 			if (prev_cc != max_cores) {
+ 				prev->frequency = prev_freq;
+ 				prev->flags = CPUFREQ_BOOST_FREQ;
+-				dev_pm_opp_add(cpu_dev,	prev_freq * 1000, volt);
++				qcom_find_update_opp(cpu_dev, prev_freq * 1000,
++						     volt);
+ 			}
  
-+int dev_pm_opp_update_voltage(struct device *dev, unsigned long freq,
-+			      unsigned long u_volt);
-+
- int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
- int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
- 
-@@ -265,6 +268,13 @@ static inline int dev_pm_opp_disable(struct device *dev, unsigned long freq)
- 	return 0;
- }
- 
-+static inline int dev_pm_opp_update_voltage(struct device *dev,
-+					    unsigned long freq,
-+					    unsigned long u_volt)
-+{
-+	return 0;
-+}
-+
- static inline int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
- {
- 	return -ENOTSUPP;
+ 			break;
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
