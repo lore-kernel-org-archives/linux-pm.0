@@ -1,50 +1,59 @@
-From: William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: Re: [PATCH v13 10/11] gpio: 74x164: Utilize the for_each_set_clump8
- macro
-Date: Thu, 28 Mar 2019 13:40:04 +0900
-Message-ID: <20190328044004.GB3251@icarus>
-References: <cover.1553661964.git.vilhelm.gray@gmail.com>
- <645f16f1d1ad3f215e34a82f457e06725fcf8f56.1553661964.git.vilhelm.gray@gmail.com>
- <20190327123314.GJ9224@smile.fi.intel.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [RESEND PATCH] thermal: rcar_gen3_thermal: Fix init value of
+ IRQCTL register
+Date: Thu, 28 Mar 2019 08:06:33 +0100
+Message-ID: <20190328070633.GA902@kunai>
+References: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190327123314.GJ9224@smile.fi.intel.com>
+In-Reply-To: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Nguyen An Hoan <na-hoan@jinso.co.jp>
+Cc: linux-renesas-soc@vger.kernel.org, geert+renesas@glider.be, rui.zhang@intel.com, jslaby@suse.com, wsa+renesas@sang-engineering.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com, yoshihiro.shimoda.uh@renesas.com, h-inayoshi@jinso.co.jp, nv-dung@jinso.co.jp, cv-dong@jinso.co.jp
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 27, 2019 at 02:33:14PM +0200, Andy Shevchenko wrote:
-> On Wed, Mar 27, 2019 at 02:02:39PM +0900, William Breathitt Gray wrote:
-> > Replace verbose implementation in set_multiple callback with
-> > for_each_set_clump8 macro to simplify code and improve clarity.
-> 
-> > +	for_each_set_clump8(offset, bankmask, mask, chip->registers * 8) {
-> 
-> > +		bank = (chip->registers - 1) - (offset / 8);
-> 
-> Excessive parens, but it's minor.
 
-Fair point, this could do without parens around (chip->registers - 1).
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Since this and renaming 'idx' to 'index' in find_bit.c are such a minor
-changes, I'll wait first to see if something else comes up to be fixed
-in this review. If so, I'll add these changes to the next version of
-this patchset.
+On Wed, Mar 27, 2019 at 06:03:18PM +0900, Nguyen An Hoan wrote:
+> From: Hoan Nguyen An <na-hoan@jinso.co.jp>
+>=20
+> Fix setting value for IRQCTL register. We are setting the last 6 bits
+> of (IRQCTL) to be 1 (0x3f), this is only suitable for H3ES1.*, according
+> to Hardware manual values 1 are "setting prohibited" for Gen3.
+>=20
+> Signed-off-by: Hoan Nguyen An <na-hoan@jinso.co.jp>
 
-William Breathitt Gray
+Yes, this is what we discussed for "[v2 PATCH] thermal:
+rcar_gen3_thermal: Fix init value of IRQCTL register"
 
-> 
-> > +		bitmask = bitmap_get_value8(bits, offset) & bankmask;
-> >  
-> >  		chip->buffer[bank] &= ~bankmask;
-> > +		chip->buffer[bank] |= bitmask;
-> >  	}
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
-> 
-> 
+Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+
+
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlyccnUACgkQFA3kzBSg
+KbYuDg/+M0RVneSw2K0/P7IFF8ql31xrf3WCWCtgmbRkbHAcwWUgY9+xbs0jaF1h
+y+nnHILeimX02peBa8dT4WHIDq3zKi+qN0IXMZ9XgU52kz4COlE51MbCtAtDhhgh
+O0tHoRCky7U80Qn/8j91QBC7G+vS7vNMaX6ES2ZLEHnrr+m2YjK7olDNLap+Y7qc
+oq3zB06fsdCT4qnow2DGCJllorICPATkv/41KI7BK59Opsm/nVnL1HbYH67IWdeh
+c+kf1QvxwYrGQG2Rgkw9hOjRRoaZJcsohrfRotVMudthCK3mq7snR/CKUeC/2ylT
+Eo6aQx10N/qo0CYxwMb63uz8J+L043bRE81kA5V8CLNaXRwyTL8BObpMAwoQyw01
+Dv0sN6ACfiIJ8toYqPVnOFkJMeHsYksmg5TrBoQ9CJ+BsXYEccph0TKSBGuJO/oc
+v/GZLKc0GAuwcY0BlthR0p9wu6X1UfcxA4/JHl9H7Tk1vaEdpSgkAcnKn/S5gDS2
+rV8Zr5F92AZDGXY55OZC73rVvB7IePrvNcLqUCPk98IAazkj5yj1bCiXpkq6gqpO
+iAn3knawf45BP4lD8Yal6lejucnnMsbWhrvsEBOTnG5W61CQ41eS6XZaScqZdcfS
+pibHXwG/6re54YGt4dPgwMOp6Bfwnd2nA4tWZcWkrowsOLNY5mE=
+=7qpK
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
