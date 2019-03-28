@@ -1,35 +1,44 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] power: reset: syscon-reboot: add a mask property
-Date: Wed, 27 Mar 2019 18:53:58 -0500
-Message-ID: <20190327235358.GA30280@bogus>
-References: <20190308074930.15270-1-ms@dev.tdt.de>
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: Re: [PATCH v13 01/11] bitops: Introduce the for_each_set_clump8 macro
+Date: Thu, 28 Mar 2019 13:30:13 +0900
+Message-ID: <20190328043013.GA3251@icarus>
+References: <cover.1553661964.git.vilhelm.gray@gmail.com>
+ <497dc4b5b1f668b54e008e10a43d4108f4a41213.1553661964.git.vilhelm.gray@gmail.com>
+ <20190327064254.lwj7ew37mxphieco@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190308074930.15270-1-ms@dev.tdt.de>
+In-Reply-To: <20190327064254.lwj7ew37mxphieco@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Martin Schiller <ms@dev.tdt.de>
-Cc: sre@kernel.org, mark.rutland@arm.com, fkan@apm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Andy Shevchenko <andy.shevchenko@gmail.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 08, 2019 at 08:49:30AM +0100, Martin Schiller wrote:
-> Make the syscon-reboot driver accept value and mask instead of
-> just value.
+On Wed, Mar 27, 2019 at 07:42:54AM +0100, Lukas Wunner wrote:
+> On Wed, Mar 27, 2019 at 01:58:45PM +0900, William Breathitt Gray wrote:
+> > This macro iterates for each 8-bit group of bits (clump) with set bits,
+> > within a bitmap memory region. For each iteration, "start" is set to the
+> > bit offset of the found clump, while the respective clump value is
+> > stored to the location pointed by "clump". Additionally, the
+> > bitmap_get_value8 and bitmap_set_value8 functions are introduced to
+> > respectively get and set an 8-bit value in a bitmap memory region.
 > 
-> Prior to this patch, the property name for the value was 'mask'. If
-> only the mask property is defined on a node, maintain compatibility
-> by using it as the value.
+> I would have preferred static inlines for bitmap_get_value8(),
+> bitmap_set_value8() and find_next_clump8() to make this as fast
+> as possible in the callers because I've personally worked with
+> an industrial application where the GPIO pins of a 74x164 are
+> written every 250 usec.
 > 
-> This patch is based on commit
-> f2c199db477e ("power: reset: syscon-poweroff: add a mask property")
-> and does the same change for the syscon-reboot driver.
+> But apart from that I like this series a lot, thanks for working on it.
 > 
-> Signed-off-by: Martin Schiller <ms@dev.tdt.de>
-> ---
->  .../devicetree/bindings/power/reset/syscon-reboot.txt | 11 +++++++++--
+> Lukas
 
-Acked-by: Rob Herring <robh@kernel.org>
+I'm not sure these can be static inline since the symbols are exported
+for use outside this file. However, in theory I have no objection from a
+performance standpoint. Since my devices don't have such strict realtime
+requirements as your 74x164 application, I'll defer this decision to
+someone more knowledgeable in this area; perhaps someone else can
+comment in this thread with their advice and suggestions.
 
->  drivers/power/reset/syscon-reboot.c                   | 19 +++++++++++++++++--
->  2 files changed, 26 insertions(+), 4 deletions(-)
+William Breathitt Gray
