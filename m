@@ -1,72 +1,98 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
-Date: Thu, 28 Mar 2019 20:51:12 +0100
-Message-ID: <1f99acdf-3f9a-5419-b1b5-1bcb9b36dbb6@linaro.org>
+Subject: Re: [PATCH 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Thu, 28 Mar 2019 21:23:35 +0100
+Message-ID: <30926b3d-0074-8c84-a081-d3dbc9258525@linaro.org>
 References: <20190328101352.25657-1-quentin.perret@arm.com>
- <20190328101352.25657-2-quentin.perret@arm.com>
- <20190328102206.doqj5fykqlld7jkd@queper01-lin>
- <f5c699d6-f8f8-ab53-2835-329ae2bd8202@linaro.org>
- <20190328174233.jthsdzxrzmzpjnqd@queper01-lin>
+ <20190328101352.25657-4-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190328174233.jthsdzxrzmzpjnqd@queper01-lin>
+In-Reply-To: <20190328101352.25657-4-quentin.perret@arm.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: edubezval@gmail.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>
+To: Quentin Perret <quentin.perret@arm.com>, edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
+Cc: dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28/03/2019 18:42, Quentin Perret wrote:
-> Hi Daniel,
+On 28/03/2019 11:13, Quentin Perret wrote:
+> The newly introduced Energy Model framework manages power cost tables in
+> a generic way. Moreover, it supports a several types of models since the
+> tables can come from DT or firmware (through SCMI) for example. On the
+> other hand, the cpu_cooling subsystem manages its own power cost tables
+> using only DT data.
 > 
-> On Thursday 28 Mar 2019 at 18:27:49 (+0100), Daniel Lezcano wrote:
->> On 28/03/2019 11:22, Quentin Perret wrote:
->>>> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
->>>> index 2d9c39033c1a..3c09bdaaefd3 100644
->>>> --- a/arch/arm64/configs/defconfig
->>>> +++ b/arch/arm64/configs/defconfig
->>>> @@ -97,6 +97,7 @@ CONFIG_XEN=y
->>>>  CONFIG_COMPAT=y
->>>>  CONFIG_HIBERNATION=y
->>>>  CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
->>>> +CONFIG_ENERGY_MODEL=n
->>>
->>> Hmm, sorry I turned this to '=n' for testing and forgot to update the
->>> patch. This obviously should be '=y' ...
->>
->> I did a test without the ENERGY_MODEL config option set, dhrystone and
->> the power_allocator policy on the hikey. The board did not mitigate well
->> and ended up rebooting.
+> In order to avoid the duplication of data in the kernel, and in order to
+> enable IPA with EMs coming from more than just DT, remove the private
+> tables from cpu_cooling.c and migrate it to using the centralized EM
+> framework.
 > 
-> OK ... And is the same thing happening if you just run mainline w/o the
-> dynamic-power-coefficient binding set for example ? The result _should_
-> be the same. 
-
-Right, it is the same.
-
-> If not, then perhaps I missed something. I'll try to
-> reproduce on my end. Just to be sure, when you say hikey, you mean
-> hikey960 ? Or 620 ? In any case, thanks for testing :-)
-
-hikey620
-
->> May be the cpu cooling Kconfig option should add
->> a SELECT or a DEPENDS on ENERGY_MODEL ?
+> The case where the thermal subsystem is used without an Energy Model
+> (cpufreq_cooling_ops) is handled by looking directly at CPUFreq's
+> frequency table which is already a dependency for cpu_cooling.c anyway.
 > 
-> Right, I've been wondering the same thing. I'm not a big fan of 'select'
-> because enabling ENERGY_MODEL automatically for the thermal stuff will
-> also happen to enable other things (EAS) without the user knowing. So
-> I'd rather keep the ENERGY_MODEL option explicit.
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  drivers/thermal/cpu_cooling.c | 231 +++++++++++-----------------------
+>  1 file changed, 75 insertions(+), 156 deletions(-)
 > 
-> But perhaps having THERMAL_GOV_POWER_ALLOCATOR 'depend on ENERGY_MODEL'
-> could work. It's just that there is no _strong_ dependency, the IPA code
-> isn't supposed to crash even if there is no EM ...
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index f7c1f49ec87f..a74ec8269b7b 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpu_cooling.h>
+> +#include <linux/energy_model.h>
+>  
+>  #include <trace/events/thermal.h>
+>  
+> @@ -48,19 +49,6 @@
+>   *	...
+>   */
+>  
+> -/**
+> - * struct freq_table - frequency table along with power entries
+> - * @frequency:	frequency in KHz
+> - * @power:	power in mW
+> - *
+> - * This structure is built when the cooling device registers and helps
+> - * in translating frequency to power and vice versa.
+> - */
+> -struct freq_table {
+> -	u32 frequency;
+> -	u32 power;
+> -};
+> -
+>  /**
+>   * struct time_in_idle - Idle time stats
+>   * @time: previous reading of the absolute time that this cpu was idle
+> @@ -82,7 +70,7 @@ struct time_in_idle {
+>   *	frequency.
+>   * @max_level: maximum cooling level. One less than total number of valid
+>   *	cpufreq frequencies.
+> - * @freq_table: Freq table in descending order of frequencies
+> + * @em: Reference on the Energy Model of the device
+>   * @cdev: thermal_cooling_device pointer to keep track of the
+>   *	registered cooling device.
+>   * @policy: cpufreq policy.
+> @@ -98,7 +86,7 @@ struct cpufreq_cooling_device {
+>  	unsigned int cpufreq_state;
+>  	unsigned int clipped_freq;
+>  	unsigned int max_level;
+> -	struct freq_table *freq_table;	/* In descending order */
+> +	struct em_perf_domain *em;
 
-Given if the ENERGY_MODEL is not set there is a regression we should add
-the dependency IMO.
+Why do you need to add this field? it will be accessible via policy->em, no?
 
+>  	struct thermal_cooling_device *cdev;
+>  	struct cpufreq_policy *policy;
+>  	struct list_head node;
+> @@ -121,14 +109,14 @@ static LIST_HEAD(cpufreq_cdev_list);
+>  static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
+[ ... ]
 
 -- 
  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
