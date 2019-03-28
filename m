@@ -1,45 +1,94 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v13 10/11] gpio: 74x164: Utilize the for_each_set_clump8
- macro
-Date: Thu, 28 Mar 2019 11:11:51 +0200
-Message-ID: <20190328091151.GU9224@smile.fi.intel.com>
-References: <cover.1553661964.git.vilhelm.gray@gmail.com>
- <645f16f1d1ad3f215e34a82f457e06725fcf8f56.1553661964.git.vilhelm.gray@gmail.com>
- <20190327123314.GJ9224@smile.fi.intel.com>
- <20190328044004.GB3251@icarus>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v3 3/4] cpufreq: schedutil: Simplify iowait boosting
+Date: Thu, 28 Mar 2019 09:48:24 +0000
+Message-ID: <20190328094823.y6gyfb6ldq43gojw@queper01-lin>
+References: <11953735.uMqeHy63Iu@aspire.rjw.lan>
+ <2864116.v8IU97Resm@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190328044004.GB3251@icarus>
+In-Reply-To: <2864116.v8IU97Resm@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 28, 2019 at 01:40:04PM +0900, William Breathitt Gray wrote:
-> On Wed, Mar 27, 2019 at 02:33:14PM +0200, Andy Shevchenko wrote:
-> > On Wed, Mar 27, 2019 at 02:02:39PM +0900, William Breathitt Gray wrote:
-> > > Replace verbose implementation in set_multiple callback with
-> > > for_each_set_clump8 macro to simplify code and improve clarity.
-> > 
-> > > +	for_each_set_clump8(offset, bankmask, mask, chip->registers * 8) {
-> > 
-> > > +		bank = (chip->registers - 1) - (offset / 8);
-> > 
-> > Excessive parens, but it's minor.
+Hi Rafael,
+
+On Tuesday 26 Mar 2019 at 12:18:00 (+0100), Rafael J. Wysocki wrote:
+> @@ -13,6 +13,8 @@
+>  #include <linux/sched/cpufreq.h>
+>  #include <trace/events/power.h>
+>  
+> +#define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
+> +
+>  struct sugov_tunables {
+>  	struct gov_attr_set	attr_set;
+>  	unsigned int		rate_limit_us;
+> @@ -51,7 +53,6 @@ struct sugov_cpu {
+>  	u64			last_update;
+>  
+>  	unsigned long		bw_dl;
+> -	unsigned long		min;
+>  	unsigned long		max;
+>  
+>  	/* The field below is for single-CPU policies only: */
+> @@ -303,7 +304,7 @@ static bool sugov_iowait_reset(struct sua
+
+The comment above this function needs updating I think.
+
+>  	if (delta_ns <= TICK_NSEC)
+>  		return false;
+>  
+> -	sg_cpu->iowait_boost = set_iowait_boost ? sg_cpu->min : 0;
+> +	sg_cpu->iowait_boost = set_iowait_boost ? IOWAIT_BOOST_MIN : 0;
+>  	sg_cpu->iowait_boost_pending = set_iowait_boost;
+>  
+>  	return true;
+> @@ -349,7 +350,7 @@ static void sugov_iowait_boost(struct su
+
+Ditto.
+
+>  	}
+>  
+>  	/* First wakeup after IO: start with minimum boost */
+> -	sg_cpu->iowait_boost = sg_cpu->min;
+> +	sg_cpu->iowait_boost = IOWAIT_BOOST_MIN;
+>  }
+>  
+>  /**
+> @@ -389,7 +390,7 @@ static unsigned long sugov_iowait_apply(
+>  		 * No boost pending; reduce the boost value.
+>  		 */
+>  		sg_cpu->iowait_boost >>= 1;
+> -		if (sg_cpu->iowait_boost < sg_cpu->min) {
+> +		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
+>  			sg_cpu->iowait_boost = 0;
+>  			return util;
+>  		}
+> @@ -826,9 +827,6 @@ static int sugov_start(struct cpufreq_po
+>  		memset(sg_cpu, 0, sizeof(*sg_cpu));
+>  		sg_cpu->cpu			= cpu;
+>  		sg_cpu->sg_policy		= sg_policy;
+> -		sg_cpu->min			=
+> -			(SCHED_CAPACITY_SCALE * policy->cpuinfo.min_freq) /
+> -			policy->cpuinfo.max_freq;
+>  	}
+>  
+>  	for_each_cpu(cpu, policy->cpus) {
 > 
-> Fair point, this could do without parens around (chip->registers - 1).
 
-And around division too.
+Other than that, I tried a backport of this on a Pixel 3 with Snapdragon
+845 (which is relevant because it has tons of OPPs, so starting at 128
+makes it ramp up faster) to check the impact on power, but the only
+differences appeared to be in the noise margin, so it's all good :)
 
-> Since this and renaming 'idx' to 'index' in find_bit.c are such a minor
-> changes, I'll wait first to see if something else comes up to be fixed
-> in this review. If so, I'll add these changes to the next version of
-> this patchset.
+Full test results available at [1]. Note that I did enable the iowait
+boost feature for these tests -- it is disabled by default on P3 ...
 
-It seems inline proposal would going to be implemented.
+Thanks,
+Quentin
 
--- 
-With Best Regards,
-Andy Shevchenko
+---
+[1] https://nbviewer.jupyter.org/gist/qperret/69c9bde13aad2d783689e78c9ba2d9bc
