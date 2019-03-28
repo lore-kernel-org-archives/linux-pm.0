@@ -1,59 +1,47 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [RESEND PATCH] thermal: rcar_gen3_thermal: Fix init value of
- IRQCTL register
-Date: Thu, 28 Mar 2019 08:06:33 +0100
-Message-ID: <20190328070633.GA902@kunai>
-References: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v13 01/11] bitops: Introduce the for_each_set_clump8 macro
+Date: Thu, 28 Mar 2019 08:30:49 +0100
+Message-ID: <20190328073049.jpizz6uio7er2sjv@wunner.de>
+References: <cover.1553661964.git.vilhelm.gray@gmail.com>
+ <497dc4b5b1f668b54e008e10a43d4108f4a41213.1553661964.git.vilhelm.gray@gmail.com>
+ <20190327064254.lwj7ew37mxphieco@wunner.de>
+ <20190328043013.GA3251@icarus>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1553677398-7896-1-git-send-email-na-hoan@jinso.co.jp>
+In-Reply-To: <20190328043013.GA3251@icarus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nguyen An Hoan <na-hoan@jinso.co.jp>
-Cc: linux-renesas-soc@vger.kernel.org, geert+renesas@glider.be, rui.zhang@intel.com, jslaby@suse.com, wsa+renesas@sang-engineering.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kuninori.morimoto.gx@renesas.com, yoshihiro.shimoda.uh@renesas.com, h-inayoshi@jinso.co.jp, nv-dung@jinso.co.jp, cv-dong@jinso.co.jp
+To: William Breathitt Gray <vilhelm.gray@gmail.com>
+Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, Andy Shevchenko <andy.shevchenko@gmail.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Mar 28, 2019 at 01:30:13PM +0900, William Breathitt Gray wrote:
+> On Wed, Mar 27, 2019 at 07:42:54AM +0100, Lukas Wunner wrote:
+> > On Wed, Mar 27, 2019 at 01:58:45PM +0900, William Breathitt Gray wrote:
+> > > This macro iterates for each 8-bit group of bits (clump) with set bits,
+> > > within a bitmap memory region. For each iteration, "start" is set to the
+> > > bit offset of the found clump, while the respective clump value is
+> > > stored to the location pointed by "clump". Additionally, the
+> > > bitmap_get_value8 and bitmap_set_value8 functions are introduced to
+> > > respectively get and set an 8-bit value in a bitmap memory region.
+> > 
+> > I would have preferred static inlines for bitmap_get_value8(),
+> > bitmap_set_value8() and find_next_clump8() to make this as fast
+> > as possible in the callers because I've personally worked with
+> > an industrial application where the GPIO pins of a 74x164 are
+> > written every 250 usec.
+> 
+> I'm not sure these can be static inline since the symbols are exported
+> for use outside this file.
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+By static inlines I meant that the functions are moved to the appropriate
+header file in include/linux/.  You don't need to worry about exporting
+in that case as the code is local to each module.  For smallish functions
+like these, static inlines are usually fine.  See drivers/dma/virt-dma.h
+for an extreme case of static inlines (as compared to the much smaller
+virt-dma.c).
 
-On Wed, Mar 27, 2019 at 06:03:18PM +0900, Nguyen An Hoan wrote:
-> From: Hoan Nguyen An <na-hoan@jinso.co.jp>
->=20
-> Fix setting value for IRQCTL register. We are setting the last 6 bits
-> of (IRQCTL) to be 1 (0x3f), this is only suitable for H3ES1.*, according
-> to Hardware manual values 1 are "setting prohibited" for Gen3.
->=20
-> Signed-off-by: Hoan Nguyen An <na-hoan@jinso.co.jp>
+Thanks,
 
-Yes, this is what we discussed for "[v2 PATCH] thermal:
-rcar_gen3_thermal: Fix init value of IRQCTL register"
-
-Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlyccnUACgkQFA3kzBSg
-KbYuDg/+M0RVneSw2K0/P7IFF8ql31xrf3WCWCtgmbRkbHAcwWUgY9+xbs0jaF1h
-y+nnHILeimX02peBa8dT4WHIDq3zKi+qN0IXMZ9XgU52kz4COlE51MbCtAtDhhgh
-O0tHoRCky7U80Qn/8j91QBC7G+vS7vNMaX6ES2ZLEHnrr+m2YjK7olDNLap+Y7qc
-oq3zB06fsdCT4qnow2DGCJllorICPATkv/41KI7BK59Opsm/nVnL1HbYH67IWdeh
-c+kf1QvxwYrGQG2Rgkw9hOjRRoaZJcsohrfRotVMudthCK3mq7snR/CKUeC/2ylT
-Eo6aQx10N/qo0CYxwMb63uz8J+L043bRE81kA5V8CLNaXRwyTL8BObpMAwoQyw01
-Dv0sN6ACfiIJ8toYqPVnOFkJMeHsYksmg5TrBoQ9CJ+BsXYEccph0TKSBGuJO/oc
-v/GZLKc0GAuwcY0BlthR0p9wu6X1UfcxA4/JHl9H7Tk1vaEdpSgkAcnKn/S5gDS2
-rV8Zr5F92AZDGXY55OZC73rVvB7IePrvNcLqUCPk98IAazkj5yj1bCiXpkq6gqpO
-iAn3knawf45BP4lD8Yal6lejucnnMsbWhrvsEBOTnG5W61CQ41eS6XZaScqZdcfS
-pibHXwG/6re54YGt4dPgwMOp6Bfwnd2nA4tWZcWkrowsOLNY5mE=
-=7qpK
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+Lukas
