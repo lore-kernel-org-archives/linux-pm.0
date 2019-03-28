@@ -1,94 +1,48 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 3/4] cpufreq: schedutil: Simplify iowait boosting
-Date: Thu, 28 Mar 2019 09:48:24 +0000
-Message-ID: <20190328094823.y6gyfb6ldq43gojw@queper01-lin>
-References: <11953735.uMqeHy63Iu@aspire.rjw.lan>
- <2864116.v8IU97Resm@aspire.rjw.lan>
+Subject: [PATCH 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+Date: Thu, 28 Mar 2019 10:13:50 +0000
+Message-ID: <20190328101352.25657-2-quentin.perret@arm.com>
+References: <20190328101352.25657-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2864116.v8IU97Resm@aspire.rjw.lan>
+In-Reply-To: <20190328101352.25657-1-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+To: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
+Cc: daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, quentin.perret@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+The recently introduced Energy Model (EM) framework manages power cost
+tables for the CPUs of the system. Its only user right now is the
+scheduler, in the context of Energy Aware Scheduling (EAS).
 
-On Tuesday 26 Mar 2019 at 12:18:00 (+0100), Rafael J. Wysocki wrote:
-> @@ -13,6 +13,8 @@
->  #include <linux/sched/cpufreq.h>
->  #include <trace/events/power.h>
->  
-> +#define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
-> +
->  struct sugov_tunables {
->  	struct gov_attr_set	attr_set;
->  	unsigned int		rate_limit_us;
-> @@ -51,7 +53,6 @@ struct sugov_cpu {
->  	u64			last_update;
->  
->  	unsigned long		bw_dl;
-> -	unsigned long		min;
->  	unsigned long		max;
->  
->  	/* The field below is for single-CPU policies only: */
-> @@ -303,7 +304,7 @@ static bool sugov_iowait_reset(struct sua
+However, the EM framework also offers a generic infrastructure that
+could replace subsystem-specific implementations of the same concepts,
+as this is the case in the thermal framework.
 
-The comment above this function needs updating I think.
+So, in order to prepare the migration of the thermal subsystem to use
+the EM framework, enable it in the default arm64 defconfig, which is the
+most commonly used architecture for IPA. This will also compile-in all
+of the EAS code, although it won't be enabled by default -- EAS requires
+to use the 'schedutil' CPUFreq governor while arm64 defaults to
+'performance'.
 
->  	if (delta_ns <= TICK_NSEC)
->  		return false;
->  
-> -	sg_cpu->iowait_boost = set_iowait_boost ? sg_cpu->min : 0;
-> +	sg_cpu->iowait_boost = set_iowait_boost ? IOWAIT_BOOST_MIN : 0;
->  	sg_cpu->iowait_boost_pending = set_iowait_boost;
->  
->  	return true;
-> @@ -349,7 +350,7 @@ static void sugov_iowait_boost(struct su
-
-Ditto.
-
->  	}
->  
->  	/* First wakeup after IO: start with minimum boost */
-> -	sg_cpu->iowait_boost = sg_cpu->min;
-> +	sg_cpu->iowait_boost = IOWAIT_BOOST_MIN;
->  }
->  
->  /**
-> @@ -389,7 +390,7 @@ static unsigned long sugov_iowait_apply(
->  		 * No boost pending; reduce the boost value.
->  		 */
->  		sg_cpu->iowait_boost >>= 1;
-> -		if (sg_cpu->iowait_boost < sg_cpu->min) {
-> +		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
->  			sg_cpu->iowait_boost = 0;
->  			return util;
->  		}
-> @@ -826,9 +827,6 @@ static int sugov_start(struct cpufreq_po
->  		memset(sg_cpu, 0, sizeof(*sg_cpu));
->  		sg_cpu->cpu			= cpu;
->  		sg_cpu->sg_policy		= sg_policy;
-> -		sg_cpu->min			=
-> -			(SCHED_CAPACITY_SCALE * policy->cpuinfo.min_freq) /
-> -			policy->cpuinfo.max_freq;
->  	}
->  
->  	for_each_cpu(cpu, policy->cpus) {
-> 
-
-Other than that, I tried a backport of this on a Pixel 3 with Snapdragon
-845 (which is relevant because it has tons of OPPs, so starting at 128
-makes it ramp up faster) to check the impact on power, but the only
-differences appeared to be in the noise margin, so it's all good :)
-
-Full test results available at [1]. Note that I did enable the iowait
-boost feature for these tests -- it is disabled by default on P3 ...
-
-Thanks,
-Quentin
-
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
-[1] https://nbviewer.jupyter.org/gist/qperret/69c9bde13aad2d783689e78c9ba2d9bc
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 2d9c39033c1a..3c09bdaaefd3 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -97,6 +97,7 @@ CONFIG_XEN=y
+ CONFIG_COMPAT=y
+ CONFIG_HIBERNATION=y
+ CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
++CONFIG_ENERGY_MODEL=n
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT=y
+-- 
+2.21.0
