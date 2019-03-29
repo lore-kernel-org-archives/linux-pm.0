@@ -1,74 +1,60 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/3] thermal: cpu_cooling: Migrate to using the EM
- framework
-Date: Fri, 29 Mar 2019 18:17:58 +0100
-Message-ID: <eeaf6156-c591-cc21-d097-b6c5cdb62a5a@linaro.org>
-References: <20190328101352.25657-1-quentin.perret@arm.com>
- <20190328101352.25657-4-quentin.perret@arm.com>
- <30926b3d-0074-8c84-a081-d3dbc9258525@linaro.org>
- <20190329091636.gbmh5hzw46ucangr@queper01-ThinkPad-T460s>
+From: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Subject: RE: [PATCH 5/6] acpi/cppc: Add support for optional CPPC registers
+Date: Fri, 29 Mar 2019 20:18:04 +0000
+Message-ID: <SN6PR12MB26399489011DD026910B6049F85A0@SN6PR12MB2639.namprd12.prod.outlook.com>
+References: <cover.1553285718.git.Janakarajan.Natarajan@amd.com>
+         <d16e973c3fa4343134f6d246cc424f29ff5d7dc9.1553285718.git.Janakarajan.Natarajan@amd.com>
+ <f3a749646c66a84e17383204385d8c73750d4813.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190329091636.gbmh5hzw46ucangr@queper01-ThinkPad-T460s>
+In-Reply-To: <f3a749646c66a84e17383204385d8c73750d4813.camel@intel.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "Moore, Robert" <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 29/03/2019 10:16, Quentin Perret wrote:
-> Hi Daniel,
-> 
-> On Thursday 28 Mar 2019 at 21:23:35 (+0100), Daniel Lezcano wrote:
->>>  /**
->>>   * struct time_in_idle - Idle time stats
->>>   * @time: previous reading of the absolute time that this cpu was idle
->>> @@ -82,7 +70,7 @@ struct time_in_idle {
->>>   *	frequency.
->>>   * @max_level: maximum cooling level. One less than total number of valid
->>>   *	cpufreq frequencies.
->>> - * @freq_table: Freq table in descending order of frequencies
->>> + * @em: Reference on the Energy Model of the device
->>>   * @cdev: thermal_cooling_device pointer to keep track of the
->>>   *	registered cooling device.
->>>   * @policy: cpufreq policy.
->>> @@ -98,7 +86,7 @@ struct cpufreq_cooling_device {
->>>  	unsigned int cpufreq_state;
->>>  	unsigned int clipped_freq;
->>>  	unsigned int max_level;
->>> -	struct freq_table *freq_table;	/* In descending order */
->>> +	struct em_perf_domain *em;
->>
->> Why do you need to add this field? it will be accessible via policy->em, no?
-> 
-> You mean via the CPUFreq policy ? Then no, the EM isn't attached to the
-> CPUFreq policy. And we can't attach it directly to the CPUFreq policy
-> since in *theory* it is not required to map 1:1 to CPUFreq policies
-> (even though that _is_ true for all existing platforms). That's one of
-> the things this patch checks in that em_is_sane() function below.
-> 
-> FWIW, the idea of the design is, the EM framework is 'independent' and
-> it's up to the client subsystems (scheduler, IPA) to check if it actually
-> works for them. In the case of the scheduler, for example, we can't use
-> an EM that's too complex because that would cause too much overhead, so
-> we don't start EAS if that's not the case. See:
-> 
->   https://elixir.bootlin.com/linux/latest/source/kernel/sched/topology.c#L367
-> 
-> In the case of IPA, we need to do something similar. We can't use an EM
-> that doesn't map 1:1 to CPUFreq policies, so we bail out if that's not
-> true, etc, ... This isn't supposed to trigger any time soon, but it's
-> good to have a check just to be on the safe side I think.
-
-Ok, makes sense. Thanks for the clarification.
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1hY3BpLW93bmVyQHZn
+ZXIua2VybmVsLm9yZyA8bGludXgtYWNwaS1vd25lckB2Z2VyLmtlcm5lbC5vcmc+IE9uIEJlaGFs
+ZiBPZiBQYW5kcnV2YWRhLCBTcmluaXZhcw0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDI3LCAy
+MDE5IDEwOjQ4IEFNDQo+IFRvOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBkZXZlbEBh
+Y3BpY2Eub3JnOyBOYXRhcmFqYW4sIEphbmFrYXJhamFuIDxKYW5ha2FyYWphbi5OYXRhcmFqYW5A
+YW1kLmNvbT47IGxpbnV4LQ0KPiBhY3BpQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnDQo+IENjOiBHaGFubmFtLCBZYXplbiA8WWF6ZW4uR2hhbm5hbUBhbWQuY29tPjsg
+bGVuYkBrZXJuZWwub3JnOyB2aXJlc2gua3VtYXJAbGluYXJvLm9yZzsgTW9vcmUsIFJvYmVydA0K
+PiA8cm9iZXJ0Lm1vb3JlQGludGVsLmNvbT47IFNjaG1hdXNzLCBFcmlrIDxlcmlrLnNjaG1hdXNz
+QGludGVsLmNvbT47IHJqd0Byand5c29ja2kubmV0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82
+XSBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZvciBvcHRpb25hbCBDUFBDIHJlZ2lzdGVycw0KPiAN
+Cj4gT24gRnJpLCAyMDE5LTAzLTIyIGF0IDIwOjI2ICswMDAwLCBOYXRhcmFqYW4sIEphbmFrYXJh
+amFuIHdyb3RlOg0KPiA+IEZyb206IFlhemVuIEdoYW5uYW0gPFlhemVuLkdoYW5uYW1AYW1kLmNv
+bT4NCj4gPg0KPiA+IE5ld2VyIEFNRCBwcm9jZXNzb3JzIHN1cHBvcnQgYSBzdWJzZXQgb2YgdGhl
+IG9wdGlvbmFsIENQUEMgcmVnaXN0ZXJzLg0KPiA+IENyZWF0ZSBzaG93LCBzdG9yZSBhbmQgaGVs
+cGVyIHJvdXRpbmVzIGZvciBzdXBwb3J0ZWQgQ1BQQyByZWdpc3RlcnMuDQo+ID4NCj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBZYXplbiBHaGFubmFtIDxZYXplbi5HaGFubmFtQGFtZC5jb20+DQo+ID4gWyBj
+YXJ2ZWQgb3V0IGludG8gYSBwYXRjaCwgY2xlYW5lZCB1cCwgcHJvZHVjdGl6ZWQgXQ0KPiA+IFNp
+Z25lZC1vZmYtYnk6IEphbmFrYXJhamFuIE5hdGFyYWphbiA8SmFuYWthcmFqYW4uTmF0YXJhamFu
+QGFtZC5jb20+DQo+ID4NCj4gDQo+IFsuLl0NCj4gDQo+ID4gKwkvKiBkZXNpcmVkX3BlcmYgaXMg
+dGhlIG9ubHkgbWFuZGF0b3J5IHZhbHVlIGluIHBlcmZfY3RybHMgKi8NCj4gPiArCWlmIChjcGNf
+cmVhZChjcHUsIGRlc2lyZWRfcmVnLCAmZGVzaXJlZCkpDQo+ID4gKwkJcmV0ID0gLUVGQVVMVDsN
+Cj4gPiArDQo+ID4gKwlpZiAoQ1BDX1NVUFBPUlRFRChtYXhfcmVnKSAmJiBjcGNfcmVhZChjcHUs
+IG1heF9yZWcsICZtYXgpKQ0KPiA+ICsJCXJldCA9IC1FRkFVTFQ7DQo+ID4gKw0KPiBXZSBzaG91
+bGQgY3JlYXRlIGFuZCB1c2UgZGlmZmVyZW50IG1hY3JvIG90aGVyIHRoYW4gQ1BQQ19TVVBQT1JU
+RUQuDQo+IENQQ19TVVBQT1JURUQgZG9lc24ndCB2YWxpZGF0ZSB0aGUgY29ycmVjdG5lc3Mgb2Yg
+b2JqZWN0IHR5cGUgZm9yIGENCj4gZmllbGQuIEZvciBleGFtcGxlICJNYXhpbXVtIFBlcmZvcm1h
+bmNlIFJlZ2lzdGVyIiBjYW4gb25seSBiZSBidWZmZXINCj4gbm90IGludGVnZXIuIEluIHRoaXMg
+d2F5IGludmFsaWQgZmllbGQgZGVmaW5pdGlvbnMgY2FuIGJlIGlnbm9yZWQuDQo+IA0KDQpTbyBj
+cmVhdGUgc29tZXRoaW5nIGxpa2UgIkNQUENfU1VQUE9SVEVEX0JVRkZFUiIgZm9yIGJ1ZmZlci1v
+bmx5IHJlZ2lzdGVycz8NCg0KQW5kIHRoZW4gYnVmZmVyL2ludGVnZXIgcmVnaXN0ZXJzIHdpbGwg
+Y29udGludWUgdG8gdXNlICJDUFBDX1NVUFBPUlRFRCIuDQoNClRoZXNlIHNlZW0gdG8gYmUgdGhl
+IG9ubHkgdHdvIGNhc2VzIGF0IHRoaXMgdGltZS4gSXMgdGhpcyBva2F5Pw0KDQpUaGFua3MsDQpZ
+YXplbg0KDQo+IA0KPiA+ICsJaWYgKENQQ19TVVBQT1JURUQobWluX3JlZykgJiYgY3BjX3JlYWQo
+Y3B1LCBtaW5fcmVnLCAmbWluKSkNCj4gPiArCQlyZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gPiAr
+CWlmIChDUENfU1VQUE9SVEVEKGVuZXJneV9yZWcpICYmIGNwY19yZWFkKGNwdSwgZW5lcmd5X3Jl
+ZywNCj4gPiAmZW5lcmd5KSkNCj4gPiArCQlyZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gPiArCWlm
+IChDUENfU1VQUE9SVEVEKGF1dG9fc2VsX2VuYWJsZV9yZWcpICYmDQo+ID4gKwkgICAgY3BjX3Jl
+YWQoY3B1LCBhdXRvX3NlbF9lbmFibGVfcmVnLCAmYXV0b19zZWxfZW5hYmxlKSkNCj4gPiArCQly
+ZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gSGVyZSBpdCBpcyBmaW5lIHRvIHVzZSBDUENfU1VQUE9S
+VEVEIGFzIHRoZSAiQXV0b25vbW91cyBTZWxlY3Rpb24NCj4gRW5hYmxlIiBjYW4gYmUgYm90aCBp
+bnRlZ2VyIGFuZCBidWZmZXIuDQo+IA0KPiBUaGFua3MsDQo+IFNyaW5pdmFzDQoNCg==
