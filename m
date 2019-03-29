@@ -1,115 +1,74 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v14 00/11] Introduce the for_each_set_clump8 macro
-Date: Fri, 29 Mar 2019 13:38:19 +0200
-Message-ID: <20190329113819.GR9224@smile.fi.intel.com>
-References: <cover.1553828158.git.vilhelm.gray@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Fri, 29 Mar 2019 18:17:58 +0100
+Message-ID: <eeaf6156-c591-cc21-d097-b6c5cdb62a5a@linaro.org>
+References: <20190328101352.25657-1-quentin.perret@arm.com>
+ <20190328101352.25657-4-quentin.perret@arm.com>
+ <30926b3d-0074-8c84-a081-d3dbc9258525@linaro.org>
+ <20190329091636.gbmh5hzw46ucangr@queper01-ThinkPad-T460s>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1553828158.git.vilhelm.gray@gmail.com>
+In-Reply-To: <20190329091636.gbmh5hzw46ucangr@queper01-ThinkPad-T460s>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: William Breathitt Gray <vilhelm.gray@gmail.com>
-Cc: linus.walleij@linaro.org, bgolaszewski@baylibre.com, akpm@linux-foundation.org, linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, geert@linux-m68k.org, preid@electromag.com.au, lukas@wunner.de
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 29, 2019 at 12:03:30PM +0900, William Breathitt Gray wrote:
-> Changes in v14:
->   - Redefine bitmap_get_value8, bitmap_set_value8, and find_next_clump8
->     as static inline functions
->   - Rename 'idx' variable to 'index' in the bitmap_get_value8 and
->     bitmap_set_value8 functions
->   - Remove superfluous parens in gen_74x164_set_multiple
+On 29/03/2019 10:16, Quentin Perret wrote:
+> Hi Daniel,
 > 
+> On Thursday 28 Mar 2019 at 21:23:35 (+0100), Daniel Lezcano wrote:
+>>>  /**
+>>>   * struct time_in_idle - Idle time stats
+>>>   * @time: previous reading of the absolute time that this cpu was idle
+>>> @@ -82,7 +70,7 @@ struct time_in_idle {
+>>>   *	frequency.
+>>>   * @max_level: maximum cooling level. One less than total number of valid
+>>>   *	cpufreq frequencies.
+>>> - * @freq_table: Freq table in descending order of frequencies
+>>> + * @em: Reference on the Energy Model of the device
+>>>   * @cdev: thermal_cooling_device pointer to keep track of the
+>>>   *	registered cooling device.
+>>>   * @policy: cpufreq policy.
+>>> @@ -98,7 +86,7 @@ struct cpufreq_cooling_device {
+>>>  	unsigned int cpufreq_state;
+>>>  	unsigned int clipped_freq;
+>>>  	unsigned int max_level;
+>>> -	struct freq_table *freq_table;	/* In descending order */
+>>> +	struct em_perf_domain *em;
+>>
+>> Why do you need to add this field? it will be accessible via policy->em, no?
+> 
+> You mean via the CPUFreq policy ? Then no, the EM isn't attached to the
+> CPUFreq policy. And we can't attach it directly to the CPUFreq policy
+> since in *theory* it is not required to map 1:1 to CPUFreq policies
+> (even though that _is_ true for all existing platforms). That's one of
+> the things this patch checks in that em_is_sane() function below.
+> 
+> FWIW, the idea of the design is, the EM framework is 'independent' and
+> it's up to the client subsystems (scheduler, IPA) to check if it actually
+> works for them. In the case of the scheduler, for example, we can't use
+> an EM that's too complex because that would cause too much overhead, so
+> we don't start EAS if that's not the case. See:
+> 
+>   https://elixir.bootlin.com/linux/latest/source/kernel/sched/topology.c#L367
+> 
+> In the case of IPA, we need to do something similar. We can't use an EM
+> that doesn't map 1:1 to CPUFreq policies, so we bail out if that's not
+> true, etc, ... This isn't supposed to trigger any time soon, but it's
+> good to have a check just to be on the safe side I think.
 
-Thank you!
+Ok, makes sense. Thanks for the clarification.
 
-FWIW,
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-> While adding GPIO get_multiple/set_multiple callback support for various
-> drivers, I noticed a pattern of looping manifesting that would be useful
-> standardized as a macro.
-> 
-> This patchset introduces the for_each_set_clump8 macro and utilizes it
-> in several GPIO drivers. The for_each_set_clump macro8 facilitates a
-> for-loop syntax that iterates over a memory region entire groups of set
-> bits at a time.
-> 
-> For example, suppose you would like to iterate over a 32-bit integer 8
-> bits at a time, skipping over 8-bit groups with no set bit, where
-> XXXXXXXX represents the current 8-bit group:
-> 
->     Example:        10111110 00000000 11111111 00110011
->     First loop:     10111110 00000000 11111111 XXXXXXXX
->     Second loop:    10111110 00000000 XXXXXXXX 00110011
->     Third loop:     XXXXXXXX 00000000 11111111 00110011
-> 
-> Each iteration of the loop returns the next 8-bit group that has at
-> least one set bit.
-> 
-> The for_each_set_clump8 macro has four parameters:
-> 
->     * start: set to the bit offset of the current clump
->     * clump: set to the current clump value
->     * bits: bitmap to search within
->     * size: bitmap size in number of bits
-> 
-> In this version of the patchset, the for_each_set_clump macro has been
-> reimplemented and simplified based on the suggestions provided by Rasmus
-> Villemoes and Andy Shevchenko in the version 4 submission.
-> 
-> In particular, the function of the for_each_set_clump macro has been
-> restricted to handle only 8-bit clumps; the drivers that use the
-> for_each_set_clump macro only handle 8-bit ports so a generic
-> for_each_set_clump implementation is not necessary. Thus, a solution for
-> large clumps (i.e. those larger than the width of a bitmap word) can be
-> postponed until a driver appears that actually requires such a generic
-> for_each_set_clump implementation.
-> 
-> For what it's worth, a semi-generic for_each_set_clump (i.e. for clumps
-> smaller than the width of a bitmap word) can be implemented by simply
-> replacing the hardcoded '8' and '0xFF' instances with respective
-> variables. I have not yet had a need for such an implementation, and
-> since it falls short of a true generic for_each_set_clump function, I
-> have decided to forgo such an implementation for now.
-> 
-> In addition, the bitmap_get_value8 and bitmap_set_value8 functions are
-> introduced to get and set 8-bit values respectively. Their use is based
-> on the behavior suggested in the patchset version 4 review.
-> 
-> William Breathitt Gray (11):
->   bitops: Introduce the for_each_set_clump8 macro
->   lib/test_bitmap.c: Add for_each_set_clump8 test cases
->   gpio: 104-dio-48e: Utilize for_each_set_clump8 macro
->   gpio: 104-idi-48: Utilize for_each_set_clump8 macro
->   gpio: gpio-mm: Utilize for_each_set_clump8 macro
->   gpio: ws16c48: Utilize for_each_set_clump8 macro
->   gpio: pci-idio-16: Utilize for_each_set_clump8 macro
->   gpio: pcie-idio-24: Utilize for_each_set_clump8 macro
->   gpio: uniphier: Utilize for_each_set_clump8 macro
->   gpio: 74x164: Utilize the for_each_set_clump8 macro
->   thermal: intel: intel_soc_dts_iosf: Utilize for_each_set_clump8 macro
-> 
->  drivers/gpio/gpio-104-dio-48e.c            |  73 ++++----------
->  drivers/gpio/gpio-104-idi-48.c             |  36 ++-----
->  drivers/gpio/gpio-74x164.c                 |  19 ++--
->  drivers/gpio/gpio-gpio-mm.c                |  73 ++++----------
->  drivers/gpio/gpio-pci-idio-16.c            |  75 +++++---------
->  drivers/gpio/gpio-pcie-idio-24.c           | 109 ++++++++-------------
->  drivers/gpio/gpio-uniphier.c               |  16 ++-
->  drivers/gpio/gpio-ws16c48.c                |  73 ++++----------
->  drivers/thermal/intel/intel_soc_dts_iosf.c |  29 +++---
->  drivers/thermal/intel/intel_soc_dts_iosf.h |   2 -
->  include/asm-generic/bitops/find.h          |  61 ++++++++++++
->  include/linux/bitops.h                     |   5 +
->  lib/test_bitmap.c                          |  65 ++++++++++++
->  13 files changed, 299 insertions(+), 337 deletions(-)
-> 
-> -- 
-> 2.21.0
-> 
 
 -- 
-With Best Regards,
-Andy Shevchenko
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
