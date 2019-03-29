@@ -1,60 +1,61 @@
-From: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
-Subject: RE: [PATCH 5/6] acpi/cppc: Add support for optional CPPC registers
-Date: Fri, 29 Mar 2019 20:18:04 +0000
-Message-ID: <SN6PR12MB26399489011DD026910B6049F85A0@SN6PR12MB2639.namprd12.prod.outlook.com>
-References: <cover.1553285718.git.Janakarajan.Natarajan@amd.com>
-         <d16e973c3fa4343134f6d246cc424f29ff5d7dc9.1553285718.git.Janakarajan.Natarajan@amd.com>
- <f3a749646c66a84e17383204385d8c73750d4813.camel@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 5/6] acpi/cppc: Add support for optional CPPC registers
+Date: Sat, 30 Mar 2019 00:02:12 +0100
+Message-ID: <1774302.IF6vfKfJ7U@aspire.rjw.lan>
+References: <cover.1553285718.git.Janakarajan.Natarajan@amd.com> <f3a749646c66a84e17383204385d8c73750d4813.camel@intel.com> <SN6PR12MB26399489011DD026910B6049F85A0@SN6PR12MB2639.namprd12.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f3a749646c66a84e17383204385d8c73750d4813.camel@intel.com>
-Content-Language: en-US
+In-Reply-To: <SN6PR12MB26399489011DD026910B6049F85A0@SN6PR12MB2639.namprd12.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "Moore, Robert" <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "Moore, Robert" <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1hY3BpLW93bmVyQHZn
-ZXIua2VybmVsLm9yZyA8bGludXgtYWNwaS1vd25lckB2Z2VyLmtlcm5lbC5vcmc+IE9uIEJlaGFs
-ZiBPZiBQYW5kcnV2YWRhLCBTcmluaXZhcw0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDI3LCAy
-MDE5IDEwOjQ4IEFNDQo+IFRvOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBkZXZlbEBh
-Y3BpY2Eub3JnOyBOYXRhcmFqYW4sIEphbmFrYXJhamFuIDxKYW5ha2FyYWphbi5OYXRhcmFqYW5A
-YW1kLmNvbT47IGxpbnV4LQ0KPiBhY3BpQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnDQo+IENjOiBHaGFubmFtLCBZYXplbiA8WWF6ZW4uR2hhbm5hbUBhbWQuY29tPjsg
-bGVuYkBrZXJuZWwub3JnOyB2aXJlc2gua3VtYXJAbGluYXJvLm9yZzsgTW9vcmUsIFJvYmVydA0K
-PiA8cm9iZXJ0Lm1vb3JlQGludGVsLmNvbT47IFNjaG1hdXNzLCBFcmlrIDxlcmlrLnNjaG1hdXNz
-QGludGVsLmNvbT47IHJqd0Byand5c29ja2kubmV0DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNS82
-XSBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZvciBvcHRpb25hbCBDUFBDIHJlZ2lzdGVycw0KPiAN
-Cj4gT24gRnJpLCAyMDE5LTAzLTIyIGF0IDIwOjI2ICswMDAwLCBOYXRhcmFqYW4sIEphbmFrYXJh
-amFuIHdyb3RlOg0KPiA+IEZyb206IFlhemVuIEdoYW5uYW0gPFlhemVuLkdoYW5uYW1AYW1kLmNv
-bT4NCj4gPg0KPiA+IE5ld2VyIEFNRCBwcm9jZXNzb3JzIHN1cHBvcnQgYSBzdWJzZXQgb2YgdGhl
-IG9wdGlvbmFsIENQUEMgcmVnaXN0ZXJzLg0KPiA+IENyZWF0ZSBzaG93LCBzdG9yZSBhbmQgaGVs
-cGVyIHJvdXRpbmVzIGZvciBzdXBwb3J0ZWQgQ1BQQyByZWdpc3RlcnMuDQo+ID4NCj4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBZYXplbiBHaGFubmFtIDxZYXplbi5HaGFubmFtQGFtZC5jb20+DQo+ID4gWyBj
-YXJ2ZWQgb3V0IGludG8gYSBwYXRjaCwgY2xlYW5lZCB1cCwgcHJvZHVjdGl6ZWQgXQ0KPiA+IFNp
-Z25lZC1vZmYtYnk6IEphbmFrYXJhamFuIE5hdGFyYWphbiA8SmFuYWthcmFqYW4uTmF0YXJhamFu
-QGFtZC5jb20+DQo+ID4NCj4gDQo+IFsuLl0NCj4gDQo+ID4gKwkvKiBkZXNpcmVkX3BlcmYgaXMg
-dGhlIG9ubHkgbWFuZGF0b3J5IHZhbHVlIGluIHBlcmZfY3RybHMgKi8NCj4gPiArCWlmIChjcGNf
-cmVhZChjcHUsIGRlc2lyZWRfcmVnLCAmZGVzaXJlZCkpDQo+ID4gKwkJcmV0ID0gLUVGQVVMVDsN
-Cj4gPiArDQo+ID4gKwlpZiAoQ1BDX1NVUFBPUlRFRChtYXhfcmVnKSAmJiBjcGNfcmVhZChjcHUs
-IG1heF9yZWcsICZtYXgpKQ0KPiA+ICsJCXJldCA9IC1FRkFVTFQ7DQo+ID4gKw0KPiBXZSBzaG91
-bGQgY3JlYXRlIGFuZCB1c2UgZGlmZmVyZW50IG1hY3JvIG90aGVyIHRoYW4gQ1BQQ19TVVBQT1JU
-RUQuDQo+IENQQ19TVVBQT1JURUQgZG9lc24ndCB2YWxpZGF0ZSB0aGUgY29ycmVjdG5lc3Mgb2Yg
-b2JqZWN0IHR5cGUgZm9yIGENCj4gZmllbGQuIEZvciBleGFtcGxlICJNYXhpbXVtIFBlcmZvcm1h
-bmNlIFJlZ2lzdGVyIiBjYW4gb25seSBiZSBidWZmZXINCj4gbm90IGludGVnZXIuIEluIHRoaXMg
-d2F5IGludmFsaWQgZmllbGQgZGVmaW5pdGlvbnMgY2FuIGJlIGlnbm9yZWQuDQo+IA0KDQpTbyBj
-cmVhdGUgc29tZXRoaW5nIGxpa2UgIkNQUENfU1VQUE9SVEVEX0JVRkZFUiIgZm9yIGJ1ZmZlci1v
-bmx5IHJlZ2lzdGVycz8NCg0KQW5kIHRoZW4gYnVmZmVyL2ludGVnZXIgcmVnaXN0ZXJzIHdpbGwg
-Y29udGludWUgdG8gdXNlICJDUFBDX1NVUFBPUlRFRCIuDQoNClRoZXNlIHNlZW0gdG8gYmUgdGhl
-IG9ubHkgdHdvIGNhc2VzIGF0IHRoaXMgdGltZS4gSXMgdGhpcyBva2F5Pw0KDQpUaGFua3MsDQpZ
-YXplbg0KDQo+IA0KPiA+ICsJaWYgKENQQ19TVVBQT1JURUQobWluX3JlZykgJiYgY3BjX3JlYWQo
-Y3B1LCBtaW5fcmVnLCAmbWluKSkNCj4gPiArCQlyZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gPiAr
-CWlmIChDUENfU1VQUE9SVEVEKGVuZXJneV9yZWcpICYmIGNwY19yZWFkKGNwdSwgZW5lcmd5X3Jl
-ZywNCj4gPiAmZW5lcmd5KSkNCj4gPiArCQlyZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gPiArCWlm
-IChDUENfU1VQUE9SVEVEKGF1dG9fc2VsX2VuYWJsZV9yZWcpICYmDQo+ID4gKwkgICAgY3BjX3Jl
-YWQoY3B1LCBhdXRvX3NlbF9lbmFibGVfcmVnLCAmYXV0b19zZWxfZW5hYmxlKSkNCj4gPiArCQly
-ZXQgPSAtRUZBVUxUOw0KPiA+ICsNCj4gSGVyZSBpdCBpcyBmaW5lIHRvIHVzZSBDUENfU1VQUE9S
-VEVEIGFzIHRoZSAiQXV0b25vbW91cyBTZWxlY3Rpb24NCj4gRW5hYmxlIiBjYW4gYmUgYm90aCBp
-bnRlZ2VyIGFuZCBidWZmZXIuDQo+IA0KPiBUaGFua3MsDQo+IFNyaW5pdmFzDQoNCg==
+On Friday, March 29, 2019 9:18:04 PM CET Ghannam, Yazen wrote:
+> > -----Original Message-----
+> > From: linux-acpi-owner@vger.kernel.org <linux-acpi-owner@vger.kernel.org> On Behalf Of Pandruvada, Srinivas
+> > Sent: Wednesday, March 27, 2019 10:48 AM
+> > To: linux-kernel@vger.kernel.org; devel@acpica.org; Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>; linux-
+> > acpi@vger.kernel.org; linux-pm@vger.kernel.org
+> > Cc: Ghannam, Yazen <Yazen.Ghannam@amd.com>; lenb@kernel.org; viresh.kumar@linaro.org; Moore, Robert
+> > <robert.moore@intel.com>; Schmauss, Erik <erik.schmauss@intel.com>; rjw@rjwysocki.net
+> > Subject: Re: [PATCH 5/6] acpi/cppc: Add support for optional CPPC registers
+> > 
+> > On Fri, 2019-03-22 at 20:26 +0000, Natarajan, Janakarajan wrote:
+> > > From: Yazen Ghannam <Yazen.Ghannam@amd.com>
+> > >
+> > > Newer AMD processors support a subset of the optional CPPC registers.
+> > > Create show, store and helper routines for supported CPPC registers.
+> > >
+> > > Signed-off-by: Yazen Ghannam <Yazen.Ghannam@amd.com>
+> > > [ carved out into a patch, cleaned up, productized ]
+> > > Signed-off-by: Janakarajan Natarajan <Janakarajan.Natarajan@amd.com>
+> > >
+> > 
+> > [..]
+> > 
+> > > +	/* desired_perf is the only mandatory value in perf_ctrls */
+> > > +	if (cpc_read(cpu, desired_reg, &desired))
+> > > +		ret = -EFAULT;
+> > > +
+> > > +	if (CPC_SUPPORTED(max_reg) && cpc_read(cpu, max_reg, &max))
+> > > +		ret = -EFAULT;
+> > > +
+> > We should create and use different macro other than CPPC_SUPPORTED.
+> > CPC_SUPPORTED doesn't validate the correctness of object type for a
+> > field. For example "Maximum Performance Register" can only be buffer
+> > not integer. In this way invalid field definitions can be ignored.
+> > 
+> 
+> So create something like "CPPC_SUPPORTED_BUFFER" for buffer-only registers?
+> 
+> And then buffer/integer registers will continue to use "CPPC_SUPPORTED".
+> 
+> These seem to be the only two cases at this time. Is this okay?
+
+Yes, something like that.
+
+Thanks,
+Rafael
