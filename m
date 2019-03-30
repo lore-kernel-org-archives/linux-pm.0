@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 10/27] thermal/int340x_thermal: Add additional UUIDs
-Date: Fri, 29 Mar 2019 20:55:36 -0400
-Message-ID: <20190330005555.28087-10-sashal@kernel.org>
-References: <20190330005555.28087-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 14/37] thermal/int340x_thermal: Add additional UUIDs
+Date: Fri, 29 Mar 2019 20:54:15 -0400
+Message-ID: <20190330005441.27540-14-sashal@kernel.org>
+References: <20190330005441.27540-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190330005555.28087-1-sashal@kernel.org>
+In-Reply-To: <20190330005441.27540-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Matthew Garrett <matthewgarrett@google.com>, Matthew Garrett <mjg59@google.com>, Nisha Aram <nisha.aram@intel.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -27,10 +27,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 14 insertions(+)
 
 diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index 5836e5554433..0beed2899163 100644
+index 43b90fd577e4..34dc4d6dda66 100644
 --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
 +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -20,6 +20,13 @@ enum int3400_thermal_uuid {
+@@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
  	INT3400_THERMAL_PASSIVE_1,
  	INT3400_THERMAL_ACTIVE,
  	INT3400_THERMAL_CRITICAL,
@@ -44,7 +44,7 @@ index 5836e5554433..0beed2899163 100644
  	INT3400_THERMAL_MAXIMUM_UUID,
  };
  
-@@ -27,6 +34,13 @@ static u8 *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+@@ -29,6 +36,13 @@ static char *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
  	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
  	"3A95C389-E4B8-4629-A526-C52C88626BAE",
  	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
