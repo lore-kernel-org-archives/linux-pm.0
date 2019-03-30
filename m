@@ -1,47 +1,62 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.0 30/67] tools/power turbostat: return the exit status of a command
-Date: Fri, 29 Mar 2019 20:50:10 -0400
-Message-ID: <20190330005047.25998-30-sashal@kernel.org>
-References: <20190330005047.25998-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 20/52] thermal/int340x_thermal: Add additional UUIDs
+Date: Fri, 29 Mar 2019 20:52:27 -0400
+Message-ID: <20190330005301.26868-20-sashal@kernel.org>
+References: <20190330005301.26868-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190330005047.25998-1-sashal@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20190330005301.26868-1-sashal@kernel.org>
+Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: David Arcari <darcari@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Matthew Garrett <matthewgarrett@google.com>, Matthew Garrett <mjg59@google.com>, Nisha Aram <nisha.aram@intel.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: David Arcari <darcari@redhat.com>
+From: Matthew Garrett <matthewgarrett@google.com>
 
-[ Upstream commit 2a95496634a017c19641f26f00907af75b962f01 ]
+[ Upstream commit 16fc8eca1975358111dbd7ce65e4ce42d1a848fb ]
 
-turbostat failed to return a non-zero exit status even though the
-supplied command (turbostat <command>) failed.  Currently when turbostat
-forks a command it returns zero instead of the actual exit status of the
-command.  Modify the code to return the exit status.
+Add more supported DPTF policies than the driver currently exposes.
 
-Signed-off-by: David Arcari <darcari@redhat.com>
-Acked-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Matthew Garrett <mjg59@google.com>
+Cc: Nisha Aram <nisha.aram@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- tools/power/x86/turbostat/turbostat.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 9327c0ddc3a5..c3fad065c89c 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -5077,6 +5077,9 @@ int fork_it(char **argv)
- 		signal(SIGQUIT, SIG_IGN);
- 		if (waitpid(child_pid, &status, 0) == -1)
- 			err(status, "waitpid");
-+
-+		if (WIFEXITED(status))
-+			status = WEXITSTATUS(status);
- 	}
- 	/*
- 	 * n.b. fork_it() does not check for errors from for_all_cpus()
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index e26b01c05e82..51c9097eaf7a 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+ 	INT3400_THERMAL_ACTIVE,
+ 	INT3400_THERMAL_CRITICAL,
++	INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
++	INT3400_THERMAL_EMERGENCY_CALL_MODE,
++	INT3400_THERMAL_PASSIVE_2,
++	INT3400_THERMAL_POWER_BOSS,
++	INT3400_THERMAL_VIRTUAL_SENSOR,
++	INT3400_THERMAL_COOLING_MODE,
++	INT3400_THERMAL_HARDWARE_DUTY_CYCLING,
+ 	INT3400_THERMAL_MAXIMUM_UUID,
+ };
+ 
+@@ -29,6 +36,13 @@ static char *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+ 	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
+ 	"3A95C389-E4B8-4629-A526-C52C88626BAE",
+ 	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
++	"63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
++	"5349962F-71E6-431D-9AE8-0A635B710AEE",
++	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
++	"F5A35014-C209-46A4-993A-EB56DE7530A1",
++	"6ED722A7-9240-48A5-B479-31EEF723D7CF",
++	"16CAF1B7-DD38-40ED-B1C1-1B8A1913D531",
++	"BE84BABF-C4D4-403D-B495-3128FD44dAC1",
+ };
+ 
+ struct int3400_thermal_priv {
 -- 
 2.19.1
