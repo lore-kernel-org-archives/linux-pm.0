@@ -1,50 +1,47 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 3.18 08/15] thermal/int340x_thermal: fix mode setting
-Date: Fri, 29 Mar 2019 20:57:23 -0400
-Message-ID: <20190330005730.28777-8-sashal@kernel.org>
-References: <20190330005730.28777-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 11/21] tools/power turbostat: return the exit status of a command
+Date: Fri, 29 Mar 2019 20:56:39 -0400
+Message-ID: <20190330005649.28475-11-sashal@kernel.org>
+References: <20190330005649.28475-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190330005730.28777-1-sashal@kernel.org>
-Sender: stable-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190330005649.28475-1-sashal@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Matthew Garrett <matthewgarrett@google.com>, Matthew Garrett <mjg59@google.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: David Arcari <darcari@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <matthewgarrett@google.com>
+From: David Arcari <darcari@redhat.com>
 
-[ Upstream commit 396ee4d0cd52c13b3f6421b8d324d65da5e7e409 ]
+[ Upstream commit 2a95496634a017c19641f26f00907af75b962f01 ]
 
-int3400 only pushes the UUID into the firmware when the mode is flipped
-to "enable". The current code only exposes the mode flag if the firmware
-supports the PASSIVE_1 UUID, which not all machines do. Remove the
-restriction.
+turbostat failed to return a non-zero exit status even though the
+supplied command (turbostat <command>) failed.  Currently when turbostat
+forks a command it returns zero instead of the actual exit status of the
+command.  Modify the code to return the exit status.
 
-Signed-off-by: Matthew Garrett <mjg59@google.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: David Arcari <darcari@redhat.com>
+Acked-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/int340x_thermal/int3400_thermal.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index edc1cce117ba..7b96b20e939a 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -208,10 +208,9 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 
--	if (priv->uuid_bitmap & 1 << INT3400_THERMAL_PASSIVE_1) {
--		int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
--		int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
--	}
-+	int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
-+	int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 33c79e415075..532e7bf06868 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -3089,6 +3089,9 @@ int fork_it(char **argv)
+ 		signal(SIGQUIT, SIG_IGN);
+ 		if (waitpid(child_pid, &status, 0) == -1)
+ 			err(status, "waitpid");
 +
- 	priv->thermal = thermal_zone_device_register("INT3400 Thermal", 0, 0,
- 						priv, &int3400_thermal_ops,
- 						&int3400_thermal_params, 0, 0);
++		if (WIFEXITED(status))
++			status = WEXITSTATUS(status);
+ 	}
+ 	/*
+ 	 * n.b. fork_it() does not check for errors from for_all_cpus()
 -- 
 2.19.1
