@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 16/37] thermal/intel_powerclamp: fix truncated kthread name
-Date: Fri, 29 Mar 2019 20:54:17 -0400
-Message-ID: <20190330005441.27540-16-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 15/37] thermal/int340x_thermal: fix mode setting
+Date: Fri, 29 Mar 2019 20:54:16 -0400
+Message-ID: <20190330005441.27540-15-sashal@kernel.org>
 References: <20190330005441.27540-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -9,36 +9,42 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190330005441.27540-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Matthew Garrett <matthewgarrett@google.com>, Matthew Garrett <mjg59@google.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Matthew Garrett <matthewgarrett@google.com>
 
-[ Upstream commit e925b5be5751f6a7286bbd9a4cbbc4ac90cc5fa6 ]
+[ Upstream commit 396ee4d0cd52c13b3f6421b8d324d65da5e7e409 ]
 
-kthread name only allows 15 characters (TASK_COMMON_LEN is 16).
-Thus rename the kthreads created by intel_powerclamp driver from
-"kidle_inject/ + decimal cpuid" to "kidle_inj/ + decimal cpuid"
-to avoid truncated kthead name for cpu 100 and later.
+int3400 only pushes the UUID into the firmware when the mode is flipped
+to "enable". The current code only exposes the mode flag if the firmware
+supports the PASSIVE_1 UUID, which not all machines do. Remove the
+restriction.
 
+Signed-off-by: Matthew Garrett <mjg59@google.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 45d9840491bd..c3293fa2bb1b 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -494,7 +494,7 @@ static void start_power_clamp_worker(unsigned long cpu)
- 	struct powerclamp_worker_data *w_data = per_cpu_ptr(worker_data, cpu);
- 	struct kthread_worker *worker;
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 34dc4d6dda66..4a20f4d47b1d 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -316,10 +316,9 @@ static int int3400_thermal_probe(struct platform_device *pdev)
  
--	worker = kthread_create_worker_on_cpu(cpu, 0, "kidle_inject/%ld", cpu);
-+	worker = kthread_create_worker_on_cpu(cpu, 0, "kidle_inj/%ld", cpu);
- 	if (IS_ERR(worker))
- 		return;
+ 	platform_set_drvdata(pdev, priv);
  
+-	if (priv->uuid_bitmap & 1 << INT3400_THERMAL_PASSIVE_1) {
+-		int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
+-		int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
+-	}
++	int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
++	int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
++
+ 	priv->thermal = thermal_zone_device_register("INT3400 Thermal", 0, 0,
+ 						priv, &int3400_thermal_ops,
+ 						&int3400_thermal_params, 0, 0);
 -- 
 2.19.1
