@@ -1,7 +1,7 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.0 25/67] thermal/intel_powerclamp: fix truncated kthread name
-Date: Fri, 29 Mar 2019 20:50:05 -0400
-Message-ID: <20190330005047.25998-25-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 30/67] tools/power turbostat: return the exit status of a command
+Date: Fri, 29 Mar 2019 20:50:10 -0400
+Message-ID: <20190330005047.25998-30-sashal@kernel.org>
 References: <20190330005047.25998-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -9,36 +9,39 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190330005047.25998-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: David Arcari <darcari@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: David Arcari <darcari@redhat.com>
 
-[ Upstream commit e925b5be5751f6a7286bbd9a4cbbc4ac90cc5fa6 ]
+[ Upstream commit 2a95496634a017c19641f26f00907af75b962f01 ]
 
-kthread name only allows 15 characters (TASK_COMMON_LEN is 16).
-Thus rename the kthreads created by intel_powerclamp driver from
-"kidle_inject/ + decimal cpuid" to "kidle_inj/ + decimal cpuid"
-to avoid truncated kthead name for cpu 100 and later.
+turbostat failed to return a non-zero exit status even though the
+supplied command (turbostat <command>) failed.  Currently when turbostat
+forks a command it returns zero instead of the actual exit status of the
+command.  Modify the code to return the exit status.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: David Arcari <darcari@redhat.com>
+Acked-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/intel/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/power/x86/turbostat/turbostat.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-index b12ecd436e23..ac7256b5f020 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -494,7 +494,7 @@ static void start_power_clamp_worker(unsigned long cpu)
- 	struct powerclamp_worker_data *w_data = per_cpu_ptr(worker_data, cpu);
- 	struct kthread_worker *worker;
- 
--	worker = kthread_create_worker_on_cpu(cpu, 0, "kidle_inject/%ld", cpu);
-+	worker = kthread_create_worker_on_cpu(cpu, 0, "kidle_inj/%ld", cpu);
- 	if (IS_ERR(worker))
- 		return;
- 
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 9327c0ddc3a5..c3fad065c89c 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -5077,6 +5077,9 @@ int fork_it(char **argv)
+ 		signal(SIGQUIT, SIG_IGN);
+ 		if (waitpid(child_pid, &status, 0) == -1)
+ 			err(status, "waitpid");
++
++		if (WIFEXITED(status))
++			status = WEXITSTATUS(status);
+ 	}
+ 	/*
+ 	 * n.b. fork_it() does not check for errors from for_all_cpus()
 -- 
 2.19.1
