@@ -1,56 +1,114 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.19 17/52] thermal/intel_powerclamp: fix __percpu declaration of worker_data
-Date: Fri, 29 Mar 2019 20:52:24 -0400
-Message-ID: <20190330005301.26868-17-sashal@kernel.org>
-References: <20190330005301.26868-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 50/67] PM / Domains: Avoid a potential deadlock
+Date: Fri, 29 Mar 2019 20:50:30 -0400
+Message-ID: <20190330005047.25998-50-sashal@kernel.org>
+References: <20190330005047.25998-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190330005301.26868-1-sashal@kernel.org>
+In-Reply-To: <20190330005047.25998-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: Jiada Wang <jiada_wang@mentor.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+From: Jiada Wang <jiada_wang@mentor.com>
 
-[ Upstream commit aa36e3616532f82a920b5ebf4e059fbafae63d88 ]
+[ Upstream commit 2071ac985d37efe496782c34318dbead93beb02f ]
 
-This variable is declared as:
-	static struct powerclamp_worker_data * __percpu worker_data;
-In other words, a percpu pointer to struct ...
+Lockdep warns that prepare_lock and genpd->mlock can cause a deadlock
+the deadlock scenario is like following:
+First thread is probing cs2000
+cs2000_probe()
+  clk_register()
+    __clk_core_init()
+      clk_prepare_lock()                            ----> acquires prepare_lock
+        cs2000_recalc_rate()
+          i2c_smbus_read_byte_data()
+            rcar_i2c_master_xfer()
+              dma_request_chan()
+                rcar_dmac_of_xlate()
+                  rcar_dmac_alloc_chan_resources()
+                    pm_runtime_get_sync()
+                      __pm_runtime_resume()
+                        rpm_resume()
+                          rpm_callback()
+                            genpd_runtime_resume()   ----> acquires genpd->mlock
 
-But this variable not used like so but as a pointer to a percpu
-struct powerclamp_worker_data.
+Second thread is attaching any device to the same PM domain
+genpd_add_device()
+  genpd_lock()                                       ----> acquires genpd->mlock
+    cpg_mssr_attach_dev()
+      of_clk_get_from_provider()
+        __of_clk_get_from_provider()
+          __clk_create_clk()
+            clk_prepare_lock()                       ----> acquires prepare_lock
 
-So fix the declaration as:
-	static struct powerclamp_worker_data __percpu *worker_data;
+Since currently no PM provider access genpd's critical section
+in .attach_dev, and .detach_dev callbacks, so there is no need to protect
+these two callbacks with genpd->mlock.
+This patch avoids a potential deadlock by moving out .attach_dev and .detach_dev
+from genpd->mlock, so that genpd->mlock won't be held when prepare_lock is acquired
+in .attach_dev and .detach_dev
 
-This also quiets Sparse's warnings from __verify_pcpu_ptr(), like:
-  494:49: warning: incorrect type in initializer (different address spaces)
-  494:49:    expected void const [noderef] <asn:3> *__vpp_verify
-  494:49:    got struct powerclamp_worker_data *
-
-Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/domain.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index cde891c54cde..ea1aa7dbe42c 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -101,7 +101,7 @@ struct powerclamp_worker_data {
- 	bool clamping;
- };
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 500de1dee967..a00ca6b8117b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1467,12 +1467,12 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (IS_ERR(gpd_data))
+ 		return PTR_ERR(gpd_data);
  
--static struct powerclamp_worker_data * __percpu worker_data;
-+static struct powerclamp_worker_data __percpu *worker_data;
- static struct thermal_cooling_device *cooling_dev;
- static unsigned long *cpu_clamping_mask;  /* bit map for tracking per cpu
- 					   * clamping kthread worker
+-	genpd_lock(genpd);
+-
+ 	ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
+ 	if (ret)
+ 		goto out;
+ 
++	genpd_lock(genpd);
++
+ 	dev_pm_domain_set(dev, &genpd->domain);
+ 
+ 	genpd->device_count++;
+@@ -1480,9 +1480,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 
+ 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+ 
+- out:
+ 	genpd_unlock(genpd);
+-
++ out:
+ 	if (ret)
+ 		genpd_free_dev_data(dev, gpd_data);
+ 	else
+@@ -1531,15 +1530,15 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd->device_count--;
+ 	genpd->max_off_time_changed = true;
+ 
+-	if (genpd->detach_dev)
+-		genpd->detach_dev(genpd, dev);
+-
+ 	dev_pm_domain_set(dev, NULL);
+ 
+ 	list_del_init(&pdd->list_node);
+ 
+ 	genpd_unlock(genpd);
+ 
++	if (genpd->detach_dev)
++		genpd->detach_dev(genpd, dev);
++
+ 	genpd_free_dev_data(dev, gpd_data);
+ 
+ 	return 0;
 -- 
 2.19.1
