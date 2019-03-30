@@ -1,62 +1,51 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v5.1-rc3
-Date: Sat, 30 Mar 2019 01:37:43 +0100
-Message-ID: <CAJZ5v0jUqQz3hY6JONcWfuLG8Bnn9vtZQcWWPnyE=PYOpVXRJQ@mail.gmail.com>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 21/67] thermal: samsung: Fix incorrect check after code merge
+Date: Fri, 29 Mar 2019 20:50:01 -0400
+Message-ID: <20190330005047.25998-21-sashal@kernel.org>
+References: <20190330005047.25998-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190330005047.25998-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Please pull from the tag
+[ Upstream commit 3b5236cc5d086dd3ddd01113ee9255421aab9fab ]
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.1-rc3
+Merge commit 19785cf93b6c ("Merge branch 'linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal")
+broke the code introduced by commit ffe6e16f14fa ("thermal: exynos: Reduce
+severity of too early temperature read"). Restore the original code from
+the mentioned commit to finally fix the warning message during boot:
 
-with top-most commit 31d4c528cea4023cf36f6148c03bb960cedefeef
+thermal thermal_zone0: failed to read out thermal zone (-22)
 
- cpufreq: scpi: Fix use after free
+Reported-by: Marian Mihailescu <mihailescu2m@gmail.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Fixes: 19785cf93b6c ("Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal")
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-on top of commit 8c2ffd9174779014c3fe1f96d9dc3641d9175f00
-
- Linux 5.1-rc2
-
-to receive power management fixes for 5.1-rc3.
-
-These fix CPU base frequency reporting in the intel_pstate
-driver and a use-after-free in the scpi-cpufreq driver.
-
-Specifics:
-
- - Fix the ACPI CPPC library to actually follow the specification
-   when decoding the guaranteed performance register information and
-   make the intel_pstate driver fall back to the nominal frequency
-   when reporting the base frequency if the guaranteed performance
-   register information is not there (Srinivas Pandruvada).
-
- - Fix use-after-free in the exit callback of scpi-cpufreq left after
-   an update during the 5.0 development cycle (Vincent Stehlé).
-
-Thanks!
-
-
----------------
-
-Srinivas Pandruvada (2):
-      ACPI / CPPC: Fix guaranteed performance handling
-      cpufreq: intel_pstate: Also use CPPC nominal_perf for base_frequency
-
-Vincent Stehlé (1):
-      cpufreq: scpi: Fix use after free
-
----------------
-
- drivers/acpi/cppc_acpi.c       | 9 +++++++--
- drivers/cpufreq/intel_pstate.c | 5 ++++-
- drivers/cpufreq/scpi-cpufreq.c | 2 +-
- 3 files changed, 12 insertions(+), 4 deletions(-)
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 48eef552cba4..fc9399d9c082 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -666,7 +666,7 @@ static int exynos_get_temp(void *p, int *temp)
+ 	struct exynos_tmu_data *data = p;
+ 	int value, ret = 0;
+ 
+-	if (!data || !data->tmu_read || !data->enabled)
++	if (!data || !data->tmu_read)
+ 		return -EINVAL;
+ 	else if (!data->enabled)
+ 		/*
+-- 
+2.19.1
