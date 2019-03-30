@@ -1,56 +1,47 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 12/37] thermal/intel_powerclamp: fix __percpu declaration of worker_data
-Date: Fri, 29 Mar 2019 20:54:13 -0400
-Message-ID: <20190330005441.27540-12-sashal@kernel.org>
-References: <20190330005441.27540-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 12/27] tools/power turbostat: return the exit status of a command
+Date: Fri, 29 Mar 2019 20:55:38 -0400
+Message-ID: <20190330005555.28087-12-sashal@kernel.org>
+References: <20190330005555.28087-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190330005441.27540-1-sashal@kernel.org>
-Sender: stable-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190330005555.28087-1-sashal@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Cc: David Arcari <darcari@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+From: David Arcari <darcari@redhat.com>
 
-[ Upstream commit aa36e3616532f82a920b5ebf4e059fbafae63d88 ]
+[ Upstream commit 2a95496634a017c19641f26f00907af75b962f01 ]
 
-This variable is declared as:
-	static struct powerclamp_worker_data * __percpu worker_data;
-In other words, a percpu pointer to struct ...
+turbostat failed to return a non-zero exit status even though the
+supplied command (turbostat <command>) failed.  Currently when turbostat
+forks a command it returns zero instead of the actual exit status of the
+command.  Modify the code to return the exit status.
 
-But this variable not used like so but as a pointer to a percpu
-struct powerclamp_worker_data.
-
-So fix the declaration as:
-	static struct powerclamp_worker_data __percpu *worker_data;
-
-This also quiets Sparse's warnings from __verify_pcpu_ptr(), like:
-  494:49: warning: incorrect type in initializer (different address spaces)
-  494:49:    expected void const [noderef] <asn:3> *__vpp_verify
-  494:49:    got struct powerclamp_worker_data *
-
-Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
-Reviewed-by: Petr Mladek <pmladek@suse.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: David Arcari <darcari@redhat.com>
+Acked-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/intel_powerclamp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/power/x86/turbostat/turbostat.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index d718cd179ddb..45d9840491bd 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -101,7 +101,7 @@ struct powerclamp_worker_data {
- 	bool clamping;
- };
- 
--static struct powerclamp_worker_data * __percpu worker_data;
-+static struct powerclamp_worker_data __percpu *worker_data;
- static struct thermal_cooling_device *cooling_dev;
- static unsigned long *cpu_clamping_mask;  /* bit map for tracking per cpu
- 					   * clamping kthread worker
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 5ec2de8f49b4..b4c5d96e54c1 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -3691,6 +3691,9 @@ int fork_it(char **argv)
+ 		signal(SIGQUIT, SIG_IGN);
+ 		if (waitpid(child_pid, &status, 0) == -1)
+ 			err(status, "waitpid");
++
++		if (WIFEXITED(status))
++			status = WEXITSTATUS(status);
+ 	}
+ 	/*
+ 	 * n.b. fork_it() does not check for errors from for_all_cpus()
 -- 
 2.19.1
