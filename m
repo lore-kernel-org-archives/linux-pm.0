@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v3 06/13] thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
-Date: Sun, 31 Mar 2019 21:14:11 -0700
-Message-ID: <20190401041418.5999-7-andrew.smirnov@gmail.com>
+Subject: [PATCH v3 08/13] thermal: qoriq: Convert driver to use devm_ioremap()
+Date: Sun, 31 Mar 2019 21:14:13 -0700
+Message-ID: <20190401041418.5999-9-andrew.smirnov@gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,9 +12,8 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Pass all necessary data to qoriq_tmu_register_tmu_zone() directly
-instead of passing a paltform device and then deriving it. This is
-done as a first step to simplify resource deallocation code.
+Convert driver to use devm_ioremap() to simplify memory deallocation
+and error handling code. No functional change intended.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -27,42 +26,69 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index deb5cb6a0baf..24a2a57f61c9 100644
+index a3ddb55740e4..4f9a2543f9c3 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -109,9 +109,9 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
- 	.get_temp = tmu_get_temp,
- };
+@@ -192,6 +192,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct device *dev = &pdev->dev;
++	struct resource *io;
  
--static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
-+static int qoriq_tmu_register_tmu_zone(struct device *dev,
-+				       struct qoriq_tmu_data *qdata)
- {
--	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
- 	int id, sites = 0;
+ 	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+ 			    GFP_KERNEL);
+@@ -200,7 +201,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
- 	for (id = 0; id < SITES_MAX; id++) {
-@@ -120,7 +120,7 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
  
- 		s->id = id;
+-	data->regs = of_iomap(np, 0);
++	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!io) {
++		dev_err(dev, "Failed to get memory region\n");
++		return -ENODEV;
++	}
++
++	data->regs = devm_ioremap(dev, io->start, resource_size(io));
+ 	if (!data->regs) {
+ 		dev_err(dev, "Failed to get memory region\n");
+ 		return -ENODEV;
+@@ -210,23 +217,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
--		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
-+		tzd = devm_thermal_zone_of_sensor_register(dev, id,
- 							   s, &tmu_tz_ops);
- 		if (IS_ERR(tzd)) {
- 			if (PTR_ERR(tzd) == -ENODEV)
-@@ -215,7 +215,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
  	if (ret < 0)
- 		goto err_tmu;
+-		goto err_tmu;
++		return ret;
  
--	ret = qoriq_tmu_register_tmu_zone(pdev);
-+	ret = qoriq_tmu_register_tmu_zone(dev, data);
+ 	ret = qoriq_tmu_register_tmu_zone(dev, data);
  	if (ret < 0) {
  		dev_err(dev, "Failed to register sensors\n");
- 		ret = -ENODEV;
+-		ret = -ENODEV;
+-		goto err_iomap;
++		return -ENODEV;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
+ 	return 0;
+-
+-err_tmu:
+-	iounmap(data->regs);
+-
+-	return ret;
+ }
+ 
+ static int qoriq_tmu_remove(struct platform_device *pdev)
+@@ -236,7 +237,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
+ 	/* Disable monitoring */
+ 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+ 
+-	iounmap(data->regs);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	return 0;
 -- 
 2.20.1
