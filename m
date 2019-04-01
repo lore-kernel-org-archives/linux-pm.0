@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v3 04/13] thermal: qoriq: Add local struct qoriq_sensor pointer
-Date: Sun, 31 Mar 2019 21:14:09 -0700
-Message-ID: <20190401041418.5999-5-andrew.smirnov@gmail.com>
+Subject: [PATCH v3 02/13] thermal: qoriq: Add local struct device pointer
+Date: Sun, 31 Mar 2019 21:14:07 -0700
+Message-ID: <20190401041418.5999-3-andrew.smirnov@gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,8 +12,8 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add local struct qoriq_sensor pointer in qoriq_tmu_register_tmu_zone()
-for brevity.
+Use a local "struct device *dev" for brevity. No functional change
+intended.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -26,36 +26,41 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 6d40b9788266..e281bdcfa11f 100644
+index 7b364933bfb1..91f9f49d2776 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -114,18 +114,18 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+@@ -192,8 +192,9 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	int ret;
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
++	struct device *dev = &pdev->dev;
  
- 	for (id = 0; id < SITES_MAX; id++) {
- 		struct thermal_zone_device *tzd;
-+		struct qoriq_sensor *s;
+-	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
++	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+ 			    GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+@@ -204,7 +205,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
--		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
-+		s = qdata->sensor[id] = devm_kzalloc(&pdev->dev,
- 				sizeof(struct qoriq_sensor), GFP_KERNEL);
- 		if (!qdata->sensor[id])
- 			return -ENOMEM;
+ 	data->regs = of_iomap(np, 0);
+ 	if (!data->regs) {
+-		dev_err(&pdev->dev, "Failed to get memory region\n");
++		dev_err(dev, "Failed to get memory region\n");
+ 		ret = -ENODEV;
+ 		goto err_iomap;
+ 	}
+@@ -217,7 +218,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
  
--		qdata->sensor[id]->id = id;
--		qdata->sensor[id]->qdata = qdata;
-+		s->id = id;
-+		s->qdata = qdata;
- 
- 		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
--							   qdata->sensor[id],
--							   &tmu_tz_ops);
-+							   s, &tmu_tz_ops);
- 		if (IS_ERR(tzd)) {
- 			if (PTR_ERR(tzd) == -ENODEV)
- 				continue;
+ 	ret = qoriq_tmu_register_tmu_zone(pdev);
+ 	if (ret < 0) {
+-		dev_err(&pdev->dev, "Failed to register sensors\n");
++		dev_err(dev, "Failed to register sensors\n");
+ 		ret = -ENODEV;
+ 		goto err_iomap;
+ 	}
 -- 
 2.20.1
