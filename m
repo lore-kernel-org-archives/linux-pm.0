@@ -1,72 +1,26 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.4 084/131] cpu/hotplug: Handle unbalanced hotplug enable/disable
-Date: Mon,  1 Apr 2019 19:02:34 +0200
-Message-ID: <20190401170059.116218209@linuxfoundation.org>
-References: <20190401170051.645954551@linuxfoundation.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 5/5] drivers/cpufreq: Convert some slow-path
+ static_cpu_has() callers to boot_cpu_has()
+Date: Mon, 1 Apr 2019 23:34:24 +0200
+Message-ID: <CAJZ5v0gCJSDFkmdf-Pi5fiZXTe2T5PK5iM3UxQeX_uk5yMPYyg@mail.gmail.com>
+References: <20190330112022.28888-1-bp@alien8.de> <20190330112022.28888-6-bp@alien8.de>
+ <CAJZ5v0hDyx6t8UXj=tO78YUTMBqmdnNWEjs4SVwBoJya9pHu4A@mail.gmail.com>
+ <CAJZ5v0gfqOB8r0dvTf3uRSkJCNOLYPe9qLaUV1BLGjTanmMbvg@mail.gmail.com> <20190401124814.GD28264@zn.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190401170051.645954551@linuxfoundation.org>
+In-Reply-To: <20190401124814.GD28264@zn.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>, peterz@infradead.org, linux-pm@vger.kernel.org, oleg@redhat.com, Thomas Gleixner <tglx@linutronix.de>, Sasha Levin <sashal@kernel.org>
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Nadav Amit <nadav.amit@gmail.com>, Andy Lutomirski <luto@amacapital.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
+On Mon, Apr 1, 2019 at 2:48 PM Borislav Petkov <bp@alien8.de> wrote:
+>
+> On Mon, Apr 01, 2019 at 11:32:59AM +0200, Rafael J. Wysocki wrote:
+> > Or I can queue it up if you prefer.
+>
+> Doesn't matter to me - it doesn't have any dependencies to previous
+> patches so however you like.
 
-------------------
-
-[ Upstream commit 01b41159066531cc8d664362ff0cd89dd137bbfa ]
-
-When cpu_hotplug_enable() is called unbalanced w/o a preceeding
-cpu_hotplug_disable() the code emits a warning, but happily decrements the
-disabled counter. This causes the next operations to malfunction.
-
-Prevent the decrement and just emit a warning.
-
-Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
-Cc: peterz@infradead.org
-Cc: linux-pm@vger.kernel.org
-Cc: oleg@redhat.com
-Link: http://lkml.kernel.org/r/1465541008-12476-1-git-send-email-lianwei.wang@gmail.com
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- kernel/cpu.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 40d20bf5de28..42ce0b0ae5c5 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -183,10 +183,17 @@ void cpu_hotplug_disable(void)
- }
- EXPORT_SYMBOL_GPL(cpu_hotplug_disable);
- 
-+static void __cpu_hotplug_enable(void)
-+{
-+	if (WARN_ONCE(!cpu_hotplug_disabled, "Unbalanced cpu hotplug enable\n"))
-+		return;
-+	cpu_hotplug_disabled--;
-+}
-+
- void cpu_hotplug_enable(void)
- {
- 	cpu_maps_update_begin();
--	WARN_ON(--cpu_hotplug_disabled < 0);
-+	__cpu_hotplug_enable();
- 	cpu_maps_update_done();
- }
- EXPORT_SYMBOL_GPL(cpu_hotplug_enable);
-@@ -626,7 +633,7 @@ void enable_nonboot_cpus(void)
- 
- 	/* Allow everyone to use the CPU hotplug again */
- 	cpu_maps_update_begin();
--	WARN_ON(--cpu_hotplug_disabled < 0);
-+	__cpu_hotplug_enable();
- 	if (cpumask_empty(frozen_cpus))
- 		goto out;
- 
--- 
-2.19.1
+OK, I'll take it.
