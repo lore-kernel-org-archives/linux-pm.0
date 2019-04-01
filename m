@@ -1,44 +1,53 @@
-From: Wen Yang <wen.yang99@zte.com.cn>
-Subject: [PATCH 5/7] cpufreq/pasemi: fix possible object reference leak
-Date: Mon, 1 Apr 2019 09:37:52 +0800
-Message-ID: <1554082674-2049-6-git-send-email-wen.yang99@zte.com.cn>
-References: <1554082674-2049-1-git-send-email-wen.yang99@zte.com.cn>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1554082674-2049-1-git-send-email-wen.yang99@zte.com.cn>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: wang.yi59@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH v2 2/4] opp: add API which get max freq by voltage
+Date: Mon, 01 Apr 2019 11:30:47 +0900
+Message-ID: <20190401023047epcms1p888e2dba45fcbc1de98d71d8a37acb976@epcms1p8>
+References: <1553841972-19737-3-git-send-email-andrew-sh.cheng@mediatek.com>
+ <1553841972-19737-1-git-send-email-andrew-sh.cheng@mediatek.com>
+ <CGME20190329064632epcas2p4d10ea099bfea4ad682d7312a75bfbe68@epcms1p8>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1553841972-19737-3-git-send-email-andrew-sh.cheng@mediatek.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael
+ J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>, "srv_heupstream@mediatek.com" <srv_heupstream@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "fan.chen@mediatek.com" <fan.chen@mediatek.com>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-The call to of_get_cpu_node returns a node pointer with refcount
-incremented thus it must be explicitly decremented after the last
-usage.
+>This API will get voltage as input parameter.
+>Search all opp items for the item which with max frequency,
+>and the voltae is smaller than provided voltage.
+>
+>Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+>---
+> drivers/opp/core.c     | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
+> include/linux/pm_opp.h |  8 ++++++++
+> 2 files changed, 63 insertions(+)
+>
+>diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+>index 24c757a..57deef9 100644
+>--- a/include/linux/pm_opp.h
+>+++ b/include/linux/pm_opp.h
+>@@ -102,6 +102,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+> 
+> struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+> 					      unsigned long *freq);
+>+struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
+>+					      unsigned long u_volt);
 
-Detected by coccinelle with the following warnings:
-./drivers/cpufreq/pasemi-cpufreq.c:212:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 147, but without a corresponding object release within this function.
-./drivers/cpufreq/pasemi-cpufreq.c:220:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 147, but without a corresponding object release within this function.
+For the symmetricity, wouldn't it be better to name it
+dev_pm_opp_find_volt_ceiling(dev, u_volt); ?
 
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/cpufreq/pasemi-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 75dfbd2..c7710c1 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -146,6 +146,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = of_get_cpu_node(policy->cpu, NULL);
- 
-+	of_node_put(cpu);
- 	if (!cpu)
- 		goto out;
- 
--- 
-2.9.5
+Cheers,
+MyungJoo
