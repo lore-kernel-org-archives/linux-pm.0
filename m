@@ -1,58 +1,55 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] dt-bindings: hwmon (pwm-fan) Remove dead
- "cooling-*-state" properties
-Date: Sun, 31 Mar 2019 01:40:55 -0500
-Message-ID: <5ca060f9.1c69fb81.58fe6.677a@mx.google.com>
-References: <afde4ebd929821d63b5172c8e70e15f0725a4b49.1553006788.git.robin.murphy@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <afde4ebd929821d63b5172c8e70e15f0725a4b49.1553006788.git.robin.murphy@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, jdelvare@suse.com, heiko@sntech.de, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, krzk@kernel.org, jonathanh@nvidia.com, thierry.reding@gmail.com, kgene@kernel.org, shawnguo@kernel.org, linux@roeck-us.net, linux-arm-kernel@lists.infradead.org
+From: Wen Yang <wen.yang99@zte.com.cn>
+Subject: [PATCH 2/7] cpufreq: imx6q: fix possible object reference leak
+Date: Mon, 1 Apr 2019 09:37:49 +0800
+Message-ID: <1554082674-2049-3-git-send-email-wen.yang99@zte.com.cn>
+References: <1554082674-2049-1-git-send-email-wen.yang99@zte.com.cn>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1554082674-2049-1-git-send-email-wen.yang99@zte.com.cn>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: wang.yi59@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 19 Mar 2019 14:54:04 +0000, Robin Murphy wrote:
-> The old "cooling-{min,max}-state" properties for thermal bindings were
-> ratified to "cooling-{min,max}-level" by commit eb168b70dea5 ("of:
-> thermal: Fix inconsitency between cooling-*-state and cooling-*-level"),
-> which were later removed entirely by commit e04907dbc259 ("dt-bindings:
-> thermal: Remove "cooling-{min|max}-level" properties").
-> 
-> The pwm-fan binding, however, was apparently in-flight in parallel with
-> that ratification, and so managed to introduce an example of the old
-> properties which escaped the scope of the later cleanup and has thus
-> continued to be dutifully copied for new boards despite being useless.
-> Clean up these remaining undocumented anachronisms to minimise any
-> further confusion.
-> 
-> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-> ---
-> 
-> Presented as one big hwmon patch for simplicity, but the DT changes
-> can quite easily be broken out by platform if maintainers prefer.
-> 
-> Robin.
-> 
->  Documentation/devicetree/bindings/hwmon/pwm-fan.txt | 2 --
->  arch/arm/boot/dts/exynos4412-odroidu3.dts           | 2 --
->  arch/arm/boot/dts/exynos5410-odroidxu.dts           | 2 --
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi  | 2 --
->  arch/arm/boot/dts/imx6qdl-emcon.dtsi                | 2 --
->  arch/arm64/boot/dts/nvidia/tegra194-p2972-0000.dts  | 2 --
->  arch/arm64/boot/dts/rockchip/rk3368-lion.dtsi       | 2 --
->  arch/arm64/boot/dts/rockchip/rk3399-puma.dtsi       | 2 --
->  8 files changed, 16 deletions(-)
-> 
+The call to of_node_get returns a node pointer with refcount
+incremented thus it must be explicitly decremented after the last
+usage.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Detected by coccinelle with the following warnings:
+./drivers/cpufreq/imx6q-cpufreq.c:391:4-10: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 348, but without a corresponding object release within this function.
+./drivers/cpufreq/imx6q-cpufreq.c:395:3-9: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 348, but without a corresponding object release within this function.
+
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index a4ff09f..3e17560 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -388,11 +388,11 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		ret = imx6ul_opp_check_speed_grading(cpu_dev);
+ 		if (ret) {
+ 			if (ret == -EPROBE_DEFER)
+-				return ret;
++				goto put_node;
+ 
+ 			dev_err(cpu_dev, "failed to read ocotp: %d\n",
+ 				ret);
+-			return ret;
++			goto put_node;
+ 		}
+ 	} else {
+ 		imx6q_opp_check_speed_grading(cpu_dev);
+-- 
+2.9.5
