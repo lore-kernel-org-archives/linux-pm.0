@@ -1,64 +1,72 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH] cpufreq/intel_pstate: Load only on Intel hardware
-Date: Mon, 01 Apr 2019 17:18:49 +0200
-Message-ID: <9389251.Bs5y7Thn0n@house>
-References: <20190330100225.14744-1-bp@alien8.de> <20190401083902.GC28264@zn.tnic> <20190401150345.GJ28264@zn.tnic>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.4 084/131] cpu/hotplug: Handle unbalanced hotplug enable/disable
+Date: Mon,  1 Apr 2019 19:02:34 +0200
+Message-ID: <20190401170059.116218209@linuxfoundation.org>
+References: <20190401170051.645954551@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190401150345.GJ28264@zn.tnic>
+In-Reply-To: <20190401170051.645954551@linuxfoundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Erwan Velu <e.velu@criteo.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>, peterz@infradead.org, linux-pm@vger.kernel.org, oleg@redhat.com, Thomas Gleixner <tglx@linutronix.de>, Sasha Levin <sashal@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 1, 2019 5:03:45 PM CEST Borislav Petkov wrote:
-> From: Borislav Petkov <bp@suse.de>
-> 
-> This driver is Intel-only so loading on anything which is not Intel is
-> pointless. Prevent it from doing so.
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Nice.
-I wondered whether there are more of these to find by review, instead
-of waiting for the next message to show up.
+------------------
 
-I ended up in the "not so straight forward" IOMMU init macros... and
-continued with daily work again.
+[ Upstream commit 01b41159066531cc8d664362ff0cd89dd137bbfa ]
 
-Anyway there are a lot files showing up when grepping the kernel for
-intel files/drivers, maybe someone who is involved in the one or other comes
-up with something similar...
+When cpu_hotplug_enable() is called unbalanced w/o a preceeding
+cpu_hotplug_disable() the code emits a warning, but happily decrements the
+disabled counter. This causes the next operations to malfunction.
 
-       Thomas
+Prevent the decrement and just emit a warning.
 
-FWIW:
-Reviewed-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+Cc: peterz@infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: oleg@redhat.com
+Link: http://lkml.kernel.org/r/1465541008-12476-1-git-send-email-lianwei.wang@gmail.com
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ kernel/cpu.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 40d20bf5de28..42ce0b0ae5c5 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -183,10 +183,17 @@ void cpu_hotplug_disable(void)
+ }
+ EXPORT_SYMBOL_GPL(cpu_hotplug_disable);
  
-> While at it, correct the "not supported" print statement to say CPU
-> "model" which is what that test does.
-> 
-> Suggested-by: Erwan Velu <e.velu@criteo.com>
-> Signed-off-by: Borislav Petkov <bp@suse.de>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> CC: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/intel_pstate.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index b599c7318aab..2986119dd31f 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2596,6 +2596,9 @@ static int __init intel_pstate_init(void)
->  	const struct x86_cpu_id *id;
->  	int rc;
-> 
-> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-> +		return -ENODEV;
-> +
-...
++static void __cpu_hotplug_enable(void)
++{
++	if (WARN_ONCE(!cpu_hotplug_disabled, "Unbalanced cpu hotplug enable\n"))
++		return;
++	cpu_hotplug_disabled--;
++}
++
+ void cpu_hotplug_enable(void)
+ {
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	__cpu_hotplug_enable();
+ 	cpu_maps_update_done();
+ }
+ EXPORT_SYMBOL_GPL(cpu_hotplug_enable);
+@@ -626,7 +633,7 @@ void enable_nonboot_cpus(void)
+ 
+ 	/* Allow everyone to use the CPU hotplug again */
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	__cpu_hotplug_enable();
+ 	if (cpumask_empty(frozen_cpus))
+ 		goto out;
+ 
+-- 
+2.19.1
