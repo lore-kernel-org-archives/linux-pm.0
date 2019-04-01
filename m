@@ -1,71 +1,35 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal/drivers/core: Remove the module Kconfig's option
-Date: Mon, 1 Apr 2019 09:18:19 +0200
-Message-ID: <86b89b19-73fe-4ec9-d030-a72f191a44d1@linaro.org>
-References: <20190401032425.18647-1-daniel.lezcano@linaro.org>
- <CABXOdTeB+5vNi+mRBf2ff2YJG5WVRAGFjBz-ehjDTCyQdcpr7A@mail.gmail.com>
+From: Erwan Velu <e.velu@criteo.com>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Do not issue the not supported
+ message on !Intel
+Date: Mon, 1 Apr 2019 08:11:51 +0000
+Message-ID: <fa14666a-269c-249a-f603-b00f6301c1a6@criteo.com>
+References: <20190330100225.14744-1-bp@alien8.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CABXOdTeB+5vNi+mRBf2ff2YJG5WVRAGFjBz-ehjDTCyQdcpr7A@mail.gmail.com>
+In-Reply-To: <20190330100225.14744-1-bp@alien8.de>
 Content-Language: en-US
+Content-ID: <F168A6D4E6B19C45BAEF38DB12BAFD9A@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <groeck@google.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Alexey Brodkin <alexey.brodkin@synopsys.com>, Andrew Morton <akpm@linux-foundation.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Guenter Roeck <groeck@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Daniel Mack <daniel@zonque.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Arnd Bergmann <arnd@arndb.de>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, "open list:MIPS" <linux-mips@vger.kernel.org>
+To: Borislav Petkov <bp@alien8.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Guenter,
-
-thanks for the review.
-
-On 01/04/2019 06:10, Guenter Roeck wrote:
-> On Sun, Mar 31, 2019 at 8:24 PM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> The module support for the thermal subsystem does have a little sense:
-> 
-> Do you mean "makes little sense" ?
-
-yep :)
-
->>  - some subsystems relying on it are not modules, thus forcing the
->>    framework to be compiled in
->>  - it is compiled in for almost every configs, the remaining ones
->>    are a few platforms where I don't see why we can not switch the thermal
->>    to 'y'. The drivers can stay in tristate.
->>  - platforms need the thermal to be ready as soon as possible at boot time
->>    in order to mitigate
->>
->> Usually the subsystems framework are compiled-in and the plugs are as module.
->>
->> Remove the module option. The removal of the module related dead code will
->> come after this patch gets in or is acked.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> 
-> Sounds like a good idea.
-> 
-> Acked-by: Guenter Roeck <groeck@chromium.org>
-> 
-> Many dependencies such as the following can probably be simplified or
-> removed after this patch has been accepted.
-> 
-> depends on THERMAL=y
-> depends on THERMAL || THERMAL=n
-> depends on (HWMON && (THERMAL || !THERMAL_OF)) || !HWMON
-> depends on !(MLXSW_CORE=y && THERMAL=m)
-> depends on THERMAL || !THERMAL
-> depends on HWMON=y || HWMON=THERMAL
-> depends on THERMAL || !THERMAL_OF
-
-Absolutely.
-
-  -- Daniel
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+DQo+IGluZGV4IGVhNjJlM2YwMmQ1Ni4uMTk4NTRmMDFlMmZhIDEwMDY0NA0KPiAtLS0gYS9kcml2
+ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVmcmVxL2ludGVs
+X3BzdGF0ZS5jDQo+IEBAIC0yNjA4LDcgKzI2MDgsOSBAQCBzdGF0aWMgaW50IF9faW5pdCBpbnRl
+bF9wc3RhdGVfaW5pdCh2b2lkKQ0KPiAgIAl9IGVsc2Ugew0KPiAgIAkJaWQgPSB4ODZfbWF0Y2hf
+Y3B1KGludGVsX3BzdGF0ZV9jcHVfaWRzKTsNCj4gICAJCWlmICghaWQpIHsNCj4gLQkJCXByX2lu
+Zm8oIkNQVSBJRCBub3Qgc3VwcG9ydGVkXG4iKTsNCj4gKwkJCWlmIChib290X2NwdV9kYXRhLng4
+Nl92ZW5kb3IgPT0gWDg2X1ZFTkRPUl9JTlRFTCkNCj4gKwkJCQlwcl9pbmZvKCJDUFUgbW9kZWwg
+bm90IHN1cHBvcnRlZFxuIik7DQo+ICsNCj4gICAJCQlyZXR1cm4gLUVOT0RFVjsNCj4gICAJCX0N
+Cg0KVGhhdCdzIGEgZ29vZCBjYXRjaCBidXQgSSB3YXMgd29uZGVyaW5nIHdoeSBub3QgcHV0dGlu
+ZyB0aGlzIHZlbmRvciANCmNvbmRpdGlvbiBhdCB0aGUgaW5pdGlhbCAiaWYgKG5vbG9hZCkiIHN0
+YXRlbWVudC4NCg0KSSBtZWFuLCBpZiB3ZSBkb24ndCBydW4gYW4gaW50ZWwgQ1BVIHRoZXJlIGlz
+IG5vIG5lZWQgb2YgbWFraW5nIHRoZSANCng4Nl9tYXRjaF9jcHUoKS4NCg0KVGhpcyBjb21taXQg
+aXMgYWxzbyBraWxsaW5nIHRoZSBjYXNlIG9mIHJlcG9ydGluZyBhbiB1bnN1cHBvcnRlZCBpbnRl
+bCANCnByb2Nlc3Nvci4NCg0KDQpJJ2Qgc3VnZ2VzdCBzb21ldGhpbmcgbGlrZSB0aGlzIGFuZCBr
+ZWVwIHRoZSAnQ1BVSUQgbm90IHN1cHBvcnRlZCcgcGFydCANCnVudG91Y2hlZC4NCg0KIMKgwqDC
+oCBpZiAobm9fbG9hZCkgfHwgKGJvb3RfY3B1X2RhdGEueDg2X3ZlbmRvciAhPSBYODZfVkVORE9S
+X0lOVEVMKQ0KDQogwqDCoMKgIMKgwqDCoCByZXR1cm4gLUVOT0RFVg0KDQo=
