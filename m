@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v3 03/13] thermal: qoriq: Don't store struct thermal_zone_device reference
-Date: Sun, 31 Mar 2019 21:14:08 -0700
-Message-ID: <20190401041418.5999-4-andrew.smirnov@gmail.com>
+Subject: [PATCH v3 05/13] thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
+Date: Sun, 31 Mar 2019 21:14:10 -0700
+Message-ID: <20190401041418.5999-6-andrew.smirnov@gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,8 +12,10 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Struct thermal_zone_device reference stored as sensor's private data
-isn't really used anywhere in the code. Drop it.
+Embed per-sensor data into struct qoriq_tmu_data so we can drop the
+code allocating it. This also allows us to get rid of per-sensor back
+reference to struct qoriq_tmu_data since now its address can be
+caluclated using container_of().
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -26,50 +28,67 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 91f9f49d2776..6d40b9788266 100644
+index e281bdcfa11f..deb5cb6a0baf 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -65,7 +65,6 @@ struct qoriq_tmu_data;
+@@ -59,22 +59,24 @@ struct qoriq_tmu_regs {
+ 	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+ };
+ 
+-struct qoriq_tmu_data;
+-
+ /*
   * Thermal zone data
   */
  struct qoriq_sensor {
--	struct thermal_zone_device	*tzd;
- 	struct qoriq_tmu_data		*qdata;
+-	struct qoriq_tmu_data		*qdata;
  	int				id;
  };
-@@ -114,6 +113,8 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
- 	int id, sites = 0;
+ 
+ struct qoriq_tmu_data {
+ 	struct qoriq_tmu_regs __iomem *regs;
+ 	bool little_endian;
+-	struct qoriq_sensor	*sensor[SITES_MAX];
++	struct qoriq_sensor	sensor[SITES_MAX];
+ };
+ 
++static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
++{
++	return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
++}
++
+ static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
+ {
+ 	if (p->little_endian)
+@@ -94,7 +96,7 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
+ static int tmu_get_temp(void *p, int *temp)
+ {
+ 	struct qoriq_sensor *qsensor = p;
+-	struct qoriq_tmu_data *qdata = qsensor->qdata;
++	struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
+ 	u32 val;
+ 
+ 	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+@@ -114,15 +116,9 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
  
  	for (id = 0; id < SITES_MAX; id++) {
-+		struct thermal_zone_device *tzd;
-+
- 		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
- 				sizeof(struct qoriq_sensor), GFP_KERNEL);
- 		if (!qdata->sensor[id])
-@@ -121,13 +122,15 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ 		struct thermal_zone_device *tzd;
+-		struct qoriq_sensor *s;
+-
+-		s = qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+-				sizeof(struct qoriq_sensor), GFP_KERNEL);
+-		if (!qdata->sensor[id])
+-			return -ENOMEM;
++		struct qoriq_sensor *s = &qdata->sensor[id];
  
- 		qdata->sensor[id]->id = id;
- 		qdata->sensor[id]->qdata = qdata;
--		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
--				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
--		if (IS_ERR(qdata->sensor[id]->tzd)) {
--			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
-+
-+		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
-+							   qdata->sensor[id],
-+							   &tmu_tz_ops);
-+		if (IS_ERR(tzd)) {
-+			if (PTR_ERR(tzd) == -ENODEV)
- 				continue;
- 			else
--				return PTR_ERR(qdata->sensor[id]->tzd);
-+				return PTR_ERR(tzd);
- 		}
+ 		s->id = id;
+-		s->qdata = qdata;
  
- 		sites |= 0x1 << (15 - id);
+ 		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
+ 							   s, &tmu_tz_ops);
 -- 
 2.20.1
