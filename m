@@ -1,136 +1,153 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update][PATCH v3 3/4] cpufreq: schedutil: Simplify iowait boosting
-Date: Mon, 01 Apr 2019 11:27:25 +0200
-Message-ID: <388546350.6JbkPPd9ra@aspire.rjw.lan>
-References: <11953735.uMqeHy63Iu@aspire.rjw.lan> <2864116.v8IU97Resm@aspire.rjw.lan> <3714586.Xfz7sSM4fi@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 5/5] drivers/cpufreq: Convert some slow-path
+ static_cpu_has() callers to boot_cpu_has()
+Date: Mon, 1 Apr 2019 11:31:49 +0200
+Message-ID: <CAJZ5v0hDyx6t8UXj=tO78YUTMBqmdnNWEjs4SVwBoJya9pHu4A@mail.gmail.com>
+References: <20190330112022.28888-1-bp@alien8.de> <20190330112022.28888-6-bp@alien8.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3714586.Xfz7sSM4fi@aspire.rjw.lan>
+In-Reply-To: <20190330112022.28888-6-bp@alien8.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+To: Borislav Petkov <bp@alien8.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nadav Amit <nadav.amit@gmail.com>, Andy Lutomirski <luto@amacapital.net>, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 28, 2019 11:33:21 AM CEST Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> There is not reason for the minimum iowait boost value in the
-> schedutil cpufreq governor to depend on the available range of CPU
-> frequencies.  In fact, that dependency is generally confusing,
-> because it causes the iowait boost to behave somewhat differently
-> on CPUs with the same maximum frequency and different minimum
-> frequencies, for example.
-> 
-> For this reason, replace the min field in struct sugov_cpu
-> with a constant and choose its values to be 1/8 of
-> SCHED_CAPACITY_SCALE (for consistency with the intel_pstate
-> driver's internal governor).
-> 
-> [Note that policy->cpuinfo.max_freq will not be a constant any more
->  after a subsequent change, so this change is depended on by it.]
-> 
-> Link: https://lore.kernel.org/lkml/20190305083202.GU32494@hirez.programming.kicks-ass.net/T/#ee20bdc98b7d89f6110c0d00e5c3ee8c2ced93c3d
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sat, Mar 30, 2019 at 12:20 PM Borislav Petkov <bp@alien8.de> wrote:
+>
+> From: Borislav Petkov <bp@suse.de>
+>
+> Using static_cpu_has() is pointless on those paths, convert them to the
+> boot_cpu_has() variant.
+>
+> No functional changes.
+>
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
 > ---
-> 
-> As pointed out by Quentin, the original patch overlooked two kerneldoc
-> comments that needed to be updated along with the code, so do that here.
-> 
-> No other changes with respect to the original.
-> 
-> ---
->  kernel/sched/cpufreq_schedutil.c |   21 ++++++++++-----------
->  1 file changed, 10 insertions(+), 11 deletions(-)
-> 
-> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-> ===================================================================
-> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
-> @@ -13,6 +13,8 @@
->  #include <linux/sched/cpufreq.h>
->  #include <trace/events/power.h>
->  
-> +#define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
-> +
->  struct sugov_tunables {
->  	struct gov_attr_set	attr_set;
->  	unsigned int		rate_limit_us;
-> @@ -51,7 +53,6 @@ struct sugov_cpu {
->  	u64			last_update;
->  
->  	unsigned long		bw_dl;
-> -	unsigned long		min;
->  	unsigned long		max;
->  
->  	/* The field below is for single-CPU policies only: */
-> @@ -291,8 +292,8 @@ static unsigned long sugov_get_util(stru
->   *
->   * The IO wait boost of a task is disabled after a tick since the last update
->   * of a CPU. If a new IO wait boost is requested after more then a tick, then
-> - * we enable the boost starting from the minimum frequency, which improves
-> - * energy efficiency by ignoring sporadic wakeups from IO.
-> + * we enable the boost starting from IOWAIT_BOOST_MIN, which improves energy
-> + * efficiency by ignoring sporadic wakeups from IO.
->   */
->  static bool sugov_iowait_reset(struct sugov_cpu *sg_cpu, u64 time,
->  			       bool set_iowait_boost)
-> @@ -303,7 +304,7 @@ static bool sugov_iowait_reset(struct su
->  	if (delta_ns <= TICK_NSEC)
->  		return false;
->  
-> -	sg_cpu->iowait_boost = set_iowait_boost ? sg_cpu->min : 0;
-> +	sg_cpu->iowait_boost = set_iowait_boost ? IOWAIT_BOOST_MIN : 0;
->  	sg_cpu->iowait_boost_pending = set_iowait_boost;
->  
->  	return true;
-> @@ -317,8 +318,9 @@ static bool sugov_iowait_reset(struct su
->   *
->   * Each time a task wakes up after an IO operation, the CPU utilization can be
->   * boosted to a certain utilization which doubles at each "frequent and
-> - * successive" wakeup from IO, ranging from the utilization of the minimum
-> - * OPP to the utilization of the maximum OPP.
-> + * successive" wakeup from IO, ranging from IOWAIT_BOOST_MIN to the utilization
-> + * of the maximum OPP.
-> + *
->   * To keep doubling, an IO boost has to be requested at least once per tick,
->   * otherwise we restart from the utilization of the minimum OPP.
->   */
-> @@ -349,7 +351,7 @@ static void sugov_iowait_boost(struct su
->  	}
->  
->  	/* First wakeup after IO: start with minimum boost */
-> -	sg_cpu->iowait_boost = sg_cpu->min;
-> +	sg_cpu->iowait_boost = IOWAIT_BOOST_MIN;
->  }
->  
->  /**
-> @@ -389,7 +391,7 @@ static unsigned long sugov_iowait_apply(
->  		 * No boost pending; reduce the boost value.
->  		 */
->  		sg_cpu->iowait_boost >>= 1;
-> -		if (sg_cpu->iowait_boost < sg_cpu->min) {
-> +		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
->  			sg_cpu->iowait_boost = 0;
->  			return util;
->  		}
-> @@ -826,9 +828,6 @@ static int sugov_start(struct cpufreq_po
->  		memset(sg_cpu, 0, sizeof(*sg_cpu));
->  		sg_cpu->cpu			= cpu;
->  		sg_cpu->sg_policy		= sg_policy;
-> -		sg_cpu->min			=
-> -			(SCHED_CAPACITY_SCALE * policy->cpuinfo.min_freq) /
-> -			policy->cpuinfo.max_freq;
->  	}
->  
->  	for_each_cpu(cpu, policy->cpus) {
-> 
-> 
-
-Any more comments on this patch?
-
-If not, I'll queue it up along with the rest of the series.
-
-Thanks!
+>  drivers/cpufreq/amd_freq_sensitivity.c |  2 +-
+>  drivers/cpufreq/intel_pstate.c         | 18 +++++++++---------
+>  drivers/cpufreq/powernow-k8.c          |  2 +-
+>  3 files changed, 11 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+> index 4ac7c3cf34be..6927a8c0e748 100644
+> --- a/drivers/cpufreq/amd_freq_sensitivity.c
+> +++ b/drivers/cpufreq/amd_freq_sensitivity.c
+> @@ -124,7 +124,7 @@ static int __init amd_freq_sensitivity_init(void)
+>                         PCI_DEVICE_ID_AMD_KERNCZ_SMBUS, NULL);
+>
+>         if (!pcidev) {
+> -               if (!static_cpu_has(X86_FEATURE_PROC_FEEDBACK))
+> +               if (!boot_cpu_has(X86_FEATURE_PROC_FEEDBACK))
+>                         return -ENODEV;
+>         }
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index e22f0dbaebb1..ea62e3f02d56 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -522,7 +522,7 @@ static s16 intel_pstate_get_epb(struct cpudata *cpu_data)
+>         u64 epb;
+>         int ret;
+>
+> -       if (!static_cpu_has(X86_FEATURE_EPB))
+> +       if (!boot_cpu_has(X86_FEATURE_EPB))
+>                 return -ENXIO;
+>
+>         ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
+> @@ -536,7 +536,7 @@ static s16 intel_pstate_get_epp(struct cpudata *cpu_data, u64 hwp_req_data)
+>  {
+>         s16 epp;
+>
+> -       if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
+> +       if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+>                 /*
+>                  * When hwp_req_data is 0, means that caller didn't read
+>                  * MSR_HWP_REQUEST, so need to read and get EPP.
+> @@ -561,7 +561,7 @@ static int intel_pstate_set_epb(int cpu, s16 pref)
+>         u64 epb;
+>         int ret;
+>
+> -       if (!static_cpu_has(X86_FEATURE_EPB))
+> +       if (!boot_cpu_has(X86_FEATURE_EPB))
+>                 return -ENXIO;
+>
+>         ret = rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
+> @@ -609,7 +609,7 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
+>         if (epp < 0)
+>                 return epp;
+>
+> -       if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
+> +       if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+>                 if (epp == HWP_EPP_PERFORMANCE)
+>                         return 1;
+>                 if (epp <= HWP_EPP_BALANCE_PERFORMANCE)
+> @@ -618,7 +618,7 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
+>                         return 3;
+>                 else
+>                         return 4;
+> -       } else if (static_cpu_has(X86_FEATURE_EPB)) {
+> +       } else if (boot_cpu_has(X86_FEATURE_EPB)) {
+>                 /*
+>                  * Range:
+>                  *      0x00-0x03       :       Performance
+> @@ -646,7 +646,7 @@ static int intel_pstate_set_energy_pref_index(struct cpudata *cpu_data,
+>
+>         mutex_lock(&intel_pstate_limits_lock);
+>
+> -       if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
+> +       if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+>                 u64 value;
+>
+>                 ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, &value);
+> @@ -821,7 +821,7 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+>                 epp = cpu_data->epp_powersave;
+>         }
+>  update_epp:
+> -       if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
+> +       if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+>                 value &= ~GENMASK_ULL(31, 24);
+>                 value |= (u64)epp << 24;
+>         } else {
+> @@ -846,7 +846,7 @@ static void intel_pstate_hwp_force_min_perf(int cpu)
+>         value |= HWP_MIN_PERF(min_perf);
+>
+>         /* Set EPP/EPB to min */
+> -       if (static_cpu_has(X86_FEATURE_HWP_EPP))
+> +       if (boot_cpu_has(X86_FEATURE_HWP_EPP))
+>                 value |= HWP_ENERGY_PERF_PREFERENCE(HWP_EPP_POWERSAVE);
+>         else
+>                 intel_pstate_set_epb(cpu, HWP_EPP_BALANCE_POWERSAVE);
+> @@ -1194,7 +1194,7 @@ static void __init intel_pstate_sysfs_expose_params(void)
+>  static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+>  {
+>         /* First disable HWP notification interrupt as we don't process them */
+> -       if (static_cpu_has(X86_FEATURE_HWP_NOTIFY))
+> +       if (boot_cpu_has(X86_FEATURE_HWP_NOTIFY))
+>                 wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
+>
+>         wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> index fb77b39a4ce3..3c12e03fa343 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -1178,7 +1178,7 @@ static int powernowk8_init(void)
+>         unsigned int i, supported_cpus = 0;
+>         int ret;
+>
+> -       if (static_cpu_has(X86_FEATURE_HW_PSTATE)) {
+> +       if (boot_cpu_has(X86_FEATURE_HW_PSTATE)) {
+>                 __request_acpi_cpufreq();
+>                 return -ENODEV;
+>         }
+> --
+> 2.21.0
+>
