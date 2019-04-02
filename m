@@ -1,92 +1,61 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [RESEND PATCH v6 05/11] mfd: core: document mfd_add_devices()
-Date: Tue, 2 Apr 2019 10:08:59 +0200
-Message-ID: <CAMRc=Mekomya5A_tj3RKSeno1EaBoGNAFJajPfyB1cHP7c+L6w@mail.gmail.com>
-References: <20190318174228.18194-1-brgl@bgdev.pl> <20190318174228.18194-6-brgl@bgdev.pl>
- <20190402074103.GG4187@dell>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Load only on Intel hardware
+Date: Tue, 02 Apr 2019 10:38:52 +0200
+Message-ID: <1751498.6LRAoAyAK1@aspire.rjw.lan>
+References: <20190330100225.14744-1-bp@alien8.de> <20190401083902.GC28264@zn.tnic> <20190401150345.GJ28264@zn.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190402074103.GG4187@dell>
+In-Reply-To: <20190401150345.GJ28264@zn.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Borislav Petkov <bp@alien8.de>
+Cc: Erwan Velu <e.velu@criteo.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-wt., 2 kwi 2019 o 09:41 Lee Jones <lee.jones@linaro.org> napisa=C5=82(a):
->
-> On Mon, 18 Mar 2019, Bartosz Golaszewski wrote:
->
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > Add a kernel doc for mfd_add_devices().
-> >
-> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > ---
-> >  drivers/mfd/mfd-core.c | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> >
-> > diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
-> > index 94e3f32ce935..0898a8db1747 100644
-> > --- a/drivers/mfd/mfd-core.c
-> > +++ b/drivers/mfd/mfd-core.c
-> > @@ -269,6 +269,20 @@ static int mfd_add_device(struct device *parent, i=
-nt id,
-> >       return ret;
-> >  }
-> >
-> > +/**
-> > + * mfd_add_devices - register a set of child devices
->
-> "register child devices"
->
-> > + *
-> > + * @parent: Parent device for all sub-nodes.
-> > + * @id: Platform device id. If >=3D 0, each sub-device will have its c=
-ell_id
-> > + *      added to this number and use it as the platform device id.
-> > + * @cells: Array of mfd cells describing sub-devices.
-> > + * @n_devs: Number of sub-devices to register.
-> > + * @mem_base: Parent register range resource for sub-devices.
-> > + * @irq_base: Base of the range of virtual interrupt numbers allocated=
- for
-> > + *            this MFD device. Unused if @domain is specified.
-> > + * @domain: Interrupt domain used to create mappings for HW interrupt =
-numbers
-> > + *          specificed in sub-devices' IRQ resources.
->
-> Spelling.
->
-> > + */
-> >  int mfd_add_devices(struct device *parent, int id,
-> >                   const struct mfd_cell *cells, int n_devs,
-> >                   struct resource *mem_base,
->
-> How about this:
->
-> /**
->  * mfd_add_devices - register child devices
->  *
->  * @parent:     Pointer to parent device.
->  * @id:         Can be PLATFORM_DEVID_AUTO to let the Platform API take c=
-are
->  *              of device numbering, or will be added to a device's cell_=
-id.
->  * @cells:      Array of (struct mfd_cell)s describing child devices.
->  * @n_devs:     Number of child devices to register.
->  * @mem_base:   Parent register range resource for child devices.
->  * @irq_base:   Base of the range of virtual interrupt numbers allocated =
-for
->  *              this MFD device. Unused if @domain is specified.
->  * @domain:     Interrupt domain to create mappings for hardware interrup=
-ts.
->  */
->
+On Monday, April 1, 2019 5:03:45 PM CEST Borislav Petkov wrote:
+> From: Borislav Petkov <bp@suse.de>
+> 
+> This driver is Intel-only so loading on anything which is not Intel is
+> pointless. Prevent it from doing so.
+> 
+> While at it, correct the "not supported" print statement to say CPU
+> "model" which is what that test does.
+> 
+> Suggested-by: Erwan Velu <e.velu@criteo.com>
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> CC: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index b599c7318aab..2986119dd31f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2596,6 +2596,9 @@ static int __init intel_pstate_init(void)
+>  	const struct x86_cpu_id *id;
+>  	int rc;
+>  
+> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
+> +		return -ENODEV;
+> +
+>  	if (no_load)
+>  		return -ENODEV;
+>  
+> @@ -2611,7 +2614,7 @@ static int __init intel_pstate_init(void)
+>  	} else {
+>  		id = x86_match_cpu(intel_pstate_cpu_ids);
+>  		if (!id) {
+> -			pr_info("CPU ID not supported\n");
+> +			pr_info("CPU model not supported\n");
+>  			return -ENODEV;
+>  		}
+>  
+> 
 
-Sure, looks good to me.
-
-FYI the latest version of this series is v7, but the mfd driver didn't
-change since v6.
-
-Bart
+Applied, thanks!
