@@ -1,55 +1,85 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/7] thermal/drivers/core: Remove module unload code
-Date: Tue,  2 Apr 2019 18:12:45 +0200
-Message-ID: <20190402161256.11044-2-daniel.lezcano@linaro.org>
+Subject: [PATCH 3/7] thermal/drivers/core: Add init section table for self-encapsulation
+Date: Tue,  2 Apr 2019 18:12:46 +0200
+Message-ID: <20190402161256.11044-3-daniel.lezcano@linaro.org>
 References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190402161256.11044-1-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "open list:GENERIC INCLUDE/ASM HEADER FILES" <linux-arch@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Now the thermal core is no longer compiled as a module. Remove the unloading
-module code and move the unregister function to the __init section.
+Currently the governors are declared in their respective files but they
+export their [un]register functions which in turn call the [un]register
+the governors core's functions. That implies a cyclic dependency which is
+not desirable. There is a way to self-encapsulate the governors by letting
+them to declare themselves in a __init section table.
+
+Define the table in the asm generic linker description like the other
+tables and provide the specific macros to deal with.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_core.c | 17 +----------------
- 1 file changed, 1 insertion(+), 16 deletions(-)
+ drivers/thermal/thermal_core.h    | 16 ++++++++++++++++
+ include/asm-generic/vmlinux.lds.h | 11 +++++++++++
+ 2 files changed, 27 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6590bb5cb688..28f7ece0e8fe 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -266,7 +266,7 @@ static int __init thermal_register_governors(void)
- 	return thermal_gov_power_allocator_register();
- }
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 0df190ed82a7..28d18083e969 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -15,6 +15,22 @@
+ /* Initial state of a cooling device during binding */
+ #define THERMAL_NO_TARGET -1UL
  
--static void thermal_unregister_governors(void)
-+static void __init thermal_unregister_governors(void)
- {
- 	thermal_gov_step_wise_unregister();
- 	thermal_gov_fair_share_unregister();
-@@ -1563,19 +1563,4 @@ static int __init thermal_init(void)
- 	mutex_destroy(&poweroff_lock);
- 	return result;
- }
--
--static void __exit thermal_exit(void)
--{
--	unregister_pm_notifier(&thermal_pm_nb);
--	of_thermal_destroy_zones();
--	genetlink_exit();
--	class_unregister(&thermal_class);
--	thermal_unregister_governors();
--	ida_destroy(&thermal_tz_ida);
--	ida_destroy(&thermal_cdev_ida);
--	mutex_destroy(&thermal_list_lock);
--	mutex_destroy(&thermal_governor_lock);
--}
--
- fs_initcall(thermal_init);
--module_exit(thermal_exit);
++/* Init section thermal table */
++extern struct thermal_governor * __governor_thermal_table[];
++extern struct thermal_governor * __governor_thermal_table_end[];
++
++#define THERMAL_TABLE_ENTRY(table, name)			\
++        static typeof(name) * __thermal_table_entry_##name	\
++	__used __section(__##table##_thermal_table)		\
++		= &name;
++
++#define THERMAL_GOVERNOR_DECLARE(name)	THERMAL_TABLE_ENTRY(governor, name)
++
++#define for_each_governor_table(__governor)		\
++	for (__governor = __governor_thermal_table;	\
++	     __governor < __governor_thermal_table_end;	\
++	     __governor++)
++
+ /*
+  * This structure is used to describe the behavior of
+  * a certain cooling device on a certain trip point
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f8f6f04c4453..9893a3ed242a 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -239,6 +239,16 @@
+ #define ACPI_PROBE_TABLE(name)
+ #endif
+ 
++#ifdef CONFIG_THERMAL
++#define THERMAL_TABLE(name)						\
++        . = ALIGN(8);							\
++        __##name##_thermal_table = .;					\
++        KEEP(*(__##name##_thermal_table))				\
++        __##name##_thermal_table_end = .;
++#else
++#define THERMAL_TABLE(name)
++#endif
++
+ #define KERNEL_DTB()							\
+ 	STRUCT_ALIGN();							\
+ 	__dtb_start = .;						\
+@@ -609,6 +619,7 @@
+ 	IRQCHIP_OF_MATCH_TABLE()					\
+ 	ACPI_PROBE_TABLE(irqchip)					\
+ 	ACPI_PROBE_TABLE(timer)						\
++	THERMAL_TABLE(governor)						\
+ 	EARLYCON_TABLE()						\
+ 	LSM_TABLE()
+ 
 -- 
 2.17.1
