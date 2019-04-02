@@ -1,60 +1,89 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH 3/3] cpuidle/drivers/mbed: Add new governor for embedded
- systems
-Date: Tue, 2 Apr 2019 17:26:05 +0100
-Message-ID: <20190402162605.sfu7xasexmno5qx7@queper01-lin>
-References: <20190308212047.28767-1-daniel.lezcano@linaro.org>
- <20190308212047.28767-4-daniel.lezcano@linaro.org>
- <20190402132236.7h264nffbgnojznw@queper01-lin>
- <a8db3115-b12b-3a8a-5dfc-a3d068ac3810@linaro.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 7/7] hwmon/drivers/core: Simplify complex dependency
+Date: Tue, 2 Apr 2019 11:23:51 -0700
+Message-ID: <20190402182351.GA12622@roeck-us.net>
+References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
+ <20190402161256.11044-7-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <a8db3115-b12b-3a8a-5dfc-a3d068ac3810@linaro.org>
+In-Reply-To: <20190402161256.11044-7-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, tglx@linutronix.de, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, "open list:HARDWARE MONITORING" <linux-hwmon@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 02 Apr 2019 at 18:02:02 (+0200), Daniel Lezcano wrote:
-> I tried on a hikey960 with an android kernel 4.19.
+On Tue, Apr 02, 2019 at 06:12:50PM +0200, Daniel Lezcano wrote:
+> As the thermal framework does not longer compile as a module, we can
+> simplify this condition below:
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+>        (!defined(CONFIG_THERMAL_HWMON) || \
+>         !(defined(MODULE) && IS_MODULE(CONFIG_THERMAL)))
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+>        (!defined(CONFIG_THERMAL_HWMON) || \
+>         !(defined(MODULE) && 0))
+> 
+> => (whatever && 0) = 0
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+>        (!defined(CONFIG_THERMAL_HWMON) || !(0))
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+>        (!defined(CONFIG_THERMAL_HWMON) || 1)
+> 
+> => (whatever || 1) = 1
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+>        (1)
+> 
+> => (whatever && 1) = whatever
+> 
+>  if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF)
+> 
+> CONFIG_THERMAL can not be a module anymore, then:
+> 
+>  if defined(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF)
+> 
+> And CONFIG_THERMAL_OF already depends on CONFIG_THERMAL, so:
+> 
+>  if defined(CONFIG_THERMAL_OF)
+> 
+> Thus,
+> 
+>  ifdef CONFIG_THERMAL_OF
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-OK. ISTR Hikey 960 had quite a few problems with idle states recently.
-At some point it was so horribly broken that you could get something
-like a 3x perf bonus in Jankbench _and_ save energy by just disabling
-all idles states no ? I haven't been following closely but have these
-issues been resolved ?
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
-In any cases, your results seem to go in the right direction, and that's
-not a blocker to go on with the review so :-)
+... assuming this will be pushed with the series. Otherwise please
+let me know.
 
-> 
-> The used percentile is the 95%, the tests are jankbench list_view and
-> edit_text, and exoplayer. Values are normalized against the menu governor:
-> 
-> list_view:
->  frame duration -35%
->  count: +20%
->  energy: +1%
-> 
-> edit text:
->  frame duration -45%
->  count: +27%
->  energy: -0.3%
-> 
-> For audio and video playback, there is no frame drop.
-> 
-> audio
->  - energy: -2.8%
-> 
-> video
->  - energy: -3.8%
-> 
-> These are preliminary results.
+Thanks,
+Guenter
 
-Thanks for the details. Assuming the board support isn't too broken,
-these look pretty good.
-
-Cheers,
-Quentin
+> ---
+>  drivers/hwmon/hwmon.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
+> index c22dc1e07911..6f76f2484db0 100644
+> --- a/drivers/hwmon/hwmon.c
+> +++ b/drivers/hwmon/hwmon.c
+> @@ -118,9 +118,7 @@ static DEFINE_IDA(hwmon_ida);
+>   * The complex conditional is necessary to avoid a cyclic dependency
+>   * between hwmon and thermal_sys modules.
+>   */
+> -#if IS_REACHABLE(CONFIG_THERMAL) && defined(CONFIG_THERMAL_OF) && \
+> -	(!defined(CONFIG_THERMAL_HWMON) || \
+> -	 !(defined(MODULE) && IS_MODULE(CONFIG_THERMAL)))
+> +#ifdef CONFIG_THERMAL_OF
+>  static int hwmon_thermal_get_temp(void *data, int *temp)
+>  {
+>  	struct hwmon_thermal_data *tdata = data;
+> -- 
+> 2.17.1
+> 
