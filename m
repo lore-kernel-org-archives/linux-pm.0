@@ -1,60 +1,66 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq/intel_pstate: Load only on Intel hardware
-Date: Tue, 02 Apr 2019 10:38:52 +0200
-Message-ID: <1751498.6LRAoAyAK1@aspire.rjw.lan>
-References: <20190330100225.14744-1-bp@alien8.de> <20190401083902.GC28264@zn.tnic> <20190401150345.GJ28264@zn.tnic>
+Subject: Re: [PATCH] PM / wakeup: Use pm_pr_dbg() instead of pr_debug()
+Date: Tue, 02 Apr 2019 10:41:19 +0200
+Message-ID: <4534427.J6G7dtiVmp@aspire.rjw.lan>
+References: <20190325172456.227190-1-swboyd@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190401150345.GJ28264@zn.tnic>
+In-Reply-To: <20190325172456.227190-1-swboyd@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Erwan Velu <e.velu@criteo.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Stephen Boyd <swboyd@chromium.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Wenkai Du <wenkai.du@intel.com>, Justin TerAvest <teravest@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 1, 2019 5:03:45 PM CEST Borislav Petkov wrote:
-> From: Borislav Petkov <bp@suse.de>
+On Monday, March 25, 2019 6:24:56 PM CEST Stephen Boyd wrote:
+> These prints are useful if we're doing PM suspend debugging. Having them
+> at pr_debug() level means that we need to either enable DEBUG in this
+> file, or compile the kernel with dynamic debug capabilities. Both of
+> these options have drawbacks like custom compilation or opting into all
+> debug statements being included into the kernel image. Given that we
+> already have infrastructure to collect PM debugging information with
+> CONFIG_PM_DEBUG and friends, let's change the pr_debug usage here to be
+> pm_pr_dbg() instead so we can collect the wakeup information in the
+> kernel logs.
 > 
-> This driver is Intel-only so loading on anything which is not Intel is
-> pointless. Prevent it from doing so.
-> 
-> While at it, correct the "not supported" print statement to say CPU
-> "model" which is what that test does.
-> 
-> Suggested-by: Erwan Velu <e.velu@criteo.com>
-> Signed-off-by: Borislav Petkov <bp@suse.de>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> CC: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Wenkai Du <wenkai.du@intel.com>
+> Cc: Justin TerAvest <teravest@chromium.org>
+> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
 > ---
->  drivers/cpufreq/intel_pstate.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  drivers/base/power/wakeup.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index b599c7318aab..2986119dd31f 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2596,6 +2596,9 @@ static int __init intel_pstate_init(void)
->  	const struct x86_cpu_id *id;
->  	int rc;
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index bb1ae175fae1..23c243a4c675 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -804,7 +804,7 @@ void pm_print_active_wakeup_sources(void)
+>  	srcuidx = srcu_read_lock(&wakeup_srcu);
+>  	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+>  		if (ws->active) {
+> -			pr_debug("active wakeup source: %s\n", ws->name);
+> +			pm_pr_dbg("active wakeup source: %s\n", ws->name);
+>  			active = 1;
+>  		} else if (!active &&
+>  			   (!last_activity_ws ||
+> @@ -815,7 +815,7 @@ void pm_print_active_wakeup_sources(void)
+>  	}
 >  
-> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-> +		return -ENODEV;
-> +
->  	if (no_load)
->  		return -ENODEV;
+>  	if (!active && last_activity_ws)
+> -		pr_debug("last active wakeup source: %s\n",
+> +		pm_pr_dbg("last active wakeup source: %s\n",
+>  			last_activity_ws->name);
+>  	srcu_read_unlock(&wakeup_srcu, srcuidx);
+>  }
+> @@ -845,7 +845,7 @@ bool pm_wakeup_pending(void)
+>  	raw_spin_unlock_irqrestore(&events_lock, flags);
 >  
-> @@ -2611,7 +2614,7 @@ static int __init intel_pstate_init(void)
->  	} else {
->  		id = x86_match_cpu(intel_pstate_cpu_ids);
->  		if (!id) {
-> -			pr_info("CPU ID not supported\n");
-> +			pr_info("CPU model not supported\n");
->  			return -ENODEV;
->  		}
+>  	if (ret) {
+> -		pr_debug("Wakeup pending, aborting suspend\n");
+> +		pm_pr_dbg("Wakeup pending, aborting suspend\n");
+>  		pm_print_active_wakeup_sources();
+>  	}
 >  
 > 
 
