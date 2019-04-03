@@ -1,69 +1,94 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: Re: [PATCH v11 4/8] dt-bindings: mfd: Document first ROHM BD70528
- bindings
-Date: Wed, 3 Apr 2019 12:04:06 +0300
-Message-ID: <20190403090406.GB3493@localhost.localdomain>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v11 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
+Date: Wed, 3 Apr 2019 10:30:15 +0100
+Message-ID: <20190403093015.GJ11301@dell>
 References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <c674ef76ca0a3298e6b13ade4ab29775edf36a76.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <20190403073426.GN4187@dell>
+ <39efebe0396dd42de30d37c6f3c1ef2926c90210.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190403073152.GM4187@dell>
+ <20190403084732.GA3493@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190403073426.GN4187@dell>
+In-Reply-To: <20190403084732.GA3493@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 Cc: mazziesaccount@gmail.com, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurop
 List-Id: linux-pm@vger.kernel.org
 
-And thanks again for fixing the language. Appreciated!
+On Wed, 03 Apr 2019, Matti Vaittinen wrote:
 
-On Wed, Apr 03, 2019 at 08:34:26AM +0100, Lee Jones wrote:
-> On Mon, 25 Mar 2019, Matti Vaittinen wrote:
+> Hello Lee,
 > 
-> > Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
-> > drivers) and 4 GPIO pins which can be configured for I/O or
-> > as interrupt sources withe configurable trigger levels.
-> > 
-> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> > Reviewed-by: Rob Herring <robh@kernel.org>
-> > Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> > ---
-> >  .../bindings/mfd/rohm,bd70528-pmic.txt        | 102 ++++++++++++++++++
-> >  1 file changed, 102 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> > new file mode 100644
-> > index 000000000000..120462c17904
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
-> > @@ -0,0 +1,102 @@
-> > +* ROHM BD70528 Power Management Integrated Circuit bindings
-> > +
-> > +BD70528MWV is an ultra-low quiescet current general purpose single-chip
+> Thanks for taking a look on this again =) I agree with most of the
+> comments and correct them at next version.
 > 
-> What does 'quiescet' mean?
+> On Wed, Apr 03, 2019 at 08:31:52AM +0100, Lee Jones wrote:
+> > On Mon, 25 Mar 2019, Matti Vaittinen wrote:
+> > 
+> > > ROHM BD70528MWV is an ultra-low quiescent current general
+> > > purpose single-chip power management IC for battery-powered
+> > > portable devices.
+> > > 
+> > > Add MFD core which enables chip access for following subdevices:
+> > > 	- regulators/LED drivers
+> > > 	- battery-charger
+> > > 	- gpios
+> > > 	- 32.768kHz clk
+> > > 	- RTC
+> > > 	- watchdog
+> > > 
+> > > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> > > + * Mapping of main IRQ register bits to sub irq register offsets so
+> > 
+> > "sub-IRQ"
+> > 
+> > > + * that we can access corect sub IRQ registers based on bits that
+> > 
+> > "sub IRQ" is also fine, but please standardise.
+> > 
+> > I do prefer "sub-IRQ" though.
+> 
+> I'll go with "sub-IRQ" then
+> 
+> > > +
+> > > +#define WD_CTRL_MAGIC1 0x55
+> > > +#define WD_CTRL_MAGIC2 0xAA
+> > > +/**
+> > > + * bd70528_wdt_set - arm or disarm watchdog timer
+> > > + *
+> > > + * @data:	device data for the PMIC instance we want to operate on
+> > > + * @enable:	new state of WDT. zero to disable, non zero to enable
+> > > + * @old_state:	previous state of WDT will be filled here
+> > > + *
+> > > + * Arm or disarm WDT on BD70528 PMIC. Expected to be called only by
+> > > + * BD70528 RTC and BD70528 WDT drivers. The rtc_timer_lock must be taken
+> > > + * by calling bd70528_wdt_lock before calling bd70528_wdt_set.
+> > > + */
+> > > +int bd70528_wdt_set(struct rohm_regmap_dev *data, int enable, int *old_state)
+> > 
+> > Why doesn't this reside in the watchdog driver?
+> 
+> If my memory serves me right we shortly discussed this already during v8
+> review ;) Cant blame you though as I have seen some of the mail traffic
+> going through your inbox :D
+> 
+> The motivation to have the functions exported from MFD is to not create
+> sirect dependency between RTC and WDT. There may be cases where we want
+> to leave either RTC or WDT out of compilation. MFD is always needed so
+> the dependency from MFD to RTC/WDT does not harm.
+> 
+> (Here's some discussion necromancy if you are interested in re-reading
+> how we did end up with this implementation:
+> https://lore.kernel.org/lkml/20190212091723.GZ20638@dell/)
+> 
+> I hope you are still Ok with having the WDT control functions in MFD.
 
-I guess you knew what I meant =) Quiescent - I'll fix the typo.
-
-> "general purpose, single-chip,"
-
-Rules for using commas are far beyond my skills. I was bad in it at
-Finnish classes. Not to even mention English. Actually, the teacher
-suggested us to rather leave out the commas than trying to place them
-correctly in English sentences. Guess the rules are not that simple =)
-
-So I'll just add them as you suggested =)
-
-Br,
-	Matti Vaittinen
+OOI, why does the RTC need to control the WDT?
 
 -- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
-
-~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
