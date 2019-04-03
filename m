@@ -1,44 +1,45 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v11 1/8] mfd: regulator: clk: split rohm-bd718x7.h
-Date: Wed, 3 Apr 2019 07:19:16 +0100
-Message-ID: <20190403061916.GL4187@dell>
-References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <81d7136a77a2786c122a1cbf3289c96c51ded79f.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Subject: [PATCH v1] tools/power: turbostat: fix buffer overrun
+Date: Wed,  3 Apr 2019 16:02:14 +0900
+Message-ID: <1554274934-12649-1-git-send-email-n-horiguchi@ah.jp.nec.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <81d7136a77a2786c122a1cbf3289c96c51ded79f.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: mazziesaccount@gmail.com, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurop
+To: linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Prarit Bhargava <prarit@redhat.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 25 Mar 2019, Matti Vaittinen wrote:
+turbostat could be terminated by general protection fault on some latest
+hardwares which (for example) support 9 levels of C-states and show 18
+"tADDED" lines. That bloats the total output and finally causes buffer
+overrun.  So let's extend the buffer to avoid this.
 
-> Split the bd718x7.h to ROHM common and bd718x7 specific parts
-> so that we do not need to add same things in every new ROHM
-> PMIC header. Please note that this change requires changes also
-> in bd718x7 sub-device drivers for regulators and clk.
-> 
-> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
-> ---
->  drivers/clk/clk-bd718x7.c             |  6 +++---
->  drivers/mfd/rohm-bd718x7.c            | 23 ++++++++++++-----------
->  drivers/regulator/bd718x7-regulator.c | 25 +++++++++++++------------
->  include/linux/mfd/rohm-bd718x7.h      | 22 ++++++++--------------
->  include/linux/mfd/rohm-generic.h      | 20 ++++++++++++++++++++
->  5 files changed, 56 insertions(+), 40 deletions(-)
->  create mode 100644 include/linux/mfd/rohm-generic.h
+This patch also removes duplicated "pc10:" line to reduce buffer usage.
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git v5.1-rc3-mmotm-2019-04-02-17-16/tools/power/x86/turbostat/turbostat.c v5.1-rc3-mmotm-2019-04-02-17-16_patched/tools/power/x86/turbostat/turbostat.c
+index c7727be..17b1f544 100644
+--- v5.1-rc3-mmotm-2019-04-02-17-16/tools/power/x86/turbostat/turbostat.c
++++ v5.1-rc3-mmotm-2019-04-02-17-16_patched/tools/power/x86/turbostat/turbostat.c
+@@ -861,7 +861,6 @@ int dump_counters(struct thread_data *t, struct core_data *c,
+ 		outp += sprintf(outp, "pc8: %016llX\n", p->pc8);
+ 		outp += sprintf(outp, "pc9: %016llX\n", p->pc9);
+ 		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
+-		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
+ 		outp += sprintf(outp, "cpu_lpi: %016llX\n", p->cpu_lpi);
+ 		outp += sprintf(outp, "sys_lpi: %016llX\n", p->sys_lpi);
+ 		outp += sprintf(outp, "Joules PKG: %0X\n", p->energy_pkg);
+@@ -5135,7 +5134,7 @@ int initialize_counters(int cpu_id)
+ 
+ void allocate_output_buffer()
+ {
+-	output_buffer = calloc(1, (1 + topo.num_cpus) * 1024);
++	output_buffer = calloc(1, (1 + topo.num_cpus) * 2048);
+ 	outp = output_buffer;
+ 	if (outp == NULL)
+ 		err(-1, "calloc output buffer");
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.7.0
