@@ -1,60 +1,70 @@
-From: Li Yang <leoyang.li@nxp.com>
-Subject: Re: [PATCH v1 2/4] soc/fsl/guts: Add definition for LX2160A
-Date: Tue, 2 Apr 2019 18:05:18 -0500
-Message-ID: <CADRPPNTcY6fMJZDmsWzPzkn1hMzsoJh15-Gchepg_vJLxL=zcw@mail.gmail.com>
-References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com> <1551132245-6089-3-git-send-email-vabhav.sharma@nxp.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 5/7] thermal/drivers/core: Remove depends on THERMAL in
+ Kconfig
+Date: Wed, 3 Apr 2019 05:32:52 +0200
+Message-ID: <9afb2911-512a-9048-9ed8-6aa9dd29a848@linaro.org>
+References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
+ <20190402161256.11044-5-daniel.lezcano@linaro.org>
+ <CAHLCerNvp9Bb0TwCcO91ecrbzKGe7epCHFk=fx4RGJgHDE_BRA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1551132245-6089-3-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <CAHLCerNvp9Bb0TwCcO91ecrbzKGe7epCHFk=fx4RGJgHDE_BRA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Stephen Rothwell <sfr@canb.auug.org.au>, "open list:ARM/QUALCOMM SUPPORT" <linux-arm-msm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 26, 2019 at 4:12 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
->
-> Adding compatible string "lx2160a-dcfg" to
-> initialize guts driver for lx2160 and SoC die
-> attribute definition for LX2160A
+Hi Amit,
 
+On 02/04/2019 20:51, Amit Kucheria wrote:
+> On Tue, Apr 2, 2019 at 11:14 PM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>> The dependency on the THERMAL option to be set is already there implicitly
+>> by the "if THERMAL" conditionnal option. The sub Kconfigs do not have to
+>> check against the THERMAL option as they are called from a Kconfig block
+>> which is enabled by the conditionnal option.
+>>
+>> Remove the useless "depends on THERMAL" in the Kconfigs.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>  drivers/thermal/Kconfig       | 2 --
+>>  drivers/thermal/intel/Kconfig | 1 -
+>>  drivers/thermal/qcom/Kconfig  | 1 -
+>>  3 files changed, 4 deletions(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index ccf5b9408d7a..d8aa7fac8c56 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -24,7 +24,6 @@ config THERMAL_STATISTICS
+>>
+>>  config THERMAL_EMERGENCY_POWEROFF_DELAY_MS
+>>         int "Emergency poweroff delay in milli-seconds"
+>> -       depends on THERMAL
+>>         default 0
+>>         help
+>>           Thermal subsystem will issue a graceful shutdown when
+>> @@ -152,7 +151,6 @@ config CPU_THERMAL
+>>         bool "generic cpu cooling support"
+>>         depends on CPU_FREQ
+>>         depends on THERMAL_OF
+>> -       depends on THERMAL=y
+> 
+> This will break the intention of afa1f2ab43d48d0e1. At the moment, we
+> need THERMAL=y if we want cpu_cooling.
 
-Applied to branch next.  Thanks.
+The patch 1/7 changes the thermal option from tristate to bool, so the
+thermal is compiled-in always. The dependency is no longer needed in
+this case. Did I miss something?
 
-Regards,
-Leo
->
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
-> Acked-by: Li Yang <leoyang.li@nxp.com>
-> ---
->  drivers/soc/fsl/guts.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> index 302e0c8..bcab1ee 100644
-> --- a/drivers/soc/fsl/guts.c
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -100,6 +100,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] = {
->           .svr          = 0x87000000,
->           .mask         = 0xfff70000,
->         },
-> +       /* Die: LX2160A, SoC: LX2160A/LX2120A/LX2080A */
-> +       { .die          = "LX2160A",
-> +         .svr          = 0x87360000,
-> +         .mask         = 0xff3f0000,
-> +       },
->         { },
->  };
->
-> @@ -222,6 +227,7 @@ static const struct of_device_id fsl_guts_of_match[] = {
->         { .compatible = "fsl,ls1088a-dcfg", },
->         { .compatible = "fsl,ls1012a-dcfg", },
->         { .compatible = "fsl,ls1046a-dcfg", },
-> +       { .compatible = "fsl,lx2160a-dcfg", },
->         {}
->  };
->  MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
-> --
-> 2.7.4
->
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
