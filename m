@@ -1,59 +1,117 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH v1] tools/power: turbostat: fix buffer overrun
-Date: Wed, 3 Apr 2019 07:42:45 -0400
-Message-ID: <f3ff449d-f431-4ea6-5c3f-8e19e2c534a8@redhat.com>
-References: <1554274934-12649-1-git-send-email-n-horiguchi@ah.jp.nec.com>
+From: "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
+Subject: Re: [PATCH v11 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
+Date: Wed, 3 Apr 2019 11:45:50 +0000
+Message-ID: <85b20828bb4fb51e6df1d5d9d1c1f667db3a7c48.camel@fi.rohmeurope.com>
+References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+         <39efebe0396dd42de30d37c6f3c1ef2926c90210.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+         <20190403073152.GM4187@dell> <20190403084732.GA3493@localhost.localdomain>
+         <20190403093015.GJ11301@dell> <20190403101003.GC3493@localhost.localdomain>
+         <20190403112559.GP11301@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1554274934-12649-1-git-send-email-n-horiguchi@ah.jp.nec.com>
-Content-Language: en-GB
+In-Reply-To: <20190403112559.GP11301@dell>
+Content-Language: de-DE
+Content-ID: <92B1E7367AA9934D865F65F13A34DA84@de.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org
+To: "lee.jones@linaro.org" <lee.jones@linaro.org>
+Cc: "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "a.zummo@towertech.it" <a.zummo@towertech.it>, "broonie@kernel.org" <broonie@kernel.org>, "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>l
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 4/3/19 3:02 AM, Naoya Horiguchi wrote:
-> turbostat could be terminated by general protection fault on some latest
-> hardwares which (for example) support 9 levels of C-states and show 18
-> "tADDED" lines. That bloats the total output and finally causes buffer
-> overrun.  So let's extend the buffer to avoid this.
-> 
-> This patch also removes duplicated "pc10:" line to reduce buffer usage.
-> 
-> Signed-off-by: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-> ---
->  tools/power/x86/turbostat/turbostat.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git v5.1-rc3-mmotm-2019-04-02-17-16/tools/power/x86/turbostat/turbostat.c v5.1-rc3-mmotm-2019-04-02-17-16_patched/tools/power/x86/turbostat/turbostat.c
-> index c7727be..17b1f544 100644
-> --- v5.1-rc3-mmotm-2019-04-02-17-16/tools/power/x86/turbostat/turbostat.c
-> +++ v5.1-rc3-mmotm-2019-04-02-17-16_patched/tools/power/x86/turbostat/turbostat.c
-> @@ -861,7 +861,6 @@ int dump_counters(struct thread_data *t, struct core_data *c,
->  		outp += sprintf(outp, "pc8: %016llX\n", p->pc8);
->  		outp += sprintf(outp, "pc9: %016llX\n", p->pc9);
->  		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
-> -		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
->  		outp += sprintf(outp, "cpu_lpi: %016llX\n", p->cpu_lpi);
->  		outp += sprintf(outp, "sys_lpi: %016llX\n", p->sys_lpi);
->  		outp += sprintf(outp, "Joules PKG: %0X\n", p->energy_pkg);
-> @@ -5135,7 +5134,7 @@ int initialize_counters(int cpu_id)
->  
->  void allocate_output_buffer()
->  {
-> -	output_buffer = calloc(1, (1 + topo.num_cpus) * 1024);
-> +	output_buffer = calloc(1, (1 + topo.num_cpus) * 2048);
-
-Is there a better way to calculate the size of that buffer other than a magic
-number?
-
-P.
-
->  	outp = output_buffer;
->  	if (outp == NULL)
->  		err(-1, "calloc output buffer");
-> 
+T24gV2VkLCAyMDE5LTA0LTAzIGF0IDEyOjI1ICswMTAwLCBMZWUgSm9uZXMgd3JvdGU6DQo+IE9u
+IFdlZCwgMDMgQXByIDIwMTksIE1hdHRpIFZhaXR0aW5lbiB3cm90ZToNCj4gDQo+ID4gT24gV2Vk
+LCBBcHIgMDMsIDIwMTkgYXQgMTA6MzA6MTVBTSArMDEwMCwgTGVlIEpvbmVzIHdyb3RlOg0KPiA+
+ID4gT24gV2VkLCAwMyBBcHIgMjAxOSwgTWF0dGkgVmFpdHRpbmVuIHdyb3RlOg0KPiA+ID4gDQo+
+ID4gPiA+IEhlbGxvIExlZSwNCj4gPiA+ID4gDQo+ID4gPiA+IFRoYW5rcyBmb3IgdGFraW5nIGEg
+bG9vayBvbiB0aGlzIGFnYWluID0pIEkgYWdyZWUgd2l0aCBtb3N0IG9mDQo+ID4gPiA+IHRoZQ0K
+PiA+ID4gPiBjb21tZW50cyBhbmQgY29ycmVjdCB0aGVtIGF0IG5leHQgdmVyc2lvbi4NCj4gPiA+
+ID4gDQo+ID4gPiA+IE9uIFdlZCwgQXByIDAzLCAyMDE5IGF0IDA4OjMxOjUyQU0gKzAxMDAsIExl
+ZSBKb25lcyB3cm90ZToNCj4gPiA+ID4gPiBPbiBNb24sIDI1IE1hciAyMDE5LCBNYXR0aSBWYWl0
+dGluZW4gd3JvdGU6DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBST0hNIEJENzA1MjhNV1YgaXMg
+YW4gdWx0cmEtbG93IHF1aWVzY2VudCBjdXJyZW50IGdlbmVyYWwNCj4gPiA+ID4gPiA+IHB1cnBv
+c2Ugc2luZ2xlLWNoaXAgcG93ZXIgbWFuYWdlbWVudCBJQyBmb3IgYmF0dGVyeS1wb3dlcmVkDQo+
+ID4gPiA+ID4gPiBwb3J0YWJsZSBkZXZpY2VzLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBB
+ZGQgTUZEIGNvcmUgd2hpY2ggZW5hYmxlcyBjaGlwIGFjY2VzcyBmb3IgZm9sbG93aW5nDQo+ID4g
+PiA+ID4gPiBzdWJkZXZpY2VzOg0KPiA+ID4gPiA+ID4gCS0gcmVndWxhdG9ycy9MRUQgZHJpdmVy
+cw0KPiA+ID4gPiA+ID4gCS0gYmF0dGVyeS1jaGFyZ2VyDQo+ID4gPiA+ID4gPiAJLSBncGlvcw0K
+PiA+ID4gPiA+ID4gCS0gMzIuNzY4a0h6IGNsaw0KPiA+ID4gPiA+ID4gCS0gUlRDDQo+ID4gPiA+
+ID4gPiAJLSB3YXRjaGRvZw0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5
+OiBNYXR0aSBWYWl0dGluZW4gPA0KPiA+ID4gPiA+ID4gbWF0dGkudmFpdHRpbmVuQGZpLnJvaG1l
+dXJvcGUuY29tPg0KPiA+ID4gPiA+ID4gKyAqIE1hcHBpbmcgb2YgbWFpbiBJUlEgcmVnaXN0ZXIg
+Yml0cyB0byBzdWIgaXJxIHJlZ2lzdGVyDQo+ID4gPiA+ID4gPiBvZmZzZXRzIHNvDQo+ID4gPiA+
+ID4gDQo+ID4gPiA+ID4gInN1Yi1JUlEiDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiArICogdGhh
+dCB3ZSBjYW4gYWNjZXNzIGNvcmVjdCBzdWIgSVJRIHJlZ2lzdGVycyBiYXNlZCBvbg0KPiA+ID4g
+PiA+ID4gYml0cyB0aGF0DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gInN1YiBJUlEiIGlzIGFsc28g
+ZmluZSwgYnV0IHBsZWFzZSBzdGFuZGFyZGlzZS4NCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBJIGRv
+IHByZWZlciAic3ViLUlSUSIgdGhvdWdoLg0KPiA+ID4gPiANCj4gPiA+ID4gSSdsbCBnbyB3aXRo
+ICJzdWItSVJRIiB0aGVuDQo+ID4gPiA+IA0KPiA+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ID4gKyNk
+ZWZpbmUgV0RfQ1RSTF9NQUdJQzEgMHg1NQ0KPiA+ID4gPiA+ID4gKyNkZWZpbmUgV0RfQ1RSTF9N
+QUdJQzIgMHhBQQ0KPiA+ID4gPiA+ID4gKy8qKg0KPiA+ID4gPiA+ID4gKyAqIGJkNzA1Mjhfd2R0
+X3NldCAtIGFybSBvciBkaXNhcm0gd2F0Y2hkb2cgdGltZXINCj4gPiA+ID4gPiA+ICsgKg0KPiA+
+ID4gPiA+ID4gKyAqIEBkYXRhOglkZXZpY2UgZGF0YSBmb3IgdGhlIFBNSUMgaW5zdGFuY2Ugd2Ug
+d2FudCB0bw0KPiA+ID4gPiA+ID4gb3BlcmF0ZSBvbg0KPiA+ID4gPiA+ID4gKyAqIEBlbmFibGU6
+CW5ldyBzdGF0ZSBvZiBXRFQuIHplcm8gdG8gZGlzYWJsZSwgbm9uDQo+ID4gPiA+ID4gPiB6ZXJv
+IHRvIGVuYWJsZQ0KPiA+ID4gPiA+ID4gKyAqIEBvbGRfc3RhdGU6CXByZXZpb3VzIHN0YXRlIG9m
+IFdEVCB3aWxsIGJlIGZpbGxlZA0KPiA+ID4gPiA+ID4gaGVyZQ0KPiA+ID4gPiA+ID4gKyAqDQo+
+ID4gPiA+ID4gPiArICogQXJtIG9yIGRpc2FybSBXRFQgb24gQkQ3MDUyOCBQTUlDLiBFeHBlY3Rl
+ZCB0byBiZQ0KPiA+ID4gPiA+ID4gY2FsbGVkIG9ubHkgYnkNCj4gPiA+ID4gPiA+ICsgKiBCRDcw
+NTI4IFJUQyBhbmQgQkQ3MDUyOCBXRFQgZHJpdmVycy4gVGhlIHJ0Y190aW1lcl9sb2NrDQo+ID4g
+PiA+ID4gPiBtdXN0IGJlIHRha2VuDQo+ID4gPiA+ID4gPiArICogYnkgY2FsbGluZyBiZDcwNTI4
+X3dkdF9sb2NrIGJlZm9yZSBjYWxsaW5nDQo+ID4gPiA+ID4gPiBiZDcwNTI4X3dkdF9zZXQuDQo+
+ID4gPiA+ID4gPiArICovDQo+ID4gPiA+ID4gPiAraW50IGJkNzA1Mjhfd2R0X3NldChzdHJ1Y3Qg
+cm9obV9yZWdtYXBfZGV2ICpkYXRhLCBpbnQNCj4gPiA+ID4gPiA+IGVuYWJsZSwgaW50ICpvbGRf
+c3RhdGUpDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gV2h5IGRvZXNuJ3QgdGhpcyByZXNpZGUgaW4g
+dGhlIHdhdGNoZG9nIGRyaXZlcj8NCj4gPiA+ID4gDQo+ID4gPiA+IElmIG15IG1lbW9yeSBzZXJ2
+ZXMgbWUgcmlnaHQgd2Ugc2hvcnRseSBkaXNjdXNzZWQgdGhpcyBhbHJlYWR5DQo+ID4gPiA+IGR1
+cmluZyB2OA0KPiA+ID4gPiByZXZpZXcgOykgQ2FudCBibGFtZSB5b3UgdGhvdWdoIGFzIEkgaGF2
+ZSBzZWVuIHNvbWUgb2YgdGhlIG1haWwNCj4gPiA+ID4gdHJhZmZpYw0KPiA+ID4gPiBnb2luZyB0
+aHJvdWdoIHlvdXIgaW5ib3ggOkQNCj4gPiA+ID4gDQo+ID4gPiA+IFRoZSBtb3RpdmF0aW9uIHRv
+IGhhdmUgdGhlIGZ1bmN0aW9ucyBleHBvcnRlZCBmcm9tIE1GRCBpcyB0bw0KPiA+ID4gPiBub3Qg
+Y3JlYXRlDQo+ID4gPiA+IHNpcmVjdCBkZXBlbmRlbmN5IGJldHdlZW4gUlRDIGFuZCBXRFQuIFRo
+ZXJlIG1heSBiZSBjYXNlcyB3aGVyZQ0KPiA+ID4gPiB3ZSB3YW50DQo+ID4gPiA+IHRvIGxlYXZl
+IGVpdGhlciBSVEMgb3IgV0RUIG91dCBvZiBjb21waWxhdGlvbi4gTUZEIGlzIGFsd2F5cw0KPiA+
+ID4gPiBuZWVkZWQgc28NCj4gPiA+ID4gdGhlIGRlcGVuZGVuY3kgZnJvbSBNRkQgdG8gUlRDL1dE
+VCBkb2VzIG5vdCBoYXJtLg0KPiA+ID4gPiANCj4gPiA+ID4gKEhlcmUncyBzb21lIGRpc2N1c3Np
+b24gbmVjcm9tYW5jeSBpZiB5b3UgYXJlIGludGVyZXN0ZWQgaW4gcmUtDQo+ID4gPiA+IHJlYWRp
+bmcNCj4gPiA+ID4gaG93IHdlIGRpZCBlbmQgdXAgd2l0aCB0aGlzIGltcGxlbWVudGF0aW9uOg0K
+PiA+ID4gPiBodHRwczovL2xvcmUua2VybmVsLm9yZy9sa21sLzIwMTkwMjEyMDkxNzIzLkdaMjA2
+MzhAZGVsbC8pDQo+ID4gPiA+IA0KPiA+ID4gPiBJIGhvcGUgeW91IGFyZSBzdGlsbCBPayB3aXRo
+IGhhdmluZyB0aGUgV0RUIGNvbnRyb2wgZnVuY3Rpb25zDQo+ID4gPiA+IGluIE1GRC4NCj4gPiA+
+IA0KPiA+ID4gT09JLCB3aHkgZG9lcyB0aGUgUlRDIG5lZWQgdG8gY29udHJvbCB0aGUgV0RUPw0K
+PiA+IA0KPiA+IEkgdGhvdWdodCBJIGhhZCBhIGNvbW1lbnQgYWJvdXQgdGhpcyBzb21ld2hlcmUg
+aW4gY29kZS4uLiBPX28gTXVzdA0KPiA+IGhhdmUNCj4gPiBiZWVuIGluIHNvbWUgZGV2ZWxvcG1l
+bnQgYnJhbmNoIEkgaGFkIDovDQo+ID4gDQo+ID4gQW55d2F5cywgc2V0dGluZyB0aGUgUlRDIGNv
+dW50ZXIgbWF5IGNhdXNlIHdhdGNoZG9nIHRvIHRyaWdnZXIuIEl0DQo+ID4gaXMgbm90DQo+ID4g
+ZnVydGhlciBleHBsYWluZWQgd2h5IGJ1dCBJIHdvdWxkIGd1ZXNzIHdhdGNoZG9nIHVzZXMgUlRD
+IGNvdW50ZXINCj4gPiB0byBjaGVjaw0KPiA+IGlmIGl0IHNob3VsZCd2ZSBiZWVuIHBpbmdlZCBh
+bHJlYWR5LiBTbyBSVEMgbmVlZHMgdG8gZGlzYWJsZSB3YXRjaA0KPiA+IGRvZyBmb3INCj4gPiB0
+aGUgZHVyYXRpb24gb2YgaHdjbG9jayBzZXR0aW5nIGFuZCBlbmFibGUgaXQgYWdhaW4gYWZ0ZXIg
+dGhlIG5ldw0KPiA+IHRpbWUgaXMNCj4gPiBzZXQuIEkgY2FuIGFkZCBhIGNvbW1lbnQgYWJvdXQg
+dGhpcyB0byBNRkQgZHJpdmVyIGlmIGl0IGhlbHBzIDopDQo+IA0KPiBIb3cgZG9lcyB0aGUgdXNl
+ciBzZWxlY3QgYmV0d2VlbiB1c2luZyB0aGUgUlRDIGFuZCB0aGUgV0RUPw0KPiANCj4gT3IgYXJl
+IHRoZSBnZW5lcmFsbHkgYm90aCBlbmFibGVkIGF0IHRoZSBzYW1lIHRpbWU/DQo+IA0KDQpCb3Ro
+IFJUQyBhbmQgV0RUIGNhbiBiZSBlbmFibGVkIGF0IHRoZSBzYW1lIHRpbWUuIEJ1dCB0aGV5IGFy
+ZSBub3QNCnJlcXVpcmVkIHRvIGJlIHVzZWQuIFdoZW4gV0RUIGlzIGVuYWJsZWQsIGl0IHVzZXMg
+Y3VycmVudCBSVEMgdGltZSBhcw0KJ2Jhc2UnIChhbmQgUlRDIHRpbWUgaXMgcnVubmluZyBubyBt
+YXR0ZXIgaWYgd2UgaGF2ZSB0aGUgUlRDIGRyaXZlcg0KaGVyZSBvciBub3QpIC0gYW5kIHRpbWUt
+b3V0IGdldHMgc2NoZWR1bGVkIHRvIHNwZWNpZmllZCBhbW91bnQgb2YgdGltZQ0KaW50byBmdXR1
+cmUuIChTYW1lIHNldHRpbmcgdGltZW91dCBpbnRvIHRoZSBmdXR1cmUgaGFwcGVucyB3aGVuIFdE
+VCBpcw0KcGluZ2VkKS4NCg0KV2hlbiB3ZSBzZXQgUlRDLCB3ZSBkaXNhYmxlIFdEVCAoaWYgaXQg
+d2FzIGVuYWJsZWQpLCBzZXQgY2xvY2sgYW5kIHJlLQ0KZW5hYmxlIFdEVC4gVGhpcyBjYXVzZXMg
+dGhlIHByZXZpb3VzbHkgdXNlZCB0aW1lLW91dCB2YWx1ZSB0byBiZSBzZXQgdG8NCldEVCBhZ2Fp
+bi4gVGhpcyB3b3JrcyBPayBiZWNhdXNlIEJENzA1MjggZG9lcyBub3Qgc3VwcG9ydCAnc2hvcnQg
+cGluZw0KZGV0ZWN0aW9uJy4gT25seSBzaWRlLWVmZmVjdCB3aWxsIGJlIG9uZSAncHJvbG9uZ2Vk
+JyBXRFQgZmVlZGluZyBwZXJpb2QNCndoZW4gUlRDIGlzIHNldC4gKGFic29sdXRlIHRpbWUgd2hl
+biBSVEMgd2FzIHNldCBtaW51cyBhYnNvbHV0ZSB0aW1lDQp3aGVuIHByZXZpb3VzIFdEIHBpbmcg
+b3IgZW5hYmxlIHdhcyBkb25lKSBsb25nZXIgdGhhbiByZXF1bGFyIHBlcmlvZC4NCg0KU28gdXNl
+ciBzaG91bGQgbm90IG5lZWQgdG8gY2FyZSBhYm91dCB0aGlzICdkZXBlbmRlbmN5Jy4gQmFzaWNh
+bGx5IHRoZQ0Kb25seSBwb3NzaWJsZSBwcm9ibGVtIEkgc2VlIGlzIHRoYXQgc29tZW9uZSBjb3Vs
+ZCBhY2NpZGVudGFsbHkgaGFuZyB0aGUNCnN5c3RlbSB3aXRoIHNvbWV0aGluZyB0aGF0IGtlZXBz
+IHNldHRpbmcgdGhlIFJUQyB0aW1lIC0gdGhpcyB3b3VsZCB0aGVuDQpwcmV2ZW50IHdhdGNoIGRv
+ZyBmcm9tIGRvaW5nIHRoZSByZXNldC4gVGhpcywgSSBiZWxpZXZlLCBpcyBhIGNvcm5lcg0KY2Fz
+ZSB3aGljaCBJIGRvbid0IGNvbnNpZGVyIG5vdyAtIGFuZCBpZiB0aGlzIGlzIGNvbnNpZGVyZWQg
+dG8gYmUgYW4NCmlzc3VlIHRoZW4gc3VjaCBhIHN5c3RlbSBtYXkgZGlzYWJsZSB0aGUgUlRDIGRy
+aXZlciBhbmQgZG8gUlRDIHNldHRpbmcNCmluIGEgd2hhdC1ldmVyLW1hbm5lciBzZWVzIHByYWN0
+aWNhbC4NCg0KSSdtIG5vdCBzdXJlIGlmIEkgYW5zd2VyZWQgdG8gcXVlc3Rpb24geW91IGFza2Vk
+IHRob3VnaCA9KQ0KDQpCciwNCglNYXR0aSBWYWl0dGluZW4NCg==
