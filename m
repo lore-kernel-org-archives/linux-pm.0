@@ -1,59 +1,69 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-Date: Wed,  3 Apr 2019 11:00:59 +0200
-Message-ID: <20190403090108.24788-3-brgl@bgdev.pl>
-References: <20190403090108.24788-1-brgl@bgdev.pl>
+From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Subject: Re: [PATCH v11 4/8] dt-bindings: mfd: Document first ROHM BD70528
+ bindings
+Date: Wed, 3 Apr 2019 12:04:06 +0300
+Message-ID: <20190403090406.GB3493@localhost.localdomain>
+References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+ <c674ef76ca0a3298e6b13ade4ab29775edf36a76.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190403073426.GN4187@dell>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190403090108.24788-1-brgl@bgdev.pl>
+Content-Disposition: inline
+In-Reply-To: <20190403073426.GN4187@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: mazziesaccount@gmail.com, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurop
 List-Id: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+And thanks again for fixing the language. Appreciated!
 
-Add the DT binding document for the battery charger module of max77650.
+On Wed, Apr 03, 2019 at 08:34:26AM +0100, Lee Jones wrote:
+> On Mon, 25 Mar 2019, Matti Vaittinen wrote:
+> 
+> > Document bindings for regulators (3 bucks, 3 LDOs and 2 LED
+> > drivers) and 4 GPIO pins which can be configured for I/O or
+> > as interrupt sources withe configurable trigger levels.
+> > 
+> > Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+> > Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> > ---
+> >  .../bindings/mfd/rohm,bd70528-pmic.txt        | 102 ++++++++++++++++++
+> >  1 file changed, 102 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > new file mode 100644
+> > index 000000000000..120462c17904
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/rohm,bd70528-pmic.txt
+> > @@ -0,0 +1,102 @@
+> > +* ROHM BD70528 Power Management Integrated Circuit bindings
+> > +
+> > +BD70528MWV is an ultra-low quiescet current general purpose single-chip
+> 
+> What does 'quiescet' mean?
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+I guess you knew what I meant =) Quiescent - I'll fix the typo.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/max77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-new file mode 100644
-index 000000000000..fef188144386
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-@@ -0,0 +1,27 @@
-+Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-+
-+This module is part of the MAX77650 MFD device. For more details
-+see Documentation/devicetree/bindings/mfd/max77650.txt.
-+
-+The charger is represented as a sub-node of the PMIC node on the device tree.
-+
-+Required properties:
-+--------------------
-+- compatible:		Must be "maxim,max77650-charger"
-+
-+Optional properties:
-+--------------------
-+- min-microvolt:	Minimum CHGIN regulation voltage (in microvolts). Must be
-+			one of: 4000000, 4100000, 4200000, 4300000, 4400000,
-+			4500000, 4600000, 4700000.
-+- current-limit-microamp:	CHGIN input current limit (in microamps). Must
-+				be one of: 95000, 190000, 285000, 380000, 475000.
-+
-+Example:
-+--------
-+
-+	charger {
-+		compatible = "maxim,max77650-charger";
-+		min-microvolt = <4200000>;
-+		curr-lim-microamp = <285000>;
-+	};
+> "general purpose, single-chip,"
+
+Rules for using commas are far beyond my skills. I was bad in it at
+Finnish classes. Not to even mention English. Actually, the teacher
+suggested us to rather leave out the commas than trying to place them
+correctly in English sentences. Guess the rules are not that simple =)
+
+So I'll just add them as you suggested =)
+
+Br,
+	Matti Vaittinen
+
 -- 
-2.21.0
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
+
+~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
