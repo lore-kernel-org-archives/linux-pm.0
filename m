@@ -1,60 +1,102 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v11 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
-Date: Thu, 4 Apr 2019 09:06:23 +0100
-Message-ID: <20190404080623.GJ6830@dell>
-References: <20190403073152.GM4187@dell>
- <20190403084732.GA3493@localhost.localdomain>
- <20190403093015.GJ11301@dell>
- <20190403101003.GC3493@localhost.localdomain>
- <20190403112559.GP11301@dell>
- <85b20828bb4fb51e6df1d5d9d1c1f667db3a7c48.camel@fi.rohmeurope.com>
- <20190404025234.GB6830@dell>
- <6775a75d1ee3ab96123d84b077881beedc358d12.camel@fi.rohmeurope.com>
- <20190404065452.GD6830@dell>
- <20190404072449.GE3493@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH RFC 1/2] thermal/drivers/of: Add a get_temp_id callback function
+Date: Thu,  4 Apr 2019 10:06:46 +0200
+Message-ID: <20190404080647.8173-1-daniel.lezcano@linaro.org>
+References: <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190404072449.GE3493@localhost.localdomain>
+In-Reply-To: <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc: "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "a.zummo@towertech.it" <a.zummo@towertech.it>, "broonie@kernel.org" <broonie@kernel.org>, "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>l
+To: andrew.smirnov@gmail.com
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-> > > ROHM. Also, I am not terribly excited about the option of changing this
-> > > back to function-pointer as I already removed the pointer from parent
-> > > data and this changed parent data is already adapted to all sub drivers
-> > > - so this is all just babbling. Maybe it is just my huge ego shouting
-> > > there - 'I was right, I must have the final say'.
-> > 
-> > No, a call-back function would be a back-step.
-> 
-> You are probably right.
-> 
-> > Ego or no ego, you're wrong. =:-D
-> 
-> I'd rephrase that as "It's not that I am wrong, but you are right." =)
+Currently when we register a sensor, we specify the sensor id and a data
+pointer to be passed when the get_temp function is called. However the
+sensor_id is not passed to the get_temp callback forcing the driver to
+do extra allocation and adding back pointer to find out from the sensor
+information the driver data and then back to the sensor id.
 
-Works for me.
+Add a new callback get_temp_id() which will be called if set. It will
+call the get_temp_id() with the sensor id.
 
-> > > As a side note, I already did submit v12 with other styling fixes but
-> > > which left the WDT function in MFD. If you still see the WDT functions
-> > > should be exported from WDT - then please ignore the v12. I'll do v13
-> > > at the afternoon (my time, which is only a bit after noon your time I
-> > > guess) which will export these functions from WDT. (Well, I had to try
-> > > once more :D)
-> > 
-> > Please keep the WDT code in the WDT driver.  Create a little stub for
-> > the cases where the WDT driver is not enabled - job done.
-> 
-> Yes Sir.
+That will be more consistent with the registering function.
 
-=;-)
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/of-thermal.c | 19 +++++++++++++------
+ include/linux/thermal.h      |  1 +
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 2df059cc07e2..787d1cbe13f3 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -78,6 +78,8 @@ struct __thermal_zone {
+ 
+ 	/* sensor interface */
+ 	void *sensor_data;
++	int sensor_id;
++
+ 	const struct thermal_zone_of_device_ops *ops;
+ };
+ 
+@@ -88,10 +90,14 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
+ {
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+-	if (!data->ops->get_temp)
+-		return -EINVAL;
++	if (data->ops->get_temp)
++		return data->ops->get_temp(data->sensor_data, temp);
+ 
+-	return data->ops->get_temp(data->sensor_data, temp);
++	if (data->ops->get_temp_id)
++		return data->ops->get_temp_id(data->sensor_id,
++					      data->sensor_data, temp);
++
++	return -EINVAL;
+ }
+ 
+ static int of_thermal_set_trips(struct thermal_zone_device *tz,
+@@ -407,8 +413,8 @@ static struct thermal_zone_device_ops of_thermal_ops = {
+ /***   sensor API   ***/
+ 
+ static struct thermal_zone_device *
+-thermal_zone_of_add_sensor(struct device_node *zone,
+-			   struct device_node *sensor, void *data,
++thermal_zone_of_add_sensor(struct device_node *zone, struct device_node *sensor,
++			   int sensor_id, void *data,
+ 			   const struct thermal_zone_of_device_ops *ops)
+ {
+ 	struct thermal_zone_device *tzd;
+@@ -426,6 +432,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+ 	mutex_lock(&tzd->lock);
+ 	tz->ops = ops;
+ 	tz->sensor_data = data;
++	tz->sensor_id = sensor_id;
+ 
+ 	tzd->ops->get_temp = of_thermal_get_temp;
+ 	tzd->ops->get_trend = of_thermal_get_trend;
+@@ -516,7 +523,7 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+ 		}
+ 
+ 		if (sensor_specs.np == sensor_np && id == sensor_id) {
+-			tzd = thermal_zone_of_add_sensor(child, sensor_np,
++			tzd = thermal_zone_of_add_sensor(child, sensor_np, sensor_id,
+ 							 data, ops);
+ 			if (!IS_ERR(tzd))
+ 				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 5f4705f46c2f..2762d7e6dd86 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -351,6 +351,7 @@ struct thermal_genl_event {
+  *		   hardware.
+  */
+ struct thermal_zone_of_device_ops {
++	int (*get_temp_id)(int, void *, int *);
+ 	int (*get_temp)(void *, int *);
+ 	int (*get_trend)(void *, int, enum thermal_trend *);
+ 	int (*set_trips)(void *, int, int);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1
