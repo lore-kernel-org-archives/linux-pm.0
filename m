@@ -1,75 +1,59 @@
 From: Niklas Cassel <niklas.cassel@linaro.org>
-Subject: [RFC PATCH 4/9] cpufreq: qcom: support qcs404 on nvmem driver
-Date: Thu,  4 Apr 2019 07:09:25 +0200
-Message-ID: <20190404050931.9812-5-niklas.cassel@linaro.org>
+Subject: [RFC PATCH 6/9] dt-bindings: opp: Add qcom-opp bindings with properties needed for CPR
+Date: Thu,  4 Apr 2019 07:09:27 +0200
+Message-ID: <20190404050931.9812-7-niklas.cassel@linaro.org>
 References: <20190404050931.9812-1-niklas.cassel@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190404050931.9812-1-niklas.cassel@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, jorge.ramirez-ortiz@linaro.org, Niklas Cassel <niklas.cassel@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-arm-msm@vger.kernel.org, jorge.ramirez-ortiz@linaro.org, Niklas Cassel <niklas.cassel@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+Add qcom-opp bindings with properties needed for Core Power Reduction (CPR).
 
+CPR is included in a great variety of Qualcomm SoC, e.g. msm8916 and msm8996,
+and was first introduced in msm8974.
+
+Co-developed-by: Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
 Signed-off-by: Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
-Co-developed-by: Niklas Cassel <niklas.cassel@linaro.org>
 Signed-off-by: Niklas Cassel <niklas.cassel@linaro.org>
 ---
- drivers/cpufreq/qcom-cpufreq-nvmem.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ .../devicetree/bindings/opp/qcom-opp.txt      | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/qcom-opp.txt
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index 366c65a7132a..7fdc38218390 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -24,6 +24,7 @@
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
- #include <linux/pm_opp.h>
- #include <linux/slab.h>
- #include <linux/soc/qcom/smem.h>
-@@ -79,6 +80,13 @@ static enum _msm8996_version qcom_cpufreq_get_msm_id(void)
- 	return version;
- }
- 
-+static int qcom_cpufreq_qcs404_name_version(struct device *cpu_dev,
-+					    struct nvmem_cell *speedbin_nvmem,
-+					    struct qcom_cpufreq_drv *drv)
-+{
-+	return 0;
-+}
+diff --git a/Documentation/devicetree/bindings/opp/qcom-opp.txt b/Documentation/devicetree/bindings/opp/qcom-opp.txt
+new file mode 100644
+index 000000000000..d24280467db7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/opp/qcom-opp.txt
+@@ -0,0 +1,24 @@
++Qualcomm OPP bindings to describe OPP nodes
 +
- static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
- 					  struct nvmem_cell *speedbin_nvmem,
- 					  struct qcom_cpufreq_drv *drv)
-@@ -191,6 +199,14 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 			dev_err(cpu_dev, "Failed to set supported hardware\n");
- 			goto free_opp;
- 		}
++The bindings are based on top of the operating-points-v2 bindings
++described in Documentation/devicetree/bindings/opp/opp.txt
++Additional properties are described below.
 +
-+		ret = dev_pm_domain_attach(cpu_dev, false);
-+		if (ret) {
-+			if (ret == -EPROBE_DEFER)
-+				goto free_opp;
-+			dev_err(cpu_dev, "Could not attach to pm_domain: %d\n",
-+				ret);
-+		}
- 	}
- 
- 	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-@@ -247,6 +263,8 @@ static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
- 	  .data = qcom_cpufreq_kryo_name_version },
- 	{ .compatible = "qcom,msm8996",
- 	  .data = qcom_cpufreq_kryo_name_version },
-+	{ .compatible = "qcom,qcs404",
-+	  .data = qcom_cpufreq_qcs404_name_version },
- 	{},
- };
- 
++* OPP Table Node
++
++Required properties:
++- compatible: Allow OPPs to express their compatibility. It should be:
++  "operating-points-v2-qcom-level"
++
++* OPP Node
++
++Optional properties:
++- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. Even
++  though a power domain doesn't need a opp-hz, there can be devices in the
++  power domain that need to know the highest supported frequency for each
++  corner/level (e.g. CPR), in order to properly initialize the hardware.
++
++- qcom,opp-fuse-level: A positive value representing the fuse corner/level
++  associated with this OPP node. Sometimes several corners/levels shares
++  a certain fuse corner/level. A fuse corner/level contains e.g. ref uV,
++  min uV, and max uV.
 -- 
 2.20.1
