@@ -1,79 +1,42 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management material for v5.1-rc3
-Date: Thu, 4 Apr 2019 22:32:04 +0200
-Message-ID: <CAJZ5v0gC4WmXra1RXCxQ8-xa2xfx6PaSost_sf9XUL4wTVeRNQ@mail.gmail.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 1/7] thermal/drivers/core: Remove the module Kconfig's option
+Date: Thu, 04 Apr 2019 22:40:41 +0200
+Message-ID: <87h8bdpkqe.fsf@belgarion.home>
+References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190402161256.11044-1-daniel.lezcano@linaro.org> (Daniel
+        Lezcano's message of "Tue, 2 Apr 2019 18:12:44 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Andrew Morton <akpm@linux-foundation.org>, Alexey Brodkin <alexey.brodkin@synopsys.com>, Arnd Bergmann <arnd@arndb.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Mack <daniel@zonque.org>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, "open list:MIPS" <linux-mips@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Daniel Lezcano <daniel.lezcano@linaro.org> writes:
 
-Please pull from the tag
+> The module support for the thermal subsystem makes little sense:
+>  - some subsystems relying on it are not modules, thus forcing the
+>    framework to be compiled in
+>  - it is compiled in for almost every configs, the remaining ones
+>    are a few platforms where I don't see why we can not switch the thermal
+>    to 'y'. The drivers can stay in tristate.
+>  - platforms need the thermal to be ready as soon as possible at boot time
+>    in order to mitigate
+>
+> Usually the subsystems framework are compiled-in and the plugs are as module.
+>
+> Remove the module option. The removal of the module related dead code will
+> come after this patch gets in or is acked.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Guenter Roeck <groeck@chromium.org>
+> For mini2440:
+> Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+For pxa:
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.1-rc4
+Cheers.
 
-with top-most commit 58b0cf8e2418c05ed277c83b5529bd0568bfcc78
-
- Merge branch 'pm-tools'
-
-on top of commit 79a3aaa7b82e3106be97842dedfd8429248896e6
-
- Linux 5.1-rc3
-
-to receive power management material for 5.1-rc4.
-
-These fix up the intel_pstate driver after recent changes to prevent
-it from printing pointless messages and update the turbostat utility
-(mostly fixes and new hardware support).
-
-Specifics:
-
- - Make intel_pstate only load on Intel processors and prevent it
-   from printing pointless failure messages (Borislav Petkov).
-
- - Update the turbostat utility:
-   * Assorted fixes (Ben Hutchings, Len Brown, Prarit Bhargava).
-   * Support for AMD Fam 17h (Zen) RAPL and package power (Calvin
-     Walton).
-   * Support for Intel Icelake and for systems with more than one
-     die per package (Len Brown).
-   * Cleanups (Len Brown).
-
-Thanks!
-
-
----------------
-
-Ben Hutchings (1):
-      tools/power turbostat: Add checks for failure of fgets() and fscanf()
-
-Borislav Petkov (1):
-      cpufreq/intel_pstate: Load only on Intel hardware
-
-Calvin Walton (2):
-      tools/power turbostat: Add support for AMD Fam 17h (Zen) RAPL
-      tools/power turbostat: Also read package power on AMD F17h (Zen)
-
-Len Brown (6):
-      tools/power turbostat: Restore ability to execute in topology-order
-      tools/power turbostat: Cleanup CC3-skip code
-      tools/power turbostat: Cleanup CNL-specific code
-      tools/power turbostat: Add Icelake support
-      tools/power turbostat: Add Die column
-      tools/power turbostat: update version number
-
-Prarit Bhargava (2):
-      tools/power turbostat: Do not display an error on systems
-without a cpufreq driver
-      tools/power turbostat: Warn on bad ACPI LPIT data
-
----------------
-
- drivers/cpufreq/intel_pstate.c        |   5 +-
- tools/power/x86/turbostat/turbostat.c | 277 +++++++++++++++++++++++++++-------
- 2 files changed, 223 insertions(+), 59 deletions(-)
+--
+Robert
