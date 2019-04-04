@@ -1,55 +1,47 @@
-From: Paul Burton <paul.burton@mips.com>
-Subject: Re: [PATCH 1/7] thermal/drivers/core: Remove the module Kconfig's
- option
-Date: Wed, 3 Apr 2019 22:55:41 +0000
-Message-ID: <20190403225539.wgytklr6ndpzbrlu@pburton-laptop>
-References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
+From: Matthew Garrett <matthewgarrett@google.com>
+Subject: [PATCH V32 08/27] hibernate: Disable when the kernel is locked down
+Date: Wed,  3 Apr 2019 17:32:30 -0700
+Message-ID: <20190404003249.14356-9-matthewgarrett@google.com>
+References: <20190404003249.14356-1-matthewgarrett@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190402161256.11044-1-daniel.lezcano@linaro.org>
-Content-Language: en-US
-Content-ID: <9F76AB0D364FC842ABC1B5D5590BEE17@namprd22.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, James Hogan <jhogan@kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Alexey Brodkin <alexey.brodkin@synopsys.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, "edubezval@gmail.com" <edubezval@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Ralf Baechle <ralf@linux-mips.org>, Guenter Roeck <groeck@chromium.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "open list:MIPS" <linux-mips@vger.kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Andrew Morton <akpm@linux-foundation.org>, Daniel Mack <daniel@zonque.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190404003249.14356-1-matthewgarrett@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org, dhowells@redhat.com, linux-api@vger.kernel.org, luto@kernel.org, Josh Boyer <jwboyer@fedoraproject.org>, Matthew Garrett <mjg59@google.com>, rjw@rjwysocki.net, pavel@ucw.cz, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
+From: Josh Boyer <jwboyer@fedoraproject.org>
 
-On Tue, Apr 02, 2019 at 06:12:44PM +0200, Daniel Lezcano wrote:
-> The module support for the thermal subsystem makes little sense:
->  - some subsystems relying on it are not modules, thus forcing the
->    framework to be compiled in
->  - it is compiled in for almost every configs, the remaining ones
->    are a few platforms where I don't see why we can not switch the thermal
->    to 'y'. The drivers can stay in tristate.
->  - platforms need the thermal to be ready as soon as possible at boot time
->    in order to mitigate
+There is currently no way to verify the resume image when returning
+from hibernate.  This might compromise the signed modules trust model,
+so until we can work with signed hibernate images we disable it when the
+kernel is locked down.
 
-Nit: mitigate what? High temperatures? It feels like this sentence was
-cut short.
+Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Matthew Garrett <mjg59@google.com>
+Cc: rjw@rjwysocki.net
+Cc: pavel@ucw.cz
+cc: linux-pm@vger.kernel.org
+---
+ kernel/power/hibernate.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> Usually the subsystems framework are compiled-in and the plugs are as module.
-> 
-> Remove the module option. The removal of the module related dead code will
-> come after this patch gets in or is acked.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Guenter Roeck <groeck@chromium.org>
-> For mini2440:
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Acked-by: Paul Burton <paul.burton@mips.com> # MIPS part
-
-Thanks,
-    Paul
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index abef759de7c8..928b198cfa26 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -70,7 +70,8 @@ static const struct platform_hibernation_ops *hibernation_ops;
+ 
+ bool hibernation_available(void)
+ {
+-	return (nohibernate == 0);
++	return nohibernate == 0 && !kernel_is_locked_down("Hibernation",
++							  LOCKDOWN_INTEGRITY);
+ }
+ 
+ /**
+-- 
+2.21.0.392.gf8f6787159e-goog
