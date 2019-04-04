@@ -1,305 +1,147 @@
-From: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Subject: [PATCH v13 1/8] mfd: regulator: clk: split rohm-bd718x7.h
-Date: Thu, 4 Apr 2019 13:20:20 +0300
-Message-ID: <e935c9655c7732d94f8c20f8066d87bf53075615.1554371464.git.matti.vaittinen@fi.rohmeurope.com>
-References: <cover.1554371464.git.matti.vaittinen@fi.rohmeurope.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] cpuidle : auto-promotion for cpuidle states
+Date: Thu, 4 Apr 2019 12:21:36 +0200
+Message-ID: <9e542011-df6d-9b84-823b-2af6a6ef9e94@linaro.org>
+References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
+ <20190322072942.8038-2-huntbag@linux.vnet.ibm.com>
+ <CAJZ5v0gY-theHng=bQQpw-33jHGe++iEigEM5j6Ls7vEuewuSQ@mail.gmail.com>
+ <cfb0076f-0b56-f12c-a736-469a3d11ab83@linaro.org>
+ <50f62972-dfce-52bf-d26b-32e6d2a367e2@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1554371464.git.matti.vaittinen@fi.rohmeurope.com>
+In-Reply-To: <50f62972-dfce-52bf-d26b-32e6d2a367e2@linux.vnet.ibm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>, mazziesaccount@gmail.com
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurope.com, mikko.mutanen@fi.ro
+To: Abhishek <huntbag@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Ellerman <mpe@ellerman.id.au>
 List-Id: linux-pm@vger.kernel.org
 
-Split the bd718x7.h to ROHM common and bd718x7 specific parts
-so that we do not need to add same things in every new ROHM
-PMIC header. Please note that this change requires changes also
-in bd718x7 sub-device drivers for regulators and clk.
 
-Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Acked-by: Mark Brown <broonie@kernel.org>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/clk/clk-bd718x7.c             |  6 +++---
- drivers/mfd/rohm-bd718x7.c            | 23 ++++++++++++-----------
- drivers/regulator/bd718x7-regulator.c | 25 +++++++++++++------------
- include/linux/mfd/rohm-bd718x7.h      | 22 ++++++++--------------
- include/linux/mfd/rohm-generic.h      | 20 ++++++++++++++++++++
- 5 files changed, 56 insertions(+), 40 deletions(-)
- create mode 100644 include/linux/mfd/rohm-generic.h
+Hi Abhishek,
 
-diff --git a/drivers/clk/clk-bd718x7.c b/drivers/clk/clk-bd718x7.c
-index 60422c72d142..461228ebf703 100644
---- a/drivers/clk/clk-bd718x7.c
-+++ b/drivers/clk/clk-bd718x7.c
-@@ -17,7 +17,7 @@ struct bd718xx_clk {
- 	u8 reg;
- 	u8 mask;
- 	struct platform_device *pdev;
--	struct bd718xx *mfd;
-+	struct rohm_regmap_dev *mfd;
- };
- 
- static int bd71837_clk_set(struct clk_hw *hw, int status)
-@@ -68,7 +68,7 @@ static int bd71837_clk_probe(struct platform_device *pdev)
- 	int rval = -ENOMEM;
- 	const char *parent_clk;
- 	struct device *parent = pdev->dev.parent;
--	struct bd718xx *mfd = dev_get_drvdata(parent);
-+	struct rohm_regmap_dev *mfd = dev_get_drvdata(parent);
- 	struct clk_init_data init = {
- 		.name = "bd718xx-32k-out",
- 		.ops = &bd71837_clk_ops,
-@@ -119,5 +119,5 @@ static struct platform_driver bd71837_clk = {
- module_platform_driver(bd71837_clk);
- 
- MODULE_AUTHOR("Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>");
--MODULE_DESCRIPTION("BD71837 chip clk driver");
-+MODULE_DESCRIPTION("BD71837/BD71847 chip clk driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/mfd/rohm-bd718x7.c b/drivers/mfd/rohm-bd718x7.c
-index a29d529a96f4..7beb444a57cb 100644
---- a/drivers/mfd/rohm-bd718x7.c
-+++ b/drivers/mfd/rohm-bd718x7.c
-@@ -98,18 +98,19 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- 		return -ENOMEM;
- 
- 	bd718xx->chip_irq = i2c->irq;
--	bd718xx->chip_type = (unsigned int)(uintptr_t)
-+	bd718xx->chip.chip_type = (unsigned int)(uintptr_t)
- 				of_device_get_match_data(&i2c->dev);
--	bd718xx->dev = &i2c->dev;
-+	bd718xx->chip.dev = &i2c->dev;
- 	dev_set_drvdata(&i2c->dev, bd718xx);
- 
--	bd718xx->regmap = devm_regmap_init_i2c(i2c, &bd718xx_regmap_config);
--	if (IS_ERR(bd718xx->regmap)) {
-+	bd718xx->chip.regmap = devm_regmap_init_i2c(i2c,
-+						    &bd718xx_regmap_config);
-+	if (IS_ERR(bd718xx->chip.regmap)) {
- 		dev_err(&i2c->dev, "regmap initialization failed\n");
--		return PTR_ERR(bd718xx->regmap);
-+		return PTR_ERR(bd718xx->chip.regmap);
- 	}
- 
--	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->regmap,
-+	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->chip.regmap,
- 				       bd718xx->chip_irq, IRQF_ONESHOT, 0,
- 				       &bd718xx_irq_chip, &bd718xx->irq_data);
- 	if (ret) {
-@@ -118,7 +119,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- 	}
- 
- 	/* Configure short press to 10 milliseconds */
--	ret = regmap_update_bits(bd718xx->regmap,
-+	ret = regmap_update_bits(bd718xx->chip.regmap,
- 				 BD718XX_REG_PWRONCONFIG0,
- 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
- 				 BD718XX_PWRBTN_SHORT_PRESS_10MS);
-@@ -129,7 +130,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- 	}
- 
- 	/* Configure long press to 10 seconds */
--	ret = regmap_update_bits(bd718xx->regmap,
-+	ret = regmap_update_bits(bd718xx->chip.regmap,
- 				 BD718XX_REG_PWRONCONFIG1,
- 				 BD718XX_PWRBTN_PRESS_DURATION_MASK,
- 				 BD718XX_PWRBTN_LONG_PRESS_10S);
-@@ -149,7 +150,7 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- 
- 	button.irq = ret;
- 
--	ret = devm_mfd_add_devices(bd718xx->dev, PLATFORM_DEVID_AUTO,
-+	ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
- 				   bd718xx_mfd_cells,
- 				   ARRAY_SIZE(bd718xx_mfd_cells), NULL, 0,
- 				   regmap_irq_get_domain(bd718xx->irq_data));
-@@ -162,11 +163,11 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
- static const struct of_device_id bd718xx_of_match[] = {
- 	{
- 		.compatible = "rohm,bd71837",
--		.data = (void *)BD718XX_TYPE_BD71837,
-+		.data = (void *)ROHM_CHIP_TYPE_BD71837,
- 	},
- 	{
- 		.compatible = "rohm,bd71847",
--		.data = (void *)BD718XX_TYPE_BD71847,
-+		.data = (void *)ROHM_CHIP_TYPE_BD71847,
- 	},
- 	{ }
- };
-diff --git a/drivers/regulator/bd718x7-regulator.c b/drivers/regulator/bd718x7-regulator.c
-index b2191be49670..1c8c8497ac0a 100644
---- a/drivers/regulator/bd718x7-regulator.c
-+++ b/drivers/regulator/bd718x7-regulator.c
-@@ -1152,12 +1152,12 @@ static int bd718xx_probe(struct platform_device *pdev)
- {
- 	struct bd718xx *mfd;
- 	struct regulator_config config = { 0 };
--	struct bd718xx_pmic_inits pmic_regulators[] = {
--		[BD718XX_TYPE_BD71837] = {
-+	struct bd718xx_pmic_inits pmic_regulators[ROHM_CHIP_TYPE_AMOUNT] = {
-+		[ROHM_CHIP_TYPE_BD71837] = {
- 			.r_datas = bd71837_regulators,
- 			.r_amount = ARRAY_SIZE(bd71837_regulators),
- 		},
--		[BD718XX_TYPE_BD71847] = {
-+		[ROHM_CHIP_TYPE_BD71847] = {
- 			.r_datas = bd71847_regulators,
- 			.r_amount = ARRAY_SIZE(bd71847_regulators),
- 		},
-@@ -1173,15 +1173,15 @@ static int bd718xx_probe(struct platform_device *pdev)
- 		goto err;
- 	}
- 
--	if (mfd->chip_type >= BD718XX_TYPE_AMOUNT ||
--	    !pmic_regulators[mfd->chip_type].r_datas) {
-+	if (mfd->chip.chip_type >= ROHM_CHIP_TYPE_AMOUNT ||
-+	    !pmic_regulators[mfd->chip.chip_type].r_datas) {
- 		dev_err(&pdev->dev, "Unsupported chip type\n");
- 		err = -EINVAL;
- 		goto err;
- 	}
- 
- 	/* Register LOCK release */
--	err = regmap_update_bits(mfd->regmap, BD718XX_REG_REGLOCK,
-+	err = regmap_update_bits(mfd->chip.regmap, BD718XX_REG_REGLOCK,
- 				 (REGLOCK_PWRSEQ | REGLOCK_VREG), 0);
- 	if (err) {
- 		dev_err(&pdev->dev, "Failed to unlock PMIC (%d)\n", err);
-@@ -1200,7 +1200,8 @@ static int bd718xx_probe(struct platform_device *pdev)
- 	 * bit allowing HW defaults for power rails to be used
- 	 */
- 	if (!use_snvs) {
--		err = regmap_update_bits(mfd->regmap, BD718XX_REG_TRANS_COND1,
-+		err = regmap_update_bits(mfd->chip.regmap,
-+					 BD718XX_REG_TRANS_COND1,
- 					 BD718XX_ON_REQ_POWEROFF_MASK |
- 					 BD718XX_SWRESET_POWEROFF_MASK |
- 					 BD718XX_WDOG_POWEROFF_MASK |
-@@ -1215,17 +1216,17 @@ static int bd718xx_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	for (i = 0; i < pmic_regulators[mfd->chip_type].r_amount; i++) {
-+	for (i = 0; i < pmic_regulators[mfd->chip.chip_type].r_amount; i++) {
- 
- 		const struct regulator_desc *desc;
- 		struct regulator_dev *rdev;
- 		const struct bd718xx_regulator_data *r;
- 
--		r = &pmic_regulators[mfd->chip_type].r_datas[i];
-+		r = &pmic_regulators[mfd->chip.chip_type].r_datas[i];
- 		desc = &r->desc;
- 
- 		config.dev = pdev->dev.parent;
--		config.regmap = mfd->regmap;
-+		config.regmap = mfd->chip.regmap;
- 
- 		rdev = devm_regulator_register(&pdev->dev, desc, &config);
- 		if (IS_ERR(rdev)) {
-@@ -1254,7 +1255,7 @@ static int bd718xx_probe(struct platform_device *pdev)
- 		 */
- 		if (!use_snvs || !rdev->constraints->always_on ||
- 		    !rdev->constraints->boot_on) {
--			err = regmap_update_bits(mfd->regmap, r->init.reg,
-+			err = regmap_update_bits(mfd->chip.regmap, r->init.reg,
- 						 r->init.mask, r->init.val);
- 			if (err) {
- 				dev_err(&pdev->dev,
-@@ -1264,7 +1265,7 @@ static int bd718xx_probe(struct platform_device *pdev)
- 			}
- 		}
- 		for (j = 0; j < r->additional_init_amnt; j++) {
--			err = regmap_update_bits(mfd->regmap,
-+			err = regmap_update_bits(mfd->chip.regmap,
- 						 r->additional_inits[j].reg,
- 						 r->additional_inits[j].mask,
- 						 r->additional_inits[j].val);
-diff --git a/include/linux/mfd/rohm-bd718x7.h b/include/linux/mfd/rohm-bd718x7.h
-index fd194bfc836f..7f2dbde402a1 100644
---- a/include/linux/mfd/rohm-bd718x7.h
-+++ b/include/linux/mfd/rohm-bd718x7.h
-@@ -4,14 +4,9 @@
- #ifndef __LINUX_MFD_BD718XX_H__
- #define __LINUX_MFD_BD718XX_H__
- 
-+#include <linux/mfd/rohm-generic.h>
- #include <linux/regmap.h>
- 
--enum {
--	BD718XX_TYPE_BD71837 = 0,
--	BD718XX_TYPE_BD71847,
--	BD718XX_TYPE_AMOUNT
--};
--
- enum {
- 	BD718XX_BUCK1 = 0,
- 	BD718XX_BUCK2,
-@@ -321,18 +316,17 @@ enum {
- 	BD718XX_PWRBTN_LONG_PRESS_15S
- };
- 
--struct bd718xx_clk;
--
- struct bd718xx {
--	unsigned int chip_type;
--	struct device *dev;
--	struct regmap *regmap;
--	unsigned long int id;
-+	/*
-+	 * Please keep this as the first member here as some
-+	 * drivers (clk) supporting more than one chip may only know this
-+	 * generic struct 'struct rohm_regmap_dev' and assume it is
-+	 * the first chunk of parent device's private data.
-+	 */
-+	struct rohm_regmap_dev chip;
- 
- 	int chip_irq;
- 	struct regmap_irq_chip_data *irq_data;
--
--	struct bd718xx_clk *clk;
- };
- 
- #endif /* __LINUX_MFD_BD718XX_H__ */
-diff --git a/include/linux/mfd/rohm-generic.h b/include/linux/mfd/rohm-generic.h
-new file mode 100644
-index 000000000000..bff15ac26f2c
---- /dev/null
-+++ b/include/linux/mfd/rohm-generic.h
-@@ -0,0 +1,20 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/* Copyright (C) 2018 ROHM Semiconductors */
-+
-+#ifndef __LINUX_MFD_ROHM_H__
-+#define __LINUX_MFD_ROHM_H__
-+
-+enum {
-+	ROHM_CHIP_TYPE_BD71837 = 0,
-+	ROHM_CHIP_TYPE_BD71847,
-+	ROHM_CHIP_TYPE_BD70528,
-+	ROHM_CHIP_TYPE_AMOUNT
-+};
-+
-+struct rohm_regmap_dev {
-+	unsigned int chip_type;
-+	struct device *dev;
-+	struct regmap *regmap;
-+};
-+
-+#endif
--- 
-2.17.2
+thanks for taking the time to test the different scenario and give us
+the numbers.
+
+On 01/04/2019 07:11, Abhishek wrote:
+> 
+> 
+> On 03/22/2019 06:56 PM, Daniel Lezcano wrote:
+>> On 22/03/2019 10:45, Rafael J. Wysocki wrote:
+>>> On Fri, Mar 22, 2019 at 8:31 AM Abhishek Goel
+>>> <huntbag@linux.vnet.ibm.com> wrote:
+>>>> Currently, the cpuidle governors (menu /ladder) determine what idle
+>>>> state
+>>>> an idling CPU should enter into based on heuristics that depend on the
+>>>> idle history on that CPU. Given that no predictive heuristic is
+>>>> perfect,
+>>>> there are cases where the governor predicts a shallow idle state,
+>>>> hoping
+>>>> that the CPU will be busy soon. However, if no new workload is
+>>>> scheduled
+>>>> on that CPU in the near future, the CPU will end up in the shallow
+>>>> state.
+>>>>
+>>>> In case of POWER, this is problematic, when the predicted state in the
+>>>> aforementioned scenario is a lite stop state, as such lite states will
+>>>> inhibit SMT folding, thereby depriving the other threads in the core
+>>>> from
+>>>> using the core resources.
+
+I can understand an idle state can prevent other threads to use the core
+resources. But why a deeper idle state does not prevent this also?
+
+
+>>>> To address this, such lite states need to be autopromoted. The cpuidle-
+>>>> core can queue timer to correspond with the residency value of the next
+>>>> available state. Thus leading to auto-promotion to a deeper idle
+>>>> state as
+>>>> soon as possible.
+>>> Isn't the tick stopping avoidance sufficient for that?
+>> I was about to ask the same :)
+>>
+>>
+>>
+>>
+> Thanks for the review.
+> I performed experiments for three scenarios to collect some data.
+> 
+> case 1 :
+> Without this patch and without tick retained, i.e. in a upstream kernel,
+> It would spend more than even a second to get out of stop0_lite.
+> 
+> case 2 : With tick retained(as suggested) -
+> 
+> Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+> it to take 8 sched tick to get out of stop0_lite. Experimentally,
+> observation was
+> 
+> ===================================
+> min            max            99percentile
+> 4ms            12ms          4ms
+> ===================================
+> *ms = milliseconds
+> 
+> It would take atleast one sched tick to get out of stop0_lite.
+> 
+> case 2 :  With this patch (not stopping tick, but explicitly queuing a
+> timer)
+> 
+> min            max              99.5percentile
+> ===============================
+> 144us       192us              144us
+> ===============================
+> *us = microseconds
+> 
+> In this patch, we queue a timer just before entering into a stop0_lite
+> state. The timer fires at (residency of next available state + exit
+> latency of next available state * 2).
+
+So for the context, we have a similar issue but from the power
+management point of view where a CPU can stay in a shallow state for a
+long period, thus consuming a lot of energy.
+
+The window was reduced by preventing stopping the tick when a shallow
+state is selected. Unfortunately, if the tick is stopped and we
+exit/enter again and we select a shallow state, the situation is the same.
+
+A solution was previously proposed with a timer some years ago, like
+this patch does, and merged but there were complains about bad
+performance impact, so it has been reverted.
+
+> Let's say if next state(stop0) is available which has residency of 20us, it
+> should get out in as low as (20+2*2)*8 [Based on the forumla (residency +
+> 2xlatency)*history length] microseconds = 192us. Ideally we would expect 8
+> iterations, it was observed to get out in 6-7 iterations.
+
+Can you explain the formula? I don't get the rational. Why using the
+exit latency and why multiply it by 2?
+
+Why the timer is not set to the next state's target residency value ?
+
+> Even if let's say stop2 is next available state(stop0 and stop1 both are
+> unavailable), it would take (100+2*10)*8 = 960us to get into stop2.
+> 
+> So, We are able to get out of stop0_lite generally in 150us(with this
+> patch) as
+> compared to 4ms(with tick retained). As stated earlier, we do not want
+> to get
+> stuck into stop0_lite as it inhibits SMT folding for other sibling
+> threads, depriving
+> them of core resources. Current patch is using auto-promotion only for
+> stop0_lite,
+> as it gives performance benefit(primary reason) along with lowering down
+> power
+> consumption. We may extend this model for other states in future.
+> 
+> --Abhishek
+> 
 
 
 -- 
-Matti Vaittinen, Linux device drivers
-ROHM Semiconductors, Finland SWDC
-Kiviharjunlenkki 1E
-90220 OULU
-FINLAND
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
