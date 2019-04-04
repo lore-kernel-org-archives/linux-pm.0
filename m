@@ -1,14 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 02/13] thermal: qoriq: Add local struct device pointer
-Date: Thu, 4 Apr 2019 05:11:42 +0200
-Message-ID: <e748759e-66e6-4acc-ea23-1e337ed53535@linaro.org>
+Subject: Re: [PATCH v3 01/13] thermal: qoriq: Remove unnecessary DT node is
+ NULL check
+Date: Thu, 4 Apr 2019 05:21:15 +0200
+Message-ID: <22f0c6d4-842e-bb91-a684-6edb6345e036@linaro.org>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-3-andrew.smirnov@gmail.com>
+ <20190401041418.5999-2-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190401041418.5999-3-andrew.smirnov@gmail.com>
+In-Reply-To: <20190401041418.5999-2-andrew.smirnov@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
@@ -16,9 +17,12 @@ Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang
 List-Id: linux-pm@vger.kernel.org
 
 On 01/04/2019 06:14, Andrey Smirnov wrote:
-> Use a local "struct device *dev" for brevity. No functional change
-> intended.
-> 
+> This driver is meant to be used with Device Tree and there's no
+> use-case where device's DT node is going to be NULL. Remove code
+> protecting against that.
+
+May be elaborate why is never going to be NULL?
+
 > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > Cc: Chris Healy <cphealy@gmail.com>
 > Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -29,46 +33,29 @@ On 01/04/2019 06:14, Andrey Smirnov wrote:
 > Cc: linux-imx@nxp.com
 > Cc: linux-pm@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
-> ---
 
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
->  drivers/thermal/qoriq_thermal.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> ---
+>  drivers/thermal/qoriq_thermal.c | 5 -----
+>  1 file changed, 5 deletions(-)
 > 
 > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index 7b364933bfb1..91f9f49d2776 100644
+> index 3b5f5b3fb1bc..7b364933bfb1 100644
 > --- a/drivers/thermal/qoriq_thermal.c
 > +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -192,8 +192,9 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  	int ret;
+> @@ -193,11 +193,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
 >  	struct qoriq_tmu_data *data;
 >  	struct device_node *np = pdev->dev.of_node;
-> +	struct device *dev = &pdev->dev;
 >  
-> -	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> +	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+> -	if (!np) {
+> -		dev_err(&pdev->dev, "Device OF-Node is NULL");
+> -		return -ENODEV;
+> -	}
+> -
+>  	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
 >  			    GFP_KERNEL);
 >  	if (!data)
->  		return -ENOMEM;
-> @@ -204,7 +205,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  
->  	data->regs = of_iomap(np, 0);
->  	if (!data->regs) {
-> -		dev_err(&pdev->dev, "Failed to get memory region\n");
-> +		dev_err(dev, "Failed to get memory region\n");
->  		ret = -ENODEV;
->  		goto err_iomap;
->  	}
-> @@ -217,7 +218,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  
->  	ret = qoriq_tmu_register_tmu_zone(pdev);
->  	if (ret < 0) {
-> -		dev_err(&pdev->dev, "Failed to register sensors\n");
-> +		dev_err(dev, "Failed to register sensors\n");
->  		ret = -ENODEV;
->  		goto err_iomap;
->  	}
 > 
 
 
