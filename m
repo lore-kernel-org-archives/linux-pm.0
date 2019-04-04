@@ -1,63 +1,125 @@
-From: "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
-Subject: Re: [PATCH v11 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
-Date: Thu, 4 Apr 2019 08:10:52 +0000
-Message-ID: <70a8a87a403eb2ab8f0aad2a26456de8a162f363.camel@fi.rohmeurope.com>
-References: <20190403073152.GM4187@dell>
-         <20190403084732.GA3493@localhost.localdomain> <20190403093015.GJ11301@dell>
-         <20190403101003.GC3493@localhost.localdomain> <20190403112559.GP11301@dell>
-         <85b20828bb4fb51e6df1d5d9d1c1f667db3a7c48.camel@fi.rohmeurope.com>
-         <20190404025234.GB6830@dell>
-         <6775a75d1ee3ab96123d84b077881beedc358d12.camel@fi.rohmeurope.com>
-         <20190404065452.GD6830@dell> <20190404072449.GE3493@localhost.localdomain>
-         <20190404075640.GV22216@piout.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 07/13] thermal: qoriq: Pass data to
+ qoriq_tmu_calibration() directly
+Date: Thu, 4 Apr 2019 10:11:57 +0200
+Message-ID: <fa3cf0ac-1015-4031-8cd4-cd5270e39fc7@linaro.org>
+References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
+ <20190401041418.5999-8-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190404075640.GV22216@piout.net>
-Content-Language: de-DE
-Content-ID: <77CA96EB2605C44DBED0E5318C266071@de.rohmeurope.com>
+In-Reply-To: <20190401041418.5999-8-andrew.smirnov@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "broonie@kernel.org" <broonie@kernel.org>, "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>, "a.zummo@towertech.it" <a.zummo@towertech.it>, "mark.rutland@arm.com" <mark.rutland@arm.com>"linux@roeck-us.net" <li>
+To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
+Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8gQWxleGFuZHJlLA0KDQpPbiBUaHUsIDIwMTktMDQtMDQgYXQgMDk6NTYgKzAyMDAsIEFs
-ZXhhbmRyZSBCZWxsb25pIHdyb3RlOg0KPiBPbiAwNC8wNC8yMDE5IDEwOjI0OjQ5KzAzMDAsIE1h
-dHRpIFZhaXR0aW5lbiB3cm90ZToNCj4gPiBPbiBUaHUsIEFwciAwNCwgMjAxOSBhdCAwNzo1NDo1
-MkFNICswMTAwLCBMZWUgSm9uZXMgd3JvdGU6DQo+ID4gPiBPbiBUaHUsIDA0IEFwciAyMDE5LCBW
-YWl0dGluZW4sIE1hdHRpIHdyb3RlOg0KPiA+ID4gDQo+ID4gPiA+IEFjdHVhbGx5LCBub3cgdGhh
-dCBJIHRoaWsgb2YgaXQgdGhlIHJpZ2h0IHdheSB0byBkbyB0aGlzIHdvdWxkDQo+ID4gPiA+IGhh
-dmUNCj4gPiA+ID4gYmVlbiB0aGUgZnVuY3Rpb24gcG9pbnRlciBpbiBwYXJlbnQgZGF0YSBhcyB3
-YXMgZG9uZSBpbg0KPiA+ID4gPiBvcmlnaW5hbCBwYXRjaA0KPiA+ID4gPiBzZXQuIEhXLWNvbGxl
-YWd1ZXMgdGVuZCB0byByZS11c2UgSFcgYmxvY2tzLCBhbmQgd2UgbGlrZSB0byByZS0NCj4gPiA+
-ID4gdXNlIG91cg0KPiA+ID4gPiBkcml2ZXJzLiBJZiB0aGUgbmV4dCBQTUlDIGZyb20gUk9ITSB1
-c2VzIHNhbWUgUlRDIGJsb2NrIGJ1dA0KPiA+ID4gPiBkb2VzIG5vdA0KPiA+ID4gPiBwcm92aWRl
-IHdhdGNoZG9nIC0gdGhlbiBpdCBpcyBjbGVhbmVzdCBzb2x1dGlvbiB0byBmYWxsIGJhY2sgdG8N
-Cj4gPiA+ID4gZnVuY3Rpb24gcG9pbnRlciBhbmQgbGVhdmUgaXQgdG8gTlVMTCB3aGVuIHRoZXJl
-IGlzIG5vIFdEVCBvcg0KPiA+ID4gPiB3aGVuIFdEVA0KPiA+ID4gPiBpcyB1bnVzZWQuIEFub3Ro
-ZXIgb3B0aW9uIGlzIHRvIGV4cG9ydCBkdW1teSBmdW5jdGlvbiAtIHdoaWNoDQo+ID4gPiA+IGlz
-IG5vdCBzbw0KPiA+ID4gPiBuaWNlLg0KPiA+ID4gDQo+ID4gPiBJIHRoaW5rIHRoZSBjb252ZXJz
-ZSBpcyB0cnVlLg0KPiA+ID4gDQo+ID4gPiBQb2ludGVycyB0byBmdW5jdGlvbnMgb3V0c2lkZSBv
-ZiBhIHN1YnN5c3RlbSBBUEkgY29udGV4dCBhcmUNCj4gPiA+IGdlbmVyYWxseQ0KPiA+ID4gaG9y
-cmlibGUuICBJdCdzIG11Y2ggbmljZXIgdG8gY2FsbCBhIGZ1bmN0aW9uIHdoaWNoIGNhbiBiZSBl
-YXNpbHkNCj4gPiA+IHN0dWJiZWQgb3V0IGluIGEgaGVhZGVyIGZpbGUgYmFzZWQgb24gYSBLY29u
-ZmlnIG9wdGlvbi4gIEl0J3MgaG93DQo+ID4gPiBtb3N0DQo+ID4gPiBrZXJuZWwgQVBJcyB3b3Jr
-Lg0KPiA+IA0KPiA+IEkgaGF0ZSB0byBhZG1pdCBidXQgSSBzZWUgeW91ciBwb2ludC4gVGhpcyBu
-aWNlbHkgc29sdmVzIGFueSBpc3N1ZXMNCj4gPiBpbg0KPiA+IHN5bmNyb25pemluZyB0aGUgc3Rh
-cnR1cCBmb3IgZHJpdmVyIHByb3ZpZGluZyBmdW5jdGlvbiBwb2ludGVyIGFuZA0KPiA+IGZvcg0K
-PiA+IGRyaXZlciB1c2luZyBpdC4NCj4gPiANCj4gDQo+IFdvdWxkbid0IGl0IGJlIGVhc2llciB0
-byByZWdpc3RlciB0aGUgd2F0Y2hkb2cgZHJpdmVyIGFzIHBhcnQgb2YgdGhlDQo+IFJUQw0KPiBk
-cml2ZXI/DQo+IA0KPiBBcyBJIHNlZSBpdCwgdGhlIHdkdCBpcyBqdXN0IGEgZ2xvcmlmaWVkIFJU
-QyBhbGFybS4NCg0KRG8geW91IHN1Z2dlc3QgbWUgdG8gcHV0IGFsbCB0aGUgc3R1ZmYgbm93IHBs
-YWNlZCBpbg0KZHJpdmVycy93YXRjaGRvZy9iZDcwNTI4X3dkdC5jIGludG8gcnRjIGRyaXZlcj8g
-SXQgd291bGQgYmUgZG9hYmxlIC0NCmJ1dCBJJ2QgcmF0aGVyIGtlcHQgdGhlIFdEVCBpbmRlcGVu
-ZGVudCBtb2R1bGUgc28gdGhhdCBpdCBjYW4gYmUgbGVmdA0Kb3V0IG9mIGNvbmZpZyBpZiBXRFQg
-bmVlZHMgbm90IHRvIGJlIHVzZWQuIEFuZCBzYW1lIHdpdGggUlRDLiBBbHNvLCByZS0NCnVzZSBv
-ZiBSVEMgZHJpdmVyIGluIEhXIHdoaWNoIGRvZXMgbm90IGluY2x1ZGUgV0RUIGlzIGVhc2llciB3
-aGVuIFdEVA0KaXMgYSBzZXBhcmF0ZSBtb2R1bGUuIFRvIG1lIGl0IGxvb2tzIG11Y2ggY2xlYW5l
-ciB0byBoYXZlIHRoZSBXRFQgYXMNCm93biBtb2R1bGUgdGhhbiBwb2xsdXRpbmcgdGhlIFJUQyBk
-cml2ZXIgd2l0aCBjb25maWcgaWZkZWZzLg0KDQpCdXQgZnJvbSBIVyBwZXJzcGVjdGl2ZSB5b3Ug
-YXJlIGNvcnJlY3QuIFRoZSBXRFQgaW4gQkQ3MDUyOCBzZWVtcyB0byBiZQ0Ka2luZCBvZiBSVEMg
-YWxhcm0gd2hpY2ggc2h1dHMgb2YgdGhlIFBNSUMgaWYgdHJpZ2dlcmVkLg0KDQpCciwNCglNYXR0
-aSBWYWl0dGluZW4NCg==
+On 01/04/2019 06:14, Andrey Smirnov wrote:
+> We can simplify error cleanup code if instead of passing a "struct
+> platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
+> pointers from it, we pass those pointers directly. This way we won't
+> be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
+> and consequently would be able to drop the "err_iomap" error path.
+> 
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> Cc: Chris Healy <cphealy@gmail.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+> Cc: linux-imx@nxp.com
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/thermal/qoriq_thermal.c | 22 +++++++++-------------
+>  1 file changed, 9 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> index 24a2a57f61c9..a3ddb55740e4 100644
+> --- a/drivers/thermal/qoriq_thermal.c
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -139,16 +139,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+>  	return 0;
+>  }
+>  
+> -static int qoriq_tmu_calibration(struct platform_device *pdev)
+> +static int qoriq_tmu_calibration(struct device *dev,
+> +				 struct qoriq_tmu_data *data)
+>  {
+>  	int i, val, len;
+>  	u32 range[4];
+>  	const u32 *calibration;
+> -	struct device_node *np = pdev->dev.of_node;
+> -	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> +	struct device_node *np = dev->of_node;
+>  
+>  	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
+> -		dev_err(&pdev->dev, "missing calibration range.\n");
+> +		dev_err(dev, "missing calibration range.\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -160,7 +160,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
+>  
+>  	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
+>  	if (calibration == NULL || len % 8) {
+> -		dev_err(&pdev->dev, "invalid calibration data.\n");
+> +		dev_err(dev, "invalid calibration data.\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -198,20 +198,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  	if (!data)
+>  		return -ENOMEM;
+>  
+> -	platform_set_drvdata(pdev, data);
+> -
+>  	data->little_endian = of_property_read_bool(np, "little-endian");
+>  
+>  	data->regs = of_iomap(np, 0);
+>  	if (!data->regs) {
+>  		dev_err(dev, "Failed to get memory region\n");
+> -		ret = -ENODEV;
+> -		goto err_iomap;
+> +		return -ENODEV;
+>  	}
+>  
+>  	qoriq_tmu_init_device(data);	/* TMU initialization */
+>  
+> -	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> +	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+>  	if (ret < 0)
+>  		goto err_tmu;
+>  
+> @@ -222,14 +219,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  		goto err_iomap;
+
+s/goto err_iomap/goto err_tmu/ ?
+
+>  	}
+>  
+> +	platform_set_drvdata(pdev, data);
+> +
+>  	return 0;
+>  
+>  err_tmu:
+>  	iounmap(data->regs);
+>  
+> -err_iomap:
+> -	platform_set_drvdata(pdev, NULL);
+> -
+>  	return ret;
+>  }
+>  
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
