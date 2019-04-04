@@ -1,176 +1,220 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v11 2/8] mfd: bd70528: Support ROHM bd70528 PMIC - core
-Date: Thu, 4 Apr 2019 03:52:34 +0100
-Message-ID: <20190404025234.GB6830@dell>
-References: <cover.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <39efebe0396dd42de30d37c6f3c1ef2926c90210.1553515333.git.matti.vaittinen@fi.rohmeurope.com>
- <20190403073152.GM4187@dell>
- <20190403084732.GA3493@localhost.localdomain>
- <20190403093015.GJ11301@dell>
- <20190403101003.GC3493@localhost.localdomain>
- <20190403112559.GP11301@dell>
- <85b20828bb4fb51e6df1d5d9d1c1f667db3a7c48.camel@fi.rohmeurope.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v1 1/3] thermal: rockchip: add pinctrl control
+Date: Thu, 4 Apr 2019 05:03:33 +0200
+Message-ID: <30325add-d75a-6775-50c0-d2d2274ff81e@linaro.org>
+References: <1554100985-11385-1-git-send-email-zhangqing@rock-chips.com>
+ <1554100985-11385-2-git-send-email-zhangqing@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <85b20828bb4fb51e6df1d5d9d1c1f667db3a7c48.camel@fi.rohmeurope.com>
+In-Reply-To: <1554100985-11385-2-git-send-email-zhangqing@rock-chips.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
-Cc: "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sre@kernel.org" <sre@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "a.zummo@towertech.it" <a.zummo@towertech.it>, "broonie@kernel.org" <broonie@kernel.org>, "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>l
+To: Elaine Zhang <zhangqing@rock-chips.com>, heiko@sntech.de
+Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 03 Apr 2019, Vaittinen, Matti wrote:
+On 01/04/2019 08:43, Elaine Zhang wrote:
+> Based on the TSADC Tshut mode to select pinctrl,
+> instead of setting pinctrl based on architecture
+> (Not depends on pinctrl setting by "init" or "default").
+> And it requires setting the tshut polarity before select pinctrl.
 
-> On Wed, 2019-04-03 at 12:25 +0100, Lee Jones wrote:
-> > On Wed, 03 Apr 2019, Matti Vaittinen wrote:
-> > 
-> > > On Wed, Apr 03, 2019 at 10:30:15AM +0100, Lee Jones wrote:
-> > > > On Wed, 03 Apr 2019, Matti Vaittinen wrote:
-> > > > 
-> > > > > Hello Lee,
-> > > > > 
-> > > > > Thanks for taking a look on this again =) I agree with most of
-> > > > > the
-> > > > > comments and correct them at next version.
-> > > > > 
-> > > > > On Wed, Apr 03, 2019 at 08:31:52AM +0100, Lee Jones wrote:
-> > > > > > On Mon, 25 Mar 2019, Matti Vaittinen wrote:
-> > > > > > 
-> > > > > > > ROHM BD70528MWV is an ultra-low quiescent current general
-> > > > > > > purpose single-chip power management IC for battery-powered
-> > > > > > > portable devices.
-> > > > > > > 
-> > > > > > > Add MFD core which enables chip access for following
-> > > > > > > subdevices:
-> > > > > > > 	- regulators/LED drivers
-> > > > > > > 	- battery-charger
-> > > > > > > 	- gpios
-> > > > > > > 	- 32.768kHz clk
-> > > > > > > 	- RTC
-> > > > > > > 	- watchdog
-> > > > > > > 
-> > > > > > > Signed-off-by: Matti Vaittinen <
-> > > > > > > matti.vaittinen@fi.rohmeurope.com>
-> > > > > > > + * Mapping of main IRQ register bits to sub irq register
-> > > > > > > offsets so
-> > > > > > 
-> > > > > > "sub-IRQ"
-> > > > > > 
-> > > > > > > + * that we can access corect sub IRQ registers based on
-> > > > > > > bits that
-> > > > > > 
-> > > > > > "sub IRQ" is also fine, but please standardise.
-> > > > > > 
-> > > > > > I do prefer "sub-IRQ" though.
-> > > > > 
-> > > > > I'll go with "sub-IRQ" then
-> > > > > 
-> > > > > > > +
-> > > > > > > +#define WD_CTRL_MAGIC1 0x55
-> > > > > > > +#define WD_CTRL_MAGIC2 0xAA
-> > > > > > > +/**
-> > > > > > > + * bd70528_wdt_set - arm or disarm watchdog timer
-> > > > > > > + *
-> > > > > > > + * @data:	device data for the PMIC instance we want to
-> > > > > > > operate on
-> > > > > > > + * @enable:	new state of WDT. zero to disable, non
-> > > > > > > zero to enable
-> > > > > > > + * @old_state:	previous state of WDT will be filled
-> > > > > > > here
-> > > > > > > + *
-> > > > > > > + * Arm or disarm WDT on BD70528 PMIC. Expected to be
-> > > > > > > called only by
-> > > > > > > + * BD70528 RTC and BD70528 WDT drivers. The rtc_timer_lock
-> > > > > > > must be taken
-> > > > > > > + * by calling bd70528_wdt_lock before calling
-> > > > > > > bd70528_wdt_set.
-> > > > > > > + */
-> > > > > > > +int bd70528_wdt_set(struct rohm_regmap_dev *data, int
-> > > > > > > enable, int *old_state)
-> > > > > > 
-> > > > > > Why doesn't this reside in the watchdog driver?
-> > > > > 
-> > > > > If my memory serves me right we shortly discussed this already
-> > > > > during v8
-> > > > > review ;) Cant blame you though as I have seen some of the mail
-> > > > > traffic
-> > > > > going through your inbox :D
-> > > > > 
-> > > > > The motivation to have the functions exported from MFD is to
-> > > > > not create
-> > > > > sirect dependency between RTC and WDT. There may be cases where
-> > > > > we want
-> > > > > to leave either RTC or WDT out of compilation. MFD is always
-> > > > > needed so
-> > > > > the dependency from MFD to RTC/WDT does not harm.
-> > > > > 
-> > > > > (Here's some discussion necromancy if you are interested in re-
-> > > > > reading
-> > > > > how we did end up with this implementation:
-> > > > > https://lore.kernel.org/lkml/20190212091723.GZ20638@dell/)
-> > > > > 
-> > > > > I hope you are still Ok with having the WDT control functions
-> > > > > in MFD.
-> > > > 
-> > > > OOI, why does the RTC need to control the WDT?
-> > > 
-> > > I thought I had a comment about this somewhere in code... O_o Must
-> > > have
-> > > been in some development branch I had :/
-> > > 
-> > > Anyways, setting the RTC counter may cause watchdog to trigger. It
-> > > is not
-> > > further explained why but I would guess watchdog uses RTC counter
-> > > to check
-> > > if it should've been pinged already. So RTC needs to disable watch
-> > > dog for
-> > > the duration of hwclock setting and enable it again after the new
-> > > time is
-> > > set. I can add a comment about this to MFD driver if it helps :)
-> > 
-> > How does the user select between using the RTC and the WDT?
-> > 
-> > Or are the generally both enabled at the same time?
-> > 
-> 
-> Both RTC and WDT can be enabled at the same time. But they are not
-> required to be used. When WDT is enabled, it uses current RTC time as
-> 'base' (and RTC time is running no matter if we have the RTC driver
-> here or not) - and time-out gets scheduled to specified amount of time
-> into future. (Same setting timeout into the future happens when WDT is
-> pinged).
-> 
-> When we set RTC, we disable WDT (if it was enabled), set clock and re-
-> enable WDT. This causes the previously used time-out value to be set to
-> WDT again. This works Ok because BD70528 does not support 'short ping
-> detection'. Only side-effect will be one 'prolonged' WDT feeding period
-> when RTC is set. (absolute time when RTC was set minus absolute time
-> when previous WD ping or enable was done) longer than reqular period.
-> 
-> So user should not need to care about this 'dependency'. Basically the
-> only possible problem I see is that someone could accidentally hang the
-> system with something that keeps setting the RTC time - this would then
-> prevent watch dog from doing the reset. This, I believe, is a corner
-> case which I don't consider now - and if this is considered to be an
-> issue then such a system may disable the RTC driver and do RTC setting
-> in a what-ever-manner sees practical.
-> 
-> I'm not sure if I answered to question you asked though =)
+I'm not sure to fully read the description. Can you rephrase/elaborate
+the changelog?
 
-I think you answered it just fine.
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+> ---
+>  drivers/thermal/rockchip_thermal.c | 61 +++++++++++++++++++++++++++++++-------
+>  1 file changed, 50 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 9c7643d62ed7..faa6c7792155 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -34,7 +34,7 @@
+>   */
+>  enum tshut_mode {
+>  	TSHUT_MODE_CRU = 0,
+> -	TSHUT_MODE_GPIO,
+> +	TSHUT_MODE_OTP,
 
-So my suggestion is to have the RTC depend on the WRT via Kconfig, and
-place this WRT code in the WRT driver where it belongs.  These
-functions can be exported from the WRT driver and the RTC can call
-into them in the same way it calls into the MFD driver currently.
+Why do you change the enum name? The impact on the patch is much higher,
+no ?
 
-Avoiding a dependency on the WRT would seem strange, because there is
-one.
+>  };
+>  
+>  /**
+> @@ -172,6 +172,9 @@ struct rockchip_thermal_data {
+>  	int tshut_temp;
+>  	enum tshut_mode tshut_mode;
+>  	enum tshut_polarity tshut_polarity;
+> +	struct pinctrl *pinctrl;
+> +	struct pinctrl_state *gpio_state;
+> +	struct pinctrl_state *otp_state;
+>  };
+>  
+>  /**
+> @@ -807,7 +810,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	u32 val;
+>  
+>  	val = readl_relaxed(regs + TSADCV2_INT_EN);
+> -	if (mode == TSHUT_MODE_GPIO) {
+> +	if (mode == TSHUT_MODE_OTP) {
+>  		val &= ~TSADCV2_SHUT_2CRU_SRC_EN(chn);
+>  		val |= TSADCV2_SHUT_2GPIO_SRC_EN(chn);
+>  	} else {
+> @@ -822,7 +825,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+>  	.chn_num = 1, /* one channel for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -846,7 +849,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+>  	.chn_num = 1, /* one channel for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -871,7 +874,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_GPU] = 2, /* gpu sensor is channel 2 */
+>  	.chn_num = 2, /* two channels for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -919,7 +922,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
+>  	.chn_num = 2, /* two channels for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -944,7 +947,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
+>  	.chn_num = 2, /* two channels for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -969,7 +972,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
+>  	.chn_num = 2, /* two channels for tsadc */
+>  
+> -	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+> +	.tshut_mode = TSHUT_MODE_OTP, /* default TSHUT via GPIO give PMIC */
+>  	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+>  	.tshut_temp = 95000,
+>  
+> @@ -1080,6 +1083,20 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
+>  	.set_trips = rockchip_thermal_set_trips,
+>  };
+>  
+> +static void thermal_pinctrl_select_otp(struct rockchip_thermal_data *thermal)
+> +{
+> +	if (!IS_ERR(thermal->pinctrl) && !IS_ERR_OR_NULL(thermal->otp_state))
+> +		pinctrl_select_state(thermal->pinctrl,
+> +				     thermal->otp_state);
+> +}
+> +
+> +static void thermal_pinctrl_select_gpio(struct rockchip_thermal_data *thermal)
+> +{
+> +	if (!IS_ERR(thermal->pinctrl) && !IS_ERR_OR_NULL(thermal->gpio_state))
+> +		pinctrl_select_state(thermal->pinctrl,
+> +				     thermal->gpio_state);
+> +}
+
+You should not have to create a couple of specific functions just to
+check the pinctrl pointers are set. The caller should do that.
+
+>  static int rockchip_configure_from_dt(struct device *dev,
+>  				      struct device_node *np,
+>  				      struct rockchip_thermal_data *thermal)
+> @@ -1103,7 +1120,7 @@ static int rockchip_configure_from_dt(struct device *dev,
+>  	if (of_property_read_u32(np, "rockchip,hw-tshut-mode", &tshut_mode)) {
+>  		dev_warn(dev,
+>  			 "Missing tshut mode property, using default (%s)\n",
+> -			 thermal->chip->tshut_mode == TSHUT_MODE_GPIO ?
+> +			 thermal->chip->tshut_mode == TSHUT_MODE_OTP ?
+>  				"gpio" : "cru");
+>  		thermal->tshut_mode = thermal->chip->tshut_mode;
+>  	} else {
+> @@ -1242,6 +1259,8 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>  		return error;
+>  	}
+>  
+> +	thermal->chip->control(thermal->regs, false);
+> +
+>  	error = clk_prepare_enable(thermal->clk);
+>  	if (error) {
+>  		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
+> @@ -1267,6 +1286,24 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>  	thermal->chip->initialize(thermal->grf, thermal->regs,
+>  				  thermal->tshut_polarity);
+>  
+> +	if (thermal->tshut_mode == TSHUT_MODE_OTP) {
+> +		thermal->pinctrl = devm_pinctrl_get(&pdev->dev);
+> +		if (IS_ERR(thermal->pinctrl))
+> +			dev_err(&pdev->dev, "failed to find thermal pinctrl\n");
+> +
+> +		thermal->gpio_state = pinctrl_lookup_state(thermal->pinctrl,
+> +							   "gpio");
+> +		if (IS_ERR_OR_NULL(thermal->gpio_state))
+> +			dev_err(&pdev->dev, "failed to find thermal gpio state\n");
+> +
+> +		thermal->otp_state = pinctrl_lookup_state(thermal->pinctrl,
+> +							  "otpout");
+> +		if (IS_ERR_OR_NULL(thermal->otp_state))
+> +			dev_err(&pdev->dev, "failed to find thermal otpout state\n");
+
+What is the meaning for the rest of the code if the lookup fails for any
+of those ?
+
+> +		thermal_pinctrl_select_otp(thermal);
+> +	}
+> +
+>  	for (i = 0; i < thermal->chip->chn_num; i++) {
+>  		error = rockchip_thermal_register_sensor(pdev, thermal,
+>  						&thermal->sensors[i],
+> @@ -1338,7 +1375,8 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+>  	clk_disable(thermal->pclk);
+>  	clk_disable(thermal->clk);
+>  
+> -	pinctrl_pm_select_sleep_state(dev);
+> +	if (thermal->tshut_mode == TSHUT_MODE_OTP)
+> +		thermal_pinctrl_select_gpio(thermal);
+>  
+>  	return 0;
+>  }
+> @@ -1383,7 +1421,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+>  		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+>  
+> -	pinctrl_pm_select_default_state(dev);
+> +	if (thermal->tshut_mode == TSHUT_MODE_OTP)
+> +		thermal_pinctrl_select_otp(thermal);
+>  
+>  	return 0;
+>  }
+> 
+
 
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
