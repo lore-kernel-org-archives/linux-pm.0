@@ -1,70 +1,349 @@
 From: Niklas Cassel <niklas.cassel@linaro.org>
-Subject: [RFC PATCH 0/9] Add support for QCOM Core Power Reduction
-Date: Thu,  4 Apr 2019 07:09:21 +0200
-Message-ID: <20190404050931.9812-1-niklas.cassel@linaro.org>
+Subject: [RFC PATCH 2/9] cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem based qcom socs
+Date: Thu,  4 Apr 2019 07:09:23 +0200
+Message-ID: <20190404050931.9812-3-niklas.cassel@linaro.org>
+References: <20190404050931.9812-1-niklas.cassel@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190404050931.9812-1-niklas.cassel@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: jorge.ramirez-ortiz@linaro.org, Niklas Cassel <niklas.cassel@linaro.org>, devicetree@vger.kernel.org
+To: Ilia Lin <ilia.lin@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-msm@vger.kernel.org, jorge.ramirez-ortiz@linaro.org, Sricharan R <sricharan@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a first RFC for Core Power Reduction (CPR), a form of
-Adaptive Voltage Scaling (AVS), found on certain Qualcomm SoCs.
+From: Sricharan R <sricharan@codeaurora.org>
 
-Since this is simply an RFC, things like MAINTAINERS hasn't
-been updated yet.
+The kryo cpufreq driver reads the nvmem cell and uses that data to
+populate the opps. There are other qcom cpufreq socs like krait which
+does similar thing. Except for the interpretation of the read data,
+rest of the driver is same for both the cases. So pull the common things
+out for reuse.
 
-CPR is a technology that reduces core power on a CPU or on other device.
-It reads voltage settings from efuses (that have been written in production),
-it uses these voltage settings as initial values, for each OPP.
-
-After moving to a certain OPP, CPR monitors dynamic factors such as
-temperature, etc. and adjusts the voltage for that frequency accordingly
-to save power and meet silicon characteristic requirements.
-
-This driver is based on an RFC by Stephen Boyd[1], which in turn is
-based on work by others on codeaurora.org[2].
-
-[1] https://lkml.org/lkml/2015/9/18/833
-[2] https://www.codeaurora.org/cgit/quic/la/kernel/msm-3.10/tree/drivers/regulator/cpr-regulator.c?h=msm-3.10
-
-
-Jorge Ramirez-Ortiz (3):
-  drivers: regulator: qcom_spmi: enable linear range info
-  cpufreq: qcom: support qcs404 on nvmem driver
-  cpufreq: Add qcs404 to cpufreq-dt-platdev blacklist
-
-Niklas Cassel (5):
-  cpufreq: qcom: create a driver struct
-  dt-bindings: opp: Add qcom-opp bindings with properties needed for CPR
-  dt-bindings: power: avs: Add support for CPR (Core Power Reduction)
-  power: avs: Add support for CPR (Core Power Reduction)
-  arm64: dts: qcom: qcs404: Add CPR and populate OPP tables
-
-Sricharan R (1):
-  cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem
-    based qcom socs
-
- ...ryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} |   16 +-
- .../devicetree/bindings/opp/qcom-opp.txt      |   24 +
- .../bindings/power/avs/qcom,cpr.txt           |  119 ++
- arch/arm64/boot/dts/qcom/qcs404.dtsi          |  152 +-
- drivers/cpufreq/Kconfig.arm                   |    4 +-
- drivers/cpufreq/Makefile                      |    2 +-
- drivers/cpufreq/cpufreq-dt-platdev.c          |    1 +
- ...om-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} |  197 +-
- drivers/power/avs/Kconfig                     |   15 +
- drivers/power/avs/Makefile                    |    1 +
- drivers/power/avs/qcom-cpr.c                  | 1777 +++++++++++++++++
- drivers/regulator/qcom_spmi-regulator.c       |    7 +
- 12 files changed, 2234 insertions(+), 81 deletions(-)
+Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+Signed-off-by: Niklas Cassel <niklas.cassel@linaro.org>
+---
+ ...ryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} |  16 +--
+ drivers/cpufreq/Kconfig.arm                   |   4 +-
+ drivers/cpufreq/Makefile                      |   2 +-
+ ...om-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} | 124 +++++++++++-------
+ 4 files changed, 85 insertions(+), 61 deletions(-)
  rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (97%)
- create mode 100644 Documentation/devicetree/bindings/opp/qcom-opp.txt
- create mode 100644 Documentation/devicetree/bindings/power/avs/qcom,cpr.txt
- rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (52%)
- create mode 100644 drivers/power/avs/qcom-cpr.c
+ rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (69%)
 
+diff --git a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+similarity index 97%
+rename from Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+rename to Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+index c2127b96805a..f4a7123730c3 100644
+--- a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
++++ b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+@@ -1,13 +1,13 @@
+-Qualcomm Technologies, Inc. KRYO CPUFreq and OPP bindings
++Qualcomm Technologies, Inc. NVMEM CPUFreq and OPP bindings
+ ===================================
+ 
+-In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
+-that have KRYO processors, the CPU ferequencies subset and voltage value
+-of each OPP varies based on the silicon variant in use.
++In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996,
++the CPU frequencies subset and voltage value of each OPP varies based on
++the silicon variant in use.
+ Qualcomm Technologies, Inc. Process Voltage Scaling Tables
+ defines the voltage and frequency value based on the msm-id in SMEM
+ and speedbin blown in the efuse combination.
+-The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
++The qcom-cpufreq-nvmem driver reads the msm-id and efuse value from the SoC
+ to provide the OPP framework with required information (existing HW bitmap).
+ This is used to determine the voltage and frequency value for each OPP of
+ operating-points-v2 table when it is parsed by the OPP framework.
+@@ -19,7 +19,7 @@ In 'cpus' nodes:
+ 
+ In 'operating-points-v2' table:
+ - compatible: Should be
+-	- 'operating-points-v2-kryo-cpu' for apq8096 and msm8996.
++	- 'operating-points-v2-qcom-cpu' for apq8096 and msm8996.
+ - nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+ 		efuse registers that has information about the
+ 		speedbin that is used to select the right frequency/voltage
+@@ -127,7 +127,7 @@ Example 1:
+ 	};
+ 
+ 	cluster0_opp: opp_table0 {
+-		compatible = "operating-points-v2-kryo-cpu";
++		compatible = "operating-points-v2-qcom-cpu";
+ 		nvmem-cells = <&speedbin_efuse>;
+ 		opp-shared;
+ 
+@@ -338,7 +338,7 @@ Example 1:
+ 	};
+ 
+ 	cluster1_opp: opp_table1 {
+-		compatible = "operating-points-v2-kryo-cpu";
++		compatible = "operating-points-v2-qcom-cpu";
+ 		nvmem-cells = <&speedbin_efuse>;
+ 		opp-shared;
+ 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 179a1d302f48..2e4aefa0f34d 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -110,8 +110,8 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
+ 
+-config ARM_QCOM_CPUFREQ_KRYO
+-	tristate "Qualcomm Kryo based CPUFreq"
++config ARM_QCOM_CPUFREQ_NVMEM
++	tristate "Qualcomm nvmem based CPUFreq"
+ 	depends on ARM64
+ 	depends on QCOM_QFPROM
+ 	depends on QCOM_SMEM
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 689b26c6f949..8e83fd73bd2d 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -63,7 +63,7 @@ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+ obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
+-obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-kryo.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ_NVMEM)	+= qcom-cpufreq-nvmem.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+similarity index 69%
+rename from drivers/cpufreq/qcom-cpufreq-kryo.c
+rename to drivers/cpufreq/qcom-cpufreq-nvmem.c
+index dd64dcf89c74..652a1de2a5d4 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -9,7 +9,7 @@
+  * based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+  * defines the voltage and frequency value based on the msm-id in SMEM
+  * and speedbin blown in the efuse combination.
+- * The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
++ * The qcom-cpufreq driver reads the msm-id and efuse value from the SoC
+  * to provide the OPP framework with required information.
+  * This is used to determine the voltage and frequency value for each OPP of
+  * operating-points-v2 table when it is parsed by the OPP framework.
+@@ -22,6 +22,7 @@
+ #include <linux/module.h>
+ #include <linux/nvmem-consumer.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+ #include <linux/slab.h>
+@@ -42,9 +43,9 @@ enum _msm8996_version {
+ 	NUM_OF_MSM8996_VERSIONS,
+ };
+ 
+-static struct platform_device *cpufreq_dt_pdev, *kryo_cpufreq_pdev;
++static struct platform_device *cpufreq_dt_pdev, *cpufreq_pdev;
+ 
+-static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
++static enum _msm8996_version qcom_cpufreq_get_msm_id(void)
+ {
+ 	size_t len;
+ 	u32 *msm_id;
+@@ -73,34 +74,68 @@ static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+ 	return version;
+ }
+ 
+-static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
++static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
++					  struct nvmem_cell *speedbin_nvmem,
++					  u32 *versions)
+ {
+-	struct opp_table **opp_tables;
++	size_t len;
++	u8 *speedbin;
+ 	enum _msm8996_version msm8996_version;
++
++	msm8996_version = qcom_cpufreq_get_msm_id();
++	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
++		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++		return -ENODEV;
++	}
++
++	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	if (IS_ERR(speedbin))
++		return PTR_ERR(speedbin);
++
++	switch (msm8996_version) {
++	case MSM8996_V3:
++		*versions = 1 << (unsigned int)(*speedbin);
++		break;
++	case MSM8996_SG:
++		*versions = 1 << ((unsigned int)(*speedbin) + 4);
++		break;
++	default:
++		BUG();
++		break;
++	}
++
++	kfree(speedbin);
++	return 0;
++}
++
++static int qcom_cpufreq_probe(struct platform_device *pdev)
++{
++	struct opp_table **opp_tables;
++	int (*get_version)(struct device *cpu_dev,
++			   struct nvmem_cell *speedbin_nvmem,
++			   u32 *versions);
+ 	struct nvmem_cell *speedbin_nvmem;
+ 	struct device_node *np;
+ 	struct device *cpu_dev;
+ 	unsigned cpu;
+-	u8 *speedbin;
+ 	u32 versions;
+-	size_t len;
++	const struct of_device_id *match;
+ 	int ret;
+ 
+ 	cpu_dev = get_cpu_device(0);
+ 	if (!cpu_dev)
+ 		return -ENODEV;
+ 
+-	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
+-	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
+-		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++	match = pdev->dev.platform_data;
++	get_version = match->data;
++	if (!get_version)
+ 		return -ENODEV;
+-	}
+ 
+ 	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+ 	if (!np)
+ 		return -ENOENT;
+ 
+-	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
++	ret = of_device_is_compatible(np, "operating-points-v2-qcom-cpu");
+ 	if (!ret) {
+ 		of_node_put(np);
+ 		return -ENOENT;
+@@ -115,23 +150,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 		return PTR_ERR(speedbin_nvmem);
+ 	}
+ 
+-	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	ret = get_version(cpu_dev, speedbin_nvmem, &versions);
+ 	nvmem_cell_put(speedbin_nvmem);
+-	if (IS_ERR(speedbin))
+-		return PTR_ERR(speedbin);
+-
+-	switch (msm8996_version) {
+-	case MSM8996_V3:
+-		versions = 1 << (unsigned int)(*speedbin);
+-		break;
+-	case MSM8996_SG:
+-		versions = 1 << ((unsigned int)(*speedbin) + 4);
+-		break;
+-	default:
+-		BUG();
+-		break;
+-	}
+-	kfree(speedbin);
++	if (ret)
++		return ret;
+ 
+ 	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables), GFP_KERNEL);
+ 	if (!opp_tables)
+@@ -174,7 +196,7 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
++static int qcom_cpufreq_remove(struct platform_device *pdev)
+ {
+ 	struct opp_table **opp_tables = platform_get_drvdata(pdev);
+ 	unsigned int cpu;
+@@ -189,18 +211,20 @@ static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct platform_driver qcom_cpufreq_kryo_driver = {
+-	.probe = qcom_cpufreq_kryo_probe,
+-	.remove = qcom_cpufreq_kryo_remove,
++static struct platform_driver qcom_cpufreq_driver = {
++	.probe = qcom_cpufreq_probe,
++	.remove = qcom_cpufreq_remove,
+ 	.driver = {
+-		.name = "qcom-cpufreq-kryo",
++		.name = "qcom-cpufreq",
+ 	},
+ };
+ 
+-static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
+-	{ .compatible = "qcom,apq8096", },
+-	{ .compatible = "qcom,msm8996", },
+-	{}
++static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
++	{ .compatible = "qcom,apq8096",
++	  .data = qcom_cpufreq_kryo_name_version },
++	{ .compatible = "qcom,msm8996",
++	  .data = qcom_cpufreq_kryo_name_version },
++	{},
+ };
+ 
+ /*
+@@ -209,7 +233,7 @@ static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
+  * which may be defered as well. The init here is only registering
+  * the driver and the platform device.
+  */
+-static int __init qcom_cpufreq_kryo_init(void)
++static int __init qcom_cpufreq_init(void)
+ {
+ 	struct device_node *np = of_find_node_by_path("/");
+ 	const struct of_device_id *match;
+@@ -218,32 +242,32 @@ static int __init qcom_cpufreq_kryo_init(void)
+ 	if (!np)
+ 		return -ENODEV;
+ 
+-	match = of_match_node(qcom_cpufreq_kryo_match_list, np);
++	match = of_match_node(qcom_cpufreq_match_list, np);
+ 	of_node_put(np);
+ 	if (!match)
+ 		return -ENODEV;
+ 
+-	ret = platform_driver_register(&qcom_cpufreq_kryo_driver);
++	ret = platform_driver_register(&qcom_cpufreq_driver);
+ 	if (unlikely(ret < 0))
+ 		return ret;
+ 
+-	kryo_cpufreq_pdev = platform_device_register_simple(
+-		"qcom-cpufreq-kryo", -1, NULL, 0);
+-	ret = PTR_ERR_OR_ZERO(kryo_cpufreq_pdev);
++	cpufreq_pdev = platform_device_register_data(NULL, "qcom-cpufreq",
++						     -1, match, sizeof(*match));
++	ret = PTR_ERR_OR_ZERO(cpufreq_pdev);
+ 	if (0 == ret)
+ 		return 0;
+ 
+-	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
++	platform_driver_unregister(&qcom_cpufreq_driver);
+ 	return ret;
+ }
+-module_init(qcom_cpufreq_kryo_init);
++module_init(qcom_cpufreq_init);
+ 
+-static void __exit qcom_cpufreq_kryo_exit(void)
++static void __exit qcom_cpufreq_exit(void)
+ {
+-	platform_device_unregister(kryo_cpufreq_pdev);
+-	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
++	platform_device_unregister(cpufreq_pdev);
++	platform_driver_unregister(&qcom_cpufreq_driver);
+ }
+-module_exit(qcom_cpufreq_kryo_exit);
++module_exit(qcom_cpufreq_exit);
+ 
+-MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
++MODULE_DESCRIPTION("Qualcomm Technologies, Inc. CPUfreq driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.20.1
