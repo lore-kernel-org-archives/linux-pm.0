@@ -1,42 +1,53 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 1/7] thermal/drivers/core: Remove the module Kconfig's option
-Date: Thu, 04 Apr 2019 22:40:41 +0200
-Message-ID: <87h8bdpkqe.fsf@belgarion.home>
-References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
+From: "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
+Subject: [PATCH v2 0/7] CPPC optional registers AMD support
+Date: Thu, 4 Apr 2019 21:25:43 +0000
+Message-ID: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190402161256.11044-1-daniel.lezcano@linaro.org> (Daniel
-        Lezcano's message of "Tue, 2 Apr 2019 18:12:44 +0200")
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Andrew Morton <akpm@linux-foundation.org>, Alexey Brodkin <alexey.brodkin@synopsys.com>, Arnd Bergmann <arnd@arndb.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Mack <daniel@zonque.org>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, "open list:MIPS" <linux-mips@vger.kernel.org>
+To: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>, "Ghannam, Yazen" <Yazen.Ghannam@amd.com>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
-
-> The module support for the thermal subsystem makes little sense:
->  - some subsystems relying on it are not modules, thus forcing the
->    framework to be compiled in
->  - it is compiled in for almost every configs, the remaining ones
->    are a few platforms where I don't see why we can not switch the thermal
->    to 'y'. The drivers can stay in tristate.
->  - platforms need the thermal to be ready as soon as possible at boot time
->    in order to mitigate
->
-> Usually the subsystems framework are compiled-in and the plugs are as module.
->
-> Remove the module option. The removal of the module related dead code will
-> come after this patch gets in or is acked.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Guenter Roeck <groeck@chromium.org>
-> For mini2440:
-> Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-For pxa:
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
-
-Cheers.
-
---
-Robert
+Q1BQQyAoQ29sbGFib3JhdGl2ZSBQcm9jZXNzb3IgUGVyZm9ybWFuY2UgQ29udHJvbCkgb2ZmZXJz
+IG9wdGlvbmFsDQpyZWdpc3RlcnMgd2hpY2ggY2FuIGJlIHVzZWQgdG8gdHVuZSB0aGUgc3lzdGVt
+IGJhc2VkIG9uIGVuZXJneSBhbmQvb3INCnBlcmZvcm1hbmNlIHJlcXVpcmVtZW50cy4NCg0KTmV3
+ZXIgQU1EIHByb2Nlc3NvcnMgYWRkIHN1cHBvcnQgZm9yIGEgc3Vic2V0IG9mIHRoZXNlIG9wdGlv
+bmFsIENQUEMNCnJlZ2lzdGVycywgYmFzZWQgb24gQUNQSSB2Ni4xLg0KDQpUaGUgZm9sbG93aW5n
+IGFyZSB0aGUgc3VwcG9ydGVkIENQUEMgcmVnaXN0ZXJzIGZvciB3aGljaCBzeXNmcyBlbnRyaWVz
+DQphcmUgY3JlYXRlZDoNCiogZW5hYmxlICAgICAgICAgICAgICAgIChORVcpDQoqIG1heF9wZXJm
+ICAgICAgICAgICAgICAoTkVXKQ0KKiBtaW5fcGVyZiAgICAgICAgICAgICAgKE5FVykNCiogZW5l
+cmd5X3BlcmYNCiogbG93ZXN0X3BlcmYNCiogbm9taW5hbF9wZXJmDQoqIGRlc2lyZWRfcGVyZiAg
+ICAgICAgICAoTkVXKQ0KKiBmZWVkYmFja19jdHJzDQoqIGF1dG9fc2VsX2VuYWJsZSAgICAgICAo
+TkVXKQ0KKiBsb3dlc3Rfbm9ubGluZWFyX3BlcmYNCg0KVGhlIENQUEMgZHJpdmVyIGlzIHVwZGF0
+ZWQgdG8gZW5hYmxlIHRoZSBPU1BNIGFuZCB0aGUgdXNlcnNwYWNlIHRvDQphY2Nlc3MNCnRoZSBu
+ZXdseSBzdXBwb3J0ZWQgcmVnaXN0ZXJzLg0KDQpUaGUgcHVycG9zZSBvZiBleHBvc2luZyB0aGUg
+cmVnaXN0ZXJzIHZpYSB0aGUgc3lzZnMgZW50cmllcyBpcyB0byBhbGxvdw0KdGhlIHVzZXJzcGFj
+ZSB0bzoNCiogVHdlYWsgdGhlIHZhbHVlcyB0byBmaXQgaXRzIHdvcmtsb2FkLg0KKiBBcHBseSBh
+IHByb2ZpbGUgZnJvbSBBTUQncyBvcHRpbWl6YXRpb24gZ3VpZGVzLg0KDQpQcm9maWxlcyB3aWxs
+IGJlIGRvY3VtZW50ZWQgaW4gdGhlIHBlcmZvcm1hbmNlL29wdGltaXphdGlvbiBndWlkZXMuDQoN
+Ck5vdGU6DQoqIEFNRCBzeXN0ZW1zIHdpbGwgbm90IGhhdmUgYSBwb2xpY3kgYXBwbGllZCBpbiB0
+aGUga2VybmVsIGF0IHRoaXMgdGltZS4NCiogQnkgZGVmYXVsdCwgYWNwaV9jcHVmcmVxIHdpbGwg
+c3RpbGwgYmUgdXNlZC4NCg0KVE9ETzoNCiogQ3JlYXRlIGEgbGludXggdXNlcnNwYWNlIHRvb2wg
+dGhhdCB3aWxsIGhlbHAgdXNlcnMgZ2VuZXJhdGUgYSBDUFBDDQoqIHByb2ZpbGUNCiAgZm9yIHRo
+ZWlyIHRhcmdldCB3b3JrbG9hZC4NCiogQ3JlYXRlIG9yIHVwZGF0ZSBhIGRyaXZlciB0byBhcHBs
+eSBhIGdlbmVyYWwgQ1BQQyBwb2xpY3kgaW4gdGhlDQoqIGtlcm5lbC4NCg0KdjEtPnYyOg0KKiBB
+ZGQgbWFjcm8gdG8gZW5zdXJlIEJVRkZFUiBvbmx5IHJlZ2lzdGVycyBoYXZlIEJVRkZFUiB0eXBl
+Lg0KKiBBZGQgc3VwcG9ydCBtYWNybyB0byBtYWtlIHRoZSByaWdodCBjaGVjayBiYXNlZCBvbiBy
+ZWdpc3RlciB0eXBlLg0KKiBSZW1vdmUgc3VwcG9ydCBjaGVja3MgZm9yIHJlZ2lzdGVycyB3aGlj
+aCBhcmUgbWFuZGF0b3J5Lg0KDQpKYW5ha2FyYWphbiBOYXRhcmFqYW4gKDIpOg0KICBhY3BpL2Nw
+cGM6IEFkZCBtYWNybyBmb3IgQ1BQQyByZWdpc3RlciBCVUZGRVIgb25seSBjaGVjaw0KICBhY3Bp
+L2NwcGM6IEVuc3VyZSBvbmx5IHN1cHBvcnRlZCBDUFBDIHN5c2ZzIGVudHJpZXMgYXJlIGNyZWF0
+ZWQNCg0KWWF6ZW4gR2hhbm5hbSAoNSk6DQogIGFjcGkvY3BwYzogTW9kaWZ5IHNob3dfY3BwY19k
+YXRhIG1hY3JvDQogIGFjcGkvY3BwYzogUmV3b3JrIGNwcGNfc2V0X3BlcmYoKSB0byB1c2UgY3Bw
+Y19yZWdzIGluZGV4DQogIGFjcGkvY3BwYzogQWRkIG1hY3JvcyB0byBkZWZpbmUgYSBSL1cgc3lz
+ZnMgZW50cnkgZm9yIENQUEMgcmVnaXN0ZXJzDQogIGFjcGkvY3BwYzogQWRkIHN1cHBvcnQgZm9y
+IG9wdGlvbmFsIENQUEMgcmVnaXN0ZXJzDQogIGFjcGkvY3BwYzogQWRkIHN1cHBvcnQgZm9yIENQ
+UEMgRW5hYmxlIHJlZ2lzdGVyDQoNCiBkcml2ZXJzL2FjcGkvY3BwY19hY3BpLmMgICAgICAgfCA0
+MDIgKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0tDQogZHJpdmVycy9jcHVmcmVxL2Nw
+cGNfY3B1ZnJlcS5jIHwgICA2ICstDQogaW5jbHVkZS9hY3BpL2NwcGNfYWNwaS5oICAgICAgIHwg
+ICA2ICstDQogMyBmaWxlcyBjaGFuZ2VkLCAzNzIgaW5zZXJ0aW9ucygrKSwgNDIgZGVsZXRpb25z
+KC0pDQoNCi0tIA0KMi4xNy4xDQoNCg==
