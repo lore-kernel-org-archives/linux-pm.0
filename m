@@ -1,41 +1,70 @@
-From: Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system resume
-Date: Thu, 04 Apr 2019 07:06:46 +0300
-Message-ID: <87k1gatnvt.fsf@kamboji.qca.qualcomm.com>
-References: <2884043.Jv1Mn93hE8@aspire.rjw.lan>
-        <20190403195718.GA74723@google.com>
-        <1645947.WPhbVaNX0l@aspire.rjw.lan>
-        <CA+ASDXPoB94o0pbY0TQGS7Dtp2RNz=3goH38gpLtBoJ15i7eoQ@mail.gmail.com>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: [RFC PATCH 0/9] Add support for QCOM Core Power Reduction
+Date: Thu,  4 Apr 2019 07:09:21 +0200
+Message-ID: <20190404050931.9812-1-niklas.cassel@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CA+ASDXPoB94o0pbY0TQGS7Dtp2RNz=3goH38gpLtBoJ15i7eoQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-        (Brian Norris's message of "Wed, 3 Apr 2019 14:54:19 -0700")
-Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-wireless <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sriram R <srirrama-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Pradeep Kumar Chitrapu <pradeepc-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Claire Chang <tientzu-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: jorge.ramirez-ortiz@linaro.org, Niklas Cassel <niklas.cassel@linaro.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
+This is a first RFC for Core Power Reduction (CPR), a form of
+Adaptive Voltage Scaling (AVS), found on certain Qualcomm SoCs.
 
-> On Wed, Apr 3, 2019 at 2:47 PM Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
->> I have been wondering whether or not I need to resend this patch or something ...
->
-> I think the linux-wireless Patchwork instance is the source of truth
-> -- Kalle and Johannes use it for tracking status, IIUC. So this says
-> your patch is still "New":
->
-> https://patchwork.kernel.org/patch/10837139/
+Since this is simply an RFC, things like MAINTAINERS hasn't
+been updated yet.
 
-Yeah, that's right:
+CPR is a technology that reduces core power on a CPU or on other device.
+It reads voltage settings from efuses (that have been written in production),
+it uses these voltage settings as initial values, for each OPP.
 
-https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches#checking_state_of_patches_from_patchwork
+After moving to a certain OPP, CPR monitors dynamic factors such as
+temperature, etc. and adjusts the voltage for that frequency accordingly
+to save power and meet silicon characteristic requirements.
 
-So no need to resend, it's in my queue.
+This driver is based on an RFC by Stephen Boyd[1], which in turn is
+based on work by others on codeaurora.org[2].
 
-I was travelling and then busy with something else so I haven't had a
-chance to process patches, I'll try to catch up now but I'm sure it will
-take a while as there are so many patches. Sorry for the delay.
+[1] https://lkml.org/lkml/2015/9/18/833
+[2] https://www.codeaurora.org/cgit/quic/la/kernel/msm-3.10/tree/drivers/regulator/cpr-regulator.c?h=msm-3.10
+
+
+Jorge Ramirez-Ortiz (3):
+  drivers: regulator: qcom_spmi: enable linear range info
+  cpufreq: qcom: support qcs404 on nvmem driver
+  cpufreq: Add qcs404 to cpufreq-dt-platdev blacklist
+
+Niklas Cassel (5):
+  cpufreq: qcom: create a driver struct
+  dt-bindings: opp: Add qcom-opp bindings with properties needed for CPR
+  dt-bindings: power: avs: Add support for CPR (Core Power Reduction)
+  power: avs: Add support for CPR (Core Power Reduction)
+  arm64: dts: qcom: qcs404: Add CPR and populate OPP tables
+
+Sricharan R (1):
+  cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem
+    based qcom socs
+
+ ...ryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} |   16 +-
+ .../devicetree/bindings/opp/qcom-opp.txt      |   24 +
+ .../bindings/power/avs/qcom,cpr.txt           |  119 ++
+ arch/arm64/boot/dts/qcom/qcs404.dtsi          |  152 +-
+ drivers/cpufreq/Kconfig.arm                   |    4 +-
+ drivers/cpufreq/Makefile                      |    2 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c          |    1 +
+ ...om-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} |  197 +-
+ drivers/power/avs/Kconfig                     |   15 +
+ drivers/power/avs/Makefile                    |    1 +
+ drivers/power/avs/qcom-cpr.c                  | 1777 +++++++++++++++++
+ drivers/regulator/qcom_spmi-regulator.c       |    7 +
+ 12 files changed, 2234 insertions(+), 81 deletions(-)
+ rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (97%)
+ create mode 100644 Documentation/devicetree/bindings/opp/qcom-opp.txt
+ create mode 100644 Documentation/devicetree/bindings/power/avs/qcom,cpr.txt
+ rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (52%)
+ create mode 100644 drivers/power/avs/qcom-cpr.c
 
 -- 
-Kalle Valo
+2.20.1
