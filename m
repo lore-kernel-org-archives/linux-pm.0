@@ -1,71 +1,94 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
-Date: Fri,  5 Apr 2019 00:30:20 -0700
-Message-ID: <20190405073020.10361-1-andrew.smirnov@gmail.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/2] Auto-promotion logic for cpuidle states
+Date: Fri,  5 Apr 2019 04:16:45 -0500
+Message-ID: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Fix a similar endless event loop as was done in commit 8dcf32175b4e
-("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
+Currently, the cpuidle governors (menu/ladder) determine what idle state a
+idling CPU should enter into based on heuristics that depend on the idle
+history on that CPU. Given that no predictive heuristic is perfect, there
+are cases where the governor predicts a shallow idle state, hoping that
+the CPU will be busy soon. However, if no new workload is scheduled on
+that CPU in the near future, the CPU will end up in the shallow state.
 
-  The culprit is the dev_dbg printk in the i2c uevent handler. If
-  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
-  in an endless loop with systemd-journald.
+Motivation
+----------
+In case of POWER, this is problematic, when the predicted state in the
+aforementioned scenario is a lite stop state, as such lite states will
+inhibit SMT folding, thereby depriving the other threads in the core from
+using the core resources.
 
-  This happens if user-space scans the system log and reads the uevent
-  file to get information about a newly created device, which seems
-  fair use to me. Unfortunately reading the "uevent" file uses the
-  same function that runs for creating the uevent for a new device,
-  generating the next syslog entry
+To address this, such lite states need to be autopromoted. The cpuidle-core
+can queue timer to correspond with the residency value of the next
+available state. Thus leading to auto-promotion to a deeper idle state as
+soon as possible.
 
-Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
-in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
-seems to have been fixed. Change debug prints to use pr_debug insted
-to resolve the issue.
+Experiment
+----------
+I performed experiments for three scenarios to collect some data.
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/power/supply/power_supply_sysfs.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+case 1 :
+Without this patch and without tick retained, i.e. in a upstream kernel,
+It would spend more than even a second to get out of stop0_lite.
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index dce24f596160..5e91946731fd 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -383,14 +383,14 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	char *prop_buf;
- 	char *attrname;
- 
--	dev_dbg(dev, "uevent\n");
-+	pr_debug("%s: uevent\n", dev_name(dev));
- 
- 	if (!psy || !psy->desc) {
- 		dev_dbg(dev, "No power supply yet\n");
- 		return ret;
- 	}
- 
--	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
-+	pr_debug("%s: POWER_SUPPLY_NAME=%s\n", dev_name(dev), psy->desc->name);
- 
- 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
- 	if (ret)
-@@ -427,7 +427,8 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 			goto out;
- 		}
- 
--		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
-+		pr_debug("%s: prop %s=%s\n", dev_name(dev), attrname,
-+			 prop_buf);
- 
- 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
- 		kfree(attrname);
+case 2 : With tick retained(as suggested) -
+
+Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+it to take 8 sched tick to get out of stop0_lite. Experimentally,
+observation was
+
+=========================================================
+sample		min            max           99percentile
+20		4ms            12ms          4ms
+=========================================================
+*ms = milliseconds
+
+It would take atleast one sched tick to get out of stop0_lite.
+
+case 2 :  With this patch (not stopping tick, but explicitly queuing a
+ 	  timer)
+
+============================================================
+sample		min		max		99percentile
+============================================================
+20		144us		192us     	144us
+============================================================
+*us = microseconds
+
+In this patch, we queue a timer just before entering into a stop0_lite
+state. The timer fires at (residency of next available state + exit latency
+of next available state * 2). Let's say if next state(stop0) is available
+which has residency of 20us, it should get out in as low as (20+2*2)*8
+[Based on the forumla (residency + 2xlatency)*history length] microseconds
+= 192us. Ideally we would expect 8 iterations, it was observed to get out
+in 6-7 iterations. Even if let's say stop2 is next available state(stop0
+and stop1 both are unavailable), it would take (100+2*10)*8 = 960us to get
+into stop2.
+
+So, We are able to get out of stop0_lite generally in 150us(with this
+patch) as compared to 4ms(with tick retained). As stated earlier, we do not
+want to get stuck into stop0_lite as it inhibits SMT folding for other
+sibling threads, depriving them of core resources. Current patch is using
+auto-promotion only for stop0_lite, as it gives performance benefit(primary
+reason) along with lowering down power consumption. We may extend this
+model for other states in future.
+
+Abhishek Goel (2):
+  cpuidle : auto-promotion for cpuidle states
+  cpuidle : Add auto-promotion flag to cpuidle flags
+
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/Kconfig             |  4 ++
+ drivers/cpuidle/cpuidle-powernv.c   | 13 +++++-
+ drivers/cpuidle/cpuidle.c           | 68 ++++++++++++++++++++++++++++-
+ drivers/cpuidle/governors/ladder.c  |  3 +-
+ drivers/cpuidle/governors/menu.c    | 22 +++++++++-
+ include/linux/cpuidle.h             | 10 ++++-
+ 7 files changed, 115 insertions(+), 6 deletions(-)
+
 -- 
-2.20.1
+2.17.1
