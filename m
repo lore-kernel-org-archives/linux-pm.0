@@ -2,106 +2,101 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC91FC282CE
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:27:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3AB6C282DA
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:30:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9E5D520863
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:27:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 739AB21738
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:30:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n5a0/qwx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731413AbfDES1I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 14:27:08 -0400
-Received: from Galois.linutronix.de ([146.0.238.70]:49455 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731087AbfDES1I (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 14:27:08 -0400
-Received: from p5492e2fc.dip0.t-ipconnect.de ([84.146.226.252] helo=nanos)
-        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
-        (Exim 4.80)
-        (envelope-from <tglx@linutronix.de>)
-        id 1hCTYO-00021r-9n; Fri, 05 Apr 2019 20:27:04 +0200
-Date:   Fri, 5 Apr 2019 20:27:03 +0200 (CEST)
-From:   Thomas Gleixner <tglx@linutronix.de>
-To:     Len Brown <lenb@kernel.org>
-cc:     x86@kernel.org, linux-kernel@vger.kernel.org,
-        Zhang Rui <rui.zhang@intel.com>,
-        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 08/14] powercap/intel_rapl: Support multi-die/package
-In-Reply-To: <680e11fe0dcc65e4cfa5bfeaa0d1cdbe7896e3c0.1551160674.git.len.brown@intel.com>
-Message-ID: <alpine.DEB.2.21.1904052022310.1802@nanos.tec.linutronix.de>
-References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com> <680e11fe0dcc65e4cfa5bfeaa0d1cdbe7896e3c0.1551160674.git.len.brown@intel.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+        id S1731627AbfDESax (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 14:30:53 -0400
+Received: from mail-it1-f196.google.com ([209.85.166.196]:55614 "EHLO
+        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731542AbfDESax (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 14:30:53 -0400
+Received: by mail-it1-f196.google.com with SMTP id y134so4431051itc.5;
+        Fri, 05 Apr 2019 11:30:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=j6TlcubHlXKJDz2HgaUxMqtqUbPGV3QCmyVIqTuPCF0=;
+        b=n5a0/qwxYeSZu+/73B7fDXhqn9zsEyY7eUmilUe7n8NGE5WdXYPQ8klwI760WOCu6i
+         W1+N+yK/5Hyb35GXaczmINKsBK2dZGnIZFHaOPxJfG1GKmWE2wTUrJzVWPlbsOFQJGWX
+         ug0/Lm5afAYIocHgrlEHvzMR3dvaQ9CKthCGxeOhNUPdPJf39eoX6g0Q8+X36NKuOaVf
+         dHTmFwKVPtJTU91rbC1Axx9Q0XtzX92xqW/J/Nl+l+hDF2zJtKXelV7O3EqAeXFC5yX7
+         ZcCLELJVBy3AWullRwq4iNAH2wyZsKdLr/xMgeU+9FSb+yfIc3V91bkODM0rYpZyLO6T
+         zv5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=j6TlcubHlXKJDz2HgaUxMqtqUbPGV3QCmyVIqTuPCF0=;
+        b=pywaYil6kVE9FoMgTBhxX/6YQMsVlWqoiNbJ1MRm9fy2AJOGt0wVJnjWTUahnTfimv
+         LUTb9SVSQ3ou/o6Uk6x12zs27ufpEdcOieO77bJXn9Bv0DsNEELIFnL+9niqg8+1Q16c
+         L54Sw1vYR6qEbEFG/wD8SU3tKlzzo8cY9x79tzfZlft1463LVGlD/q0zCJQilwppWhC6
+         Z983Lh/Bdt1rKpSeEZhNXvCRM/hd+/WdCt7KS6qA5yxTBkKs4Hbta5DyDr8f+iWnwIs6
+         aHUDIxGStE5SpDVA1XXmoE9XCblC8rcPM237sq51881jAiGaLi/DnlLJv0YliNn97eIw
+         u3NA==
+X-Gm-Message-State: APjAAAUu654aqpGyT/eZeTFOsTIoRMrMHviDB3JVePcIycTFPAzQpAFv
+        ZkIM9QM/Rp7mLRvu0YXN6p2q7ro0L6xTdj5mfE0=
+X-Google-Smtp-Source: APXvYqwhI8i2yn6RTuiRykOQGOADYuqsIN5BD3f9wJULWnB86k+0SqXzY7LBuN+upj/rZkuguI+RhSTL/eKpdd0d13Y=
+X-Received: by 2002:a02:1d03:: with SMTP id 3mr11016326jaj.73.1554489052662;
+ Fri, 05 Apr 2019 11:30:52 -0700 (PDT)
 MIME-Version: 1.0
+References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
+ <20190401041418.5999-12-andrew.smirnov@gmail.com> <6b2bb239-dc98-df92-1999-0ae914732e17@linaro.org>
+In-Reply-To: <6b2bb239-dc98-df92-1999-0ae914732e17@linaro.org>
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+Date:   Fri, 5 Apr 2019 11:30:41 -0700
+Message-ID:
+ <CAHQ1cqGohyy=0yFjaVK1Xy=MBDmca9B1Ea+dfDWwmGs65G6uxw@mail.gmail.com>
+Subject: Re: [PATCH v3 11/13] thermal: qoriq: Do not report invalid
+ temperature reading
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405182703.ePqdNgnK7seVr3rv8EYeLIh8saLCP4fHRQ9rn-bRzYY@z>
+Message-ID: <20190405183041.IIbcnpCzMpvKEoSEaOVBpjGxQNaGtUd11f6h61lCwmY@z>
 
-On Tue, 26 Feb 2019, Len Brown wrote:
+On Thu, Apr 4, 2019 at 2:05 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> On 01/04/2019 06:14, Andrey Smirnov wrote:
+> > Before returning measured temperature data to upper layer we need to
+> > make sure that the reading was marked as "valid" to avoid reporting
+> > bogus data.
+>
+> Is it possible to add a comment above the read_poll to describe the
+> layout of the register ? That will help to understand the valid bit.
+>
 
-> From: Zhang Rui <rui.zhang@intel.com>
-> 
-> On the new dual-die/package systems, the RAPL MSR becomes die-scope.
-> Thus instead of one powercap device per physical package, now there
-> should be one powercap device for each unique die on these systems.
-> 
-> This patch introduces intel_rapl driver support for new
-> dual-die/package systems.
+Sure, will do.
 
-This patch .... See Documentation/processs/
+> Is the valid bit reset after reading the value?
+>
 
-and this sentence is not really helpful either.
+It works a bit differently. Here's the description form the datasheet:
 
-> On the hardwares that do not have multi-die, topology_logical_die_id()
-> equals topology_physical_package_id(), thus there is no functional change.
+Valid measured temperature.
+   0    Not valid. Temperature out of sensor range or first
+measurement still pending.
+   1    Valid.
 
-Something like this:
-
-To support this the RAPL package domain has to be identified by the die id
-instead of the package id. On single die CPUs the die id is the same as the
-physical package id.
-
-Hmm?
-
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> ---
->  drivers/powercap/intel_rapl.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 6057d9695fed..8723e9ae7436 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
->  /* caller to ensure CPU hotplug lock is held */
->  static struct rapl_package *rapl_find_package(int cpu)
->  {
-> -	int id = topology_physical_package_id(cpu);
-> +	int id = topology_logical_die_id(cpu);
->  	struct rapl_package *rp;
->  
->  	list_for_each_entry(rp, &rapl_packages, plist) {
-> @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
->  /* called from CPU hotplug notifier, hotplug lock held */
->  static struct rapl_package *rapl_add_package(int cpu)
->  {
-> -	int id = topology_physical_package_id(cpu);
-> +	int id = topology_logical_die_id(cpu);
->  	struct rapl_package *rp;
->  	int ret;
->  
-> -- 
-> 2.18.0-rc0
-> 
-> 
+Thanks,
+Andrey Smirnov
