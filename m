@@ -1,86 +1,79 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 0/3] add support for SAM9X60's shutdown controller
-Date: Fri, 5 Apr 2019 17:52:20 +0200
-Message-ID: <20190405155220.rsxrvv2yopij73de@earth.universe>
-References: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+From: sre <sre@kernel.org>
+Subject: Re: [PATCH] power:ds2782:Fix description error
+Date: Fri, 5 Apr 2019 17:58:50 +0200
+Message-ID: <20190405155850.j3f35qiov7hg5pfo@earth.universe>
+References: <tencent_408CB7922C1972D02ACDB8E48E4218092507@qq.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="lcyamu3phuxokejg"
+        protocol="application/pgp-signature"; boundary="hdhbftm6bszhjotw"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <tencent_408CB7922C1972D02ACDB8E48E4218092507@qq.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: =?utf-8?B?5b2t57qi?= <elicec@foxmail.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---lcyamu3phuxokejg
-Content-Type: text/plain; charset=us-ascii
+--hdhbftm6bszhjotw
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Feb 21, 2019 at 01:45:44PM +0000, Claudiu.Beznea@microchip.com wrot=
-e:
-> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+On Wed, Feb 20, 2019 at 04:32:29PM +0800, =E5=BD=AD=E7=BA=A2 wrote:
+> After add support for ds2786 battery gas gauge=EF=BC=8Cthe description
+> didn't update. fix it.
 >=20
-> Hi,
->=20
-> This series adapt SAMA5D2's shutdown controller driver to work for
-> SAM9X60's shutdown controller. The difference is that SAM9X60 have
-> option for RTT timer wakeup.
->=20
-> Thank you,
-> Claudiu Beznea
+> Signed-off-by: HongPeng <elicec@foxmail.com>
+> ---
 
-Thanks, queued.
+The patch does not apply due to a spelling fix in the description
+(Gauage -> Gauge). Also your name in From does not match the name
+in the Signed-off-by (SoB) and the one from SoB seems to miss a
+space.
 
 -- Sebastian
 
+>  drivers/power/supply/ds2782_battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> Changes in v2:
-> - collect Acked-by tags
-> - in patch 3/3 use "optional microchip,sam9x60-shdwc properties"
->   string to specify that the introduced property is only for
->   microchip,sam9x60-shdwc as specified above in case of
->   atmel,<chip>-shdwc shutdown controllers
-> - in patch 3/3 keep only the optional property introduced by
->   microchip,sam9x60-shwdwc (atmel,wakeup-rtt-timer)
->=20
-> Claudiu Beznea (3):
->   power: reset: at91-poweroff: add RTT wakeup capability
->   power: reset: at91-poweroff: add support for SAM9X60
->   dt-bindings: arm: atmel: add binding for SAM9X60 shutdown controller
->=20
->  .../devicetree/bindings/arm/atmel-sysregs.txt      |  6 +++++-
->  drivers/power/reset/at91-sama5d2_shdwc.c           | 25 ++++++++++++++++=
-++++++
->  2 files changed, 30 insertions(+), 1 deletion(-)
->=20
+> diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply=
+/ds2782_battery.c
+> index a1b7e0592245..924e99d1e69e 100644
+> --- a/drivers/power/supply/ds2782_battery.c
+> +++ b/drivers/power/supply/ds2782_battery.c
+> @@ -471,5 +471,5 @@ static struct i2c_driver ds278x_battery_driver =3D {
+>  module_i2c_driver(ds278x_battery_driver);
+> =20
+>  MODULE_AUTHOR("Ryan Mallon");
+> -MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC drive=
+r");
+> +MODULE_DESCRIPTION("Maxim/Dallas DS2782/DS2786 Stand-Alone Fuel Gauage I=
+C driver");
+>  MODULE_LICENSE("GPL");
 > --=20
-> 2.7.4
->=20
+> 2.17.1
 
---lcyamu3phuxokejg
+--hdhbftm6bszhjotw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynebQACgkQ2O7X88g7
-+pqpPxAAqI8P+IVyhLmkU+Aes/7au2rBLOAfw5K9NPNj10VzVsfa7dZnpimaWvhX
-EqYXyPdPbcj5tAlRlWoVb77bgJvT4JaOQNS25fjR9gxx1IF0nTJm6ggcauFwECZM
-3iZ1O0cvZkMAeSlEW9eto9mg18lgUHDI8SDl5RqiEAa7KDKSrKr9/tKEt/K/Kdvz
-VA0QtNliTeTG9oYA8JhcPdjQqEpEcwWwoitB2MPWUHcoPw3HIxNRKBQRGjEdsgFQ
-rtmk33qHqlobo8gKcv69SCd+wvLu4pht444G5KVrkUdBTwb2rKnvyVqz+BIyxbFv
-fknCj9ZEi3AQMLwEkhQv+0LUvcT7aKGyvSnd2wTbI5//w6H/m3/aNCRD2wV/Qlfl
-eEFyHSmG3sLw5xJOkqNP0RTqUIDWrKMuIqY4C2sruEgfmVACiKhRWemQwWAHLqXQ
-yi1YwaTZbVkqZcgcYI5un8xJqlBUTy41vR6cI/IHrstWYrfX+FPv/oMT/muXurxa
-D1Sz3uwRI+kaakIgfvELyV3t2gxM5qokZ3ndQikPDrScnl8h2a7GLjRIjO3vpljT
-EqCl2utcFlj7sJIJUSMsbt/JYzwn60Rc9zCvGBs08Mpm4rHL4SRnMtXhYbiF7gtm
-1hsmLNo5NdLxnRizxtCm3WRJKxb/+t0jf9bEBVCkqqndhLTvIGw=
-=zRv5
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynezoACgkQ2O7X88g7
++por0xAAhqSxQkhQqPwnHJq9mNddmBX/H6tS91EL0bhP4jIUTuXnZ9lEzlxdnnbP
+IV6GfrDOI89JtwvfxhiWXTMqUrm9XK/A9eTPcin+li98pF05eQ0btM1/kL9b9Soe
+KMiwW/ZElYr/oxkwQE+gB+uIdCQA0SpH9x/EPRKLGjSUSntytsyyR4kcnJYy8UW9
+Jlg7KGB9e27KZKBnuDBg8XBKttdddVXjcotwupJXP7VnG/Sz1xuvpg03QOtsmB9d
+ixL1fbWhbz6FJeg5BZgxLOaLkoz86BH68WjxPVhBqiggZHLvTil0MbIXyaluy/n4
+ppDUdb5RKMpq13+EvD7LyxprLWqcanfAklm35Eo6lJ+fL+4M8JMptbMd8IPF2sPG
+FIpn4+cGZErsF4j0TO9GQNZG6pnc+/ICbIyNvJLESyX1hOYetM3K81eC3MkAPpMV
+AQJRrJMHFPlcJv/d5bXwhOiDlayUpVMlC/BE61TKH6fCfS1yA5i3wYECX7OucM/p
+9MIeYO4Gx2UpUi+buCKWfHk6+s1C3UucdThRRZcNah438cp1h40QR1zwEkWcaiby
+tRzV27LcCe/yMIUVYQSyIDvdh/R+6MtAAGIJcPyUxs7stZA96T7Q8yO5wQbh+Tsc
+XJFhzKR1JZ8hlf+Nz6rViJzm5pCM0KYvlyjDlvVNYRGIC+Euc7w=
+=lVby
 -----END PGP SIGNATURE-----
 
---lcyamu3phuxokejg--
+--hdhbftm6bszhjotw--
