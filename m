@@ -1,27 +1,23 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v3 07/13] thermal: qoriq: Pass data to qoriq_tmu_calibration()
- directly
-Date: Fri, 5 Apr 2019 11:04:49 -0700
-Message-ID: <CAHQ1cqGfSS0PHaM+QcEMzhxXN5F9vQEE=nWseSoRKbrEmkFHag@mail.gmail.com>
+Subject: Re: [PATCH v3 08/13] thermal: qoriq: Convert driver to use devm_ioremap()
+Date: Fri, 5 Apr 2019 11:14:15 -0700
+Message-ID: <CAHQ1cqFgS1euUwc=vuUX1W24fBPcvb3tUsTwwFTKUb9tEdWNzg@mail.gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-8-andrew.smirnov@gmail.com> <fa3cf0ac-1015-4031-8cd4-cd5270e39fc7@linaro.org>
+ <20190401041418.5999-9-andrew.smirnov@gmail.com> <4d17af42-9db4-685e-799d-7b7981344129@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fa3cf0ac-1015-4031-8cd4-cd5270e39fc7@linaro.org>
+In-Reply-To: <4d17af42-9db4-685e-799d-7b7981344129@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 4, 2019 at 1:12 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On Thu, Apr 4, 2019 at 1:23 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 >
 > On 01/04/2019 06:14, Andrey Smirnov wrote:
-> > We can simplify error cleanup code if instead of passing a "struct
-> > platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
-> > pointers from it, we pass those pointers directly. This way we won't
-> > be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
-> > and consequently would be able to drop the "err_iomap" error path.
+> > Convert driver to use devm_ioremap() to simplify memory deallocation
+> > and error handling code. No functional change intended.
 > >
 > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > > Cc: Chris Healy <cphealy@gmail.com>
@@ -34,73 +30,47 @@ On Thu, Apr 4, 2019 at 1:12 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 > > Cc: linux-pm@vger.kernel.org
 > > Cc: linux-kernel@vger.kernel.org
 > > ---
-> >  drivers/thermal/qoriq_thermal.c | 22 +++++++++-------------
-> >  1 file changed, 9 insertions(+), 13 deletions(-)
+> >  drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
+> >  1 file changed, 10 insertions(+), 10 deletions(-)
 > >
 > > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> > index 24a2a57f61c9..a3ddb55740e4 100644
+> > index a3ddb55740e4..4f9a2543f9c3 100644
 > > --- a/drivers/thermal/qoriq_thermal.c
 > > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -139,16 +139,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
-> >       return 0;
-> >  }
+> > @@ -192,6 +192,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+> >       struct qoriq_tmu_data *data;
+> >       struct device_node *np = pdev->dev.of_node;
+> >       struct device *dev = &pdev->dev;
+> > +     struct resource *io;
 > >
-> > -static int qoriq_tmu_calibration(struct platform_device *pdev)
-> > +static int qoriq_tmu_calibration(struct device *dev,
-> > +                              struct qoriq_tmu_data *data)
-> >  {
-> >       int i, val, len;
-> >       u32 range[4];
-> >       const u32 *calibration;
-> > -     struct device_node *np = pdev->dev.of_node;
-> > -     struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-> > +     struct device_node *np = dev->of_node;
+> >       data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+> >                           GFP_KERNEL);
+> > @@ -200,7 +201,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
 > >
-> >       if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
-> > -             dev_err(&pdev->dev, "missing calibration range.\n");
-> > +             dev_err(dev, "missing calibration range.\n");
-> >               return -ENODEV;
-> >       }
-> >
-> > @@ -160,7 +160,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
-> >
-> >       calibration = of_get_property(np, "fsl,tmu-calibration", &len);
-> >       if (calibration == NULL || len % 8) {
-> > -             dev_err(&pdev->dev, "invalid calibration data.\n");
-> > +             dev_err(dev, "invalid calibration data.\n");
-> >               return -ENODEV;
-> >       }
-> >
-> > @@ -198,20 +198,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
-> >       if (!data)
-> >               return -ENOMEM;
-> >
-> > -     platform_set_drvdata(pdev, data);
-> > -
 > >       data->little_endian = of_property_read_bool(np, "little-endian");
 > >
-> >       data->regs = of_iomap(np, 0);
-> >       if (!data->regs) {
-> >               dev_err(dev, "Failed to get memory region\n");
-> > -             ret = -ENODEV;
-> > -             goto err_iomap;
+> > -     data->regs = of_iomap(np, 0);
+> > +     io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +     if (!io) {
+> > +             dev_err(dev, "Failed to get memory region\n");
 > > +             return -ENODEV;
-> >       }
-> >
-> >       qoriq_tmu_init_device(data);    /* TMU initialization */
-> >
-> > -     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
-> > +     ret = qoriq_tmu_calibration(dev, data); /* TMU calibration */
-> >       if (ret < 0)
-> >               goto err_tmu;
-> >
-> > @@ -222,14 +219,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
-> >               goto err_iomap;
+> > +     }
+> > +
+> > +     data->regs = devm_ioremap(dev, io->start, resource_size(io));
 >
-> s/goto err_iomap/goto err_tmu/ ?
+>
+>         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>         base = devm_ioremap_resource(&pdev->dev, res);
+> ?
 >
 
-Ugh, not sure how I missed this. Will fix. Thanks for catching this!
+devm_ioremap_resource() will call devm_request_mem_region() which
+would change original behavior. I don't know if original code was
+purposefully written to not request underlying memory region or not,
+but I didn't want to change the behavior. I am more than happy to
+change the code to use devm_ioremap_resource() (or probably even
+devm_platform_ioremap_resource()) if we agree that such a change is
+acceptable.
 
 Thanks,
 Andrey Smirnov
