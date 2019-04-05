@@ -1,89 +1,76 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm QCS404 DT
- bindings
-Date: Fri, 5 Apr 2019 21:32:54 +0700
-Message-ID: <20190405143254.GM1843@tuxbook-pro>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
- <20190405035446.31886-2-georgi.djakov@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/1] dt-bindings: power: supply: add missing semi-colon
+ in example
+Date: Fri, 5 Apr 2019 16:54:15 +0200
+Message-ID: <20190405145415.4dthzpqgvww7gv3a@earth.universe>
+References: <20190328203518.12100-1-sebastien.bourdelin@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="wepqn5kyeknu4t3h"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190405035446.31886-2-georgi.djakov@linaro.org>
+In-Reply-To: <20190328203518.12100-1-sebastien.bourdelin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Sebastien Bourdelin <sebastien.bourdelin@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
 
-> The Qualcomm QCS404 platform has several buses that could be controlled
-> and tuned according to the bandwidth demand.
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+--wepqn5kyeknu4t3h
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, Mar 28, 2019 at 04:35:18PM -0400, Sebastien Bourdelin wrote:
+> Fix the example documentation which is missing a semi-colon.
+>=20
+> Signed-off-by: Sebastien Bourdelin <sebastien.bourdelin@gmail.com>
 > ---
->  .../bindings/interconnect/qcom,qcs404.txt     | 45 +++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> new file mode 100644
-> index 000000000000..2ea63ea827d7
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> @@ -0,0 +1,45 @@
-> +Qualcomm QCS404 Network-On-Chip interconnect driver binding
-> +-----------------------------------------------------------
-> +
-> +Required properties :
-> +- compatible : shall contain only one of the following:
-> +			"qcom,qcs404-bimc"
-
-As this is a hardware block available in mmio register space I think you
-better represent this on the mmio (soc) bus - and then represent the
-link to rpm as a child node of the rpm.
-
-Apart from that this looks good.
-
-Regards,
-Bjorn
-
-> +			"qcom,qcs404-pcnoc"
-> +			"qcom,qcs404-snoc"
-> +- #interconnect-cells : should contain 1
-> +
-> +Optional properties :
-> +clocks : list of phandles and specifiers to all interconnect bus clocks
-> +clock-names : clock names should include both "bus_clk" and "bus_a_clk"
-> +
-> +Example:
-> +
-> +rpm-glink {
-> +	...
-> +	rpm_requests: glink-channel {
-> +		...
-> +		bimc: interconnect@0 {
-> +			compatible = "qcom,qcs404-bimc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-> +				<&rpmcc RPM_SMD_BIMC_A_CLK>;
-> +		};
-> +
-> +		pnoc: interconnect@1 {
-> +			compatible = "qcom,qcs404-pcnoc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-> +				<&rpmcc RPM_SMD_PNOC_A_CLK>;
-> +		};
-> +
-> +		snoc: interconnect@2 {
-> +			compatible = "qcom,qcs404-snoc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-> +				<&rpmcc RPM_SMD_SNOC_A_CLK>;
-> +		};
+>  Documentation/devicetree/bindings/power/supply/gpio-charger.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.=
+txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> index adbb5dc5b6e9..ddf7b7b971e1 100644
+> --- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> @@ -20,7 +20,7 @@ Example:
+>  		compatible =3D "gpio-charger";
+>  		charger-type =3D "usb-sdp";
+>  		gpios =3D <&gpf0 2 0 0 0>;
+> -	}
 > +	};
-> +};
+> =20
+>  	battery {
+>  		power-supplies =3D <&usb_charger>;
+> --=20
+> 2.20.1
+>=20
+
+Thanks, queued.
+
+-- Sebastian
+
+--wepqn5kyeknu4t3h
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynbBMACgkQ2O7X88g7
++pqViRAAo72q+SntauFv4VqYQR6nq1rukGbCNCYWqdn1DW8iSGQQNWJbtq+jJ7lC
+eWcrAMYx64tGioMfW0WRhJLPjXC393h7XRG4LvCUJDXBxzl6Yx7gDA0DkyEZpJMH
+OLxgTK7NNmS3fSdtPkwi90C+QOKV013Ci/HBpoEX35b1Jrx/Z58q3mHrxCstFW5j
+qgHvnUslid4LTpHnbLF3UfdG2a9cmXLrpdooUxaJ3khIbo1KKcU56UR1raXuwQvZ
+bJUZx3SkDUowr/FhaoyWNEFWYwWG0fHgXtoi5aUu4TMGu7xgZz23gsXOh+y3UD48
+UIq1qwhMBe6X+f3JenzGwdZcL0qw/jlwtFZGST/qhb2aLTxbsyfw86JNm8ogUgBN
+b3FrH81iMPTzHEVJP5oLSSYHqHoq+iOXB6vuu8FtpwUxR1Mw6ULESV2qyBKv5lDC
+43cT+UAwAYGrMg7tMA5RqXMQH4CjTA4zWUNvY8jL7oADFrZkFtGNHWsCQwwm/RnU
+dHuc6Frn5JL9DJxXxsVXtLlKfVgrUr6wjoNWkG19p8i9GhRimFN67IH/nYViJLpU
+LMskOjETonKzy6+ubpEclSpJGtW1LyS+dAiNaCWlbwaRGa0+FDkW62Uwiyz0+Bgn
+Px/ZR6dYskChIQAJEGx47BwJ2/OVGrdSx3N7bbnWWtF+z9igHsU=
+=uV8j
+-----END PGP SIGNATURE-----
+
+--wepqn5kyeknu4t3h--
