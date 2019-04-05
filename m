@@ -4,241 +4,204 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB51C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:11:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4722BC4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:18:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C7C83218AC
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:11:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F22B2190A
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:18:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554477115;
-	bh=YvGBtCO0klVKGMHmQSoe7cSukMQeNGTnmuOXD21Tqrw=;
+	s=default; t=1554477490;
+	bh=oqQfrHf2pZO2yORsvkdFBH1q8/RZUyJKabxuePfQB3g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=aaPiqyq0effGkkydTW1L8If8IrJM9kw8ZnVJ1x761MP7bca0b6N1BWLZWaxY0f/Ts
-	 1VgNBlN4vwMNn4nwjPB0nHEAdZThooDdcqlYgknF0JvaQxBKT71J+MVy0kH0onZT/i
-	 GYH43BVDJtHoUXQDnqlqMl6l40S1ZTpHUbxKqmP4=
+	b=Dq0dbiquM05U2aD4a7x68+KZd98sdbfCMWjbiittlYsxgspj4tWzGZxNqVC0Wpnh9
+	 wi3cMLjQvZs7r31aTV5TUrkmkyrA+eNiO3cntSbWeegC9OqMrIxG3BflTu8TPSzYPk
+	 cdCkrR8q2f17HMXj0KwuEAWhcI1bFYLvO8gFI/yY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731661AbfDEPLy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 11:11:54 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33048 "EHLO mail.kernel.org"
+        id S1731403AbfDEPSJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 11:18:09 -0400
+Received: from mail.kernel.org ([198.145.29.99]:36698 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731677AbfDEPLt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 11:11:49 -0400
+        id S1726291AbfDEPSJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 11:18:09 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 095EA21872;
-        Fri,  5 Apr 2019 15:11:48 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 83B11218D4;
+        Fri,  5 Apr 2019 15:18:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554477108;
-        bh=YvGBtCO0klVKGMHmQSoe7cSukMQeNGTnmuOXD21Tqrw=;
+        s=default; t=1554477487;
+        bh=oqQfrHf2pZO2yORsvkdFBH1q8/RZUyJKabxuePfQB3g=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=pyBKh/X4IMgldMs+btO58o0JAv0PzleWrBNFR9UkKrU90lh8B6mGWvkHs1sQ+wbYb
-         Q5nbGhTfbIy3FLHKG3UKoTbnmWkfo8Qo9YPxKC4GPtLxr+N9DEVncOyMAcCp5niWvr
-         iKUNFuIJ/D5dN+F+fY7JlzDBVKpngGWqhk22RS9o=
+        b=FmpZoHDiR1vOC4pMe0A6KMxn3jviex7Vt0xcC7efDawDZAKAaGyFyK0LLdxOyYK0s
+         Lr4yAnpDdAo5Aw6lDiXHVZnmWDu5c0LdAMdLo4g97sRbBQkQBi8NNLR6jaBkSouCAT
+         xK3/Fs2k41otY66Dcmev7rE5Nx8q4BZgaHetfEfk=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 0E22D3C08D5; Fri,  5 Apr 2019 17:11:46 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 17:11:45 +0200
+        id 7EF0A3C08D5; Fri,  5 Apr 2019 17:18:05 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 17:18:05 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc:     "mike.looijmans@topic.nl" <mike.looijmans@topic.nl>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "Getz, Robin" <Robin.Getz@analog.com>
-Subject: Re: [PATCH] power: supply: ltc3651-charger.c: Fix typo in device name
-Message-ID: <20190405151145.3iplzv423u7pkq6j@earth.universe>
-References: <1553608635-29376-1-git-send-email-michael.hennerich@analog.com>
- <20190405143747.didydf5neea4iqcq@earth.universe>
- <BY1PR0301MB0901370B40482D4EBD6EE84F8E510@BY1PR0301MB0901.namprd03.prod.outlook.com>
+To:     Martin Schiller <ms@dev.tdt.de>
+Cc:     robh+dt@kernel.org, mark.rutland@arm.com, fkan@apm.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: reset: syscon-reboot: add a mask property
+Message-ID: <20190405151805.fr3ie3q2vspljhr7@earth.universe>
+References: <20190308074930.15270-1-ms@dev.tdt.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="dblzwh77ugxulmds"
+        protocol="application/pgp-signature"; boundary="4iycinlwha4fbtrm"
 Content-Disposition: inline
-In-Reply-To: <BY1PR0301MB0901370B40482D4EBD6EE84F8E510@BY1PR0301MB0901.namprd03.prod.outlook.com>
+In-Reply-To: <20190308074930.15270-1-ms@dev.tdt.de>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190405151805.Zvoer3rPabFwlyRljt6sgx4YaxQqK_ZaduEo90zf5oo@z>
 
 
---dblzwh77ugxulmds
+--4iycinlwha4fbtrm
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 05, 2019 at 02:58:24PM +0000, Hennerich, Michael wrote:
-> > -----Original Message-----
-> > From: Sebastian Reichel [mailto:sre@kernel.org]
-> > Sent: Freitag, 5. April 2019 16:38
-> > To: Hennerich, Michael <Michael.Hennerich@analog.com>
-> > Cc: mike.looijmans@topic.nl; robh+dt@kernel.org; linux-pm@vger.kernel.o=
-rg; devicetree@vger.kernel.org; Getz, Robin
-> > <Robin.Getz@analog.com>
-> > Subject: Re: [PATCH] power: supply: ltc3651-charger.c: Fix typo in devi=
-ce name
-> >=20
-> > Hi,
-> >=20
-> > On Tue, Mar 26, 2019 at 02:57:15PM +0100, michael.hennerich@analog.com =
-wrote:
-> > > From: Michael Hennerich <michael.hennerich@analog.com>
-> > >
-> > > There never was a device called LTC3651, it always was just LT3651.
-> > > This circumstance makes it pretty difficult to identify what this
-> > > driver is meant to control. This patch is a minimal invasive attempt
-> > > to fix this issue without affecting existing systems.
-> > >
-> > >
-> > > Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> > > ---
-> >=20
-> > Please change subject to "power: supply: ltc3651-charger: Fix device na=
-me"
+On Fri, Mar 08, 2019 at 08:49:30AM +0100, Martin Schiller wrote:
+> Make the syscon-reboot driver accept value and mask instead of
+> just value.
 >=20
-> Sure
+> Prior to this patch, the property name for the value was 'mask'. If
+> only the mask property is defined on a node, maintain compatibility
+> by using it as the value.
 >=20
-> > Also we probably should change the filenames and Kconfig name.
+> This patch is based on commit
+> f2c199db477e ("power: reset: syscon-poweroff: add a mask property")
+> and does the same change for the syscon-reboot driver.
 >=20
-> If we go that far we can also fix the function prefixes as well.
+> Signed-off-by: Martin Schiller <ms@dev.tdt.de>
+> ---
 
-sounds good to me.
-
-> I'm a bit hesitant about the Kconfig name. It'll break existing kernel co=
-nfigs
-> for no good reason!? Please let me know what you prefer.
-
-I suppose we can keep to the old Kconfig option, if this is being
-used already. Hopefully not many people search for their driver
-using raw Kconfig names :)
+thanks, queued.
 
 -- Sebastian
 
+>  .../devicetree/bindings/power/reset/syscon-reboot.txt | 11 +++++++++--
+>  drivers/power/reset/syscon-reboot.c                   | 19 +++++++++++++=
+++++--
+>  2 files changed, 26 insertions(+), 4 deletions(-)
 >=20
-> Thanks for the review.
+> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot.=
+txt b/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> index 11906316b43d..e23dea8344f8 100644
+> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> @@ -3,13 +3,20 @@ Generic SYSCON mapped register reset driver
+>  This is a generic reset driver using syscon to map the reset register.
+>  The reset is generally performed with a write to the reset register
+>  defined by the register map pointed by syscon reference plus the offset
+> -with the mask defined in the reboot node.
+> +with the value and mask defined in the reboot node.
+> =20
+>  Required properties:
+>  - compatible: should contain "syscon-reboot"
+>  - regmap: this is phandle to the register map node
+>  - offset: offset in the register map for the reboot register (in bytes)
+> -- mask: the reset value written to the reboot register (32 bit access)
+> +- value: the reset value written to the reboot register (32 bit access)
+> +
+> +Optional properties:
+> +- mask: update only the register bits defined by the mask (32 bit)
+> +
+> +Legacy usage:
+> +If a node doesn't contain a value property but contains a mask property,=
+ the
+> +mask property is used as the value.
+> =20
+>  Default will be little endian mode, 32 bit access only.
+> =20
+> diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/sy=
+scon-reboot.c
+> index 7d0d269a0837..5a6bb638c331 100644
+> --- a/drivers/power/reset/syscon-reboot.c
+> +++ b/drivers/power/reset/syscon-reboot.c
+> @@ -27,6 +27,7 @@
+>  struct syscon_reboot_context {
+>  	struct regmap *map;
+>  	u32 offset;
+> +	u32 value;
+>  	u32 mask;
+>  	struct notifier_block restart_handler;
+>  };
+> @@ -39,7 +40,7 @@ static int syscon_restart_handle(struct notifier_block =
+*this,
+>  					restart_handler);
+> =20
+>  	/* Issue the reboot */
+> -	regmap_write(ctx->map, ctx->offset, ctx->mask);
+> +	regmap_update_bits(ctx->map, ctx->offset, ctx->mask, ctx->value);
+> =20
+>  	mdelay(1000);
+> =20
+> @@ -51,6 +52,7 @@ static int syscon_reboot_probe(struct platform_device *=
+pdev)
+>  {
+>  	struct syscon_reboot_context *ctx;
+>  	struct device *dev =3D &pdev->dev;
+> +	int mask_err, value_err;
+>  	int err;
+> =20
+>  	ctx =3D devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+> @@ -64,8 +66,21 @@ static int syscon_reboot_probe(struct platform_device =
+*pdev)
+>  	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
+>  		return -EINVAL;
+> =20
+> -	if (of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask))
+> +	value_err =3D of_property_read_u32(pdev->dev.of_node, "value", &ctx->va=
+lue);
+> +	mask_err =3D of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask=
+);
+> +	if (value_err && mask_err) {
+> +		dev_err(dev, "unable to read 'value' and 'mask'");
+>  		return -EINVAL;
+> +	}
+> +
+> +	if (value_err) {
+> +		/* support old binding */
+> +		ctx->value =3D ctx->mask;
+> +		ctx->mask =3D 0xFFFFFFFF;
+> +	} else if (mask_err) {
+> +		/* support value without mask*/
+> +		ctx->mask =3D 0xFFFFFFFF;
+> +	}
+> =20
+>  	ctx->restart_handler.notifier_call =3D syscon_restart_handle;
+>  	ctx->restart_handler.priority =3D 192;
+> --=20
+> 2.11.0
 >=20
-> -- Michael
->=20
-> >=20
-> > -- Sebastian
-> >=20
-> > >  .../devicetree/bindings/power/supply/ltc3651-charger.txt         | 8=
- +++++---
-> > >  drivers/power/supply/Kconfig                                     | 6=
- +++---
-> > >  drivers/power/supply/ltc3651-charger.c                           | 9=
- +++------
-> > >  3 files changed, 11 insertions(+), 12 deletions(-)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/power/supply/ltc3651-c=
-harger.txt
-> > b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-> > > index 71f2840..f012449 100644
-> > > --- a/Documentation/devicetree/bindings/power/supply/ltc3651-charger.=
-txt
-> > > +++ b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.=
-txt
-> > > @@ -1,7 +1,9 @@
-> > > -ltc3651-charger
-> > > +Analog Devices LT3651 Charger Power Supply bindings: ltc3651-charger
-> > >
-> > >  Required properties:
-> > > - - compatible: "lltc,ltc3651-charger"
-> > > +- compatible: Should contain one of the following:
-> > > + * "lltc,ltc3651-charger",
-> > > + * "lltc,lt3651-charger"
-> > >   - lltc,acpr-gpios: Connect to ACPR output. See remark below.
-> > >
-> > >  Optional properties:
-> > > @@ -20,7 +22,7 @@ attributes to detect changes.
-> > >  Example:
-> > >
-> > >  	charger: battery-charger {
-> > > -		compatible =3D "lltc,ltc3651-charger";
-> > > +		compatible =3D "lltc,lt3651-charger";
-> > >  		lltc,acpr-gpios =3D <&gpio0 68 GPIO_ACTIVE_LOW>;
-> > >  		lltc,fault-gpios =3D <&gpio0 64 GPIO_ACTIVE_LOW>;
-> > >  		lltc,chrg-gpios =3D <&gpio0 63 GPIO_ACTIVE_LOW>;
-> > > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kcon=
-fig
-> > > index e901b9879..6816a86 100644
-> > > --- a/drivers/power/supply/Kconfig
-> > > +++ b/drivers/power/supply/Kconfig
-> > > @@ -476,11 +476,11 @@ config CHARGER_MANAGER
-> > >            with help of suspend_again support.
-> > >
-> > >  config CHARGER_LTC3651
-> > > -	tristate "LTC3651 charger"
-> > > +	tristate "Analog Devices LT3651 charger"
-> > >  	depends on GPIOLIB
-> > >  	help
-> > > -	  Say Y to include support for the LTC3651 battery charger which re=
-ports
-> > > -	  its status via GPIO lines.
-> > > +	  Say Y to include support for the Analog Devices (Linear Technolog=
-y)
-> > > +	  LT3651 battery charger which reports its status via GPIO lines.
-> > >
-> > >  config CHARGER_MAX14577
-> > >  	tristate "Maxim MAX14577/77836 battery charger driver"
-> > > diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/s=
-upply/ltc3651-charger.c
-> > > index eea63ff..07ed537 100644
-> > > --- a/drivers/power/supply/ltc3651-charger.c
-> > > +++ b/drivers/power/supply/ltc3651-charger.c
-> > > @@ -1,11 +1,7 @@
-> > > +// SPDX-License-Identifier: GPL-2.0+
-> > >  /*
-> > > + *  Driver for Analog Devices (Linear Technology) LT3651 charger IC.
-> > >   *  Copyright (C) 2017, Topic Embedded Products
-> > > - *  Driver for LTC3651 charger IC.
-> > > - *
-> > > - *  This program is free software; you can redistribute it and/or mo=
-dify it
-> > > - *  under  the terms of the GNU General  Public License as published=
- by the
-> > > - *  Free Software Foundation;  either version 2 of the License, or (=
-at your
-> > > - *  option) any later version.
-> > >   */
-> > >
-> > >  #include <linux/device.h>
-> > > @@ -190,6 +186,7 @@ static int ltc3651_charger_probe(struct platform_=
-device *pdev)
-> > >
-> > >  static const struct of_device_id ltc3651_charger_match[] =3D {
-> > >  	{ .compatible =3D "lltc,ltc3651-charger" },
-> > > +	{ .compatible =3D "lltc,lt3651-charger" },
-> > >  	{ }
-> > >  };
-> > >  MODULE_DEVICE_TABLE(of, ltc3651_charger_match);
-> > > --
-> > > 2.7.4
-> > >
 
---dblzwh77ugxulmds
+--4iycinlwha4fbtrm
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlyncC4ACgkQ2O7X88g7
-+pqxtA//QNvt4WmP277jMga3CFuaWWiJtSrNmmaPoAV0WGbsjnhejX7JHGhCM0W3
-fhsE1JQr9H7JEcaX3gF6fiTyvtzyiq9kGkH7KgBaaQMtuz9iU2U9IvR43gXLM7bo
-GrrBAHWwDOjeQAxGr925zD320hC3iHnBF27QGu4+KM38KihL8YF41Q/uPBM7I6YI
-J91auagt95OLzolBggBQZia8YNmR0Wz79kC9KrjixKCP+x9xit8zT/XjM3TVyR4H
-FBbM3QAAH/4cfawu8donAACL7RVApbE6IErqsZSNHrXX4NFj61+iN2fMNz5xna91
-9py+NqENRzD3dOARbCpPoKdRifuOzkxl+xrdCjwwbTTEYC9u9UA2owG+L3NMV8pj
-QAZREHQQg7btpaN+yDbXvSFgNnRVpWI8jw29VVRhcI/z6OPIMnLHmyeJLiuWe7Lx
-8tYXbaHlPFVNKJ76TezEtHE5Us8tRBxis0lNykTuKX9IgiusaNKD+Mu7KqFiRTwF
-JzVkJDSlkAJiB9yjCyyeStQTqrAZRzSA33EU5wd+QEWBvMFNXvRpNNssNGFA8Pul
-0PhHzAe/lDoosvhr9WflTU4wGMaqIB1ooOy2ewT05y+On8X2Rhf7NNMkREzHf1k5
-cJoku4Brag47l6CNrx08fytnzefDNcMCzCXm4tUmJcOKgSiQ6LA=
-=342K
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynca0ACgkQ2O7X88g7
++popCA//dK7Dexr7cJnG6mdmK2NQzYdDB/9PyWQmOBWxP0WgBqKNUyqj0E9TCkNi
+EbrvppE4s4QTKAZ4pc9pUJEqNDqFPhRi82Xaj1NUp2cPAeyPUJr4O/kjM6VmLpbj
+lgTFkjn/d2IvHT5s/HAs+AMDzqVaSrVxRemgFk+7Ccux5dfnZAKGaDLJANYi/dxW
+w/kaiYiw0rQMq3b7sEEaEI7D3OR11qo/BV3SC3154PeqSKohroRE5o6YUsC7zUSJ
+4hA+i+NjNekqfKkQKY6FsgRLoSuKXpWBIf4EhYuLVPxAXEsEWtd/Hs8jjVxoYgpq
+biiPoi3EdgMs364O3kTFrJbfe946F4AiH04rVX4m4wHZ83WIERO3y2DnvQ3Y67td
+Hu7J01uKjMuulrjGF9si3EoUui6ppxW6Lmbof6/GUCt3LdVon+gC517uJjtW7a8t
+EjM+gbSttmOblGWYcVb3RvM/FQrIoslE9V2BXLXbIALXF1bOHi1GTJXWxeHI1FNN
+YrARbBM0Cp1/ESBlF6PtrKLfI4fn8U6XYu5JEN+lTYPuDuSBTs7KhsRbkLAIuYbe
+oYHYh6XCEGQGaRkwNYilda5Uz6iClzdZPOwTlAOixfDDBu1Ne33h7c3CBt1V8nOb
+2tLA9q96c9qGAGt4xP1lFmroHdvFCaq4zr7fzIm2PtqzsmKQ1gY=
+=VyQN
 -----END PGP SIGNATURE-----
 
---dblzwh77ugxulmds--
+--4iycinlwha4fbtrm--
