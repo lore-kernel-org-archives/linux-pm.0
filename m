@@ -1,231 +1,74 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v3 09/13] thermal: qoriq: Convert driver to use regmap API
-Date: Fri, 5 Apr 2019 11:24:23 -0700
-Message-ID: <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
-References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-10-andrew.smirnov@gmail.com> <52c33c26-47fa-04d2-0808-65a53fd2c804@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 08/14] powercap/intel_rapl: Support multi-die/package
+Date: Fri, 5 Apr 2019 20:27:03 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1904052022310.1802@nanos.tec.linutronix.de>
+References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com> <680e11fe0dcc65e4cfa5bfeaa0d1cdbe7896e3c0.1551160674.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52c33c26-47fa-04d2-0808-65a53fd2c804@linaro.org>
+In-Reply-To: <680e11fe0dcc65e4cfa5bfeaa0d1cdbe7896e3c0.1551160674.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 4, 2019 at 1:47 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> On 01/04/2019 06:14, Andrey Smirnov wrote:
-> > Convert driver to use regmap API, drop custom LE/BE IO helpers and
-> > simplify bit manipulation using regmap_update_bits(). This also allows
-> > us to convert some register initialization to use loops and adds
-> > convenient debug access to TMU registers via debugfs.
-> >
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-> > Cc: linux-imx@nxp.com
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  drivers/thermal/qoriq_thermal.c | 159 +++++++++++++++-----------------
-> >  1 file changed, 74 insertions(+), 85 deletions(-)
-> >
-> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> > index 4f9a2543f9c3..a909acee4354 100644
-> > --- a/drivers/thermal/qoriq_thermal.c
-> > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/io.h>
-> >  #include <linux/of.h>
-> >  #include <linux/of_address.h>
-> > +#include <linux/regmap.h>
-> >  #include <linux/thermal.h>
-> >
-> >  #include "thermal_core.h"
-> > @@ -17,48 +18,27 @@
-> >  /*
-> >   * QorIQ TMU Registers
-> >   */
-> > -struct qoriq_tmu_site_regs {
-> > -     u32 tritsr;             /* Immediate Temperature Site Register */
-> > -     u32 tratsr;             /* Average Temperature Site Register */
-> > -     u8 res0[0x8];
-> > -};
-> >
-> > -struct qoriq_tmu_regs {
-> > -     u32 tmr;                /* Mode Register */
-> > +#define REGS_TMR     0x000   /* Mode Register */
-> >  #define TMR_DISABLE  0x0
-> >  #define TMR_ME               0x80000000
-> >  #define TMR_ALPF     0x0c000000
-> > -     u32 tsr;                /* Status Register */
-> > -     u32 tmtmir;             /* Temperature measurement interval Register */
-> > +
-> > +#define REGS_TMTMIR  0x008   /* Temperature measurement interval Register */
-> >  #define TMTMIR_DEFAULT       0x0000000f
-> > -     u8 res0[0x14];
-> > -     u32 tier;               /* Interrupt Enable Register */
-> > +
-> > +#define REGS_TIER    0x020   /* Interrupt Enable Register */
-> >  #define TIER_DISABLE 0x0
-> > -     u32 tidr;               /* Interrupt Detect Register */
-> > -     u32 tiscr;              /* Interrupt Site Capture Register */
-> > -     u32 ticscr;             /* Interrupt Critical Site Capture Register */
-> > -     u8 res1[0x10];
-> > -     u32 tmhtcrh;            /* High Temperature Capture Register */
-> > -     u32 tmhtcrl;            /* Low Temperature Capture Register */
-> > -     u8 res2[0x8];
-> > -     u32 tmhtitr;            /* High Temperature Immediate Threshold */
-> > -     u32 tmhtatr;            /* High Temperature Average Threshold */
-> > -     u32 tmhtactr;   /* High Temperature Average Crit Threshold */
-> > -     u8 res3[0x24];
-> > -     u32 ttcfgr;             /* Temperature Configuration Register */
-> > -     u32 tscfgr;             /* Sensor Configuration Register */
-> > -     u8 res4[0x78];
-> > -     struct qoriq_tmu_site_regs site[SITES_MAX];
-> > -     u8 res5[0x9f8];
-> > -     u32 ipbrr0;             /* IP Block Revision Register 0 */
-> > -     u32 ipbrr1;             /* IP Block Revision Register 1 */
-> > -     u8 res6[0x310];
-> > -     u32 ttr0cr;             /* Temperature Range 0 Control Register */
-> > -     u32 ttr1cr;             /* Temperature Range 1 Control Register */
-> > -     u32 ttr2cr;             /* Temperature Range 2 Control Register */
-> > -     u32 ttr3cr;             /* Temperature Range 3 Control Register */
-> > -};
-> >
-> > +#define REGS_TTCFGR  0x080   /* Temperature Configuration Register */
-> > +#define REGS_TSCFGR  0x084   /* Sensor Configuration Register */
-> > +
-> > +#define REGS_TRITSR(n)       (0x100 + 16 * (n)) /* Immediate Temperature
-> > +                                         * Site Register
-> > +                                         */
-> > +#define REGS_TTRnCR(n)       (0xf10 + 4 * (n)) /* Temperature Range n
-> > +                                        * Control Register
-> > +                                        */
-> >  /*
-> >   * Thermal zone data
-> >   */
-> > @@ -67,8 +47,7 @@ struct qoriq_sensor {
-> >  };
-> >
-> >  struct qoriq_tmu_data {
-> > -     struct qoriq_tmu_regs __iomem *regs;
-> > -     bool little_endian;
-> > +     struct regmap *regmap;
-> >       struct qoriq_sensor     sensor[SITES_MAX];
-> >  };
-> >
-> > @@ -77,29 +56,13 @@ static struct qoriq_tmu_data *qoriq_sensor_to_data(struct qoriq_sensor *s)
-> >       return container_of(s, struct qoriq_tmu_data, sensor[s->id]);
-> >  }
-> >
-> > -static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
-> > -{
-> > -     if (p->little_endian)
-> > -             iowrite32(val, addr);
-> > -     else
-> > -             iowrite32be(val, addr);
-> > -}
-> > -
-> > -static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
-> > -{
-> > -     if (p->little_endian)
-> > -             return ioread32(addr);
-> > -     else
-> > -             return ioread32be(addr);
-> > -}
-> > -
-> >  static int tmu_get_temp(void *p, int *temp)
-> >  {
-> >       struct qoriq_sensor *qsensor = p;
-> >       struct qoriq_tmu_data *qdata = qoriq_sensor_to_data(qsensor);
-> >       u32 val;
-> >
-> > -     val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
-> > +     regmap_read(qdata->regmap, REGS_TRITSR(qsensor->id), &val);
-> >       *temp = (val & 0xff) * 1000;
-> >
-> >       return 0;
-> > @@ -134,7 +97,8 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
-> >
-> >       /* Enable monitoring */
-> >       if (sites != 0)
-> > -             tmu_write(qdata, sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
-> > +             regmap_write(qdata->regmap, REGS_TMR,
-> > +                          sites | TMR_ME | TMR_ALPF);
-> >
-> >       return 0;
-> >  }
-> > @@ -153,10 +117,8 @@ static int qoriq_tmu_calibration(struct device *dev,
-> >       }
-> >
-> >       /* Init temperature range registers */
-> > -     tmu_write(data, range[0], &data->regs->ttr0cr);
-> > -     tmu_write(data, range[1], &data->regs->ttr1cr);
-> > -     tmu_write(data, range[2], &data->regs->ttr2cr);
-> > -     tmu_write(data, range[3], &data->regs->ttr3cr);
-> > +     for (i = 0; i < ARRAY_SIZE(range); i++)
-> > +             regmap_write(data->regmap, REGS_TTRnCR(i), range[i]);
-> >
-> >       calibration = of_get_property(np, "fsl,tmu-calibration", &len);
-> >       if (calibration == NULL || len % 8) {
-> > @@ -166,9 +128,9 @@ static int qoriq_tmu_calibration(struct device *dev,
-> >
-> >       for (i = 0; i < len; i += 8, calibration += 2) {
-> >               val = of_read_number(calibration, 1);
-> > -             tmu_write(data, val, &data->regs->ttcfgr);
-> > +             regmap_write(data->regmap, REGS_TTCFGR, val);
-> >               val = of_read_number(calibration + 1, 1);
-> > -             tmu_write(data, val, &data->regs->tscfgr);
-> > +             regmap_write(data->regmap, REGS_TSCFGR, val);
-> >       }
-> >
-> >       return 0;
-> > @@ -177,15 +139,32 @@ static int qoriq_tmu_calibration(struct device *dev,
-> >  static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-> >  {
-> >       /* Disable interrupt, using polling instead */
-> > -     tmu_write(data, TIER_DISABLE, &data->regs->tier);
-> > +     regmap_write(data->regmap, REGS_TIER, TIER_DISABLE);
-> >
-> >       /* Set update_interval */
-> > -     tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
-> > +     regmap_write(data->regmap, REGS_TMTMIR, TMTMIR_DEFAULT);
-> >
-> >       /* Disable monitoring */
-> > -     tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-> > +     regmap_write(data->regmap, REGS_TMR, TMR_DISABLE);
-> >  }
-> >
-> > +static const struct regmap_range qiriq_yes_ranges[] = {
-> > +     regmap_reg_range(REGS_TMR, REGS_TSCFGR),
-> > +     regmap_reg_range(REGS_TTRnCR(0), REGS_TTRnCR(3)),
-> > +     /* Read only registers below */
-> > +     regmap_reg_range(REGS_TRITSR(0), REGS_TRITSR(15)),
-> > +};
-> > +
-> > +static const struct regmap_access_table qiriq_wr_table = {
-> > +     .yes_ranges     = qiriq_yes_ranges,
-> > +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges) - 1,
-> > +};
-> > +
-> > +static const struct regmap_access_table qiriq_rd_table = {
-> > +     .yes_ranges     = qiriq_yes_ranges,
-> > +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges),
-> > +};
->
-> As the table are the same, it would make sense to fold both structure to
-> a single one (and s/qiriq/qoriq/ ?)
->
+On Tue, 26 Feb 2019, Len Brown wrote:
 
-Writable registers are a subset of readable registers and n_yes_ranges
-is different between the two. Not sure how I could fold the two into a
-single struct. Will definitely fix the typo.
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> On the new dual-die/package systems, the RAPL MSR becomes die-scope.
+> Thus instead of one powercap device per physical package, now there
+> should be one powercap device for each unique die on these systems.
+> 
+> This patch introduces intel_rapl driver support for new
+> dual-die/package systems.
 
-Thanks,
-Andrey Smirnov
+This patch .... See Documentation/processs/
+
+and this sentence is not really helpful either.
+
+> On the hardwares that do not have multi-die, topology_logical_die_id()
+> equals topology_physical_package_id(), thus there is no functional change.
+
+Something like this:
+
+To support this the RAPL package domain has to be identified by the die id
+instead of the package id. On single die CPUs the die id is the same as the
+physical package id.
+
+Hmm?
+
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/powercap/intel_rapl.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 6057d9695fed..8723e9ae7436 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+>  /* caller to ensure CPU hotplug lock is held */
+>  static struct rapl_package *rapl_find_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  
+>  	list_for_each_entry(rp, &rapl_packages, plist) {
+> @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+>  /* called from CPU hotplug notifier, hotplug lock held */
+>  static struct rapl_package *rapl_add_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  	int ret;
+>  
+> -- 
+> 2.18.0-rc0
+> 
+> 
