@@ -2,156 +2,113 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 458D3C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0ECCC4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:02:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1532B21850
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C12B0218A6
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:02:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554472917;
-	bh=SH3hi1nePzhLHjLCJLW6uRcos6S1EVYQqeNfHFVTQf0=;
+	s=default; t=1554472962;
+	bh=YLyD9UK7a58sm+ZbvEW72Sy8kRoXPbd/NMxTrhRVJD0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Kr7S1NGceqh+iGI4rcuma/XWvqxQjd0JIulWf3HNsDzKfw6OWVFiWOdVY7M345/rA
-	 OZxtVFUQvvbkBVFnS+v1juQ5WUEEz3SoT9q77Uzn1Xm00N141HNBzaH3nmdfGFsP2B
-	 l5wonWAnnPiR4WwzblyonyQtoD60YbXL0r6XmMns=
+	b=WPTWOpeUxhK0n/I1fVx27PKNkZV1vIFsnNgYTcBSBWevkyPFWdbp+HIlOB/WklVX7
+	 o0rTn/flQ4+elqQR48AkAT4s8/rKtf7zB73Vs+oUFWsVcR2Lt7jrXNR5EX2H+X9MjR
+	 H9x50nMpyef1K7+186lKjUrXkL8s4B6beJMIzJWc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726027AbfDEN7w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 09:59:52 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46516 "EHLO mail.kernel.org"
+        id S1726663AbfDEOCm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 10:02:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49118 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731191AbfDEN7w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 09:59:52 -0400
+        id S1726643AbfDEOCl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 10:02:41 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 665BA21850;
-        Fri,  5 Apr 2019 13:59:50 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id E26BB21850;
+        Fri,  5 Apr 2019 14:02:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554472790;
-        bh=SH3hi1nePzhLHjLCJLW6uRcos6S1EVYQqeNfHFVTQf0=;
+        s=default; t=1554472961;
+        bh=YLyD9UK7a58sm+ZbvEW72Sy8kRoXPbd/NMxTrhRVJD0=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=C+QeqKJGNdOetqdMBbMjZSxne1b1UFU6nzt/q7EeaVoAbd/+MoxUCJ+7OL51Nfdt+
-         vSQ1xfEqdbA5mjTtv9IEPI63M0xuSb7CkYpqa7jzVsXMbIUoKooZy3SX2WhMavZqC6
-         OD7ZkDe7bW0rshb0h9Zg6qRqrSY5VufR92xMez/s=
+        b=tHwtm14y7bhronDTuOzNEOHHemteTxG0ANMmmUZ8oy1Q7gwGWnfDa2bgVOCYofcUu
+         dvG4sgqSRxYNEiGRYwdIfH2bWOE52GUjyBCWmbgSo6FLGLFTbVaIlwTSCjcxCWHco4
+         OSFTQjlnO4i4FbN/3e20jAEoV3T1ialIhjCjvmvQ=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 63DD93C08D5; Fri,  5 Apr 2019 15:59:48 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 15:59:48 +0200
+        id 1E9703C08D5; Fri,  5 Apr 2019 16:02:39 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 16:02:38 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Thomas Gleixner <tglx@linutronix.de>
-Cc:     Lubomir Rintel <lkundrak@v3.sk>,
-        Darren Hart <dvhart@infradead.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 04/10] x86, olpc: Use a correct version when making up a
- battery node
-Message-ID: <20190405135948.wnwv2qq3wz7bzsog@earth.universe>
-References: <20190310162419.11861-1-lkundrak@v3.sk>
- <20190310162419.11861-5-lkundrak@v3.sk>
- <alpine.DEB.2.21.1903230020270.2157@nanos.tec.linutronix.de>
+To:     Maxime Ripard <maxime.ripard@bootlin.com>
+Cc:     linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: Fix the simple battery property names
+Message-ID: <20190405140238.yuugynxoiyeh2nru@earth.universe>
+References: <20190318133629.17144-1-maxime.ripard@bootlin.com>
+ <20190402132245.wvakxqkhyyl66gbs@flea>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="cicfdoeib2e7lfta"
+        protocol="application/pgp-signature"; boundary="hgrhiohv2dkdy3ud"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.21.1903230020270.2157@nanos.tec.linutronix.de>
+In-Reply-To: <20190402132245.wvakxqkhyyl66gbs@flea>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405135948.CKsJOYFHwSHdLgEqMr3u_ODAuYShC714wwyZ5beDRRs@z>
 
 
---cicfdoeib2e7lfta
+--hgrhiohv2dkdy3ud
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Mar 23, 2019 at 12:25:58AM +0100, Thomas Gleixner wrote:
-> On Sun, 10 Mar 2019, Lubomir Rintel wrote:
+On Tue, Apr 02, 2019 at 03:22:45PM +0200, Maxime Ripard wrote:
+> On Mon, Mar 18, 2019 at 02:36:29PM +0100, Maxime Ripard wrote:
+> > Commit c08b1f45d7d1 ("power: supply: core: Add power_supply_battery_info
+> > and API") introduced code to parse the simple-battery node and express
+> > battery charging constraints. However, it parsed that node using the
+> > properties constant_charge_current_max_microamp and
+> > constant_charge_voltage_max_microvolt, while the device tree binding for
+> > the simple-battery node uses dashes to separate the words in those
+> > properties (constant-charge-current-max-microamp and
+> > constant-charge-voltage-max-microvolt).
+> >
+> > Let's make the code match the binding.
+> >
+> > Fixes: c08b1f45d7d1 ("power: supply: core: Add power_supply_battery_inf=
+o and API")
+> > Signed-off-by: Maxime Ripard <maxime.ripard@bootlin.com>
 >=20
-> Subject prefix ...
+> Ping?
 >=20
-> > The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-> > ambient temperature. We need to use a different compatible string for t=
-he
-> > XO-1.5 battery.
-> >=20
-> > Previously olpc_dt_fixup() used the presence od the battery node's
->=20
-> s/od/of/
->=20
-> > =20
-> > +int olpc_dt_compatible_match(phandle node, const char *compat)
-> > +{
-> > +	char buf[64];
-> > +	int plen;
-> > +	char *p;
-> > +	int len;
->=20
-> Please coalesce variables of the same type. No point in wasting space.
->=20
-> 	char buf[64], *p;
-> 	int plen, len;
->=20
-> Hmm?
->=20
-> > +
-> > +		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-> > +			/* If we have a olpc,xo1-battery compatible, then we're
-> > +			 * running a new enough firmware that already has
-> > +			 * the dcon node.
-> > +			 */
->=20
-> Comment style:
->=20
->        		 	 /*
-> 			  * This is a proper multi line comment even
-> 			  * if networking people use that horrible style
-> 			  * above.
-> 			  */
->=20
-> With those nitpicks fixed:
->=20
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> Maxime
 
-Looks like this is the last required change before this can be
-merged. Assuming Lubomir sends a fixed series soon, how should
-it be merged?
-
-a) I get a pull-request with a immutable branch for patch 2-4
-b) Complete patchset goes in via x86
-c) Complete patchset goes in via power-supply
-
-I'm fine with all variants.
+Pong. Sorry for the delay, queued.
 
 -- Sebastian
 
---cicfdoeib2e7lfta
+--hgrhiohv2dkdy3ud
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX1QACgkQ2O7X88g7
-+ppT6hAAnwa8NzJM9yXdDEp4T6Ci3Aiq3Nus2/3mrQwSI66pYQkangJzm0S1wy8u
-p9Y/SUD1PXtAKPtcnfh6uKp78gsqig+SmKaVC6CU415NuewyjzXDh0jnDAYGjR71
-QfofvUZc/l2X5Dl0AzpiUHp3uGb90pkAGqbo3hLdLGRfM6ZQUMs56uC2qyhYBj/U
-P2hi6sDnpCFGzk+5JkL2oR/XSuq4EUeJXoRfUsvMyFfmwKewbZCi9yONn6HVy9tF
-DfI6ATIbicDQ8RqaLFAcSFukIL/z0B1KTrc8W49b3XPMLbsmF5jm4iEYJem99k2p
-MD8pp0JSJudbDwD/rw2GseyAI1JS7qcAysdMQ8AvXqk8zjG3h+qtcopeCM9IZJmJ
-sK1UPEwY9uIuzrAylGw0HyqRPrPvDU3GUNC49+N7M2GA2Se0GSatkwc+FmAnhaUV
-6BvGQSkVPU2sANVYdy9bRgPGXscJcCZ5Bodmd/70tYlFfKQgUY5Cs6R1YWSs4CSd
-nInDgYrUnG8zggqWbFnVt+XIg+6Gzrf6w4d3AABBxin7x+beno98pLx/nUeVa1Wh
-jvYzTn1cfq52ZmayrkwLTHnnljCqoYhuAXK8JLsijO5PNJyfPbRH2ptADTBtbW+W
-UlfEol9hp7SGMwBFJKZ06ksvpl+JqQJuDrhHeOfBlQdfOeKG0II=
-=Fcpl
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX/4ACgkQ2O7X88g7
++prAzg/+L4tcUDf1Fne3MaHoABeJeMAVgCwbtRqbMnlh9EvK2VGIHD8fUOws/W2s
+vxp0bm96UUbkfJEEavhAQvNOXTH/hQahZZAZiK41L5VvvQOl32G1tI1qkxJyYCH2
+tBXzQzMdoSZzr9UNIaoxPQCn3N6pRHVogG8ZSZkqQ6CS5b/tNLIfIAN1iVFeHWlD
+lUv8XSaBPbQAK99sWua1WDM7k+uzoNHx7JYNMgdvHJjN9d+VZ92bJC4K1/zxaQo7
+f5d3l6gN+d7pwGhxbeb4ZsEBM7kOQbs96E+RmxIbTbyuUCEPSl4gHJQTQftXaoqf
+SYMf/mTQYzAaqV01lfFyIX0de1vM4aQbKDTvHVsnSC07RClnDsIrF07wOhIriQIh
+eCLy3QMYPJmFEUs4jYJdia/uk1m4fAbKJSkgzzUFK06zkFuuTE9S1SnfeMUcFIay
+Q6rpQO6u7m5QboSFluHxxdV0U2R5m9Dpt0pjdttTGcAqCPDuE9zFKAVWmtIpu1VG
+jkQwiZHD/RuZ0+dHRvvle2jkAXev1PwUK6OnifzLXUcVPXEw+VPTyt9sTzqV2IgG
+WHrx0elNs2LQEBrMvijRbNC/ktM6vYrmYV6Hbv0E+Yhjqoj56sO+2y08iB7E2Lhm
+bs0Vmsf9cY2yL7bjKOMpcgzkoEfJJOaR9Y3daDm0ykhHFxFqoR8=
+=wW/4
 -----END PGP SIGNATURE-----
 
---cicfdoeib2e7lfta--
+--hgrhiohv2dkdy3ud--
