@@ -1,40 +1,28 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v3 05/13] thermal: qoriq: Embed per-sensor data into
- struct qoriq_tmu_data
-Date: Fri, 5 Apr 2019 11:00:42 -0700
-Message-ID: <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
+Subject: Re: [PATCH v3 07/13] thermal: qoriq: Pass data to qoriq_tmu_calibration()
+ directly
+Date: Fri, 5 Apr 2019 11:04:49 -0700
+Message-ID: <CAHQ1cqGfSS0PHaM+QcEMzhxXN5F9vQEE=nWseSoRKbrEmkFHag@mail.gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-6-andrew.smirnov@gmail.com> <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
+ <20190401041418.5999-8-andrew.smirnov@gmail.com> <fa3cf0ac-1015-4031-8cd4-cd5270e39fc7@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
+In-Reply-To: <fa3cf0ac-1015-4031-8cd4-cd5270e39fc7@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 4, 2019 at 12:57 AM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
+On Thu, Apr 4, 2019 at 1:12 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 >
 > On 01/04/2019 06:14, Andrey Smirnov wrote:
-> > Embed per-sensor data into struct qoriq_tmu_data so we can drop the
-> > code allocating it. This also allows us to get rid of per-sensor back
-> > reference to struct qoriq_tmu_data since now its address can be
-> > caluclated using container_of().
->
-> This seems to be a repeating pattern, drivers are forced to put a back
-> pointer in the thermal sensor structure to regain access to the
-> container structure in the get_temp callback.
->
-> It would make sense to pass the sensor id to the get_temp callback as we
-> register with the sensor id.
->
-
-I'll rebase this series on the two patches you submitted.
-
-> One comment below.
->
+> > We can simplify error cleanup code if instead of passing a "struct
+> > platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
+> > pointers from it, we pass those pointers directly. This way we won't
+> > be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
+> > and consequently would be able to drop the "err_iomap" error path.
+> >
 > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > > Cc: Chris Healy <cphealy@gmail.com>
 > > Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -46,40 +34,73 @@ I'll rebase this series on the two patches you submitted.
 > > Cc: linux-pm@vger.kernel.org
 > > Cc: linux-kernel@vger.kernel.org
 > > ---
-> >  drivers/thermal/qoriq_thermal.c | 20 ++++++++------------
-> >  1 file changed, 8 insertions(+), 12 deletions(-)
+> >  drivers/thermal/qoriq_thermal.c | 22 +++++++++-------------
+> >  1 file changed, 9 insertions(+), 13 deletions(-)
 > >
 > > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> > index e281bdcfa11f..deb5cb6a0baf 100644
+> > index 24a2a57f61c9..a3ddb55740e4 100644
 > > --- a/drivers/thermal/qoriq_thermal.c
 > > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -59,22 +59,24 @@ struct qoriq_tmu_regs {
-> >       u32 ttr3cr;             /* Temperature Range 3 Control Register */
-> >  };
+> > @@ -139,16 +139,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+> >       return 0;
+> >  }
 > >
-> > -struct qoriq_tmu_data;
+> > -static int qoriq_tmu_calibration(struct platform_device *pdev)
+> > +static int qoriq_tmu_calibration(struct device *dev,
+> > +                              struct qoriq_tmu_data *data)
+> >  {
+> >       int i, val, len;
+> >       u32 range[4];
+> >       const u32 *calibration;
+> > -     struct device_node *np = pdev->dev.of_node;
+> > -     struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> > +     struct device_node *np = dev->of_node;
+> >
+> >       if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
+> > -             dev_err(&pdev->dev, "missing calibration range.\n");
+> > +             dev_err(dev, "missing calibration range.\n");
+> >               return -ENODEV;
+> >       }
+> >
+> > @@ -160,7 +160,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
+> >
+> >       calibration = of_get_property(np, "fsl,tmu-calibration", &len);
+> >       if (calibration == NULL || len % 8) {
+> > -             dev_err(&pdev->dev, "invalid calibration data.\n");
+> > +             dev_err(dev, "invalid calibration data.\n");
+> >               return -ENODEV;
+> >       }
+> >
+> > @@ -198,20 +198,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+> >       if (!data)
+> >               return -ENOMEM;
+> >
+> > -     platform_set_drvdata(pdev, data);
 > > -
-> >  /*
-> >   * Thermal zone data
-> >   */
-> >  struct qoriq_sensor {
-> > -     struct qoriq_tmu_data           *qdata;
-> >       int                             id;
-> >  };>
-> >  struct qoriq_tmu_data {
-> >       struct qoriq_tmu_regs __iomem *regs;
-> >       bool little_endian;
+> >       data->little_endian = of_property_read_bool(np, "little-endian");
+> >
+> >       data->regs = of_iomap(np, 0);
+> >       if (!data->regs) {
+> >               dev_err(dev, "Failed to get memory region\n");
+> > -             ret = -ENODEV;
+> > -             goto err_iomap;
+> > +             return -ENODEV;
+> >       }
+> >
+> >       qoriq_tmu_init_device(data);    /* TMU initialization */
+> >
+> > -     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
+> > +     ret = qoriq_tmu_calibration(dev, data); /* TMU calibration */
+> >       if (ret < 0)
+> >               goto err_tmu;
+> >
+> > @@ -222,14 +219,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+> >               goto err_iomap;
 >
-> Why not replace the little_endian boolean by a couple of callback
-> read/write and assign them to ioread32|ioread32be at init time.
->
-> That will kill the tmu_read and tmu_write functions and from there you
-> can figure out how to remove the qdata backpointer. In addition, it will
-> save a few instructions to test the boolean.
+> s/goto err_iomap/goto err_tmu/ ?
 >
 
-I am sure you've seen it by now, but little_endian is going away in
-this series in regmap conversion patch.
+Ugh, not sure how I missed this. Will fix. Thanks for catching this!
 
-Thanks
+Thanks,
 Andrey Smirnov
