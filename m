@@ -1,95 +1,28 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
-Date: Fri,  5 Apr 2019 04:16:47 -0500
-Message-ID: <20190405091647.4169-3-huntbag@linux.vnet.ibm.com>
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH 0/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date: Fri,  5 Apr 2019 06:24:53 -0400
+Message-ID: <20190405102455.15311-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch sets up flags for the state which needs to be auto-promoted. On
-POWERNV system, only lite states need to be autopromoted. We identify lite
-states by those which do not lose user context. That information has been
-used to set the flag for lite states.
+Add sunxi nvmem based CPU scaling driver, refers to qcom-cpufreq-kryo.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/Kconfig             |  4 ++++
- drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+Yangtao Li (2):
+  cpufreq: Add sunxi nvmem based CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 8caccbbd7..9b8e9b96a 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -35,6 +35,10 @@ config CPU_IDLE_GOV_TEO
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_AUTO_PROMOTION
-+	bool
-+	default y if PPC_POWERNV
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..0dd767270 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states && !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_AUTO_PROMOTION,
-+					  stop_loop, target_residency,
-+					  exit_latency, state->psscr_val,
-+					  state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
--					  state->psscr_val,
--					  state->psscr_mask);
-+					  state->psscr_val, state->psscr_mask);
- 		}
- 
- 		/*
+ .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 +++++++++++++++++
+ MAINTAINERS                                   |   7 +
+ drivers/cpufreq/Kconfig.arm                   |  10 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/cpufreq/sunxi-cpufreq-nvmem.c         | 236 ++++++++++++++++++
+ 6 files changed, 491 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+ create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+
 -- 
-2.17.1
+2.17.0
