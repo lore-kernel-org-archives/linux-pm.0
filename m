@@ -1,284 +1,160 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 2/3] interconnect: qcom: Add QCS404 interconnect provider
- driver
-Date: Fri, 5 Apr 2019 21:57:56 +0700
-Message-ID: <20190405145756.GN1843@tuxbook-pro>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
- <20190405035446.31886-3-georgi.djakov@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: reset: syscon-reboot: add a mask property
+Date: Fri, 5 Apr 2019 17:18:05 +0200
+Message-ID: <20190405151805.fr3ie3q2vspljhr7@earth.universe>
+References: <20190308074930.15270-1-ms@dev.tdt.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="4iycinlwha4fbtrm"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190405035446.31886-3-georgi.djakov@linaro.org>
+In-Reply-To: <20190308074930.15270-1-ms@dev.tdt.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Martin Schiller <ms@dev.tdt.de>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, fkan@apm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
-[..]
-> diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
-> new file mode 100644
-> index 000000000000..42d36db13ec0
-> --- /dev/null
-> +++ b/drivers/interconnect/qcom/qcs404.c
-> @@ -0,0 +1,488 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (C) 2019 Linaro Ltd
-> + */
-> +
-> +#include <dt-bindings/interconnect/qcom,qcs404.h>
-> +#include <linux/clk.h>
-> +#include <linux/device.h>
-> +#include <linux/interconnect-provider.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/soc/qcom/smd-rpm.h>
-> +
-> +#include "qcs404_ids.h"
-> +
-> +#define RPM_BUS_MASTER_REQ	0x73616d62
-> +#define RPM_BUS_SLAVE_REQ	0x766c7362
-> +#define RPM_KEY_BW		0x00007762
-> +
-> +#define to_qcom_provider(_provider) \
-> +	container_of(_provider, struct qcom_icc_provider, provider)
-> +
-> +struct qcom_smd_rpm *qcs404_rpm;
 
-static
+--4iycinlwha4fbtrm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi,
+
+On Fri, Mar 08, 2019 at 08:49:30AM +0100, Martin Schiller wrote:
+> Make the syscon-reboot driver accept value and mask instead of
+> just value.
+>=20
+> Prior to this patch, the property name for the value was 'mask'. If
+> only the mask property is defined on a node, maintain compatibility
+> by using it as the value.
+>=20
+> This patch is based on commit
+> f2c199db477e ("power: reset: syscon-poweroff: add a mask property")
+> and does the same change for the syscon-reboot driver.
+>=20
+> Signed-off-by: Martin Schiller <ms@dev.tdt.de>
+> ---
+
+thanks, queued.
+
+-- Sebastian
+
+>  .../devicetree/bindings/power/reset/syscon-reboot.txt | 11 +++++++++--
+>  drivers/power/reset/syscon-reboot.c                   | 19 +++++++++++++=
+++++--
+>  2 files changed, 26 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot.=
+txt b/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> index 11906316b43d..e23dea8344f8 100644
+> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot.txt
+> @@ -3,13 +3,20 @@ Generic SYSCON mapped register reset driver
+>  This is a generic reset driver using syscon to map the reset register.
+>  The reset is generally performed with a write to the reset register
+>  defined by the register map pointed by syscon reference plus the offset
+> -with the mask defined in the reboot node.
+> +with the value and mask defined in the reboot node.
+> =20
+>  Required properties:
+>  - compatible: should contain "syscon-reboot"
+>  - regmap: this is phandle to the register map node
+>  - offset: offset in the register map for the reboot register (in bytes)
+> -- mask: the reset value written to the reboot register (32 bit access)
+> +- value: the reset value written to the reboot register (32 bit access)
 > +
-[..]
-> +#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,	\
-> +		     _numlinks, ...)					\
-> +		static struct qcom_icc_node _name = {			\
-> +		.name = #_name,						\
-> +		.id = _id,						\
-> +		.buswidth = _buswidth,					\
-> +		.mas_rpm_id = _mas_rpm_id,				\
-> +		.slv_rpm_id = _slv_rpm_id,				\
-> +		.num_links = _numlinks,					\
-
-If you write this as ARRAY_SIZE(((int[]){ __VA_ARGS__ })), you don't
-need the manually entered _numlinks number.
-
-> +		.links = { __VA_ARGS__ },				\
+> +Optional properties:
+> +- mask: update only the register bits defined by the mask (32 bit)
+> +
+> +Legacy usage:
+> +If a node doesn't contain a value property but contains a mask property,=
+ the
+> +mask property is used as the value.
+> =20
+>  Default will be little endian mode, 32 bit access only.
+> =20
+> diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/sy=
+scon-reboot.c
+> index 7d0d269a0837..5a6bb638c331 100644
+> --- a/drivers/power/reset/syscon-reboot.c
+> +++ b/drivers/power/reset/syscon-reboot.c
+> @@ -27,6 +27,7 @@
+>  struct syscon_reboot_context {
+>  	struct regmap *map;
+>  	u32 offset;
+> +	u32 value;
+>  	u32 mask;
+>  	struct notifier_block restart_handler;
+>  };
+> @@ -39,7 +40,7 @@ static int syscon_restart_handle(struct notifier_block =
+*this,
+>  					restart_handler);
+> =20
+>  	/* Issue the reboot */
+> -	regmap_write(ctx->map, ctx->offset, ctx->mask);
+> +	regmap_update_bits(ctx->map, ctx->offset, ctx->mask, ctx->value);
+> =20
+>  	mdelay(1000);
+> =20
+> @@ -51,6 +52,7 @@ static int syscon_reboot_probe(struct platform_device *=
+pdev)
+>  {
+>  	struct syscon_reboot_context *ctx;
+>  	struct device *dev =3D &pdev->dev;
+> +	int mask_err, value_err;
+>  	int err;
+> =20
+>  	ctx =3D devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+> @@ -64,8 +66,21 @@ static int syscon_reboot_probe(struct platform_device =
+*pdev)
+>  	if (of_property_read_u32(pdev->dev.of_node, "offset", &ctx->offset))
+>  		return -EINVAL;
+> =20
+> -	if (of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask))
+> +	value_err =3D of_property_read_u32(pdev->dev.of_node, "value", &ctx->va=
+lue);
+> +	mask_err =3D of_property_read_u32(pdev->dev.of_node, "mask", &ctx->mask=
+);
+> +	if (value_err && mask_err) {
+> +		dev_err(dev, "unable to read 'value' and 'mask'");
+>  		return -EINVAL;
 > +	}
 > +
-[..]
-> +static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
-> +{
-> +	struct qcom_icc_provider *qp;
-> +	struct qcom_icc_node *qn;
-> +	struct icc_provider *provider;
-> +	struct icc_node *n;
-> +	u64 sum_bw;
-> +	u64 max_peak_bw;
-> +	u64 rate;
-> +	u32 agg_avg = 0;
-> +	u32 agg_peak = 0;
-> +	int ret = 0;
-> +
-> +	qn = src->data;
-> +	provider = src->provider;
-> +	qp = to_qcom_provider(provider);
-> +
-> +	list_for_each_entry(n, &provider->nodes, node_list)
-> +		qcom_icc_aggregate(n, n->avg_bw, n->peak_bw,
-> +				   &agg_avg, &agg_peak);
-> +
-> +	sum_bw = icc_units_to_bps(agg_avg);
-> +	max_peak_bw = icc_units_to_bps(agg_peak);
-> +
-> +	/* send message to the RPM processor */
-> +	if (qn->mas_rpm_id != -1) {
-> +		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-> +					    RPM_BUS_MASTER_REQ,
-> +					    qn->mas_rpm_id,
-> +					    sum_bw);
-> +		if (ret) {
-> +			pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
-> +			       qn->mas_rpm_id, ret);
-> +			return ret;
-> +		}
+> +	if (value_err) {
+> +		/* support old binding */
+> +		ctx->value =3D ctx->mask;
+> +		ctx->mask =3D 0xFFFFFFFF;
+> +	} else if (mask_err) {
+> +		/* support value without mask*/
+> +		ctx->mask =3D 0xFFFFFFFF;
 > +	}
-> +
-> +	if (qn->slv_rpm_id != -1) {
-> +		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-> +					    RPM_BUS_SLAVE_REQ,
-> +					    qn->slv_rpm_id,
-> +					    sum_bw);
-> +		if (ret) {
-> +			pr_err("qcom_icc_rpm_smd_send slv error %d\n",
-> +			       ret);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	rate = max(sum_bw, max_peak_bw);
-> +
-> +	do_div(rate, qn->buswidth);
-> +
-> +	if (qn->rate != rate) {
-> +		ret = clk_set_rate(qp->bus_clk, rate);
-> +		if (ret) {
-> +			pr_err("set clk rate %lld error %d\n", rate, ret);
-> +			return ret;
-> +		}
-> +
-> +		ret = clk_set_rate(qp->bus_a_clk, rate);
-> +		if (ret) {
-> +			pr_err("set clk rate %lld error %d\n", rate, ret);
-> +			return ret;
-> +		}
-> +
-> +		qn->rate = rate;
-> +	}
-> +
-> +	return ret;
+> =20
+>  	ctx->restart_handler.notifier_call =3D syscon_restart_handle;
+>  	ctx->restart_handler.priority =3D 192;
+> --=20
+> 2.11.0
+>=20
 
-ret is 0, return 0; and you can skip setting ret = 0 above.
+--4iycinlwha4fbtrm
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> +}
-> +
-> +static int qnoc_probe(struct platform_device *pdev)
-> +{
-> +	const struct qcom_icc_desc *desc;
-> +	struct icc_onecell_data *data;
-> +	struct icc_provider *provider;
-> +	struct qcom_icc_node **qnodes;
-> +	struct qcom_icc_provider *qp;
-> +	struct icc_node *node;
-> +	size_t num_nodes, i;
-> +	int ret;
-> +
-> +	/* wait for RPM */
+-----BEGIN PGP SIGNATURE-----
 
-This isn't waiting, it's getting the reference. That said if you make
-these sit on mmio bus you would need to EPROBE_DEFER on the rpm-child
-not being probed yet (and by that it would be a wait).
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynca0ACgkQ2O7X88g7
++popCA//dK7Dexr7cJnG6mdmK2NQzYdDB/9PyWQmOBWxP0WgBqKNUyqj0E9TCkNi
+EbrvppE4s4QTKAZ4pc9pUJEqNDqFPhRi82Xaj1NUp2cPAeyPUJr4O/kjM6VmLpbj
+lgTFkjn/d2IvHT5s/HAs+AMDzqVaSrVxRemgFk+7Ccux5dfnZAKGaDLJANYi/dxW
+w/kaiYiw0rQMq3b7sEEaEI7D3OR11qo/BV3SC3154PeqSKohroRE5o6YUsC7zUSJ
+4hA+i+NjNekqfKkQKY6FsgRLoSuKXpWBIf4EhYuLVPxAXEsEWtd/Hs8jjVxoYgpq
+biiPoi3EdgMs364O3kTFrJbfe946F4AiH04rVX4m4wHZ83WIERO3y2DnvQ3Y67td
+Hu7J01uKjMuulrjGF9si3EoUui6ppxW6Lmbof6/GUCt3LdVon+gC517uJjtW7a8t
+EjM+gbSttmOblGWYcVb3RvM/FQrIoslE9V2BXLXbIALXF1bOHi1GTJXWxeHI1FNN
+YrARbBM0Cp1/ESBlF6PtrKLfI4fn8U6XYu5JEN+lTYPuDuSBTs7KhsRbkLAIuYbe
+oYHYh6XCEGQGaRkwNYilda5Uz6iClzdZPOwTlAOixfDDBu1Ne33h7c3CBt1V8nOb
+2tLA9q96c9qGAGt4xP1lFmroHdvFCaq4zr7fzIm2PtqzsmKQ1gY=
+=VyQN
+-----END PGP SIGNATURE-----
 
-> +	qcs404_rpm = dev_get_drvdata(pdev->dev.parent);
-> +	if (!qcs404_rpm) {
-> +		dev_err(&pdev->dev, "unable to retrieve handle to RPM\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	desc = of_device_get_match_data(&pdev->dev);
-> +	if (!desc)
-> +		return -EINVAL;
-> +
-> +	qnodes = desc->nodes;
-> +	num_nodes = desc->num_nodes;
-> +
-> +	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
-> +	if (!qp)
-> +		return -ENOMEM;
-> +
-> +	data = devm_kcalloc(&pdev->dev, num_nodes, sizeof(*node), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
-
-Please use the clk_bulk interface instead.
-
-> +	if (IS_ERR(qp->bus_clk))
-> +		return PTR_ERR(qp->bus_clk);
-> +
-> +	ret = clk_prepare_enable(qp->bus_clk);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error enabling bus_clk: %d\n", ret);
-
-clk_prepare_enable() will complain if it fails to enable the clock, so
-no need to add another print.
-
-> +		return ret;
-> +	}
-> +
-> +	qp->bus_a_clk = devm_clk_get(&pdev->dev, "bus_a_clk");
-> +	if (IS_ERR(qp->bus_a_clk))
-> +		return PTR_ERR(qp->bus_a_clk);
-> +
-> +	ret = clk_prepare_enable(qp->bus_a_clk);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error enabling bus_a_clk: %d\n", ret);
-> +		clk_disable_unprepare(qp->bus_clk);
-> +		return ret;
-> +	}
-> +
-> +	provider = &qp->provider;
-> +	INIT_LIST_HEAD(&provider->nodes);
-> +	provider->dev = &pdev->dev;
-> +	provider->set = qcom_icc_set;
-> +	provider->aggregate = qcom_icc_aggregate;
-> +	provider->xlate = of_icc_xlate_onecell;
-> +	provider->data = data;
-> +
-> +	ret = icc_provider_add(provider);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error adding interconnect provider\n");
-> +		clk_disable_unprepare(qp->bus_clk);
-> +		clk_disable_unprepare(qp->bus_a_clk);
-> +		return ret;
-> +	}
-> +
-> +	for (i = 0; i < num_nodes; i++) {
-> +		size_t j;
-> +
-> +		node = icc_node_create(qnodes[i]->id);
-> +		if (IS_ERR(node)) {
-> +			ret = PTR_ERR(node);
-> +			goto err;
-> +		}
-> +
-> +		node->name = qnodes[i]->name;
-> +		node->data = qnodes[i];
-> +		icc_node_add(node, provider);
-> +
-> +		dev_dbg(&pdev->dev, "registered node %s\n", node->name);
-> +
-> +		/* populate links */
-> +		for (j = 0; j < qnodes[i]->num_links; j++)
-> +			icc_link_create(node, qnodes[i]->links[j]);
-> +
-> +		data->nodes[i] = node;
-> +	}
-> +	data->num_nodes = num_nodes;
-> +
-> +	platform_set_drvdata(pdev, qp);
-> +
-> +	return ret;
-
-ret is 0 here, so just return 0;
-
-> +err:
-> +	list_for_each_entry(node, &provider->nodes, node_list) {
-> +		icc_node_del(node);
-> +		icc_node_destroy(node->id);
-> +	}
-> +	clk_disable_unprepare(qp->bus_clk);
-> +	clk_disable_unprepare(qp->bus_a_clk);
-> +	icc_provider_del(provider);
-> +
-> +	return ret;
-> +}
-[..]
-> diff --git a/drivers/interconnect/qcom/qcs404_ids.h b/drivers/interconnect/qcom/qcs404_ids.h
-
-You use these defines in the driver, so I think this file should be the
-one in include/dt-bindings...
-
-[..]
-> diff --git a/include/dt-bindings/interconnect/qcom,qcs404.h b/include/dt-bindings/interconnect/qcom,qcs404.h
-
-...and that this is an accidental include(?)
-
-Regards,
-Bjorn
+--4iycinlwha4fbtrm--
