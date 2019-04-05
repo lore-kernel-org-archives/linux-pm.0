@@ -2,136 +2,156 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA6BC4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 07:30:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE22EC4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 09:17:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4A76E2175B
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 07:30:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fdhnNrTQ"
+	by mail.kernel.org (Postfix) with ESMTP id A7E23217D7
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 09:17:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729783AbfDEHae (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 03:30:34 -0400
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:34708 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726594AbfDEHae (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 03:30:34 -0400
-Received: by mail-pl1-f194.google.com with SMTP id y6so2574455plt.1;
-        Fri, 05 Apr 2019 00:30:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=VOrnHXSxYndVz4s82/4h/nLN4u1uE1Ep10yXCThvdm0=;
-        b=fdhnNrTQsWoBprPQFsOKO0qtUwHG1MALvjx54XZ4ZDabC4VsHr4sXxQPV90cIRKB9S
-         A4HyhnKuxvjDnkM3cp1izfJgnMdcFr9k28jxQRmwsMC0UzyCII1DXGHss/V0aGqdY1zt
-         6PtNxys4pXN4QL/XaN1X50ia2k7LvxjKcnJRQ55hUK9uVUtaryGaMwJTTQaph1t5LZQA
-         Tn4vuE9TokRhh57oR2/TN3FLM09Eul0Q8a19O1WyhOIFa2pT6315GT4kpSBBN3NYLtu8
-         MO5XPG7SVC7R083C5LJLCfm+OE+PFVZu+2QvwsSpTZvNmPKqev6KBD1dS25gx86ZRacX
-         09UQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=VOrnHXSxYndVz4s82/4h/nLN4u1uE1Ep10yXCThvdm0=;
-        b=AAMfriRX9bb7qY3zLkWltwx9hxFLjJ0GLXqrb9DH5HFIFMq1MfnMrScRL1SNubVGSm
-         EKHblA2lCH2QY2e8gZHonlqr9TY82gLKTJj50FcOu6L/MEFjZDph2WOxQlz11CrKzJjN
-         YUp+XfulwKKtojiYu7SxO41xGRNg4JJIy1/0MNRwj0pe8VSHCj427xR65kvyKPuUqhlA
-         a6uscrkJxvNBjxqdoNekf+2utAwjD/DjMcLpWqMKumWa04WeK0DPRY3HoTcj59Pld4Sm
-         zQuYuO9Nkc1CNY9CQHYJBwhQkU22TNjQT5nEtkT1KwqOjO1oCIMMsIbLGB2GvsW6fM/6
-         DW4A==
-X-Gm-Message-State: APjAAAXc4OfbesTng0odgFRzBdpVlE2fL5pBl6gnBjSChV/BtWc/ZMY8
-        DBShbj+kzyU1/1/jXDroG+E=
-X-Google-Smtp-Source: APXvYqy6cMT4BHanKoFfkkZ4mv5VUjuezy/ovsrrzAUBs16QcxyaNtZOtHBBCxosKXxoz/z1+fPluw==
-X-Received: by 2002:a17:902:b407:: with SMTP id x7mr11503526plr.288.1554449433145;
-        Fri, 05 Apr 2019 00:30:33 -0700 (PDT)
-Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id u5sm17042269pfm.121.2019.04.05.00.30.31
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 05 Apr 2019 00:30:32 -0700 (PDT)
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Chris Healy <cphealy@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
-Date:   Fri,  5 Apr 2019 00:30:20 -0700
-Message-Id: <20190405073020.10361-1-andrew.smirnov@gmail.com>
-X-Mailer: git-send-email 2.20.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+        id S1729896AbfDEJRL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 05:17:11 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:50068 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729792AbfDEJRK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 05:17:10 -0400
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x359BTQs107402
+        for <linux-pm@vger.kernel.org>; Fri, 5 Apr 2019 05:17:09 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2rp3g3ae7f-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 05 Apr 2019 05:17:09 -0400
+Received: from localhost
+        by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Fri, 5 Apr 2019 10:17:07 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+        by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Fri, 5 Apr 2019 10:17:04 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x359H3vO56295500
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 5 Apr 2019 09:17:03 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 9728652054;
+        Fri,  5 Apr 2019 09:17:03 +0000 (GMT)
+Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 56E2E52067;
+        Fri,  5 Apr 2019 09:17:02 +0000 (GMT)
+From:   Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-pm@vger.kernel.org
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
+        ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/2] Auto-promotion logic for cpuidle states
+Date:   Fri,  5 Apr 2019 04:16:45 -0500
+X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 19040509-0012-0000-0000-0000030B9169
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040509-0013-0000-0000-00002143A4DA
+Message-Id: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-05_06:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=805 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904050068
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190405073020.CFQ-NgekRtQ17tE8YbC-bOw7cA3UZXwm4LU39X-ympo@z>
+Message-ID: <20190405091645.xAhHkomk75VUgTSmI37oLhe3XoCp-MXxZuzDaE_qXOc@z>
 
-Fix a similar endless event loop as was done in commit 8dcf32175b4e
-("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
+Currently, the cpuidle governors (menu/ladder) determine what idle state a
+idling CPU should enter into based on heuristics that depend on the idle
+history on that CPU. Given that no predictive heuristic is perfect, there
+are cases where the governor predicts a shallow idle state, hoping that
+the CPU will be busy soon. However, if no new workload is scheduled on
+that CPU in the near future, the CPU will end up in the shallow state.
 
-  The culprit is the dev_dbg printk in the i2c uevent handler. If
-  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
-  in an endless loop with systemd-journald.
+Motivation
+----------
+In case of POWER, this is problematic, when the predicted state in the
+aforementioned scenario is a lite stop state, as such lite states will
+inhibit SMT folding, thereby depriving the other threads in the core from
+using the core resources.
 
-  This happens if user-space scans the system log and reads the uevent
-  file to get information about a newly created device, which seems
-  fair use to me. Unfortunately reading the "uevent" file uses the
-  same function that runs for creating the uevent for a new device,
-  generating the next syslog entry
+To address this, such lite states need to be autopromoted. The cpuidle-core
+can queue timer to correspond with the residency value of the next
+available state. Thus leading to auto-promotion to a deeper idle state as
+soon as possible.
 
-Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
-in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
-seems to have been fixed. Change debug prints to use pr_debug insted
-to resolve the issue.
+Experiment
+----------
+I performed experiments for three scenarios to collect some data.
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/power/supply/power_supply_sysfs.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+case 1 :
+Without this patch and without tick retained, i.e. in a upstream kernel,
+It would spend more than even a second to get out of stop0_lite.
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index dce24f596160..5e91946731fd 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -383,14 +383,14 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	char *prop_buf;
- 	char *attrname;
- 
--	dev_dbg(dev, "uevent\n");
-+	pr_debug("%s: uevent\n", dev_name(dev));
- 
- 	if (!psy || !psy->desc) {
- 		dev_dbg(dev, "No power supply yet\n");
- 		return ret;
- 	}
- 
--	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
-+	pr_debug("%s: POWER_SUPPLY_NAME=%s\n", dev_name(dev), psy->desc->name);
- 
- 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
- 	if (ret)
-@@ -427,7 +427,8 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 			goto out;
- 		}
- 
--		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
-+		pr_debug("%s: prop %s=%s\n", dev_name(dev), attrname,
-+			 prop_buf);
- 
- 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
- 		kfree(attrname);
+case 2 : With tick retained(as suggested) -
+
+Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+it to take 8 sched tick to get out of stop0_lite. Experimentally,
+observation was
+
+=========================================================
+sample		min            max           99percentile
+20		4ms            12ms          4ms
+=========================================================
+*ms = milliseconds
+
+It would take atleast one sched tick to get out of stop0_lite.
+
+case 2 :  With this patch (not stopping tick, but explicitly queuing a
+ 	  timer)
+
+============================================================
+sample		min		max		99percentile
+============================================================
+20		144us		192us     	144us
+============================================================
+*us = microseconds
+
+In this patch, we queue a timer just before entering into a stop0_lite
+state. The timer fires at (residency of next available state + exit latency
+of next available state * 2). Let's say if next state(stop0) is available
+which has residency of 20us, it should get out in as low as (20+2*2)*8
+[Based on the forumla (residency + 2xlatency)*history length] microseconds
+= 192us. Ideally we would expect 8 iterations, it was observed to get out
+in 6-7 iterations. Even if let's say stop2 is next available state(stop0
+and stop1 both are unavailable), it would take (100+2*10)*8 = 960us to get
+into stop2.
+
+So, We are able to get out of stop0_lite generally in 150us(with this
+patch) as compared to 4ms(with tick retained). As stated earlier, we do not
+want to get stuck into stop0_lite as it inhibits SMT folding for other
+sibling threads, depriving them of core resources. Current patch is using
+auto-promotion only for stop0_lite, as it gives performance benefit(primary
+reason) along with lowering down power consumption. We may extend this
+model for other states in future.
+
+Abhishek Goel (2):
+  cpuidle : auto-promotion for cpuidle states
+  cpuidle : Add auto-promotion flag to cpuidle flags
+
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/Kconfig             |  4 ++
+ drivers/cpuidle/cpuidle-powernv.c   | 13 +++++-
+ drivers/cpuidle/cpuidle.c           | 68 ++++++++++++++++++++++++++++-
+ drivers/cpuidle/governors/ladder.c  |  3 +-
+ drivers/cpuidle/governors/menu.c    | 22 +++++++++-
+ include/linux/cpuidle.h             | 10 ++++-
+ 7 files changed, 115 insertions(+), 6 deletions(-)
+
 -- 
-2.20.1
+2.17.1
 
