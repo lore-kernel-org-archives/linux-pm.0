@@ -2,125 +2,156 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE27C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 458D3C4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4E10B218AC
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1532B21850
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554472894;
-	bh=fsh/4e2YUoJ6mxG6gKftsBN+3Zc6eKt4TFqmWvOthcM=;
+	s=default; t=1554472917;
+	bh=SH3hi1nePzhLHjLCJLW6uRcos6S1EVYQqeNfHFVTQf0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=z08+CsipQNjL3dMGhkudozYerx8Im0Y8fYvULvq7GC+8nGWA88RHaGkcbfGHrCa7W
-	 JPVczHSYpySSFGyqvueYTddOQQNQInlFs1nfbcZmJ5uyrOvHYNmp/Oe0LAhTwTUmDg
-	 SP82bmjDyY9Y3WV+IauvCVpa424LSskg81/k8CQ4=
+	b=Kr7S1NGceqh+iGI4rcuma/XWvqxQjd0JIulWf3HNsDzKfw6OWVFiWOdVY7M345/rA
+	 OZxtVFUQvvbkBVFnS+v1juQ5WUEEz3SoT9q77Uzn1Xm00N141HNBzaH3nmdfGFsP2B
+	 l5wonWAnnPiR4WwzblyonyQtoD60YbXL0r6XmMns=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731448AbfDEOAe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 10:00:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:47400 "EHLO mail.kernel.org"
+        id S1726027AbfDEN7w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 09:59:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:46516 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731445AbfDEOAd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 10:00:33 -0400
+        id S1731191AbfDEN7w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 09:59:52 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 0BB382186A;
-        Fri,  5 Apr 2019 14:00:33 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 665BA21850;
+        Fri,  5 Apr 2019 13:59:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554472833;
-        bh=fsh/4e2YUoJ6mxG6gKftsBN+3Zc6eKt4TFqmWvOthcM=;
+        s=default; t=1554472790;
+        bh=SH3hi1nePzhLHjLCJLW6uRcos6S1EVYQqeNfHFVTQf0=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=tFVGo5jsv7v2QhLvHC/FSjMhlrVL6lTv6MuFrA84ZpKo3+wGkVynXaTSXlYlmt/mL
-         W45RXFcB8RZyiPPV60XkZB6SYttSYBZZEe5FIQ8sAkNw18BL8zVp7py9BafognDX58
-         dQhv9UkAk6YSIR55+9g1P9goOt9XpwlLjx2NgF8M=
+        b=C+QeqKJGNdOetqdMBbMjZSxne1b1UFU6nzt/q7EeaVoAbd/+MoxUCJ+7OL51Nfdt+
+         vSQ1xfEqdbA5mjTtv9IEPI63M0xuSb7CkYpqa7jzVsXMbIUoKooZy3SX2WhMavZqC6
+         OD7ZkDe7bW0rshb0h9Zg6qRqrSY5VufR92xMez/s=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 30ACF3C08D5; Fri,  5 Apr 2019 16:00:31 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 16:00:31 +0200
+        id 63DD93C08D5; Fri,  5 Apr 2019 15:59:48 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 15:59:48 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Kangjie Lu <kjlu@umn.edu>
-Cc:     pakki001@umn.edu, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: charger-manager: fix a potential NULL pointer
- dereference
-Message-ID: <20190405140031.6u35e5jd56aqms6o@earth.universe>
-References: <20190314060247.7848-1-kjlu@umn.edu>
+To:     Thomas Gleixner <tglx@linutronix.de>
+Cc:     Lubomir Rintel <lkundrak@v3.sk>,
+        Darren Hart <dvhart@infradead.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 04/10] x86, olpc: Use a correct version when making up a
+ battery node
+Message-ID: <20190405135948.wnwv2qq3wz7bzsog@earth.universe>
+References: <20190310162419.11861-1-lkundrak@v3.sk>
+ <20190310162419.11861-5-lkundrak@v3.sk>
+ <alpine.DEB.2.21.1903230020270.2157@nanos.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tkl3ivocftthn6sa"
+        protocol="application/pgp-signature"; boundary="cicfdoeib2e7lfta"
 Content-Disposition: inline
-In-Reply-To: <20190314060247.7848-1-kjlu@umn.edu>
+In-Reply-To: <alpine.DEB.2.21.1903230020270.2157@nanos.tec.linutronix.de>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405140031.rbeBy-n6Wi-ZhyvhDG21uY3uZZZK5x5fT-2IHpgtpZw@z>
+Message-ID: <20190405135948.CKsJOYFHwSHdLgEqMr3u_ODAuYShC714wwyZ5beDRRs@z>
 
 
---tkl3ivocftthn6sa
+--cicfdoeib2e7lfta
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Mar 14, 2019 at 01:02:47AM -0500, Kangjie Lu wrote:
-> In case create_freezable_workqueue fails, the fix return -ENOMEM
-> to avoid a potential NULL pointer dereference.
+On Sat, Mar 23, 2019 at 12:25:58AM +0100, Thomas Gleixner wrote:
+> On Sun, 10 Mar 2019, Lubomir Rintel wrote:
 >=20
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-> ---
+> Subject prefix ...
+>=20
+> > The XO-1 and XO-1.5 batteries apparently differ in an ability to report
+> > ambient temperature. We need to use a different compatible string for t=
+he
+> > XO-1.5 battery.
+> >=20
+> > Previously olpc_dt_fixup() used the presence od the battery node's
+>=20
+> s/od/of/
+>=20
+> > =20
+> > +int olpc_dt_compatible_match(phandle node, const char *compat)
+> > +{
+> > +	char buf[64];
+> > +	int plen;
+> > +	char *p;
+> > +	int len;
+>=20
+> Please coalesce variables of the same type. No point in wasting space.
+>=20
+> 	char buf[64], *p;
+> 	int plen, len;
+>=20
+> Hmm?
+>=20
+> > +
+> > +		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
+> > +			/* If we have a olpc,xo1-battery compatible, then we're
+> > +			 * running a new enough firmware that already has
+> > +			 * the dcon node.
+> > +			 */
+>=20
+> Comment style:
+>=20
+>        		 	 /*
+> 			  * This is a proper multi line comment even
+> 			  * if networking people use that horrible style
+> 			  * above.
+> 			  */
+>=20
+> With those nitpicks fixed:
+>=20
+> Acked-by: Thomas Gleixner <tglx@linutronix.de>
 
-Thanks, queued.
+Looks like this is the last required change before this can be
+merged. Assuming Lubomir sends a fixed series soon, how should
+it be merged?
+
+a) I get a pull-request with a immutable branch for patch 2-4
+b) Complete patchset goes in via x86
+c) Complete patchset goes in via power-supply
+
+I'm fine with all variants.
 
 -- Sebastian
 
->  drivers/power/supply/charger-manager.c | 3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/suppl=
-y/charger-manager.c
-> index 38be91f21cc4..d29c4f338157 100644
-> --- a/drivers/power/supply/charger-manager.c
-> +++ b/drivers/power/supply/charger-manager.c
-> @@ -1987,6 +1987,9 @@ static struct platform_driver charger_manager_drive=
-r =3D {
->  static int __init charger_manager_init(void)
->  {
->  	cm_wq =3D create_freezable_workqueue("charger_manager");
-> +	if (unlikely(!cm_wq))
-> +		return -ENOMEM;
-> +
->  	INIT_DELAYED_WORK(&cm_monitor_work, cm_monitor_poller);
-> =20
->  	return platform_driver_register(&charger_manager_driver);
-> --=20
-> 2.17.1
->=20
-
---tkl3ivocftthn6sa
+--cicfdoeib2e7lfta
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX34ACgkQ2O7X88g7
-+pqT4w//bt8j4QXMjCoJjbStIlmi1jhU7Zq0fcOE/O0PkQyArTOnQJ5cyvnvoDGv
-UfcaxNBLas4M1YXXVHZT7cp1GyZI21s/e0dPXvTNxpqd4SkipcdYGtRgkvj1s3yN
-+0Olt8vuomRr48a825+5sGL55tXCXJfOe9T5M8GGxvv4urNcy+U2JaO0pidnWZi0
-cmVQ0oCRXiqFh24xfwpwJ0AB0O+yIpxqcXEXwTJ6F1nOXrEe+LpgSHginyCDET3s
-dvaiDBuYk6d36ZCmsN3rz80LE0jz6m9rZd0iVGi2jVACbSFgPvYlgJmJA8n3Hn+8
-yBp2VcHqUrRLGFeLykLSxIRHd1Ahrtugmkn4eH4S920BhqqIdL1esVvnxRtQ7sce
-feIrzAPTNpVzS3O38CDExWEQrg9BCLnv6A+6QS3T/ediYH4p1agZSKXQluKIU4gq
-niS8142knFXQ2xCNBm8Np44ahjCwftjJ6pAH994fqTvF6kRQ6b5GgiUzjV16EL+i
-zdkS75qeNgOcbCrJEUgMcpa76Gk3/Mys5pA+2mq4qxWvejMH9Z2daL8N3zsPZ+Kp
-mqImJqaDMiLeQP6srTkuDrUHKQBAuDi+/mgrqLYUNw5HQnq/rDAHnUWvjN1puCDW
-FDoMlUlyy2U9o8O/KJjUvdeZX4Ts/OKU/FZOqRQLlTy5SKXV+ks=
-=u5jE
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX1QACgkQ2O7X88g7
++ppT6hAAnwa8NzJM9yXdDEp4T6Ci3Aiq3Nus2/3mrQwSI66pYQkangJzm0S1wy8u
+p9Y/SUD1PXtAKPtcnfh6uKp78gsqig+SmKaVC6CU415NuewyjzXDh0jnDAYGjR71
+QfofvUZc/l2X5Dl0AzpiUHp3uGb90pkAGqbo3hLdLGRfM6ZQUMs56uC2qyhYBj/U
+P2hi6sDnpCFGzk+5JkL2oR/XSuq4EUeJXoRfUsvMyFfmwKewbZCi9yONn6HVy9tF
+DfI6ATIbicDQ8RqaLFAcSFukIL/z0B1KTrc8W49b3XPMLbsmF5jm4iEYJem99k2p
+MD8pp0JSJudbDwD/rw2GseyAI1JS7qcAysdMQ8AvXqk8zjG3h+qtcopeCM9IZJmJ
+sK1UPEwY9uIuzrAylGw0HyqRPrPvDU3GUNC49+N7M2GA2Se0GSatkwc+FmAnhaUV
+6BvGQSkVPU2sANVYdy9bRgPGXscJcCZ5Bodmd/70tYlFfKQgUY5Cs6R1YWSs4CSd
+nInDgYrUnG8zggqWbFnVt+XIg+6Gzrf6w4d3AABBxin7x+beno98pLx/nUeVa1Wh
+jvYzTn1cfq52ZmayrkwLTHnnljCqoYhuAXK8JLsijO5PNJyfPbRH2ptADTBtbW+W
+UlfEol9hp7SGMwBFJKZ06ksvpl+JqQJuDrhHeOfBlQdfOeKG0II=
+=Fcpl
 -----END PGP SIGNATURE-----
 
---tkl3ivocftthn6sa--
+--cicfdoeib2e7lfta--
