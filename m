@@ -2,113 +2,140 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0ECCC4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:02:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2EE7C4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:04:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C12B0218A6
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:02:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A112D2186A
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:04:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554472962;
-	bh=YLyD9UK7a58sm+ZbvEW72Sy8kRoXPbd/NMxTrhRVJD0=;
+	s=default; t=1554473060;
+	bh=tXofxIeRxSbVJICOj67+SiNUoai6W5vF0h3jC8BRAAc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=WPTWOpeUxhK0n/I1fVx27PKNkZV1vIFsnNgYTcBSBWevkyPFWdbp+HIlOB/WklVX7
-	 o0rTn/flQ4+elqQR48AkAT4s8/rKtf7zB73Vs+oUFWsVcR2Lt7jrXNR5EX2H+X9MjR
-	 H9x50nMpyef1K7+186lKjUrXkL8s4B6beJMIzJWc=
+	b=0C3zri3RxZmrMH1aWzNGEV32GKno716tg3aQYKFX2Asy4OAE9wdtzFBjFdeuOMVCv
+	 JEn4AxscCyNSkGUOiZsF5YP15VDiHVSkfK+mOau0KRQhI4orx6HI68tPVzkl2QJq53
+	 3Ng1/wsFBQU6EUO40kIJ6Q4MDMboawNLWddEavPA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726663AbfDEOCm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 10:02:42 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49118 "EHLO mail.kernel.org"
+        id S1726513AbfDEOEU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 10:04:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50160 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726643AbfDEOCl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 10:02:41 -0400
+        id S1727212AbfDEOET (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 10:04:19 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id E26BB21850;
-        Fri,  5 Apr 2019 14:02:40 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 25B8921850;
+        Fri,  5 Apr 2019 14:04:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554472961;
-        bh=YLyD9UK7a58sm+ZbvEW72Sy8kRoXPbd/NMxTrhRVJD0=;
+        s=default; t=1554473058;
+        bh=tXofxIeRxSbVJICOj67+SiNUoai6W5vF0h3jC8BRAAc=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=tHwtm14y7bhronDTuOzNEOHHemteTxG0ANMmmUZ8oy1Q7gwGWnfDa2bgVOCYofcUu
-         dvG4sgqSRxYNEiGRYwdIfH2bWOE52GUjyBCWmbgSo6FLGLFTbVaIlwTSCjcxCWHco4
-         OSFTQjlnO4i4FbN/3e20jAEoV3T1ialIhjCjvmvQ=
+        b=P+FobSaXOchwscsPNV7rKq/JZwOdLHT02xkh8BevXErAgV2hIthWv4HOpTVyKzCja
+         IaEea7rPCHLnV3zu3DxTaOp9HSiomNAHMWSsfBLfbKBMTa2hY0c+uCOSQ1Hg08lyMW
+         VUVDfAqKV/VfiynyflEjt3lojNeFjPqaSyoQMUIE=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 1E9703C08D5; Fri,  5 Apr 2019 16:02:39 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 16:02:38 +0200
+        id 599373C08D5; Fri,  5 Apr 2019 16:04:16 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 16:04:16 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Maxime Ripard <maxime.ripard@bootlin.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: Fix the simple battery property names
-Message-ID: <20190405140238.yuugynxoiyeh2nru@earth.universe>
-References: <20190318133629.17144-1-maxime.ripard@bootlin.com>
- <20190402132245.wvakxqkhyyl66gbs@flea>
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Ramakrishna Pallala <ramakrishna.pallala@intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: axp288_charger: Fix unchecked return value
+Message-ID: <20190405140416.5drwsaciiipaa626@earth.universe>
+References: <20190318161439.GA6245@embeddedor>
+ <e42cdec8-911d-950a-8b06-3b1aefaba74c@redhat.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="hgrhiohv2dkdy3ud"
+        protocol="application/pgp-signature"; boundary="v4x564h5nq5jwjac"
 Content-Disposition: inline
-In-Reply-To: <20190402132245.wvakxqkhyyl66gbs@flea>
+In-Reply-To: <e42cdec8-911d-950a-8b06-3b1aefaba74c@redhat.com>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190405140416.KfAGlH2bnggtonxXSNHPYfXxkM6i0COkVJ95_l29Ya0@z>
 
 
---hgrhiohv2dkdy3ud
+--v4x564h5nq5jwjac
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Apr 02, 2019 at 03:22:45PM +0200, Maxime Ripard wrote:
-> On Mon, Mar 18, 2019 at 02:36:29PM +0100, Maxime Ripard wrote:
-> > Commit c08b1f45d7d1 ("power: supply: core: Add power_supply_battery_info
-> > and API") introduced code to parse the simple-battery node and express
-> > battery charging constraints. However, it parsed that node using the
-> > properties constant_charge_current_max_microamp and
-> > constant_charge_voltage_max_microvolt, while the device tree binding for
-> > the simple-battery node uses dashes to separate the words in those
-> > properties (constant-charge-current-max-microamp and
-> > constant-charge-voltage-max-microvolt).
-> >
-> > Let's make the code match the binding.
-> >
-> > Fixes: c08b1f45d7d1 ("power: supply: core: Add power_supply_battery_inf=
-o and API")
-> > Signed-off-by: Maxime Ripard <maxime.ripard@bootlin.com>
+On Mon, Mar 18, 2019 at 06:32:35PM +0100, Hans de Goede wrote:
+> Hi,
 >=20
-> Ping?
+> On 18-03-19 17:14, Gustavo A. R. Silva wrote:
+> > Currently there is no check on platform_get_irq() return value
+> > in case it fails, hence never actually reporting any errors and
+> > causing unexpected behavior when using such value as argument
+> > for function regmap_irq_get_virq().
+> >=20
+> > Fix this by adding a proper check, a message reporting any errors
+> > and returning *pirq*
+> >=20
+> > Addresses-Coverity-ID: 1443940 ("Improper use of negative value")
+> > Fixes: 843735b788a4 ("power: axp288_charger: axp288 charger driver")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> > ---
+> >   drivers/power/supply/axp288_charger.c | 4 ++++
+> >   1 file changed, 4 insertions(+)
+> >=20
+> > diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supp=
+ly/axp288_charger.c
+> > index f8c6da9277b3..00b961890a38 100644
+> > --- a/drivers/power/supply/axp288_charger.c
+> > +++ b/drivers/power/supply/axp288_charger.c
+> > @@ -833,6 +833,10 @@ static int axp288_charger_probe(struct platform_de=
+vice *pdev)
+> >   	/* Register charger interrupts */
+> >   	for (i =3D 0; i < CHRG_INTR_END; i++) {
+> >   		pirq =3D platform_get_irq(info->pdev, i);
+> > +		if (pirq < 0) {
+> > +			dev_err(&pdev->dev, "Failed to get IRQ: %d\n", pirq);
+> > +			return pirq;
+> > +		}
+> >   		info->irq[i] =3D regmap_irq_get_virq(info->regmap_irqc, pirq);
+> >   		if (info->irq[i] < 0) {
+> >   			dev_warn(&info->pdev->dev,
+> >=20
 >=20
-> Maxime
+> Patch looks good to me:
+>=20
+> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
-Pong. Sorry for the delay, queued.
+Thanks, queued.
 
 -- Sebastian
 
---hgrhiohv2dkdy3ud
+--v4x564h5nq5jwjac
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX/4ACgkQ2O7X88g7
-+prAzg/+L4tcUDf1Fne3MaHoABeJeMAVgCwbtRqbMnlh9EvK2VGIHD8fUOws/W2s
-vxp0bm96UUbkfJEEavhAQvNOXTH/hQahZZAZiK41L5VvvQOl32G1tI1qkxJyYCH2
-tBXzQzMdoSZzr9UNIaoxPQCn3N6pRHVogG8ZSZkqQ6CS5b/tNLIfIAN1iVFeHWlD
-lUv8XSaBPbQAK99sWua1WDM7k+uzoNHx7JYNMgdvHJjN9d+VZ92bJC4K1/zxaQo7
-f5d3l6gN+d7pwGhxbeb4ZsEBM7kOQbs96E+RmxIbTbyuUCEPSl4gHJQTQftXaoqf
-SYMf/mTQYzAaqV01lfFyIX0de1vM4aQbKDTvHVsnSC07RClnDsIrF07wOhIriQIh
-eCLy3QMYPJmFEUs4jYJdia/uk1m4fAbKJSkgzzUFK06zkFuuTE9S1SnfeMUcFIay
-Q6rpQO6u7m5QboSFluHxxdV0U2R5m9Dpt0pjdttTGcAqCPDuE9zFKAVWmtIpu1VG
-jkQwiZHD/RuZ0+dHRvvle2jkAXev1PwUK6OnifzLXUcVPXEw+VPTyt9sTzqV2IgG
-WHrx0elNs2LQEBrMvijRbNC/ktM6vYrmYV6Hbv0E+Yhjqoj56sO+2y08iB7E2Lhm
-bs0Vmsf9cY2yL7bjKOMpcgzkoEfJJOaR9Y3daDm0ykhHFxFqoR8=
-=wW/4
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynYGAACgkQ2O7X88g7
++pq8vA//eN4OarDl2zaxXoMbmcPg6MH8MglCdNeKSv17IjTlOmB0gqHWPL70L7VQ
+0MQrw6xh6NAqpI7toux3uzNycRgddQBTV9WyDs6Ry8b7xrcV9QhweECuFOqypwJe
+RQmn+zkHgl84O4UC5DR3mVnHpxVTryZ1wpL7mVxJIQuQki1tDJDcsSepniyBb70Y
+1enxIVp/CXD5haKmXDHbVKn055RBye5aRa+iIgN/ng7ecJ0xBp4owqj1UU31i0MX
+6Y+9F3j6+i9bKrLVjWzl1MQwnK0s1AE+XXy1jD05Pke5c6ffE012+683R4CWlugv
+npaTgdfiEJvIYfFjW8zp+FJRSjxPgLxfPocv1c74ajIWjzmcHeKOhMvsSLtO5wfz
+6XAQdWOIQiKVlyvhk8zkC9rkHJ2jvVYs0Nte9U0HCoGCGJ5SjW3QHFA8mX5pX2NH
+SVyr3gOgVw2r1aIAW8+QZqawQ9TOcXuIKk9fjH/WwFR9yHy7Ozn42hgdJ/LnQtHP
+5OKnwqKp9LWqffTj2Yt3w+dkhJcgHlPadidSetpATUt2JumfEBSYgL3s65jlF1m9
+6taemwpXLHFoLvakJMM+iBjzhaPnrV/k6Rbx8c/uG8WFg0fQb0UZJVaU+2awrqmy
+YTtHYPuYguprytU/Wy0repRDfeTE3pYEJcBp+MwHRcKsMphu/j8=
+=QiiC
 -----END PGP SIGNATURE-----
 
---hgrhiohv2dkdy3ud--
+--v4x564h5nq5jwjac--
