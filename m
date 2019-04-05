@@ -1,220 +1,262 @@
-From: Han Nandor <nandor.han@vaisala.com>
-Subject: [PATCH 1/1] power: reset: nvmem-reboot-mode: use NVMEM as reboot mode
- write interface
-Date: Fri, 5 Apr 2019 10:54:55 +0000
-Message-ID: <20190405105432.21941-1-nandor.han@vaisala.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 06/10] power: supply: olpc_battery: Move priv data to a
+ struct
+Date: Fri, 5 Apr 2019 15:45:53 +0200
+Message-ID: <20190405134553.ahntfz7aggzg7hdd@earth.universe>
+References: <20190310162419.11861-1-lkundrak@v3.sk>
+ <20190310162419.11861-7-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lcxnf65dmsdxorj7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190310162419.11861-7-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Han Nandor <nandor.han@vaisala.com>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Shevchenko <andy.shevchenko@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a new reboot mode write interface that is using a NVMEM cell,
-called "reboot-mode", to store the reboot mode magic.
 
-Signed-off-by: Nandor Han <nandor.han@vaisala.com>
----
+--lcxnf65dmsdxorj7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Description
------------
-Extend the reboot mode driver to use a NVMEM cell as writing interface.
+Hi,
 
-Testing
--------
-The testing is done by configuring DT from a custom board.
-The NVMEM cell is configured in an RTC non-volatile memory.
+On Sun, Mar 10, 2019 at 05:24:15PM +0100, Lubomir Rintel wrote:
+> The global variables for private data are not too nice. I'd like some
+> more, and that would clutter the global name space even further.
+>=20
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
-DT configurations:
-`
-...
-reboot-mode-nvmem@0 {
-    compatible =3D "simple-mfd";
-    reboot-mode {
-        compatible =3D "nvmem-reboot-mode";
-        nvmem-cells =3D <&reboot_mode>;
-        nvmem-cell-names =3D "reboot-mode";
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-        mode-test       =3D <0x21969147>;
-     };
-};
-...
-reboot_mode: nvmem_reboot_mode@0 {
-        reg =3D <0x00 0x4>;
-};
-...
-`
+-- Sebastian
 
-1. Reboot the system using the command `reboot test`
+>=20
+> ---
+> Changes since v4:
+> - Bring some more code that was misplaced here.
+>=20
+> Changes since v2:
+> - Bring the allocaton of the priv data structure here
+>=20
+> Changes since v1:
+> - Split out the move to devm_* into a separate patch
+>=20
+>  drivers/power/supply/olpc_battery.c | 78 ++++++++++++++++++-----------
+>  1 file changed, 48 insertions(+), 30 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+> index 3dcf5e19f329..f7bb9bedd893 100644
+> --- a/drivers/power/supply/olpc_battery.c
+> +++ b/drivers/power/supply/olpc_battery.c
+> @@ -53,6 +53,12 @@
+> =20
+>  #define BAT_ADDR_MFR_TYPE	0x5F
+> =20
+> +struct olpc_battery_data {
+> +	struct power_supply *olpc_ac;
+> +	struct power_supply *olpc_bat;
+> +	char bat_serial[17];
+> +};
+> +
+>  /*********************************************************************
+>   *		Power
+>   *********************************************************************/
+> @@ -91,11 +97,8 @@ static const struct power_supply_desc olpc_ac_desc =3D=
+ {
+>  	.get_property =3D olpc_ac_get_prop,
+>  };
+> =20
+> -static struct power_supply *olpc_ac;
+> -
+> -static char bat_serial[17]; /* Ick */
+> -
+> -static int olpc_bat_get_status(union power_supply_propval *val, uint8_t =
+ec_byte)
+> +static int olpc_bat_get_status(struct olpc_battery_data *data,
+> +		union power_supply_propval *val, uint8_t ec_byte)
+>  {
+>  	if (olpc_platform_info.ecver > 0x44) {
+>  		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
+> @@ -326,6 +329,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+>  				 enum power_supply_property psp,
+>  				 union power_supply_propval *val)
+>  {
+> +	struct olpc_battery_data *data =3D power_supply_get_drvdata(psy);
+>  	int ret =3D 0;
+>  	__be16 ec_word;
+>  	uint8_t ec_byte;
+> @@ -347,7 +351,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+> =20
+>  	switch (psp) {
+>  	case POWER_SUPPLY_PROP_STATUS:
+> -		ret =3D olpc_bat_get_status(val, ec_byte);
+> +		ret =3D olpc_bat_get_status(data, val, ec_byte);
+>  		if (ret)
+>  			return ret;
+>  		break;
+> @@ -450,8 +454,8 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+>  		if (ret)
+>  			return ret;
+> =20
+> -		sprintf(bat_serial, "%016llx", (long long)be64_to_cpu(ser_buf));
+> -		val->strval =3D bat_serial;
+> +		sprintf(data->bat_serial, "%016llx", (long long)be64_to_cpu(ser_buf));
+> +		val->strval =3D data->bat_serial;
+>  		break;
+>  	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+>  		ret =3D olpc_bat_get_voltage_max_design(val);
+> @@ -579,17 +583,17 @@ static struct power_supply_desc olpc_bat_desc =3D {
+>  	.use_for_apm =3D 1,
+>  };
+> =20
+> -static struct power_supply *olpc_bat;
+> -
+>  static int olpc_battery_suspend(struct platform_device *pdev,
+>  				pm_message_t state)
+>  {
+> -	if (device_may_wakeup(&olpc_ac->dev))
+> +	struct olpc_battery_data *data =3D platform_get_drvdata(pdev);
+> +
+> +	if (device_may_wakeup(&data->olpc_ac->dev))
+>  		olpc_ec_wakeup_set(EC_SCI_SRC_ACPWR);
+>  	else
+>  		olpc_ec_wakeup_clear(EC_SCI_SRC_ACPWR);
+> =20
+> -	if (device_may_wakeup(&olpc_bat->dev))
+> +	if (device_may_wakeup(&data->olpc_bat->dev))
+>  		olpc_ec_wakeup_set(EC_SCI_SRC_BATTERY | EC_SCI_SRC_BATSOC
+>  				   | EC_SCI_SRC_BATERR);
+>  	else
+> @@ -601,8 +605,15 @@ static int olpc_battery_suspend(struct platform_devi=
+ce *pdev,
+> =20
+>  static int olpc_battery_probe(struct platform_device *pdev)
+>  {
+> -	int ret;
+> +	struct power_supply_config psy_cfg =3D {};
+> +	struct olpc_battery_data *data;
+>  	uint8_t status;
+> +	int ret;
+> +
+> +	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +	platform_set_drvdata(pdev, data);
+> =20
+>  	/*
+>  	 * We've seen a number of EC protocol changes; this driver requires
+> @@ -620,9 +631,13 @@ static int olpc_battery_probe(struct platform_device=
+ *pdev)
+> =20
+>  	/* Ignore the status. It doesn't actually matter */
+> =20
+> -	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
+> -	if (IS_ERR(olpc_ac))
+> -		return PTR_ERR(olpc_ac);
+> +	psy_cfg.of_node =3D pdev->dev.of_node;
+> +	psy_cfg.drv_data =3D data;
+> +
+> +	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
+_cfg);
+> +	if (IS_ERR(data->olpc_ac))
+> +		return PTR_ERR(data->olpc_ac);
+> +
+>  	if (of_device_is_compatible(pdev->dev.of_node, "olpc,xo1.5-battery")) {
+>  		/* XO-1.5 */
+>  		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
+> @@ -633,42 +648,45 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
+>  		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
+>  	}
+> =20
+> -	olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, NULL);
+> -	if (IS_ERR(olpc_bat)) {
+> -		ret =3D PTR_ERR(olpc_bat);
+> +	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
+sy_cfg);
+> +	if (IS_ERR(data->olpc_bat)) {
+> +		ret =3D PTR_ERR(data->olpc_bat);
+>  		goto battery_failed;
+>  	}
+> =20
+> -	ret =3D device_create_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
+> +	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+>  	if (ret)
+>  		goto eeprom_failed;
+> =20
+> -	ret =3D device_create_file(&olpc_bat->dev, &olpc_bat_error);
+> +	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
+>  	if (ret)
+>  		goto error_failed;
+> =20
+>  	if (olpc_ec_wakeup_available()) {
+> -		device_set_wakeup_capable(&olpc_ac->dev, true);
+> -		device_set_wakeup_capable(&olpc_bat->dev, true);
+> +		device_set_wakeup_capable(&data->olpc_ac->dev, true);
+> +		device_set_wakeup_capable(&data->olpc_bat->dev, true);
+>  	}
+> =20
+>  	return 0;
+> =20
+>  error_failed:
+> -	device_remove_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
+> +	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+>  eeprom_failed:
+> -	power_supply_unregister(olpc_bat);
+> +	power_supply_unregister(data->olpc_bat);
+>  battery_failed:
+> -	power_supply_unregister(olpc_ac);
+> +	power_supply_unregister(data->olpc_ac);
+>  	return ret;
+>  }
+> =20
+>  static int olpc_battery_remove(struct platform_device *pdev)
+>  {
+> -	device_remove_file(&olpc_bat->dev, &olpc_bat_error);
+> -	device_remove_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
+> -	power_supply_unregister(olpc_bat);
+> -	power_supply_unregister(olpc_ac);
+> +	struct olpc_battery_data *data =3D platform_get_drvdata(pdev);
+> +
+> +	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
+> +	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+> +	power_supply_unregister(data->olpc_bat);
+> +	power_supply_unregister(data->olpc_ac);
+> +
+>  	return 0;
+>  }
+> =20
+> --=20
+> 2.20.1
+>=20
 
-2. Verify that kernel logs show that reboot was done in mode `test`:
-PASS
-`[  413.957172] reboot: Restarting system with command 'test' `
+--lcxnf65dmsdxorj7
+Content-Type: application/pgp-signature; name="signature.asc"
 
-3. Stop in U-Boot and verify that mode `test` magic value is present
-in RTCs non-volatile memory: PASS
+-----BEGIN PGP SIGNATURE-----
 
- .../power/reset/nvmem-reboot-mode.txt         | 32 ++++++++
- drivers/power/reset/Kconfig                   |  9 +++
- drivers/power/reset/Makefile                  |  1 +
- drivers/power/reset/nvmem-reboot-mode.c       | 75 +++++++++++++++++++
- 4 files changed, 117 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-reb=
-oot-mode.txt
- create mode 100644 drivers/power/reset/nvmem-reboot-mode.c
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynXAQACgkQ2O7X88g7
++prmTw//WvOnV38fHWbDKo5jQ2UqxNuxuaBiWdFDWc/d4PzNouyCDCoiqc2EOwft
+xKLdzg3FOn/MB8Mgl64jCLa22b+swgIspe08DFYFPHburwYtBxBZiukJrMilzt7q
+ANVJMrp92pb12lXk+TVjHNl5L15deRFxP6Dq2WTFyfAj5N0qvaCmTWTR03MpvALK
+69Dncw02zAAUlEh1hgilRlJO1psB3EoHwdI5rv998Lppb2+donByw2F0Pn4Eq2/j
+H0sRI6ky9ni/An68oGGvWW8Z27zdbQaAr7KwBjG/FXaS4Ntc1LQblQCNrJ/ZeRmf
+/nXa6zJ2k7Ra+Np5Pta/VIWVgvBD4HHskABq0L7DkTV1kzjdB4P7c5tpEhEsolZg
+E8lFvx1r6BP7MXPkcDhoBtu8bE6joMxunYeFUQ7iUw1bo46LLBo5BXl9BsuY0usO
+5PvNLiG3KBpRqFROCCPztolqUJueiBdle3HgS/g4zHlEqUK+wB8WW/02G5QAE6X3
+JS63y5DRp48LwL1wTNX9Oe2KdIFkns3VDf08K2eXyrwoPiv43PT8KjLpHMM0yhKG
+T5+h0x7LiHEl12OkfxBL7dcDbHUPWj758gUJDQBYiepgOsq9H/DhFrZOnelqL8sw
+ddx459jyPSnzRbGawgW5lPv8Y0RmQCQHMQL0yPs31JuBZhr7RU4=
+=pSCJ
+-----END PGP SIGNATURE-----
 
-diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mod=
-e.txt b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
-new file mode 100644
-index 000000000000..2e1b86c31cb3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
-@@ -0,0 +1,32 @@
-+NVMEM reboot mode driver
-+
-+This driver gets reboot mode magic value from reboot-mode driver
-+and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
-+can read it and take different action according to the magic
-+value stored.
-+
-+This DT node should be represented as a sub-node of a "simple-mfd"
-+node.
-+
-+Required properties:
-+- compatible: should be "nvmem-reboot-mode".
-+- nvmem-cells: A phandle to the reboot mode provided by a nvmem device.
-+- nvmem-cell-names: Should be "reboot-mode".
-+
-+The rest of the properties should follow the generic reboot-mode descripti=
-on
-+found in reboot-mode.txt
-+
-+Example:
-+	reboot-mode-nvmem@0 {
-+		compatible =3D "simple-mfd";
-+		reboot-mode {
-+			compatible =3D "nvmem-reboot-mode";
-+			nvmem-cells =3D <&reboot_mode>;
-+			nvmem-cell-names =3D "reboot-mode";
-+
-+			mode-normal     =3D <0xAAAA5501>;
-+			mode-bootloader =3D <0xBBBB5500>;
-+			mode-recovery   =3D <0xCCCC5502>;
-+			mode-test       =3D <0xDDDD5503>;
-+		};
-+	};
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 6533aa560aa1..bb4a4e854f96 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -245,5 +245,14 @@ config POWER_RESET_SC27XX
- 	  PMICs includes the SC2720, SC2721, SC2723, SC2730
- 	  and SC2731 chips.
-=20
-+config NVMEM_REBOOT_MODE
-+	tristate "Generic NVMEM reboot mode driver"
-+	select REBOOT_MODE
-+	help
-+	  Say y here will enable reboot mode driver. This will
-+	  get reboot mode arguments and store it in a NVMEM cell,
-+	  then the bootloader can read it and take different
-+	  action according to the mode.
-+
- endif
-=20
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 0aebee954ac1..85da3198e4e0 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -29,3 +29,4 @@ obj-$(CONFIG_POWER_RESET_ZX) +=3D zx-reboot.o
- obj-$(CONFIG_REBOOT_MODE) +=3D reboot-mode.o
- obj-$(CONFIG_SYSCON_REBOOT_MODE) +=3D syscon-reboot-mode.o
- obj-$(CONFIG_POWER_RESET_SC27XX) +=3D sc27xx-poweroff.o
-+obj-$(CONFIG_NVMEM_REBOOT_MODE) +=3D nvmem-reboot-mode.o
-diff --git a/drivers/power/reset/nvmem-reboot-mode.c b/drivers/power/reset/=
-nvmem-reboot-mode.c
-new file mode 100644
-index 000000000000..31b73c7a0dad
---- /dev/null
-+++ b/drivers/power/reset/nvmem-reboot-mode.c
-@@ -0,0 +1,75 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) Vaisala Oyj. All rights reserved.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot-mode.h>
-+
-+struct nvmem_reboot_mode {
-+	struct reboot_mode_driver reboot;
-+	struct nvmem_cell *cell;
-+};
-+
-+static int nvmem_reboot_mode_write(struct reboot_mode_driver *reboot,
-+				    unsigned int magic)
-+{
-+	int ret;
-+	struct nvmem_reboot_mode *nvmem_rbm;
-+
-+	nvmem_rbm =3D container_of(reboot, struct nvmem_reboot_mode, reboot);
-+
-+	ret =3D nvmem_cell_write(nvmem_rbm->cell, &magic, sizeof(magic));
-+	if (ret < 0)
-+		dev_err(reboot->dev, "update reboot mode bits failed\n");
-+
-+	return ret;
-+}
-+
-+static int nvmem_reboot_mode_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct nvmem_reboot_mode *nvmem_rbm;
-+
-+	nvmem_rbm =3D devm_kzalloc(&pdev->dev, sizeof(*nvmem_rbm), GFP_KERNEL);
-+	if (!nvmem_rbm)
-+		return -ENOMEM;
-+
-+	nvmem_rbm->reboot.dev =3D &pdev->dev;
-+	nvmem_rbm->reboot.write =3D nvmem_reboot_mode_write;
-+
-+	nvmem_rbm->cell =3D devm_nvmem_cell_get(&pdev->dev, "reboot-mode");
-+	if (IS_ERR(nvmem_rbm->cell)) {
-+		dev_err(&pdev->dev, "failed to get the nvmem cell reboot-mode\n");
-+		return PTR_ERR(nvmem_rbm->cell);
-+	}
-+
-+	ret =3D devm_reboot_mode_register(&pdev->dev, &nvmem_rbm->reboot);
-+	if (ret)
-+		dev_err(&pdev->dev, "can't register reboot mode\n");
-+
-+	return ret;
-+}
-+
-+static const struct of_device_id nvmem_reboot_mode_of_match[] =3D {
-+	{ .compatible =3D "nvmem-reboot-mode" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, nvmem_reboot_mode_of_match);
-+
-+static struct platform_driver nvmem_reboot_mode_driver =3D {
-+	.probe =3D nvmem_reboot_mode_probe,
-+	.driver =3D {
-+		.name =3D "nvmem-reboot-mode",
-+		.of_match_table =3D nvmem_reboot_mode_of_match,
-+	},
-+};
-+module_platform_driver(nvmem_reboot_mode_driver);
-+
-+MODULE_AUTHOR("Nandor Han <nandor.han@vaisala.com>");
-+MODULE_DESCRIPTION("NVMEM reboot mode driver");
-+MODULE_LICENSE("GPL v2");
---=20
-2.17.2
+--lcxnf65dmsdxorj7--
