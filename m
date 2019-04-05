@@ -2,125 +2,153 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB84C282CE
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:38:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5928C282CE
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 22:40:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2E87F21738
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 18:38:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 571DA20700
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 22:40:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OEKEA6Ah"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="XH20c09P"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731362AbfDESiO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 14:38:14 -0400
-Received: from mail-io1-f68.google.com ([209.85.166.68]:44323 "EHLO
-        mail-io1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731087AbfDESiO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 14:38:14 -0400
-Received: by mail-io1-f68.google.com with SMTP id u12so5802312iop.11;
-        Fri, 05 Apr 2019 11:38:13 -0700 (PDT)
+        id S1726199AbfDEWj7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 18:39:59 -0400
+Received: from mail-it1-f196.google.com ([209.85.166.196]:40362 "EHLO
+        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726124AbfDEWj7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 18:39:59 -0400
+Received: by mail-it1-f196.google.com with SMTP id k64so12163307itb.5
+        for <linux-pm@vger.kernel.org>; Fri, 05 Apr 2019 15:39:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=sS1MDVcP9r8rd8f/Exb154TT9Pe2vw4MwASpFoeBNoE=;
-        b=OEKEA6AhIGiHUXjs6I7gxdrB+jYBDwbuCuSyfNVLfU4hksvGGpA32eKnlzBNd9fpO0
-         vbhqYnmEZhy2ixp9GeK+ssXiKDBgLpuIKENghfC+N3WSDFw5uSz0XvLUy0bMR3rckAsW
-         CFYvoM9TbEIOIROpsBi5rcDWJI9bwwa3KmrULyAODt6nl8nktSYfOoAK6yKMzPH1Uc5f
-         NQaCm1+3A/Zn41WhspyJ2D2ALL6dvk0ZEvWdh6HeiQfErIkQIYZLTWOF3CnrIJj74zqj
-         5JCh1JH+zUoyMalK4pMhP57ijCmvMr/cNVf1I07JOXUcAm9fTZuIJ4uIEDQi82+phMwi
-         jMCQ==
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hldxkxWM3hSqdi6yUY+bXZzasV3q/AnL0PcDXeuAe2Y=;
+        b=XH20c09P60dJZkY66k9m3ybp4fpAUszioaLrHzef3zwNGL0ZMnqvo9WdSXzeP2o/gg
+         O04GOv4m8Zc3Ev1y7pSNoVXLk/EPILD84Ot63hEbhs1rrn4CxE+JHWWndFX0N5tiwPvk
+         87qywvqFHM+ZD9V5mnLmPuApZHbo3wkh71rcU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=sS1MDVcP9r8rd8f/Exb154TT9Pe2vw4MwASpFoeBNoE=;
-        b=YQa3c9uHoDW2gWXqCOLCtZjJMWrVKkRDq1tHtz4ltDl8wKakpC4LRwal3hb8c/fKkj
-         ZyPBYcChT0aFo+cPRQqTbouFbil5CsbL7+2ewY7BlMoaT6yHRxQedtXrkyhlIMrOiZBo
-         HuyOejAYcTlh4m+hcCjsO686Wsmo9FDMSvKHWtx545FmzRaE9j9trDhEhJ8zGRdIj5b8
-         q/FKrGr9KdWpHG2cEP33H0/sMAwric+gOlmstirBGFB0m8i9N5uTqzIFhNVYYsGkoMvr
-         ACvBvGrUarw3fhTxaEdVQN08gDZtO+M2bwCoP3AYIp2fXqRwC4UVTLlP0Mp1CM8XdZy/
-         hrrw==
-X-Gm-Message-State: APjAAAXAvW8LMiCYzVPh4+02FxYKC6hAQ91yeYCLWIzG6MBDB3M+Qb8H
-        GAjbCZiVH0ZOwLgLumIRBG6se8VUfsoli7KwCYr/lA==
-X-Google-Smtp-Source: APXvYqyG4F6Lt0S/J6prNWk5ZrnsCexXsN05mCC3c0beC1gZM21C9BbV+FPlU1z50dSBj2sxY+LYzTWaMw2JPAq4Bvo=
-X-Received: by 2002:a6b:c981:: with SMTP id z123mr8934997iof.123.1554489493162;
- Fri, 05 Apr 2019 11:38:13 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=hldxkxWM3hSqdi6yUY+bXZzasV3q/AnL0PcDXeuAe2Y=;
+        b=N5pv0rtdFysdFJkyxyVRqFbgFif+c7dPIp+9PWF/8E0kL/3YO9ww8dbDdgBQdEPPay
+         Fe5pweO2prSr8LwFcKjFUF3+uxoEfHydPnZ5ovb5SQRrnqAI3ZUG/EraIdfe74ZkqjdG
+         sV63sBul9LZj6xIQT68dxkgf1V8RYjxYFL+NoSyShWSjhWn/3FTdhyJLpZz4W3XA/ax6
+         sJx7Kd8TtQESu6//48mnsG+mj2MxzKlINPP9WoAVt+9nIcD2NOU9Fwip0CWn/g//Jy3Q
+         Gy1Z3U2QgiUL0M/aYPQA/QQhIX5OFlOtbULHqfOtSCclX+tmYluvvDRHWp/XQz1X5w7x
+         /ttA==
+X-Gm-Message-State: APjAAAXW8DTd7OP0squ9+gqXTZkGYu9WcKe8iZ2tu2NsGf0BcHgYCD6t
+        AJbweY00MmqXo1PpkNTIdNcxyA==
+X-Google-Smtp-Source: APXvYqzwspJVT+mUIUoNQ3XyoBhSvzAqD/LNs7En3926HdGzEQwpMPx9Jss2QVjPKdJNGucB0RHpsQ==
+X-Received: by 2002:a24:6583:: with SMTP id u125mr7998517itb.151.1554503998450;
+        Fri, 05 Apr 2019 15:39:58 -0700 (PDT)
+Received: from ncrews2.bld.corp.google.com ([2620:15c:183:200:8140:8e3f:aea5:bcdf])
+        by smtp.gmail.com with ESMTPSA id f132sm9588011ioa.76.2019.04.05.15.39.57
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Fri, 05 Apr 2019 15:39:57 -0700 (PDT)
+From:   Nick Crews <ncrews@chromium.org>
+To:     enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org,
+        linux-pm@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, dlaurie@chromium.org,
+        lamzin@google.com, bartfab@google.com, derat@google.com,
+        groeck@google.com, dtor@google.com, sjg@chromium.org,
+        Nick Crews <ncrews@chromium.org>
+Subject: [PATCH 1/2] power_supply: Add more charge types and CHARGE_CONTROL_* properties
+Date:   Fri,  5 Apr 2019 16:35:53 -0600
+Message-Id: <20190405223554.228813-1-ncrews@chromium.org>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-14-andrew.smirnov@gmail.com> <4c6ef4cb-8214-cda6-bfa9-8f0887fc2170@linaro.org>
-In-Reply-To: <4c6ef4cb-8214-cda6-bfa9-8f0887fc2170@linaro.org>
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-Date:   Fri, 5 Apr 2019 11:38:00 -0700
-Message-ID:
- <CAHQ1cqGfRCCD0vL+6xUWnHyL2FPQhMB=2f6nkdQ0wTWXZR0NCA@mail.gmail.com>
-Subject: Re: [PATCH v3 13/13] thermal: qoriq: Add hwmon support
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Angus Ainslie <angus@akkea.ca>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405183800.Xw3NrUpWivd8kOhNVsMxXWa12-1mi69req6LBhOEAUg@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190405223553.hopU0u5m6Snqst0-9JnkuNAzYiCk7VpR_Kzy_OuRb6I@z>
 
-On Thu, Apr 4, 2019 at 2:12 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->
-> On 01/04/2019 06:14, Andrey Smirnov wrote:
-> > Expose thermal readings as a HWMON device, so that it could be
-> > accessed using lm-sensors.
-> >
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-> > Cc: linux-imx@nxp.com
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
-> >  drivers/thermal/qoriq_thermal.c | 6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> > index 9d227654f879..7fb9321a0d8c 100644
-> > --- a/drivers/thermal/qoriq_thermal.c
-> > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -12,6 +12,7 @@
-> >  #include <linux/thermal.h>
-> >
-> >  #include "thermal_core.h"
-> > +#include "thermal_hwmon.h"
-> >
-> >  #define SITES_MAX    16
-> >
-> > @@ -103,7 +104,10 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
-> >               case -ENODEV:
-> >                       continue;
-> >               case 0:
-> > -                     break;
-> > +                     ret = devm_thermal_add_hwmon_sysfs(tzd);
-> > +                     if (!ret)
-> > +                             break;
-> > +                     /* fallthrough */
->
-> Do we really want to disable the thermal zone if the hwmon fails to
-> register ?
+Add "Standard", "Adaptive", and "Custom" modes to the charge_type
+property, to expand the existing "Trickle" and "Fast" modes.
+In addition, add POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD
+and POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD properties, to expand
+the existing CHARGE_CONTROL_* properties. I am adding them in order
+to support a new Chrome OS device, but these properties should be
+general enough that they can be used on other devices.
 
-Original code already disables all thermal zones if any single one
-fails to register, so I though we may as well be as strict for hwmon
-registration as well. Doesn't have to be though. Will change in v4.
+The meaning of "Standard" is obvious, but "Adaptive" and "Custom" are
+more tricky: "Adaptive" means that the charge controller uses some
+custom algorithm to change the charge type automatically, with no
+configuration needed. "Custom" means that the charge controller uses the
+POWER_SUPPLY_PROP_CHARGE_CONTROL_* properties as configuration for some
+other algorithm. For example, in the use case that I am supporting,
+this means the battery begins charging when the percentage
+level drops below POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD and
+charging ceases when the percentage level goes above
+POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD.
 
-Thanks,
-Andrey Smirnov
+Signed-off-by: Nick Crews <ncrews@chromium.org>
+---
+ drivers/power/supply/power_supply_sysfs.c |  4 +++-
+ include/linux/power_supply.h              | 10 ++++++++--
+ 2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f596160..6104a3f03d46 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -56,7 +56,7 @@ static const char * const power_supply_status_text[] = {
+ };
+ 
+ static const char * const power_supply_charge_type_text[] = {
+-	"Unknown", "N/A", "Trickle", "Fast"
++	"Unknown", "N/A", "Trickle", "Fast", "Standard", "Adaptive", "Custom"
+ };
+ 
+ static const char * const power_supply_health_text[] = {
+@@ -274,6 +274,8 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(constant_charge_voltage_max),
+ 	POWER_SUPPLY_ATTR(charge_control_limit),
+ 	POWER_SUPPLY_ATTR(charge_control_limit_max),
++	POWER_SUPPLY_ATTR(charge_control_start_threshold),
++	POWER_SUPPLY_ATTR(charge_control_end_threshold),
+ 	POWER_SUPPLY_ATTR(input_current_limit),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..d59205170232 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -40,11 +40,15 @@ enum {
+ 	POWER_SUPPLY_STATUS_FULL,
+ };
+ 
++/* What algorithm is the charger using? */
+ enum {
+ 	POWER_SUPPLY_CHARGE_TYPE_UNKNOWN = 0,
+ 	POWER_SUPPLY_CHARGE_TYPE_NONE,
+-	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,
+-	POWER_SUPPLY_CHARGE_TYPE_FAST,
++	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,	/* slow speed */
++	POWER_SUPPLY_CHARGE_TYPE_FAST,		/* fast speed */
++	POWER_SUPPLY_CHARGE_TYPE_STANDARD,	/* normal speed */
++	POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,	/* dynamically adjusted speed */
++	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
+ };
+ 
+ enum {
+@@ -121,6 +125,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+-- 
+2.20.1
+
