@@ -1,93 +1,89 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: axp288_charger: Fix unchecked return value
-Date: Fri, 5 Apr 2019 16:04:16 +0200
-Message-ID: <20190405140416.5drwsaciiipaa626@earth.universe>
-References: <20190318161439.GA6245@embeddedor>
- <e42cdec8-911d-950a-8b06-3b1aefaba74c@redhat.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm QCS404 DT
+ bindings
+Date: Fri, 5 Apr 2019 21:32:54 +0700
+Message-ID: <20190405143254.GM1843@tuxbook-pro>
+References: <20190405035446.31886-1-georgi.djakov@linaro.org>
+ <20190405035446.31886-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="v4x564h5nq5jwjac"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <e42cdec8-911d-950a-8b06-3b1aefaba74c@redhat.com>
+In-Reply-To: <20190405035446.31886-2-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Chen-Yu Tsai <wens@csie.org>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
 
---v4x564h5nq5jwjac
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The Qualcomm QCS404 platform has several buses that could be controlled
+> and tuned according to the bandwidth demand.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  .../bindings/interconnect/qcom,qcs404.txt     | 45 +++++++++++++++++++
+>  1 file changed, 45 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> new file mode 100644
+> index 000000000000..2ea63ea827d7
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> @@ -0,0 +1,45 @@
+> +Qualcomm QCS404 Network-On-Chip interconnect driver binding
+> +-----------------------------------------------------------
+> +
+> +Required properties :
+> +- compatible : shall contain only one of the following:
+> +			"qcom,qcs404-bimc"
 
-Hi,
+As this is a hardware block available in mmio register space I think you
+better represent this on the mmio (soc) bus - and then represent the
+link to rpm as a child node of the rpm.
 
-On Mon, Mar 18, 2019 at 06:32:35PM +0100, Hans de Goede wrote:
-> Hi,
->=20
-> On 18-03-19 17:14, Gustavo A. R. Silva wrote:
-> > Currently there is no check on platform_get_irq() return value
-> > in case it fails, hence never actually reporting any errors and
-> > causing unexpected behavior when using such value as argument
-> > for function regmap_irq_get_virq().
-> >=20
-> > Fix this by adding a proper check, a message reporting any errors
-> > and returning *pirq*
-> >=20
-> > Addresses-Coverity-ID: 1443940 ("Improper use of negative value")
-> > Fixes: 843735b788a4 ("power: axp288_charger: axp288 charger driver")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> > ---
-> >   drivers/power/supply/axp288_charger.c | 4 ++++
-> >   1 file changed, 4 insertions(+)
-> >=20
-> > diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supp=
-ly/axp288_charger.c
-> > index f8c6da9277b3..00b961890a38 100644
-> > --- a/drivers/power/supply/axp288_charger.c
-> > +++ b/drivers/power/supply/axp288_charger.c
-> > @@ -833,6 +833,10 @@ static int axp288_charger_probe(struct platform_de=
-vice *pdev)
-> >   	/* Register charger interrupts */
-> >   	for (i =3D 0; i < CHRG_INTR_END; i++) {
-> >   		pirq =3D platform_get_irq(info->pdev, i);
-> > +		if (pirq < 0) {
-> > +			dev_err(&pdev->dev, "Failed to get IRQ: %d\n", pirq);
-> > +			return pirq;
-> > +		}
-> >   		info->irq[i] =3D regmap_irq_get_virq(info->regmap_irqc, pirq);
-> >   		if (info->irq[i] < 0) {
-> >   			dev_warn(&info->pdev->dev,
-> >=20
->=20
-> Patch looks good to me:
->=20
-> Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Apart from that this looks good.
 
-Thanks, queued.
+Regards,
+Bjorn
 
--- Sebastian
-
---v4x564h5nq5jwjac
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynYGAACgkQ2O7X88g7
-+pq8vA//eN4OarDl2zaxXoMbmcPg6MH8MglCdNeKSv17IjTlOmB0gqHWPL70L7VQ
-0MQrw6xh6NAqpI7toux3uzNycRgddQBTV9WyDs6Ry8b7xrcV9QhweECuFOqypwJe
-RQmn+zkHgl84O4UC5DR3mVnHpxVTryZ1wpL7mVxJIQuQki1tDJDcsSepniyBb70Y
-1enxIVp/CXD5haKmXDHbVKn055RBye5aRa+iIgN/ng7ecJ0xBp4owqj1UU31i0MX
-6Y+9F3j6+i9bKrLVjWzl1MQwnK0s1AE+XXy1jD05Pke5c6ffE012+683R4CWlugv
-npaTgdfiEJvIYfFjW8zp+FJRSjxPgLxfPocv1c74ajIWjzmcHeKOhMvsSLtO5wfz
-6XAQdWOIQiKVlyvhk8zkC9rkHJ2jvVYs0Nte9U0HCoGCGJ5SjW3QHFA8mX5pX2NH
-SVyr3gOgVw2r1aIAW8+QZqawQ9TOcXuIKk9fjH/WwFR9yHy7Ozn42hgdJ/LnQtHP
-5OKnwqKp9LWqffTj2Yt3w+dkhJcgHlPadidSetpATUt2JumfEBSYgL3s65jlF1m9
-6taemwpXLHFoLvakJMM+iBjzhaPnrV/k6Rbx8c/uG8WFg0fQb0UZJVaU+2awrqmy
-YTtHYPuYguprytU/Wy0repRDfeTE3pYEJcBp+MwHRcKsMphu/j8=
-=QiiC
------END PGP SIGNATURE-----
-
---v4x564h5nq5jwjac--
+> +			"qcom,qcs404-pcnoc"
+> +			"qcom,qcs404-snoc"
+> +- #interconnect-cells : should contain 1
+> +
+> +Optional properties :
+> +clocks : list of phandles and specifiers to all interconnect bus clocks
+> +clock-names : clock names should include both "bus_clk" and "bus_a_clk"
+> +
+> +Example:
+> +
+> +rpm-glink {
+> +	...
+> +	rpm_requests: glink-channel {
+> +		...
+> +		bimc: interconnect@0 {
+> +			compatible = "qcom,qcs404-bimc";
+> +			#interconnect-cells = <1>;
+> +			clock-names = "bus_clk", "bus_a_clk";
+> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
+> +				<&rpmcc RPM_SMD_BIMC_A_CLK>;
+> +		};
+> +
+> +		pnoc: interconnect@1 {
+> +			compatible = "qcom,qcs404-pcnoc";
+> +			#interconnect-cells = <1>;
+> +			clock-names = "bus_clk", "bus_a_clk";
+> +			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
+> +				<&rpmcc RPM_SMD_PNOC_A_CLK>;
+> +		};
+> +
+> +		snoc: interconnect@2 {
+> +			compatible = "qcom,qcs404-snoc";
+> +			#interconnect-cells = <1>;
+> +			clock-names = "bus_clk", "bus_a_clk";
+> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+> +				<&rpmcc RPM_SMD_SNOC_A_CLK>;
+> +		};
+> +	};
+> +};
