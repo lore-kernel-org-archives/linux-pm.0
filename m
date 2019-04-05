@@ -2,77 +2,129 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AA6BC4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F251C4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:43:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 151AE2175B
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:32:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F82F21852
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:43:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1554479001;
+	bh=GOgLyq5QBzoqNiw/jYFcfoGprsdnF7AsBTYJcwppRhk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Ib33u0NjZ/FKvGDVXn63743Mzd+h3Raij2N7tHXS0+djfmOKDl3e+uKx2WkGn1o4Q
+	 OjaYa17pAPwA02wmjkC+Dg4mnZVuLnzsK5tjWeyp3uPx/1oPW9WFOE2pOYazE93BRZ
+	 4CypdkgDRHySCanHNY9+KU4Aky5z33Y9Z7/7MGP8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731229AbfDEPcR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 11:32:17 -0400
-Received: from Galois.linutronix.de ([146.0.238.70]:49161 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726643AbfDEPcR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 11:32:17 -0400
-Received: from p5492e2fc.dip0.t-ipconnect.de ([84.146.226.252] helo=nanos)
-        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
-        (Exim 4.80)
-        (envelope-from <tglx@linutronix.de>)
-        id 1hCQp8-0006lb-C9; Fri, 05 Apr 2019 17:32:10 +0200
-Date:   Fri, 5 Apr 2019 17:32:09 +0200 (CEST)
-From:   Thomas Gleixner <tglx@linutronix.de>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-cc:     Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86 <x86@kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Laura Abbott <labbott@fedoraproject.org>,
-        Ingo Molnar <mingo@kernel.org>,
-        Simon Schricker <sschricker@suse.de>,
-        Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
-Subject: Re: [PATCH] PM / arch: x86: Rework the MSR_IA32_ENERGY_PERF_BIAS
- handling
-In-Reply-To: <CAJZ5v0hz3KFtmsP+8Qbee7KrV4BBOUzReUmK8BWH52+hwekt=Q@mail.gmail.com>
-Message-ID: <alpine.DEB.2.21.1904051731510.1802@nanos.tec.linutronix.de>
-References: <2816566.rddYshD6lm@aspire.rjw.lan> <20190321075807.GK6058@hirez.programming.kicks-ass.net> <CAJZ5v0hz3KFtmsP+8Qbee7KrV4BBOUzReUmK8BWH52+hwekt=Q@mail.gmail.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+        id S1731433AbfDEPnU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 11:43:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49506 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726291AbfDEPnU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 11:43:20 -0400
+Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 38E202184B;
+        Fri,  5 Apr 2019 15:43:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1554478999;
+        bh=GOgLyq5QBzoqNiw/jYFcfoGprsdnF7AsBTYJcwppRhk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=MnXzkO3WTUA1IpX/ZQfts5jWYWlBJl6tbi0CezX0kJGyZrDEZpK+v93R1LQvQbz0o
+         fxmmDcvgiHLXFEsW/yCowWQ5M+dMi8mxzm0L8xnxgN80dksYoffVoTWPrbQU1bePjo
+         ucBeN/bVaKWtuQc1BPUhqDnptQ7f/3W3kH4P2IKY=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 30F313C08D5; Fri,  5 Apr 2019 17:43:17 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 17:43:17 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Artur Rojek <contact@artur-rojek.eu>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Paul Cercueil <paul@crapouillou.net>
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: supply: gpio-charger: Add
+ status-gpios property
+Message-ID: <20190405154317.suqovb4u2bgceqf7@earth.universe>
+References: <20190226150437.3704-1-contact@artur-rojek.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lgrrqna5ih6dueed"
+Content-Disposition: inline
+In-Reply-To: <20190226150437.3704-1-contact@artur-rojek.eu>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405153209.JmmKfUvnbDJUXqDospbbzi_z5kJrsJfjPlGaWzqd_Ho@z>
+Message-ID: <20190405154317.zrnt8X_hXwAZr0d4_orGuHH6f0-lYh0Rcsp8DD1NDeY@z>
 
-On Thu, 21 Mar 2019, Rafael J. Wysocki wrote:
 
-> On Thu, Mar 21, 2019 at 8:58 AM Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Thu, Mar 21, 2019 at 01:00:52AM +0100, Rafael J. Wysocki wrote:
-> > > + * The Performance and Energy Bias Hint (EPB) allows software to specify its
-> > > + * preference with respect to the power-performance tradeoffs present in the
-> > > + * processor.  Generally, the EPB is expected to be set by user space through
-> > > + * the generic MSR interface (with the help of the x86_energy_perf_policy tool),
-> > > + * but there are two reasons for the kernel to touch it.
-> >
-> > So I hate /dev/msr with a passion. It is absolute atrocious crap.
-> >
-> > Please, just make a real interface for this if it is important.
-> 
-> That's the plan going forward, this is just documenting the current situation.
-> 
-> Do you have any particular concerns regarding this patch?
+--lgrrqna5ih6dueed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No.
+Hi,
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+On Tue, Feb 26, 2019 at 04:04:36PM +0100, Artur Rojek wrote:
+> Add documentation for the "status-gpios" property.
+> Update the "gpios" property with a valid example.
+>=20
+> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+> ---
+>=20
+> Changes:
+>=20
+> v2: - add a better description for the "status-gpios" property,
+>     - add valid examples for the "gpios" and "status-gpios" properties
+>=20
+>  .../devicetree/bindings/power/supply/gpio-charger.txt       | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.=
+txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> index adbb5dc5b6e9..999cc245543c 100644
+> --- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+> @@ -14,12 +14,16 @@ Required properties :
+>       usb-cdp (USB charging downstream port)
+>       usb-aca (USB accessory charger adapter)
+> =20
+> +Optional properties:
+> + - status-gpios: GPIO indicating whether a battery is charging.
 
+I think it's better to name this charge-status-gpios, since charger
+may provide all kind of status GPIOs. For example the existing
+gpios property (also bad name, but cannot be changed easily now),
+which provides AC online status.
+
+Otherwise the binding and the driver patch looks good to me.
+
+-- Sebastian
+
+--lgrrqna5ih6dueed
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynd44ACgkQ2O7X88g7
++prPzw//XO6mDUEhOYJsXTr2FPrYOHrHWEs0rLyj3x+5rOaOuVTb5LXAPtE2iCNZ
+8J5/tZ48z9gAm4K16h5N6LIyMewU29E43ouzDDVZ60/k28gOFsZ/tSDT/lgUZiQg
+irKv/yjn1txoQcQbb+aHRdHpXp/SBKFcU4T1iDT8EsU7bN4a3GW4WZQJPpSvAQhh
+eQCWBiPAadNIyfJcQjmnUPtG8YQT3TCVDV8cXjMwV9nfc+3FKkMtZXW7rrsqdrVC
+pukRRokwok4ogfJ5UF8UPJ/KkDO7aerKJ1vu2Ms8u+Mkz7k+OJAlUffTevlUXJX8
+agi+XJHumq0OelOvgr4jowJ+Yh0Y2jcGX2iaw4DomNC7UPVXkzwhdMzIsdUKfULE
+vxaznLsAOjRODTCJ+Dnd6te3qFNmMIP3v2K/8dmrQinfUEJheuxGrxVyRalSRVtX
+B1yO1c6aHdiRAuxxIx+UlDOgHv4xzhbL4lzCxCFVXz5jj9H4jwPpwyI/YblLpu/p
+njCBTlwpffeDwzWubkbxm3qyvqJcQgab3Wr7B0Y182djl8URipKqzeCGHc55V1In
+7s2SE7ViXp4dUe2BeO963FpFDL0HKmFDq/wDpy2ix3yPPZyISmnRBwcFPPO50/ue
+Mn5VCHi50BMIZegBPUQsGoKh03TbrmPa+0XmdW8qeOiIYi+M9t4=
+=SUiH
+-----END PGP SIGNATURE-----
+
+--lgrrqna5ih6dueed--
