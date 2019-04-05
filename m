@@ -2,157 +2,91 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 326F1C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 09:17:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D5DDC4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 10:25:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 09ABC217D7
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 09:17:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B4A5218C3
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 10:25:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ChzUWipo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730361AbfDEJRU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 05:17:20 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:51816 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1730188AbfDEJRT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 05:17:19 -0400
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x359BQfp097969
-        for <linux-pm@vger.kernel.org>; Fri, 5 Apr 2019 05:17:18 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2rp39qb5sk-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 05 Apr 2019 05:17:18 -0400
-Received: from localhost
-        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Fri, 5 Apr 2019 10:17:16 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
-        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Fri, 5 Apr 2019 10:17:14 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x359HDh959375746
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 5 Apr 2019 09:17:13 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 98C6B5204E;
-        Fri,  5 Apr 2019 09:17:13 +0000 (GMT)
-Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5A53D52050;
-        Fri,  5 Apr 2019 09:17:12 +0000 (GMT)
-From:   Abhishek Goel <huntbag@linux.vnet.ibm.com>
-To:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-pm@vger.kernel.org
-Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
-        ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
-Date:   Fri,  5 Apr 2019 04:16:47 -0500
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19040509-0020-0000-0000-0000032C9111
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19040509-0021-0000-0000-0000217EA863
-Message-Id: <20190405091647.4169-3-huntbag@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-05_06:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=781 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904050068
+        id S1730609AbfDEKZE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 06:25:04 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:40317 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730292AbfDEKZE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 06:25:04 -0400
+Received: by mail-pf1-f196.google.com with SMTP id c207so3041689pfc.7;
+        Fri, 05 Apr 2019 03:25:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=3QzP4cYm2TOVKPV+VIy+S+5r4WzTpPrfu+RUgD9Xve0=;
+        b=ChzUWipo16dVbOXEVUpC5Y26lnO5dfn9bswfegUDP4ld1sNY70ok/BOC7jfFK91nW6
+         wj7Xnm192Ops0RXgibS1+qcMFb5GFMy2nhtnD9OFrRvAkhbuf+P4uRLLSdTqkAZZkGrM
+         UsScdCeMi2q9esmC3uzAMWNTDxqYKwNel2sCCoj64uLnnOiWUI8Vzls+kRdmGOUmz4mj
+         lhlh42QOpazHWOBDNeDELFzKLUP4+gdQdMyuveLX6D+Yga8PF+3ncZNw3OdFsyBvsFfY
+         Z5ucejvSstTfkwDfKR5SyD6XS8TBSu3DWM4smFLZLzNaOHxHju/Q/sGpz3ZU7/AwzyqQ
+         N58g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=3QzP4cYm2TOVKPV+VIy+S+5r4WzTpPrfu+RUgD9Xve0=;
+        b=FT9MN0cNPOE5ANPR1K7kZJH92/23qB/qEQIxID7/hu2crIxiecWjVZtXMyaObrZvDO
+         bohOqMbGxIrXabAwwrZPMj5Ba4SCf3Z22PadsLX7GJmyN1TA54+jIcRjZNpfY2hyd3vd
+         E5f4HtSnDOoacOXeQgyBu9niRzW25d+Zt8qu3fCaP0tkBvSGZPvl2+5VATur0NXbkXqV
+         PxLaidhkm5FJtt3M6wlmaxDiEXkoK6TJdnb/IMp9y6Uv3DYUHE8K4IQwjwU0eztrjwRC
+         6w0sa4SzSmSrQK9qEpp2GMAfdvWQhaVHJ/0htUjSgCG5xAdwdRl2PoXDf5vWg+UHAplw
+         oPfw==
+X-Gm-Message-State: APjAAAW3Rvbx3gm4IJUydQD6/E4cZ5nbZxzRqw6TT8p2hVnci6k9aflb
+        GrN6wjPSiUKeKFa4js3gJok=
+X-Google-Smtp-Source: APXvYqzycCck+YMnCC6BfuSzJ/zZYo1/bQkYsNJEJU8sYPBNGOy8GZ7ZwS0s4gjodO/d1Qtk1AJgYA==
+X-Received: by 2002:a63:e70c:: with SMTP id b12mr10755758pgi.399.1554459903673;
+        Fri, 05 Apr 2019 03:25:03 -0700 (PDT)
+Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
+        by smtp.gmail.com with ESMTPSA id a80sm50323460pfj.61.2019.04.05.03.25.01
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Fri, 05 Apr 2019 03:25:02 -0700 (PDT)
+From:   Yangtao Li <tiny.windzz@gmail.com>
+To:     tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date:   Fri,  5 Apr 2019 06:24:53 -0400
+Message-Id: <20190405102455.15311-1-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190405091647.W4NbvG2AHMij08iorlJ8iKNxrzMogDXXLm6OL1Vs4sE@z>
+Message-ID: <20190405102453.D10kYMGgLCfT0hxAJ2o5tDBGxqXQKTc5HjEE6g8jjnE@z>
 
-This patch sets up flags for the state which needs to be auto-promoted. On
-POWERNV system, only lite states need to be autopromoted. We identify lite
-states by those which do not lose user context. That information has been
-used to set the flag for lite states.
+Add sunxi nvmem based CPU scaling driver, refers to qcom-cpufreq-kryo.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/Kconfig             |  4 ++++
- drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+Yangtao Li (2):
+  cpufreq: Add sunxi nvmem based CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 8caccbbd7..9b8e9b96a 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -35,6 +35,10 @@ config CPU_IDLE_GOV_TEO
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_AUTO_PROMOTION
-+	bool
-+	default y if PPC_POWERNV
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..0dd767270 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states && !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_AUTO_PROMOTION,
-+					  stop_loop, target_residency,
-+					  exit_latency, state->psscr_val,
-+					  state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
--					  state->psscr_val,
--					  state->psscr_mask);
-+					  state->psscr_val, state->psscr_mask);
- 		}
- 
- 		/*
+ .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 +++++++++++++++++
+ MAINTAINERS                                   |   7 +
+ drivers/cpufreq/Kconfig.arm                   |  10 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/cpufreq/sunxi-cpufreq-nvmem.c         | 236 ++++++++++++++++++
+ 6 files changed, 491 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+ create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+
 -- 
-2.17.1
+2.17.0
 
