@@ -2,134 +2,124 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12122C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81153C4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:58:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D6F9321855
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:52:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4CB652184B
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 15:58:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554479544;
-	bh=uCqjH6WSiHEuIJm7zv5pX1DuQt11Ycw4+/0/9uTHxuE=;
+	s=default; t=1554479934;
+	bh=/ujAI0kuX6MbKlnCRJSqfOUbAHxk336H5FdchUMBFdk=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=RrGHOSldvFkx9yXEdpwTs8CukzjGch2TOjZA+KRryCBf0un6wah8v2nVtvolU7vIe
-	 ovMvZ3jRw466Mb5uZhOrzZXTiUxq1ybRkvLYLjYP4eaBy5uF4h16Coq/oWoCD4Y4I/
-	 zVMXidp11Hlbw/ryflb29jTdMI1VXqQctGcSnBxU=
+	b=Nph/p8Um0M8/v+8wN0y9QQeL/boqr1F0tnWL0qAP7LX+IapS2zr4acrfQH8vo4Fcq
+	 yYKFdb9alM/TS0KUhjpDUvMnVEvfbuNkg5/FpT+rndybhlOUnduNfCwgoBnR0nrSos
+	 sR8OP/PMSm3WNRNpj2rxyjkdTqo7ka2hToiNJClQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729641AbfDEPwY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 11:52:24 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52574 "EHLO mail.kernel.org"
+        id S1729987AbfDEP6x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 11:58:53 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55356 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726643AbfDEPwY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 11:52:24 -0400
+        id S1726135AbfDEP6x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 11:58:53 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id DE7E32146F;
-        Fri,  5 Apr 2019 15:52:22 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A45712175B;
+        Fri,  5 Apr 2019 15:58:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554479543;
-        bh=uCqjH6WSiHEuIJm7zv5pX1DuQt11Ycw4+/0/9uTHxuE=;
+        s=default; t=1554479932;
+        bh=/ujAI0kuX6MbKlnCRJSqfOUbAHxk336H5FdchUMBFdk=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=cqoGgsVNW4mPt6XPndxs+CwsAanm7TyhKEQGGabTvrP6YfEV2FOpJZT297TRSuxJD
-         IovnrXkFh9F3ZD/+jDArZ0NVD4+nmFjulHHjpANN+NqNRtacpyXfNMXYFHEUfL3lWl
-         mZvGdG+kRtPZ05jqGP2nqUCPMbFFZxYjeUDOs2Is=
+        b=M2ZSOEjEH4eiKEShrjCIw5hwobHM7nWl6K7kHeEwrocG9ZhacjknVyzmAWpOMiEiN
+         Ionumne7iliFcloGLC/7DyO3ubOg2RM0r93ykKUI41hI0QoeJNqUa8fFCvVE6yBvox
+         CD82Is92aQiCE23qkmunfnVcqbkyRfsQsWFTmcdw=
 Received: by earth.universe (Postfix, from userid 1000)
-        id E13743C08D5; Fri,  5 Apr 2019 17:52:20 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 17:52:20 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Claudiu.Beznea@microchip.com
-Cc:     robh+dt@kernel.org, mark.rutland@arm.com,
-        Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com,
-        Ludovic.Desroches@microchip.com, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 0/3] add support for SAM9X60's shutdown controller
-Message-ID: <20190405155220.rsxrvv2yopij73de@earth.universe>
-References: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+        id A86603C08D5; Fri,  5 Apr 2019 17:58:50 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 17:58:50 +0200
+From:   sre <sre@kernel.org>
+To:     =?utf-8?B?5b2t57qi?= <elicec@foxmail.com>
+Cc:     linux-pm <linux-pm@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] power:ds2782:Fix description error
+Message-ID: <20190405155850.j3f35qiov7hg5pfo@earth.universe>
+References: <tencent_408CB7922C1972D02ACDB8E48E4218092507@qq.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="lcyamu3phuxokejg"
+        protocol="application/pgp-signature"; boundary="hdhbftm6bszhjotw"
 Content-Disposition: inline
-In-Reply-To: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <tencent_408CB7922C1972D02ACDB8E48E4218092507@qq.com>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405155220.wOK79JNUMVFk8FCM5jvTeKqMuDmDIxjvL4TIE4MDJo4@z>
+Message-ID: <20190405155850.YSGJAsEQp9uXsgef8A472iWfMPle6U4tmzjgiZ5SCBM@z>
 
 
---lcyamu3phuxokejg
-Content-Type: text/plain; charset=us-ascii
+--hdhbftm6bszhjotw
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Feb 21, 2019 at 01:45:44PM +0000, Claudiu.Beznea@microchip.com wrot=
-e:
-> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+On Wed, Feb 20, 2019 at 04:32:29PM +0800, =E5=BD=AD=E7=BA=A2 wrote:
+> After add support for ds2786 battery gas gauge=EF=BC=8Cthe description
+> didn't update. fix it.
 >=20
-> Hi,
->=20
-> This series adapt SAMA5D2's shutdown controller driver to work for
-> SAM9X60's shutdown controller. The difference is that SAM9X60 have
-> option for RTT timer wakeup.
->=20
-> Thank you,
-> Claudiu Beznea
+> Signed-off-by: HongPeng <elicec@foxmail.com>
+> ---
 
-Thanks, queued.
+The patch does not apply due to a spelling fix in the description
+(Gauage -> Gauge). Also your name in From does not match the name
+in the Signed-off-by (SoB) and the one from SoB seems to miss a
+space.
 
 -- Sebastian
 
+>  drivers/power/supply/ds2782_battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> Changes in v2:
-> - collect Acked-by tags
-> - in patch 3/3 use "optional microchip,sam9x60-shdwc properties"
->   string to specify that the introduced property is only for
->   microchip,sam9x60-shdwc as specified above in case of
->   atmel,<chip>-shdwc shutdown controllers
-> - in patch 3/3 keep only the optional property introduced by
->   microchip,sam9x60-shwdwc (atmel,wakeup-rtt-timer)
->=20
-> Claudiu Beznea (3):
->   power: reset: at91-poweroff: add RTT wakeup capability
->   power: reset: at91-poweroff: add support for SAM9X60
->   dt-bindings: arm: atmel: add binding for SAM9X60 shutdown controller
->=20
->  .../devicetree/bindings/arm/atmel-sysregs.txt      |  6 +++++-
->  drivers/power/reset/at91-sama5d2_shdwc.c           | 25 ++++++++++++++++=
-++++++
->  2 files changed, 30 insertions(+), 1 deletion(-)
->=20
+> diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply=
+/ds2782_battery.c
+> index a1b7e0592245..924e99d1e69e 100644
+> --- a/drivers/power/supply/ds2782_battery.c
+> +++ b/drivers/power/supply/ds2782_battery.c
+> @@ -471,5 +471,5 @@ static struct i2c_driver ds278x_battery_driver =3D {
+>  module_i2c_driver(ds278x_battery_driver);
+> =20
+>  MODULE_AUTHOR("Ryan Mallon");
+> -MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC drive=
+r");
+> +MODULE_DESCRIPTION("Maxim/Dallas DS2782/DS2786 Stand-Alone Fuel Gauage I=
+C driver");
+>  MODULE_LICENSE("GPL");
 > --=20
-> 2.7.4
->=20
+> 2.17.1
 
---lcyamu3phuxokejg
+--hdhbftm6bszhjotw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynebQACgkQ2O7X88g7
-+pqpPxAAqI8P+IVyhLmkU+Aes/7au2rBLOAfw5K9NPNj10VzVsfa7dZnpimaWvhX
-EqYXyPdPbcj5tAlRlWoVb77bgJvT4JaOQNS25fjR9gxx1IF0nTJm6ggcauFwECZM
-3iZ1O0cvZkMAeSlEW9eto9mg18lgUHDI8SDl5RqiEAa7KDKSrKr9/tKEt/K/Kdvz
-VA0QtNliTeTG9oYA8JhcPdjQqEpEcwWwoitB2MPWUHcoPw3HIxNRKBQRGjEdsgFQ
-rtmk33qHqlobo8gKcv69SCd+wvLu4pht444G5KVrkUdBTwb2rKnvyVqz+BIyxbFv
-fknCj9ZEi3AQMLwEkhQv+0LUvcT7aKGyvSnd2wTbI5//w6H/m3/aNCRD2wV/Qlfl
-eEFyHSmG3sLw5xJOkqNP0RTqUIDWrKMuIqY4C2sruEgfmVACiKhRWemQwWAHLqXQ
-yi1YwaTZbVkqZcgcYI5un8xJqlBUTy41vR6cI/IHrstWYrfX+FPv/oMT/muXurxa
-D1Sz3uwRI+kaakIgfvELyV3t2gxM5qokZ3ndQikPDrScnl8h2a7GLjRIjO3vpljT
-EqCl2utcFlj7sJIJUSMsbt/JYzwn60Rc9zCvGBs08Mpm4rHL4SRnMtXhYbiF7gtm
-1hsmLNo5NdLxnRizxtCm3WRJKxb/+t0jf9bEBVCkqqndhLTvIGw=
-=zRv5
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynezoACgkQ2O7X88g7
++por0xAAhqSxQkhQqPwnHJq9mNddmBX/H6tS91EL0bhP4jIUTuXnZ9lEzlxdnnbP
+IV6GfrDOI89JtwvfxhiWXTMqUrm9XK/A9eTPcin+li98pF05eQ0btM1/kL9b9Soe
+KMiwW/ZElYr/oxkwQE+gB+uIdCQA0SpH9x/EPRKLGjSUSntytsyyR4kcnJYy8UW9
+Jlg7KGB9e27KZKBnuDBg8XBKttdddVXjcotwupJXP7VnG/Sz1xuvpg03QOtsmB9d
+ixL1fbWhbz6FJeg5BZgxLOaLkoz86BH68WjxPVhBqiggZHLvTil0MbIXyaluy/n4
+ppDUdb5RKMpq13+EvD7LyxprLWqcanfAklm35Eo6lJ+fL+4M8JMptbMd8IPF2sPG
+FIpn4+cGZErsF4j0TO9GQNZG6pnc+/ICbIyNvJLESyX1hOYetM3K81eC3MkAPpMV
+AQJRrJMHFPlcJv/d5bXwhOiDlayUpVMlC/BE61TKH6fCfS1yA5i3wYECX7OucM/p
+9MIeYO4Gx2UpUi+buCKWfHk6+s1C3UucdThRRZcNah438cp1h40QR1zwEkWcaiby
+tRzV27LcCe/yMIUVYQSyIDvdh/R+6MtAAGIJcPyUxs7stZA96T7Q8yO5wQbh+Tsc
+XJFhzKR1JZ8hlf+Nz6rViJzm5pCM0KYvlyjDlvVNYRGIC+Euc7w=
+=lVby
 -----END PGP SIGNATURE-----
 
---lcyamu3phuxokejg--
+--hdhbftm6bszhjotw--
