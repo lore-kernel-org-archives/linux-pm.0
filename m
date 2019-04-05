@@ -2,127 +2,136 @@ Return-Path: <SRS0=/XJp=SH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A02A3C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 03:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AA6BC4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 07:30:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6D7BF2186A
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 03:55:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A76E2175B
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 07:30:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EkgWa3lL"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fdhnNrTQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730115AbfDEDzT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Apr 2019 23:55:19 -0400
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:40863 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730103AbfDEDzS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2019 23:55:18 -0400
-Received: by mail-lj1-f196.google.com with SMTP id q66so3966160ljq.7
-        for <linux-pm@vger.kernel.org>; Thu, 04 Apr 2019 20:55:17 -0700 (PDT)
+        id S1729783AbfDEHae (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 03:30:34 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:34708 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726594AbfDEHae (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2019 03:30:34 -0400
+Received: by mail-pl1-f194.google.com with SMTP id y6so2574455plt.1;
+        Fri, 05 Apr 2019 00:30:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=l/1mlm+04wVwhtMiLlTVCrPwXOYS7toZlKWNXa22sNE=;
-        b=EkgWa3lLKtEbOWlu8Y6elZvv7Rih+xNWefGGDTvXZv24SRVRyvlst4xZHCm/hKMYG5
-         KZfHjRfGbdkNd8kf14OQr8LP6YPhUjHvF5Ld34ZE9fgD7wadH35eFCoVaqL4AXoPKgfX
-         UEcFfQE/TpJGtLzx2/xYR16QzTWEUbLPW+J/DsLJIxpJyC8Ap2sBUFLt+9z1HktZg3EJ
-         mQPRywevhOVE12HTkFCFHNuuLNV6y5h85KO0wE8Fgiw0ec43kpT/F59BhIfPM1XU7Q9R
-         W9bzttvLLe8QtlqRQN+WjEexzToeD36TPx4EHNoswOc7XXh3TCnqBj0wN5qUoq4uNbm+
-         0WBA==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=VOrnHXSxYndVz4s82/4h/nLN4u1uE1Ep10yXCThvdm0=;
+        b=fdhnNrTQsWoBprPQFsOKO0qtUwHG1MALvjx54XZ4ZDabC4VsHr4sXxQPV90cIRKB9S
+         A4HyhnKuxvjDnkM3cp1izfJgnMdcFr9k28jxQRmwsMC0UzyCII1DXGHss/V0aGqdY1zt
+         6PtNxys4pXN4QL/XaN1X50ia2k7LvxjKcnJRQ55hUK9uVUtaryGaMwJTTQaph1t5LZQA
+         Tn4vuE9TokRhh57oR2/TN3FLM09Eul0Q8a19O1WyhOIFa2pT6315GT4kpSBBN3NYLtu8
+         MO5XPG7SVC7R083C5LJLCfm+OE+PFVZu+2QvwsSpTZvNmPKqev6KBD1dS25gx86ZRacX
+         09UQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=l/1mlm+04wVwhtMiLlTVCrPwXOYS7toZlKWNXa22sNE=;
-        b=F2OAMDjY7NHdJngMkKJmKKPJ3SjwoNaa9ArRpU9b++zwY1zktWCJHcP7SUUI6PjDdA
-         T5brVi/+KBVyEHg/mHiarjFfJV+E5jEBLHkRehmyObtLr6zblfsxivlf3NcylkkLehJX
-         PogSuiYdwd0qFZTtrgVPgb7UnpFIclfm/VtIKmzl8+EDMnKEIu0RjuNzG4T03TQ6dR7t
-         byBVHyqL4c61XmsTXZ0Lkk6WWoV53OuTtPm+wCdNRCPe07710PUWXRTrgvAm07W+wZFC
-         6VYkrgYqPtvV9JTdkf5xDw6JcLY0UoCs4FWRz1mZjTVzQIyyTncVmWvu+2VkbIfwoR7f
-         GGZw==
-X-Gm-Message-State: APjAAAXdC0jXZke6HPfe8Xv7Ffv1Xn7z7U0NKS/0eYXMT89HEdZxgexr
-        McbHWpcxahxkypvn5ehzirvyqQ==
-X-Google-Smtp-Source: APXvYqyz2iDP84+5SX7Wz+x4EG741CH0A9mmrzuRJSauAZgDQHwYXPQfQd1NKxQPFC74FTUDY2/29Q==
-X-Received: by 2002:a2e:711a:: with SMTP id m26mr5522243ljc.40.1554436516470;
-        Thu, 04 Apr 2019 20:55:16 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id i24sm4417633ljb.31.2019.04.04.20.55.09
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 04 Apr 2019 20:55:15 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     robh+dt@kernel.org, georgi.djakov@linaro.org
-Cc:     bjorn.andersson@linaro.org, vkoul@kernel.org, evgreen@chromium.org,
-        daidavid1@codeaurora.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: [PATCH 3/3] arm64: dts: qcs404: Add interconnect provider DT nodes
-Date:   Fri,  5 Apr 2019 10:54:46 +0700
-Message-Id: <20190405035446.31886-4-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190405035446.31886-1-georgi.djakov@linaro.org>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=VOrnHXSxYndVz4s82/4h/nLN4u1uE1Ep10yXCThvdm0=;
+        b=AAMfriRX9bb7qY3zLkWltwx9hxFLjJ0GLXqrb9DH5HFIFMq1MfnMrScRL1SNubVGSm
+         EKHblA2lCH2QY2e8gZHonlqr9TY82gLKTJj50FcOu6L/MEFjZDph2WOxQlz11CrKzJjN
+         YUp+XfulwKKtojiYu7SxO41xGRNg4JJIy1/0MNRwj0pe8VSHCj427xR65kvyKPuUqhlA
+         a6uscrkJxvNBjxqdoNekf+2utAwjD/DjMcLpWqMKumWa04WeK0DPRY3HoTcj59Pld4Sm
+         zQuYuO9Nkc1CNY9CQHYJBwhQkU22TNjQT5nEtkT1KwqOjO1oCIMMsIbLGB2GvsW6fM/6
+         DW4A==
+X-Gm-Message-State: APjAAAXc4OfbesTng0odgFRzBdpVlE2fL5pBl6gnBjSChV/BtWc/ZMY8
+        DBShbj+kzyU1/1/jXDroG+E=
+X-Google-Smtp-Source: APXvYqy6cMT4BHanKoFfkkZ4mv5VUjuezy/ovsrrzAUBs16QcxyaNtZOtHBBCxosKXxoz/z1+fPluw==
+X-Received: by 2002:a17:902:b407:: with SMTP id x7mr11503526plr.288.1554449433145;
+        Fri, 05 Apr 2019 00:30:33 -0700 (PDT)
+Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
+        by smtp.gmail.com with ESMTPSA id u5sm17042269pfm.121.2019.04.05.00.30.31
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Fri, 05 Apr 2019 00:30:32 -0700 (PDT)
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Chris Healy <cphealy@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date:   Fri,  5 Apr 2019 00:30:20 -0700
+Message-Id: <20190405073020.10361-1-andrew.smirnov@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190405035446.rWGTo0ozNntIqyYi8KszqT8-hHMebusO4IbdSQXaicA@z>
+Message-ID: <20190405073020.CFQ-NgekRtQ17tE8YbC-bOw7cA3UZXwm4LU39X-ympo@z>
 
-Add the DT nodes for the network-on-chip interconnect buses found
-on qcs404-based platforms.
+Fix a similar endless event loop as was done in commit 8dcf32175b4e
+("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+  The culprit is the dev_dbg printk in the i2c uevent handler. If
+  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
+  in an endless loop with systemd-journald.
+
+  This happens if user-space scans the system log and reads the uevent
+  file to get information about a newly created device, which seems
+  fair use to me. Unfortunately reading the "uevent" file uses the
+  same function that runs for creating the uevent for a new device,
+  generating the next syslog entry
+
+Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
+in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
+seems to have been fixed. Change debug prints to use pr_debug insted
+to resolve the issue.
+
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/arm64/boot/dts/qcom/qcs404.dtsi | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/power/supply/power_supply_sysfs.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/qcs404.dtsi b/arch/arm64/boot/dts/qcom/qcs404.dtsi
-index e8fd26633d57..706e918f79f6 100644
---- a/arch/arm64/boot/dts/qcom/qcs404.dtsi
-+++ b/arch/arm64/boot/dts/qcom/qcs404.dtsi
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- // Copyright (c) 2018, Linaro Limited
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f596160..5e91946731fd 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -383,14 +383,14 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	char *prop_buf;
+ 	char *attrname;
  
-+#include <dt-bindings/interconnect/qcom,qcs404.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/clock/qcom,gcc-qcs404.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
-@@ -226,6 +227,30 @@
- 			compatible = "qcom,rpm-qcs404";
- 			qcom,glink-channels = "rpm_requests";
+-	dev_dbg(dev, "uevent\n");
++	pr_debug("%s: uevent\n", dev_name(dev));
  
-+			bimc: interconnect@0 {
-+				compatible = "qcom,qcs404-bimc";
-+				#interconnect-cells = <1>;
-+				clock-names = "bus_clk", "bus_a_clk";
-+				clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-+					<&rpmcc RPM_SMD_BIMC_A_CLK>;
-+			};
-+
-+			pcnoc: interconnect@1 {
-+				compatible = "qcom,qcs404-pcnoc";
-+				#interconnect-cells = <1>;
-+				clock-names = "bus_clk", "bus_a_clk";
-+				clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-+					<&rpmcc RPM_SMD_PNOC_A_CLK>;
-+			};
-+
-+			snoc: interconnect@2 {
-+				compatible = "qcom,qcs404-snoc";
-+				#interconnect-cells = <1>;
-+				clock-names = "bus_clk", "bus_a_clk";
-+				clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-+					<&rpmcc RPM_SMD_SNOC_A_CLK>;
-+			};
-+
- 			rpmcc: clock-controller {
- 				compatible = "qcom,rpmcc-qcs404";
- 				#clock-cells = <1>;
+ 	if (!psy || !psy->desc) {
+ 		dev_dbg(dev, "No power supply yet\n");
+ 		return ret;
+ 	}
+ 
+-	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
++	pr_debug("%s: POWER_SUPPLY_NAME=%s\n", dev_name(dev), psy->desc->name);
+ 
+ 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
+ 	if (ret)
+@@ -427,7 +427,8 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 			goto out;
+ 		}
+ 
+-		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
++		pr_debug("%s: prop %s=%s\n", dev_name(dev), attrname,
++			 prop_buf);
+ 
+ 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
+ 		kfree(attrname);
+-- 
+2.20.1
+
