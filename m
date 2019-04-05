@@ -1,104 +1,86 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm QCS404 DT
- bindings
-Date: Fri, 5 Apr 2019 22:46:39 +0700
-Message-ID: <9ee2c9b2-f201-abfb-be60-180befa9dc6d@linaro.org>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
- <20190405035446.31886-2-georgi.djakov@linaro.org>
- <20190405143254.GM1843@tuxbook-pro>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 0/3] add support for SAM9X60's shutdown controller
+Date: Fri, 5 Apr 2019 17:52:20 +0200
+Message-ID: <20190405155220.rsxrvv2yopij73de@earth.universe>
+References: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lcyamu3phuxokejg"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190405143254.GM1843@tuxbook-pro>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1550756716-3032-1-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Claudiu.Beznea@microchip.com
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bjorn,
 
-On 4/5/19 21:32, Bjorn Andersson wrote:
-> On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
-> 
->> The Qualcomm QCS404 platform has several buses that could be controlled
->> and tuned according to the bandwidth demand.
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  .../bindings/interconnect/qcom,qcs404.txt     | 45 +++++++++++++++++++
->>  1 file changed, 45 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
->>
->> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
->> new file mode 100644
->> index 000000000000..2ea63ea827d7
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
->> @@ -0,0 +1,45 @@
->> +Qualcomm QCS404 Network-On-Chip interconnect driver binding
->> +-----------------------------------------------------------
->> +
->> +Required properties :
->> +- compatible : shall contain only one of the following:
->> +			"qcom,qcs404-bimc"
-> 
-> As this is a hardware block available in mmio register space I think you
-> better represent this on the mmio (soc) bus - and then represent the
-> link to rpm as a child node of the rpm.
+--lcyamu3phuxokejg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The mmio register space is not used for expressing bandwidth needs, but
-contains mostly QoS related stuff. We do not support QoS for now and
-that's why i haven't included it. When we decide to support QoS, we can
-add the nodes for the QoS registers and then reference them with some DT
-property like qcom,qos = <&bimc_qos>;
+Hi,
 
-Thanks,
-Georgi
+On Thu, Feb 21, 2019 at 01:45:44PM +0000, Claudiu.Beznea@microchip.com wrot=
+e:
+> From: Claudiu Beznea <claudiu.beznea@microchip.com>
+>=20
+> Hi,
+>=20
+> This series adapt SAMA5D2's shutdown controller driver to work for
+> SAM9X60's shutdown controller. The difference is that SAM9X60 have
+> option for RTT timer wakeup.
+>=20
+> Thank you,
+> Claudiu Beznea
 
-> 
-> Apart from that this looks good.
-> 
-> Regards,
-> Bjorn
-> 
->> +			"qcom,qcs404-pcnoc"
->> +			"qcom,qcs404-snoc"
->> +- #interconnect-cells : should contain 1
->> +
->> +Optional properties :
->> +clocks : list of phandles and specifiers to all interconnect bus clocks
->> +clock-names : clock names should include both "bus_clk" and "bus_a_clk"
->> +
->> +Example:
->> +
->> +rpm-glink {
->> +	...
->> +	rpm_requests: glink-channel {
->> +		...
->> +		bimc: interconnect@0 {
->> +			compatible = "qcom,qcs404-bimc";
->> +			#interconnect-cells = <1>;
->> +			clock-names = "bus_clk", "bus_a_clk";
->> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
->> +				<&rpmcc RPM_SMD_BIMC_A_CLK>;
->> +		};
->> +
->> +		pnoc: interconnect@1 {
->> +			compatible = "qcom,qcs404-pcnoc";
->> +			#interconnect-cells = <1>;
->> +			clock-names = "bus_clk", "bus_a_clk";
->> +			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
->> +				<&rpmcc RPM_SMD_PNOC_A_CLK>;
->> +		};
->> +
->> +		snoc: interconnect@2 {
->> +			compatible = "qcom,qcs404-snoc";
->> +			#interconnect-cells = <1>;
->> +			clock-names = "bus_clk", "bus_a_clk";
->> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
->> +				<&rpmcc RPM_SMD_SNOC_A_CLK>;
->> +		};
->> +	};
->> +};
+Thanks, queued.
+
+-- Sebastian
+
+>=20
+> Changes in v2:
+> - collect Acked-by tags
+> - in patch 3/3 use "optional microchip,sam9x60-shdwc properties"
+>   string to specify that the introduced property is only for
+>   microchip,sam9x60-shdwc as specified above in case of
+>   atmel,<chip>-shdwc shutdown controllers
+> - in patch 3/3 keep only the optional property introduced by
+>   microchip,sam9x60-shwdwc (atmel,wakeup-rtt-timer)
+>=20
+> Claudiu Beznea (3):
+>   power: reset: at91-poweroff: add RTT wakeup capability
+>   power: reset: at91-poweroff: add support for SAM9X60
+>   dt-bindings: arm: atmel: add binding for SAM9X60 shutdown controller
+>=20
+>  .../devicetree/bindings/arm/atmel-sysregs.txt      |  6 +++++-
+>  drivers/power/reset/at91-sama5d2_shdwc.c           | 25 ++++++++++++++++=
+++++++
+>  2 files changed, 30 insertions(+), 1 deletion(-)
+>=20
+> --=20
+> 2.7.4
+>=20
+
+--lcyamu3phuxokejg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynebQACgkQ2O7X88g7
++pqpPxAAqI8P+IVyhLmkU+Aes/7au2rBLOAfw5K9NPNj10VzVsfa7dZnpimaWvhX
+EqYXyPdPbcj5tAlRlWoVb77bgJvT4JaOQNS25fjR9gxx1IF0nTJm6ggcauFwECZM
+3iZ1O0cvZkMAeSlEW9eto9mg18lgUHDI8SDl5RqiEAa7KDKSrKr9/tKEt/K/Kdvz
+VA0QtNliTeTG9oYA8JhcPdjQqEpEcwWwoitB2MPWUHcoPw3HIxNRKBQRGjEdsgFQ
+rtmk33qHqlobo8gKcv69SCd+wvLu4pht444G5KVrkUdBTwb2rKnvyVqz+BIyxbFv
+fknCj9ZEi3AQMLwEkhQv+0LUvcT7aKGyvSnd2wTbI5//w6H/m3/aNCRD2wV/Qlfl
+eEFyHSmG3sLw5xJOkqNP0RTqUIDWrKMuIqY4C2sruEgfmVACiKhRWemQwWAHLqXQ
+yi1YwaTZbVkqZcgcYI5un8xJqlBUTy41vR6cI/IHrstWYrfX+FPv/oMT/muXurxa
+D1Sz3uwRI+kaakIgfvELyV3t2gxM5qokZ3ndQikPDrScnl8h2a7GLjRIjO3vpljT
+EqCl2utcFlj7sJIJUSMsbt/JYzwn60Rc9zCvGBs08Mpm4rHL4SRnMtXhYbiF7gtm
+1hsmLNo5NdLxnRizxtCm3WRJKxb/+t0jf9bEBVCkqqndhLTvIGw=
+=zRv5
+-----END PGP SIGNATURE-----
+
+--lcyamu3phuxokejg--
