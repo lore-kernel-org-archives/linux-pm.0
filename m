@@ -4,212 +4,123 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E157C4360F
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 13:50:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE27C4360F
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6A474218AE
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 13:50:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4E10B218AC
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Apr 2019 14:01:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554472230;
-	bh=DMiIHM54l+v6TDCFo5GJg0LsMf/TNEW9BlpPao9RmMo=;
+	s=default; t=1554472894;
+	bh=fsh/4e2YUoJ6mxG6gKftsBN+3Zc6eKt4TFqmWvOthcM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Eg6ycs3O8vuAISuqw+PAyVWa5dDiEupChLgD7IZzieNdx1ifqQOKn768DSPudNJYR
-	 jVsxBJA5lRClNuSQ19tMRm6v4zLfpBs1uGb11Fq1nrf1fO/jofFQiLB++O3psN/UAu
-	 OaPWLgC36cfxa7ZsO+k8WI+J6wb9N00hMa5vG2BU=
+	b=z08+CsipQNjL3dMGhkudozYerx8Im0Y8fYvULvq7GC+8nGWA88RHaGkcbfGHrCa7W
+	 JPVczHSYpySSFGyqvueYTddOQQNQInlFs1nfbcZmJ5uyrOvHYNmp/Oe0LAhTwTUmDg
+	 SP82bmjDyY9Y3WV+IauvCVpa424LSskg81/k8CQ4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730440AbfDENu3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Apr 2019 09:50:29 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38200 "EHLO mail.kernel.org"
+        id S1731448AbfDEOAe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Apr 2019 10:00:34 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47400 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726594AbfDENu3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Apr 2019 09:50:29 -0400
+        id S1731445AbfDEOAd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Apr 2019 10:00:33 -0400
 Received: from earth.universe (host-091-097-083-087.ewe-ip-backbone.de [91.97.83.87])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 9ED6C21738;
-        Fri,  5 Apr 2019 13:50:27 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0BB382186A;
+        Fri,  5 Apr 2019 14:00:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554472227;
-        bh=DMiIHM54l+v6TDCFo5GJg0LsMf/TNEW9BlpPao9RmMo=;
+        s=default; t=1554472833;
+        bh=fsh/4e2YUoJ6mxG6gKftsBN+3Zc6eKt4TFqmWvOthcM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=OSvHYJ+NHUFU5yDDz8DVr/zmS5rMaO7SNPEDJQusgFEkRRMyhKFD+Ra41gLqLkAb6
-         wJWT6f0F3qS8faCFWNOm7Ge5p6ghlQHEphnqP8zPCVUkWC38Y5ppgt2eCvUiGB9CQF
-         YFQ836/lVV+e7nsxHBn80CcwyoyJo8Blk4qhUr0s=
+        b=tFVGo5jsv7v2QhLvHC/FSjMhlrVL6lTv6MuFrA84ZpKo3+wGkVynXaTSXlYlmt/mL
+         W45RXFcB8RZyiPPV60XkZB6SYttSYBZZEe5FIQ8sAkNw18BL8zVp7py9BafognDX58
+         dQhv9UkAk6YSIR55+9g1P9goOt9XpwlLjx2NgF8M=
 Received: by earth.universe (Postfix, from userid 1000)
-        id AE04B3C08D5; Fri,  5 Apr 2019 15:50:25 +0200 (CEST)
-Date:   Fri, 5 Apr 2019 15:50:25 +0200
+        id 30ACF3C08D5; Fri,  5 Apr 2019 16:00:31 +0200 (CEST)
+Date:   Fri, 5 Apr 2019 16:00:31 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Lubomir Rintel <lkundrak@v3.sk>
-Cc:     Darren Hart <dvhart@infradead.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 09/10] power: supply: olpc_battery: Add OLPC XO 1.75
- support
-Message-ID: <20190405135025.v4sn33mkgdrsjvtm@earth.universe>
-References: <20190310162419.11861-1-lkundrak@v3.sk>
- <20190310162419.11861-10-lkundrak@v3.sk>
+To:     Kangjie Lu <kjlu@umn.edu>
+Cc:     pakki001@umn.edu, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: charger-manager: fix a potential NULL pointer
+ dereference
+Message-ID: <20190405140031.6u35e5jd56aqms6o@earth.universe>
+References: <20190314060247.7848-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="zr6rkb6gtz4ibzpy"
+        protocol="application/pgp-signature"; boundary="tkl3ivocftthn6sa"
 Content-Disposition: inline
-In-Reply-To: <20190310162419.11861-10-lkundrak@v3.sk>
+In-Reply-To: <20190314060247.7848-1-kjlu@umn.edu>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190405135025.3uvljGWzWc6yf-J_7BZgIJzeykslHB_NshvR_dPC1Co@z>
+Message-ID: <20190405140031.rbeBy-n6Wi-ZhyvhDG21uY3uZZZK5x5fT-2IHpgtpZw@z>
 
 
---zr6rkb6gtz4ibzpy
+--tkl3ivocftthn6sa
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sun, Mar 10, 2019 at 05:24:18PM +0100, Lubomir Rintel wrote:
-> The battery and the protocol are essentially the same as OLPC XO 1.5,
-> but the responses from the EC are LSB first.
+On Thu, Mar 14, 2019 at 01:02:47AM -0500, Kangjie Lu wrote:
+> In case create_freezable_workqueue fails, the fix return -ENOMEM
+> to avoid a potential NULL pointer dereference.
 >=20
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
->=20
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
 > ---
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Thanks, queued.
 
 -- Sebastian
 
-> Changes since v5:
-> - s/int little_endian/bool little_endian/
+>  drivers/power/supply/charger-manager.c | 3 +++
+>  1 file changed, 3 insertions(+)
 >=20
-> Changes since v2:
-> - Fix the version conditional
->=20
-> Changes since v1:
-> - s/s16 ecword_to_cpu/u16 ecword_to_cpu/
-> - s/u16 ec_byte/u16 ec_word/
->=20
->  drivers/power/supply/olpc_battery.c | 25 +++++++++++++++++++------
->  1 file changed, 19 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-> index 8be44c717d85..0d67158c13d6 100644
-> --- a/drivers/power/supply/olpc_battery.c
-> +++ b/drivers/power/supply/olpc_battery.c
-> @@ -58,6 +58,7 @@ struct olpc_battery_data {
->  	struct power_supply *olpc_bat;
->  	char bat_serial[17];
->  	bool new_proto;
-> +	bool little_endian;
->  };
-> =20
->  /*********************************************************************
-> @@ -323,6 +324,14 @@ static int olpc_bat_get_voltage_max_design(union pow=
-er_supply_propval *val)
->  	return ret;
->  }
-> =20
-> +static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
-> +{
-> +	if (data->little_endian)
-> +		return le16_to_cpu(ec_word);
-> +	else
-> +		return be16_to_cpu(ec_word);
-> +}
+> diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/suppl=
+y/charger-manager.c
+> index 38be91f21cc4..d29c4f338157 100644
+> --- a/drivers/power/supply/charger-manager.c
+> +++ b/drivers/power/supply/charger-manager.c
+> @@ -1987,6 +1987,9 @@ static struct platform_driver charger_manager_drive=
+r =3D {
+>  static int __init charger_manager_init(void)
+>  {
+>  	cm_wq =3D create_freezable_workqueue("charger_manager");
+> +	if (unlikely(!cm_wq))
+> +		return -ENOMEM;
 > +
->  /*********************************************************************
->   *		Battery properties
->   *********************************************************************/
-> @@ -395,7 +404,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
->  		if (ret)
->  			return ret;
+>  	INIT_DELAYED_WORK(&cm_monitor_work, cm_monitor_poller);
 > =20
-> -		val->intval =3D (s16)be16_to_cpu(ec_word) * 9760L / 32;
-> +		val->intval =3D ecword_to_cpu(data, ec_word) * 9760L / 32;
->  		break;
->  	case POWER_SUPPLY_PROP_CURRENT_AVG:
->  	case POWER_SUPPLY_PROP_CURRENT_NOW:
-> @@ -403,7 +412,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
->  		if (ret)
->  			return ret;
-> =20
-> -		val->intval =3D (s16)be16_to_cpu(ec_word) * 15625L / 120;
-> +		val->intval =3D ecword_to_cpu(data, ec_word) * 15625L / 120;
->  		break;
->  	case POWER_SUPPLY_PROP_CAPACITY:
->  		ret =3D olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
-> @@ -434,21 +443,21 @@ static int olpc_bat_get_property(struct power_suppl=
-y *psy,
->  		if (ret)
->  			return ret;
-> =20
-> -		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
-> +		val->intval =3D ecword_to_cpu(data, ec_word) * 10 / 256;
->  		break;
->  	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
->  		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
->  		if (ret)
->  			return ret;
-> =20
-> -		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
-> +		val->intval =3D (int)ecword_to_cpu(data, ec_word) * 10 / 256;
->  		break;
->  	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
->  		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
->  		if (ret)
->  			return ret;
-> =20
-> -		val->intval =3D (s16)be16_to_cpu(ec_word) * 6250 / 15;
-> +		val->intval =3D ecword_to_cpu(data, ec_word) * 6250 / 15;
->  		break;
->  	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
->  		ret =3D olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
-> @@ -622,7 +631,11 @@ static int olpc_battery_probe(struct platform_device=
- *pdev)
->  	if (ret)
->  		return ret;
-> =20
-> -	if (ecver > 0x44) {
-> +	if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
-> +		/* XO 1.75 */
-> +		data->new_proto =3D true;
-> +		data->little_endian =3D true;
-> +	} else if (ecver > 0x44) {
->  		/* XO 1 or 1.5 with a new EC firmware. */
->  		data->new_proto =3D true;
->  	} else if (ecver < 0x44) {
+>  	return platform_driver_register(&charger_manager_driver);
 > --=20
-> 2.20.1
+> 2.17.1
 >=20
 
---zr6rkb6gtz4ibzpy
+--tkl3ivocftthn6sa
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynXSEACgkQ2O7X88g7
-+ppOKw//et6UMKFAZCoUWBKGPxze0tyeRPa/oo9hnQop3QzOHxAsyZRIpgJ9PYnE
-PGzNvZc3/CNgaBjIt1HFS1A5NXWmW77Go8NrEo8R1y4bYJ7MyxAc9hD2FOS6b7/A
-gRxexw9yf9RAq0s8xeUHOGcf2i9OwX2+StGkyMixPPh90R9hE7bPufCKzzoBabRx
-inIZ3FT9UB8wP6aCgGhENHjKlZYnbIM4Jbd3G4u0d7ZiOVMxA2LnEuU7lQRx0sjw
-o02bXLk0/UsECSDiq+wwhSI8S3p8KeRrI6EB5vNnfuvzGGPTGkbzr5guc8g1XMb6
-Rkm+ZA0tgAO+PI4/KmQoyX3qbJxvEa/2fCOQBXrL200XFk/WuKNSyHameLY5HmKa
-1YAirLEGjzo+e87HznGunCAxaoIQRM5eunh+yAbIybSlgb0Gr7FbrdpOB5Gcn3zr
-D5KP/GEgGrk/7Z51cEfG5iuZ7PzaB+wVy8QoDWJ1hKl4AG3uANkw1zmogorljLyk
-JuWOgGvRhAbATVkC83IWFZwTT6VyMWGAWHsb8SYqYT1SHTHl5HJv+xm0AMJWD3e3
-g0Bb2QgPYQiDyw2vl56SYGMiMvHP4iWcDaNPI0eBRFk+Qt+y7Vw6wYcnGGqVDuuP
-JxYvgJboBKXWIMqkddMyncOY1vEH5iRTUiWsPuZrGlBoTp9bKUE=
-=mpI2
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlynX34ACgkQ2O7X88g7
++pqT4w//bt8j4QXMjCoJjbStIlmi1jhU7Zq0fcOE/O0PkQyArTOnQJ5cyvnvoDGv
+UfcaxNBLas4M1YXXVHZT7cp1GyZI21s/e0dPXvTNxpqd4SkipcdYGtRgkvj1s3yN
++0Olt8vuomRr48a825+5sGL55tXCXJfOe9T5M8GGxvv4urNcy+U2JaO0pidnWZi0
+cmVQ0oCRXiqFh24xfwpwJ0AB0O+yIpxqcXEXwTJ6F1nOXrEe+LpgSHginyCDET3s
+dvaiDBuYk6d36ZCmsN3rz80LE0jz6m9rZd0iVGi2jVACbSFgPvYlgJmJA8n3Hn+8
+yBp2VcHqUrRLGFeLykLSxIRHd1Ahrtugmkn4eH4S920BhqqIdL1esVvnxRtQ7sce
+feIrzAPTNpVzS3O38CDExWEQrg9BCLnv6A+6QS3T/ediYH4p1agZSKXQluKIU4gq
+niS8142knFXQ2xCNBm8Np44ahjCwftjJ6pAH994fqTvF6kRQ6b5GgiUzjV16EL+i
+zdkS75qeNgOcbCrJEUgMcpa76Gk3/Mys5pA+2mq4qxWvejMH9Z2daL8N3zsPZ+Kp
+mqImJqaDMiLeQP6srTkuDrUHKQBAuDi+/mgrqLYUNw5HQnq/rDAHnUWvjN1puCDW
+FDoMlUlyy2U9o8O/KJjUvdeZX4Ts/OKU/FZOqRQLlTy5SKXV+ks=
+=u5jE
 -----END PGP SIGNATURE-----
 
---zr6rkb6gtz4ibzpy--
+--tkl3ivocftthn6sa--
