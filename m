@@ -1,40 +1,24 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v3 01/13] thermal: qoriq: Remove unnecessary DT node is
- NULL check
-Date: Fri, 5 Apr 2019 10:51:14 -0700
-Message-ID: <CAHQ1cqEDiqn3KJeG62zqLm0tLv=+dgVHxSafm9_TYoi=VOMNhA@mail.gmail.com>
+Subject: Re: [PATCH v3 04/13] thermal: qoriq: Add local struct qoriq_sensor pointer
+Date: Fri, 5 Apr 2019 10:57:48 -0700
+Message-ID: <CAHQ1cqF3VBn9UTQvY5f3ySz9Q-zeZHcb5ojMt8suDPTfcJbZLw@mail.gmail.com>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-2-andrew.smirnov@gmail.com> <22f0c6d4-842e-bb91-a684-6edb6345e036@linaro.org>
+ <20190401041418.5999-5-andrew.smirnov@gmail.com> <02822a7c-ae86-8c00-093e-665b603b1430@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <22f0c6d4-842e-bb91-a684-6edb6345e036@linaro.org>
+In-Reply-To: <02822a7c-ae86-8c00-093e-665b603b1430@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 3, 2019 at 8:21 PM Daniel Lezcano <daniel.lezcano@linaro.org> w=
-rote:
+On Wed, Apr 3, 2019 at 8:28 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 >
 > On 01/04/2019 06:14, Andrey Smirnov wrote:
-> > This driver is meant to be used with Device Tree and there's no
-> > use-case where device's DT node is going to be NULL. Remove code
-> > protecting against that.
->
-> May be elaborate why is never going to be NULL?
->
-
-Hmm, I am not sure what can be elaborated further than what's already
-there. The driver is written to be instantiated via DT and there's no
-code that tries to do that via board code or anything like that. I am
-guessing you maybe read the description differently. Can you help me
-by giving an example of what you think needs clarifying?
-
-Thanks,
-Andrey Smirnov
-
+> > Add local struct qoriq_sensor pointer in qoriq_tmu_register_tmu_zone()
+> > for brevity.
+> >
 > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > > Cc: Chris Healy <cphealy@gmail.com>
 > > Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -45,39 +29,30 @@ Andrey Smirnov
 > > Cc: linux-imx@nxp.com
 > > Cc: linux-pm@vger.kernel.org
 > > Cc: linux-kernel@vger.kernel.org
->
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->
 > > ---
-> >  drivers/thermal/qoriq_thermal.c | 5 -----
-> >  1 file changed, 5 deletions(-)
+> >  drivers/thermal/qoriq_thermal.c | 10 +++++-----
+> >  1 file changed, 5 insertions(+), 5 deletions(-)
 > >
-> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_th=
-ermal.c
-> > index 3b5f5b3fb1bc..7b364933bfb1 100644
+> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> > index 6d40b9788266..e281bdcfa11f 100644
 > > --- a/drivers/thermal/qoriq_thermal.c
 > > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -193,11 +193,6 @@ static int qoriq_tmu_probe(struct platform_device =
-*pdev)
-> >       struct qoriq_tmu_data *data;
-> >       struct device_node *np =3D pdev->dev.of_node;
+> > @@ -114,18 +114,18 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
 > >
-> > -     if (!np) {
-> > -             dev_err(&pdev->dev, "Device OF-Node is NULL");
-> > -             return -ENODEV;
-> > -     }
-> > -
-> >       data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> >                           GFP_KERNEL);
-> >       if (!data)
+> >       for (id = 0; id < SITES_MAX; id++) {
+> >               struct thermal_zone_device *tzd;
+> > +             struct qoriq_sensor *s;
 > >
+> > -             qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+> > +             s = qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+> >                               sizeof(struct qoriq_sensor), GFP_KERNEL);
 >
+> I would not recommend this, especially if you use a variable helper for
+> clarity. Keep using the 's' variable and then assign qdata->sensor[id] =
+> s at the end when everything is ok. May be rename it 'sensor'?
 >
-> --
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
-RM SoCs
->
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
->
+
+Sure, I'll move the assignment in v4.
+
+Thanks,
+Andrey Smirnov
