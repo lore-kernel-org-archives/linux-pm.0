@@ -1,24 +1,35 @@
-From: pr-tracker-bot@kernel.org
-Subject: Re: [GIT PULL] ACPI fix for v5.1-rc4
-Date: Fri, 05 Apr 2019 01:55:07 +0000
-Message-ID: <155442930798.31474.11389041453540921430.pr-tracker-bot@kernel.org>
-References: <CAJZ5v0g=1Cdme_bigvg9JtxREs=e-kkpRo5-7HUuGEiy1bw0gA@mail.gmail.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH 0/3] Add QCS404 interconnect provider driver
+Date: Fri,  5 Apr 2019 10:54:43 +0700
+Message-ID: <20190405035446.31886-1-georgi.djakov@linaro.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g=1Cdme_bigvg9JtxREs=e-kkpRo5-7HUuGEiy1bw0gA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: robh+dt@kernel.org, georgi.djakov@linaro.org
+Cc: bjorn.andersson@linaro.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The pull request you sent on Thu, 4 Apr 2019 22:30:24 +0200:
+Add driver to support scaling of the on-chip interconnects on QCS404-based
+platforms. Also add the necessary device-tree nodes, so that the driver for
+each NoC can probe and register as interconnect-provider.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.1-rc4
+Bjorn Andersson (1):
+  interconnect: qcom: Add QCS404 interconnect provider driver
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/b512f71221d0bcb07ab32f3e958a84e164c85881
+Georgi Djakov (2):
+  dt-bindings: interconnect: Add Qualcomm QCS404 DT bindings
+  arm64: dts: qcs404: Add interconnect provider DT nodes
 
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+ .../bindings/interconnect/qcom,qcs404.txt     |  45 ++
+ arch/arm64/boot/dts/qcom/qcs404.dtsi          |  25 +
+ drivers/interconnect/qcom/Kconfig             |   8 +
+ drivers/interconnect/qcom/Makefile            |   2 +
+ drivers/interconnect/qcom/qcs404.c            | 488 ++++++++++++++++++
+ drivers/interconnect/qcom/qcs404_ids.h        |  86 +++
+ .../dt-bindings/interconnect/qcom,qcs404.h    |  88 ++++
+ 7 files changed, 742 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+ create mode 100644 drivers/interconnect/qcom/qcs404.c
+ create mode 100644 drivers/interconnect/qcom/qcs404_ids.h
+ create mode 100644 include/dt-bindings/interconnect/qcom,qcs404.h
