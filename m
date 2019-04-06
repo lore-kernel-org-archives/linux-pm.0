@@ -1,550 +1,106 @@
-From: Nick Crews <ncrews@chromium.org>
-Subject: [PATCH 2/2] power_supply: wilco_ec: Add charging config driver for Wilco EC
-Date: Fri,  5 Apr 2019 16:35:54 -0600
-Message-ID: <20190405223554.228813-2-ncrews@chromium.org>
-References: <20190405223554.228813-1-ncrews@chromium.org>
+From: Samuel Holland <samuel@sholland.org>
+Subject: Re: [PATCH 2/2] dt-bindings: cpufreq: Document
+ operating-points-v2-sunxi-cpu
+Date: Fri, 5 Apr 2019 22:26:20 -0500
+Message-ID: <5721bddc-4995-c38f-3f45-7a4589a1ccb5@sholland.org>
+References: <20190405102455.15311-1-tiny.windzz@gmail.com>
+ <20190405102455.15311-3-tiny.windzz@gmail.com>
+ <20190405145532.cstvbv3mxbzrmpxp@flea>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190405223554.228813-1-ncrews@chromium.org>
+In-Reply-To: <20190405145532.cstvbv3mxbzrmpxp@flea>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, groeck@google.com, dtor@google.com, sjg@chromium.org, Nick Crews <ncrews@chromium.org>
+To: Maxime Ripard <maxime.ripard@bootlin.com>, Yangtao Li <tiny.windzz@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add control of the charging algorithm used on Wilco devices.
-See Documentation/ABI/testing/sysfs-class-power-wilco for the
-userspace interface and other info.
+On 4/5/19 9:55 AM, Maxime Ripard wrote:
+> Hi,
+> 
+> On Fri, Apr 05, 2019 at 06:24:55AM -0400, Yangtao Li wrote:
+>> Allwinner Process Voltage Scaling Tables defines the voltage and
+>> frequency value  based on the speedbin blown in the efuse combination.
+>> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+>> provide the OPP framework with required information.
+>> This is used to determine the voltage and frequency value for each
+>> OPP of operating-points-v2 table when it is parsed by the OPP framework.
+>>
+>> This change adds documentation for the DT bindings.
+>> The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
+>> with following parameters:
+>> - nvmem-cells (NVMEM area containig the speedbin information)
+>> - opp-supported-hw: A single 32 bit bitmap value,
+>>   representing compatible HW:
+>> 			0:      speedbin 0
+>> 			1:      speedbin 1
+>> 			2:      speedbin 2
+>> 			3-31:   unused
+>>
+>> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+>> ---
+>>  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 ++++++++++++++++++
+>>  1 file changed, 235 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+>> new file mode 100644
+>> index 000000000000..80201d4e5147
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+>> @@ -0,0 +1,235 @@
+>> +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+>> +===================================
+>> +
+>> +For some SoCs, the CPU frequency subset and voltage value of each OPP
+>> +varies based on the silicon variant in use. Allwinner Process Voltage
+>> +Scaling Tables defines the voltage and frequency value  based on the
+>> +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
+>> +reads the efuse value from the SoC to provide the OPP framework with
+>> +required information.
+>> +
+>> +Required properties:
+>> +--------------------
+>> +In 'cpus' nodes:
+>> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+>> +
+>> +In 'operating-points-v2' table:
+>> +- compatible: Should be
+>> +	- 'operating-points-v2-sunxi-cpu'.
+>> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+>> +		efuse registers that has information about the
+>> +		speedbin that is used to select the right frequency/voltage
+>> +		value pair.
+>> +		Please refer the for nvmem-cells
+>> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+>> +		and also examples below.
+>> +
+>> +In every OPP node:
+>> +- opp-supported-hw: A single 32 bit bitmap value, representing compatible HW.
+>> +		    Bitmap:
+>> +			0:	speedbin 0
+>> +			1:	speedbin 1
+>> +			2:	speedbin 2
+>> +			3-31:	unused
+> 
+> I'm wondering if that's the right approach.
+> 
+> I guess we could also have three different OPP tables, and pass them
+> all three through a phandle array, and have the kernel code select
+> which one is relevant based on the SID content
+> 
+> Another option would be to use the OF_DYNAMIC code to fill
+> operating-points-v2 at kernel boot, before (or when) cpufreq kicks in.
+> 
+> ATF could also do that work.
 
-Signed-off-by: Nick Crews <ncrews@chromium.org>
----
- .../ABI/testing/sysfs-class-power-wilco       |  30 +++
- drivers/platform/chrome/wilco_ec/Kconfig      |   9 +
- drivers/platform/chrome/wilco_ec/Makefile     |   2 +
- .../platform/chrome/wilco_ec/charge_config.c  | 182 ++++++++++++++++++
- drivers/platform/chrome/wilco_ec/core.c       |  14 ++
- drivers/platform/chrome/wilco_ec/properties.c | 129 +++++++++++++
- drivers/platform/chrome/wilco_ec/properties.h |  68 +++++++
- include/linux/platform_data/wilco-ec.h        |   2 +
- 8 files changed, 436 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-power-wilco
- create mode 100644 drivers/platform/chrome/wilco_ec/charge_config.c
- create mode 100644 drivers/platform/chrome/wilco_ec/properties.c
- create mode 100644 drivers/platform/chrome/wilco_ec/properties.h
+While ATF has code to read and parse the DTB (which it uses to set up the PMIC),
+it's not really in a position to modify the DTB. For one thing, it only has
+access to the DTB appended to u-boot, not any DTB loaded from disk. And for two,
+that would add a significant amount of code, when ATF is already reaching its
+size limits.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-wilco b/Documentation/ABI/testing/sysfs-class-power-wilco
-new file mode 100644
-index 000000000000..ef78e3d4a4bd
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-power-wilco
-@@ -0,0 +1,30 @@
-+What:		/sys/class/power_supply/wilco_charger/charge_type
-+Date:		April 2019
-+KernelVersion:	5.1
-+Description:
-+		What charging algorithm to use:
-+
-+		Standard: Fully charges battery at a standard rate.
-+		Adaptive: Battery settings adaptively optimized based on
-+			typical battery usage pattern.
-+		Fast: Battery charges over a shorter period.
-+		Trickle: Extends battery lifespan for users who use
-+			their Chromebooks connected to AC.
-+		Custom: A low and high threshold percentage is specified.
-+			Charging begins when level drops below
-+			charge_control_start_threshold, and ceases when
-+			level is above charge_control_end_threshold.
-+
-+What:		/sys/class/power_supply/wilco_charger/charge_control_start_threshold
-+Date:		April 2019
-+KernelVersion:	5.1
-+Description:
-+		Used when charge_type="Custom", as described above. Measured in
-+		percentages. The valid range is [50, 95].
-+
-+What:		/sys/class/power_supply/wilco_charger/charge_control_end_threshold
-+Date:		April 2019
-+KernelVersion:	5.1
-+Description:
-+		Used when charge_type="Custom", as described above. Measured in
-+		percentages. The valid range is [55, 100].
-diff --git a/drivers/platform/chrome/wilco_ec/Kconfig b/drivers/platform/chrome/wilco_ec/Kconfig
-index e09e4cebe9b4..1c427830bd57 100644
---- a/drivers/platform/chrome/wilco_ec/Kconfig
-+++ b/drivers/platform/chrome/wilco_ec/Kconfig
-@@ -18,3 +18,12 @@ config WILCO_EC_DEBUGFS
- 	  manipulation and allow for testing arbitrary commands.  This
- 	  interface is intended for debug only and will not be present
- 	  on production devices.
-+
-+config WILCO_EC_CHARGE_CNTL
-+	tristate "Enable charging control"
-+	depends on WILCO_EC
-+	help
-+	  If you say Y here, you get support to control the charging
-+	  routines performed by the Wilco Embedded Controller.
-+	  Further information can be found in
-+	  Documentation/ABI/testing/sysfs-class-power-wilco)
-diff --git a/drivers/platform/chrome/wilco_ec/Makefile b/drivers/platform/chrome/wilco_ec/Makefile
-index 063e7fb4ea17..7e980f56f793 100644
---- a/drivers/platform/chrome/wilco_ec/Makefile
-+++ b/drivers/platform/chrome/wilco_ec/Makefile
-@@ -4,3 +4,5 @@ wilco_ec-objs				:= core.o mailbox.o
- obj-$(CONFIG_WILCO_EC)			+= wilco_ec.o
- wilco_ec_debugfs-objs			:= debugfs.o
- obj-$(CONFIG_WILCO_EC_DEBUGFS)		+= wilco_ec_debugfs.o
-+wilco_ec_charging-objs			:= charge_config.o properties.o
-+obj-$(CONFIG_WILCO_EC_CHARGE_CNTL)	+= wilco_ec_charging.o
-diff --git a/drivers/platform/chrome/wilco_ec/charge_config.c b/drivers/platform/chrome/wilco_ec/charge_config.c
-new file mode 100644
-index 000000000000..907526829444
---- /dev/null
-+++ b/drivers/platform/chrome/wilco_ec/charge_config.c
-@@ -0,0 +1,182 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Charging control driver for the Wilco EC
-+ *
-+ * Copyright 2019 Google LLC
-+ *
-+ * See Documentation/ABI/testing/sysfs-class-power-wilco for
-+ * userspace interface and other info.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/platform_data/wilco-ec.h>
-+#include <linux/power_supply.h>
-+
-+#include "properties.h"
-+
-+#define DRV_NAME "wilco-ec-charging"
-+
-+/* Property IDs and related EC constants */
-+#define PID_PCC_MODE		0x0710
-+#define PID_PCC_LOWER_LIMIT	0x0711
-+#define PID_PCC_UPPER_LIMIT	0x0712
-+
-+enum charge_mode {
-+	CHARGE_MODE_STD = 1,	/* Used for Standard */
-+	CHARGE_MODE_EXP = 2,	/* Express Charge, used for Fast */
-+	CHARGE_MODE_AC = 3,	/* Mostly AC use, used for Trickle */
-+	CHARGE_MODE_AUTO = 4,	/* Used for Adaptive */
-+	CHARGE_MODE_CUSTOM = 5,	/* Used for Custom */
-+};
-+
-+#define PCC_LOWER_LIMIT_MIN	50
-+#define PCC_LOWER_LIMIT_MAX	95
-+#define PCC_UPPER_LIMIT_MIN	55
-+#define PCC_UPPER_LIMIT_MAX	100
-+
-+static int set_charge_type(struct wilco_ec_device *ec, int psp_val)
-+{
-+	enum charge_mode mode;
-+
-+	switch (psp_val) {
-+	case (POWER_SUPPLY_CHARGE_TYPE_TRICKLE):
-+		mode = CHARGE_MODE_AC;
-+		break;
-+	case (POWER_SUPPLY_CHARGE_TYPE_FAST):
-+		mode = CHARGE_MODE_EXP;
-+		break;
-+	case (POWER_SUPPLY_CHARGE_TYPE_STANDARD):
-+		mode = CHARGE_MODE_STD;
-+		break;
-+	case (POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE):
-+		mode = CHARGE_MODE_AUTO;
-+		break;
-+	case (POWER_SUPPLY_CHARGE_TYPE_CUSTOM):
-+		mode = CHARGE_MODE_CUSTOM;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return wilco_ec_set_byte_property(ec, PID_PCC_MODE, mode);
-+}
-+
-+static enum power_supply_property wilco_pcc_props[] = {
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
-+};
-+
-+struct wilco_pcc_data {
-+	struct wilco_ec_device *ec;
-+	struct power_supply *psy;
-+};
-+
-+static int wilco_pcc_get_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					union power_supply_propval *val)
-+{
-+	struct wilco_pcc_data *data = power_supply_get_drvdata(psy);
-+	struct wilco_ec_device *ec = data->ec;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		return wilco_ec_get_byte_property(ec, PID_PCC_MODE,
-+						  (u8 *)&val->intval);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+		return wilco_ec_get_byte_property(ec, PID_PCC_LOWER_LIMIT,
-+						  (u8 *)&val->intval);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		return wilco_ec_get_byte_property(ec, PID_PCC_UPPER_LIMIT,
-+						  (u8 *)&val->intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int wilco_pcc_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct wilco_pcc_data *data = power_supply_get_drvdata(psy);
-+	struct wilco_ec_device *ec = data->ec;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		return set_charge_type(ec, val->intval);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+		if (val->intval < PCC_LOWER_LIMIT_MIN ||
-+		    val->intval > PCC_LOWER_LIMIT_MAX)
-+			return -EINVAL;
-+		return wilco_ec_set_byte_property(ec, PID_PCC_LOWER_LIMIT,
-+						  val->intval);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		if (val->intval < PCC_UPPER_LIMIT_MIN ||
-+		    val->intval > PCC_UPPER_LIMIT_MAX)
-+			return -EINVAL;
-+		return wilco_ec_set_byte_property(ec, PID_PCC_UPPER_LIMIT,
-+						  val->intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int wilco_pcc_property_is_writeable(struct power_supply *psy,
-+					   enum power_supply_property psp)
-+{
-+	return 1;
-+}
-+
-+static const struct power_supply_desc wilco_ps_desc = {
-+	.properties	= wilco_pcc_props,
-+	.num_properties	= ARRAY_SIZE(wilco_pcc_props),
-+	.get_property	= wilco_pcc_get_property,
-+	.set_property	= wilco_pcc_set_property,
-+	.property_is_writeable = wilco_pcc_property_is_writeable,
-+	.name		= "wilco-charger",
-+	.type		= POWER_SUPPLY_TYPE_MAINS,
-+};
-+
-+static int wilco_pcc_probe(struct platform_device *pdev)
-+{
-+	struct wilco_ec_device *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct power_supply_config psy_cfg = {};
-+	struct wilco_pcc_data *data;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->ec = ec;
-+	psy_cfg.drv_data = data;
-+	platform_set_drvdata(pdev, data);
-+
-+	data->psy = power_supply_register(&pdev->dev, &wilco_ps_desc, &psy_cfg);
-+	if (IS_ERR(data->psy))
-+		return PTR_ERR(data->psy);
-+
-+	return 0;
-+}
-+
-+static int wilco_pcc_remove(struct platform_device *pdev)
-+{
-+	struct wilco_pcc_data *data = platform_get_drvdata(pdev);
-+
-+	power_supply_unregister(data->psy);
-+	return 0;
-+}
-+
-+static struct platform_driver wilco_pcc_driver = {
-+	.probe	= wilco_pcc_probe,
-+	.remove	= wilco_pcc_remove,
-+	.driver = {
-+		.name = DRV_NAME,
-+	}
-+};
-+module_platform_driver(wilco_pcc_driver);
-+
-+MODULE_ALIAS("platform:" DRV_NAME);
-+MODULE_AUTHOR("Nick Crews <ncrews@chromium.org>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("Wilco EC charge control driver");
-diff --git a/drivers/platform/chrome/wilco_ec/core.c b/drivers/platform/chrome/wilco_ec/core.c
-index 05e1e2be1c91..b6f3b061f37b 100644
---- a/drivers/platform/chrome/wilco_ec/core.c
-+++ b/drivers/platform/chrome/wilco_ec/core.c
-@@ -89,8 +89,21 @@ static int wilco_ec_probe(struct platform_device *pdev)
- 		goto unregister_debugfs;
- 	}
- 
-+	/* Register child device to be found by charging config driver. */
-+	ec->charging_pdev = platform_device_register_data(dev,
-+							  "wilco-ec-charging",
-+							  PLATFORM_DEVID_AUTO,
-+							  NULL, 0);
-+	if (IS_ERR(ec->charging_pdev)) {
-+		dev_err(dev, "Failed to create charging platform device\n");
-+		ret = PTR_ERR(ec->charging_pdev);
-+		goto unregister_rtc;
-+	}
-+
- 	return 0;
- 
-+unregister_rtc:
-+	platform_device_unregister(ec->rtc_pdev);
- unregister_debugfs:
- 	if (ec->debugfs_pdev)
- 		platform_device_unregister(ec->debugfs_pdev);
-@@ -102,6 +115,7 @@ static int wilco_ec_remove(struct platform_device *pdev)
- {
- 	struct wilco_ec_device *ec = platform_get_drvdata(pdev);
- 
-+	platform_device_unregister(ec->charging_pdev);
- 	platform_device_unregister(ec->rtc_pdev);
- 	if (ec->debugfs_pdev)
- 		platform_device_unregister(ec->debugfs_pdev);
-diff --git a/drivers/platform/chrome/wilco_ec/properties.c b/drivers/platform/chrome/wilco_ec/properties.c
-new file mode 100644
-index 000000000000..67fdf6208a9c
---- /dev/null
-+++ b/drivers/platform/chrome/wilco_ec/properties.c
-@@ -0,0 +1,129 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2019 Google LLC
-+ */
-+
-+#include "properties.h"
-+
-+struct ec_property_request {
-+	u8 op;
-+	u8 property_id[4];
-+	u8 length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+} __packed;
-+
-+struct ec_property_response {
-+	u8 reserved[2];
-+	u8 op;
-+	u8 property_id[4];
-+	u8 length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+} __packed;
-+
-+/* Store a 32 bit property ID into a byte array, LSB first */
-+static inline void fill_property_id(u32 property_id, u8 field[])
-+{
-+	field[0] =  property_id        & 0xff;
-+	field[1] = (property_id >> 8)  & 0xff;
-+	field[2] = (property_id >> 16) & 0xff;
-+	field[3] = (property_id >> 24) & 0xff;
-+}
-+
-+static int send_property_msg(struct wilco_ec_device *ec,
-+			     struct ec_property_request *rq,
-+			     struct ec_property_response *rs)
-+{
-+	struct wilco_ec_message ec_msg;
-+	int ret;
-+
-+	memset(&ec_msg, 0, sizeof(ec_msg));
-+	ec_msg.type = WILCO_EC_MSG_PROPERTY;
-+	ec_msg.request_data = rq;
-+	ec_msg.request_size = sizeof(*rq);
-+	ec_msg.response_data = rs;
-+	ec_msg.response_size = sizeof(*rs);
-+	ret = wilco_ec_mailbox(ec, &ec_msg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (rs->op != rq->op)
-+		return -EBADMSG;
-+
-+	return 0;
-+}
-+
-+int wilco_ec_get_property(struct wilco_ec_device *ec,
-+			  struct ec_property_get_msg *prop_msg)
-+{
-+	struct ec_property_request rq;
-+	struct ec_property_response rs;
-+	int ret;
-+
-+	memset(&rq, 0, sizeof(rq));
-+	rq.op = OP_GET;
-+	fill_property_id(prop_msg->property_id, (u8 *)&rq.property_id);
-+
-+	ret = send_property_msg(ec, &rq, &rs);
-+	if (ret < 0)
-+		return ret;
-+
-+	prop_msg->length = rs.length;
-+	memcpy(prop_msg->data, &rs.data, rs.length);
-+
-+	return 0;
-+}
-+
-+int wilco_ec_set_property(struct wilco_ec_device *ec,
-+			  struct ec_property_set_msg *prop_msg)
-+{
-+	struct ec_property_request rq;
-+	struct ec_property_response rs;
-+	int ret;
-+
-+	memset(&rq, 0, sizeof(rq));
-+	rq.op = prop_msg->op;
-+	fill_property_id(prop_msg->property_id, (u8 *)&rq.property_id);
-+	rq.length = prop_msg->length;
-+	memcpy(&rq.data, prop_msg->data, prop_msg->length);
-+
-+	ret = send_property_msg(ec, &rq, &rs);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (rs.length != prop_msg->length)
-+		return -EBADMSG;
-+
-+	return 0;
-+}
-+
-+int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 *val)
-+{
-+	struct ec_property_get_msg msg;
-+	int ret;
-+
-+	msg.property_id = property_id;
-+	ret = wilco_ec_get_property(ec, &msg);
-+	if (ret)
-+		return ret;
-+
-+	if (msg.length != 1)
-+		return -EBADMSG;
-+
-+	*val = msg.data[0];
-+
-+	return 0;
-+}
-+
-+int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 val)
-+{
-+	struct ec_property_set_msg msg;
-+
-+	msg.property_id = property_id;
-+	msg.op = OP_SET;
-+	msg.data[0] = val;
-+	msg.length = 1;
-+
-+	return wilco_ec_set_property(ec, &msg);
-+}
-diff --git a/drivers/platform/chrome/wilco_ec/properties.h b/drivers/platform/chrome/wilco_ec/properties.h
-new file mode 100644
-index 000000000000..da0bb3b869af
---- /dev/null
-+++ b/drivers/platform/chrome/wilco_ec/properties.h
-@@ -0,0 +1,68 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Helper library for property access on the Wilco EC.
-+ *
-+ * Copyright 2019 Google LLC
-+ *
-+ * A Property is typically a data item that is stored to NVRAM
-+ * by the EC. Each of these data items has an index associated
-+ * with it known as the Property ID (PID). Properties may have
-+ * variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
-+ * bytes. Properties can be simple integers, or they may be more
-+ * complex binary data.
-+ */
-+
-+#include <linux/platform_data/wilco-ec.h>
-+
-+#define WILCO_EC_PROPERTY_MAX_SIZE	4
-+
-+/*
-+ * Properties are accessed with an subcommand, or "op". OP_GET
-+ * requests the property from the EC. OP_SET and OP_SYNC do the
-+ * exact same thing from our perspective: save a property. Only
-+ * one of them works for a given property, so each property uses
-+ * either OP_GET and OP_SET, or OP_GET and OP_SYNC.
-+ */
-+enum get_set_sync_op {
-+	OP_GET = 0,
-+	OP_SET = 1,
-+	OP_SYNC = 4
-+};
-+
-+/**
-+ * struct ec_property_get_msg - Message to retrieve a property.
-+ * @property_id: PID of property to retrieve.
-+ * @length: number of bytes received, set by wilco_ec_get_property().
-+ * @data: actual property data, set by wilco_ec_get_property().
-+ */
-+struct ec_property_get_msg {
-+	u32 property_id;
-+	int length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+};
-+
-+/**
-+ * struct ec_property_set_msg - Message to save a property.
-+ * @op: Which subcommand to use, either OP_SET or OP_SYNC
-+ * @property_id: PID of property to save.
-+ * @length: number of bytes to save, must not exceed WILCO_EC_PROPERTY_MAX_SIZE.
-+ * @data: actual property data.
-+ */
-+struct ec_property_set_msg {
-+	enum get_set_sync_op op;
-+	u32 property_id;
-+	int length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+};
-+
-+/* Both of these will return 0 on success, negative error code on failure */
-+int wilco_ec_get_property(struct wilco_ec_device *ec,
-+			  struct ec_property_get_msg *prop_msg);
-+int wilco_ec_set_property(struct wilco_ec_device *ec,
-+			  struct ec_property_set_msg *prop_msg);
-+
-+/* Both of these will return 0 on success, negative error code on failure */
-+int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 *val);
-+int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 val);
-diff --git a/include/linux/platform_data/wilco-ec.h b/include/linux/platform_data/wilco-ec.h
-index 1ff224793c99..4e7dce897500 100644
---- a/include/linux/platform_data/wilco-ec.h
-+++ b/include/linux/platform_data/wilco-ec.h
-@@ -32,6 +32,7 @@
-  * @data_size: Size of the data buffer used for EC communication.
-  * @debugfs_pdev: The child platform_device used by the debugfs sub-driver.
-  * @rtc_pdev: The child platform_device used by the RTC sub-driver.
-+ * @charging_pdev: Child platform_device used by the charging config sub-driver.
-  */
- struct wilco_ec_device {
- 	struct device *dev;
-@@ -43,6 +44,7 @@ struct wilco_ec_device {
- 	size_t data_size;
- 	struct platform_device *debugfs_pdev;
- 	struct platform_device *rtc_pdev;
-+	struct platform_device *charging_pdev;
- };
- 
- /**
--- 
-2.20.1
+Cheers,
+Samuel
