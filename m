@@ -2,159 +2,131 @@ Return-Path: <SRS0=+ebW=SI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BFB9C10F06
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Apr 2019 06:07:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 301AEC282DC
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Apr 2019 07:07:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 69A2A21871
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Apr 2019 06:07:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F0EB62173C
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Apr 2019 07:07:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554530861;
-	bh=XZkPg42MjxDTEdJlMwmA1I7MMJCM567vKaDFFQO/D4w=;
+	s=default; t=1554534477;
+	bh=WZUst9gyTfTPA+ibnZdArO2cZbJ81swoCLnFNEu9Jsc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=sDteIDbfKmmmL1wO/pcEYcBXQZH3PYDHP4gKOYWPcA98dwhoCs17S98J1vNupo7Bv
-	 w65CR9SmQ+0VRtvEmhSaI28KLBLdoEnr9/fIwjXPIygjVYntELZ9oZQo+n4F1yLtCW
-	 hNpR041InWsYUkUosaMBjnwYhRKXPr5tT4NDJBY0=
+	b=KSKiJU+wp6WhPwS8CPznefktkmeKSsX4Ct//hfeSDqs1UgB30oVwaiGRWaIhXHktg
+	 wEvUoenVbb3WVQrghuekp5lqz4dzU8II8BJduQuUlT0trQw3lKYzbrC2IlacqZWnzV
+	 3lF4FRIs75RheoN9NaB0woSDKP7oSd3nonJz1jlQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726959AbfDFGH2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 Apr 2019 02:07:28 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:36013 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725290AbfDFGH1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 Apr 2019 02:07:27 -0400
-Received: by mail-pf1-f194.google.com with SMTP id z5so4457752pfn.3;
-        Fri, 05 Apr 2019 23:07:27 -0700 (PDT)
+        id S1726349AbfDFHHv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 6 Apr 2019 03:07:51 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:35528 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725934AbfDFHHv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 Apr 2019 03:07:51 -0400
+Received: by mail-pl1-f193.google.com with SMTP id w24so4256145plp.2;
+        Sat, 06 Apr 2019 00:07:50 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:from:to:cc:subject:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=R0cBTNmYa5ZMa7v6+KWY6z9n/NLmb68qLhUTjr5EjE4=;
-        b=m3icVLiL5JZAJJJFCJ+JLNQdpEJryBl5xXUoeR77OfBWhKLuAQwfZCtIBBBW3S4kpQ
-         0YJT5TCoInVqPvUV4NGuebHEHorIXRLQHD/W2zfUJEU34JuSJmx0ZbPVxk5TqsxBSbZP
-         1vv4c4RsJ20PkLs6IfJhgZ8hSyx8GZe+i7wcZYcwcYiJPI+4b4paBMejxcbVz/wBvXXI
-         6G/argBD+iU+NfCDAmJ0+voG1n/29V80S7br7dltL5NhJzIupW9VDvOHwbH98JCCF7vF
-         YEF3ko8GzwM0V5VA/zuMeIIeG+Ki2pLkCinKX4NlZaK/MUp33mUrnv9lzZ8P8qSM0cth
-         J0OA==
-X-Gm-Message-State: APjAAAUhqnrW008XIVBZIzCNCqvI8vJQ0TGiGZ4E+zjH090BML+jpVAj
-        vGepuxZetw1Ljn1TvSuOGw==
-X-Google-Smtp-Source: APXvYqwJHnb6B8VkTgSLH+GFvvHsyKelqgzPSbLzvBuQ+RgwX5JVCKzY8MildZUkARJlHb+2xR/7xg==
-X-Received: by 2002:a65:6645:: with SMTP id z5mr16356135pgv.251.1554530846692;
-        Fri, 05 Apr 2019 23:07:26 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=ws6pD7Qq+qIdFrLaL2qogzUD1/0pmgYWnmgkr6guwP0=;
+        b=lpyHD5AWs2SD2ZgcQa0VaLXHwpybbOed8FrYsl3D1y+at9OOk9nl19R2CgdBLmB4al
+         WqVfvZHjUGheSr2W+mHKpnTIaHq7tCCvbseid5I2Jp7pcvZG9nH0HHRZV7IgftQvrLZL
+         TVib2z86QzCt+jZVqVyZumWSM1npiltYGx6TKbNVLrowYqT7oeYx2XvHJJbzzgykoF0A
+         JeWYo2NzNPM6USWt8xFLHT/Sf9MwoxXopb4sid36dehC9Fu70wF5NGMsGjk2seVjxvcX
+         P3lrGWnk7zXLhAWSpdb8+L2RECI4aoG38mUmAuJGDaoEmRkacxbmOI/eT54W8AMvPTwu
+         F0mg==
+X-Gm-Message-State: APjAAAUUXtaseg1nNWN1YCFoDlAZKwjp6wxGXa8I0q06VhB8N9xeiEml
+        jHBEMeGIucthMUyE9Rx8/g==
+X-Google-Smtp-Source: APXvYqys0XTwhZVtf8q1WSwT9wwPg5H5h2A8R2U7EqGCLNRSspCno+1//GOdBIVw82bfUAAHEp+eYQ==
+X-Received: by 2002:a17:902:e407:: with SMTP id ci7mr17466575plb.219.1554534469753;
+        Sat, 06 Apr 2019 00:07:49 -0700 (PDT)
 Received: from localhost ([210.160.217.71])
-        by smtp.gmail.com with ESMTPSA id o76sm61402541pfa.156.2019.04.05.23.07.25
+        by smtp.gmail.com with ESMTPSA id q144sm5276731pgq.76.2019.04.06.00.07.48
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 05 Apr 2019 23:07:26 -0700 (PDT)
-Message-ID: <5ca8421e.1c69fb81.42211.e57b@mx.google.com>
-Date:   Sat, 06 Apr 2019 01:07:23 -0500
+        Sat, 06 Apr 2019 00:07:48 -0700 (PDT)
+Date:   Sat, 6 Apr 2019 02:07:46 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     Niklas Cassel <niklas.cassel@linaro.org>
-Cc:     Ilia Lin <ilia.lin@kernel.org>, Viresh Kumar <vireshk@kernel.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Andy Gross <andy.gross@linaro.org>,
-        David Brown <david.brown@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        linux-arm-msm@vger.kernel.org, jorge.ramirez-ortiz@linaro.org,
-        Sricharan R <sricharan@codeaurora.org>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/9] cpufreq: qcom: Re-organise kryo cpufreq to use
- it for other nvmem based qcom socs
-References: <20190404050931.9812-1-niklas.cassel@linaro.org>
- <20190404050931.9812-3-niklas.cassel@linaro.org>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Mark Rutland <mark.rutland@arm.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for
+ max77650
+Message-ID: <20190406070746.GA29624@bogus>
+References: <20190403090108.24788-1-brgl@bgdev.pl>
+ <20190403090108.24788-3-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190404050931.9812-3-niklas.cassel@linaro.org>
-X-Mutt-References: <20190404050931.9812-3-niklas.cassel@linaro.org>
+In-Reply-To: <20190403090108.24788-3-brgl@bgdev.pl>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190406060723.JIPaJt2_BySwUJuPZr2aZM4EKnS_NY5kK9L1o4QBSW0@z>
+Message-ID: <20190406070746.NNtug-8aq_4HdOmxNURiUfENd9l6-sNYwGJuF73ubwY@z>
 
-On Thu, Apr 04, 2019 at 07:09:23AM +0200, Niklas Cassel wrote:
-> From: Sricharan R <sricharan@codeaurora.org>
+On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > 
-> The kryo cpufreq driver reads the nvmem cell and uses that data to
-> populate the opps. There are other qcom cpufreq socs like krait which
-> does similar thing. Except for the interpretation of the read data,
-> rest of the driver is same for both the cases. So pull the common things
-> out for reuse.
+> Add the DT binding document for the battery charger module of max77650.
 > 
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
-> Signed-off-by: Niklas Cassel <niklas.cassel@linaro.org>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > ---
->  ...ryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} |  16 +--
-
-Please make DT bindings a separate patch.
-
->  drivers/cpufreq/Kconfig.arm                   |   4 +-
->  drivers/cpufreq/Makefile                      |   2 +-
->  ...om-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} | 124 +++++++++++-------
->  4 files changed, 85 insertions(+), 61 deletions(-)
->  rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (97%)
->  rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (69%)
+>  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-> similarity index 97%
-> rename from Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
-> rename to Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-> index c2127b96805a..f4a7123730c3 100644
-> --- a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
-> +++ b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-> @@ -1,13 +1,13 @@
-> -Qualcomm Technologies, Inc. KRYO CPUFreq and OPP bindings
-> +Qualcomm Technologies, Inc. NVMEM CPUFreq and OPP bindings
->  ===================================
->  
-> -In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996
-> -that have KRYO processors, the CPU ferequencies subset and voltage value
-> -of each OPP varies based on the silicon variant in use.
-> +In Certain Qualcomm Technologies, Inc. SoCs like apq8096 and msm8996,
-> +the CPU frequencies subset and voltage value of each OPP varies based on
-> +the silicon variant in use.
->  Qualcomm Technologies, Inc. Process Voltage Scaling Tables
->  defines the voltage and frequency value based on the msm-id in SMEM
->  and speedbin blown in the efuse combination.
-> -The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
-> +The qcom-cpufreq-nvmem driver reads the msm-id and efuse value from the SoC
->  to provide the OPP framework with required information (existing HW bitmap).
->  This is used to determine the voltage and frequency value for each OPP of
->  operating-points-v2 table when it is parsed by the OPP framework.
-> @@ -19,7 +19,7 @@ In 'cpus' nodes:
->  
->  In 'operating-points-v2' table:
->  - compatible: Should be
-> -	- 'operating-points-v2-kryo-cpu' for apq8096 and msm8996.
-> +	- 'operating-points-v2-qcom-cpu' for apq8096 and msm8996.
+> diff --git a/Documentation/devicetree/bindings/power/supply/max77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> new file mode 100644
+> index 000000000000..fef188144386
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> @@ -0,0 +1,27 @@
+> +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> +
+> +This module is part of the MAX77650 MFD device. For more details
+> +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> +
+> +The charger is represented as a sub-node of the PMIC node on the device tree.
+> +
+> +Required properties:
+> +--------------------
+> +- compatible:		Must be "maxim,max77650-charger"
+> +
+> +Optional properties:
+> +--------------------
+> +- min-microvolt:	Minimum CHGIN regulation voltage (in microvolts). Must be
+> +			one of: 4000000, 4100000, 4200000, 4300000, 4400000,
+> +			4500000, 4600000, 4700000.
+> +- current-limit-microamp:	CHGIN input current limit (in microamps). Must
+> +				be one of: 95000, 190000, 285000, 380000, 475000.
 
-You can't just change this. In any case, it's just a string. Use it even 
-if it applies to more than just kryo cpus.
+To repeat what I said on v6, these should be common properties IMO (and 
+therefore documented as such).
 
->  - nvmem-cells: A phandle pointing to a nvmem-cells node representing the
->  		efuse registers that has information about the
->  		speedbin that is used to select the right frequency/voltage
-> @@ -127,7 +127,7 @@ Example 1:
->  	};
->  
->  	cluster0_opp: opp_table0 {
-> -		compatible = "operating-points-v2-kryo-cpu";
-> +		compatible = "operating-points-v2-qcom-cpu";
->  		nvmem-cells = <&speedbin_efuse>;
->  		opp-shared;
->  
-> @@ -338,7 +338,7 @@ Example 1:
->  	};
->  
->  	cluster1_opp: opp_table1 {
-> -		compatible = "operating-points-v2-kryo-cpu";
-> +		compatible = "operating-points-v2-qcom-cpu";
->  		nvmem-cells = <&speedbin_efuse>;
->  		opp-shared;
->  
-
+> +
+> +Example:
+> +--------
+> +
+> +	charger {
+> +		compatible = "maxim,max77650-charger";
+> +		min-microvolt = <4200000>;
+> +		curr-lim-microamp = <285000>;
+> +	};
+> -- 
+> 2.21.0
+> 
