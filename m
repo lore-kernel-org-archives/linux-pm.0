@@ -2,141 +2,100 @@ Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 498ECC282CE
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 09:38:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25AFFC10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:17:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 17582208E3
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 09:38:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554716315;
-	bh=oLj+mpVfYrMAKVzT100KDOGJ3d3S70Ze+nV+TsWJcxM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=d/hfEYJMxux3CZX9ThQFDaOCm7k/VMEzo7Aehz60zFckW++VwHfMjo+zGifhZ8cE6
-	 FWkc/dtUHoUGkjutdj/2YRiAUYN4OuyQN3dS/g+uZP8Y63Y+tYmXMVTtc4GDh/ac0c
-	 VP9SrS0QEwtXMHKgsdcL1pdkVIebdLJ5rrQ+NvTg=
+	by mail.kernel.org (Postfix) with ESMTP id E51E120880
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:17:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zueC8Wpu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726629AbfDHJia (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 05:38:30 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35602 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726240AbfDHJi3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 Apr 2019 05:38:29 -0400
-Received: from earth.universe (dyndsl-037-138-087-101.ewe-ip-backbone.de [37.138.87.101])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 72A5120880;
-        Mon,  8 Apr 2019 09:38:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554716308;
-        bh=oLj+mpVfYrMAKVzT100KDOGJ3d3S70Ze+nV+TsWJcxM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=sJTL5FvqkzJtA8kNPhmF3T1ag21WUT1NXgRgQH/Dn+E+pxvdZCxTWrJzg7ep1k9oS
-         CEBjrZhwDmwxOCMnPm+R9V1pNFoeCE2qV671rrzH0zObL60yra4hMNbBZxxTTNbJRK
-         vQg4M8LUyyzMRjWETQ2Fedg1G2bvUiywIBoBsSX4=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 312AA3C08D4; Mon,  8 Apr 2019 11:38:24 +0200 (CEST)
-Date:   Mon, 8 Apr 2019 11:38:24 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Paul Cercueil <paul@crapouillou.net>
-Cc:     Jonathan Cameron <jic23@kernel.org>,
-        Artur Rojek <contact@artur-rojek.eu>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        id S1726396AbfDHKRO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 06:17:14 -0400
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:40615 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725857AbfDHKRO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 06:17:14 -0400
+Received: by mail-pl1-f196.google.com with SMTP id b3so7062712plr.7
+        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 03:17:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=WvgHnd237oGngw9Iinl1xldDc2z2stqnIQlwZoYfjL8=;
+        b=zueC8WpuxIqagO4BEiWCRrfweXmf3rgrtBQl18HqTlVu/XemFE6zb/4jIIpKrpD1YF
+         R4KxXtmEu2reSa2S2xvxnJftqsWpntxujRrIzaTwg/rK+0cS/uMD73fJoTyaX33Bnc95
+         NN6649v9tlMLFbKPMCYyBZLomVJ5JoUjspECz8q1TckjNcQi3EbQiUm1/pkBLuStQrHA
+         RPdRKVHeeEUJQA4z4fle9OML12g3zOhAHDhE2A3d2z1IB5TCrbhqzXKEPFUsKg/fn7mk
+         zmaD1YTFPQlYgc3sxuvz0PECvJvMreIx/TfBampSzd1tQs2+MXSvv0IWxs+IukCKBe39
+         RCzw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=WvgHnd237oGngw9Iinl1xldDc2z2stqnIQlwZoYfjL8=;
+        b=pzNNQmQFpYWrO7rn4E2Tiz6I/L7uso+KKoCEN6gCuYdfJPaazSSspIyEFzOVIk1YgI
+         +166Ar4EE8dcNE01qwdjEZtiWN24I8RY4Qg9BcASAN4LGuJdClRNMDJOY877VBjqA7F4
+         Q9Xy6tWuUwL4o/dB8HLiPPmpnjUxhGEFmFkF0WbIwDwK5PZUmpT6IXGtVQUM5lsGoxvW
+         ouXvTr76v6SIujaxyXoSr5PPpZBbJAaKW5kULGWkXj1K9owNJKFrB1qvoQnXe8lpB2Do
+         de+REeYTCwwWuMP+odUcWJmVEKA08YuQa/1raKLuUhNuipiNNbWOkbGlvAzPJE60aw6n
+         PZKA==
+X-Gm-Message-State: APjAAAVCkoWIQKezyQiJGjT2qKKzPw5dqhT2oN7jL+ReMphtKvu5ZWUG
+        jhaniTNKU9rlt7BMGTlwyLzHEw==
+X-Google-Smtp-Source: APXvYqxsabb57g17JjGkijyv0MPiOezy+yODG2vSbtwqDOIKtkRI18jF+LEtkpLgbamChVoujMlHig==
+X-Received: by 2002:a17:902:28a9:: with SMTP id f38mr9577120plb.295.1554718633578;
+        Mon, 08 Apr 2019 03:17:13 -0700 (PDT)
+Received: from localhost ([122.172.162.162])
+        by smtp.gmail.com with ESMTPSA id c1sm41202562pfd.114.2019.04.08.03.17.11
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 08 Apr 2019 03:17:12 -0700 (PDT)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Rafael Wysocki <rjw@rjwysocki.net>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery driver.
-Message-ID: <20190408093824.yzpd7mve6df7lpka@earth.universe>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
- <20190323172809.14407-4-contact@artur-rojek.eu>
- <20190324153137.04857cdf@archlinux>
- <20190407165234.is66vmnjfc35jnho@earth.universe>
- <1554664077.4322.0@crapouillou.net>
+Subject: [PATCH] cpufreq: maple: Remove redundant code from maple_cpufreq_init()
+Date:   Mon,  8 Apr 2019 15:47:06 +0530
+Message-Id:
+ <dfb046a881d254f5133e6a1f86a04f49e73c56f9.1554718622.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kxv5ige2aqijufid"
-Content-Disposition: inline
-In-Reply-To: <1554664077.4322.0@crapouillou.net>
-User-Agent: NeoMutt/20180716
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408093824.Q_m3p3abFngTI2pXJZKwSuq18J_hpIgSuUT752HNO9Q@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190408101706.66hL6VWsq8uX9iY5hwbVH0Tvhm42oiYEj13QT_gmkpU@z>
 
+The success path and error path both look the same, don't duplicate the
+code.
 
---kxv5ige2aqijufid
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/maple-cpufreq.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Hi Paul,
+diff --git a/drivers/cpufreq/maple-cpufreq.c b/drivers/cpufreq/maple-cpufreq.c
+index a05f1342ec02..a94355723ef8 100644
+--- a/drivers/cpufreq/maple-cpufreq.c
++++ b/drivers/cpufreq/maple-cpufreq.c
+@@ -231,10 +231,6 @@ static int __init maple_cpufreq_init(void)
+ 
+ 	rc = cpufreq_register_driver(&maple_cpufreq_driver);
+ 
+-	of_node_put(cpunode);
+-
+-	return rc;
+-
+ bail_noprops:
+ 	of_node_put(cpunode);
+ 
+-- 
+2.21.0.rc0.269.g1a574e7a288b
 
-On Sun, Apr 07, 2019 at 09:07:57PM +0200, Paul Cercueil wrote:
-> Hi Sebastian,
->=20
-> Le dim. 7 avril 2019 =E0 18:52, Sebastian Reichel <sre@kernel.org> a =E9c=
-rit :
-> > Hi,
-> >=20
-> > On Sun, Mar 24, 2019 at 03:31:37PM +0000, Jonathan Cameron wrote:
-> > >  On Sat, 23 Mar 2019 18:28:09 +0100
-> > >  Artur Rojek <contact@artur-rojek.eu> wrote:
-> > >=20
-> > >  > Add a driver for battery present on Ingenic JZ47xx SoCs.
-> > >  >
-> > >  > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
-> > >  The IIO parts look fine to me.
-> > >  Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > >=20
-> > >  Sebastian, assuming you are happy with this version,
-> >=20
-> > The driver itself looks ok. I'm a bit unhappy, that we already have
-> > jz4740-battery. This driver is much cleaner, but does not yet seem
-> > to be ready to replace it. Artur Rojek what are your plans regarding
-> > to the existing driver? Is there currently work going on migrating
-> > JZ47xx to DT?
->=20
-> Why do you think it's not ready? Feature-wise, it has everything we
-> need to replace jz4740-battery, which will be trashed as soon as the
-> LB60 board code is updated to use the new driver.
-
-jz4740-battery has a few features not provided by your driver.
-For example the gpio providing the charging status. Assuming
-you plan to trash the old driver soon:
-
-Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-
-> We are working on porting the JZ47xx code to devicetree, yes. The
-> ultimate goal is to completely get rid of
-> arch/mips/jz4740/board-qi_lb60.c and arch/mips/jz4740/platform.c.
-
-Ok, sounds good.
-
--- Sebastian
-
---kxv5ige2aqijufid
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlyrFowACgkQ2O7X88g7
-+pqAVw/+NKyxFp5GIWuXBnG+OV0ezhW5bAYrBsST5OtDqg8x4aACWv6BjwNwLQJN
-TREW2Rda/Jqyy0fxhwUDdcGJ0deWMqWbFi0+OPQXBZ4Xd8kpTLjs1uwcHRag8mkN
-Sre9c6FIsCytrd73CYFgJjz7PMmB4FBaRr/Z7qhWhdgTh66i+m+Ql5GjVI0sl2nL
-m9fxTCpJgh7zmVuLepEosq7YgwrOTP8ZZaMCJSD/Bo8ejDIW9ox9IMjbdUFEqWC1
-sxzpDvBhZT6rcvuwVx57/F0XtGIcsJEMruB3YFKCOS5XJhk7GExs1c1zos9xBap6
-N0WBllMu4PhLpZphW/7zWWDxeco/whNupy682YPh3r9hg7u5npCfaxu9z+h5Kp53
-YCW/dClq8WId9IG1nxI2Pl4M7pXiieiMR3ms9Bq/VMLYRLT08QWRopsA2QVZ/dyt
-wle6YdFZtgvt+yFfKNOHF0ogmhApuA4J01PP9T65KAEcV4RDH3ZgLNlZuEZeYFCq
-YcKPp5e2dQGv66qqRNnMPLyhUAOY3s6UG8YCSkSGtRZZjZheb/nqHaw/w7CjitrR
-JbDcw+iBLeoDxgYRLSQKGFpkvxSt1x8rd8xBHKmVailT/9IAUgrejm0CL+MS3fZm
-te+QRKM+DvDMGvKXnuF6WjTqw6yTNngyd/aM2yQQ4XQ604fXBNo=
-=/UP4
------END PGP SIGNATURE-----
-
---kxv5ige2aqijufid--
