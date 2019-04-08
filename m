@@ -1,59 +1,81 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] intel-lpss: Set the device in reset state when init
-Date: Mon, 8 Apr 2019 10:43:02 +0300
-Message-ID: <20190408074302.GD3622@lahna.fi.intel.com>
+From: "Wu, Binbin" <binbin.wu@intel.com>
+Subject: RE: [PATCH] intel-lpss: Set the device in reset state when init
+Date: Mon, 8 Apr 2019 08:05:21 +0000
+Message-ID: <9A6FEF68D1963C4FAD959D223192905A72C12922@SHSMSX101.ccr.corp.intel.com>
 References: <1554702118-20184-1-git-send-email-binbin.wu@intel.com>
+ <20190408074302.GD3622@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1554702118-20184-1-git-send-email-binbin.wu@intel.com>
+In-Reply-To: <20190408074302.GD3622@lahna.fi.intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Binbin Wu <binbin.wu@intel.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, lee.jones@linaro.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, andriy.shevchenko@linux.intel.com
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 08, 2019 at 01:41:58PM +0800, Binbin Wu wrote:
-> In virtualized setup, when system reboots due to warm
-> reset interrupt storm is seen.
+Hi Mika,
+
+Will correct the title line in the next version.
+Thanks.
+
+--
+Best wishes,
+Binbin
+
+
+> -----Original Message-----
+> From: Mika Westerberg [mailto:mika.westerberg@linux.intel.com]
+> Sent: Monday, April 8, 2019 3:43 PM
+> To: Wu, Binbin <binbin.wu@intel.com>
+> Cc: rjw@rjwysocki.net; linux-pm@vger.kernel.org;
+> gregkh@linuxfoundation.org; lee.jones@linaro.org; linux-
+> kernel@vger.kernel.org; dmaengine@vger.kernel.org;
+> andriy.shevchenko@linux.intel.com
+> Subject: Re: [PATCH] intel-lpss: Set the device in reset state when init
 > 
-> Call Trace:
-> <IRQ>
-> dump_stack+0x70/0xa5
-> __report_bad_irq+0x2e/0xc0
-> note_interrupt+0x248/0x290
-> ? add_interrupt_randomness+0x30/0x220
-> handle_irq_event_percpu+0x54/0x80
-> handle_irq_event+0x39/0x60
-> handle_fasteoi_irq+0x91/0x150
-> handle_irq+0x108/0x180
-> do_IRQ+0x52/0xf0
-> common_interrupt+0xf/0xf
-> </IRQ>
-> RIP: 0033:0x76fc2cfabc1d
-> Code: 24 28 bf 03 00 00 00 31 c0 48 8d 35 63 77 0e 00 48 8d 15 2e
-> 94 0e 00 4c 89 f9 49 89 d9 4c 89 d3 e8 b8 e2 01 00 48 8b 54 24 18
-> <48> 89 ef 48 89 de 4c 89 e1 e8 d5 97 01 00 84 c0 74 2d 48 8b 04
-> 24
-> RSP: 002b:00007ffd247c1fc0 EFLAGS: 00000293 ORIG_RAX: ffffffffffffffda
-> RAX: 0000000000000000 RBX: 00007ffd247c1ff0 RCX: 000000000003d3ce
-> RDX: 0000000000000000 RSI: 00007ffd247c1ff0 RDI: 000076fc2cbb6010
-> RBP: 000076fc2cded010 R08: 00007ffd247c2210 R09: 00007ffd247c22a0
-> R10: 000076fc29465470 R11: 0000000000000000 R12: 00007ffd247c1fc0
-> R13: 000076fc2ce8e470 R14: 000076fc27ec9960 R15: 0000000000000414
-> handlers:
-> [<000000000d3fa913>] idma64_irq
-> Disabling IRQ #27
+> On Mon, Apr 08, 2019 at 01:41:58PM +0800, Binbin Wu wrote:
+> > In virtualized setup, when system reboots due to warm reset interrupt
+> > storm is seen.
+> >
+> > Call Trace:
+> > <IRQ>
+> > dump_stack+0x70/0xa5
+> > __report_bad_irq+0x2e/0xc0
+> > note_interrupt+0x248/0x290
+> > ? add_interrupt_randomness+0x30/0x220
+> > handle_irq_event_percpu+0x54/0x80
+> > handle_irq_event+0x39/0x60
+> > handle_fasteoi_irq+0x91/0x150
+> > handle_irq+0x108/0x180
+> > do_IRQ+0x52/0xf0
+> > common_interrupt+0xf/0xf
+> > </IRQ>
+> > RIP: 0033:0x76fc2cfabc1d
+> > Code: 24 28 bf 03 00 00 00 31 c0 48 8d 35 63 77 0e 00 48 8d 15 2e
+> > 94 0e 00 4c 89 f9 49 89 d9 4c 89 d3 e8 b8 e2 01 00 48 8b 54 24 18 <48>
+> > 89 ef 48 89 de 4c 89 e1 e8 d5 97 01 00 84 c0 74 2d 48 8b 04
+> > 24
+> > RSP: 002b:00007ffd247c1fc0 EFLAGS: 00000293 ORIG_RAX: ffffffffffffffda
+> > RAX: 0000000000000000 RBX: 00007ffd247c1ff0 RCX: 000000000003d3ce
+> > RDX: 0000000000000000 RSI: 00007ffd247c1ff0 RDI: 000076fc2cbb6010
+> > RBP: 000076fc2cded010 R08: 00007ffd247c2210 R09: 00007ffd247c22a0
+> > R10: 000076fc29465470 R11: 0000000000000000 R12: 00007ffd247c1fc0
+> > R13: 000076fc2ce8e470 R14: 000076fc27ec9960 R15: 0000000000000414
+> > handlers:
+> > [<000000000d3fa913>] idma64_irq
+> > Disabling IRQ #27
+> >
+> > To avoid interrupt storm, set the device in reset state before
+> > bringing out the device from reset state.
+> >
+> > Signed-off-by: Binbin Wu <binbin.wu@intel.com>
 > 
-> To avoid interrupt storm, set the device in reset state
-> before bringing out the device from reset state.
+> I think the correct subject line should be:
 > 
-> Signed-off-by: Binbin Wu <binbin.wu@intel.com>
-
-I think the correct subject line should be:
-
- "mfd: intel-lpss: Set the device in reset state when init"
-
-Regardless of that,
-
-Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>  "mfd: intel-lpss: Set the device in reset state when init"
+> 
+> Regardless of that,
+> 
+> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
