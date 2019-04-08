@@ -2,99 +2,71 @@ Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22388C10F13
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACEADC10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:42:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DE5DB208E3
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:31:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZffpFYBN"
+	by mail.kernel.org (Postfix) with ESMTP id 8781B20870
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:42:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725984AbfDHKbA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 06:31:00 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:46202 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725857AbfDHKbA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 06:31:00 -0400
-Received: by mail-oi1-f194.google.com with SMTP id x188so10028457oia.13;
-        Mon, 08 Apr 2019 03:30:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Bf7SVbXVHsaF4+XZ5unw9bMrO6ItzHO0anxO3aCT3Mo=;
-        b=ZffpFYBNQXXfPsuht/L0Qp9wTuWwFxxxVepqKWhl+a0A0L4cEL1FTGTIdibdcUycKp
-         OAXDbvONhX6bs3NdTkyAuj3zRAoafslP4OILvvovfrYaygHd1Gqpr67/OUH+rOgG60CV
-         Ap3C+mt205E35iVcxLs6huOScXLnBs2GDwW4ZFEtxcgh4BGlNfB52uQn7Wtuhh/xJYDZ
-         2OV57hbt58uzoNR16w/2ayUbhPqbjz9eLOnZaTJ0B+Nfyi3FArlVKuHTK+Ym3EorvMtg
-         3agevs0S5kpoOWbL1WyCq0GFBztGpnOlJAqf4+hYB6dSxkKFaQqucpZscuKt78BXW8VI
-         NCLA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Bf7SVbXVHsaF4+XZ5unw9bMrO6ItzHO0anxO3aCT3Mo=;
-        b=jp2P8a8I29V/MDg82pI5f3XJyXlWNHkW2BC0JH2eJErtuEbXE7Osf9u8f95dL6iFAz
-         +se0kEdN1eb5+tZbpFWTDpESfLW3DN6INMP+9T9PMIelF4fqXSN4vOeRN478Vrmftxuf
-         W/xsuD/hQALvMIFCdM3/JDkoTHq1bp8GFzO181p7TzwXDZZ8lCgW5ktV3fRHX6HL2PC6
-         jQHwI0e1uthdnNoiKGkjjpohWgFCGUheuBZp79i46HTN1IBQHWK5J0o53v1DYRsGc914
-         vUUZyH7AVL3+HjX8bZBXeR0HMGeGQ4iqBUWHttFBHDEFEJQMxM07PsNZFpKCN1L+nfFC
-         BOTw==
-X-Gm-Message-State: APjAAAXvj1WPP7seu26+WXB9jgPleOE1ecuiNEOztrNprbOXyueaNFyN
-        VaK8sZFw/WUBR2F4zPhIDAVshhPfvs0h4l0sJQmaCQ==
-X-Google-Smtp-Source: APXvYqwzoXl00F5liRhIaS8aOLixVY9QdfN5BIw7PhVYTzClSrNStagsZs+U+6c1/3MWNqavYNfW0HzDd6Gre5d2HnQ=
-X-Received: by 2002:aca:db45:: with SMTP id s66mr15395354oig.59.1554719459352;
- Mon, 08 Apr 2019 03:30:59 -0700 (PDT)
+        id S1726050AbfDHKmA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 06:42:00 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:54896 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725857AbfDHKl7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 06:41:59 -0400
+Received: from 79.184.255.221.ipv4.supernova.orange.pl (79.184.255.221) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
+ id 0ff1e0eec5394703; Mon, 8 Apr 2019 12:41:57 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: maple: Remove redundant code from maple_cpufreq_init()
+Date:   Mon, 08 Apr 2019 12:41:57 +0200
+Message-ID: <4531254.vnb8GhbyUH@kreacher>
+In-Reply-To: <dfb046a881d254f5133e6a1f86a04f49e73c56f9.1554718622.git.viresh.kumar@linaro.org>
+References: <dfb046a881d254f5133e6a1f86a04f49e73c56f9.1554718622.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-References: <20190404050931.9812-1-niklas.cassel@linaro.org>
-In-Reply-To: <20190404050931.9812-1-niklas.cassel@linaro.org>
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Mon, 8 Apr 2019 16:00:48 +0530
-Message-ID:
- <CAOh2x==enW-jmtYi3F=TP8QS=wt8UHKV5td-tyJiCXV=D6ZBBQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/9] Add support for QCOM Core Power Reduction
-To:     Niklas Cassel <niklas.cassel@linaro.org>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>,
-        DTML <devicetree@vger.kernel.org>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408103048.BJwiBBPxMX_hiaCVN4u4DSrw116S9lN8OTW2ETy4hUY@z>
+Message-ID: <20190408104157.uR-JFpEjA_7ygEMcQ7Z_ugYagJTbM59C0HPJbUb4mok@z>
 
-On Thu, Apr 4, 2019 at 10:40 AM Niklas Cassel <niklas.cassel@linaro.org> wrote:
->
-> This is a first RFC for Core Power Reduction (CPR), a form of
-> Adaptive Voltage Scaling (AVS), found on certain Qualcomm SoCs.
->
-> Since this is simply an RFC, things like MAINTAINERS hasn't
-> been updated yet.
->
-> CPR is a technology that reduces core power on a CPU or on other device.
-> It reads voltage settings from efuses (that have been written in production),
-> it uses these voltage settings as initial values, for each OPP.
->
-> After moving to a certain OPP, CPR monitors dynamic factors such as
-> temperature, etc. and adjusts the voltage for that frequency accordingly
-> to save power and meet silicon characteristic requirements.
->
-> This driver is based on an RFC by Stephen Boyd[1], which in turn is
-> based on work by others on codeaurora.org[2].
->
-> [1] https://lkml.org/lkml/2015/9/18/833
-> [2] https://www.codeaurora.org/cgit/quic/la/kernel/msm-3.10/tree/drivers/regulator/cpr-regulator.c?h=msm-3.10
+On Monday, April 8, 2019 12:17:06 PM CEST Viresh Kumar wrote:
+> The success path and error path both look the same, don't duplicate the
+> code.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/maple-cpufreq.c | 4 ----
+>  1 file changed, 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/maple-cpufreq.c
+> b/drivers/cpufreq/maple-cpufreq.c index a05f1342ec02..a94355723ef8 100644
+> --- a/drivers/cpufreq/maple-cpufreq.c
+> +++ b/drivers/cpufreq/maple-cpufreq.c
+> @@ -231,10 +231,6 @@ static int __init maple_cpufreq_init(void)
+> 
+>  	rc = cpufreq_register_driver(&maple_cpufreq_driver);
+> 
+> -	of_node_put(cpunode);
+> -
+> -	return rc;
+> -
+>  bail_noprops:
+>  	of_node_put(cpunode);
 
-Please add relevant people to all the patches as it makes their life
-easier and never
-miss anyone from the cover-letter :)
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---
-viresh
+I'm assuming this to land in your tree.
+
+
+
