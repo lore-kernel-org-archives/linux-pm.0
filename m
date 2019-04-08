@@ -1,84 +1,35 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-Date: Mon, 8 Apr 2019 14:25:45 +0200
-Message-ID: <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
-References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
- <20190406070746.GA29624@bogus>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH RFC] gpio: pca953x: Configure wake-up path when wake-up is enabled
+Date: Mon, 8 Apr 2019 14:50:36 +0200
+Message-ID: <CACRpkdaAZ8C-kmhWRMqu3y6yVJ--6UFjnoRi_iRtogwzzyGseQ@mail.gmail.com>
+References: <20190320103927.21227-1-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190406070746.GA29624@bogus>
+In-Reply-To: <20190320103927.21227-1-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a):
->
-> On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote:
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > Add the DT binding document for the battery charger module of max77650.
-> >
-> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > ---
-> >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
-> >  1 file changed, 27 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/max7=
-7650-charger.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-ch=
-arger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger=
-.txt
-> > new file mode 100644
-> > index 000000000000..fef188144386
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.t=
-xt
-> > @@ -0,0 +1,27 @@
-> > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> > +
-> > +This module is part of the MAX77650 MFD device. For more details
-> > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > +
-> > +The charger is represented as a sub-node of the PMIC node on the devic=
-e tree.
-> > +
-> > +Required properties:
-> > +--------------------
-> > +- compatible:                Must be "maxim,max77650-charger"
-> > +
-> > +Optional properties:
-> > +--------------------
-> > +- min-microvolt:     Minimum CHGIN regulation voltage (in microvolts).=
- Must be
-> > +                     one of: 4000000, 4100000, 4200000, 4300000, 44000=
-00,
-> > +                     4500000, 4600000, 4700000.
-> > +- current-limit-microamp:    CHGIN input current limit (in microamps).=
- Must
-> > +                             be one of: 95000, 190000, 285000, 380000,=
- 475000.
->
-> To repeat what I said on v6, these should be common properties IMO (and
-> therefore documented as such).
->
+On Wed, Mar 20, 2019 at 11:39 AM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 
-Do you mean a separate "charger.txt" document in
-Documentation/devicetree/bindings/power/supply/?
+> If a device is part of the wake-up path, it should indicate this by
+> setting its power.wakeup_path field.  This allows the genpd core code to
+> keep the device enabled during system suspend when needed.
+>
+> As regulators powering devices are not handled by genpd, the driver
+> handles these itself, and thus must skip regulator control when the
+> device is part of the wake-up path.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Bart
+Patch applied with Ulf's Review tag.
 
-> > +
-> > +Example:
-> > +--------
-> > +
-> > +     charger {
-> > +             compatible =3D "maxim,max77650-charger";
-> > +             min-microvolt =3D <4200000>;
-> > +             curr-lim-microamp =3D <285000>;
-> > +     };
-> > --
-> > 2.21.0
-> >
+If there are even better ways to do it I think we can fix that on top of
+this, it is best to start with something that obviously works and
+take it from there.
+
+Yours,
+Linus Walleij
