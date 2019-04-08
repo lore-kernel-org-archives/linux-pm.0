@@ -2,202 +2,83 @@ Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B6F7C10F13
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 11:49:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 884CEC10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:01:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 43E8C208E3
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 11:49:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 623B720880
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:01:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726568AbfDHLtS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 07:49:18 -0400
-Received: from foss.arm.com ([217.140.101.70]:46904 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726119AbfDHLtR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 Apr 2019 07:49:17 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0C29E15BF;
-        Mon,  8 Apr 2019 04:49:17 -0700 (PDT)
-Received: from e110439-lin (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 168953F718;
-        Mon,  8 Apr 2019 04:49:13 -0700 (PDT)
-Date:   Mon, 8 Apr 2019 12:49:08 +0100
-From:   Patrick Bellasi <patrick.bellasi@arm.com>
-To:     Suren Baghdasaryan <surenb@google.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org,
-        linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Tejun Heo <tj@kernel.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Turner <pjt@google.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Todd Kjos <tkjos@google.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Steve Muckle <smuckle@google.com>
-Subject: Re: [PATCH v8 01/16] sched/core: uclamp: Add CPU's clamp buckets
- refcounting
-Message-ID: <20190408114908.evij7pqml6ltqtnl@e110439-lin>
-References: <20190402104153.25404-1-patrick.bellasi@arm.com>
- <20190402104153.25404-2-patrick.bellasi@arm.com>
- <CAJuCfpFdDK+xYZDq+TDVjRUcF8BTqeXWvF2Wex8n7nB-O5qH1g@mail.gmail.com>
+        id S1726479AbfDHMBl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 08:01:41 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43331 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726005AbfDHMBl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 08:01:41 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 8D90380742; Mon,  8 Apr 2019 14:01:31 +0200 (CEST)
+Date:   Mon, 8 Apr 2019 14:01:42 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Tony Lindgren <tony@atomide.com>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org
+Subject: Re: [PATCH 1/7] power: supply: cpcap-battery: Fix division by zero
+Message-ID: <20190408120142.GA19749@amd>
+References: <20190407181254.64537-1-tony@atomide.com>
+ <20190407181254.64537-2-tony@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
 Content-Disposition: inline
-In-Reply-To: <CAJuCfpFdDK+xYZDq+TDVjRUcF8BTqeXWvF2Wex8n7nB-O5qH1g@mail.gmail.com>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <20190407181254.64537-2-tony@atomide.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408114908.M3y9hmyqT--iPJHwxizKKXeQEXbU-iTRzc4QhOBFdjw@z>
 
-On 06-Apr 16:51, Suren Baghdasaryan wrote:
-> On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
 
-[...]
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > + * The first few values calculated by this routine:
-> > + * bf(0) = 1
-> > + * bf(1) = 1
-> > + * bf(2) = 2
-> > + * bf(3) = 2
-> > + * bf(4) = 3
-> > + * ... and so on.
-> > + */
-> > +#define bits_per(n)                            \
-> > +(                                              \
-> > +       __builtin_constant_p(n) ? (             \
-> > +               ((n) == 0 || (n) == 1) ? 1 : (  \
-> > +               ((n) & (n - 1)) == 0 ?          \
-> 
-> missing braces around 'n'
-> -               ((n) & (n - 1)) == 0 ?          \
-> +               ((n) & ((n) - 1)) == 0 ?          \
-> 
-> > +                       ilog2((n) - 1) + 2 :    \
-> > +                       ilog2((n) - 1) + 1      \
-> 
-> Isn't this "((n) & ((n) - 1)) == 0 ?  ilog2((n) - 1) + 2 : ilog2((n) -
-> 1) + 1" expression equivalent to a simple "ilog2(n) + 1"?
+On Sun 2019-04-07 11:12:48, Tony Lindgren wrote:
+> If called fast enough so samples do not increment, we can get
+> division by zero in kernel:
+>=20
+> __div0
+> cpcap_battery_cc_raw_div
+> cpcap_battery_get_property
+> power_supply_get_property.part.1
+> power_supply_get_property
+> power_supply_show_property
+> power_supply_uevent
+>=20
+> Fixes: 874b2adbed12 ("power: supply: cpcap-battery: Add a battery driver")
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-Right, since we already have n=0 and n=1 as special cases, what you
-propose should work for all n>=2.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> 
-> > +               )                               \
-> > +       ) :                                     \
-> > +       __bits_per(n)                           \
-> > +)
-> >  #endif /* _LINUX_LOG2_H */
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-[...]
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> > +static inline unsigned int uclamp_bucket_base_value(unsigned int clamp_value)
-> 
-> Where are you using uclamp_bucket_base_value()? I would expect its
-> usage somewhere inside uclamp_rq_dec_id() when the last task in the
-> bucket is dequeued but I don't see it...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-This behavior is not move into a dedicated patch, as per Peter
-request:
+iEYEARECAAYFAlyrOCYACgkQMOfwapXb+vKbzQCgqW5zqfJ/jgPWrlRMsuhdwDl6
+S3QAn0tPPQ8hAtqE4tYKVSTI7miJw6m7
+=pgG/
+-----END PGP SIGNATURE-----
 
-   Message-ID: <20190314111849.gx6bl6myfjtaan7r@e110439-lin>
-
-This functions was left here to support a the intialization code in
-init_uclamp() but... I notice know I'm doing the initialization in a
-different way thus, I'll move it into the following patch.
-
-> > +{
-> > +       return UCLAMP_BUCKET_DELTA * uclamp_bucket_id(clamp_value);
-> > +}
-> > +
-
-[...]
-
-> > +static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
-> > +                                   unsigned int clamp_id)
-> > +{
-> > +       struct uclamp_rq *uc_rq = &rq->uclamp[clamp_id];
-> > +       struct uclamp_se *uc_se = &p->uclamp[clamp_id];
-> > +       struct uclamp_bucket *bucket;
-> > +       unsigned int rq_clamp;
-> > +
-> > +       bucket = &uc_rq->bucket[uc_se->bucket_id];
-> > +       SCHED_WARN_ON(!bucket->tasks);
-> > +       if (likely(bucket->tasks))
-> > +               bucket->tasks--;
-> > +
-> > +       if (likely(bucket->tasks))
-> 
-> Shouldn't you adjust bucket->value if the remaining tasks in the
-> bucket have a lower clamp value than the task that was just removed?
-
-No, this is never done. As long as a bucket is not empty/idle we never
-reset it to its nominal value. In this patch specifically, the value
-is never changed since we moved the "local max tracking" bits into a
-dedicated patch.
-
-> > +               return;
-> > +
-> > +       rq_clamp = READ_ONCE(uc_rq->value);
-> > +       /*
-> > +        * Defensive programming: this should never happen. If it happens,
-> > +        * e.g. due to future modification, warn and fixup the expected value.
-> > +        */
-> > +       SCHED_WARN_ON(bucket->value > rq_clamp);
-> > +       if (bucket->value >= rq_clamp)
-> > +               WRITE_ONCE(uc_rq->value, uclamp_rq_max_value(rq, clamp_id));
-> > +}
-
-[...]
-
-> > +static void __init init_uclamp(void)
-> > +{
-> > +       unsigned int clamp_id;
-> > +       int cpu;
-> > +
-> > +       for_each_possible_cpu(cpu) {
-> > +               struct uclamp_bucket *bucket;
-> > +               struct uclamp_rq *uc_rq;
-> > +               unsigned int bucket_id;
-> > +
-> > +               memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
-> > +
-> > +               for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> > +                       uc_rq = &cpu_rq(cpu)->uclamp[clamp_id];
-> > +
-> > +                       bucket_id = 1;
-> > +                       while (bucket_id < UCLAMP_BUCKETS) {
-> > +                               bucket = &uc_rq->bucket[bucket_id];
-> > +                               bucket->value = bucket_id * UCLAMP_BUCKET_DELTA;
-> > +                               ++bucket_id;
-> > +                       }
-> > +               }
-> > +       }
-
-All the initialization code above is not more required after the next
-patch introducing "local max tracking".
-
-> > +
-> > +       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> > +               struct uclamp_se *uc_se = &init_task.uclamp[clamp_id];
-> > +
-> > +               uc_se->value = uclamp_none(clamp_id);
-> > +               uc_se->bucket_id = uclamp_bucket_id(uc_se->value);
-> > +       }
-> > +}
-
-[...]
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--OXfL5xGRrasGEqWY--
