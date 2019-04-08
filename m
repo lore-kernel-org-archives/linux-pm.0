@@ -1,197 +1,116 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH 2/3] interconnect: qcom: Add QCS404 interconnect provider
- driver
-Date: Mon, 8 Apr 2019 17:33:53 +0300
-Message-ID: <0ca7862f-31ba-748a-945d-a925a40a16de@linaro.org>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
- <20190405035446.31886-3-georgi.djakov@linaro.org>
- <20190405145756.GN1843@tuxbook-pro>
+From: Frank Lee <tiny.windzz@gmail.com>
+Subject: Re: [PATCH 2/2] dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
+Date: Tue, 9 Apr 2019 00:13:58 +0800
+Message-ID: <CAEExFWuDjD2Ur6UuCPD_m=hvUYJj7Z=NqQ7KXXR+tmnVtDqfbQ@mail.gmail.com>
+References: <20190405102455.15311-1-tiny.windzz@gmail.com> <20190405102455.15311-3-tiny.windzz@gmail.com>
+ <20190405145532.cstvbv3mxbzrmpxp@flea>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190405145756.GN1843@tuxbook-pro>
-Content-Language: en-US
+In-Reply-To: <20190405145532.cstvbv3mxbzrmpxp@flea>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@bootlin.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bjorn,
+On Fri, Apr 5, 2019 at 10:55 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+>
+> Hi,
+>
+> On Fri, Apr 05, 2019 at 06:24:55AM -0400, Yangtao Li wrote:
+> > Allwinner Process Voltage Scaling Tables defines the voltage and
+> > frequency value  based on the speedbin blown in the efuse combination.
+> > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> > provide the OPP framework with required information.
+> > This is used to determine the voltage and frequency value for each
+> > OPP of operating-points-v2 table when it is parsed by the OPP framework.
+> >
+> > This change adds documentation for the DT bindings.
+> > The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
+> > with following parameters:
+> > - nvmem-cells (NVMEM area containig the speedbin information)
+> > - opp-supported-hw: A single 32 bit bitmap value,
+> >   representing compatible HW:
+> >                       0:      speedbin 0
+> >                       1:      speedbin 1
+> >                       2:      speedbin 2
+> >                       3-31:   unused
+> >
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> >  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 ++++++++++++++++++
+> >  1 file changed, 235 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > new file mode 100644
+> > index 000000000000..80201d4e5147
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > @@ -0,0 +1,235 @@
+> > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+> > +===================================
+> > +
+> > +For some SoCs, the CPU frequency subset and voltage value of each OPP
+> > +varies based on the silicon variant in use. Allwinner Process Voltage
+> > +Scaling Tables defines the voltage and frequency value  based on the
+> > +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
+> > +reads the efuse value from the SoC to provide the OPP framework with
+> > +required information.
+> > +
+> > +Required properties:
+> > +--------------------
+> > +In 'cpus' nodes:
+> > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+> > +
+> > +In 'operating-points-v2' table:
+> > +- compatible: Should be
+> > +     - 'operating-points-v2-sunxi-cpu'.
+> > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> > +             efuse registers that has information about the
+> > +             speedbin that is used to select the right frequency/voltage
+> > +             value pair.
+> > +             Please refer the for nvmem-cells
+> > +             bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+> > +             and also examples below.
+> > +
+> > +In every OPP node:
+> > +- opp-supported-hw: A single 32 bit bitmap value, representing compatible HW.
+> > +                 Bitmap:
+> > +                     0:      speedbin 0
+> > +                     1:      speedbin 1
+> > +                     2:      speedbin 2
+> > +                     3-31:   unused
+>
+> I'm wondering if that's the right approach.
+>
+> I guess we could also have three different OPP tables, and pass them
+> all three through a phandle array, and have the kernel code select
+> which one is relevant based on the SID content
 
-Thanks for reviewing!
+It's ok. But why not use the way we already have?
+Is it necessary to introduce new helper?
 
-On 4/5/19 17:57, Bjorn Andersson wrote:
-> On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
-> [..]
->> diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
->> new file mode 100644
->> index 000000000000..42d36db13ec0
->> --- /dev/null
->> +++ b/drivers/interconnect/qcom/qcs404.c
->> @@ -0,0 +1,488 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * Copyright (C) 2019 Linaro Ltd
->> + */
->> +
->> +#include <dt-bindings/interconnect/qcom,qcs404.h>
->> +#include <linux/clk.h>
->> +#include <linux/device.h>
->> +#include <linux/interconnect-provider.h>
->> +#include <linux/io.h>
->> +#include <linux/module.h>
->> +#include <linux/of_device.h>
->> +#include <linux/of_platform.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/slab.h>
->> +#include <linux/soc/qcom/smd-rpm.h>
->> +
->> +#include "qcs404_ids.h"
->> +
->> +#define RPM_BUS_MASTER_REQ	0x73616d62
->> +#define RPM_BUS_SLAVE_REQ	0x766c7362
->> +#define RPM_KEY_BW		0x00007762
->> +
->> +#define to_qcom_provider(_provider) \
->> +	container_of(_provider, struct qcom_icc_provider, provider)
->> +
->> +struct qcom_smd_rpm *qcs404_rpm;
-> 
-> static
+>
+> Another option would be to use the OF_DYNAMIC code to fill
+> operating-points-v2 at kernel boot, before (or when) cpufreq kicks in.
 
-Ok!
+My thought is to keep the same with others. And this situation may
+make thingis complex though it works.
 
->> +
-> [..]
->> +#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,	\
->> +		     _numlinks, ...)					\
->> +		static struct qcom_icc_node _name = {			\
->> +		.name = #_name,						\
->> +		.id = _id,						\
->> +		.buswidth = _buswidth,					\
->> +		.mas_rpm_id = _mas_rpm_id,				\
->> +		.slv_rpm_id = _slv_rpm_id,				\
->> +		.num_links = _numlinks,					\
-> 
-> If you write this as ARRAY_SIZE(((int[]){ __VA_ARGS__ })), you don't
-> need the manually entered _numlinks number.
+Hi  vireshk,
 
-This is a really nice idea!
+I want to hear from you.
 
-> 
->> +		.links = { __VA_ARGS__ },				\
->> +	}
->> +
-> [..]
-[..]
->> +
->> +	return ret;
-> 
-> ret is 0, return 0; and you can skip setting ret = 0 above.
+Yours,
+Yangtao
 
-Ok!
-
->> +}
->> +
->> +static int qnoc_probe(struct platform_device *pdev)
->> +{
->> +	const struct qcom_icc_desc *desc;
->> +	struct icc_onecell_data *data;
->> +	struct icc_provider *provider;
->> +	struct qcom_icc_node **qnodes;
->> +	struct qcom_icc_provider *qp;
->> +	struct icc_node *node;
->> +	size_t num_nodes, i;
->> +	int ret;
->> +
->> +	/* wait for RPM */
-> 
-> This isn't waiting, it's getting the reference. That said if you make
-> these sit on mmio bus you would need to EPROBE_DEFER on the rpm-child
-> not being probed yet (and by that it would be a wait).
-
-Agree that it's a reference. The mmio registers are mostly qos related
-and seem not required for just requesting bandwidth, so we can add them
-later if we want to support priorities and different port modes like
-limiter, regulator etc.
-
->> +	qcs404_rpm = dev_get_drvdata(pdev->dev.parent);
->> +	if (!qcs404_rpm) {
->> +		dev_err(&pdev->dev, "unable to retrieve handle to RPM\n");
->> +		return -ENODEV;
->> +	}
->> +
->> +	desc = of_device_get_match_data(&pdev->dev);
->> +	if (!desc)
->> +		return -EINVAL;
->> +
->> +	qnodes = desc->nodes;
->> +	num_nodes = desc->num_nodes;
->> +
->> +	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
->> +	if (!qp)
->> +		return -ENOMEM;
->> +
->> +	data = devm_kcalloc(&pdev->dev, num_nodes, sizeof(*node), GFP_KERNEL);
->> +	if (!data)
->> +		return -ENOMEM;
->> +
->> +	qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
-> 
-> Please use the clk_bulk interface instead.
-
-Ok, will do.
-
->> +	if (IS_ERR(qp->bus_clk))
->> +		return PTR_ERR(qp->bus_clk);
->> +
->> +	ret = clk_prepare_enable(qp->bus_clk);
->> +	if (ret) {
->> +		dev_err(&pdev->dev, "error enabling bus_clk: %d\n", ret);
-> 
-> clk_prepare_enable() will complain if it fails to enable the clock, so
-> no need to add another print.
-
-Ok, right!
-
-[..]>> +
->> +	platform_set_drvdata(pdev, qp);
->> +
->> +	return ret;
-> 
-> ret is 0 here, so just return 0;
-
-Ok!
-
->> +err:
->> +	list_for_each_entry(node, &provider->nodes, node_list) {
->> +		icc_node_del(node);
->> +		icc_node_destroy(node->id);
->> +	}
->> +	clk_disable_unprepare(qp->bus_clk);
->> +	clk_disable_unprepare(qp->bus_a_clk);
->> +	icc_provider_del(provider);
->> +
->> +	return ret;
->> +}
-> [..]
->> diff --git a/drivers/interconnect/qcom/qcs404_ids.h b/drivers/interconnect/qcom/qcs404_ids.h
-> 
-> You use these defines in the driver, so I think this file should be the
-> one in include/dt-bindings...
-
-The ids in this header are in a single global namespace in order to
-build the internal topology and could be used for drivers that support
-only platform data (although not sure if there would be any).
-
-> 
-> [..]
->> diff --git a/include/dt-bindings/interconnect/qcom,qcs404.h b/include/dt-bindings/interconnect/qcom,qcs404.h
-> 
-
-These header is using per NoC local ids and should be used on DT enabled
-platforms.
-
-Thanks,
-Georgi
+>
+> ATF could also do that work.
+>
+> Maxime
+>
+> --
+> Maxime Ripard, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
