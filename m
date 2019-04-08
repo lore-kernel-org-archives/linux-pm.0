@@ -1,91 +1,52 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 08/14] powercap/intel_rapl: Support multi-die/package
-Date: Mon, 08 Apr 2019 09:35:47 +0800
-Message-ID: <1554687347.2178.1.camel@intel.com>
-References: <e2810a5317d3a109a98204e883fd1461f77b9339.1551160674.git.len.brown@intel.com>
-         <680e11fe0dcc65e4cfa5bfeaa0d1cdbe7896e3c0.1551160674.git.len.brown@intel.com>
-         <alpine.DEB.2.21.1904052022310.1802@nanos.tec.linutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: stats: Use lock by stat to replace global spin
+ lock
+Date: Mon, 8 Apr 2019 11:09:44 +0530
+Message-ID: <20190408053944.wcz2pblevccyftmg@vireshk-i7>
+References: <20190325072933.215946-1-linkyle0915@gmail.com>
+ <20190326184346.GY112750@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.21.1904052022310.1802@nanos.tec.linutronix.de>
+Content-Disposition: inline
+In-Reply-To: <20190326184346.GY112750@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Kyle Lin <linkyle0915@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 五, 2019-04-05 at 20:27 +0200, Thomas Gleixner wrote:
-> On Tue, 26 Feb 2019, Len Brown wrote:
-> 
+On 26-03-19, 11:43, Matthias Kaehlcke wrote:
+> On Mon, Mar 25, 2019 at 03:29:33PM +0800, Kyle Lin wrote:
+> > Stats is updated by each policy, using the lock by stat can
+> > reduce the contention.
 > > 
-> > From: Zhang Rui <rui.zhang@intel.com>
-> > 
-> > On the new dual-die/package systems, the RAPL MSR becomes die-
-> > scope.
-> > Thus instead of one powercap device per physical package, now there
-> > should be one powercap device for each unique die on these systems.
-> > 
-> > This patch introduces intel_rapl driver support for new
-> > dual-die/package systems.
-> This patch .... See Documentation/processs/
-> 
-> and this sentence is not really helpful either.
-> 
-> > 
-> > On the hardwares that do not have multi-die,
-> > topology_logical_die_id()
-> > equals topology_physical_package_id(), thus there is no functional
-> > change.
-> Something like this:
-> 
-> To support this the RAPL package domain has to be identified by the
-> die id
-> instead of the package id. On single die CPUs the die id is the same
-> as the
-> physical package id.
-> 
-> Hmm?
-
-Yeah, sounds much better.
-Len, will you help me update the changelog or do you want me to send an
-updated version to you?
-
-thanks,
-rui
-
-> 
-> > 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: linux-pm@vger.kernel.org
+> > Signed-off-by: Kyle Lin <linkyle0915@gmail.com>
 > > ---
-> >  drivers/powercap/intel_rapl.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >  drivers/cpufreq/cpufreq_stats.c | 15 ++++++++-------
+> >  1 file changed, 8 insertions(+), 7 deletions(-)
 > > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c
-> > index 6057d9695fed..8723e9ae7436 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -266,7 +266,7 @@ static struct rapl_domain
-> > *platform_rapl_domain; /* Platform (PSys) domain */
-> >  /* caller to ensure CPU hotplug lock is held */
-> >  static struct rapl_package *rapl_find_package(int cpu)
-> >  {
-> > -	int id = topology_physical_package_id(cpu);
-> > +	int id = topology_logical_die_id(cpu);
-> >  	struct rapl_package *rp;
-> >  
-> >  	list_for_each_entry(rp, &rapl_packages, plist) {
-> > @@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct
-> > rapl_package *rp)
-> >  /* called from CPU hotplug notifier, hotplug lock held */
-> >  static struct rapl_package *rapl_add_package(int cpu)
-> >  {
-> > -	int id = topology_physical_package_id(cpu);
-> > +	int id = topology_logical_die_id(cpu);
-> >  	struct rapl_package *rp;
-> >  	int ret;
-> >  
+> > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> > index e2db5581489a..17beb1bc7e16 100644
+> > --- a/drivers/cpufreq/cpufreq_stats.c
+> > +++ b/drivers/cpufreq/cpufreq_stats.c
+> > @@ -14,7 +14,6 @@
+> >  #include <linux/module.h>
+> >  #include <linux/slab.h>
+> >  
+> > -static DEFINE_SPINLOCK(cpufreq_stats_lock);
+> >  
+> >  struct cpufreq_stats {
+> >  	unsigned int total_trans;
+> > @@ -23,6 +22,7 @@ struct cpufreq_stats {
+> >  	unsigned int state_num;
+> >  	unsigned int last_index;
+> >  	u64 *time_in_state;
+> > +	spinlock_t lock;        /*spinlock for stats update*/
+> 
+> nit: not sure if the comment adds much value. If it stay there it
+> needs a blank after '/*' and another before '*/'
+
+Just drop the comment please.
+
+-- 
+viresh
