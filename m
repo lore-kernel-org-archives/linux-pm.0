@@ -2,115 +2,99 @@ Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A5F5C282CE
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22388C10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:31:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5D20F21473
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:23:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DE5DB208E3
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 10:31:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="PqoQvzDT"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZffpFYBN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725947AbfDHKXL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 06:23:11 -0400
-Received: from outils.crapouillou.net ([89.234.176.41]:55990 "EHLO
-        crapouillou.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725933AbfDHKXL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 06:23:11 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
-        s=mail; t=1554718989; h=from:from:sender:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=YG2rCSEWGmHwSf0TVaqngGYKpa7LURt8tfGQ+HtEtuE=;
-        b=PqoQvzDTSpHGrXTOBPg1fiebnKVNFMbLopVljXEjjz5fDkXbYRggSrJC0k1iYFCyiuy4oZ
-        32D00htHkAH1EMMH9DVbJoMnOy7tV04CW9YmVNlcBIIANltjH5bb1ZID5DSfpoo37NL62o
-        Xv6/dv6o/UDTEHQdiNGdMIvy4bTv09g=
-Date:   Mon, 08 Apr 2019 12:23:03 +0200
-From:   Paul Cercueil <paul@crapouillou.net>
-Subject: Re: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery driver.
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Jonathan Cameron <jic23@kernel.org>,
-        Artur Rojek <contact@artur-rojek.eu>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Message-Id: <1554718983.1893.0@crapouillou.net>
-In-Reply-To: <20190408093824.yzpd7mve6df7lpka@earth.universe>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
-        <20190323172809.14407-4-contact@artur-rojek.eu>
-        <20190324153137.04857cdf@archlinux>
-        <20190407165234.is66vmnjfc35jnho@earth.universe>
-        <1554664077.4322.0@crapouillou.net>
-        <20190408093824.yzpd7mve6df7lpka@earth.universe>
+        id S1725984AbfDHKbA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 06:31:00 -0400
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:46202 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725857AbfDHKbA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 06:31:00 -0400
+Received: by mail-oi1-f194.google.com with SMTP id x188so10028457oia.13;
+        Mon, 08 Apr 2019 03:30:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Bf7SVbXVHsaF4+XZ5unw9bMrO6ItzHO0anxO3aCT3Mo=;
+        b=ZffpFYBNQXXfPsuht/L0Qp9wTuWwFxxxVepqKWhl+a0A0L4cEL1FTGTIdibdcUycKp
+         OAXDbvONhX6bs3NdTkyAuj3zRAoafslP4OILvvovfrYaygHd1Gqpr67/OUH+rOgG60CV
+         Ap3C+mt205E35iVcxLs6huOScXLnBs2GDwW4ZFEtxcgh4BGlNfB52uQn7Wtuhh/xJYDZ
+         2OV57hbt58uzoNR16w/2ayUbhPqbjz9eLOnZaTJ0B+Nfyi3FArlVKuHTK+Ym3EorvMtg
+         3agevs0S5kpoOWbL1WyCq0GFBztGpnOlJAqf4+hYB6dSxkKFaQqucpZscuKt78BXW8VI
+         NCLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Bf7SVbXVHsaF4+XZ5unw9bMrO6ItzHO0anxO3aCT3Mo=;
+        b=jp2P8a8I29V/MDg82pI5f3XJyXlWNHkW2BC0JH2eJErtuEbXE7Osf9u8f95dL6iFAz
+         +se0kEdN1eb5+tZbpFWTDpESfLW3DN6INMP+9T9PMIelF4fqXSN4vOeRN478Vrmftxuf
+         W/xsuD/hQALvMIFCdM3/JDkoTHq1bp8GFzO181p7TzwXDZZ8lCgW5ktV3fRHX6HL2PC6
+         jQHwI0e1uthdnNoiKGkjjpohWgFCGUheuBZp79i46HTN1IBQHWK5J0o53v1DYRsGc914
+         vUUZyH7AVL3+HjX8bZBXeR0HMGeGQ4iqBUWHttFBHDEFEJQMxM07PsNZFpKCN1L+nfFC
+         BOTw==
+X-Gm-Message-State: APjAAAXvj1WPP7seu26+WXB9jgPleOE1ecuiNEOztrNprbOXyueaNFyN
+        VaK8sZFw/WUBR2F4zPhIDAVshhPfvs0h4l0sJQmaCQ==
+X-Google-Smtp-Source: APXvYqwzoXl00F5liRhIaS8aOLixVY9QdfN5BIw7PhVYTzClSrNStagsZs+U+6c1/3MWNqavYNfW0HzDd6Gre5d2HnQ=
+X-Received: by 2002:aca:db45:: with SMTP id s66mr15395354oig.59.1554719459352;
+ Mon, 08 Apr 2019 03:30:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
+References: <20190404050931.9812-1-niklas.cassel@linaro.org>
+In-Reply-To: <20190404050931.9812-1-niklas.cassel@linaro.org>
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Mon, 8 Apr 2019 16:00:48 +0530
+Message-ID:
+ <CAOh2x==enW-jmtYi3F=TP8QS=wt8UHKV5td-tyJiCXV=D6ZBBQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/9] Add support for QCOM Core Power Reduction
+To:     Niklas Cassel <niklas.cassel@linaro.org>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>,
+        DTML <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408102303.aR-Za796iUROojo8VXI42kJgWiZxnCbmekFuCtPOdYU@z>
+Message-ID: <20190408103048.BJwiBBPxMX_hiaCVN4u4DSrw116S9lN8OTW2ETy4hUY@z>
 
+On Thu, Apr 4, 2019 at 10:40 AM Niklas Cassel <niklas.cassel@linaro.org> wrote:
+>
+> This is a first RFC for Core Power Reduction (CPR), a form of
+> Adaptive Voltage Scaling (AVS), found on certain Qualcomm SoCs.
+>
+> Since this is simply an RFC, things like MAINTAINERS hasn't
+> been updated yet.
+>
+> CPR is a technology that reduces core power on a CPU or on other device.
+> It reads voltage settings from efuses (that have been written in production),
+> it uses these voltage settings as initial values, for each OPP.
+>
+> After moving to a certain OPP, CPR monitors dynamic factors such as
+> temperature, etc. and adjusts the voltage for that frequency accordingly
+> to save power and meet silicon characteristic requirements.
+>
+> This driver is based on an RFC by Stephen Boyd[1], which in turn is
+> based on work by others on codeaurora.org[2].
+>
+> [1] https://lkml.org/lkml/2015/9/18/833
+> [2] https://www.codeaurora.org/cgit/quic/la/kernel/msm-3.10/tree/drivers/regulator/cpr-regulator.c?h=msm-3.10
 
+Please add relevant people to all the patches as it makes their life
+easier and never
+miss anyone from the cover-letter :)
 
-Le lun. 8 avril 2019 =E0 11:38, Sebastian Reichel <sre@kernel.org> a=20
-=E9crit :
-> Hi Paul,
->=20
-> On Sun, Apr 07, 2019 at 09:07:57PM +0200, Paul Cercueil wrote:
->>  Hi Sebastian,
->>=20
->>  Le dim. 7 avril 2019 =E0 18:52, Sebastian Reichel <sre@kernel.org> a=20
->> =E9crit :
->>  > Hi,
->>  >
->>  > On Sun, Mar 24, 2019 at 03:31:37PM +0000, Jonathan Cameron wrote:
->>  > >  On Sat, 23 Mar 2019 18:28:09 +0100
->>  > >  Artur Rojek <contact@artur-rojek.eu> wrote:
->>  > >
->>  > >  > Add a driver for battery present on Ingenic JZ47xx SoCs.
->>  > >  >
->>  > >  > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
->>  > >  The IIO parts look fine to me.
->>  > >  Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
->>  > >
->>  > >  Sebastian, assuming you are happy with this version,
->>  >
->>  > The driver itself looks ok. I'm a bit unhappy, that we already=20
->> have
->>  > jz4740-battery. This driver is much cleaner, but does not yet seem
->>  > to be ready to replace it. Artur Rojek what are your plans=20
->> regarding
->>  > to the existing driver? Is there currently work going on migrating
->>  > JZ47xx to DT?
->>=20
->>  Why do you think it's not ready? Feature-wise, it has everything we
->>  need to replace jz4740-battery, which will be trashed as soon as the
->>  LB60 board code is updated to use the new driver.
->=20
-> jz4740-battery has a few features not provided by your driver.
-> For example the gpio providing the charging status.
-
-Artur sumitted a separate patchset for this functionality:
-https://lkml.org/lkml/2019/2/26/501
-
-> Assuming you plan to trash the old driver soon:
->=20
-> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
->=20
->>  We are working on porting the JZ47xx code to devicetree, yes. The
->>  ultimate goal is to completely get rid of
->>  arch/mips/jz4740/board-qi_lb60.c and arch/mips/jz4740/platform.c.
->=20
-> Ok, sounds good.
->=20
-> -- Sebastian
-
-=
-
+--
+viresh
