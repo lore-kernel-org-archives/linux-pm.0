@@ -2,152 +2,97 @@ Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 649EBC10F13
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:26:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEC8BC10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:50:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2C67221473
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:26:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE34D20883
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 12:50:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="i18Bzi9S"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eosgU5hi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726684AbfDHMZ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 08:25:58 -0400
-Received: from mail-it1-f194.google.com ([209.85.166.194]:37746 "EHLO
-        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726585AbfDHMZ5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 08:25:57 -0400
-Received: by mail-it1-f194.google.com with SMTP id u65so20586928itc.2
-        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 05:25:57 -0700 (PDT)
+        id S1726570AbfDHMuu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 08:50:50 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:38039 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726511AbfDHMuu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 08:50:50 -0400
+Received: by mail-lf1-f66.google.com with SMTP id u24so2482194lfg.5
+        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 05:50:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
+        d=linaro.org; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=lQcpDr5VAF2zM8uHWq0SbeKOgE159Ny/tgMDuFmE6vk=;
-        b=i18Bzi9SmJ28ujFiloXcrHDpCjfcj4/cJ199b4fJwbAHkA73kCnu1eYyrKnZQ/fD73
-         Q0GXgU+dtAvYkKjrTZhRoBptnGCPX3KBp+qooku9+znowPRFIAZVmMAQX6gIKvGUIMAW
-         oI6myldKjygByD9fp56S5cYe3xgM79AODwzXXoD63c0Fn9XN+kR4Fux3+HYJpr4aOYL6
-         fnUMkWda+QUw8anMs7NZWeXP+bWs4P7OtEFxA9AJr9J+30cGOK/zqrzf6cDpRiLIZRdI
-         XIml4qTFz0ZbiCK9PnSbQfPxEBjT3R8SaOT2Y5s1QLH6k/z2rALb1keNelz4TeL/3bk9
-         qqcw==
+         :cc;
+        bh=kObOSXeLNarr4A7JyCeGDmf2Aqlc+AnUxoBbHSTRZHQ=;
+        b=eosgU5hidfriIgdzaffD+gEjxqfYzI3r3ZsjYh7VmHGSIrCKhE0HubpIvm4G6Q66JC
+         RmlZkX8thltFNhRW7qB2FRiv6rWE0gDjg9utnyKd97Nrj6YKU5tepS45ju+O4mnVeU5s
+         la/UeY1gCcgYSVlcA9mdEjGXHp42yRzQfi6eA5qUweC3RNJ8cBsI9uQLWnp0lEJEgKqi
+         /hYnBQmrRh3WqiIsdSSqkRy5/WCC7nM/M9OMMudpC0ndIklTQmbpRJVj4LSvmJ/638Mx
+         IIwgPo2M19TUfc0yd4ZllxLYHmUqp5oBXEjATgeE0LjILu/Y97JPmRGWjy6zhwWwaJqY
+         0HMQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=lQcpDr5VAF2zM8uHWq0SbeKOgE159Ny/tgMDuFmE6vk=;
-        b=XcWurAjYCXPrTDlkUkBZmE7EHzNO0PbbMUXuejc+ZQO9COxQrw2+939BriBigsk118
-         i/EQ9iKuR4eKyHXAXRk+g0SLis7lEA+dQdc4IYgggylasEgU59a9HA+MVt39hV17VXTN
-         ItZWWULTj31ooIcGwpPCaePF7104yiovOz36rJNv7O0iAWIGw/obG70SFHJ+39Aq8+Xr
-         B+LvmuQLhvQedE7IZqD7K6RFJ0EOzVGbvdLGFMCZCOnTYCVY7+2vdnzSdnjtYO/uppa2
-         nd098HkWgTo0CAuQwhVvLZMmGO72i71jXSk2xwoQSdDgNLRUEE5933Pdm9k2gT+fWMuG
-         cnLg==
-X-Gm-Message-State: APjAAAWNhEEvcTyH6qfLY0PyTddDHjfAwFuV+cZ17F7ZzXlsFX7JZtXQ
-        Z85rbYo/Hyr7CPRYzwFRAPDqQ+CibDu7NyfhW36Tzw==
-X-Google-Smtp-Source: APXvYqypso5ErFjcfXh1FiVJ51uhvmCt0KVoZ/gESJrKqTUNlD5m+qLQP5hs9RZ0vPe4pNzBDI4kjUEkpO7nqLX7vs8=
-X-Received: by 2002:a24:57cf:: with SMTP id u198mr16538556ita.162.1554726356883;
- Mon, 08 Apr 2019 05:25:56 -0700 (PDT)
+         :message-id:subject:to:cc;
+        bh=kObOSXeLNarr4A7JyCeGDmf2Aqlc+AnUxoBbHSTRZHQ=;
+        b=tb1RIH+S4dfZksIiFMcX3Pp+SqwRrvJK5KCxsN9jCygc8itzlcasQ4mgcumAqYSiqb
+         cdQdTrY4+EyO3bf83K0zNMUrcIKPlkTJ618HI3ECrw5Dw4VSsQUBhqe7IGMbtWs0Nuyo
+         Rb1tNUEtvnfDz8adtvNvdm4+O7z+yxYKWQMNWiqPFoxGxX3i52MDeLDPhTqa1JsBUGSq
+         aB2eCL4PsR0OaY/eJeQDQ3VA/+LdZwXKjJb1iI9/PpBsWllf9ZnN7R3Yc6ZWkqU1GyFd
+         iSp5zHOHRgU8WjUuB73AouuJck/HdPkI3aGMXLOQq79hg6e4Q9/ZMriGRL6gJe/QtN2t
+         i+qQ==
+X-Gm-Message-State: APjAAAVP1jEYE78qvdmpdJ634BNGaFGMwjEFf3eSXD65RXOHEMkC1ggT
+        H8zVKE5IsPlokWwFFHqOV3Ylb7J57hOhIFs2ht7TXA==
+X-Google-Smtp-Source: APXvYqxm6gQM5RizB+QB98o/vRKWl9Hck0t3rr9vH0/mChEJSdcx8mhIM4dkN1BSfuO67QpDJ3ehnEaYQ430riupIIk=
+X-Received: by 2002:ac2:54b0:: with SMTP id w16mr16050034lfk.138.1554727847932;
+ Mon, 08 Apr 2019 05:50:47 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
- <20190406070746.GA29624@bogus>
-In-Reply-To: <20190406070746.GA29624@bogus>
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-Date:   Mon, 8 Apr 2019 14:25:45 +0200
+References: <20190320103927.21227-1-geert+renesas@glider.be>
+In-Reply-To: <20190320103927.21227-1-geert+renesas@glider.be>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Mon, 8 Apr 2019 14:50:36 +0200
 Message-ID:
- <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
-Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-To:     Rob Herring <robh@kernel.org>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ <CACRpkdaAZ8C-kmhWRMqu3y6yVJ--6UFjnoRi_iRtogwzzyGseQ@mail.gmail.com>
+Subject: Re: [PATCH RFC] gpio: pca953x: Configure wake-up path when wake-up is enabled
+To:     Geert Uytterhoeven <geert+renesas@glider.be>
+Cc:     Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Laurent Pinchart <Laurent.pinchart@ideasonboard.com>,
         "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
         Linux PM list <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408122545.gK6fKsvYs0SJvZe2qrbj1sYJP7l6Ur1tiZ5VwMR7Dvc@z>
+Message-ID: <20190408125036.DS6wsrLQoAMNbUBiIkp-A--uSoUJWOz-XQvU7ZE3WWc@z>
 
-sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+On Wed, Mar 20, 2019 at 11:39 AM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+
+> If a device is part of the wake-up path, it should indicate this by
+> setting its power.wakeup_path field.  This allows the genpd core code to
+> keep the device enabled during system suspend when needed.
 >
-> On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote:
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > Add the DT binding document for the battery charger module of max77650.
-> >
-> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > ---
-> >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++++
-> >  1 file changed, 27 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/max7=
-7650-charger.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-ch=
-arger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger=
-.txt
-> > new file mode 100644
-> > index 000000000000..fef188144386
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.t=
-xt
-> > @@ -0,0 +1,27 @@
-> > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> > +
-> > +This module is part of the MAX77650 MFD device. For more details
-> > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > +
-> > +The charger is represented as a sub-node of the PMIC node on the devic=
-e tree.
-> > +
-> > +Required properties:
-> > +--------------------
-> > +- compatible:                Must be "maxim,max77650-charger"
-> > +
-> > +Optional properties:
-> > +--------------------
-> > +- min-microvolt:     Minimum CHGIN regulation voltage (in microvolts).=
- Must be
-> > +                     one of: 4000000, 4100000, 4200000, 4300000, 44000=
-00,
-> > +                     4500000, 4600000, 4700000.
-> > +- current-limit-microamp:    CHGIN input current limit (in microamps).=
- Must
-> > +                             be one of: 95000, 190000, 285000, 380000,=
- 475000.
+> As regulators powering devices are not handled by genpd, the driver
+> handles these itself, and thus must skip regulator control when the
+> device is part of the wake-up path.
 >
-> To repeat what I said on v6, these should be common properties IMO (and
-> therefore documented as such).
->
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Do you mean a separate "charger.txt" document in
-Documentation/devicetree/bindings/power/supply/?
+Patch applied with Ulf's Review tag.
 
-Bart
+If there are even better ways to do it I think we can fix that on top of
+this, it is best to start with something that obviously works and
+take it from there.
 
-> > +
-> > +Example:
-> > +--------
-> > +
-> > +     charger {
-> > +             compatible =3D "maxim,max77650-charger";
-> > +             min-microvolt =3D <4200000>;
-> > +             curr-lim-microamp =3D <285000>;
-> > +     };
-> > --
-> > 2.21.0
-> >
+Yours,
+Linus Walleij
