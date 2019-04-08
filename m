@@ -1,42 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 0/9] Add support for QCOM Core Power Reduction
-Date: Mon, 8 Apr 2019 16:00:48 +0530
-Message-ID: <CAOh2x==enW-jmtYi3F=TP8QS=wt8UHKV5td-tyJiCXV=D6ZBBQ@mail.gmail.com>
-References: <20190404050931.9812-1-niklas.cassel@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: maple: Remove redundant code from maple_cpufreq_init()
+Date: Mon, 08 Apr 2019 12:41:57 +0200
+Message-ID: <4531254.vnb8GhbyUH@kreacher>
+References: <dfb046a881d254f5133e6a1f86a04f49e73c56f9.1554718622.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190404050931.9812-1-niklas.cassel@linaro.org>
+In-Reply-To: <dfb046a881d254f5133e6a1f86a04f49e73c56f9.1554718622.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Niklas Cassel <niklas.cassel@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>, DTML <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 4, 2019 at 10:40 AM Niklas Cassel <niklas.cassel@linaro.org> wrote:
->
-> This is a first RFC for Core Power Reduction (CPR), a form of
-> Adaptive Voltage Scaling (AVS), found on certain Qualcomm SoCs.
->
-> Since this is simply an RFC, things like MAINTAINERS hasn't
-> been updated yet.
->
-> CPR is a technology that reduces core power on a CPU or on other device.
-> It reads voltage settings from efuses (that have been written in production),
-> it uses these voltage settings as initial values, for each OPP.
->
-> After moving to a certain OPP, CPR monitors dynamic factors such as
-> temperature, etc. and adjusts the voltage for that frequency accordingly
-> to save power and meet silicon characteristic requirements.
->
-> This driver is based on an RFC by Stephen Boyd[1], which in turn is
-> based on work by others on codeaurora.org[2].
->
-> [1] https://lkml.org/lkml/2015/9/18/833
-> [2] https://www.codeaurora.org/cgit/quic/la/kernel/msm-3.10/tree/drivers/regulator/cpr-regulator.c?h=msm-3.10
+On Monday, April 8, 2019 12:17:06 PM CEST Viresh Kumar wrote:
+> The success path and error path both look the same, don't duplicate the
+> code.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/maple-cpufreq.c | 4 ----
+>  1 file changed, 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/maple-cpufreq.c
+> b/drivers/cpufreq/maple-cpufreq.c index a05f1342ec02..a94355723ef8 100644
+> --- a/drivers/cpufreq/maple-cpufreq.c
+> +++ b/drivers/cpufreq/maple-cpufreq.c
+> @@ -231,10 +231,6 @@ static int __init maple_cpufreq_init(void)
+> 
+>  	rc = cpufreq_register_driver(&maple_cpufreq_driver);
+> 
+> -	of_node_put(cpunode);
+> -
+> -	return rc;
+> -
+>  bail_noprops:
+>  	of_node_put(cpunode);
 
-Please add relevant people to all the patches as it makes their life
-easier and never
-miss anyone from the cover-letter :)
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---
-viresh
+I'm assuming this to land in your tree.
