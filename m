@@ -1,65 +1,54 @@
-From: Binbin Wu <binbin.wu@intel.com>
-Subject: [PATCH] intel-lpss: Set the device in reset state when init
-Date: Mon,  8 Apr 2019 13:41:58 +0800
-Message-ID: <1554702118-20184-1-git-send-email-binbin.wu@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Update][PATCH v3 3/4] cpufreq: schedutil: Simplify iowait
+ boosting
+Date: Mon, 8 Apr 2019 11:24:45 +0530
+Message-ID: <20190408055445.6civdatkw7crwxes@vireshk-i7>
+References: <11953735.uMqeHy63Iu@aspire.rjw.lan>
+ <2864116.v8IU97Resm@aspire.rjw.lan>
+ <3714586.Xfz7sSM4fi@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3714586.Xfz7sSM4fi@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, lee.jones@linaro.org, mika.westerberg@linux.intel.com, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, andriy.shevchenko@linux.intel.com
-Cc: binbin.wu@intel.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Chen Yu <yu.c.chen@intel.com>, Gabriele Mazzotta <gabriele.mzt@gmail.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-In virtualized setup, when system reboots due to warm
-reset interrupt storm is seen.
+On 28-03-19, 11:33, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> There is not reason for the minimum iowait boost value in the
+> schedutil cpufreq governor to depend on the available range of CPU
+> frequencies.  In fact, that dependency is generally confusing,
+> because it causes the iowait boost to behave somewhat differently
+> on CPUs with the same maximum frequency and different minimum
+> frequencies, for example.
+> 
+> For this reason, replace the min field in struct sugov_cpu
+> with a constant and choose its values to be 1/8 of
+> SCHED_CAPACITY_SCALE (for consistency with the intel_pstate
+> driver's internal governor).
+> 
+> [Note that policy->cpuinfo.max_freq will not be a constant any more
+>  after a subsequent change, so this change is depended on by it.]
+> 
+> Link: https://lore.kernel.org/lkml/20190305083202.GU32494@hirez.programming.kicks-ass.net/T/#ee20bdc98b7d89f6110c0d00e5c3ee8c2ced93c3d
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> As pointed out by Quentin, the original patch overlooked two kerneldoc
+> comments that needed to be updated along with the code, so do that here.
+> 
+> No other changes with respect to the original.
+> 
+> ---
+>  kernel/sched/cpufreq_schedutil.c |   21 ++++++++++-----------
+>  1 file changed, 10 insertions(+), 11 deletions(-)
 
-Call Trace:
-<IRQ>
-dump_stack+0x70/0xa5
-__report_bad_irq+0x2e/0xc0
-note_interrupt+0x248/0x290
-? add_interrupt_randomness+0x30/0x220
-handle_irq_event_percpu+0x54/0x80
-handle_irq_event+0x39/0x60
-handle_fasteoi_irq+0x91/0x150
-handle_irq+0x108/0x180
-do_IRQ+0x52/0xf0
-common_interrupt+0xf/0xf
-</IRQ>
-RIP: 0033:0x76fc2cfabc1d
-Code: 24 28 bf 03 00 00 00 31 c0 48 8d 35 63 77 0e 00 48 8d 15 2e
-94 0e 00 4c 89 f9 49 89 d9 4c 89 d3 e8 b8 e2 01 00 48 8b 54 24 18
-<48> 89 ef 48 89 de 4c 89 e1 e8 d5 97 01 00 84 c0 74 2d 48 8b 04
-24
-RSP: 002b:00007ffd247c1fc0 EFLAGS: 00000293 ORIG_RAX: ffffffffffffffda
-RAX: 0000000000000000 RBX: 00007ffd247c1ff0 RCX: 000000000003d3ce
-RDX: 0000000000000000 RSI: 00007ffd247c1ff0 RDI: 000076fc2cbb6010
-RBP: 000076fc2cded010 R08: 00007ffd247c2210 R09: 00007ffd247c22a0
-R10: 000076fc29465470 R11: 0000000000000000 R12: 00007ffd247c1fc0
-R13: 000076fc2ce8e470 R14: 000076fc27ec9960 R15: 0000000000000414
-handlers:
-[<000000000d3fa913>] idma64_irq
-Disabling IRQ #27
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-To avoid interrupt storm, set the device in reset state
-before bringing out the device from reset state.
-
-Signed-off-by: Binbin Wu <binbin.wu@intel.com>
----
- drivers/mfd/intel-lpss.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-index 50bffc3..ff3fba1 100644
---- a/drivers/mfd/intel-lpss.c
-+++ b/drivers/mfd/intel-lpss.c
-@@ -273,6 +273,9 @@ static void intel_lpss_init_dev(const struct intel_lpss *lpss)
- {
- 	u32 value = LPSS_PRIV_SSP_REG_DIS_DMA_FIN;
- 
-+	/* Set the device in reset state */
-+	writel(0, lpss->priv + LPSS_PRIV_RESETS);
-+
- 	intel_lpss_deassert_reset(lpss);
- 
- 	intel_lpss_set_remap_addr(lpss);
 -- 
-2.7.4
+viresh
