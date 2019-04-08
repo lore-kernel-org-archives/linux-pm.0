@@ -6,137 +6,297 @@ X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 136D3C10F14
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 14:25:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD103C10F13
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 14:33:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CA85421473
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 14:25:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73B6620879
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 14:33:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="qY5Aj+jj"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rv9dB+p6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726930AbfDHOZs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 10:25:48 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:38987 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726952AbfDHOZs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 10:25:48 -0400
-Received: by mail-pg1-f195.google.com with SMTP id k3so7423594pga.6
-        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 07:25:47 -0700 (PDT)
+        id S1726882AbfDHOd6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 10:33:58 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:37503 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726775AbfDHOd5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 10:33:57 -0400
+Received: by mail-lf1-f68.google.com with SMTP id o19so9655119lfl.4
+        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 07:33:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=axtens.net; s=google;
-        h=from:to:cc:subject:in-reply-to:references:date:message-id
-         :mime-version;
-        bh=P4vKQmbK14vtbIuUEndCl5MfnUaB3hSyiz0CQzCAQZw=;
-        b=qY5Aj+jjp/s1OSKgwZzU3l7+6LRruW6kkAAmrM7wKfUAdxwjQQxdeNZ/RTPhazCg3J
-         H+cnE0oznA7ZjQ86s8U5XSbCO9iuZBNwagfDSqpGOeGZQ2AnyTGLShNvbaQaPBb+iw/K
-         Hdkouht+z8nSthWNBPdK2PD3K/MmxfyYTaxsY=
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=AwC77turM8Fuzoj2lqSX9M7XkjdlrQcSJzhbCyzQM6U=;
+        b=rv9dB+p6JpJnN8oVgYEdq7vAGqt3eHcJznDFPLYF0pF06yVOBcDbL8GNBfc94EnMvQ
+         3GllB73o7MJB1IlH5r7XJMysYAlFsaGu/kJJ5hiMX3L1aNpodyAMR9/4N91APZaoJJM+
+         CJOprlOPqjnABCf/l4tCEpdtMyIE8Osa+8xi3UBiw6FSOnrgtPXeQoz899xhj0ZrJgMm
+         rg5+nxdLDXCrT9UQuQ7zxxq3Q0FcRrrVtq55IVoj/cZ34SUKe+EgvFRPalKYQT/ee33I
+         xgWipNlYwQsbBSgM063vJHOhXqLevzxVZkhxZoCtrhsYUaVimnUuavRcWZ1Sy6xtBVN2
+         cgow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
-         :message-id:mime-version;
-        bh=P4vKQmbK14vtbIuUEndCl5MfnUaB3hSyiz0CQzCAQZw=;
-        b=JnT1QBB1524Wxokx6KUEWqa/jDYYFMopUGak6OX9Kw+DjLtyE8QmL3LRyuevTM+KNW
-         gchhp4xdTjLzUiYzVqU9udrfdpsyTxMwCh6RlF7+b1MPK++pILY6xDTDi5HGIRl4pejd
-         jjtGAmDHpVf0GaIVxesBls7FIo5QfTOXYP2JBWofr2mqpM9t+7ah4t+ZngS+LIbsHdBc
-         D8VUsRkf3yfzz//JYaIpQcC9hQGiWmQ9Wge0l5Kgm9xtDikwqvBhoTWlLlLQKf9u5yrt
-         w2YkLVry0s0QIjj8VwYdpNGqkYJ+7tLUh1iZjRRiu2BZ6G0T4EWOGwvWyGbMWMlnSJQg
-         3HGw==
-X-Gm-Message-State: APjAAAV/YOeaREYQ5sRT/VrlOBtY+H6QNMjxyjNOEM1agFP/u1JlfFwN
-        sGO1t8ClopGEObDDRymDGc/8hA==
-X-Google-Smtp-Source: APXvYqzsA1AXiPykN+pw3sx+WRcap8ev3d4GcOkTSI8xZZNomj0hdsu8k/FPqteD9t9mt5/PsBrx4A==
-X-Received: by 2002:a63:f212:: with SMTP id v18mr27873814pgh.231.1554733547282;
-        Mon, 08 Apr 2019 07:25:47 -0700 (PDT)
-Received: from localhost (124-171-136-51.dyn.iinet.net.au. [124.171.136.51])
-        by smtp.gmail.com with ESMTPSA id z13sm43143504pgc.25.2019.04.08.07.25.45
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 08 Apr 2019 07:25:46 -0700 (PDT)
-From:   Daniel Axtens <dja@axtens.net>
-To:     Abhishek Goel <huntbag@linux.vnet.ibm.com>,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-pm@vger.kernel.org
-Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
-        ego@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/2] cpuidle : auto-promotion for cpuidle states
-In-Reply-To: <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com> <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-Date:   Tue, 09 Apr 2019 00:25:42 +1000
-Message-ID: <87lg0kwp3t.fsf@dja-thinkpad.axtens.net>
+        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+         :message-id:date:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=AwC77turM8Fuzoj2lqSX9M7XkjdlrQcSJzhbCyzQM6U=;
+        b=jgzOVOLrQeuYMUA+TfdedXqqObWtBycVawWrsjwRd7iow0JLBh1R78FpjdGr/NPlfG
+         Q4700Xv8ih3305QAMnt34EfmHwyd2wUHOWAyyiLn/WvIkLs1K5HVOs5nOkT4RI7I+UE/
+         OCj8k2sWeebET767ptIEzRv0YjswQ0PWDC9U+8jDESixXTQ5BylXmKpSkTcxKJGz8RfQ
+         TjGffdJ+6WDOo0RmZkJlPnE9YSKiVuHW7ZYdz7T8MWTEI6mK6d4Lu9ADzGXGbwnQoypf
+         1o6xw8w0xhPyHrh1z4P3FTFMvcNVBL8xYr0pa2slqtU0YjckjmbWqz7mOzfV/CRg0IIc
+         Eb8A==
+X-Gm-Message-State: APjAAAV6MnWFMvt72D74kUUc89k9tJFfYN9/ZI8Y4vCrp+9Zca0sqsm+
+        nNtY5iPerXSwc+pnVGMmxSpZQg==
+X-Google-Smtp-Source: APXvYqyUZ9zv89I+9yta9qYe/hP0jmM0eaT9x1dfssq4Z7Tm7CcoTBmlZxgEp9WGoG/ET12OLIVCaQ==
+X-Received: by 2002:ac2:59db:: with SMTP id x27mr10067556lfn.108.1554734034826;
+        Mon, 08 Apr 2019 07:33:54 -0700 (PDT)
+Received: from [10.44.66.8] ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id m19sm6340887lji.70.2019.04.08.07.33.53
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 08 Apr 2019 07:33:53 -0700 (PDT)
+Subject: Re: [PATCH 2/3] interconnect: qcom: Add QCS404 interconnect provider
+ driver
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org,
+        daidavid1@codeaurora.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+References: <20190405035446.31886-1-georgi.djakov@linaro.org>
+ <20190405035446.31886-3-georgi.djakov@linaro.org>
+ <20190405145756.GN1843@tuxbook-pro>
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+Openpgp: preference=signencrypt
+Autocrypt: addr=georgi.djakov@linaro.org; prefer-encrypt=mutual; keydata=
+ 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
+ KEmKjLDvB0pePJkdTw==
+Message-ID: <0ca7862f-31ba-748a-945d-a925a40a16de@linaro.org>
+Date:   Mon, 8 Apr 2019 17:33:53 +0300
 MIME-Version: 1.0
+In-Reply-To: <20190405145756.GN1843@tuxbook-pro>
 Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408142542.bAALCyi1mIxIUvoB2KKi-s184X1GdBHk9L87pKGq6Uk@z>
+Message-ID: <20190408143353.iXRNHO5eYRxknRHLM0zHfZEKA5vA15-qIRmZuR0sSUs@z>
 
-Hi,
+Hi Bjorn,
 
-Sorry, just realised another thing I wanted to ask:
+Thanks for reviewing!
 
-> @@ -442,6 +442,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->  		}
->  	}
->
->
-> +#ifdef CPUIDLE_FLAG_AUTO_PROMOTION
+On 4/5/19 17:57, Bjorn Andersson wrote:
+> On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
+> [..]
+>> diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+>> new file mode 100644
+>> index 000000000000..42d36db13ec0
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/qcs404.c
+>> @@ -0,0 +1,488 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (C) 2019 Linaro Ltd
+>> + */
+>> +
+>> +#include <dt-bindings/interconnect/qcom,qcs404.h>
+>> +#include <linux/clk.h>
+>> +#include <linux/device.h>
+>> +#include <linux/interconnect-provider.h>
+>> +#include <linux/io.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/soc/qcom/smd-rpm.h>
+>> +
+>> +#include "qcs404_ids.h"
+>> +
+>> +#define RPM_BUS_MASTER_REQ	0x73616d62
+>> +#define RPM_BUS_SLAVE_REQ	0x766c7362
+>> +#define RPM_KEY_BW		0x00007762
+>> +
+>> +#define to_qcom_provider(_provider) \
+>> +	container_of(_provider, struct qcom_icc_provider, provider)
+>> +
+>> +struct qcom_smd_rpm *qcs404_rpm;
+> 
+> static
 
-Why is this based on CPUIDLE_FLAG_ rather than CONFIG_CPU_IDLE_? Won't
-this always be true, given that the flag is defined regardless of the
-config option in the header?
+Ok!
 
-> +	if (drv->states[idx].flags & CPUIDLE_FLAG_AUTO_PROMOTION) {
-> +		/*
-> +		 * Timeout is intended to be defined as sum of target residency
-> +		 * of next available state, entry latency and exit latency. If
-> +		 * time interval equal to timeout is spent in current state,
-> +		 * and if it is a shallow lite state, we may want to auto-
-> +		 * promote from such state.
-> +		 */
+>> +
+> [..]
+>> +#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,	\
+>> +		     _numlinks, ...)					\
+>> +		static struct qcom_icc_node _name = {			\
+>> +		.name = #_name,						\
+>> +		.id = _id,						\
+>> +		.buswidth = _buswidth,					\
+>> +		.mas_rpm_id = _mas_rpm_id,				\
+>> +		.slv_rpm_id = _slv_rpm_id,				\
+>> +		.num_links = _numlinks,					\
+> 
+> If you write this as ARRAY_SIZE(((int[]){ __VA_ARGS__ })), you don't
+> need the manually entered _numlinks number.
 
-Regards,
-Daniel
+This is a really nice idea!
 
-> +		for (i = idx + 1; i < drv->state_count; i++) {
-> +			if (drv->states[i].disabled ||
-> +					dev->states_usage[i].disable)
-> +				continue;
-> +			*timeout = drv->states[i].target_residency +
-> +					2 * drv->states[i].exit_latency;
-> +			break;
-> +		}
-> +	}
-> +#endif
-> +
->  	return idx;
->  }
->  
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 3b3947232..84d76d1ec 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -72,6 +72,13 @@ struct cpuidle_state {
->  #define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
->  #define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
->  #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
-> +/*
-> + * State with only and only fast state bit set don't even lose user context.
-> + * But such states prevent other sibling threads from thread folding benefits.
-> + * And hence we don't want to stay for too long in such states and want to
-> + * auto-promote from it.
-> + */
-> +#define CPUIDLE_FLAG_AUTO_PROMOTION	BIT(3)
->  
->  struct cpuidle_device_kobj;
->  struct cpuidle_state_kobj;
-> @@ -243,7 +250,8 @@ struct cpuidle_governor {
->  
->  	int  (*select)		(struct cpuidle_driver *drv,
->  					struct cpuidle_device *dev,
-> -					bool *stop_tick);
-> +					bool *stop_tick, unsigned long
-> +					*timeout);
->  	void (*reflect)		(struct cpuidle_device *dev, int index);
->  };
->  
-> -- 
-> 2.17.1
+> 
+>> +		.links = { __VA_ARGS__ },				\
+>> +	}
+>> +
+> [..]
+[..]
+>> +
+>> +	return ret;
+> 
+> ret is 0, return 0; and you can skip setting ret = 0 above.
+
+Ok!
+
+>> +}
+>> +
+>> +static int qnoc_probe(struct platform_device *pdev)
+>> +{
+>> +	const struct qcom_icc_desc *desc;
+>> +	struct icc_onecell_data *data;
+>> +	struct icc_provider *provider;
+>> +	struct qcom_icc_node **qnodes;
+>> +	struct qcom_icc_provider *qp;
+>> +	struct icc_node *node;
+>> +	size_t num_nodes, i;
+>> +	int ret;
+>> +
+>> +	/* wait for RPM */
+> 
+> This isn't waiting, it's getting the reference. That said if you make
+> these sit on mmio bus you would need to EPROBE_DEFER on the rpm-child
+> not being probed yet (and by that it would be a wait).
+
+Agree that it's a reference. The mmio registers are mostly qos related
+and seem not required for just requesting bandwidth, so we can add them
+later if we want to support priorities and different port modes like
+limiter, regulator etc.
+
+>> +	qcs404_rpm = dev_get_drvdata(pdev->dev.parent);
+>> +	if (!qcs404_rpm) {
+>> +		dev_err(&pdev->dev, "unable to retrieve handle to RPM\n");
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	desc = of_device_get_match_data(&pdev->dev);
+>> +	if (!desc)
+>> +		return -EINVAL;
+>> +
+>> +	qnodes = desc->nodes;
+>> +	num_nodes = desc->num_nodes;
+>> +
+>> +	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
+>> +	if (!qp)
+>> +		return -ENOMEM;
+>> +
+>> +	data = devm_kcalloc(&pdev->dev, num_nodes, sizeof(*node), GFP_KERNEL);
+>> +	if (!data)
+>> +		return -ENOMEM;
+>> +
+>> +	qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
+> 
+> Please use the clk_bulk interface instead.
+
+Ok, will do.
+
+>> +	if (IS_ERR(qp->bus_clk))
+>> +		return PTR_ERR(qp->bus_clk);
+>> +
+>> +	ret = clk_prepare_enable(qp->bus_clk);
+>> +	if (ret) {
+>> +		dev_err(&pdev->dev, "error enabling bus_clk: %d\n", ret);
+> 
+> clk_prepare_enable() will complain if it fails to enable the clock, so
+> no need to add another print.
+
+Ok, right!
+
+[..]>> +
+>> +	platform_set_drvdata(pdev, qp);
+>> +
+>> +	return ret;
+> 
+> ret is 0 here, so just return 0;
+
+Ok!
+
+>> +err:
+>> +	list_for_each_entry(node, &provider->nodes, node_list) {
+>> +		icc_node_del(node);
+>> +		icc_node_destroy(node->id);
+>> +	}
+>> +	clk_disable_unprepare(qp->bus_clk);
+>> +	clk_disable_unprepare(qp->bus_a_clk);
+>> +	icc_provider_del(provider);
+>> +
+>> +	return ret;
+>> +}
+> [..]
+>> diff --git a/drivers/interconnect/qcom/qcs404_ids.h b/drivers/interconnect/qcom/qcs404_ids.h
+> 
+> You use these defines in the driver, so I think this file should be the
+> one in include/dt-bindings...
+
+The ids in this header are in a single global namespace in order to
+build the internal topology and could be used for drivers that support
+only platform data (although not sure if there would be any).
+
+> 
+> [..]
+>> diff --git a/include/dt-bindings/interconnect/qcom,qcs404.h b/include/dt-bindings/interconnect/qcom,qcs404.h
+> 
+
+These header is using per NoC local ids and should be used on DT enabled
+platforms.
+
+Thanks,
+Georgi
