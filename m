@@ -2,451 +2,581 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF317C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 06:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C7BAC10F0E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 07:28:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9979320883
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 06:20:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=analog.onmicrosoft.com header.i=@analog.onmicrosoft.com header.b="R5cYzYT+"
+	by mail.kernel.org (Postfix) with ESMTP id 26F8121841
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 07:28:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726129AbfDIGUJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 02:20:09 -0400
-Received: from mail-eopbgr760079.outbound.protection.outlook.com ([40.107.76.79]:42311
-        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725781AbfDIGUI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Apr 2019 02:20:08 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=analog.onmicrosoft.com; s=selector1-analog-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=rPW3zfWvdvN94Voqgr2lC075rMoq3zJZuqgHmyQmQnc=;
- b=R5cYzYT+ed4WSmKnY7Jek3YTmCv+elnpSOMMURSFZO8Hk/leN6kSbhZajefj6OH3/57T4J3b1BkvVNvz707wnm6PUZyWlwuJ4bIFGfec34UuPcsRITgv2eeqhSJaEfrVU8Jc0iBCdtYU0v9oqH149BJbAnbZMFcu9gX2Ac6NmV8=
-Received: from BN6PR03CA0058.namprd03.prod.outlook.com (2603:10b6:404:4c::20)
- by BN6PR03MB3122.namprd03.prod.outlook.com (2603:10b6:405:3c::27) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.1771.16; Tue, 9 Apr
- 2019 06:20:00 +0000
-Received: from BL2NAM02FT009.eop-nam02.prod.protection.outlook.com
- (2a01:111:f400:7e46::205) by BN6PR03CA0058.outlook.office365.com
- (2603:10b6:404:4c::20) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id 15.20.1771.16 via Frontend
- Transport; Tue, 9 Apr 2019 06:20:00 +0000
-Authentication-Results: spf=pass (sender IP is 137.71.25.55)
- smtp.mailfrom=analog.com; vger.kernel.org; dkim=none (message not signed)
- header.d=none;vger.kernel.org; dmarc=bestguesspass action=none
- header.from=analog.com;
-Received-SPF: Pass (protection.outlook.com: domain of analog.com designates
- 137.71.25.55 as permitted sender) receiver=protection.outlook.com;
- client-ip=137.71.25.55; helo=nwd2mta1.analog.com;
-Received: from nwd2mta1.analog.com (137.71.25.55) by
- BL2NAM02FT009.mail.protection.outlook.com (10.152.77.68) with Microsoft SMTP
- Server (version=TLS1_0, cipher=TLS_RSA_WITH_AES_256_CBC_SHA) id 15.20.1771.16
- via Frontend Transport; Tue, 9 Apr 2019 06:20:00 +0000
-Received: from NWD2HUBCAS9.ad.analog.com (nwd2hubcas9.ad.analog.com [10.64.69.109])
-        by nwd2mta1.analog.com (8.13.8/8.13.8) with ESMTP id x396Jxne013901
-        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=OK);
-        Mon, 8 Apr 2019 23:19:59 -0700
-Received: from zeus.spd.analog.com (10.64.82.11) by NWD2HUBCAS9.ad.analog.com
- (10.64.69.109) with Microsoft SMTP Server id 14.3.408.0; Tue, 9 Apr 2019
- 02:19:59 -0400
-Received: from localhost.localdomain ([10.44.3.40])     by zeus.spd.analog.com
- (8.15.1/8.15.1) with ESMTP id x396Jv9G008379;  Tue, 9 Apr 2019 02:19:58 -0400
-From:   <michael.hennerich@analog.com>
-To:     <mike.looijmans@topic.nl>, <sre@kernel.org>, <robh+dt@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <robin.getz@analog.com>,
-        Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH v3 1/2] power: supply: ltc3651-charger: Fix device name
-Date:   Tue, 9 Apr 2019 08:24:40 +0200
-Message-ID: <1554791081-10950-1-git-send-email-michael.hennerich@analog.com>
-X-Mailer: git-send-email 2.7.4
-MIME-Version: 1.0
-Content-Type: text/plain
-X-ADIRoutedOnPrem: True
-X-EOPAttributedMessage: 0
-X-MS-Office365-Filtering-HT: Tenant
-X-Forefront-Antispam-Report: CIP:137.71.25.55;IPV:NLI;CTRY:US;EFV:NLI;SFV:NSPM;SFS:(10009020)(346002)(39860400002)(396003)(376002)(136003)(2980300002)(189003)(199004)(7636002)(14444005)(5660300002)(486006)(8936002)(356004)(30864003)(6666004)(126002)(476003)(86362001)(426003)(305945005)(336012)(86152003)(2616005)(246002)(47776003)(72206003)(8676002)(36756003)(4326008)(26005)(77096007)(2876002)(50226002)(186003)(106466001)(2906002)(49486002)(316002)(54906003)(51416003)(110136005)(16586007)(107886003)(106002)(48376002)(50466002)(478600001)(2004002);DIR:OUT;SFP:1101;SCL:1;SRVR:BN6PR03MB3122;H:nwd2mta1.analog.com;FPR:;SPF:Pass;LANG:en;PTR:nwd2mail10.analog.com;MX:1;A:1;
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 6ba29c03-9d69-417f-bb4b-08d6bcb36520
-X-Microsoft-Antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600139)(711020)(4605104)(4709054)(2017052603328);SRVR:BN6PR03MB3122;
-X-MS-TrafficTypeDiagnostic: BN6PR03MB3122:
-X-Microsoft-Antispam-PRVS: <BN6PR03MB3122C83372D489B5DD4F3E4D8E2D0@BN6PR03MB3122.namprd03.prod.outlook.com>
-X-Forefront-PRVS: 000227DA0C
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam-Message-Info: eowHEx1CNdvwJPT/pT0U7L+++51liH5dLOMmttByiQ/1S6mSUKhPDNK8bUQAgEuWPbsnRg0mJtd4Y6/bNxu0nir8sFcRf+ScqjSUrMjc5VtgE16inMG8/xc3SjptxyNrmDmZ/Cq4ADRJv3rZ1EigMXfdtSi8wT8QnwAayzyqTgazeDO3UcciXyY2CmnxI2inGfwFmaDG3UnbJwI+fnT+gM11Nr3m2yQiiSpZ08ANFxFMABBshjOGoSTaoMMO2dNpSigVn+YqqGKbPq3VDykHUGMolUq3DwvkemLaa9mWPB0NgZW8TEteJ3BFEbWS9+G3ixiEBVmTUcjUkgCzjRNUejmbcwcdJwXaxBjN06vkHFP+y2I3b5TnfbMKi1GBRppXSiCov5QnT86MrBeNwCJipjDXfezIVNxUIWrzR/3fkMg=
-X-OriginatorOrg: analog.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Apr 2019 06:20:00.0354
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6ba29c03-9d69-417f-bb4b-08d6bcb36520
-X-MS-Exchange-CrossTenant-Id: eaa689b4-8f87-40e0-9c6f-7228de4d754a
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=eaa689b4-8f87-40e0-9c6f-7228de4d754a;Ip=[137.71.25.55];Helo=[nwd2mta1.analog.com]
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR03MB3122
+        id S1726599AbfDIH2m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 03:28:42 -0400
+Received: from mga17.intel.com ([192.55.52.151]:4987 "EHLO mga17.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726205AbfDIH2m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Apr 2019 03:28:42 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 09 Apr 2019 00:28:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,328,1549958400"; 
+   d="scan'208";a="289953460"
+Received: from lyang61-mobl3.ccr.corp.intel.com ([10.255.30.213])
+  by orsmga004.jf.intel.com with ESMTP; 09 Apr 2019 00:28:32 -0700
+Message-ID: <1554794910.2178.6.camel@intel.com>
+Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal binding
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Anson Huang <anson.huang@nxp.com>, Rob Herring <robh@kernel.org>,
+        "edubezval@gmail.com" <edubezval@gmail.com>
+Cc:     "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>,
+        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        "festevam@gmail.com" <festevam@gmail.com>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "will.deacon@arm.com" <will.deacon@arm.com>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Andy Gross <andy.gross@linaro.org>,
+        "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>,
+        "heiko@sntech.de" <heiko@sntech.de>,
+        "arnd@arndb.de" <arnd@arndb.de>,
+        "maxime.ripard@bootlin.com" <maxime.ripard@bootlin.com>,
+        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
+        "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>,
+        "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>,
+        "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>,
+        "olof@lixom.net" <olof@lixom.net>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>
+Date:   Tue, 09 Apr 2019 15:28:30 +0800
+In-Reply-To: <DB3PR0402MB39161C8A34E6D45FF9003A8FF52D0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1551256894-21954-1-git-send-email-Anson.Huang@nxp.com>
+         <20190227235455.GA15211@bogus>
+         <DB3PR0402MB391673518C43A0ABE9BDB55FF5750@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <CAL_JsqJct4BztHEak+=iNK3G7dwYR-pQPeUqb4kBnEdRQMLr6A@mail.gmail.com>
+         <DB3PR0402MB3916D67D2CA6C33D27371F58F5760@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <DB3PR0402MB39166061B0712B30E443DA07F5730@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <AM6PR0402MB39111B82FAE76449785EDF90F54A0@AM6PR0402MB3911.eurprd04.prod.outlook.com>
+         <DB3PR0402MB3916A75C03F131ED3B69A455F55F0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <DB3PR0402MB39161C8A34E6D45FF9003A8FF52D0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190409072830.LcB4BTk_JqR1m_DuRhnB7hC92u2Ncj04Icdn1ag1_ck@z>
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On 二, 2019-04-09 at 05:28 +0000, Anson Huang wrote:
+> Ping...
+> Can anyone provide some suggestion about how to proceed next?
+> 
+Hi, Eduardo,
 
-There never was a device called LTC3651, it always was just LT3651.
-This circumstance makes it pretty difficult to identify what this
-driver is meant to control.channges since
+I guess you will comment on this patch, right?
+Or else I will take the patch following Rob' suggestion.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+thanks,
+rui
 
----
-Changes in v2:
- - Mark erroneous compatible strings as deprecated
- - Change patch title
- - Rename all occurrences of ltc3651
- - Rename kconfig name
- - Rename files
 
-Changes in v3:
- - Regenerate patchset with rename detection
----
- .../bindings/power/supply/ltc3651-charger.txt      |  10 +-
- drivers/power/supply/Kconfig                       |   8 +-
- drivers/power/supply/Makefile                      |   2 +-
- drivers/power/supply/ltc3651-charger.c             | 123 ++++++++++-----------
- 4 files changed, 71 insertions(+), 72 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-index 71f2840..40811ff 100644
---- a/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ltc3651-charger.txt
-@@ -1,14 +1,16 @@
--ltc3651-charger
-+Analog Devices LT3651 Charger Power Supply bindings: lt3651-charger
- 
- Required properties:
-- - compatible: "lltc,ltc3651-charger"
-+- compatible: Should contain one of the following:
-+ * "lltc,ltc3651-charger", (DEPRECATED: Use "lltc,lt3651-charger")
-+ * "lltc,lt3651-charger"
-  - lltc,acpr-gpios: Connect to ACPR output. See remark below.
- 
- Optional properties:
-  - lltc,fault-gpios: Connect to FAULT output. See remark below.
-  - lltc,chrg-gpios: Connect to CHRG output. See remark below.
- 
--The ltc3651 outputs are open-drain type and active low. The driver assumes the
-+The lt3651 outputs are open-drain type and active low. The driver assumes the
- GPIO reports "active" when the output is asserted, so if the pins have been
- connected directly, the GPIO flags should be set to active low also.
- 
-@@ -20,7 +22,7 @@ attributes to detect changes.
- Example:
- 
- 	charger: battery-charger {
--		compatible = "lltc,ltc3651-charger";
-+		compatible = "lltc,lt3651-charger";
- 		lltc,acpr-gpios = <&gpio0 68 GPIO_ACTIVE_LOW>;
- 		lltc,fault-gpios = <&gpio0 64 GPIO_ACTIVE_LOW>;
- 		lltc,chrg-gpios = <&gpio0 63 GPIO_ACTIVE_LOW>;
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879..e907521 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -475,12 +475,12 @@ config CHARGER_MANAGER
-           runtime and in suspend-to-RAM by waking up the system periodically
-           with help of suspend_again support.
- 
--config CHARGER_LTC3651
--	tristate "LTC3651 charger"
-+config CHARGER_LT3651
-+	tristate "Analog Devices LT3651 charger"
- 	depends on GPIOLIB
- 	help
--	  Say Y to include support for the LTC3651 battery charger which reports
--	  its status via GPIO lines.
-+	  Say Y to include support for the Analog Devices (Linear Technology)
-+	  LT3651 battery charger which reports its status via GPIO lines.
- 
- config CHARGER_MAX14577
- 	tristate "Maxim MAX14577/77836 battery charger driver"
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index b731c2a..714c602 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -67,7 +67,7 @@ obj-$(CONFIG_CHARGER_LP8727)	+= lp8727_charger.o
- obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
- obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
- obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
--obj-$(CONFIG_CHARGER_LTC3651)	+= ltc3651-charger.o
-+obj-$(CONFIG_CHARGER_LT3651)	+= ltc3651-charger.o
- obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
- obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+= max14656_charger_detector.o
- obj-$(CONFIG_CHARGER_MAX77693)	+= max77693_charger.o
-diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/supply/ltc3651-charger.c
-index eea63ff..8de500f 100644
---- a/drivers/power/supply/ltc3651-charger.c
-+++ b/drivers/power/supply/ltc3651-charger.c
-@@ -1,11 +1,7 @@
-+// SPDX-License-Identifier: GPL-2.0+
- /*
-+ *  Driver for Analog Devices (Linear Technology) LT3651 charger IC.
-  *  Copyright (C) 2017, Topic Embedded Products
-- *  Driver for LTC3651 charger IC.
-- *
-- *  This program is free software; you can redistribute it and/or modify it
-- *  under  the terms of the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the License, or (at your
-- *  option) any later version.
-  */
- 
- #include <linux/device.h>
-@@ -19,7 +15,7 @@
- #include <linux/slab.h>
- #include <linux/of.h>
- 
--struct ltc3651_charger {
-+struct lt3651_charger {
- 	struct power_supply *charger;
- 	struct power_supply_desc charger_desc;
- 	struct gpio_desc *acpr_gpio;
-@@ -27,7 +23,7 @@ struct ltc3651_charger {
- 	struct gpio_desc *chrg_gpio;
- };
- 
--static irqreturn_t ltc3651_charger_irq(int irq, void *devid)
-+static irqreturn_t lt3651_charger_irq(int irq, void *devid)
- {
- 	struct power_supply *charger = devid;
- 
-@@ -36,37 +32,37 @@ static irqreturn_t ltc3651_charger_irq(int irq, void *devid)
- 	return IRQ_HANDLED;
- }
- 
--static inline struct ltc3651_charger *psy_to_ltc3651_charger(
-+static inline struct lt3651_charger *psy_to_lt3651_charger(
- 	struct power_supply *psy)
- {
- 	return power_supply_get_drvdata(psy);
- }
- 
--static int ltc3651_charger_get_property(struct power_supply *psy,
-+static int lt3651_charger_get_property(struct power_supply *psy,
- 		enum power_supply_property psp, union power_supply_propval *val)
- {
--	struct ltc3651_charger *ltc3651_charger = psy_to_ltc3651_charger(psy);
-+	struct lt3651_charger *lt3651_charger = psy_to_lt3651_charger(psy);
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		if (!ltc3651_charger->chrg_gpio) {
-+		if (!lt3651_charger->chrg_gpio) {
- 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
- 			break;
- 		}
--		if (gpiod_get_value(ltc3651_charger->chrg_gpio))
-+		if (gpiod_get_value(lt3651_charger->chrg_gpio))
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else
- 			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		break;
- 	case POWER_SUPPLY_PROP_ONLINE:
--		val->intval = gpiod_get_value(ltc3651_charger->acpr_gpio);
-+		val->intval = gpiod_get_value(lt3651_charger->acpr_gpio);
- 		break;
- 	case POWER_SUPPLY_PROP_HEALTH:
--		if (!ltc3651_charger->fault_gpio) {
-+		if (!lt3651_charger->fault_gpio) {
- 			val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
- 			break;
- 		}
--		if (!gpiod_get_value(ltc3651_charger->fault_gpio)) {
-+		if (!gpiod_get_value(lt3651_charger->fault_gpio)) {
- 			val->intval = POWER_SUPPLY_HEALTH_GOOD;
- 			break;
- 		}
-@@ -74,11 +70,11 @@ static int ltc3651_charger_get_property(struct power_supply *psy,
- 		 * If the fault pin is active, the chrg pin explains the type
- 		 * of failure.
- 		 */
--		if (!ltc3651_charger->chrg_gpio) {
-+		if (!lt3651_charger->chrg_gpio) {
- 			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
- 			break;
- 		}
--		val->intval = gpiod_get_value(ltc3651_charger->chrg_gpio) ?
-+		val->intval = gpiod_get_value(lt3651_charger->chrg_gpio) ?
- 				POWER_SUPPLY_HEALTH_OVERHEAT :
- 				POWER_SUPPLY_HEALTH_DEAD;
- 		break;
-@@ -89,59 +85,59 @@ static int ltc3651_charger_get_property(struct power_supply *psy,
- 	return 0;
- }
- 
--static enum power_supply_property ltc3651_charger_properties[] = {
-+static enum power_supply_property lt3651_charger_properties[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_HEALTH,
- };
- 
--static int ltc3651_charger_probe(struct platform_device *pdev)
-+static int lt3651_charger_probe(struct platform_device *pdev)
- {
- 	struct power_supply_config psy_cfg = {};
--	struct ltc3651_charger *ltc3651_charger;
-+	struct lt3651_charger *lt3651_charger;
- 	struct power_supply_desc *charger_desc;
- 	int ret;
- 
--	ltc3651_charger = devm_kzalloc(&pdev->dev, sizeof(*ltc3651_charger),
-+	lt3651_charger = devm_kzalloc(&pdev->dev, sizeof(*lt3651_charger),
- 					GFP_KERNEL);
--	if (!ltc3651_charger)
-+	if (!lt3651_charger)
- 		return -ENOMEM;
- 
--	ltc3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
-+	lt3651_charger->acpr_gpio = devm_gpiod_get(&pdev->dev,
- 					"lltc,acpr", GPIOD_IN);
--	if (IS_ERR(ltc3651_charger->acpr_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->acpr_gpio);
-+	if (IS_ERR(lt3651_charger->acpr_gpio)) {
-+		ret = PTR_ERR(lt3651_charger->acpr_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire acpr GPIO: %d\n", ret);
- 		return ret;
- 	}
--	ltc3651_charger->fault_gpio = devm_gpiod_get_optional(&pdev->dev,
-+	lt3651_charger->fault_gpio = devm_gpiod_get_optional(&pdev->dev,
- 					"lltc,fault", GPIOD_IN);
--	if (IS_ERR(ltc3651_charger->fault_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->fault_gpio);
-+	if (IS_ERR(lt3651_charger->fault_gpio)) {
-+		ret = PTR_ERR(lt3651_charger->fault_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire fault GPIO: %d\n", ret);
- 		return ret;
- 	}
--	ltc3651_charger->chrg_gpio = devm_gpiod_get_optional(&pdev->dev,
-+	lt3651_charger->chrg_gpio = devm_gpiod_get_optional(&pdev->dev,
- 					"lltc,chrg", GPIOD_IN);
--	if (IS_ERR(ltc3651_charger->chrg_gpio)) {
--		ret = PTR_ERR(ltc3651_charger->chrg_gpio);
-+	if (IS_ERR(lt3651_charger->chrg_gpio)) {
-+		ret = PTR_ERR(lt3651_charger->chrg_gpio);
- 		dev_err(&pdev->dev, "Failed to acquire chrg GPIO: %d\n", ret);
- 		return ret;
- 	}
- 
--	charger_desc = &ltc3651_charger->charger_desc;
-+	charger_desc = &lt3651_charger->charger_desc;
- 	charger_desc->name = pdev->dev.of_node->name;
- 	charger_desc->type = POWER_SUPPLY_TYPE_MAINS;
--	charger_desc->properties = ltc3651_charger_properties;
--	charger_desc->num_properties = ARRAY_SIZE(ltc3651_charger_properties);
--	charger_desc->get_property = ltc3651_charger_get_property;
-+	charger_desc->properties = lt3651_charger_properties;
-+	charger_desc->num_properties = ARRAY_SIZE(lt3651_charger_properties);
-+	charger_desc->get_property = lt3651_charger_get_property;
- 	psy_cfg.of_node = pdev->dev.of_node;
--	psy_cfg.drv_data = ltc3651_charger;
-+	psy_cfg.drv_data = lt3651_charger;
- 
--	ltc3651_charger->charger = devm_power_supply_register(&pdev->dev,
-+	lt3651_charger->charger = devm_power_supply_register(&pdev->dev,
- 						      charger_desc, &psy_cfg);
--	if (IS_ERR(ltc3651_charger->charger)) {
--		ret = PTR_ERR(ltc3651_charger->charger);
-+	if (IS_ERR(lt3651_charger->charger)) {
-+		ret = PTR_ERR(lt3651_charger->charger);
- 		dev_err(&pdev->dev, "Failed to register power supply: %d\n",
- 			ret);
- 		return ret;
-@@ -152,59 +148,60 @@ static int ltc3651_charger_probe(struct platform_device *pdev)
- 	 * support IRQs on these pins, userspace will have to poll the sysfs
- 	 * files manually.
- 	 */
--	if (ltc3651_charger->acpr_gpio) {
--		ret = gpiod_to_irq(ltc3651_charger->acpr_gpio);
-+	if (lt3651_charger->acpr_gpio) {
-+		ret = gpiod_to_irq(lt3651_charger->acpr_gpio);
- 		if (ret >= 0)
- 			ret = devm_request_any_context_irq(&pdev->dev, ret,
--				ltc3651_charger_irq,
-+				lt3651_charger_irq,
- 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
--				dev_name(&pdev->dev), ltc3651_charger->charger);
-+				dev_name(&pdev->dev), lt3651_charger->charger);
- 		if (ret < 0)
- 			dev_warn(&pdev->dev, "Failed to request acpr irq\n");
- 	}
--	if (ltc3651_charger->fault_gpio) {
--		ret = gpiod_to_irq(ltc3651_charger->fault_gpio);
-+	if (lt3651_charger->fault_gpio) {
-+		ret = gpiod_to_irq(lt3651_charger->fault_gpio);
- 		if (ret >= 0)
- 			ret = devm_request_any_context_irq(&pdev->dev, ret,
--				ltc3651_charger_irq,
-+				lt3651_charger_irq,
- 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
--				dev_name(&pdev->dev), ltc3651_charger->charger);
-+				dev_name(&pdev->dev), lt3651_charger->charger);
- 		if (ret < 0)
- 			dev_warn(&pdev->dev, "Failed to request fault irq\n");
- 	}
--	if (ltc3651_charger->chrg_gpio) {
--		ret = gpiod_to_irq(ltc3651_charger->chrg_gpio);
-+	if (lt3651_charger->chrg_gpio) {
-+		ret = gpiod_to_irq(lt3651_charger->chrg_gpio);
- 		if (ret >= 0)
- 			ret = devm_request_any_context_irq(&pdev->dev, ret,
--				ltc3651_charger_irq,
-+				lt3651_charger_irq,
- 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
--				dev_name(&pdev->dev), ltc3651_charger->charger);
-+				dev_name(&pdev->dev), lt3651_charger->charger);
- 		if (ret < 0)
- 			dev_warn(&pdev->dev, "Failed to request chrg irq\n");
- 	}
- 
--	platform_set_drvdata(pdev, ltc3651_charger);
-+	platform_set_drvdata(pdev, lt3651_charger);
- 
- 	return 0;
- }
- 
--static const struct of_device_id ltc3651_charger_match[] = {
--	{ .compatible = "lltc,ltc3651-charger" },
-+static const struct of_device_id lt3651_charger_match[] = {
-+	{ .compatible = "lltc,ltc3651-charger" }, /* DEPRECATED */
-+	{ .compatible = "lltc,lt3651-charger" },
- 	{ }
- };
--MODULE_DEVICE_TABLE(of, ltc3651_charger_match);
-+MODULE_DEVICE_TABLE(of, lt3651_charger_match);
- 
--static struct platform_driver ltc3651_charger_driver = {
--	.probe = ltc3651_charger_probe,
-+static struct platform_driver lt3651_charger_driver = {
-+	.probe = lt3651_charger_probe,
- 	.driver = {
--		.name = "ltc3651-charger",
--		.of_match_table = ltc3651_charger_match,
-+		.name = "lt3651-charger",
-+		.of_match_table = lt3651_charger_match,
- 	},
- };
- 
--module_platform_driver(ltc3651_charger_driver);
-+module_platform_driver(lt3651_charger_driver);
- 
- MODULE_AUTHOR("Mike Looijmans <mike.looijmans@topic.nl>");
--MODULE_DESCRIPTION("Driver for LTC3651 charger");
-+MODULE_DESCRIPTION("Driver for LT3651 charger");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("platform:ltc3651-charger");
-+MODULE_ALIAS("platform:lt3651-charger");
--- 
-2.7.4
-
+> Best Regards!
+> Anson Huang
+> 
+> > 
+> > -----Original Message-----
+> > From: Anson Huang
+> > Sent: 2019年3月26日 10:45
+> > To: 'Rob Herring' <robh@kernel.org>; 'edubezval@gmail.com'
+> > <edubezval@gmail.com>
+> > Cc: 'mark.rutland@arm.com' <mark.rutland@arm.com>;
+> > 'shawnguo@kernel.org' <shawnguo@kernel.org>; 's.hauer@pengutronix.d
+> > e'
+> > <s.hauer@pengutronix.de>; 'kernel@pengutronix.de'
+> > <kernel@pengutronix.de>; 'festevam@gmail.com' <festevam@gmail.com>;
+> > 'catalin.marinas@arm.com' <catalin.marinas@arm.com>;
+> > 'will.deacon@arm.com' <will.deacon@arm.com>; 'rui.zhang@intel.com'
+> > <rui.zhang@intel.com>; 'edubezval@gmail.com' <edubezval@gmail.com>;
+> > 'daniel.lezcano@linaro.org' <daniel.lezcano@linaro.org>; Aisheng
+> > Dong
+> > <aisheng.dong@nxp.com>; 'ulf.hansson@linaro.org'
+> > <ulf.hansson@linaro.org>; 'sboyd@kernel.org' <sboyd@kernel.org>;
+> > Daniel
+> > Baluta <daniel.baluta@nxp.com>; Andy Gross <andy.gross@linaro.org>;
+> > 'horms+renesas@verge.net.au' <horms+renesas@verge.net.au>;
+> > 'heiko@sntech.de' <heiko@sntech.de>; 'arnd@arndb.de' <arnd@arndb.de
+> > >;
+> > 'maxime.ripard@bootlin.com' <maxime.ripard@bootlin.com>;
+> > 'bjorn.andersson@linaro.org' <bjorn.andersson@linaro.org>;
+> > 'jagan@amarulasolutions.com' <jagan@amarulasolutions.com>;
+> > 'enric.balletbo@collabora.com' <enric.balletbo@collabora.com>;
+> > 'marc.w.gonzalez@free.fr' <marc.w.gonzalez@free.fr>; 'olof@lixom.ne
+> > t'
+> > <olof@lixom.net>; 'devicetree@vger.kernel.org'
+> > <devicetree@vger.kernel.org>; 'linux-kernel@vger.kernel.org'
+> > <linux-
+> > kernel@vger.kernel.org>; 'linux-arm-kernel@lists.infradead.org'
+> > <linux-arm-
+> > kernel@lists.infradead.org>; 'linux-pm@vger.kernel.org' <linux-
+> > pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal
+> > binding
+> > 
+> > Ping...
+> > 
+> > Hi, Eduardo
+> > 	What is your opinion about where to put the HW resource ID in
+> > DT?
+> > 
+> > Best Regards!
+> > Anson Huang
+> > 
+> > > 
+> > > -----Original Message-----
+> > > From: Anson Huang
+> > > Sent: 2019年3月13日 16:12
+> > > To: 'Rob Herring' <robh@kernel.org>; 'edubezval@gmail.com'
+> > > <edubezval@gmail.com>
+> > > Cc: 'mark.rutland@arm.com' <mark.rutland@arm.com>;
+> > > 'shawnguo@kernel.org' <shawnguo@kernel.org>;
+> > 's.hauer@pengutronix.de'
+> > > 
+> > > <s.hauer@pengutronix.de>; 'kernel@pengutronix.de'
+> > > <kernel@pengutronix.de>; 'festevam@gmail.com' <festevam@gmail.com
+> > > >;
+> > > 'catalin.marinas@arm.com' <catalin.marinas@arm.com>;
+> > > 'will.deacon@arm.com' <will.deacon@arm.com>; 'rui.zhang@intel.com
+> > > '
+> > > <rui.zhang@intel.com>; 'edubezval@gmail.com' <edubezval@gmail.com
+> > > >;
+> > > 'daniel.lezcano@linaro.org' <daniel.lezcano@linaro.org>; Aisheng
+> > > Dong
+> > > <aisheng.dong@nxp.com>; 'ulf.hansson@linaro.org'
+> > > <ulf.hansson@linaro.org>; 'sboyd@kernel.org' <sboyd@kernel.org>;
+> > > Daniel Baluta <daniel.baluta@nxp.com>; Andy Gross
+> > > <andy.gross@linaro.org>; 'horms+renesas@verge.net.au'
+> > > <horms+renesas@verge.net.au>; 'heiko@sntech.de' <heiko@sntech.de>
+> > > ;
+> > > 'arnd@arndb.de' <arnd@arndb.de>; 'maxime.ripard@bootlin.com'
+> > > <maxime.ripard@bootlin.com>; 'bjorn.andersson@linaro.org'
+> > > <bjorn.andersson@linaro.org>; 'jagan@amarulasolutions.com'
+> > > <jagan@amarulasolutions.com>; 'enric.balletbo@collabora.com'
+> > > <enric.balletbo@collabora.com>; 'marc.w.gonzalez@free.fr'
+> > <marc.w.gonzalez@free.fr>; 'olof@lixom.net'
+> > > 
+> > > <olof@lixom.net>; 'devicetree@vger.kernel.org'
+> > > <devicetree@vger.kernel.org>; 'linux-kernel@vger.kernel.org'
+> > > <linux-
+> > > kernel@vger.kernel.org>; 'linux-arm-kernel@lists.infradead.org'
+> > > <linux-arm- kernel@lists.infradead.org>; 'linux-pm@vger.kernel.or
+> > > g'
+> > > <linux- pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > > Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal
+> > > binding
+> > > 
+> > > Ping...
+> > > Hi, Eduardo
+> > > 	Can you take a look at this thread? Thanks.
+> > > 
+> > > 
+> > > Best Regards!
+> > > Anson Huang
+> > > 
+> > > > 
+> > > > -----Original Message-----
+> > > > From: Anson Huang
+> > > > Sent: 2019年3月6日 13:27
+> > > > To: 'Rob Herring' <robh@kernel.org>; 'edubezval@gmail.com'
+> > > > <edubezval@gmail.com>
+> > > > Cc: 'mark.rutland@arm.com' <mark.rutland@arm.com>;
+> > > > 'shawnguo@kernel.org' <shawnguo@kernel.org>;
+> > > 's.hauer@pengutronix.de'
+> > > > 
+> > > > <s.hauer@pengutronix.de>; 'kernel@pengutronix.de'
+> > > > <kernel@pengutronix.de>; 'festevam@gmail.com'
+> > <festevam@gmail.com>;
+> > > 
+> > > > 
+> > > > 'catalin.marinas@arm.com' <catalin.marinas@arm.com>;
+> > > > 'will.deacon@arm.com' <will.deacon@arm.com>; 'rui.zhang@intel.c
+> > > > om'
+> > > > <rui.zhang@intel.com>; 'edubezval@gmail.com'
+> > <edubezval@gmail.com>;
+> > > 
+> > > > 
+> > > > 'daniel.lezcano@linaro.org' <daniel.lezcano@linaro.org>;
+> > > > Aisheng
+> > > > Dong <aisheng.dong@nxp.com>; 'ulf.hansson@linaro.org'
+> > > > <ulf.hansson@linaro.org>; 'sboyd@kernel.org' <sboyd@kernel.org>
+> > > > ;
+> > > > Daniel Baluta <daniel.baluta@nxp.com>; Andy Gross
+> > > > <andy.gross@linaro.org>; 'horms+renesas@verge.net.au'
+> > > > <horms+renesas@verge.net.au>; 'heiko@sntech.de' <heiko@sntech.d
+> > > > e>;
+> > > > 'arnd@arndb.de' <arnd@arndb.de>; 'maxime.ripard@bootlin.com'
+> > > > <maxime.ripard@bootlin.com>; 'bjorn.andersson@linaro.org'
+> > > > <bjorn.andersson@linaro.org>; 'jagan@amarulasolutions.com'
+> > > > <jagan@amarulasolutions.com>; 'enric.balletbo@collabora.com'
+> > > > <enric.balletbo@collabora.com>; 'marc.w.gonzalez@free.fr'
+> > > <marc.w.gonzalez@free.fr>; 'olof@lixom.net'
+> > > > 
+> > > > <olof@lixom.net>; 'devicetree@vger.kernel.org'
+> > > > <devicetree@vger.kernel.org>; 'linux-kernel@vger.kernel.org'
+> > > > <linux-
+> > > > kernel@vger.kernel.org>; 'linux-arm-kernel@lists.infradead.org'
+> > > > <linux-arm- kernel@lists.infradead.org>; 'linux-pm@vger.kernel.
+> > > > org'
+> > > > <linux- pm@vger.kernel.org>; dl-linux-imx <linux-imx@nxp.com>
+> > > > Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add thermal
+> > > > binding
+> > > > 
+> > > > Ping...
+> > > > 
+> > > > Hi, Eduardo
+> > > > 	Looks like we are going around in circle, can we make
+> > > > decision of
+> > > > which direction to go?
+> > > > 
+> > > > Best Regards!
+> > > > Anson Huang
+> > > > 
+> > > > > 
+> > > > > -----Original Message-----
+> > > > > From: Anson Huang
+> > > > > Sent: 2019年3月1日 9:41
+> > > > > To: 'Rob Herring' <robh@kernel.org>; edubezval@gmail.com
+> > > > > Cc: mark.rutland@arm.com; shawnguo@kernel.org;
+> > > > s.hauer@pengutronix.de;
+> > > > > 
+> > > > > kernel@pengutronix.de; festevam@gmail.com;
+> > > catalin.marinas@arm.com;
+> > > > 
+> > > > > 
+> > > > > will.deacon@arm.com; rui.zhang@intel.com; edubezval@gmail.com
+> > > > > ;
+> > > > > daniel.lezcano@linaro.org; Aisheng Dong <aisheng.dong@nxp.com
+> > > > > >;
+> > > > > ulf.hansson@linaro.org; sboyd@kernel.org; Daniel Baluta
+> > > > > <daniel.baluta@nxp.com>; Andy Gross <andy.gross@linaro.org>;
+> > > > > horms+renesas@verge.net.au; heiko@sntech.de; arnd@arndb.de;
+> > > > > maxime.ripard@bootlin.com; bjorn.andersson@linaro.org;
+> > > > > jagan@amarulasolutions.com; enric.balletbo@collabora.com;
+> > > > > marc.w.gonzalez@free.fr; olof@lixom.net;
+> > > > > devicetree@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > > > linux-arm-kernel@lists.infradead.org;
+> > > > > linux- pm@vger.kernel.org; dl-linux-imx <linux-imx@nxp.com>
+> > > > > Subject: RE: [PATCH V10 1/4] dt-bindings: fsl: scu: add
+> > > > > thermal
+> > > > > binding
+> > > > > 
+> > > > > Hi, Rob/Eduardo
+> > > > > 
+> > > > > Best Regards!
+> > > > > Anson Huang
+> > > > > 
+> > > > > > 
+> > > > > > -----Original Message-----
+> > > > > > From: Rob Herring [mailto:robh@kernel.org]
+> > > > > > Sent: 2019年2月28日 22:49
+> > > > > > To: Anson Huang <anson.huang@nxp.com>
+> > > > > > Cc: mark.rutland@arm.com; shawnguo@kernel.org;
+> > > > > s.hauer@pengutronix.de;
+> > > > > > 
+> > > > > > kernel@pengutronix.de; festevam@gmail.com;
+> > > > catalin.marinas@arm.com;
+> > > > > 
+> > > > > > 
+> > > > > > will.deacon@arm.com; rui.zhang@intel.com; edubezval@gmail.c
+> > > > > > om;
+> > > > > > daniel.lezcano@linaro.org; Aisheng Dong <aisheng.dong@nxp.c
+> > > > > > om>;
+> > > > > > ulf.hansson@linaro.org; sboyd@kernel.org; Daniel Baluta
+> > > > > > <daniel.baluta@nxp.com>; Andy Gross <andy.gross@linaro.org>
+> > > > > > ;
+> > > > > > horms+renesas@verge.net.au; heiko@sntech.de; arnd@arndb.de;
+> > > > > > maxime.ripard@bootlin.com; bjorn.andersson@linaro.org;
+> > > > > > jagan@amarulasolutions.com; enric.balletbo@collabora.com;
+> > > > > > marc.w.gonzalez@free.fr; olof@lixom.net;
+> > > > > > devicetree@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > > > > linux-arm-kernel@lists.infradead.org;
+> > > > > > linux- pm@vger.kernel.org; dl-linux-imx <linux-imx@nxp.com>
+> > > > > > Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add
+> > > > > > thermal
+> > > > > > binding
+> > > > > > 
+> > > > > > On Wed, Feb 27, 2019 at 6:48 PM Anson Huang
+> > > <anson.huang@nxp.com>
+> > > > 
+> > > > > 
+> > > > > > 
+> > > > > > wrote:
+> > > > > > > 
+> > > > > > > 
+> > > > > > > Hi, Rob
+> > > > > > > 
+> > > > > > > Best Regards!
+> > > > > > > Anson Huang
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Rob Herring [mailto:robh@kernel.org]
+> > > > > > > > Sent: 2019年2月28日 7:55
+> > > > > > > > To: Anson Huang <anson.huang@nxp.com>
+> > > > > > > > Cc: mark.rutland@arm.com; shawnguo@kernel.org;
+> > > > > > > > s.hauer@pengutronix.de; kernel@pengutronix.de;
+> > > > > festevam@gmail.com;
+> > > > > > 
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > catalin.marinas@arm.com; will.deacon@arm.com;
+> > > > > rui.zhang@intel.com;
+> > > > > > 
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > edubezval@gmail.com; daniel.lezcano@linaro.org; Aisheng
+> > > > > > > > Dong
+> > > > > > > > <aisheng.dong@nxp.com>; ulf.hansson@linaro.org;
+> > > > > > > > sboyd@kernel.org; Daniel Baluta <daniel.baluta@nxp.com>
+> > > > > > > > ;
+> > > > > > > > Andy Gross <andy.gross@linaro.org>;
+> > > > > > > > horms+renesas@verge.net.au; heiko@sntech.de; arnd@arndb
+> > > > > > > > .de;
+> > > > > > > > maxime.ripard@bootlin.com; bjorn.andersson@linaro.org;
+> > > > > > > > jagan@amarulasolutions.com; enric.balletbo@collabora.co
+> > > > > > > > m;
+> > > > > > > > marc.w.gonzalez@free.fr; olof@lixom.net;
+> > > > > > > > devicetree@vger.kernel.org; linux-kernel@vger.kernel.or
+> > > > > > > > g;
+> > > > > > > > linux-arm-kernel@lists.infradead.org;
+> > > > > > > > linux- pm@vger.kernel.org; dl-linux-imx <linux-imx@nxp.
+> > > > > > > > com>
+> > > > > > > > Subject: Re: [PATCH V10 1/4] dt-bindings: fsl: scu: add
+> > > > > > > > thermal binding
+> > > > > > > > 
+> > > > > > > > On Wed, Feb 27, 2019 at 08:46:21AM +0000, Anson Huang
+> > > > > > > > wrote:
+> > > > > > > > > 
+> > > > > > > > > NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core
+> > > > > > > > > inside
+> > > > > > > > > as system controller, the system controller is in
+> > > > > > > > > charge
+> > > > > > > > > of system power, clock and thermal sensors etc.
+> > > > > > > > > management, Linux kernel has to communicate with
+> > > > > > > > > system
+> > > > > > > > > controller via MU (message unit) IPC to get
+> > > > > > > > > temperature
+> > > > > > > > > from thermal sensors, this patch adds binding doc for
+> > > > > > > > > i.MX
+> > > > > > > > > system controller thermal
+> > > > driver.
+> > > > > 
+> > > > > > 
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > > > > > > > > ---
+> > > > > > > > > Changes since V9:
+> > > > > > > > >     - change #thermal-sensor-cells value in example
+> > > > > > > > > to 1,
+> > > > > > > > > since there are
+> > > > > > > > other
+> > > > > > > > > 
+> > > > > > > > >       thermal sensors inside system controller, it is
+> > > > > > > > > just
+> > > > > > > > > because there are
+> > > > > > > > still
+> > > > > > > > > 
+> > > > > > > > >       some issue, so system controller does NOT
+> > > > > > > > > expose
+> > > > > > > > > them for now,
+> > > > > > > > they could
+> > > > > > > > > 
+> > > > > > > > >       be exposed later, so it should be 1 from HW
+> > > > > > > > > perspective.
+> > > > > > > > > ---
+> > > > > > > > >  .../devicetree/bindings/arm/freescale/fsl,scu.txt   
+> > > > > > > > > | 21
+> > > > > > > > +++++++++++++++++++++
+> > > > > > > > > 
+> > > > > > > > >  1 file changed, 21 insertions(+)
+> > > > > > > > > 
+> > > > > > > > > diff --git
+> > > > > > > > > a/Documentation/devicetree/bindings/arm/freescale/fsl
+> > > > > > > > > ,scu.
+> > > > > > > > > tx
+> > > > > > > > > t
+> > > > > > > > > b/Documentation/devicetree/bindings/arm/freescale/fsl
+> > > > > > > > > ,scu.
+> > > > > > > > > tx t index 72d481c..855270b 100644
+> > > > > > > > > ---
+> > > > > > > > > a/Documentation/devicetree/bindings/arm/freescale/fsl
+> > > > > > > > > ,scu.
+> > > > > > > > > tx
+> > > > > > > > > t
+> > > > > > > > > +++
+> > b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.
+> > > 
+> > > > 
+> > > > > 
+> > > > > > 
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > +++ tx
+> > > > > > > > > +++ t
+> > > > > > > > > @@ -122,6 +122,21 @@ RTC bindings based on SCU
+> > > > > > > > > Message
+> > > > > Protocol
+> > > > > > 
+> > > > > > > 
+> > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > Required properties:
+> > > > > > > > >  - compatible: should be "fsl,imx8qxp-sc-rtc";
+> > > > > > > > > 
+> > > > > > > > > +Thermal bindings based on SCU Message Protocol
+> > > > > > > > > +--------------------------------------------------
+> > > > > > > > > -------
+> > > > > > > > > +--
+> > > > > > > > > +-
+> > > > > > > > > +
+> > > > > > > > > +Required properties:
+> > > > > > > > > +- compatible:                      Should be :
+> > > > > > > > > +                             "fsl,imx8qxp-sc-
+> > > > > > > > > thermal"
+> > > > > > > > > +                           followed by
+> > > > > > > > > +"fsl,imx-sc-thermal";
+> > > > > > > > > +
+> > > > > > > > > +- #thermal-sensor-cells:   See
+> > > > > > > > Documentation/devicetree/bindings/thermal/thermal.txt
+> > > > > > > > > 
+> > > > > > > > > +                           for a description.
+> > > > > > > > > +
+> > > > > > > > > +- imx,sensor-resource-id:  A single integer for
+> > > > > > > > > single
+> > > > > > > > > +thermal zone's
+> > > > > > > > resource ID or
+> > > > > > > > > 
+> > > > > > > > > +                           an array of integers to
+> > > > > > > > > + specify each thermal
+> > > > > > > > zone's sensor
+> > > > > > > > > 
+> > > > > > > > > +                           resource ID.
+> > > > > > > > Can't you put the resource ids in the thermal-sensor
+> > > > > > > > cells?
+> > > > > > > > Why do you need to list them here?
+> > > > > > > For the thermal-sensor cells, if you meant the argument
+> > > > > > > of
+> > > > > > > tsens phandle, then the reason is that argument is for
+> > > > > > > sensor
+> > > > > > > index starting from 0, previous I use it for our resource
+> > > > > > > ID,
+> > > > > > > but it looks confused, since user will think there are
+> > > > > > > many
+> > > > > > > sensors there per
+> > > > > Eduardo's comment.
+> > > > > > 
+> > > > > > > 
+> > > > > > > 
+> > > > > > > +                       thermal-sensors = <&tsens 0>;
+> > > > > > > 
+> > > > > > > If you meant putting it in each thermal sensor node
+> > > > > > > instead of
+> > "tsens"
+> > > 
+> > > > 
+> > > > > 
+> > > > > > 
+> > > > > > > 
+> > > > > > > node, then in previous patch series, I put this "
+> > > > > > > imx,sensor-resource-id " property in each thermal sensor
+> > > > > > > node,
+> > > > > > > but the thermal sensor nodes are parsed by common thermal
+> > > > > > > framework, thermal driver will need to find the thermal
+> > > > > > > zone
+> > > > > > > node and go through every child node to get the resource
+> > > > > > > id
+> > > > > > > again, so Eduardo suggested to put it in
+> > > > > > our platform tsens node, that makes our thermal driver code
+> > > > > > much
+> > > > > > more simple.
+> > > > > > 
+> > > > > > The phandle args are meant to be an id typically. There's
+> > > > > > absolutely no requirement they are 0-N based. They often
+> > > > > > are
+> > > > > > because things like interrupts are 0-N or clocks have no
+> > > > > > h/w id.
+> > > > > > If you already have an id,
+> > > > use it.
+> > > > > 
+> > > > > > 
+> > > > > > Don't invent your own.
+> > > > > At the beginning, I put the HW resource ID in the "tsens"
+> > > > > phandle
+> > > > > argument of "thermal-sensors" node, see  below patch I sent
+> > > > > before, the benefit is I do NOT need to add new property for
+> > > > > passing HW resource ID to driver, the disadvantage is, I have
+> > > > > to
+> > > > > parse the thermal_zones' each child node and get the HW
+> > > > > resource
+> > > > > ID from phandle argument(searing thermal_zones node and go
+> > > > > through
+> > > > > all its child node, and get the phandle argument), they are
+> > > > > by
+> > > > > default ONLY parsed by thermal core driver. When we register
+> > > > > thermal zone, we have to pass the HW resource ID when calling
+> > > > > devm_thermal_zone_of_sensor_register(), if we add our own
+> > > > > property
+> > > > > to pass the HW resource ID, then no need to do so, we just
+> > > > > pass
+> > > > > the index 0-N for each thermal sensors in devicetree which
+> > > > > also
+> > > > > with phandle
+> > > > argument 0- N. So using our own property makes the driver much
+> > > > more
+> > > > simple.
+> > > > > 
+> > > > > 
+> > > > > So, @Eduardo, which direction I should go? Looks like Rob
+> > > > > suggests
+> > > > > just put the HW resource ID in the phandle argument like what
+> > > > > I
+> > > > > did at the beginning, can you advise?
+> > > > > 
+> > > > > Thanks,
+> > > > > Anson.
+> > > > > 
+> > > > > https://patchwork.kernel.org/patch/10703849/
+> > > > > > 
+> > > > > > +	thermal_zones: thermal-zones {
+> > > > > > +		cpu-thermal0 {
+> > > > > > +			polling-delay-passive = <250>;
+> > > > > > +			polling-delay = <2000>;
+> > > > > > +			thermal-sensors = <&tsens 355>;
+> > > > > > +			trips {
+> > > > > > +				cpu_alert0: trip0 {
+> > > > > > +					temperature =
+> > > > > > <107000>;
+> > > > > > +					hysteresis =
+> > > > > > <2000>;
+> > > > > > +					type = "passive";
+> > > > > > +				};
+> > > > > > 
+> > > > > > 
+> > > > > > Rob
