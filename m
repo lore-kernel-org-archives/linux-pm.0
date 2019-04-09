@@ -1,184 +1,141 @@
-Return-Path: <SRS0=xQv0=SK=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C90E9C10F13
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 22:38:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA415C10F14
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 01:10:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 95CC9213F2
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Apr 2019 22:38:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="I6F3c3yt"
+	by mail.kernel.org (Postfix) with ESMTP id AA63520818
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 01:10:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1554772248;
+	bh=udsn4aAsvTKiApOCJyOPVPRbRWdn4i433mxFi4XcIuc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=JSEcwsbw0UmImbPWMvn8Tpi1UkRjTO0+/69lCAJjW22JkeZm4pcxWeoUWYPy8p1oI
+	 xW6ETnFc9exIJb4jJGSl+NTnIboxkg9hJKN5jGOUCmJJ0LJYtjeQ3hkZZ2xRZ04J/i
+	 4HJfGNJnTHeGA3y/HXQOgh8xIUzDHPyWMTYfOgZE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727458AbfDHWiW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Apr 2019 18:38:22 -0400
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:39950 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726638AbfDHWiW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2019 18:38:22 -0400
-Received: by mail-pl1-f193.google.com with SMTP id b3so8144115plr.7
-        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2019 15:38:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=FfXCNxGjgip9tM/24J4x9HgXgQeH+eXUxsfXR19pBSo=;
-        b=I6F3c3ytswQ2No1wfT9BwkH3vkabdrpJcUJ0D+X/pKLNaOCVbJuebSFNRj7cJ/a6KY
-         zEPKjzFf/TqyZzQyubdQ0PpkKz1RsmL0kVycfyzx+1ovcvSeam8Eug0aMyu5uvd2e+n/
-         APe1+RzO76LnBoWHcTiglOc9BK7fasU8ALOk+Bnl24dS3KL94DMngoJZdQ+SPRz93Eh9
-         worpOkyLZcfpmHHToStEVo2EsCQG6K2wj8oJZNUGgHry/8C0vBHizi5KuKg5vqs7BRhh
-         leDeM7XlwMbXAh/Sd0elxDag1PLKxXezjtU4ohTfCQ7Jdt6bBRQdnvCwXKyPaJ0x2Yd8
-         g7Yg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=FfXCNxGjgip9tM/24J4x9HgXgQeH+eXUxsfXR19pBSo=;
-        b=Q4gRdgD05jnf+2i8gczH3vxVuwaqfjWx8gukRmwJFPOktUd0eCU0zE+J3pKsj7Shs5
-         VQkpYh7if9KgFLj5gNu3aQcR+TTAQKSWUs2/dqjUTZQ2sxczLIHnohIF26FbWk/eqgyT
-         vMCzGlk0C9PTVaQ4bF3eD2s2o50q4QxpvXQky/7AB7FCe8zA1/FeqyRHQ1hZJKfM47O9
-         bGZYRTE7JgdhjVuVydUEJNoIfJCxGTPDBQN9AobUkZAqxkZJKZHsFQorsDeqluWmzMum
-         4MxXJnWFNnyBig/vE9x4S/7xsw7D8SegtS7zkWXYCx/AqXfInOqFw/MAO7ISZbFio/fY
-         u6Ow==
-X-Gm-Message-State: APjAAAWhWxLXYJ9MPP4oB2sMroocVhbhazE0jwdz552yHhlKqyr2JBT6
-        wcrj5WtBezIm7+jL00jole/n/A==
-X-Google-Smtp-Source: APXvYqyB09EAnp/9MaAYN3lufSGL1bahGfdNMb6d9BPZ6LXfhvrFMOl2X8idIwXTbK4AEPQrCaabnQ==
-X-Received: by 2002:a17:902:7441:: with SMTP id e1mr32220266plt.13.1554763101258;
-        Mon, 08 Apr 2019 15:38:21 -0700 (PDT)
-Received: from tuxbook-pro (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
-        by smtp.gmail.com with ESMTPSA id v12sm41115361pfe.148.2019.04.08.15.38.18
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 08 Apr 2019 15:38:20 -0700 (PDT)
-Date:   Mon, 8 Apr 2019 15:38:17 -0700
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org,
-        daidavid1@codeaurora.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 1/3] dt-bindings: interconnect: Add Qualcomm QCS404 DT
- bindings
-Message-ID: <20190408223817.GS1843@tuxbook-pro>
-References: <20190405035446.31886-1-georgi.djakov@linaro.org>
- <20190405035446.31886-2-georgi.djakov@linaro.org>
- <20190405143254.GM1843@tuxbook-pro>
- <9ee2c9b2-f201-abfb-be60-180befa9dc6d@linaro.org>
+        id S1726465AbfDIBKo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Apr 2019 21:10:44 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41016 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725923AbfDIBKo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 8 Apr 2019 21:10:44 -0400
+Received: from mail-qk1-f176.google.com (mail-qk1-f176.google.com [209.85.222.176])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 61075218D2;
+        Tue,  9 Apr 2019 01:10:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1554772242;
+        bh=udsn4aAsvTKiApOCJyOPVPRbRWdn4i433mxFi4XcIuc=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=IOPmsLfWI4eXFcTKMnd+9dGBaY9G1Lq1AfojTte+WisTSh7eAnh5BgPaNne9+xQzd
+         G1Xto8pEWQevHI3UV8LYIqginQan5OAjxX+7egTGUkpT3dIFUL9z+EJvGExvFG71X/
+         5Rwxjf7bECA7AaZ3GTo3bdu11jUzakxwp9ZTZIuU=
+Received: by mail-qk1-f176.google.com with SMTP id y5so9240124qkc.11;
+        Mon, 08 Apr 2019 18:10:42 -0700 (PDT)
+X-Gm-Message-State: APjAAAXlOx1IC3E/Oi6yuUH3RjujJ7lpxLSvxYTIuRIfAOe57lN3JDH2
+        M+gPk2Oobynn0T2Hd+gQV3lYAt/y7uiP2E29AQ==
+X-Google-Smtp-Source: APXvYqzaYjIRetkEt5M1YjX5yIvE26DvUM9AyZZiUx2/mNCLUp1okE3cOLsoTEjuDkPhAL61pw3grFBBKcWDlzbG6Zw=
+X-Received: by 2002:ae9:e313:: with SMTP id v19mr24091020qkf.153.1554772241641;
+ Mon, 08 Apr 2019 18:10:41 -0700 (PDT)
 MIME-Version: 1.0
+References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
+ <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
+In-Reply-To: <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
+From:   Rob Herring <robh@kernel.org>
+Date:   Mon, 8 Apr 2019 20:10:30 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
+Message-ID:
+ <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
+Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Mark Rutland <mark.rutland@arm.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux Input <linux-input@vger.kernel.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <9ee2c9b2-f201-abfb-be60-180befa9dc6d@linaro.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190408223817.Qt7laDiW8ovPK8HcmuvecAxXQhtVzrKfiVErRXttSqQ@z>
+Message-ID: <20190409011030.A13T1bpTz0p4cUW_Luf0MpFt_UYLF1KlGrJmmxKnBMA@z>
 
-On Fri 05 Apr 08:46 PDT 2019, Georgi Djakov wrote:
+On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+>
+> sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+> >
+> > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote:
+> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > >
+> > > Add the DT binding document for the battery charger module of max7765=
+0.
+> > >
+> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > ---
+> > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++++=
+++
+> > >  1 file changed, 27 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/power/supply/ma=
+x77650-charger.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/power/supply/max77650-=
+charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charg=
+er.txt
+> > > new file mode 100644
+> > > index 000000000000..fef188144386
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger=
+.txt
+> > > @@ -0,0 +1,27 @@
+> > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> > > +
+> > > +This module is part of the MAX77650 MFD device. For more details
+> > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > > +
+> > > +The charger is represented as a sub-node of the PMIC node on the dev=
+ice tree.
+> > > +
+> > > +Required properties:
+> > > +--------------------
+> > > +- compatible:                Must be "maxim,max77650-charger"
+> > > +
+> > > +Optional properties:
+> > > +--------------------
+> > > +- min-microvolt:     Minimum CHGIN regulation voltage (in microvolts=
+). Must be
+> > > +                     one of: 4000000, 4100000, 4200000, 4300000, 440=
+0000,
+> > > +                     4500000, 4600000, 4700000.
+> > > +- current-limit-microamp:    CHGIN input current limit (in microamps=
+). Must
+> > > +                             be one of: 95000, 190000, 285000, 38000=
+0, 475000.
+> >
+> > To repeat what I said on v6, these should be common properties IMO (and
+> > therefore documented as such).
+> >
+>
+> Do you mean a separate "charger.txt" document in
+> Documentation/devicetree/bindings/power/supply/?
 
-> Hi Bjorn,
-> 
-> On 4/5/19 21:32, Bjorn Andersson wrote:
-> > On Fri 05 Apr 10:54 +07 2019, Georgi Djakov wrote:
-> > 
-> >> The Qualcomm QCS404 platform has several buses that could be controlled
-> >> and tuned according to the bandwidth demand.
-> >>
-> >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> >> ---
-> >>  .../bindings/interconnect/qcom,qcs404.txt     | 45 +++++++++++++++++++
-> >>  1 file changed, 45 insertions(+)
-> >>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> >> new file mode 100644
-> >> index 000000000000..2ea63ea827d7
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> >> @@ -0,0 +1,45 @@
-> >> +Qualcomm QCS404 Network-On-Chip interconnect driver binding
-> >> +-----------------------------------------------------------
-> >> +
-> >> +Required properties :
-> >> +- compatible : shall contain only one of the following:
-> >> +			"qcom,qcs404-bimc"
-> > 
-> > As this is a hardware block available in mmio register space I think you
-> > better represent this on the mmio (soc) bus - and then represent the
-> > link to rpm as a child node of the rpm.
-> 
-> The mmio register space is not used for expressing bandwidth needs, but
-> contains mostly QoS related stuff. We do not support QoS for now and
-> that's why i haven't included it. When we decide to support QoS, we can
-> add the nodes for the QoS registers and then reference them with some DT
-> property like qcom,qos = <&bimc_qos>;
-> 
+Yes, though I thought we had something already.
 
-The fact that QoS support is not implemented today is an implementation
-detail, it does not relate to how we're describing the hardware in
-DeviceTree. Adding three new nodes under soc{} and referencing these
-(and potentially duplicating the clocks properties in the two sets of
-nodes?) in the future, rather than just describing the hardware
-appropriately today seems odd to me.
-
-Further more, as I shared a while back the aggregation code related to
-the RPM would better be shared between 404, 410, 820 and 835. So to me
-it makes sense to even on the implementation side split this is NoC part
-and RPM part, from the beginning.
-
-Regards,
-Bjorn
-
-> Thanks,
-> Georgi
-> 
-> > 
-> > Apart from that this looks good.
-> > 
-> > Regards,
-> > Bjorn
-> > 
-> >> +			"qcom,qcs404-pcnoc"
-> >> +			"qcom,qcs404-snoc"
-> >> +- #interconnect-cells : should contain 1
-> >> +
-> >> +Optional properties :
-> >> +clocks : list of phandles and specifiers to all interconnect bus clocks
-> >> +clock-names : clock names should include both "bus_clk" and "bus_a_clk"
-> >> +
-> >> +Example:
-> >> +
-> >> +rpm-glink {
-> >> +	...
-> >> +	rpm_requests: glink-channel {
-> >> +		...
-> >> +		bimc: interconnect@0 {
-> >> +			compatible = "qcom,qcs404-bimc";
-> >> +			#interconnect-cells = <1>;
-> >> +			clock-names = "bus_clk", "bus_a_clk";
-> >> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-> >> +				<&rpmcc RPM_SMD_BIMC_A_CLK>;
-> >> +		};
-> >> +
-> >> +		pnoc: interconnect@1 {
-> >> +			compatible = "qcom,qcs404-pcnoc";
-> >> +			#interconnect-cells = <1>;
-> >> +			clock-names = "bus_clk", "bus_a_clk";
-> >> +			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-> >> +				<&rpmcc RPM_SMD_PNOC_A_CLK>;
-> >> +		};
-> >> +
-> >> +		snoc: interconnect@2 {
-> >> +			compatible = "qcom,qcs404-snoc";
-> >> +			#interconnect-cells = <1>;
-> >> +			clock-names = "bus_clk", "bus_a_clk";
-> >> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-> >> +				<&rpmcc RPM_SMD_SNOC_A_CLK>;
-> >> +		};
-> >> +	};
-> >> +};
+Rob
