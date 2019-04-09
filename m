@@ -1,144 +1,50 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v13 0/4] PM / Domains: Support hierarchical CPU
- arrangement (PSCI/ARM)
-Date: Tue, 9 Apr 2019 13:57:03 +0200
-Message-ID: <CAPDyKFqc9OeaCGrSu7toMcgZesN2xBqqWNQfqUt+4+FvQ4kmDw@mail.gmail.com>
-References: <20190327143548.25305-1-ulf.hansson@linaro.org>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH v2 1/1] treewide: Switch printk users from %pf and %pF to
+ %ps and %pS, respectively
+Date: Tue, 9 Apr 2019 15:02:23 +0200
+Message-ID: <20190409130223.qylyzna7syu5cdc4@pathway.suse.cz>
+References: <20190325193229.23390-1-sakari.ailus@linux.intel.com>
+ <20190326133510.cylhvyvc7l77bqdg@pathway.suse.cz>
+ <20190403112814.7frkxkwmitzugzmt@paasikivi.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190327143548.25305-1-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190403112814.7frkxkwmitzugzmt@paasikivi.fi.intel.com>
+Sender: netdev-owner@vger.kernel.org
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, sparclinux@vger.kernel.org, linux-um@lists.infradead.org, xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvdimm@lists.01.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, linux-btrfs@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org, ceph-devel@vger.kernel.org, netdev@vger.kernel.org, Anna-Maria Gleixner <anna-maria@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 27 Mar 2019 at 15:35, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> Changes in v13:
->  - Use WRITE|READ_ONCE when reading/writing the "next_hrtimer" variable in the
-> struct cpuidle_device. Also reset the same variable after resumed from idle to
-> avoid it from containing a stale value.
->  - Added acks from Daniel Lezcano.
->  - The entire v13 series, including the PSCI/ARM changes are available in a
-> git branch [3].
+On Wed 2019-04-03 14:28:14, Sakari Ailus wrote:
+> Ping.
+> 
+> On Tue, Mar 26, 2019 at 02:35:10PM +0100, Petr Mladek wrote:
+> > Linus,
+> > 
+> > On Mon 2019-03-25 21:32:28, Sakari Ailus wrote:
+> > > %pF and %pf are functionally equivalent to %pS and %ps conversion
+> > > specifiers. The former are deprecated, therefore switch the current users
+> > > to use the preferred variant.
+> > > 
+> > > The changes have been produced by the following command:
+> > > 
+> > > 	git grep -l '%p[fF]' | grep -v '^\(tools\|Documentation\)/' | \
+> > > 	while read i; do perl -i -pe 's/%pf/%ps/g; s/%pF/%pS/g;' $i; done
+> > > 
+> > > And verifying the result.
+> > 
+> > I guess that the best timing for such tree-wide clean up is the end
+> > of the merge window. Should we wait for 5.2 or is it still acceptable
+> > to push this for 5.1-rc3?
+> 
+> The patch still cleanly applies to linux-next as wells as Linus's tree.
+> Some %pf bits have appeared and fixed since (include/trace/events/timer.h);
+> the fix is in linux-next so once that and this patch are merged, there are
+> no remaining %pf (or %pF) users left.
 
-Rafael, I have address the received comments on this version $subject
-series, is there anything that is holding you back from queuing it?
+I have pushed the patch into printk.git, branch for-5.2-pf-removal.
+It is v2 without the include/trace/events/timer.h stuff.
 
-If you like I can send a pull-request, to simplify for you.
-
-Moreover, there is another series which I have pinged you about
-earlier, which I would appreciate to queue via your tree. It's acked
-by PSCI maintainers and is ready to go. "[PATCH v2 0/5] drivers:
-firmware: psci: Some cleanup and refactoring".
-
-Kind regards
-Uffe
-
->
-> Changes in v12:
->  - Drop the patches for restructuring tick_nohz_get_sleep_length(). Instead
-> replace them all with a new timer/cpuidle patch, according to suggestions by
-> Rafael.
->  - The entire v12 series, including the PSCI/ARM changes are available in a
-> git branch [2].
->
-> Changes in v11:
->  - This version contains only the infrastructure changes that is needed for
-> deployment. The PSCI/ARM changes have also been updated and tested, but I will
-> post them separately. Still, to provide completeness, I have published a branch
-> containing everything to a git tree [1], feel free to have a look and test.
->  - The v10 series contained a patch, "timer: Export next wakeup time of a CPU",
-> which has been replaced by a couple of new patches, whom reworks the existing
-> tick_nohz_get_sleep_length() function, to provide the next timer expiration
-> instead of the duration.
->  - More changelogs are available per patch.
->
-> Changes in v10:
->  - Quite significant changes have been to the PSCI driver deployment. According
->    to an agreement with Lorenzo, the hierarchical CPU layout for PSCI should be
->    orthogonal to whether the PSCI FW supports OSI or not. This has been taken
->    care of in this version.
->  - Drop the generic attach/detach helpers of CPUs to genpd, instead make that
->    related code internal to PSCI, for now.
->  - Fix "BUG: sleeping for invalid context" for hotplug, as reported by Raju.
->  - Addressed various comments from version 8 and 9.
->  - Clarified changelogs and re-wrote the cover-letter to better explain the
->    motivations behind these changes.
->
-> Background:
->
-> For ARM64/ARM based platforms CPUs are often arranged in a hierarchical manner.
-> From a CPU idle state perspective, this means some states may be shared among a
-> group of CPUs (aka CPU cluster).
->
-> To deal with idle management of a group of CPUs, sometimes the kernel needs to
-> be involved to manage the last-man standing algorithm, simply because it can't
-> rely solely on power management FWs to deal with this. Depending on the
-> platform, of course.
->
-> There are a couple of typical scenarios for when the kernel needs to be in
-> control, dealing with synchronization of when the last CPU in a cluster is about
-> to enter a deep idle state.
->
-> 1)
-> The kernel needs to carry out so called last-man activities before the
-> CPU cluster can enter a deep idle state. This may for example involve to
-> configure external logics for wakeups, as the GIC may no longer be functional
-> once a deep cluster idle state have been entered. Likewise, these operations
-> may need to be restored, when the first CPU wakes up.
->
-> 2)
-> Other more generic I/O devices, such as an MMC controller for example, may be a
-> part of the same power domain as the CPU cluster, due to a shared power-rail.
-> For these scenarios, when the MMC controller is in use dealing with an MMC
-> request, a deeper idle state of the CPU cluster may needs to be temporarily
-> disabled. This is needed to retain the MMC controller in a functional state,
-> else it may loose its register-context in the middle of serving a request.
->
-> In this series, we are extending the generic PM domain (aka genpd) to be used
-> for also CPU devices. Hence the goal is to re-use much of its current code to
-> help us manage the last-man standing synchronization. Moreover, as we already
-> use genpd to model power domains for generic I/O devices, both 1) and 2) can be
-> address with its help.
->
-> Moreover, to address these problems for ARM64 DT based platforms, we are
-> deploying support for genpd and runtime PM to the PSCI FW driver - and finally
-> we make some updates to two ARM64 DTBs, as to deploy the new PSCI CPU topology
-> layout.
->
-> The series has been tested on a Qcom 410c dragonboard and on a Hisilicon Hikey
-> board. The first one uses PSCI OS-initiated mode, while the second uses the PSCI
-> Platform-Coordinated mode.
->
-> Kind regards
-> Ulf Hansson
->
-> [1]
-> git.linaro.org/people/ulf.hansson/linux-pm.git next_v11
-> [2]
-> git.linaro.org/people/ulf.hansson/linux-pm.git next_v12
-> [2]
-> git.linaro.org/people/ulf.hansson/linux-pm.git next_v13
->
->
-> Ulf Hansson (4):
->   PM / Domains: Add a generic data pointer to the genpd_power_state
->     struct
->   PM / Domains: Add support for CPU devices to genpd
->   cpuidle: Export the next timer/tick expiration for a CPU
->   PM / Domains: Add genpd governor for CPUs
->
->  drivers/base/power/domain.c          | 77 ++++++++++++++++++++++++++--
->  drivers/base/power/domain_governor.c | 65 ++++++++++++++++++++++-
->  drivers/cpuidle/cpuidle.c            | 19 ++++++-
->  include/linux/cpuidle.h              |  1 +
->  include/linux/pm_domain.h            | 20 +++++++-
->  include/linux/tick.h                 |  7 ++-
->  kernel/time/tick-sched.c             | 12 +++++
->  7 files changed, 193 insertions(+), 8 deletions(-)
->
-> --
-> 2.17.1
->
+Best Regards,
+Petr
