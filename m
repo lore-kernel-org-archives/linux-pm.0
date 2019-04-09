@@ -1,50 +1,120 @@
-From: Petr Mladek <pmladek@suse.com>
-Subject: Re: [PATCH v2 1/1] treewide: Switch printk users from %pf and %pF to
- %ps and %pS, respectively
-Date: Tue, 9 Apr 2019 15:02:23 +0200
-Message-ID: <20190409130223.qylyzna7syu5cdc4@pathway.suse.cz>
-References: <20190325193229.23390-1-sakari.ailus@linux.intel.com>
- <20190326133510.cylhvyvc7l77bqdg@pathway.suse.cz>
- <20190403112814.7frkxkwmitzugzmt@paasikivi.fi.intel.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH 1/4] dt-bindings: opp: Introduce opp-bw-MBs bindings
+Date: Tue, 9 Apr 2019 17:36:01 +0300
+Message-ID: <e462c932-4789-4f59-ad58-98c62266d977@linaro.org>
+References: <20190313090010.20534-1-georgi.djakov@linaro.org>
+ <20190313090010.20534-2-georgi.djakov@linaro.org>
+ <20190314062312.vwyu3ryeyc6iv55h@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190403112814.7frkxkwmitzugzmt@paasikivi.fi.intel.com>
-Sender: netdev-owner@vger.kernel.org
-To: Sakari Ailus <sakari.ailus@linux.intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, sparclinux@vger.kernel.org, linux-um@lists.infradead.org, xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, drbd-dev@lists.linbit.com, linux-block@vger.kernel.org, linux-mmc@vger.kernel.org, linux-nvdimm@lists.01.org, linux-pci@vger.kernel.org, linux-scsi@vger.kernel.org, linux-btrfs@vger.kernel.org, linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org, ceph-devel@vger.kernel.org, netdev@vger.kernel.org, Anna-Maria Gleixner <anna-maria@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190314062312.vwyu3ryeyc6iv55h@vireshk-i7>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2019-04-03 14:28:14, Sakari Ailus wrote:
-> Ping.
-> 
-> On Tue, Mar 26, 2019 at 02:35:10PM +0100, Petr Mladek wrote:
-> > Linus,
-> > 
-> > On Mon 2019-03-25 21:32:28, Sakari Ailus wrote:
-> > > %pF and %pf are functionally equivalent to %pS and %ps conversion
-> > > specifiers. The former are deprecated, therefore switch the current users
-> > > to use the preferred variant.
-> > > 
-> > > The changes have been produced by the following command:
-> > > 
-> > > 	git grep -l '%p[fF]' | grep -v '^\(tools\|Documentation\)/' | \
-> > > 	while read i; do perl -i -pe 's/%pf/%ps/g; s/%pF/%pS/g;' $i; done
-> > > 
-> > > And verifying the result.
-> > 
-> > I guess that the best timing for such tree-wide clean up is the end
-> > of the merge window. Should we wait for 5.2 or is it still acceptable
-> > to push this for 5.1-rc3?
-> 
-> The patch still cleanly applies to linux-next as wells as Linus's tree.
-> Some %pf bits have appeared and fixed since (include/trace/events/timer.h);
-> the fix is in linux-next so once that and this patch are merged, there are
-> no remaining %pf (or %pF) users left.
+Hi Viresh,
 
-I have pushed the patch into printk.git, branch for-5.2-pf-removal.
-It is v2 without the include/trace/events/timer.h stuff.
+On 3/14/19 08:23, Viresh Kumar wrote:
+> On 13-03-19, 11:00, Georgi Djakov wrote:
+>> In addition to frequency and voltage, some devices may have bandwidth
+>> requirements for their interconnect throughput - for example a CPU
+>> or GPU may also need to increase or decrease their bandwidth to DDR
+>> memory based on the current operating performance point.
+>>
+>> Extend the OPP tables with additional property to describe the bandwidth
+>> needs of a device. The average and peak bandwidth values depend on the
+>> hardware and its properties.
+>>
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> ---
+>>  Documentation/devicetree/bindings/opp/opp.txt | 45 +++++++++++++++++++
+>>  1 file changed, 45 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+>> index 76b6c79604a5..fa598264615f 100644
+>> --- a/Documentation/devicetree/bindings/opp/opp.txt
+>> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+>> @@ -129,6 +129,9 @@ Optional properties:
+>>  - opp-microamp-<name>: Named opp-microamp property. Similar to
+>>    opp-microvolt-<name> property, but for microamp instead.
+>>  
+>> +- opp-bw-MBs: The interconnect bandwidth is specified with an array containing
+>> +  the two integer values for average and peak bandwidth in megabytes per second.
+>> +
+>>  - opp-level: A value representing the performance level of the device,
+>>    expressed as a 32-bit integer.
+>>  
+>> @@ -546,3 +549,45 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+>>  		};
+>>  	};
+>>  };
+>> +
+>> +Example 7: opp-bw-MBs:
+>> +(example: average and peak bandwidth values are defined for each OPP and the
+>> +interconnect between CPU and DDR memory is scaled together with CPU frequency)
+>> +
+>> +/ {
+>> +	cpus {
+>> +		CPU0: cpu@0 {
+>> +			compatible = "arm,cortex-a53", "arm,armv8";
+>> +			...
+>> +			operating-points-v2 = <&cpu_opp_table>;
+>> +			/* path between the CPU and DDR memory */
+>> +			interconnects = <&rpm_bimc MASTER_AMPSS_M0
+>> +					&rpm_bimc SLAVE_EBI_CH0>;
+> 
+> Can we have multiple paths for a device ?
 
-Best Regards,
-Petr
+I suppose that this is also a possible scenario. Will propose something
+to handle multiple paths too.
+
+>> +		};
+>> +	};
+>> +
+>> +	cpu_opp_table: cpu_opp_table {
+>> +		compatible = "operating-points-v2";
+>> +		opp-shared;
+>> +
+>> +		opp-200000000 {
+>> +			opp-hz = /bits/ 64 <200000000>;
+>> +			/* 457 MB/s average and 1525 MB/s peak bandwidth */
+>> +			opp-bw-MBs = <457 1525>;
+> 
+> In that case fixing this to just 2 entries in the array is incorrect
+> and we should take care of that in the bindings here.
+
+We can encode the path name into the property (when there are multiple
+paths). We already have opp-microamp-<name> and opp-microamp-<name>, so
+we can follow the same practice.
+
+For example:
+
+CPU0: cpu@0 {
+	compatible = "arm,cortex-a53", "arm,armv8";
+	...
+	operating-points-v2 = <&cpu_opp_table>;
+	/* path between the CPU and DDR and path between CPU and L3 */
+	interconnects = <&bimc MASTER_AMPSS_M0 &bimc SLAVE_EBI_CH0>,
+			<&bimc MASTER_AMPSS_M0 &bimc SLAVE_L3>;
+	interconnect-names "cpu-mem", "cpu-l3";
+};
+
+cpu_opp_table: cpu_opp_table {
+	compatible = "operating-points-v2";
+	opp-shared;
+
+	opp-200000000 {
+		opp-hz = /bits/ 64 <200000000>;
+		/* 457 MB/s average, 1525 MB/s peak bandwidth to DDR */
+		opp-bw-MBps-cpu-mem = <457 1525>;
+		/* 914 MB/s average, 3050 MB/s peak bandwidth to L3 */
+		opp-bw-MBps-cpu-l3 = <914 3050>;
+	};
+};
+
+Thanks,
+Georgi
