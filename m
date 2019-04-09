@@ -2,67 +2,68 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C71C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17586C10F0E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:49:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0DD8F20833
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:34:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDD5A2077C
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:49:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V4cPP5Z1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nQigrRqV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726496AbfDIRew (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 13:34:52 -0400
-Received: from mail-io1-f67.google.com ([209.85.166.67]:40946 "EHLO
-        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726460AbfDIRew (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 13:34:52 -0400
-Received: by mail-io1-f67.google.com with SMTP id d201so15038617iof.7;
-        Tue, 09 Apr 2019 10:34:51 -0700 (PDT)
+        id S1726492AbfDIRtg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 13:49:36 -0400
+Received: from mail-it1-f194.google.com ([209.85.166.194]:38964 "EHLO
+        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726383AbfDIRtg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 13:49:36 -0400
+Received: by mail-it1-f194.google.com with SMTP id 139so6401119ita.4;
+        Tue, 09 Apr 2019 10:49:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=rz0aDV9OpL7jI4BvLfVtUPXYDaxQQtRxUY20Zf2oyXA=;
-        b=V4cPP5Z1XaSRh22nIlFhsmpyRfDYa8UWb1HsXVs8OZuswciCnnEcVSISsEZJiHnk1V
-         qYKFyr/Yll8t4jblcabWIHrJRF7tJuOAchbdMxdGNNFpRXYFG3pun03jrHdWHE8ifKBA
-         PiXodOqEpex9gAeIFLU/9uMAw5faKABA8F+N/jEAPYv+grWroEp6urIwGjmJDIq8GUWx
-         7uGVjIsF6EcG/0vLmSSZYfGA7VUY5PWshFOXmooyFgBHptE90fUsvN6bv5EG9YpA06+6
-         gymIY0seAkNn/s9945zkzSt6le49neQV7Hjofp4Suc4RdU0trKDoxksvGZTFe7tBRZ9b
-         K6bA==
+        bh=MoFB4KGbO5bnWW9b0d3DZz7QfAbAO0D02d4oxMDK29s=;
+        b=nQigrRqVGbbEZU1twqk9nfPDh5fO2Jx6vhF5F6LsXrIvZHq5QQy99HLun0wTRKbkMJ
+         c6D7rNW3M0boELO6iIg6SE99EYX9QNa0CBFzyvDfUkdHzWQlZq3x/DIVViKeBekr0Pua
+         dUy+YQNo4g7xBgn3IzAglR0k5s1OAmjBW3Z8lXYAfQjHQJyQyILmMSukLrtMz2hGZPh2
+         MrjPGmhWCqS92OiQm8OBEPTVbBh4YqQuOKJ1zA1n/Hrhe59LHjmzhjWF/RGfi7Amk66H
+         n7b722aQ/SNS+FU1QHYRxtPGKmqKJL+9RIEolwPjQ0bMGM6NIQcDKYibScmeaVyUkC+4
+         MDRw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=rz0aDV9OpL7jI4BvLfVtUPXYDaxQQtRxUY20Zf2oyXA=;
-        b=BgC0Nxy9eVVRU9WEBGUN94EMNvbbicfNe7DVlMUVI7r14COn/nSMAzCqllqNQg977O
-         GgNZxCJ6xNKMlsPNy/o4LQ8tq/P24gRbCGQwJWeLYlK0mlvpGjCkA2jr6gA/33zUY9Cl
-         0oXAZCvoUWhfPAgYjEAlkp1Ys+h9dpx1PGysZ0TLYKVGZDrQoOpa2H4rNOA2d9F0mKd1
-         pODOnJ+DaAX5kuH4lEgrkvete6JCT/CRSedgqIHhFqAKkqNN4JQBxxofBp3yKeyK6TXJ
-         ryGzVgx703th93Lh7RE3LWJ76w2mCi+mqJmXgtyg4n6C3+/OskxEbBbXEpNcjMSdmRe9
-         Wt7w==
-X-Gm-Message-State: APjAAAXsGpKXldveoLvF4LqXfwy0jQYqN1tej7hhPfpcCULEW2ARrUl+
-        Qhdr6JH41Yx3o3EWL1nIVB+H9DBQsUhWCmT1dY4=
-X-Google-Smtp-Source: APXvYqyERUnrii6LK2LZodMbjTA8prA8ZWqOH31IgCG6z/FH1RCv3CMJEdtL6bkUMlz2iEjnfrwb3wt+5J4T+ezP888=
-X-Received: by 2002:a6b:b797:: with SMTP id h145mr17061971iof.190.1554831290887;
- Tue, 09 Apr 2019 10:34:50 -0700 (PDT)
+        bh=MoFB4KGbO5bnWW9b0d3DZz7QfAbAO0D02d4oxMDK29s=;
+        b=i5N2LeCOEp2ofN0u21syGyPL5FflXfbbwxp05pJgZfDVAEbbSA48Oklff/yHoDQbR9
+         nb2LuqBIg2TagubnFqlFOKmjNEpmgQuElYEjXR8vAd3IYStilG4bmOxKsn4NNNjpA/Aq
+         9vA6NIXcd+cmnOI7qWnGMjQQlY1j2RBel9KBkKrywIqIONY/fFR7boTyZj20c2Xfqbnz
+         aQTRN0R9mb8LakgWxoXvxDwG3aWMh2uBLw52YYDAdIBhUIt/NvJFkrOzk+g0nKzui+4N
+         x7snCPH36SE+teduwAfE6p0HsZqVYFL6Z9BrSeo7Ojz38UqRT9DoulbIt2JGOk1t1pth
+         eT0g==
+X-Gm-Message-State: APjAAAUkP+vNvai4Lzrme5q0/sFLIQFe9gpqo+toLG/QjQm5t/kElOGQ
+        66gMKjjqq4QjKhg/gH+0hLjpS9UjAndPNDtnaV8=
+X-Google-Smtp-Source: APXvYqxxttc5uh6VUStni4vuoLdqP9WDh1iFM4CNn54DM6JOU3WpVNQZ5ka9SimkO2DUdHY1bBjlffvS+R50V1ry3L8=
+X-Received: by 2002:a05:6638:110:: with SMTP id x16mr27724565jao.75.1554832174769;
+ Tue, 09 Apr 2019 10:49:34 -0700 (PDT)
 MIME-Version: 1.0
 References: <20190405102455.15311-1-tiny.windzz@gmail.com> <20190405102455.15311-3-tiny.windzz@gmail.com>
- <20190409100730.2rtxyy66knjning6@vireshk-i7>
-In-Reply-To: <20190409100730.2rtxyy66knjning6@vireshk-i7>
+ <20190405145532.cstvbv3mxbzrmpxp@flea> <CAEExFWuDjD2Ur6UuCPD_m=hvUYJj7Z=NqQ7KXXR+tmnVtDqfbQ@mail.gmail.com>
+ <20190409080931.5x36pgtwhdjh2lkq@flea>
+In-Reply-To: <20190409080931.5x36pgtwhdjh2lkq@flea>
 From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Wed, 10 Apr 2019 01:34:39 +0800
+Date:   Wed, 10 Apr 2019 01:49:23 +0800
 Message-ID:
- <CAEExFWvQbXtyQjzr1RPQ9R6SxBushiNPN8UqH=MMHBLGsq+Omg@mail.gmail.com>
+ <CAEExFWs8jn1-Ht6Rq0ukL=Kz0sTwgf+kJzxw3Js=6hX+2OjYTA@mail.gmail.com>
 Subject: Re: [PATCH 2/2] dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
-To:     Viresh Kumar <viresh.kumar@linaro.org>
+To:     Maxime Ripard <maxime.ripard@bootlin.com>
 Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
         robh+dt@kernel.org, mark.rutland@arm.com,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
         Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net,
         davem@davemloft.net, mchehab+samsung@kernel.org,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -75,215 +76,103 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409173439.nvnWyoqpeKgMarUWnUDmsnprfLCmLf1IeeK9IJWusSg@z>
+Message-ID: <20190409174923.4rhlNpgWGndfws_UqkJ0GhwNSSr8bppsh3lmxDCb5UI@z>
 
-On Tue, Apr 9, 2019 at 6:07 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Tue, Apr 9, 2019 at 4:10 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
 >
-> On 05-04-19, 06:24, Yangtao Li wrote:
-> > +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> > +     cpus {
-> > +             #address-cells = <1>;
-> > +             #size-cells = <0>;
-> > +
-> > +             cpu0: cpu@0 {
-> > +                     compatible = "arm,cortex-a53";
-> > +                     device_type = "cpu";
-> > +                     reg = <0>;
-> > +                     enable-method = "psci";
-> > +                     clocks = <&ccu CLK_CPUX>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +                     operating-points-v2 = <&cpu_opp_table>;
-> > +                     #cooling-cells = <2>;
-> > +             };
-> > +
-> > +             cpu1: cpu@1 {
-> > +                     compatible = "arm,cortex-a53";
-> > +                     device_type = "cpu";
-> > +                     reg = <1>;
-> > +                     enable-method = "psci";
-> > +                     clocks = <&ccu CLK_CPUX>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +                     operating-points-v2 = <&cpu_opp_table>;
-> > +                     #cooling-cells = <2>;
-> > +             };
-> > +
-> > +             cpu2: cpu@2 {
-> > +                     compatible = "arm,cortex-a53";
-> > +                     device_type = "cpu";
-> > +                     reg = <2>;
-> > +                     enable-method = "psci";
-> > +                     clocks = <&ccu CLK_CPUX>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +                     operating-points-v2 = <&cpu_opp_table>;
-> > +                     #cooling-cells = <2>;
-> > +             };
-> > +
-> > +             cpu3: cpu@3 {
-> > +                     compatible = "arm,cortex-a53";
-> > +                     device_type = "cpu";
-> > +                     reg = <3>;
-> > +                     enable-method = "psci";
-> > +                     clocks = <&ccu CLK_CPUX>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +                     operating-points-v2 = <&cpu_opp_table>;
-> > +                     #cooling-cells = <2>;
-> > +             };
-> > +        };
-> > +
-> > +     cpu_opp_table: opp_table {
-> > +             compatible = "operating-points-v2-sunxi-cpu";
-> > +             nvmem-cells = <&speedbin_efuse>;
-> > +             opp-shared;
-> > +
-> > +             opp-480000000-0 {
-> > +                     opp-hz = /bits/ 64 <480000000>;
-> > +                     opp-microvolt = <880000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-720000000-0 {
-> > +                     opp-hz = /bits/ 64 <720000000>;
-> > +                     opp-microvolt = <880000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-816000000-0 {
-> > +                     opp-hz = /bits/ 64 <816000000>;
-> > +                     opp-microvolt = <880000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-888000000-0 {
-> > +                     opp-hz = /bits/ 64 <888000000>;
-> > +                     opp-microvolt = <940000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1080000000-0 {
-> > +                     opp-hz = /bits/ 64 <1080000000>;
-> > +                     opp-microvolt = <1060000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1320000000-0 {
-> > +                     opp-hz = /bits/ 64 <1320000000>;
-> > +                     opp-microvolt = <1160000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1488000000-0 {
-> > +                     opp-hz = /bits/ 64 <1488000000>;
-> > +                     opp-microvolt = <1160000>;
-> > +                     opp-supported-hw = <0x1>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +
-> > +             opp-480000000-1 {
-> > +                     opp-hz = /bits/ 64 <480000000>;
-> > +                     opp-microvolt = <820000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-720000000-1 {
-> > +                     opp-hz = /bits/ 64 <720000000>;
-> > +                     opp-microvolt = <820000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-816000000-1 {
-> > +                     opp-hz = /bits/ 64 <816000000>;
-> > +                     opp-microvolt = <820000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-888000000-1 {
-> > +                     opp-hz = /bits/ 64 <888000000>;
-> > +                     opp-microvolt = <820000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1080000000-1 {
-> > +                     opp-hz = /bits/ 64 <1080000000>;
-> > +                     opp-microvolt = <880000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1320000000-1 {
-> > +                     opp-hz = /bits/ 64 <1320000000>;
-> > +                     opp-microvolt = <940000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1488000000-1 {
-> > +                     opp-hz = /bits/ 64 <1488000000>;
-> > +                     opp-microvolt = <1000000>;
-> > +                     opp-supported-hw = <0x2>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +
-> > +             opp-480000000-2 {
-> > +                     opp-hz = /bits/ 64 <480000000>;
-> > +                     opp-microvolt = <800000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-720000000-2 {
-> > +                     opp-hz = /bits/ 64 <720000000>;
-> > +                     opp-microvolt = <800000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-816000000-2 {
-> > +                     opp-hz = /bits/ 64 <816000000>;
-> > +                     opp-microvolt = <800000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-888000000-2 {
-> > +                     opp-hz = /bits/ 64 <888000000>;
-> > +                     opp-microvolt = <800000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1080000000-2 {
-> > +                     opp-hz = /bits/ 64 <1080000000>;
-> > +                     opp-microvolt = <840000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1320000000-2 {
-> > +                     opp-hz = /bits/ 64 <1320000000>;
-> > +                     opp-microvolt = <900000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +             opp-1488000000-2 {
-> > +                     opp-hz = /bits/ 64 <1488000000>;
-> > +                     opp-microvolt = <960000>;
-> > +                     opp-supported-hw = <0x4>;
-> > +                     clock-latency-ns = <244144>; /* 8 32k periods */
-> > +             };
-> > +     };
+> On Tue, Apr 09, 2019 at 12:13:58AM +0800, Frank Lee wrote:
+> > On Fri, Apr 5, 2019 at 10:55 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+> > >
+> > > Hi,
+> > >
+> > > On Fri, Apr 05, 2019 at 06:24:55AM -0400, Yangtao Li wrote:
+> > > > Allwinner Process Voltage Scaling Tables defines the voltage and
+> > > > frequency value  based on the speedbin blown in the efuse combination.
+> > > > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> > > > provide the OPP framework with required information.
+> > > > This is used to determine the voltage and frequency value for each
+> > > > OPP of operating-points-v2 table when it is parsed by the OPP framework.
+> > > >
+> > > > This change adds documentation for the DT bindings.
+> > > > The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
+> > > > with following parameters:
+> > > > - nvmem-cells (NVMEM area containig the speedbin information)
+> > > > - opp-supported-hw: A single 32 bit bitmap value,
+> > > >   representing compatible HW:
+> > > >                       0:      speedbin 0
+> > > >                       1:      speedbin 1
+> > > >                       2:      speedbin 2
+> > > >                       3-31:   unused
+> > > >
+> > > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > > > ---
+> > > >  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 ++++++++++++++++++
+> > > >  1 file changed, 235 insertions(+)
+> > > >  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > > > new file mode 100644
+> > > > index 000000000000..80201d4e5147
+> > > > --- /dev/null
+> > > > +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > > > @@ -0,0 +1,235 @@
+> > > > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+> > > > +===================================
+> > > > +
+> > > > +For some SoCs, the CPU frequency subset and voltage value of each OPP
+> > > > +varies based on the silicon variant in use. Allwinner Process Voltage
+> > > > +Scaling Tables defines the voltage and frequency value  based on the
+> > > > +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
+> > > > +reads the efuse value from the SoC to provide the OPP framework with
+> > > > +required information.
+> > > > +
+> > > > +Required properties:
+> > > > +--------------------
+> > > > +In 'cpus' nodes:
+> > > > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+> > > > +
+> > > > +In 'operating-points-v2' table:
+> > > > +- compatible: Should be
+> > > > +     - 'operating-points-v2-sunxi-cpu'.
+> > > > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> > > > +             efuse registers that has information about the
+> > > > +             speedbin that is used to select the right frequency/voltage
+> > > > +             value pair.
+> > > > +             Please refer the for nvmem-cells
+> > > > +             bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+> > > > +             and also examples below.
+> > > > +
+> > > > +In every OPP node:
+> > > > +- opp-supported-hw: A single 32 bit bitmap value, representing compatible HW.
+> > > > +                 Bitmap:
+> > > > +                     0:      speedbin 0
+> > > > +                     1:      speedbin 1
+> > > > +                     2:      speedbin 2
+> > > > +                     3-31:   unused
+> > >
+> > > I'm wondering if that's the right approach.
+> > >
+> > > I guess we could also have three different OPP tables, and pass them
+> > > all three through a phandle array, and have the kernel code select
+> > > which one is relevant based on the SID content
+> >
+> > It's ok. But why not use the way we already have?
+> > Is it necessary to introduce new helper?
 >
-> Well, this is pure duplication of all the OPPs which isn't great. If I have
-> understood things correctly from the above example, then all you want is a
-> different microvolt value for each OPP, right ?
+> My main concern is that it becomes quite difficult to differentiate
+> the various OPPs, and to which bin a particular OPP is belonging to,
+> while the more traditional OPPv2 makes it much more obvious.
+Hi Maxime,
 
-Not exactly like this. But this is working for the current situation.
+How about the newer patch ?
+I think it is clearer. Just add a printk and people will know the opp
+information used.
 
->
-> Then you are using the wrong feature of OPP core I am afraid. What you should
-> rather look for is opp-microvolt-<name> property, look in opp.txt bindings.
-
-Yeah. This is more appropriate.
-
->
-> And these are the helper you need to use:
-> dev_pm_opp_set_prop_name()/dev_pm_opp_put_prop_name().
-
-Thanks,
 Yangtao
-
+>
+> Maxime
 >
 > --
-> viresh
+> Maxime Ripard, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
