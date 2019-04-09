@@ -2,127 +2,167 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11AEDC10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D749DC282CE
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:38:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DF3522133D
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:36:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A74102133D
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:38:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="G6tBl6c1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726493AbfDIPga (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 11:36:30 -0400
-Received: from mga18.intel.com ([134.134.136.126]:56368 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726431AbfDIPga (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Apr 2019 11:36:30 -0400
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 09 Apr 2019 08:36:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,329,1549958400"; 
-   d="scan'208";a="159607994"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
-  by fmsmga002.fm.intel.com with ESMTP; 09 Apr 2019 08:36:26 -0700
-Received: from andy by smile with local (Exim 4.92)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1hDsnR-0004o0-Ly; Tue, 09 Apr 2019 18:36:25 +0300
-Date:   Tue, 9 Apr 2019 18:36:25 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Binbin Wu <binbin.wu@intel.com>
-Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        gregkh@linuxfoundation.org, lee.jones@linaro.org,
-        mika.westerberg@linux.intel.com, linux-kernel@vger.kernel.org,
-        dmaengine@vger.kernel.org
-Subject: Re: [PATCH v2] mfd: intel-lpss: Set the device in reset state when
- init
-Message-ID: <20190409153625.GV9224@smile.fi.intel.com>
-References: <1554710950-21212-1-git-send-email-binbin.wu@intel.com>
+        id S1726709AbfDIPie (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 11:38:34 -0400
+Received: from mail-it1-f195.google.com ([209.85.166.195]:56261 "EHLO
+        mail-it1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726702AbfDIPid (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 11:38:33 -0400
+Received: by mail-it1-f195.google.com with SMTP id y134so5612339itc.5
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 08:38:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=Pt9UNGmZGIYGlZ2QTO4HylfUAQVS8xdNO3SXWY6eb4c=;
+        b=G6tBl6c1Ws6CyGsICZgqvE1rUjgwzRPSFz2Q1in7N4+rvi+/QwOCvJcAj53J8/ekMG
+         W1+jXB1/6luDXq93LNrQ0vN40m4osHRFb/1KmySoaSyxGFd0wz/hPvixP+p8U9Ozhpu+
+         u8ihs04i/MdHAeNBaltE8ltPRuul4d8/HrbHcvlFfy8jRg8MCJos0fEV7Pc5shxXYHnx
+         aZk7NDWLVfW2lvyr6a/sqbqrW9MlQFHTOuzzKpIoKPFxOeIWyO21cVXf2oOAIjSyNF8H
+         GBmnhCz0aMnkyUnjCPLRcWqxzJNtHoT0nfJIiWJGtNHp02zLwx/tjmGpK8qyfTiSBX5z
+         jieg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=Pt9UNGmZGIYGlZ2QTO4HylfUAQVS8xdNO3SXWY6eb4c=;
+        b=h3RPgdo4vyPx/rv7Zb9fpoABRoDEDMxIyrphZaEgbJ5HozzjMsNCNvO+hUw7R+I5QV
+         sHDL+UeA3Lj7fcfDb7EbT5R9WFJqnWr3EhNW66u78+94r0moeA9IscL/WdbKnXyvnczd
+         D0WnumshrFfyXvpo6WG6pQF2DDS98vMJ3AfZwwfhJ91ZRrL8GEJDnsIswK839IIhtZjY
+         DD1v4BlvklqfiKx1SIIdGWe8ZwqfemfRks3CXjhS+tpeo9grcEsSiM2meMa5U8uhj8yF
+         8GyqiWs1N8PoB7ABxYSKA+zne2O3cE7IS6qxavCH0nYSFszORpLpasWVJfPzzRsIVqVH
+         89cQ==
+X-Gm-Message-State: APjAAAVGYKrWV6xHnH6YMyF0BvgfngRGLofj8b4GQFsG+jjpW68JqYgd
+        Lg5OpnnlvpL2maKatQnCEV1zks2JbUFsl8aswLOZOw==
+X-Google-Smtp-Source: APXvYqwgIZ8jvlJsLLHZsGZV7XLhc54MZO8km3dqpscHI9XMQP5QklSnw6tEw2lK3OyXmlDPeY2eD9811Hh2ecyIHKY=
+X-Received: by 2002:a24:57cf:: with SMTP id u198mr21047947ita.162.1554824312072;
+ Tue, 09 Apr 2019 08:38:32 -0700 (PDT)
 MIME-Version: 1.0
+References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
+ <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
+ <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com> <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
+In-Reply-To: <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
+From:   Bartosz Golaszewski <brgl@bgdev.pl>
+Date:   Tue, 9 Apr 2019 17:38:20 +0200
+Message-ID:
+ <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
+Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
+To:     Rob Herring <robh@kernel.org>
+Cc:     Mark Rutland <mark.rutland@arm.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux Input <linux-input@vger.kernel.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <1554710950-21212-1-git-send-email-binbin.wu@intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409153625.ziAAmCo0V1TXycP02t12Af42irfFVwOhr9NZgn72GiU@z>
+Message-ID: <20190409153820.Gzf8dnSsvFSmRrldsi3DWizFyViRsNiFZQ_-7oHHj-o@z>
 
-On Mon, Apr 08, 2019 at 04:09:10PM +0800, Binbin Wu wrote:
-> In virtualized setup, when system reboots due to warm
-> reset interrupt storm is seen.
-> 
-> Call Trace:
-> <IRQ>
-> dump_stack+0x70/0xa5
-> __report_bad_irq+0x2e/0xc0
-> note_interrupt+0x248/0x290
-> ? add_interrupt_randomness+0x30/0x220
-> handle_irq_event_percpu+0x54/0x80
-> handle_irq_event+0x39/0x60
-> handle_fasteoi_irq+0x91/0x150
-> handle_irq+0x108/0x180
-> do_IRQ+0x52/0xf0
-> common_interrupt+0xf/0xf
-> </IRQ>
-> RIP: 0033:0x76fc2cfabc1d
-> Code: 24 28 bf 03 00 00 00 31 c0 48 8d 35 63 77 0e 00 48 8d 15 2e
-> 94 0e 00 4c 89 f9 49 89 d9 4c 89 d3 e8 b8 e2 01 00 48 8b 54 24 18
-> <48> 89 ef 48 89 de 4c 89 e1 e8 d5 97 01 00 84 c0 74 2d 48 8b 04
-> 24
-> RSP: 002b:00007ffd247c1fc0 EFLAGS: 00000293 ORIG_RAX: ffffffffffffffda
-> RAX: 0000000000000000 RBX: 00007ffd247c1ff0 RCX: 000000000003d3ce
-> RDX: 0000000000000000 RSI: 00007ffd247c1ff0 RDI: 000076fc2cbb6010
-> RBP: 000076fc2cded010 R08: 00007ffd247c2210 R09: 00007ffd247c22a0
-> R10: 000076fc29465470 R11: 0000000000000000 R12: 00007ffd247c1fc0
-> R13: 000076fc2ce8e470 R14: 000076fc27ec9960 R15: 0000000000000414
-> handlers:
-> [<000000000d3fa913>] idma64_irq
-> Disabling IRQ #27
-> 
-> To avoid interrupt storm, set the device in reset state
-> before bringing out the device from reset state.
+wt., 9 kwi 2019 o 13:04 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(a)=
+:
+>
+> wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+> >
+> > On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wrot=
+e:
+> > >
+> > > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a=
+):
+> > > >
+> > > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote=
+:
+> > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > >
+> > > > > Add the DT binding document for the battery charger module of max=
+77650.
+> > > > >
+> > > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > > ---
+> > > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++=
+++++++
+> > > > >  1 file changed, 27 insertions(+)
+> > > > >  create mode 100644 Documentation/devicetree/bindings/power/suppl=
+y/max77650-charger.txt
+> > > > >
+> > > > > diff --git a/Documentation/devicetree/bindings/power/supply/max77=
+650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-c=
+harger.txt
+> > > > > new file mode 100644
+> > > > > index 000000000000..fef188144386
+> > > > > --- /dev/null
+> > > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-cha=
+rger.txt
+> > > > > @@ -0,0 +1,27 @@
+> > > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> > > > > +
+> > > > > +This module is part of the MAX77650 MFD device. For more details
+> > > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > > > > +
+> > > > > +The charger is represented as a sub-node of the PMIC node on the=
+ device tree.
+> > > > > +
+> > > > > +Required properties:
+> > > > > +--------------------
+> > > > > +- compatible:                Must be "maxim,max77650-charger"
+> > > > > +
+> > > > > +Optional properties:
+> > > > > +--------------------
+> > > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in microv=
+olts). Must be
+> > > > > +                     one of: 4000000, 4100000, 4200000, 4300000,=
+ 4400000,
+> > > > > +                     4500000, 4600000, 4700000.
+> > > > > +- current-limit-microamp:    CHGIN input current limit (in micro=
+amps). Must
+> > > > > +                             be one of: 95000, 190000, 285000, 3=
+80000, 475000.
+> > > >
+> > > > To repeat what I said on v6, these should be common properties IMO =
+(and
+> > > > therefore documented as such).
+> > > >
+> > >
+> > > Do you mean a separate "charger.txt" document in
+> > > Documentation/devicetree/bindings/power/supply/?
+> >
+> > Yes, though I thought we had something already.
+> >
+> > Rob
+>
+> We don't AFAICT. There's only a binding document for "simple-battery"
+> in power supply.
+>
+> Bart
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Can we have it locally for now but without the maxim prefix and then
+reuse it if any other charger needs such functionality? To make it
+even more generic we can name it: "input-voltage-min-microvolt" &
+"input-current-limit-microamp".
 
-(It shouldn't prevent usage of no_console_suspend hack AFAICS)
-
-> 
-> Changelog v2:
-> - correct the subject line by adding "mfd: "
-> 
-> Signed-off-by: Binbin Wu <binbin.wu@intel.com>
-> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> ---
->  drivers/mfd/intel-lpss.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-> index 50bffc3..ff3fba1 100644
-> --- a/drivers/mfd/intel-lpss.c
-> +++ b/drivers/mfd/intel-lpss.c
-> @@ -273,6 +273,9 @@ static void intel_lpss_init_dev(const struct intel_lpss *lpss)
->  {
->  	u32 value = LPSS_PRIV_SSP_REG_DIS_DMA_FIN;
->  
-> +	/* Set the device in reset state */
-> +	writel(0, lpss->priv + LPSS_PRIV_RESETS);
-> +
->  	intel_lpss_deassert_reset(lpss);
->  
->  	intel_lpss_set_remap_addr(lpss);
-> -- 
-> 2.7.4
-> 
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Bart
