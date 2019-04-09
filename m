@@ -2,154 +2,215 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01356C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 11:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16A3FC10F0E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 11:57:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B6B5020883
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 11:04:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D767C21473
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 11:57:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="fjjk5/dv"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cNcSW/1f"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726936AbfDILEd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 07:04:33 -0400
-Received: from mail-io1-f67.google.com ([209.85.166.67]:39860 "EHLO
-        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726133AbfDILEd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 07:04:33 -0400
-Received: by mail-io1-f67.google.com with SMTP id e13so13849083ioq.6
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 04:04:32 -0700 (PDT)
+        id S1726633AbfDIL5l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 07:57:41 -0400
+Received: from mail-vs1-f66.google.com ([209.85.217.66]:39673 "EHLO
+        mail-vs1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726112AbfDIL5k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 07:57:40 -0400
+Received: by mail-vs1-f66.google.com with SMTP id g127so9597479vsd.6
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 04:57:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
+        d=linaro.org; s=google;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=0EhV+7BMi42sYY58kzkNs3iubmQlT6Xn711Q8iv4dZw=;
-        b=fjjk5/dvn4vvjcq/jWzJkNLB2ybcLA1h2jL2dNYG7I5ha4xo/vVDTAbxJV695tJcLp
-         B9OhlmHfgI48Q4gc/pA4bea2FuLH51+elIJCydJ1lvkZ9CxoL7iS2h541YvCLNx3k3Lb
-         q0DKwv+y9+5ku8lix5VaiknfZSnpIFRWV4kGyJPN3mSsjpG24XcwB30luPgOfJWWQjP1
-         1gioHfcsSvAHCfP5qn4skOov1pW8HEuHekryz1sg6avgn2fYsW5vqGvgfFU7OIJHTBHu
-         WV9YKbtgjUN7uJFwkh6DwxB30PyACYf0rkKums6lFajt9Qirxtyedlb9Cbv3zOHJ4Cnj
-         EA9Q==
+         :cc;
+        bh=zMhNkHranI20/oIEI+ZxPbQNSavGeJvpDcvvgYrFzws=;
+        b=cNcSW/1fjBw6Aj/V/PClH1q46e+mYPVhEwt13DRb1LGT8PM3T1wO4dEo5lL28lldJq
+         FFX1iVPNYwdcyrQtUF41CJo3VtDGgoRgloNI4cUmk2IpW9rPQZ1JviTWpnZ6ptOhQda2
+         jgJRtrs2R8n/9ZKaC23VXsOLqbYLwvIM1BHSRrxXICrn9Mgh5ACg9k438jxYf24+tYV0
+         LkrZWJ2Rx9X6fobv6o1fdB1iWNFa73B2soQJVuupEy/iYrvUkZBYhOAnq79gz/pUHn4F
+         jc99sMWAA3CdVrw1VNm5ZpN2gMcvohQkyJGwJ/xU7kMV8c/pgUv6lLfJTky0Ai+pWmWF
+         TEeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=0EhV+7BMi42sYY58kzkNs3iubmQlT6Xn711Q8iv4dZw=;
-        b=HJMQUcpcLJtziCdqgiHuDSa269+b4bT+4/oLZa1aVaPF9lNXh7PUA/BQ7Y43/I2roV
-         3nIVwdYKfv5T9euuxt22Ul9ZkYpBi7ouanlugMXnxCQHvK4K2VLw9MGjsxqNEBSDtuJ+
-         09ylmqphZKGoqIsGVcaFyDttODwyk7mMpWOxRluM5keWbyKoWp8FahCwTq5e7IONSnRz
-         eBGBFbKhiFPvsH2guaZvHTp+15VLzzMZOZ9gOBhkfhipuJye2+vlcKMFHByWOUma439Q
-         1wfNS3Q9zBXUwZ0TS8GK6yhMrrlFKwAo75Uur8cEUERk5qvChjZ6eV2crOpk/402lVcQ
-         PyRw==
-X-Gm-Message-State: APjAAAU1Nuaz5lCUdCc+NYijwaA1t4NBmBD1qZSjOqly43jRc1ntst0e
-        TeDOGAZu6oEhtsJjMvlC23ff0V7YJcpbpo0aIARWdg==
-X-Google-Smtp-Source: APXvYqxHQdpydahAFb1uM5EmRRXlBc1JJ8IhflmFGTlP4hj6rTGoad4eiWnt35V26oIqIH/OtyBMGyZb/B768faaKVY=
-X-Received: by 2002:a6b:3b43:: with SMTP id i64mr22527637ioa.121.1554807872189;
- Tue, 09 Apr 2019 04:04:32 -0700 (PDT)
+         :message-id:subject:to:cc;
+        bh=zMhNkHranI20/oIEI+ZxPbQNSavGeJvpDcvvgYrFzws=;
+        b=LZre05X2GEFB4ypTzXHE2sb63nY+1C6Pdz8dP9FMxVSBRgRoGtznkxLvP+ZPjh+FQ7
+         jF3FtbMQPm23anoLy9dn1dBGNTV1kYGv5dcrrfjZHa+hBajjJtmCE8OXa5et+00YID3b
+         UkpdNmxjHSeRnDCTDLcxd/hojyjl1fGd+MybA4RIvvDc1Vmh0KHSirjsxWbjCRIgtw1A
+         TWt1LxZcj1E5o7vP3y3+vzbjzdiYNE6DU/ct4Uz3zfg9iIL4L4QPdU3SAFSdBXctSyZP
+         0tno/ykNOWP7WlkbHIZ0x4LB07rKxgFTk/5c94PkJcC7xakT7a3OdPZCtfuAubYYjbD+
+         1g3Q==
+X-Gm-Message-State: APjAAAVjRmsiTe8LkbjtJBs4q63izbZwm+XWcg0nPNnWs4wJz/5UqVaH
+        M1J+I5CHGPirxxU9SdNnZ2CXvDqA1iEi6ItrNaXL8Q==
+X-Google-Smtp-Source: APXvYqxwbnqiPl3S8OdcVdyPTE6ZLI/zrKFvlP4kPijBZnRAsn1eG+7GheKUncMrM8IyGfCxstlYv+rhv4oPBKo/zGQ=
+X-Received: by 2002:a67:fa95:: with SMTP id f21mr19573541vsq.180.1554811059488;
+ Tue, 09 Apr 2019 04:57:39 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
- <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
- <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
-In-Reply-To: <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-Date:   Tue, 9 Apr 2019 13:04:21 +0200
+References: <20190327143548.25305-1-ulf.hansson@linaro.org>
+In-Reply-To: <20190327143548.25305-1-ulf.hansson@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 9 Apr 2019 13:57:03 +0200
 Message-ID:
- <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
-Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-To:     Rob Herring <robh@kernel.org>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+ <CAPDyKFqc9OeaCGrSu7toMcgZesN2xBqqWNQfqUt+4+FvQ4kmDw@mail.gmail.com>
+Subject: Re: [PATCH v13 0/4] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     Frederic Weisbecker <fweisbec@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409110421.uZGSu6mh3C6pxOXUCawZaeg9ht7afnAks3oT-aFF3Uw@z>
+Message-ID: <20190409115703.TarNL9al24UGbBJJMZMyzGtAtmQhccyjvPac7Q8tEJM@z>
 
-wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+On Wed, 27 Mar 2019 at 15:35, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
-> On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
-> >
-> > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a):
-> > >
-> > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote:
-> > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > >
-> > > > Add the DT binding document for the battery charger module of max77=
-650.
-> > > >
-> > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > > ---
-> > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++++=
-++++
-> > > >  1 file changed, 27 insertions(+)
-> > > >  create mode 100644 Documentation/devicetree/bindings/power/supply/=
-max77650-charger.txt
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/power/supply/max7765=
-0-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-cha=
-rger.txt
-> > > > new file mode 100644
-> > > > index 000000000000..fef188144386
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-charg=
-er.txt
-> > > > @@ -0,0 +1,27 @@
-> > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> > > > +
-> > > > +This module is part of the MAX77650 MFD device. For more details
-> > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > > > +
-> > > > +The charger is represented as a sub-node of the PMIC node on the d=
-evice tree.
-> > > > +
-> > > > +Required properties:
-> > > > +--------------------
-> > > > +- compatible:                Must be "maxim,max77650-charger"
-> > > > +
-> > > > +Optional properties:
-> > > > +--------------------
-> > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in microvol=
-ts). Must be
-> > > > +                     one of: 4000000, 4100000, 4200000, 4300000, 4=
-400000,
-> > > > +                     4500000, 4600000, 4700000.
-> > > > +- current-limit-microamp:    CHGIN input current limit (in microam=
-ps). Must
-> > > > +                             be one of: 95000, 190000, 285000, 380=
-000, 475000.
-> > >
-> > > To repeat what I said on v6, these should be common properties IMO (a=
-nd
-> > > therefore documented as such).
-> > >
-> >
-> > Do you mean a separate "charger.txt" document in
-> > Documentation/devicetree/bindings/power/supply/?
->
-> Yes, though I thought we had something already.
->
-> Rob
+> Changes in v13:
+>  - Use WRITE|READ_ONCE when reading/writing the "next_hrtimer" variable in the
+> struct cpuidle_device. Also reset the same variable after resumed from idle to
+> avoid it from containing a stale value.
+>  - Added acks from Daniel Lezcano.
+>  - The entire v13 series, including the PSCI/ARM changes are available in a
+> git branch [3].
 
-We don't AFAICT. There's only a binding document for "simple-battery"
-in power supply.
+Rafael, I have address the received comments on this version $subject
+series, is there anything that is holding you back from queuing it?
 
-Bart
+If you like I can send a pull-request, to simplify for you.
+
+Moreover, there is another series which I have pinged you about
+earlier, which I would appreciate to queue via your tree. It's acked
+by PSCI maintainers and is ready to go. "[PATCH v2 0/5] drivers:
+firmware: psci: Some cleanup and refactoring".
+
+Kind regards
+Uffe
+
+>
+> Changes in v12:
+>  - Drop the patches for restructuring tick_nohz_get_sleep_length(). Instead
+> replace them all with a new timer/cpuidle patch, according to suggestions by
+> Rafael.
+>  - The entire v12 series, including the PSCI/ARM changes are available in a
+> git branch [2].
+>
+> Changes in v11:
+>  - This version contains only the infrastructure changes that is needed for
+> deployment. The PSCI/ARM changes have also been updated and tested, but I will
+> post them separately. Still, to provide completeness, I have published a branch
+> containing everything to a git tree [1], feel free to have a look and test.
+>  - The v10 series contained a patch, "timer: Export next wakeup time of a CPU",
+> which has been replaced by a couple of new patches, whom reworks the existing
+> tick_nohz_get_sleep_length() function, to provide the next timer expiration
+> instead of the duration.
+>  - More changelogs are available per patch.
+>
+> Changes in v10:
+>  - Quite significant changes have been to the PSCI driver deployment. According
+>    to an agreement with Lorenzo, the hierarchical CPU layout for PSCI should be
+>    orthogonal to whether the PSCI FW supports OSI or not. This has been taken
+>    care of in this version.
+>  - Drop the generic attach/detach helpers of CPUs to genpd, instead make that
+>    related code internal to PSCI, for now.
+>  - Fix "BUG: sleeping for invalid context" for hotplug, as reported by Raju.
+>  - Addressed various comments from version 8 and 9.
+>  - Clarified changelogs and re-wrote the cover-letter to better explain the
+>    motivations behind these changes.
+>
+> Background:
+>
+> For ARM64/ARM based platforms CPUs are often arranged in a hierarchical manner.
+> From a CPU idle state perspective, this means some states may be shared among a
+> group of CPUs (aka CPU cluster).
+>
+> To deal with idle management of a group of CPUs, sometimes the kernel needs to
+> be involved to manage the last-man standing algorithm, simply because it can't
+> rely solely on power management FWs to deal with this. Depending on the
+> platform, of course.
+>
+> There are a couple of typical scenarios for when the kernel needs to be in
+> control, dealing with synchronization of when the last CPU in a cluster is about
+> to enter a deep idle state.
+>
+> 1)
+> The kernel needs to carry out so called last-man activities before the
+> CPU cluster can enter a deep idle state. This may for example involve to
+> configure external logics for wakeups, as the GIC may no longer be functional
+> once a deep cluster idle state have been entered. Likewise, these operations
+> may need to be restored, when the first CPU wakes up.
+>
+> 2)
+> Other more generic I/O devices, such as an MMC controller for example, may be a
+> part of the same power domain as the CPU cluster, due to a shared power-rail.
+> For these scenarios, when the MMC controller is in use dealing with an MMC
+> request, a deeper idle state of the CPU cluster may needs to be temporarily
+> disabled. This is needed to retain the MMC controller in a functional state,
+> else it may loose its register-context in the middle of serving a request.
+>
+> In this series, we are extending the generic PM domain (aka genpd) to be used
+> for also CPU devices. Hence the goal is to re-use much of its current code to
+> help us manage the last-man standing synchronization. Moreover, as we already
+> use genpd to model power domains for generic I/O devices, both 1) and 2) can be
+> address with its help.
+>
+> Moreover, to address these problems for ARM64 DT based platforms, we are
+> deploying support for genpd and runtime PM to the PSCI FW driver - and finally
+> we make some updates to two ARM64 DTBs, as to deploy the new PSCI CPU topology
+> layout.
+>
+> The series has been tested on a Qcom 410c dragonboard and on a Hisilicon Hikey
+> board. The first one uses PSCI OS-initiated mode, while the second uses the PSCI
+> Platform-Coordinated mode.
+>
+> Kind regards
+> Ulf Hansson
+>
+> [1]
+> git.linaro.org/people/ulf.hansson/linux-pm.git next_v11
+> [2]
+> git.linaro.org/people/ulf.hansson/linux-pm.git next_v12
+> [2]
+> git.linaro.org/people/ulf.hansson/linux-pm.git next_v13
+>
+>
+> Ulf Hansson (4):
+>   PM / Domains: Add a generic data pointer to the genpd_power_state
+>     struct
+>   PM / Domains: Add support for CPU devices to genpd
+>   cpuidle: Export the next timer/tick expiration for a CPU
+>   PM / Domains: Add genpd governor for CPUs
+>
+>  drivers/base/power/domain.c          | 77 ++++++++++++++++++++++++++--
+>  drivers/base/power/domain_governor.c | 65 ++++++++++++++++++++++-
+>  drivers/cpuidle/cpuidle.c            | 19 ++++++-
+>  include/linux/cpuidle.h              |  1 +
+>  include/linux/pm_domain.h            | 20 +++++++-
+>  include/linux/tick.h                 |  7 ++-
+>  kernel/time/tick-sched.c             | 12 +++++
+>  7 files changed, 193 insertions(+), 8 deletions(-)
+>
+> --
+> 2.17.1
+>
