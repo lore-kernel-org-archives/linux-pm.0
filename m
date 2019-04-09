@@ -1,86 +1,99 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v2] mfd: intel-lpss: Set the device in reset state when
- init
-Date: Tue, 9 Apr 2019 18:36:25 +0300
-Message-ID: <20190409153625.GV9224@smile.fi.intel.com>
-References: <1554710950-21212-1-git-send-email-binbin.wu@intel.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
+Date: Tue, 9 Apr 2019 17:38:20 +0200
+Message-ID: <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
+References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
+ <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
+ <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com> <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1554710950-21212-1-git-send-email-binbin.wu@intel.com>
+In-Reply-To: <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Binbin Wu <binbin.wu@intel.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, lee.jones@linaro.org, mika.westerberg@linux.intel.com, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 08, 2019 at 04:09:10PM +0800, Binbin Wu wrote:
-> In virtualized setup, when system reboots due to warm
-> reset interrupt storm is seen.
-> 
-> Call Trace:
-> <IRQ>
-> dump_stack+0x70/0xa5
-> __report_bad_irq+0x2e/0xc0
-> note_interrupt+0x248/0x290
-> ? add_interrupt_randomness+0x30/0x220
-> handle_irq_event_percpu+0x54/0x80
-> handle_irq_event+0x39/0x60
-> handle_fasteoi_irq+0x91/0x150
-> handle_irq+0x108/0x180
-> do_IRQ+0x52/0xf0
-> common_interrupt+0xf/0xf
-> </IRQ>
-> RIP: 0033:0x76fc2cfabc1d
-> Code: 24 28 bf 03 00 00 00 31 c0 48 8d 35 63 77 0e 00 48 8d 15 2e
-> 94 0e 00 4c 89 f9 49 89 d9 4c 89 d3 e8 b8 e2 01 00 48 8b 54 24 18
-> <48> 89 ef 48 89 de 4c 89 e1 e8 d5 97 01 00 84 c0 74 2d 48 8b 04
-> 24
-> RSP: 002b:00007ffd247c1fc0 EFLAGS: 00000293 ORIG_RAX: ffffffffffffffda
-> RAX: 0000000000000000 RBX: 00007ffd247c1ff0 RCX: 000000000003d3ce
-> RDX: 0000000000000000 RSI: 00007ffd247c1ff0 RDI: 000076fc2cbb6010
-> RBP: 000076fc2cded010 R08: 00007ffd247c2210 R09: 00007ffd247c22a0
-> R10: 000076fc29465470 R11: 0000000000000000 R12: 00007ffd247c1fc0
-> R13: 000076fc2ce8e470 R14: 000076fc27ec9960 R15: 0000000000000414
-> handlers:
-> [<000000000d3fa913>] idma64_irq
-> Disabling IRQ #27
-> 
-> To avoid interrupt storm, set the device in reset state
-> before bringing out the device from reset state.
+wt., 9 kwi 2019 o 13:04 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(a)=
+:
+>
+> wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+> >
+> > On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wrot=
+e:
+> > >
+> > > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a=
+):
+> > > >
+> > > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote=
+:
+> > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > >
+> > > > > Add the DT binding document for the battery charger module of max=
+77650.
+> > > > >
+> > > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > > ---
+> > > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++=
+++++++
+> > > > >  1 file changed, 27 insertions(+)
+> > > > >  create mode 100644 Documentation/devicetree/bindings/power/suppl=
+y/max77650-charger.txt
+> > > > >
+> > > > > diff --git a/Documentation/devicetree/bindings/power/supply/max77=
+650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-c=
+harger.txt
+> > > > > new file mode 100644
+> > > > > index 000000000000..fef188144386
+> > > > > --- /dev/null
+> > > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-cha=
+rger.txt
+> > > > > @@ -0,0 +1,27 @@
+> > > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> > > > > +
+> > > > > +This module is part of the MAX77650 MFD device. For more details
+> > > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > > > > +
+> > > > > +The charger is represented as a sub-node of the PMIC node on the=
+ device tree.
+> > > > > +
+> > > > > +Required properties:
+> > > > > +--------------------
+> > > > > +- compatible:                Must be "maxim,max77650-charger"
+> > > > > +
+> > > > > +Optional properties:
+> > > > > +--------------------
+> > > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in microv=
+olts). Must be
+> > > > > +                     one of: 4000000, 4100000, 4200000, 4300000,=
+ 4400000,
+> > > > > +                     4500000, 4600000, 4700000.
+> > > > > +- current-limit-microamp:    CHGIN input current limit (in micro=
+amps). Must
+> > > > > +                             be one of: 95000, 190000, 285000, 3=
+80000, 475000.
+> > > >
+> > > > To repeat what I said on v6, these should be common properties IMO =
+(and
+> > > > therefore documented as such).
+> > > >
+> > >
+> > > Do you mean a separate "charger.txt" document in
+> > > Documentation/devicetree/bindings/power/supply/?
+> >
+> > Yes, though I thought we had something already.
+> >
+> > Rob
+>
+> We don't AFAICT. There's only a binding document for "simple-battery"
+> in power supply.
+>
+> Bart
 
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Can we have it locally for now but without the maxim prefix and then
+reuse it if any other charger needs such functionality? To make it
+even more generic we can name it: "input-voltage-min-microvolt" &
+"input-current-limit-microamp".
 
-(It shouldn't prevent usage of no_console_suspend hack AFAICS)
-
-> 
-> Changelog v2:
-> - correct the subject line by adding "mfd: "
-> 
-> Signed-off-by: Binbin Wu <binbin.wu@intel.com>
-> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> ---
->  drivers/mfd/intel-lpss.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-> index 50bffc3..ff3fba1 100644
-> --- a/drivers/mfd/intel-lpss.c
-> +++ b/drivers/mfd/intel-lpss.c
-> @@ -273,6 +273,9 @@ static void intel_lpss_init_dev(const struct intel_lpss *lpss)
->  {
->  	u32 value = LPSS_PRIV_SSP_REG_DIS_DMA_FIN;
->  
-> +	/* Set the device in reset state */
-> +	writel(0, lpss->priv + LPSS_PRIV_RESETS);
-> +
->  	intel_lpss_deassert_reset(lpss);
->  
->  	intel_lpss_set_remap_addr(lpss);
-> -- 
-> 2.7.4
-> 
-
--- 
-With Best Regards,
-Andy Shevchenko
+Bart
