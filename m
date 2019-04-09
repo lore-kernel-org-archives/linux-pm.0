@@ -2,346 +2,279 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BFD1C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 10:01:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D257C282CE
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 10:07:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DA491218FC
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 10:01:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554804085;
-	bh=Aljhiu4ziRmSZash4Po9Bm5hcAJ9sB6a+ZDREIfxum8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=wXR11NvckfELBojQyvmv/dKlOGCgJiorxlWsMUS5Nb+0Z6HHQfYRGYxMHSC0+2Cc3
-	 sTbMfG1YL4KE5GM9Bvfzffp0I9Puoh4GVFk/NQdopQQjIy8fDrlRBlcvO+OPdkjoVs
-	 aDSgAGfvEKo3N1kXyjTz4ThGa/ocdHGWT5/iEuH4=
+	by mail.kernel.org (Postfix) with ESMTP id 018532083E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 10:07:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SVBVhho/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726091AbfDIKBY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 06:01:24 -0400
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:32912 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726066AbfDIKBX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 06:01:23 -0400
-Received: by mail-oi1-f193.google.com with SMTP id e5so13070193oii.0;
-        Tue, 09 Apr 2019 03:01:23 -0700 (PDT)
+        id S1726079AbfDIKHf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 06:07:35 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:39565 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727085AbfDIKHe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 06:07:34 -0400
+Received: by mail-pf1-f196.google.com with SMTP id i17so6289242pfo.6
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 03:07:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=63RC5yV5xPuk6vbHnpK6FXhUlEyzGfikDI5OAE5o4dw=;
+        b=SVBVhho/CO1pj7d1xtD204w37VeuqYRg+2kyhK7a2g4ls69frxCc/QCr/+OivOcaLb
+         sXqdV9a3hOyTsKAD3r5Ewnb7cFaRdHENj/q5aoOSJ1PvlTmlW+lGx5O9btIAzo7iZze1
+         i+uFUZBqg2qCFqQtPAd/6P42OyF3JuZ+XrrSGxhNCv2ssVwzK1KBCpy2azIcKf5tRklI
+         cxaqbBrjEyjiEmWd3aS7lmFVIqmSgCaIieLGGDy7JewPIKKr/dxs/wC5CfDJaXDr9V4Y
+         ZG7b6/1/HVCtvZ8Xp6IBFFjg0WN5tgRYBMaIoRyFZ6h0NrNTtZqhVPaVlamkht+BylRB
+         tCAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=KRxph3b0OYBtaL79FzbaTlaoVbIYtKI0HcnduwI2Heo=;
-        b=CPnBF3QIIWkGG8Jj9f4hX0U9lmLQ5v+CU01pwlJFwOgTRwadaAQH8tSGBNFCx2XF5f
-         +WFYbJdB+pdJk9rMouwxQcDkTv9MWbxA7fj6MpI89ENMz5R/L338FjgBG7CQeNRvQHPv
-         toXlUoSVDie5TKw9iB+VaU7GO/2psynq1BFO0aaiPHezUTHOfmG6M0ri9cLyFm9TGNTi
-         8TUwsFuvScDHULHzRP5n8ndfaunxXBDQlNZexNbyJ7aZI4iSgI38djRV8tGla30EccrY
-         a4c68aXH29F7PgZIHO7p4nH4c0spF5vSvrYnySUbydZrqekAWvORIdjiywLjjANa/7gM
-         FxRg==
-X-Gm-Message-State: APjAAAU2fmMIlYOxHBBDAtQzKYpF2FJv26xaA2YqdEQwqHv4pJMFybCj
-        +iwBJ2I99hXkJrfp1gVi4y2lxUhU9T2Rnw47cu4FUwBW
-X-Google-Smtp-Source: APXvYqxhwQT6WMql3nWuEvqkiyAKTxj9AphvcSlTz3/1dSWwWej3dTbHucjo93ciF93pwdp84viqyVZcEdYpuu82Ars=
-X-Received: by 2002:aca:4c08:: with SMTP id z8mr20237073oia.30.1554804082815;
- Tue, 09 Apr 2019 03:01:22 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=63RC5yV5xPuk6vbHnpK6FXhUlEyzGfikDI5OAE5o4dw=;
+        b=akTkm/iXW8GYRwc8S0w6q2ZGASIXdvUxDv0o/k3of1jq7V+TvMCC7rQg2htTPg2egG
+         s4FFiruy8GW4K1djPIZ7sMgLCZuZ/AEIUJc9Z1/hBXhI3ryMAybvnxFBdO07WjO9fbZr
+         oXVgpZShM4LqECND4Hym/gLp1VyjfNZNgwsL4DWM2UFsOnWiUUqLyqRnkulMPXioXEwq
+         jYkbhhZXtlasl2iCNOOBTVZ8vy+jfo/Oqkk0Q9rIhlwORU1AXnkiLSWmBm6zn11qCnZ/
+         Atc7lt5BGthX0se06mjen/rUSrQCHUwks4kSDw+7ffBFKmHeVphS2R9j6+cm8g/zRL57
+         1cJA==
+X-Gm-Message-State: APjAAAUhYYqk4QD45mD8EpL4j2/wh6MwUEI8am0CFC1FaCrZU9tmEsjF
+        MygougpFdXjimJ2UZx+60tYidg==
+X-Google-Smtp-Source: APXvYqxs5ramzBDSy8hQA1StgrIc+AZTeFh+vht56AKFMjRQvbnWuF9X4qGf1dEcFKRQHg9MhMTtaQ==
+X-Received: by 2002:a63:c505:: with SMTP id f5mr34218953pgd.87.1554804453806;
+        Tue, 09 Apr 2019 03:07:33 -0700 (PDT)
+Received: from localhost ([122.172.162.162])
+        by smtp.gmail.com with ESMTPSA id o81sm26333085pfa.156.2019.04.09.03.07.31
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 09 Apr 2019 03:07:32 -0700 (PDT)
+Date:   Tue, 9 Apr 2019 15:37:30 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Yangtao Li <tiny.windzz@gmail.com>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] dt-bindings: cpufreq: Document
+ operating-points-v2-sunxi-cpu
+Message-ID: <20190409100730.2rtxyy66knjning6@vireshk-i7>
+References: <20190405102455.15311-1-tiny.windzz@gmail.com>
+ <20190405102455.15311-3-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com> <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-In-Reply-To: <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 9 Apr 2019 12:01:11 +0200
-Message-ID:
- <CAJZ5v0h+jyPQ=NofwV4ha6zBqk7E1gF1xE9CoBfKYfb3jBTbig@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] cpuidle : auto-promotion for cpuidle states
-To:     Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190405102455.15311-3-tiny.windzz@gmail.com>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409100111.ay5l9l-Q7j3p1DKAf71pFJmc0lEAAcZbcfGeSYOeHjg@z>
+Message-ID: <20190409100730.Vl_wtqqc4e0JAqsEA5pmTsMb4b3lFMYu8foMXAQGzFg@z>
 
-On Fri, Apr 5, 2019 at 11:17 AM Abhishek Goel
-<huntbag@linux.vnet.ibm.com> wrote:
->
-> Currently, the cpuidle governors (menu /ladder) determine what idle state
+On 05-04-19, 06:24, Yangtao Li wrote:
+> +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu0: cpu@0 {
+> +			compatible = "arm,cortex-a53";
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			enable-method = "psci";
+> +			clocks = <&ccu CLK_CPUX>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			#cooling-cells = <2>;
+> +		};
+> +
+> +		cpu1: cpu@1 {
+> +			compatible = "arm,cortex-a53";
+> +			device_type = "cpu";
+> +			reg = <1>;
+> +			enable-method = "psci";
+> +			clocks = <&ccu CLK_CPUX>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			#cooling-cells = <2>;
+> +		};
+> +
+> +		cpu2: cpu@2 {
+> +			compatible = "arm,cortex-a53";
+> +			device_type = "cpu";
+> +			reg = <2>;
+> +			enable-method = "psci";
+> +			clocks = <&ccu CLK_CPUX>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			#cooling-cells = <2>;
+> +		};
+> +
+> +		cpu3: cpu@3 {
+> +			compatible = "arm,cortex-a53";
+> +			device_type = "cpu";
+> +			reg = <3>;
+> +			enable-method = "psci";
+> +			clocks = <&ccu CLK_CPUX>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			#cooling-cells = <2>;
+> +		};
+> +        };
+> +
+> +	cpu_opp_table: opp_table {
+> +		compatible = "operating-points-v2-sunxi-cpu";
+> +		nvmem-cells = <&speedbin_efuse>;
+> +		opp-shared;
+> +
+> +		opp-480000000-0 {
+> +			opp-hz = /bits/ 64 <480000000>;
+> +			opp-microvolt = <880000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-720000000-0 {
+> +			opp-hz = /bits/ 64 <720000000>;
+> +			opp-microvolt = <880000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-816000000-0 {
+> +			opp-hz = /bits/ 64 <816000000>;
+> +			opp-microvolt = <880000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-888000000-0 {
+> +			opp-hz = /bits/ 64 <888000000>;
+> +			opp-microvolt = <940000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1080000000-0 {
+> +			opp-hz = /bits/ 64 <1080000000>;
+> +			opp-microvolt = <1060000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1320000000-0 {
+> +			opp-hz = /bits/ 64 <1320000000>;
+> +			opp-microvolt = <1160000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1488000000-0 {
+> +			opp-hz = /bits/ 64 <1488000000>;
+> +			opp-microvolt = <1160000>;
+> +			opp-supported-hw = <0x1>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +
+> +		opp-480000000-1 {
+> +			opp-hz = /bits/ 64 <480000000>;
+> +			opp-microvolt = <820000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-720000000-1 {
+> +			opp-hz = /bits/ 64 <720000000>;
+> +			opp-microvolt = <820000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-816000000-1 {
+> +			opp-hz = /bits/ 64 <816000000>;
+> +			opp-microvolt = <820000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-888000000-1 {
+> +			opp-hz = /bits/ 64 <888000000>;
+> +			opp-microvolt = <820000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1080000000-1 {
+> +			opp-hz = /bits/ 64 <1080000000>;
+> +			opp-microvolt = <880000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1320000000-1 {
+> +			opp-hz = /bits/ 64 <1320000000>;
+> +			opp-microvolt = <940000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1488000000-1 {
+> +			opp-hz = /bits/ 64 <1488000000>;
+> +			opp-microvolt = <1000000>;
+> +			opp-supported-hw = <0x2>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +
+> +		opp-480000000-2 {
+> +			opp-hz = /bits/ 64 <480000000>;
+> +			opp-microvolt = <800000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-720000000-2 {
+> +			opp-hz = /bits/ 64 <720000000>;
+> +			opp-microvolt = <800000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-816000000-2 {
+> +			opp-hz = /bits/ 64 <816000000>;
+> +			opp-microvolt = <800000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-888000000-2 {
+> +			opp-hz = /bits/ 64 <888000000>;
+> +			opp-microvolt = <800000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1080000000-2 {
+> +			opp-hz = /bits/ 64 <1080000000>;
+> +			opp-microvolt = <840000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1320000000-2 {
+> +			opp-hz = /bits/ 64 <1320000000>;
+> +			opp-microvolt = <900000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +		opp-1488000000-2 {
+> +			opp-hz = /bits/ 64 <1488000000>;
+> +			opp-microvolt = <960000>;
+> +			opp-supported-hw = <0x4>;
+> +			clock-latency-ns = <244144>; /* 8 32k periods */
+> +		};
+> +	};
 
-There are three governors in 5.1-rc.
+Well, this is pure duplication of all the OPPs which isn't great. If I have
+understood things correctly from the above example, then all you want is a
+different microvolt value for each OPP, right ?
 
-> an idling CPU should enter into based on heuristics that depend on the
-> idle history on that CPU. Given that no predictive heuristic is perfect,
-> there are cases where the governor predicts a shallow idle state, hoping
-> that the CPU will be busy soon. However, if no new workload is scheduled
-> on that CPU in the near future, the CPU will end up in the shallow state.
->
-> In case of POWER, this is problematic, when the predicted state in the
-> aforementioned scenario is a lite stop state, as such lite states will
-> inhibit SMT folding, thereby depriving the other threads in the core from
-> using the core resources.
->
-> To address this, such lite states need to be autopromoted.
+Then you are using the wrong feature of OPP core I am afraid. What you should
+rather look for is opp-microvolt-<name> property, look in opp.txt bindings.
 
-I don't quite agree with this statement and it doesn't even match what
-the patch does AFAICS.  "Autopromotion" would be going from the given
-state to a deeper one without running state selection in between, but
-that's not what's going on here.
+And these are the helper you need to use:
+dev_pm_opp_set_prop_name()/dev_pm_opp_put_prop_name().
 
-> The cpuidle-core can queue timer to correspond with the residency value of the next
-> available state. Thus leading to auto-promotion to a deeper idle state as
-> soon as possible.
-
-No, it doesn't automatically cause a deeper state to be used next
-time.  It simply kicks the CPU out of the idle state and one more
-iteration of the idle loop runs on it.  Whether or not a deeper state
-will be selected in that iteration depends on the governor
-computations carried out in it.
-
-Now, this appears to be almost analogous to the "polling" state used
-on x86 which uses the next idle state's target residency as a timeout.
-
-While generally I'm not a big fan of setting up timers in the idle
-loop (it sort of feels like pulling your own hair in order to get
-yourself out of a swamp), if idle states like these are there in your
-platform, setting up a timer to get out of them in the driver's
-->enter() routine might not be particularly objectionable.  Doing that
-in the core is a whole different story, though.
-
-Generally, this adds quite a bit of complexity (on the "ugly" side of
-things IMO) to the core to cover a corner case present in one
-platform, while IMO it can be covered in the driver for that platform
-directly.
-
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-> ---
->
-> v1->v2 : Removed timeout_needed and rebased to current upstream kernel
->
->  drivers/cpuidle/cpuidle.c          | 68 +++++++++++++++++++++++++++++-
->  drivers/cpuidle/governors/ladder.c |  3 +-
->  drivers/cpuidle/governors/menu.c   | 22 +++++++++-
->  include/linux/cpuidle.h            | 10 ++++-
->  4 files changed, 99 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 7f108309e..11ce43f19 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -36,6 +36,11 @@ static int enabled_devices;
->  static int off __read_mostly;
->  static int initialized __read_mostly;
->
-> +struct auto_promotion {
-> +       struct hrtimer  hrtimer;
-> +       unsigned long   timeout_us;
-> +};
-> +
->  int cpuidle_disabled(void)
->  {
->         return off;
-> @@ -188,6 +193,54 @@ int cpuidle_enter_s2idle(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  }
->  #endif /* CONFIG_SUSPEND */
->
-> +enum hrtimer_restart auto_promotion_hrtimer_callback(struct hrtimer *hrtimer)
-> +{
-> +       return HRTIMER_NORESTART;
-> +}
-> +
-> +#ifdef CONFIG_CPU_IDLE_AUTO_PROMOTION
-> +DEFINE_PER_CPU(struct auto_promotion, ap);
-> +
-> +static void cpuidle_auto_promotion_start(int cpu, struct cpuidle_state *state)
-> +{
-> +       struct auto_promotion *this_ap = &per_cpu(ap, cpu);
-> +
-> +       if (state->flags & CPUIDLE_FLAG_AUTO_PROMOTION)
-> +               hrtimer_start(&this_ap->hrtimer, ns_to_ktime(this_ap->timeout_us
-> +                                       * 1000), HRTIMER_MODE_REL_PINNED);
-> +}
-> +
-> +static void cpuidle_auto_promotion_cancel(int cpu)
-> +{
-> +       struct hrtimer *hrtimer;
-> +
-> +       hrtimer = &per_cpu(ap, cpu).hrtimer;
-> +       if (hrtimer_is_queued(hrtimer))
-> +               hrtimer_cancel(hrtimer);
-> +}
-> +
-> +static void cpuidle_auto_promotion_update(int cpu, unsigned long timeout)
-> +{
-> +       per_cpu(ap, cpu).timeout_us = timeout;
-> +}
-> +
-> +static void cpuidle_auto_promotion_init(int cpu, struct cpuidle_driver *drv)
-> +{
-> +       struct auto_promotion *this_ap = &per_cpu(ap, cpu);
-> +
-> +       hrtimer_init(&this_ap->hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +       this_ap->hrtimer.function = auto_promotion_hrtimer_callback;
-> +}
-> +#else
-> +static inline void cpuidle_auto_promotion_start(int cpu, struct cpuidle_state
-> +                                               *state) { }
-> +static inline void cpuidle_auto_promotion_cancel(int cpu) { }
-> +static inline void cpuidle_auto_promotion_update(int cpu, unsigned long
-> +                                               timeout) { }
-> +static inline void cpuidle_auto_promotion_init(int cpu, struct cpuidle_driver
-> +                                               *drv) { }
-> +#endif
-> +
->  /**
->   * cpuidle_enter_state - enter the state and update stats
->   * @dev: cpuidle device for this cpu
-> @@ -225,12 +278,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->         trace_cpu_idle_rcuidle(index, dev->cpu);
->         time_start = ns_to_ktime(local_clock());
->
-> +       cpuidle_auto_promotion_start(dev->cpu, target_state);
-
-First off, I wouldn't call it "auto-promotion", because it just adds a
-timeout to trigger if the CPU spends too much time in the target
-state.
-
-Second, and more important, I don't see why this cannot be done in
-target_state->enter() just for the state in which it is needed (in
-analogy with the "polling" state).
-
-> +
->         stop_critical_timings();
->         entered_state = target_state->enter(dev, drv, index);
->         start_critical_timings();
->
->         sched_clock_idle_wakeup_event();
->         time_end = ns_to_ktime(local_clock());
-> +
-> +       cpuidle_auto_promotion_cancel(dev->cpu);
-> +
->         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->
->         /* The cpu is no longer idle or about to enter idle. */
-> @@ -312,7 +370,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->  int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->                    bool *stop_tick)
->  {
-> -       return cpuidle_curr_governor->select(drv, dev, stop_tick);
-> +       unsigned long timeout_us, ret;
-> +
-> +       timeout_us = UINT_MAX;
-> +       ret = cpuidle_curr_governor->select(drv, dev, stop_tick, &timeout_us);
-> +       cpuidle_auto_promotion_update(dev->cpu, timeout_us);
-> +
-> +       return ret;
->  }
->
->  /**
-> @@ -658,6 +722,8 @@ int cpuidle_register(struct cpuidle_driver *drv,
->                 device = &per_cpu(cpuidle_dev, cpu);
->                 device->cpu = cpu;
->
-> +               cpuidle_auto_promotion_init(cpu, drv);
-> +
->  #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
->                 /*
->                  * On multiplatform for ARM, the coupled idle states could be
-> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> index f0dddc66a..65b518dd7 100644
-> --- a/drivers/cpuidle/governors/ladder.c
-> +++ b/drivers/cpuidle/governors/ladder.c
-> @@ -64,7 +64,8 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
->   * @dummy: not used
->   */
->  static int ladder_select_state(struct cpuidle_driver *drv,
-> -                              struct cpuidle_device *dev, bool *dummy)
-> +                              struct cpuidle_device *dev, bool *dummy,
-> +                              unsigned long *unused)
->  {
->         struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
->         struct ladder_device_state *last_state;
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 5951604e7..835e337de 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -276,7 +276,7 @@ static unsigned int get_typical_interval(struct menu_device *data,
->   * @stop_tick: indication on whether or not to stop the tick
->   */
->  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-> -                      bool *stop_tick)
-> +                      bool *stop_tick, unsigned long *timeout)
->  {
->         struct menu_device *data = this_cpu_ptr(&menu_devices);
->         int latency_req = cpuidle_governor_latency_req(dev->cpu);
-> @@ -442,6 +442,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->                 }
->         }
->
-> +#ifdef CPUIDLE_FLAG_AUTO_PROMOTION
-> +       if (drv->states[idx].flags & CPUIDLE_FLAG_AUTO_PROMOTION) {
-> +               /*
-> +                * Timeout is intended to be defined as sum of target residency
-> +                * of next available state, entry latency and exit latency. If
-> +                * time interval equal to timeout is spent in current state,
-> +                * and if it is a shallow lite state, we may want to auto-
-> +                * promote from such state.
-> +                */
-> +               for (i = idx + 1; i < drv->state_count; i++) {
-> +                       if (drv->states[i].disabled ||
-> +                                       dev->states_usage[i].disable)
-> +                               continue;
-> +                       *timeout = drv->states[i].target_residency +
-> +                                       2 * drv->states[i].exit_latency;
-> +                       break;
-> +               }
-> +       }
-> +#endif
-
-Why do you need to do the above in the governor at all?
-
-The driver's ->enter() callback knows what state has been selected, it
-can check what the next available state is and set up the timer
-accordingly.
-
-I don't see the need to pass the timeout from the governor to the core
-anyway when the next thing the governor does is to return the selected
-state index.
-
-> +
->         return idx;
->  }
->
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 3b3947232..84d76d1ec 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -72,6 +72,13 @@ struct cpuidle_state {
->  #define CPUIDLE_FLAG_POLLING   BIT(0) /* polling state */
->  #define CPUIDLE_FLAG_COUPLED   BIT(1) /* state applies to multiple cpus */
->  #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
-> +/*
-> + * State with only and only fast state bit set don't even lose user context.
-> + * But such states prevent other sibling threads from thread folding benefits.
-> + * And hence we don't want to stay for too long in such states and want to
-> + * auto-promote from it.
-> + */
-> +#define CPUIDLE_FLAG_AUTO_PROMOTION    BIT(3)
->
->  struct cpuidle_device_kobj;
->  struct cpuidle_state_kobj;
-> @@ -243,7 +250,8 @@ struct cpuidle_governor {
->
->         int  (*select)          (struct cpuidle_driver *drv,
->                                         struct cpuidle_device *dev,
-> -                                       bool *stop_tick);
-> +                                       bool *stop_tick, unsigned long
-> +                                       *timeout);
->         void (*reflect)         (struct cpuidle_device *dev, int index);
->  };
->
-> --
-> 2.17.1
->
+-- 
+viresh
