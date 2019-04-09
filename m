@@ -2,167 +2,96 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D749DC282CE
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:38:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3FB3C10F0E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A74102133D
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 15:38:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 93A63214AF
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 17:26:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="G6tBl6c1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uR+W9FF4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726709AbfDIPie (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 11:38:34 -0400
-Received: from mail-it1-f195.google.com ([209.85.166.195]:56261 "EHLO
-        mail-it1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726702AbfDIPid (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 11:38:33 -0400
-Received: by mail-it1-f195.google.com with SMTP id y134so5612339itc.5
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 08:38:32 -0700 (PDT)
+        id S1727185AbfDIR0F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 13:26:05 -0400
+Received: from mail-pf1-f193.google.com ([209.85.210.193]:45557 "EHLO
+        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726780AbfDIR0E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 13:26:04 -0400
+Received: by mail-pf1-f193.google.com with SMTP id e24so10092688pfi.12;
+        Tue, 09 Apr 2019 10:26:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=Pt9UNGmZGIYGlZ2QTO4HylfUAQVS8xdNO3SXWY6eb4c=;
-        b=G6tBl6c1Ws6CyGsICZgqvE1rUjgwzRPSFz2Q1in7N4+rvi+/QwOCvJcAj53J8/ekMG
-         W1+jXB1/6luDXq93LNrQ0vN40m4osHRFb/1KmySoaSyxGFd0wz/hPvixP+p8U9Ozhpu+
-         u8ihs04i/MdHAeNBaltE8ltPRuul4d8/HrbHcvlFfy8jRg8MCJos0fEV7Pc5shxXYHnx
-         aZk7NDWLVfW2lvyr6a/sqbqrW9MlQFHTOuzzKpIoKPFxOeIWyO21cVXf2oOAIjSyNF8H
-         GBmnhCz0aMnkyUnjCPLRcWqxzJNtHoT0nfJIiWJGtNHp02zLwx/tjmGpK8qyfTiSBX5z
-         jieg==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=2OPzDwOe7I+UnNSxlX5RL4h6AHbqcWSwv2DhZC078Jw=;
+        b=uR+W9FF4/Rg4RzQuHf+07C5aW4QXNJi4CuEpLlGsB3GRMSkG4vHqsRMfZ0t/rB3ulw
+         iLrXRHMXCpdEPsrWvSHKyN4SWpvGNy3EKPn8oFkDuN/WHwrqCvCZBjfSYzk1A5iblOGK
+         76zYYsKy3dUV9v40WAJLOawqFa0IJN90Ly0/8QHVDse/1kU9uraDf/Va1S2No51sAj3H
+         43DNzY7kRuvIckHH6bG1UN11tsTbPhcI5Tj2Tmtzvv/eSSvxO1yyP7cAWVyvOKCq4nc2
+         89/s1vYQ3YZQCgyPuFe1hCW4z8u2QzCQjM0opgohwogbXKGFwA2/H3M0XDrpFXHYsT4o
+         Vvvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=Pt9UNGmZGIYGlZ2QTO4HylfUAQVS8xdNO3SXWY6eb4c=;
-        b=h3RPgdo4vyPx/rv7Zb9fpoABRoDEDMxIyrphZaEgbJ5HozzjMsNCNvO+hUw7R+I5QV
-         sHDL+UeA3Lj7fcfDb7EbT5R9WFJqnWr3EhNW66u78+94r0moeA9IscL/WdbKnXyvnczd
-         D0WnumshrFfyXvpo6WG6pQF2DDS98vMJ3AfZwwfhJ91ZRrL8GEJDnsIswK839IIhtZjY
-         DD1v4BlvklqfiKx1SIIdGWe8ZwqfemfRks3CXjhS+tpeo9grcEsSiM2meMa5U8uhj8yF
-         8GyqiWs1N8PoB7ABxYSKA+zne2O3cE7IS6qxavCH0nYSFszORpLpasWVJfPzzRsIVqVH
-         89cQ==
-X-Gm-Message-State: APjAAAVGYKrWV6xHnH6YMyF0BvgfngRGLofj8b4GQFsG+jjpW68JqYgd
-        Lg5OpnnlvpL2maKatQnCEV1zks2JbUFsl8aswLOZOw==
-X-Google-Smtp-Source: APXvYqwgIZ8jvlJsLLHZsGZV7XLhc54MZO8km3dqpscHI9XMQP5QklSnw6tEw2lK3OyXmlDPeY2eD9811Hh2ecyIHKY=
-X-Received: by 2002:a24:57cf:: with SMTP id u198mr21047947ita.162.1554824312072;
- Tue, 09 Apr 2019 08:38:32 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
- <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
- <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com> <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
-In-Reply-To: <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com>
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-Date:   Tue, 9 Apr 2019 17:38:20 +0200
-Message-ID:
- <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
-Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-To:     Rob Herring <robh@kernel.org>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=2OPzDwOe7I+UnNSxlX5RL4h6AHbqcWSwv2DhZC078Jw=;
+        b=NGJ24rwsyHn2LG9KlDAq5AESmwG97Fna0kuRzso/DNZxtV/nhXc++K8gWtOUlovB/p
+         BkDtbK4F71HIsCg6miu9Bd3Yu3qVISz8miyVCIaBhGvSPfLIrzwEcg4R7jRTgCu4tsNB
+         86x1iYqv2NltGzkPZexwaAUJpGYa3gpUaR7ysiGPorFShhbtpbf7vQvkSi14FRaWmOIr
+         oEfl9/Hk/ENGd7Ia8N/ffnI0+gNqTkDWyXUhHPb+X9LEEEjHmSVMBwPalH6mWhOOAKQy
+         CI52c6ro9IOuoBvTE07yuVsBh50RJED27H6ZH1ubLygxU8P0vavaAzECxMjzqZl1F6O9
+         /TuA==
+X-Gm-Message-State: APjAAAWPBwwZJGWvMDursuFWPKWfQoowxxdIE3+ZLmcB602umjrZT7l/
+        q7qc4+z8vqsvfflnF3nDfnsGtryFBrE=
+X-Google-Smtp-Source: APXvYqxtg3Eugmatg8OYWhdBA2qBSJZvTrXbtIXDQQUzLNVk3FhZRvnz6SKW7593A5zaeSeSmbJYvQ==
+X-Received: by 2002:a63:e20b:: with SMTP id q11mr36565491pgh.263.1554830763853;
+        Tue, 09 Apr 2019 10:26:03 -0700 (PDT)
+Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
+        by smtp.gmail.com with ESMTPSA id l10sm23922205pfc.46.2019.04.09.10.26.02
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Tue, 09 Apr 2019 10:26:02 -0700 (PDT)
+From:   Yangtao Li <tiny.windzz@gmail.com>
+To:     tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date:   Tue,  9 Apr 2019 13:25:56 -0400
+Message-Id: <20190409172558.18778-1-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409153820.Gzf8dnSsvFSmRrldsi3DWizFyViRsNiFZQ_-7oHHj-o@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190409172556.AgFXUabG3H5TvP_GV8mlT7oDioSatFndDZAU120ETUI@z>
 
-wt., 9 kwi 2019 o 13:04 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(a)=
-:
->
-> wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
-> >
-> > On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wrot=
-e:
-> > >
-> > > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82(a=
-):
-> > > >
-> > > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wrote=
-:
-> > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > > >
-> > > > > Add the DT binding document for the battery charger module of max=
-77650.
-> > > > >
-> > > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > > > ---
-> > > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++++=
-++++++
-> > > > >  1 file changed, 27 insertions(+)
-> > > > >  create mode 100644 Documentation/devicetree/bindings/power/suppl=
-y/max77650-charger.txt
-> > > > >
-> > > > > diff --git a/Documentation/devicetree/bindings/power/supply/max77=
-650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-c=
-harger.txt
-> > > > > new file mode 100644
-> > > > > index 000000000000..fef188144386
-> > > > > --- /dev/null
-> > > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-cha=
-rger.txt
-> > > > > @@ -0,0 +1,27 @@
-> > > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-> > > > > +
-> > > > > +This module is part of the MAX77650 MFD device. For more details
-> > > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > > > > +
-> > > > > +The charger is represented as a sub-node of the PMIC node on the=
- device tree.
-> > > > > +
-> > > > > +Required properties:
-> > > > > +--------------------
-> > > > > +- compatible:                Must be "maxim,max77650-charger"
-> > > > > +
-> > > > > +Optional properties:
-> > > > > +--------------------
-> > > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in microv=
-olts). Must be
-> > > > > +                     one of: 4000000, 4100000, 4200000, 4300000,=
- 4400000,
-> > > > > +                     4500000, 4600000, 4700000.
-> > > > > +- current-limit-microamp:    CHGIN input current limit (in micro=
-amps). Must
-> > > > > +                             be one of: 95000, 190000, 285000, 3=
-80000, 475000.
-> > > >
-> > > > To repeat what I said on v6, these should be common properties IMO =
-(and
-> > > > therefore documented as such).
-> > > >
-> > >
-> > > Do you mean a separate "charger.txt" document in
-> > > Documentation/devicetree/bindings/power/supply/?
-> >
-> > Yes, though I thought we had something already.
-> >
-> > Rob
->
-> We don't AFAICT. There's only a binding document for "simple-battery"
-> in power supply.
->
-> Bart
+Add sunxi nvmem based CPU scaling driver, refers to qcom-cpufreq-kryo.
 
-Can we have it locally for now but without the maxim prefix and then
-reuse it if any other charger needs such functionality? To make it
-even more generic we can name it: "input-voltage-min-microvolt" &
-"input-current-limit-microamp".
+Yangtao Li (2):
+  cpufreq: Add sunxi nvmem based CPU scaling driver
+  dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
 
-Bart
+ .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 166 +++++++++++++
+ MAINTAINERS                                   |   7 +
+ drivers/cpufreq/Kconfig.arm                   |  10 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/cpufreq/sunxi-cpufreq-nvmem.c         | 234 ++++++++++++++++++
+ 6 files changed, 420 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+ create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+
+---
+v2:
+-update changelog
+-convert to dev_pm_opp_set_prop_name use instead of dev_pm_opp_set_supported_hw
+-some change in OPP Node 
+---
+2.17.0
+
