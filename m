@@ -2,78 +2,102 @@ Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5532C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 09:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 526D4C10F0E
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 09:37:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7194920833
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 09:30:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554802257;
-	bh=xF0MHbJVnFRkXMVSY0Sz0OcFAfptosSeLujRNokzuKU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=FAXjy8yFtiQMfUuzzzNIS4sv7THZ8WxSf9noSN/ijSRCKFtKjdRaXq0y2o/xYh80M
-	 BQuzS/wMzi8GI5ru//jCMVv0Ifg+9P3SvY4rSd8zcQK5tACfbnFFQUpJlDcAOGVxQv
-	 1BB4n251VZbMnaots4TW9jrHaOGL3919NThzL24E=
+	by mail.kernel.org (Postfix) with ESMTP id 293F52084C
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 09:37:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726656AbfDIJa4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 05:30:56 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:37425 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726535AbfDIJa4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 05:30:56 -0400
-Received: by mail-ot1-f68.google.com with SMTP id c16so14937214otn.4;
-        Tue, 09 Apr 2019 02:30:56 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=xF0MHbJVnFRkXMVSY0Sz0OcFAfptosSeLujRNokzuKU=;
-        b=Yx+XcIgoPC7vYMCffgiBnHarZgO8Xg2Z0nnK3YFHYh32TUNW5aBG9t0bipX5gAIAMm
-         Xk1fyV2MzJ7XUas5BxYSorqo/JMYvKsqU0m4OX6WSZarFSeDijcjN0sNp5MbRZPra10R
-         JOwN3/vCJ4dLartraKLQ4IzWAjWJB0LvIvvmcSDyJgX+1U9cQF9wac5XSdxVzSXtDJ10
-         8wFw1Y+7B6edl1aKTNXADDA3ElYxi0UnanpEvJIEiXWI1deAkU+IVfPm6I42orukaruv
-         CE2g8ui/vk6TNpJtVBzhDjjeRTn7dT8DPZ1t/9Z40+vEwQEaOwZH6IDYQcLB99ih8nOD
-         H+cw==
-X-Gm-Message-State: APjAAAXnNb/OztPaW1xdAPXAGg/oWH/q2F2sWVNTmo/oJk5P7SHcERGA
-        dlX9YqSD3pyrdENpjAQju2QXwamdmVVTQZjdFyw=
-X-Google-Smtp-Source: APXvYqy2whJeRDYFhQ1WR8epZJWXwBAbpl0SMfSDW3+AyfZoBtTVvs/WROgMZn7JgUsV/JmPbpgj6GGcqBKPhykhhEs=
-X-Received: by 2002:a9d:2dea:: with SMTP id g97mr3637022otb.20.1554802255792;
- Tue, 09 Apr 2019 02:30:55 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
- <20190405091647.4169-2-huntbag@linux.vnet.ibm.com> <87r2acwpp2.fsf@dja-thinkpad.axtens.net>
- <a8368cfa-9667-5f5b-cafe-f4830ece0f26@linux.vnet.ibm.com>
-In-Reply-To: <a8368cfa-9667-5f5b-cafe-f4830ece0f26@linux.vnet.ibm.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 9 Apr 2019 11:30:44 +0200
-Message-ID:
- <CAJZ5v0jS7HX3ka59OhYzbdgdAYDO_DTwp44gxar_xQV_AsscSw@mail.gmail.com>
+        id S1726770AbfDIJhZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 05:37:25 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:37880 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726741AbfDIJhZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 05:37:25 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x399YFn9134366
+        for <linux-pm@vger.kernel.org>; Tue, 9 Apr 2019 05:37:24 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2rrpve5qtb-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 05:37:09 -0400
+Received: from localhost
+        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Tue, 9 Apr 2019 10:36:53 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Tue, 9 Apr 2019 10:36:50 +0100
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+        by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x399anDR43974692
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 9 Apr 2019 09:36:49 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 67C96A405B;
+        Tue,  9 Apr 2019 09:36:49 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id CC29DA4054;
+        Tue,  9 Apr 2019 09:36:47 +0000 (GMT)
+Received: from oc0383214508.ibm.com (unknown [9.124.35.65])
+        by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+        Tue,  9 Apr 2019 09:36:47 +0000 (GMT)
 Subject: Re: [PATCH v2 1/2] cpuidle : auto-promotion for cpuidle states
-To:     Abhishek <huntbag@linux.vnet.ibm.com>
-Cc:     Daniel Axtens <dja@axtens.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+To:     Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
+        ego@linux.vnet.ibm.com
+References: <20190405091647.4169-1-huntbag@linux.vnet.ibm.com>
+ <20190405091647.4169-2-huntbag@linux.vnet.ibm.com>
+ <87lg0kwp3t.fsf@dja-thinkpad.axtens.net>
+From:   Abhishek <huntbag@linux.vnet.ibm.com>
+Date:   Tue, 9 Apr 2019 15:06:47 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <87lg0kwp3t.fsf@dja-thinkpad.axtens.net>
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+x-cbid: 19040909-0020-0000-0000-0000032DD817
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19040909-0021-0000-0000-0000217FFD89
+Message-Id: <f8a0e5ad-44d1-9a12-1995-57f3671a5889@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-09_03:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=729 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904090063
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190409093044.lbvGQBX7pFw8pGvs-l3pbTDh0NJz_NWcbUejh03qc9A@z>
+Message-ID: <20190409093647.-DS3YkDGkvaTnmRca2X5pyO6OFNYpU3LABTzXeQ1pEQ@z>
 
-On Tue, Apr 9, 2019 at 11:29 AM Abhishek <huntbag@linux.vnet.ibm.com> wrote:
->
-> Hi Daniel,
->
-> Thanks for such a descriptive review. I will include all the suggestions
-> made in my next iteration.
+Hi Daniel,
 
-Please give me some time to send comments before that.
+On 04/08/2019 07:55 PM, Daniel Axtens wrote:
+> Hi,
+>
+> Sorry, just realised another thing I wanted to ask:
+>
+>> @@ -442,6 +442,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>>   		}
+>>   	}
+>>
+>>
+>> +#ifdef CPUIDLE_FLAG_AUTO_PROMOTION
+> Why is this based on CPUIDLE_FLAG_ rather than CONFIG_CPU_IDLE_? Won't
+> this always be true, given that the flag is defined regardless of the
+> config option in the header?
+Yeah, You are right. This should have been CONFIG_CPU_IDLE_AUTO_PROMOTION.
+
+--Abhishek
+
