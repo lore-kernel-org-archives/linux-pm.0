@@ -1,65 +1,46 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH 1/4] dt-bindings: opp: Introduce opp-bw-MBs bindings
-Date: Tue, 9 Apr 2019 17:39:08 +0300
-Message-ID: <6d918bd9-489c-89fa-733e-90a5dabdaa0c@linaro.org>
-References: <20190313090010.20534-1-georgi.djakov@linaro.org>
- <20190313090010.20534-2-georgi.djakov@linaro.org>
- <20190328151255.GA5262@bogus>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v13 0/4] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Tue, 9 Apr 2019 17:01:12 +0200
+Message-ID: <CAJZ5v0g57V=tHdTJ2THLfTH_CbHQyS8xpNaeZUojPiHp=+gS4Q@mail.gmail.com>
+References: <20190327143548.25305-1-ulf.hansson@linaro.org> <CAPDyKFqc9OeaCGrSu7toMcgZesN2xBqqWNQfqUt+4+FvQ4kmDw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190328151255.GA5262@bogus>
-Content-Language: en-US
+In-Reply-To: <CAPDyKFqc9OeaCGrSu7toMcgZesN2xBqqWNQfqUt+4+FvQ4kmDw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Linux PM <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+On Tue, Apr 9, 2019 at 1:57 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Wed, 27 Mar 2019 at 15:35, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > Changes in v13:
+> >  - Use WRITE|READ_ONCE when reading/writing the "next_hrtimer" variable in the
+> > struct cpuidle_device. Also reset the same variable after resumed from idle to
+> > avoid it from containing a stale value.
+> >  - Added acks from Daniel Lezcano.
+> >  - The entire v13 series, including the PSCI/ARM changes are available in a
+> > git branch [3].
+>
+> Rafael, I have address the received comments on this version $subject
+> series, is there anything that is holding you back from queuing it?
+>
+> If you like I can send a pull-request, to simplify for you.
 
-On 3/28/19 17:12, Rob Herring wrote:
-> On Wed, Mar 13, 2019 at 11:00:07AM +0200, Georgi Djakov wrote:
->> In addition to frequency and voltage, some devices may have bandwidth
->> requirements for their interconnect throughput - for example a CPU
->> or GPU may also need to increase or decrease their bandwidth to DDR
->> memory based on the current operating performance point.
->>
->> Extend the OPP tables with additional property to describe the bandwidth
->> needs of a device. The average and peak bandwidth values depend on the
->> hardware and its properties.
-> 
-> How would this work if you have 1 OPP (for the bus/interconnect/ddr) and 
-> 2 devices with variable bandwidth needs? Or 'device' here means the 
-> interconnect?
+I will get to this one shortly.  I've been waiting for possible
+comments on patch [3/4], but since no one has commented so far, it
+seems to be non-controversial. :-)
 
-This is a property of the consumer devices and not of the bus. It's fine
-for devices to have different bandwidth needs and to be connected to a
-shared bus. In this case the framework knows the topology and can
-determine which parts of the bus are shared and aggregate the traffic
-accordingly.
+I'm going to add this material to the cpuidle branch rather than genpd.
 
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  Documentation/devicetree/bindings/opp/opp.txt | 45 +++++++++++++++++++
->>  1 file changed, 45 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
->> index 76b6c79604a5..fa598264615f 100644
->> --- a/Documentation/devicetree/bindings/opp/opp.txt
->> +++ b/Documentation/devicetree/bindings/opp/opp.txt
->> @@ -129,6 +129,9 @@ Optional properties:
->>  - opp-microamp-<name>: Named opp-microamp property. Similar to
->>    opp-microvolt-<name> property, but for microamp instead.
->>  
->> +- opp-bw-MBs: The interconnect bandwidth is specified with an array containing
->> +  the two integer values for average and peak bandwidth in megabytes per second.
-> 
-> -MBps would be better IMO. Either way, units should be documented in 
-> property-units.txt.
+> Moreover, there is another series which I have pinged you about
+> earlier, which I would appreciate to queue via your tree. It's acked
+> by PSCI maintainers and is ready to go. "[PATCH v2 0/5] drivers:
+> firmware: psci: Some cleanup and refactoring".
 
-Agree! Of course!
-
-Thanks,
-Georgi
+If you want me to merge the PSCI series, please resent it with a
+request to that end in the cover letter.  Also please let me know
+whether or not it depends on the $subject series.
