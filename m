@@ -2,87 +2,101 @@ Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2F14C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:39:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1F69C10F14
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:41:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BC9C3206DF
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:39:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 86B6020854
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:41:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kLPZDRdq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387513AbfDJQjj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 12:39:39 -0400
-Received: from foss.arm.com ([217.140.101.70]:57788 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731199AbfDJQji (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Apr 2019 12:39:38 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 40642374;
-        Wed, 10 Apr 2019 09:39:38 -0700 (PDT)
-Received: from [0.0.0.0] (e107985-lin.cambridge.arm.com [10.1.194.38])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B8673F59C;
-        Wed, 10 Apr 2019 09:39:37 -0700 (PDT)
-Subject: Re: [RFC 6/6] Providing TurboSched as config option
-To:     Parth Shah <parth015@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
-References: <20190322060621.27021-1-parth015@linux.vnet.ibm.com>
- <20190322060621.27021-7-parth015@linux.vnet.ibm.com>
-From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
-Message-ID: <84e0894c-b38c-3e14-998f-71b23670baf2@arm.com>
-Date:   Wed, 10 Apr 2019 18:39:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <20190322060621.27021-7-parth015@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+        id S1729662AbfDJRlq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 13:41:46 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:35485 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729365AbfDJRlq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 13:41:46 -0400
+Received: by mail-pg1-f194.google.com with SMTP id g8so1992964pgf.2;
+        Wed, 10 Apr 2019 10:41:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=cIF48K8XpxYwNR94LDHijnfSJcxVFagLr9cYV08b7iE=;
+        b=kLPZDRdqAXR2xTAx1wWtZslBLXTGP4lcjNw96zxh14Nxt4kMztbVJh3WRbm7LRybZl
+         flvy6UEYRARIBNMDrTTEL4Zl3XggpyHMGTbHcKNgwH7XSfJ5nsdEoX56fRXjbwhZkAfI
+         xTFzlH/kard/QtBGMRBibBnYKPZNE+EnyOB5hhoKYoe19Nd20csm14/C0ysOIziFrX7G
+         gNFR5I/tB6P7Y8bch9i9QkP51uANBA8dmeO4Vn3KsxAYNRhrKzdbn97btvJK5Ue8BVPE
+         QYDJYxH/5/H5zDIWU3/oSqxDbp8VNP8zuhums+5dbo75GKSjAWLX1MHWmi3s0lHwop4P
+         r94w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=cIF48K8XpxYwNR94LDHijnfSJcxVFagLr9cYV08b7iE=;
+        b=monIsnhdAy/OVwXp0QdfXvPV1sKHeKrxp6lixBXoAhHI5IE7tVH+o5lTn9GxciUzmw
+         ndezYtUqE0xYYRXgh4YVsT/ottoifZiyJayVlM1vWmE01eiu2b8uDxp/8LUL+EZLV7aJ
+         qxCbYS7RSQxFLaWR7ua+wRaloL+0M7lYxr7X37iDBhjkZ7UvixYGY8rgxWC+8sgCBXHq
+         mOQCmTeb1PWn1vkMRMQtN5lplCkh/vymKV8y06q2oYOkOxW28n8z6LsaNxOzbAL5LxB7
+         2Z6mcGnuaTJW99kM4Q8qGXrNU/1MEqW0yVJ2M0uGLZTz6gBA47wE5d5XIjqhKJOTHuO4
+         EWjA==
+X-Gm-Message-State: APjAAAXYMX06ClxnqQr0zrHzOsOuY27bwBI00+0yZqsSnHjtwR74NsnX
+        zylwcaiHL8wSKFd8+t0dMjw=
+X-Google-Smtp-Source: APXvYqxy07eYlruoHBkz2KKPT88J0+/pcwSr4sisLJg3WgSfTg142Srfcy3lkTlik6gv4A4Kki9cKQ==
+X-Received: by 2002:a62:b61a:: with SMTP id j26mr45122885pff.203.1554918105532;
+        Wed, 10 Apr 2019 10:41:45 -0700 (PDT)
+Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
+        by smtp.gmail.com with ESMTPSA id j20sm20609850pfn.84.2019.04.10.10.41.41
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Wed, 10 Apr 2019 10:41:44 -0700 (PDT)
+From:   Yangtao Li <tiny.windzz@gmail.com>
+To:     tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date:   Wed, 10 Apr 2019 13:41:37 -0400
+Message-Id: <20190410174139.20012-1-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190410174137.sirTf8shWh8db_oqEP3A7uBVf_D1C6vIz8o6HZuzcdo@z>
 
-On 3/22/19 7:06 AM, Parth Shah wrote:
-> Signed-off-by: Parth Shah <parth015@linux.vnet.ibm.com>
+Add sunxi nvmem based CPU scaling driver, refers to qcom-cpufreq-kryo.
 
-[...]
+Yangtao Li (2):
+  cpufreq: Add sunxi nvmem based CPU scaling driver
+  dt-bindings: cpufreq: Document allwinner,cpu-operating-points-v2
 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 06e440d3ea2f..2484fa8c49d0 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -54,6 +54,7 @@ unsigned int sysctl_sched_rt_period = 1000000;
->   
->   __read_mostly int scheduler_running;
->   
-> +#ifdef CONFIG_TURBO_SCHED
+ .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 168 +++++++++++++
+ MAINTAINERS                                   |   7 +
+ drivers/cpufreq/Kconfig.arm                   |  10 +
+ drivers/cpufreq/Makefile                      |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/cpufreq/sunxi-cpufreq-nvmem.c         | 232 ++++++++++++++++++
+ 6 files changed, 420 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+ create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
 
-This one takes sysctl_sched_rt_runtime away from a non 
-CONFIG_TURBO_SCHED build like arm64 defconfig.
+---
+v3:
+-update changelog and title
+-convert compatibles to allwinner,cpu-operating-points-v2
+-document the valid names for opp-microvolt-<name>
+v2:
+-update changelog
+-convert to dev_pm_opp_set_prop_name instead of
+ dev_pm_opp_set_supported_hw
+-some change in OPP Node 
+---
+2.17.0
 
-...
-   MODPOST vmlinux.o
-kernel/sysctl.o:(.data+0x14d0): undefined reference to 
-`sysctl_sched_rt_runtime'
-kernel/sched/core.o: In function `dl_bandwidth_enabled':
-/opt/git/kernel_org/kernel/sched/sched.h:282: undefined reference to 
-`sysctl_sched_rt_runtime'
-...
-
-[...]
-
---- 8< ---
-
-@@ -54,13 +54,13 @@ unsigned int sysctl_sched_rt_period = 1000000;
-
-  __read_mostly int scheduler_running;
-
--#ifdef CONFIG_TURBO_SCHED
-  /*
-   * part of the period that we allow rt tasks to run in us.
-   * default: 0.95s
-   */
-  int sysctl_sched_rt_runtime = 950000;
-
-+#ifdef CONFIG_TURBO_SCHED
