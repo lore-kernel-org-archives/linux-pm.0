@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3CAFC10F14
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 297C5C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:20:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AF84E206B6
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:20:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE005206B6
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:20:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rHIYi9ba"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="meorCV0l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729421AbfDJIUq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 04:20:46 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:42390 "EHLO
-        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729287AbfDJIUq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:20:46 -0400
-Received: by mail-lf1-f67.google.com with SMTP id w23so1100747lfc.9
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 01:20:44 -0700 (PDT)
+        id S1729287AbfDJIUr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 04:20:47 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:43967 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729258AbfDJIUr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:20:47 -0400
+Received: by mail-lj1-f195.google.com with SMTP id f18so1242602lja.10
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 01:20:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=wXapuDJ/TxdZdSmwteecFqdWBuQB0h5GI4Aq0atblIM=;
-        b=rHIYi9ba92gg8LkA31/7tWSmN9BXPCv4fviYMZe1iSFxfd6GajN5HaoOMcKMj56Nl2
-         Q+VQP0P0fcCiyIHQcUv3VuufwXB5YDzUOrbe/olGwQoIRC3Qbq/2gzL14A62daskwX0R
-         F+YJAxbPsh6EaLOhueGYvhaHloVSpkyLXcm0H6sbRg5COodlIaq9yB1HLZDeHDZYudu7
-         FSWO0M4QMkjflN1bIF20Et0VFSYnT/YuRlaLJ8ZTlyH3kFkc0Z73Ff2oiarV0PQlJMGP
-         7DAvpzBVUIsbIzyhjiDbthAMuTse3GD4kzZKkZ5hDgL3EVQLiQTMOqeZQ3AiWvj5gE5H
-         SWyQ==
+        bh=fqLAcdPj/NLZOrfZZI3kgT4b9oSplDLhcdYfEWYk7f0=;
+        b=meorCV0lfQredAwU2T0Tv4bAokTPM0RaKKvcv1f4Zkgzrz6wBM9F78OxGC4F4ULvZS
+         TTwysSVVXNlZwlKOotm9O5PzUO1jLSU+pssMiR+xaVT2oGb2AiVXeBPghZsGWtw4MuXv
+         U0wreO5tHp85amwZGZ5njG5mI7n27mJ/wzmO/r4BoimQNrPBusfrLBnH6EOF4YoV77vY
+         vCeUpdya3P60zDgoGV7/xBw/OnHFgCehptWFeHLPHkUzg0xR+QfMNXy9PAxYjwZMjqPK
+         pVvBEqtd/cJJTKbyJNbloU3b4tgWs12BMmgYss6UWYwxchMYSxpim+dHHV1rRUeOrlpK
+         c9+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=wXapuDJ/TxdZdSmwteecFqdWBuQB0h5GI4Aq0atblIM=;
-        b=Rl/5FcHfBNXqaHrqMs7jRw0Q2O7tdSgd0mWD3pVnC3BIHj+BrT7MK0cX+4FbwpX8Un
-         wqs/inPnQDY4xMZfvDM2mriDmmCsn9ICOcJ+gTY3Wsdtc5uxAuROuE1elE+gj+MqT+Sr
-         Z+kTbsPSbbBYMi5smEWhKSUW5em0nN0pKkAN3X2EKmorHy1k0bwvjnozJKvUTGm67plZ
-         CctGkO9K+hWqZITtusUbsUpb+RS70Lrhb6UZ4oilzaLwsXh69G8wK3iUpytTZZl/ZWEK
-         er3aeJ6edzwZLk/ACiustIJ+AvEgdFAQ4w1iRvPu3NaiKO4vdLkeMNT+Yn5RdGIFnicU
-         Of/A==
-X-Gm-Message-State: APjAAAVdjmft3tZqpsBcCRm1B13bXTINSSLlqvFIpNNQPtX/Vz305xMR
-        h7X6Us9zZnZcTH6bgXd1Yluf0A==
-X-Google-Smtp-Source: APXvYqyryS1q15a6d0UsZY2G/O7PEH4B07acNQrCSSgxP4ck3B8hMWAB5vl6cz5C1FZ2tb6e/Um+Mw==
-X-Received: by 2002:ac2:4242:: with SMTP id m2mr1249881lfl.142.1554884443988;
-        Wed, 10 Apr 2019 01:20:43 -0700 (PDT)
+        bh=fqLAcdPj/NLZOrfZZI3kgT4b9oSplDLhcdYfEWYk7f0=;
+        b=NnzUzNgMvxmQ1tOpIcUUCsg7NM0DAM5uQ7LGATx1h22waLV1oolZ9r3I7Oj5jMieCM
+         YZBjsJS59b5LmvIhbJ+30MrRZWtNM9Tzq9ggKkBOoF5lHyBYkIyAQ6YUZ+apzFYprEm3
+         6gcLllhwIBqpP1r6ys6HCJ1glC6B/BNsXNPXYxGDmBr6HIMJsEwFRDnkJe/TS3GaP+Z/
+         EwyEdgM1HELFrAJfm/1R74fIQVMUO5j3060Rixo3pQDoE5RIopF7az6eHHwxDyttmdiu
+         Ca4sjnRj9TS02lZ6dX4RA0kOaLTkuo4cQi4ewRyOPR7PtObOJAeLo/6z6rWS4T6j9GbA
+         rPMw==
+X-Gm-Message-State: APjAAAXbDjjfA9KkCLX9N18sjNgvUf2k2xlit2TvYxc80Wb8vhKhErtG
+        1mSgUkl/0E8rjdBXDl1jFFS6lg==
+X-Google-Smtp-Source: APXvYqyzghyBIm1gYgowOZ/whO39XDQHXurGBpGYX892IX7polNLrEr5KpF1zI55BOJYcE+O19Fv6A==
+X-Received: by 2002:a2e:380c:: with SMTP id f12mr23568517lja.116.1554884445456;
+        Wed, 10 Apr 2019 01:20:45 -0700 (PDT)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id q6sm3385189lfj.36.2019.04.10.01.20.42
+        by smtp.gmail.com with ESMTPSA id q6sm3385189lfj.36.2019.04.10.01.20.44
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 10 Apr 2019 01:20:43 -0700 (PDT)
+        Wed, 10 Apr 2019 01:20:44 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc:     Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
@@ -62,9 +62,9 @@ Cc:     Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
         Lina Iyer <ilina@codeaurora.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         linux-arm-kernel@lists.infradead.org
-Subject: [RESEND PATCH v2 2/5] MAINTAINERS: Update files for PSCI
-Date:   Wed, 10 Apr 2019 10:20:22 +0200
-Message-Id: <20190410082025.5989-3-ulf.hansson@linaro.org>
+Subject: [RESEND PATCH v2 3/5] drivers: firmware: psci: Split psci_dt_cpu_init_idle()
+Date:   Wed, 10 Apr 2019 10:20:23 +0200
+Message-Id: <20190410082025.5989-4-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190410082025.5989-1-ulf.hansson@linaro.org>
 References: <20190410082025.5989-1-ulf.hansson@linaro.org>
@@ -73,33 +73,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190410082022.AfR7jFDjlc45sVlmazIGdv69PxCjQXNYmt0pw-NZxp8@z>
+Message-ID: <20190410082023.xfeLtfQ6c6xX16_tk37eLGWEbwKaOpceOLo8PkxIxp0@z>
 
-The files for the PSCI firmware driver were moved to a sub-directory, let's
-update MAINTAINERS to reflect that.
+Let's split the psci_dt_cpu_init_idle() function into two functions. This
+makes the code clearer and provides better re-usability.
 
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
+Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Acked-by: Mark Rutland <mark.rutland@arm.com>
 Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
+ 1 file changed, 23 insertions(+), 19 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a419acaa01c5..97dcec6fc877 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12257,7 +12257,7 @@ M:	Mark Rutland <mark.rutland@arm.com>
- M:	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
- L:	linux-arm-kernel@lists.infradead.org
- S:	Maintained
--F:	drivers/firmware/psci*.c
-+F:	drivers/firmware/psci/
- F:	include/linux/psci.h
- F:	include/uapi/linux/psci.h
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index c80ec1d03274..9788bfc1cf8b 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -270,9 +270,26 @@ static int __init psci_features(u32 psci_func_id)
+ #ifdef CONFIG_CPU_IDLE
+ static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
  
++static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
++{
++	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
++
++	if (err) {
++		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
++		return err;
++	}
++
++	if (!psci_power_state_is_valid(*state)) {
++		pr_warn("Invalid PSCI power state %#x\n", *state);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ {
+-	int i, ret, count = 0;
++	int i, ret = 0, count = 0;
+ 	u32 *psci_states;
+ 	struct device_node *state_node;
+ 
+@@ -291,29 +308,16 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < count; i++) {
+-		u32 state;
+-
+ 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
++		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
++		of_node_put(state_node);
+ 
+-		ret = of_property_read_u32(state_node,
+-					   "arm,psci-suspend-param",
+-					   &state);
+-		if (ret) {
+-			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
+-				state_node);
+-			of_node_put(state_node);
++		if (ret)
+ 			goto free_mem;
+-		}
+ 
+-		of_node_put(state_node);
+-		pr_debug("psci-power-state %#x index %d\n", state, i);
+-		if (!psci_power_state_is_valid(state)) {
+-			pr_warn("Invalid PSCI power state %#x\n", state);
+-			ret = -EINVAL;
+-			goto free_mem;
+-		}
+-		psci_states[i] = state;
++		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
+ 	}
++
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
+ 	return 0;
 -- 
 2.17.1
 
