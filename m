@@ -2,67 +2,66 @@ Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C67B2C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70F45C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:49:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 908D420850
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:44:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 45F432063F
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 17:49:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TdFQ5XtC"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hlOoMja4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730002AbfDJRo4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 13:44:56 -0400
-Received: from mail-it1-f194.google.com ([209.85.166.194]:51539 "EHLO
-        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728729AbfDJRoz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 13:44:55 -0400
-Received: by mail-it1-f194.google.com with SMTP id s3so4905322itk.1;
-        Wed, 10 Apr 2019 10:44:54 -0700 (PDT)
+        id S1730288AbfDJRtv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 13:49:51 -0400
+Received: from mail-it1-f193.google.com ([209.85.166.193]:38647 "EHLO
+        mail-it1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729935AbfDJRtv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 13:49:51 -0400
+Received: by mail-it1-f193.google.com with SMTP id f22so4888606ita.3;
+        Wed, 10 Apr 2019 10:49:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=MV7KVJPMaMQx2Z9TncqSkCN/S9HTCt2ZwsjI0DEsHM4=;
-        b=TdFQ5XtCSzZ0YvcqEVhgnY+OfFtN3pQs80IpIEiDK8z6zrmBfXiJ/JHSAqXB95zFvi
-         MHIo7TlvMpjaQHIBWMnXY3LR8nDksuWPAFMhz5TWJaYLGnqK8Kqt+y4dIJmO+s1/aTmc
-         BKhGKTPUFmdrxdiNs2PoTurB9/+mQ8Qf5jfYrYfHtJAyNkMsF+lMpyndo8+3BwXgUXz0
-         06n9K4zE9G9pDnHjxLcdgCJmrlABwbqw39E+UNyzuHpF6O9v3lQocFPmKgYR5CPSSyMb
-         KgRSVI2LO1tv/bnnkLX+ejhVJ7zXsEQ6dLWHCoyUVy2GwDpLxYBcmNfY80SsfOfKqPSm
-         B9xA==
+        bh=a4HGuR9gtKZMdV4ZW4brHmMzJmgAueXVt96dFJJECmM=;
+        b=hlOoMja4HkpWsgaGaPbuAm7CyzLPWcLNqOJq6JGew5o1gmr2Xfl83qUIr+7YKQiwQ4
+         4Q21nNC691ter4Rqq6bWYvJYOWMVGSWG2d5nQX0s+H0izH/W964570HgDYqpJO8XPAln
+         mEDP+6/8lSgqfZKNX+H7iOQVtgDJKDv57Tf7ktoDWr1ZOi0uoshF2bpDr61sOmZzDDei
+         zdNFCGvQBfJED69BV/O6mOl48DWbWVNz0mBhZdUQUMdeyDDFWDsOHSGcf8eH50fVoTIk
+         +ODeh8ca05hm2bClNB+tbVF8uIGlB3oUgXUFvjcBU3ESl79hJyPqZq5SUQIHBPPKhrF+
+         N+HQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=MV7KVJPMaMQx2Z9TncqSkCN/S9HTCt2ZwsjI0DEsHM4=;
-        b=F68o1MQ1m8NAD1rBlxgFIh1AyEWNGdKZWbPKWpnsAbwjn3ExqA2+HK78Fn4PtPkzsq
-         glHHafrGpq/Pwz4/+OkDlhQOy1SvQzzaP+ifQlsH4SFSXFmqBgCu0qYEB+SfQkMyTGFS
-         RAgxDSzGZox8v5k3hQ0CqPjOacsNE2+fZ1Oo+u30FWT9fAb4i9YxWva095Yr1Q00y52H
-         iBS0l7y0RVsRCV5m5x09uXPS67Z++1kOkDcoByZc6oy6Tx/cu9R6D/2gEuuGf89Pg0x6
-         xKbnDV2bskyMV0xlYSXZZlx/aJ9tv46RGXu9pBNeZRo6sOlS5idsawIq9mXQyQH4L76L
-         oTEw==
-X-Gm-Message-State: APjAAAXHJ1K6jngwcb67br2TBtrk61CUXrPJqgeRPvVhFLFUdHwfFurN
-        Xv6oLapu3pgwCt0QzEPxkQQwBOaA9myIumJmLrDANNse
-X-Google-Smtp-Source: APXvYqx8JTK2BbZhjYazxQ3r/8SI19BSRChchEVxn9RdHJA52NjDNRYL8fZLhw/IudwQX2nOl7sG7VtxNh5WNtn2EYo=
-X-Received: by 2002:a24:9b8b:: with SMTP id o133mr4573561itd.74.1554918294637;
- Wed, 10 Apr 2019 10:44:54 -0700 (PDT)
+        bh=a4HGuR9gtKZMdV4ZW4brHmMzJmgAueXVt96dFJJECmM=;
+        b=BmNh1qoyqQwDVn9qwUdhWpciImx44tCbOhYUPOge3w1cYOgtlbcA9ARR40dAAuSBFp
+         2VcBCQa3GgVj1gi7WeynwB3fHGM5SVib7RUlFGDjfAF0vPEZm0P38GYvy9EshypJ5DRi
+         jE1rkhQtQeBLR6tnAj3LoQKEUHVnfqrQEWs++Ua12JZycXqjsGth9ouOnMcx1vbpL3+6
+         606aaIQQyb9Ty+3b0qz5Pe2Iu0i81uKHAuztp3rPQO3Gbj68a/g+4LpXUWwmg+lNKeY5
+         BCP9aehIdXFUUm8aD7qyXsr1PIqNAj5jvkDL/8fu/221ErTCe2cjFQB0QpLK4hmi8lX/
+         c4SA==
+X-Gm-Message-State: APjAAAXfbfWqQImDfvSi5E+Ok0C0t8M6mU0u45r+Wj2lIDR2mFB+rLLS
+        hgGKbeNNYodGBRCc2rXWrXxAIuqJJ5G940+CyzQ=
+X-Google-Smtp-Source: APXvYqwngouX3i/1jzPpqK9jd1mwRddiCjnWAnM2Ms5Lf+TcD6pzCyeqJFvaLVRgoLsGlAdbSlfCxnQGXQJq+xAjr7M=
+X-Received: by 2002:a24:9b8b:: with SMTP id o133mr4593001itd.74.1554918590660;
+ Wed, 10 Apr 2019 10:49:50 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190409172558.18778-1-tiny.windzz@gmail.com> <20190409172558.18778-2-tiny.windzz@gmail.com>
- <20190410032404.eskk4qxbsws6fbec@vireshk-i7>
-In-Reply-To: <20190410032404.eskk4qxbsws6fbec@vireshk-i7>
+References: <20190409172558.18778-1-tiny.windzz@gmail.com> <20190409172558.18778-3-tiny.windzz@gmail.com>
+ <20190410145659.62nl4o2jvkuggmpe@flea>
+In-Reply-To: <20190410145659.62nl4o2jvkuggmpe@flea>
 From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Thu, 11 Apr 2019 01:44:43 +0800
+Date:   Thu, 11 Apr 2019 01:49:39 +0800
 Message-ID:
- <CAEExFWvUzPcGckJ_ceAhRM9wduo+=nEgSiwePmvpKcxx5gBDkg@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-To:     Viresh Kumar <viresh.kumar@linaro.org>
+ <CAEExFWu60DZ2xY7qxpjGFq3f_u2G4p7y-wqmsj0HR7CQy24r7w@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] dt-bindings: cpufreq: Document operating-points-v2-sunxi-cpu
+To:     Maxime Ripard <maxime.ripard@bootlin.com>
 Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
         robh+dt@kernel.org, mark.rutland@arm.com,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
         Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net,
         davem@davemloft.net, mchehab+samsung@kernel.org,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -75,173 +74,84 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190410174443.ZRiNZ6Ld0lWcBeUUQ5ZiGkCDV1_ZDgdahC3CEMKYAFI@z>
+Message-ID: <20190410174939.sMVO0-FH67GmKtMRQrYGzstScp1D6v1lEkymZ9NT5EU@z>
 
-On Wed, Apr 10, 2019 at 11:24 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Wed, Apr 10, 2019 at 10:57 PM Maxime Ripard
+<maxime.ripard@bootlin.com> wrote:
 >
-> On 09-04-19, 13:25, Yangtao Li wrote:
-> > +static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
-> > +     .efuse_xlate = sun50i_efuse_xlate,
-> > +     .nvmem_mask = 0x7,
-> > +     .nvmem_shift = 5,
-> > +};
+> On Tue, Apr 09, 2019 at 01:25:58PM -0400, Yangtao Li wrote:
+> > Allwinner Process Voltage Scaling Tables defines the voltage and
+> > frequency value  based on the speedbin blown in the efuse combination.
+> > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> > provide the OPP framework with required information.
+> > This is used to determine the voltage and frequency value for each
+> > OPP of operating-points-v2 table when it is parsed by the OPP framework.
+> >
+> > The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
+> > with following parameters:
+> > - nvmem-cells (NVMEM area containig the speedbin information)
+> > - opp-microvolt-<name>: voltage in micro Volts.
+> >   At runtime, the platform can pick a <name> and matching
+> >   opp-microvolt-<name> property
+> >
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> >  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 166 ++++++++++++++++++
+> >  1 file changed, 166 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > new file mode 100644
+> > index 000000000000..c81a2075b974
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> > @@ -0,0 +1,166 @@
+> > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+> > +===================================
 > > +
-> > +static const struct of_device_id sunxi_cpufreq_match_list[] = {
-> > +     { .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
-> > +     {}
-> > +};
+> > +For some SoCs, the CPU frequency subset and voltage value of each OPP
+> > +varies based on the silicon variant in use. Allwinner Process Voltage
+> > +Scaling Tables defines the voltage and frequency value  based on the
+> > +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
+> > +reads the efuse value from the SoC to provide the OPP framework with
+> > +required information.
 > > +
-> > +static const struct of_device_id *sunxi_cpufreq_match_node(void)
-> > +{
-> > +     struct device_node *np;
-> > +     const struct of_device_id *match;
+> > +Required properties:
+> > +--------------------
+> > +In 'cpus' nodes:
+> > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
 > > +
-> > +     np = of_find_node_by_path("/");
-> > +     match = of_match_node(sunxi_cpufreq_match_list, np);
-> > +     of_node_put(np);
-> > +
-> > +     return match;
-> > +}
-> > +
+> > +In 'operating-points-v2' table:
+> > +- compatible: Should be
+> > +     - 'operating-points-v2-sunxi-cpu'.
 >
-> Above code can be placed just above sunxi_cpufreq_init(), if you ...
+> Vendor-specific compatibles should have the vendor mentionned.
 >
-> > +static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
-> > +{
-> > +     const struct sunxi_cpufreq_soc_data *soc_data;
-> > +     struct opp_table **opp_tables;
-> > +     const struct of_device_id *match;
-> > +     char name[MAX_NAME_LEN];
-> > +     unsigned int cpu;
-> > +     u32 speed = 0;
-> > +     int ret;
-> > +
-> > +     opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-> > +                          GFP_KERNEL);
-> > +     if (!opp_tables)
-> > +             return -ENOMEM;
-> > +
-> > +     match = sunxi_cpufreq_match_node();
+> Also, even though the H6 is the only SoC so far that has needed this,
+> we can't really assume that it will be the only SoC to use it, or that
+> it will always behave like that.
+There is no doubt that many platforms need this.
 >
-> ... avoid this and ...
+> So having something like allwinner,sun50i-h6-operating-points would be
+> great.
+allwinner,cpu-operating-points-v2 Maybe better?
 >
-> > +     soc_data = match->data;
-> > +     if (!soc_data)
-> > +             return -EINVAL;
+> > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> > +             efuse registers that has information about the
+> > +             speedbin that is used to select the right frequency/voltage
+> > +             value pair.
+> > +             Please refer the for nvmem-cells
+> > +             bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+> > +             and also examples below.
 > > +
-> > +     ret = sunxi_cpufreq_get_efuse(soc_data, &speed);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     snprintf(name, MAX_NAME_LEN, "speed%d", speed);
-> > +
-> > +     for_each_possible_cpu(cpu) {
-> > +             struct device *cpu_dev = get_cpu_device(cpu);
-> > +
-> > +             if (NULL == cpu_dev) {
-> > +                     ret = -ENODEV;
-> > +                     goto free_opp;
-> > +             }
-> > +
-> > +             opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
-> > +             if (IS_ERR(opp_tables[cpu])) {
-> > +                     ret = PTR_ERR(opp_tables[cpu]);
-> > +                     pr_err("Failed to set prop name\n");
-> > +                     goto free_opp;
-> > +             }
-> > +     }
-> > +
-> > +     cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-> > +                                                       NULL, 0);
-> > +     if (!IS_ERR(cpufreq_dt_pdev)) {
-> > +             platform_set_drvdata(pdev, opp_tables);
-> > +             return 0;
-> > +     }
-> > +
-> > +     ret = PTR_ERR(cpufreq_dt_pdev);
-> > +     pr_err("Failed to register platform device\n");
-> > +
-> > +free_opp:
-> > +     for_each_possible_cpu(cpu) {
-> > +             if (IS_ERR_OR_NULL(opp_tables[cpu]))
-> > +                     break;
-> > +             dev_pm_opp_put_prop_name(opp_tables[cpu]);
-> > +     }
-> > +     kfree(opp_tables);
-> > +
-> > +     return ret;
-> > +}
-> > +
-> > +static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
-> > +{
-> > +     struct opp_table **opp_tables = platform_get_drvdata(pdev);
-> > +     unsigned int cpu;
-> > +
-> > +     platform_device_unregister(cpufreq_dt_pdev);
-> > +
-> > +     for_each_possible_cpu(cpu)
-> > +             dev_pm_opp_put_prop_name(opp_tables[cpu]);
-> > +
-> > +     kfree(opp_tables);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static struct platform_driver sunxi_cpufreq_driver = {
-> > +     .probe = sunxi_cpufreq_nvmem_probe,
-> > +     .remove = sunxi_cpufreq_nvmem_remove,
-> > +     .driver = {
-> > +             .name = "sunxi-cpufreq-nvmem",
-> > +     },
-> > +};
-> > +
-> > +/*
-> > + * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
-> > + * all the real activity is done in the probe, which may be defered as well.
-> > + * The init here is only registering the driver and the platform device.
-> > + */
-> > +static int __init sunxi_cpufreq_init(void)
-> > +{
-> > +     const struct of_device_id *match;
-> > +     int ret;
-> > +
-> > +     match = sunxi_cpufreq_match_node();
-> > +     if (!match)
-> > +             return -ENODEV;
-> > +
-> > +     ret = platform_driver_register(&sunxi_cpufreq_driver);
-> > +     if (unlikely(ret < 0))
-> > +             return ret;
-> > +
-> > +     sunxi_cpufreq_pdev = platform_device_register_simple(
-> > +             "sunxi-cpufreq-nvmem", -1, NULL, 0);
+> > +In every OPP node:
+> > +- opp-microvolt-<name>: Voltage in micro Volts.
+> > +                     At runtime, the platform can pick a <name> and
+> > +                     matching opp-microvolt-<name> property.
+> > +                     [See: opp.txt]
 >
-> ... pass match->data as platform device's data here..
-Yead, it is.
+> You need to document the valid names here.
+OK.
 
-Thanks,
+Cheers,
 Yangtao
->
-> > +     ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
-> > +     if (0 == ret)
-> > +             return 0;
-> > +
-> > +     platform_driver_unregister(&sunxi_cpufreq_driver);
-> > +     return ret;
-> > +}
-> > +module_init(sunxi_cpufreq_init);
-> > +
-> > +static void __exit sunxi_cpufreq_exit(void)
-> > +{
-> > +     platform_device_unregister(sunxi_cpufreq_pdev);
-> > +     platform_driver_unregister(&sunxi_cpufreq_driver);
-> > +}
-> > +module_exit(sunxi_cpufreq_exit);
-> > +
-> > +MODULE_DESCRIPTION("Sunxi cpufreq driver");
-> > +MODULE_LICENSE("GPL v2");
-> > --
-> > 2.17.0
->
-> --
-> viresh
