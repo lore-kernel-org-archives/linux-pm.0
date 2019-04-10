@@ -1,68 +1,32 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH RFC 7/9] cpufreq: qcom: Add support to update cpu node's
- OPP tables
-Date: Wed, 10 Apr 2019 16:55:16 +0530
-Message-ID: <20190410112516.gnh77jcwawvld6et@vireshk-i7>
-References: <20190328152822.532-1-sibis@codeaurora.org>
- <20190328152822.532-8-sibis@codeaurora.org>
- <20190410103316.sxev2f54klemq2p6@vireshk-i7>
- <8aeedc48150da49b7ab2ce27dd45a455@codeaurora.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH RESEND V11 1/4] dt-bindings: fsl: scu: add thermal binding
+Date: Wed, 10 Apr 2019 08:46:44 -0500
+Message-ID: <20190410134644.GA7399@bogus>
+References: <1554881866-26333-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8aeedc48150da49b7ab2ce27dd45a455@codeaurora.org>
+In-Reply-To: <1554881866-26333-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sibi Sankar <sibis@codeaurora.org>
-Cc: robh+dt@kernel.org, andy.gross@linaro.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, nm@ti.com, sboyd@kernel.org, georgi.djakov@linaro.org, bjorn.andersson@linaro.org, david.brown@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org, devicetree@vger.kernel.org, rnayak@codeaurora.org, cw00.choi@samsung.com, linux-pm@vger.kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, dianders@chromium.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Peng Fan <peng.fan@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "heiko@sntech.de" <heiko@sntech.de>, Andy Gross <andy.gross@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-04-19, 16:46, Sibi Sankar wrote:
-> On 2019-04-10 16:03, Viresh Kumar wrote:
-> > On 28-03-19, 20:58, Sibi Sankar wrote:
-> > > Add support to parse and update OPP tables attached to the cpu nodes.
-> > > 
-> > > Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
-> > > ---
-> > >  drivers/cpufreq/qcom-cpufreq-hw.c | 29 +++++++++++++++++++++++++++--
-> > >  1 file changed, 27 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c
-> > > b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > > index 4b0b50403901..5c268dd2346c 100644
-> > > --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> > > +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > > @@ -73,6 +73,25 @@ static unsigned int
-> > > qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
-> > >  	return policy->freq_table[index].frequency;
-> > >  }
-> > > 
-> > > +static int qcom_find_update_opp(struct device *cpu_dev, unsigned
-> > > long freq,
-> > > +				unsigned long volt)
-> > > +{
-> > > +	int ret;
-> > > +	struct dev_pm_opp *opp;
-> > > +
-> > > +	opp = dev_pm_opp_find_freq_exact(cpu_dev, freq, true);
-> > > +	if (IS_ERR(opp)) {
-> > > +		ret = dev_pm_opp_add(cpu_dev, freq, volt);
-> > 
-> > With my comment on the other patch, you can just call
-> > dev_pm_opp_update_voltage() and if that fails then call
-> > dev_pm_opp_add().
+On Wed, Apr 10, 2019 at 07:43:04AM +0000, Anson Huang wrote:
+> NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
+> system controller, the system controller is in charge of system
+> power, clock and thermal sensors etc. management, Linux kernel
+> has to communicate with system controller via MU (message unit)
+> IPC to get temperature from thermal sensors, this patch adds
+> binding doc for i.MX system controller thermal driver.
 > 
-> yeah that should simplify things.
-> 
-> Also through the above approach I cannot
-> really disable opps that the OSM does not
-> support. I can only try enabling opp's that
-> OSM supports. But that would require all
-> opp's nodes to start with "disabled" but
-> that is not allowed I guess.
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+> Changes since V10:
+> 	- remove property "imx,sensor-resource-id".
+> ---
+>  .../devicetree/bindings/arm/freescale/fsl,scu.txt        | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 
-Yeah maybe add all OPPs from DT, disable all of them and then only modify and
-enable the ones you need.
-
--- 
-viresh
+Reviewed-by: Rob Herring <robh@kernel.org>
