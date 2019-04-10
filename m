@@ -1,147 +1,243 @@
-Return-Path: <SRS0=kGmN=SL=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ABE8C10F0E
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 22:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B01B9C10F0E
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 03:24:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 139AE217F4
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Apr 2019 22:45:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1554849911;
-	bh=FiQzksaZ4wqU5F7nesJEkZUok3HcZu9IR9deoHdBGgM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=VlnokhGkMWvTd6+GGDGnkIj3bfxS8MsdAQfbbe0pZliSw9QlxmOU737Cm4hASHoK6
-	 WlgqfRepEIw3elvmT7ob94+HvdX2aB7xwZdLVgd1DmyHNptNn/FZrSkJJW2rY0uouB
-	 k5CPp0FWcXp4PA35xtWd2aOAjwUUSV+DFLQN8xcY=
+	by mail.kernel.org (Postfix) with ESMTP id 78D8721741
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 03:24:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ij5G/oNb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726680AbfDIWpK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Apr 2019 18:45:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:36270 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726592AbfDIWpK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Apr 2019 18:45:10 -0400
-Received: from earth.universe (unknown [185.62.205.103])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 617B620820;
-        Tue,  9 Apr 2019 22:45:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1554849908;
-        bh=FiQzksaZ4wqU5F7nesJEkZUok3HcZu9IR9deoHdBGgM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=bcgeBzhlQnzWd0+buM8hwxI9Sw7DD4OHUXnnVntcV/mZXFsdTzskCgNGpl2S3WYRW
-         VequbXd1ID4fp2sRU+95ht3sxUYgqVuuuVlMtJ2iKIy0F1U9OzcKvDOPw3A+Q/nqoE
-         oN1CVZH7PjajlWySAj/Ojiqhf6GZGPOjjTiKUwx0=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 3C3733C08D4; Wed, 10 Apr 2019 00:45:06 +0200 (CEST)
-Date:   Wed, 10 Apr 2019 00:45:06 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     michael.hennerich@analog.com
-Cc:     mike.looijmans@topic.nl, robh+dt@kernel.org,
+        id S1726766AbfDJDYK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Apr 2019 23:24:10 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:44468 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726678AbfDJDYK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2019 23:24:10 -0400
+Received: by mail-pl1-f194.google.com with SMTP id g12so465601pll.11
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 20:24:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=fDaB7AQBQgFAqrLsrjcQE4bi+tzImk9oc4UlfpH5iRQ=;
+        b=ij5G/oNb95eXSsD1S1NKcpDLAzxltRjzkS2vNxx91dTvZMCLJ8UGUYbYp8D/QOEzlt
+         mFEM1HjvQcEddXUwos41AXju6J7szB6Q2piB/JoLbGyI149Mw7NIz838E/2kj4QPSJpK
+         e8C7+1jFHlYUcsjVLZyLH5fWMyaImWWIMPmgigXgBah+v64bM5LkksDsEVolBoeQTc78
+         ckVyp/McmqDVAFuwEZkXRyRw/kpmnBkF90UDcZVCY+TiZ++PiRDJ1iCifzIF4hIIly6l
+         aSdwrk8xITYyrySxD13fcKVdzufZ+5IhNQzXwZhwchRJ4Fzfmn25RtN62g4iG9Oz7izY
+         7xXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=fDaB7AQBQgFAqrLsrjcQE4bi+tzImk9oc4UlfpH5iRQ=;
+        b=Ko/AHeZMGVn6Ex/BsJm/9YKRBnG317JogU5IES9qGpSFXbt+XzMUKgoW0+ysY1YuHY
+         eKuVrr3dlHQ/6o9xw4YLAaUhl4HjPc9R68vCTQUEGWZF6arGOhdwXe/O3cQ8hUoKtb64
+         KqZOjYgw0wD9+xFkFemTNKFAzK2QWCW4vHHsJM4bgUiYEjfy73q11dO0JWzRxxsZazq9
+         5jXzoeyjCBKCF2+NyKVdx+M1dSisjPTAPC01iWONbHBTzRAWFfazlC0pNBfMuwrgZXL7
+         KZtLvaIOqIzAuVRbJrDEoC9YiGuekhK3rUO9kNeRRjCpU01dTXVxns5h0KuE6Ydz0glW
+         56sA==
+X-Gm-Message-State: APjAAAVpR0Oxox/wqRQBuWPrwNc4kl5sKrMO5dSi2H+1IIKyjjd6vCht
+        k+K7O/B6E72L4XnrLuZ758aHGQ==
+X-Google-Smtp-Source: APXvYqy4WqxmeDHzZvbtNMMhHMZKHov4Nr0cvDcxQD92LS5by/92IhrsIw9zJiVxeD3QvXTnFVK+uQ==
+X-Received: by 2002:a17:902:184:: with SMTP id b4mr20220942plb.26.1554866649145;
+        Tue, 09 Apr 2019 20:24:09 -0700 (PDT)
+Received: from localhost ([122.166.139.136])
+        by smtp.gmail.com with ESMTPSA id l10sm25158503pfc.46.2019.04.09.20.24.05
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 09 Apr 2019 20:24:06 -0700 (PDT)
+Date:   Wed, 10 Apr 2019 08:54:04 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Yangtao Li <tiny.windzz@gmail.com>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        robin.getz@analog.com
-Subject: Re: [PATCH v3 2/2] power: supply: ltc3651-charger: Fix device name
- (rename files)
-Message-ID: <20190409224506.wy26tk5fxywim565@earth.universe>
-References: <1554791081-10950-1-git-send-email-michael.hennerich@analog.com>
- <1554791081-10950-2-git-send-email-michael.hennerich@analog.com>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Message-ID: <20190410032404.eskk4qxbsws6fbec@vireshk-i7>
+References: <20190409172558.18778-1-tiny.windzz@gmail.com>
+ <20190409172558.18778-2-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="it54iirjvr5zofhb"
+Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <1554791081-10950-2-git-send-email-michael.hennerich@analog.com>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <20190409172558.18778-2-tiny.windzz@gmail.com>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190410032404.Kuy3rNswfDsP5qNO-NmoMv6hjKApkez6665PDQ5EObo@z>
 
+On 09-04-19, 13:25, Yangtao Li wrote:
+> +static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
+> +	.efuse_xlate = sun50i_efuse_xlate,
+> +	.nvmem_mask = 0x7,
+> +	.nvmem_shift = 5,
+> +};
+> +
+> +static const struct of_device_id sunxi_cpufreq_match_list[] = {
+> +	{ .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
+> +	{}
+> +};
+> +
+> +static const struct of_device_id *sunxi_cpufreq_match_node(void)
+> +{
+> +	struct device_node *np;
+> +	const struct of_device_id *match;
+> +
+> +	np = of_find_node_by_path("/");
+> +	match = of_match_node(sunxi_cpufreq_match_list, np);
+> +	of_node_put(np);
+> +
+> +	return match;
+> +}
+> +
 
---it54iirjvr5zofhb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Above code can be placed just above sunxi_cpufreq_init(), if you ...
 
-Hi,
+> +static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
+> +{
+> +	const struct sunxi_cpufreq_soc_data *soc_data;
+> +	struct opp_table **opp_tables;
+> +	const struct of_device_id *match;
+> +	char name[MAX_NAME_LEN];
+> +	unsigned int cpu;
+> +	u32 speed = 0;
+> +	int ret;
+> +
+> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
+> +			     GFP_KERNEL);
+> +	if (!opp_tables)
+> +		return -ENOMEM;
+> +
+> +	match = sunxi_cpufreq_match_node();
 
-On Tue, Apr 09, 2019 at 08:24:41AM +0200, michael.hennerich@analog.com wrot=
-e:
-> From: Michael Hennerich <michael.hennerich@analog.com>
->=20
-> rename only - no functional changes
->=20
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> ---
+... avoid this and ...
 
-Thanks, queued.
+> +	soc_data = match->data;
+> +	if (!soc_data)
+> +		return -EINVAL;
+> +
+> +	ret = sunxi_cpufreq_get_efuse(soc_data, &speed);
+> +	if (ret)
+> +		return ret;
+> +
+> +	snprintf(name, MAX_NAME_LEN, "speed%d", speed);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		struct device *cpu_dev = get_cpu_device(cpu);
+> +
+> +		if (NULL == cpu_dev) {
+> +			ret = -ENODEV;
+> +			goto free_opp;
+> +		}
+> +
+> +		opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
+> +		if (IS_ERR(opp_tables[cpu])) {
+> +			ret = PTR_ERR(opp_tables[cpu]);
+> +			pr_err("Failed to set prop name\n");
+> +			goto free_opp;
+> +		}
+> +	}
+> +
+> +	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+> +							  NULL, 0);
+> +	if (!IS_ERR(cpufreq_dt_pdev)) {
+> +		platform_set_drvdata(pdev, opp_tables);
+> +		return 0;
+> +	}
+> +
+> +	ret = PTR_ERR(cpufreq_dt_pdev);
+> +	pr_err("Failed to register platform device\n");
+> +
+> +free_opp:
+> +	for_each_possible_cpu(cpu) {
+> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
+> +			break;
+> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
+> +	}
+> +	kfree(opp_tables);
+> +
+> +	return ret;
+> +}
+> +
+> +static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
+> +{
+> +	struct opp_table **opp_tables = platform_get_drvdata(pdev);
+> +	unsigned int cpu;
+> +
+> +	platform_device_unregister(cpufreq_dt_pdev);
+> +
+> +	for_each_possible_cpu(cpu)
+> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
+> +
+> +	kfree(opp_tables);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver sunxi_cpufreq_driver = {
+> +	.probe = sunxi_cpufreq_nvmem_probe,
+> +	.remove = sunxi_cpufreq_nvmem_remove,
+> +	.driver = {
+> +		.name = "sunxi-cpufreq-nvmem",
+> +	},
+> +};
+> +
+> +/*
+> + * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
+> + * all the real activity is done in the probe, which may be defered as well.
+> + * The init here is only registering the driver and the platform device.
+> + */
+> +static int __init sunxi_cpufreq_init(void)
+> +{
+> +	const struct of_device_id *match;
+> +	int ret;
+> +
+> +	match = sunxi_cpufreq_match_node();
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	ret = platform_driver_register(&sunxi_cpufreq_driver);
+> +	if (unlikely(ret < 0))
+> +		return ret;
+> +
+> +	sunxi_cpufreq_pdev = platform_device_register_simple(
+> +		"sunxi-cpufreq-nvmem", -1, NULL, 0);
 
--- Sebastian
+... pass match->data as platform device's data here..
 
->  .../bindings/power/supply/{ltc3651-charger.txt =3D> lt3651-charger.txt} =
-  | 0
->  drivers/power/supply/Makefile                                           =
-| 2 +-
->  drivers/power/supply/{ltc3651-charger.c =3D> lt3651-charger.c}          =
-  | 0
->  3 files changed, 1 insertion(+), 1 deletion(-)
->  rename Documentation/devicetree/bindings/power/supply/{ltc3651-charger.t=
-xt =3D> lt3651-charger.txt} (100%)
->  rename drivers/power/supply/{ltc3651-charger.c =3D> lt3651-charger.c} (1=
-00%)
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/ltc3651-charg=
-er.txt b/Documentation/devicetree/bindings/power/supply/lt3651-charger.txt
-> similarity index 100%
-> rename from Documentation/devicetree/bindings/power/supply/ltc3651-charge=
-r.txt
-> rename to Documentation/devicetree/bindings/power/supply/lt3651-charger.t=
-xt
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index 714c602..a2b3ab1 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -67,7 +67,7 @@ obj-$(CONFIG_CHARGER_LP8727)	+=3D lp8727_charger.o
->  obj-$(CONFIG_CHARGER_LP8788)	+=3D lp8788-charger.o
->  obj-$(CONFIG_CHARGER_GPIO)	+=3D gpio-charger.o
->  obj-$(CONFIG_CHARGER_MANAGER)	+=3D charger-manager.o
-> -obj-$(CONFIG_CHARGER_LT3651)	+=3D ltc3651-charger.o
-> +obj-$(CONFIG_CHARGER_LT3651)	+=3D lt3651-charger.o
->  obj-$(CONFIG_CHARGER_MAX14577)	+=3D max14577_charger.o
->  obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+=3D max14656_charger_detector.o
->  obj-$(CONFIG_CHARGER_MAX77693)	+=3D max77693_charger.o
-> diff --git a/drivers/power/supply/ltc3651-charger.c b/drivers/power/suppl=
-y/lt3651-charger.c
-> similarity index 100%
-> rename from drivers/power/supply/ltc3651-charger.c
-> rename to drivers/power/supply/lt3651-charger.c
-> --=20
-> 2.7.4
->=20
+> +	ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
+> +	if (0 == ret)
+> +		return 0;
+> +
+> +	platform_driver_unregister(&sunxi_cpufreq_driver);
+> +	return ret;
+> +}
+> +module_init(sunxi_cpufreq_init);
+> +
+> +static void __exit sunxi_cpufreq_exit(void)
+> +{
+> +	platform_device_unregister(sunxi_cpufreq_pdev);
+> +	platform_driver_unregister(&sunxi_cpufreq_driver);
+> +}
+> +module_exit(sunxi_cpufreq_exit);
+> +
+> +MODULE_DESCRIPTION("Sunxi cpufreq driver");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.17.0
 
---it54iirjvr5zofhb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlytIHIACgkQ2O7X88g7
-+pqHCBAAhnMQS0necHFrzQXynhx/l7bD60OxcIzo6YkhoJ9/76USJUQxIuwhiDp+
-Je712lLnEIOH+nv0wBfSl6sjsOQqEATnRcqZ9U8jrFyZfaVTEqkGZMNfenLrkZkH
-+T1tjIZLEKCas4defWKRTSmsw+uAaq8RfWAtb4xcwVSNLv5WVuVv4uXL5TZMUU4d
-zvUBqHjoxm6S+mNLDg0CS+0kkQ+UkXyRXw7ybLneXR+I7nvdACNUsAQhCWRdwZFP
-p1a8B7Unhrjfa5EffvrgqnluTKpQg2Ehip5SBfvnU51arnHlG2mYmIxx31MWiumZ
-nUkKU3CXuqcUVXWhV3fZFJYhR/rUtnxU/2VJaRdf2/4+ievE7YqVTW+DB9R7oQA8
-AfjQZFP6uMvdylCm9Jr1PWhRIB++2jxEP7tDbvfRR7kPiLJmLIp+wtXA4eb+6B1j
-frP20sCS+LUIT7h0UGVkgQuS4e/oVOlD9//GGsbLmoNGahqnWWBoc0gYbim2A+jd
-rxcIcAKmcOlCwdQQDMty6uBq7bsj3B6+uvLMNy0/ZReQgOg5sd7xBgZvqKZsFhP3
-0Ydo1neePuOztbBhRASlQGxCiWLGH9EyDEglG7OIxvvg8b2iEO3qLsm74xr+mt0z
-TAhoz8Uepw1h2TJojAseHZme08Rc6/un9X5FfmPFsQRoq8vx1HE=
-=717F
------END PGP SIGNATURE-----
-
---it54iirjvr5zofhb--
+-- 
+viresh
