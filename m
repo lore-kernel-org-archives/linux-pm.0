@@ -1,114 +1,95 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH v2 2/2] dt-bindings: cpufreq: Document
- operating-points-v2-sunxi-cpu
-Date: Wed, 10 Apr 2019 16:56:59 +0200
-Message-ID: <20190410145659.62nl4o2jvkuggmpe@flea>
-References: <20190409172558.18778-1-tiny.windzz@gmail.com>
- <20190409172558.18778-3-tiny.windzz@gmail.com>
+From: Alexandre Torgue <alexandre.torgue@st.com>
+Subject: Re: [PATCH] PM / core: Propagate dev->power.wakeup_path when no
+ callbacks
+Date: Wed, 10 Apr 2019 17:28:06 +0200
+Message-ID: <c0e5e074-b0e4-c554-ab50-b04b046a487e@st.com>
+References: <20190410095516.6170-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="6yay5myzwekec5cw"
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190409172558.18778-3-tiny.windzz@gmail.com>
+In-Reply-To: <20190410095516.6170-1-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Loic Pallardy <loic.pallardy@st.com>, Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Johan Hovold <johan@kernel.org>, linux-gpio@vger.kernel.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Ulf
 
---6yay5myzwekec5cw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Apr 09, 2019 at 01:25:58PM -0400, Yangtao Li wrote:
-> Allwinner Process Voltage Scaling Tables defines the voltage and
-> frequency value  based on the speedbin blown in the efuse combination.
-> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each
-> OPP of operating-points-v2 table when it is parsed by the OPP framework.
->
-> The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
-> with following parameters:
-> - nvmem-cells (NVMEM area containig the speedbin information)
-> - opp-microvolt-<name>: voltage in micro Volts.
->   At runtime, the platform can pick a <name> and matching
->   opp-microvolt-<name> property
->
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+On 4/10/19 11:55 AM, Ulf Hansson wrote:
+> The dev->power.direct_complete flag may become set in device_prepare() in
+> case the device don't have any PM callbacks (dev->power.no_pm_callbacks is
+> set). This leads to a broken behaviour, when there is child having wakeup
+> enabled and relies on its parent to be used in the wakeup path.
+> 
+> More precisely, when the direct complete path becomes selected for the
+> child in __device_suspend(), the propagation of the dev->power.wakeup_path
+> becomes skipped as well.
+> 
+> Let's address this problem, by checking if the device is a part the wakeup
+> path or has wakeup enabled, then prevent the direct complete path from
+> being used.
+> 
+> Reported-by: Loic Pallardy <loic.pallardy@st.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
->  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 166 ++++++++++++++++++
->  1 file changed, 166 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
->
-> diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> new file mode 100644
-> index 000000000000..c81a2075b974
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> @@ -0,0 +1,166 @@
-> +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
-> +===================================
+> 
+
+Thanks Ulf for this patch. It'll avoid to have dirty hack in serial 
+suspend callback (at least for stm32). I just tested it on stm32 kernel 
+v4.19 (which embeds all our genpd based power features). Replacing
+device_may_wakeup(dev) by
+device_may_wakeup(dev) || dev->power.wakeup_path) then dirty hack to 
+test ttydev wakeup flag in stm32 usart driver is no more needed.
+
+So you can add my Tested-by
+
+Regards
+Alex
+
+
+> More background:
+> 
+> This problem was reported by Loic Pallardy, offlist, while he was working
+> on enabling wakeup for a tty serial console driver.
+> 
+> When I looked more closely, I noticed that uart_suspend_port() calls
+> device_may_wakeup() for the tty child devices, and then also the used serial
+> driver check its device (parent) for device_may_wakeup(). To me this looks like
+> workarounds to fix a behaviour that really should be dealt with from the PM
+> core, no matter of whether the child have PM callbacks assigned or not.
+> 
+> In other words, it seems like the serial driver(s) should be checking the
+> wakeup_path flag for the parent, solely, instead.
+> 
+> I haven't digested further behaviours for other subsystem, but recently
+> reviewed a patch for a gpio driver [1], that seems to be suffering from the
+> similar problems.
+> 
+> Kind regards
+> Ulf Hansson
+> 
+> [1]
+> https://lkml.org/lkml/2019/4/4/1283
+> 
+> ---
+>   drivers/base/power/main.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 41eba82ee7b9..f9cfdeee8288 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1747,6 +1747,10 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>   	if (dev->power.syscore)
+>   		goto Complete;
+>   
+> +	/* Avoid direct_complete, to let wakeup_path being propagated. */
+> +	if (device_may_wakeup(dev) || dev->power.wakeup_path)
+> +		dev->power.direct_complete = false;
 > +
-> +For some SoCs, the CPU frequency subset and voltage value of each OPP
-> +varies based on the silicon variant in use. Allwinner Process Voltage
-> +Scaling Tables defines the voltage and frequency value  based on the
-> +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
-> +reads the efuse value from the SoC to provide the OPP framework with
-> +required information.
-> +
-> +Required properties:
-> +--------------------
-> +In 'cpus' nodes:
-> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> +
-> +In 'operating-points-v2' table:
-> +- compatible: Should be
-> +	- 'operating-points-v2-sunxi-cpu'.
-
-Vendor-specific compatibles should have the vendor mentionned.
-
-Also, even though the H6 is the only SoC so far that has needed this,
-we can't really assume that it will be the only SoC to use it, or that
-it will always behave like that.
-
-So having something like allwinner,sun50i-h6-operating-points would be
-great.
-
-> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> +		efuse registers that has information about the
-> +		speedbin that is used to select the right frequency/voltage
-> +		value pair.
-> +		Please refer the for nvmem-cells
-> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
-> +		and also examples below.
-> +
-> +In every OPP node:
-> +- opp-microvolt-<name>: Voltage in micro Volts.
-> +			At runtime, the platform can pick a <name> and
-> +			matching opp-microvolt-<name> property.
-> +			[See: opp.txt]
-
-You need to document the valid names here.
-
-Thanks!
-Maxime
-
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---6yay5myzwekec5cw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXK4EOwAKCRDj7w1vZxhR
-xXr6AQDvwTpjj8VYqGfUgaR7dQGKXPaggIMLIGU9MeAPENqygwD/TQrHWLapGkm0
-0yMu+BgQ5XREz9SeD+UV2GVYA1PoxgA=
-=Bpew
------END PGP SIGNATURE-----
-
---6yay5myzwekec5cw--
+>   	if (dev->power.direct_complete) {
+>   		if (pm_runtime_status_suspended(dev)) {
+>   			pm_runtime_disable(dev);
+> 
