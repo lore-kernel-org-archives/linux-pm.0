@@ -4,196 +4,143 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 418DBC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 06:29:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CCA8C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 07:43:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0351D2084B
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 06:29:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 002D02083E
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 07:43:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UCyfNCr5"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="ECDkcaAv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727286AbfDJG3P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 02:29:15 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:34981 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727082AbfDJG3P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 02:29:15 -0400
-Received: by mail-pf1-f193.google.com with SMTP id t21so825881pfh.2
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 23:29:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=xwfoUJqPA7B1qNvVW6xqIft2TcTCZV15J00JP5m2zL0=;
-        b=UCyfNCr519TJ50zJhOYOS3XKdK0WnZVYhD5rWWcwm5L+T5bcxT1LczBzkY6bHu6BbZ
-         Mq6EKHOZYz8zBPDZC4PThzCQbbpvAZ75UJMy9XcVMRHyHe74YoH2niI771wWBOitsY5K
-         RALtn2igb0aj1KJWqiveis3Tv0VroWV0Sc23h+mTdYuLUlOegjP+YOWxHvRL2GxjQbsI
-         1mSchPAZq4NEXqW8mc2GUZpr9sE10Sp1C92sSoKdis2uOvfOyfx/KbvCithIp7QY9Qn8
-         DF22GRECTU9827sKvmqsEYqKvpodXBM5CfuzB9EUJ0MEl/uWslrv7y8HJN3oQVBA4Bc8
-         p/ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=xwfoUJqPA7B1qNvVW6xqIft2TcTCZV15J00JP5m2zL0=;
-        b=bGaghjfgrq0N46kMtZ2ARMJz4Dak2zxIXloAi6UKooG2fnrKyjEgRZaOgO6ba3aAeP
-         9wrYrNxroHrqokcnRorK9hgSbG2nbh+jIfaszAd/SoEYqQVLI492/GCOSnzGMhs7ye+1
-         lxAOFWEeyh+eZ1NFQ5xsolcVNbAnE7qQOcpEi3b+BuxvVpp9K+CuoZhUKw7Z49BeJGBg
-         9IcDBczJYlwUs8T07JeZWWnk1UGC/8u0JLC8lPZ7XdXrxdcNsQbVSmlFO+/mI8qPddNn
-         9k0ruv85UI3PKwbjRnAEUYBZ3nCKlAKf0UC7qrZTUSJv8zJpQGPuBa0LFok48bM8A3DE
-         CAiA==
-X-Gm-Message-State: APjAAAWHi/985bjRoGViBIwO5CpIJXVjGmKuh3fKCr2U0DtdnSNAW9Pk
-        +J1OmXneb+Ury3ioweV3U7beWA==
-X-Google-Smtp-Source: APXvYqwhCjnR8iyO0qw7uyNVRkxDrU991+dX+WGTKAyB0guZWqyPfl3YUsBqGPPZOoIM+eCh3ZxgIQ==
-X-Received: by 2002:a63:195f:: with SMTP id 31mr39424906pgz.116.1554877753878;
-        Tue, 09 Apr 2019 23:29:13 -0700 (PDT)
-Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id a129sm79153601pfa.152.2019.04.09.23.29.11
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 09 Apr 2019 23:29:11 -0700 (PDT)
-Date:   Wed, 10 Apr 2019 11:59:09 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        srv_heupstream@mediatek.com, fan.chen@mediatek.com
-Subject: Re: [PATCH v2 2/4] opp: add API which get max freq by voltage
-Message-ID: <20190410062909.6nkl4m4j5evrmqrl@vireshk-i7>
-References: <1553841972-19737-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1553841972-19737-3-git-send-email-andrew-sh.cheng@mediatek.com>
+        id S1726954AbfDJHnL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 03:43:11 -0400
+Received: from mail-eopbgr140088.outbound.protection.outlook.com ([40.107.14.88]:55297
+        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726577AbfDJHnL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Apr 2019 03:43:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=UGz2RHNOSYTa3YO1/HVmBLDqunDx5M3PWWfNwBLuyzI=;
+ b=ECDkcaAvrMzBNGUPes3CtGY92ahEIRN8iCk+KTe6jtMA0rMy29BzHDJ44nzEoKYbnukT5eOdqxudNmA4iY1plrbz0HOC5Cunp4Vr0cyII/EyzAccuARemFIzxo6Yov+0Ittj7OJcB3te/plE/tJ847MSgF/yUqui0imtAY+XeH4=
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com (52.134.72.18) by
+ DB3PR0402MB3770.eurprd04.prod.outlook.com (52.134.73.21) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1771.18; Wed, 10 Apr 2019 07:43:04 +0000
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::e8ca:4f6b:e43:c170]) by DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::e8ca:4f6b:e43:c170%3]) with mapi id 15.20.1771.016; Wed, 10 Apr 2019
+ 07:43:04 +0000
+From:   Anson Huang <anson.huang@nxp.com>
+To:     "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>,
+        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        "festevam@gmail.com" <festevam@gmail.com>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "will.deacon@arm.com" <will.deacon@arm.com>,
+        "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "edubezval@gmail.com" <edubezval@gmail.com>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+        Peng Fan <peng.fan@nxp.com>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>,
+        "heiko@sntech.de" <heiko@sntech.de>,
+        Andy Gross <andy.gross@linaro.org>,
+        "maxime.ripard@bootlin.com" <maxime.ripard@bootlin.com>,
+        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
+        "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>,
+        "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>,
+        "ezequiel@collabora.com" <ezequiel@collabora.com>,
+        "stefan.wahren@i2se.com" <stefan.wahren@i2se.com>,
+        "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>,
+        "olof@lixom.net" <olof@lixom.net>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+CC:     dl-linux-imx <linux-imx@nxp.com>
+Subject: [PATCH RESEND V11 1/4] dt-bindings: fsl: scu: add thermal binding
+Thread-Topic: [PATCH RESEND V11 1/4] dt-bindings: fsl: scu: add thermal
+ binding
+Thread-Index: AQHU73EHSbSj+ICal0a8V7ocQCksIw==
+Date:   Wed, 10 Apr 2019 07:43:04 +0000
+Message-ID: <1554881866-26333-1-git-send-email-Anson.Huang@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-mailer: git-send-email 2.7.4
+x-clientproxiedby: HK2PR02CA0155.apcprd02.prod.outlook.com (10.171.30.15) To
+ DB3PR0402MB3916.eurprd04.prod.outlook.com (52.134.72.18)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=anson.huang@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 0b8d3518-8bf4-4b3c-1854-08d6bd882a3a
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600139)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:DB3PR0402MB3770;
+x-ms-traffictypediagnostic: DB3PR0402MB3770:
+x-ld-processed: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635,ExtAddr
+x-microsoft-antispam-prvs: <DB3PR0402MB3770F3DA0508261AAB565EDAF52E0@DB3PR0402MB3770.eurprd04.prod.outlook.com>
+x-forefront-prvs: 00032065B2
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(366004)(346002)(39860400002)(396003)(136003)(376002)(189003)(199004)(86362001)(478600001)(7416002)(52116002)(97736004)(110136005)(386003)(6506007)(2501003)(316002)(102836004)(186003)(2201001)(81156014)(81166006)(14454004)(2906002)(66066001)(8676002)(26005)(256004)(305945005)(6116002)(3846002)(7736002)(71190400001)(71200400001)(68736007)(5660300002)(476003)(2616005)(6512007)(53936002)(36756003)(99286004)(106356001)(6436002)(105586002)(6486002)(8936002)(50226002)(25786009)(486006)(4326008)(921003)(1121003);DIR:OUT;SFP:1101;SCL:1;SRVR:DB3PR0402MB3770;H:DB3PR0402MB3916.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: ikf866ZlTPVUHqU4a0icddtNq54zcBk6/1dS4IGN4cDr6abGPUkX7kZ/vQVFFO3N6Vj2VBkJQuupk85LiUoo/o4W+Z/NDZYuGmyzfdbdvcS7qlKQ1dx2ueaGid9DyngU0mX2JLMiQsRj6lO2JPqss95Tb+XcgSBebW08d3dxyz029WZlpJqgDMYWhbxfM91ZSX8+iNZ7rvWsTTSJKgsJZvvHiS/BKnHszkHghngVfHIX7Fp7PeuCRms6xg/skoFNyyC1H8q7pEo1VMmCwzvgBBljXCZwkwyqCU0WW8vs3pj6xYmT0HMn0jvRye6DQgey5K970o39tQDvxLIV47gZwcVAZq6r986BjiAvdpjOy+i/fw+Z12sPL5wQ6/hZoI3WCjVE9J1/K83pvojob7jVgEHVj8y1CCIrfcNDjZNkbLM=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <1553841972-19737-3-git-send-email-andrew-sh.cheng@mediatek.com>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0b8d3518-8bf4-4b3c-1854-08d6bd882a3a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Apr 2019 07:43:04.4488
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0402MB3770
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190410062909.bAoFiYr-sGCKCzDQcmca0_j7R0PXLH1hN1TgUfPeCJ4@z>
 
-On 29-03-19, 14:46, Andrew-sh.Cheng wrote:
-> This API will get voltage as input parameter.
-> Search all opp items for the item which with max frequency,
-> and the voltae is smaller than provided voltage.
-> 
-> Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> ---
->  drivers/opp/core.c     | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h |  8 ++++++++
->  2 files changed, 63 insertions(+)
-
-I have applied this patch with some modifications, here is the diff:
-
----
- drivers/opp/core.c     | 29 ++++++++++++++---------------
- include/linux/pm_opp.h |  8 ++++----
- 2 files changed, 18 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 7323cd9aabf9..0e7703fe733f 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -527,31 +527,30 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
- /**
-- * dev_pm_opp_find_max_freq_by_volt() - Search for a opp with max freq
-- * under provided voltage
-- * @dev:	device for which we do this operation
-- * @u_volt:	provided voltage
-+ * dev_pm_opp_find_freq_ceil_by_volt() - Find OPP with highest frequency for
-+ *					 target voltage.
-+ * @dev:	Device for which we do this operation.
-+ * @u_volt:	Target voltage.
-+ *
-+ * Search for OPP with highest (ceil) frequency and has voltage <= u_volt.
-  *
-- * Search for the matching available OPP which provide voltage can support.
-+ * Return: matching *opp, else returns ERR_PTR in case of error which should be
-+ * handled using IS_ERR.
-  *
-- * Return: matching *opp, else returns ERR_PTR in case of error
-- * and should be handled using IS_ERR.
-  * Error return values can be:
-- * EINVAL:	for bad pointer
-- * ERANGE:	no match found for search
-- * ENODEV:	if device not found in list of registered devices
-+ * EINVAL:	bad parameters
-  *
-  * The callers are required to call dev_pm_opp_put() for the returned OPP after
-  * use.
-  */
--struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
--					      unsigned long u_volt)
-+struct dev_pm_opp *dev_pm_opp_find_freq_ceil_by_volt(struct device *dev,
-+						     unsigned long u_volt)
- {
- 	struct opp_table *opp_table;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
- 	if (!dev || !u_volt) {
--		dev_err(dev, "%s: Invalid argument volt=%d\n", __func__,
-+		dev_err(dev, "%s: Invalid argument volt=%lu\n", __func__,
- 			u_volt);
- 		return ERR_PTR(-EINVAL);
- 	}
-@@ -564,7 +563,6 @@ struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
- 
- 	list_for_each_entry(temp_opp, &opp_table->opp_list, node) {
- 		if (temp_opp->available) {
--			/* go to the next node, before choosing prev */
- 			if (temp_opp->supplies[0].u_volt > u_volt)
- 				break;
- 			opp = temp_opp;
-@@ -574,12 +572,13 @@ struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
- 	/* Increment the reference count of OPP */
- 	if (!IS_ERR(opp))
- 		dev_pm_opp_get(opp);
-+
- 	mutex_unlock(&opp_table->lock);
- 	dev_pm_opp_put_opp_table(opp_table);
- 
- 	return opp;
- }
--EXPORT_SYMBOL_GPL(dev_pm_opp_find_max_freq_by_volt);
-+EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_ceil_by_volt);
- 
- static int _set_opp_voltage(struct device *dev, struct regulator *reg,
- 			    struct dev_pm_opp_supply *supply)
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 57deef9cf5d3..b150fe97ce5a 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -102,8 +102,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
- 
- struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- 					      unsigned long *freq);
--struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
--					      unsigned long u_volt);
-+struct dev_pm_opp *dev_pm_opp_find_freq_ceil_by_volt(struct device *dev,
-+						     unsigned long u_volt);
- 
- struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 					     unsigned long *freq);
-@@ -209,8 +209,8 @@ static inline struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- 	return ERR_PTR(-ENOTSUPP);
- }
- 
--static inline struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
--					      unsigned long u_volt)
-+static inline struct dev_pm_opp *dev_pm_opp_find_freq_ceil_by_volt(struct device *dev,
-+					unsigned long u_volt)
- {
- 	return ERR_PTR(-ENOTSUPP);
- }
+TlhQIGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3aXRoIGEgQ29ydGV4LU00IGNvcmUgaW5zaWRl
+IGFzDQpzeXN0ZW0gY29udHJvbGxlciwgdGhlIHN5c3RlbSBjb250cm9sbGVyIGlzIGluIGNoYXJn
+ZSBvZiBzeXN0ZW0NCnBvd2VyLCBjbG9jayBhbmQgdGhlcm1hbCBzZW5zb3JzIGV0Yy4gbWFuYWdl
+bWVudCwgTGludXgga2VybmVsDQpoYXMgdG8gY29tbXVuaWNhdGUgd2l0aCBzeXN0ZW0gY29udHJv
+bGxlciB2aWEgTVUgKG1lc3NhZ2UgdW5pdCkNCklQQyB0byBnZXQgdGVtcGVyYXR1cmUgZnJvbSB0
+aGVybWFsIHNlbnNvcnMsIHRoaXMgcGF0Y2ggYWRkcw0KYmluZGluZyBkb2MgZm9yIGkuTVggc3lz
+dGVtIGNvbnRyb2xsZXIgdGhlcm1hbCBkcml2ZXIuDQoNClNpZ25lZC1vZmYtYnk6IEFuc29uIEh1
+YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0KLS0tDQpDaGFuZ2VzIHNpbmNlIFYxMDoNCgktIHJl
+bW92ZSBwcm9wZXJ0eSAiaW14LHNlbnNvci1yZXNvdXJjZS1pZCIuDQotLS0NCiAuLi4vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0ICAgICAgICB8IDE2ICsrKysr
+KysrKysrKysrKysNCiAxIGZpbGUgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0t
+Z2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUvZnNs
+LHNjdS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2Fs
+ZS9mc2wsc2N1LnR4dA0KaW5kZXggNzJkNDgxYy4uMDIzZmI1YyAxMDA2NDQNCi0tLSBhL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0DQor
+KysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2ws
+c2N1LnR4dA0KQEAgLTEyMiw2ICsxMjIsMTcgQEAgUlRDIGJpbmRpbmdzIGJhc2VkIG9uIFNDVSBN
+ZXNzYWdlIFByb3RvY29sDQogUmVxdWlyZWQgcHJvcGVydGllczoNCiAtIGNvbXBhdGlibGU6IHNo
+b3VsZCBiZSAiZnNsLGlteDhxeHAtc2MtcnRjIjsNCiANCitUaGVybWFsIGJpbmRpbmdzIGJhc2Vk
+IG9uIFNDVSBNZXNzYWdlIFByb3RvY29sDQorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQorDQorUmVxdWlyZWQgcHJvcGVydGllczoN
+CistIGNvbXBhdGlibGU6CQkJU2hvdWxkIGJlIDoNCisJCQkJICAiZnNsLGlteDhxeHAtc2MtdGhl
+cm1hbCINCisJCQkJZm9sbG93ZWQgYnkgImZzbCxpbXgtc2MtdGhlcm1hbCI7DQorDQorLSAjdGhl
+cm1hbC1zZW5zb3ItY2VsbHM6CVNlZSBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+dGhlcm1hbC90aGVybWFsLnR4dA0KKwkJCQlmb3IgYSBkZXNjcmlwdGlvbi4NCisNCiBFeGFtcGxl
+IChpbXg4cXhwKToNCiAtLS0tLS0tLS0tLS0tDQogbHNpb19tdTE6IG1haWxib3hANWQxYzAwMDAg
+ew0KQEAgLTE2OCw2ICsxNzksMTEgQEAgZmlybXdhcmUgew0KIAkJcnRjOiBydGMgew0KIAkJCWNv
+bXBhdGlibGUgPSAiZnNsLGlteDhxeHAtc2MtcnRjIjsNCiAJCX07DQorDQorCQl0c2VuczogdGhl
+cm1hbC1zZW5zb3Igew0KKwkJCWNvbXBhdGlibGUgPSAiZnNsLGlteDhxeHAtc2MtdGhlcm1hbCIs
+ICJmc2wsaW14LXNjLXRoZXJtYWwiOw0KKwkJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDwxPjsN
+CisJCX07DQogCX07DQogfTsNCiANCi0tIA0KMi43LjQNCg0K
