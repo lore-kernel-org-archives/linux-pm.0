@@ -2,88 +2,87 @@ Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D0CBC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:33:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2F14C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:39:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2CCE5206DF
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:33:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BC9C3206DF
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 16:39:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729591AbfDJQde (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 12:33:34 -0400
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:57716 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729089AbfDJQde (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Apr 2019 12:33:34 -0400
+        id S2387513AbfDJQjj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 12:39:39 -0400
+Received: from foss.arm.com ([217.140.101.70]:57788 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731199AbfDJQji (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Apr 2019 12:39:38 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B354A374;
-        Wed, 10 Apr 2019 09:33:33 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 40642374;
+        Wed, 10 Apr 2019 09:39:38 -0700 (PDT)
 Received: from [0.0.0.0] (e107985-lin.cambridge.arm.com [10.1.194.38])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1B9CB3F59C;
-        Wed, 10 Apr 2019 09:33:32 -0700 (PDT)
-Subject: Re: [RFC 1/6] Optimize wake-up task for Task Packing heuristic
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9B8673F59C;
+        Wed, 10 Apr 2019 09:39:37 -0700 (PDT)
+Subject: Re: [RFC 6/6] Providing TurboSched as config option
 To:     Parth Shah <parth015@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 References: <20190322060621.27021-1-parth015@linux.vnet.ibm.com>
- <20190322060621.27021-2-parth015@linux.vnet.ibm.com>
- <0b198386-ef0b-75e0-e53a-1160c77326b7@arm.com>
- <60e34244-1e40-e318-080e-e76607bb3d92@linux.vnet.ibm.com>
+ <20190322060621.27021-7-parth015@linux.vnet.ibm.com>
 From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
-Message-ID: <c877a201-2601-5bf4-7c80-0f6b190c1711@arm.com>
-Date:   Wed, 10 Apr 2019 18:33:30 +0200
+Message-ID: <84e0894c-b38c-3e14-998f-71b23670baf2@arm.com>
+Date:   Wed, 10 Apr 2019 18:39:35 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <60e34244-1e40-e318-080e-e76607bb3d92@linux.vnet.ibm.com>
+In-Reply-To: <20190322060621.27021-7-parth015@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-GB
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 4/7/19 7:57 AM, Parth Shah wrote:
-> 
-> 
-> On 3/27/19 3:01 PM, Dietmar Eggemann wrote:
->> Hi Parth,
->>
->> On 3/22/19 7:06 AM, Parth Shah wrote:
+On 3/22/19 7:06 AM, Parth Shah wrote:
+> Signed-off-by: Parth Shah <parth015@linux.vnet.ibm.com>
 
 [...]
 
->>> +    for_each_cpu_wrap(core, cpus, prev_cpu)
->>> +    {
->>> +        long unsigned int core_util = 0;
->>> +        long unsigned int core_cap = core_cap_mf*capacity_of(core)/10;
->>> +        long unsigned int cache_cpu_util = (unsigned)-1;
->>> +        long unsigned est_util = 0, est_util_enqueued = 0;
->>> +        int cache_cpu = core;
->>> +        struct cfs_rq *cfs_rq;
->>> +
->>> +        for_each_cpu(smt, cpu_smt_mask(core)) {
->>
->> This one doesn't build for me on arm64 (make defconfig) since it uses cpu_smt_mask() outside the CONFIG_SCHED_SMT guard.
->>
->> kernel/sched/fair.c: In function ‘select_non_idle_core’:
->> kernel/sched/fair.c:6243:21: error: implicit declaration of function ‘cpu_smt_mask’; did you mean ‘cpu_cpu_mask’? [-Werror=implicit-function-declaration]
->>     for_each_cpu(smt, cpu_smt_mask(core)) {
->>                       ^
->> ./include/linux/cpumask.h:242:32: note: in definition of macro ‘for_each_cpu’
->>
->> [...]
->>
-> 
-> Thanks for pointing out. It will not build for individual patches for the current version of RFC.
-> 
-> Please try to build it with full patch set. I assure, the following iterations of RFC will resolve this issue.
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 06e440d3ea2f..2484fa8c49d0 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -54,6 +54,7 @@ unsigned int sysctl_sched_rt_period = 1000000;
+>   
+>   __read_mostly int scheduler_running;
+>   
+> +#ifdef CONFIG_TURBO_SCHED
 
-Ah, I see, you have this CONFIG_TURBO_SCHED patch at the end of the 
-series. I think that you will have a hard time to get new CONFIG 
-switches into the task scheduler code. Can you not bting in your feature 
-w/o CONFIG_TURBO_SCHED?
+This one takes sysctl_sched_rt_runtime away from a non 
+CONFIG_TURBO_SCHED build like arm64 defconfig.
+
+...
+   MODPOST vmlinux.o
+kernel/sysctl.o:(.data+0x14d0): undefined reference to 
+`sysctl_sched_rt_runtime'
+kernel/sched/core.o: In function `dl_bandwidth_enabled':
+/opt/git/kernel_org/kernel/sched/sched.h:282: undefined reference to 
+`sysctl_sched_rt_runtime'
+...
 
 [...]
+
+--- 8< ---
+
+@@ -54,13 +54,13 @@ unsigned int sysctl_sched_rt_period = 1000000;
+
+  __read_mostly int scheduler_running;
+
+-#ifdef CONFIG_TURBO_SCHED
+  /*
+   * part of the period that we allow rt tasks to run in us.
+   * default: 0.95s
+   */
+  int sysctl_sched_rt_runtime = 950000;
+
++#ifdef CONFIG_TURBO_SCHED
