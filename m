@@ -6,30 +6,30 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89F0BC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03AB9C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:17:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 63FC5204FD
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CACE3204FD
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:17:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729251AbfDJIQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 04:16:32 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44454 "EHLO
+        id S1729215AbfDJIRb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 04:17:31 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:42088 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729080AbfDJIQc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:16:32 -0400
+        with ESMTP id S1729080AbfDJIRb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:17:31 -0400
 Received: from 79.184.255.221.ipv4.supernova.orange.pl (79.184.255.221) (HELO aspire.rjw.lan)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
- id dae130f1f40b40f8; Wed, 10 Apr 2019 10:16:30 +0200
+ id 6b94f61ed903f552; Wed, 10 Apr 2019 10:17:28 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Pavel Machek <pavel@ucw.cz>, Yangtao Li <tiny.windzz@gmail.com>
-Cc:     len.brown@intel.com, gregkh@linuxfoundation.org,
+To:     Yangtao Li <tiny.windzz@gmail.com>
+Cc:     len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PM / core: fix kerneldoc comment for dpm_watchdog_handler()
-Date:   Wed, 10 Apr 2019 10:14:19 +0200
-Message-ID: <3427737.Aay4R73sDK@aspire.rjw.lan>
-In-Reply-To: <20190318121654.GF6101@amd>
-References: <20190316033751.31323-1-tiny.windzz@gmail.com> <20190318121654.GF6101@amd>
+Subject: Re: [PATCH 1/4] PM / core: Introduce dpm_async_fn() helper
+Date:   Wed, 10 Apr 2019 10:15:17 +0200
+Message-ID: <1823590.m8T6rWHPoh@aspire.rjw.lan>
+In-Reply-To: <20190316045928.31934-2-tiny.windzz@gmail.com>
+References: <20190316045928.31934-1-tiny.windzz@gmail.com> <20190316045928.31934-2-tiny.windzz@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
@@ -37,21 +37,25 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190410081419.ZbmGe-oyqEDWRGIoqb7ABOwMHFzSxOb3ZO9xqPknYn8@z>
+Message-ID: <20190410081517._GQfom_bU2h1U--dTFQzBWg75ML5Mr23Fov55IOuIWc@z>
 
-On Monday, March 18, 2019 1:16:54 PM CEST Pavel Machek wrote:
+On Saturday, March 16, 2019 5:59:25 AM CEST Yangtao Li wrote:
+> When we want to execute device pm functions asynchronously, we'll
+> do the following for the device:
 > 
-> --w3uUfsyyY1Pqa/ej
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
+>   1) reinit_completion(&dev->power.completion);
+>   2) Check if the device enables asynchronous suspend.
+>   3) If necessary, execute the corresponding function asynchronously.
 > 
-> On Fri 2019-03-15 23:37:51, Yangtao Li wrote:
-> > This brings the kernel doc in line with the function signature.
-> >=20
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> There are a lot of such repeated operations here, in fact we can avoid
+> this. So introduce dpm_async_fn() to have better code readability and
+> reuse.
 > 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+> And use this function to do some cleanup.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 
-Patch applied, thanks!
+I'm queuing up this one, but the [2-4/4] are not convincing.
+
+Thanks!
 
