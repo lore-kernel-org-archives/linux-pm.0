@@ -1,80 +1,114 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/2] dt-bindings: thermal: al-thermal: Add binding
- documentation
-Date: Wed, 10 Apr 2019 09:10:00 -0500
-Message-ID: <20190410141000.GA19197@bogus>
-References: <1554373016-1442-1-git-send-email-talel@amazon.com>
- <1554373016-1442-2-git-send-email-talel@amazon.com>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH v2 2/2] dt-bindings: cpufreq: Document
+ operating-points-v2-sunxi-cpu
+Date: Wed, 10 Apr 2019 16:56:59 +0200
+Message-ID: <20190410145659.62nl4o2jvkuggmpe@flea>
+References: <20190409172558.18778-1-tiny.windzz@gmail.com>
+ <20190409172558.18778-3-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="6yay5myzwekec5cw"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1554373016-1442-2-git-send-email-talel@amazon.com>
+In-Reply-To: <20190409172558.18778-3-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Talel Shenhar <talel@amazon.com>
-Cc: edubezval@gmail.com, dwmw@amazon.co.uk, jonnyc@amazon.com, rui.zhang@intel.com, hhhawa@amazon.com, ronenk@amazon.com, hanochu@amazon.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 04, 2019 at 01:16:55PM +0300, Talel Shenhar wrote:
-> Add thermal binding documentation for Amazon's Annapurna Labs Thermal
-> Sensor.
-> 
-> Signed-off-by: Talel Shenhar <talel@amazon.com>
-> Reviewed-by: David Woodhouse <dwmw@amazon.co.uk>
+
+--6yay5myzwekec5cw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Apr 09, 2019 at 01:25:58PM -0400, Yangtao Li wrote:
+> Allwinner Process Voltage Scaling Tables defines the voltage and
+> frequency value  based on the speedbin blown in the efuse combination.
+> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each
+> OPP of operating-points-v2 table when it is parsed by the OPP framework.
+>
+> The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
+> with following parameters:
+> - nvmem-cells (NVMEM area containig the speedbin information)
+> - opp-microvolt-<name>: voltage in micro Volts.
+>   At runtime, the platform can pick a <name> and matching
+>   opp-microvolt-<name> property
+>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
->  .../bindings/thermal/amazon,al-thermal.txt         | 33 ++++++++++++++++++++++
->  1 file changed, 33 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt b/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+>  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 166 ++++++++++++++++++
+>  1 file changed, 166 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+>
+> diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
 > new file mode 100644
-> index 0000000..af8cf18
+> index 000000000000..c81a2075b974
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
-> @@ -0,0 +1,33 @@
-> +Amazon's Annapurna Labs Thermal Sensor
+> +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> @@ -0,0 +1,166 @@
+> +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+> +===================================
 > +
-> +Simple thermal device that allows temperature reading by a single MMIO
-> +transaction.
+> +For some SoCs, the CPU frequency subset and voltage value of each OPP
+> +varies based on the silicon variant in use. Allwinner Process Voltage
+> +Scaling Tables defines the voltage and frequency value  based on the
+> +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
+> +reads the efuse value from the SoC to provide the OPP framework with
+> +required information.
 > +
 > +Required properties:
-> +- compatible: "amazon,al-thermal".
-> +- reg: The physical base address and length of the sensor's registers.
-> +- #thermal-sensor-cells: Must be 1. See ./thermal.txt for a description.
+> +--------------------
+> +In 'cpus' nodes:
+> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
 > +
-> +Example:
-> +	thermal: thermal {
-> +		compatible = "amazon,al-thermal";
-> +		reg = <0x0 0x05002860 0x0 0x1>;
-> +		#thermal-sensor-cells = <0x1>;
-> +	};
+> +In 'operating-points-v2' table:
+> +- compatible: Should be
+> +	- 'operating-points-v2-sunxi-cpu'.
+
+Vendor-specific compatibles should have the vendor mentionned.
+
+Also, even though the H6 is the only SoC so far that has needed this,
+we can't really assume that it will be the only SoC to use it, or that
+it will always behave like that.
+
+So having something like allwinner,sun50i-h6-operating-points would be
+great.
+
+> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> +		efuse registers that has information about the
+> +		speedbin that is used to select the right frequency/voltage
+> +		value pair.
+> +		Please refer the for nvmem-cells
+> +		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
+> +		and also examples below.
 > +
-> +	thermal-zones {
-> +		thermal_z0 {
+> +In every OPP node:
+> +- opp-microvolt-<name>: Voltage in micro Volts.
+> +			At runtime, the platform can pick a <name> and
+> +			matching opp-microvolt-<name> property.
+> +			[See: opp.txt]
 
-thermal-z0 {
+You need to document the valid names here.
 
-> +			polling-delay-passive = <250>;
-> +			polling-delay = <1000>;
-> +			thermal-sensors = <&thermal 0>;
-> +			trips {
-> +				thermalz0_crit {
+Thanks!
+Maxime
 
-critical {
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
-With that,
+--6yay5myzwekec5cw
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+-----BEGIN PGP SIGNATURE-----
 
-> +					temperature = <105000>;
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +
-> +		};
-> +	};
-> +
-> -- 
-> 2.7.4
-> 
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXK4EOwAKCRDj7w1vZxhR
+xXr6AQDvwTpjj8VYqGfUgaR7dQGKXPaggIMLIGU9MeAPENqygwD/TQrHWLapGkm0
+0yMu+BgQ5XREz9SeD+UV2GVYA1PoxgA=
+=Bpew
+-----END PGP SIGNATURE-----
+
+--6yay5myzwekec5cw--
