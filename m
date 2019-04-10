@@ -6,30 +6,30 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31940C10F14
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89F0BC10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 02D5A217F4
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 63FC5204FD
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 08:16:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729318AbfDJIQD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 04:16:03 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:45962 "EHLO
+        id S1729251AbfDJIQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 04:16:32 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44454 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729319AbfDJIQC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:16:02 -0400
+        with ESMTP id S1729080AbfDJIQc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 04:16:32 -0400
 Received: from 79.184.255.221.ipv4.supernova.orange.pl (79.184.255.221) (HELO aspire.rjw.lan)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
- id 0dcb74f0b4a0e9a7; Wed, 10 Apr 2019 10:16:00 +0200
+ id dae130f1f40b40f8; Wed, 10 Apr 2019 10:16:30 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Pavel Machek <pavel@ucw.cz>, Yangtao Li <tiny.windzz@gmail.com>
 Cc:     len.brown@intel.com, gregkh@linuxfoundation.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PM / core: fix kerneldoc comment for device_pm_wait_for_dev
-Date:   Wed, 10 Apr 2019 10:13:48 +0200
-Message-ID: <3125140.GLtFsX2kdH@aspire.rjw.lan>
-In-Reply-To: <20190318121710.GG6101@amd>
-References: <20190316034841.31451-1-tiny.windzz@gmail.com> <20190318121710.GG6101@amd>
+Subject: Re: [PATCH] PM / core: fix kerneldoc comment for dpm_watchdog_handler()
+Date:   Wed, 10 Apr 2019 10:14:19 +0200
+Message-ID: <3427737.Aay4R73sDK@aspire.rjw.lan>
+In-Reply-To: <20190318121654.GF6101@amd>
+References: <20190316033751.31323-1-tiny.windzz@gmail.com> <20190318121654.GF6101@amd>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
@@ -37,18 +37,17 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190410081348.Lw2E_4KDdAM4ep2ezadejvkObc62jm-YlJMKAb295g0@z>
+Message-ID: <20190410081419.ZbmGe-oyqEDWRGIoqb7ABOwMHFzSxOb3ZO9xqPknYn8@z>
 
-On Monday, March 18, 2019 1:17:10 PM CEST Pavel Machek wrote:
+On Monday, March 18, 2019 1:16:54 PM CEST Pavel Machek wrote:
 > 
-> --Qf1oXS95uex85X0R
+> --w3uUfsyyY1Pqa/ej
 > Content-Type: text/plain; charset=us-ascii
 > Content-Disposition: inline
 > Content-Transfer-Encoding: quoted-printable
 > 
-> On Fri 2019-03-15 23:48:41, Yangtao Li wrote:
-> > Rearrange comment to make the comment style consistent, the previous
-> > function parameters are described first.
+> On Fri 2019-03-15 23:37:51, Yangtao Li wrote:
+> > This brings the kernel doc in line with the function signature.
 > >=20
 > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > 
