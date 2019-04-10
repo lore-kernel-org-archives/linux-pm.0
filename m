@@ -1,72 +1,40 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / core: Propagate dev->power.wakeup_path when no callbacks
-Date: Wed, 10 Apr 2019 11:55:16 +0200
-Message-ID: <20190410095516.6170-1-ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Wed, 10 Apr 2019 15:44:23 +0530
+Message-ID: <20190410101423.3pl6yfhv2wnxuwgw@vireshk-i7>
+References: <20190328101352.25657-1-quentin.perret@arm.com>
+ <20190328101352.25657-4-quentin.perret@arm.com>
+ <20190410054449.zwmemg7vza557gue@vireshk-i7>
+ <20190410085702.nll6spd565oio3ds@queper01-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190410085702.nll6spd565oio3ds@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Loic Pallardy <loic.pallardy@st.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Torgue <alexandre.torgue@st.com>, Rob Herring <robh@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Johan Hovold <johan@kernel.org>, linux-gpio@vger.kernel.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The dev->power.direct_complete flag may become set in device_prepare() in
-case the device don't have any PM callbacks (dev->power.no_pm_callbacks is
-set). This leads to a broken behaviour, when there is child having wakeup
-enabled and relies on its parent to be used in the wakeup path.
+On 10-04-19, 09:57, Quentin Perret wrote:
+> Hmm, indeed... I thought cpufreq_table_validate_and_sort() was actively
+> sorting the table but it seems I was wrong.
+> 
+> But I _think_ in practice the freq table actually happens to be sorted
+> for the upstream cpufreq drivers with the CPUFREQ_IS_COOLING_DEV flag
+> set. Most of them use dev_pm_opp_init_cpufreq_table() which guarantees
+> the table is sorted and qoriq-cpufreq explicitly sorts the table. But
+> I'm not sure about qcom-cpufreq-hw ...
+> 
+> So, if the above is true, perhaps I could simply add a check to mandate
+> that policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_UNSORTED for
+> cpu_cooling ? That shouldn't harm the existing users.
 
-More precisely, when the direct complete path becomes selected for the
-child in __device_suspend(), the propagation of the dev->power.wakeup_path
-becomes skipped as well.
+Right, I think most of the platforms will have it sorted anyway right now, but
+you never know if one or two of them don't. Maybe just add the above conditional
+and put out an error or WARN or something, so people know that something broke.
 
-Let's address this problem, by checking if the device is a part the wakeup
-path or has wakeup enabled, then prevent the direct complete path from
-being used.
 
-Reported-by: Loic Pallardy <loic.pallardy@st.com>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-More background:
-
-This problem was reported by Loic Pallardy, offlist, while he was working
-on enabling wakeup for a tty serial console driver.
-
-When I looked more closely, I noticed that uart_suspend_port() calls
-device_may_wakeup() for the tty child devices, and then also the used serial
-driver check its device (parent) for device_may_wakeup(). To me this looks like
-workarounds to fix a behaviour that really should be dealt with from the PM
-core, no matter of whether the child have PM callbacks assigned or not.
-
-In other words, it seems like the serial driver(s) should be checking the
-wakeup_path flag for the parent, solely, instead.
-
-I haven't digested further behaviours for other subsystem, but recently
-reviewed a patch for a gpio driver [1], that seems to be suffering from the
-similar problems.
-
-Kind regards
-Ulf Hansson
-
-[1]
-https://lkml.org/lkml/2019/4/4/1283
-
----
- drivers/base/power/main.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 41eba82ee7b9..f9cfdeee8288 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1747,6 +1747,10 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	/* Avoid direct_complete, to let wakeup_path being propagated. */
-+	if (device_may_wakeup(dev) || dev->power.wakeup_path)
-+		dev->power.direct_complete = false;
-+
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
- 			pm_runtime_disable(dev);
 -- 
-2.17.1
+viresh
