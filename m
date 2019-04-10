@@ -1,18 +1,15 @@
-From: Frank Lee <tiny.windzz@gmail.com>
-Subject: Re: [PATCH 2/2] dt-bindings: cpufreq: Document
- operating-points-v2-sunxi-cpu
-Date: Wed, 10 Apr 2019 01:49:23 +0800
-Message-ID: <CAEExFWs8jn1-Ht6Rq0ukL=Kz0sTwgf+kJzxw3Js=6hX+2OjYTA@mail.gmail.com>
-References: <20190405102455.15311-1-tiny.windzz@gmail.com>
- <20190405102455.15311-3-tiny.windzz@gmail.com>
- <20190405145532.cstvbv3mxbzrmpxp@flea>
- <CAEExFWuDjD2Ur6UuCPD_m=hvUYJj7Z=NqQ7KXXR+tmnVtDqfbQ@mail.gmail.com>
- <20190409080931.5x36pgtwhdjh2lkq@flea>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date: Wed, 10 Apr 2019 08:54:04 +0530
+Message-ID: <20190410032404.eskk4qxbsws6fbec@vireshk-i7>
+References: <20190409172558.18778-1-tiny.windzz@gmail.com>
+ <20190409172558.18778-2-tiny.windzz@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190409080931.5x36pgtwhdjh2lkq@flea>
+Content-Disposition: inline
+In-Reply-To: <20190409172558.18778-2-tiny.windzz@gmail.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,105 +19,169 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: nm@ti.com, mark.rutland@arm.com, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, vireshk@kernel.org, rjw@rjwysocki.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, robh+dt@kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mchehab+samsung@kernel.org, davem@davemloft.net, devicetree@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: nm@ti.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, maxime.ripard@bootlin.com, vireshk@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, sboyd@kernel.org, wens@csie.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, mchehab+samsung@kernel.org, davem@davemloft.net, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 9, 2019 at 4:10 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->
-> On Tue, Apr 09, 2019 at 12:13:58AM +0800, Frank Lee wrote:
-> > On Fri, Apr 5, 2019 at 10:55 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > >
-> > > Hi,
-> > >
-> > > On Fri, Apr 05, 2019 at 06:24:55AM -0400, Yangtao Li wrote:
-> > > > Allwinner Process Voltage Scaling Tables defines the voltage and
-> > > > frequency value  based on the speedbin blown in the efuse combination.
-> > > > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> > > > provide the OPP framework with required information.
-> > > > This is used to determine the voltage and frequency value for each
-> > > > OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> > > >
-> > > > This change adds documentation for the DT bindings.
-> > > > The "operating-points-v2-sunxi-cpu" DT extends the "operating-points-v2"
-> > > > with following parameters:
-> > > > - nvmem-cells (NVMEM area containig the speedbin information)
-> > > > - opp-supported-hw: A single 32 bit bitmap value,
-> > > >   representing compatible HW:
-> > > >                       0:      speedbin 0
-> > > >                       1:      speedbin 1
-> > > >                       2:      speedbin 2
-> > > >                       3-31:   unused
-> > > >
-> > > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > > > ---
-> > > >  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 235 ++++++++++++++++++
-> > > >  1 file changed, 235 insertions(+)
-> > > >  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> > > > new file mode 100644
-> > > > index 000000000000..80201d4e5147
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> > > > @@ -0,0 +1,235 @@
-> > > > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
-> > > > +===================================
-> > > > +
-> > > > +For some SoCs, the CPU frequency subset and voltage value of each OPP
-> > > > +varies based on the silicon variant in use. Allwinner Process Voltage
-> > > > +Scaling Tables defines the voltage and frequency value  based on the
-> > > > +speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
-> > > > +reads the efuse value from the SoC to provide the OPP framework with
-> > > > +required information.
-> > > > +
-> > > > +Required properties:
-> > > > +--------------------
-> > > > +In 'cpus' nodes:
-> > > > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> > > > +
-> > > > +In 'operating-points-v2' table:
-> > > > +- compatible: Should be
-> > > > +     - 'operating-points-v2-sunxi-cpu'.
-> > > > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> > > > +             efuse registers that has information about the
-> > > > +             speedbin that is used to select the right frequency/voltage
-> > > > +             value pair.
-> > > > +             Please refer the for nvmem-cells
-> > > > +             bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
-> > > > +             and also examples below.
-> > > > +
-> > > > +In every OPP node:
-> > > > +- opp-supported-hw: A single 32 bit bitmap value, representing compatible HW.
-> > > > +                 Bitmap:
-> > > > +                     0:      speedbin 0
-> > > > +                     1:      speedbin 1
-> > > > +                     2:      speedbin 2
-> > > > +                     3-31:   unused
-> > >
-> > > I'm wondering if that's the right approach.
-> > >
-> > > I guess we could also have three different OPP tables, and pass them
-> > > all three through a phandle array, and have the kernel code select
-> > > which one is relevant based on the SID content
-> >
-> > It's ok. But why not use the way we already have?
-> > Is it necessary to introduce new helper?
->
-> My main concern is that it becomes quite difficult to differentiate
-> the various OPPs, and to which bin a particular OPP is belonging to,
-> while the more traditional OPPv2 makes it much more obvious.
-Hi Maxime,
+On 09-04-19, 13:25, Yangtao Li wrote:
+> +static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
+> +	.efuse_xlate = sun50i_efuse_xlate,
+> +	.nvmem_mask = 0x7,
+> +	.nvmem_shift = 5,
+> +};
+> +
+> +static const struct of_device_id sunxi_cpufreq_match_list[] = {
+> +	{ .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
+> +	{}
+> +};
+> +
+> +static const struct of_device_id *sunxi_cpufreq_match_node(void)
+> +{
+> +	struct device_node *np;
+> +	const struct of_device_id *match;
+> +
+> +	np = of_find_node_by_path("/");
+> +	match = of_match_node(sunxi_cpufreq_match_list, np);
+> +	of_node_put(np);
+> +
+> +	return match;
+> +}
+> +
 
-How about the newer patch ?
-I think it is clearer. Just add a printk and people will know the opp
-information used.
+Above code can be placed just above sunxi_cpufreq_init(), if you ...
 
-Yangtao
->
-> Maxime
->
-> --
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
+> +static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
+> +{
+> +	const struct sunxi_cpufreq_soc_data *soc_data;
+> +	struct opp_table **opp_tables;
+> +	const struct of_device_id *match;
+> +	char name[MAX_NAME_LEN];
+> +	unsigned int cpu;
+> +	u32 speed = 0;
+> +	int ret;
+> +
+> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
+> +			     GFP_KERNEL);
+> +	if (!opp_tables)
+> +		return -ENOMEM;
+> +
+> +	match = sunxi_cpufreq_match_node();
+
+... avoid this and ...
+
+> +	soc_data = match->data;
+> +	if (!soc_data)
+> +		return -EINVAL;
+> +
+> +	ret = sunxi_cpufreq_get_efuse(soc_data, &speed);
+> +	if (ret)
+> +		return ret;
+> +
+> +	snprintf(name, MAX_NAME_LEN, "speed%d", speed);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		struct device *cpu_dev = get_cpu_device(cpu);
+> +
+> +		if (NULL == cpu_dev) {
+> +			ret = -ENODEV;
+> +			goto free_opp;
+> +		}
+> +
+> +		opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
+> +		if (IS_ERR(opp_tables[cpu])) {
+> +			ret = PTR_ERR(opp_tables[cpu]);
+> +			pr_err("Failed to set prop name\n");
+> +			goto free_opp;
+> +		}
+> +	}
+> +
+> +	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
+> +							  NULL, 0);
+> +	if (!IS_ERR(cpufreq_dt_pdev)) {
+> +		platform_set_drvdata(pdev, opp_tables);
+> +		return 0;
+> +	}
+> +
+> +	ret = PTR_ERR(cpufreq_dt_pdev);
+> +	pr_err("Failed to register platform device\n");
+> +
+> +free_opp:
+> +	for_each_possible_cpu(cpu) {
+> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
+> +			break;
+> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
+> +	}
+> +	kfree(opp_tables);
+> +
+> +	return ret;
+> +}
+> +
+> +static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
+> +{
+> +	struct opp_table **opp_tables = platform_get_drvdata(pdev);
+> +	unsigned int cpu;
+> +
+> +	platform_device_unregister(cpufreq_dt_pdev);
+> +
+> +	for_each_possible_cpu(cpu)
+> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
+> +
+> +	kfree(opp_tables);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver sunxi_cpufreq_driver = {
+> +	.probe = sunxi_cpufreq_nvmem_probe,
+> +	.remove = sunxi_cpufreq_nvmem_remove,
+> +	.driver = {
+> +		.name = "sunxi-cpufreq-nvmem",
+> +	},
+> +};
+> +
+> +/*
+> + * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
+> + * all the real activity is done in the probe, which may be defered as well.
+> + * The init here is only registering the driver and the platform device.
+> + */
+> +static int __init sunxi_cpufreq_init(void)
+> +{
+> +	const struct of_device_id *match;
+> +	int ret;
+> +
+> +	match = sunxi_cpufreq_match_node();
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	ret = platform_driver_register(&sunxi_cpufreq_driver);
+> +	if (unlikely(ret < 0))
+> +		return ret;
+> +
+> +	sunxi_cpufreq_pdev = platform_device_register_simple(
+> +		"sunxi-cpufreq-nvmem", -1, NULL, 0);
+
+... pass match->data as platform device's data here..
+
+> +	ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
+> +	if (0 == ret)
+> +		return 0;
+> +
+> +	platform_driver_unregister(&sunxi_cpufreq_driver);
+> +	return ret;
+> +}
+> +module_init(sunxi_cpufreq_init);
+> +
+> +static void __exit sunxi_cpufreq_exit(void)
+> +{
+> +	platform_device_unregister(sunxi_cpufreq_pdev);
+> +	platform_driver_unregister(&sunxi_cpufreq_driver);
+> +}
+> +module_exit(sunxi_cpufreq_exit);
+> +
+> +MODULE_DESCRIPTION("Sunxi cpufreq driver");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.17.0
+
+-- 
+viresh
