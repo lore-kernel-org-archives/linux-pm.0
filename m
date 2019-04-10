@@ -1,7 +1,7 @@
 From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-Date: Wed, 10 Apr 2019 13:41:38 -0400
-Message-ID: <20190410174139.20012-2-tiny.windzz@gmail.com>
+Subject: [PATCH v3 2/2] dt-bindings: cpufreq: Document allwinner,cpu-operating-points-v2
+Date: Wed, 10 Apr 2019 13:41:39 -0400
+Message-ID: <20190410174139.20012-3-tiny.windzz@gmail.com>
 References: <20190410174139.20012-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190410174139.20012-1-tiny.windzz@gmail.com>
@@ -10,322 +10,201 @@ To: tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-For some SoCs, the CPU frequency subset and voltage value of each OPP
-varies based on the silicon variant in use. The sunxi-cpufreq-nvmem
-driver reads the efuse value from the SoC to provide the OPP framework
-with required information.
+Allwinner Process Voltage Scaling Tables defines the voltage and
+frequency value based on the speedbin blown in the efuse combination.
+The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+provide the OPP framework with required information.
+This is used to determine the voltage and frequency value for each
+OPP of operating-points-v2 table when it is parsed by the OPP framework.
+
+The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
+with following parameters:
+- nvmem-cells (NVMEM area containig the speedbin information)
+- opp-microvolt-<name>: voltage in micro Volts.
+  At runtime, the platform can pick a <name> and matching
+  opp-microvolt-<name> property.
+			HW:		<name>:
+			sun50iw-h6      speed0 speed1 speed2
 
 Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- MAINTAINERS                           |   7 +
- drivers/cpufreq/Kconfig.arm           |  10 ++
- drivers/cpufreq/Makefile              |   1 +
- drivers/cpufreq/cpufreq-dt-platdev.c  |   2 +
- drivers/cpufreq/sunxi-cpufreq-nvmem.c | 232 ++++++++++++++++++++++++++
- 5 files changed, 252 insertions(+)
- create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+ .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 168 ++++++++++++++++++
+ 1 file changed, 168 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 391405091c6b..bfd18ba6aa1a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -667,6 +667,13 @@ S:	Maintained
- F:	Documentation/i2c/busses/i2c-ali1563
- F:	drivers/i2c/busses/i2c-ali1563.c
- 
-+ALLWINNER CPUFREQ DRIVER
-+M:	Yangtao Li <tiny.windzz@gmail.com>
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-+F:	drivers/cpufreq/sunxi-cpufreq-nvmem.c
-+
- ALLWINNER SECURITY SYSTEM
- M:	Corentin Labbe <clabbe.montjoie@gmail.com>
- L:	linux-crypto@vger.kernel.org
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 179a1d302f48..25933c4321a7 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -18,6 +18,16 @@ config ACPI_CPPC_CPUFREQ
- 
- 	  If in doubt, say N.
- 
-+config ARM_ALLWINNER_CPUFREQ_NVMEM
-+	tristate "Allwinner nvmem based CPUFreq"
-+	depends on ARCH_SUNXI
-+	depends on NVMEM_SUNXI_SID
-+	select PM_OPP
-+	help
-+	  This adds the CPUFreq driver for Allwinner nvmem based SoC.
-+
-+	  If in doubt, say N.
-+
- config ARM_ARMADA_37XX_CPUFREQ
- 	tristate "Armada 37xx CPUFreq support"
- 	depends on ARCH_MVEBU && CPUFREQ_DT
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 689b26c6f949..da28de67613c 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -78,6 +78,7 @@ obj-$(CONFIG_ARM_SCMI_CPUFREQ)		+= scmi-cpufreq.o
- obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
-+obj-$(CONFIG_ARM_ALLWINNER_CPUFREQ_NVMEM) += sunxi-cpufreq-nvmem.o
- obj-$(CONFIG_ARM_TANGO_CPUFREQ)		+= tango-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 47729a22c159..50e7810f3a28 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -105,6 +105,8 @@ static const struct of_device_id whitelist[] __initconst = {
-  * platforms using "operating-points-v2" property.
-  */
- static const struct of_device_id blacklist[] __initconst = {
-+	{ .compatible = "allwinner,sun50i-h6", },
-+
- 	{ .compatible = "calxeda,highbank", },
- 	{ .compatible = "calxeda,ecx-2000", },
- 
-diff --git a/drivers/cpufreq/sunxi-cpufreq-nvmem.c b/drivers/cpufreq/sunxi-cpufreq-nvmem.c
+diff --git a/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
 new file mode 100644
-index 000000000000..6bf4755d00d9
+index 000000000000..9a1826724b47
 --- /dev/null
-+++ b/drivers/cpufreq/sunxi-cpufreq-nvmem.c
-@@ -0,0 +1,232 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Allwinner CPUFreq nvmem based driver
-+ *
-+ * The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-+ * provide the OPP framework with required information.
-+ *
-+ * Copyright (C) 2019 Yangtao Li <tiny.windzz@gmail.com>
-+ */
++++ b/Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+@@ -0,0 +1,168 @@
++Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
++===================================
 +
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++For some SoCs, the CPU frequency subset and voltage value of each OPP
++varies based on the silicon variant in use. Allwinner Process Voltage
++Scaling Tables defines the voltage and frequency value based on the
++speedbin blown in the efuse combination. The sunxi-cpufreq-nvmem driver
++reads the efuse value from the SoC to provide the OPP framework with
++required information.
 +
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
++Required properties:
++--------------------
++In 'cpus' nodes:
++- operating-points-v2: Phandle to the operating-points-v2 table to use.
 +
-+#define MAX_NAME_LEN      7
++In 'operating-points-v2' table:
++- compatible: Should be
++	- 'allwinner,cpu-operating-points-v2'.
++- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
++		efuse registers that has information about the
++		speedbin that is used to select the right frequency/voltage
++		value pair.
++		Please refer the for nvmem-cells
++		bindings Documentation/devicetree/bindings/nvmem/nvmem.txt
++		and also examples below.
 +
-+struct sunxi_cpufreq_soc_data {
-+	u32 (*efuse_xlate)(const struct sunxi_cpufreq_soc_data *soc_data,
-+			   u32 efuse);
-+	u32 nvmem_mask;
-+	u32 nvmem_shift;
++In every OPP node:
++- opp-microvolt-<name>: Voltage in micro Volts.
++			At runtime, the platform can pick a <name> and
++			matching opp-microvolt-<name> property.
++			[See: opp.txt]
++			HW:		<name>:
++			sun50iw-h6	speed0 speed1 speed2
++
++Example 1:
++---------
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: cpu@0 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <0>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu1: cpu@1 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <1>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu2: cpu@2 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <2>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu3: cpu@3 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <3>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++        };
++
++        cpu_opp_table: opp_table {
++                compatible = "operating-points-v2-sunxi-cpu";
++                nvmem-cells = <&speedbin_efuse>;
++                opp-shared;
++
++                opp@480000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <480000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@720000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <720000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@816000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <816000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@888000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <888000000>;
++
++                        opp-microvolt-speed0 = <940000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@1080000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1080000000>;
++
++                        opp-microvolt-speed0 = <1060000>;
++                        opp-microvolt-speed1 = <880000>;
++                        opp-microvolt-speed2 = <840000>;
++                };
++
++                opp@1320000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1320000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <940000>;
++                        opp-microvolt-speed2 = <900000>;
++                };
++
++                opp@1488000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1488000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <1000000>;
++                        opp-microvolt-speed2 = <960000>;
++                };
++        };
++....
++soc {
++....
++	sid: sid@3006000 {
++		compatible = "allwinner,sun50i-h6-sid";
++		reg = <0x03006000 0x400>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		....
++		speedbin_efuse: speed@1c {
++			reg = <0x1c 4>;
++		};
++        };
 +};
-+
-+static struct platform_device *cpufreq_dt_pdev, *sunxi_cpufreq_pdev;
-+
-+static u32 sun50i_efuse_xlate(const struct sunxi_cpufreq_soc_data *soc_data,
-+			      u32 efuse)
-+{
-+	return (efuse >> soc_data->nvmem_shift) & soc_data->nvmem_mask;
-+}
-+
-+/**
-+ * sunxi_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-+ * @soc_data: Pointer to sunxi_cpufreq_soc_data context
-+ * @versions: Set to the value parsed from efuse
-+ *
-+ * Returns 0 if success.
-+ */
-+static int sunxi_cpufreq_get_efuse(const struct sunxi_cpufreq_soc_data *soc_data,
-+				   u32 *versions)
-+{
-+	struct nvmem_cell *speedbin_nvmem;
-+	struct device_node *np;
-+	struct device *cpu_dev;
-+	u32 *speedbin;
-+	size_t len;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-+	if (!np)
-+		return -ENOENT;
-+
-+	ret = of_device_is_compatible(np, "allwinner,cpu-operating-points-v2");
-+	if (!ret) {
-+		of_node_put(np);
-+		return -ENOENT;
-+	}
-+
-+	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
-+	of_node_put(np);
-+	if (IS_ERR(speedbin_nvmem)) {
-+		if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
-+			pr_err("Could not get nvmem cell: %ld\n",
-+			PTR_ERR(speedbin_nvmem));
-+		return PTR_ERR(speedbin_nvmem);
-+	}
-+
-+	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-+	nvmem_cell_put(speedbin_nvmem);
-+	if (IS_ERR(speedbin))
-+		return PTR_ERR(speedbin);
-+
-+	*versions = soc_data->efuse_xlate(soc_data, *speedbin);
-+
-+	kfree(speedbin);
-+	return 0;
-+};
-+
-+static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
-+	.efuse_xlate = sun50i_efuse_xlate,
-+	.nvmem_mask = 0x7,
-+	.nvmem_shift = 5,
-+};
-+
-+static const struct of_device_id sunxi_cpufreq_match_list[] = {
-+	{ .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
-+	{}
-+};
-+
-+static const struct of_device_id *sunxi_cpufreq_match_node(void)
-+{
-+	struct device_node *np;
-+	const struct of_device_id *match;
-+
-+	np = of_find_node_by_path("/");
-+	match = of_match_node(sunxi_cpufreq_match_list, np);
-+	of_node_put(np);
-+
-+	return match;
-+}
-+
-+static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
-+{
-+	struct opp_table **opp_tables;
-+	const struct of_device_id *match;
-+	char name[MAX_NAME_LEN];
-+	unsigned int cpu;
-+	u32 speed = 0;
-+	int ret;
-+
-+	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-+			     GFP_KERNEL);
-+	if (!opp_tables)
-+		return -ENOMEM;
-+
-+	match = dev_get_platdata(&pdev->dev);
-+	if (!match)
-+		return -EINVAL;
-+
-+	ret = sunxi_cpufreq_get_efuse(match->data, &speed);
-+	if (ret)
-+		return ret;
-+
-+	snprintf(name, MAX_NAME_LEN, "speed%d", speed);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev = get_cpu_device(cpu);
-+
-+		if (NULL == cpu_dev) {
-+			ret = -ENODEV;
-+			goto free_opp;
-+		}
-+
-+		opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
-+		if (IS_ERR(opp_tables[cpu])) {
-+			ret = PTR_ERR(opp_tables[cpu]);
-+			pr_err("Failed to set prop name\n");
-+			goto free_opp;
-+		}
-+	}
-+
-+	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-+							  NULL, 0);
-+	if (!IS_ERR(cpufreq_dt_pdev)) {
-+		platform_set_drvdata(pdev, opp_tables);
-+		return 0;
-+	}
-+
-+	ret = PTR_ERR(cpufreq_dt_pdev);
-+	pr_err("Failed to register platform device\n");
-+
-+free_opp:
-+	for_each_possible_cpu(cpu) {
-+		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-+			break;
-+		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+	}
-+	kfree(opp_tables);
-+
-+	return ret;
-+}
-+
-+static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
-+{
-+	struct opp_table **opp_tables = platform_get_drvdata(pdev);
-+	unsigned int cpu;
-+
-+	platform_device_unregister(cpufreq_dt_pdev);
-+
-+	for_each_possible_cpu(cpu)
-+		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+
-+	kfree(opp_tables);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver sunxi_cpufreq_driver = {
-+	.probe = sunxi_cpufreq_nvmem_probe,
-+	.remove = sunxi_cpufreq_nvmem_remove,
-+	.driver = {
-+		.name = "sunxi-cpufreq-nvmem",
-+	},
-+};
-+
-+/*
-+ * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
-+ * all the real activity is done in the probe, which may be defered as well.
-+ * The init here is only registering the driver and the platform device.
-+ */
-+static int __init sunxi_cpufreq_init(void)
-+{
-+	const struct of_device_id *match;
-+	int ret;
-+
-+	match = sunxi_cpufreq_match_node();
-+	if (!match)
-+		return -ENODEV;
-+
-+	ret = platform_driver_register(&sunxi_cpufreq_driver);
-+	if (unlikely(ret < 0))
-+		return ret;
-+
-+	sunxi_cpufreq_pdev = platform_device_register_data(NULL,
-+		"sunxi-cpufreq-nvmem", -1, match, sizeof(*match));
-+	ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
-+	if (0 == ret)
-+		return 0;
-+
-+	platform_driver_unregister(&sunxi_cpufreq_driver);
-+	return ret;
-+}
-+module_init(sunxi_cpufreq_init);
-+
-+static void __exit sunxi_cpufreq_exit(void)
-+{
-+	platform_device_unregister(sunxi_cpufreq_pdev);
-+	platform_driver_unregister(&sunxi_cpufreq_driver);
-+}
-+module_exit(sunxi_cpufreq_exit);
-+
-+MODULE_DESCRIPTION("Sunxi cpufreq driver");
-+MODULE_LICENSE("GPL v2");
 -- 
 2.17.0
