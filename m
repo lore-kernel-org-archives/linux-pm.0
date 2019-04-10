@@ -7,54 +7,54 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6DF4C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9C3C10F14
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:33:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8A362217D9
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:24:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA4BE20830
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:33:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KnQQ+KW+"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OujTAQQP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730495AbfDJKYe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 06:24:34 -0400
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:36656 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730491AbfDJKYd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 06:24:33 -0400
-Received: by mail-pl1-f194.google.com with SMTP id ck15so1169864plb.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 03:24:33 -0700 (PDT)
+        id S1729915AbfDJKdU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 06:33:20 -0400
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:35297 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729774AbfDJKdU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 06:33:20 -0400
+Received: by mail-pl1-f196.google.com with SMTP id w24so1181920plp.2
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 03:33:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=F+IcYepTaZNcb054fK7h53TiXoIuBY/DoVKRXtiA9Ys=;
-        b=KnQQ+KW+P5DkuCiEAd3jtdt3l94zX2o8yT2oavNnRhnJdYhbUxMm2TLzllCuiSgEnZ
-         F1yL0RiKcA32KszCzAnIqeTnadAsfy39pJLrgDQas9wlORr7b38F0y9GXfPTAFgGo/2M
-         bwyVNDmuueluZzxNovOY4Afs7EFN4yhvqR+MoTaj5gsr9UImGLmzNYpiIw/4x/GXZvQt
-         A0kCwdzF5mAvqmh7SroBIIfjO1fwt+I2mdqaiix5IJozeUVwc0TFRVHGEcX7pjKj26UZ
-         IfJSsppzOx9+rCBeccetJZCcjQvGzVRZUC7xRhOEes+CmvSKxpaYnfO/Q2DRFrd6h8G/
-         942Q==
+        bh=o6MP4MD2XvqRqDBpI14/SbmM5jumQB8YX4MXAiMxcgg=;
+        b=OujTAQQPHwq+Rr4uTnK74C/W70fLAhCmbeQzs7wLTUnxJN8i+7ARsbfJ8C2uFQK2VW
+         EWKctw7l0crAZJc430ajsnAkdBEKVrS0lAcIyeAJE41I1QqRZQhaGTavEHn8az8FxP9w
+         xIlDRhyb0pB3LwN8fqXS3Efiiv/cG1GIUFwHbgcCikgJtorgUi8miWSIxpTkVb1YB2HQ
+         Enc6wk+PYVv0VSXhA/B80gD5yfT+qNeoxUdIQbXxMdCW026nx27ebhaHYxBkf3HAtcTK
+         CQGessLwHtGH0qRAcf2vjXGHHG5Irfgyq0gQIeoes6n7/B2H7KTTF/MrECqqayMgyTSB
+         lXYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=F+IcYepTaZNcb054fK7h53TiXoIuBY/DoVKRXtiA9Ys=;
-        b=J66nQdg4VVijFOzzKqBKJ9K996cmenzjeY0O9ShflQD6uulBtDcwJAcK/3rZHp+aM4
-         7HCCR/hjHhpX/DNXmLx1aZYoeLTBZhdoir77Ya3eJebwQzYaBWNyHBDJRvOpCFwOvuDV
-         0I8IRF2C9wg8xfglctpPgwveR4ETDjLArCLzEP+dwaiNr7lrCfIVv7LGssmvA/7JFvMU
-         /6gx/c4MIMID1hvNYYctSj1KvxHtmwl3h7SUw2hsUsjVb/YxmuyOAfUgq4sDxICLrFJd
-         kMNbeJzVH3wXRWW/ereM7SqtCDb6nsQv6EKUMwc2bx3A3jbkzU5RAchx4lCtluDgwhkT
-         5SJw==
-X-Gm-Message-State: APjAAAXCbz1eSEahzgmy1T+nkg8l0wojQO/xpimf7bArVOmVnB/bS4En
-        N0DMzyb5ltym73xOFe9m49zywA==
-X-Google-Smtp-Source: APXvYqyR+ON7F4IxHT0DZh2LAR02HAGTdP1vDc3onHPdtFzUJXeWwd2VeV5PxyAp6QvzkLRUh+7i3w==
-X-Received: by 2002:a17:902:b28b:: with SMTP id u11mr42137203plr.257.1554891872062;
-        Wed, 10 Apr 2019 03:24:32 -0700 (PDT)
+        bh=o6MP4MD2XvqRqDBpI14/SbmM5jumQB8YX4MXAiMxcgg=;
+        b=F90OfI3cUTL/sgfI2P7AKC1ESBPoHyYi/tsDrGsLHcDAD54EL+IdgTvnMNxxn92X9q
+         zD4aPnjz0viB32FJO+4h4vTCp0hK6AXkzH0kh9sSDvOxyvqLaCspz8tw/DQW3mUdGSQ7
+         66SAb3//7OUZr+H/Bk58DbaN3Yhz+1wfmqXMsnZvIhTYEAW73CZ0VLgv4H4U803zLc1v
+         rv7YwzoORZWiF6bnT2mmh/7eOo66MPXmAFjulvATrIvJOlwmy1C9CDC7AmS6a5U1Ta0i
+         RRpOKVHkLClTcdwk9G7IUNEPSf234+zOHC6JRnXTFipxLo/H2wjNGmJIrfLilDRQtgg7
+         PCwQ==
+X-Gm-Message-State: APjAAAVPOMRC4Di+BmuQrPH2MmfejbP0m1bE8K47Qh3V16lhNYT0LbAp
+        4Q9xo/bFxIgojgtLVeBGywPo/Q==
+X-Google-Smtp-Source: APXvYqw+Nx1Y+7H23kBikUygsyauL9xa46UprB/ftsk+YWYHtSqDL/XDQtgzY94OU/Wa7WZrRXj7kQ==
+X-Received: by 2002:a17:902:2d01:: with SMTP id o1mr43337462plb.155.1554892399613;
+        Wed, 10 Apr 2019 03:33:19 -0700 (PDT)
 Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id b72sm75679316pga.86.2019.04.10.03.24.30
+        by smtp.gmail.com with ESMTPSA id d68sm50349990pfg.16.2019.04.10.03.33.18
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 10 Apr 2019 03:24:30 -0700 (PDT)
-Date:   Wed, 10 Apr 2019 15:54:29 +0530
+        Wed, 10 Apr 2019 03:33:18 -0700 (PDT)
+Date:   Wed, 10 Apr 2019 16:03:16 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Sibi Sankar <sibis@codeaurora.org>
 Cc:     robh+dt@kernel.org, andy.gross@linaro.org,
@@ -67,149 +67,105 @@ Cc:     robh+dt@kernel.org, andy.gross@linaro.org,
         cw00.choi@samsung.com, linux-pm@vger.kernel.org,
         evgreen@chromium.org, daidavid1@codeaurora.org,
         dianders@chromium.org
-Subject: Re: [PATCH RFC 6/9] OPP: Add and export helper to update voltage
-Message-ID: <20190410102429.r6j6brm5kspmqxc3@vireshk-i7>
+Subject: Re: [PATCH RFC 7/9] cpufreq: qcom: Add support to update cpu node's
+ OPP tables
+Message-ID: <20190410103316.sxev2f54klemq2p6@vireshk-i7>
 References: <20190328152822.532-1-sibis@codeaurora.org>
- <20190328152822.532-7-sibis@codeaurora.org>
+ <20190328152822.532-8-sibis@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190328152822.532-7-sibis@codeaurora.org>
+In-Reply-To: <20190328152822.532-8-sibis@codeaurora.org>
 User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190410102429.Z4TViBfawJ867GdmoK60Ti-oDA47bDN88Q-R7nlAx-I@z>
+Message-ID: <20190410103316.SYC1d3MEvjIXYEnNx7pYvipSZ3cG-eI_PKhPzNgsURA@z>
 
 On 28-03-19, 20:58, Sibi Sankar wrote:
-> Add and export 'dev_pm_opp_update_voltage' to find and update voltage
-> of an opp for a given frequency. This will be useful to update the opps
-> with voltages read back from firmware.
+> Add support to parse and update OPP tables attached to the cpu nodes.
 > 
 > Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 > ---
->  drivers/opp/core.c     | 62 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h | 10 +++++++
->  2 files changed, 72 insertions(+)
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 29 +++++++++++++++++++++++++++--
+>  1 file changed, 27 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index addaf7aae9ae..c066cd120a33 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -2090,6 +2090,68 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> index 4b0b50403901..5c268dd2346c 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -73,6 +73,25 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+>  	return policy->freq_table[index].frequency;
 >  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
 >  
-> +static int _opp_update_voltage(struct device *dev, unsigned long freq,
-> +			       unsigned long u_volt)
+> +static int qcom_find_update_opp(struct device *cpu_dev, unsigned long freq,
+> +				unsigned long volt)
 > +{
-> +	struct opp_table *opp_table;
-> +	struct dev_pm_opp *tmp_opp, *opp = ERR_PTR(-ENODEV);
-> +	int r = 0;
-
-s/r/ret/
-
+> +	int ret;
+> +	struct dev_pm_opp *opp;
 > +
-> +	/* Find the opp_table */
-> +	opp_table = _find_opp_table(dev);
-> +	if (IS_ERR(opp_table)) {
-> +		r = PTR_ERR(opp_table);
-> +		dev_warn(dev, "%s: Device OPP not found (%d)\n", __func__, r);
-
-Why dev_warn instead of dev_err which is normally used in this file ? And you
-weren't searching for OPP but opp_table. Put out the correct error message
-please.
-
-> +		return r;
-> +	}
-> +
-> +	mutex_lock(&opp_table->lock);
-> +
-> +	/* Do we have the frequency? */
-> +	list_for_each_entry(tmp_opp, &opp_table->opp_list, node) {
-> +		if (tmp_opp->rate == freq) {
-> +			opp = tmp_opp;
-> +			break;
-> +		}
-> +	}
-> +
+> +	opp = dev_pm_opp_find_freq_exact(cpu_dev, freq, true);
 > +	if (IS_ERR(opp)) {
-> +		r = PTR_ERR(opp);
-> +		goto unlock;
+> +		ret = dev_pm_opp_add(cpu_dev, freq, volt);
+
+With my comment on the other patch, you can just call
+dev_pm_opp_update_voltage() and if that fails then call dev_pm_opp_add().
+
+> +	} else {
+> +		dev_pm_opp_disable(cpu_dev, freq);
+> +		ret = dev_pm_opp_update_voltage(cpu_dev, freq, volt);
+> +		dev_pm_opp_enable(cpu_dev, freq);
+
+Perhaps no one else should be using the CPU OPP table at this point of time and
+so we can get away with disable and enable stuff ? Just add a comment on why
+that works.
+
+> +		dev_pm_opp_put(opp);
 > +	}
 > +
-> +	/* update only if the opp is disabled */
-> +	if (opp->available)
-> +		goto unlock;
-> +
-
-What about reusing dev_pm_opp_find_freq_exact() instead of the above code in
-this routine ?
-
-> +	opp->supplies[0].u_volt = u_volt;
-> +
-> +unlock:
-> +	mutex_unlock(&opp_table->lock);
-> +	dev_pm_opp_put_opp_table(opp_table);
-> +	return r;
+> +	return ret;
 > +}
 > +
-> +/**
-> + * dev_pm_opp_update_voltage() - find and update voltage of an opp
-> + *				 for a given frequency
-> + * @dev:	device for which we do this operation
-> + * @freq:	OPP frequency to update voltage
-> + * @u_volt:	voltage requested for this opp
-> + *
-> + * This is useful only for devices with single power supply.
-> + *
-> + * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-> + * copy operation, returns 0 if no modification was done OR modification was
-> + * successful.
-> + */
-> +int dev_pm_opp_update_voltage(struct device *dev, unsigned long freq,
-> +			      unsigned long u_volt)
-> +{
-> +	return _opp_update_voltage(dev, freq, u_volt);
-
-Remove the unnecessary wrapper and open code this routine here. While at it, you
-should updated min/max/target and not just target voltage.
-
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_update_voltage);
+>  static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+>  				    struct cpufreq_policy *policy,
+>  				    void __iomem *base)
+> @@ -81,11 +100,16 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+>  	u32 volt;
+>  	unsigned int max_cores = cpumask_weight(policy->cpus);
+>  	struct cpufreq_frequency_table	*table;
+> +	int ret;
+>  
+>  	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
+>  	if (!table)
+>  		return -ENOMEM;
+>  
+> +	ret = dev_pm_opp_of_add_table(cpu_dev);
+> +	if (ret)
+> +		dev_dbg(cpu_dev, "Couldn't add OPP table\n");
 > +
->  /**
->   * dev_pm_opp_register_notifier() - Register OPP notifier for the device
->   * @dev:	Device for which notifier needs to be registered
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index d7cb0e65c4f0..58490f6839ce 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -130,6 +130,9 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+>  	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+>  		data = readl_relaxed(base + REG_FREQ_LUT +
+>  				      i * LUT_ROW_SIZE);
+> @@ -104,7 +128,7 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
 >  
->  int dev_pm_opp_disable(struct device *dev, unsigned long freq);
+>  		if (freq != prev_freq && core_count == max_cores) {
+>  			table[i].frequency = freq;
+> -			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
+> +			qcom_find_update_opp(cpu_dev, freq * 1000, volt);
+>  			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
+>  				freq, core_count);
+>  		} else {
+> @@ -125,7 +149,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+>  			if (prev_cc != max_cores) {
+>  				prev->frequency = prev_freq;
+>  				prev->flags = CPUFREQ_BOOST_FREQ;
+> -				dev_pm_opp_add(cpu_dev,	prev_freq * 1000, volt);
+> +				qcom_find_update_opp(cpu_dev, prev_freq * 1000,
+> +						     volt);
+>  			}
 >  
-> +int dev_pm_opp_update_voltage(struct device *dev, unsigned long freq,
-> +			      unsigned long u_volt);
-> +
->  int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
->  int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
->  
-> @@ -265,6 +268,13 @@ static inline int dev_pm_opp_disable(struct device *dev, unsigned long freq)
->  	return 0;
->  }
->  
-> +static inline int dev_pm_opp_update_voltage(struct device *dev,
-> +					    unsigned long freq,
-> +					    unsigned long u_volt)
-> +{
-> +	return 0;
-> +}
-> +
->  static inline int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
->  {
->  	return -ENOTSUPP;
+>  			break;
 > -- 
 > The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 > a Linux Foundation Collaborative Project
