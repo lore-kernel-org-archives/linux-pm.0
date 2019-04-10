@@ -2,124 +2,140 @@ Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2500AC10F14
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 04:10:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CD16C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 05:29:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E5A2D20850
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 04:10:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5613C2133D
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 05:29:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qGZdbjga"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y9RNT0R8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726897AbfDJEKJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 00:10:09 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:39671 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726875AbfDJEKJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 00:10:09 -0400
-Received: by mail-pl1-f196.google.com with SMTP id a96so549942pla.6
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 21:10:08 -0700 (PDT)
+        id S1727223AbfDJF3V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 01:29:21 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:46766 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725924AbfDJF3V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 01:29:21 -0400
+Received: by mail-pg1-f194.google.com with SMTP id q1so793374pgv.13
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2019 22:29:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=I1hUJsZeUNhEFZwhF7q+JnsawPC3UHDZU6KqeakLNtk=;
-        b=qGZdbjgawqb++IYhdGJ6eH/UYhSuShrqeQaguaKE7dxSOBIHBgGpY5ue/qCIj6ZWZB
-         fJ5SDIiwwpZ12xPLLf06vWpoX4ihKCO8e9i9wlgKXbZYTwWKHK0LgMOCFHNshqb+8drH
-         eZ584IH+7cSbNDahyL0rQFMDT0PcbXr6QEzFGAri6aLMGhsT/1mF0XIakq465hCRgAqO
-         35EJGCpp4vPl7b2k9tgGP+2dBgdwtBwTo5P6gHXP8jsWIAMCYV0N+14rQ4D6kSTGXSgk
-         7lo3lWRRyRLmK6rynVY0FL/nbZ83kcmppt9KrYLHrgFzNvdhwVypT2u3JQw5FSsesmsa
-         KzOQ==
+        bh=qiT1nli0EEPkRjkLmrVuD5/q5F8HGDNYQaGn1cIJnZg=;
+        b=Y9RNT0R8q4+7K13nGwE1i0K19CeWbTb+0k2tJy+UbmKv6MCGIYGEZCpLko/qb5NNpc
+         E0LMqKXAktnbWwp7lmrewnNDAQ7JhItnY5ZIK9n+8bIlSqQpA0A5a7+Bg+sDaPXZzh03
+         JVQwMA+PgOHDdtIdHxXLTwiqL/i2B83xf48dXy5tZnxAumjkgUJkBYdODShsvgSHIkma
+         ZI0bGu0g6lZ+DWucdDXwiOKeaQDnOYk9ssMKUBj4S8/eiQoZFXsMGKTA+1RwnGgn/gMh
+         Vln4tSM+xtrXYZQfd/nZUCiHS/WMfM+U/Gzn9wwi1AkqmACrq0tSUx2RtJSNVhff/uFw
+         HWPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=I1hUJsZeUNhEFZwhF7q+JnsawPC3UHDZU6KqeakLNtk=;
-        b=MQiT7jVbGOqyUNVg4X7z6qES1jRGsVokWhOYChVQ+ZEYdqv7J4W+Jj6KKJW6aex8/f
-         Dz4V9bC/7ZniroUmNMSDaFaPxJ3TgL1rB709HK5FxmDIQgQVbkaKloe1X/t1dPQWPCmC
-         /iddhqwhlpXwN7HueAG/WiJP1AmnE9fksg3ABfU7c6Efdic6soFa/X13iI/38ElFUiLo
-         GAB7OSMY/B8SQXmhBIZfLC4QjBDUpCbGWRe9SGBj0GQ1+bIpQV+s2qX8GkFb45QBV3p0
-         eKpfmklGhXuDztrywybsLkZKY8gUIpflKClgb7ny0d2oUyo3opBw/IKKEvqT5Hi0yCK4
-         8i9g==
-X-Gm-Message-State: APjAAAVs3UnU3cULHbc/hETyioBQ4zR+m8h/4bXLnJUyKhlkidVxZh56
-        IWNdvhVDKGf+Lgr6kTfWF67JNg==
-X-Google-Smtp-Source: APXvYqxudYlyIttnPuIrzscTaMB5fy/6w1fWwb6g+cZ4aLRGAWSE31UCweH/B2C8l3q2IDH4KwQqcw==
-X-Received: by 2002:a17:902:110b:: with SMTP id d11mr3362267pla.275.1554869408399;
-        Tue, 09 Apr 2019 21:10:08 -0700 (PDT)
+        bh=qiT1nli0EEPkRjkLmrVuD5/q5F8HGDNYQaGn1cIJnZg=;
+        b=pG8xlfY8OUwP57xnROJhoQgH+5ihy0RR7PQpBs/qIu85/iTQP3HnYvP1qXtZigW8Pr
+         jeJ7cPVtEjWggdsWphGeRMGMEGMt0egycr85yY+JGwsQ3+bnT0LxFeEo/G/uzAWuap6L
+         7dX3E0/ZzvdCFuqkqsSxMmOBKb5iBddo/bKt6+00UbCBptmkqKzAAD9CJz++q4AxIIF1
+         BtYUwD4cmEl+cOH9h2p1vgiQwkdeFJkKJwn6/KZ9J9hjQOU3GV+mglgOOEdKVi4haoAf
+         +NphECHPLjhtPM5LHgxtHrJr+ubHl9XRGvCEFOPeyLxB8KwZgrBhYRZDYrgf65W3NFZQ
+         x+zA==
+X-Gm-Message-State: APjAAAUv0Ko6kdaLWD8IpFcITHGqTsi6dxTbo02IxxHH5PPnCA2bcVeJ
+        dt/K5jaVVoGftSZG+VDFfOL+3w==
+X-Google-Smtp-Source: APXvYqxT504WyIg4m9hiA+vbIogotuilOk+WK3T4b9anX/SLmBa3bwEsAqVn81a2dJrbbifh7vpU4A==
+X-Received: by 2002:a62:1b03:: with SMTP id b3mr41802992pfb.150.1554874159726;
+        Tue, 09 Apr 2019 22:29:19 -0700 (PDT)
 Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id x9sm55163632pfn.60.2019.04.09.21.10.07
+        by smtp.gmail.com with ESMTPSA id g73sm62433138pfd.185.2019.04.09.22.29.17
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 09 Apr 2019 21:10:07 -0700 (PDT)
-Date:   Wed, 10 Apr 2019 09:40:05 +0530
+        Tue, 09 Apr 2019 22:29:18 -0700 (PDT)
+Date:   Wed, 10 Apr 2019 10:59:15 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Yue Hu <zbestahu@gmail.com>
-Cc:     rjw@rjwysocki.net, rafael.j.wysocki@intel.com,
-        linux-pm@vger.kernel.org, huyue2@yulong.com
-Subject: Re: [PATCH] cpufreq / boost: Remove CONFIG_CPU_FREQ_BOOST_SW Kconfig
- option
-Message-ID: <20190410041005.iwuppsv7je5oa537@vireshk-i7>
-References: <20190410035952.5728-1-zbestahu@gmail.com>
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+Cc:     Alexandre Bailon <abailon@baylibre.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "georgi.djakov@linaro.org" <georgi.djakov@linaro.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "ptitiano@baylibre.com" <ptitiano@baylibre.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        Zening Wang <zening.wang@nxp.com>,
+        "khilman@baylibre.com" <khilman@baylibre.com>,
+        "ccaione@baylibre.com" <ccaione@baylibre.com>,
+        Jacky Bai <ping.bai@nxp.com>, dl-linux-imx <linux-imx@nxp.com>,
+        Ranjani Vaidyanathan <ranjani.vaidyanathan@nxp.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH 0/3] Add support of busfreq
+Message-ID: <20190410052915.jrb67qmpwnmy4ird@vireshk-i7>
+References: <20190313193408.23740-1-abailon@baylibre.com>
+ <AM0PR04MB421150DF12C869161E7ED4C180440@AM0PR04MB4211.eurprd04.prod.outlook.com>
+ <56e96a3a-4901-c79c-e91d-6b6a0690e5b7@baylibre.com>
+ <VI1PR04MB55334013173D78F365CA5E19EE440@VI1PR04MB5533.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190410035952.5728-1-zbestahu@gmail.com>
+In-Reply-To: <VI1PR04MB55334013173D78F365CA5E19EE440@VI1PR04MB5533.eurprd04.prod.outlook.com>
 User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190410052915.a33BDpp60r0cNe_K7CGcdEOgyopbVfEA0z-tCRsLp_w@z>
 
-On 10-04-19, 11:59, Yue Hu wrote:
-> From: Yue Hu <huyue2@yulong.com>
+On 15-03-19, 17:17, Leonard Crestez wrote:
+> On 3/15/19 11:31 AM, Alexandre Bailon wrote:
+> >>> This series is sent as RFC mostly because the current support of i.MX SoC won't
+> >>> benefit of busfreq framework, because the clocks' driver don't support
+> >>> interconnect / dram frequency scaling.
+> >>> As exemple, this series implements busfreq for i.MX8MM whose upstreaming
+> >>> is in progress. Because this relies on ATF to do the frequency scaling, it won't
+> >>> be hard make it work.
 > 
-> Commit 2fb4719b2560 ("cpufreq / boost: Kconfig: Support for
-> software-managed BOOST") added the CONFIG_CPU_FREQ_BOOST_SW config.
-> However EXYNOS based cpufreq drivers have been removed because of
-> switching to cpufreq-dt driver which will set boost-attr if required.
+> >> How can I test this patch series?
+> >> Any additional patches you can share with us?
+> >> Or what else we need to do to test it? We can help with it.
 > 
-> So, let's remove this option and update cpufreq_generic_attr[].
+> > Many other patches will be required to test the series.
+> > There are a couple of patches that updates i.MX device drivers to
+> > request for bandwidth (does similar thing as bus_freq_request and
+> > bus_freq_release).
 > 
-> Signed-off-by: Yue Hu <huyue2@yulong.com>
-> ---
->  drivers/cpufreq/Kconfig      | 4 ----
->  drivers/cpufreq/freq_table.c | 3 ---
->  2 files changed, 7 deletions(-)
+> The interconnect framework asks for bandwidth in bytes/second but in NXP 
+> tree most requests are of the form "request_bus_freq(BUS_FREQ_HIGH);". 
+> In many cases (ethernet) it doesn't seem you can calculate a specific 
+> bandwidth usefully.
 > 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index b22e6bb..4d2b33a 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -26,10 +26,6 @@ config CPU_FREQ_GOV_COMMON
->  	select IRQ_WORK
->  	bool
->  
-> -config CPU_FREQ_BOOST_SW
-> -	bool
-> -	depends on THERMAL
-> -
->  config CPU_FREQ_STAT
->  	bool "CPU frequency transition statistics"
->  	help
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index 3a8cc99..e7be0af 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -290,9 +290,6 @@ static ssize_t scaling_boost_frequencies_show(struct cpufreq_policy *policy,
->  
->  struct freq_attr *cpufreq_generic_attr[] = {
->  	&cpufreq_freq_attr_scaling_available_freqs,
-> -#ifdef CONFIG_CPU_FREQ_BOOST_SW
-> -	&cpufreq_freq_attr_scaling_boost_freqs,
-> -#endif
->  	NULL,
->  };
->  EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
+> Instead of asking for "infinite bandwidth zero latency" to force 
+> everything to "high" it would be nicer to "request an opp".
+> 
+> Power-domain bindings mentioned that consumer-devices can specify a 
+> "required-opps" property but I've found zero users in tree. Maybe some 
+> helpers could be written to parse that property and automatically 
+> request ICC opp on device suspend/resume via device-links?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Documentation/devicetree/bindings/power/qcom,rpmpd.txt is using it currently in
+mainline.
+
+> I know that stuff was written for genpd but it looks like a very good 
+> fit to me.
+
+Yes, the very first user is genpd but we have designed it with an open mind and
+so it shouldn't be difficult to make use of it at other places.
+
+There is some WIP which you can look at :
+
+- Introduce OPP bandwidth bindings
+  lore.kernel.org/lkml/20190313090010.20534-1-georgi.djakov@linaro.org
+
+- DVFS in the OPP core
+  https://lore.kernel.org/lkml/20190320094918.20234-1-rnayak@codeaurora.org
 
 -- 
 viresh
