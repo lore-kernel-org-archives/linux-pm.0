@@ -2,138 +2,103 @@ Return-Path: <SRS0=6BhR=SM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D558C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 09:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9ABDC10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:14:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6A31B20830
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 09:55:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9FEA120674
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Apr 2019 10:14:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LXkahYLK"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SkfAwoJU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730264AbfDJJz3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Apr 2019 05:55:29 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:33685 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730261AbfDJJz2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 05:55:28 -0400
-Received: by mail-lj1-f195.google.com with SMTP id f23so1545585ljc.0
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 02:55:27 -0700 (PDT)
+        id S1729877AbfDJKO3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Apr 2019 06:14:29 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:39018 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726630AbfDJKO3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2019 06:14:29 -0400
+Received: by mail-pg1-f193.google.com with SMTP id k3so1276908pga.6
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2019 03:14:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=IdJSlX082YGa+o2RjrcHVg2ClWPcfT2dSVotJi56VHg=;
-        b=LXkahYLKzcDWcov3EhmrnSqF7l0ZXLldbNSWy+3WOKivzEWNVsDEMAc/w1fGAJ0d+S
-         jU+gZtakF/P20vRD0HTjJydZ0aodQzLjGq1sxd7k7PMNOCTsAYwSdIMuxElevBFQbOsE
-         oelE3y3dezV9zqaCi//YyPIEGhlmkX6pCoER0fRz9WRyqRXOToansJreNKndeL0vud5f
-         MtXOSNFAk98IV0gHyxqzBdceik6Fls+cTt+p7vAbsGxieUdDdkJRRuH0YIjLomA8qS9F
-         B1UBFGwoqaeC9YQZFqO0vnTdET8iiYBdIq6ceOmemhmAz+LCCRV1JpTdrL+YS8+RjKWS
-         Lvww==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=B8ioIUEeiqtVl+ZCSp3JvwV+qbfIptquCFsO7jxIal4=;
+        b=SkfAwoJUywdpyqAX3z1tNy5OT98AYB5hAC0i6kdlVvDXPR0cv670KQ0klWoC0F06Fa
+         SAlVZ4eLTO1qFiPRdQwPExN0TDn7qIbcM5gPEBVwmDhspPE5/H1br6PqvltaqjBMgoVe
+         ibnR6jouewQMDp6B56qib3/sWbaZoHEAP/Dc4qkqoahvfrItIfWAmg0NGIMPQtJAG86u
+         IhkAS3AFxC8h8mNqj9JTLncLMr6p1zVffL7LMFc6LXcjDko/BEgxbon/VSQaszB10oa7
+         EyxhtGbGIwlK/2Barsr/qX/ASfOFLYlWUC+Cxo/gZWb+YFRY8JzmplvdO4Rs0YV1fjOM
+         +R5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=IdJSlX082YGa+o2RjrcHVg2ClWPcfT2dSVotJi56VHg=;
-        b=M+sRFvW0WkStV41h/erWLLxl0kQyBj3LRKUEdrYwwUgk8gyHlbdzZ703i9b167pU+m
-         VAbksaWWF32dywh3XB04elx48d2w6MyVL6k+Y1xnlh4Be5A+8zIg0ctIFCBB7JWvoJrp
-         gLI7GcNJ3w6kPSO70zYkikwdIt7+9NRlMqf++dI/QxwxjF6ycUGiqYzMYoHvg2v0eTHQ
-         kVoebsYW0MK+WZCzS+UTGaY01sCJHhSI2EJGuPUZlslMM1g3YVSzKQF81DcD7vSxR6wW
-         YYDH1kqKXXR/brVVElEAk6OLd5FuzkTPJ4+Yj7gqSxrowF60D8JGMu5IPHBsLSWwld5O
-         UtMg==
-X-Gm-Message-State: APjAAAVttCxjiu6TkJlVLYl82pKdalM8P81qAaT1oo/ebaiTfNXFqS39
-        FQsAnYv+uDdV9LbfOud9+ugz+Q==
-X-Google-Smtp-Source: APXvYqwk7081QudqCuERp6RleVPoGeEKggtgjEdb4dksKdX/YeywMTxgd+NhOrUbEYXQ2jg1bnL9HA==
-X-Received: by 2002:a2e:9013:: with SMTP id h19mr16508925ljg.136.1554890126771;
-        Wed, 10 Apr 2019 02:55:26 -0700 (PDT)
-Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id h3sm113941lfe.87.2019.04.10.02.55.25
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=B8ioIUEeiqtVl+ZCSp3JvwV+qbfIptquCFsO7jxIal4=;
+        b=LOM7FcZJWuYjeEE1B6nFlNkfMiaklztabHBAX7xEGq3S63racJFUvUK7nrVTPG+BUC
+         qkLZUC/6V6ANtIFW++oaqVv/dp+8fvi8OuJfkjnWTORTnZL0aWVkH0g9drqhRfR/eMH4
+         /g4AYSwZT8V+mh7cnL2MVkFumKnyqjvjYEmhlzRYsBF5WZoBRBSAz/jkHHccIZeg+MFq
+         NjSrhfTaa9RwNfcLoz/CKzvqY3i78qE6P3awZcacTr+6SrEwSVjappc6TGca6+vSjE2F
+         5v36gTc3wgKPyf4NWaTzkwd3QME5bL/+Xp0mF4Rgyi2uafdniS/nFmOhrsTGwSbTYjdc
+         hS1Q==
+X-Gm-Message-State: APjAAAUYUh262u54hloQRZN4TtNhmKPbTtNXK0kFeieOr6w1ne9m5NAC
+        TIppTIHiXdil5cBfQyQ+11rJ8A==
+X-Google-Smtp-Source: APXvYqwo7+KKU8jVhTU8CQxQvy82MbjdeDtbg3qjgVR3vvqyC2411pwMRRr6uk0FOV7ft026V5NXTw==
+X-Received: by 2002:a65:4489:: with SMTP id l9mr39223674pgq.1.1554891267760;
+        Wed, 10 Apr 2019 03:14:27 -0700 (PDT)
+Received: from localhost ([122.166.139.136])
+        by smtp.gmail.com with ESMTPSA id v19sm47575587pfn.62.2019.04.10.03.14.25
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 10 Apr 2019 02:55:26 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Loic Pallardy <loic.pallardy@st.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Rob Herring <robh@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Johan Hovold <johan@kernel.org>, linux-gpio@vger.kernel.org,
-        linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / core: Propagate dev->power.wakeup_path when no callbacks
-Date:   Wed, 10 Apr 2019 11:55:16 +0200
-Message-Id: <20190410095516.6170-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        Wed, 10 Apr 2019 03:14:26 -0700 (PDT)
+Date:   Wed, 10 Apr 2019 15:44:23 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Quentin Perret <quentin.perret@arm.com>
+Cc:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
+        amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com,
+        catalin.marinas@arm.com, daniel.lezcano@linaro.org,
+        dietmar.eggemann@arm.com, ionela.voinescu@arm.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Message-ID: <20190410101423.3pl6yfhv2wnxuwgw@vireshk-i7>
+References: <20190328101352.25657-1-quentin.perret@arm.com>
+ <20190328101352.25657-4-quentin.perret@arm.com>
+ <20190410054449.zwmemg7vza557gue@vireshk-i7>
+ <20190410085702.nll6spd565oio3ds@queper01-lin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190410085702.nll6spd565oio3ds@queper01-lin>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190410095516.31o5UHXlKCMD9RPL_gkF2VebzCDBer2EB-sKfgpUltU@z>
+Message-ID: <20190410101423.TCip3wApXXKvYfrez12T7FIS3YMJIZ9ufzDYUZucVWo@z>
 
-The dev->power.direct_complete flag may become set in device_prepare() in
-case the device don't have any PM callbacks (dev->power.no_pm_callbacks is
-set). This leads to a broken behaviour, when there is child having wakeup
-enabled and relies on its parent to be used in the wakeup path.
+On 10-04-19, 09:57, Quentin Perret wrote:
+> Hmm, indeed... I thought cpufreq_table_validate_and_sort() was actively
+> sorting the table but it seems I was wrong.
+> 
+> But I _think_ in practice the freq table actually happens to be sorted
+> for the upstream cpufreq drivers with the CPUFREQ_IS_COOLING_DEV flag
+> set. Most of them use dev_pm_opp_init_cpufreq_table() which guarantees
+> the table is sorted and qoriq-cpufreq explicitly sorts the table. But
+> I'm not sure about qcom-cpufreq-hw ...
+> 
+> So, if the above is true, perhaps I could simply add a check to mandate
+> that policy->freq_table_sorted != CPUFREQ_TABLE_SORTED_UNSORTED for
+> cpu_cooling ? That shouldn't harm the existing users.
 
-More precisely, when the direct complete path becomes selected for the
-child in __device_suspend(), the propagation of the dev->power.wakeup_path
-becomes skipped as well.
+Right, I think most of the platforms will have it sorted anyway right now, but
+you never know if one or two of them don't. Maybe just add the above conditional
+and put out an error or WARN or something, so people know that something broke.
 
-Let's address this problem, by checking if the device is a part the wakeup
-path or has wakeup enabled, then prevent the direct complete path from
-being used.
 
-Reported-by: Loic Pallardy <loic.pallardy@st.com>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-More background:
-
-This problem was reported by Loic Pallardy, offlist, while he was working
-on enabling wakeup for a tty serial console driver.
-
-When I looked more closely, I noticed that uart_suspend_port() calls
-device_may_wakeup() for the tty child devices, and then also the used serial
-driver check its device (parent) for device_may_wakeup(). To me this looks like
-workarounds to fix a behaviour that really should be dealt with from the PM
-core, no matter of whether the child have PM callbacks assigned or not.
-
-In other words, it seems like the serial driver(s) should be checking the
-wakeup_path flag for the parent, solely, instead.
-
-I haven't digested further behaviours for other subsystem, but recently
-reviewed a patch for a gpio driver [1], that seems to be suffering from the
-similar problems.
-
-Kind regards
-Ulf Hansson
-
-[1]
-https://lkml.org/lkml/2019/4/4/1283
-
----
- drivers/base/power/main.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 41eba82ee7b9..f9cfdeee8288 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1747,6 +1747,10 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.syscore)
- 		goto Complete;
- 
-+	/* Avoid direct_complete, to let wakeup_path being propagated. */
-+	if (device_may_wakeup(dev) || dev->power.wakeup_path)
-+		dev->power.direct_complete = false;
-+
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
- 			pm_runtime_disable(dev);
 -- 
-2.17.1
-
+viresh
