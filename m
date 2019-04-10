@@ -1,51 +1,80 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH RESEND V11 4/4] arm64: dts: imx: add i.MX8QXP thermal
- support
-Date: Wed, 10 Apr 2019 08:52:51 -0500
-Message-ID: <20190410135251.GA20384@bogus>
-References: <1554881866-26333-1-git-send-email-Anson.Huang@nxp.com>
- <1554881866-26333-4-git-send-email-Anson.Huang@nxp.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: thermal: al-thermal: Add binding
+ documentation
+Date: Wed, 10 Apr 2019 09:10:00 -0500
+Message-ID: <20190410141000.GA19197@bogus>
+References: <1554373016-1442-1-git-send-email-talel@amazon.com>
+ <1554373016-1442-2-git-send-email-talel@amazon.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8133682923872736211=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1554881866-26333-4-git-send-email-Anson.Huang@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "maxime.ripard@bootlin.com" <maxime.ripard@bootlin.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Peng Fan <peng.fan@nxp.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "festevam@gmail.com" <festevam@gmail.com>, "stefan.wahren@i2se.com" <stefan.wahren@i2se.com>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>, Andy Gross <andy.gross@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, dl-linux-imx <linux-imx@nxp.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>, s.hauer@pengu
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1554373016-1442-2-git-send-email-talel@amazon.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Talel Shenhar <talel@amazon.com>
+Cc: edubezval@gmail.com, dwmw@amazon.co.uk, jonnyc@amazon.com, rui.zhang@intel.com, hhhawa@amazon.com, ronenk@amazon.com, hanochu@amazon.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============8133682923872736211==
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Content-Language: en-US
+On Thu, Apr 04, 2019 at 01:16:55PM +0300, Talel Shenhar wrote:
+> Add thermal binding documentation for Amazon's Annapurna Labs Thermal
+> Sensor.
+> 
+> Signed-off-by: Talel Shenhar <talel@amazon.com>
+> Reviewed-by: David Woodhouse <dwmw@amazon.co.uk>
+> ---
+>  .../bindings/thermal/amazon,al-thermal.txt         | 33 ++++++++++++++++++++++
+>  1 file changed, 33 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt b/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+> new file mode 100644
+> index 0000000..af8cf18
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+> @@ -0,0 +1,33 @@
+> +Amazon's Annapurna Labs Thermal Sensor
+> +
+> +Simple thermal device that allows temperature reading by a single MMIO
+> +transaction.
+> +
+> +Required properties:
+> +- compatible: "amazon,al-thermal".
+> +- reg: The physical base address and length of the sensor's registers.
+> +- #thermal-sensor-cells: Must be 1. See ./thermal.txt for a description.
+> +
+> +Example:
+> +	thermal: thermal {
+> +		compatible = "amazon,al-thermal";
+> +		reg = <0x0 0x05002860 0x0 0x1>;
+> +		#thermal-sensor-cells = <0x1>;
+> +	};
+> +
+> +	thermal-zones {
+> +		thermal_z0 {
 
-:u?w]=00?????;?}??M4?	??q?jx0??^=01?b1=7F=10\??R?^?f?=CE=89=DE=B2?i??R?	?v?=
-?o '??=C7=B9??=02{(?{??	???&
-=16???,?w=1EW]+zj/z??????)???=EC=A2=BA=DE=B2??q??jwi??=D6=AD?(??=1E 8??'^y?=
-!?=17???lz{(??ajwey???g???=DC=87=F6=AB=9B=AE?n?-??l???z?=1A????=1F*=C6=97m?=
--????????????????????????_?W????y???{=1E?=D8=A8?=CF=91z????[?=1A=1B=1D???x+=
-??dz?=DE=96?
+thermal-z0 {
 
+> +			polling-delay-passive = <250>;
+> +			polling-delay = <1000>;
+> +			thermal-sensors = <&thermal 0>;
+> +			trips {
+> +				thermalz0_crit {
 
---===============8133682923872736211==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+critical {
 
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+With that,
 
---===============8133682923872736211==--
+Reviewed-by: Rob Herring <robh@kernel.org>
+
+> +					temperature = <105000>;
+> +					hysteresis = <2000>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +		};
+> +	};
+> +
+> -- 
+> 2.7.4
+> 
