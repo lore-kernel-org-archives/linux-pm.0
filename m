@@ -1,76 +1,94 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v4] arm64: dts: ls1088a: add one more thermal zone node
-Date: Thu, 11 Apr 2019 08:01:55 +0000
-Message-ID: <VI1PR04MB433392E5E650435B0D06AFFFF32F0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190401032905.32711-1-andy.tang@nxp.com>
- <273bb946-8659-8e50-6598-3cffa6dff9f5@linaro.org>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Date: Thu, 11 Apr 2019 10:09:55 +0200
+Message-ID: <20190411080955.ysp3wreifwqrpn3n@flea>
+References: <20190410174139.20012-1-tiny.windzz@gmail.com>
+ <20190410174139.20012-2-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ljbikfewuqsnslmi"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <273bb946-8659-8e50-6598-3cffa6dff9f5@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190410174139.20012-2-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>
-Cc: Leo Li <leoyang.li@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgRGFuaWVsLA0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFu
-aWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnlubQ0
-5pyINOaXpSAxMDozNQ0KPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IHNoYXdu
-Z3VvQGtlcm5lbC5vcmcNCj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtk
-dEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBs
-aXN0cy5pbmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhh
-bmdAaW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggdjRdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsIHpvbmUgbm9k
-ZQ0KPiA+ICsJCQkJCQk8JmNwdTEgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05PX0xJTUlU
-PiwNCj4gPiArCQkJCQkJPCZjcHUyIFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9OT19MSU1J
-VD4sDQo+ID4gKwkJCQkJCTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxfTk9fTElN
-SVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTQgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05PX0xJ
-TUlUPiwNCj4gPiArCQkJCQkJPCZjcHU1IFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9OT19M
-SU1JVD4sDQo+ID4gKwkJCQkJCTwmY3B1NiBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxfTk9f
-TElNSVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTcgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05P
-X0xJTUlUPjsNCj4gPiArCQkJCX07DQo+IA0KPiBEb2VzIGl0IG1ha2Ugc2Vuc2UgdG8gYXNzaWdu
-IHRoZSBzYW1lIGNvb2xpbmcgZGV2aWNlcyB0byB0d28gZGlmZmVyZW50IHRoZXJtYWwNCj4gem9u
-ZXMgcnVubmluZyBkaWZmZXJlbnQgaW5zdGFuY2VzIG9mIGdvdmVybm9yID8NCkV2ZW4gdGhvdWdo
-IEkgZGlkbid0IGZpbmQgYW55IGVycm9yIHdoZW4gdGVzdCwgSSBkbyB0aGluayBpdCBpcyBpbmFw
-cHJvcHJpYXRlLg0KDQpCUiwNCkFuZHkNCj4gDQo+ID4gKwkJCX07DQo+ID4gKwkJfTsNCj4gPiAr
-DQo+ID4gKwkJcGxhdGZvcm0tdGhlcm1hbCB7DQo+ID4gKwkJCXBvbGxpbmctZGVsYXktcGFzc2l2
-ZSA9IDwxMDAwPjsNCj4gPiArCQkJcG9sbGluZy1kZWxheSA9IDw1MDAwPjsNCj4gPiArCQkJdGhl
-cm1hbC1zZW5zb3JzID0gPCZ0bXUgMT47DQo+ID4gKw0KPiA+ICsJCQl0cmlwcyB7DQo+ID4gKwkJ
-CQlwbGF0Zm9ybV9hbGVydDogcGxhdGZvcm0tYWxlcnQgew0KPiA+ICsJCQkJCXRlbXBlcmF0dXJl
-ID0gPDg1MDAwPjsNCj4gPiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICsJCQkJCXR5
-cGUgPSAicGFzc2l2ZSI7DQo+ID4gKwkJCQl9Ow0KPiA+ICsNCj4gPiArCQkJCXBsYXRmb3JtX2Ny
-aXQ6IHBsYXRmb3JtLWNyaXQgew0KPiA+ICsJCQkJCXRlbXBlcmF0dXJlID0gPDk1MDAwPjsNCj4g
-PiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICsJCQkJCXR5cGUgPSAiY3JpdGljYWwi
-Ow0KPiA+ICsJCQkJfTsNCj4gPiArCQkJfTsNCj4gPiArDQo+ID4gKwkJCWNvb2xpbmctbWFwcyB7
-DQo+ID4gKwkJCQltYXAwIHsNCj4gPiArCQkJCQl0cmlwID0gPCZwbGF0Zm9ybV9hbGVydD47DQo+
-ID4gIAkJCQkJY29vbGluZy1kZXZpY2UgPQ0KPiA+ICAJCQkJCQk8JmNwdTAgVEhFUk1BTF9OT19M
-SU1JVA0KPiBUSEVSTUFMX05PX0xJTUlUPiwNCj4gPiAgCQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9f
-TElNSVQNCj4gVEhFUk1BTF9OT19MSU1JVD4sDQo+ID4NCj4gDQo+IA0KPiAtLQ0KPiANCj4gPGh0
-dHBzOi8vZXVyMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNB
-JTJGJTJGd3d3Lmxpbg0KPiBhcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbmcl
-NDBueHAuY29tJTdDZTFiNzA0ODMyZWEzNA0KPiA2YWU3Mzg0MDhkNmI4YTYyODNmJTdDNjg2ZWEx
-ZDNiYzJiNGM2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3Qw0KPiA2MzY4OTk0MjExMTA0NDE1
-NzQmYW1wO3NkYXRhPUM3bXJVenRPYmtITVp5cUVKZzUzaDk5U2RJd2VKU2VLaGk4bA0KPiAlMkJR
-cFVRaEElM0QmYW1wO3Jlc2VydmVkPTA+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3
-YXJlIGZvcg0KPiBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZXVy
-MDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3
-LmZhYw0KPiBlYm9vay5jb20lMkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5k
-eS50YW5nJTQwbnhwLmNvbQ0KPiAlN0NlMWI3MDQ4MzJlYTM0NmFlNzM4NDA4ZDZiOGE2MjgzZiU3
-QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzANCj4gMTYzNSU3QzAlN0MwJTdDNjM2ODk5NDIx
-MTEwNDQxNTc0JmFtcDtzZGF0YT1QeGolMkJsZmMlMkZDMUtpUUJEMA0KPiBrelRqUUdUMkFnakNi
-WWxjWGhuc2NXVGI2cHclM0QmYW1wO3Jlc2VydmVkPTA+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8v
-ZXVyMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJG
-dHdpdHRlci5jDQo+IG9tJTJGJTIzISUyRmxpbmFyb29yZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5k
-eS50YW5nJTQwbnhwLmNvbSU3Q2UNCj4gMWI3MDQ4MzJlYTM0NmFlNzM4NDA4ZDZiOGE2MjgzZiU3
-QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1DQo+ICU3QzAlN0MwJTdDNjM2ODk5NDIx
-MTEwNDQxNTc0JmFtcDtzZGF0YT1ZSlFSZ01Ud2NHJTJCM0gxZyUyRlgNCj4gaDN6YXclMkJYeThP
-ZGxzdEw1QUg0UjBlWG1OOCUzRCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczov
-L2V1cjAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUy
-Rnd3dy5saW4NCj4gYXJvLm9yZyUyRmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0Nh
-bmR5LnRhbmclNDBueHAuY29tJTdDDQo+IGUxYjcwNDgzMmVhMzQ2YWU3Mzg0MDhkNmI4YTYyODNm
-JTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNkOTljNWMzMDE2Mw0KPiA1JTdDMCU3QzAlN0M2MzY4OTk0
-MjExMTA0NDE1NzQmYW1wO3NkYXRhPXJsa082bWtIZ2RhbThLMlJUd3NPZg0KPiA4RXhQRjJLUnkl
-MkZyTXd3eXNoUkJLQWclM0QmYW1wO3Jlc2VydmVkPTA+IEJsb2cNCg0K
+
+--ljbikfewuqsnslmi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi,
+
+On Wed, Apr 10, 2019 at 01:41:38PM -0400, Yangtao Li wrote:
+> For some SoCs, the CPU frequency subset and voltage value of each OPP
+> varies based on the silicon variant in use. The sunxi-cpufreq-nvmem
+> driver reads the efuse value from the SoC to provide the OPP framework
+> with required information.
+>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+
+The driver has a bunch of checkpatch warnings, please fix them
+(running checkpatch with --strict).
+
+> ---
+>  MAINTAINERS                           |   7 +
+>  drivers/cpufreq/Kconfig.arm           |  10 ++
+>  drivers/cpufreq/Makefile              |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c  |   2 +
+>  drivers/cpufreq/sunxi-cpufreq-nvmem.c | 232 ++++++++++++++++++++++++++
+>  5 files changed, 252 insertions(+)
+>  create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 391405091c6b..bfd18ba6aa1a 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -667,6 +667,13 @@ S:	Maintained
+>  F:	Documentation/i2c/busses/i2c-ali1563
+>  F:	drivers/i2c/busses/i2c-ali1563.c
+>
+> +ALLWINNER CPUFREQ DRIVER
+> +M:	Yangtao Li <tiny.windzz@gmail.com>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> +F:	drivers/cpufreq/sunxi-cpufreq-nvmem.c
+> +
+
+Please use a less generic name for the driver as well. It's called
+sunxi, but applies to a single SoC (for now).
+
+> +struct sunxi_cpufreq_soc_data {
+> +	u32 (*efuse_xlate)(const struct sunxi_cpufreq_soc_data *soc_data,
+> +			   u32 efuse);
+> +	u32 nvmem_mask;
+> +	u32 nvmem_shift;
+> +};
+
+What cases do you have? You're mentionning that it might apply to more
+SoCs, which ones? How is the data stored on those SoCs (and why do you
+need this particular abstraction)?
+
+Thanks!
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--ljbikfewuqsnslmi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXK72UwAKCRDj7w1vZxhR
+xddWAP4/ozszJEsxyLl3PcSuUQNUmGNPTI5/EZoFHMnPIMM1+gEA26Mdnj9YBQVs
+HKxva/PTNG3RNdsvgtKweCHQ+Qrllww=
+=diSg
+-----END PGP SIGNATURE-----
+
+--ljbikfewuqsnslmi--
