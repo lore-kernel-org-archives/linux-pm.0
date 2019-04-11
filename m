@@ -1,70 +1,77 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v3 4/5] arm64: dts: rk3399: Add dfi and dmc nodes.
-Date: Thu, 11 Apr 2019 15:20:53 +0200
-Message-ID: <7786013.gjegOBUKu0@phil>
-References: <20190321231440.19031-1-gael.portay@collabora.com> <20190321231440.19031-5-gael.portay@collabora.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH -next] power/domain_governor: fix a compilation error
+Date: Thu, 11 Apr 2019 15:22:56 +0200
+Message-ID: <CAPDyKFqmP3pORhufTsCg1nuqSPGz8hEQNTpZgr24fFqk13hM3w@mail.gmail.com>
+References: <20190411124739.5542-1-cai@lca.pw>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190321231440.19031-5-gael.portay@collabora.com>
+In-Reply-To: <20190411124739.5542-1-cai@lca.pw>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?ISO-8859-1?Q?Ga=EBl?= PORTAY <gael.portay@collabora.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>
+To: Qian Cai <cai@lca.pw>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Lina Iyer <lina.iyer@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Gaël,
+On Thu, 11 Apr 2019 at 14:48, Qian Cai <cai@lca.pw> wrote:
+>
+> The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
+> introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
+> cpuidle_devices is undefined there.
+>
+> drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
+> drivers/base/power/domain_governor.c:263: undefined reference to
+> 'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
+> R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
+> bind externally can not be used when making a shared object; recompile
+> with -fPIC
+> drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
+> relocation: unsupported relocation
+> drivers/base/power/domain_governor.c:263: undefined reference to
+> 'cpuidle_devices'
+> make: *** [Makefile:1047: vmlinux] Error 1
+>
+> Signed-off-by: Qian Cai <cai@lca.pw>
 
-Am Freitag, 22. März 2019, 00:14:39 CEST schrieb Gaël PORTAY:
-> From: Lin Huang <hl@rock-chips.com>
-> 
-> These are required to support DDR DVFS on rk3399 platform. The patch also
-> introduces a new file with default DRAM settings.
-> 
-> Signed-off-by: Lin Huang <hl@rock-chips.com>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+Qian, thanks for you patch!
 
-> +	dmc: dmc {
-> +		compatible = "rockchip,rk3399-dmc";
-> +		rockchip,pmu = <&pmugrf>;
-> +		devfreq-events = <&dfi>;
-> +		clocks = <&cru SCLK_DDRC>;
-> +		clock-names = "dmc_clk";
-> +		status = "disabled";
-> +		rockchip,ddr3_speed_bin = <21>;
-> +		rockchip,pd_idle = <0x40>;
-> +		rockchip,sr_idle = <0x2>;
-> +		rockchip,sr_mc_gate_idle = <0x3>;
-> +		rockchip,srpd_lite_idle	= <0x4>;
-> +		rockchip,standby_idle = <0x2000>;
-> +		rockchip,dram_dll_dis_freq = <300000000>;
-> +		rockchip,phy_dll_dis_freq = <125000000>;
-> +		rockchip,auto_pd_dis_freq = <666000000>;
-> +		rockchip,ddr3_odt_dis_freq = <333000000>;
-> +		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-> +		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-> +		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
-> +		rockchip,lpddr3_odt_dis_freq = <333000000>;
-> +		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-> +		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-> +		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
-> +		rockchip,lpddr4_odt_dis_freq = <333000000>;
-> +		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-> +		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-> +		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-> +		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-> +		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-> +		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
+> ---
+>  drivers/base/power/domain_governor.c | 12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index 39c8a699cb53..252d88fcf760 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+>          */
+>         domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+>         for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+> -               dev = per_cpu(cpuidle_devices, cpu);
+> -               if (dev) {
+> -                       next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> -                       if (ktime_before(next_hrtimer, domain_wakeup))
+> -                               domain_wakeup = next_hrtimer;
+> +               if (IS_ENABLED(CONFIG_CPU_IDLE)) {
+> +                       dev = per_cpu(cpuidle_devices, cpu);
+> +                       if (dev) {
+> +                               next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> +                               if (ktime_before(next_hrtimer, domain_wakeup))
+> +                                       domain_wakeup = next_hrtimer;
+> +                       }
 
-as Rob mentioned in his review, these values look board-specific,
-so should probably move over to the specific board you're using them
-on?
+This works as quick fix, but I think there is two possible options
+that is probably better in long run.
 
+1) Extend the cpuidle interface with a new function:
 
-Heiko
+struct cpuidle_device *cpuidle_get_cpu_device(unsigned int cpu)
+
+Then when CONFIG_CPU_IDLE is unset, we can just have a stub function
+returning NULL.
+
+2) Have the struct dev_power_governor pm_domain_cpu_gov to be defined
+(and the corresponding functionality), but only when CONFIG_CPU_IDLE
+is set and when CONFIG_PM_GENERIC_DOMAINS is set.
+
+Kind regards
+Uffe
