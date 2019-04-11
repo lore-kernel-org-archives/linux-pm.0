@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA291C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 22:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96C11C10F14
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 22:30:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 99FF62184B
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 22:30:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 657C92184B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 22:30:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mYdousLl"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E4rpvYON"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727356AbfDKWah (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 18:30:37 -0400
-Received: from mail-lf1-f66.google.com ([209.85.167.66]:45016 "EHLO
-        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727219AbfDKWaG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 18:30:06 -0400
-Received: by mail-lf1-f66.google.com with SMTP id h18so5899446lfj.11;
-        Thu, 11 Apr 2019 15:30:04 -0700 (PDT)
+        id S1727241AbfDKWaF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 18:30:05 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:33092 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727216AbfDKWaF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 18:30:05 -0400
+Received: by mail-lj1-f194.google.com with SMTP id f23so7053243ljc.0;
+        Thu, 11 Apr 2019 15:30:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=RsYzqS+sD+odCER6OAB87SufxlLcgz5HRZWnhoapdvQ=;
-        b=mYdousLlYMPA/MCAK2QG0cpWfZQRahCWSjT19JGibS0vWSRa3eGeol92VenMQXqjQl
-         MFbP8LX39TcwnqRFPlLt2ijXSMzeGJuK4awCHjrdg8E4gZAxlrOYc/TLifxnmG8mkf56
-         uwUr3ECOqfKcEEXBSmFzsBUqGn4sqt+wtMbkHVb382qEQWvD+lhfWmr5hpSmyEVU0S3P
-         JaJ6WF5j/dJcUkFKVv49qxoVFwI+PyPPk5+K4dfGr6FErH/xnHsPDpJ0HpZZraeqNL+j
-         yTKTSIjxVAEGAzA08K4CGQUCUp5K3B6x875DnCfclVc2/qCFR/pjjvbrwNm5o8U4LnXT
-         NPIA==
+        bh=CfwEQnrKW1Lt+UjYKDauX5BBzSk4KvQZH0bhWzaKNqs=;
+        b=E4rpvYONus7P4KGzFOey1J3G7vWbsugbPgRonVGW94zLgAGuF+xptfas5FeENGmOIc
+         z+DCfjB4V89zLLC/p++bxtY13vfOIMxPqopZ6IY5il5Y3t0zAsN1quqvYI5k0dO00t4i
+         kbGMYM5p13y4hmd6Zh01YYgaxhVKihPQBJYEsZsireltz5QdbbtTFtWId/sxN/syx6xa
+         5VSMUFIaAPbQlrBtFr7DZorFXiTI4lDVD09wwibYd3iqjy4TE7AS1RI7qLH99kJsmxr0
+         9Q6Xon7dDLjNdmpDW1kfq3coQtLgRg+c9jVLLSKlorMa0GK/vsnk5rJNiSw4l5wFuVvC
+         jLLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=RsYzqS+sD+odCER6OAB87SufxlLcgz5HRZWnhoapdvQ=;
-        b=hlA6u6aFQ1ccu8/reiHK/iV8yjzEvuXxpzqZA3WQI7vK3d46DuRLRNiP2n3nCfJNbx
-         F+LjIlAIQaNpusoID8rLlPiNi+XWbxtSb8khN0rNmZJFNo1F0MJ1xZaw46sq35kD5Yxm
-         WDZjFtdA6DAv+bBEytr+XbgSnFy4VZUtz4PA7XTSvbBAErmb+oDKBaE4ryxBFdjlC4Dm
-         ruD7qhoi3NXpj6sFbZwT/eUYn7QkNsAcl2Utt92ikrBc/x3iAxsy0+jl036PsHoIiGe3
-         gFq9QIUQxlXKEay62pDbat7rqVbRBeBotFhHe8yrahPYFgu95heSXZpdh4tBF6FvSLRU
-         vIxA==
-X-Gm-Message-State: APjAAAWrYuyNMKDx6znlBrD6L4Aqdq7jgjAzKzcmjOweh9RnYkKFYZH7
-        ucLiJagDYhBinEnODU2QeGByEk2Z
-X-Google-Smtp-Source: APXvYqyTpO6KQagoSs+3BF66j2zdj+yIL760WLZcKVe0a10F0eRNQltBqmvh5cxf69XzKnvzvhJqMQ==
-X-Received: by 2002:ac2:4291:: with SMTP id m17mr16986694lfh.29.1555021803915;
-        Thu, 11 Apr 2019 15:30:03 -0700 (PDT)
+        bh=CfwEQnrKW1Lt+UjYKDauX5BBzSk4KvQZH0bhWzaKNqs=;
+        b=jc8EeWnyEFtxRRu05zdZNmjXUKYG1tHvnkpKWVV2VPVn9FMek8ZlwwhmVV2idZQDj6
+         5SGSr9je3yP+nxdy56bao1y9tGu+wzutpO9hZ3cjRxGiwve/YgusdRxmyWJQwe0uXJlH
+         DOjFbNNKBNYG9eo075EGuZpfOQWeZrVtKDa5/9t+yyceSYSp8awSwzaBNkgIDjgSqWX1
+         HVXN+OlsuI01zrVQeBRqpHZSLmNLPfygZ5lClUQ1wM0UTwDnw0NBhku55JDMk5TPdiF0
+         8r2U0xHaSULmmv/m6tVLHqxFSy19tCN63bmxCklOY6Cyhgl/duzGwh1X5DtCGfHNIf/z
+         pfog==
+X-Gm-Message-State: APjAAAWzgRGRo4ZcVdntjH0DnqGoxO/QlctBWG6fP8grDw4t2X45WJvQ
+        qOQFpGSrCMHeFpO8Q8Yqn7FSkmMc
+X-Google-Smtp-Source: APXvYqzf3w0qvTxcWT8WrEWumI47wq2JhEkpcfSvj1lLrVtky4WIQQvK/UFGQaX1+sRere8DY92lGw==
+X-Received: by 2002:a2e:9348:: with SMTP id m8mr9662448ljh.23.1555021802835;
+        Thu, 11 Apr 2019 15:30:02 -0700 (PDT)
 Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id d13sm1646000lfa.40.2019.04.11.15.30.02
+        by smtp.gmail.com with ESMTPSA id d13sm1646000lfa.40.2019.04.11.15.30.01
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 15:30:03 -0700 (PDT)
+        Thu, 11 Apr 2019 15:30:02 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -63,9 +63,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Chanwoo Choi <cw00.choi@samsung.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v1 5/8] PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-Date:   Fri, 12 Apr 2019 01:29:11 +0300
-Message-Id: <20190411222914.25539-6-digetx@gmail.com>
+Subject: [PATCH v1 4/8] PM / devfreq: tegra: Don't release IRQ manually on driver removal
+Date:   Fri, 12 Apr 2019 01:29:10 +0300
+Message-Id: <20190411222914.25539-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190411222914.25539-1-digetx@gmail.com>
 References: <20190411222914.25539-1-digetx@gmail.com>
@@ -76,29 +76,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190411222911.MgxgQND_PCm8dshDIsudF1u_GO8mgJ__UJ9uu1Hf22g@z>
+Message-ID: <20190411222910.hngsr68r6-1SVd6nJCFn8FsJYKkQio-3OK_XWuObEQw@z>
 
-There is no real benefit from doing so, hence let's drop that rate setting
-for consistency.
+The IRQ releasing is handled by "managed resources", hence there is no
+need to release IRQ manually.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index ed67d7a48176..aefd4874b5a2 100644
+index 6185e7ab20a8..ed67d7a48176 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -648,8 +648,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
+@@ -717,7 +717,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ static int tegra_devfreq_remove(struct platform_device *pdev)
+ {
+ 	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+-	int irq = platform_get_irq(pdev, 0);
+ 	u32 val;
+ 	unsigned int i;
  
--	clk_set_rate(tegra->emc_clock, ULONG_MAX);
+@@ -729,8 +728,6 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+ 
+ 	actmon_write_barrier(tegra);
+ 
+-	devm_free_irq(&pdev->dev, irq, tegra);
 -
- 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
- 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
- 	if (err) {
+ 	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
+ 
+ 	clk_disable_unprepare(tegra->clock);
 -- 
 2.21.0
 
