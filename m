@@ -1,58 +1,59 @@
-From: Qian Cai <cai@lca.pw>
-Subject: [PATCH -next] power/domain_governor: fix a compilation error
-Date: Thu, 11 Apr 2019 08:47:39 -0400
-Message-ID: <20190411124739.5542-1-cai@lca.pw>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 09/13] thermal: qoriq: Convert driver to use regmap API
+Date: Thu, 11 Apr 2019 15:00:51 +0200
+Message-ID: <dac3e90a-dd9f-56eb-faa2-c48d1fe380da@linaro.org>
+References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
+ <20190401041418.5999-10-andrew.smirnov@gmail.com>
+ <52c33c26-47fa-04d2-0808-65a53fd2c804@linaro.org>
+ <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org
-Cc: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, pavel@ucw.cz, len.brown@intel.com, lina.iyer@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Qian Cai <cai@lca.pw>
+To: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
-introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
-cpuidle_devices is undefined there.
+On 05/04/2019 20:24, Andrey Smirnov wrote:
 
-drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
-drivers/base/power/domain_governor.c:263: undefined reference to
-'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
-R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
-bind externally can not be used when making a shared object; recompile
-with -fPIC
-drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
-relocation: unsupported relocation
-drivers/base/power/domain_governor.c:263: undefined reference to
-'cpuidle_devices'
-make: *** [Makefile:1047: vmlinux] Error 1
+[ ... ]
 
-Signed-off-by: Qian Cai <cai@lca.pw>
----
- drivers/base/power/domain_governor.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+>>> +static const struct regmap_range qiriq_yes_ranges[] = {
+>>> +     regmap_reg_range(REGS_TMR, REGS_TSCFGR),
+>>> +     regmap_reg_range(REGS_TTRnCR(0), REGS_TTRnCR(3)),
+>>> +     /* Read only registers below */
+>>> +     regmap_reg_range(REGS_TRITSR(0), REGS_TRITSR(15)),
+>>> +};
+>>> +
+>>> +static const struct regmap_access_table qiriq_wr_table = {
+>>> +     .yes_ranges     = qiriq_yes_ranges,
+>>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges) - 1,
+>>> +};
+>>> +
+>>> +static const struct regmap_access_table qiriq_rd_table = {
+>>> +     .yes_ranges     = qiriq_yes_ranges,
+>>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges),
+>>> +};
+>>
+>> As the table are the same, it would make sense to fold both structure to
+>> a single one (and s/qiriq/qoriq/ ?)
+>>
+> 
+> Writable registers are a subset of readable registers and n_yes_ranges
+> is different between the two. Not sure how I could fold the two into a
+> single struct.
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 39c8a699cb53..252d88fcf760 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
- 	 */
- 	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
- 	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
--		dev = per_cpu(cpuidle_devices, cpu);
--		if (dev) {
--			next_hrtimer = READ_ONCE(dev->next_hrtimer);
--			if (ktime_before(next_hrtimer, domain_wakeup))
--				domain_wakeup = next_hrtimer;
-+		if (IS_ENABLED(CONFIG_CPU_IDLE)) {
-+			dev = per_cpu(cpuidle_devices, cpu);
-+			if (dev) {
-+				next_hrtimer = READ_ONCE(dev->next_hrtimer);
-+				if (ktime_before(next_hrtimer, domain_wakeup))
-+					domain_wakeup = next_hrtimer;
-+			}
- 		}
- 	}
- 
+Right, never mind my comment.
+
+
+
+
 -- 
-2.20.1 (Apple Git-117)
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
