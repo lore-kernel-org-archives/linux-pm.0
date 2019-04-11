@@ -1,65 +1,92 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 05/13] thermal: qoriq: Embed per-sensor data into
- struct qoriq_tmu_data
-Date: Thu, 11 Apr 2019 18:54:47 +0200
-Message-ID: <4a61e24a-fbb5-30f6-691a-0376fbca7b46@linaro.org>
-References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-6-andrew.smirnov@gmail.com>
- <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
- <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH -next] power/domain_governor: fix a compilation error
+Date: Thu, 11 Apr 2019 20:00:43 +0200
+Message-ID: <CAPDyKFpVsNB3T7FtveK1rcTOtmOzEOQrSZ3zS+ze6jexVqw9nA@mail.gmail.com>
+References: <20190411124739.5542-1-cai@lca.pw> <CAPDyKFqmP3pORhufTsCg1nuqSPGz8hEQNTpZgr24fFqk13hM3w@mail.gmail.com>
+ <CAJZ5v0hWL1dGPZX0aotcJ7cT_LdHvreZvx-fR7B_9Y=mqxSyzw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0hWL1dGPZX0aotcJ7cT_LdHvreZvx-fR7B_9Y=mqxSyzw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Qian Cai <cai@lca.pw>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Lina Iyer <lina.iyer@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/04/2019 20:00, Andrey Smirnov wrote:
-> On Thu, Apr 4, 2019 at 12:57 AM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 01/04/2019 06:14, Andrey Smirnov wrote:
->>> Embed per-sensor data into struct qoriq_tmu_data so we can drop the
->>> code allocating it. This also allows us to get rid of per-sensor back
->>> reference to struct qoriq_tmu_data since now its address can be
->>> caluclated using container_of().
->>
->> This seems to be a repeating pattern, drivers are forced to put a back
->> pointer in the thermal sensor structure to regain access to the
->> container structure in the get_temp callback.
->>
->> It would make sense to pass the sensor id to the get_temp callback as we
->> register with the sensor id.
->>
-> 
-> I'll rebase this series on the two patches you submitted.
+On Thu, 11 Apr 2019 at 16:37, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Thu, Apr 11, 2019 at 3:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Thu, 11 Apr 2019 at 14:48, Qian Cai <cai@lca.pw> wrote:
+> > >
+> > > The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
+> > > introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
+> > > cpuidle_devices is undefined there.
+> > >
+> > > drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
+> > > drivers/base/power/domain_governor.c:263: undefined reference to
+> > > 'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
+> > > R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
+> > > bind externally can not be used when making a shared object; recompile
+> > > with -fPIC
+> > > drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
+> > > relocation: unsupported relocation
+> > > drivers/base/power/domain_governor.c:263: undefined reference to
+> > > 'cpuidle_devices'
+> > > make: *** [Makefile:1047: vmlinux] Error 1
+> > >
+> > > Signed-off-by: Qian Cai <cai@lca.pw>
+> >
+> > Qian, thanks for you patch!
+> >
+> > > ---
+> > >  drivers/base/power/domain_governor.c | 12 +++++++-----
+> > >  1 file changed, 7 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> > > index 39c8a699cb53..252d88fcf760 100644
+> > > --- a/drivers/base/power/domain_governor.c
+> > > +++ b/drivers/base/power/domain_governor.c
+> > > @@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+> > >          */
+> > >         domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+> > >         for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+> > > -               dev = per_cpu(cpuidle_devices, cpu);
+> > > -               if (dev) {
+> > > -                       next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> > > -                       if (ktime_before(next_hrtimer, domain_wakeup))
+> > > -                               domain_wakeup = next_hrtimer;
+> > > +               if (IS_ENABLED(CONFIG_CPU_IDLE)) {
+> > > +                       dev = per_cpu(cpuidle_devices, cpu);
+> > > +                       if (dev) {
+> > > +                               next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> > > +                               if (ktime_before(next_hrtimer, domain_wakeup))
+> > > +                                       domain_wakeup = next_hrtimer;
+> > > +                       }
+> >
+> > This works as quick fix, but I think there is two possible options
+> > that is probably better in long run.
+> >
+> > 1) Extend the cpuidle interface with a new function:
+> >
+> > struct cpuidle_device *cpuidle_get_cpu_device(unsigned int cpu)
+> >
+> > Then when CONFIG_CPU_IDLE is unset, we can just have a stub function
+> > returning NULL.
+>
+> So why exactly cpu_power_down_ok() would be still needed with
+> CONFIG_CPU_IDLE unset?
+>
+> > 2) Have the struct dev_power_governor pm_domain_cpu_gov to be defined
+> > (and the corresponding functionality), but only when CONFIG_CPU_IDLE
+> > is set and when CONFIG_PM_GENERIC_DOMAINS is set.
+>
+> So please do that.
+>
+> Can you please send a replacement patch for the [4/4] in the series
+> with this fixed?
 
-Well I should have added the RFC tag because I was not able to test with
-a platform.
+Yes, I do that!
 
-[ ... ]
-
->> Why not replace the little_endian boolean by a couple of callback
->> read/write and assign them to ioread32|ioread32be at init time.
->>
->> That will kill the tmu_read and tmu_write functions and from there you
->> can figure out how to remove the qdata backpointer. In addition, it will
->> save a few instructions to test the boolean.
->>
-> 
-> I am sure you've seen it by now, but little_endian is going away in
-> this series in regmap conversion patch.
-
-Right :)
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Kind regards
+Uffe
