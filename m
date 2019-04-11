@@ -7,128 +7,122 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03648C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:39:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88031C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:03:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CF4A321841
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:39:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5DE93217D4
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:03:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726814AbfDKIjl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 04:39:41 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:57132 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725793AbfDKIjl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 Apr 2019 04:39:41 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 7B23F1A008E;
-        Thu, 11 Apr 2019 10:39:38 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id BA4661A0025;
-        Thu, 11 Apr 2019 10:39:32 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 67E43402DB;
-        Thu, 11 Apr 2019 16:39:25 +0800 (SGT)
-From:   Yuantian Tang <andy.tang@nxp.com>
-To:     shawnguo@kernel.org
-Cc:     leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        daniel.lezcano@linaro.org, rui.zhang@intel.com,
-        edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH v5] arm64: dts: ls1088a: add one more thermal zone node
-Date:   Thu, 11 Apr 2019 16:32:36 +0800
-Message-Id: <20190411083236.9377-1-andy.tang@nxp.com>
-X-Mailer: git-send-email 2.14.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726104AbfDKKDx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 06:03:53 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:58594 "EHLO
+        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726026AbfDKKDx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 06:03:53 -0400
+Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
+        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
+        id 1hEWYf-000336-PW from Jiada_Wang@mentor.com ; Thu, 11 Apr 2019 03:03:49 -0700
+Received: from jiwang-OptiPlex-980.tokyo.mentorg.com (147.34.91.1) by
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203) with Microsoft SMTP Server
+ (TLS) id 15.0.1320.4; Thu, 11 Apr 2019 03:03:46 -0700
+From:   Jiada Wang <jiada_wang@mentor.com>
+To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
+        <daniel.lezcano@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <jiada_wang@mentor.com>
+Subject: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after device initialization
+Date:   Thu, 11 Apr 2019 19:03:52 +0900
+Message-ID: <20190411100352.15977-1-jiada_wang@mentor.com>
+X-Mailer: git-send-email 2.19.2
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset="UTF-8"
+X-ClientProxiedBy: svr-orw-mbx-08.mgc.mentorg.com (147.34.90.208) To
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190411083236.cugZVGEzjJVQvjkxioMhMVUL-ZG9qEqJc80WgDjd100@z>
+Message-ID: <20190411100352.VeqkZ7kXKmkY5g3gldpCPj8ylCY26AracQzDiTZUI3U@z>
 
-Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-sensor is used to monitor the temperature of core and SoC platform is for
-platform. The current dts only support the first sensor.
-This patch adds the second sensor node to dts to enable it.
+Currently IRQ is remain enabled after .remove, later if device is probed,
+IRQ is requested before .thermal_init, this may cause IRQ function be
+triggered but not able to clear IRQ status, thus cause system to hang.
 
-Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+this patch by moving request of IRQ after device initialization to
+avoid this issue.
+
+Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 ---
-v5:
-	- update the thermal zone name due to the length limitation
-	- remove cooling map in platform zone
-v4:
-	- use hyphen instead of underscore in node name
-v3:
-	- use more descriptive name for each zone
-v2:
-	- Add more information about sensors to description
- arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   28 ++++++++++++++++++++---
- 1 files changed, 24 insertions(+), 4 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index de93b42..de39672 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -129,19 +129,19 @@
- 	};
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 88fa41cf16e8..4d095d7f9763 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
  
- 	thermal-zones {
--		cpu_thermal: cpu-thermal {
-+		core-cluster {
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
- 			thermal-sensors = <&tmu 0>;
+ 	platform_set_drvdata(pdev, priv);
  
- 			trips {
--				cpu_alert: cpu-alert {
-+				core_cluster_alert: core-cluster-alert {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+-	/*
+-	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+-	 * to trigger on the low and high trip points of the current
+-	 * temp window at this point.
+-	 */
+-	for (i = 0; i < 2; i++) {
+-		irq = platform_get_irq(pdev, i);
+-		if (irq < 0)
+-			return irq;
+-
+-		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+-					 dev_name(dev), i);
+-		if (!irqname)
+-			return -ENOMEM;
+-
+-		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+-						rcar_gen3_thermal_irq_thread,
+-						IRQF_SHARED, irqname, priv);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
  
--				cpu_crit: cpu-crit {
-+				core_cluster_crit: core-cluster-crit {
- 					temperature = <95000>;
- 					hysteresis = <2000>;
- 					type = "critical";
-@@ -150,7 +150,7 @@
+@@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		goto error_unregister;
+ 	}
  
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu_alert>;
-+					trip = <&core_cluster_alert>;
- 					cooling-device =
- 						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-@@ -163,6 +163,26 @@
- 				};
- 			};
- 		};
++	/*
++	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
++	 * to trigger on the low and high trip points of the current
++	 * temp window at this point.
++	 */
++	for (i = 0; i < 2; i++) {
++		irq = platform_get_irq(pdev, i);
++		if (irq < 0) {
++			ret = irq;
++			goto error_unregister;
++		}
 +
-+		platform {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&tmu 1>;
++		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
++					 dev_name(dev), i);
++		if (!irqname) {
++			ret = -ENOMEM;
++			goto error_unregister;
++		}
 +
-+			trips {
-+				platform-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
++		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
++						rcar_gen3_thermal_irq_thread,
++						IRQF_SHARED, irqname, priv);
++		if (ret)
++			goto error_unregister;
++	}
 +
-+				platform-crit {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
- 	};
+ 	rcar_thermal_irq_set(priv, true);
  
- 	timer {
+ 	return 0;
 -- 
-1.7.1
+2.19.2
 
