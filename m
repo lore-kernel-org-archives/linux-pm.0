@@ -1,46 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v14 4/4] PM / Domains: Add genpd governor for CPUs
-Date: Thu, 11 Apr 2019 22:44:29 +0200
-Message-ID: <CAJZ5v0hVkgF2MYUh4VkXN0L2ZtxMoC8bUV6CY7=fAnSHRLpqUA@mail.gmail.com>
-References: <20190411181733.21437-1-ulf.hansson@linaro.org>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH v1 0/8] devfreq: Tegra devfreq fixes / improvements and Tegra30 support
+Date: Fri, 12 Apr 2019 01:29:06 +0300
+Message-ID: <20190411222914.25539-1-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190411181733.21437-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
+To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 11, 2019 at 8:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> After some preceding changes, PM domains managed by genpd may contain
-> CPU devices, so idle state residency values should be taken into
-> account during the state selection process. [The residency value is
-> the minimum amount of time to be spent by a CPU (or a group of CPUs)
-> in an idle state in order to save more energy than could be saved
-> by picking up a shallower idle state.]
->
-> For this purpose, add a new genpd governor, pm_domain_cpu_gov, to be
-> used for selecting idle states of PM domains with CPU devices attached
-> either directly or through subdomains.
->
-> The new governor computes the minimum expected idle duration for all
-> online CPUs attached to a PM domain and its subdomains.  Next, it
-> finds the deepest idle state whose target residency is within the
-> expected idle duration and selects it as the target idle state of
-> the domain.
->
-> It should be noted that the minimum expected idle duration computation
-> is based on the closest timer event information stored in the per-CPU
-> variables cpuidle_devices for all of the CPUs in the domain.  That
-> needs to be revisited in future, as obviously there are other reasons
-> why a CPU may be woken up from idle.
->
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> [ rjw: Changelog ]
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello,
 
-Applied instead of the previous version, thanks!
+I tried to utilize the Tegra devfreq driver on Tegra30 and found out that
+it doesn't work properly due to improper Hz<->kHz conversions made by the
+driver. After fixing that problem and doing some more testing I noticed
+that there are things that could be improved and in result here is this
+patchset that fixes the problems, makes some improvements and adds support
+for NVIDIA Tegra30 SoC's. This series was tested on Tegra30 and Tegra124
+machines.
+
+Dmitry Osipenko (8):
+  PM / devfreq: tegra: Fix kHz to Hz conversion
+  PM / devfreq: tegra: Replace readl-writel with relaxed versions
+  PM / devfreq: tegra: Don't ignore clk errors
+  PM / devfreq: tegra: Don't release IRQ manually on driver removal
+  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
+  PM / devfreq: tegra: Drop spinlock
+  PM / devfreq: tegra: Remove OPP entries on driver removal
+  PM / devfreq: tegra: Support Tegra30
+
+ drivers/devfreq/Kconfig         |  2 +-
+ drivers/devfreq/tegra-devfreq.c | 66 ++++++++++++++-------------------
+ 2 files changed, 29 insertions(+), 39 deletions(-)
+
+-- 
+2.21.0
