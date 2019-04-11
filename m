@@ -2,121 +2,125 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E111C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 12:48:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7222FC10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 13:00:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 69A8721871
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 12:48:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 409DE2184B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 13:00:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="Y9VX6vF2"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ndU9JZtt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727164AbfDKMsR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 08:48:17 -0400
-Received: from mail-qk1-f193.google.com ([209.85.222.193]:44284 "EHLO
-        mail-qk1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726014AbfDKMsQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 08:48:16 -0400
-Received: by mail-qk1-f193.google.com with SMTP id y5so3315805qkc.11
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 05:48:16 -0700 (PDT)
+        id S1726656AbfDKNA5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 09:00:57 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:39111 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726073AbfDKNA5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 09:00:57 -0400
+Received: by mail-wr1-f65.google.com with SMTP id j9so7250188wrn.6
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 06:00:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=lca.pw; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=v8YRfd9/nj3nRdlwjpQLHs10suvZojy3m14ocFvDPe4=;
-        b=Y9VX6vF2V1EJfosrzQrn4ay9uuwewLljC4/FiNawTYohOkPKfDhpyfVWKSE4wRsPcE
-         r/61hfBw4a8V/rSNVObB863dCOJQlGBjm3Ukcj46RHvOhvQ1yzfxIJjB8sSCipRh/7v3
-         8uBYQ5+QtmQX+pN54gNHpmdwcMSJXV2pcNOaPCecMRlPSEFOzccuh++bB0Qj84I+1PxT
-         Rkd397UkPCcbZCniuV9cigeB2KfAPfwKyrsdiOrwoILojl07jnOAy/D0gQpHJ5Tx+Rt4
-         q+CaAq3pY/1lq8YuFqrc1DIl8VC0rvFZAdLHkWZ1+5t4rHR7UCw4+e8U9LW2nzNtDsDe
-         UBOQ==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=o9hfX+awk8anQN4LGFHcQzLSZQ1q9T5oeKnDQ0qxXt0=;
+        b=ndU9JZtteAeRvhCUCG8i7Z6JE6NL2Md23OtAYbM5H/dKcr7Bilj/ck780pZPFIctLZ
+         f2CR7ZkrUFaoyOyI6OF0fieXHov02mqFQyAyWsXVp9vD4f3PJlAaVZEuESQ+kWOcqHpL
+         CDOlQ1AVa29875Kohkl8iV5yHbmzDIK/Jf+78WOE6+acBhoMjakUh3yo7wPFAuLIULjD
+         jzr6o8QjdwcyAi0Rx6KayNYn3Qe3p7XBtBG2HVeoV8WMTvnyRMuHUUwrNdMkddjMDDn6
+         4NKffV3yweYimmw51ngkNhvfiz3hCU0rIJX9bOXdeutAO8i7zMooKKJ4qjEiMK4/YczQ
+         DjDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=v8YRfd9/nj3nRdlwjpQLHs10suvZojy3m14ocFvDPe4=;
-        b=MatmuMXX9zUlRZ/cRUzRdcJqMoiNXKAKI4jpw0o0yrJcH2hORShcaXCi6m2Cr/nAPS
-         BfdAmoR3l8fCDspJGYrnwoYTB0fPeL3B/Ap5c8DDnqqsNCw5s4dZEdP1mbeGbgvAkI33
-         OckSt3qtE7TU/BYtZPkHNxH/iIj77KBsENWx5EEbrfGRoDmlJYHsCmAL7hCUwxgkQSX8
-         SsODvAAy3OvE3y47i7F5b2aWgPEifyUrrZMsjp543kMpn8pZYNU0ZxtmCyMqskbMFdxJ
-         P+IRZU1q7CG6I6PALvxgrd/uhd+MUnHS6fycMH5TPWWHnRch1Ub3ORvcgYZ/dRZeFTvt
-         e6/g==
-X-Gm-Message-State: APjAAAVCeNOBvZlMNGTz9+tyHyHjHIqnByxLe+lEccxdEmohJrpx+653
-        dU4QYK5hBMmDqM2vPITfDFV8Gw==
-X-Google-Smtp-Source: APXvYqzJO6AqlihTSDk0OKRS6AaYTxiEL6t84h+G7QNTt9KrjNL6e4bxpTt8yZFhioQyHIrDxrJoyQ==
-X-Received: by 2002:ae9:e002:: with SMTP id m2mr38822766qkk.178.1554986895974;
-        Thu, 11 Apr 2019 05:48:15 -0700 (PDT)
-Received: from Qians-MBP.fios-router.home (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
-        by smtp.gmail.com with ESMTPSA id q6sm24745152qkj.87.2019.04.11.05.48.14
+        bh=o9hfX+awk8anQN4LGFHcQzLSZQ1q9T5oeKnDQ0qxXt0=;
+        b=Sl/QAE9wS9FsSiLuGpMR6hSoBhrEIG5NJaV110WzpOb07W6lvjzE5jV/+08LIn8rYp
+         vt3Q39YAZuXIS6L+rDkQfNP/5TbAz7CPYY5YlvyNkOI1Qp3J6RhUHqO7s1ePddNIzUdS
+         FoaLTqP5gsO00K4Ln97c+/HhFlVrSPJKgSSlr5ppgSnWHohv9cb6N0Sn1iG2unF8uJ4/
+         Y/FJSBuEFGNAZf36jnDzFxYd0OezrHhEDQGYL+7W9Qz474x7TvuRlUeX4hZRNOeEecpi
+         34GZQkQSMZjsBusvFCVDrZs0qNhDMsv+wFRqlePqBRLXbN8/DzBD1xUBkimRXLn01n6R
+         ppsA==
+X-Gm-Message-State: APjAAAW4I2UKZp+8PHkx6GYMm57Dkcy7gZ8esrmsaWKQi6D2xmIbEVRj
+        upyH/1SLuA//DU6Q1Zq1HUpFKw==
+X-Google-Smtp-Source: APXvYqzp07dNC/bEWcF78unl1171JEvuxkXAYzpeJeGswiSj4EKp7awAFkblgO7usdLjL4q9taeXRQ==
+X-Received: by 2002:a5d:6987:: with SMTP id g7mr24383259wru.299.1554987655452;
+        Thu, 11 Apr 2019 06:00:55 -0700 (PDT)
+Received: from [192.168.0.44] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id o4sm8268489wmo.20.2019.04.11.06.00.54
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 05:48:15 -0700 (PDT)
-From:   Qian Cai <cai@lca.pw>
-To:     gregkh@linuxfoundation.org
-Cc:     rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org,
-        pavel@ucw.cz, len.brown@intel.com, lina.iyer@linaro.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Qian Cai <cai@lca.pw>
-Subject: [PATCH -next] power/domain_governor: fix a compilation error
-Date:   Thu, 11 Apr 2019 08:47:39 -0400
-Message-Id: <20190411124739.5542-1-cai@lca.pw>
-X-Mailer: git-send-email 2.20.1 (Apple Git-117)
+        Thu, 11 Apr 2019 06:00:54 -0700 (PDT)
+Subject: Re: [PATCH v3 09/13] thermal: qoriq: Convert driver to use regmap API
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
+ <20190401041418.5999-10-andrew.smirnov@gmail.com>
+ <52c33c26-47fa-04d2-0808-65a53fd2c804@linaro.org>
+ <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <dac3e90a-dd9f-56eb-faa2-c48d1fe380da@linaro.org>
+Date:   Thu, 11 Apr 2019 15:00:51 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190411124739.sO0yyARrbBlqvC4OTAWXjLpToM0T4iaS4O4fyX6d1Eo@z>
+Message-ID: <20190411130051.6eQ3bf7OuK1k7RF8GX_FNwxe_9PnZuuBGYAi6r4aH3Y@z>
 
-The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
-introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
-cpuidle_devices is undefined there.
+On 05/04/2019 20:24, Andrey Smirnov wrote:
 
-drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
-drivers/base/power/domain_governor.c:263: undefined reference to
-'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
-R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
-bind externally can not be used when making a shared object; recompile
-with -fPIC
-drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
-relocation: unsupported relocation
-drivers/base/power/domain_governor.c:263: undefined reference to
-'cpuidle_devices'
-make: *** [Makefile:1047: vmlinux] Error 1
+[ ... ]
 
-Signed-off-by: Qian Cai <cai@lca.pw>
----
- drivers/base/power/domain_governor.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+>>> +static const struct regmap_range qiriq_yes_ranges[] = {
+>>> +     regmap_reg_range(REGS_TMR, REGS_TSCFGR),
+>>> +     regmap_reg_range(REGS_TTRnCR(0), REGS_TTRnCR(3)),
+>>> +     /* Read only registers below */
+>>> +     regmap_reg_range(REGS_TRITSR(0), REGS_TRITSR(15)),
+>>> +};
+>>> +
+>>> +static const struct regmap_access_table qiriq_wr_table = {
+>>> +     .yes_ranges     = qiriq_yes_ranges,
+>>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges) - 1,
+>>> +};
+>>> +
+>>> +static const struct regmap_access_table qiriq_rd_table = {
+>>> +     .yes_ranges     = qiriq_yes_ranges,
+>>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges),
+>>> +};
+>>
+>> As the table are the same, it would make sense to fold both structure to
+>> a single one (and s/qiriq/qoriq/ ?)
+>>
+> 
+> Writable registers are a subset of readable registers and n_yes_ranges
+> is different between the two. Not sure how I could fold the two into a
+> single struct.
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 39c8a699cb53..252d88fcf760 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
- 	 */
- 	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
- 	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
--		dev = per_cpu(cpuidle_devices, cpu);
--		if (dev) {
--			next_hrtimer = READ_ONCE(dev->next_hrtimer);
--			if (ktime_before(next_hrtimer, domain_wakeup))
--				domain_wakeup = next_hrtimer;
-+		if (IS_ENABLED(CONFIG_CPU_IDLE)) {
-+			dev = per_cpu(cpuidle_devices, cpu);
-+			if (dev) {
-+				next_hrtimer = READ_ONCE(dev->next_hrtimer);
-+				if (ktime_before(next_hrtimer, domain_wakeup))
-+					domain_wakeup = next_hrtimer;
-+			}
- 		}
- 	}
- 
+Right, never mind my comment.
+
+
+
+
 -- 
-2.20.1 (Apple Git-117)
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
