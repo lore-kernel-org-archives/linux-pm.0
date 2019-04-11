@@ -1,17 +1,20 @@
 From: Frank Lee <tiny.windzz@gmail.com>
 Subject: Re: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-Date: Fri, 12 Apr 2019 02:36:42 +0800
-Message-ID: <CAEExFWvcoK+C=_+knCw4nZQso2Frz0-CpbECQbVzKPS11P9RUw@mail.gmail.com>
+Date: Fri, 12 Apr 2019 02:41:41 +0800
+Message-ID: <CAEExFWszJ36=5+2iKE1a7Zgoscn4DYH+=DiPx0si+e9C_5K=yw@mail.gmail.com>
 References: <20190410174139.20012-1-tiny.windzz@gmail.com> <20190410174139.20012-2-tiny.windzz@gmail.com>
- <20190411080955.ysp3wreifwqrpn3n@flea>
+ <20190411080955.ysp3wreifwqrpn3n@flea> <CAEExFWvcoK+C=_+knCw4nZQso2Frz0-CpbECQbVzKPS11P9RUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/mixed; boundary="0000000000002a09b20586458a8c"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190411080955.ysp3wreifwqrpn3n@flea>
+In-Reply-To: <CAEExFWvcoK+C=_+knCw4nZQso2Frz0-CpbECQbVzKPS11P9RUw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Maxime Ripard <maxime.ripard@bootlin.com>
 Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
+
+--0000000000002a09b20586458a8c
+Content-Type: text/plain; charset="UTF-8"
 
 Hi,
     Changes:
@@ -20,243 +23,108 @@ Hi,
     3. Update soc_bin xlate. (LINE:484
 https://github.com/Allwinner-Homlet/H6-BSP4.9-linux/blob/master/drivers/soc/sunxi/sunxi-sid.c)
 
+    (maybe attach a file is better)
+
     Now temporarily consider it as supporting only one platform.
     Anything else to modify?
 
 THx,
 Yangtao
 
-diff --git a/drivers/cpufreq/sun5i-cpufreq-nvmem.c
-b/drivers/cpufreq/sun5i-cpufreq-nvmem.c
-new file mode 100644
-index 000000000000..08a8f99463ba
---- /dev/null
-+++ b/drivers/cpufreq/sun5i-cpufreq-nvmem.c
-@@ -0,0 +1,225 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Allwinner CPUFreq nvmem based driver
-+ *
-+ * The sun5i-cpufreq-nvmem driver reads the efuse value from the SoC to
-+ * provide the OPP framework with required information.
-+ *
-+ * Copyright (C) 2019 Yangtao Li <tiny.windzz@gmail.com>
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+
-+#define MAX_NAME_LEN 7
-+
-+#define NVMEM_MASK 0x7
-+#define NVMEM_SHIFT 5
-+
-+static struct platform_device *cpufreq_dt_pdev, *sunxi_cpufreq_pdev;
-+
-+/**
-+ * sunxi_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-+ * @versions: Set to the value parsed from efuse
-+ *
-+ * Returns 0 if success.
-+ */
-+static int sunxi_cpufreq_get_efuse(u32 *versions)
-+{
-+ struct nvmem_cell *speedbin_nvmem;
-+ struct device_node *np;
-+ struct device *cpu_dev;
-+ u32 *speedbin, efuse_value;
-+ size_t len;
-+ int ret;
-+
-+ cpu_dev = get_cpu_device(0);
-+ if (!cpu_dev)
-+ return -ENODEV;
-+
-+ np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-+ if (!np)
-+ return -ENOENT;
-+
-+ ret = of_device_is_compatible(np,
-+ "allwinner,sun50i-h6-operating-points");
-+ if (!ret) {
-+ of_node_put(np);
-+ return -ENOENT;
-+ }
-+
-+ speedbin_nvmem = of_nvmem_cell_get(np, NULL);
-+ of_node_put(np);
-+ if (IS_ERR(speedbin_nvmem)) {
-+ if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
-+ pr_err("Could not get nvmem cell: %ld\n",
-+ PTR_ERR(speedbin_nvmem));
-+ return PTR_ERR(speedbin_nvmem);
-+ }
-+
-+ speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-+ nvmem_cell_put(speedbin_nvmem);
-+ if (IS_ERR(speedbin))
-+ return PTR_ERR(speedbin);
-+
-+ efuse_value = (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
-+ switch (efuse_value) {
-+ case 0b0001:
-+ *versions = 1;
-+ break;
-+ case 0b0011:
-+ *versions = 2;
-+ break;
-+ default:
-+ /*
-+ * For other situations, we treat it as bin0.
-+ * This vf table can be run for any good cpu.
-+ */
-+ *versions = 0;
-+ break;
-+ }
-+
-+ kfree(speedbin);
-+ return 0;
-+};
-+
-+static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
-+{
-+ struct opp_table **opp_tables;
-+ char name[MAX_NAME_LEN];
-+ unsigned int cpu;
-+ u32 speed = 0;
-+ int ret;
-+
-+ opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-+      GFP_KERNEL);
-+ if (!opp_tables)
-+ return -ENOMEM;
-+
-+ ret = sunxi_cpufreq_get_efuse(&speed);
-+ if (ret)
-+ return ret;
-+
-+ snprintf(name, MAX_NAME_LEN, "speed%d", speed);
-+
-+ for_each_possible_cpu(cpu) {
-+ struct device *cpu_dev = get_cpu_device(cpu);
-+
-+ if (cpu_dev == NULL) {
-+ ret = -ENODEV;
-+ goto free_opp;
-+ }
-+
-+ opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
-+ if (IS_ERR(opp_tables[cpu])) {
-+ ret = PTR_ERR(opp_tables[cpu]);
-+ pr_err("Failed to set prop name\n");
-+ goto free_opp;
-+ }
-+ }
-+
-+ cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-+   NULL, 0);
-+ if (!IS_ERR(cpufreq_dt_pdev)) {
-+ platform_set_drvdata(pdev, opp_tables);
-+ return 0;
-+ }
-+
-+ ret = PTR_ERR(cpufreq_dt_pdev);
-+ pr_err("Failed to register platform device\n");
-+
-+free_opp:
-+ for_each_possible_cpu(cpu) {
-+ if (IS_ERR_OR_NULL(opp_tables[cpu]))
-+ break;
-+ dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+ }
-+ kfree(opp_tables);
-+
-+ return ret;
-+}
-+
-+static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
-+{
-+ struct opp_table **opp_tables = platform_get_drvdata(pdev);
-+ unsigned int cpu;
-+
-+ platform_device_unregister(cpufreq_dt_pdev);
-+
-+ for_each_possible_cpu(cpu)
-+ dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+
-+ kfree(opp_tables);
-+
-+ return 0;
-+}
-+
-+static struct platform_driver sunxi_cpufreq_driver = {
-+ .probe = sunxi_cpufreq_nvmem_probe,
-+ .remove = sunxi_cpufreq_nvmem_remove,
-+ .driver = {
-+ .name = "sunxi-cpufreq-nvmem",
-+ },
-+};
-+
-+static const struct of_device_id sunxi_cpufreq_match_list[] = {
-+ { .compatible = "allwinner,sun50i-h6" },
-+ {}
-+};
-+
-+static const struct of_device_id *sunxi_cpufreq_match_node(void)
-+{
-+ const struct of_device_id *match;
-+ struct device_node *np;
-+
-+ np = of_find_node_by_path("/");
-+ match = of_match_node(sunxi_cpufreq_match_list, np);
-+ of_node_put(np);
-+
-+ return match;
-+}
-+
-+/*
-+ * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
-+ * all the real activity is done in the probe, which may be defered as well.
-+ * The init here is only registering the driver and the platform device.
-+ */
-+static int __init sunxi_cpufreq_init(void)
-+{
-+ const struct of_device_id *match;
-+ int ret;
-+
-+ match = sunxi_cpufreq_match_node();
-+ if (!match)
-+ return -ENODEV;
-+
-+ ret = platform_driver_register(&sunxi_cpufreq_driver);
-+ if (unlikely(ret < 0))
-+ return ret;
-+
-+ sunxi_cpufreq_pdev = platform_device_register_simple(
-+ "sunxi-cpufreq-nvmem", -1, NULL, 0);
-+ ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
-+ if (ret == 0)
-+ return 0;
-+
-+ platform_driver_unregister(&sunxi_cpufreq_driver);
-+ return ret;
-+}
-+module_init(sunxi_cpufreq_init);
-+
-+static void __exit sunxi_cpufreq_exit(void)
-+{
-+ platform_device_unregister(sunxi_cpufreq_pdev);
-+ platform_driver_unregister(&sunxi_cpufreq_driver);
-+}
-+module_exit(sunxi_cpufreq_exit);
-+
-+MODULE_DESCRIPTION("Sunxi cpufreq driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.17.1
+--0000000000002a09b20586458a8c
+Content-Type: text/x-csrc; charset="US-ASCII"; name="sun5i-cpufreq-nvmem.c"
+Content-Disposition: attachment; filename="sun5i-cpufreq-nvmem.c"
+Content-Transfer-Encoding: base64
+Content-ID: <f_juczo34n0>
+X-Attachment-Id: f_juczo34n0
+
+Ly8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjAKLyoKICogQWxsd2lubmVyIENQVUZy
+ZXEgbnZtZW0gYmFzZWQgZHJpdmVyCiAqCiAqIFRoZSBzdW41aS1jcHVmcmVxLW52bWVtIGRyaXZl
+ciByZWFkcyB0aGUgZWZ1c2UgdmFsdWUgZnJvbSB0aGUgU29DIHRvCiAqIHByb3ZpZGUgdGhlIE9Q
+UCBmcmFtZXdvcmsgd2l0aCByZXF1aXJlZCBpbmZvcm1hdGlvbi4KICoKICogQ29weXJpZ2h0IChD
+KSAyMDE5IFlhbmd0YW8gTGkgPHRpbnkud2luZHp6QGdtYWlsLmNvbT4KICovCgojZGVmaW5lIHBy
+X2ZtdChmbXQpIEtCVUlMRF9NT0ROQU1FICI6ICIgZm10CgojaW5jbHVkZSA8bGludXgvbW9kdWxl
+Lmg+CiNpbmNsdWRlIDxsaW51eC9udm1lbS1jb25zdW1lci5oPgojaW5jbHVkZSA8bGludXgvb2Zf
+ZGV2aWNlLmg+CiNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KI2luY2x1ZGUgPGxp
+bnV4L3BtX29wcC5oPgojaW5jbHVkZSA8bGludXgvc2xhYi5oPgoKI2RlZmluZSBNQVhfTkFNRV9M
+RU4JNwoKI2RlZmluZSBOVk1FTV9NQVNLCTB4NwojZGVmaW5lIE5WTUVNX1NISUZUCTUKCnN0YXRp
+YyBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpjcHVmcmVxX2R0X3BkZXYsICpzdW54aV9jcHVmcmVx
+X3BkZXY7CgovKioKICogc3VueGlfY3B1ZnJlcV9nZXRfZWZ1c2UoKSAtIFBhcnNlIGFuZCByZXR1
+cm4gZWZ1c2UgdmFsdWUgcHJlc2VudCBvbiBTb0MKICogQHZlcnNpb25zOiBTZXQgdG8gdGhlIHZh
+bHVlIHBhcnNlZCBmcm9tIGVmdXNlCiAqCiAqIFJldHVybnMgMCBpZiBzdWNjZXNzLgogKi8Kc3Rh
+dGljIGludCBzdW54aV9jcHVmcmVxX2dldF9lZnVzZSh1MzIgKnZlcnNpb25zKQp7CglzdHJ1Y3Qg
+bnZtZW1fY2VsbCAqc3BlZWRiaW5fbnZtZW07CglzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOwoJc3Ry
+dWN0IGRldmljZSAqY3B1X2RldjsKCXUzMiAqc3BlZWRiaW4sIGVmdXNlX3ZhbHVlOwoJc2l6ZV90
+IGxlbjsKCWludCByZXQ7CgoJY3B1X2RldiA9IGdldF9jcHVfZGV2aWNlKDApOwoJaWYgKCFjcHVf
+ZGV2KQoJCXJldHVybiAtRU5PREVWOwoKCW5wID0gZGV2X3BtX29wcF9vZl9nZXRfb3BwX2Rlc2Nf
+bm9kZShjcHVfZGV2KTsKCWlmICghbnApCgkJcmV0dXJuIC1FTk9FTlQ7CgoJcmV0ID0gb2ZfZGV2
+aWNlX2lzX2NvbXBhdGlibGUobnAsCgkJImFsbHdpbm5lcixzdW41MGktaDYtb3BlcmF0aW5nLXBv
+aW50cyIpOwoJaWYgKCFyZXQpIHsKCQlvZl9ub2RlX3B1dChucCk7CgkJcmV0dXJuIC1FTk9FTlQ7
+Cgl9CgoJc3BlZWRiaW5fbnZtZW0gPSBvZl9udm1lbV9jZWxsX2dldChucCwgTlVMTCk7CglvZl9u
+b2RlX3B1dChucCk7CglpZiAoSVNfRVJSKHNwZWVkYmluX252bWVtKSkgewoJCWlmIChQVFJfRVJS
+KHNwZWVkYmluX252bWVtKSAhPSAtRVBST0JFX0RFRkVSKQoJCQlwcl9lcnIoIkNvdWxkIG5vdCBn
+ZXQgbnZtZW0gY2VsbDogJWxkXG4iLAoJCQlQVFJfRVJSKHNwZWVkYmluX252bWVtKSk7CgkJcmV0
+dXJuIFBUUl9FUlIoc3BlZWRiaW5fbnZtZW0pOwoJfQoKCXNwZWVkYmluID0gbnZtZW1fY2VsbF9y
+ZWFkKHNwZWVkYmluX252bWVtLCAmbGVuKTsKCW52bWVtX2NlbGxfcHV0KHNwZWVkYmluX252bWVt
+KTsKCWlmIChJU19FUlIoc3BlZWRiaW4pKQoJCXJldHVybiBQVFJfRVJSKHNwZWVkYmluKTsKCgll
+ZnVzZV92YWx1ZSA9ICgqc3BlZWRiaW4gPj4gTlZNRU1fU0hJRlQpICYgTlZNRU1fTUFTSzsKCXN3
+aXRjaCAoZWZ1c2VfdmFsdWUpIHsKCWNhc2UgMGIwMDAxOgoJCSp2ZXJzaW9ucyA9IDE7CgkJYnJl
+YWs7CgljYXNlIDBiMDAxMToKCQkqdmVyc2lvbnMgPSAyOwoJCWJyZWFrOwoJZGVmYXVsdDoKCQkv
+KgoJCSAqIEZvciBvdGhlciBzaXR1YXRpb25zLCB3ZSB0cmVhdCBpdCBhcyBiaW4wLgoJCSAqIFRo
+aXMgdmYgdGFibGUgY2FuIGJlIHJ1biBmb3IgYW55IGdvb2QgY3B1LgoJCSAqLwoJCSp2ZXJzaW9u
+cyA9IDA7CgkJYnJlYWs7Cgl9CgoJa2ZyZWUoc3BlZWRiaW4pOwoJcmV0dXJuIDA7Cn07CgpzdGF0
+aWMgaW50IHN1bnhpX2NwdWZyZXFfbnZtZW1fcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAq
+cGRldikKewoJc3RydWN0IG9wcF90YWJsZSAqKm9wcF90YWJsZXM7CgljaGFyIG5hbWVbTUFYX05B
+TUVfTEVOXTsKCXVuc2lnbmVkIGludCBjcHU7Cgl1MzIgc3BlZWQgPSAwOwoJaW50IHJldDsKCglv
+cHBfdGFibGVzID0ga2NhbGxvYyhudW1fcG9zc2libGVfY3B1cygpLCBzaXplb2YoKm9wcF90YWJs
+ZXMpLAoJCQkgICAgIEdGUF9LRVJORUwpOwoJaWYgKCFvcHBfdGFibGVzKQoJCXJldHVybiAtRU5P
+TUVNOwoKCXJldCA9IHN1bnhpX2NwdWZyZXFfZ2V0X2VmdXNlKCZzcGVlZCk7CglpZiAocmV0KQoJ
+CXJldHVybiByZXQ7CgoJc25wcmludGYobmFtZSwgTUFYX05BTUVfTEVOLCAic3BlZWQlZCIsIHNw
+ZWVkKTsKCglmb3JfZWFjaF9wb3NzaWJsZV9jcHUoY3B1KSB7CgkJc3RydWN0IGRldmljZSAqY3B1
+X2RldiA9IGdldF9jcHVfZGV2aWNlKGNwdSk7CgoJCWlmIChjcHVfZGV2ID09IE5VTEwpIHsKCQkJ
+cmV0ID0gLUVOT0RFVjsKCQkJZ290byBmcmVlX29wcDsKCQl9CgoJCW9wcF90YWJsZXNbY3B1XSA9
+IGRldl9wbV9vcHBfc2V0X3Byb3BfbmFtZShjcHVfZGV2LCBuYW1lKTsKCQlpZiAoSVNfRVJSKG9w
+cF90YWJsZXNbY3B1XSkpIHsKCQkJcmV0ID0gUFRSX0VSUihvcHBfdGFibGVzW2NwdV0pOwoJCQlw
+cl9lcnIoIkZhaWxlZCB0byBzZXQgcHJvcCBuYW1lXG4iKTsKCQkJZ290byBmcmVlX29wcDsKCQl9
+Cgl9CgoJY3B1ZnJlcV9kdF9wZGV2ID0gcGxhdGZvcm1fZGV2aWNlX3JlZ2lzdGVyX3NpbXBsZSgi
+Y3B1ZnJlcS1kdCIsIC0xLAoJCQkJCQkJICBOVUxMLCAwKTsKCWlmICghSVNfRVJSKGNwdWZyZXFf
+ZHRfcGRldikpIHsKCQlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBvcHBfdGFibGVzKTsKCQly
+ZXR1cm4gMDsKCX0KCglyZXQgPSBQVFJfRVJSKGNwdWZyZXFfZHRfcGRldik7Cglwcl9lcnIoIkZh
+aWxlZCB0byByZWdpc3RlciBwbGF0Zm9ybSBkZXZpY2VcbiIpOwoKZnJlZV9vcHA6Cglmb3JfZWFj
+aF9wb3NzaWJsZV9jcHUoY3B1KSB7CgkJaWYgKElTX0VSUl9PUl9OVUxMKG9wcF90YWJsZXNbY3B1
+XSkpCgkJCWJyZWFrOwoJCWRldl9wbV9vcHBfcHV0X3Byb3BfbmFtZShvcHBfdGFibGVzW2NwdV0p
+OwoJfQoJa2ZyZWUob3BwX3RhYmxlcyk7CgoJcmV0dXJuIHJldDsKfQoKc3RhdGljIGludCBzdW54
+aV9jcHVmcmVxX252bWVtX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQp7Cglz
+dHJ1Y3Qgb3BwX3RhYmxlICoqb3BwX3RhYmxlcyA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYp
+OwoJdW5zaWduZWQgaW50IGNwdTsKCglwbGF0Zm9ybV9kZXZpY2VfdW5yZWdpc3RlcihjcHVmcmVx
+X2R0X3BkZXYpOwoKCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpCgkJZGV2X3BtX29wcF9wdXRf
+cHJvcF9uYW1lKG9wcF90YWJsZXNbY3B1XSk7CgoJa2ZyZWUob3BwX3RhYmxlcyk7CgoJcmV0dXJu
+IDA7Cn0KCnN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIHN1bnhpX2NwdWZyZXFfZHJpdmVy
+ID0gewoJLnByb2JlID0gc3VueGlfY3B1ZnJlcV9udm1lbV9wcm9iZSwKCS5yZW1vdmUgPSBzdW54
+aV9jcHVmcmVxX252bWVtX3JlbW92ZSwKCS5kcml2ZXIgPSB7CgkJLm5hbWUgPSAic3VueGktY3B1
+ZnJlcS1udm1lbSIsCgl9LAp9OwoKc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgc3Vu
+eGlfY3B1ZnJlcV9tYXRjaF9saXN0W10gPSB7Cgl7IC5jb21wYXRpYmxlID0gImFsbHdpbm5lcixz
+dW41MGktaDYiIH0sCgl7fQp9OwoKc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgKnN1
+bnhpX2NwdWZyZXFfbWF0Y2hfbm9kZSh2b2lkKQp7Cgljb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lk
+ICptYXRjaDsKCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CgoJbnAgPSBvZl9maW5kX25vZGVfYnlf
+cGF0aCgiLyIpOwoJbWF0Y2ggPSBvZl9tYXRjaF9ub2RlKHN1bnhpX2NwdWZyZXFfbWF0Y2hfbGlz
+dCwgbnApOwoJb2Zfbm9kZV9wdXQobnApOwoKCXJldHVybiBtYXRjaDsKfQoKLyoKICogU2luY2Ug
+dGhlIGRyaXZlciBkZXBlbmRzIG9uIG52bWVtIGRyaXZlcnMsIHdoaWNoIG1heSByZXR1cm4gRVBS
+T0JFX0RFRkVSLAogKiBhbGwgdGhlIHJlYWwgYWN0aXZpdHkgaXMgZG9uZSBpbiB0aGUgcHJvYmUs
+IHdoaWNoIG1heSBiZSBkZWZlcmVkIGFzIHdlbGwuCiAqIFRoZSBpbml0IGhlcmUgaXMgb25seSBy
+ZWdpc3RlcmluZyB0aGUgZHJpdmVyIGFuZCB0aGUgcGxhdGZvcm0gZGV2aWNlLgogKi8Kc3RhdGlj
+IGludCBfX2luaXQgc3VueGlfY3B1ZnJlcV9pbml0KHZvaWQpCnsKCWNvbnN0IHN0cnVjdCBvZl9k
+ZXZpY2VfaWQgKm1hdGNoOwoJaW50IHJldDsKCgltYXRjaCA9IHN1bnhpX2NwdWZyZXFfbWF0Y2hf
+bm9kZSgpOwoJaWYgKCFtYXRjaCkKCQlyZXR1cm4gLUVOT0RFVjsKCglyZXQgPSBwbGF0Zm9ybV9k
+cml2ZXJfcmVnaXN0ZXIoJnN1bnhpX2NwdWZyZXFfZHJpdmVyKTsKCWlmICh1bmxpa2VseShyZXQg
+PCAwKSkKCQlyZXR1cm4gcmV0OwoKCXN1bnhpX2NwdWZyZXFfcGRldiA9IHBsYXRmb3JtX2Rldmlj
+ZV9yZWdpc3Rlcl9zaW1wbGUoCgkJInN1bnhpLWNwdWZyZXEtbnZtZW0iLCAtMSwgTlVMTCwgMCk7
+CglyZXQgPSBQVFJfRVJSX09SX1pFUk8oc3VueGlfY3B1ZnJlcV9wZGV2KTsKCWlmIChyZXQgPT0g
+MCkKCQlyZXR1cm4gMDsKCglwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3Rlcigmc3VueGlfY3B1ZnJl
+cV9kcml2ZXIpOwoJcmV0dXJuIHJldDsKfQptb2R1bGVfaW5pdChzdW54aV9jcHVmcmVxX2luaXQp
+OwoKc3RhdGljIHZvaWQgX19leGl0IHN1bnhpX2NwdWZyZXFfZXhpdCh2b2lkKQp7CglwbGF0Zm9y
+bV9kZXZpY2VfdW5yZWdpc3RlcihzdW54aV9jcHVmcmVxX3BkZXYpOwoJcGxhdGZvcm1fZHJpdmVy
+X3VucmVnaXN0ZXIoJnN1bnhpX2NwdWZyZXFfZHJpdmVyKTsKfQptb2R1bGVfZXhpdChzdW54aV9j
+cHVmcmVxX2V4aXQpOwoKTU9EVUxFX0RFU0NSSVBUSU9OKCJTdW54aSBjcHVmcmVxIGRyaXZlciIp
+OwpNT0RVTEVfTElDRU5TRSgiR1BMIHYyIik7Cg==
+--0000000000002a09b20586458a8c--
