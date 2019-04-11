@@ -1,346 +1,50 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-Date: Thu, 11 Apr 2019 09:33:35 +0530
-Message-ID: <20190411040335.qckm7zyiqwbanykx@vireshk-i7>
-References: <20190410174139.20012-1-tiny.windzz@gmail.com>
- <20190410174139.20012-2-tiny.windzz@gmail.com>
+From: Han Nandor <nandor.han@vaisala.com>
+Subject: [PATCH v2 0/2] Use NVMEM as reboot-mode write interface
+Date: Thu, 11 Apr 2019 05:54:03 +0000
+Message-ID: <20190411055341.9263-1-nandor.han@vaisala.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190410174139.20012-2-tiny.windzz@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: Han Nandor <nandor.han@vaisala.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-04-19, 13:41, Yangtao Li wrote:
-> For some SoCs, the CPU frequency subset and voltage value of each OPP
-> varies based on the silicon variant in use. The sunxi-cpufreq-nvmem
-> driver reads the efuse value from the SoC to provide the OPP framework
-> with required information.
-> 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  MAINTAINERS                           |   7 +
->  drivers/cpufreq/Kconfig.arm           |  10 ++
->  drivers/cpufreq/Makefile              |   1 +
->  drivers/cpufreq/cpufreq-dt-platdev.c  |   2 +
->  drivers/cpufreq/sunxi-cpufreq-nvmem.c | 232 ++++++++++++++++++++++++++
->  5 files changed, 252 insertions(+)
->  create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 391405091c6b..bfd18ba6aa1a 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -667,6 +667,13 @@ S:	Maintained
->  F:	Documentation/i2c/busses/i2c-ali1563
->  F:	drivers/i2c/busses/i2c-ali1563.c
->  
-> +ALLWINNER CPUFREQ DRIVER
-> +M:	Yangtao Li <tiny.windzz@gmail.com>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
-> +F:	drivers/cpufreq/sunxi-cpufreq-nvmem.c
-> +
->  ALLWINNER SECURITY SYSTEM
->  M:	Corentin Labbe <clabbe.montjoie@gmail.com>
->  L:	linux-crypto@vger.kernel.org
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 179a1d302f48..25933c4321a7 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -18,6 +18,16 @@ config ACPI_CPPC_CPUFREQ
->  
->  	  If in doubt, say N.
->  
-> +config ARM_ALLWINNER_CPUFREQ_NVMEM
-> +	tristate "Allwinner nvmem based CPUFreq"
-> +	depends on ARCH_SUNXI
-> +	depends on NVMEM_SUNXI_SID
-> +	select PM_OPP
-> +	help
-> +	  This adds the CPUFreq driver for Allwinner nvmem based SoC.
-> +
-> +	  If in doubt, say N.
-> +
->  config ARM_ARMADA_37XX_CPUFREQ
->  	tristate "Armada 37xx CPUFreq support"
->  	depends on ARCH_MVEBU && CPUFREQ_DT
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 689b26c6f949..da28de67613c 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -78,6 +78,7 @@ obj-$(CONFIG_ARM_SCMI_CPUFREQ)		+= scmi-cpufreq.o
->  obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
-> +obj-$(CONFIG_ARM_ALLWINNER_CPUFREQ_NVMEM) += sunxi-cpufreq-nvmem.o
->  obj-$(CONFIG_ARM_TANGO_CPUFREQ)		+= tango-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 47729a22c159..50e7810f3a28 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -105,6 +105,8 @@ static const struct of_device_id whitelist[] __initconst = {
->   * platforms using "operating-points-v2" property.
->   */
->  static const struct of_device_id blacklist[] __initconst = {
-> +	{ .compatible = "allwinner,sun50i-h6", },
-> +
->  	{ .compatible = "calxeda,highbank", },
->  	{ .compatible = "calxeda,ecx-2000", },
->  
-> diff --git a/drivers/cpufreq/sunxi-cpufreq-nvmem.c b/drivers/cpufreq/sunxi-cpufreq-nvmem.c
-> new file mode 100644
-> index 000000000000..6bf4755d00d9
-> --- /dev/null
-> +++ b/drivers/cpufreq/sunxi-cpufreq-nvmem.c
-> @@ -0,0 +1,232 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Allwinner CPUFreq nvmem based driver
-> + *
-> + * The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> + * provide the OPP framework with required information.
-> + *
-> + * Copyright (C) 2019 Yangtao Li <tiny.windzz@gmail.com>
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/module.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +
-> +#define MAX_NAME_LEN      7
-> +
-> +struct sunxi_cpufreq_soc_data {
-> +	u32 (*efuse_xlate)(const struct sunxi_cpufreq_soc_data *soc_data,
-> +			   u32 efuse);
-> +	u32 nvmem_mask;
-> +	u32 nvmem_shift;
-> +};
-> +
-> +static struct platform_device *cpufreq_dt_pdev, *sunxi_cpufreq_pdev;
-> +
-> +static u32 sun50i_efuse_xlate(const struct sunxi_cpufreq_soc_data *soc_data,
-> +			      u32 efuse)
-> +{
-> +	return (efuse >> soc_data->nvmem_shift) & soc_data->nvmem_mask;
-> +}
-> +
-> +/**
-> + * sunxi_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-> + * @soc_data: Pointer to sunxi_cpufreq_soc_data context
-> + * @versions: Set to the value parsed from efuse
-> + *
-> + * Returns 0 if success.
-> + */
-> +static int sunxi_cpufreq_get_efuse(const struct sunxi_cpufreq_soc_data *soc_data,
-> +				   u32 *versions)
-> +{
-> +	struct nvmem_cell *speedbin_nvmem;
-> +	struct device_node *np;
-> +	struct device *cpu_dev;
-> +	u32 *speedbin;
-> +	size_t len;
-> +	int ret;
-> +
-> +	cpu_dev = get_cpu_device(0);
-> +	if (!cpu_dev)
-> +		return -ENODEV;
-> +
-> +	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-> +	if (!np)
-> +		return -ENOENT;
-> +
-> +	ret = of_device_is_compatible(np, "allwinner,cpu-operating-points-v2");
-> +	if (!ret) {
-> +		of_node_put(np);
-> +		return -ENOENT;
-> +	}
-> +
-> +	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
-> +	of_node_put(np);
-> +	if (IS_ERR(speedbin_nvmem)) {
-> +		if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
-> +			pr_err("Could not get nvmem cell: %ld\n",
-> +			PTR_ERR(speedbin_nvmem));
-> +		return PTR_ERR(speedbin_nvmem);
-> +	}
-> +
-> +	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-> +	nvmem_cell_put(speedbin_nvmem);
-> +	if (IS_ERR(speedbin))
-> +		return PTR_ERR(speedbin);
-> +
-> +	*versions = soc_data->efuse_xlate(soc_data, *speedbin);
-> +
-> +	kfree(speedbin);
-> +	return 0;
-> +};
-> +
-> +static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
-> +	.efuse_xlate = sun50i_efuse_xlate,
-> +	.nvmem_mask = 0x7,
-> +	.nvmem_shift = 5,
-> +};
-> +
-> +static const struct of_device_id sunxi_cpufreq_match_list[] = {
-> +	{ .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
-> +	{}
-> +};
-> +
-> +static const struct of_device_id *sunxi_cpufreq_match_node(void)
-> +{
-> +	struct device_node *np;
-> +	const struct of_device_id *match;
-> +
-> +	np = of_find_node_by_path("/");
-> +	match = of_match_node(sunxi_cpufreq_match_list, np);
-> +	of_node_put(np);
-> +
-> +	return match;
-> +}
-> +
-
-As I said in the previous version, this should have been moved to somewhere
-below. i.e. right above the routine that needs it.
-
-> +static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
-> +{
-> +	struct opp_table **opp_tables;
-> +	const struct of_device_id *match;
-> +	char name[MAX_NAME_LEN];
-> +	unsigned int cpu;
-> +	u32 speed = 0;
-> +	int ret;
-> +
-> +	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-> +			     GFP_KERNEL);
-> +	if (!opp_tables)
-> +		return -ENOMEM;
-> +
-> +	match = dev_get_platdata(&pdev->dev);
-
-Also, you should have just passed match->data instead of match here.
-
-> +	if (!match)
-> +		return -EINVAL;
-> +
-> +	ret = sunxi_cpufreq_get_efuse(match->data, &speed);
-> +	if (ret)
-> +		return ret;
-> +
-> +	snprintf(name, MAX_NAME_LEN, "speed%d", speed);
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		struct device *cpu_dev = get_cpu_device(cpu);
-> +
-> +		if (NULL == cpu_dev) {
-> +			ret = -ENODEV;
-> +			goto free_opp;
-> +		}
-> +
-> +		opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
-> +		if (IS_ERR(opp_tables[cpu])) {
-> +			ret = PTR_ERR(opp_tables[cpu]);
-> +			pr_err("Failed to set prop name\n");
-> +			goto free_opp;
-> +		}
-> +	}
-> +
-> +	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-> +							  NULL, 0);
-> +	if (!IS_ERR(cpufreq_dt_pdev)) {
-> +		platform_set_drvdata(pdev, opp_tables);
-> +		return 0;
-> +	}
-> +
-> +	ret = PTR_ERR(cpufreq_dt_pdev);
-> +	pr_err("Failed to register platform device\n");
-> +
-> +free_opp:
-> +	for_each_possible_cpu(cpu) {
-> +		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-> +			break;
-> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-> +	}
-> +	kfree(opp_tables);
-> +
-> +	return ret;
-> +}
-> +
-> +static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
-> +{
-> +	struct opp_table **opp_tables = platform_get_drvdata(pdev);
-> +	unsigned int cpu;
-> +
-> +	platform_device_unregister(cpufreq_dt_pdev);
-> +
-> +	for_each_possible_cpu(cpu)
-> +		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-> +
-> +	kfree(opp_tables);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver sunxi_cpufreq_driver = {
-> +	.probe = sunxi_cpufreq_nvmem_probe,
-> +	.remove = sunxi_cpufreq_nvmem_remove,
-> +	.driver = {
-> +		.name = "sunxi-cpufreq-nvmem",
-> +	},
-> +};
-> +
-> +/*
-> + * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
-> + * all the real activity is done in the probe, which may be defered as well.
-> + * The init here is only registering the driver and the platform device.
-> + */
-> +static int __init sunxi_cpufreq_init(void)
-> +{
-> +	const struct of_device_id *match;
-> +	int ret;
-> +
-> +	match = sunxi_cpufreq_match_node();
-> +	if (!match)
-> +		return -ENODEV;
-> +
-> +	ret = platform_driver_register(&sunxi_cpufreq_driver);
-> +	if (unlikely(ret < 0))
-> +		return ret;
-> +
-> +	sunxi_cpufreq_pdev = platform_device_register_data(NULL,
-> +		"sunxi-cpufreq-nvmem", -1, match, sizeof(*match));
-> +	ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
-> +	if (0 == ret)
-> +		return 0;
-> +
-> +	platform_driver_unregister(&sunxi_cpufreq_driver);
-> +	return ret;
-> +}
-> +module_init(sunxi_cpufreq_init);
-> +
-> +static void __exit sunxi_cpufreq_exit(void)
-> +{
-> +	platform_device_unregister(sunxi_cpufreq_pdev);
-> +	platform_driver_unregister(&sunxi_cpufreq_driver);
-> +}
-> +module_exit(sunxi_cpufreq_exit);
-> +
-> +MODULE_DESCRIPTION("Sunxi cpufreq driver");
-> +MODULE_LICENSE("GPL v2");
-> -- 
-> 2.17.0
-
--- 
-viresh
+RGVzY3JpcHRpb24NCi0tLS0tLS0tLS0tDQpFeHRlbmQgdGhlIHJlYm9vdCBtb2RlIGRyaXZlciB0
+byB1c2UgYSBOVk1FTSBjZWxsIGFzIHdyaXRpbmcgaW50ZXJmYWNlLg0KDQpUZXN0aW5nDQotLS0t
+LS0tDQpUaGUgdGVzdGluZyBpcyBkb25lIGJ5IGNvbmZpZ3VyaW5nIERUIGZyb20gYSBjdXN0b20g
+Ym9hcmQuDQpUaGUgTlZNRU0gY2VsbCBpcyBjb25maWd1cmVkIGluIGFuIFJUQyBub24tdm9sYXRp
+bGUgbWVtb3J5Lg0KS2VybmVsOiA0LjE0LjYwICh0aGUgcGF0Y2hzZXQgd2FzIHJlYmFzZWQgb24g
+a2VybmVsIG1hc3RlcikNCg0KRFQgY29uZmlndXJhdGlvbnM6DQpgDQouLi4NCnJlYm9vdC1tb2Rl
+LW52bWVtQDAgew0KICAgIGNvbXBhdGlibGUgPSAic2ltcGxlLW1mZCI7DQogICAgcmVib290LW1v
+ZGUgew0KICAgICAgICBjb21wYXRpYmxlID0gIm52bWVtLXJlYm9vdC1tb2RlIjsNCiAgICAgICAg
+bnZtZW0tY2VsbHMgPSA8JnJlYm9vdF9tb2RlPjsNCiAgICAgICAgbnZtZW0tY2VsbC1uYW1lcyA9
+ICJyZWJvb3QtbW9kZSI7DQoNCiAgICAgICAgbW9kZS10ZXN0ICAgICAgID0gPDB4MjE5NjkxNDc+
+Ow0KICAgIH07DQp9Ow0KLi4uDQpyZWJvb3RfbW9kZTogbnZtZW1fcmVib290X21vZGVAMCB7DQog
+ICAgICAgIHJlZyA9IDwweDAwIDB4ND47DQp9Ow0KLi4uDQpgDQoNCjEuIFJlYm9vdCB0aGUgc3lz
+dGVtIHVzaW5nIHRoZSBjb21tYW5kIGByZWJvb3QgdGVzdGANCg0KMi4gVmVyaWZ5IHRoYXQga2Vy
+bmVsIGxvZ3Mgc2hvdyB0aGF0IHJlYm9vdCB3YXMgZG9uZSBpbiBtb2RlIGB0ZXN0YDoNClBBU1MN
+CmBbICA0MTMuOTU3MTcyXSByZWJvb3Q6IFJlc3RhcnRpbmcgc3lzdGVtIHdpdGggY29tbWFuZCAn
+dGVzdCcgYA0KDQozLiBTdG9wIGluIFUtQm9vdCBhbmQgdmVyaWZ5IHRoYXQgbW9kZSBgdGVzdGAg
+bWFnaWMgdmFsdWUgaXMgcHJlc2VudA0KaW4gUlRDcyBub24tdm9sYXRpbGUgbWVtb3J5OiBQQVNT
+DQoNCktlcm5lbDogNS4xLjAtcmMzDQoNCjEuIENvbmZpZ3VyZSBgYXJjaC9hcm0vY29uZmlncy9p
+bXhfdjZfdjdfZGVmY29uZmlnYCB0byBjb250YWluIA0KYENPTkZJR19OVk1FTV9SRUJPT1RfTU9E
+RT15YA0KMi4gVmVyaWZ5IHRoYXQgS2VybmVsIGNvbXBpbGVzIHN1Y2Nlc3NmdWw6IFBBU1MNCmAN
+Cm1ha2UgQVJDSD1hcm0gQ1JPU1NfQ09NUElMRT1hcm0tbGludXgtZ251LSBpbXhfdjZfdjdfZGVm
+Y29uZmlnIHpJbWFnZQ0KLi4uDQpDQyAgICAgIGRyaXZlcnMvcG93ZXIvcmVzZXQvbnZtZW0tcmVi
+b290LW1vZGUubw0KLi4uDQpLZXJuZWw6IGFyY2gvYXJtL2Jvb3QvekltYWdlIGlzIHJlYWR5DQpg
+DQpDaGFuZ2VzIHNpbmNlIHYxOg0KLS0tLS0tLS0tLS0tLS0tLS0NCiAtIHNwbGl0IHRoZSBkb2N1
+bWVudGF0aW9uIG9uIGEgc2VwYXJhdGUgcGF0Y2gNCiAtIGFkZCBhIG1pc3NpbmcgaGVhZGVyDQoN
+Ck5hbmRvciBIYW4gKDIpOg0KICBwb3dlcjogcmVzZXQ6IG52bWVtLXJlYm9vdC1tb2RlOiB1c2Ug
+TlZNRU0gYXMgcmVib290IG1vZGUgd3JpdGUNCiAgICBpbnRlcmZhY2UNCiAgZHQtYmluZGluZ3M6
+IHBvd2VyOiByZXNldDogYWRkIGRvY3VtZW50IGZvciBOVk1FTSBiYXNlZCByZWJvb3QtbW9kZQ0K
+DQogLi4uL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1tb2RlLnR4dCAgICAgICAgIHwgMzIgKysr
+KysrKysNCiBkcml2ZXJzL3Bvd2VyL3Jlc2V0L0tjb25maWcgICAgICAgICAgICAgICAgICAgfCAg
+OSArKysNCiBkcml2ZXJzL3Bvd2VyL3Jlc2V0L01ha2VmaWxlICAgICAgICAgICAgICAgICAgfCAg
+MSArDQogZHJpdmVycy9wb3dlci9yZXNldC9udm1lbS1yZWJvb3QtbW9kZS5jICAgICAgIHwgNzYg
+KysrKysrKysrKysrKysrKysrKw0KIDQgZmlsZXMgY2hhbmdlZCwgMTE4IGluc2VydGlvbnMoKykN
+CiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bv
+d2VyL3Jlc2V0L252bWVtLXJlYm9vdC1tb2RlLnR4dA0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2
+ZXJzL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1tb2RlLmMNCg0KLS0gDQoyLjE3LjINCg0K
