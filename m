@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 2/8] PM / devfreq: tegra: Replace readl-writel with relaxed versions
-Date: Fri, 12 Apr 2019 01:29:08 +0300
-Message-ID: <20190411222914.25539-3-digetx@gmail.com>
+Subject: [PATCH v1 4/8] PM / devfreq: tegra: Don't release IRQ manually on driver removal
+Date: Fri, 12 Apr 2019 01:29:10 +0300
+Message-ID: <20190411222914.25539-5-digetx@gmail.com>
 References: <20190411222914.25539-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,45 +12,34 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no need to insert memory barrier on each readl/writel
-invocation, hence use the relaxed versions.
+The IRQ releasing is handled by "managed resources", hence there is no
+need to release IRQ manually.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index ec4ff55f5eea..d749399f67ae 100644
+index 6185e7ab20a8..ed67d7a48176 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -191,23 +191,23 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
- 
- static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+@@ -717,7 +717,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ static int tegra_devfreq_remove(struct platform_device *pdev)
  {
--	return readl(tegra->regs + offset);
-+	return readl_relaxed(tegra->regs + offset);
- }
+ 	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+-	int irq = platform_get_irq(pdev, 0);
+ 	u32 val;
+ 	unsigned int i;
  
- static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
- {
--	writel(val, tegra->regs + offset);
-+	writel_relaxed(val, tegra->regs + offset);
- }
+@@ -729,8 +728,6 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
  
- static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
- {
--	return readl(dev->regs + offset);
-+	return readl_relaxed(dev->regs + offset);
- }
+ 	actmon_write_barrier(tegra);
  
- static void device_writel(struct tegra_devfreq_device *dev, u32 val,
- 			  u32 offset)
- {
--	writel(val, dev->regs + offset);
-+	writel_relaxed(val, dev->regs + offset);
- }
+-	devm_free_irq(&pdev->dev, irq, tegra);
+-
+ 	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
  
- static unsigned long do_percent(unsigned long val, unsigned int pct)
+ 	clk_disable_unprepare(tegra->clock);
 -- 
 2.21.0
