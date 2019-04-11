@@ -2,152 +2,126 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F2A3C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:02:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 170C5C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:10:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 24E122133D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:02:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="mIcNQbP7"
+	by mail.kernel.org (Postfix) with ESMTP id E2CAB218D2
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 08:10:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727023AbfDKICF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 04:02:05 -0400
-Received: from mail-eopbgr130041.outbound.protection.outlook.com ([40.107.13.41]:58436
-        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726872AbfDKICE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 Apr 2019 04:02:04 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=xQiYKAZtWWanJOrY9Asi0gXWI6W+6IPhnRltgBk1yGo=;
- b=mIcNQbP7oNwR7zOLlGx9tyBh8HO0T88OeiYn5XFe+m0RfL/hI4m5cjfCdIVigY33gHZD8WpfVx7VH5txmzSmXbtjqUwGko1EMJ9517PmlO82uYtXpJt19vQYgazfHg/c6pecawQfWW5gyrv8Xc5uhIcaUT+Mqb0ifJUvbsIurLA=
-Received: from VI1PR04MB4333.eurprd04.prod.outlook.com (52.134.122.155) by
- VI1PR04MB5773.eurprd04.prod.outlook.com (20.178.127.203) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1792.17; Thu, 11 Apr 2019 08:01:56 +0000
-Received: from VI1PR04MB4333.eurprd04.prod.outlook.com
- ([fe80::b821:e46f:63e4:7b13]) by VI1PR04MB4333.eurprd04.prod.outlook.com
- ([fe80::b821:e46f:63e4:7b13%3]) with mapi id 15.20.1771.016; Thu, 11 Apr 2019
- 08:01:56 +0000
-From:   Andy Tang <andy.tang@nxp.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "shawnguo@kernel.org" <shawnguo@kernel.org>
-CC:     Leo Li <leoyang.li@nxp.com>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>,
-        "edubezval@gmail.com" <edubezval@gmail.com>
-Subject: RE: [PATCH v4] arm64: dts: ls1088a: add one more thermal zone node
-Thread-Topic: [PATCH v4] arm64: dts: ls1088a: add one more thermal zone node
-Thread-Index: AQHU6DwH2AhWFp3fPkOzSEzzKH5KeqYrTYiAgAta/8A=
-Date:   Thu, 11 Apr 2019 08:01:55 +0000
-Message-ID:
- <VI1PR04MB433392E5E650435B0D06AFFFF32F0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190401032905.32711-1-andy.tang@nxp.com>
- <273bb946-8659-8e50-6598-3cffa6dff9f5@linaro.org>
-In-Reply-To: <273bb946-8659-8e50-6598-3cffa6dff9f5@linaro.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=andy.tang@nxp.com; 
-x-originating-ip: [119.31.174.73]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: f49899d0-c310-4c17-6d75-08d6be53f75c
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600139)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:VI1PR04MB5773;
-x-ms-traffictypediagnostic: VI1PR04MB5773:
-x-ms-exchange-purlcount: 3
-x-microsoft-antispam-prvs: <VI1PR04MB5773C6839A73A2E78BF5991AF32F0@VI1PR04MB5773.eurprd04.prod.outlook.com>
-x-forefront-prvs: 00046D390F
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(376002)(39860400002)(396003)(346002)(136003)(366004)(189003)(199004)(13464003)(446003)(14454004)(486006)(508600001)(476003)(11346002)(44832011)(2501003)(316002)(25786009)(54906003)(110136005)(4326008)(305945005)(7736002)(74316002)(71200400001)(8676002)(6246003)(53936002)(6306002)(9686003)(256004)(81166006)(8936002)(81156014)(99286004)(55016002)(2906002)(7696005)(68736007)(71190400001)(3846002)(33656002)(6116002)(86362001)(7416002)(105586002)(106356001)(14444005)(6436002)(186003)(53546011)(6506007)(97736004)(229853002)(76176011)(5660300002)(66066001)(26005)(102836004)(52536014);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB5773;H:VI1PR04MB4333.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: Ec+gARdz798Y38aLXzg9P4o1pxGDJgdywcfDWMIGGRGVyzNjY442in8IZqtZHoa5pkuRhZ5URk7OJWsFlr8bq2wV8To4QxPEWDIIzMIbwIZqm7GiBgiiD0HVAsFD9+dWaaIlig2tyVAwLS+eB+lVpai9X+e/H3VfzqkHM/QVR0IzRpObO5ujuy57biiXIVQ3tmiO6WiPum49K2hvR31/0+HFc9MLjz4d4iU4WoDVm4mx8/U7k8cys/Z7QPk9eYqORRJnryE8PVv+i64xv4yVY1JxPQ4OJRa8pxU5oviiB4LPrtb4G2lwu7misZROwD7NEf/hiSQaO0XOcv6zHK9fv2esLcFEJDwyQ3ycMRPcNcYIpck8JLxE3xB2dy67zcgpVxMz2c4QBbK64T/A9R6qbQB+Y+iZcrJ7hHnROCc0WTM=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+        id S1726607AbfDKIKB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 04:10:01 -0400
+Received: from relay7-d.mail.gandi.net ([217.70.183.200]:49343 "EHLO
+        relay7-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725793AbfDKIKA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 04:10:00 -0400
+X-Originating-IP: 90.88.18.121
+Received: from localhost (aaubervilliers-681-1-63-121.w90-88.abo.wanadoo.fr [90.88.18.121])
+        (Authenticated sender: maxime.ripard@bootlin.com)
+        by relay7-d.mail.gandi.net (Postfix) with ESMTPSA id 9E98720007;
+        Thu, 11 Apr 2019 08:09:55 +0000 (UTC)
+Date:   Thu, 11 Apr 2019 10:09:55 +0200
+From:   Maxime Ripard <maxime.ripard@bootlin.com>
+To:     Yangtao Li <tiny.windzz@gmail.com>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org,
+        rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org,
+        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+Message-ID: <20190411080955.ysp3wreifwqrpn3n@flea>
+References: <20190410174139.20012-1-tiny.windzz@gmail.com>
+ <20190410174139.20012-2-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f49899d0-c310-4c17-6d75-08d6be53f75c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Apr 2019 08:01:56.0596
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5773
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ljbikfewuqsnslmi"
+Content-Disposition: inline
+In-Reply-To: <20190410174139.20012-2-tiny.windzz@gmail.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411080155.gkeBU3qEG7CKnUGEELBwVuhvspqE_Hcol3bA3S59-ow@z>
+Message-ID: <20190411080955.FDKyH0fMu3kI4ODDnfixnB4WyppXWfhTjTGdHW6qihA@z>
 
-SGkgRGFuaWVsLA0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFu
-aWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnlubQ0
-5pyINOaXpSAxMDozNQ0KPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IHNoYXdu
-Z3VvQGtlcm5lbC5vcmcNCj4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtk
-dEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gbGludXgtYXJtLWtlcm5lbEBs
-aXN0cy5pbmZyYWRlYWQub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhh
-bmdAaW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggdjRdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsIHpvbmUgbm9k
-ZQ0KPiA+ICsJCQkJCQk8JmNwdTEgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05PX0xJTUlU
-PiwNCj4gPiArCQkJCQkJPCZjcHUyIFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9OT19MSU1J
-VD4sDQo+ID4gKwkJCQkJCTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxfTk9fTElN
-SVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTQgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05PX0xJ
-TUlUPiwNCj4gPiArCQkJCQkJPCZjcHU1IFRIRVJNQUxfTk9fTElNSVQNCj4gVEhFUk1BTF9OT19M
-SU1JVD4sDQo+ID4gKwkJCQkJCTwmY3B1NiBUSEVSTUFMX05PX0xJTUlUDQo+IFRIRVJNQUxfTk9f
-TElNSVQ+LA0KPiA+ICsJCQkJCQk8JmNwdTcgVEhFUk1BTF9OT19MSU1JVA0KPiBUSEVSTUFMX05P
-X0xJTUlUPjsNCj4gPiArCQkJCX07DQo+IA0KPiBEb2VzIGl0IG1ha2Ugc2Vuc2UgdG8gYXNzaWdu
-IHRoZSBzYW1lIGNvb2xpbmcgZGV2aWNlcyB0byB0d28gZGlmZmVyZW50IHRoZXJtYWwNCj4gem9u
-ZXMgcnVubmluZyBkaWZmZXJlbnQgaW5zdGFuY2VzIG9mIGdvdmVybm9yID8NCkV2ZW4gdGhvdWdo
-IEkgZGlkbid0IGZpbmQgYW55IGVycm9yIHdoZW4gdGVzdCwgSSBkbyB0aGluayBpdCBpcyBpbmFw
-cHJvcHJpYXRlLg0KDQpCUiwNCkFuZHkNCj4gDQo+ID4gKwkJCX07DQo+ID4gKwkJfTsNCj4gPiAr
-DQo+ID4gKwkJcGxhdGZvcm0tdGhlcm1hbCB7DQo+ID4gKwkJCXBvbGxpbmctZGVsYXktcGFzc2l2
-ZSA9IDwxMDAwPjsNCj4gPiArCQkJcG9sbGluZy1kZWxheSA9IDw1MDAwPjsNCj4gPiArCQkJdGhl
-cm1hbC1zZW5zb3JzID0gPCZ0bXUgMT47DQo+ID4gKw0KPiA+ICsJCQl0cmlwcyB7DQo+ID4gKwkJ
-CQlwbGF0Zm9ybV9hbGVydDogcGxhdGZvcm0tYWxlcnQgew0KPiA+ICsJCQkJCXRlbXBlcmF0dXJl
-ID0gPDg1MDAwPjsNCj4gPiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICsJCQkJCXR5
-cGUgPSAicGFzc2l2ZSI7DQo+ID4gKwkJCQl9Ow0KPiA+ICsNCj4gPiArCQkJCXBsYXRmb3JtX2Ny
-aXQ6IHBsYXRmb3JtLWNyaXQgew0KPiA+ICsJCQkJCXRlbXBlcmF0dXJlID0gPDk1MDAwPjsNCj4g
-PiArCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICsJCQkJCXR5cGUgPSAiY3JpdGljYWwi
-Ow0KPiA+ICsJCQkJfTsNCj4gPiArCQkJfTsNCj4gPiArDQo+ID4gKwkJCWNvb2xpbmctbWFwcyB7
-DQo+ID4gKwkJCQltYXAwIHsNCj4gPiArCQkJCQl0cmlwID0gPCZwbGF0Zm9ybV9hbGVydD47DQo+
-ID4gIAkJCQkJY29vbGluZy1kZXZpY2UgPQ0KPiA+ICAJCQkJCQk8JmNwdTAgVEhFUk1BTF9OT19M
-SU1JVA0KPiBUSEVSTUFMX05PX0xJTUlUPiwNCj4gPiAgCQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9f
-TElNSVQNCj4gVEhFUk1BTF9OT19MSU1JVD4sDQo+ID4NCj4gDQo+IA0KPiAtLQ0KPiANCj4gPGh0
-dHBzOi8vZXVyMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNB
-JTJGJTJGd3d3Lmxpbg0KPiBhcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbmcl
-NDBueHAuY29tJTdDZTFiNzA0ODMyZWEzNA0KPiA2YWU3Mzg0MDhkNmI4YTYyODNmJTdDNjg2ZWEx
-ZDNiYzJiNGM2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3Qw0KPiA2MzY4OTk0MjExMTA0NDE1
-NzQmYW1wO3NkYXRhPUM3bXJVenRPYmtITVp5cUVKZzUzaDk5U2RJd2VKU2VLaGk4bA0KPiAlMkJR
-cFVRaEElM0QmYW1wO3Jlc2VydmVkPTA+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3
-YXJlIGZvcg0KPiBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZXVy
-MDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3
-LmZhYw0KPiBlYm9vay5jb20lMkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5k
-eS50YW5nJTQwbnhwLmNvbQ0KPiAlN0NlMWI3MDQ4MzJlYTM0NmFlNzM4NDA4ZDZiOGE2MjgzZiU3
-QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzANCj4gMTYzNSU3QzAlN0MwJTdDNjM2ODk5NDIx
-MTEwNDQxNTc0JmFtcDtzZGF0YT1QeGolMkJsZmMlMkZDMUtpUUJEMA0KPiBrelRqUUdUMkFnakNi
-WWxjWGhuc2NXVGI2cHclM0QmYW1wO3Jlc2VydmVkPTA+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8v
-ZXVyMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJG
-dHdpdHRlci5jDQo+IG9tJTJGJTIzISUyRmxpbmFyb29yZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5k
-eS50YW5nJTQwbnhwLmNvbSU3Q2UNCj4gMWI3MDQ4MzJlYTM0NmFlNzM4NDA4ZDZiOGE2MjgzZiU3
-QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1DQo+ICU3QzAlN0MwJTdDNjM2ODk5NDIx
-MTEwNDQxNTc0JmFtcDtzZGF0YT1ZSlFSZ01Ud2NHJTJCM0gxZyUyRlgNCj4gaDN6YXclMkJYeThP
-ZGxzdEw1QUg0UjBlWG1OOCUzRCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczov
-L2V1cjAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUy
-Rnd3dy5saW4NCj4gYXJvLm9yZyUyRmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0Nh
-bmR5LnRhbmclNDBueHAuY29tJTdDDQo+IGUxYjcwNDgzMmVhMzQ2YWU3Mzg0MDhkNmI4YTYyODNm
-JTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNkOTljNWMzMDE2Mw0KPiA1JTdDMCU3QzAlN0M2MzY4OTk0
-MjExMTA0NDE1NzQmYW1wO3NkYXRhPXJsa082bWtIZ2RhbThLMlJUd3NPZg0KPiA4RXhQRjJLUnkl
-MkZyTXd3eXNoUkJLQWclM0QmYW1wO3Jlc2VydmVkPTA+IEJsb2cNCg0K
+
+--ljbikfewuqsnslmi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi,
+
+On Wed, Apr 10, 2019 at 01:41:38PM -0400, Yangtao Li wrote:
+> For some SoCs, the CPU frequency subset and voltage value of each OPP
+> varies based on the silicon variant in use. The sunxi-cpufreq-nvmem
+> driver reads the efuse value from the SoC to provide the OPP framework
+> with required information.
+>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+
+The driver has a bunch of checkpatch warnings, please fix them
+(running checkpatch with --strict).
+
+> ---
+>  MAINTAINERS                           |   7 +
+>  drivers/cpufreq/Kconfig.arm           |  10 ++
+>  drivers/cpufreq/Makefile              |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c  |   2 +
+>  drivers/cpufreq/sunxi-cpufreq-nvmem.c | 232 ++++++++++++++++++++++++++
+>  5 files changed, 252 insertions(+)
+>  create mode 100644 drivers/cpufreq/sunxi-cpufreq-nvmem.c
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 391405091c6b..bfd18ba6aa1a 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -667,6 +667,13 @@ S:	Maintained
+>  F:	Documentation/i2c/busses/i2c-ali1563
+>  F:	drivers/i2c/busses/i2c-ali1563.c
+>
+> +ALLWINNER CPUFREQ DRIVER
+> +M:	Yangtao Li <tiny.windzz@gmail.com>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> +F:	drivers/cpufreq/sunxi-cpufreq-nvmem.c
+> +
+
+Please use a less generic name for the driver as well. It's called
+sunxi, but applies to a single SoC (for now).
+
+> +struct sunxi_cpufreq_soc_data {
+> +	u32 (*efuse_xlate)(const struct sunxi_cpufreq_soc_data *soc_data,
+> +			   u32 efuse);
+> +	u32 nvmem_mask;
+> +	u32 nvmem_shift;
+> +};
+
+What cases do you have? You're mentionning that it might apply to more
+SoCs, which ones? How is the data stored on those SoCs (and why do you
+need this particular abstraction)?
+
+Thanks!
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--ljbikfewuqsnslmi
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXK72UwAKCRDj7w1vZxhR
+xddWAP4/ozszJEsxyLl3PcSuUQNUmGNPTI5/EZoFHMnPIMM1+gEA26Mdnj9YBQVs
+HKxva/PTNG3RNdsvgtKweCHQ+Qrllww=
+=diSg
+-----END PGP SIGNATURE-----
+
+--ljbikfewuqsnslmi--
