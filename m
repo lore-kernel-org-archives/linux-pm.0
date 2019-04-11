@@ -2,58 +2,61 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15035C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C55BC10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DA40C2184B
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E60DE2184B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="BFe4Euni"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="YUWrSk8u"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726599AbfDKKXL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 06:23:11 -0400
-Received: from smtp-fw-2101.amazon.com ([72.21.196.25]:32476 "EHLO
-        smtp-fw-2101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726562AbfDKKXL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 06:23:11 -0400
+        id S1726264AbfDKKXX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 06:23:23 -0400
+Received: from smtp-fw-6001.amazon.com ([52.95.48.154]:14779 "EHLO
+        smtp-fw-6001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726517AbfDKKXW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 06:23:22 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1554978190; x=1586514190;
-  h=from:to:subject:date:message-id:mime-version;
-  bh=ZdwRQPKamKRhDq4hZZRT4OqvNsRINrDHac1Ji29q3kM=;
-  b=BFe4EunidO+S6/DoqdcbX2wQwsfhRZkBifVzTKn3AVVtGsoZoWK2nmuY
-   bJkWWgIcBhhsLYVKtjaebo4b8y6cowr7xQ8Ns+YKKwoGMlEjE/mwoVSyQ
-   ZJQbjbacotZLyIFrq/Wac91JBHbSf3SH4ouI2OtElhbRVA+jh4/pVtNo7
-   g=;
+  t=1554978200; x=1586514200;
+  h=from:to:subject:date:message-id:in-reply-to:references:
+   mime-version;
+  bh=D5COnaEMj1dSrN3bUntCS2/3FFeeDpM05/t1O4kXNR0=;
+  b=YUWrSk8uKLIQ/kKYkrKGX7l48Njw7mojAPtKrwZGoRVw3ZW9YQbp7jhu
+   RF7pBUO2s3AJ8ix3VzcJJG4n8XMj8qb2ouZ4CZUvc35op8OLEPVq04g20
+   pUh9QFya0dlBH1z18N+cqshAeY6XyQtmWHLvE8bjaBbQL8BqBba7Ebjje
+   k=;
 X-IronPort-AV: E=Sophos;i="5.60,337,1549929600"; 
-   d="scan'208";a="727378066"
-Received: from iad6-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-1e-c7c08562.us-east-1.amazon.com) ([10.124.125.2])
-  by smtp-border-fw-out-2101.iad2.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 11 Apr 2019 10:23:08 +0000
-Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan3.iad.amazon.com [10.40.159.166])
-        by email-inbound-relay-1e-c7c08562.us-east-1.amazon.com (8.14.7/8.14.7) with ESMTP id x3BAN6k2067872
+   d="scan'208";a="390542863"
+Received: from iad6-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-1a-af6a10df.us-east-1.amazon.com) ([10.124.125.6])
+  by smtp-border-fw-out-6001.iad6.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 11 Apr 2019 10:23:19 +0000
+Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
+        by email-inbound-relay-1a-af6a10df.us-east-1.amazon.com (8.14.7/8.14.7) with ESMTP id x3BANGc1055273
         (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
-        Thu, 11 Apr 2019 10:23:06 GMT
+        Thu, 11 Apr 2019 10:23:17 GMT
 Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
  EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Thu, 11 Apr 2019 10:23:05 +0000
+ id 15.0.1367.3; Thu, 11 Apr 2019 10:23:16 +0000
 Received: from udc4a3e82dbc15a031435.hfa14.amazon.com (10.43.160.69) by
  EX13D01EUB001.ant.amazon.com (10.43.166.194) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Thu, 11 Apr 2019 10:22:58 +0000
+ id 15.0.1367.3; Thu, 11 Apr 2019 10:23:10 +0000
 From:   Talel Shenhar <talel@amazon.com>
 To:     <talel@amazon.com>, <robh@kernel.org>, <edubezval@gmail.com>,
         <dwmw@amazon.co.uk>, <jonnyc@amazon.com>, <rui.zhang@intel.com>,
         <hhhawa@amazon.com>, <ronenk@amazon.com>, <hanochu@amazon.com>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <mark.rutland@arm.com>, <devicetree@vger.kernel.org>
-Subject: [PATCH v3 0/2] Amazon's Annapurna Labs Thermal Sensor Driver
-Date:   Thu, 11 Apr 2019 13:22:46 +0300
-Message-ID: <1554978168-17369-1-git-send-email-talel@amazon.com>
+Subject: [PATCH v3 2/2] thermal: Introduce Amazon's Annapurna Labs Thermal Driver
+Date:   Thu, 11 Apr 2019 13:22:48 +0300
+Message-ID: <1554978168-17369-3-git-send-email-talel@amazon.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1554978168-17369-1-git-send-email-talel@amazon.com>
+References: <1554978168-17369-1-git-send-email-talel@amazon.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 X-Originating-IP: [10.43.160.69]
@@ -63,44 +66,209 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411102246.yRnF110w-V6yGvkBVi6alWCejuwTdtTMYyfCd06FwuA@z>
+Message-ID: <20190411102248.akpll7eT3qGlLQx-CfxXQ-IMnbaXC5hQU9ExnQkKD7M@z>
 
-This series introduces support for Amazon's Annapurna Labs Thermal Sensor
-based on a new simple MMIO thermal driver. This driver is intended to be
-used by other devices as well, which require just a simple MMIO access to
-read temperature. 
+This is a generic thermal driver for simple MMIO sensors, of which
+amazon,al-thermal is one.
 
-Changes since v2:
-=================
-- dt-binding: changed node name from "thermal_z0" to "thermal-z0"
-- dt-binding: changed node name from thermalz0_crit to "critical"
+This device uses a single MMIO transaction to read the temperature and
+report it to the thermal subsystem.
 
-Changes since v1:
-==================
-- removed the "thermal_mmio" compatible string. With v2 version, only
-  specific hardware can bound
-- add initialization function that is mapped based on the specific binding
-  string
-- removed thermal_mmio_readl and thermal_readw, but kept mmio reads in
-  callback function. Left only thermal_mmio_reab which is used by
-  al-thermal
-- removed divider, bias, width which are not needed for al-thermal.
-
-
-
-Talel Shenhar (2):
-  dt-bindings: thermal: al-thermal: Add binding documentation
-  thermal: Introduce Amazon's Annapurna Labs Thermal Driver
-
- .../bindings/thermal/amazon,al-thermal.txt         |  33 ++++++
- MAINTAINERS                                        |   6 +
- drivers/thermal/Kconfig                            |  10 ++
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/thermal_mmio.c                     | 129 +++++++++++++++++++++
- 5 files changed, 179 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+Signed-off-by: Talel Shenhar <talel@amazon.com>
+Reviewed-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+ MAINTAINERS                    |   6 ++
+ drivers/thermal/Kconfig        |  10 ++++
+ drivers/thermal/Makefile       |   1 +
+ drivers/thermal/thermal_mmio.c | 129 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 146 insertions(+)
  create mode 100644 drivers/thermal/thermal_mmio.c
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 955463f..262cb2c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -727,6 +727,12 @@ S:	Supported
+ F:	Documentation/networking/ena.txt
+ F:	drivers/net/ethernet/amazon/
+ 
++AMAZON ANNAPURNA LABS THERMAL MMIO DRIVER
++M:	Talel Shenhar <talel@amazon.com>
++S:	Maintained
++F:	Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
++F:	drivers/thermal/thermal_mmio.c
++
+ AMD CRYPTOGRAPHIC COPROCESSOR (CCP) DRIVER
+ M:	Tom Lendacky <thomas.lendacky@amd.com>
+ M:	Gary Hook <gary.hook@amd.com>
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 1775d44..96d9236 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -199,6 +199,16 @@ config THERMAL_EMULATION
+ 	  because userland can easily disable the thermal policy by simply
+ 	  flooding this sysfs node with low temperature values.
+ 
++config THERMAL_MMIO
++	tristate "Generic Thermal MMIO driver"
++	depends on OF || COMPILE_TEST
++	help
++	  This option enables the generic thermal MMIO driver that will use
++	  memory-mapped reads to get the temperature.  Any HW/System that
++	  allows temperature reading by a single memory-mapped reading, be it
++	  register or shared memory, is a potential candidate to work with this
++	  driver.
++
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on ARCH_HISI || COMPILE_TEST
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 82bb50d..d4c9ae7 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -29,6 +29,7 @@ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+ 
+ # platform thermal drivers
+ obj-y				+= broadcom/
++obj-$(CONFIG_THERMAL_MMIO)		+= thermal_mmio.o
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+ obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
+new file mode 100644
+index 0000000..de3ccee
+--- /dev/null
++++ b/drivers/thermal/thermal_mmio.c
+@@ -0,0 +1,129 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
++ */
++
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++struct thermal_mmio {
++	void __iomem *mmio_base;
++	u32 (*read_mmio)(void __iomem *mmio_base);
++	u32 mask;
++	int factor;
++};
++
++static u32 thermal_mmio_readb(void __iomem *mmio_base)
++{
++	return readb(mmio_base);
++}
++
++static int thermal_mmio_get_temperature(void *private, int *temp)
++{
++	int t;
++	struct thermal_mmio *sensor =
++		(struct thermal_mmio *)private;
++
++	t = sensor->read_mmio(sensor->mmio_base) & sensor->mask;
++	t *= sensor->factor;
++
++	*temp = t;
++
++	return 0;
++}
++
++static struct thermal_zone_of_device_ops thermal_mmio_ops = {
++	.get_temp = thermal_mmio_get_temperature,
++};
++
++static int thermal_mmio_probe(struct platform_device *pdev)
++{
++	struct resource *resource;
++	struct thermal_mmio *sensor;
++	int (*sensor_init_func)(struct platform_device *pdev,
++				struct thermal_mmio *sensor);
++	struct thermal_zone_device *thermal_zone;
++	int ret;
++	int temperature;
++
++	sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
++	if (!sensor)
++		return -ENOMEM;
++
++	resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (IS_ERR(resource)) {
++		dev_err(&pdev->dev,
++			"fail to get platform memory resource (%ld)\n",
++			PTR_ERR(resource));
++		return PTR_ERR(resource);
++	}
++
++	sensor->mmio_base = devm_ioremap_resource(&pdev->dev, resource);
++	if (IS_ERR(sensor->mmio_base)) {
++		dev_err(&pdev->dev, "failed to ioremap memory (%ld)\n",
++			PTR_ERR(sensor->mmio_base));
++		return PTR_ERR(sensor->mmio_base);
++	}
++
++	sensor_init_func = device_get_match_data(&pdev->dev);
++	if (sensor_init_func) {
++		ret = sensor_init_func(pdev, sensor);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"failed to initialize sensor (%d)\n",
++				ret);
++			return ret;
++		}
++	}
++
++	thermal_zone = devm_thermal_zone_of_sensor_register(&pdev->dev,
++							    0,
++							    sensor,
++							    &thermal_mmio_ops);
++	if (IS_ERR(thermal_zone)) {
++		dev_err(&pdev->dev,
++			"failed to register sensor (%ld)\n",
++			PTR_ERR(thermal_zone));
++		return PTR_ERR(thermal_zone);
++	}
++
++	thermal_mmio_get_temperature(sensor, &temperature);
++	dev_info(&pdev->dev,
++		 "thermal mmio sensor %s registered, current temperature: %d\n",
++		 pdev->name, temperature);
++
++	return 0;
++}
++
++static int al_thermal_init(struct platform_device *pdev,
++			   struct thermal_mmio *sensor)
++{
++	sensor->read_mmio = thermal_mmio_readb;
++	sensor->mask = 0xff;
++	sensor->factor = 1000;
++
++	return 0;
++}
++
++static const struct of_device_id thermal_mmio_id_table[] = {
++	{ .compatible = "amazon,al-thermal", .data = al_thermal_init},
++	{}
++};
++MODULE_DEVICE_TABLE(of, thermal_mmio_id_table);
++
++static struct platform_driver thermal_mmio_driver = {
++	.probe = thermal_mmio_probe,
++	.driver = {
++		.name = "thermal-mmio",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(thermal_mmio_id_table),
++	},
++};
++
++module_platform_driver(thermal_mmio_driver);
++
++MODULE_AUTHOR("Talel Shenhar <talel@amazon.com>");
++MODULE_DESCRIPTION("Thermal MMIO Driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.7.4
 
