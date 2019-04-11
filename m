@@ -2,182 +2,112 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C801AC10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 19:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20BB1C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 20:44:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 94102217F4
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 19:14:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BDjeyhYE"
+	by mail.kernel.org (Postfix) with ESMTP id E042A2146F
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 20:44:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555015488;
+	bh=q66BQqnKckskSTecJ/LlsnJkkia2OlBOrQQyyB1+l1g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=YT3//55qgrCnUImZFnEeAG+cj3Aj8AoOn4EtE2JoyyQ6aPDpXCjT0YOB2fFt08Keb
+	 pVWpJGoNQWzqzclKf6y56SQD+OscL7Z960SVvnRLVHP2wr0TdkmWUx4mL+LXo4pOX6
+	 rFb626HG9NbUsM6ECKZ6Kd5h3UN9b5JbSvVrH5ns=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726738AbfDKTOt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 15:14:49 -0400
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:35991 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726538AbfDKTOs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 15:14:48 -0400
-Received: by mail-wm1-f66.google.com with SMTP id h18so8025434wml.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 12:14:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Sjgv+GTqzYYYEeYktG8EM218JZ1lIdpdQ+xHnyDK8sQ=;
-        b=BDjeyhYEB9/73Pt/L8UtgjqBXTkhti+6OPdAQGKZu/wUJWX5fuYRSvHxtFPoNYK8G0
-         HS3Hgs6n4kBOqjSegpS4EKjAjqsmjRVatypIIwAtMdm4kkB0zmlShvUyFN77ewv3FbBT
-         rGqWgQvGoHAkUIIV3WGFY4LAFJTen8glHdNSUJpyOF/wZAlHP0RLOLTf+C85iZuioFkb
-         qnGHzlWKh8LYbuDrfNZK7OMUMfVjIrR1YJYu1Aal1znh/y9hKNG10oFNS9raShVu4ZV0
-         lBG55psPKyUEDnxFlzjxelogInrLIs4xD0zHwcl07yVQV0szQmwS9hv4HECUY5vv5E5L
-         d2WA==
+        id S1726962AbfDKUol (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 16:44:41 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:46760 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726629AbfDKUol (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 16:44:41 -0400
+Received: by mail-oi1-f196.google.com with SMTP id x188so6097559oia.13;
+        Thu, 11 Apr 2019 13:44:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Sjgv+GTqzYYYEeYktG8EM218JZ1lIdpdQ+xHnyDK8sQ=;
-        b=sNsbqmjtJ+V4vF4PjY41JFGvXnCClP8pIJKZcu0VgH4qUxgEKttCQ+lVMwIbKFW2Gr
-         Arv8TIU2gInwSr9ectHeq0GjZZqj+EvbiXF+P4iJuIWPuejR3NBe+ls/85Zey794apR3
-         O+1oQW61IVaMNS5k+mU3JYlMXqTgLq8xtCz1uxxhCFnCLVRbm57vVsA2GxZvdwGbvr+v
-         c3o/PONLcM6m0tIRsuVZoRWQhb4RipJKpGWqFzS6TaJSBKRVKR7LNuTpW8JxW67h0kPS
-         EtPeUFG7NLsVxQwmaUuVsoQr2azNvwj3sGvuW/q2+EM7R/nk3Ik0wD6WV7BKDzJWK962
-         Tqig==
-X-Gm-Message-State: APjAAAVjaUbhu9LPwsTb1szbIzGENKc6C3UIlbxiK9ls7dBp0e2N3pXR
-        dPaUU6sIHmjr0KqR5PV42Z/bRg==
-X-Google-Smtp-Source: APXvYqxkQKdnZ0L8z5xBYB7bt/ExshN7qriHIvv/xfy/O8OPzXsc/EKVrJqrllzjmWn2KC1PUo2xjA==
-X-Received: by 2002:a1c:5f42:: with SMTP id t63mr7525678wmb.94.1555010086734;
-        Thu, 11 Apr 2019 12:14:46 -0700 (PDT)
-Received: from [192.168.8.100] (195.118.130.77.rev.sfr.net. [77.130.118.195])
-        by smtp.googlemail.com with ESMTPSA id o2sm31400238wrs.89.2019.04.11.12.14.45
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 12:14:46 -0700 (PDT)
-Subject: Re: [PATCH v5] arm64: dts: ls1088a: add one more thermal zone node
-To:     Yuantian Tang <andy.tang@nxp.com>, shawnguo@kernel.org
-Cc:     leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        rui.zhang@intel.com, edubezval@gmail.com
-References: <20190411083236.9377-1-andy.tang@nxp.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <915c86d8-d00e-f1e1-e7f5-24bc225c8e42@linaro.org>
-Date:   Thu, 11 Apr 2019 21:14:44 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=tLlC6X7IovyMMzQ0jkSm2PAnsWWLeJJTqcPx8mAOfwM=;
+        b=jqwq1YNLE0bC/rlhg6ZmqZp09WTh5ccy872gzJo/jbeZCsHy3OunDLLy9uC5Y8eCoc
+         WmFYlWqP073wWjHtA+4i7LjRwvy0fqXgVFL3cKWWrZDEr/IkShPDvjfUH+fksh9xrf3I
+         NOgm0GWq99GpjAvZpWp2FAs4Lf0VFQzzhwnyNOlbAuoeZF34DTCuU3E0nE3crW6+m0SM
+         lkPyVooJkTK6p/AjYY99iQpTjXAmLzmlzC4pPAzCbIulbGMqk57E1YHDLcjIx/8RFr1Q
+         bswVY97OviCwGFSdEaYKApw5dXPBM2fh/BXPC30ffmb2z5wg3zoq3K6bvasvAQ1lxuay
+         r7MA==
+X-Gm-Message-State: APjAAAUKXkpEXOpYWYPhUL6qdY8VVwVnVuUyvvhjqWM87fyRqbxnPjnr
+        k1jfyThs3RvDfLjXzr7510GNy/P2XHxj5r/sbgo=
+X-Google-Smtp-Source: APXvYqyfZP+w+RFpgS9CgC/HXHhWnweUGlZbSPPOESFhgFzTYWiDGGLbTYFsWAfxtedmIgCPSM86fhuPZAS5UCP0F/g=
+X-Received: by 2002:aca:5c55:: with SMTP id q82mr7698757oib.95.1555015480675;
+ Thu, 11 Apr 2019 13:44:40 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190411083236.9377-1-andy.tang@nxp.com>
+References: <20190411181733.21437-1-ulf.hansson@linaro.org>
+In-Reply-To: <20190411181733.21437-1-ulf.hansson@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 11 Apr 2019 22:44:29 +0200
+Message-ID:
+ <CAJZ5v0hVkgF2MYUh4VkXN0L2ZtxMoC8bUV6CY7=fAnSHRLpqUA@mail.gmail.com>
+Subject: Re: [PATCH v14 4/4] PM / Domains: Add genpd governor for CPUs
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Frederic Weisbecker <fweisbec@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411191444.vrzogUT-3kRBB1ioXR0p5bzoJ7EV7OOuZm38I71Pvwc@z>
+Message-ID: <20190411204429.XS4cdfxkva3EQx4j3qIthcZ_6Tmpzs1BesOE8PTaURI@z>
 
-On 11/04/2019 10:32, Yuantian Tang wrote:
-> Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-> sensor is used to monitor the temperature of core and SoC platform is for
-> platform. The current dts only support the first sensor.
-> This patch adds the second sensor node to dts to enable it.
-> 
-> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> ---
-> v5:
-> 	- update the thermal zone name due to the length limitation
-> 	- remove cooling map in platform zone
-> v4:
-> 	- use hyphen instead of underscore in node name
-> v3:
-> 	- use more descriptive name for each zone
-> v2:
-> 	- Add more information about sensors to description
->  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   28 ++++++++++++++++++++---
->  1 files changed, 24 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> index de93b42..de39672 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> @@ -129,19 +129,19 @@
->  	};
->  
->  	thermal-zones {
-> -		cpu_thermal: cpu-thermal {
-> +		core-cluster {
->  			polling-delay-passive = <1000>;
->  			polling-delay = <5000>;
->  			thermal-sensors = <&tmu 0>;
->  
->  			trips {
-> -				cpu_alert: cpu-alert {
-> +				core_cluster_alert: core-cluster-alert {
->  					temperature = <85000>;
->  					hysteresis = <2000>;
->  					type = "passive";
->  				};
->  
-> -				cpu_crit: cpu-crit {
-> +				core_cluster_crit: core-cluster-crit {
->  					temperature = <95000>;
->  					hysteresis = <2000>;
->  					type = "critical";
-> @@ -150,7 +150,7 @@
->  
->  			cooling-maps {
->  				map0 {
-> -					trip = <&cpu_alert>;
-> +					trip = <&core_cluster_alert>;
->  					cooling-device =
->  						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
->  						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> @@ -163,6 +163,26 @@
->  				};
->  			};
->  		};
-> +
-> +		platform {
-> +			polling-delay-passive = <1000>;
-> +			polling-delay = <5000>;
-> +			thermal-sensors = <&tmu 1>;
-> +
-> +			trips {
-> +				platform-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				platform-crit {
-> +					temperature = <95000>;
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
+On Thu, Apr 11, 2019 at 8:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> After some preceding changes, PM domains managed by genpd may contain
+> CPU devices, so idle state residency values should be taken into
+> account during the state selection process. [The residency value is
+> the minimum amount of time to be spent by a CPU (or a group of CPUs)
+> in an idle state in order to save more energy than could be saved
+> by picking up a shallower idle state.]
+>
+> For this purpose, add a new genpd governor, pm_domain_cpu_gov, to be
+> used for selecting idle states of PM domains with CPU devices attached
+> either directly or through subdomains.
+>
+> The new governor computes the minimum expected idle duration for all
+> online CPUs attached to a PM domain and its subdomains.  Next, it
+> finds the deepest idle state whose target residency is within the
+> expected idle duration and selects it as the target idle state of
+> the domain.
+>
+> It should be noted that the minimum expected idle duration computation
+> is based on the closest timer event information stored in the per-CPU
+> variables cpuidle_devices for all of the CPUs in the domain.  That
+> needs to be revisited in future, as obviously there are other reasons
+> why a CPU may be woken up from idle.
+>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> [ rjw: Changelog ]
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-
-Unfortunately, the documentation says the thermal zone node must contain
-a "cooling-maps" entry.
-
-It makes sense as if there is no cooling device, there is no action to
-be taken thus polling the temperature just add noise to the system.
-
-
-
->  	};
->  
->  	timer {
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Applied instead of the previous version, thanks!
