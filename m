@@ -3,246 +3,324 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1437EC10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2532DC10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D0DFE2146F
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:17:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D881C2184B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:36:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zNmdNA0r"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TmD6pE/j"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726585AbfDKSRn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 14:17:43 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:33654 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726649AbfDKSRn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 14:17:43 -0400
-Received: by mail-lf1-f65.google.com with SMTP id j11so5457477lfm.0
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 11:17:41 -0700 (PDT)
+        id S1726656AbfDKSgz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 14:36:55 -0400
+Received: from mail-it1-f195.google.com ([209.85.166.195]:40090 "EHLO
+        mail-it1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726536AbfDKSgz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 14:36:55 -0400
+Received: by mail-it1-f195.google.com with SMTP id k64so11215753itb.5;
+        Thu, 11 Apr 2019 11:36:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=pf7QbFgAhcYW1LW0/5PkllmLvAODcFP2rewRBiSGZHI=;
-        b=zNmdNA0riuf18zmSkT7G9Qx0jX7jsxoGGM/+DgLaKSfnMVOvTHOMMKH9y+NmA7eA07
-         0eIpvywenadsD4RjFSkCTF6GoQDu8Edwtm+CKhJ6y+PoO1+hNGcJpJ0EM4+2LUqGjwmW
-         n4fU6KjMJxN75eq61398vodHLyEYfJLj/YjT9/S0gYFvr0WchaExF9Y/JYZFF/rOk2/g
-         oVrI55JCqd2mZVfmwo7oDevmL1c6jh8ZhPQjZPl3g1tiwjPGhB98Ux0XboRQ9zHZ4WWh
-         kkWz3Zs8LaAREk40JttskePAP145ypSMzIpBAIjlJvgZVAJVzL+uQOSeSpY1lR68Jg41
-         Yiow==
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=d9TNf3UZ35qeYaXcIAD6Jv3jypBLTq8q3CpN92zAumA=;
+        b=TmD6pE/j5mgVbno8cslMwumh6exLxW9mCQU13hx1QZ5KeOu0L84BN4zZarNmXEE02O
+         G+D6VrR9OnOdipmlrTyF/S7Kw6f8Cn32piGg7ifOQsg5xN/Ad91WGpl0In3ShB2t5Lg7
+         AbMfD0PkJzmGktt6ShrAwVGloVGgqrEg8Ka/njlX/ymdhJ9CReRMhHVibd9o05jTtV2c
+         8xgCcIiHUpQE+2HwIhB8+rwZvx4NPPfUupmtb590Qiz9rGC//3CS1L1SVvvDAvqWlatV
+         w9Becw86FbDsqRl99oJ3nP3Nk8LOYQAdXizAj8SZ/4CUYwRdWHsBeBb3BjyOEpmOOGN2
+         vmfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=pf7QbFgAhcYW1LW0/5PkllmLvAODcFP2rewRBiSGZHI=;
-        b=snO2xzFR86VvoBtuXE/OW/hDkLBL/127Ejd4wWFtQcfJlH0xSRmP3nBYQhcu/HvCaP
-         vkPsxNyT010YYLYC0yCJVMVODIz64jHiZSEtsDIWCuCwL6Fc31SdjDWTZ13GoBYNC3H+
-         NZ0gaWICa0vUTH+Qebn7x1/35s+5CAniQbIGUzHv+EFfJvYHD6Ey28p37Ko85rFnBdKk
-         QKrXgj0SlvU+J0PttsR04GPB8P52vaXC27vtcU3rJjQYlsZMZraZzkNroq5pi63o0xAY
-         n3Z4EJ+tk0a5DJktSIBPKmNFFj3Eojih92FV2/Ue8HUlyjPs4nwL9KTgaDdXsnnQ2AGB
-         QW/w==
-X-Gm-Message-State: APjAAAXSbF5YK16PbsV22AePmYfFAVZeuUqSspd7v6VFLu54N/PwEggv
-        OJ34HxKHrm0n1G2i+bIvunZfIQ==
-X-Google-Smtp-Source: APXvYqwEGuLmkApqIn6LxQZ4v+k520TCQHVuG0cD0K4tdPNQtoJDRox1x9GFJsn1Etr6xdO4nvYxZg==
-X-Received: by 2002:ac2:4ad1:: with SMTP id m17mr10432536lfp.129.1555006660332;
-        Thu, 11 Apr 2019 11:17:40 -0700 (PDT)
-Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id d13sm1555715lfa.40.2019.04.11.11.17.38
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 11:17:39 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc:     Frederic Weisbecker <fweisbec@gmail.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Tony Lindgren <tony@atomide.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH v14 4/4] PM / Domains: Add genpd governor for CPUs
-Date:   Thu, 11 Apr 2019 20:17:33 +0200
-Message-Id: <20190411181733.21437-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=d9TNf3UZ35qeYaXcIAD6Jv3jypBLTq8q3CpN92zAumA=;
+        b=NMxujN2vgp48sdtWDdtNRLWFmWP2WPjSWCsDqqldCSL8UonW+rOKikKk3JwtC4SoH5
+         VC5C31obNBGRJzxkGf3F4PBmiCe+uut9jZhSfNVhE9tCc0zgBrXHrbcLoljIk/ND2XFF
+         +MvS/L6gkIt1QZ2HMGLPqtb0H5bjxenggh/a+Us6mEE0kjFqIsndWIuYVBtP6pqljNGn
+         JSbjnZV6Ya/Uck6KeEW2XiFJFEjDd/qGkJX86noUhCdXFgl90eMe2q4urAvbeATToglb
+         iEM+twYzZUOsW4zUjI7ys+aF5eVJjE4Hpzo7jPwjFYXF65e6zJiXwbm+Y4jQsotbCUac
+         fybw==
+X-Gm-Message-State: APjAAAUIng1grThH25eOHYaSL+otD3PtfO/nkpn89B7Y9dTyq+GPWRwQ
+        XnOX/wynrcdiuz92TZi884B1fSAr2agNNxEz5C8=
+X-Google-Smtp-Source: APXvYqzPphzMLED9oICsy9RE9R0jAzoFDCSwTkJjrbhF+K1Dhnf31CHfnDQrAsgrXGoP3yhrQv2JTup+DXqJ2ej3IZw=
+X-Received: by 2002:a24:160d:: with SMTP id a13mr9751033ita.4.1555007813898;
+ Thu, 11 Apr 2019 11:36:53 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190410174139.20012-1-tiny.windzz@gmail.com> <20190410174139.20012-2-tiny.windzz@gmail.com>
+ <20190411080955.ysp3wreifwqrpn3n@flea>
+In-Reply-To: <20190411080955.ysp3wreifwqrpn3n@flea>
+From:   Frank Lee <tiny.windzz@gmail.com>
+Date:   Fri, 12 Apr 2019 02:36:42 +0800
+Message-ID:
+ <CAEExFWvcoK+C=_+knCw4nZQso2Frz0-CpbECQbVzKPS11P9RUw@mail.gmail.com>
+Subject: Re: [PATCH v3 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
+To:     Maxime Ripard <maxime.ripard@bootlin.com>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, mark.rutland@arm.com,
+        Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net,
+        davem@davemloft.net, mchehab+samsung@kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>,
+        devicetree@vger.kernel.org,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190411181733.Ln6Wz1wusIWtuMKrdcKVklmnFN-_MPMr3Id5VuZgUIY@z>
+Message-ID: <20190411183642.c4uEwHmI486qp6xo8MlRaiGxziwggY-aktXkvR0WbSk@z>
 
-After some preceding changes, PM domains managed by genpd may contain
-CPU devices, so idle state residency values should be taken into
-account during the state selection process. [The residency value is
-the minimum amount of time to be spent by a CPU (or a group of CPUs)
-in an idle state in order to save more energy than could be saved
-by picking up a shallower idle state.]
+Hi,
+    Changes:
+    1. I removed this sunxi_cpufreq_soc_data structure for now.
+    2. Convert to  less generic name.
+    3. Update soc_bin xlate. (LINE:484
+https://github.com/Allwinner-Homlet/H6-BSP4.9-linux/blob/master/drivers/soc/sunxi/sunxi-sid.c)
 
-For this purpose, add a new genpd governor, pm_domain_cpu_gov, to be
-used for selecting idle states of PM domains with CPU devices attached
-either directly or through subdomains.
+    Now temporarily consider it as supporting only one platform.
+    Anything else to modify?
 
-The new governor computes the minimum expected idle duration for all
-online CPUs attached to a PM domain and its subdomains.  Next, it
-finds the deepest idle state whose target residency is within the
-expected idle duration and selects it as the target idle state of
-the domain.
+THx,
+Yangtao
 
-It should be noted that the minimum expected idle duration computation
-is based on the closest timer event information stored in the per-CPU
-variables cpuidle_devices for all of the CPUs in the domain.  That
-needs to be revisited in future, as obviously there are other reasons
-why a CPU may be woken up from idle.
-
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-[ rjw: Changelog ]
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-Changes in v4:
-	- Fix build error when CONFIG_CPU_IDLE is unset.
-
----
- drivers/base/power/domain_governor.c | 67 +++++++++++++++++++++++++++-
- include/linux/pm_domain.h            |  4 ++
- 2 files changed, 70 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 4d07e38a8247..7912bc957244 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -10,6 +10,9 @@
- #include <linux/pm_domain.h>
- #include <linux/pm_qos.h>
- #include <linux/hrtimer.h>
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/ktime.h>
- 
- static int dev_update_qos_constraint(struct device *dev, void *data)
- {
-@@ -210,8 +213,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
- 
--	if (!genpd->max_off_time_changed)
-+	if (!genpd->max_off_time_changed) {
-+		genpd->state_idx = genpd->cached_power_down_state_idx;
- 		return genpd->cached_power_down_ok;
-+	}
- 
- 	/*
- 	 * We have to invalidate the cached results for the masters, so
-@@ -236,6 +241,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		genpd->state_idx--;
- 	}
- 
-+	genpd->cached_power_down_state_idx = genpd->state_idx;
- 	return genpd->cached_power_down_ok;
- }
- 
-@@ -244,6 +250,65 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- 	return false;
- }
- 
-+#ifdef CONFIG_CPU_IDLE
-+static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+diff --git a/drivers/cpufreq/sun5i-cpufreq-nvmem.c
+b/drivers/cpufreq/sun5i-cpufreq-nvmem.c
+new file mode 100644
+index 000000000000..08a8f99463ba
+--- /dev/null
++++ b/drivers/cpufreq/sun5i-cpufreq-nvmem.c
+@@ -0,0 +1,225 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Allwinner CPUFreq nvmem based driver
++ *
++ * The sun5i-cpufreq-nvmem driver reads the efuse value from the SoC to
++ * provide the OPP framework with required information.
++ *
++ * Copyright (C) 2019 Yangtao Li <tiny.windzz@gmail.com>
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/module.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++
++#define MAX_NAME_LEN 7
++
++#define NVMEM_MASK 0x7
++#define NVMEM_SHIFT 5
++
++static struct platform_device *cpufreq_dt_pdev, *sunxi_cpufreq_pdev;
++
++/**
++ * sunxi_cpufreq_get_efuse() - Parse and return efuse value present on SoC
++ * @versions: Set to the value parsed from efuse
++ *
++ * Returns 0 if success.
++ */
++static int sunxi_cpufreq_get_efuse(u32 *versions)
 +{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	struct cpuidle_device *dev;
-+	ktime_t domain_wakeup, next_hrtimer;
-+	s64 idle_duration_ns;
-+	int cpu, i;
++ struct nvmem_cell *speedbin_nvmem;
++ struct device_node *np;
++ struct device *cpu_dev;
++ u32 *speedbin, efuse_value;
++ size_t len;
++ int ret;
 +
-+	/* Validate dev PM QoS constraints. */
-+	if (!default_power_down_ok(pd))
-+		return false;
++ cpu_dev = get_cpu_device(0);
++ if (!cpu_dev)
++ return -ENODEV;
 +
-+	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-+		return true;
++ np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
++ if (!np)
++ return -ENOENT;
 +
-+	/*
-+	 * Find the next wakeup for any of the online CPUs within the PM domain
-+	 * and its subdomains. Note, we only need the genpd->cpus, as it already
-+	 * contains a mask of all CPUs from subdomains.
-+	 */
-+	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-+	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-+		dev = per_cpu(cpuidle_devices, cpu);
-+		if (dev) {
-+			next_hrtimer = READ_ONCE(dev->next_hrtimer);
-+			if (ktime_before(next_hrtimer, domain_wakeup))
-+				domain_wakeup = next_hrtimer;
-+		}
-+	}
++ ret = of_device_is_compatible(np,
++ "allwinner,sun50i-h6-operating-points");
++ if (!ret) {
++ of_node_put(np);
++ return -ENOENT;
++ }
 +
-+	/* The minimum idle duration is from now - until the next wakeup. */
-+	idle_duration_ns = ktime_to_ns(ktime_sub(domain_wakeup, ktime_get()));
-+	if (idle_duration_ns <= 0)
-+		return false;
++ speedbin_nvmem = of_nvmem_cell_get(np, NULL);
++ of_node_put(np);
++ if (IS_ERR(speedbin_nvmem)) {
++ if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
++ pr_err("Could not get nvmem cell: %ld\n",
++ PTR_ERR(speedbin_nvmem));
++ return PTR_ERR(speedbin_nvmem);
++ }
 +
-+	/*
-+	 * Find the deepest idle state that has its residency value satisfied
-+	 * and by also taking into account the power off latency for the state.
-+	 * Start at the state picked by the dev PM QoS constraint validation.
-+	 */
-+	i = genpd->state_idx;
-+	do {
-+		if (idle_duration_ns >= (genpd->states[i].residency_ns +
-+		    genpd->states[i].power_off_latency_ns)) {
-+			genpd->state_idx = i;
-+			return true;
-+		}
-+	} while (--i >= 0);
++ speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++ nvmem_cell_put(speedbin_nvmem);
++ if (IS_ERR(speedbin))
++ return PTR_ERR(speedbin);
 +
-+	return false;
++ efuse_value = (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
++ switch (efuse_value) {
++ case 0b0001:
++ *versions = 1;
++ break;
++ case 0b0011:
++ *versions = 2;
++ break;
++ default:
++ /*
++ * For other situations, we treat it as bin0.
++ * This vf table can be run for any good cpu.
++ */
++ *versions = 0;
++ break;
++ }
++
++ kfree(speedbin);
++ return 0;
++};
++
++static int sunxi_cpufreq_nvmem_probe(struct platform_device *pdev)
++{
++ struct opp_table **opp_tables;
++ char name[MAX_NAME_LEN];
++ unsigned int cpu;
++ u32 speed = 0;
++ int ret;
++
++ opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
++      GFP_KERNEL);
++ if (!opp_tables)
++ return -ENOMEM;
++
++ ret = sunxi_cpufreq_get_efuse(&speed);
++ if (ret)
++ return ret;
++
++ snprintf(name, MAX_NAME_LEN, "speed%d", speed);
++
++ for_each_possible_cpu(cpu) {
++ struct device *cpu_dev = get_cpu_device(cpu);
++
++ if (cpu_dev == NULL) {
++ ret = -ENODEV;
++ goto free_opp;
++ }
++
++ opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
++ if (IS_ERR(opp_tables[cpu])) {
++ ret = PTR_ERR(opp_tables[cpu]);
++ pr_err("Failed to set prop name\n");
++ goto free_opp;
++ }
++ }
++
++ cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
++   NULL, 0);
++ if (!IS_ERR(cpufreq_dt_pdev)) {
++ platform_set_drvdata(pdev, opp_tables);
++ return 0;
++ }
++
++ ret = PTR_ERR(cpufreq_dt_pdev);
++ pr_err("Failed to register platform device\n");
++
++free_opp:
++ for_each_possible_cpu(cpu) {
++ if (IS_ERR_OR_NULL(opp_tables[cpu]))
++ break;
++ dev_pm_opp_put_prop_name(opp_tables[cpu]);
++ }
++ kfree(opp_tables);
++
++ return ret;
 +}
 +
-+struct dev_power_governor pm_domain_cpu_gov = {
-+	.suspend_ok = default_suspend_ok,
-+	.power_down_ok = cpu_power_down_ok,
-+};
-+#endif
++static int sunxi_cpufreq_nvmem_remove(struct platform_device *pdev)
++{
++ struct opp_table **opp_tables = platform_get_drvdata(pdev);
++ unsigned int cpu;
 +
- struct dev_power_governor simple_qos_governor = {
- 	.suspend_ok = default_suspend_ok,
- 	.power_down_ok = default_power_down_ok,
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index a6e251fe9deb..bc82e74560ee 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -118,6 +118,7 @@ struct generic_pm_domain {
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
- 	bool cached_power_down_ok;
-+	bool cached_power_down_state_idx;
- 	int (*attach_dev)(struct generic_pm_domain *domain,
- 			  struct device *dev);
- 	void (*detach_dev)(struct generic_pm_domain *domain,
-@@ -202,6 +203,9 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-+#ifdef CONFIG_CPU_IDLE
-+extern struct dev_power_governor pm_domain_cpu_gov;
-+#endif
- #else
- 
- static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
++ platform_device_unregister(cpufreq_dt_pdev);
++
++ for_each_possible_cpu(cpu)
++ dev_pm_opp_put_prop_name(opp_tables[cpu]);
++
++ kfree(opp_tables);
++
++ return 0;
++}
++
++static struct platform_driver sunxi_cpufreq_driver = {
++ .probe = sunxi_cpufreq_nvmem_probe,
++ .remove = sunxi_cpufreq_nvmem_remove,
++ .driver = {
++ .name = "sunxi-cpufreq-nvmem",
++ },
++};
++
++static const struct of_device_id sunxi_cpufreq_match_list[] = {
++ { .compatible = "allwinner,sun50i-h6" },
++ {}
++};
++
++static const struct of_device_id *sunxi_cpufreq_match_node(void)
++{
++ const struct of_device_id *match;
++ struct device_node *np;
++
++ np = of_find_node_by_path("/");
++ match = of_match_node(sunxi_cpufreq_match_list, np);
++ of_node_put(np);
++
++ return match;
++}
++
++/*
++ * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
++ * all the real activity is done in the probe, which may be defered as well.
++ * The init here is only registering the driver and the platform device.
++ */
++static int __init sunxi_cpufreq_init(void)
++{
++ const struct of_device_id *match;
++ int ret;
++
++ match = sunxi_cpufreq_match_node();
++ if (!match)
++ return -ENODEV;
++
++ ret = platform_driver_register(&sunxi_cpufreq_driver);
++ if (unlikely(ret < 0))
++ return ret;
++
++ sunxi_cpufreq_pdev = platform_device_register_simple(
++ "sunxi-cpufreq-nvmem", -1, NULL, 0);
++ ret = PTR_ERR_OR_ZERO(sunxi_cpufreq_pdev);
++ if (ret == 0)
++ return 0;
++
++ platform_driver_unregister(&sunxi_cpufreq_driver);
++ return ret;
++}
++module_init(sunxi_cpufreq_init);
++
++static void __exit sunxi_cpufreq_exit(void)
++{
++ platform_device_unregister(sunxi_cpufreq_pdev);
++ platform_driver_unregister(&sunxi_cpufreq_driver);
++}
++module_exit(sunxi_cpufreq_exit);
++
++MODULE_DESCRIPTION("Sunxi cpufreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.17.1
-
