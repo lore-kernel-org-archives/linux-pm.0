@@ -1,84 +1,107 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH -next] power/domain_governor: fix a compilation error
-Date: Thu, 11 Apr 2019 16:36:56 +0200
-Message-ID: <CAJZ5v0hWL1dGPZX0aotcJ7cT_LdHvreZvx-fR7B_9Y=mqxSyzw@mail.gmail.com>
-References: <20190411124739.5542-1-cai@lca.pw> <CAPDyKFqmP3pORhufTsCg1nuqSPGz8hEQNTpZgr24fFqk13hM3w@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
+Date: Thu, 11 Apr 2019 11:50:19 -0500
+Message-ID: <CAL_JsqKHGczKAD3VjBsq6G=Ev0t8p_qWZ0YG6rRsqO8GuRAK7Q@mail.gmail.com>
+References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
+ <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
+ <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
+ <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com> <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqmP3pORhufTsCg1nuqSPGz8hEQNTpZgr24fFqk13hM3w@mail.gmail.com>
+In-Reply-To: <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Qian Cai <cai@lca.pw>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Lina Iyer <lina.iyer@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 11, 2019 at 3:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On Tue, Apr 9, 2019 at 10:38 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
 >
-> On Thu, 11 Apr 2019 at 14:48, Qian Cai <cai@lca.pw> wrote:
+> wt., 9 kwi 2019 o 13:04 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(=
+a):
 > >
-> > The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
-> > introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
-> > cpuidle_devices is undefined there.
+> > wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
+> > >
+> > > On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wr=
+ote:
+> > > >
+> > > > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82=
+(a):
+> > > > >
+> > > > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wro=
+te:
+> > > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > > >
+> > > > > > Add the DT binding document for the battery charger module of m=
+ax77650.
+> > > > > >
+> > > > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > > > ---
+> > > > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++=
+++++++++
+> > > > > >  1 file changed, 27 insertions(+)
+> > > > > >  create mode 100644 Documentation/devicetree/bindings/power/sup=
+ply/max77650-charger.txt
+> > > > > >
+> > > > > > diff --git a/Documentation/devicetree/bindings/power/supply/max=
+77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650=
+-charger.txt
+> > > > > > new file mode 100644
+> > > > > > index 000000000000..fef188144386
+> > > > > > --- /dev/null
+> > > > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-c=
+harger.txt
+> > > > > > @@ -0,0 +1,27 @@
+> > > > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated=
+.
+> > > > > > +
+> > > > > > +This module is part of the MAX77650 MFD device. For more detai=
+ls
+> > > > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> > > > > > +
+> > > > > > +The charger is represented as a sub-node of the PMIC node on t=
+he device tree.
+> > > > > > +
+> > > > > > +Required properties:
+> > > > > > +--------------------
+> > > > > > +- compatible:                Must be "maxim,max77650-charger"
+> > > > > > +
+> > > > > > +Optional properties:
+> > > > > > +--------------------
+> > > > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in micr=
+ovolts). Must be
+> > > > > > +                     one of: 4000000, 4100000, 4200000, 430000=
+0, 4400000,
+> > > > > > +                     4500000, 4600000, 4700000.
+> > > > > > +- current-limit-microamp:    CHGIN input current limit (in mic=
+roamps). Must
+> > > > > > +                             be one of: 95000, 190000, 285000,=
+ 380000, 475000.
+> > > > >
+> > > > > To repeat what I said on v6, these should be common properties IM=
+O (and
+> > > > > therefore documented as such).
+> > > > >
+> > > >
+> > > > Do you mean a separate "charger.txt" document in
+> > > > Documentation/devicetree/bindings/power/supply/?
+> > >
+> > > Yes, though I thought we had something already.
+> > >
+> > > Rob
 > >
-> > drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
-> > drivers/base/power/domain_governor.c:263: undefined reference to
-> > 'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
-> > R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
-> > bind externally can not be used when making a shared object; recompile
-> > with -fPIC
-> > drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
-> > relocation: unsupported relocation
-> > drivers/base/power/domain_governor.c:263: undefined reference to
-> > 'cpuidle_devices'
-> > make: *** [Makefile:1047: vmlinux] Error 1
+> > We don't AFAICT. There's only a binding document for "simple-battery"
+> > in power supply.
 > >
-> > Signed-off-by: Qian Cai <cai@lca.pw>
+> > Bart
 >
-> Qian, thanks for you patch!
->
-> > ---
-> >  drivers/base/power/domain_governor.c | 12 +++++++-----
-> >  1 file changed, 7 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> > index 39c8a699cb53..252d88fcf760 100644
-> > --- a/drivers/base/power/domain_governor.c
-> > +++ b/drivers/base/power/domain_governor.c
-> > @@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-> >          */
-> >         domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> >         for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> > -               dev = per_cpu(cpuidle_devices, cpu);
-> > -               if (dev) {
-> > -                       next_hrtimer = READ_ONCE(dev->next_hrtimer);
-> > -                       if (ktime_before(next_hrtimer, domain_wakeup))
-> > -                               domain_wakeup = next_hrtimer;
-> > +               if (IS_ENABLED(CONFIG_CPU_IDLE)) {
-> > +                       dev = per_cpu(cpuidle_devices, cpu);
-> > +                       if (dev) {
-> > +                               next_hrtimer = READ_ONCE(dev->next_hrtimer);
-> > +                               if (ktime_before(next_hrtimer, domain_wakeup))
-> > +                                       domain_wakeup = next_hrtimer;
-> > +                       }
->
-> This works as quick fix, but I think there is two possible options
-> that is probably better in long run.
->
-> 1) Extend the cpuidle interface with a new function:
->
-> struct cpuidle_device *cpuidle_get_cpu_device(unsigned int cpu)
->
-> Then when CONFIG_CPU_IDLE is unset, we can just have a stub function
-> returning NULL.
+> Can we have it locally for now but without the maxim prefix and then
+> reuse it if any other charger needs such functionality? To make it
+> even more generic we can name it: "input-voltage-min-microvolt" &
+> "input-current-limit-microamp".
 
-So why exactly cpu_power_down_ok() would be still needed with
-CONFIG_CPU_IDLE unset?
+I guess. And defining these as 'input' is good because we do have
+similar property names already for battery current limit and voltages.
 
-> 2) Have the struct dev_power_governor pm_domain_cpu_gov to be defined
-> (and the corresponding functionality), but only when CONFIG_CPU_IDLE
-> is set and when CONFIG_PM_GENERIC_DOMAINS is set.
-
-So please do that.
-
-Can you please send a replacement patch for the [4/4] in the series
-with this fixed?
+Rob
