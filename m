@@ -2,61 +2,60 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7D45C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:52:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C17C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:54:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A49612133D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:52:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 54BA42133D
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:54:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KoQx+8ii"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fEgO+XK1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726014AbfDKQwZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 12:52:25 -0400
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:55285 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726644AbfDKQwY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 12:52:24 -0400
-Received: by mail-wm1-f66.google.com with SMTP id c1so7594593wml.4
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 09:52:23 -0700 (PDT)
+        id S1726709AbfDKQyw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 12:54:52 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:36272 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726014AbfDKQyw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 12:54:52 -0400
+Received: by mail-wr1-f65.google.com with SMTP id y13so8315170wrd.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 09:54:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=9t4ilQ6mof2vrLlpPEWpt1SKNbSf3Ic0fWoK+soeb7k=;
-        b=KoQx+8iiWRxjA8U2wqa3Gp4LXLKkMSDps9mjaswCu2E2D75/ajSZcpqVF72V/CMWpB
-         E04amp3V283Qxd5MqHfVBcBAT7RMXry65eEMWgyRUOyn2BgqjeNomweQRPrFGCRUdHi5
-         I7Zu3T8ulQp16SjL0Z+tsV6XoOtTI7OaWTiZQKadmZ3uexV05U1ops4CYHx/d2EhgUm4
-         MaI7VpSDnXHhqO5G1rbIFX4eTQ3+j17GrMvwW5keA6MqrIAQ2pqyRNK2PLtwhIh9bt6v
-         AnLBnrN+BvliGStfKI+gUULlm/A0+wBGK7INTJGzfy4TnA7LZ/URWhucul4Vg+vCXhIL
-         +E7Q==
+        bh=cOPpYZ3H0MfSv2c9lP19htg6l7OxmezHtSYFlHqm1UU=;
+        b=fEgO+XK1as3Z1ARlG/p809yfJJrV/4vTjcSHcrjqur3X5wDIwo8kCIGgLMCR/T/RE7
+         JCcKGqLNte/YPw1IOGMrt0ckjOKvXwxnNWBzr1DMzDRQTicjRfaU9ZaBWcJZJC6b+NQC
+         IwW8l1E2rpIcEIAPtPayK/MvxALsohFBGstFYmh3kDT67vKFq/HuGdRhmophtHY2vdkH
+         XedXJx11QcfMRzVsG0FQdEKiVPjuoDWIszEkyufFTnQNZWPXLFD+T2G/9h0wennRhgMV
+         HPrjg0AbBZ+Ho2DvRE6lnWrcL0+P9zXkDxID2rO1CPO/n384OMvlUa73JoAN0siG+u8f
+         pjeQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=9t4ilQ6mof2vrLlpPEWpt1SKNbSf3Ic0fWoK+soeb7k=;
-        b=pKhV5lstRS6k9lLuODPW2teM9s/jFHgV7NcACTUsNNhoD1uBogg+O4Nna5g1eNB8bl
-         cDsOBLatAj3J42heUhXA01xx00MRvOVpb5vBLavnMwYjBZShTTA15mmnQ/qHL3tgmtnE
-         m8qUKJpPPCJYCGTaXooQglhzK+Xxj5uM5626tHAPecQWLdqrG4W+GrH7s3Zs36biENeG
-         fqATPv/X9vxgtNky9+ejLUgL81NFddg3ds15bofsRmJl0zhDnQ7FO9gmSn6FBvneMC/6
-         RVilKGyHE7oEzBP0RLsaQ7Jk5aqdNB5lQD5HDlPlJEncshCnSEfCf8ilX/RAMoJQ/hy2
-         +0+Q==
-X-Gm-Message-State: APjAAAWXV3d48Nr2Pwv0yzB+5PoLvqa40FwMUAJ25qIZ3Fj7rP06B6aY
-        7RLFoSpo4KLDaXZuqg+chnyrdA==
-X-Google-Smtp-Source: APXvYqx0gbTtZ4aF/yVlAevNj6Jyrc5c4iwdKCkgY4KAaVtrSC2rGv+ELhgjLV/NSgdK7lCsb4tFEw==
-X-Received: by 2002:a1c:480b:: with SMTP id v11mr7334426wma.25.1555001542551;
-        Thu, 11 Apr 2019 09:52:22 -0700 (PDT)
+        bh=cOPpYZ3H0MfSv2c9lP19htg6l7OxmezHtSYFlHqm1UU=;
+        b=hQL8hFIJ7toZdSwmxChQy3sYMzzymWT6eoBPcQr5aLIzf75fl1WVWCXnfpnqNfvB4p
+         WGCjv7BjDCZK6waMrD/xCFa3vTFY12QJkcwkGtF1KVqNWmPOe/JAQPqfDICuMiej0Dmv
+         RoqvUbPhPRWUu2q1KWA7Z9chkvaWWgTHfrKI6x0Q78Wqsky0O9H3NAhdalqLMiAsgvLA
+         fE/zu3trxnQSV+YwKYUGjYpeKiXyKmxvCx1TdgNIRtLcJeDGwMr/j+PsOYMyJruhjtUS
+         3OnJHH7GOa01NwMVs7AU+XppKo7ENIKdCA4n2orO+nmUGSF2kwv+CwEhtrClg9zGsWpP
+         UiPQ==
+X-Gm-Message-State: APjAAAXknQmE3zWmFPVCaiQhq3K8uYtBGm88Y7Q67hpDeN9oZ/p+T4lv
+        sW2J0xUM0kgXApWLX2/apbEn0Q==
+X-Google-Smtp-Source: APXvYqzxeM5u5pIVhTsvKsMqIBrH2illPdq3axdBpz3E+n8nzrtGegGuKG19noMTlgSUB9ulYXnkMw==
+X-Received: by 2002:a5d:6646:: with SMTP id f6mr9784948wrw.68.1555001690222;
+        Thu, 11 Apr 2019 09:54:50 -0700 (PDT)
 Received: from [192.168.8.100] (195.118.130.77.rev.sfr.net. [77.130.118.195])
-        by smtp.googlemail.com with ESMTPSA id j7sm56746955wrt.96.2019.04.11.09.52.21
+        by smtp.googlemail.com with ESMTPSA id y6sm41552051wru.9.2019.04.11.09.54.48
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 09:52:22 -0700 (PDT)
-Subject: Re: [PATCH v3 01/13] thermal: qoriq: Remove unnecessary DT node is
- NULL check
+        Thu, 11 Apr 2019 09:54:49 -0700 (PDT)
+Subject: Re: [PATCH v3 05/13] thermal: qoriq: Embed per-sensor data into
+ struct qoriq_tmu_data
 To:     Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
         Lucas Stach <l.stach@pengutronix.de>,
@@ -66,16 +65,16 @@ Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
         dl-linux-imx <linux-imx@nxp.com>,
         linux-kernel <linux-kernel@vger.kernel.org>
 References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-2-andrew.smirnov@gmail.com>
- <22f0c6d4-842e-bb91-a684-6edb6345e036@linaro.org>
- <CAHQ1cqEDiqn3KJeG62zqLm0tLv=+dgVHxSafm9_TYoi=VOMNhA@mail.gmail.com>
+ <20190401041418.5999-6-andrew.smirnov@gmail.com>
+ <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
+ <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <6cc7173a-ea45-4f79-61e6-bcfe1b9aaa4a@linaro.org>
-Date:   Thu, 11 Apr 2019 18:52:20 +0200
+Message-ID: <4a61e24a-fbb5-30f6-691a-0376fbca7b46@linaro.org>
+Date:   Thu, 11 Apr 2019 18:54:47 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <CAHQ1cqEDiqn3KJeG62zqLm0tLv=+dgVHxSafm9_TYoi=VOMNhA@mail.gmail.com>
+In-Reply-To: <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -83,74 +82,45 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411165220.u9ZGCgMH1MDoHxOeeEtR87JdWj_uEYsDJHr0NqOibl8@z>
+Message-ID: <20190411165447.3PgCX8Ai-QaacFy3X60I-j3-_oogeMMiFfeBlM6TtbU@z>
 
-On 05/04/2019 19:51, Andrey Smirnov wrote:
-> On Wed, Apr 3, 2019 at 8:21 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On 05/04/2019 20:00, Andrey Smirnov wrote:
+> On Thu, Apr 4, 2019 at 12:57 AM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
 >>
 >> On 01/04/2019 06:14, Andrey Smirnov wrote:
->>> This driver is meant to be used with Device Tree and there's no
->>> use-case where device's DT node is going to be NULL. Remove code
->>> protecting against that.
+>>> Embed per-sensor data into struct qoriq_tmu_data so we can drop the
+>>> code allocating it. This also allows us to get rid of per-sensor back
+>>> reference to struct qoriq_tmu_data since now its address can be
+>>> caluclated using container_of().
 >>
->> May be elaborate why is never going to be NULL?
+>> This seems to be a repeating pattern, drivers are forced to put a back
+>> pointer in the thermal sensor structure to regain access to the
+>> container structure in the get_temp callback.
+>>
+>> It would make sense to pass the sensor id to the get_temp callback as we
+>> register with the sensor id.
 >>
 > 
-> Hmm, I am not sure what can be elaborated further than what's already
-> there. The driver is written to be instantiated via DT and there's no
-> code that tries to do that via board code or anything like that. I am
-> guessing you maybe read the description differently. Can you help me
-> by giving an example of what you think needs clarifying?
+> I'll rebase this series on the two patches you submitted.
 
-May be just say if the probe function is called, the dev.of_node is
-guarantee to be filled by the underlying framework because the
-compatible string was found so the check is pointless.
+Well I should have added the RFC tag because I was not able to test with
+a platform.
 
-Anyway, it is a detail.
+[ ... ]
 
->>> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
->>> Cc: Chris Healy <cphealy@gmail.com>
->>> Cc: Lucas Stach <l.stach@pengutronix.de>
->>> Cc: Zhang Rui <rui.zhang@intel.com>
->>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
->>> Cc: linux-imx@nxp.com
->>> Cc: linux-pm@vger.kernel.org
->>> Cc: linux-kernel@vger.kernel.org
+>> Why not replace the little_endian boolean by a couple of callback
+>> read/write and assign them to ioread32|ioread32be at init time.
 >>
->> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> That will kill the tmu_read and tmu_write functions and from there you
+>> can figure out how to remove the qdata backpointer. In addition, it will
+>> save a few instructions to test the boolean.
 >>
->>> ---
->>>  drivers/thermal/qoriq_thermal.c | 5 -----
->>>  1 file changed, 5 deletions(-)
->>>
->>> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
->>> index 3b5f5b3fb1bc..7b364933bfb1 100644
->>> --- a/drivers/thermal/qoriq_thermal.c
->>> +++ b/drivers/thermal/qoriq_thermal.c
->>> @@ -193,11 +193,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->>>       struct qoriq_tmu_data *data;
->>>       struct device_node *np = pdev->dev.of_node;
->>>
->>> -     if (!np) {
->>> -             dev_err(&pdev->dev, "Device OF-Node is NULL");
->>> -             return -ENODEV;
->>> -     }
->>> -
->>>       data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
->>>                           GFP_KERNEL);
->>>       if (!data)
->>>
->>
->>
->> --
->>  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
->>
+> 
+> I am sure you've seen it by now, but little_endian is going away in
+> this series in regmap conversion patch.
+
+Right :)
 
 
 -- 
