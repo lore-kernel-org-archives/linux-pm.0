@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1] ARM: dts: tegra30: Add ACTMON node
-Date: Fri, 12 Apr 2019 01:30:42 +0300
-Message-ID: <20190411223042.25809-1-digetx@gmail.com>
+Subject: [PATCH v1] PM / devfreq: Introduce driver for NVIDIA Tegra20
+Date: Fri, 12 Apr 2019 01:36:53 +0300
+Message-ID: <20190411223653.27322-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,34 +10,253 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add ACTMON node to the Tegra30's device-tree.
+Add devfreq driver for NVIDIA Tegra20 SoC's. The driver periodically
+reads out Memory Controller counters and adjusts memory frequency based
+on the memory clients activity.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra30.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ MAINTAINERS                       |   8 ++
+ drivers/devfreq/Kconfig           |  10 ++
+ drivers/devfreq/Makefile          |   1 +
+ drivers/devfreq/tegra20-devfreq.c | 177 ++++++++++++++++++++++++++++++
+ 4 files changed, 196 insertions(+)
+ create mode 100644 drivers/devfreq/tegra20-devfreq.c
 
-diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
-index d2b553f76719..e074258d4518 100644
---- a/arch/arm/boot/dts/tegra30.dtsi
-+++ b/arch/arm/boot/dts/tegra30.dtsi
-@@ -370,6 +370,17 @@
- 		reg = <0x6000c000 0x150>; /* AHB Arbitration + Gizmo Controller */
- 	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 80b59db1b6e4..91f475ec4545 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10056,6 +10056,14 @@ F:	include/linux/memblock.h
+ F:	mm/memblock.c
+ F:	Documentation/core-api/boot-time-mm.rst
  
-+	actmon@6000c800 {
-+		compatible = "nvidia,tegra30-actmon";
-+		reg = <0x6000c800 0x400>;
-+		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&tegra_car TEGRA30_CLK_ACTMON>,
-+			 <&tegra_car TEGRA30_CLK_EMC>;
-+		clock-names = "actmon", "emc";
-+		resets = <&tegra_car TEGRA30_CLK_ACTMON>;
-+		reset-names = "actmon";
-+	};
++MEMORY FREQUENCY SCALING DRIVER FOR NVIDIA TEGRA20
++M:	Dmitry Osipenko <digetx@gmail.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-tegra@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
++S:	Maintained
++F:	drivers/devfreq/tegra20-devfreq.c
 +
- 	gpio: gpio@6000d000 {
- 		compatible = "nvidia,tegra30-gpio";
- 		reg = <0x6000d000 0x1000>;
+ MEMORY MANAGEMENT
+ L:	linux-mm@kvack.org
+ W:	http://www.linux-mm.org
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 6bae9688a52b..c2a1f791ca86 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -101,6 +101,16 @@ config ARM_TEGRA_DEVFREQ
+ 	  It reads ACTMON counters of memory controllers and adjusts the
+ 	  operating frequencies and voltages with OPP support.
+ 
++config ARM_TEGRA20_DEVFREQ
++	tristate "Tegra20 DEVFREQ Driver"
++	depends on TEGRA_MC && TEGRA20_EMC
++	select DEVFREQ_GOV_SIMPLE_ONDEMAND
++	select PM_OPP
++	help
++	  This adds the DEVFREQ driver for the Tegra20 family of SoCs.
++	  It reads Memory Controller counters and adjusts the operating
++	  frequencies and voltages with OPP support.
++
+ config ARM_RK3399_DMC_DEVFREQ
+ 	tristate "ARM RK3399 DMC DEVFREQ Driver"
+ 	depends on ARCH_ROCKCHIP
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 32b8d4d3f12c..6fcc5596b8b7 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+ obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+ obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
++obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
+ 
+ # DEVFREQ Event Drivers
+ obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+diff --git a/drivers/devfreq/tegra20-devfreq.c b/drivers/devfreq/tegra20-devfreq.c
+new file mode 100644
+index 000000000000..18c9aad7a9d7
+--- /dev/null
++++ b/drivers/devfreq/tegra20-devfreq.c
+@@ -0,0 +1,177 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * NVIDIA Tegra20 devfreq driver
++ *
++ * Author: Dmitry Osipenko <digetx@gmail.com>
++ */
++
++#include <linux/clk.h>
++#include <linux/devfreq.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++
++#include <soc/tegra/mc.h>
++
++#include "governor.h"
++
++#define MC_STAT_CONTROL				0x90
++#define MC_STAT_EMC_CLOCK_LIMIT			0xa0
++#define MC_STAT_EMC_CLOCKS			0xa4
++#define MC_STAT_EMC_CONTROL			0xa8
++#define MC_STAT_EMC_COUNT			0xb8
++
++#define EMC_GATHER_CLEAR			(1 << 8)
++#define EMC_GATHER_ENABLE			(3 << 8)
++
++struct tegra_devfreq {
++	struct devfreq *devfreq;
++	struct clk *clk;
++	void __iomem *regs;
++};
++
++static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
++				u32 flags)
++{
++	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
++	struct dev_pm_opp *opp;
++	unsigned long rate;
++	int err;
++
++	opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(opp))
++		return PTR_ERR(opp);
++
++	rate = dev_pm_opp_get_freq(opp);
++	dev_pm_opp_put(opp);
++
++	err = clk_set_min_rate(tegra->clk, rate);
++	if (err)
++		return err;
++
++	err = clk_set_rate(tegra->clk, 0);
++	if (err)
++		return err;
++
++	return 0;
++}
++
++static int tegra_devfreq_get_dev_status(struct device *dev,
++					struct devfreq_dev_status *stat)
++{
++	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
++
++	stat->busy_time = readl_relaxed(tegra->regs + MC_STAT_EMC_COUNT);
++	stat->total_time = readl_relaxed(tegra->regs + MC_STAT_EMC_CLOCKS) / 8;
++	stat->current_frequency = clk_get_rate(tegra->clk);
++
++	writel_relaxed(EMC_GATHER_CLEAR, tegra->regs + MC_STAT_CONTROL);
++	writel_relaxed(EMC_GATHER_ENABLE, tegra->regs + MC_STAT_CONTROL);
++
++	return 0;
++}
++
++static struct devfreq_dev_profile tegra_devfreq_profile = {
++	.polling_ms	= 500,
++	.target		= tegra_devfreq_target,
++	.get_dev_status	= tegra_devfreq_get_dev_status,
++};
++
++static struct tegra_mc *tegra_get_memory_controller(void)
++{
++	struct platform_device *pdev;
++	struct device_node *np;
++	struct tegra_mc *mc;
++
++	np = of_find_compatible_node(NULL, NULL, "nvidia,tegra20-mc-gart");
++	if (!np)
++		return ERR_PTR(-ENOENT);
++
++	pdev = of_find_device_by_node(np);
++	of_node_put(np);
++	if (!pdev)
++		return ERR_PTR(-ENODEV);
++
++	mc = platform_get_drvdata(pdev);
++	if (!mc)
++		return ERR_PTR(-EPROBE_DEFER);
++
++	return mc;
++}
++
++static int tegra_devfeq_probe(struct platform_device *pdev)
++{
++	struct tegra_devfreq *tegra;
++	struct tegra_mc *mc;
++	unsigned long max_rate;
++	unsigned long rate;
++	int err;
++
++	mc = tegra_get_memory_controller();
++	if (IS_ERR(mc)) {
++		err = PTR_ERR(mc);
++		dev_err(&pdev->dev, "failed to get mc: %d\n", err);
++		return err;
++	}
++
++	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
++	if (!tegra)
++		return -ENOMEM;
++
++	tegra->clk = devm_clk_get(&pdev->dev, "emc");
++	if (IS_ERR(tegra->clk)) {
++		err = PTR_ERR(tegra->clk);
++		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
++		return err;
++	}
++
++	tegra->regs = mc->regs;
++
++	max_rate = clk_round_rate(tegra->clk, ULONG_MAX);
++
++	for (rate = 0; rate <= max_rate; rate++) {
++		rate = clk_round_rate(tegra->clk, rate);
++		dev_pm_opp_add(&pdev->dev, rate, 0);
++	}
++
++	writel_relaxed(0x00000000, tegra->regs + MC_STAT_CONTROL);
++	writel_relaxed(0x00000000, tegra->regs + MC_STAT_EMC_CONTROL);
++	writel_relaxed(0xffffffff, tegra->regs + MC_STAT_EMC_CLOCK_LIMIT);
++
++	platform_set_drvdata(pdev, tegra);
++
++	tegra->devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
++					    DEVFREQ_GOV_SIMPLE_ONDEMAND, NULL);
++	if (IS_ERR(tegra->devfreq))
++		return PTR_ERR(tegra->devfreq);
++
++	return 0;
++}
++
++static int tegra_devfreq_remove(struct platform_device *pdev)
++{
++	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
++
++	devfreq_remove_device(tegra->devfreq);
++	dev_pm_opp_remove_all_dynamic(&pdev->dev);
++
++	return 0;
++}
++
++static struct platform_driver tegra_devfeq_driver = {
++	.probe		= tegra_devfeq_probe,
++	.remove		= tegra_devfreq_remove,
++	.driver		= {
++		.name	= "tegra20-devfreq",
++	},
++};
++module_platform_driver(tegra_devfeq_driver);
++
++MODULE_ALIAS("platform:tegra20-devfreq");
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra20 devfreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.21.0
