@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 7/8] PM / devfreq: tegra: Remove OPP entries on driver removal
-Date: Fri, 12 Apr 2019 01:29:13 +0300
-Message-ID: <20190411222914.25539-8-digetx@gmail.com>
+Subject: [PATCH v1 8/8] PM / devfreq: tegra: Support Tegra30
+Date: Fri, 12 Apr 2019 01:29:14 +0300
+Message-ID: <20190411222914.25539-9-digetx@gmail.com>
 References: <20190411222914.25539-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,41 +12,40 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This fixes "_opp_is_duplicate" warning messages on driver's module reload.
+The devfreq driver can be used on Tegra30 without any code change and
+it works perfectly fine, the default Tegra124 parameters are good enough
+for Tegra30.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/devfreq/Kconfig         | 2 +-
+ drivers/devfreq/tegra-devfreq.c | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 6a172d338f6d..6bae9688a52b 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ 
+ config ARM_TEGRA_DEVFREQ
+ 	tristate "Tegra DEVFREQ Driver"
+-	depends on ARCH_TEGRA_124_SOC
++	depends on ARCH_TEGRA
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 96f1e8e64e46..0985c02b75fe 100644
+index 0985c02b75fe..a0a3dafa9188 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -691,10 +691,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	}
- 
- 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
--	tegra->devfreq = devm_devfreq_add_device(&pdev->dev,
--						 &tegra_devfreq_profile,
--						 "tegra_actmon",
--						 NULL);
-+	tegra->devfreq = devfreq_add_device(&pdev->dev,
-+					    &tegra_devfreq_profile,
-+					    "tegra_actmon",
-+					    NULL);
- 
- 	return 0;
+@@ -724,6 +724,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
  }
-@@ -705,6 +705,9 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	u32 val;
- 	unsigned int i;
  
-+	devfreq_remove_device(tegra->devfreq);
-+	dev_pm_opp_remove_all_dynamic(&pdev->dev);
-+
- 	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
- 		val = device_readl(&tegra->devices[i], ACTMON_DEV_CTRL);
- 		val &= ~ACTMON_DEV_CTRL_ENB;
+ static const struct of_device_id tegra_devfreq_of_match[] = {
++	{ .compatible = "nvidia,tegra30-actmon" },
+ 	{ .compatible = "nvidia,tegra124-actmon" },
+ 	{ },
+ };
 -- 
 2.21.0
