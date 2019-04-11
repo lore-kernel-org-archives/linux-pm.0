@@ -2,127 +2,105 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88031C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:03:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15035C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5DE93217D4
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:03:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DA40C2184B
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 10:23:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="BFe4Euni"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726104AbfDKKDx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 06:03:53 -0400
-Received: from relay1.mentorg.com ([192.94.38.131]:58594 "EHLO
-        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726026AbfDKKDx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 06:03:53 -0400
-Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
-        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
-        id 1hEWYf-000336-PW from Jiada_Wang@mentor.com ; Thu, 11 Apr 2019 03:03:49 -0700
-Received: from jiwang-OptiPlex-980.tokyo.mentorg.com (147.34.91.1) by
- svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203) with Microsoft SMTP Server
- (TLS) id 15.0.1320.4; Thu, 11 Apr 2019 03:03:46 -0700
-From:   Jiada Wang <jiada_wang@mentor.com>
-To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
-        <daniel.lezcano@linaro.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <jiada_wang@mentor.com>
-Subject: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after device initialization
-Date:   Thu, 11 Apr 2019 19:03:52 +0900
-Message-ID: <20190411100352.15977-1-jiada_wang@mentor.com>
-X-Mailer: git-send-email 2.19.2
+        id S1726599AbfDKKXL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 06:23:11 -0400
+Received: from smtp-fw-2101.amazon.com ([72.21.196.25]:32476 "EHLO
+        smtp-fw-2101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726562AbfDKKXL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 06:23:11 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1554978190; x=1586514190;
+  h=from:to:subject:date:message-id:mime-version;
+  bh=ZdwRQPKamKRhDq4hZZRT4OqvNsRINrDHac1Ji29q3kM=;
+  b=BFe4EunidO+S6/DoqdcbX2wQwsfhRZkBifVzTKn3AVVtGsoZoWK2nmuY
+   bJkWWgIcBhhsLYVKtjaebo4b8y6cowr7xQ8Ns+YKKwoGMlEjE/mwoVSyQ
+   ZJQbjbacotZLyIFrq/Wac91JBHbSf3SH4ouI2OtElhbRVA+jh4/pVtNo7
+   g=;
+X-IronPort-AV: E=Sophos;i="5.60,337,1549929600"; 
+   d="scan'208";a="727378066"
+Received: from iad6-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-1e-c7c08562.us-east-1.amazon.com) ([10.124.125.2])
+  by smtp-border-fw-out-2101.iad2.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 11 Apr 2019 10:23:08 +0000
+Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan3.iad.amazon.com [10.40.159.166])
+        by email-inbound-relay-1e-c7c08562.us-east-1.amazon.com (8.14.7/8.14.7) with ESMTP id x3BAN6k2067872
+        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
+        Thu, 11 Apr 2019 10:23:06 GMT
+Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
+ EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
+ id 15.0.1367.3; Thu, 11 Apr 2019 10:23:05 +0000
+Received: from udc4a3e82dbc15a031435.hfa14.amazon.com (10.43.160.69) by
+ EX13D01EUB001.ant.amazon.com (10.43.166.194) with Microsoft SMTP Server (TLS)
+ id 15.0.1367.3; Thu, 11 Apr 2019 10:22:58 +0000
+From:   Talel Shenhar <talel@amazon.com>
+To:     <talel@amazon.com>, <robh@kernel.org>, <edubezval@gmail.com>,
+        <dwmw@amazon.co.uk>, <jonnyc@amazon.com>, <rui.zhang@intel.com>,
+        <hhhawa@amazon.com>, <ronenk@amazon.com>, <hanochu@amazon.com>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <mark.rutland@arm.com>, <devicetree@vger.kernel.org>
+Subject: [PATCH v3 0/2] Amazon's Annapurna Labs Thermal Sensor Driver
+Date:   Thu, 11 Apr 2019 13:22:46 +0300
+Message-ID: <1554978168-17369-1-git-send-email-talel@amazon.com>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset="UTF-8"
-X-ClientProxiedBy: svr-orw-mbx-08.mgc.mentorg.com (147.34.90.208) To
- svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
+X-Originating-IP: [10.43.160.69]
+X-ClientProxiedBy: EX13D15UWB001.ant.amazon.com (10.43.161.254) To
+ EX13D01EUB001.ant.amazon.com (10.43.166.194)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411100352.VeqkZ7kXKmkY5g3gldpCPj8ylCY26AracQzDiTZUI3U@z>
+Message-ID: <20190411102246.yRnF110w-V6yGvkBVi6alWCejuwTdtTMYyfCd06FwuA@z>
 
-Currently IRQ is remain enabled after .remove, later if device is probed,
-IRQ is requested before .thermal_init, this may cause IRQ function be
-triggered but not able to clear IRQ status, thus cause system to hang.
+This series introduces support for Amazon's Annapurna Labs Thermal Sensor
+based on a new simple MMIO thermal driver. This driver is intended to be
+used by other devices as well, which require just a simple MMIO access to
+read temperature. 
 
-this patch by moving request of IRQ after device initialization to
-avoid this issue.
+Changes since v2:
+=================
+- dt-binding: changed node name from "thermal_z0" to "thermal-z0"
+- dt-binding: changed node name from thermalz0_crit to "critical"
 
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
----
- drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
- 1 file changed, 26 insertions(+), 22 deletions(-)
+Changes since v1:
+==================
+- removed the "thermal_mmio" compatible string. With v2 version, only
+  specific hardware can bound
+- add initialization function that is mapped based on the specific binding
+  string
+- removed thermal_mmio_readl and thermal_readw, but kept mmio reads in
+  callback function. Left only thermal_mmio_reab which is used by
+  al-thermal
+- removed divider, bias, width which are not needed for al-thermal.
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 88fa41cf16e8..4d095d7f9763 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 
--	/*
--	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
--	 * to trigger on the low and high trip points of the current
--	 * temp window at this point.
--	 */
--	for (i = 0; i < 2; i++) {
--		irq = platform_get_irq(pdev, i);
--		if (irq < 0)
--			return irq;
--
--		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
--					 dev_name(dev), i);
--		if (!irqname)
--			return -ENOMEM;
--
--		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
--						rcar_gen3_thermal_irq_thread,
--						IRQF_SHARED, irqname, priv);
--		if (ret)
--			return ret;
--	}
--
- 	pm_runtime_enable(dev);
- 	pm_runtime_get_sync(dev);
- 
-@@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		goto error_unregister;
- 	}
- 
-+	/*
-+	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
-+	 * to trigger on the low and high trip points of the current
-+	 * temp window at this point.
-+	 */
-+	for (i = 0; i < 2; i++) {
-+		irq = platform_get_irq(pdev, i);
-+		if (irq < 0) {
-+			ret = irq;
-+			goto error_unregister;
-+		}
-+
-+		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
-+					 dev_name(dev), i);
-+		if (!irqname) {
-+			ret = -ENOMEM;
-+			goto error_unregister;
-+		}
-+
-+		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
-+						rcar_gen3_thermal_irq_thread,
-+						IRQF_SHARED, irqname, priv);
-+		if (ret)
-+			goto error_unregister;
-+	}
-+
- 	rcar_thermal_irq_set(priv, true);
- 
- 	return 0;
+
+
+Talel Shenhar (2):
+  dt-bindings: thermal: al-thermal: Add binding documentation
+  thermal: Introduce Amazon's Annapurna Labs Thermal Driver
+
+ .../bindings/thermal/amazon,al-thermal.txt         |  33 ++++++
+ MAINTAINERS                                        |   6 +
+ drivers/thermal/Kconfig                            |  10 ++
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/thermal_mmio.c                     | 129 +++++++++++++++++++++
+ 5 files changed, 179 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/amazon,al-thermal.txt
+ create mode 100644 drivers/thermal/thermal_mmio.c
+
 -- 
-2.19.2
+2.7.4
 
