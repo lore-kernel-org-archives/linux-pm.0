@@ -2,131 +2,153 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90C17C10F13
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:54:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A6A0C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:01:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 54BA42133D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:54:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDD1020850
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 18:01:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fEgO+XK1"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OQSNtXP5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726709AbfDKQyw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 12:54:52 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:36272 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726014AbfDKQyw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 12:54:52 -0400
-Received: by mail-wr1-f65.google.com with SMTP id y13so8315170wrd.3
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 09:54:51 -0700 (PDT)
+        id S1726585AbfDKSBV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 14:01:21 -0400
+Received: from mail-vs1-f67.google.com ([209.85.217.67]:34492 "EHLO
+        mail-vs1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726538AbfDKSBV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 14:01:21 -0400
+Received: by mail-vs1-f67.google.com with SMTP id t78so4038329vsc.1
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 11:01:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=cOPpYZ3H0MfSv2c9lP19htg6l7OxmezHtSYFlHqm1UU=;
-        b=fEgO+XK1as3Z1ARlG/p809yfJJrV/4vTjcSHcrjqur3X5wDIwo8kCIGgLMCR/T/RE7
-         JCcKGqLNte/YPw1IOGMrt0ckjOKvXwxnNWBzr1DMzDRQTicjRfaU9ZaBWcJZJC6b+NQC
-         IwW8l1E2rpIcEIAPtPayK/MvxALsohFBGstFYmh3kDT67vKFq/HuGdRhmophtHY2vdkH
-         XedXJx11QcfMRzVsG0FQdEKiVPjuoDWIszEkyufFTnQNZWPXLFD+T2G/9h0wennRhgMV
-         HPrjg0AbBZ+Ho2DvRE6lnWrcL0+P9zXkDxID2rO1CPO/n384OMvlUa73JoAN0siG+u8f
-         pjeQ==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=wiTdxbR/Lnuud6AEHWf71vo3FVoh7MoNjxOQrobPs0A=;
+        b=OQSNtXP5SB8zFweDIqdroMcA8DOQ7BIg0sNCujk2AEYm5QgLHJMFrTsBGlHdr4QCB6
+         TZVhjNOSWr+7r4qxJIyQ5U74m8Yu1LM62r07CgW37uPwtVg2nTInCLyW9VpUb7ZwIS4d
+         /NZd23hVSc9lIJuxxmAtwDVJwQ5U+c5kPpCxW9K393aT/gcdwKigUsEAZjJVBwBxC2un
+         Hx3c/3nos5T0VVUZck3PuKBEY5OC7IvF/Z7EWKAugZTTryc/XqX7qsydX4xDEZmrOQQl
+         172hvtduYLQw7esbIJjyn9pzjngPalCOjbRmUJjxRykEsUL0GtfJ8OZMotO/kb9otYI/
+         FpUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=cOPpYZ3H0MfSv2c9lP19htg6l7OxmezHtSYFlHqm1UU=;
-        b=hQL8hFIJ7toZdSwmxChQy3sYMzzymWT6eoBPcQr5aLIzf75fl1WVWCXnfpnqNfvB4p
-         WGCjv7BjDCZK6waMrD/xCFa3vTFY12QJkcwkGtF1KVqNWmPOe/JAQPqfDICuMiej0Dmv
-         RoqvUbPhPRWUu2q1KWA7Z9chkvaWWgTHfrKI6x0Q78Wqsky0O9H3NAhdalqLMiAsgvLA
-         fE/zu3trxnQSV+YwKYUGjYpeKiXyKmxvCx1TdgNIRtLcJeDGwMr/j+PsOYMyJruhjtUS
-         3OnJHH7GOa01NwMVs7AU+XppKo7ENIKdCA4n2orO+nmUGSF2kwv+CwEhtrClg9zGsWpP
-         UiPQ==
-X-Gm-Message-State: APjAAAXknQmE3zWmFPVCaiQhq3K8uYtBGm88Y7Q67hpDeN9oZ/p+T4lv
-        sW2J0xUM0kgXApWLX2/apbEn0Q==
-X-Google-Smtp-Source: APXvYqzxeM5u5pIVhTsvKsMqIBrH2illPdq3axdBpz3E+n8nzrtGegGuKG19noMTlgSUB9ulYXnkMw==
-X-Received: by 2002:a5d:6646:: with SMTP id f6mr9784948wrw.68.1555001690222;
-        Thu, 11 Apr 2019 09:54:50 -0700 (PDT)
-Received: from [192.168.8.100] (195.118.130.77.rev.sfr.net. [77.130.118.195])
-        by smtp.googlemail.com with ESMTPSA id y6sm41552051wru.9.2019.04.11.09.54.48
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 11 Apr 2019 09:54:49 -0700 (PDT)
-Subject: Re: [PATCH v3 05/13] thermal: qoriq: Embed per-sensor data into
- struct qoriq_tmu_data
-To:     Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Angus Ainslie <angus@akkea.ca>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-6-andrew.smirnov@gmail.com>
- <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
- <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <4a61e24a-fbb5-30f6-691a-0376fbca7b46@linaro.org>
-Date:   Thu, 11 Apr 2019 18:54:47 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=wiTdxbR/Lnuud6AEHWf71vo3FVoh7MoNjxOQrobPs0A=;
+        b=Ewud3R/fCY8V7L07ryellx4Jd/PGfYa+qRqIJXsn+n6bUibmnSMEDIiIQbRCCPMEek
+         DniwQB5helrGUnif3zCMFiXeLWBPP9Ji5xoMfLmhmxhNBoB+2SEWn8qBb0bmY7INCfxh
+         YrY3JwayGYlVL1XJcNEfwv4wapm6z9a0buOWPqtYVIOeEoIsRKlY9jcRTDQ+NmCiA9i8
+         n1htdR2q/upjd4I5gJWQ5R3iOCtZftjNoRr3wwSg4s3rlAhPXSgl8SqnOkTm4iBKEZUC
+         MeQILLfL/YpYkPlAkZemybNvZ+n3nerMityLa5LpRaKXZNDlesv3Awh9yg5r6AliV2Vj
+         zVwQ==
+X-Gm-Message-State: APjAAAWbXUKT37F2S139mjHcxBT2vk+3NqJuVGDxWu8bqJkFQL5VoDXJ
+        ADLCFtozlMZ2G/VZFpX8VzbwnmQ6hxD2uharsjD+Lg==
+X-Google-Smtp-Source: APXvYqx8XPYiDgHZ0gQYochFd76iE1WBRHxNlh0I6aqddVTYYC0kJWigXoZpVKvXflsFBaTv0baSlBp1u9qGYNPenUA=
+X-Received: by 2002:a67:fa95:: with SMTP id f21mr28367782vsq.180.1555005679726;
+ Thu, 11 Apr 2019 11:01:19 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAHQ1cqEJbXKdoqqwKjkD_yPjv52Y9w+XOOKxqFpPN23q-qnFaw@mail.gmail.com>
+References: <20190411124739.5542-1-cai@lca.pw> <CAPDyKFqmP3pORhufTsCg1nuqSPGz8hEQNTpZgr24fFqk13hM3w@mail.gmail.com>
+ <CAJZ5v0hWL1dGPZX0aotcJ7cT_LdHvreZvx-fR7B_9Y=mqxSyzw@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hWL1dGPZX0aotcJ7cT_LdHvreZvx-fR7B_9Y=mqxSyzw@mail.gmail.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 11 Apr 2019 20:00:43 +0200
+Message-ID:
+ <CAPDyKFpVsNB3T7FtveK1rcTOtmOzEOQrSZ3zS+ze6jexVqw9nA@mail.gmail.com>
+Subject: Re: [PATCH -next] power/domain_governor: fix a compilation error
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Qian Cai <cai@lca.pw>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+        Len Brown <len.brown@intel.com>,
+        Lina Iyer <lina.iyer@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411165447.3PgCX8Ai-QaacFy3X60I-j3-_oogeMMiFfeBlM6TtbU@z>
+Message-ID: <20190411180043.9H-ASdoH6r7SHeJM90hm0v521uHpmAS28zxX9ynbIEA@z>
 
-On 05/04/2019 20:00, Andrey Smirnov wrote:
-> On Thu, Apr 4, 2019 at 12:57 AM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 01/04/2019 06:14, Andrey Smirnov wrote:
->>> Embed per-sensor data into struct qoriq_tmu_data so we can drop the
->>> code allocating it. This also allows us to get rid of per-sensor back
->>> reference to struct qoriq_tmu_data since now its address can be
->>> caluclated using container_of().
->>
->> This seems to be a repeating pattern, drivers are forced to put a back
->> pointer in the thermal sensor structure to regain access to the
->> container structure in the get_temp callback.
->>
->> It would make sense to pass the sensor id to the get_temp callback as we
->> register with the sensor id.
->>
-> 
-> I'll rebase this series on the two patches you submitted.
+On Thu, 11 Apr 2019 at 16:37, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Thu, Apr 11, 2019 at 3:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Thu, 11 Apr 2019 at 14:48, Qian Cai <cai@lca.pw> wrote:
+> > >
+> > > The commit 50899f7d5078 ("PM / Domains: Add genpd governor for CPUs")
+> > > introduced a compilation error on arm64 with CONFIG_CPU_IDLE=n because
+> > > cpuidle_devices is undefined there.
+> > >
+> > > drivers/base/power/domain_governor.o: In function `cpu_power_down_ok':
+> > > drivers/base/power/domain_governor.c:263: undefined reference to
+> > > 'cpuidle_devices' ld: drivers/base/power/domain_governor.o: relocation
+> > > R_AARCH64_ADR_PREL_PG_HI21 against symbol 'cpuidle_devices' which may
+> > > bind externally can not be used when making a shared object; recompile
+> > > with -fPIC
+> > > drivers/base/power/domain_governor.c:263:(.text+0x638): dangerous
+> > > relocation: unsupported relocation
+> > > drivers/base/power/domain_governor.c:263: undefined reference to
+> > > 'cpuidle_devices'
+> > > make: *** [Makefile:1047: vmlinux] Error 1
+> > >
+> > > Signed-off-by: Qian Cai <cai@lca.pw>
+> >
+> > Qian, thanks for you patch!
+> >
+> > > ---
+> > >  drivers/base/power/domain_governor.c | 12 +++++++-----
+> > >  1 file changed, 7 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> > > index 39c8a699cb53..252d88fcf760 100644
+> > > --- a/drivers/base/power/domain_governor.c
+> > > +++ b/drivers/base/power/domain_governor.c
+> > > @@ -270,11 +270,13 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+> > >          */
+> > >         domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+> > >         for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+> > > -               dev = per_cpu(cpuidle_devices, cpu);
+> > > -               if (dev) {
+> > > -                       next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> > > -                       if (ktime_before(next_hrtimer, domain_wakeup))
+> > > -                               domain_wakeup = next_hrtimer;
+> > > +               if (IS_ENABLED(CONFIG_CPU_IDLE)) {
+> > > +                       dev = per_cpu(cpuidle_devices, cpu);
+> > > +                       if (dev) {
+> > > +                               next_hrtimer = READ_ONCE(dev->next_hrtimer);
+> > > +                               if (ktime_before(next_hrtimer, domain_wakeup))
+> > > +                                       domain_wakeup = next_hrtimer;
+> > > +                       }
+> >
+> > This works as quick fix, but I think there is two possible options
+> > that is probably better in long run.
+> >
+> > 1) Extend the cpuidle interface with a new function:
+> >
+> > struct cpuidle_device *cpuidle_get_cpu_device(unsigned int cpu)
+> >
+> > Then when CONFIG_CPU_IDLE is unset, we can just have a stub function
+> > returning NULL.
+>
+> So why exactly cpu_power_down_ok() would be still needed with
+> CONFIG_CPU_IDLE unset?
+>
+> > 2) Have the struct dev_power_governor pm_domain_cpu_gov to be defined
+> > (and the corresponding functionality), but only when CONFIG_CPU_IDLE
+> > is set and when CONFIG_PM_GENERIC_DOMAINS is set.
+>
+> So please do that.
+>
+> Can you please send a replacement patch for the [4/4] in the series
+> with this fixed?
 
-Well I should have added the RFC tag because I was not able to test with
-a platform.
+Yes, I do that!
 
-[ ... ]
-
->> Why not replace the little_endian boolean by a couple of callback
->> read/write and assign them to ioread32|ioread32be at init time.
->>
->> That will kill the tmu_read and tmu_write functions and from there you
->> can figure out how to remove the qdata backpointer. In addition, it will
->> save a few instructions to test the boolean.
->>
-> 
-> I am sure you've seen it by now, but little_endian is going away in
-> this series in regmap conversion patch.
-
-Right :)
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Kind regards
+Uffe
