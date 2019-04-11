@@ -1,94 +1,93 @@
-From: Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH v5] arm64: dts: ls1088a: add one more thermal zone node
-Date: Thu, 11 Apr 2019 16:32:36 +0800
-Message-ID: <20190411083236.9377-1-andy.tang@nxp.com>
+From: Jiada Wang <jiada_wang@mentor.com>
+Subject: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after device initialization
+Date: Thu, 11 Apr 2019 19:03:52 +0900
+Message-ID: <20190411100352.15977-1-jiada_wang@mentor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: shawnguo@kernel.org
-Cc: leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
+To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jiada_wang@mentor.com
 List-Id: linux-pm@vger.kernel.org
 
-Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-sensor is used to monitor the temperature of core and SoC platform is for
-platform. The current dts only support the first sensor.
-This patch adds the second sensor node to dts to enable it.
+Currently IRQ is remain enabled after .remove, later if device is probed,
+IRQ is requested before .thermal_init, this may cause IRQ function be
+triggered but not able to clear IRQ status, thus cause system to hang.
 
-Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+this patch by moving request of IRQ after device initialization to
+avoid this issue.
+
+Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 ---
-v5:
-	- update the thermal zone name due to the length limitation
-	- remove cooling map in platform zone
-v4:
-	- use hyphen instead of underscore in node name
-v3:
-	- use more descriptive name for each zone
-v2:
-	- Add more information about sensors to description
- arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   28 ++++++++++++++++++++---
- 1 files changed, 24 insertions(+), 4 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+ 1 file changed, 26 insertions(+), 22 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index de93b42..de39672 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -129,19 +129,19 @@
- 	};
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 88fa41cf16e8..4d095d7f9763 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
  
- 	thermal-zones {
--		cpu_thermal: cpu-thermal {
-+		core-cluster {
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
- 			thermal-sensors = <&tmu 0>;
+ 	platform_set_drvdata(pdev, priv);
  
- 			trips {
--				cpu_alert: cpu-alert {
-+				core_cluster_alert: core-cluster-alert {
- 					temperature = <85000>;
- 					hysteresis = <2000>;
- 					type = "passive";
- 				};
+-	/*
+-	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+-	 * to trigger on the low and high trip points of the current
+-	 * temp window at this point.
+-	 */
+-	for (i = 0; i < 2; i++) {
+-		irq = platform_get_irq(pdev, i);
+-		if (irq < 0)
+-			return irq;
+-
+-		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+-					 dev_name(dev), i);
+-		if (!irqname)
+-			return -ENOMEM;
+-
+-		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+-						rcar_gen3_thermal_irq_thread,
+-						IRQF_SHARED, irqname, priv);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
  
--				cpu_crit: cpu-crit {
-+				core_cluster_crit: core-cluster-crit {
- 					temperature = <95000>;
- 					hysteresis = <2000>;
- 					type = "critical";
-@@ -150,7 +150,7 @@
+@@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		goto error_unregister;
+ 	}
  
- 			cooling-maps {
- 				map0 {
--					trip = <&cpu_alert>;
-+					trip = <&core_cluster_alert>;
- 					cooling-device =
- 						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
- 						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-@@ -163,6 +163,26 @@
- 				};
- 			};
- 		};
++	/*
++	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
++	 * to trigger on the low and high trip points of the current
++	 * temp window at this point.
++	 */
++	for (i = 0; i < 2; i++) {
++		irq = platform_get_irq(pdev, i);
++		if (irq < 0) {
++			ret = irq;
++			goto error_unregister;
++		}
 +
-+		platform {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+			thermal-sensors = <&tmu 1>;
++		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
++					 dev_name(dev), i);
++		if (!irqname) {
++			ret = -ENOMEM;
++			goto error_unregister;
++		}
 +
-+			trips {
-+				platform-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
++		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
++						rcar_gen3_thermal_irq_thread,
++						IRQF_SHARED, irqname, priv);
++		if (ret)
++			goto error_unregister;
++	}
 +
-+				platform-crit {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
- 	};
+ 	rcar_thermal_irq_set(priv, true);
  
- 	timer {
+ 	return 0;
 -- 
-1.7.1
+2.19.2
