@@ -1,38 +1,56 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 0/8] devfreq: Tegra devfreq fixes / improvements and Tegra30 support
-Date: Fri, 12 Apr 2019 01:29:06 +0300
-Message-ID: <20190411222914.25539-1-digetx@gmail.com>
+Subject: [PATCH v1 2/8] PM / devfreq: tegra: Replace readl-writel with relaxed versions
+Date: Fri, 12 Apr 2019 01:29:08 +0300
+Message-ID: <20190411222914.25539-3-digetx@gmail.com>
+References: <20190411222914.25539-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190411222914.25539-1-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+There is no need to insert memory barrier on each readl/writel
+invocation, hence use the relaxed versions.
 
-I tried to utilize the Tegra devfreq driver on Tegra30 and found out that
-it doesn't work properly due to improper Hz<->kHz conversions made by the
-driver. After fixing that problem and doing some more testing I noticed
-that there are things that could be improved and in result here is this
-patchset that fixes the problems, makes some improvements and adds support
-for NVIDIA Tegra30 SoC's. This series was tested on Tegra30 and Tegra124
-machines.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra-devfreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Dmitry Osipenko (8):
-  PM / devfreq: tegra: Fix kHz to Hz conversion
-  PM / devfreq: tegra: Replace readl-writel with relaxed versions
-  PM / devfreq: tegra: Don't ignore clk errors
-  PM / devfreq: tegra: Don't release IRQ manually on driver removal
-  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-  PM / devfreq: tegra: Drop spinlock
-  PM / devfreq: tegra: Remove OPP entries on driver removal
-  PM / devfreq: tegra: Support Tegra30
-
- drivers/devfreq/Kconfig         |  2 +-
- drivers/devfreq/tegra-devfreq.c | 66 ++++++++++++++-------------------
- 2 files changed, 29 insertions(+), 39 deletions(-)
-
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index ec4ff55f5eea..d749399f67ae 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -191,23 +191,23 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
+ 
+ static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+ {
+-	return readl(tegra->regs + offset);
++	return readl_relaxed(tegra->regs + offset);
+ }
+ 
+ static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
+ {
+-	writel(val, tegra->regs + offset);
++	writel_relaxed(val, tegra->regs + offset);
+ }
+ 
+ static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
+ {
+-	return readl(dev->regs + offset);
++	return readl_relaxed(dev->regs + offset);
+ }
+ 
+ static void device_writel(struct tegra_devfreq_device *dev, u32 val,
+ 			  u32 offset)
+ {
+-	writel(val, dev->regs + offset);
++	writel_relaxed(val, dev->regs + offset);
+ }
+ 
+ static unsigned long do_percent(unsigned long val, unsigned int pct)
 -- 
 2.21.0
