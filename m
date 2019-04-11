@@ -2,171 +2,161 @@ Return-Path: <SRS0=4kRr=SN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F42CC10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7D45C10F13
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:52:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2D6BC2133D
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:50:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555001440;
-	bh=yIir5Y2LTtThpcZ0wmoahtPjJhRvzPB4XRFyJC5fbpY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=lC/qJmILXyOO820q6/w8gbuC3t3tzhVbR9GgC+me5yYNYVMODWXmpkAogIx4J4aO8
-	 Njx3bw7TNRfq+m8uBXvsDxdN9jz0qyPCi7qCpXezsC9V8m22GlY5WiXTl1pWyDnqb3
-	 UjYjeDkNKiHUGtiYfKsB5Wm7iq2gcZ1DLTqf3bgI=
+	by mail.kernel.org (Postfix) with ESMTP id A49612133D
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Apr 2019 16:52:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KoQx+8ii"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726684AbfDKQue (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Apr 2019 12:50:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:59288 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726014AbfDKQud (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 11 Apr 2019 12:50:33 -0400
-Received: from mail-qt1-f170.google.com (mail-qt1-f170.google.com [209.85.160.170])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 1FC0C2146F;
-        Thu, 11 Apr 2019 16:50:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1555001432;
-        bh=yIir5Y2LTtThpcZ0wmoahtPjJhRvzPB4XRFyJC5fbpY=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=vnL9Do0tI6kdTd3ZBZSqJJl+7Mqkt4UshkZI4sl3m6mDQmAqWApaTluwpiYPUZxAX
-         EpZYF9Y26xbZK80UxkgViwBbmu5TM8z9R+scsafLZ5Z2dJwThJMf3f/0AZRryzcEtF
-         mGDVpDI+Ixwwb2kHm0DDCXs1fHOp4sOOv3+prKGM=
-Received: by mail-qt1-f170.google.com with SMTP id z16so7905811qtn.4;
-        Thu, 11 Apr 2019 09:50:32 -0700 (PDT)
-X-Gm-Message-State: APjAAAUv/vXy44gK+UJzQoDZg/vUCrUuDGKosXubRxLTmUYsef03eojq
-        ooTiSTyHl+FRtra74pswktk2a9wkBh+Sy3mK+A==
-X-Google-Smtp-Source: APXvYqwTqvX7C0TTcwgCaYWdFm3bXLLByPKzUgynxM+iqmu4l9jDYFGRw2vas6PYj2tYWtRg5Rk0rxSUelKiNEkJZNg=
-X-Received: by 2002:aed:3e3d:: with SMTP id l58mr43153787qtf.77.1555001431360;
- Thu, 11 Apr 2019 09:50:31 -0700 (PDT)
+        id S1726014AbfDKQwZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Apr 2019 12:52:25 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:55285 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726644AbfDKQwY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2019 12:52:24 -0400
+Received: by mail-wm1-f66.google.com with SMTP id c1so7594593wml.4
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2019 09:52:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=9t4ilQ6mof2vrLlpPEWpt1SKNbSf3Ic0fWoK+soeb7k=;
+        b=KoQx+8iiWRxjA8U2wqa3Gp4LXLKkMSDps9mjaswCu2E2D75/ajSZcpqVF72V/CMWpB
+         E04amp3V283Qxd5MqHfVBcBAT7RMXry65eEMWgyRUOyn2BgqjeNomweQRPrFGCRUdHi5
+         I7Zu3T8ulQp16SjL0Z+tsV6XoOtTI7OaWTiZQKadmZ3uexV05U1ops4CYHx/d2EhgUm4
+         MaI7VpSDnXHhqO5G1rbIFX4eTQ3+j17GrMvwW5keA6MqrIAQ2pqyRNK2PLtwhIh9bt6v
+         AnLBnrN+BvliGStfKI+gUULlm/A0+wBGK7INTJGzfy4TnA7LZ/URWhucul4Vg+vCXhIL
+         +E7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=9t4ilQ6mof2vrLlpPEWpt1SKNbSf3Ic0fWoK+soeb7k=;
+        b=pKhV5lstRS6k9lLuODPW2teM9s/jFHgV7NcACTUsNNhoD1uBogg+O4Nna5g1eNB8bl
+         cDsOBLatAj3J42heUhXA01xx00MRvOVpb5vBLavnMwYjBZShTTA15mmnQ/qHL3tgmtnE
+         m8qUKJpPPCJYCGTaXooQglhzK+Xxj5uM5626tHAPecQWLdqrG4W+GrH7s3Zs36biENeG
+         fqATPv/X9vxgtNky9+ejLUgL81NFddg3ds15bofsRmJl0zhDnQ7FO9gmSn6FBvneMC/6
+         RVilKGyHE7oEzBP0RLsaQ7Jk5aqdNB5lQD5HDlPlJEncshCnSEfCf8ilX/RAMoJQ/hy2
+         +0+Q==
+X-Gm-Message-State: APjAAAWXV3d48Nr2Pwv0yzB+5PoLvqa40FwMUAJ25qIZ3Fj7rP06B6aY
+        7RLFoSpo4KLDaXZuqg+chnyrdA==
+X-Google-Smtp-Source: APXvYqx0gbTtZ4aF/yVlAevNj6Jyrc5c4iwdKCkgY4KAaVtrSC2rGv+ELhgjLV/NSgdK7lCsb4tFEw==
+X-Received: by 2002:a1c:480b:: with SMTP id v11mr7334426wma.25.1555001542551;
+        Thu, 11 Apr 2019 09:52:22 -0700 (PDT)
+Received: from [192.168.8.100] (195.118.130.77.rev.sfr.net. [77.130.118.195])
+        by smtp.googlemail.com with ESMTPSA id j7sm56746955wrt.96.2019.04.11.09.52.21
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 11 Apr 2019 09:52:22 -0700 (PDT)
+Subject: Re: [PATCH v3 01/13] thermal: qoriq: Remove unnecessary DT node is
+ NULL check
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
+ <20190401041418.5999-2-andrew.smirnov@gmail.com>
+ <22f0c6d4-842e-bb91-a684-6edb6345e036@linaro.org>
+ <CAHQ1cqEDiqn3KJeG62zqLm0tLv=+dgVHxSafm9_TYoi=VOMNhA@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <6cc7173a-ea45-4f79-61e6-bcfe1b9aaa4a@linaro.org>
+Date:   Thu, 11 Apr 2019 18:52:20 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <20190403090108.24788-1-brgl@bgdev.pl> <20190403090108.24788-3-brgl@bgdev.pl>
- <20190406070746.GA29624@bogus> <CAMRc=Mc+cTVrzywTydp-10Hj=-m=qCmtK1+4NRiOFHZ855fnDw@mail.gmail.com>
- <CAL_JsqKHjppN2kXqVpv5LjTedykA-Q8vteQDipw=FAaoUZLGeg@mail.gmail.com>
- <CAMRc=Mc4HOn+Pjwf+sD4fU7gNoksRKXz9Yq6zE233CCoNskPiQ@mail.gmail.com> <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
-In-Reply-To: <CAMRc=MfkdBMmhrCM7Ut8ZGkgT=gFTRrbgFmu3MbghGwCRkEEKg@mail.gmail.com>
-From:   Rob Herring <robh@kernel.org>
-Date:   Thu, 11 Apr 2019 11:50:19 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKHGczKAD3VjBsq6G=Ev0t8p_qWZ0YG6rRsqO8GuRAK7Q@mail.gmail.com>
-Message-ID:
- <CAL_JsqKHGczKAD3VjBsq6G=Ev0t8p_qWZ0YG6rRsqO8GuRAK7Q@mail.gmail.com>
-Subject: Re: [PATCH v8 02/11] dt-bindings: power: supply: add DT bindings for max77650
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+In-Reply-To: <CAHQ1cqEDiqn3KJeG62zqLm0tLv=+dgVHxSafm9_TYoi=VOMNhA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190411165019.McEiKDR5pLb53AG8VHj6jYigDqWc_Koqr9cRFu-oCks@z>
+Message-ID: <20190411165220.u9ZGCgMH1MDoHxOeeEtR87JdWj_uEYsDJHr0NqOibl8@z>
 
-On Tue, Apr 9, 2019 at 10:38 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
->
-> wt., 9 kwi 2019 o 13:04 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(=
-a):
-> >
-> > wt., 9 kwi 2019 o 03:10 Rob Herring <robh@kernel.org> napisa=C5=82(a):
-> > >
-> > > On Mon, Apr 8, 2019 at 7:25 AM Bartosz Golaszewski <brgl@bgdev.pl> wr=
-ote:
-> > > >
-> > > > sob., 6 kwi 2019 o 09:07 Rob Herring <robh@kernel.org> napisa=C5=82=
-(a):
-> > > > >
-> > > > > On Wed, Apr 03, 2019 at 11:00:59AM +0200, Bartosz Golaszewski wro=
-te:
-> > > > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > > > >
-> > > > > > Add the DT binding document for the battery charger module of m=
-ax77650.
-> > > > > >
-> > > > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > > > > ---
-> > > > > >  .../power/supply/max77650-charger.txt         | 27 +++++++++++=
-++++++++
-> > > > > >  1 file changed, 27 insertions(+)
-> > > > > >  create mode 100644 Documentation/devicetree/bindings/power/sup=
-ply/max77650-charger.txt
-> > > > > >
-> > > > > > diff --git a/Documentation/devicetree/bindings/power/supply/max=
-77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650=
--charger.txt
-> > > > > > new file mode 100644
-> > > > > > index 000000000000..fef188144386
-> > > > > > --- /dev/null
-> > > > > > +++ b/Documentation/devicetree/bindings/power/supply/max77650-c=
-harger.txt
-> > > > > > @@ -0,0 +1,27 @@
-> > > > > > +Battery charger driver for MAX77650 PMIC from Maxim Integrated=
-.
-> > > > > > +
-> > > > > > +This module is part of the MAX77650 MFD device. For more detai=
-ls
-> > > > > > +see Documentation/devicetree/bindings/mfd/max77650.txt.
-> > > > > > +
-> > > > > > +The charger is represented as a sub-node of the PMIC node on t=
-he device tree.
-> > > > > > +
-> > > > > > +Required properties:
-> > > > > > +--------------------
-> > > > > > +- compatible:                Must be "maxim,max77650-charger"
-> > > > > > +
-> > > > > > +Optional properties:
-> > > > > > +--------------------
-> > > > > > +- min-microvolt:     Minimum CHGIN regulation voltage (in micr=
-ovolts). Must be
-> > > > > > +                     one of: 4000000, 4100000, 4200000, 430000=
-0, 4400000,
-> > > > > > +                     4500000, 4600000, 4700000.
-> > > > > > +- current-limit-microamp:    CHGIN input current limit (in mic=
-roamps). Must
-> > > > > > +                             be one of: 95000, 190000, 285000,=
- 380000, 475000.
-> > > > >
-> > > > > To repeat what I said on v6, these should be common properties IM=
-O (and
-> > > > > therefore documented as such).
-> > > > >
-> > > >
-> > > > Do you mean a separate "charger.txt" document in
-> > > > Documentation/devicetree/bindings/power/supply/?
-> > >
-> > > Yes, though I thought we had something already.
-> > >
-> > > Rob
-> >
-> > We don't AFAICT. There's only a binding document for "simple-battery"
-> > in power supply.
-> >
-> > Bart
->
-> Can we have it locally for now but without the maxim prefix and then
-> reuse it if any other charger needs such functionality? To make it
-> even more generic we can name it: "input-voltage-min-microvolt" &
-> "input-current-limit-microamp".
+On 05/04/2019 19:51, Andrey Smirnov wrote:
+> On Wed, Apr 3, 2019 at 8:21 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 01/04/2019 06:14, Andrey Smirnov wrote:
+>>> This driver is meant to be used with Device Tree and there's no
+>>> use-case where device's DT node is going to be NULL. Remove code
+>>> protecting against that.
+>>
+>> May be elaborate why is never going to be NULL?
+>>
+> 
+> Hmm, I am not sure what can be elaborated further than what's already
+> there. The driver is written to be instantiated via DT and there's no
+> code that tries to do that via board code or anything like that. I am
+> guessing you maybe read the description differently. Can you help me
+> by giving an example of what you think needs clarifying?
 
-I guess. And defining these as 'input' is good because we do have
-similar property names already for battery current limit and voltages.
+May be just say if the probe function is called, the dev.of_node is
+guarantee to be filled by the underlying framework because the
+compatible string was found so the check is pointless.
 
-Rob
+Anyway, it is a detail.
+
+>>> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+>>> Cc: Chris Healy <cphealy@gmail.com>
+>>> Cc: Lucas Stach <l.stach@pengutronix.de>
+>>> Cc: Zhang Rui <rui.zhang@intel.com>
+>>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+>>> Cc: linux-imx@nxp.com
+>>> Cc: linux-pm@vger.kernel.org
+>>> Cc: linux-kernel@vger.kernel.org
+>>
+>> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>
+>>> ---
+>>>  drivers/thermal/qoriq_thermal.c | 5 -----
+>>>  1 file changed, 5 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+>>> index 3b5f5b3fb1bc..7b364933bfb1 100644
+>>> --- a/drivers/thermal/qoriq_thermal.c
+>>> +++ b/drivers/thermal/qoriq_thermal.c
+>>> @@ -193,11 +193,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>>>       struct qoriq_tmu_data *data;
+>>>       struct device_node *np = pdev->dev.of_node;
+>>>
+>>> -     if (!np) {
+>>> -             dev_err(&pdev->dev, "Device OF-Node is NULL");
+>>> -             return -ENODEV;
+>>> -     }
+>>> -
+>>>       data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+>>>                           GFP_KERNEL);
+>>>       if (!data)
+>>>
+>>
+>>
+>> --
+>>  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>>
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
