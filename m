@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1 8/8] PM / devfreq: tegra: Support Tegra30
-Date: Fri, 12 Apr 2019 01:29:14 +0300
-Message-ID: <20190411222914.25539-9-digetx@gmail.com>
+Subject: [PATCH v1 3/8] PM / devfreq: tegra: Don't ignore clk errors
+Date: Fri, 12 Apr 2019 01:29:09 +0300
+Message-ID: <20190411222914.25539-4-digetx@gmail.com>
 References: <20190411222914.25539-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,40 +12,42 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The devfreq driver can be used on Tegra30 without any code change and
-it works perfectly fine, the default Tegra124 parameters are good enough
-for Tegra30.
+The clk_set_min_rate() could fail and in this case clk_set_rate() sets
+rate to 0, which may drop EMC rate to minimum and make machine very
+difficult to use.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/Kconfig         | 2 +-
- drivers/devfreq/tegra-devfreq.c | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ drivers/devfreq/tegra-devfreq.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 6a172d338f6d..6bae9688a52b 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
- 
- config ARM_TEGRA_DEVFREQ
- 	tristate "Tegra DEVFREQ Driver"
--	depends on ARCH_TEGRA_124_SOC
-+	depends on ARCH_TEGRA
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
- 	select PM_OPP
- 	help
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 0985c02b75fe..a0a3dafa9188 100644
+index d749399f67ae..6185e7ab20a8 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -724,6 +724,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- }
+@@ -487,6 +487,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct dev_pm_opp *opp;
+ 	unsigned long rate;
++	int err;
  
- static const struct of_device_id tegra_devfreq_of_match[] = {
-+	{ .compatible = "nvidia,tegra30-actmon" },
- 	{ .compatible = "nvidia,tegra124-actmon" },
- 	{ },
- };
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp)) {
+@@ -496,8 +497,13 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	rate = dev_pm_opp_get_freq(opp) * KHZ;
+ 	dev_pm_opp_put(opp);
+ 
+-	clk_set_min_rate(tegra->emc_clock, rate);
+-	clk_set_rate(tegra->emc_clock, 0);
++	err = clk_set_min_rate(tegra->emc_clock, rate);
++	if (err)
++		return err;
++
++	err = clk_set_rate(tegra->emc_clock, 0);
++	if (err)
++		return err;
+ 
+ 	return 0;
+ }
 -- 
 2.21.0
