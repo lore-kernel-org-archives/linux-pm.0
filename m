@@ -1,118 +1,46 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v5] arm64: dts: ls1088a: add one more thermal zone node
-Date: Thu, 11 Apr 2019 21:14:44 +0200
-Message-ID: <915c86d8-d00e-f1e1-e7f5-24bc225c8e42@linaro.org>
-References: <20190411083236.9377-1-andy.tang@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v14 4/4] PM / Domains: Add genpd governor for CPUs
+Date: Thu, 11 Apr 2019 22:44:29 +0200
+Message-ID: <CAJZ5v0hVkgF2MYUh4VkXN0L2ZtxMoC8bUV6CY7=fAnSHRLpqUA@mail.gmail.com>
+References: <20190411181733.21437-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190411083236.9377-1-andy.tang@nxp.com>
-Content-Language: en-US
+In-Reply-To: <20190411181733.21437-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yuantian Tang <andy.tang@nxp.com>, shawnguo@kernel.org
-Cc: leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>Linux
 List-Id: linux-pm@vger.kernel.org
 
-On 11/04/2019 10:32, Yuantian Tang wrote:
-> Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
-> sensor is used to monitor the temperature of core and SoC platform is for
-> platform. The current dts only support the first sensor.
-> This patch adds the second sensor node to dts to enable it.
-> 
-> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> ---
-> v5:
-> 	- update the thermal zone name due to the length limitation
-> 	- remove cooling map in platform zone
-> v4:
-> 	- use hyphen instead of underscore in node name
-> v3:
-> 	- use more descriptive name for each zone
-> v2:
-> 	- Add more information about sensors to description
->  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   28 ++++++++++++++++++++---
->  1 files changed, 24 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> index de93b42..de39672 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-> @@ -129,19 +129,19 @@
->  	};
->  
->  	thermal-zones {
-> -		cpu_thermal: cpu-thermal {
-> +		core-cluster {
->  			polling-delay-passive = <1000>;
->  			polling-delay = <5000>;
->  			thermal-sensors = <&tmu 0>;
->  
->  			trips {
-> -				cpu_alert: cpu-alert {
-> +				core_cluster_alert: core-cluster-alert {
->  					temperature = <85000>;
->  					hysteresis = <2000>;
->  					type = "passive";
->  				};
->  
-> -				cpu_crit: cpu-crit {
-> +				core_cluster_crit: core-cluster-crit {
->  					temperature = <95000>;
->  					hysteresis = <2000>;
->  					type = "critical";
-> @@ -150,7 +150,7 @@
->  
->  			cooling-maps {
->  				map0 {
-> -					trip = <&cpu_alert>;
-> +					trip = <&core_cluster_alert>;
->  					cooling-device =
->  						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
->  						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> @@ -163,6 +163,26 @@
->  				};
->  			};
->  		};
-> +
-> +		platform {
-> +			polling-delay-passive = <1000>;
-> +			polling-delay = <5000>;
-> +			thermal-sensors = <&tmu 1>;
-> +
-> +			trips {
-> +				platform-alert {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +
-> +				platform-crit {
-> +					temperature = <95000>;
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
+On Thu, Apr 11, 2019 at 8:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> After some preceding changes, PM domains managed by genpd may contain
+> CPU devices, so idle state residency values should be taken into
+> account during the state selection process. [The residency value is
+> the minimum amount of time to be spent by a CPU (or a group of CPUs)
+> in an idle state in order to save more energy than could be saved
+> by picking up a shallower idle state.]
+>
+> For this purpose, add a new genpd governor, pm_domain_cpu_gov, to be
+> used for selecting idle states of PM domains with CPU devices attached
+> either directly or through subdomains.
+>
+> The new governor computes the minimum expected idle duration for all
+> online CPUs attached to a PM domain and its subdomains.  Next, it
+> finds the deepest idle state whose target residency is within the
+> expected idle duration and selects it as the target idle state of
+> the domain.
+>
+> It should be noted that the minimum expected idle duration computation
+> is based on the closest timer event information stored in the per-CPU
+> variables cpuidle_devices for all of the CPUs in the domain.  That
+> needs to be revisited in future, as obviously there are other reasons
+> why a CPU may be woken up from idle.
+>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> [ rjw: Changelog ]
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-
-Unfortunately, the documentation says the thermal zone node must contain
-a "cooling-maps" entry.
-
-It makes sense as if there is no cooling device, there is no action to
-be taken thus polling the temperature just add noise to the system.
-
-
-
->  	};
->  
->  	timer {
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Applied instead of the previous version, thanks!
