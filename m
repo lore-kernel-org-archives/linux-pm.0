@@ -1,59 +1,70 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 09/13] thermal: qoriq: Convert driver to use regmap API
-Date: Thu, 11 Apr 2019 15:00:51 +0200
-Message-ID: <dac3e90a-dd9f-56eb-faa2-c48d1fe380da@linaro.org>
-References: <20190401041418.5999-1-andrew.smirnov@gmail.com>
- <20190401041418.5999-10-andrew.smirnov@gmail.com>
- <52c33c26-47fa-04d2-0808-65a53fd2c804@linaro.org>
- <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v3 4/5] arm64: dts: rk3399: Add dfi and dmc nodes.
+Date: Thu, 11 Apr 2019 15:20:53 +0200
+Message-ID: <7786013.gjegOBUKu0@phil>
+References: <20190321231440.19031-1-gael.portay@collabora.com> <20190321231440.19031-5-gael.portay@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHQ1cqGbBXdQBagcKH211N0GkBzQzsutbu6=FMLLxZoL8pL8bA@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20190321231440.19031-5-gael.portay@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
+To: =?ISO-8859-1?Q?Ga=EBl?= PORTAY <gael.portay@collabora.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/04/2019 20:24, Andrey Smirnov wrote:
+Hi Gaël,
 
-[ ... ]
-
->>> +static const struct regmap_range qiriq_yes_ranges[] = {
->>> +     regmap_reg_range(REGS_TMR, REGS_TSCFGR),
->>> +     regmap_reg_range(REGS_TTRnCR(0), REGS_TTRnCR(3)),
->>> +     /* Read only registers below */
->>> +     regmap_reg_range(REGS_TRITSR(0), REGS_TRITSR(15)),
->>> +};
->>> +
->>> +static const struct regmap_access_table qiriq_wr_table = {
->>> +     .yes_ranges     = qiriq_yes_ranges,
->>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges) - 1,
->>> +};
->>> +
->>> +static const struct regmap_access_table qiriq_rd_table = {
->>> +     .yes_ranges     = qiriq_yes_ranges,
->>> +     .n_yes_ranges   = ARRAY_SIZE(qiriq_yes_ranges),
->>> +};
->>
->> As the table are the same, it would make sense to fold both structure to
->> a single one (and s/qiriq/qoriq/ ?)
->>
+Am Freitag, 22. März 2019, 00:14:39 CEST schrieb Gaël PORTAY:
+> From: Lin Huang <hl@rock-chips.com>
 > 
-> Writable registers are a subset of readable registers and n_yes_ranges
-> is different between the two. Not sure how I could fold the two into a
-> single struct.
+> These are required to support DDR DVFS on rk3399 platform. The patch also
+> introduces a new file with default DRAM settings.
+> 
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
 
-Right, never mind my comment.
+> +	dmc: dmc {
+> +		compatible = "rockchip,rk3399-dmc";
+> +		rockchip,pmu = <&pmugrf>;
+> +		devfreq-events = <&dfi>;
+> +		clocks = <&cru SCLK_DDRC>;
+> +		clock-names = "dmc_clk";
+> +		status = "disabled";
+> +		rockchip,ddr3_speed_bin = <21>;
+> +		rockchip,pd_idle = <0x40>;
+> +		rockchip,sr_idle = <0x2>;
+> +		rockchip,sr_mc_gate_idle = <0x3>;
+> +		rockchip,srpd_lite_idle	= <0x4>;
+> +		rockchip,standby_idle = <0x2000>;
+> +		rockchip,dram_dll_dis_freq = <300000000>;
+> +		rockchip,phy_dll_dis_freq = <125000000>;
+> +		rockchip,auto_pd_dis_freq = <666000000>;
+> +		rockchip,ddr3_odt_dis_freq = <333000000>;
+> +		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
+> +		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
+> +		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
+> +		rockchip,lpddr3_odt_dis_freq = <333000000>;
+> +		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
+> +		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
+> +		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
+> +		rockchip,lpddr4_odt_dis_freq = <333000000>;
+> +		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
+> +		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
+> +		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
+> +		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
+> +		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
+> +		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
+> +		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
+
+as Rob mentioned in his review, these values look board-specific,
+so should probably move over to the specific board you're using them
+on?
 
 
-
-
--- 
- <http://www.linaro.org/> Linaro.org â”‚ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Heiko
