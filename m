@@ -2,103 +2,229 @@ Return-Path: <SRS0=8Vg7=SO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02AD2C10F14
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Apr 2019 11:31:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 129C6C10F0E
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Apr 2019 12:19:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CE10B2084D
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Apr 2019 11:31:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8A4C2077C
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Apr 2019 12:19:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HFq8ehtf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726327AbfDLLbN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Apr 2019 07:31:13 -0400
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:52330 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727070AbfDLLbM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2019 07:31:12 -0400
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x3CBQCAd129015
-        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2019 07:31:11 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2rtsrhr9kg-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2019 07:31:11 -0400
-Received: from localhost
-        by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <parth015@linux.vnet.ibm.com>;
-        Fri, 12 Apr 2019 12:31:09 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
-        by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Fri, 12 Apr 2019 12:31:07 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x3CBV6Wx49807360
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 12 Apr 2019 11:31:06 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 1FFE811C058;
-        Fri, 12 Apr 2019 11:31:06 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 9890A11C04A;
-        Fri, 12 Apr 2019 11:31:05 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.124.35.96])
-        by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Fri, 12 Apr 2019 11:31:05 +0000 (GMT)
-Subject: Re: [RFC 4/6] Add cpumask to track throughput intensive tasks
-To:     Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        linux-pm@vger.kernel.org
-References: <20190322060621.27021-1-parth015@linux.vnet.ibm.com>
- <20190322060621.27021-5-parth015@linux.vnet.ibm.com>
- <4cfafd66-d5aa-36b4-af77-eaa757d77eb4@arm.com>
-From:   Parth Shah <parth015@linux.vnet.ibm.com>
-Date:   Fri, 12 Apr 2019 17:01:04 +0530
+        id S1727074AbfDLMTH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Apr 2019 08:19:07 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:46914 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726773AbfDLMTH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2019 08:19:07 -0400
+Received: by mail-wr1-f67.google.com with SMTP id t17so11621163wrw.13
+        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2019 05:19:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=ir8sEPDXChUV7v85TJcoRQP1tQ9RJbECjaDQk9/1U58=;
+        b=HFq8ehtfDYOhznbD4RU9nyfn+zZhDTf8lFPaMx1JGzQ/BThu7KAB/jqHX9xFS9HcW0
+         /Mq+ubTbMWpT53S2KOwpn9B8X0rg1/ES1NuX6hsMk1gSU9dHf7s/QAMcWUEEBeMo9zFD
+         LcCZUNuBAx1N8OhrttYoIUbCtvAQajNDHWusLAuafnAGbnMsXKlO3xf/25zIfHf+g6wj
+         24HEDEvk8GvQ86p1Fi906Bv49gzsq1RJx5PvKiAnRrnMaPyR2uRqkSZGE2fHLJAK/UN1
+         JrYNGwL5LqVuWeSJwY82h3gkUfoiIGruI6UfhmTG0iI95DUWxULihZ2+p5QEsBvQxH0q
+         dKHQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=ir8sEPDXChUV7v85TJcoRQP1tQ9RJbECjaDQk9/1U58=;
+        b=IZKFnnRtgcTlqhrBNEX5lZxH4ZPSgLER4JHED2JhVenis4ffozeFLTvmMrPKrrcdqU
+         9E5Eup4hG4vyWJl8hiIri86dyp2d26hgYthgm1hmhf003BBSanzEiNDO3J8TeZfr28LU
+         98WinDoPxKpTBqgRXi9sL3K0zp1D1IYqXZu5wN4p+Nozffkf8QAYbsGNmARpX7bKLOSh
+         PyX7udjPngis+E9w/R/foQY+3vP8nbfxovmlDjE+9/Lpeyu/4+Gsem9j+aC5RxKCsD9/
+         wxKHn632ih7WEeoCVUeAuiawsTtMwZlyPpYOQtyHQy8FlakRHHR+me+dZf5878DDznWl
+         tnEQ==
+X-Gm-Message-State: APjAAAUaPtdLyjpMT6Agx29pmTx9EZwAawRB8iY/IRVMST9wM9XIILYr
+        Q+GiNfpfzmnjgurB3UA0JE7Kaw==
+X-Google-Smtp-Source: APXvYqyitS1k8nFw3SVElljn2DDFnCog3CZjgODdLB0n1BhcRW9O7oCP6wksfQuEfdXfudnQUT5cMw==
+X-Received: by 2002:adf:f78c:: with SMTP id q12mr14690511wrp.172.1555071544545;
+        Fri, 12 Apr 2019 05:19:04 -0700 (PDT)
+Received: from [192.168.0.44] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id w16sm60598513wrt.84.2019.04.12.05.19.02
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 12 Apr 2019 05:19:03 -0700 (PDT)
+Subject: Re: [EXT] Re: [PATCH v5] arm64: dts: ls1088a: add one more thermal
+ zone node
+To:     Andy Tang <andy.tang@nxp.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc:     Leo Li <leoyang.li@nxp.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "edubezval@gmail.com" <edubezval@gmail.com>
+References: <20190411083236.9377-1-andy.tang@nxp.com>
+ <915c86d8-d00e-f1e1-e7f5-24bc225c8e42@linaro.org>
+ <AM6PR04MB4326561F037194D84CEB011AF3280@AM6PR04MB4326.eurprd04.prod.outlook.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <6be740a0-aaa7-6b49-ba82-8d04d47b2339@linaro.org>
+Date:   Fri, 12 Apr 2019 14:19:02 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <4cfafd66-d5aa-36b4-af77-eaa757d77eb4@arm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AM6PR04MB4326561F037194D84CEB011AF3280@AM6PR04MB4326.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041211-0028-0000-0000-000003601909
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041211-0029-0000-0000-0000241F43E0
-Message-Id: <99a5f3c1-624a-e91e-2ffb-d0f08962838f@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-12_07:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904120075
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190412121902.e8zQQJkCcfRMFm_8dCkQoiT0T_U5BIoh9HomuKCSH3c@z>
+
+On 12/04/2019 09:47, Andy Tang wrote:
+> 
+>> -----Original Message-----
+>> From: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Sent: 2019年4月12日 3:15
+>> To: Andy Tang <andy.tang@nxp.com>; shawnguo@kernel.org
+>> Cc: Leo Li <leoyang.li@nxp.com>; robh+dt@kernel.org; mark.rutland@arm.com;
+>> linux-arm-kernel@lists.infradead.org; devicetree@vger.kernel.org;
+>> linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org; rui.zhang@intel.com;
+>> edubezval@gmail.com
+>> Subject: [EXT] Re: [PATCH v5] arm64: dts: ls1088a: add one more thermal zone
+>> node
+>>
+>> WARNING: This email was created outside of NXP. DO NOT CLICK links or
+>> attachments unless you recognize the sender and know the content is safe.
+>>
+>>
+>>
+>> On 11/04/2019 10:32, Yuantian Tang wrote:
+>>> Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core
+>>> cluster sensor is used to monitor the temperature of core and SoC
+>>> platform is for platform. The current dts only support the first sensor.
+>>> This patch adds the second sensor node to dts to enable it.
+>>>
+>>> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+>>> ---
+>>> v5:
+>>>       - update the thermal zone name due to the length limitation
+>>>       - remove cooling map in platform zone
+>>> v4:
+>>>       - use hyphen instead of underscore in node name
+>>> v3:
+>>>       - use more descriptive name for each zone
+>>> v2:
+>>>       - Add more information about sensors to description
+>>>  arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   28
+>> ++++++++++++++++++++---
+>>>  1 files changed, 24 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+>>> b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+>>> index de93b42..de39672 100644
+>>> --- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+>>> +++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+>>> @@ -129,19 +129,19 @@
+>>>       };
+>>>
+>>>       thermal-zones {
+>>> -             cpu_thermal: cpu-thermal {
+>>> +             core-cluster {
+>>>                       polling-delay-passive = <1000>;
+>>>                       polling-delay = <5000>;
+>>>                       thermal-sensors = <&tmu 0>;
+>>>
+>>>                       trips {
+>>> -                             cpu_alert: cpu-alert {
+>>> +                             core_cluster_alert: core-cluster-alert {
+>>>                                       temperature = <85000>;
+>>>                                       hysteresis = <2000>;
+>>>                                       type = "passive";
+>>>                               };
+>>>
+>>> -                             cpu_crit: cpu-crit {
+>>> +                             core_cluster_crit: core-cluster-crit {
+>>>                                       temperature = <95000>;
+>>>                                       hysteresis = <2000>;
+>>>                                       type = "critical"; @@ -150,7
+>>> +150,7 @@
+>>>
+>>>                       cooling-maps {
+>>>                               map0 {
+>>> -                                     trip = <&cpu_alert>;
+>>> +                                     trip = <&core_cluster_alert>;
+>>>                                       cooling-device =
+>>>                                               <&cpu0
+>> THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+>>>                                               <&cpu1
+>> THERMAL_NO_LIMIT
+>>> THERMAL_NO_LIMIT>, @@ -163,6 +163,26 @@
+>>>                               };
+>>>                       };
+>>>               };
+>>> +
+>>> +             platform {
+>>> +                     polling-delay-passive = <1000>;
+>>> +                     polling-delay = <5000>;
+>>> +                     thermal-sensors = <&tmu 1>;
+>>> +
+>>> +                     trips {
+>>> +                             platform-alert {
+>>> +                                     temperature = <85000>;
+>>> +                                     hysteresis = <2000>;
+>>> +                                     type = "passive";
+>>> +                             };
+>>> +
+>>> +                             platform-crit {
+>>> +                                     temperature = <95000>;
+>>> +                                     hysteresis = <2000>;
+>>> +                                     type = "critical";
+>>> +                             };
+>>> +                     };
+>>> +             };
+>>
+>>
+>> Unfortunately, the documentation says the thermal zone node must contain a
+>> "cooling-maps" entry.
+> That's a question.
+> If I add "cooling-maps", then multiple zones will use same cooling device.
+> If I don't, documentation says it is a " Required properties".
+> I am wondering how it was dealt with on other platform supporting multiple zones.
+
+I think the problem comes from the fact there are no governors capable
+of handling multiple thermal zones.
+
+The additional cooling device is the devfreq but as the mali driver is
+not upstream, the cooling map for this device does not appear. We can
+find the definitions and the driver in the AOSP [1].
+
+Moreover, the power is usually managed by the IPA governor, but this one
+can not handle multiple thermal zones, so the cooling devices are joined
+together into a single thermal zone with their contribution to the
+cooling effect.
+
+Other definitions I have seen upstream are incomplete or broken.
+
+[1]
+https://android.googlesource.com/kernel/hikey-linaro/+/refs/heads/android-hikey-linaro-4.14/arch/arm64/boot/dts/hisilicon/hi3660.dtsi#1340
+
+> Hi Shawn,
+> What's your opinions about this?
 
 
 
-On 4/12/19 4:28 PM, Dietmar Eggemann wrote:
-> On 3/22/19 7:06 AM, Parth Shah wrote:
-> 
-> [...]
-> 
->> @@ -6225,10 +6232,11 @@ static const int core_cap_mf = 16;
->>    */
->>   static int select_non_idle_core(struct task_struct *p, int prev_cpu)
->>   {
->> -    struct cpumask *cpus = this_cpu_cpumask_var_ptr(select_idle_mask);
->> +    struct cpumask highutil_task_mask_copy;
->> +    struct cpumask *cpus = &highutil_task_mask_copy;
->>       int core, smt;
-I think I should retain the following line
->>   -    cpumask_and(cpus, cpu_online_mask, &p->cpus_allowed);
->> +    cpumask_copy(cpus, highutil_task_cpu_mask);
-> 
-> IMHO, you still would have to and cpus with cpu_online_mask and &p->cpus_allowed.
-> 
-> [...]
-> I agree.
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
