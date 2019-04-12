@@ -1,36 +1,35 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 2/2] thermal: Introduce Amazon's Annapurna Labs Thermal
- Driver
-Date: Fri, 12 Apr 2019 14:32:37 +0200
-Message-ID: <61186ba3-659c-cc62-cb70-532e89aaae44@linaro.org>
-References: <1554978168-17369-1-git-send-email-talel@amazon.com>
- <1554978168-17369-3-git-send-email-talel@amazon.com>
+From: kbuild test robot <lkp@intel.com>
+Subject: Re: [PATCH v3 2/2] power_supply: platform/chrome: wilco_ec: Add
+ charging config driver
+Date: Fri, 12 Apr 2019 23:52:43 +0800
+Message-ID: <201904122335.RtGa2sij%lkp@intel.com>
+References: <20190412002055.92529-2-ncrews@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1554978168-17369-3-git-send-email-talel@amazon.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190412002055.92529-2-ncrews@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Talel Shenhar <talel@amazon.com>, robh@kernel.org, edubezval@gmail.com, dwmw@amazon.co.uk, jonnyc@amazon.com, rui.zhang@intel.com, hhhawa@amazon.com, ronenk@amazon.com, hanochu@amazon.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org
+Cc: kbuild-all@01.org, enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, groeck@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org, Nick Crews <ncrews@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/04/2019 12:22, Talel Shenhar wrote:
-> This is a generic thermal driver for simple MMIO sensors, of which
-> amazon,al-thermal is one.
-> 
-> This device uses a single MMIO transaction to read the temperature and
-> report it to the thermal subsystem.
-> 
-> Signed-off-by: Talel Shenhar <talel@amazon.com>
-> Reviewed-by: David Woodhouse <dwmw@amazon.co.uk>
-> ---
+Hi Nick,
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Thank you for the patch! Perhaps something to improve:
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+[auto build test WARNING on linus/master]
+[also build test WARNING on v5.1-rc4 next-20190412]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+url:    https://github.com/0day-ci/linux/commits/Nick-Crews/power_supply-Add-more-charge-types-and-CHARGE_CONTROL_-properties/20190412-211253
+
+
+coccinelle warnings: (new ones prefixed by >>)
+
+>> drivers/platform/chrome/wilco_ec/charge_config.c:173:1-3: WARNING: PTR_ERR_OR_ZERO can be used
+
+Please review and possibly fold the followup patch.
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
