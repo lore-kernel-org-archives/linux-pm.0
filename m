@@ -1,47 +1,75 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH RFC 1/2] thermal/drivers/of: Add a get_temp_id callback
- function
-Date: Sat, 13 Apr 2019 10:28:14 +0200
-Message-ID: <e6f3007f-bcee-278a-24f0-df1e70cb376e@linaro.org>
-References: <00a5711b-5120-9e77-91a0-e0cbab456d92@linaro.org>
- <20190404080647.8173-1-daniel.lezcano@linaro.org>
- <CAHQ1cqHXK8HHXCj0FtZUtCzafYCYdOkdHm_wA6_NqN8q=iB-yQ@mail.gmail.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH v4 03/12] thermal: qoriq: Don't store struct thermal_zone_device reference
+Date: Sat, 13 Apr 2019 01:27:39 -0700
+Message-ID: <20190413082748.29990-4-andrew.smirnov@gmail.com>
+References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHQ1cqHXK8HHXCj0FtZUtCzafYCYdOkdHm_wA6_NqN8q=iB-yQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, open list <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13/04/2019 10:18, Andrey Smirnov wrote:
-> On Thu, Apr 4, 2019 at 1:07 AM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>
->> Currently when we register a sensor, we specify the sensor id and a data
->> pointer to be passed when the get_temp function is called. However the
->> sensor_id is not passed to the get_temp callback forcing the driver to
->> do extra allocation and adding back pointer to find out from the sensor
->> information the driver data and then back to the sensor id.
->>
->> Add a new callback get_temp_id() which will be called if set. It will
->> call the get_temp_id() with the sensor id.
->>
->> That will be more consistent with the registering function.
->>
-> 
-> Tested both patches on i.MX8MQ, seem to work as expected.
-> 
-> Tested-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Struct thermal_zone_device reference stored as sensor's private data
+isn't really used anywhere in the code. Drop it.
 
-Great, thank you very much for testing!
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+Cc: linux-imx@nxp.com
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/thermal/qoriq_thermal.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index c3ed6ed81dfb..c041d1ae3500 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -65,7 +65,6 @@ struct qoriq_tmu_data;
+  * Thermal zone data
+  */
+ struct qoriq_sensor {
+-	struct thermal_zone_device	*tzd;
+ 	struct qoriq_tmu_data		*qdata;
+ 	int				id;
+ };
+@@ -114,6 +113,8 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ 	int id, sites = 0;
+ 
+ 	for (id = 0; id < SITES_MAX; id++) {
++		struct thermal_zone_device *tzd;
++
+ 		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+ 				sizeof(struct qoriq_sensor), GFP_KERNEL);
+ 		if (!qdata->sensor[id])
+@@ -121,13 +122,15 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ 
+ 		qdata->sensor[id]->id = id;
+ 		qdata->sensor[id]->qdata = qdata;
+-		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
+-				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
+-		if (IS_ERR(qdata->sensor[id]->tzd)) {
+-			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
++
++		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
++							   qdata->sensor[id],
++							   &tmu_tz_ops);
++		if (IS_ERR(tzd)) {
++			if (PTR_ERR(tzd) == -ENODEV)
+ 				continue;
+ 			else
+-				return PTR_ERR(qdata->sensor[id]->tzd);
++				return PTR_ERR(tzd);
+ 		}
+ 
+ 		sites |= 0x1 << (15 - id);
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.20.1
