@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v4 10/12] thermal: qoriq: Do not report invalid temperature reading
-Date: Sat, 13 Apr 2019 01:27:46 -0700
-Message-ID: <20190413082748.29990-11-andrew.smirnov@gmail.com>
+Subject: [PATCH v4 07/12] thermal: qoriq: Convert driver to use devm_ioremap()
+Date: Sat, 13 Apr 2019 01:27:43 -0700
+Message-ID: <20190413082748.29990-8-andrew.smirnov@gmail.com>
 References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,9 +12,8 @@ To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Before returning measured temperature data to upper layer we need to
-make sure that the reading was marked as "valid" to avoid reporting
-bogus data.
+Convert driver to use devm_ioremap() to simplify memory deallocation
+and error handling code. No functional change intended.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -26,48 +25,69 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index abbbfe88422e..5c459a9d0db3 100644
+index 0b6937bbc7d0..64cad6d4c1d7 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -37,6 +37,7 @@
- #define REGS_TRITSR(n)	(0x100 + 16 * (n)) /* Immediate Temperature
- 					    * Site Register
- 					    */
-+#define TRITSR_V	BIT(31)
- #define REGS_TTRnCR(n)	(0xf10 + 4 * (n)) /* Temperature Range n
- 					   * Control Register
- 					   */
-@@ -48,10 +49,25 @@ static int tmu_get_temp(int id, void *p, int *temp)
- {
- 	struct qoriq_tmu_data *qdata = p;
- 	u32 val;
-+	/*
-+	 * REGS_TRITSR(id) has the following layout:
-+	 *
-+	 * 31  ... 7 6 5 4 3 2 1 0
-+	 *  V          TEMP
-+	 *
-+	 * Where V bit signifies if the measurement is ready and is
-+	 * within sensor range. TEMP is an 8 bit value representing
-+	 * temperature in C.
-+	 */
-+	if (regmap_read_poll_timeout(qdata->regmap,
-+				     REGS_TRITSR(id),
-+				     val,
-+				     val & TRITSR_V,
-+				     USEC_PER_MSEC,
-+				     10 * USEC_PER_MSEC))
-+		return -ENODATA;
+@@ -175,6 +175,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct device *dev = &pdev->dev;
++	struct resource *io;
  
--	regmap_read(qdata->regmap, REGS_TRITSR(id), &val);
- 	*temp = (val & 0xff) * 1000;
--
+ 	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+ 			    GFP_KERNEL);
+@@ -183,7 +184,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
+ 
+-	data->regs = of_iomap(np, 0);
++	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!io) {
++		dev_err(dev, "Failed to get memory region\n");
++		return -ENODEV;
++	}
++
++	data->regs = devm_ioremap(dev, io->start, resource_size(io));
+ 	if (!data->regs) {
+ 		dev_err(dev, "Failed to get memory region\n");
+ 		return -ENODEV;
+@@ -193,23 +200,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 
+ 	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+ 	if (ret < 0)
+-		goto err_tmu;
++		return ret;
+ 
+ 	ret = qoriq_tmu_register_tmu_zone(dev, data);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Failed to register sensors\n");
+-		ret = -ENODEV;
+-		goto err_tmu;
++		return -ENODEV;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
  	return 0;
+-
+-err_tmu:
+-	iounmap(data->regs);
+-
+-	return ret;
  }
  
+ static int qoriq_tmu_remove(struct platform_device *pdev)
+@@ -219,7 +220,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
+ 	/* Disable monitoring */
+ 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+ 
+-	iounmap(data->regs);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	return 0;
 -- 
 2.20.1
