@@ -1,15 +1,16 @@
 From: andrew-sh.cheng <andrew-sh.cheng@mediatek.com>
-Subject: Re: [PATCH v2 1/4] cpufreq: mediatek: add mt8183 cpufreq support
-Date: Sat, 13 Apr 2019 10:33:38 +0800
-Message-ID: <1555122818.14109.1.camel@mtksdaap41>
-References: <1553841972-19737-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1553841972-19737-2-git-send-email-andrew-sh.cheng@mediatek.com>
- <CANMq1KBX1NTfv1OYV3aq4B8hfrOnSEJRX1g6JOYzMws1ZNQgjg@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] opp: add API which get max freq by voltage
+Date: Sat, 13 Apr 2019 11:36:15 +0800
+Message-ID: <1555126575.14109.4.camel@mtksdaap41>
+References: <1553841972-19737-3-git-send-email-andrew-sh.cheng@mediatek.com>
+ <1553841972-19737-1-git-send-email-andrew-sh.cheng@mediatek.com>
+ <CGME20190329064632epcas2p4d10ea099bfea4ad682d7312a75bfbe68@epcms1p8>
+ <20190401023047epcms1p888e2dba45fcbc1de98d71d8a37acb976@epcms1p8>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CANMq1KBX1NTfv1OYV3aq4B8hfrOnSEJRX1g6JOYzMws1ZNQgjg@mail.gmail.com>
+In-Reply-To: <20190401023047epcms1p888e2dba45fcbc1de98d71d8a37acb976@epcms1p8>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,107 +20,44 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Boichat <drinkcat@chromium.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, srv_heupstream <srv_heupstream@mediatek.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Matthias Brugger <matthias.bgg@gmail.com>, Fan Chen <fan.chen@mediatek.com>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+To: myungjoo.ham@samsung.com
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "srv_heupstream@mediatek.com" <srv_heupstream@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J.
+ Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, "fan.chen@mediatek.com" <fan.chen@mediatek.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2019-03-30 at 17:06 -0700, Nicolas Boichat wrote:
-> On Thu, Mar 28, 2019 at 11:46 PM Andrew-sh.Cheng
-> <andrew-sh.cheng@mediatek.com> wrote:
+On Mon, 2019-04-01 at 11:30 +0900, MyungJoo Ham wrote:
+> >This API will get voltage as input parameter.
+> >Search all opp items for the item which with max frequency,
+> >and the voltae is smaller than provided voltage.
 > >
-> > For new mediatek chip mt8183,
-> > cci and little cluster share the same buck,
-> > so need to modify the attribute of regulator from exclusive to optional
+> >Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+> >---
+> > drivers/opp/core.c     | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
+> > include/linux/pm_opp.h |  8 ++++++++
+> > 2 files changed, 63 insertions(+)
 > >
-> > Intermediate clock is not always enabled by ccf in different projects,
-> > so cpufreq should always enable it by itself.
+> >diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> >index 24c757a..57deef9 100644
+> >--- a/include/linux/pm_opp.h
+> >+++ b/include/linux/pm_opp.h
+> >@@ -102,6 +102,8 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+> > 
+> > struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+> > 					      unsigned long *freq);
+> >+struct dev_pm_opp *dev_pm_opp_find_max_freq_by_volt(struct device *dev,
+> >+					      unsigned long u_volt);
 > 
-> One comment, otherwise the changes look good. However, I feel that
-> this patch should be split in 3:
->  1. Change to regulator_get_optional
->  2. Enable inter_clk
->  3. Add support for 8183
-Okay, I will split it into 3 patches
-> > Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c |  1 +
-> >  drivers/cpufreq/mediatek-cpufreq.c   | 12 ++++++++++--
-> >  2 files changed, 11 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > index 47729a2..53ea52b 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -117,6 +117,7 @@
-> >         { .compatible = "mediatek,mt817x", },
-> >         { .compatible = "mediatek,mt8173", },
-> >         { .compatible = "mediatek,mt8176", },
-> > +       { .compatible = "mediatek,mt8183", },
-> >
-> >         { .compatible = "nvidia,tegra124", },
-> >         { .compatible = "nvidia,tegra210", },
-> > diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-> > index 48e9829..7cd01d3 100644
-> > --- a/drivers/cpufreq/mediatek-cpufreq.c
-> > +++ b/drivers/cpufreq/mediatek-cpufreq.c
-> > @@ -346,7 +346,7 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
-> >                 goto out_free_resources;
-> >         }
-> >
-> > -       proc_reg = regulator_get_exclusive(cpu_dev, "proc");
-> > +       proc_reg = regulator_get_optional(cpu_dev, "proc");
-> >         if (IS_ERR(proc_reg)) {
-> >                 if (PTR_ERR(proc_reg) == -EPROBE_DEFER)
-> >                         pr_warn("proc regulator for cpu%d not ready, retry.\n",
-> > @@ -376,13 +376,17 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
-> >                 goto out_free_resources;
-> >         }
-> >
-> > +       ret = clk_prepare_enable(inter_clk);
+> For the symmetricity, wouldn't it be better to name it
+> dev_pm_opp_find_volt_ceiling(dev, u_volt); ?
+Yes.
+Viresh has comment on this, too.
+I will use dev_pm_opp_find_freq_ceil_by_volt() in next patch.
+
 > 
-> Should you disable the clock in mtk_cpu_dvfs_info_release?
-Yes, I will add it.
+> Cheers,
+> MyungJoo
 > 
-> > +       if (ret)
-> > +               goto out_free_opp_table;
-> > +
-> >         /* Search a safe voltage for intermediate frequency. */
-> >         rate = clk_get_rate(inter_clk);
-> >         opp = dev_pm_opp_find_freq_ceil(cpu_dev, &rate);
-> >         if (IS_ERR(opp)) {
-> >                 pr_err("failed to get intermediate opp for cpu%d\n", cpu);
-> >                 ret = PTR_ERR(opp);
-> > -               goto out_free_opp_table;
-> > +               goto out_disable_clock;
-> >         }
-> >         info->intermediate_voltage = dev_pm_opp_get_voltage(opp);
-> >         dev_pm_opp_put(opp);
-> > @@ -401,6 +405,9 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
-> >
-> >         return 0;
-> >
-> > +out_disable_clock:
-> > +       clk_disable_unprepare(inter_clk);
-> > +
-> >  out_free_opp_table:
-> >         dev_pm_opp_of_cpumask_remove_table(&info->cpus);
-> >
-> > @@ -543,6 +550,7 @@ static int mtk_cpufreq_probe(struct platform_device *pdev)
-> >         { .compatible = "mediatek,mt817x", },
-> >         { .compatible = "mediatek,mt8173", },
-> >         { .compatible = "mediatek,mt8176", },
-> > +       { .compatible = "mediatek,mt8183", },
-> >
-> >         { }
-> >  };
-> > --
-> > 1.8.1.1.dirty
-> >
-> >
-> > _______________________________________________
-> > Linux-mediatek mailing list
-> > Linux-mediatek@lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-mediatek
+> 
 > 
 > _______________________________________________
 > Linux-mediatek mailing list
