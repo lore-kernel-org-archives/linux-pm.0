@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1684AC10F14
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C492C10F11
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:28:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D1A2921721
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:28:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1457B218C3
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:28:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bFSFmZSJ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JvhLVGUg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727440AbfDMI2V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 13 Apr 2019 04:28:21 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:41300 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727408AbfDMI2U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Apr 2019 04:28:20 -0400
-Received: by mail-pg1-f194.google.com with SMTP id f6so6280044pgs.8;
-        Sat, 13 Apr 2019 01:28:19 -0700 (PDT)
+        id S1727408AbfDMI2b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 13 Apr 2019 04:28:31 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:38908 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727431AbfDMI2W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Apr 2019 04:28:22 -0400
+Received: by mail-pf1-f196.google.com with SMTP id 10so6246999pfo.5;
+        Sat, 13 Apr 2019 01:28:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ioF0cKR12rI6esgkEu/uGcNVeKMcEFlcMNhoifYw7yg=;
-        b=bFSFmZSJk3ZIyC0DhLCpFf0UxxbQW6TIF/zLUDNiou0sDoos0AtMdtvOeXVFjCVo+j
-         mrVx68aNc9vA7oVkZkI4cT8U6ibg4KJ19DM1kgEFRrqHpBujJqNZ1M6aTxpejLpiL7od
-         iHhAP+voymDBvHIGipdR8IR7bKULH4ixzrC93i2trDyFTaxz1moAbUVpSyJJl24saOQD
-         GhzyZbRauTF2Ganlx3wO0Fh6ZyzQ9wUwCiDz0h9UGPERqT3h2+IjqSm+oY54FwCwK8Gd
-         NfkQSuPIMDFRvOWYZaOMAI5oIDyShx8dCXF+JgQl1ulzWOTaAszE4HgKqY3WJPjhVf4h
-         7vmg==
+        bh=9b0tOUXrItaudN6sxbhg3XVgPHSnLKvU1HgYCYf2y2k=;
+        b=JvhLVGUgw22o4ubpkmnmEdOaMkXSDDJ7NclMbBFBz9JvbWWjrumjqCNwUObDxSzwnF
+         vkjQIsYEM0kUOXuxIC4cYyHuPVZISnt5yYqgrONJhl2eQ3RTflXL4TouFfLvOzJ0r7ah
+         gIQ7OJrdmRN7f840sXoD43qC0UW4343jcKGYpiVsizh9SOsrUpFKXNMtCu7HaicuZkKh
+         HFBqKEhbxBxJJkl3DnukBpF/EkGJRxjKsXbvv0U6NvY7PButGdsSgjhnxivuuzexL7Ie
+         F9ny92wVQkaQQ+hq2OT6VMz5P6OkA/Eav5emachC4/rZVloTHfFC/HoAjfoSY72gHkNV
+         VFTA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ioF0cKR12rI6esgkEu/uGcNVeKMcEFlcMNhoifYw7yg=;
-        b=scUrGJIiBaaRhkvUgmw3rdlWXiMbtqj+5VNIP2S2H/G0z5FaomM6rzWQoKFQya/sB3
-         ftWq2VL2bjcvrvTaQRkviAlG7bgVIk/IBj/M/u6w30V54h131Mg27CejkdxWzQCYep5b
-         6gaKt64DFsMnyVeoJtOcGlhQpTGIYPgUmdJKLvolGkPPl5cqT+3bqjlOinE73pILQTIg
-         7dvpMYAPZtdU4jpeKAJTA4yoiDPrWbRX/nGbuC/cQpYG+G4/o334Q7Qv2IQkJNmAH+Ow
-         8LxLOcLzqIHLwDOv79iL0KCkJtPdNY+TKPXH6zYjAitN/rI+86RzNrK9umyTaZS/440z
-         MBbw==
-X-Gm-Message-State: APjAAAXxFCAyh8cUxJIvAWj0VCVAof8GjfzcMkLoqpfx0yg6YJf2YTC7
-        WYh1e5sXtjDiNUS/pFaINHlOjLHw
-X-Google-Smtp-Source: APXvYqzUG3V6eE9t3J3TivTCeehch77k03rKnqUHnXlEXeeAl9+huIRiEGknUEHlK5GtMC37IQ/HLw==
-X-Received: by 2002:a63:2983:: with SMTP id p125mr59194840pgp.262.1555144099049;
-        Sat, 13 Apr 2019 01:28:19 -0700 (PDT)
+        bh=9b0tOUXrItaudN6sxbhg3XVgPHSnLKvU1HgYCYf2y2k=;
+        b=lp0G+c99OR6W0xoNEn0Ie0GQESWtFa59Mfd7ugCPSxbaWN56F4xkqpLqyLHKdX3Pq2
+         Anf/7HSAjw8Y39vhYvEnwjMiRkM7Anr6EWTeUAkORVjTFNZaDTL7F9HNFTRyEUQBvwJ8
+         x8jzLIXdETwBxP8T9rASMA2CisTRIYQV/ktvM9lfwqtj///EtPuJR3QtsMgOO5LigrkL
+         Fk8YrkyeW4a7oRrOcMKfNIyVSg1WEsxGGt5err1j7ZPHeBANd/igZkWbz8/PvGSq6XNZ
+         oOIBIalpYUdttzMxL6LLiH7EsIq9Eq/xnWf7skz1xe9reO1qPoonl7/ypa9UsJLpJ9fE
+         Bclw==
+X-Gm-Message-State: APjAAAUZFd6OmO19DF0qkKxGnHakTXQIb/ktyWrml2f3KVrzY+fgW4Ho
+        MQzZwOGDRw4cMyJJUAGgOXBvqiWT
+X-Google-Smtp-Source: APXvYqxDA3RqESeGbbaHAhwa7ckl/AJuNE7OawPUQMaNeQK6fivmzo0doBf6ZNqpfCyol468YMdgzA==
+X-Received: by 2002:a62:e304:: with SMTP id g4mr56202827pfh.71.1555144101255;
+        Sat, 13 Apr 2019 01:28:21 -0700 (PDT)
 Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id z20sm58261328pgf.70.2019.04.13.01.28.17
+        by smtp.gmail.com with ESMTPSA id z20sm58261328pgf.70.2019.04.13.01.28.19
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sat, 13 Apr 2019 01:28:18 -0700 (PDT)
+        Sat, 13 Apr 2019 01:28:19 -0700 (PDT)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
@@ -64,9 +64,9 @@ Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v4 11/12] thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
-Date:   Sat, 13 Apr 2019 01:27:47 -0700
-Message-Id: <20190413082748.29990-12-andrew.smirnov@gmail.com>
+Subject: [PATCH v4 12/12] thermal: qoriq: Add hwmon support
+Date:   Sat, 13 Apr 2019 01:27:48 -0700
+Message-Id: <20190413082748.29990-13-andrew.smirnov@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
 References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
@@ -77,10 +77,10 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190413082747.KBX0QlLsMjPZY7id5JVScq2hcqvWxnxFZrPI7luys4s@z>
+Message-ID: <20190413082748.BgqVHoqc123rCPJ8BqpQZ3pJyGvLWEmKIZR3TNxJcpk@z>
 
-Add devres wrapper for thermal_add_hwmon_sysfs() to simplify driver
-code.
+Expose thermal readings as a HWMON device, so that it could be
+accessed using lm-sensors.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Cc: Chris Healy <cphealy@gmail.com>
@@ -92,71 +92,32 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/thermal_hwmon.c | 28 ++++++++++++++++++++++++++++
- drivers/thermal/thermal_hwmon.h |  7 +++++++
- 2 files changed, 35 insertions(+)
+ drivers/thermal/qoriq_thermal.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 40c69a533b24..4e79524182e1 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -244,3 +244,31 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
- 	kfree(hwmon);
- }
- EXPORT_SYMBOL_GPL(thermal_remove_hwmon_sysfs);
-+
-+static void devm_thermal_hwmon_release(struct device *dev, void *res)
-+{
-+	thermal_remove_hwmon_sysfs(*(struct thermal_zone_device **)res);
-+}
-+
-+int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
-+{
-+	struct thermal_zone_device **ptr;
-+	int ret;
-+
-+	ptr = devres_alloc(devm_thermal_hwmon_release, sizeof(*ptr),
-+			   GFP_KERNEL);
-+	if (!ptr)
-+		return -ENOMEM;
-+
-+	ret = thermal_add_hwmon_sysfs(tz);
-+	if (ret) {
-+		devres_free(ptr);
-+		return ret;
-+	}
-+
-+	*ptr = tz;
-+	devres_add(&tz->device, ptr);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(devm_thermal_add_hwmon_sysfs);
-diff --git a/drivers/thermal/thermal_hwmon.h b/drivers/thermal/thermal_hwmon.h
-index a160b9d62dd0..1a9d65f6a6a8 100644
---- a/drivers/thermal/thermal_hwmon.h
-+++ b/drivers/thermal/thermal_hwmon.h
-@@ -17,6 +17,7 @@
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 5c459a9d0db3..897b3424b43b 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -12,6 +12,7 @@
+ #include <linux/thermal.h>
  
- #ifdef CONFIG_THERMAL_HWMON
- int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
-+int devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz);
- void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz);
- #else
- static inline int
-@@ -25,6 +26,12 @@ thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 	return 0;
- }
+ #include "thermal_core.h"
++#include "thermal_hwmon.h"
  
-+static inline int
-+devm_thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
-+{
-+	return 0;
-+}
-+
- static inline void
- thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
- {
+ #define SITES_MAX	16
+ 
+@@ -93,6 +94,10 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 		case -ENODEV:
+ 			continue;
+ 		case 0:
++			ret = devm_thermal_add_hwmon_sysfs(tzd);
++			if (ret)
++				dev_warn(dev,
++				     "Failed to add hwmon sysfs attributes\n");
+ 			break;
+ 		default:
+ 			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
 -- 
 2.20.1
 
