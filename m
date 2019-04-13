@@ -2,117 +2,73 @@ Return-Path: <SRS0=dcw/=SP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFDECC10F11
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:29:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F5C5C10F14
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 14:20:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A0F7B20850
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 08:29:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L9F3zM/p"
+	by mail.kernel.org (Postfix) with ESMTP id 315442084D
+	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 14:20:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727185AbfDMI2I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 13 Apr 2019 04:28:08 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:37729 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726278AbfDMI2H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 13 Apr 2019 04:28:07 -0400
-Received: by mail-pl1-f196.google.com with SMTP id w23so6231580ply.4;
-        Sat, 13 Apr 2019 01:28:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=bLQ/nNmpG86cdxUkBF2/3YqgQ/OejpmjaLfh3C1Z/s4=;
-        b=L9F3zM/pd92X9TaVrcKKjPtEOhDHUSLzFC5wIWXuoPTJPvhzknIihGT4PcTzqDVbNo
-         7I+VNfiWhOYiyp9DEaknYzR7I2FJWTqYsEdGJIP3WnIRey1mJXD7eQTMalbCaClz5ItS
-         iF7gDRCnMTkqWKooiIXIiYfc7nh9ip4Yw1ovbq3IaNKBZBdvsW8Hh/iH74ZIVIMU5zDQ
-         Baq2f7/a3tDkpafNkedP4sqggW6hnIU9b7lirhdr+llP6pPogH6Iwp5amn39Pwl5kETF
-         G2rvsLuG/sesbjLGqsWbdKmlzwy+hNFJLMdIWkPRSKauYDwzxlyoor/+6QxI+YpaYgkV
-         /klA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=bLQ/nNmpG86cdxUkBF2/3YqgQ/OejpmjaLfh3C1Z/s4=;
-        b=tzJ6mPW73Tx3P1yAt5vzfI0jCXfnLtEoiikA3bdPJNnN9ycZG1LGKXEyTDfV7WeipI
-         +OKz9dHeVwFBCvTzaX9I01Ne0jpc0X985wJUfbliptwGBX0qJctHuvOMuehVYUYZBr00
-         3ztIE7lz0gAvCfxQZHbNSkeJgKKuiYFmv3pYWDFvL+V9tBpXjGfplmBEJSjBMPhdszDx
-         htBs8dRT1d6AkwldXWXTWygUfbpx4JHnfItfR5bqyAj9T55LV+4Io6p/TLZ7rUKr/9Jx
-         0hKOiGA2lrky9oi0QTSX1N9o5vyoLtozNmAiEmhv12Dz84bfRd6O5HdbIU59f/Dcsi/g
-         Mrfg==
-X-Gm-Message-State: APjAAAUJdymTeMmSQ7cdYrS1kUxu1Xds3EKhbh0xldWseGZNazby3HkP
-        ZqMzUkXGsbJ18ebL1OH0yw5nIJ9q
-X-Google-Smtp-Source: APXvYqw3qTdW0Wvq+ebg/r95kQZU60CBOm9Gol6MNlLUzxMHhdRpyXUDZ4qRw9lP3ruw9SpkKqlGAw==
-X-Received: by 2002:a17:902:9048:: with SMTP id w8mr63357472plz.195.1555144086165;
-        Sat, 13 Apr 2019 01:28:06 -0700 (PDT)
-Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id z20sm58261328pgf.70.2019.04.13.01.28.04
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sat, 13 Apr 2019 01:28:05 -0700 (PDT)
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v4 01/12] thermal: qoriq: Remove unnecessary DT node is NULL check
-Date:   Sat, 13 Apr 2019 01:27:37 -0700
-Message-Id: <20190413082748.29990-2-andrew.smirnov@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
-References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+        id S1727085AbfDMOUQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 13 Apr 2019 10:20:16 -0400
+Received: from szxga07-in.huawei.com ([45.249.212.35]:35718 "EHLO huawei.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726301AbfDMOUQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 13 Apr 2019 10:20:16 -0400
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
+        by Forcepoint Email with ESMTP id 6078E9A7DF40D681CCD2;
+        Sat, 13 Apr 2019 22:20:07 +0800 (CST)
+Received: from localhost (10.177.31.96) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.408.0; Sat, 13 Apr 2019
+ 22:19:59 +0800
+From:   Yue Haibing <yuehaibing@huawei.com>
+To:     <andy.gross@linaro.org>, <david.brown@linaro.org>,
+        <georgi.djakov@linaro.org>
+CC:     <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH -next] interconnect: qcom: Make qcs404_rpm static
+Date:   Sat, 13 Apr 2019 22:19:54 +0800
+Message-ID: <20190413141954.38900-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.10.2.windows.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-Originating-IP: [10.177.31.96]
+X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190413082737.HKq_uSOm1bmkp2ZwD3i3qShviwubUsZZqcc96qggoLM@z>
+Message-ID: <20190413141954.RlIULu_4w8wnwFcV9uVK_fBQtobcnW4wmlLSI4ml-y8@z>
 
-It's impossible to use this driver outside of Device Tree, so if the
-probe function is called, the dev.of_node is guaranteed to not be NULL
-and guarding against that is pointless. Drop it.
+From: YueHaibing <yuehaibing@huawei.com>
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-Cc: linux-imx@nxp.com
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Fix sparse warning:
+
+drivers/interconnect/qcom/qcs404.c:27:21:
+ warning: symbol 'qcs404_rpm' was not declared. Should it be static?
+
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/thermal/qoriq_thermal.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/interconnect/qcom/qcs404.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 405d1fbdd0cb..5828314ec74d 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -193,11 +193,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	struct qoriq_tmu_data *data;
- 	struct device_node *np = pdev->dev.of_node;
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index de35fd7..c320cbd 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -24,7 +24,7 @@
+ #define to_qcom_provider(_provider) \
+ 	container_of(_provider, struct qcom_icc_provider, provider)
  
--	if (!np) {
--		dev_err(&pdev->dev, "Device OF-Node is NULL");
--		return -ENODEV;
--	}
--
- 	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
- 			    GFP_KERNEL);
- 	if (!data)
+-struct qcom_smd_rpm *qcs404_rpm;
++static struct qcom_smd_rpm *qcs404_rpm;
+ 
+ struct icc_rpm_smd_req {
+ 	__le32 key;
 -- 
-2.20.1
+2.7.4
+
 
