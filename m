@@ -1,39 +1,108 @@
-From: Yue Haibing <yuehaibing@huawei.com>
-Subject: [PATCH -next] interconnect: qcom: Make qcs404_rpm static
-Date: Sat, 13 Apr 2019 22:19:54 +0800
-Message-ID: <20190413141954.38900-1-yuehaibing@huawei.com>
+From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
+Subject: Re: [PATCH v2 1/4] iio: inkern: API for reading available iio
+ channel attribute values
+Date: Sun, 14 Apr 2019 11:34:54 +0100
+Message-ID: <20190414113454.53087ca6@archlinux>
+References: <20190323172809.14407-1-contact@artur-rojek.eu>
+        <20190324152725.35fed317@archlinux>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190324152725.35fed317@archlinux>
 Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, georgi.djakov@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
+To: Artur Rojek <contact@artur-rojek.eu>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 List-Id: linux-pm@vger.kernel.org
 
-From: YueHaibing <yuehaibing@huawei.com>
+On Sun, 24 Mar 2019 15:27:25 +0000
+Jonathan Cameron <jic23@kernel.org> wrote:
 
-Fix sparse warning:
+> On Sat, 23 Mar 2019 18:28:06 +0100
+> Artur Rojek <contact@artur-rojek.eu> wrote:
+> 
+> > Extend the inkern API with a function for reading available
+> > attribute values of iio channels.
+> > 
+> > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>  
+> If this goes through a route other than IIO (otherwise
+> I'll just add a signed-off-by...)
+> 
+> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-drivers/interconnect/qcom/qcs404.c:27:21:
- warning: symbol 'qcs404_rpm' was not declared. Should it be static?
+Applied to the ib-jz47xx-prereq branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/interconnect/qcom/qcs404.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I'll merge that into the togreg branch as well shortly.
 
-diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
-index de35fd7..c320cbd 100644
---- a/drivers/interconnect/qcom/qcs404.c
-+++ b/drivers/interconnect/qcom/qcs404.c
-@@ -24,7 +24,7 @@
- #define to_qcom_provider(_provider) \
- 	container_of(_provider, struct qcom_icc_provider, provider)
- 
--struct qcom_smd_rpm *qcs404_rpm;
-+static struct qcom_smd_rpm *qcs404_rpm;
- 
- struct icc_rpm_smd_req {
- 	__le32 key;
--- 
-2.7.4
+Thanks,
+
+Jonathan
+> 
+> > ---
+> > 
+> > Changes:
+> > 
+> > v2: no change
+> > 
+> >  drivers/iio/inkern.c         | 20 ++++++++++++++++++++
+> >  include/linux/iio/consumer.h | 14 ++++++++++++++
+> >  2 files changed, 34 insertions(+)
+> > 
+> > diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
+> > index 06ca3f7fcc44..f19dbde3c945 100644
+> > --- a/drivers/iio/inkern.c
+> > +++ b/drivers/iio/inkern.c
+> > @@ -733,6 +733,26 @@ static int iio_channel_read_avail(struct iio_channel *chan,
+> >  						 vals, type, length, info);
+> >  }
+> >  
+> > +int iio_read_avail_channel_attribute(struct iio_channel *chan,
+> > +				     const int **vals, int *type, int *length,
+> > +				     enum iio_chan_info_enum attribute)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&chan->indio_dev->info_exist_lock);
+> > +	if (!chan->indio_dev->info) {
+> > +		ret = -ENODEV;
+> > +		goto err_unlock;
+> > +	}
+> > +
+> > +	ret = iio_channel_read_avail(chan, vals, type, length, attribute);
+> > +err_unlock:
+> > +	mutex_unlock(&chan->indio_dev->info_exist_lock);
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(iio_read_avail_channel_attribute);
+> > +
+> >  int iio_read_avail_channel_raw(struct iio_channel *chan,
+> >  			       const int **vals, int *length)
+> >  {
+> > diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
+> > index 9887f4f8e2a8..b2d34831ed7c 100644
+> > --- a/include/linux/iio/consumer.h
+> > +++ b/include/linux/iio/consumer.h
+> > @@ -290,6 +290,20 @@ int iio_read_max_channel_raw(struct iio_channel *chan, int *val);
+> >  int iio_read_avail_channel_raw(struct iio_channel *chan,
+> >  			       const int **vals, int *length);
+> >  
+> > +/**
+> > + * iio_read_avail_channel_attribute() - read available channel attribute values
+> > + * @chan:		The channel being queried.
+> > + * @vals:		Available values read back.
+> > + * @type:		Type of values read back.
+> > + * @length:		Number of entries in vals.
+> > + * @attribute:		info attribute to be read back.
+> > + *
+> > + * Returns an error code, IIO_AVAIL_RANGE or IIO_AVAIL_LIST.
+> > + */
+> > +int iio_read_avail_channel_attribute(struct iio_channel *chan,
+> > +				     const int **vals, int *type, int *length,
+> > +				     enum iio_chan_info_enum attribute);
+> > +
+> >  /**
+> >   * iio_get_channel_type() - get the type of a channel
+> >   * @channel:		The channel being queried.  
+> 
