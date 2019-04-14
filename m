@@ -1,74 +1,140 @@
-Return-Path: <SRS0=dcw/=SP=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=GSIr=SQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F5C5C10F14
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 14:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A78CDC10F13
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 10:35:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 315442084D
-	for <linux-pm@archiver.kernel.org>; Sat, 13 Apr 2019 14:20:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 758C52148E
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 10:35:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727085AbfDMOUQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 13 Apr 2019 10:20:16 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:35718 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726301AbfDMOUQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 13 Apr 2019 10:20:16 -0400
-Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id 6078E9A7DF40D681CCD2;
-        Sat, 13 Apr 2019 22:20:07 +0800 (CST)
-Received: from localhost (10.177.31.96) by DGGEMS406-HUB.china.huawei.com
- (10.3.19.206) with Microsoft SMTP Server id 14.3.408.0; Sat, 13 Apr 2019
- 22:19:59 +0800
-From:   Yue Haibing <yuehaibing@huawei.com>
-To:     <andy.gross@linaro.org>, <david.brown@linaro.org>,
-        <georgi.djakov@linaro.org>
-CC:     <linux-kernel@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH -next] interconnect: qcom: Make qcs404_rpm static
-Date:   Sat, 13 Apr 2019 22:19:54 +0800
-Message-ID: <20190413141954.38900-1-yuehaibing@huawei.com>
-X-Mailer: git-send-email 2.10.2.windows.1
+        id S1725975AbfDNKe7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 14 Apr 2019 06:34:59 -0400
+Received: from saturn.retrosnub.co.uk ([46.235.226.198]:45428 "EHLO
+        saturn.retrosnub.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725807AbfDNKe7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Apr 2019 06:34:59 -0400
+Received: from archlinux (cpc91196-cmbg18-2-0-cust659.5-4.cable.virginm.net [81.96.234.148])
+        by saturn.retrosnub.co.uk (Postfix; Retrosnub mail submission) with ESMTPSA id 709989E75AC;
+        Sun, 14 Apr 2019 11:34:56 +0100 (BST)
+Date:   Sun, 14 Apr 2019 11:34:54 +0100
+From:   Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
+To:     Artur Rojek <contact@artur-rojek.eu>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
+        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+Subject: Re: [PATCH v2 1/4] iio: inkern: API for reading available iio
+ channel attribute values
+Message-ID: <20190414113454.53087ca6@archlinux>
+In-Reply-To: <20190324152725.35fed317@archlinux>
+References: <20190323172809.14407-1-contact@artur-rojek.eu>
+        <20190324152725.35fed317@archlinux>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-X-Originating-IP: [10.177.31.96]
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190413141954.RlIULu_4w8wnwFcV9uVK_fBQtobcnW4wmlLSI4ml-y8@z>
+Message-ID: <20190414103454.bc8k-weX06O9MRHj4lZOR0QseTvDsXGP41yQ_ySLY3k@z>
 
-From: YueHaibing <yuehaibing@huawei.com>
+On Sun, 24 Mar 2019 15:27:25 +0000
+Jonathan Cameron <jic23@kernel.org> wrote:
 
-Fix sparse warning:
+> On Sat, 23 Mar 2019 18:28:06 +0100
+> Artur Rojek <contact@artur-rojek.eu> wrote:
+> 
+> > Extend the inkern API with a function for reading available
+> > attribute values of iio channels.
+> > 
+> > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>  
+> If this goes through a route other than IIO (otherwise
+> I'll just add a signed-off-by...)
+> 
+> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-drivers/interconnect/qcom/qcs404.c:27:21:
- warning: symbol 'qcs404_rpm' was not declared. Should it be static?
+Applied to the ib-jz47xx-prereq branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/interconnect/qcom/qcs404.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I'll merge that into the togreg branch as well shortly.
 
-diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
-index de35fd7..c320cbd 100644
---- a/drivers/interconnect/qcom/qcs404.c
-+++ b/drivers/interconnect/qcom/qcs404.c
-@@ -24,7 +24,7 @@
- #define to_qcom_provider(_provider) \
- 	container_of(_provider, struct qcom_icc_provider, provider)
- 
--struct qcom_smd_rpm *qcs404_rpm;
-+static struct qcom_smd_rpm *qcs404_rpm;
- 
- struct icc_rpm_smd_req {
- 	__le32 key;
--- 
-2.7.4
+Thanks,
 
+Jonathan
+> 
+> > ---
+> > 
+> > Changes:
+> > 
+> > v2: no change
+> > 
+> >  drivers/iio/inkern.c         | 20 ++++++++++++++++++++
+> >  include/linux/iio/consumer.h | 14 ++++++++++++++
+> >  2 files changed, 34 insertions(+)
+> > 
+> > diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
+> > index 06ca3f7fcc44..f19dbde3c945 100644
+> > --- a/drivers/iio/inkern.c
+> > +++ b/drivers/iio/inkern.c
+> > @@ -733,6 +733,26 @@ static int iio_channel_read_avail(struct iio_channel *chan,
+> >  						 vals, type, length, info);
+> >  }
+> >  
+> > +int iio_read_avail_channel_attribute(struct iio_channel *chan,
+> > +				     const int **vals, int *type, int *length,
+> > +				     enum iio_chan_info_enum attribute)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&chan->indio_dev->info_exist_lock);
+> > +	if (!chan->indio_dev->info) {
+> > +		ret = -ENODEV;
+> > +		goto err_unlock;
+> > +	}
+> > +
+> > +	ret = iio_channel_read_avail(chan, vals, type, length, attribute);
+> > +err_unlock:
+> > +	mutex_unlock(&chan->indio_dev->info_exist_lock);
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(iio_read_avail_channel_attribute);
+> > +
+> >  int iio_read_avail_channel_raw(struct iio_channel *chan,
+> >  			       const int **vals, int *length)
+> >  {
+> > diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
+> > index 9887f4f8e2a8..b2d34831ed7c 100644
+> > --- a/include/linux/iio/consumer.h
+> > +++ b/include/linux/iio/consumer.h
+> > @@ -290,6 +290,20 @@ int iio_read_max_channel_raw(struct iio_channel *chan, int *val);
+> >  int iio_read_avail_channel_raw(struct iio_channel *chan,
+> >  			       const int **vals, int *length);
+> >  
+> > +/**
+> > + * iio_read_avail_channel_attribute() - read available channel attribute values
+> > + * @chan:		The channel being queried.
+> > + * @vals:		Available values read back.
+> > + * @type:		Type of values read back.
+> > + * @length:		Number of entries in vals.
+> > + * @attribute:		info attribute to be read back.
+> > + *
+> > + * Returns an error code, IIO_AVAIL_RANGE or IIO_AVAIL_LIST.
+> > + */
+> > +int iio_read_avail_channel_attribute(struct iio_channel *chan,
+> > +				     const int **vals, int *type, int *length,
+> > +				     enum iio_chan_info_enum attribute);
+> > +
+> >  /**
+> >   * iio_get_channel_type() - get the type of a channel
+> >   * @channel:		The channel being queried.  
+> 
 
