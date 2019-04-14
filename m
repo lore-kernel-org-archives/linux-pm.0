@@ -2,357 +2,167 @@ Return-Path: <SRS0=GSIr=SQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BA98C282CE
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 10:38:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D062CC10F13
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 12:07:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 29121218FE
-	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 10:38:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555238291;
-	bh=eOlfsa98Gzg2skzbt7VhPXjrLji9qcTKQuDfolUs7pM=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=Mwkx5sGDVocieBEctkA5zHTwg/IheqbExB/ZIXJl6AhCOvkyCfEPPVTPakESqU1M4
-	 3ujSuP8mjC54fDxwiEMmt4o9s5MCZZq4ilLPRR/G/cW3xhTjpEKIEN1+XimV+2gjyp
-	 EU2eLh19uS1Si/24Z7hbiqo5SmiKmnwW3aPTwlrs=
+	by mail.kernel.org (Postfix) with ESMTP id 9E11C2084E
+	for <linux-pm@archiver.kernel.org>; Sun, 14 Apr 2019 12:07:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PNYi0fis"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726305AbfDNKiK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 14 Apr 2019 06:38:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:53552 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725972AbfDNKiK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 14 Apr 2019 06:38:10 -0400
-Received: from archlinux (cpc91196-cmbg18-2-0-cust659.5-4.cable.virginm.net [81.96.234.148])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B2B6C2148E;
-        Sun, 14 Apr 2019 10:38:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1555238288;
-        bh=eOlfsa98Gzg2skzbt7VhPXjrLji9qcTKQuDfolUs7pM=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=NRcaN406fInN2QrNvy/vV+3rq5PVdBPtIf2jMftK1kfivtYMSxSx6Ieg6WK/cPhjR
-         uIRC0Y2gI/hJx+3kdMXV4LZBvIk29UkGuLWQJ4PtENOpPUD24jh5lHnrinlxGk0sEB
-         oAL9a8R/QVmPLyXdzbUkZPyWw9ZENCvE/cz1AveQ=
-Date:   Sun, 14 Apr 2019 11:37:58 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Artur Rojek <contact@artur-rojek.eu>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
-Subject: Re: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery
- driver.
-Message-ID: <20190414113758.07702982@archlinux>
-In-Reply-To: <20190407165234.is66vmnjfc35jnho@earth.universe>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
-        <20190323172809.14407-4-contact@artur-rojek.eu>
-        <20190324153137.04857cdf@archlinux>
-        <20190407165234.is66vmnjfc35jnho@earth.universe>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+        id S1726283AbfDNMHr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 14 Apr 2019 08:07:47 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:47007 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725829AbfDNMHr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Apr 2019 08:07:47 -0400
+Received: by mail-lf1-f68.google.com with SMTP id k18so1969679lfj.13
+        for <linux-pm@vger.kernel.org>; Sun, 14 Apr 2019 05:07:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=QiBcl40u0nC5UdOVE4yHMU4668NXtmUDFerEKoTHADI=;
+        b=PNYi0fiswx7wKf6tmq2pbptWNG9Np24jp+KbYEwNE4cnYMycFJy43+9MMObJeEobkV
+         EeQboiPU+rX+qXptoPZxlZ13jv+LBh/SkQdtKQpuYlHbqaQJdKJVtC/fFd8GdSOxhigY
+         y9voy+O6RRpp8+wO92kgVXJoQ0RpMUsBK69F8/EOdfMoVz3wYRnJbDgE2Gjo89ggDms/
+         U2q6j6EBGeM56R9FAuitWlVcLps7DstWV7rRyOzofOm0h5op5tXcvRc4beRCjcTsd1II
+         OAS6s+2Fk4E1Z8JwNXkRONAR1c9gaBJuVgDH9NhNQ/NmkbuabU+xTDvHMOcoiLtnGMCu
+         omsw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=QiBcl40u0nC5UdOVE4yHMU4668NXtmUDFerEKoTHADI=;
+        b=JztpnnmtAWswNELgmxQGHdYfCRBI5wkBGsOHvxzAqHT8CatUB0MGRpOgRj7BsK8QyG
+         bD3w3njIvcsaNNGJwLjXIDaVIugarTyqqCVkfq8fRp0XcjFam8UcPLX6IyIBI87JVYvL
+         Fg/NwhoGOHgE9cS1rezHfb4fQSxtx38VB7Egr7k2csJteBHZUfzQNRvBAfKvUVjptl4b
+         usi4C6A/tqgcepNN/keiJ0XVFJYA7CRon56QnmAoi9BsqTyERt2o7ldQEX7VC8FyahYa
+         CB/bhb5xAZZ2f6gRLA7PekhwS1KA9lpmoawYj38oORBXDh6HXhlO6xN9W2A3y9RE+pmr
+         dkEg==
+X-Gm-Message-State: APjAAAXnswnqBpxUC2uasG7QA86k0MurpEh/2uvyErnHdM/lpfnAK+sb
+        bL7/cdvpG4HVoAA8MBFMme4=
+X-Google-Smtp-Source: APXvYqxv6WI5uV1Hl6vbKfbSAVvROC+SZGkqO4dLofD2PpV1+HnEpJmitEjAwRA5OhBNbNx/aRMD3Q==
+X-Received: by 2002:ac2:51d9:: with SMTP id u25mr9269399lfm.91.1555243665540;
+        Sun, 14 Apr 2019 05:07:45 -0700 (PDT)
+Received: from localhost.localdomain (46-243-146.internethome.cytanet.com.cy. [46.199.243.146])
+        by smtp.gmail.com with ESMTPSA id u19sm9471573lfg.74.2019.04.14.05.07.43
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Sun, 14 Apr 2019 05:07:44 -0700 (PDT)
+From:   Mohan Kumar <mohankumar718@gmail.com>
+To:     rjw@rjwysocki.net
+Cc:     viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Subject: [PATCH] drivers/cpufreq/acpi-cpufreq.c: This fixes the following checkpatch warning
+Date:   Sun, 14 Apr 2019 15:07:38 +0300
+Message-Id: <1555243658-11196-1-git-send-email-mohankumar718@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190414103758.NnbvVSPwfK-zBeZjC6Jr5IIS6DP2SN7PHsH2XYMT0cM@z>
 
-On Sun, 7 Apr 2019 18:52:34 +0200
-Sebastian Reichel <sre@kernel.org> wrote:
+WARNING: Prefer using '"%s...", __func__' to using function's name, in a
+string
 
-> Hi,
-> 
-> On Sun, Mar 24, 2019 at 03:31:37PM +0000, Jonathan Cameron wrote:
-> > On Sat, 23 Mar 2019 18:28:09 +0100
-> > Artur Rojek <contact@artur-rojek.eu> wrote:
-> >   
-> > > Add a driver for battery present on Ingenic JZ47xx SoCs.
-> > > 
-> > > Signed-off-by: Artur Rojek <contact@artur-rojek.eu>  
-> > The IIO parts look fine to me.
-> > Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > 
-> > Sebastian, assuming you are happy with this version,  
-> 
-> The driver itself looks ok. I'm a bit unhappy, that we already have
-> jz4740-battery. This driver is much cleaner, but does not yet seem
-> to be ready to replace it. Artur Rojek what are your plans regarding
-> to the existing driver? Is there currently work going on migrating
-> JZ47xx to DT?
-> 
-> > do you have any preference for how we handle this series?
-> > 
-> > Probably needs one of us to do an immutable branch with just this
-> > in it.  I'm happy to do so once all the relevant Acks etc are in
-> > place, but don't mind if you want to!  
-> 
-> I suppose you could provide an immutable branch with just the first
-> two patches in it. Then I can pull it and apply the power-supply
-> patches on top.
-Done. ib-jz47xx-battery-prereq branch of 
-git://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git
+Switch hardcoded function name with a reference to __func__ making the
+code more maintainable
 
-which is based on v5.0
+Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-I'll pull that into the togreg branch of iio.git shortly.
-
-Thanks,
-
-Jonathan
-
-> 
-> -- Sebastian
-> 
-> > Thanks,
-> > 
-> > Jonathan
-> >   
-> > > ---
-> > > 
-> > > Changes:
-> > > 
-> > > v2: - rework the return logic in ingenic_battery_get_property,
-> > >     - make index offsets point forward in ingenic_battery_set_scale,
-> > >     - fix spacing around scale_raw[best_idx + 1]
-> > > 
-> > >  drivers/power/supply/Kconfig           |  11 ++
-> > >  drivers/power/supply/Makefile          |   1 +
-> > >  drivers/power/supply/ingenic-battery.c | 180 +++++++++++++++++++++++++
-> > >  3 files changed, 192 insertions(+)
-> > >  create mode 100644 drivers/power/supply/ingenic-battery.c
-> > > 
-> > > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> > > index e901b9879e7e..9bfb1637ec28 100644
-> > > --- a/drivers/power/supply/Kconfig
-> > > +++ b/drivers/power/supply/Kconfig
-> > > @@ -169,6 +169,17 @@ config BATTERY_COLLIE
-> > >  	  Say Y to enable support for the battery on the Sharp Zaurus
-> > >  	  SL-5500 (collie) models.
-> > >  
-> > > +config BATTERY_INGENIC
-> > > +	tristate "Ingenic JZ47xx SoCs battery driver"
-> > > +	depends on MIPS || COMPILE_TEST
-> > > +	depends on INGENIC_ADC
-> > > +	help
-> > > +	  Choose this option if you want to monitor battery status on
-> > > +	  Ingenic JZ47xx SoC based devices.
-> > > +
-> > > +	  This driver can also be built as a module. If so, the module will be
-> > > +	  called ingenic-battery.
-> > > +
-> > >  config BATTERY_IPAQ_MICRO
-> > >  	tristate "iPAQ Atmel Micro ASIC battery driver"
-> > >  	depends on MFD_IPAQ_MICRO
-> > > diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> > > index b731c2a9b695..9e2c481d0187 100644
-> > > --- a/drivers/power/supply/Makefile
-> > > +++ b/drivers/power/supply/Makefile
-> > > @@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
-> > >  obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
-> > >  obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
-> > >  obj-$(CONFIG_BATTERY_COLLIE)	+= collie_battery.o
-> > > +obj-$(CONFIG_BATTERY_INGENIC)	+= ingenic-battery.o
-> > >  obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
-> > >  obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
-> > >  obj-$(CONFIG_BATTERY_SBS)	+= sbs-battery.o
-> > > diff --git a/drivers/power/supply/ingenic-battery.c b/drivers/power/supply/ingenic-battery.c
-> > > new file mode 100644
-> > > index 000000000000..822aee1c7b64
-> > > --- /dev/null
-> > > +++ b/drivers/power/supply/ingenic-battery.c
-> > > @@ -0,0 +1,180 @@
-> > > +// SPDX-License-Identifier: GPL-2.0
-> > > +/*
-> > > + * Battery driver for the Ingenic JZ47xx SoCs
-> > > + * Copyright (c) 2019 Artur Rojek <contact@artur-rojek.eu>
-> > > + *
-> > > + * based on drivers/power/supply/jz4740-battery.c
-> > > + */
-> > > +
-> > > +#include <linux/iio/consumer.h>
-> > > +#include <linux/module.h>
-> > > +#include <linux/of.h>
-> > > +#include <linux/platform_device.h>
-> > > +#include <linux/power_supply.h>
-> > > +#include <linux/property.h>
-> > > +
-> > > +struct ingenic_battery {
-> > > +	struct device *dev;
-> > > +	struct iio_channel *channel;
-> > > +	struct power_supply_desc desc;
-> > > +	struct power_supply *battery;
-> > > +	struct power_supply_battery_info info;
-> > > +};
-> > > +
-> > > +static int ingenic_battery_get_property(struct power_supply *psy,
-> > > +					enum power_supply_property psp,
-> > > +					union power_supply_propval *val)
-> > > +{
-> > > +	struct ingenic_battery *bat = power_supply_get_drvdata(psy);
-> > > +	struct power_supply_battery_info *info = &bat->info;
-> > > +	int ret;
-> > > +
-> > > +	switch (psp) {
-> > > +	case POWER_SUPPLY_PROP_HEALTH:
-> > > +		ret = iio_read_channel_processed(bat->channel, &val->intval);
-> > > +		val->intval *= 1000;
-> > > +		if (val->intval < info->voltage_min_design_uv)
-> > > +			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-> > > +		else if (val->intval > info->voltage_max_design_uv)
-> > > +			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> > > +		else
-> > > +			val->intval = POWER_SUPPLY_HEALTH_GOOD;
-> > > +		return ret;
-> > > +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> > > +		ret = iio_read_channel_processed(bat->channel, &val->intval);
-> > > +		val->intval *= 1000;
-> > > +		return ret;
-> > > +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-> > > +		val->intval = info->voltage_min_design_uv;
-> > > +		return 0;
-> > > +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-> > > +		val->intval = info->voltage_max_design_uv;
-> > > +		return 0;
-> > > +	default:
-> > > +		return -EINVAL;
-> > > +	};
-> > > +}
-> > > +
-> > > +/* Set the most appropriate IIO channel voltage reference scale
-> > > + * based on the battery's max voltage.
-> > > + */
-> > > +static int ingenic_battery_set_scale(struct ingenic_battery *bat)
-> > > +{
-> > > +	const int *scale_raw;
-> > > +	int scale_len, scale_type, best_idx = -1, best_mV, max_raw, i, ret;
-> > > +	u64 max_mV;
-> > > +
-> > > +	ret = iio_read_max_channel_raw(bat->channel, &max_raw);
-> > > +	if (ret) {
-> > > +		dev_err(bat->dev, "Unable to read max raw channel value\n");
-> > > +		return ret;
-> > > +	}
-> > > +
-> > > +	ret = iio_read_avail_channel_attribute(bat->channel, &scale_raw,
-> > > +					       &scale_type, &scale_len,
-> > > +					       IIO_CHAN_INFO_SCALE);
-> > > +	if (ret < 0) {
-> > > +		dev_err(bat->dev, "Unable to read channel avail scale\n");
-> > > +		return ret;
-> > > +	}
-> > > +	if (ret != IIO_AVAIL_LIST || scale_type != IIO_VAL_FRACTIONAL_LOG2)
-> > > +		return -EINVAL;
-> > > +
-> > > +	max_mV = bat->info.voltage_max_design_uv / 1000;
-> > > +
-> > > +	for (i = 0; i < scale_len; i += 2) {
-> > > +		u64 scale_mV = (max_raw * scale_raw[i]) >> scale_raw[i + 1];
-> > > +
-> > > +		if (scale_mV < max_mV)
-> > > +			continue;
-> > > +
-> > > +		if (best_idx >= 0 && scale_mV > best_mV)
-> > > +			continue;
-> > > +
-> > > +		best_mV = scale_mV;
-> > > +		best_idx = i;
-> > > +	}
-> > > +
-> > > +	if (best_idx < 0) {
-> > > +		dev_err(bat->dev, "Unable to find matching voltage scale\n");
-> > > +		return -EINVAL;
-> > > +	}
-> > > +
-> > > +	return iio_write_channel_attribute(bat->channel,
-> > > +					   scale_raw[best_idx],
-> > > +					   scale_raw[best_idx + 1],
-> > > +					   IIO_CHAN_INFO_SCALE);
-> > > +}
-> > > +
-> > > +static enum power_supply_property ingenic_battery_properties[] = {
-> > > +	POWER_SUPPLY_PROP_HEALTH,
-> > > +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> > > +	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-> > > +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-> > > +};
-> > > +
-> > > +static int ingenic_battery_probe(struct platform_device *pdev)
-> > > +{
-> > > +	struct device *dev = &pdev->dev;
-> > > +	struct ingenic_battery *bat;
-> > > +	struct power_supply_config psy_cfg = {};
-> > > +	struct power_supply_desc *desc;
-> > > +	int ret;
-> > > +
-> > > +	bat = devm_kzalloc(dev, sizeof(*bat), GFP_KERNEL);
-> > > +	if (!bat)
-> > > +		return -ENOMEM;
-> > > +
-> > > +	bat->dev = dev;
-> > > +	bat->channel = devm_iio_channel_get(dev, "battery");
-> > > +	if (IS_ERR(bat->channel))
-> > > +		return PTR_ERR(bat->channel);
-> > > +
-> > > +	desc = &bat->desc;
-> > > +	desc->name = "jz-battery";
-> > > +	desc->type = POWER_SUPPLY_TYPE_BATTERY;
-> > > +	desc->properties = ingenic_battery_properties;
-> > > +	desc->num_properties = ARRAY_SIZE(ingenic_battery_properties);
-> > > +	desc->get_property = ingenic_battery_get_property;
-> > > +	psy_cfg.drv_data = bat;
-> > > +	psy_cfg.of_node = dev->of_node;
-> > > +
-> > > +	bat->battery = devm_power_supply_register(dev, desc, &psy_cfg);
-> > > +	if (IS_ERR(bat->battery)) {
-> > > +		dev_err(dev, "Unable to register battery\n");
-> > > +		return PTR_ERR(bat->battery);
-> > > +	}
-> > > +
-> > > +	ret = power_supply_get_battery_info(bat->battery, &bat->info);
-> > > +	if (ret) {
-> > > +		dev_err(dev, "Unable to get battery info: %d\n", ret);
-> > > +		return ret;
-> > > +	}
-> > > +	if (bat->info.voltage_min_design_uv < 0) {
-> > > +		dev_err(dev, "Unable to get voltage min design\n");
-> > > +		return bat->info.voltage_min_design_uv;
-> > > +	}
-> > > +	if (bat->info.voltage_max_design_uv < 0) {
-> > > +		dev_err(dev, "Unable to get voltage max design\n");
-> > > +		return bat->info.voltage_max_design_uv;
-> > > +	}
-> > > +
-> > > +	return ingenic_battery_set_scale(bat);
-> > > +}
-> > > +
-> > > +#ifdef CONFIG_OF
-> > > +static const struct of_device_id ingenic_battery_of_match[] = {
-> > > +	{ .compatible = "ingenic,jz4740-battery", },
-> > > +	{ },
-> > > +};
-> > > +MODULE_DEVICE_TABLE(of, ingenic_battery_of_match);
-> > > +#endif
-> > > +
-> > > +static struct platform_driver ingenic_battery_driver = {
-> > > +	.driver = {
-> > > +		.name = "ingenic-battery",
-> > > +		.of_match_table = of_match_ptr(ingenic_battery_of_match),  
-> > 
-> > I guess we can be fairly sure no one will even user this with ACPI
-> > (magic DT) bindings?  That would make this a rare case where the
-> > of_match_pr protection and ifdef fun is still fine.
-> > 
-> >   
-> > > +	},
-> > > +	.probe = ingenic_battery_probe,
-> > > +};
-> > > +module_platform_driver(ingenic_battery_driver);  
-> >   
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index c72258a..8030dcd 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -366,7 +366,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
+ 
+ 	val = drv_read(data, mask);
+ 
+-	pr_debug("get_cur_val = %u\n", val);
++	pr_debug("%s = %u\n", __func__, val);
+ 
+ 	return val;
+ }
+@@ -378,7 +378,7 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+ 	unsigned int freq;
+ 	unsigned int cached_freq;
+ 
+-	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
++	pr_debug("%s (%d)\n", __func__, cpu);
+ 
+ 	policy = cpufreq_cpu_get_raw(cpu);
+ 	if (unlikely(!policy))
+@@ -458,8 +458,8 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 	if (acpi_pstate_strict) {
+ 		if (!check_freqs(policy, mask,
+ 				 policy->freq_table[index].frequency)) {
+-			pr_debug("acpi_cpufreq_target failed (%d)\n",
+-				policy->cpu);
++			pr_debug("%s (%d)\n",
++				__func__, policy->cpu);
+ 			result = -EAGAIN;
+ 		}
+ 	}
+@@ -573,7 +573,7 @@ static int cpufreq_boost_down_prep(unsigned int cpu)
+ static int __init acpi_cpufreq_early_init(void)
+ {
+ 	unsigned int i;
+-	pr_debug("acpi_cpufreq_early_init\n");
++	pr_debug("%s\n", __func__);
+ 
+ 	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
+ 	if (!acpi_perf_data) {
+@@ -657,7 +657,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	static int blacklisted;
+ #endif
+ 
+-	pr_debug("acpi_cpufreq_cpu_init\n");
++	pr_debug("%s\n", __func__);
+ 
+ #ifdef CONFIG_SMP
+ 	if (blacklisted)
+@@ -856,7 +856,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 
+-	pr_debug("acpi_cpufreq_cpu_exit\n");
++	pr_debug("%s\n", __func__);
+ 
+ 	policy->fast_switch_possible = false;
+ 	policy->driver_data = NULL;
+@@ -881,7 +881,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 
+-	pr_debug("acpi_cpufreq_resume\n");
++	pr_debug("%s\n", __func__);
+ 
+ 	data->resume = 1;
+ 
+@@ -954,7 +954,7 @@ static int __init acpi_cpufreq_init(void)
+ 	if (cpufreq_get_current_driver())
+ 		return -EEXIST;
+ 
+-	pr_debug("acpi_cpufreq_init\n");
++	pr_debug("%s\n", __func__);
+ 
+ 	ret = acpi_cpufreq_early_init();
+ 	if (ret)
+@@ -991,7 +991,7 @@ static int __init acpi_cpufreq_init(void)
+ 
+ static void __exit acpi_cpufreq_exit(void)
+ {
+-	pr_debug("acpi_cpufreq_exit\n");
++	pr_debug("%s\n", __func__);
+ 
+ 	acpi_cpufreq_boost_exit();
+ 
+-- 
+2.7.4
 
