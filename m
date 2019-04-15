@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10747C10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ADEDC10F12
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D45F520880
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A28F20880
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZRYl5FA1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ebq4sbxC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727671AbfDOOzo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 10:55:44 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:43835 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727564AbfDOOzo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:44 -0400
-Received: by mail-lj1-f193.google.com with SMTP id f18so15946861lja.10;
-        Mon, 15 Apr 2019 07:55:42 -0700 (PDT)
+        id S1727777AbfDOO5w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 10:57:52 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:44258 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727647AbfDOOzm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:42 -0400
+Received: by mail-lj1-f196.google.com with SMTP id h16so15931178ljg.11;
+        Mon, 15 Apr 2019 07:55:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=8HWSyi3PygSX+JPDCLdXZ2LpUmvO6eJiuWIhGQlNkaw=;
-        b=ZRYl5FA1pSu4iIsJ5SzUWdQ8Ynz5lQuFwx0ZfeKpfXlDJg1Vgnv1eVLmy/gf7iS8L+
-         IhHCBkKjoGwS0kgxc3xAgcj+8kQpiE5a70ne4WZmGF9ZzHSethWa7X9agVmVMkXm6VS1
-         WzSDOfiyEfjJr8tiX70I+fFSuWD5XsKXAXVpDbbdXIDXHUBPkY4/ldDeeB379SXYf7vr
-         xhDPc5nhtdAQf2CyaS14Rq3LFPyIRwvpwlL2a4O3aGrTjc68SH7FWRqFZefKN1BBHTmn
-         QI7xcE4WRMEugjtG2Gtu2Ax8n4y0Wr1ciuuWX0tt78fTZxZ3cqO4YCzFQWAA5Vqt47Oq
-         Ms2Q==
+        bh=i6Xn9R9brWUT4b6RnyZ3sxN9szgqfnxfRVF7qHAQNak=;
+        b=Ebq4sbxCdwRWFLTiMoDLZq7P/iZ5W97pwxcwiITZKZfWPmzEeT5B1C3Fpr07aXO3ns
+         Tp5ibxnl2tFwuZDceYGWA3sq0Q744cbN4wW4xlXaTyLRCxfDEJW29SFEPSSQmkhbV3yU
+         UJjpcVEbwbtsoziOkvVPb9FnOyPAQH2oBSJj0MXttp9K2OwRjE5pbpeTSjIm4rnC7aOR
+         OnLw2F0RhR5Q39o3M5NVjYVdP5zH5uNSGNwsMmB74BpEytq8AGH23J8RpevqDxwJ8QI+
+         YC/IkpHbogtw2ljJFQd1XEjBtCE7qah01DQkTyTPm71HMsVT+oNgGLRTdLmSmSgmHovp
+         y42w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=8HWSyi3PygSX+JPDCLdXZ2LpUmvO6eJiuWIhGQlNkaw=;
-        b=WrV3hezmpqMDoYmy/9xBI9SxnFmgUrmTBNHeHsLtGhWb4Dh7c2EapuPmYDKvviG5mB
-         kZdeepYAdwxw9GoiTtPaTEz3Rtr/CnJKaGTnoBfgUtQ8i6j6mA+gK2tW/nVFIB2EobQe
-         ll8OjjolyUrLYRNARIgKPqB7UNyDk01CaNpakOPA1vRqLXcbKshv8UBgb2gs7yoMvKKT
-         MDTlf7dGJ5Y8oyiT2dnqqX/EqPWFosOCF9bmN+dbKbvZJ99loQ9bBJZ4nqXLNEmnio9l
-         55nSRs4dKt23sCwwzK7FF6AIuLnbIqysGmx6UDAcSmLlBKVnbl2IpXClTPiGL9pV4TBo
-         C24w==
-X-Gm-Message-State: APjAAAVeWC89S9qG2sGyVz3AZ0S1Cjnn3juaiLcVZEyijbgjQr9xybxc
-        mrzGuDzFMx2aZwvD94ZXHsuZIzRE
-X-Google-Smtp-Source: APXvYqyXTWmS6raMlWH3PGMIX7x+F2XzxCBYLhFTJOSUHiShFgAWdeTZFVSUNxx+L7tIUxVxnX/4vw==
-X-Received: by 2002:a2e:9842:: with SMTP id e2mr40133233ljj.142.1555340141485;
-        Mon, 15 Apr 2019 07:55:41 -0700 (PDT)
-Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.40
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        bh=i6Xn9R9brWUT4b6RnyZ3sxN9szgqfnxfRVF7qHAQNak=;
+        b=UoTuO3CeSAogtoVkjHHn7W7sOEHVZOMv46jh7lxfAX2MZJlyeFVTL+L7x0XOLFX5tY
+         KKnjqdX17OGYka5kQ8ulLZoq3d7+R9a4Wai9J36ecjg8zu8LYn4XileiKoFxly9AtEou
+         LSV6tGdYtTfp1Lp7E/OkWDHm8q57e+JHzqhkYupWq0mYILBknlQLX944ogalKYQqpqJ1
+         LNyen9Np2jVl1xWy3va7uDcCAAD4qZxiB7QFnaHxQQ5Y2Xyymcye754MMkyLVMtawf+i
+         5TBmdhhZULv2Hcwxc/q9Z5TKNltYMyRlh1maaMJCfQWUtBbfu4SH+9hAyyor5hIHDM2n
+         w4RA==
+X-Gm-Message-State: APjAAAUdjEiyIWauiyRwbhsUOWaF3wwa7xiwW2JBHkk2G+m9hxOVcGcl
+        sJwWB5CHfFlgxOsrYREiNyY=
+X-Google-Smtp-Source: APXvYqxQau+WvyLk8STbVoFeKqGPr/V7AzFSo6YVuvzNfeYFaaRkVH4j+GCgdELhqBNGspq42LgQGA==
+X-Received: by 2002:a2e:9597:: with SMTP id w23mr33961266ljh.111.1555340140224;
         Mon, 15 Apr 2019 07:55:40 -0700 (PDT)
+Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
+        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.39
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 15 Apr 2019 07:55:39 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 06/19] PM / devfreq: tegra: Fix missed error checking on devfreq initialization failure
-Date:   Mon, 15 Apr 2019 17:54:52 +0300
-Message-Id: <20190415145505.18397-7-digetx@gmail.com>
+Subject: [PATCH v2 05/19] PM / devfreq: tegra: Replace write memory barrier with the read barrier
+Date:   Mon, 15 Apr 2019 17:54:51 +0300
+Message-Id: <20190415145505.18397-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190415145505.18397-1-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
@@ -77,30 +77,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415145452.DGyXrucl8ZkuVU2yXI2_lpPslPNGg4y6wV0-C6kNdKs@z>
+Message-ID: <20190415145451.tRVpY_GDod2sslkzwzYAeIGBcp8UO0BhWhKMD-KC1Ww@z>
 
-The code doesn't check for devfreq initialization failure, fix it.
+The write memory barrier isn't needed because the BUS buffer is flushed
+by read after write that happens after the removed wmb(), we will also
+use readl() instead of the relaxed version to ensure that read is indeed
+completed.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/devfreq/tegra-devfreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index f0f0d78f6cbf..aa0478464b35 100644
+index d62fb1b0d9bb..f0f0d78f6cbf 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -707,6 +707,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 						 &tegra_devfreq_profile,
- 						 "tegra_actmon",
- 						 NULL);
-+	if (IS_ERR(tegra->devfreq)) {
-+		err = PTR_ERR(tegra->devfreq);
-+		return err;
-+	}
- 
- 	return 0;
+@@ -243,8 +243,7 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+ static void actmon_write_barrier(struct tegra_devfreq *tegra)
+ {
+ 	/* ensure the update has reached the ACTMON */
+-	wmb();
+-	actmon_readl(tegra, ACTMON_GLB_STATUS);
++	readl(tegra->regs + ACTMON_GLB_STATUS);
  }
+ 
+ static void actmon_isr_device(struct tegra_devfreq *tegra,
 -- 
 2.21.0
 
