@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v2 12/19] PM / devfreq: tegra: Avoid inconsistency of current frequency value
-Date: Mon, 15 Apr 2019 17:54:58 +0300
-Message-ID: <20190415145505.18397-13-digetx@gmail.com>
+Subject: [PATCH v2 17/19] PM / devfreq: tegra: Support Tegra30
+Date: Mon, 15 Apr 2019 17:55:03 +0300
+Message-ID: <20190415145505.18397-18-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,44 +12,42 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The frequency value potentially could change in-between. It doesn't
-cause any real problem at all right now, but that could change in the
-future. Hence let's avoid the inconsistency.
+The devfreq driver can be used on Tegra30 without any code change and
+it works perfectly fine, the default Tegra124 parameters are good enough
+for Tegra30.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/devfreq/Kconfig         | 4 ++--
+ drivers/devfreq/tegra-devfreq.c | 1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index a78dffe603c1..78c33ddd4eea 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -92,8 +92,8 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ 	  This does not yet operate with optimal voltages.
+ 
+ config ARM_TEGRA_DEVFREQ
+-	tristate "Tegra DEVFREQ Driver"
+-	depends on ARCH_TEGRA_124_SOC
++	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
++	depends on ARCH_TEGRA
+ 	select PM_OPP
+ 	help
+ 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index a668e4fbc874..f1a6f951813a 100644
+index f0711d5ad27d..0a2465a58cf5 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -496,13 +496,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
-+	unsigned long cur_freq;
+@@ -719,6 +719,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+ }
  
--	stat->current_frequency = tegra->cur_freq * KHZ;
-+	cur_freq = READ_ONCE(tegra->cur_freq);
- 
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
- 
- 	/* The below are to be used by the other governors */
-+	stat->current_frequency = cur_freq * KHZ;
- 
- 	actmon_dev = &tegra->devices[MCALL];
- 
-@@ -513,7 +515,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
- 
- 	/* Number of cycles in a sampling period */
--	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
-+	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
- 
- 	stat->busy_time = min(stat->busy_time, stat->total_time);
- 
+ static const struct of_device_id tegra_devfreq_of_match[] = {
++	{ .compatible = "nvidia,tegra30-actmon" },
+ 	{ .compatible = "nvidia,tegra124-actmon" },
+ 	{ },
+ };
 -- 
 2.21.0
