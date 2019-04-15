@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v2 14/19] PM / devfreq: tegra: Move governor registration to driver's probe
-Date: Mon, 15 Apr 2019 17:55:00 +0300
-Message-ID: <20190415145505.18397-15-digetx@gmail.com>
+Subject: [PATCH v2 11/19] PM / devfreq: tegra: De-initialize properly on driver's probe error
+Date: Mon, 15 Apr 2019 17:54:57 +0300
+Message-ID: <20190415145505.18397-12-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,97 +12,113 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no need to register the ACTMON's governor separately from
-the driver, hence let's move the registration into the driver's probe
-function for consistency and to make code cleaner a tad.
+Reset hardware, disable ACTMON clock, release OPP's and free IRQ before
+removing devfreq device since there is no guarantee that interrupt
+handling won't run after masking interrupt in hardware.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 44 +++++++++------------------------
- 1 file changed, 12 insertions(+), 32 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 53 ++++++++++++++++-----------------
+ 1 file changed, 26 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 832e4f5aa11b..46c61af8ca33 100644
+index 69b557df5084..a668e4fbc874 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -673,6 +673,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+@@ -663,28 +663,28 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+-		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
+-		return irq;
++		err = irq;
++		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
++		goto remove_opps;
+ 	}
  
  	platform_set_drvdata(pdev, tegra);
  
-+	err = devfreq_add_governor(&tegra_devfreq_governor);
-+	if (err) {
-+		dev_err(&pdev->dev, "Failed to add governor: %d\n", err);
-+		goto remove_opps;
-+	}
-+
  	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
- 	tegra->devfreq = devfreq_add_device(&pdev->dev,
- 					    &tegra_devfreq_profile,
-@@ -680,7 +686,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 					    NULL);
+-	tegra->devfreq = devm_devfreq_add_device(&pdev->dev,
+-						 &tegra_devfreq_profile,
+-						 "tegra_actmon",
+-						 NULL);
++	tegra->devfreq = devfreq_add_device(&pdev->dev,
++					    &tegra_devfreq_profile,
++					    "tegra_actmon",
++					    NULL);
  	if (IS_ERR(tegra->devfreq)) {
  		err = PTR_ERR(tegra->devfreq);
--		goto remove_opps;
-+		goto remove_governor;
+-		return err;
++		goto remove_opps;
  	}
  
- 	err = request_threaded_irq(irq, NULL, actmon_thread_isr, IRQF_ONESHOT,
-@@ -706,6 +712,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- remove_devfreq:
- 	devfreq_remove_device(tegra->devfreq);
+-	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+-					actmon_thread_isr, IRQF_ONESHOT,
+-					"tegra-devfreq", tegra);
++	err = request_threaded_irq(irq, NULL, actmon_thread_isr, IRQF_ONESHOT,
++				   "tegra-devfreq", tegra);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Interrupt request failed\n");
+-		goto remove_opps;
++		goto remove_devfreq;
+ 	}
  
-+remove_governor:
-+	devfreq_remove_governor(&tegra_devfreq_governor);
+ 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+@@ -692,14 +692,23 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	if (err) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register rate change notifier\n");
+-		goto remove_opps;
++		goto disable_interrupt;
+ 	}
+ 
+ 	return 0;
+ 
++disable_interrupt:
++	free_irq(irq, tegra);
++
++remove_devfreq:
++	devfreq_remove_device(tegra->devfreq);
 +
  remove_opps:
  	dev_pm_opp_remove_all_dynamic(&pdev->dev);
  
-@@ -729,7 +738,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	reset_control_reset(tegra->reset);
- 	clk_disable_unprepare(tegra->clock);
- 
--	return 0;
-+	return devfreq_remove_governor(&tegra_devfreq_governor);
++	reset_control_reset(tegra->reset);
++	clk_disable_unprepare(tegra->clock);
++
+ 	return err;
  }
  
- static const struct of_device_id tegra_devfreq_of_match[] = {
-@@ -747,36 +756,7 @@ static struct platform_driver tegra_devfreq_driver = {
- 		.of_match_table = tegra_devfreq_of_match,
- 	},
- };
+@@ -707,24 +716,14 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+ {
+ 	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+ 	int irq = platform_get_irq(pdev, 0);
+-	u32 val;
+-	unsigned int i;
 -
--static int __init tegra_devfreq_init(void)
--{
--	int ret = 0;
+-	devm_devfreq_remove_device(&pdev->dev, tegra->devfreq);
+-	dev_pm_opp_remove_all_dynamic(&pdev->dev);
 -
--	ret = devfreq_add_governor(&tegra_devfreq_governor);
--	if (ret) {
--		pr_err("%s: failed to add governor: %d\n", __func__, ret);
--		return ret;
+-	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+-		val = device_readl(&tegra->devices[i], ACTMON_DEV_CTRL);
+-		val &= ~ACTMON_DEV_CTRL_ENB;
+-		device_writel(&tegra->devices[i], val, ACTMON_DEV_CTRL);
 -	}
 -
--	ret = platform_driver_register(&tegra_devfreq_driver);
--	if (ret)
--		devfreq_remove_governor(&tegra_devfreq_governor);
+-	actmon_write_barrier(tegra);
 -
--	return ret;
--}
--module_init(tegra_devfreq_init)
--
--static void __exit tegra_devfreq_exit(void)
--{
--	int ret = 0;
--
--	platform_driver_unregister(&tegra_devfreq_driver);
--
--	ret = devfreq_remove_governor(&tegra_devfreq_governor);
--	if (ret)
--		pr_err("%s: failed to remove governor: %d\n", __func__, ret);
--}
--module_exit(tegra_devfreq_exit)
-+module_platform_driver(tegra_devfreq_driver);
+-	devm_free_irq(&pdev->dev, irq, tegra);
  
- MODULE_LICENSE("GPL v2");
- MODULE_DESCRIPTION("Tegra devfreq driver");
+ 	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
++	free_irq(irq, tegra);
++
++	devfreq_remove_device(tegra->devfreq);
++	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+ 
++	reset_control_reset(tegra->reset);
+ 	clk_disable_unprepare(tegra->clock);
+ 
+ 	return 0;
 -- 
 2.21.0
