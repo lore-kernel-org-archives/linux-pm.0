@@ -2,141 +2,110 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A871C10F12
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B4DAC10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 16:28:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A7CD2147C
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="reLoU8+J"
+	by mail.kernel.org (Postfix) with ESMTP id 048BA20818
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 16:28:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727490AbfDOOzh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 10:55:37 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:46911 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726102AbfDOOzg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:36 -0400
-Received: by mail-lf1-f68.google.com with SMTP id k18so4405799lfj.13;
-        Mon, 15 Apr 2019 07:55:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=f5T8atUTvJOfOrgRbVO67MZvPmsCQ9fM6En3Qkk12gw=;
-        b=reLoU8+J6CvGt5tVx71ZKa5svYrQlag86nDbeucNXt5eb33Tux1ofULLXSEDINjMSm
-         pSvgVQVQp2Tz46Xb1NwZQG5/0fPzxpgbqc7ZFWS4Npd0RglFDuaY5Ap1vf1jV0lQGCWp
-         dYLzp+DzYRJEj+bELItd/Gc1lUqMGZ3MwwAueUUPQavnVf01GWKAUCocFV0G455N7rdy
-         0KUkjK/g02LFNyLMMlP3FR6xqfQbqx5z3DHkzYmTbWBPSTNxvcBI++Yu0mW5U7LJzYBk
-         O+k3KVulJPq9YsjoEVOTOW9FDj7cv8d+h1cmrgloOuS1xtjN+Aoc221SlbAU623OA8FM
-         hlVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=f5T8atUTvJOfOrgRbVO67MZvPmsCQ9fM6En3Qkk12gw=;
-        b=rrNsGhICP5rJrd/jxp4CZm0zMWkEC8/3AQthD1VfyLL/j0ttkj+h7/ASOVezV4SeOE
-         RSHj4AauRIUl+Ya692jMkg0FWoftnCyxW5KoSVLg1Ytz9xtm6OsBHvqGXkwHjVT3ok/a
-         ZuoFI5WzWIxLYpsQ3GV5heLe3P2ub4EU47c6ZIG8vk3ltS+0t63yOmBqUyl6PS+7xZk+
-         YNn5l7jC6qxPmtVe8SEpUvMuxPD3w5Uvk5Kg3dJa0TPIS3fIWkZlKsHdJ/eLu1IgTyBL
-         iblVkiBXzxdIUd05JZNy/D6FlhRVUwiYP4Tq4uovWIE+MgCUpAhTmIq5soed7A5Jod8h
-         QwXA==
-X-Gm-Message-State: APjAAAVLscmT3HNAazq1OuRhSGK0Da7n5nnxQNZ2y8gsSGSuyOENsZ0m
-        7ftRzkPrWykezINnPNYPg4VZK8oc
-X-Google-Smtp-Source: APXvYqyypglaCMPVFONPc4c0X7lEj7S6RTZ7TzQ8utFiRuvelUVt4PZqm219CVy83KuOaZMYA24WHw==
-X-Received: by 2002:a19:f60d:: with SMTP id x13mr4237018lfe.11.1555340134287;
-        Mon, 15 Apr 2019 07:55:34 -0700 (PDT)
-Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.32
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 15 Apr 2019 07:55:33 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 00/19] NVIDIA Tegra devfreq improvements and Tegra20/30 support
-Date:   Mon, 15 Apr 2019 17:54:46 +0300
-Message-Id: <20190415145505.18397-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.21.0
+        id S1726988AbfDOQ2M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 12:28:12 -0400
+Received: from mga14.intel.com ([192.55.52.115]:17796 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726034AbfDOQ2M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 12:28:12 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 15 Apr 2019 09:28:12 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,354,1549958400"; 
+   d="scan'208";a="140856676"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
+  by fmsmga008.fm.intel.com with ESMTP; 15 Apr 2019 09:28:10 -0700
+Received: from andy by smile with local (Exim 4.92)
+        (envelope-from <andriy.shevchenko@intel.com>)
+        id 1hG4Sn-0005D1-25; Mon, 15 Apr 2019 19:28:09 +0300
+Date:   Mon, 15 Apr 2019 19:28:09 +0300
+From:   Andy Shevchenko <andriy.shevchenko@intel.com>
+To:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Cc:     rui.zhang@intel.com, edubezval@gmail.com,
+        daniel.lezcano@linaro.org, srinivas.pandruvada@linux.intel.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thermal: intel: int340x: processor_thermal_device:
+ simplify to get driver data
+Message-ID: <20190415162809.GU9224@smile.fi.intel.com>
+References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415145446.etO5Brzc8NnsLG_k8mhsgGHShgctvdz-qxS5ZjgEp_M@z>
+Message-ID: <20190415162809.mNpZr4WXvIGedqkhX9OAOeeVEzg_BT_aH2Wi6aihKR0@z>
 
-Hello,
+On Mon, Apr 15, 2019 at 08:18:30PM +0530, Sumeet Pawnikar wrote:
+> From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+> 
+> This simplifies getting the 'driver_data' from 'struct device' directly.
+> Going through platform_device or pci_dev is not required. Also removes
+> condition check as the private data stored with dev pointer, means
+> irrespective of enumeration mode, we can use dev_get_drvdata().
+> This removes the unnecessary step back and forth.
+> 
 
-I tried to utilize the Tegra devfreq driver on Tegra30 and found out that
-it doesn't work properly due to improper Hz<->kHz conversions made by the
-driver. After fixing that problem and doing some more testing I noticed
-that there are things that could be improved and in result here is this
-patchset that fixes the problems, makes some improvements and adds support
-for NVIDIA Tegra30 SoC's. This series was tested on Tegra30 and Tegra124
-machines.
+Indeed, good clean up!
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 
-This series also adds support for the Tegra20 SoC's that do not have
-the ACTMON hardware unit, but can use Memory Controller counters to make
-decision about the required memory frequency. Please note that the patch
-that instantiates a platform device for the driver isn't a part of this
-series, I'll submit it later on because of interdependency with some other
-ongoing patchset.
-
-Please review, thanks.
-
-Changelog:
-
-v2: The patchset was quite heavily reworked since v1, few patches we
-    dropped or squashed into the new ones and more patches we added.
-    In a result more bugs and potential problems are fixed now, driver's
-    code got more clean up.
-
-    The Tegra20 driver-addition patch is now a part of this series, it has
-    no changes since v1.
-
-Dmitry Osipenko (19):
-  PM / devfreq: tegra: Fix kHz to Hz conversion
-  PM / devfreq: tegra: Replace readl-writel with relaxed versions
-  PM / devfreq: tegra: Don't ignore clk errors
-  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-  PM / devfreq: tegra: Replace write memory barrier with the read
-    barrier
-  PM / devfreq: tegra: Fix missed error checking on devfreq
-    initialization failure
-  PM / devfreq: tegra: Register clk notifier in the end of driver's
-    probe
-  PM / devfreq: tegra: Remove OPP entries on driver removal
-  PM / devfreq: tegra: Change interrupt request order
-  PM / devfreq: tegra: Drop primary interrupt handler
-  PM / devfreq: tegra: De-initialize properly on driver's probe error
-  PM / devfreq: tegra: Avoid inconsistency of current frequency value
-  PM / devfreq: tegra: Mark ACTMON's governor as immutable
-  PM / devfreq: tegra: Move governor registration to driver's probe
-  PM / devfreq: tegra: Synchronize IRQ after masking it in hardware
-  PM / devfreq: tegra: Reconfigure hardware on governor's restart
-  PM / devfreq: tegra: Support Tegra30
-  PM / devfreq: tegra: Enable COMPILE_TEST for the driver
-  PM / devfreq: Introduce driver for NVIDIA Tegra20
-
- MAINTAINERS                       |   8 +
- drivers/devfreq/Kconfig           |  15 +-
- drivers/devfreq/Makefile          |   1 +
- drivers/devfreq/tegra-devfreq.c   | 296 +++++++++++++-----------------
- drivers/devfreq/tegra20-devfreq.c | 177 ++++++++++++++++++
- 5 files changed, 324 insertions(+), 173 deletions(-)
- create mode 100644 drivers/devfreq/tegra20-devfreq.c
+> Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+> ---
+>  .../int340x_thermal/processor_thermal_device.c     |   11 +----------
+>  1 file changed, 1 insertion(+), 10 deletions(-)
+> 
+> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> index 8e1cf4d..2a7cbaa 100644
+> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> @@ -81,22 +81,13 @@ enum proc_thermal_emum_mode_type {
+>  					struct device_attribute *attr, \
+>  					char *buf) \
+>  { \
+> -	struct pci_dev *pci_dev; \
+> -	struct platform_device *pdev; \
+> -	struct proc_thermal_device *proc_dev; \
+> +	struct proc_thermal_device *proc_dev = dev_get_drvdata(dev); \
+>  	\
+>  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
+>  		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
+>  		return 0; \
+>  	} \
+>  	\
+> -	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
+> -		pdev = to_platform_device(dev); \
+> -		proc_dev = platform_get_drvdata(pdev); \
+> -	} else { \
+> -		pci_dev = to_pci_dev(dev); \
+> -		proc_dev = pci_get_drvdata(pci_dev); \
+> -	} \
+>  	return sprintf(buf, "%lu\n",\
+>  	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
+>  }
+> -- 
+> 1.7.9.5
+> 
 
 -- 
-2.21.0
+With Best Regards,
+Andy Shevchenko
+
 
