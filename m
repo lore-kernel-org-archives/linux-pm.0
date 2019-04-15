@@ -1,56 +1,44 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 4/4] power: supply: max17040: Send uevent in SOC changes
-Date: Mon, 15 Apr 2019 09:30:58 +0200
-Message-ID: <CAJKOXPf=nPrmw6Vzi_=LmO=dVsV4Gvoc-q75XP2FBEgm9Gxv0A@mail.gmail.com>
-References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
- <20190415012635.6369-1-matheus@castello.eng.br> <20190415012635.6369-5-matheus@castello.eng.br>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v2 0/4] Add QCS404 interconnect provider driver
+Date: Mon, 15 Apr 2019 13:43:53 +0300
+Message-ID: <20190415104357.5305-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190415012635.6369-5-matheus@castello.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matheus Castello <matheus@castello.eng.br>
-Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: robh+dt@kernel.org, bjorn.andersson@linaro.org, georgi.djakov@linaro.org
+Cc: vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Apr 2019 at 03:48, Matheus Castello <matheus@castello.eng.br> wrote:
->
-> Notify core through power_supply_changed() in case of changes in state
-> of charge. This is useful for user-space to efficiently update current
-> battery level.
->
-> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
-> ---
->  drivers/power/supply/max17040_battery.c | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-> index f036f272d52f..db901ebf495d 100644
-> --- a/drivers/power/supply/max17040_battery.c
-> +++ b/drivers/power/supply/max17040_battery.c
-> @@ -208,10 +208,17 @@ static void max17040_check_changes(struct i2c_client *client)
->  static void max17040_work(struct work_struct *work)
->  {
->         struct max17040_chip *chip;
-> +       int last_soc;
->
->         chip = container_of(work, struct max17040_chip, work.work);
-> +       /* store SOC for check change */
-> +       last_soc = chip->soc;
->         max17040_check_changes(chip->client);
->
-> +       /* check changes and send uevent */
-> +       if (last_soc != chip->soc)
+Add driver to support scaling of the on-chip interconnects on QCS404-based
+platforms. Also add the necessary device-tree nodes, so that the driver for
+each NoC can probe and register as interconnect-provider.
 
-chip->soc could be negative ERRNO so in such case I think user-space
-should not be notified.
+v2:
+- Use the clk_bulk API. (Bjorn)
+- Move the port IDs into the provider file. (Bjorn)
+- Use ARRAY_SIZE in the macro to automagically count the num_links. (Bjorn)
+- Improve code readability. (Bjorn)
+- Add patch [4/4] introducing a qcom,qos DT property to represent the link to
+  the MMIO QoS registers HW block.
 
-> +               power_supply_changed(chip->battery);
-> +
+v1: https://lore.kernel.org/lkml/20190405035446.31886-1-georgi.djakov@linaro.org/
 
-You should also notify on online and status change (e.g. started
-charging). User-space also wants to know that, e.g. to show the
-charging icon or battery health status.
+Bjorn Andersson (1):
+  interconnect: qcom: Add QCS404 interconnect provider driver
 
-Best regards,
-Krzysztof
+Georgi Djakov (3):
+  dt-bindings: interconnect: Add Qualcomm QCS404 DT bindings
+  arm64: dts: qcs404: Add interconnect provider DT nodes
+  dt-bindings: interconnect: qcs404: Introduce qcom,qos DT property
+
+ .../bindings/interconnect/qcom,qcs404.txt     |  76 +++
+ arch/arm64/boot/dts/qcom/qcs404.dtsi          |  25 +
+ drivers/interconnect/qcom/Kconfig             |   8 +
+ drivers/interconnect/qcom/Makefile            |   2 +
+ drivers/interconnect/qcom/qcs404.c            | 559 ++++++++++++++++++
+ .../dt-bindings/interconnect/qcom,qcs404.h    |  88 +++
+ 6 files changed, 758 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+ create mode 100644 drivers/interconnect/qcom/qcs404.c
+ create mode 100644 include/dt-bindings/interconnect/qcom,qcs404.h
