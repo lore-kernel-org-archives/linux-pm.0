@@ -1,53 +1,46 @@
 From: Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v2 0/4] power: supply: MAX17040: Add IRQ for low level and alert SOC changes
-Date: Sun, 14 Apr 2019 22:26:31 -0300
-Message-ID: <20190415012635.6369-1-matheus@castello.eng.br>
+Subject: [PATCH v2 4/4] power: supply: max17040: Send uevent in SOC changes
+Date: Sun, 14 Apr 2019 22:26:35 -0300
+Message-ID: <20190415012635.6369-5-matheus@castello.eng.br>
 References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+ <20190415012635.6369-1-matheus@castello.eng.br>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+In-Reply-To: <20190415012635.6369-1-matheus@castello.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
 Cc: mark.rutland@arm.com, cw00.choi@samsung.com, b.zolnierkie@samsung.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Matheus Castello <matheus@castello.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
-This series add IRQ handler for low level SOC alert, define a devicetree 
-binding attribute to configure the alert level threshold and check for
-changes in SOC for send uevents.
+Notify core through power_supply_changed() in case of changes in state
+of charge. This is useful for user-space to efficiently update current
+battery level.
 
-Max17040 have a pin for alert host about low level state of charge and
-this alert can be configured in a threshold from 1% up to 32% of SOC.
+Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+---
+ drivers/power/supply/max17040_battery.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Tested on Toradex Colibri iMX7D, with a SparkFun Lipo Fuel Gauge module
-based on MAXIM MAX17043.
-
-Thanks Krzysztof Kozlowski for your time reviewing it, and forgive me for
-the delay in working on it, now I'm back to the patchs. Let me know what
-you think about the fixes and I'm open to maintainers suggestions.
-
-Changes since v1:
-(Suggested by Krzysztof Kozlowski)
-- Put common code from max17040_work and max17040_thread_handler in a function
-- Code style fixes
-- Define mask and low level threshold alert default
-- Check return value from max17040_set_soc_threshold
-- Set low level state of charge threshold before IRQ
-- CC maintainers from drivers/mfd/max14577
-- Use flags from FDT client->flags instead hard coded it
-- Mention interrupts on DT Documentation
-- Fix "maxim,max77836-battery" missed from DT Documentation
-- Fix commit description
-
-Matheus Castello (4):
-  power: supply: max17040: Add IRQ handler for low SOC alert
-  dt-bindings: power: supply: Max17040: Add low level SOC alert
-    threshold
-  power: supply: max17040: Config alert SOC low level threshold from FDT
-  power: supply: max17040: Send uevent in SOC changes
-
- .../power/supply/max17040_battery.txt         |  24 ++++
- drivers/power/supply/max17040_battery.c       | 118 +++++++++++++++++-
- 2 files changed, 138 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index f036f272d52f..db901ebf495d 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -208,10 +208,17 @@ static void max17040_check_changes(struct i2c_client *client)
+ static void max17040_work(struct work_struct *work)
+ {
+ 	struct max17040_chip *chip;
++	int last_soc;
+ 
+ 	chip = container_of(work, struct max17040_chip, work.work);
++	/* store SOC for check change */
++	last_soc = chip->soc;
+ 	max17040_check_changes(chip->client);
+ 
++	/* check changes and send uevent */
++	if (last_soc != chip->soc)
++		power_supply_changed(chip->battery);
++
+ 	queue_delayed_work(system_power_efficient_wq, &chip->work,
+ 			   MAX17040_DELAY);
+ }
 -- 
 2.17.0
