@@ -2,170 +2,137 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3E8AC10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 18:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43DB4C10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 19:44:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 92646218A1
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 18:30:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0E81120825
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 19:44:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555357448;
+	bh=6lW6ykUoQp/n4gUTrMVw2ocv9lDh94UgruEDQewhLno=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=aYKBQA0QfTcFQskSTOpQVxdLbp1pFHcV2+BA+SAh1harG+IHKc+IHifx50HgKsMaK
+	 ogvBhUh/pLSpdBxGjU7Os5Z6UhVKDXuiEiFZGTxlKfZskNFfZ9Nthr6qnhNGhL7P/K
+	 FTip3vvNhFmgy/oJ+xCUNlWX3iQ+A4cPE02cc/gA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727929AbfDOSaq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 14:30:46 -0400
-Received: from mga01.intel.com ([192.55.52.88]:47382 "EHLO mga01.intel.com"
+        id S1728306AbfDOToH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 15:44:07 -0400
+Received: from mail.kernel.org ([198.145.29.99]:46834 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727783AbfDOSaq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Apr 2019 14:30:46 -0400
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 15 Apr 2019 11:30:45 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,354,1549958400"; 
-   d="scan'208";a="140896049"
-Received: from spandruv-desk.jf.intel.com ([10.54.75.31])
-  by fmsmga008.fm.intel.com with ESMTP; 15 Apr 2019 11:30:45 -0700
-Message-ID: <a5c3b9717a9fe995993014a162a59a9c595848ed.camel@linux.intel.com>
-Subject: Re: [PATCH 1/2] x86: intel_pstate: Fix wrong definition of Disable
- Energy Efficiency Optimization bit
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Liran Alon <liran.alon@oracle.com>
-Cc:     linux-pm@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net,
-        viresh.kumar@linaro.org,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Date:   Mon, 15 Apr 2019 11:30:45 -0700
-In-Reply-To: <B1F73CF7-B984-4EE2-A331-46BEE95D3FE5@oracle.com>
-References: <20190414204831.93705-1-liran.alon@oracle.com>
-         <d1825fdb9b1c9d759bcfefa7ef80a380cd9ece78.camel@linux.intel.com>
-         <CDD74CD9-4DF0-4403-8140-12008DB86E7A@oracle.com>
-         <1411b93ccc156d6712b9e9bb7ba3e03049489c02.camel@linux.intel.com>
-         <40769113-101E-43D0-BC7B-BFF7C72DD1E4@oracle.com>
-         <4205cd7a8b94a6000625b34d51bd6f960af8666f.camel@linux.intel.com>
-         <B1F73CF7-B984-4EE2-A331-46BEE95D3FE5@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-2.fc28) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1728251AbfDOToH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 15:44:07 -0400
+Received: from earth.universe (unknown [185.62.205.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id D2C6F20825;
+        Mon, 15 Apr 2019 19:44:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1555357446;
+        bh=6lW6ykUoQp/n4gUTrMVw2ocv9lDh94UgruEDQewhLno=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Mpt/N8PVP01/vfAXWVMa9xOMwxpBhUiEaz90s1oram7xQ1YquavinnEVQSBKPtlo5
+         vdylQpSCKj0pJxD1PZJGrs2XTUoricfN5NCLYbTK0/Adj/xC8U9BEMotJM2l5rFcCL
+         3+md8z19BcN1/oDEqr0tzjOZcz2SCgGvnhoVB70M=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 72DF53C08D5; Mon, 15 Apr 2019 21:44:03 +0200 (CEST)
+Date:   Mon, 15 Apr 2019 21:44:03 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc:     linux-kernel@vger.kernel.org, kernel@collabora.com,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH] power: supply: core: fix typo in function to get current
+ charge control limit
+Message-ID: <20190415194403.hj23wvbw7brb7qkv@earth.universe>
+References: <20190415142918.4383-1-enric.balletbo@collabora.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="fg2cu7rwq4kf52ih"
+Content-Disposition: inline
+In-Reply-To: <20190415142918.4383-1-enric.balletbo@collabora.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190415194403.TIPFS72DYmkLIZeHpaVb17fp9u7II26UIVAYttXVh38@z>
 
-On Mon, 2019-04-15 at 21:27 +0300, Liran Alon wrote:
-> > On 15 Apr 2019, at 21:22, Srinivas Pandruvada <
-> > srinivas.pandruvada@linux.intel.com> wrote:
-> > 
-> > On Mon, 2019-04-15 at 21:13 +0300, Liran Alon wrote:
-> > > > On 15 Apr 2019, at 21:03, Srinivas Pandruvada <
-> > > > srinivas.pandruvada@linux.intel.com> wrote:
-> > > > 
-> > > > On Mon, 2019-04-15 at 11:32 +0300, Liran Alon wrote:
-> > > > > > On 15 Apr 2019, at 5:00, Srinivas Pandruvada <
-> > > > > > srinivas.pandruvada@linux.intel.com> wrote:
-> > > > > > 
-> > > > > > On Sun, 2019-04-14 at 23:48 +0300, Liran Alon wrote:
-> > > > > > > Bit definition can be found in Intel SDM Section 2.16
-> > > > > > > MSRS IN
-> > > > > > > THE
-> > > > > > > 6TH
-> > > > > > > GENERATION, 7TH GENERATION AND 8TH GENERATION
-> > > > > > > INTEL® CORE™ PROCESSORS, INTEL® XEON® PROCESSOR SCALABLE
-> > > > > > > FAMILY, AND FUTURE INTEL® CORE™ PROCESSORS.
-> > > > > > > 
-> > > > > > > Definition of all Skylake MSR_POWER_CTL bits can also be
-> > > > > > > found at
-> > > > > > > EDK2
-> > > > > > > source at UefiCpuPkg/Include/Register/Msr/SkylakeMsr.h
-> > > > > > > union
-> > > > > > > MSR_SKYLAKE_POWER_CTL_REGISTER.
-> > > > > > > 
-> > > > > > > Fixes: 6e978b22efa1 ("cpufreq: intel_pstate: Disable
-> > > > > > > energy
-> > > > > > > efficiency optimization")
-> > > > > > 
-> > > > > > What are you trying to address? This bit 19 has a special
-> > > > > > meaning
-> > > > > > when
-> > > > > > system is in HWP mode. So this is correct.
-> > > > > > 
-> > > > > > Bit 20 has a different meaning depending on legacy or in
-> > > > > > HWP
-> > > > > > mode.
-> > > > > > 
-> > > > > > Thanks,
-> > > > > > Srinivas
-> > > > > > 
-> > > > > 
-> > > > > Maybe I’m misinterpreting Intel SDM, but it seems to me that
-> > > > > bit
-> > > > > 19
-> > > > > in MSR_POWER_CTL is always "Disable Race to Halt Optimization
-> > > > > (R/W)”
-> > > > > while bit 20 is the "Disable Energy Efficiency Optimization
-> > > > > (R/W)”.
-> > > > > 
-> > > > > I didn’t find a place in Intel SDM where it is discussed that
-> > > > > bit
-> > > > > 19
-> > > > > have a special meaning when system is in HWP mode.
-> > > > > Can you point me to relevant place in Intel SDM?
-> > > > > 
-> > > > 
-> > > > SDM doesn't describe the algorithms. This is a feature of Intel
-> > > > Speed
-> > > > Shift Technology aka HWP. Both bits target disabling some
-> > > > energy
-> > > > efficiency features of the processor. I wish there are some
-> > > > better
-> > > > names of these bits. Ideas is to pick the best for a platform
-> > > > based
-> > > > on
-> > > > the performance needs. Here based on the experiments, setting
-> > > > bit
-> > > > 19
-> > > > gave the required performance on Kaby Lake desktops.
-> > > > 
-> > > > So unless you found some performance/power issue with setting
-> > > > of
-> > > > bit 19
-> > > > vs bit 20, on Kaby Lake based platforms, we shouldn't change
-> > > > (may
-> > > > be
-> > > > rename as per SDM definition).
-> > > > 
-> > > > Thanks,
-> > > > Srinivas
-> > > 
-> > > I haven’t found any performance/power issue.
-> > > 
-> > > The name of the bit, the function names, prints and comments just
-> > > seems to refer to bit 20 and not bit 19.
-> > > If the code intention is to manipulate "Disable Race to Halt
-> > > Optimization” bit instead of "Disable Energy Efficiency
-> > > Optimization”
-> > > bit,
-> > > code should be renamed appropriately.
-> > > Is this code intention?
-> > 
-> > The code change was done before SDM documented this feature, so it
-> > is
-> > not matching.
-> > 
-> > Thanks,
-> > Srinivas
-> > 
-> 
-> So should I submit a v2 patch that renames these appropriately by
-> updated SDM?
-Sure.
 
-Thanks,
-Srinivas
+--fg2cu7rwq4kf52ih
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> -Liran
-> 
-> 
+Hi,
 
+On Mon, Apr 15, 2019 at 04:29:18PM +0200, Enric Balletbo i Serra wrote:
+> There is a spelling mistake in ps_get_cur_charge_cntl_limit function so
+> replace 'chrage' for 'charge'.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+
+Thanks, queued.
+
+-- Sebastian
+
+>=20
+>  drivers/power/supply/power_supply_core.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index c917a8b43b2b..ef2aecfe2cd2 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -899,7 +899,7 @@ static int ps_get_max_charge_cntl_limit(struct therma=
+l_cooling_device *tcd,
+>  	return ret;
+>  }
+> =20
+> -static int ps_get_cur_chrage_cntl_limit(struct thermal_cooling_device *t=
+cd,
+> +static int ps_get_cur_charge_cntl_limit(struct thermal_cooling_device *t=
+cd,
+>  					unsigned long *state)
+>  {
+>  	struct power_supply *psy;
+> @@ -934,7 +934,7 @@ static int ps_set_cur_charge_cntl_limit(struct therma=
+l_cooling_device *tcd,
+> =20
+>  static const struct thermal_cooling_device_ops psy_tcd_ops =3D {
+>  	.get_max_state =3D ps_get_max_charge_cntl_limit,
+> -	.get_cur_state =3D ps_get_cur_chrage_cntl_limit,
+> +	.get_cur_state =3D ps_get_cur_charge_cntl_limit,
+>  	.set_cur_state =3D ps_set_cur_charge_cntl_limit,
+>  };
+> =20
+> --=20
+> 2.20.1
+>=20
+
+--fg2cu7rwq4kf52ih
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly03wMACgkQ2O7X88g7
++poyMg/7BnuoQ9N1OqyZiZUWLhmzxNOLKnkFon4ANsgpqbmPCR2MiS5eCwcrAbjY
+9MMqxRsSFODTtppsKPpBGJVltJzOk0jpViRBtMo5PwKSap3hasJ9GM19cdIJEPlb
+SW/Blm/WSL2vhEItFtC02iST++9RThJmxAVIkQHwUsPKZ46kw/sFqRy8kRkfQue2
+pbspFiMENO2rvdwt/aQjKsx4nNkempTLaZC+Rb2OZgRbyxVpo5AxMQeVPkEBVRqR
+z2ntaM/pf783Ec0mXXTvxGV1Q3LZpPJZvy1ETzU47CvF+GdcH82hZhHGjzaJVH5W
+RcShIrIm7hXPEcHsuOY3sox0ImcoY6+XiHCL8V97TngkB51bw+qac0lojVFtHyAq
++QSl+whSr8MUGGW+D3w0S9gyplkJWWOYZ7vY6DJBOi5by8GZLMw0IYOhgEYpFoiR
+/Ls3gyV4/vZ6NgSW3EjRmD8H1amGJdWJV9WM/TgFR/1iz+CH8phVouwR1Kvk/0mK
+QWwvRiZLdh0+Ft1Sv91YDU05MGrg+x2BHiMNtzB6lpvilEk84wLy+3pSNzTga4jD
+l0MuRVAAk15ZCUzqpEdvRDynyBC5dPl5OHcH8pp8D7uIzrzxUoqH6aKIUJj0FDwM
+JgTD/hg4yCh8n8meuDI1Wf70Y22uO/rhc/CmgFeTegjIT0n4Cyc=
+=Zq+n
+-----END PGP SIGNATURE-----
+
+--fg2cu7rwq4kf52ih--
