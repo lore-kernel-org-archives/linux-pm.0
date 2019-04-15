@@ -2,26 +2,26 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E78B1C10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EEA0C10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:30:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B4A5E2070D
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:29:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1640220880
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:30:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727243AbfDOV3v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 17:29:51 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:46850 "EHLO
+        id S1728083AbfDOVaB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 17:30:01 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:46932 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726939AbfDOV3u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 17:29:50 -0400
+        with ESMTP id S1728054AbfDOV36 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 17:29:58 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: gportay)
-        with ESMTPSA id B6103263BB8
+        with ESMTPSA id 2C5F6281AC7
 From:   =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -40,10 +40,12 @@ To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         linux-rockchip@lists.infradead.org
 Cc:     Mark Rutland <mark.rutland@arm.com>,
         =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-Subject: [PATCH v4 0/5] Add support for drm/rockchip to dynamically control the DDR frequency.
-Date:   Mon, 15 Apr 2019 17:29:43 -0400
-Message-Id: <20190415212948.7736-1-gael.portay@collabora.com>
+Subject: [PATCH v4 4/5] arm64: dts: rk3399: Add dfi and dmc nodes.
+Date:   Mon, 15 Apr 2019 17:29:47 -0400
+Message-Id: <20190415212948.7736-5-gael.portay@collabora.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190415212948.7736-1-gael.portay@collabora.com>
+References: <20190415212948.7736-1-gael.portay@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
@@ -51,106 +53,64 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190415212943.m_0dGX7otLhv_M0yCgXhL0Gyd-XMCgdD90gqC8u-ZY8@z>
+Message-ID: <20190415212947.3fe-Gqws_YVHjU_amcROjVnmTw273nUthb3UVMkK6tg@z>
 
-Dear all,
+From: Lin Huang <hl@rock-chips.com>
 
-The rk3399 platform has a DFI controller that can monitor DDR load and a
-DMC driver that talks with the TF-A (Trusted Firmware-A) to dynamically
-set the DDR frequency with following flow.
+These are required to support DDR DVFS on rk3399 platform.
 
-             kernel                          Trusted Firmware-A
-                                                  (bl31)
-        monitor ddr load
-                |
-                |
-        get_target_rate
-                |
-                |           pass rate to TF-A
-        clk_set_rate(ddr) --------------------->run ddr dvs flow
-                                                    |
-                                                    |
-                 <------------------------------end ddr dvs flow
-                |
-                |
-              return
-
-These patches add support for devfreq to dynamically control the DDR
-frequency for the gru chromebooks. By default it uses the
-'simple_ondemand' governor which can adjust the frequency based on the
-DDR load.
-
-Waiting for your feedback.
-
-Best regards,
-Gaël
-
-Note: The RFC and the first patchset contained three patches to sync the
-DDR frequency change within the vblank. These patches was removed.
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+---
 
 Changes in v4:
-- [PATCH v3 1/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
-- [PATCH v3 2/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
-- [PATCH v3 3/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
-- [PATCH v3 4/5] Remove board related DDR settings (moved to 5/5).
-- [PATCH v3 5/5] Add board related DDR settings (moved from 5/5).
+- [PATCH v3 4/5] Remove board related DDR settings.
 
-Changes in v3:
-- [PATCH v2 1/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
-- [PATCH v2 2/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
-- [PATCH v2 3/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
-		 Remove comments.
-		 Move pmu dt parsing after dt-parsing of timings to fix
-		  data->odt_dis_freq value.
-- [PATCH v2 5/5] Remove display_subsystem nodes.
+Changes in v3: None
 
 Changes in v2:
-- [PATCH 1/8] Really add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>.
-- [PATCH 4/8] Removed from patchset.
-- [PATCH 5/8] Removed from patchset.
-- [PATCH 6/8] Removed from patchset.
 - [PATCH 7/8] Reword the commit message to reflect the removal of
               rk3390-dram-default-timing.dts in v1.
-- [PATCH 8/8] Move center-supply attribute of dmc node in file
-              rk3399-gru-chromebook.dtsi (where ppvar_centerlogic is
-	      defined).
 
 Changes in v1:
-- [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-- [RFC 1/10] s/Generic/General/ (Robin Murphy)
-- [RFC 2/10] Add reviewed and acked tags from Chanwoo Choi and Rob Herring
-- [RFC 3/10] Add an explanation for platform SIP calls.
-- [RFC 3/10] Change if statement for a switch.
-- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
-- [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
-- [RFC 7/10] Removed from the series. I did not found a use case where this matters.
 - [RFC 8/10] Move rk3399-dram.h to dt-includes.
 - [RFC 8/10] Put sdram default values under the dmc node.
 - [RFC 8/10] Removed rk3399-dram-default-timing.dts
 
-Enric Balletbo i Serra (3):
-  devfreq: rockchip-dfi: Move GRF definitions to a common place.
-  dt-bindings: devfreq: rk3399_dmc: Add rockchip,pmu phandle.
-  devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-Lin Huang (2):
-  arm64: dts: rk3399: Add dfi and dmc nodes.
-  arm64: dts: rockchip: Enable dmc and dfi nodes on gru.
-
- .../bindings/devfreq/rk3399_dmc.txt           |  2 +
- .../dts/rockchip/rk3399-gru-chromebook.dtsi   |  4 +
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  | 46 ++++++++++++
- .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 ++++++++
- arch/arm64/boot/dts/rockchip/rk3399.dtsi      | 19 +++++
- drivers/devfreq/event/rockchip-dfi.c          | 23 ++----
- drivers/devfreq/rk3399_dmc.c                  | 71 +++++++++++++++++-
- include/dt-bindings/power/rk3399-dram.h       | 73 +++++++++++++++++++
- include/soc/rockchip/rk3399_grf.h             | 21 ++++++
- include/soc/rockchip/rockchip_sip.h           |  1 +
- 10 files changed, 272 insertions(+), 17 deletions(-)
- create mode 100644 include/dt-bindings/power/rk3399-dram.h
- create mode 100644 include/soc/rockchip/rk3399_grf.h
-
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index db9d948c0b03..87ee084fac89 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1885,6 +1885,25 @@
+ 		status = "disabled";
+ 	};
+ 
++	dfi: dfi@ff630000 {
++		reg = <0x00 0xff630000 0x00 0x4000>;
++		compatible = "rockchip,rk3399-dfi";
++		rockchip,pmu = <&pmugrf>;
++		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
++		clocks = <&cru PCLK_DDR_MON>;
++		clock-names = "pclk_ddr_mon";
++		status = "disabled";
++	};
++
++	dmc: dmc {
++		compatible = "rockchip,rk3399-dmc";
++		rockchip,pmu = <&pmugrf>;
++		devfreq-events = <&dfi>;
++		clocks = <&cru SCLK_DDRC>;
++		clock-names = "dmc_clk";
++		status = "disabled";
++	};
++
+ 	pinctrl: pinctrl {
+ 		compatible = "rockchip,rk3399-pinctrl";
+ 		rockchip,grf = <&grf>;
 -- 
 2.21.0
 
