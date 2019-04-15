@@ -2,172 +2,113 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF35C10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CAE0C10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:31:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3D16020880
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:30:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 08EDE20880
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 21:31:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555363913;
+	bh=Wn55LCzxxn6BClCZgun7QPJfuo8QZWZE2Ah4Lj+eN4k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=JbRvQ/WsHbOh7XLmXSso3N06mCagq7X6TRQyeL0W6745tynmx4L5ONrP/ykhUmmCd
+	 YzJv7Bq53u228ycEBbH7T7QfLb6IRFOz0WfBJ58IWlCY09pMzhrhf5c+2i7eur3aa4
+	 w1BbriXMLEpPkL94xT9IiAYv8wkqk+7T63E6WAZ4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727949AbfDOV3x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 17:29:53 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:46882 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726939AbfDOV3x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 17:29:53 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: gportay)
-        with ESMTPSA id C9BB9284191
-From:   =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        Lin Huang <hl@rock-chips.com>,
-        Brian Norris <briannorris@chromium.org>,
-        Douglas Anderson <dianders@chromium.org>,
-        Klaus Goger <klaus.goger@theobroma-systems.com>,
-        Derek Basehore <dbasehore@chromium.org>,
-        Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-Subject: [PATCH v4 1/5] devfreq: rockchip-dfi: Move GRF definitions to a common place.
-Date:   Mon, 15 Apr 2019 17:29:44 -0400
-Message-Id: <20190415212948.7736-2-gael.portay@collabora.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190415212948.7736-1-gael.portay@collabora.com>
-References: <20190415212948.7736-1-gael.portay@collabora.com>
+        id S1728004AbfDOVbw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 17:31:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57836 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727949AbfDOVbw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 17:31:52 -0400
+Received: from earth.universe (unknown [185.62.205.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 6373B2070D;
+        Mon, 15 Apr 2019 21:31:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1555363911;
+        bh=Wn55LCzxxn6BClCZgun7QPJfuo8QZWZE2Ah4Lj+eN4k=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=ZRPSrG7t5a26ePiEQQGZZPR8In383DRlZxj1XgwjghDrT+nXhLAcssKFnjLBJvN/b
+         3A4WmtXl/4bgNFIs5b+yw6tZPrfRuH4W6sbKPoTRogFwlJjHC5n/1h4jBhtqEDubWW
+         I2Kv5uHIz3ygsvb+wGMnRvAoMtU5oB8Y8W2FS18g=
+Received: by earth.universe (Postfix, from userid 1000)
+        id E18953C08D5; Mon, 15 Apr 2019 23:31:48 +0200 (CEST)
+Date:   Mon, 15 Apr 2019 23:31:48 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Tony Lindgren <tony@atomide.com>
+Cc:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [PATCH 0/7] Some fixes and improvments for cpcap battery and
+ charger
+Message-ID: <20190415213148.zd4mtxt6u4apcr7x@earth.universe>
+References: <20190407181254.64537-1-tony@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ivwyreocyn7n4fhx"
+Content-Disposition: inline
+In-Reply-To: <20190407181254.64537-1-tony@atomide.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190415212944.cUGM2S1skFGj9_IZ0HDgpS-8frlvJsAEADrstAc4CC8@z>
 
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-Some rk3399 GRF (Generic Register Files) definitions can be used for
-different drivers. Move these definitions to a common include so we
-don't need to duplicate these definitions.
+--ivwyreocyn7n4fhx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
+Hi,
 
-Changes in v4:
-- [PATCH v3 1/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+On Sun, Apr 07, 2019 at 11:12:47AM -0700, Tony Lindgren wrote:
+> I've been trying to figure out how come the coulomb counter on droid 4 is=
+ off
+> especially for the low power consumption values. Turns out the "coulomb c=
+ounter"
+> values correlate better with average power consumption if we divide the v=
+alue with
+> number of samples. Otherwise we have a curve instead of flat correlation =
+between
+> the register values and power consumed. I have some patches coming up eve=
+ntually to
+> fix that, but meanwhile I've noticed some minor issues in general that wo=
+uld be
+> good to have out of the way.
+>=20
+> I've only tagged the first one with fixes tag, the other ones can certain=
+ly wait
+> for the merge window considering further changes are needed at least for =
+low power
+> consumption values.
 
-Changes in v3:
-- [PATCH v2 1/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+Thanks, all queued.
 
-Changes in v2:
-- [PATCH 1/8] Really add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>.
+-- Sebastian
 
-Changes in v1:
-- [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-- [RFC 1/10] s/Generic/General/ (Robin Murphy)
-- [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
-- [RFC 7/10] Removed from the series. I did not found a use case where this matters.
+--ivwyreocyn7n4fhx
+Content-Type: application/pgp-signature; name="signature.asc"
 
- drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
- include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
- 2 files changed, 28 insertions(+), 16 deletions(-)
- create mode 100644 include/soc/rockchip/rk3399_grf.h
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 22b113363ffc..2fbbcbeb644f 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -26,6 +26,8 @@
- #include <linux/list.h>
- #include <linux/of.h>
- 
-+#include <soc/rockchip/rk3399_grf.h>
-+
- #define RK3399_DMC_NUM_CH	2
- 
- /* DDRMON_CTRL */
-@@ -43,18 +45,6 @@
- #define DDRMON_CH1_COUNT_NUM		0x3c
- #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
- 
--/* pmu grf */
--#define PMUGRF_OS_REG2	0x308
--#define DDRTYPE_SHIFT	13
--#define DDRTYPE_MASK	7
--
--enum {
--	DDR3 = 3,
--	LPDDR3 = 6,
--	LPDDR4 = 7,
--	UNUSED = 0xFF
--};
--
- struct dmc_usage {
- 	u32 access;
- 	u32 total;
-@@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 	u32 ddr_type;
- 
- 	/* get ddr type */
--	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
--	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
-+	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
-+	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
-+		    RK3399_PMUGRF_DDRTYPE_MASK;
- 
- 	/* clear DDRMON_CTRL setting */
- 	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
- 
- 	/* set ddr type to dfi */
--	if (ddr_type == LPDDR3)
-+	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
- 		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
--	else if (ddr_type == LPDDR4)
-+	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
- 		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
- 
- 	/* enable count, use software mode */
-diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
-new file mode 100644
-index 000000000000..3eebabcb2812
---- /dev/null
-+++ b/include/soc/rockchip/rk3399_grf.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Rockchip General Register Files definitions
-+ *
-+ * Copyright (c) 2018, Collabora Ltd.
-+ * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-+ */
-+
-+#ifndef __SOC_RK3399_GRF_H
-+#define __SOC_RK3399_GRF_H
-+
-+/* PMU GRF Registers */
-+#define RK3399_PMUGRF_OS_REG2		0x308
-+#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
-+#define RK3399_PMUGRF_DDRTYPE_MASK	7
-+#define RK3399_PMUGRF_DDRTYPE_DDR3	3
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
-+
-+#endif
--- 
-2.21.0
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly0+D8ACgkQ2O7X88g7
++pq0Yg//e+ONsDQpI54T/NKLx9lFbTR2k2P7oGOkAdiFCjBTm+22Vu0lCYKgsgxz
+G/JbTBHl+VhM5YQqOkVQkfUGZ5XFoTYUEnmqL8uPpxSUDHRr5MLEv7HGKqlXAgFe
+3sERoVeum/hzMLEsmfthVs3WLxqKidCAEhvuZqEmxWjfnnaXGadSsF0SCuqZJS/g
+RXu6AWWwWAPlHlJgiUrxVpkfZvuBkzHiBrIdXIfNRc4zGtPJqJYyzh8bIbTc0kO0
+D+B0qC8CMvTTcsPoLXOkY4hYYAG2m+G/U7gqQUwQ6XFxOeJnnWNZuKsPxgYKXJ11
+NFPaRE60KnLSyAZ08+FFcTMA0/DbUNa4Nucc/pGeuNhtrwi22lfNLdpxK+62daZY
+/5Z1wzAHnUaFZEZuQTPL4CLQDn69rbe8gYz1N3zdWp0hx7tzEA4bipxy1uki4Zop
+rhb5G1nnVGvrG3KtDgPUR47U5KclLe9v4vZ3pAgroBGUPyngFZdfxD6XdFzMycFK
+cZfsKmEl7x8VyTplwB4ChSFy8QH+HkRFypi472lDrmfSAZ7SrLS9E04+MVtzQCM2
+u5ymLt4MoICXdcLCi3UCG+t3rI9y8tppXYg7lH++/2JnO9zIYB1UXzWHJ2wLbmft
+XHu8OpYaI4qKLCbFKw/SePSz1GKYJTE8Fx3p6zj+fVaT4LUWtTQ=
+=s/KK
+-----END PGP SIGNATURE-----
 
+--ivwyreocyn7n4fhx--
