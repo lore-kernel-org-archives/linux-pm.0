@@ -7,26 +7,26 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21D80C10F13
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73630C10F14
 	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 01:51:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E1ADD20883
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 01:51:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 40F9020850
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 01:51:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="htsbbGEN"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="ZPIF36Rh"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725789AbfDOBvz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1725775AbfDOBvz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sun, 14 Apr 2019 21:51:55 -0400
-Received: from gateway21.websitewelcome.com ([192.185.45.155]:26566 "EHLO
+Received: from gateway21.websitewelcome.com ([192.185.45.155]:31513 "EHLO
         gateway21.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726201AbfDOBvz (ORCPT
+        by vger.kernel.org with ESMTP id S1726111AbfDOBvz (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 14 Apr 2019 21:51:55 -0400
-Received: from cm14.websitewelcome.com (cm14.websitewelcome.com [100.42.49.7])
-        by gateway21.websitewelcome.com (Postfix) with ESMTP id DCEBA400C52D1
-        for <linux-pm@vger.kernel.org>; Sun, 14 Apr 2019 20:27:28 -0500 (CDT)
+Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
+        by gateway21.websitewelcome.com (Postfix) with ESMTP id DBB24400C5811
+        for <linux-pm@vger.kernel.org>; Sun, 14 Apr 2019 20:27:19 -0500 (CDT)
 Received: from br164.hostgator.com.br ([192.185.176.180])
         by cmsmtp with SMTP
-        id FqPAhJkje2qH7FqPAhfxXT; Sun, 14 Apr 2019 20:27:28 -0500
+        id FqP1hXpQ4YTGMFqP1hffDP; Sun, 14 Apr 2019 20:27:19 -0500
 X-Authority-Reason: nr=8
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=castello.eng.br; s=default; h=References:In-Reply-To:Message-Id:Date:
@@ -34,17 +34,17 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
         Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
         List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-         bh=nli8XspRAniu+hZMp6iB5II++QseN+g9eYpJ/egI1YI=; b=htsbbGEN8M1y4WkfxhcRtS26n
-        7SIG8Y/yr7EJPBo2tatX7ijBZ2s0oPBRPwo2Xj145M0c1og/RyMZ4aGiif0ZKATDA8JSX1Onjm4UI
-        opyT4H4akgPqiBcPudphUJmr1pPN8eqXYTZxwI2m9Z3AG5Fqt7wYm4VUaMrrznFffaqCC609bkCPx
-        B+hDpqksLPLkl/TKOkAVjyYze4cVkVQK+CjUgBfgxxpAxjQExnAnVTXhQshN3HnFdrH/o4O0BjTdS
-        IktnUmZo40VWRVTS86q7r83PmQZt+IgkCE0ZL+kVtOXHEAoRJoqAcofTXu60KZDUANaUuqodwk4hC
-        gO/A/cLTw==;
+         bh=R1H/zb0qpfuLZ6IzHqM2mtOCJc/6Ct/oVxfuSRZenXs=; b=ZPIF36RhX8vVvv1zPrlaLQIT1
+        MCQxb2Mc49otqH+84aJe3M8m0M0GzdybYyuvINnt18tiLAbM3rVXVvtl8rKJrhJaAfy7oN06HKyey
+        4jwDJDEc2CibPOtR7Hy1036cBkkCKs3PrwoHQ5EQqKdvoG61WwOSp1xLoj2jccfHOO0TSao0eimPR
+        PQB9VVQpNQ3KCio9fmB8NSWnRd6yn+/l4823VWvKR3HkUHo6b5LCaIebaGSELUUzHVHZjIZlncDo5
+        ENZd1QFxPg9Xm2nQfLBLlE3ICTkdGklVL+yxGQ7+sEJ7S4USVoF4d1Kdb2VtO+hQ7yrf0Vp0C1AhL
+        FFPTCIwVg==;
 Received: from [191.191.240.251] (port=33232 helo=localhost.localdomain)
         by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
         (Exim 4.91)
         (envelope-from <matheus@castello.eng.br>)
-        id 1hFqP7-000Uj7-Tc; Sun, 14 Apr 2019 22:27:28 -0300
+        id 1hFqP1-000Uj7-1F; Sun, 14 Apr 2019 22:27:19 -0300
 From:   Matheus Castello <matheus@castello.eng.br>
 To:     sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
 Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
@@ -52,9 +52,9 @@ Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v2 4/4] power: supply: max17040: Send uevent in SOC changes
-Date:   Sun, 14 Apr 2019 22:26:35 -0300
-Message-Id: <20190415012635.6369-5-matheus@castello.eng.br>
+Subject: [PATCH v2 3/4] power: supply: max17040: Config alert SOC low level threshold from FDT
+Date:   Sun, 14 Apr 2019 22:26:34 -0300
+Message-Id: <20190415012635.6369-4-matheus@castello.eng.br>
 X-Mailer: git-send-email 2.17.0
 In-Reply-To: <20190415012635.6369-1-matheus@castello.eng.br>
 References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
@@ -67,13 +67,13 @@ X-AntiAbuse: Sender Address Domain - castello.eng.br
 X-BWhitelist: no
 X-Source-IP: 191.191.240.251
 X-Source-L: No
-X-Exim-ID: 1hFqP7-000Uj7-Tc
+X-Exim-ID: 1hFqP1-000Uj7-1F
 X-Source: 
 X-Source-Args: 
 X-Source-Dir: 
 X-Source-Sender: (localhost.localdomain) [191.191.240.251]:33232
 X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 57
+X-Email-Count: 46
 X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
 X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
@@ -81,39 +81,136 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415012635.iZkWALk_T5tIw3P1DJw8AJtUIk08PD4zJkM5C0fYOpw@z>
+Message-ID: <20190415012634.C_WiEevIqtKGmMW-V1Z6PZncj8TcbXKVMA-eNfPvss0@z>
 
-Notify core through power_supply_changed() in case of changes in state
-of charge. This is useful for user-space to efficiently update current
-battery level.
+For configuration of fuel gauge alert for a low level state of charge
+interrupt we add a function to config level threshold and a device tree
+binding property to set it in flatned device tree node.
+
+Now we can use "maxim,alert-soc-level" property with the values from
+1 up to 32 to configure alert interrupt threshold.
 
 Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 ---
- drivers/power/supply/max17040_battery.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/power/supply/max17040_battery.c | 56 ++++++++++++++++++++++---
+ 1 file changed, 50 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index f036f272d52f..db901ebf495d 100644
+index 8d2f8ed3f44c..f036f272d52f 100644
 --- a/drivers/power/supply/max17040_battery.c
 +++ b/drivers/power/supply/max17040_battery.c
-@@ -208,10 +208,17 @@ static void max17040_check_changes(struct i2c_client *client)
- static void max17040_work(struct work_struct *work)
- {
- 	struct max17040_chip *chip;
-+	int last_soc;
+@@ -29,6 +29,9 @@
+ #define MAX17040_DELAY		1000
+ #define MAX17040_BATTERY_FULL	95
  
- 	chip = container_of(work, struct max17040_chip, work.work);
-+	/* store SOC for check change */
-+	last_soc = chip->soc;
- 	max17040_check_changes(chip->client);
- 
-+	/* check changes and send uevent */
-+	if (last_soc != chip->soc)
-+		power_supply_changed(chip->battery);
++#define MAX17040_ATHD_MASK		0xFFE0
++#define MAX17040_ATHD_DEFAULT_POWER_UP	4
 +
+ struct max17040_chip {
+ 	struct i2c_client		*client;
+ 	struct delayed_work		work;
+@@ -43,6 +46,8 @@ struct max17040_chip {
+ 	int soc;
+ 	/* State Of Charge */
+ 	int status;
++	/* Alert threshold from 32% to 1% of the State of Charge */
++	u32 alert_threshold;
+ };
+ 
+ static int max17040_get_property(struct power_supply *psy,
+@@ -119,6 +124,27 @@ static void max17040_get_soc(struct i2c_client *client)
+ 	chip->soc = (soc >> 8);
+ }
+ 
++static int max17040_set_soc_threshold(struct i2c_client *client, u32 level)
++{
++	int ret;
++	u16 data;
++
++	/* check if level is between 1% and 32% */
++	if (level > 0 && level < 33) {
++		/* alert threshold use LSb 5 bits from RCOMP */
++		level = 32 - level;
++		data = max17040_read_reg(client, MAX17040_RCOMP);
++		data &= MAX17040_ATHD_MASK;
++		data |= level;
++		max17040_write_reg(client, MAX17040_RCOMP, data);
++		ret = 0;
++	} else {
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++
+ static void max17040_get_version(struct i2c_client *client)
+ {
+ 	u16 version;
+@@ -161,6 +187,16 @@ static void max17040_get_status(struct i2c_client *client)
+ 		chip->status = POWER_SUPPLY_STATUS_FULL;
+ }
+ 
++static void max17040_get_of_data(struct max17040_chip *chip)
++{
++	struct device *dev = &chip->client->dev;
++	struct device_node *np = dev->of_node;
++
++	if (of_property_read_u32(np, "maxim,alert-soc-level",
++			&chip->alert_threshold))
++		chip->alert_threshold = MAX17040_ATHD_DEFAULT_POWER_UP;
++}
++
+ static void max17040_check_changes(struct i2c_client *client)
+ {
+ 	max17040_get_vcell(client);
+@@ -226,6 +262,7 @@ static int max17040_probe(struct i2c_client *client,
+ 
+ 	chip->client = client;
+ 	chip->pdata = client->dev.platform_data;
++	max17040_get_of_data(chip);
+ 
+ 	i2c_set_clientdata(client, chip);
+ 	psy_cfg.drv_data = chip;
+@@ -237,16 +274,26 @@ static int max17040_probe(struct i2c_client *client,
+ 		return PTR_ERR(chip->battery);
+ 	}
+ 
++	max17040_reset(client);
++	max17040_get_version(client);
++
+ 	/* check interrupt */
+ 	if (client->irq) {
+ 		int ret;
+-		unsigned int flags;
++
++		ret = max17040_set_soc_threshold(client, chip->alert_threshold);
++		if (ret) {
++			dev_err(&client->dev,
++				"Failed to set SOC alert threshold: err %d\n",
++				ret);
++			return ret;
++		}
+ 
+ 		dev_info(&client->dev, "IRQ: enabled\n");
+-		flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
+ 
+ 		ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+-						max17040_thread_handler, flags,
++						max17040_thread_handler,
++						(client->flags | IRQF_ONESHOT),
+ 						chip->battery->desc->name,
+ 						chip);
+ 
+@@ -258,9 +305,6 @@ static int max17040_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 
+-	max17040_reset(client);
+-	max17040_get_version(client);
+-
+ 	INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
  	queue_delayed_work(system_power_efficient_wq, &chip->work,
  			   MAX17040_DELAY);
- }
 -- 
 2.17.0
 
