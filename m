@@ -1,7 +1,7 @@
 From: Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v2 3/4] power: supply: max17040: Config alert SOC low level threshold from FDT
-Date: Sun, 14 Apr 2019 22:26:34 -0300
-Message-ID: <20190415012635.6369-4-matheus@castello.eng.br>
+Subject: [PATCH v2 2/4] dt-bindings: power: supply: Max17040: Add low level SOC alert threshold
+Date: Sun, 14 Apr 2019 22:26:33 -0300
+Message-ID: <20190415012635.6369-3-matheus@castello.eng.br>
 References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
  <20190415012635.6369-1-matheus@castello.eng.br>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,133 +11,44 @@ To: sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
 Cc: mark.rutland@arm.com, cw00.choi@samsung.com, b.zolnierkie@samsung.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Matheus Castello <matheus@castello.eng.br>
 List-Id: linux-pm@vger.kernel.org
 
-For configuration of fuel gauge alert for a low level state of charge
-interrupt we add a function to config level threshold and a device tree
-binding property to set it in flatned device tree node.
-
-Now we can use "maxim,alert-soc-level" property with the values from
-1 up to 32 to configure alert interrupt threshold.
+For configure low level state of charge threshold alert signaled from
+max17040 we add "maxim,alert-soc-level" property.
 
 Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 ---
- drivers/power/supply/max17040_battery.c | 56 ++++++++++++++++++++++---
- 1 file changed, 50 insertions(+), 6 deletions(-)
+ .../power/supply/max17040_battery.txt         | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 8d2f8ed3f44c..f036f272d52f 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -29,6 +29,9 @@
- #define MAX17040_DELAY		1000
- #define MAX17040_BATTERY_FULL	95
- 
-+#define MAX17040_ATHD_MASK		0xFFE0
-+#define MAX17040_ATHD_DEFAULT_POWER_UP	4
+diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+new file mode 100644
+index 000000000000..9b2cc67d556f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+@@ -0,0 +1,24 @@
++max17040_battery
++~~~~~~~~~~~~~~~~
 +
- struct max17040_chip {
- 	struct i2c_client		*client;
- 	struct delayed_work		work;
-@@ -43,6 +46,8 @@ struct max17040_chip {
- 	int soc;
- 	/* State Of Charge */
- 	int status;
-+	/* Alert threshold from 32% to 1% of the State of Charge */
-+	u32 alert_threshold;
- };
- 
- static int max17040_get_property(struct power_supply *psy,
-@@ -119,6 +124,27 @@ static void max17040_get_soc(struct i2c_client *client)
- 	chip->soc = (soc >> 8);
- }
- 
-+static int max17040_set_soc_threshold(struct i2c_client *client, u32 level)
-+{
-+	int ret;
-+	u16 data;
++Required properties :
++ - compatible : "maxim,max17040" or "maxim,max77836-battery"
 +
-+	/* check if level is between 1% and 32% */
-+	if (level > 0 && level < 33) {
-+		/* alert threshold use LSb 5 bits from RCOMP */
-+		level = 32 - level;
-+		data = max17040_read_reg(client, MAX17040_RCOMP);
-+		data &= MAX17040_ATHD_MASK;
-+		data |= level;
-+		max17040_write_reg(client, MAX17040_RCOMP, data);
-+		ret = 0;
-+	} else {
-+		ret = -EINVAL;
-+	}
++Optional properties :
++- maxim,alert-soc-level :	The alert threshold that sets the state of
++ 				charge level where an interrupt is generated.
++                          	Can be configured from 1 up to 32. If skipped
++				the power up default value of 4 will be used.
++- interrupt-parent : 		The GPIO bank from the interrupt line.
++- interrupts : 			Interrupt line see Documentation/devicetree/
++				bindings/interrupt-controller/interrupts.txt
 +
-+	return ret;
-+}
++Example:
 +
- static void max17040_get_version(struct i2c_client *client)
- {
- 	u16 version;
-@@ -161,6 +187,16 @@ static void max17040_get_status(struct i2c_client *client)
- 		chip->status = POWER_SUPPLY_STATUS_FULL;
- }
- 
-+static void max17040_get_of_data(struct max17040_chip *chip)
-+{
-+	struct device *dev = &chip->client->dev;
-+	struct device_node *np = dev->of_node;
-+
-+	if (of_property_read_u32(np, "maxim,alert-soc-level",
-+			&chip->alert_threshold))
-+		chip->alert_threshold = MAX17040_ATHD_DEFAULT_POWER_UP;
-+}
-+
- static void max17040_check_changes(struct i2c_client *client)
- {
- 	max17040_get_vcell(client);
-@@ -226,6 +262,7 @@ static int max17040_probe(struct i2c_client *client,
- 
- 	chip->client = client;
- 	chip->pdata = client->dev.platform_data;
-+	max17040_get_of_data(chip);
- 
- 	i2c_set_clientdata(client, chip);
- 	psy_cfg.drv_data = chip;
-@@ -237,16 +274,26 @@ static int max17040_probe(struct i2c_client *client,
- 		return PTR_ERR(chip->battery);
- 	}
- 
-+	max17040_reset(client);
-+	max17040_get_version(client);
-+
- 	/* check interrupt */
- 	if (client->irq) {
- 		int ret;
--		unsigned int flags;
-+
-+		ret = max17040_set_soc_threshold(client, chip->alert_threshold);
-+		if (ret) {
-+			dev_err(&client->dev,
-+				"Failed to set SOC alert threshold: err %d\n",
-+				ret);
-+			return ret;
-+		}
- 
- 		dev_info(&client->dev, "IRQ: enabled\n");
--		flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
- 
- 		ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
--						max17040_thread_handler, flags,
-+						max17040_thread_handler,
-+						(client->flags | IRQF_ONESHOT),
- 						chip->battery->desc->name,
- 						chip);
- 
-@@ -258,9 +305,6 @@ static int max17040_probe(struct i2c_client *client,
- 		}
- 	}
- 
--	max17040_reset(client);
--	max17040_get_version(client);
--
- 	INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
- 	queue_delayed_work(system_power_efficient_wq, &chip->work,
- 			   MAX17040_DELAY);
++	battery-charger@36 {
++		compatible = "maxim,max17040";
++		reg = <0x36>;
++		maxim,alert-soc-level = <10>;
++		interrupt-parent = <&gpio7>;
++		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
++	};
 -- 
 2.17.0
