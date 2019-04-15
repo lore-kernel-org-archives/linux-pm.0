@@ -4,87 +4,222 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AF76C10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:46:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27126C10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:51:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 272F120880
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:46:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAD6D2146E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:51:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726298AbfDOOql (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 10:46:41 -0400
-Received: from mga07.intel.com ([134.134.136.100]:10069 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726259AbfDOOql (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Apr 2019 10:46:41 -0400
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 15 Apr 2019 07:46:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,354,1549958400"; 
-   d="scan'208";a="140832497"
-Received: from linuxpc.iind.intel.com ([10.223.107.112])
-  by fmsmga008.fm.intel.com with ESMTP; 15 Apr 2019 07:46:38 -0700
-From:   Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-To:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, srinivas.pandruvada@linux.intel.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        andriy.shevchenko@intel.com, sumeet.r.pawnikar@intel.com
-Subject: [PATCH] thermal: intel: int340x: processor_thermal_device: simplify to get driver data
-Date:   Mon, 15 Apr 2019 20:18:30 +0530
-Message-Id: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
-X-Mailer: git-send-email 1.7.9.5
+        id S1726259AbfDOOvT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 10:51:19 -0400
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:36262 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727304AbfDOOvT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 10:51:19 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 54E6A374;
+        Mon, 15 Apr 2019 07:51:18 -0700 (PDT)
+Received: from e110439-lin (e110439-lin.cambridge.arm.com [10.1.194.43])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 616413F68F;
+        Mon, 15 Apr 2019 07:51:15 -0700 (PDT)
+Date:   Mon, 15 Apr 2019 15:51:07 +0100
+From:   Patrick Bellasi <patrick.bellasi@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-api@vger.kernel.org
+Cc:     Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Tejun Heo <tj@kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>,
+        Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v8 02/16] sched/core: Add bucket local max tracking
+Message-ID: <20190415144930.pntid6evu6r67l4o@e110439-lin>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-3-patrick.bellasi@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190402104153.25404-3-patrick.bellasi@arm.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415144830.BHaYn12W4eyixqlI42cHWbV-s07BstwF3rJ7dclMuhc@z>
+Message-ID: <20190415145107.MIV69rIHgaCVzNnoU-YXmMjmKapzcujQMOMK8QOzEto@z>
 
-From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+On 02-Apr 11:41, Patrick Bellasi wrote:
+> Because of bucketization, different task-specific clamp values are
+> tracked in the same bucket.  For example, with 20% bucket size and
+> assuming to have:
+>   Task1: util_min=25%
+>   Task2: util_min=35%
+> both tasks will be refcounted in the [20..39]% bucket and always boosted
+> only up to 20% thus implementing a simple floor aggregation normally
+> used in histograms.
+> 
+> In systems with only few and well-defined clamp values, it would be
+> useful to track the exact clamp value required by a task whenever
+> possible. For example, if a system requires only 23% and 47% boost
+> values then it's possible to track the exact boost required by each
+> task using only 3 buckets of ~33% size each.
+> 
+> Introduce a mechanism to max aggregate the requested clamp values of
+> RUNNABLE tasks in the same bucket. Keep it simple by resetting the
+> bucket value to its base value only when a bucket becomes inactive.
+> Allow a limited and controlled overboosting margin for tasks recounted
+> in the same bucket.
+> 
+> In systems where the boost values are not known in advance, it is still
+> possible to control the maximum acceptable overboosting margin by tuning
+> the number of clamp groups. For example, 20 groups ensure a 5% maximum
+> overboost.
+> 
+> Remove the rq bucket initialization code since a correct bucket value
+> is now computed when a task is refcounted into a CPU's rq.
+> 
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> 
+> --
+> Changes in v8:
+>  Message-ID: <20190313193916.GQ2482@worktop.programming.kicks-ass.net>
+>  - split this code out from the previous patch
+> ---
+>  kernel/sched/core.c | 46 ++++++++++++++++++++++++++-------------------
+>  1 file changed, 27 insertions(+), 19 deletions(-)
+> 
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 032211b72110..6e1beae5f348 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -778,6 +778,11 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
+>   * When a task is enqueued on a rq, the clamp bucket currently defined by the
+>   * task's uclamp::bucket_id is refcounted on that rq. This also immediately
+>   * updates the rq's clamp value if required.
+> + *
+> + * Tasks can have a task-specific value requested from user-space, track
+> + * within each bucket the maximum value for tasks refcounted in it.
+> + * This "local max aggregation" allows to track the exact "requested" value
+> + * for each bucket when all its RUNNABLE tasks require the same clamp.
+>   */
+>  static inline void uclamp_rq_inc_id(struct task_struct *p, struct rq *rq,
+>  				    unsigned int clamp_id)
+> @@ -789,8 +794,15 @@ static inline void uclamp_rq_inc_id(struct task_struct *p, struct rq *rq,
+>  	bucket = &uc_rq->bucket[uc_se->bucket_id];
+>  	bucket->tasks++;
+>  
+> +	/*
+> +	 * Local max aggregation: rq buckets always track the max
+> +	 * "requested" clamp value of its RUNNABLE tasks.
+> +	 */
+> +	if (uc_se->value > bucket->value)
+> +		bucket->value = uc_se->value;
+> +
+>  	if (uc_se->value > READ_ONCE(uc_rq->value))
+> -		WRITE_ONCE(uc_rq->value, bucket->value);
+> +		WRITE_ONCE(uc_rq->value, uc_se->value);
+>  }
+>  
+>  /*
+> @@ -815,6 +827,12 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
+>  	if (likely(bucket->tasks))
+>  		bucket->tasks--;
+>  
+> +	/*
+> +	 * Keep "local max aggregation" simple and accept to (possibly)
+> +	 * overboost some RUNNABLE tasks in the same bucket.
+> +	 * The rq clamp bucket value is reset to its base value whenever
+> +	 * there are no more RUNNABLE tasks refcounting it.
+> +	 */
+>  	if (likely(bucket->tasks))
+>  		return;
+>  
+> @@ -824,8 +842,14 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
+>  	 * e.g. due to future modification, warn and fixup the expected value.
+>  	 */
+>  	SCHED_WARN_ON(bucket->value > rq_clamp);
+> -	if (bucket->value >= rq_clamp)
+> +	if (bucket->value >= rq_clamp) {
+> +		/*
+> +		 * Reset clamp bucket value to its nominal value whenever
+> +		 * there are anymore RUNNABLE tasks refcounting it.
+> +		 */
+> +		bucket->value = uclamp_bucket_base_value(bucket->value);
 
-This simplifies getting the 'driver_data' from 'struct device' directly.
-Going through platform_device or pci_dev is not required. Also removes
-condition check as the private data stored with dev pointer, means
-irrespective of enumeration mode, we can use dev_get_drvdata().
-This removes the unnecessary step back and forth.
+While running tests on Android, I found that the snipped above should
+be better done in uclamp_rq_inc_id() for two main reasons:
+ 1. because of the early return in this function, we skip the reset in
+    case the task is not the last one running on a CPU, thus
+    triggering the above SCHED_WARN_ON
+ 2. since a non active bucket is already ignored, we don't care about
+    resetting its "local max value"
 
-Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
----
- .../int340x_thermal/processor_thermal_device.c     |   11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+Will move the "max local update" in uclamp_rq_inc_id() where something
+like:
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index 8e1cf4d..2a7cbaa 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -81,22 +81,13 @@ enum proc_thermal_emum_mode_type {
- 					struct device_attribute *attr, \
- 					char *buf) \
- { \
--	struct pci_dev *pci_dev; \
--	struct platform_device *pdev; \
--	struct proc_thermal_device *proc_dev; \
-+	struct proc_thermal_device *proc_dev = dev_get_drvdata(dev); \
- 	\
- 	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
- 		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
- 		return 0; \
- 	} \
- 	\
--	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
--		pdev = to_platform_device(dev); \
--		proc_dev = platform_get_drvdata(pdev); \
--	} else { \
--		pci_dev = to_pci_dev(dev); \
--		proc_dev = pci_get_drvdata(pci_dev); \
--	} \
- 	return sprintf(buf, "%lu\n",\
- 	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
- }
+
+    /*
+     * Local max aggregation: rq buckets always track the max
+     * "requested" clamp value of its RUNNABLE tasks.
+     */
+    if (bucket->tasks == 1 || uc_se->value > bucket->value)
+    	bucket->value = uc_se->value;
+
+
+Should grant to always have an updated local max every time a bucket
+is active.
+
+
+>  		WRITE_ONCE(uc_rq->value, uclamp_rq_max_value(rq, clamp_id));
+> +	}
+>  }
+>  
+>  static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
+> @@ -855,25 +879,9 @@ static void __init init_uclamp(void)
+>  	unsigned int clamp_id;
+>  	int cpu;
+>  
+> -	for_each_possible_cpu(cpu) {
+> -		struct uclamp_bucket *bucket;
+> -		struct uclamp_rq *uc_rq;
+> -		unsigned int bucket_id;
+> -
+> +	for_each_possible_cpu(cpu)
+>  		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
+>  
+> -		for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> -			uc_rq = &cpu_rq(cpu)->uclamp[clamp_id];
+> -
+> -			bucket_id = 1;
+> -			while (bucket_id < UCLAMP_BUCKETS) {
+> -				bucket = &uc_rq->bucket[bucket_id];
+> -				bucket->value = bucket_id * UCLAMP_BUCKET_DELTA;
+> -				++bucket_id;
+> -			}
+> -		}
+> -	}
+> -
+>  	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+>  		struct uclamp_se *uc_se = &init_task.uclamp[clamp_id];
+>  
+> -- 
+> 2.20.1
+> 
+
 -- 
-1.7.9.5
+#include <best/regards.h>
 
+Patrick Bellasi
