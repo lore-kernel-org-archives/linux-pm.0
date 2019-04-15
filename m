@@ -1,111 +1,74 @@
 Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Level: **
+X-Spam-Status: No, score=2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D00FC10F11
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12769C282CE
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:39:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E23C206BA
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:31:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555313479;
-	bh=JUQAB0Wo1WE/583zIpphIJODcSIKdzXmVISS33Hzwq8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Kuc0DMEKj+HT62Oc1bGRzhpDHO8UxVer+Tb/qTEFgE3mxL0BboeUTcxIObljTRJL3
-	 83q7e6WVKn/u8eew0xAsK7DzvuLqq7IopkNqlZFnI/qcxxqdZEVsWelSuRfaG8Erai
-	 o1snKNTRAncRaIradP4AOJT/LIJ1yMjfhMhEM704=
+	by mail.kernel.org (Postfix) with ESMTP id D7D0720674
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:39:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=eat-dinner.eu header.i=@eat-dinner.eu header.b="Mz7lw2yc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726346AbfDOHbN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 03:31:13 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35856 "EHLO mail.kernel.org"
+        id S1725798AbfDOHjd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 03:39:33 -0400
+Received: from mail.eat-dinner.eu ([80.211.38.224]:40445 "EHLO eat-dinner.eu"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726432AbfDOHbL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Apr 2019 03:31:11 -0400
-Received: from mail-lj1-f169.google.com (mail-lj1-f169.google.com [209.85.208.169])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AE472218EA;
-        Mon, 15 Apr 2019 07:31:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1555313471;
-        bh=JUQAB0Wo1WE/583zIpphIJODcSIKdzXmVISS33Hzwq8=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=r5Gd7km7PiIFZvhyK+g2fbWN4QNzAMavYygNi41q2bF8NnG34PAJvqKltGjQW2hys
-         nWshlaBxgace5X3dTwmE5Jf1eu3rXOcgJCz+7gFn22hn0qYcqofTfV5AwRqdyumE1l
-         lVe7NvwV7ih8WSyP74GkALyep8Fg949gSTrdolfs=
-Received: by mail-lj1-f169.google.com with SMTP id p14so14608314ljg.5;
-        Mon, 15 Apr 2019 00:31:10 -0700 (PDT)
-X-Gm-Message-State: APjAAAXkK8bdXjfZzKsxhzaEvyM0JBe0Z2tgi0fW/NGlKfo47Hp4FQqS
-        yTAW2/z9eKuBtNJEHB8gGoqx1lfcEj3Jby2QxPI=
-X-Google-Smtp-Source: APXvYqygSSnNnDcvGPSYtuR57Nph+AMxv0ORlfoBIvjb7XcvAcEXQW5TmMhAJV2v2I7viHrNM59HTyh+kevpTTHywCg=
-X-Received: by 2002:a2e:500d:: with SMTP id e13mr40925411ljb.169.1555313468959;
- Mon, 15 Apr 2019 00:31:08 -0700 (PDT)
+        id S1726334AbfDOHjd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 03:39:33 -0400
+X-Greylist: delayed 413 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Apr 2019 03:39:32 EDT
+Received: by eat-dinner.eu (Postfix, from userid 1001)
+        id 60D9DA1402; Mon, 15 Apr 2019 09:31:34 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=eat-dinner.eu;
+        s=mail; t=1555313557;
+        bh=Pq3JAJM5iF8ICERSPFAm/P648K1IfJ1sBmhj3v1LJ9Q=;
+        h=Date:From:To:Subject:From;
+        b=Mz7lw2ycGp21bhqrYslxJYAtIDyrZI5F6aogCUEmWom1HZ+VOiNVHJmM6JdGFycd0
+         Ye3dkYCeVHBQtwLeusrUMzr6I4O4akSl0K3p/X3HyrgUPK97Jkx5rBZTRt5JdYNRs2
+         5/MvexhoMf68es0ZFPiEKyPrGj3zSdHArZv4cZW4=
+Received: by mail.eat-dinner.eu for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2019 07:31:30 GMT
+Message-ID: <20190415084500-0.1.l.q6b.0.m38fcs0tg4@eat-dinner.eu>
+Date:   Mon, 15 Apr 2019 07:31:30 GMT
+From:   =?UTF-8?Q? "Kapolcs_M=C3=A1ty=C3=A1s" ?= 
+        <kapolcs.matyas@eat-dinner.eu>
+To:     <linux-pm@vger.kernel.org>
+Subject: =?UTF-8?Q?B=C3=A9ren_k=C3=ADv=C3=BCli_juttat=C3=A1sok?=
+X-Mailer: mail.eat-dinner.eu
 MIME-Version: 1.0
-References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
- <20190415012635.6369-1-matheus@castello.eng.br> <20190415012635.6369-5-matheus@castello.eng.br>
-In-Reply-To: <20190415012635.6369-5-matheus@castello.eng.br>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Date:   Mon, 15 Apr 2019 09:30:58 +0200
-X-Gmail-Original-Message-ID: <CAJKOXPf=nPrmw6Vzi_=LmO=dVsV4Gvoc-q75XP2FBEgm9Gxv0A@mail.gmail.com>
-Message-ID:
- <CAJKOXPf=nPrmw6Vzi_=LmO=dVsV4Gvoc-q75XP2FBEgm9Gxv0A@mail.gmail.com>
-Subject: Re: [PATCH v2 4/4] power: supply: max17040: Send uevent in SOC changes
-To:     Matheus Castello <matheus@castello.eng.br>
-Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= 
-        <b.zolnierkie@samsung.com>, lee.jones@linaro.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190415073058.MubanT7mdnvHZX7MMr-95o7vR-dc0XMgXvjEKQnlSeo@z>
 
-On Mon, 15 Apr 2019 at 03:48, Matheus Castello <matheus@castello.eng.br> wrote:
->
-> Notify core through power_supply_changed() in case of changes in state
-> of charge. This is useful for user-space to efficiently update current
-> battery level.
->
-> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
-> ---
->  drivers/power/supply/max17040_battery.c | 7 +++++++
->  1 file changed, 7 insertions(+)
->
-> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-> index f036f272d52f..db901ebf495d 100644
-> --- a/drivers/power/supply/max17040_battery.c
-> +++ b/drivers/power/supply/max17040_battery.c
-> @@ -208,10 +208,17 @@ static void max17040_check_changes(struct i2c_client *client)
->  static void max17040_work(struct work_struct *work)
->  {
->         struct max17040_chip *chip;
-> +       int last_soc;
->
->         chip = container_of(work, struct max17040_chip, work.work);
-> +       /* store SOC for check change */
-> +       last_soc = chip->soc;
->         max17040_check_changes(chip->client);
->
-> +       /* check changes and send uevent */
-> +       if (last_soc != chip->soc)
+=C3=9Cdv=C3=B6zl=C3=B6m!
 
-chip->soc could be negative ERRNO so in such case I think user-space
-should not be notified.
+2019 janu=C3=A1rj=C3=A1t=C3=B3l jelent=C5=91sen =C3=A1talakult mind a jut=
+tat=C3=A1sok ad=C3=B3z=C3=A1sa, mind a piacon el=C3=A9rhet=C5=91 juttat=C3=
+=A1si term=C3=A9kek k=C3=B6re. =20
 
-> +               power_supply_changed(chip->battery);
-> +
+Amennyiben =C3=96nnek is fejt=C3=B6r=C3=A9st okoz, mivel p=C3=B3tolja a k=
+or=C3=A1bban haszn=C3=A1lt Erzs=C3=A9bet utalv=C3=A1nyt, ismerje meg k=C3=
+=A1rty=C3=A1inkat =C3=A9s utalv=C3=A1nyainkat, melyek az =C3=96n c=C3=A9g=
+=C3=A9nek is k=C3=ADv=C3=A1l=C3=B3 alternat=C3=ADv=C3=A1t ny=C3=BAjthatna=
+k.
 
-You should also notify on online and status change (e.g. started
-charging). User-space also wants to know that, e.g. to show the
-charging icon or battery health status.
+A SZ=C3=89P k=C3=A1rty=C3=A1hoz k=C3=A9pest juttat=C3=A1si k=C3=A1rty=C3=A1=
+inkat j=C3=B3val sz=C3=A9lesebb k=C3=B6rben haszn=C3=A1lhatj=C3=A1k k=C3=A1=
+rtyabirtokosaink t=C3=B6bbek k=C3=B6z=C3=B6tt =C3=A9lelmiszer v=C3=A1s=C3=
+=A1rl=C3=A1sra, eg=C3=A9szs=C3=A9g=C3=BCgyi szolg=C3=A1ltat=C3=A1sokra, e=
+lektronikai term=C3=A9kekre, =C3=BCd=C3=BCl=C3=A9sre, tankol=C3=A1sra =E2=
+=80=93 ak=C3=A1r k=C3=A9szp=C3=A9nzfelv=C3=A9teli lehet=C5=91s=C3=A9ggel =
+is.
 
-Best regards,
-Krzysztof
+Szeretn=C3=A9 megismerni, milyen lehet=C5=91s=C3=A9geket k=C3=ADn=C3=A1lu=
+nk juttat=C3=A1si term=C3=A9keinkkel? =20
+
+
+Kapolcs M=C3=A1ty=C3=A1s
+Hungary Team Leader =20
