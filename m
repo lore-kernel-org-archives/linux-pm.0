@@ -2,59 +2,58 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B16EC10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A871C10F12
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EDEF72147C
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A7CD2147C
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:58:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iFB/D+48"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="reLoU8+J"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727665AbfDOO6G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 10:58:06 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:34895 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727447AbfDOOzh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:37 -0400
-Received: by mail-lj1-f194.google.com with SMTP id t4so7445480ljc.2;
-        Mon, 15 Apr 2019 07:55:36 -0700 (PDT)
+        id S1727490AbfDOOzh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 10:55:37 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:46911 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726102AbfDOOzg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:36 -0400
+Received: by mail-lf1-f68.google.com with SMTP id k18so4405799lfj.13;
+        Mon, 15 Apr 2019 07:55:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YyEWyd/0/FOQqZopdUl0UO49wVaBKveFMv7rmBv9s6k=;
-        b=iFB/D+48kanPXUd9c+KTDTPEaK2DGIPtI/y1W+50te+5dWUK8c80SnQWmjgu530V6C
-         neE+v4gjVqDulAvJsAm2FMeAQ7dIU84nAq38pGbtgSgHOMnxeNWKuWeViO4iuFC1//+6
-         Ue6uwZiT+mxf/njtGDYaK7dWt4amiqLeFqHQY4BRTxX05wON+At/QDQUXoBRrgFWysrH
-         rf31ZzZjr/5odEaZrSg+lI0S6w0fEkMDj3JuFrE2ndY7XD0rDdxwjrPXx8zg/OU5LJy9
-         ubPRwudVSXOkH4KWMXNu11H/EaYMQdms54xTu+sQpIMP7ne/ub44+6wgii1w5mW15HF8
-         6fsQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=f5T8atUTvJOfOrgRbVO67MZvPmsCQ9fM6En3Qkk12gw=;
+        b=reLoU8+J6CvGt5tVx71ZKa5svYrQlag86nDbeucNXt5eb33Tux1ofULLXSEDINjMSm
+         pSvgVQVQp2Tz46Xb1NwZQG5/0fPzxpgbqc7ZFWS4Npd0RglFDuaY5Ap1vf1jV0lQGCWp
+         dYLzp+DzYRJEj+bELItd/Gc1lUqMGZ3MwwAueUUPQavnVf01GWKAUCocFV0G455N7rdy
+         0KUkjK/g02LFNyLMMlP3FR6xqfQbqx5z3DHkzYmTbWBPSTNxvcBI++Yu0mW5U7LJzYBk
+         O+k3KVulJPq9YsjoEVOTOW9FDj7cv8d+h1cmrgloOuS1xtjN+Aoc221SlbAU623OA8FM
+         hlVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YyEWyd/0/FOQqZopdUl0UO49wVaBKveFMv7rmBv9s6k=;
-        b=F7BDc8BnwT7iH5ARLgfeAmws2Dj+qw/PZiUQpPEYZuu5k1ViCRF9AH8ZQx5nUsjar8
-         XbBnneNYt/IKLjiU1p187YLB5ZJyHyrZKM/QhcflpO7qfMM/o1k6ySS9RYZ5qZq/wFBJ
-         Ypfc97UCzv5t1dJ15/fglyiWUGuzfTJ8sqatT8DDMlopN5SvkJddhjjWn9mtFU5zSKZ5
-         kvqE/AzWFrx3gfRvxHgnfRWs0h7unsfqFc8YpyiipTiJtNH8SxRDvOBXtSrarX8rF+8p
-         p/a/l5TAB8V7qDChLzzm8wtHdkMeFdRberhhkxjW4IdmKJlwQ28AQ8eNvnVU9Igr2r4r
-         MmQw==
-X-Gm-Message-State: APjAAAUCLRD4+/SjXrGfrSyQDRE4gRHXVLIyVelHEICu1e20E3vek/N6
-        xBWsWQHupgCqyG9r3tog8pO1pwiL
-X-Google-Smtp-Source: APXvYqxlHCj1h3ecJd5aGgmuZF3aw5DUepJt++1LHniEfWi7S0ndLg/AgcFkrd7YywmPYqQiPihItQ==
-X-Received: by 2002:a2e:960b:: with SMTP id v11mr27575063ljh.135.1555340135615;
-        Mon, 15 Apr 2019 07:55:35 -0700 (PDT)
-Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.34
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=f5T8atUTvJOfOrgRbVO67MZvPmsCQ9fM6En3Qkk12gw=;
+        b=rrNsGhICP5rJrd/jxp4CZm0zMWkEC8/3AQthD1VfyLL/j0ttkj+h7/ASOVezV4SeOE
+         RSHj4AauRIUl+Ya692jMkg0FWoftnCyxW5KoSVLg1Ytz9xtm6OsBHvqGXkwHjVT3ok/a
+         ZuoFI5WzWIxLYpsQ3GV5heLe3P2ub4EU47c6ZIG8vk3ltS+0t63yOmBqUyl6PS+7xZk+
+         YNn5l7jC6qxPmtVe8SEpUvMuxPD3w5Uvk5Kg3dJa0TPIS3fIWkZlKsHdJ/eLu1IgTyBL
+         iblVkiBXzxdIUd05JZNy/D6FlhRVUwiYP4Tq4uovWIE+MgCUpAhTmIq5soed7A5Jod8h
+         QwXA==
+X-Gm-Message-State: APjAAAVLscmT3HNAazq1OuRhSGK0Da7n5nnxQNZ2y8gsSGSuyOENsZ0m
+        7ftRzkPrWykezINnPNYPg4VZK8oc
+X-Google-Smtp-Source: APXvYqyypglaCMPVFONPc4c0X7lEj7S6RTZ7TzQ8utFiRuvelUVt4PZqm219CVy83KuOaZMYA24WHw==
+X-Received: by 2002:a19:f60d:: with SMTP id x13mr4237018lfe.11.1555340134287;
         Mon, 15 Apr 2019 07:55:34 -0700 (PDT)
+Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
+        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.32
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 15 Apr 2019 07:55:33 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,12 +63,10 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 01/19] PM / devfreq: tegra: Fix kHz to Hz conversion
-Date:   Mon, 15 Apr 2019 17:54:47 +0300
-Message-Id: <20190415145505.18397-2-digetx@gmail.com>
+Subject: [PATCH v2 00/19] NVIDIA Tegra devfreq improvements and Tegra20/30 support
+Date:   Mon, 15 Apr 2019 17:54:46 +0300
+Message-Id: <20190415145505.18397-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190415145505.18397-1-digetx@gmail.com>
-References: <20190415145505.18397-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -77,68 +74,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415145447.XioBgVTOatQPSeyXIshXKdAqG364vfUF4XbnI-CZPAo@z>
+Message-ID: <20190415145446.etO5Brzc8NnsLG_k8mhsgGHShgctvdz-qxS5ZjgEp_M@z>
 
-The kHz to Hz is incorrectly converted in a few places in the code,
-this results in a wrong frequency being calculated because devfreq core
-uses OPP frequencies that are given in Hz to clamp the rate, while
-tegra-devfreq gives to the core value in kHz and then it also expects to
-receive value in kHz from the core. In a result memory freq is always set
-to a value which is close to ULONG_MAX because of the bug. Hence the EMC
-frequency is always capped to the maximum and the driver doesn't do
-anything useful. This patch was tested on Tegra30 and Tegra124 SoC's, EMC
-frequency scaling works properly now.
+Hello,
 
-Cc: <stable@vger.kernel.org> # 4.14+
-Tested-by: Steev Klimaszewski <steev@kali.org>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra-devfreq.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+I tried to utilize the Tegra devfreq driver on Tegra30 and found out that
+it doesn't work properly due to improper Hz<->kHz conversions made by the
+driver. After fixing that problem and doing some more testing I noticed
+that there are things that could be improved and in result here is this
+patchset that fixes the problems, makes some improvements and adds support
+for NVIDIA Tegra30 SoC's. This series was tested on Tegra30 and Tegra124
+machines.
 
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index c89ba7b834ff..02905978abe1 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -486,9 +486,9 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct dev_pm_opp *opp;
--	unsigned long rate = *freq * KHZ;
-+	unsigned long rate;
- 
--	opp = devfreq_recommended_opp(dev, &rate, flags);
-+	opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(opp)) {
- 		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
- 		return PTR_ERR(opp);
-@@ -499,8 +499,6 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	clk_set_min_rate(tegra->emc_clock, rate);
- 	clk_set_rate(tegra->emc_clock, 0);
- 
--	*freq = rate;
--
- 	return 0;
- }
- 
-@@ -510,7 +508,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
- 
--	stat->current_frequency = tegra->cur_freq;
-+	stat->current_frequency = tegra->cur_freq * KHZ;
- 
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
-@@ -565,7 +563,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
- 		target_freq = max(target_freq, dev->target_freq);
- 	}
- 
--	*freq = target_freq;
-+	*freq = target_freq * KHZ;
- 
- 	return 0;
- }
+This series also adds support for the Tegra20 SoC's that do not have
+the ACTMON hardware unit, but can use Memory Controller counters to make
+decision about the required memory frequency. Please note that the patch
+that instantiates a platform device for the driver isn't a part of this
+series, I'll submit it later on because of interdependency with some other
+ongoing patchset.
+
+Please review, thanks.
+
+Changelog:
+
+v2: The patchset was quite heavily reworked since v1, few patches we
+    dropped or squashed into the new ones and more patches we added.
+    In a result more bugs and potential problems are fixed now, driver's
+    code got more clean up.
+
+    The Tegra20 driver-addition patch is now a part of this series, it has
+    no changes since v1.
+
+Dmitry Osipenko (19):
+  PM / devfreq: tegra: Fix kHz to Hz conversion
+  PM / devfreq: tegra: Replace readl-writel with relaxed versions
+  PM / devfreq: tegra: Don't ignore clk errors
+  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
+  PM / devfreq: tegra: Replace write memory barrier with the read
+    barrier
+  PM / devfreq: tegra: Fix missed error checking on devfreq
+    initialization failure
+  PM / devfreq: tegra: Register clk notifier in the end of driver's
+    probe
+  PM / devfreq: tegra: Remove OPP entries on driver removal
+  PM / devfreq: tegra: Change interrupt request order
+  PM / devfreq: tegra: Drop primary interrupt handler
+  PM / devfreq: tegra: De-initialize properly on driver's probe error
+  PM / devfreq: tegra: Avoid inconsistency of current frequency value
+  PM / devfreq: tegra: Mark ACTMON's governor as immutable
+  PM / devfreq: tegra: Move governor registration to driver's probe
+  PM / devfreq: tegra: Synchronize IRQ after masking it in hardware
+  PM / devfreq: tegra: Reconfigure hardware on governor's restart
+  PM / devfreq: tegra: Support Tegra30
+  PM / devfreq: tegra: Enable COMPILE_TEST for the driver
+  PM / devfreq: Introduce driver for NVIDIA Tegra20
+
+ MAINTAINERS                       |   8 +
+ drivers/devfreq/Kconfig           |  15 +-
+ drivers/devfreq/Makefile          |   1 +
+ drivers/devfreq/tegra-devfreq.c   | 296 +++++++++++++-----------------
+ drivers/devfreq/tegra20-devfreq.c | 177 ++++++++++++++++++
+ 5 files changed, 324 insertions(+), 173 deletions(-)
+ create mode 100644 drivers/devfreq/tegra20-devfreq.c
+
 -- 
 2.21.0
 
