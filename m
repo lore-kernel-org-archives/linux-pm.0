@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB980C10F12
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9842AC10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AAE942183F
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 66BAC20880
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 14:57:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="F2VUKGeQ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J4Uloyev"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727730AbfDOOzy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 10:55:54 -0400
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:32974 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727669AbfDOOzu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:50 -0400
-Received: by mail-lj1-f196.google.com with SMTP id f23so15990390ljc.0;
-        Mon, 15 Apr 2019 07:55:49 -0700 (PDT)
+        id S1727729AbfDOOzx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 10:55:53 -0400
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:33414 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727718AbfDOOzw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 10:55:52 -0400
+Received: by mail-lf1-f65.google.com with SMTP id j11so13356661lfm.0;
+        Mon, 15 Apr 2019 07:55:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0m53QvjknqRp3ie0vm6CpfbAyiM0FVU3b4et23ofcuA=;
-        b=F2VUKGeQdqeNwP0nOteb8rfuOpQaIP/fnuUKyn2O6Et18CEeZZbN9q3hj9obLt7Ip7
-         sjTdcdMe0UNSZ/xP3SSbOG/Fr3Mb6X8VRaiVwA9ANypifyHL3reKiZmUwEtlE55sshhe
-         uDvfyoxBm7Q1Ye991Zdu5HeyIphGUUw5xPx9B0nDTqQWpSsKl2KEQcz4pYHlMvy4yEDZ
-         MCo8FHdDFpCK/Uomh7Ry+e+0ggO2tB0kVrOARVQVET1ZL6kDp76atbAdBpD9YbKddfF8
-         02CV8kmhny1lUXNrqv3kXSLB8iCKXZIiWM2eDvI4NDccXvP6QlvQNRW6pDOSNlEj2I7x
-         bZHA==
+        bh=WGyPSf1K0bwZ7WuY0uWEI/50dRfbYW5Q/niDp699c2A=;
+        b=J4UloyevIRDg2O1zufZ1NDyjqymXpw16FBIWr+1GvAp5gXwV/bhnYWE4oUxqj9LDgu
+         qTWwsWOFoJGbEdpA6ScJsO+kQ+xGU4erPS0JdDJ0KfejkmMXmh9+4q3wbZ8dhmFinNq0
+         M6Y5B/+NZd8mbTNgflUPIe9nPlgkUZDx0XiZVJpC/xite+3WQvdsJZ/O0qdeZLx1hEit
+         BE7Opuj3lCXn4xL2Bo9vCElUyO3lItndAFw0gIGexnaYiitlIqNNmOKrYycVgkYhkkKZ
+         oMgSr+6PfWIrv0HghOlWP9evCjs01QkKa6mIvWk+efuWzMhL2Ej7TqOssBY7xqLAxrQh
+         d3aw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0m53QvjknqRp3ie0vm6CpfbAyiM0FVU3b4et23ofcuA=;
-        b=ER5xjhVBpn4sHS+r1qB5Yb+h7AR0CF6Ep7ULFR59rHyvNf2gHhGPwZ2yWfsUefsI9C
-         FrcMQlrVQPyqKRcMay75VKleJn8Feupu1fUo4u3WmNx1thp1R8Lt9QPbK5vdjhLzO1kI
-         mJLMx5/7xI8WAS7efTH9Jv2qyr4d/HYm2S8OARuVi1abMN38CJaFg5BHyK/xKes1q6I3
-         LuHhMvEYIpiA5tsXIefxa6jxjWasuJoIAXhuC/0XSV8vHBjmDd1m0YhcngAn2yiedwWc
-         ATEXDMBGTHu9m4/RsXSU2VAhzxChluBTohUprNb2C0Bpb/vcQmRts8yGy1xnOXUDsraT
-         Cwtg==
-X-Gm-Message-State: APjAAAVpBB9Vhx6yRnMyGuYpXRi/5qRJ8HneWv4JpWWiA1mKYp7YAiJ/
-        xPTnag4pReVUJqksc4Ad7uI=
-X-Google-Smtp-Source: APXvYqzpTGE5/TikmNNDpIoscTEm2A9ggE6XFk7D7Ol09PySJOwV+H2gq5rqP1/BbtgyOUZ3DcXWdg==
-X-Received: by 2002:a2e:7d19:: with SMTP id y25mr18247204ljc.126.1555340148490;
-        Mon, 15 Apr 2019 07:55:48 -0700 (PDT)
+        bh=WGyPSf1K0bwZ7WuY0uWEI/50dRfbYW5Q/niDp699c2A=;
+        b=noOD/8DchxPHQUvBX3IJxx0yR3+9st3w0imh6ZLm1qSQgKXXoY69jqeKQETdL/Juto
+         rx4Y4c0cKzaehqarOSUdXF1WVp0qRav8l38eBLRigvv0JdhU4GgGIK7dg88NhFbTK2iF
+         GTJ2AF2sx4pHIgIRirkxthMH6m+vz9I12sqA7cmqAXG4bdGrxsM9jXVfbyCaduQZxgQV
+         akWK1b1sDAUGT4UBsK00/S2dRrWQ9PE00SCasSsDitEoF68DK0FFq5VZpCu+K/B93wlC
+         4iuw4IDSbymcTH+dV5ZA/CQ/p51i8rW58rSruZp4cUkeKuVK53eEw1JGr1+4c0CULkvp
+         TUow==
+X-Gm-Message-State: APjAAAW6QR6CL4mcNUJk1JwNekEbEUrZv3K9mFIlnCHv4wLtfZ74vQwr
+        W8BkUmDeRta6gW5y5lqnn64=
+X-Google-Smtp-Source: APXvYqzhvHZzlPFFCmkuJuL4+pFjlzsCPWSxZybBRKdXMEBSiaUBDlk0d8kp1dOU/zOBJ7Ro2qWAWA==
+X-Received: by 2002:ac2:51da:: with SMTP id u26mr5780373lfm.32.1555340149641;
+        Mon, 15 Apr 2019 07:55:49 -0700 (PDT)
 Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.47
+        by smtp.gmail.com with ESMTPSA id l12sm9989932lfc.61.2019.04.15.07.55.48
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 15 Apr 2019 07:55:47 -0700 (PDT)
+        Mon, 15 Apr 2019 07:55:49 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 12/19] PM / devfreq: tegra: Avoid inconsistency of current frequency value
-Date:   Mon, 15 Apr 2019 17:54:58 +0300
-Message-Id: <20190415145505.18397-13-digetx@gmail.com>
+Subject: [PATCH v2 13/19] PM / devfreq: tegra: Mark ACTMON's governor as immutable
+Date:   Mon, 15 Apr 2019 17:54:59 +0300
+Message-Id: <20190415145505.18397-14-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190415145505.18397-1-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
@@ -77,47 +77,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190415145458.cZ6FhhrX6MMZjksLp1ERMoUUiWL-9gQtTdWd1qI4RhE@z>
+Message-ID: <20190415145459.J_TjGj_IhpiLEU0VmjUySmxB1CJClghSagKbUIl19xQ@z>
 
-The frequency value potentially could change in-between. It doesn't
-cause any real problem at all right now, but that could change in the
-future. Hence let's avoid the inconsistency.
+The ACTMON's governor supports only the Tegra's devfreq device and there
+is no need to use any other governor, hence let's mark Tegra governor as
+immutable to permanently stick it with Tegra's devfreq device.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/devfreq/Kconfig         | 1 -
+ drivers/devfreq/tegra-devfreq.c | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 6a172d338f6d..a78dffe603c1 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -94,7 +94,6 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ config ARM_TEGRA_DEVFREQ
+ 	tristate "Tegra DEVFREQ Driver"
+ 	depends on ARCH_TEGRA_124_SOC
+-	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
+ 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index a668e4fbc874..f1a6f951813a 100644
+index f1a6f951813a..832e4f5aa11b 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -496,13 +496,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
-+	unsigned long cur_freq;
+@@ -593,6 +593,7 @@ static struct devfreq_governor tegra_devfreq_governor = {
+ 	.name = "tegra_actmon",
+ 	.get_target_freq = tegra_governor_get_target,
+ 	.event_handler = tegra_governor_event_handler,
++	.immutable = true,
+ };
  
--	stat->current_frequency = tegra->cur_freq * KHZ;
-+	cur_freq = READ_ONCE(tegra->cur_freq);
- 
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
- 
- 	/* The below are to be used by the other governors */
-+	stat->current_frequency = cur_freq * KHZ;
- 
- 	actmon_dev = &tegra->devices[MCALL];
- 
-@@ -513,7 +515,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
- 
- 	/* Number of cycles in a sampling period */
--	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
-+	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
- 
- 	stat->busy_time = min(stat->busy_time, stat->total_time);
- 
+ static int tegra_devfreq_probe(struct platform_device *pdev)
 -- 
 2.21.0
 
