@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v2 03/19] PM / devfreq: tegra: Don't ignore clk errors
-Date: Mon, 15 Apr 2019 17:54:49 +0300
-Message-ID: <20190415145505.18397-4-digetx@gmail.com>
+Subject: [PATCH v2 05/19] PM / devfreq: tegra: Replace write memory barrier with the read barrier
+Date: Mon, 15 Apr 2019 17:54:51 +0300
+Message-ID: <20190415145505.18397-6-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,42 +12,29 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The clk_set_min_rate() could fail and in this case clk_set_rate() sets
-rate to 0, which may drop EMC rate to minimum and make machine very
-difficult to use.
+The write memory barrier isn't needed because the BUS buffer is flushed
+by read after write that happens after the removed wmb(), we will also
+use readl() instead of the relaxed version to ensure that read is indeed
+completed.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 0c0909fba545..69581c9082d4 100644
+index d62fb1b0d9bb..f0f0d78f6cbf 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -487,6 +487,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct dev_pm_opp *opp;
- 	unsigned long rate;
-+	int err;
- 
- 	opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(opp)) {
-@@ -496,8 +497,13 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	rate = dev_pm_opp_get_freq(opp);
- 	dev_pm_opp_put(opp);
- 
--	clk_set_min_rate(tegra->emc_clock, rate);
--	clk_set_rate(tegra->emc_clock, 0);
-+	err = clk_set_min_rate(tegra->emc_clock, rate);
-+	if (err)
-+		return err;
-+
-+	err = clk_set_rate(tegra->emc_clock, 0);
-+	if (err)
-+		return err;
- 
- 	return 0;
+@@ -243,8 +243,7 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+ static void actmon_write_barrier(struct tegra_devfreq *tegra)
+ {
+ 	/* ensure the update has reached the ACTMON */
+-	wmb();
+-	actmon_readl(tegra, ACTMON_GLB_STATUS);
++	readl(tegra->regs + ACTMON_GLB_STATUS);
  }
+ 
+ static void actmon_isr_device(struct tegra_devfreq *tegra,
 -- 
 2.21.0
