@@ -1,109 +1,110 @@
-From: Mohan Kumar <mohankumar718@gmail.com>
-Subject: [RESEND] drivers/cpufreq/acpi-cpufreq.c: This fixes the following  checkpatch warning
-Date: Mon, 15 Apr 2019 14:03:58 +0300
-Message-ID: <1555326238-3612-1-git-send-email-mohankumar718@gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v4] firmware/psci: add support for SYSTEM_RESET2
+Date: Mon, 15 Apr 2019 12:47:46 +0100
+Message-ID: <20190415114746.32753-1-sudeep.holla@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Aaro Koskinen <aaro.koskinen@nokia.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, Florian Fainelli <f.fainelli@gmail.com>, Michal Simek <michal.simek@xilinx.com>, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-WARNING: Prefer using '"%s...", __func__' to using function's name, in a
-string
+PSCI v1.1 introduced SYSTEM_RESET2 to allow both architectural resets
+where the semantics are described by the PSCI specification itself as
+well as vendor-specific resets. Currently only system warm reset
+semantics is defined as part of architectural resets by the specification.
 
-Switch hardcoded function name with a reference to __func__ making the
-code more maintainable
+This patch implements support for SYSTEM_RESET2 by making using of
+reboot_mode passed by the reboot infrastructure in the kernel.
 
-Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+Tested-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ drivers/firmware/psci/psci.c | 24 +++++++++++++++++++++++-
+ include/uapi/linux/psci.h    |  2 ++
+ 2 files changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index c72258a..73bb2aa 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -366,7 +366,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
- 
- 	val = drv_read(data, mask);
- 
--	pr_debug("get_cur_val = %u\n", val);
-+	pr_debug("%s = %u\n", __func__, val);
- 
- 	return val;
+v3->v4:
+	- Rebased on linux-pm -next tree
+	- Added Aaro Koskinen tested-by
+
+v2->v3:
+	- Added else condition so that if SYSTEM_RESET2 fails, it ends
+	  up doing a system halt
+	- Wrap single statement if..else with braces because of presence
+	  of multiple line comment
+
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index eabd01383cd6..fe090ef43d28 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -88,6 +88,7 @@ static u32 psci_function_id[PSCI_FN_MAX];
+ 				PSCI_1_0_EXT_POWER_STATE_TYPE_MASK)
+
+ static u32 psci_cpu_suspend_feature;
++static bool psci_system_reset2_supported;
+
+ static inline bool psci_has_ext_power_state(void)
+ {
+@@ -258,7 +259,17 @@ static int get_set_conduit_method(struct device_node *np)
+
+ static void psci_sys_reset(enum reboot_mode reboot_mode, const char *cmd)
+ {
+-	invoke_psci_fn(PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
++	if ((reboot_mode == REBOOT_WARM || reboot_mode == REBOOT_SOFT) &&
++	    psci_system_reset2_supported) {
++		/*
++		 * reset_type[31] = 0 (architectural)
++		 * reset_type[30:0] = 0 (SYSTEM_WARM_RESET)
++		 * cookie = 0 (ignored by the implementation)
++		 */
++		invoke_psci_fn(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2), 0, 0, 0);
++	} else {
++		invoke_psci_fn(PSCI_0_2_FN_SYSTEM_RESET, 0, 0, 0);
++	}
  }
-@@ -378,7 +378,7 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 	unsigned int freq;
- 	unsigned int cached_freq;
- 
--	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
-+	pr_debug("%s (%d)\n", __func__, cpu);
- 
- 	policy = cpufreq_cpu_get_raw(cpu);
- 	if (unlikely(!policy))
-@@ -458,8 +458,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 	if (acpi_pstate_strict) {
- 		if (!check_freqs(policy, mask,
- 				 policy->freq_table[index].frequency)) {
--			pr_debug("acpi_cpufreq_target failed (%d)\n",
--				policy->cpu);
-+			pr_debug("%s (%d)\n", __func__, policy->cpu);
- 			result = -EAGAIN;
- 		}
+
+ static void psci_sys_poweroff(void)
+@@ -460,6 +471,16 @@ static const struct platform_suspend_ops psci_suspend_ops = {
+ 	.enter          = psci_system_suspend_enter,
+ };
+
++static void __init psci_init_system_reset2(void)
++{
++	int ret;
++
++	ret = psci_features(PSCI_FN_NATIVE(1_1, SYSTEM_RESET2));
++
++	if (ret != PSCI_RET_NOT_SUPPORTED)
++		psci_system_reset2_supported = true;
++}
++
+ static void __init psci_init_system_suspend(void)
+ {
+ 	int ret;
+@@ -597,6 +618,7 @@ static int __init psci_probe(void)
+ 		psci_init_smccc();
+ 		psci_init_cpu_suspend();
+ 		psci_init_system_suspend();
++		psci_init_system_reset2();
  	}
-@@ -573,7 +572,7 @@ static int cpufreq_boost_down_prep(unsigned int cpu)
- static int __init acpi_cpufreq_early_init(void)
- {
- 	unsigned int i;
--	pr_debug("acpi_cpufreq_early_init\n");
-+	pr_debug("%s\n", __func__);
- 
- 	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
- 	if (!acpi_perf_data) {
-@@ -657,7 +656,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	static int blacklisted;
- #endif
- 
--	pr_debug("acpi_cpufreq_cpu_init\n");
-+	pr_debug("%s\n", __func__);
- 
- #ifdef CONFIG_SMP
- 	if (blacklisted)
-@@ -856,7 +855,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 
--	pr_debug("acpi_cpufreq_cpu_exit\n");
-+	pr_debug("%s\n", __func__);
- 
- 	policy->fast_switch_possible = false;
- 	policy->driver_data = NULL;
-@@ -881,7 +880,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 
--	pr_debug("acpi_cpufreq_resume\n");
-+	pr_debug("%s\n", __func__);
- 
- 	data->resume = 1;
- 
-@@ -954,7 +953,7 @@ static int __init acpi_cpufreq_init(void)
- 	if (cpufreq_get_current_driver())
- 		return -EEXIST;
- 
--	pr_debug("acpi_cpufreq_init\n");
-+	pr_debug("%s\n", __func__);
- 
- 	ret = acpi_cpufreq_early_init();
- 	if (ret)
-@@ -991,7 +990,7 @@ static int __init acpi_cpufreq_init(void)
- 
- static void __exit acpi_cpufreq_exit(void)
- {
--	pr_debug("acpi_cpufreq_exit\n");
-+	pr_debug("%s\n", __func__);
- 
- 	acpi_cpufreq_boost_exit();
- 
--- 
-2.7.4
+
+ 	return 0;
+diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
+index 581f72085c33..2fcad1dd0b0e 100644
+--- a/include/uapi/linux/psci.h
++++ b/include/uapi/linux/psci.h
+@@ -50,8 +50,10 @@
+ #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
+ #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
+ #define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
++#define PSCI_1_1_FN_SYSTEM_RESET2		PSCI_0_2_FN(18)
+
+ #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
++#define PSCI_1_1_FN64_SYSTEM_RESET2		PSCI_0_2_FN64(18)
+
+ /* PSCI v0.2 power state encoding for CPU_SUSPEND function */
+ #define PSCI_0_2_POWER_STATE_ID_MASK		0xffff
+--
+2.17.1
