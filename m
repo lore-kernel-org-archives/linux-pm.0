@@ -2,115 +2,199 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46481C10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:23:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A457C10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:27:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1AD4320825
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:23:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 405312087E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 07:27:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555313267;
+	bh=QWS5xeoMeq0unEDlGpOKZi1/HNLnq+cMZ9ErGDkVNX0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=iVN7ZBkVG1+AUJcWiAJUD1RSfwVvLpKf1fyK7nYPOnT4eXM6Mevmh4ymVcggt/4K2
+	 rxP24Z7IwB9gV1zdLnaw2DhO/CN/kfqappvVWJRGI0K3h0N+zsbOS0/YH6e0BNtenW
+	 8AuD2JTfPxcxomE9Jw8b6b0jEQpmEORs6/OqXQFE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725851AbfDOHX6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 03:23:58 -0400
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:44770 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725794AbfDOHX6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 03:23:58 -0400
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x3F7EbWb091067
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2019 03:23:57 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2rvkh2nka9-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2019 03:23:56 -0400
-Received: from localhost
-        by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <parth015@linux.vnet.ibm.com>;
-        Mon, 15 Apr 2019 08:23:54 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
-        by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Mon, 15 Apr 2019 08:23:52 +0100
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x3F7NpXd38535298
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 15 Apr 2019 07:23:52 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id D62EF11C064;
-        Mon, 15 Apr 2019 07:23:51 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 45D1311C04C;
-        Mon, 15 Apr 2019 07:23:51 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.44.57])
-        by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Mon, 15 Apr 2019 07:23:51 +0000 (GMT)
-Subject: Re: [RFC 2/6] Provide cgroup interface for manual jitter
- classification
-To:     Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        linux-pm@vger.kernel.org
-References: <20190322060621.27021-1-parth015@linux.vnet.ibm.com>
- <20190322060621.27021-3-parth015@linux.vnet.ibm.com>
- <462cf628-1b0b-4f8c-251d-c0cff6af18fd@arm.com>
-From:   Parth Shah <parth015@linux.vnet.ibm.com>
-Date:   Mon, 15 Apr 2019 12:53:50 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.0
+        id S1726046AbfDOH1q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 03:27:46 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34632 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725798AbfDOH1q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 03:27:46 -0400
+Received: from mail-lj1-f171.google.com (mail-lj1-f171.google.com [209.85.208.171])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 85DE620880;
+        Mon, 15 Apr 2019 07:27:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1555313264;
+        bh=QWS5xeoMeq0unEDlGpOKZi1/HNLnq+cMZ9ErGDkVNX0=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=hRqAlhcKw6GJWEjqe9CIbCbRfRvseBPkgCjEHqmCzBcYhB0K4EUdp21qw5ISDOstG
+         qiGwOAQq2cGRWAWRmiB+x9eGQOhGbMz3p4LlI3pYQowJZHTUFdT8Xe5jTQCH14KGpU
+         e0MiG5E1sNxYeBEyBmeqp2sgR/SRb17GlO3FHnng=
+Received: by mail-lj1-f171.google.com with SMTP id q66so14614600ljq.7;
+        Mon, 15 Apr 2019 00:27:44 -0700 (PDT)
+X-Gm-Message-State: APjAAAX2wysRYyGVSKaGre2fN2WMeYSCKUy1UXLb+eyfXguQ1DBoMGFS
+        Wx5JXyomi0AmRZQUl0n4PrC4OFeEec0YVdtgDsc=
+X-Google-Smtp-Source: APXvYqwx/+EuH1bDwzrOmMkn0XXOu9Ga5p5gOEDE6ac0UZM6Iu31Gp0qHq1AR2gqQ9859mRsEmVK4PxHJFJ7DHyN5kw=
+X-Received: by 2002:a2e:5dd2:: with SMTP id v79mr37851018lje.22.1555313262791;
+ Mon, 15 Apr 2019 00:27:42 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <462cf628-1b0b-4f8c-251d-c0cff6af18fd@arm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19041507-0016-0000-0000-0000026ED7EC
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19041507-0017-0000-0000-000032CB1AE4
-Message-Id: <f14f03e4-33e9-06a0-ca81-fbfb07ae22d5@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-15_04:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904150049
+References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+ <20190415012635.6369-1-matheus@castello.eng.br> <20190415012635.6369-4-matheus@castello.eng.br>
+In-Reply-To: <20190415012635.6369-4-matheus@castello.eng.br>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Mon, 15 Apr 2019 09:27:31 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPfZBmNATxDTOqiZm_rpjEpRL9sdGF7QAOxppG+ygRmZPQ@mail.gmail.com>
+Message-ID:
+ <CAJKOXPfZBmNATxDTOqiZm_rpjEpRL9sdGF7QAOxppG+ygRmZPQ@mail.gmail.com>
+Subject: Re: [PATCH v2 3/4] power: supply: max17040: Config alert SOC low
+ level threshold from FDT
+To:     Matheus Castello <matheus@castello.eng.br>
+Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= 
+        <b.zolnierkie@samsung.com>, lee.jones@linaro.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190415072731.raTQe7gsXPPYgh_mR0eVZpKQV5jIs4wjduOsiNuOk_0@z>
 
+On Mon, 15 Apr 2019 at 03:51, Matheus Castello <matheus@castello.eng.br> wrote:
+>
+> For configuration of fuel gauge alert for a low level state of charge
+> interrupt we add a function to config level threshold and a device tree
+> binding property to set it in flatned device tree node.
+>
+> Now we can use "maxim,alert-soc-level" property with the values from
+> 1 up to 32 to configure alert interrupt threshold.
+>
+> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+> ---
+>  drivers/power/supply/max17040_battery.c | 56 ++++++++++++++++++++++---
+>  1 file changed, 50 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+> index 8d2f8ed3f44c..f036f272d52f 100644
+> --- a/drivers/power/supply/max17040_battery.c
+> +++ b/drivers/power/supply/max17040_battery.c
+> @@ -29,6 +29,9 @@
+>  #define MAX17040_DELAY         1000
+>  #define MAX17040_BATTERY_FULL  95
+>
+> +#define MAX17040_ATHD_MASK             0xFFE0
+> +#define MAX17040_ATHD_DEFAULT_POWER_UP 4
+> +
+>  struct max17040_chip {
+>         struct i2c_client               *client;
+>         struct delayed_work             work;
+> @@ -43,6 +46,8 @@ struct max17040_chip {
+>         int soc;
+>         /* State Of Charge */
+>         int status;
+> +       /* Alert threshold from 32% to 1% of the State of Charge */
+> +       u32 alert_threshold;
+>  };
+>
+>  static int max17040_get_property(struct power_supply *psy,
+> @@ -119,6 +124,27 @@ static void max17040_get_soc(struct i2c_client *client)
+>         chip->soc = (soc >> 8);
+>  }
+>
+> +static int max17040_set_soc_threshold(struct i2c_client *client, u32 level)
+> +{
+> +       int ret;
+> +       u16 data;
+> +
+> +       /* check if level is between 1% and 32% */
+> +       if (level > 0 && level < 33) {
+> +               /* alert threshold use LSb 5 bits from RCOMP */
+> +               level = 32 - level;
+> +               data = max17040_read_reg(client, MAX17040_RCOMP);
+> +               data &= MAX17040_ATHD_MASK;
+> +               data |= level;
+> +               max17040_write_reg(client, MAX17040_RCOMP, data);
+> +               ret = 0;
+> +       } else {
+> +               ret = -EINVAL;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+>  static void max17040_get_version(struct i2c_client *client)
+>  {
+>         u16 version;
+> @@ -161,6 +187,16 @@ static void max17040_get_status(struct i2c_client *client)
+>                 chip->status = POWER_SUPPLY_STATUS_FULL;
+>  }
+>
+> +static void max17040_get_of_data(struct max17040_chip *chip)
+> +{
+> +       struct device *dev = &chip->client->dev;
+> +       struct device_node *np = dev->of_node;
+> +
+> +       if (of_property_read_u32(np, "maxim,alert-soc-level",
+> +                       &chip->alert_threshold))
+> +               chip->alert_threshold = MAX17040_ATHD_DEFAULT_POWER_UP;
+> +}
+> +
+>  static void max17040_check_changes(struct i2c_client *client)
+>  {
+>         max17040_get_vcell(client);
+> @@ -226,6 +262,7 @@ static int max17040_probe(struct i2c_client *client,
+>
+>         chip->client = client;
+>         chip->pdata = client->dev.platform_data;
+> +       max17040_get_of_data(chip);
+>
+>         i2c_set_clientdata(client, chip);
+>         psy_cfg.drv_data = chip;
+> @@ -237,16 +274,26 @@ static int max17040_probe(struct i2c_client *client,
+>                 return PTR_ERR(chip->battery);
+>         }
+>
+> +       max17040_reset(client);
+> +       max17040_get_version(client);
+> +
+>         /* check interrupt */
+>         if (client->irq) {
+>                 int ret;
+> -               unsigned int flags;
+> +
+> +               ret = max17040_set_soc_threshold(client, chip->alert_threshold);
+> +               if (ret) {
+> +                       dev_err(&client->dev,
+> +                               "Failed to set SOC alert threshold: err %d\n",
+> +                               ret);
+> +                       return ret;
+> +               }
+>
+>                 dev_info(&client->dev, "IRQ: enabled\n");
+> -               flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
+>
+>                 ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+> -                                               max17040_thread_handler, flags,
+> +                                               max17040_thread_handler,
+> +                                               (client->flags | IRQF_ONESHOT),
+>                                                 chip->battery->desc->name,
+>                                                 chip);
 
+Now I noticed that you are not clearing the ALRT status bit. Therefore
+alert interrupt will be generated only once. Even if SoC goes up
+(charged) and then down to alert level it will not be generated second
+time. At least documentation for max77836 is saying that clearing this
+bit is required.
 
-On 4/11/19 7:16 PM, Dietmar Eggemann wrote:
-> On 3/22/19 7:06 AM, Parth Shah wrote:
->> Signed-off-by: Parth Shah <parth015@linux.vnet.ibm.com>
->> ---
->>   include/linux/sched.h |  8 ++++++++
->>   kernel/sched/core.c   | 46 +++++++++++++++++++++++++++++++++++++++++++
->>   kernel/sched/fair.c   | 15 +++++++++-----
->>   kernel/sched/sched.h  |  2 ++
->>   4 files changed, 66 insertions(+), 5 deletions(-)
->>
->> diff --git a/include/linux/sched.h b/include/linux/sched.h
->> index 903ef29b62c3..be8e8617e0cb 100644
->> --- a/include/linux/sched.h
->> +++ b/include/linux/sched.h
->> @@ -604,6 +604,14 @@ struct task_struct {
->>       unsigned int            flags;
->>       unsigned int            ptrace;
->>   +    /*
->> +     * task_characteristics:
->> +     * 0 = unknown. Follows regular CFS policy for task placement.
->> +     * 1 = Throughput intensive high utilization task
->> +     * 2 = Jitter tasks. Should be packed to reduce active core count.
-> 
-> This is very similar to the ideas in [PATCH v8 00/16] Add utilization clamping support https://lore.kernel.org/lkml/20190402104153.25404-1-patrick.bellasi@arm.com . Task classification from userspace ...
-> 
-> [...]
-> 
-
-Patches seems interesting and converges to the process of jitter classification.
-I will try to re-base my patches on top of that.
-
-Thanks
-
+Best regards,
+Krzysztof
