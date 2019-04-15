@@ -1,60 +1,60 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 4/4] power: supply: add Ingenic JZ47xx battery driver.
-Date: Tue, 16 Apr 2019 00:09:58 +0200
-Message-ID: <20190415220958.d3hr6ymwoy43npjw@earth.universe>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
- <20190323172809.14407-4-contact@artur-rojek.eu>
+From: Janakarajan Natarajan <jnataraj@amd.com>
+Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
+Date: Mon, 15 Apr 2019 22:35:48 +0000
+Message-ID: <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com>
+References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rw2r4of4bpn34oof"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190323172809.14407-4-contact@artur-rojek.eu>
+In-Reply-To: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
+Content-Language: en-US
+Content-ID: <B4C29D8A2FA3B345ADAA26B77C37F46D@namprd12.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Artur Rojek <contact@artur-rojek.eu>
-Cc: Jonathan Cameron <jic23@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+To: "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>, "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-
---rw2r4of4bpn34oof
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Sat, Mar 23, 2019 at 06:28:09PM +0100, Artur Rojek wrote:
-> Add a driver for battery present on Ingenic JZ47xx SoCs.
->=20
-> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
-
-I just applied the patch, but it results in the following warning:
-
-WARNING: modpost: missing MODULE_LICENSE() in drivers/power/supply/ingenic-=
-battery.o
-
-Please add MODULE_LICENSE & Co and send a v4 of patch 4/4.
-
--- Sebastian
-
---rw2r4of4bpn34oof
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly1ASsACgkQ2O7X88g7
-+pqTVA/+Ik4sVPteTU4wCrybHl8pxCnajSRMODXGm3MxbBSs6vpI4wr5/aqD3P5Z
-iWMburw6eg3YZOk5kK9awGkykioyZ4MGlfTURZyKo7QKMPbEruY1RUTnJRBtZ9d6
-oV8HxzzuiZlY9pN0Szlw8UYK7aZOKR5CqtTzL3HHsZR+mHTLFZG+W5tQdALQzs/6
-GS+V3d48s5o+JVYnZePwFe4b6Qi9cs57f/JFJ6hOnpIdKQzEh1xxbw/6axMaIZBh
-nzlh2pdJT0bN/uPOYztunaGefrkht7YH+SCYttAr6Valxa7UJIccYwhggTAtCwFK
-UAYDyZVPuhp3i9vBMBeNRIdCoxwqoHUsdffpRrIMlJvxa2Jkvff4dAfcoVtzgJpq
-VzbOfRsquhVxlCiOScO5cc9WK+qAifoy7Q+yo8uZ5Y+oniMx72zueeOvG6Kv+idL
-jDbMvSxqVv7QdqSv/fA/7X9cjeu90548YvBRB0dkKh9fvNfaD2myGeW6VKl2/m6T
-c7OSOaUS0HAD/hfDIaZaJX72fK7cVGNJ7bF8dMPv57Y7oBoH6r4eaLvIdxAv3xnH
-kGR6ZGZ1KB0LNxYH/lblosuo5N3lVFSToXsluvhfpjQHbNKtXXZhDJTKSvA0nUu5
-yLItgAQ4Qfsc3k30zoQinBbADuD5ibptP9KM/6BPaeCnp7lSKqA=
-=S6TG
------END PGP SIGNATURE-----
-
---rw2r4of4bpn34oof--
+T24gNC80LzE5IDQ6MjUgUE0sIE5hdGFyYWphbiwgSmFuYWthcmFqYW4gd3JvdGU6DQo+IENQUEMg
+KENvbGxhYm9yYXRpdmUgUHJvY2Vzc29yIFBlcmZvcm1hbmNlIENvbnRyb2wpIG9mZmVycyBvcHRp
+b25hbA0KPiByZWdpc3RlcnMgd2hpY2ggY2FuIGJlIHVzZWQgdG8gdHVuZSB0aGUgc3lzdGVtIGJh
+c2VkIG9uIGVuZXJneSBhbmQvb3INCj4gcGVyZm9ybWFuY2UgcmVxdWlyZW1lbnRzLg0KPg0KPiBO
+ZXdlciBBTUQgcHJvY2Vzc29ycyBhZGQgc3VwcG9ydCBmb3IgYSBzdWJzZXQgb2YgdGhlc2Ugb3B0
+aW9uYWwgQ1BQQw0KPiByZWdpc3RlcnMsIGJhc2VkIG9uIEFDUEkgdjYuMS4NCj4NCj4gVGhlIGZv
+bGxvd2luZyBhcmUgdGhlIHN1cHBvcnRlZCBDUFBDIHJlZ2lzdGVycyBmb3Igd2hpY2ggc3lzZnMg
+ZW50cmllcw0KPiBhcmUgY3JlYXRlZDoNCj4gKiBlbmFibGUgICAgICAgICAgICAgICAgKE5FVykN
+Cj4gKiBtYXhfcGVyZiAgICAgICAgICAgICAgKE5FVykNCj4gKiBtaW5fcGVyZiAgICAgICAgICAg
+ICAgKE5FVykNCj4gKiBlbmVyZ3lfcGVyZg0KPiAqIGxvd2VzdF9wZXJmDQo+ICogbm9taW5hbF9w
+ZXJmDQo+ICogZGVzaXJlZF9wZXJmICAgICAgICAgIChORVcpDQo+ICogZmVlZGJhY2tfY3Rycw0K
+PiAqIGF1dG9fc2VsX2VuYWJsZSAgICAgICAoTkVXKQ0KPiAqIGxvd2VzdF9ub25saW5lYXJfcGVy
+Zg0KPg0KPiBUaGUgQ1BQQyBkcml2ZXIgaXMgdXBkYXRlZCB0byBlbmFibGUgdGhlIE9TUE0gYW5k
+IHRoZSB1c2Vyc3BhY2UgdG8NCj4gYWNjZXNzDQo+IHRoZSBuZXdseSBzdXBwb3J0ZWQgcmVnaXN0
+ZXJzLg0KPg0KPiBUaGUgcHVycG9zZSBvZiBleHBvc2luZyB0aGUgcmVnaXN0ZXJzIHZpYSB0aGUg
+c3lzZnMgZW50cmllcyBpcyB0byBhbGxvdw0KPiB0aGUgdXNlcnNwYWNlIHRvOg0KPiAqIFR3ZWFr
+IHRoZSB2YWx1ZXMgdG8gZml0IGl0cyB3b3JrbG9hZC4NCj4gKiBBcHBseSBhIHByb2ZpbGUgZnJv
+bSBBTUQncyBvcHRpbWl6YXRpb24gZ3VpZGVzLg0KPg0KPiBQcm9maWxlcyB3aWxsIGJlIGRvY3Vt
+ZW50ZWQgaW4gdGhlIHBlcmZvcm1hbmNlL29wdGltaXphdGlvbiBndWlkZXMuDQo+DQo+IE5vdGU6
+DQo+ICogQU1EIHN5c3RlbXMgd2lsbCBub3QgaGF2ZSBhIHBvbGljeSBhcHBsaWVkIGluIHRoZSBr
+ZXJuZWwgYXQgdGhpcyB0aW1lLg0KPiAqIEJ5IGRlZmF1bHQsIGFjcGlfY3B1ZnJlcSB3aWxsIHN0
+aWxsIGJlIHVzZWQuDQo+DQo+IFRPRE86DQo+ICogQ3JlYXRlIGEgbGludXggdXNlcnNwYWNlIHRv
+b2wgdGhhdCB3aWxsIGhlbHAgdXNlcnMgZ2VuZXJhdGUgYSBDUFBDDQo+ICogcHJvZmlsZQ0KPiAg
+ICBmb3IgdGhlaXIgdGFyZ2V0IHdvcmtsb2FkLg0KPiAqIENyZWF0ZSBvciB1cGRhdGUgYSBkcml2
+ZXIgdG8gYXBwbHkgYSBnZW5lcmFsIENQUEMgcG9saWN5IGluIHRoZQ0KPiAqIGtlcm5lbC4NCj4N
+Cj4gdjEtPnYyOg0KPiAqIEFkZCBtYWNybyB0byBlbnN1cmUgQlVGRkVSIG9ubHkgcmVnaXN0ZXJz
+IGhhdmUgQlVGRkVSIHR5cGUuDQo+ICogQWRkIHN1cHBvcnQgbWFjcm8gdG8gbWFrZSB0aGUgcmln
+aHQgY2hlY2sgYmFzZWQgb24gcmVnaXN0ZXIgdHlwZS4NCj4gKiBSZW1vdmUgc3VwcG9ydCBjaGVj
+a3MgZm9yIHJlZ2lzdGVycyB3aGljaCBhcmUgbWFuZGF0b3J5Lg0KDQoNCkFyZSB0aGVyZSBhbnkg
+Y29uY2VybnMgcmVnYXJkaW5nIHRoaXMgcGF0Y2hzZXQ/DQoNCg0KVGhhbmtzLg0KDQoNCj4NCj4g
+SmFuYWthcmFqYW4gTmF0YXJhamFuICgyKToNCj4gICAgYWNwaS9jcHBjOiBBZGQgbWFjcm8gZm9y
+IENQUEMgcmVnaXN0ZXIgQlVGRkVSIG9ubHkgY2hlY2sNCj4gICAgYWNwaS9jcHBjOiBFbnN1cmUg
+b25seSBzdXBwb3J0ZWQgQ1BQQyBzeXNmcyBlbnRyaWVzIGFyZSBjcmVhdGVkDQo+DQo+IFlhemVu
+IEdoYW5uYW0gKDUpOg0KPiAgICBhY3BpL2NwcGM6IE1vZGlmeSBzaG93X2NwcGNfZGF0YSBtYWNy
+bw0KPiAgICBhY3BpL2NwcGM6IFJld29yayBjcHBjX3NldF9wZXJmKCkgdG8gdXNlIGNwcGNfcmVn
+cyBpbmRleA0KPiAgICBhY3BpL2NwcGM6IEFkZCBtYWNyb3MgdG8gZGVmaW5lIGEgUi9XIHN5c2Zz
+IGVudHJ5IGZvciBDUFBDIHJlZ2lzdGVycw0KPiAgICBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZv
+ciBvcHRpb25hbCBDUFBDIHJlZ2lzdGVycw0KPiAgICBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZv
+ciBDUFBDIEVuYWJsZSByZWdpc3Rlcg0KPg0KPiAgIGRyaXZlcnMvYWNwaS9jcHBjX2FjcGkuYyAg
+ICAgICB8IDQwMiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0NCj4gICBkcml2ZXJz
+L2NwdWZyZXEvY3BwY19jcHVmcmVxLmMgfCAgIDYgKy0NCj4gICBpbmNsdWRlL2FjcGkvY3BwY19h
+Y3BpLmggICAgICAgfCAgIDYgKy0NCj4gICAzIGZpbGVzIGNoYW5nZWQsIDM3MiBpbnNlcnRpb25z
+KCspLCA0MiBkZWxldGlvbnMoLSkNCj4NCg==
