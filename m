@@ -2,110 +2,106 @@ Return-Path: <SRS0=TEYo=SR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B4DAC10F0E
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 16:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DF2EC10F0E
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 18:04:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 048BA20818
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 16:28:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2B0B6218DA
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Apr 2019 18:04:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726988AbfDOQ2M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 12:28:12 -0400
-Received: from mga14.intel.com ([192.55.52.115]:17796 "EHLO mga14.intel.com"
+        id S1727490AbfDOSD7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 14:03:59 -0400
+Received: from mga14.intel.com ([192.55.52.115]:25531 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726034AbfDOQ2M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Apr 2019 12:28:12 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
+        id S1727256AbfDOSD7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Apr 2019 14:03:59 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 15 Apr 2019 09:28:12 -0700
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 15 Apr 2019 11:03:59 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.60,354,1549958400"; 
-   d="scan'208";a="140856676"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.72.86])
-  by fmsmga008.fm.intel.com with ESMTP; 15 Apr 2019 09:28:10 -0700
-Received: from andy by smile with local (Exim 4.92)
-        (envelope-from <andriy.shevchenko@intel.com>)
-        id 1hG4Sn-0005D1-25; Mon, 15 Apr 2019 19:28:09 +0300
-Date:   Mon, 15 Apr 2019 19:28:09 +0300
-From:   Andy Shevchenko <andriy.shevchenko@intel.com>
-To:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-Cc:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, srinivas.pandruvada@linux.intel.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] thermal: intel: int340x: processor_thermal_device:
- simplify to get driver data
-Message-ID: <20190415162809.GU9224@smile.fi.intel.com>
-References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
-MIME-Version: 1.0
+   d="scan'208";a="164943833"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.31])
+  by fmsmga001.fm.intel.com with ESMTP; 15 Apr 2019 11:03:58 -0700
+Message-ID: <1411b93ccc156d6712b9e9bb7ba3e03049489c02.camel@linux.intel.com>
+Subject: Re: [PATCH 1/2] x86: intel_pstate: Fix wrong definition of Disable
+ Energy Efficiency Optimization bit
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Liran Alon <liran.alon@oracle.com>
+Cc:     linux-pm@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Date:   Mon, 15 Apr 2019 11:03:58 -0700
+In-Reply-To: <CDD74CD9-4DF0-4403-8140-12008DB86E7A@oracle.com>
+References: <20190414204831.93705-1-liran.alon@oracle.com>
+         <d1825fdb9b1c9d759bcfefa7ef80a380cd9ece78.camel@linux.intel.com>
+         <CDD74CD9-4DF0-4403-8140-12008DB86E7A@oracle.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailer: Evolution 3.28.5 (3.28.5-2.fc28) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190415162809.mNpZr4WXvIGedqkhX9OAOeeVEzg_BT_aH2Wi6aihKR0@z>
 
-On Mon, Apr 15, 2019 at 08:18:30PM +0530, Sumeet Pawnikar wrote:
-> From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+On Mon, 2019-04-15 at 11:32 +0300, Liran Alon wrote:
+> > On 15 Apr 2019, at 5:00, Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > On Sun, 2019-04-14 at 23:48 +0300, Liran Alon wrote:
+> > > Bit definition can be found in Intel SDM Section 2.16 MSRS IN THE
+> > > 6TH
+> > > GENERATION, 7TH GENERATION AND 8TH GENERATION
+> > > INTEL® CORE™ PROCESSORS, INTEL® XEON® PROCESSOR SCALABLE
+> > > FAMILY, AND FUTURE INTEL® CORE™ PROCESSORS.
+> > > 
+> > > Definition of all Skylake MSR_POWER_CTL bits can also be found at
+> > > EDK2
+> > > source at UefiCpuPkg/Include/Register/Msr/SkylakeMsr.h union
+> > > MSR_SKYLAKE_POWER_CTL_REGISTER.
+> > > 
+> > > Fixes: 6e978b22efa1 ("cpufreq: intel_pstate: Disable energy
+> > > efficiency optimization")
+> > 
+> > What are you trying to address? This bit 19 has a special meaning
+> > when
+> > system is in HWP mode. So this is correct.
+> > 
+> > Bit 20 has a different meaning depending on legacy or in HWP mode.
+> > 
+> > Thanks,
+> > Srinivas
+> > 
 > 
-> This simplifies getting the 'driver_data' from 'struct device' directly.
-> Going through platform_device or pci_dev is not required. Also removes
-> condition check as the private data stored with dev pointer, means
-> irrespective of enumeration mode, we can use dev_get_drvdata().
-> This removes the unnecessary step back and forth.
+> Maybe I’m misinterpreting Intel SDM, but it seems to me that bit 19
+> in MSR_POWER_CTL is always "Disable Race to Halt Optimization (R/W)”
+> while bit 20 is the "Disable Energy Efficiency Optimization (R/W)”.
 > 
-
-Indeed, good clean up!
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
-
-> Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-> ---
->  .../int340x_thermal/processor_thermal_device.c     |   11 +----------
->  1 file changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> index 8e1cf4d..2a7cbaa 100644
-> --- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> +++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> @@ -81,22 +81,13 @@ enum proc_thermal_emum_mode_type {
->  					struct device_attribute *attr, \
->  					char *buf) \
->  { \
-> -	struct pci_dev *pci_dev; \
-> -	struct platform_device *pdev; \
-> -	struct proc_thermal_device *proc_dev; \
-> +	struct proc_thermal_device *proc_dev = dev_get_drvdata(dev); \
->  	\
->  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
->  		dev_warn(dev, "Attempted to get power limit before device was initialized!\n"); \
->  		return 0; \
->  	} \
->  	\
-> -	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
-> -		pdev = to_platform_device(dev); \
-> -		proc_dev = platform_get_drvdata(pdev); \
-> -	} else { \
-> -		pci_dev = to_pci_dev(dev); \
-> -		proc_dev = pci_get_drvdata(pci_dev); \
-> -	} \
->  	return sprintf(buf, "%lu\n",\
->  	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
->  }
-> -- 
-> 1.7.9.5
+> I didn’t find a place in Intel SDM where it is discussed that bit 19
+> have a special meaning when system is in HWP mode.
+> Can you point me to relevant place in Intel SDM?
 > 
 
--- 
-With Best Regards,
-Andy Shevchenko
+SDM doesn't describe the algorithms. This is a feature of Intel Speed
+Shift Technology aka HWP. Both bits target disabling some energy
+efficiency features of the processor. I wish there are some better
+names of these bits. Ideas is to pick the best for a platform based on
+the performance needs. Here based on the experiments, setting bit 19
+gave the required performance on Kaby Lake desktops.
 
+So unless you found some performance/power issue with setting of bit 19
+vs bit 20, on Kaby Lake based platforms, we shouldn't change (may be
+rename as per SDM definition).
+
+Thanks,
+Srinivas
+
+> Thanks,
+> -Liran
+> 
 
