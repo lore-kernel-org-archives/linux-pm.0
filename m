@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v2 07/19] PM / devfreq: tegra: Register clk notifier in the end of driver's probe
-Date: Mon, 15 Apr 2019 17:54:53 +0300
-Message-ID: <20190415145505.18397-8-digetx@gmail.com>
+Subject: [PATCH v2 03/19] PM / devfreq: tegra: Don't ignore clk errors
+Date: Mon, 15 Apr 2019 17:54:49 +0300
+Message-ID: <20190415145505.18397-4-digetx@gmail.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,47 +12,42 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The notifier isn't unregistered if something fails after the registration,
-move it to the end of probe to fix the potential use-after-free problem.
+The clk_set_min_rate() could fail and in this case clk_set_rate() sets
+rate to 0, which may drop EMC rate to minimum and make machine very
+difficult to use.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index aa0478464b35..c248c18431d9 100644
+index 0c0909fba545..69581c9082d4 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -647,14 +647,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
+@@ -487,6 +487,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct dev_pm_opp *opp;
+ 	unsigned long rate;
++	int err;
  
--	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
--	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
--	if (err) {
--		dev_err(&pdev->dev,
--			"Failed to register rate change notifier\n");
--		return err;
--	}
--
- 	reset_control_assert(tegra->reset);
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp)) {
+@@ -496,8 +497,13 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	rate = dev_pm_opp_get_freq(opp);
+ 	dev_pm_opp_put(opp);
  
- 	err = clk_prepare_enable(tegra->clock);
-@@ -712,6 +704,14 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
-+	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"Failed to register rate change notifier\n");
+-	clk_set_min_rate(tegra->emc_clock, rate);
+-	clk_set_rate(tegra->emc_clock, 0);
++	err = clk_set_min_rate(tegra->emc_clock, rate);
++	if (err)
 +		return err;
-+	}
 +
++	err = clk_set_rate(tegra->emc_clock, 0);
++	if (err)
++		return err;
+ 
  	return 0;
  }
- 
 -- 
 2.21.0
