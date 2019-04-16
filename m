@@ -2,43 +2,43 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F0A5C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92E39C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 515F12183F
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6339120870
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555396870;
-	bh=H0o5dNCLlp84SoA0n7A6haX/AtSXzPGS44dR0gQukGI=;
+	s=default; t=1555396872;
+	bh=kKsOYcI2T6VAiFUjbXkORPJNFR29l8ahg+ZcFe9Kg10=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pQIl5Z/lkoPtHJ8LTG9zHgrJXgbSeMO7lQd92AERzl9JdY45a2QHtb+IxqLBVtxQO
-	 stgYuk/VvIOLR3LJWwhwg57GnNWpzXOZdKyiE8EmfuVrM9v1n0C7F8ND4nOzSRLGEH
-	 Ku2RNyZoXYUg6QJs9+UdDX5wixqxr6+i/hhSRbm8=
+	b=MS/Qpbnl+hrzb/XuT+9RmPyz6O3XWfdkNwvF8Rdau7IWs78OPijEUCXiDCKJ8I1IW
+	 iHkhzXzCGy79nIEntMdF0ViJ30k7iqSdCX7l96r1rr1l7q1PifT65Eh6RPAJ9ctiXl
+	 zMPy82xyUhI2vF4oNSJ62zYtG2GfQuvJIhR9VyBU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726857AbfDPGlD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 02:41:03 -0400
-Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:34020 "EHLO
+        id S1728451AbfDPGka (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 02:40:30 -0400
+Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:33984 "EHLO
         wens.csie.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728412AbfDPGkb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Apr 2019 02:40:31 -0400
+        id S1727136AbfDPGk3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 16 Apr 2019 02:40:29 -0400
 Received: by wens.csie.org (Postfix, from userid 1000)
-        id A4108602AD; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
+        id 87E1F5FAAE; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
 From:   Chen-Yu Tsai <wens@kernel.org>
 To:     Maxime Ripard <maxime.ripard@bootlin.com>,
         Sebastian Reichel <sre@kernel.org>
-Cc:     Quentin Schulz <quentin.schulz@bootlin.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-sunxi@googlegroups.com, Hans de Goede <hdegoede@redhat.com>,
-        Chen-Yu Tsai <wens@csie.org>
-Subject: [PATCH v4 5/7] power: supply: axp20x_usb_power: add support for AXP813
-Date:   Tue, 16 Apr 2019 14:40:22 +0800
-Message-Id: <20190416064024.20414-6-wens@kernel.org>
+Cc:     Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
+        Hans de Goede <hdegoede@redhat.com>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v4 1/7] dt-bindings: power: supply: axp20x_usb_power: add axp813 compatible
+Date:   Tue, 16 Apr 2019 14:40:18 +0800
+Message-Id: <20190416064024.20414-2-wens@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190416064024.20414-1-wens@kernel.org>
 References: <20190416064024.20414-1-wens@kernel.org>
@@ -49,138 +49,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416064022.lKW0Ypb2--bK9ZAIKr-h_yR0CvyQDhDWeWHWx6KN6tU@z>
+Message-ID: <20190416064018.ZI5iaZdY1_ZoycQajhhVLr4cu-qYSVIFD-MTDG_6MRI@z>
 
-From: Quentin Schulz <quentin.schulz@bootlin.com>
+From: Chen-Yu Tsai <wens@csie.org>
 
-This adds support for AXP813 PMIC. It is almost the same as AXP22X but
-has a different current limit.
+This adds the "x-powers,axp813-usb-power-supply" to the list of
+compatibles for AXP20X VBUS power supply driver.
 
-Signed-off-by: Quentin Schulz <quentin.schulz@bootlin.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Chen-Yu Tsai <wens@csie.org>
----
- drivers/power/supply/axp20x_usb_power.c | 66 ++++++++++++++++++++++++-
- 1 file changed, 65 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index 04c2cafbe8e6..d2b1255ee1cc 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -42,6 +42,11 @@
- #define AXP20X_VBUS_CLIMIT_100mA	2
- #define AXP20X_VBUS_CLIMIT_NONE		3
+---
+Changes since v2:
+
+  - Collected Rob's Reviewed-by
+---
+ .../devicetree/bindings/power/supply/axp20x_usb_power.txt        | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+index ba8d35f66cbe..b2d4968fde7d 100644
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
++++ b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
+@@ -4,6 +4,7 @@ Required Properties:
+ -compatible: One of: "x-powers,axp202-usb-power-supply"
+                      "x-powers,axp221-usb-power-supply"
+                      "x-powers,axp223-usb-power-supply"
++		     "x-powers,axp813-usb-power-supply"
  
-+#define AXP813_VBUS_CLIMIT_900mA	0
-+#define AXP813_VBUS_CLIMIT_1500mA	1
-+#define AXP813_VBUS_CLIMIT_2000mA	2
-+#define AXP813_VBUS_CLIMIT_2500mA	3
-+
- #define AXP20X_ADC_EN1_VBUS_CURR	BIT(2)
- #define AXP20X_ADC_EN1_VBUS_VOLT	BIT(3)
- 
-@@ -131,6 +136,31 @@ static int axp20x_get_current_max(struct axp20x_usb_power *power, int *val)
- 	return 0;
- }
- 
-+static int axp813_get_current_max(struct axp20x_usb_power *power, int *val)
-+{
-+	unsigned int v;
-+	int ret = regmap_read(power->regmap, AXP20X_VBUS_IPSOUT_MGMT, &v);
-+
-+	if (ret)
-+		return ret;
-+
-+	switch (v & AXP20X_VBUS_CLIMIT_MASK) {
-+	case AXP813_VBUS_CLIMIT_900mA:
-+		*val = 900000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_1500mA:
-+		*val = 1500000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_2000mA:
-+		*val = 2000000;
-+		break;
-+	case AXP813_VBUS_CLIMIT_2500mA:
-+		*val = 2500000;
-+		break;
-+	}
-+	return 0;
-+}
-+
- static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -169,6 +199,8 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 		val->intval = ret * 1700; /* 1 step = 1.7 mV */
- 		return 0;
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		if (power->axp20x_id == AXP813_ID)
-+			return axp813_get_current_max(power, &val->intval);
- 		return axp20x_get_current_max(power, &val->intval);
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-@@ -260,6 +292,31 @@ static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
- 	return -EINVAL;
- }
- 
-+static int axp813_usb_power_set_current_max(struct axp20x_usb_power *power,
-+					    int intval)
-+{
-+	int val;
-+
-+	switch (intval) {
-+	case 900000:
-+		return regmap_update_bits(power->regmap,
-+					  AXP20X_VBUS_IPSOUT_MGMT,
-+					  AXP20X_VBUS_CLIMIT_MASK,
-+					  AXP813_VBUS_CLIMIT_900mA);
-+	case 1500000:
-+	case 2000000:
-+	case 2500000:
-+		val = (intval - 1000000) / 500000;
-+		return regmap_update_bits(power->regmap,
-+					  AXP20X_VBUS_IPSOUT_MGMT,
-+					  AXP20X_VBUS_CLIMIT_MASK, val);
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return -EINVAL;
-+}
-+
- static int axp20x_usb_power_set_current_max(struct axp20x_usb_power *power,
- 					    int intval)
- {
-@@ -294,6 +351,9 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- 		return axp20x_usb_power_set_voltage_min(power, val->intval);
- 
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		if (power->axp20x_id == AXP813_ID)
-+			return axp813_usb_power_set_current_max(power,
-+								val->intval);
- 		return axp20x_usb_power_set_current_max(power, val->intval);
- 
- 	default:
-@@ -429,7 +489,8 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 		usb_power_desc = &axp20x_usb_power_desc;
- 		irq_names = axp20x_irq_names;
- 	} else if (power->axp20x_id == AXP221_ID ||
--		   power->axp20x_id == AXP223_ID) {
-+		   power->axp20x_id == AXP223_ID ||
-+		   power->axp20x_id == AXP813_ID) {
- 		usb_power_desc = &axp22x_usb_power_desc;
- 		irq_names = axp22x_irq_names;
- 	} else {
-@@ -488,6 +549,9 @@ static const struct of_device_id axp20x_usb_power_match[] = {
- 	}, {
- 		.compatible = "x-powers,axp223-usb-power-supply",
- 		.data = (void *)AXP223_ID,
-+	}, {
-+		.compatible = "x-powers,axp813-usb-power-supply",
-+		.data = (void *)AXP813_ID,
- 	}, { /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
+ The AXP223 PMIC shares most of its behaviour with the AXP221 but has slight
+ variations such as the former being able to set the VBUS power supply max
 -- 
 2.20.1
 
