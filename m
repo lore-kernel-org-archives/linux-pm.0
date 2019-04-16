@@ -2,177 +2,108 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D5E3C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 19:23:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57880C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 21:31:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D3FBE20868
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 19:23:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="giEVzNR0"
+	by mail.kernel.org (Postfix) with ESMTP id 256B42173C
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 21:31:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555450277;
+	bh=4Kqhg4YYv2NJnsDlSX1xv2++dRRH2DaJZ0KkyyNEpd4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=jhZlOk1yiXIJ79HY0D/Vl7tK3k/PN33fOlL7aWLa/HzgxGZK5C7svxBi/sgLMKKw2
+	 1FFSQJ2asZhdym6TFyfcMqtg/PrD9sXEdLpKIi/Az++oDEZCSZrc3eup5xgEGvRoti
+	 Z/euHHulYaM0pJ/du7xtWJJ0J2lP4u0eMLvRY3Y0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727490AbfDPTXE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 15:23:04 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:33558 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727136AbfDPTXD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 15:23:03 -0400
-Received: by mail-wr1-f65.google.com with SMTP id q1so28681911wrp.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 12:23:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=EDYx7epngbmP/CMeNw7L8ab8CPJ0bEuFj8yGq0twy/U=;
-        b=giEVzNR0s6KH9lYbUhfbWWrwojgHNm2klF7m38ladJx3vj7Iap2KT98L5xRyD5lW15
-         e1NOB8w7zJ51+kyM1bDjBf4CSYz0a7r+2j5VNaRcJtZfP/v/MrHgzlFVSuSKjrE7Suu2
-         XyekDuEAREiG8+CFuSEfWnSbNck31nWKtm0LyWbKfcTx2lJu5C4fNu9eub+EdGkrnMap
-         ayMNTl0yKLeiyLh1HZZ/YnSTXYZFRnE11Wsha3Iw/oXkRyh3xfeSc0aVdgiQcRfZ+t7a
-         IVi6dzXTsADBr1Cui3yejy0YC8gJYkp1iHG9TCkTQLiUAdfU+pEn8k09yQaYBbKu86EU
-         huVg==
+        id S1726986AbfDPVbQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 17:31:16 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:38306 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729623AbfDPVbP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 17:31:15 -0400
+Received: by mail-ot1-f67.google.com with SMTP id e80so1635772ote.5
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 14:31:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=EDYx7epngbmP/CMeNw7L8ab8CPJ0bEuFj8yGq0twy/U=;
-        b=rs7DHvt4bh7xe9rak6lLvHv0K8a5tNwZEZQcUG6ZdwwBSxftQ9B3Kszm/VQEdSLKH6
-         sLP0peuoP8tddeo3ARi60SwySkhlyaHPKtG6KX40RXnkzB65LWp1uvMtsJ2ADcgj14GE
-         mhPwMhb4GRuu1Il1xkuSE0QKh/qPih5q5el13rmgA4jMo80vDaqKxqvzhVg6fBYcxBwi
-         bl+qesV0JAZuLnIl6TSUa9x86gIGAITTuSUDLs+MDI/OVQY8tgEEM19Q3v0r/g2Jg+5/
-         khknGHm8Api75tdIe3PebQkqfioAeg5EkX4tmQ26azmlS+aBKF4JPBSwkjbHrD29reJY
-         hypg==
-X-Gm-Message-State: APjAAAXPh1rVrJ2a6KwQi3sG29U3xN6DjhiVMDcMuK8XrRg+TrIa0zkd
-        AINNC5Yllw8SkHX9JDGYPCaybQ==
-X-Google-Smtp-Source: APXvYqwvSLzXRPVwl9wYnW4Skw66lF5zMamiO/JBxgEw1HuFsoc9L+JTNJjmf6oYmZtpX543MoVudg==
-X-Received: by 2002:adf:e94d:: with SMTP id m13mr31626911wrn.141.1555442581433;
-        Tue, 16 Apr 2019 12:23:01 -0700 (PDT)
-Received: from [192.168.0.41] (50.251.95.92.rev.sfr.net. [92.95.251.50])
-        by smtp.googlemail.com with ESMTPSA id s18sm202287wmc.41.2019.04.16.12.22.59
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Apr 2019 12:23:00 -0700 (PDT)
-Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
- device initialization
-To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
-        edubezval@gmail.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20190411100352.15977-1-jiada_wang@mentor.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
-Date:   Tue, 16 Apr 2019 21:22:59 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=846ELSgOChVPtzBOSATQRwRBkEGWuT0+mailpxsYm+Y=;
+        b=B/vN247Jh+XQHSswK1sTqJfsPMnhlY8InKpQ7L1Dk7iPOCY2ACBnv3SsGPrffY/9ur
+         BoDP59lGWUdpzEmRqeU/ZBzwwXo4NI/zeNuaxVvuKqfVkpI0i0F6+Zvmdq6kn8BE46mL
+         skrin8JvEWQZ39/oEzioSuf0+IIm/9pmdkohkIK1j+5UOe8Q0clbvQbCmEqoLLc/vk0v
+         7s0xmzyfBUgBM3zEPJvNS7TXkYBTwh+IQ7oy4K2PVDJRs9ywKtqJpDTPVx/mV05zdTCi
+         5Q5RtxCCQogNJMPs7ZeJUGZny3cLrQeXKHZp3oUyVVKjZkkHoGnjUxygz7JBwN2xX3qR
+         P/qA==
+X-Gm-Message-State: APjAAAXBU/rYr3YaWHQot+5GRW+py7HKk+AeIjWVnRlInCRtRyvcGW2k
+        RuUJ677S3EORsdGZ7fCamEVooZMFGQ/Gx91+cd8=
+X-Google-Smtp-Source: APXvYqxVUnAFEY38msh6Yrzgjzkob8tCSRbcnBB59/VIxq49mO2PVhvPORBor1zf8lZnK9K0/Ku/k1B9q6TjvggSp20=
+X-Received: by 2002:a05:6830:1342:: with SMTP id r2mr54822669otq.105.1555450274993;
+ Tue, 16 Apr 2019 14:31:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190411100352.15977-1-jiada_wang@mentor.com>
+References: <36183132.7cOCK0nhyl@house>
+In-Reply-To: <36183132.7cOCK0nhyl@house>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 16 Apr 2019 23:31:03 +0200
+Message-ID: <CAJZ5v0j+BtpgMYZ1f-V1sZDz8RZtTB1P6=9KOiQeWBQeDyPr0A@mail.gmail.com>
+Subject: Re: [PATCH] x86: Do not override performance EPB MSR value on servers
+To:     Thomas Renninger <trenn@suse.de>
+Cc:     Rafael Wysocki <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416192259.gdh6_qUHFxQH0vFPlusLnf2c-Epx_WtIXFqKOzdiUt8@z>
 
-On 11/04/2019 12:03, Jiada Wang wrote:
-> Currently IRQ is remain enabled after .remove, later if device is probed,
-> IRQ is requested before .thermal_init, this may cause IRQ function be
-> triggered but not able to clear IRQ status, thus cause system to hang.
-> 
-> this patch by moving request of IRQ after device initialization to
-> avoid this issue.
-
-Why not disable the interrupt and clear the irq status in the .remove
-callback, so the place is clean when probing again?
-
-
-        struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
-
-        rcar_thermal_irq_set(priv, false);
-
-should do the trick no ?
-
-> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
->  1 file changed, 26 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 88fa41cf16e8..4d095d7f9763 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, priv);
->  
-> -	/*
-> -	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
-> -	 * to trigger on the low and high trip points of the current
-> -	 * temp window at this point.
-> -	 */
-> -	for (i = 0; i < 2; i++) {
-> -		irq = platform_get_irq(pdev, i);
-> -		if (irq < 0)
-> -			return irq;
-> -
-> -		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
-> -					 dev_name(dev), i);
-> -		if (!irqname)
-> -			return -ENOMEM;
-> -
-> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
-> -						rcar_gen3_thermal_irq_thread,
-> -						IRQF_SHARED, irqname, priv);
-> -		if (ret)
-> -			return ret;
-> -	}
-> -
->  	pm_runtime_enable(dev);
->  	pm_runtime_get_sync(dev);
->  
-> @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		goto error_unregister;
->  	}
->  
-> +	/*
-> +	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
-> +	 * to trigger on the low and high trip points of the current
-> +	 * temp window at this point.
-> +	 */
-> +	for (i = 0; i < 2; i++) {
-> +		irq = platform_get_irq(pdev, i);
-> +		if (irq < 0) {
-> +			ret = irq;
-> +			goto error_unregister;
-> +		}
+On Mon, Apr 8, 2019 at 10:46 AM Thomas Renninger <trenn@suse.de> wrote:
+>
+> It is about this kernel message showing up on quite a lot servers:
+> [    0.072652] ENERGY_PERF_BIAS: Set to 'normal', was 'performance'
+> [    0.076003] ENERGY_PERF_BIAS: View and update with x86_energy_perf_policy(8)
+>
+> With this patch the EPB value is not overridden anymore on systems
+> which expose themselves as appliance or enterprise server via ACPI
+> perferred profile variable.
+>
+> Signed-off-by: trenn@suse.de
+>
+>
+> Index: perf_bias_acpi_server_only/arch/x86/kernel/cpu/intel_epb.c
+> ===================================================================
+> --- perf_bias_acpi_server_only.orig/arch/x86/kernel/cpu/intel_epb.c     2019-04-05 14:43:04.280222577 +0200
+> +++ perf_bias_acpi_server_only/arch/x86/kernel/cpu/intel_epb.c  2019-04-08 10:01:26.029278425 +0200
+> @@ -19,6 +19,8 @@
+>  #include <asm/cpufeature.h>
+>  #include <asm/msr.h>
+>
+> +#include <linux/acpi.h>
 > +
-> +		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
-> +					 dev_name(dev), i);
-> +		if (!irqname) {
-> +			ret = -ENOMEM;
-> +			goto error_unregister;
-> +		}
-> +
-> +		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
-> +						rcar_gen3_thermal_irq_thread,
-> +						IRQF_SHARED, irqname, priv);
-> +		if (ret)
-> +			goto error_unregister;
-> +	}
-> +
->  	rcar_thermal_irq_set(priv, true);
->  
->  	return 0;
-> 
+>  /**
+>   * DOC: overview
+>   *
+> @@ -89,7 +91,10 @@ static void intel_epb_restore(void)
+>                  * ('normal').
+>                  */
+>                 val = epb & EPB_MASK;
+> -               if (val == ENERGY_PERF_BIAS_PERFORMANCE) {
+> +               if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
+> +                   acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER) {
+> +                       /* Keep performance setting on servers */
+> +               } else  if (val == ENERGY_PERF_BIAS_PERFORMANCE) {
 
+I would write this as
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+if (val == ENERGY_PERF_BIAS_PERFORMANCE &&
+    acpi_gbl_FADT.preferred_profile != PM_ENTERPRISE_SERVER &&
+    acpi_gbl_FADT.preferred_profile != PM_PERFORMANCE_SERVER) {
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+but overall the approach is not particularly objectionable.
 
+>                         val = ENERGY_PERF_BIAS_NORMAL;
+>                         pr_warn_once("ENERGY_PERF_BIAS: Set to 'normal', was 'performance'\n");
+>                 }
+>
