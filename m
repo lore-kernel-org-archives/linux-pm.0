@@ -3,90 +3,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFC82C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 08:42:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16380C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 08:59:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C295F20821
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 08:42:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF6D12073F
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 08:59:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726890AbfDPImf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 04:42:35 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:48842 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726857AbfDPImf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 04:42:35 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: eballetbo)
-        with ESMTPSA id 3AB10260FF2
-Subject: Re: [RESEND PATCH v3 1/2] power: supply: add input voltage limit
- property
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     linux-pm@vger.kernel.org, sre@kernel.org,
-        Sameer Nanda <snanda@chromium.org>, bleung@chromium.org,
-        rjw@rjwysocki.net, gwendal@chromium.org,
-        linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
-        groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com,
-        kernel@collabora.com
-References: <20190415220049.14924-1-enric.balletbo@collabora.com>
- <20190416071941.GB14538@amd>
-From:   Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Message-ID: <8d1f70a7-46d6-f278-f58c-6a7e7a644d46@collabora.com>
-Date:   Tue, 16 Apr 2019 10:42:30 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S1728218AbfDPI70 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 04:59:26 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:47158 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726576AbfDPI70 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 04:59:26 -0400
+Received: from 79.184.254.18.ipv4.supernova.orange.pl (79.184.254.18) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
+ id 9e76c8fa0672b35f; Tue, 16 Apr 2019 10:59:23 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 25/57] docs: power: convert docs to ReST
+Date:   Tue, 16 Apr 2019 10:59:23 +0200
+Message-ID: <1616669.eeiCRjss8h@kreacher>
+In-Reply-To: <cfab8842b681a84518b327980b08aee95d159605.1555382110.git.mchehab+samsung@kernel.org>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org> <cfab8842b681a84518b327980b08aee95d159605.1555382110.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20190416071941.GB14538@amd>
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416084230.A3igt9jqTD7qvEwxNRa9sFvZbYk354ZZQP20HF0L2dM@z>
+Message-ID: <20190416085923.29hMitKC5RyuZzhTl6CIT9MabMmiHUHR9Rrcdjy9E9o@z>
 
-Hi Pavel,
+On Tuesday, April 16, 2019 4:55:50 AM CEST Mauro Carvalho Chehab wrote:
+> Convert the PM documents to ReST, in order to allow them to
+> build with Sphinx.
 
-On 16/4/19 9:19, Pavel Machek wrote:
-> Hi!
-> 
->> This patch exposes a new property, similar to input current limit, to
->> re-configure the maximum voltage from the external supply at runtime
->> based on system-level knowledge or user input.
-> 
-> Well, and I suspect it should expose input power limit, not input
-> voltage limit.
-> 
+And what exactly is the motivation for doing that?
 
-Oh, ok, I thought we were agree that input voltage had sense after had some
-discussion in v3. Seems that no, let me try to give you another example...
-
-> DC-DC convertor efficiency normally does not much depend on input
-> voltage....
-> 
-> 								Pavel
-> 
-
-As we said we have a heat "problem" due the internal voltage conversions.
-
-Lets assume you have a linear regulator instead with a Vin range from 5V to 9V
-and we want an output of 3.3V/1A
-
-For 9V:
- Input power : P(in) = 9V x 1A = 9W
- Output power: P(out) = 3.3V x 1A = 3.3W
- Regulator power dissipated: P(reg) = P(in) - P(out) = 9W - 3.3W = 5.7W
-
-For 5V:
- Input power : P(in) = 5V x 1A = 5W
- Output power: P(out) = 3.3V x 1A = 3.3W
- Regulator power dissipated: P(reg) = P(in) - P(out) = 5W - 3.3W = 1,7W
-
-In the first case the regulator needs to dissipate more power, hence the
-temperature is greater than the second case.
+There are plans for some of these files to be converted already, some of them need to be merged or split and it just is not worth it to convert some others.
 
 Thanks,
- Enric
+Rafael
+
+
+
