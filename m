@@ -8,60 +8,62 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89462C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:56:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1DF1C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:58:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5C6F12075B
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:56:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C5061206B6
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:58:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BpeZ1/Je"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UmbWMsOe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730595AbfDPR4n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 13:56:43 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:44360 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730567AbfDPR4m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:56:42 -0400
-Received: by mail-oi1-f194.google.com with SMTP id i21so17722234oib.11;
-        Tue, 16 Apr 2019 10:56:41 -0700 (PDT)
+        id S1730000AbfDPR6i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 13:58:38 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:41756 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729251AbfDPR6i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:58:38 -0400
+Received: by mail-ot1-f67.google.com with SMTP id 64so18351382otb.8;
+        Tue, 16 Apr 2019 10:58:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc:content-transfer-encoding;
-        bh=JY7nlLfsUk9s/cUDq7uRdqTtYQlcu4BPxZj/0OHgYIM=;
-        b=BpeZ1/JelVLHrtWDtzElmSjWlUNsN/WDd+1OdqyQwmeQ8bAiGivR0uLE3bL2e5Q85H
-         V0578NFzJXmZYlWKBA/A1HfpHhi4fVMuV0qf3L5BDKAdaqynzrJ3Muo/wpR95Cmm+6me
-         J5ouqWNJC5DL4gFDJ8eypnxA3a6FaTNl/La9ff0LAHOe9O6jdq/juOPo9u33wXIFuZCX
-         fdsZ5DJxXIDUn4n0PzDGXmcXEcLIviNfAkV2XHZQjna41UMxaGhl93s0FHdgWkDHdFUz
-         y+14mA3oAAubLwdmIV+m/8+vhnyq1BMtc2eVZnVe/sOQ7oPOMj6YnrLcUXpkwnG/Assa
-         3ruA==
+        bh=EidWfYVGkkRXMbcoVzWniJ1YzRfymLouJTDXgtCXrm8=;
+        b=UmbWMsOeXT3ov6nrPgpTS+elXWa8vGaqeCrPb575FJUmDzeDXBEm+38/bKJS2b+sEa
+         wJrHE94pplyZEAVhe3QpROyNLsKr/WpPOoNFTsispkuWpAXHPCivWKHKJHc5TWqiEAnh
+         9cfQzehf0UqB73v6fWmRZjmbhaksH5I0ZZIwXLClqenyzL+AaTCw1i23O0UtmBWQg4Ys
+         GaC7/+7TXBuxJbJMJLVdTBqc4e/bPYRyZPgLzsQZaYHLB7Gt3I/ngG7yPucyMuJrFBED
+         3hMEoqhmsd5+XsT0WeJ6av0h0FePMWLjPGXsLVo7zafigLRTrH2bsaOS8Zy71Ca+IeY3
+         uj9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc:content-transfer-encoding;
-        bh=JY7nlLfsUk9s/cUDq7uRdqTtYQlcu4BPxZj/0OHgYIM=;
-        b=MhsDC5k534Yx7jwMhLmbBn1E/SxySN9Njm3ymiln/aaEOnMSpwKE+FjcTA1GvuQG04
-         t/t7WXlpCLfNS3yWezLcpkaiwNu5rd6Cz9oItwELzsGWA3lgaELPafMdQebAKPKJsj95
-         xTJuAD2Gh1p1EgPW/K6NoYOm98GYzvh2huLxW7qnFqD/58yExkpeV6A0X2e0i4mF2ih2
-         hEo0GKmhmFAYWjwerQkiajJGT4ak2OULu33jzfquDuIubQ0Y2xuVJ711W5plS0y7ghwO
-         12+aiUSCwGXUAXIP+5jURHzduiS8qfcDL1g0olSPhnqFz8DJm0RlZCQS0kKWzuR4AArd
-         Q/IQ==
-X-Gm-Message-State: APjAAAW/pfCYp130AxbzbWCReYicm3CFwX1rRdswvZplv13g9oAGmb6E
-        MUP5TxjZ46B3nydMTsUDdfAgwGm9k/SYL0rp7j8vdvnR
-X-Google-Smtp-Source: APXvYqyWTb55odlXg0P2RDLhV9J+YHJv1w6b60JnT1l7q9OQdrzI0QwcrfymHg4sLsu/cc/nP3/kRsByuz6BjW5Ljfo=
-X-Received: by 2002:aca:3084:: with SMTP id w126mr25236771oiw.102.1555437401186;
- Tue, 16 Apr 2019 10:56:41 -0700 (PDT)
+        bh=EidWfYVGkkRXMbcoVzWniJ1YzRfymLouJTDXgtCXrm8=;
+        b=pNbS1NbAcp7A1ZEvrnIt3PqrVUnEljfHMQmPblVyiBifZEQrkDezUOCevtTpsSMsBE
+         xX4HhjfNdWP4iTlSy+iJueVDSqLWDGtvhu8EkUizVXuw8bayWXJ/4lhtiW8/NWUd0c6V
+         LdROi3zO8zVhrb7zsTVL80+rz+WLXPJoyV8H7meVy9lA4oecmq288LJUlR+P4s5mfC2M
+         WuRhZUtqHNjfjgXlp49egYYxzhbq6Kyx7vUOGVXb1JrZBmfy+fzh/w4B7i67shAzGV3L
+         hHFYxoApm9vUtfvJCtywjsu9ge//x6vwjdkNUNAXg0xDh4i2m5AJ2DoH9+nZwF8L61ow
+         kHzw==
+X-Gm-Message-State: APjAAAVtxsfBHtdBcRJsYYI/57xR1jy3WpCbOHTgWifBJAEYQbfFMQwQ
+        3HJeLtClXL0boTwNiXuXbjoofHI8KMrxfWSr3TM=
+X-Google-Smtp-Source: APXvYqyjyQpVkpt8UdZO6dJtGGHDvfdhgpCg1S4ZgKpSwCZV2AtTrr055NHEzz91Yf/vbUjpX7LT3j9OrNSnC6cunv4=
+X-Received: by 2002:a9d:7359:: with SMTP id l25mr51832885otk.189.1555437517076;
+ Tue, 16 Apr 2019 10:58:37 -0700 (PDT)
 MIME-Version: 1.0
 References: <1553201273-16757-1-git-send-email-ykaneko0929@gmail.com>
- <20190401133753.5luent76gyzygtcb@verge.net.au> <20190403092238.sy46nkpbhwo2izpa@verge.net.au>
-In-Reply-To: <20190403092238.sy46nkpbhwo2izpa@verge.net.au>
+ <20190401133753.5luent76gyzygtcb@verge.net.au> <20190411165034.GF30887@bigcity.dyn.berto.se>
+In-Reply-To: <20190411165034.GF30887@bigcity.dyn.berto.se>
 From:   Yoshihiro Kaneko <ykaneko0929@gmail.com>
-Date:   Wed, 17 Apr 2019 02:56:30 +0900
-Message-ID: <CAH1o70Jvw0ehTTRb4C1bNfCSz5diCQise4_GS8tek9NAdt4hMQ@mail.gmail.com>
+Date:   Wed, 17 Apr 2019 02:58:25 +0900
+Message-ID: <CAH1o70+BHrDgjBKuE=mtk6VWdZ0qvedBnYw4aN23v=455a+wyA@mail.gmail.com>
 Subject: Re: [PATCH/RFT] thermal: rcar_gen3_thermal: Update calculation
  formula due to HW evaluation
-To:     Simon Horman <horms@verge.net.au>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
+Cc:     Simon Horman <horms@verge.net.au>,
+        Yoshihiro Kaneko <ykaneko0929@gmail.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
         Rob Herring <robh+dt@kernel.org>,
@@ -74,18 +76,18 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Simon-san,
+Hi Niklas-san,
 
 Thanks for your review.
-I have split this patch and made fixes in v2.
 
-Thanks,
-Kaneko
-
-2019=E5=B9=B44=E6=9C=883=E6=97=A5(=E6=B0=B4) 18:22 Simon Horman <horms@verg=
-e.net.au>:
+2019=E5=B9=B44=E6=9C=8812=E6=97=A5(=E9=87=91) 1:50 Niklas S=C3=B6derlund <n=
+iklas.soderlund@ragnatech.se>:
 >
-> On Mon, Apr 01, 2019 at 03:37:57PM +0200, Simon Horman wrote:
+> Hi Kaneko-san,
+>
+> Thanks for your work.
+>
+> On 2019-04-01 15:37:57 +0200, Simon Horman wrote:
 > > On Fri, Mar 22, 2019 at 05:47:53AM +0900, Yoshihiro Kaneko wrote:
 > > > From: Dien Pham <dien.pham.ry@renesas.com>
 > > >
@@ -125,6 +127,16 @@ x
 > > verifying this patch - the new if statement in rcar_gen3_thermal_get_te=
 mp()
 > > seems to result in 0 temperature readings when the else case is used.
+>
+> I think the changes in this patch are good and correct but I agree with
+> Simon here, this patch should be split.
+
+I have split this patch and made fixes in v2.
+
+Thanks,
+Kaneko
+
+>
 > >
 > > > ---
 > > >  drivers/thermal/rcar_gen3_thermal.c | 86 +++++++++++++++++++++++++--=
@@ -153,13 +165,6 @@ ar_gen3_thermal.c
 > >
 > > ...
 >
-> Also, from just a little further down the patch
->
-> > > +/* default THCODE values if FUSEs are missing */
-> > > +static int thcode[TSC_MAX_NUM][3] =3D {
-> > > +       { 3397, 2800, 2221 },
-> > > +       { 3393, 2795, 2216 },
-> > > +       { 3389, 2805, 2237 },
-> > > +};
->
-> I think thcode can be marked const.
+> --
+> Regards,
+> Niklas S=C3=B6derlund
