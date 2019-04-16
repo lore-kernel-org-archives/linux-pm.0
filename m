@@ -1,143 +1,115 @@
-From: Eugeniu Rosca <erosca@de.adit-jv.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
  device initialization
-Date: Tue, 16 Apr 2019 19:48:30 +0200
-Message-ID: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+Date: Tue, 16 Apr 2019 21:22:59 +0200
+Message-ID: <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
 References: <20190411100352.15977-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20190411100352.15977-1-jiada_wang@mentor.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiada Wang <jiada_wang@mentor.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Simon Horman <horms+renesas@verge.net.au>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Dien Pham <dien.pham.ry@renesas.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Biju Das <biju.das@bp.renesas.com>, "George G. Davis" <george_davis@mentor.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu
+To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jiada,
+On 11/04/2019 12:03, Jiada Wang wrote:
+> Currently IRQ is remain enabled after .remove, later if device is probed,
+> IRQ is requested before .thermal_init, this may cause IRQ function be
+> triggered but not able to clear IRQ status, thus cause system to hang.
+> 
+> this patch by moving request of IRQ after device initialization to
+> avoid this issue.
 
-Adding below people, since they've made recent contributions to the
-driver and might be interested in your patch:
+Why not disable the interrupt and clear the irq status in the .remove
+callback, so the place is clean when probing again?
 
-git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
-    | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
-      7 Eduardo Valentin <edubezval@gmail.com>
-      6 Simon Horman <horms+renesas@verge.net.au>
-      5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-      2 Geert Uytterhoeven <geert+renesas@glider.be>
-      1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-      1 Marek Vasut <marek.vasut+renesas@gmail.com>
-      1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-      1 Hien Dang <hien.dang.eb@renesas.com>
-      1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-      1 Dien Pham <dien.pham.ry@renesas.com>
-      1 Daniel Lezcano <daniel.lezcano@linaro.org>
-      1 Biju Das <biju.das@bp.renesas.com>
 
-I confirm that loading and unloading the rcar3 thermal driver in a
-loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
-H3-ES2.0-Salvator-X. 
+        struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
 
-Full log and .config can be found here:
-https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+        rcar_thermal_irq_set(priv, false);
 
-I post an excerpt from the above [1] (why not including it in the
-description?). Also, why not rephrasing the commit summary line in such
-a way that everybody understands this patch fixes a severe issue, e.g.
-"thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+should do the trick no ?
 
-BTW, with this patch applied I left the thermal driver being
-loaded/unloaded on the target for over one hour w/o seeing the issue
-reproduced. So, while there might be slight variations in how the final
-solution looks like, I think the patch already deserves a:
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+> ---
+>  drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>  1 file changed, 26 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..4d095d7f9763 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, priv);
+>  
+> -	/*
+> -	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+> -	 * to trigger on the low and high trip points of the current
+> -	 * temp window at this point.
+> -	 */
+> -	for (i = 0; i < 2; i++) {
+> -		irq = platform_get_irq(pdev, i);
+> -		if (irq < 0)
+> -			return irq;
+> -
+> -		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+> -					 dev_name(dev), i);
+> -		if (!irqname)
+> -			return -ENOMEM;
+> -
+> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> -						rcar_gen3_thermal_irq_thread,
+> -						IRQF_SHARED, irqname, priv);
+> -		if (ret)
+> -			return ret;
+> -	}
+> -
+>  	pm_runtime_enable(dev);
+>  	pm_runtime_get_sync(dev);
+>  
+> @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		goto error_unregister;
+>  	}
+>  
+> +	/*
+> +	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+> +	 * to trigger on the low and high trip points of the current
+> +	 * temp window at this point.
+> +	 */
+> +	for (i = 0; i < 2; i++) {
+> +		irq = platform_get_irq(pdev, i);
+> +		if (irq < 0) {
+> +			ret = irq;
+> +			goto error_unregister;
+> +		}
+> +
+> +		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+> +					 dev_name(dev), i);
+> +		if (!irqname) {
+> +			ret = -ENOMEM;
+> +			goto error_unregister;
+> +		}
+> +
+> +		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> +						rcar_gen3_thermal_irq_thread,
+> +						IRQF_SHARED, irqname, priv);
+> +		if (ret)
+> +			goto error_unregister;
+> +	}
+> +
+>  	rcar_thermal_irq_set(priv, true);
+>  
+>  	return 0;
+> 
 
-Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
 
-[1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-root@rcar-gen3:~# while true; do rmmod rcar_gen3_thermal; modprobe rcar_gen3_thermal; done
-[   43.439043] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
-[   43.451670] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
-[   43.463974] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
-
-[..]
-
-[  553.966104] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
-[  553.978759] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
-[  553.991058] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
-[  562.235306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD25)
-[  567.353336] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
-[  572.473318] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
-[  577.593328] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  579.189148] rcu: INFO: rcu_preempt self-detected stall on CPU
-[  579.195329] rcu:     0-....: (1 GPs behind) idle=b76/1/0x4000000000000004 softirq=263851/263851 fqs=6251 last_accelerate: e095/4240, Nonlazy posted: ...
-[  579.209711] rcu:      (t=25008 jiffies g=346801 q=468)
-[  579.214801] Task dump for CPU 0:
-[  579.218178] modprobe        R  running task        0  6337   1420 0x0000002a
-[  579.225514] Call trace:
-[  579.228103]  dump_backtrace+0x0/0x1dc
-[  579.231934]  show_stack+0x24/0x30
-[  579.235410]  sched_show_task+0x31c/0x36c
-[  579.239507]  dump_cpu_task+0xb0/0xc0
-[  579.243248]  rcu_dump_cpu_stacks+0x220/0x238
-[  579.247702]  rcu_sched_clock_irq+0x8a4/0x141c
-[  579.252249]  update_process_times+0x34/0x64
-[  579.256617]  tick_sched_handle+0x80/0x98
-[  579.260714]  tick_sched_timer+0x64/0xbc
-[  579.264722]  __hrtimer_run_queues+0x5c0/0xb84
-[  579.269266]  hrtimer_interrupt+0x1ec/0x454
-[  579.273547]  arch_timer_handler_phys+0x40/0x58
-[  579.278185]  handle_percpu_devid_irq+0x174/0x6e8
-[  579.282999]  generic_handle_irq+0x3c/0x54
-[  579.287185]  __handle_domain_irq+0x114/0x118
-[  579.291639]  gic_handle_irq+0x70/0xac
-[  579.295465]  el1_irq+0xbc/0x180
-[  579.298756]  __asan_load8+0x8c/0x9c
-[  579.302403]  rcu_is_watching+0x80/0x8c
-[  579.306322]  rebalance_domains+0x12c/0x584
-[  579.310599]  run_rebalance_domains+0x1f4/0x298
-[  579.315231]  __do_softirq+0x4c0/0xab8
-[  579.319061]  irq_exit+0x148/0x1d8
-[  579.322530]  __handle_domain_irq+0xc0/0x118
-[  579.326894]  gic_handle_irq+0x70/0xac
-[  579.330720]  el1_irq+0xbc/0x180
-[  579.334012]  lock_is_held_type+0xec/0x144
-[  579.338201]  rcu_read_lock_sched_held+0x90/0x98
-[  579.342927]  kmem_cache_alloc+0x328/0x3e0
-[  579.347114]  create_object+0x5c/0x39c
-[  579.350944]  kmemleak_alloc+0x54/0x88
-[  579.354774]  __kmalloc_track_caller+0x1c8/0x434
-[  579.359499]  devres_alloc_node+0x40/0x8c
-[  579.363597]  __devm_request_region+0x48/0xc8
-[  579.368055]  devm_ioremap_resource+0xcc/0x148
-[  579.372626]  rcar_gen3_thermal_probe+0x288/0x618 [rcar_gen3_thermal]
-[  579.379231]  platform_drv_probe+0x70/0xe4
-[  579.383420]  really_probe+0x2d8/0x3d8
-[  579.387249]  driver_probe_device+0x154/0x164
-[  579.391705]  device_driver_attach+0x98/0xa0
-[  579.396070]  __driver_attach+0xf0/0xf4
-[  579.399987]  bus_for_each_dev+0x114/0x13c
-[  579.404173]  driver_attach+0x38/0x44
-[  579.407912]  bus_add_driver+0x234/0x288
-[  579.411919]  driver_register+0x148/0x190
-[  579.416015]  __platform_driver_register+0x84/0x90
-[  579.420931]  rcar_gen3_thermal_driver_init+0x28/0x1000 [rcar_gen3_thermal]
-[  579.428074]  do_one_initcall+0x124/0x68c
-[  579.432173]  do_init_module+0xb4/0x300
-[  579.436090]  load_module+0x2c90/0x2f18
-[  579.440008]  __se_sys_finit_module+0x128/0x148
-[  579.444642]  __arm64_sys_finit_module+0x4c/0x5c
-[  579.449367]  el0_svc_common+0xd0/0x16c
-[  579.453283]  el0_svc_handler+0x94/0xa0
-[  579.457200]  el0_svc+0x8/0xc
-[  582.713314] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  587.833305] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  592.953323] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  598.073430] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  603.193306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
-[  604.242120] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:6337]
-[..]
-
-Best regards,
-Eugeniu.
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
