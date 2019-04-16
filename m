@@ -2,99 +2,194 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 654CAC10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 16:23:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF64C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 16:51:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 335DD2087C
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 16:23:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 976182087C
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 16:51:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YF07nlNR"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iwumSBs5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728712AbfDPQXI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 12:23:08 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:36434 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727052AbfDPQXI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 12:23:08 -0400
-Received: by mail-pg1-f195.google.com with SMTP id 85so10589474pgc.3;
-        Tue, 16 Apr 2019 09:23:08 -0700 (PDT)
+        id S1728093AbfDPQvz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 12:51:55 -0400
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:38637 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726946AbfDPQvy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 12:51:54 -0400
+Received: by mail-wm1-f65.google.com with SMTP id w15so26344937wmc.3
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 09:51:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=+443J6WdsUQskMitvLq9h/wv6uWnm+Lk4TG8Q2wjNNU=;
-        b=YF07nlNR4xipxuE9qtDsxP+9QyiflcsMGxM1a8UA7fBZHFB0v8Bwsn+6VezyBBxkW+
-         /u7FalAU57TNFqijI9PU14bNhR6QqpESFm3HnWQ90jesldOFs3WXWiPef6nmDdVpLaf9
-         AwnV9dQ3KspPIZ6TDI5PE8pcj9hdyODPZ/FReldiahH3LX6bVfR6U+JzJi8HDpI8kyyq
-         ck/lLIDUCgE9LHtmEUF7xWoZ5HSLlMwT4Vnppsmfy56CLxurpmyU8U01QEEfov/hBO9z
-         pDWWxXhAdvh7PC9a9TLiouYlWJsZPcOfFOfDfi67Dbs2t5XSylrUXhOiWzUrn95A+h19
-         U3og==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=dzBYZ6U7LJKOrJ8NQ1oOnzmvpmYp2QXciCTaYNIJU70=;
+        b=iwumSBs5CFQOuqNeSBprIx03CnTiyQIOPW2fQ8qZwcc8T/bDS15v0aqDUK2I3gfAIU
+         Rlh7YihZ4QX8CBZ69oHQMAloIZC7OQXnVDqkpdwv1cFJW1dcgkQi2QiH90JMZYje/KgG
+         qUYJWC8K2mNJfxvO7x2MmJ3DoKv8wd3LI8qZqskHszrtHv7pDUXFp5caG3bMRZ33tb/u
+         Vl7WwLbN5Wjyw7AD9dJtM8Ir4hWeeSDf3Agjt98S4E16+AQraE8ud/K/hnnRc5jKJuWn
+         iPys07nr/KkdZY3cpRgjB0k7Bo4WB2Nk6Q0GFxGPP3AElfM1rh2RH8EYH7uLInMSpzEI
+         c+xg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=+443J6WdsUQskMitvLq9h/wv6uWnm+Lk4TG8Q2wjNNU=;
-        b=afTIx+xkNz+uEZ7IAHEsFAjXuxmZUDgwVG5+NL6Z6zkMK+lDc7UtRNFfBOInoLlvCm
-         lGKnF6hBp/TYaJGdYxCZ4CjfFODyoPuDEe4aeW1vdbNNacCS99Aq/FA2nVmA0sxKhEUR
-         TFM8CMT1bJOs+4/HWO+NGXJjffJLnN5vwnHuFFE1IuSF0l3IKoShDQTW9+/J42QoAT5M
-         auYRI+yBPlT99fqnheRtX2NzMKruRpVp/9pSsqwdEtxt14xqzFwPp++yImY8XCRfWehA
-         Fikl2G3QakzyX8fEcuDslfNAlYSvNB8csqsk5ZuzyLd9dM0KXun3c3HDZJnfR/9idNOw
-         IUnA==
-X-Gm-Message-State: APjAAAVaSjPT/nfGJkMkwEI2TsuekHxOgsqK7fCf0hXYfjJ+IXbP/vJO
-        jNxwXKt8FGSYUeYqVC0gXTM=
-X-Google-Smtp-Source: APXvYqzLLF2O9LAHWA8Zn5hO6qCFh1Ja5HWAPhZ4HpUuo7FUYWaz/Sl4M047gwqq1FT2659EofoSNA==
-X-Received: by 2002:a63:7153:: with SMTP id b19mr74644345pgn.289.1555431787628;
-        Tue, 16 Apr 2019 09:23:07 -0700 (PDT)
-Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
-        by smtp.gmail.com with ESMTPSA id n21sm102391148pfb.42.2019.04.16.09.23.06
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Tue, 16 Apr 2019 09:23:06 -0700 (PDT)
-From:   Yangtao Li <tiny.windzz@gmail.com>
-To:     rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org,
-        pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] PM / Domains: remove unnecessary unlikely()
-Date:   Tue, 16 Apr 2019 12:23:05 -0400
-Message-Id: <20190416162305.24375-1-tiny.windzz@gmail.com>
-X-Mailer: git-send-email 2.17.0
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=dzBYZ6U7LJKOrJ8NQ1oOnzmvpmYp2QXciCTaYNIJU70=;
+        b=VloJ6wFokXtTJrnRNMfYASklpu3ycHRsTsUZEEKIqluZVQYDWAw4xL0Ze6aJ0ikjwS
+         ETIh3bo/YeN2FNUQiEY9GVfNHMG3Aw8w4cw3CmdCYjuCOz3L4bdM2/v6THqP1QrG+gIB
+         bEyquBJ3WI5lgvaZppokApZhdhMpLqb9J9aDmQ6bmDLY58d6NPk+vOc1UI8fLy5LiRu2
+         LFi3350qb0tM0snDw+59bT/lCCkj1f4T4aCR44MnxAG4WBdIcFmpL3/Zbf5boOw9zYWx
+         boCl05arWmNz/6R6E0MXx7EOI7nEkCgUSY/35jeMSpE0W1S+AdZf8mrpflNUFi5cFHZW
+         G9rA==
+X-Gm-Message-State: APjAAAUIEH2U2tZYonAQso9AO749yvYGrla27nE/7QL90ibHQrnJcUL0
+        enuMe0+BP8peSO+WYQzHYlVJpQ==
+X-Google-Smtp-Source: APXvYqy7gQ5N4zohV/Xx57Z1UvKgUw/Mh8DvXgMKu/TXGe8H1SBp6dc61C1ciiipMbswYEU/PAm3Ug==
+X-Received: by 2002:a7b:cb04:: with SMTP id u4mr29043851wmj.0.1555433512058;
+        Tue, 16 Apr 2019 09:51:52 -0700 (PDT)
+Received: from [192.168.0.41] (50.251.95.92.rev.sfr.net. [92.95.251.50])
+        by smtp.googlemail.com with ESMTPSA id o15sm53210742wrj.59.2019.04.16.09.51.50
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 16 Apr 2019 09:51:51 -0700 (PDT)
+Subject: Re: [PATCH v4 06/12] thermal: qoriq: Pass data to
+ qoriq_tmu_calibration() directly
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
+Cc:     Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
+        linux-kernel@vger.kernel.org
+References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+ <20190413082748.29990-7-andrew.smirnov@gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <74c4f677-c586-45de-3a38-feb627757193@linaro.org>
+Date:   Tue, 16 Apr 2019 18:51:50 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <20190413082748.29990-7-andrew.smirnov@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416162305.I7Dh8JnDRzw_yBHJK0iSTNCyLJbBh9uKAtzTWmEnR_M@z>
+Message-ID: <20190416165150.4GF7suwpWuiXbPfPvyR2YFnbbD6rclNJmIvqNWvBCJk@z>
 
-WARN_ON() already contains an unlikely(), so it's not necessary to use
-unlikely.
+On 13/04/2019 10:27, Andrey Smirnov wrote:
+> We can simplify error cleanup code if instead of passing a "struct
+> platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
+> pointers from it, we pass those pointers directly. This way we won't
+> be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
+> and consequently would be able to drop the "err_iomap" error path.
+> 
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> Cc: Chris Healy <cphealy@gmail.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+> Cc: linux-imx@nxp.com
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- drivers/base/power/domain.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 96a6dc9d305c..598a4e02aee1 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -391,11 +391,9 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 	if (unlikely(!genpd->set_performance_state))
- 		return -EINVAL;
- 
--	if (unlikely(!dev->power.subsys_data ||
--		     !dev->power.subsys_data->domain_data)) {
--		WARN_ON(1);
-+	if (WARN_ON(!dev->power.subsys_data ||
-+		     !dev->power.subsys_data->domain_data))
- 		return -EINVAL;
--	}
- 
- 	genpd_lock(genpd);
- 
+
+> ---
+>  drivers/thermal/qoriq_thermal.c | 24 ++++++++++--------------
+>  1 file changed, 10 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> index 3419505a2f0a..0b6937bbc7d0 100644
+> --- a/drivers/thermal/qoriq_thermal.c
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -122,16 +122,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+>  	return 0;
+>  }
+>  
+> -static int qoriq_tmu_calibration(struct platform_device *pdev)
+> +static int qoriq_tmu_calibration(struct device *dev,
+> +				 struct qoriq_tmu_data *data)
+>  {
+>  	int i, val, len;
+>  	u32 range[4];
+>  	const u32 *calibration;
+> -	struct device_node *np = pdev->dev.of_node;
+> -	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> +	struct device_node *np = dev->of_node;
+>  
+>  	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
+> -		dev_err(&pdev->dev, "missing calibration range.\n");
+> +		dev_err(dev, "missing calibration range.\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -143,7 +143,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
+>  
+>  	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
+>  	if (calibration == NULL || len % 8) {
+> -		dev_err(&pdev->dev, "invalid calibration data.\n");
+> +		dev_err(dev, "invalid calibration data.\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -181,20 +181,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  	if (!data)
+>  		return -ENOMEM;
+>  
+> -	platform_set_drvdata(pdev, data);
+> -
+>  	data->little_endian = of_property_read_bool(np, "little-endian");
+>  
+>  	data->regs = of_iomap(np, 0);
+>  	if (!data->regs) {
+>  		dev_err(dev, "Failed to get memory region\n");
+> -		ret = -ENODEV;
+> -		goto err_iomap;
+> +		return -ENODEV;
+>  	}
+>  
+>  	qoriq_tmu_init_device(data);	/* TMU initialization */
+>  
+> -	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> +	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+>  	if (ret < 0)
+>  		goto err_tmu;
+>  
+> @@ -202,17 +199,16 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  	if (ret < 0) {
+>  		dev_err(dev, "Failed to register sensors\n");
+>  		ret = -ENODEV;
+> -		goto err_iomap;
+> +		goto err_tmu;
+>  	}
+>  
+> +	platform_set_drvdata(pdev, data);
+> +
+>  	return 0;
+>  
+>  err_tmu:
+>  	iounmap(data->regs);
+>  
+> -err_iomap:
+> -	platform_set_drvdata(pdev, NULL);
+> -
+>  	return ret;
+>  }
+>  
+> 
+
+
 -- 
-2.17.0
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
