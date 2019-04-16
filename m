@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEC08C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64AEFC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBFE62073F
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3367A2073F
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555396873;
-	bh=leU528GPgbbl6FZ0hvYD1ThhlYXuBMbC39ljevMevzM=;
+	s=default; t=1555396874;
+	bh=6ccqy02XCR8/Zc2V7/iway6+ZBCj6P2TCnOcpx9xxqU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=uY9Cw2mHwvwjSuiOwHGrovSG9UKIxqHjbxsUQg/S5PyhGRCIKDCvuKF9O9GpN5nR3
-	 OWgSgXdGc9QCoo6UgqkWU6tLTS3ihVuhioNznVaiP4QmnCI1zkqFC+SXtpp2L4qvWt
-	 fuGfSWpCgmXOWuwXDFdu7/K0e3r0YkCyADSjk2Ns=
+	b=kWrDoYxgaX2Wg3CLGP4vrIeWaxrlMaGWEIDFAMBXvv9ic0Z+4XyAYAWenlMFRQlnJ
+	 iejFCYSgp0cliKnGTR1xnz2s2uNMSrle5PEdrJORvKJjEaN9Ifs/bxa7X1iiwC8+70
+	 Ldxx7CpxigXNh4n9h1nLGHkfJFV8mBRbp+6CWhXM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728445AbfDPGka (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728434AbfDPGka (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 16 Apr 2019 02:40:30 -0400
-Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:33982 "EHLO
+Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:33980 "EHLO
         wens.csie.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726147AbfDPGk3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1726680AbfDPGk3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 16 Apr 2019 02:40:29 -0400
 Received: by wens.csie.org (Postfix, from userid 1000)
-        id 8C7A95FD9F; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
+        id 960655FDF9; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
 From:   Chen-Yu Tsai <wens@kernel.org>
 To:     Maxime Ripard <maxime.ripard@bootlin.com>,
         Sebastian Reichel <sre@kernel.org>
@@ -35,9 +35,9 @@ Cc:     Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
         Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v4 2/7] power: supply: axp20x_usb_power: Fix typo in VBUS current limit macros
-Date:   Tue, 16 Apr 2019 14:40:19 +0800
-Message-Id: <20190416064024.20414-3-wens@kernel.org>
+Subject: [PATCH v4 3/7] power: supply: axp20x_usb_power: use polling to detect vbus status change
+Date:   Tue, 16 Apr 2019 14:40:20 +0800
+Message-Id: <20190416064024.20414-4-wens@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190416064024.20414-1-wens@kernel.org>
 References: <20190416064024.20414-1-wens@kernel.org>
@@ -48,62 +48,140 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416064019.T6QRrAgDqCQoOQ1NA2lZeqzVnNE8CZS9ZrVCFQA_0OA@z>
+Message-ID: <20190416064020.cZddWiyR643PUudeJ7b-71hZsi_HqGMa2tWheh3_Qeg@z>
 
 From: Chen-Yu Tsai <wens@csie.org>
 
-The VBUS current limit value macros have VBUS typed as VBUC, while
-the bitmask macro is named correctly. Fix it.
+On AXP221 and later AXP PMICs that have the N_VBUSEN pin, when this pin
+is high, either due to the PMIC driving it high or as an input, the VBUS
+detection related interrupt mechanisms are disabled.
 
-Fixes: 69fb4dcada77 ("power: Add an axp20x-usb-power driver")
+Previously this was worked around in the phy-sun4i-usb driver, which
+needed to sense VBUS changes and report them to the musb driver in a
+timely matter. However this workaround was only for the A31 and A33 type
+USB PHYs. To support newer platforms we would have to enable it for
+almost all the post-A31 SoCs.
+
+However, since this is actually the result of the PMIC's behavior, the
+workaround would be better if done in the PMIC driver, in this case the
+VBUS power supply driver.
+
+Add the same workqueue-based polling to the VBUS power supply driver.
+The polling interval is chosen to be the debounce interval from the USB
+PHY driver, as this short interval is needed in some cases, but the
+power supply driver would not know when.
+
 Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 ---
- drivers/power/supply/axp20x_usb_power.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/power/supply/axp20x_usb_power.c | 53 +++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
 diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index f52fe77edb6f..cd9b90d79839 100644
+index cd9b90d79839..290028aed230 100644
 --- a/drivers/power/supply/axp20x_usb_power.c
 +++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -36,10 +36,10 @@
- #define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
- #define AXP20X_VBUS_VHOLD_OFFSET	3
- #define AXP20X_VBUS_CLIMIT_MASK		3
--#define AXP20X_VBUC_CLIMIT_900mA	0
--#define AXP20X_VBUC_CLIMIT_500mA	1
--#define AXP20X_VBUC_CLIMIT_100mA	2
--#define AXP20X_VBUC_CLIMIT_NONE		3
-+#define AXP20X_VBUS_CLIMIT_900mA	0
-+#define AXP20X_VBUS_CLIMIT_500mA	1
-+#define AXP20X_VBUS_CLIMIT_100mA	2
-+#define AXP20X_VBUS_CLIMIT_NONE		3
+@@ -24,6 +24,7 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ #include <linux/iio/consumer.h>
++#include <linux/workqueue.h>
  
- #define AXP20X_ADC_EN1_VBUS_CURR	BIT(2)
- #define AXP20X_ADC_EN1_VBUS_VOLT	BIT(3)
-@@ -107,19 +107,19 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 			return ret;
+ #define DRVNAME "axp20x-usb-power-supply"
  
- 		switch (v & AXP20X_VBUS_CLIMIT_MASK) {
--		case AXP20X_VBUC_CLIMIT_100mA:
-+		case AXP20X_VBUS_CLIMIT_100mA:
- 			if (power->axp20x_id == AXP221_ID)
- 				val->intval = -1; /* No 100mA limit */
- 			else
- 				val->intval = 100000;
- 			break;
--		case AXP20X_VBUC_CLIMIT_500mA:
-+		case AXP20X_VBUS_CLIMIT_500mA:
- 			val->intval = 500000;
- 			break;
--		case AXP20X_VBUC_CLIMIT_900mA:
-+		case AXP20X_VBUS_CLIMIT_900mA:
- 			val->intval = 900000;
- 			break;
--		case AXP20X_VBUC_CLIMIT_NONE:
-+		case AXP20X_VBUS_CLIMIT_NONE:
- 			val->intval = -1;
- 			break;
- 		}
+@@ -46,6 +47,12 @@
+ 
+ #define AXP20X_VBUS_MON_VBUS_VALID	BIT(3)
+ 
++/*
++ * Note do not raise the debounce time, we must report Vusb high within
++ * 100ms otherwise we get Vbus errors in musb.
++ */
++#define DEBOUNCE_TIME			msecs_to_jiffies(50)
++
+ struct axp20x_usb_power {
+ 	struct device_node *np;
+ 	struct regmap *regmap;
+@@ -53,6 +60,8 @@ struct axp20x_usb_power {
+ 	enum axp20x_variants axp20x_id;
+ 	struct iio_channel *vbus_v;
+ 	struct iio_channel *vbus_i;
++	struct delayed_work vbus_detect;
++	unsigned int old_status;
+ };
+ 
+ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
+@@ -64,6 +73,35 @@ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
+ 	return IRQ_HANDLED;
+ }
+ 
++static void axp20x_usb_power_poll_vbus(struct work_struct *work)
++{
++	struct axp20x_usb_power *power =
++		container_of(work, struct axp20x_usb_power, vbus_detect.work);
++	unsigned int val;
++	int ret;
++
++	ret = regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &val);
++	if (ret)
++		goto out;
++
++	val &= (AXP20X_PWR_STATUS_VBUS_PRESENT | AXP20X_PWR_STATUS_VBUS_USED);
++	if (val != power->old_status)
++		power_supply_changed(power->supply);
++
++	power->old_status = val;
++
++out:
++	mod_delayed_work(system_wq, &power->vbus_detect, DEBOUNCE_TIME);
++}
++
++static bool axp20x_usb_vbus_needs_polling(struct axp20x_usb_power *power)
++{
++	if (power->axp20x_id >= AXP221_ID)
++		return true;
++
++	return false;
++}
++
+ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 	enum power_supply_property psp, union power_supply_propval *val)
+ {
+@@ -357,6 +395,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 	if (!power)
+ 		return -ENOMEM;
+ 
++	platform_set_drvdata(pdev, power);
+ 	power->axp20x_id = (enum axp20x_variants)of_device_get_match_data(
+ 								&pdev->dev);
+ 
+@@ -415,6 +454,19 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 				 irq_names[i], ret);
+ 	}
+ 
++	INIT_DELAYED_WORK(&power->vbus_detect, axp20x_usb_power_poll_vbus);
++	if (axp20x_usb_vbus_needs_polling(power))
++		queue_delayed_work(system_wq, &power->vbus_detect, 0);
++
++	return 0;
++}
++
++static int axp20x_usb_power_remove(struct platform_device *pdev)
++{
++	struct axp20x_usb_power *power = platform_get_drvdata(pdev);
++
++	cancel_delayed_work_sync(&power->vbus_detect);
++
+ 	return 0;
+ }
+ 
+@@ -434,6 +486,7 @@ MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
+ 
+ static struct platform_driver axp20x_usb_power_driver = {
+ 	.probe = axp20x_usb_power_probe,
++	.remove = axp20x_usb_power_remove,
+ 	.driver = {
+ 		.name = DRVNAME,
+ 		.of_match_table = axp20x_usb_power_match,
 -- 
 2.20.1
 
