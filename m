@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 09/12] thermal: qoriq: Enable all sensors before
- registering them
-Date: Tue, 16 Apr 2019 19:09:30 +0200
-Message-ID: <8233019b-988b-05d5-6b7c-55652da8b3cd@linaro.org>
+Subject: Re: [PATCH v4 10/12] thermal: qoriq: Do not report invalid
+ temperature reading
+Date: Tue, 16 Apr 2019 19:11:00 +0200
+Message-ID: <6c07ec86-297f-01e0-f150-1b03c0a27c62@linaro.org>
 References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
- <20190413082748.29990-10-andrew.smirnov@gmail.com>
+ <20190413082748.29990-11-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190413082748.29990-10-andrew.smirnov@gmail.com>
+In-Reply-To: <20190413082748.29990-11-andrew.smirnov@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
@@ -17,12 +17,9 @@ Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduar
 List-Id: linux-pm@vger.kernel.org
 
 On 13/04/2019 10:27, Andrey Smirnov wrote:
-> Tmu_get_temp will get called as a part of sensor registration via
-> devm_thermal_zone_of_sensor_register(). To prevent it from retruning
-> bogus data we need to enable sensor monitoring before that. Looking at
-> the datasheet (i.MX8MQ RM) there doesn't seem to be any harm in
-> enabling them all, so, for the sake of simplicity, change the code to
-> do just that.
+> Before returning measured temperature data to upper layer we need to
+> make sure that the reading was marked as "valid" to avoid reporting
+> bogus data.
 > 
 > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > Cc: Chris Healy <cphealy@gmail.com>
@@ -34,71 +31,49 @@ On 13/04/2019 10:27, Andrey Smirnov wrote:
 > Cc: linux-pm@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
 > ---
->  drivers/thermal/qoriq_thermal.c | 27 ++++++++++++++-------------
->  1 file changed, 14 insertions(+), 13 deletions(-)
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+
+>  drivers/thermal/qoriq_thermal.c | 20 ++++++++++++++++++--
+>  1 file changed, 18 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index 9774323a17bf..abbbfe88422e 100644
+> index abbbfe88422e..5c459a9d0db3 100644
 > --- a/drivers/thermal/qoriq_thermal.c
 > +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -23,6 +23,7 @@
->  #define TMR_DISABLE	0x0
->  #define TMR_ME		0x80000000
->  #define TMR_ALPF	0x0c000000
-> +#define TMR_MSITE_ALL	GENMASK(15, 0)
->  
->  #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
->  #define TMTMIR_DEFAULT	0x0000000f
-> @@ -61,28 +62,28 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
->  static int qoriq_tmu_register_tmu_zone(struct device *dev,
->  				       struct qoriq_tmu_data *qdata)
+> @@ -37,6 +37,7 @@
+>  #define REGS_TRITSR(n)	(0x100 + 16 * (n)) /* Immediate Temperature
+>  					    * Site Register
+>  					    */
+> +#define TRITSR_V	BIT(31)
+>  #define REGS_TTRnCR(n)	(0xf10 + 4 * (n)) /* Temperature Range n
+>  					   * Control Register
+>  					   */
+> @@ -48,10 +49,25 @@ static int tmu_get_temp(int id, void *p, int *temp)
 >  {
-> -	int id, sites = 0;
-> +	int id, ret;
-> +
-> +	regmap_write(qdata->regmap, REGS_TMR,
-> +		     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
+>  	struct qoriq_tmu_data *qdata = p;
+>  	u32 val;
+> +	/*
+> +	 * REGS_TRITSR(id) has the following layout:
+> +	 *
+> +	 * 31  ... 7 6 5 4 3 2 1 0
+> +	 *  V          TEMP
+> +	 *
+> +	 * Where V bit signifies if the measurement is ready and is
+> +	 * within sensor range. TEMP is an 8 bit value representing
+> +	 * temperature in C.
+> +	 */
+> +	if (regmap_read_poll_timeout(qdata->regmap,
+> +				     REGS_TRITSR(id),
+> +				     val,
+> +				     val & TRITSR_V,
+> +				     USEC_PER_MSEC,
+> +				     10 * USEC_PER_MSEC))
+> +		return -ENODATA;
 >  
->  	for (id = 0; id < SITES_MAX; id++) {
->  		struct thermal_zone_device *tzd;
->  
->  		tzd = devm_thermal_zone_of_sensor_register(dev, id,
->  							   qdata, &tmu_tz_ops);
-> -		if (IS_ERR(tzd)) {
-> -			if (PTR_ERR(tzd) == -ENODEV)
-> -				continue;
-> -			else
-> -				return PTR_ERR(tzd);
-> +		ret = PTR_ERR_OR_ZERO(tzd);
-> +		switch (ret) {
-> +		case -ENODEV:
-> +			continue;
-> +		case 0:
-
-Why not simply:
-
-	if (!IS_ERR(tzd) || PTR_ERR(tzd) == -ENODEV)
-		continue;
-
-	regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-
-	return PTR_ERR(tzd);
-
-?
-
-> +			break;
-> +		default:
-> +			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-> +			return ret;
->  		}
-> -
-> -		sites |= 0x1 << (15 - id);
->  	}
->  
-> -	/* Enable monitoring */
-> -	if (sites != 0)
-> -		regmap_write(qdata->regmap, REGS_TMR,
-> -			     sites | TMR_ME | TMR_ALPF);
+> -	regmap_read(qdata->regmap, REGS_TRITSR(id), &val);
+>  	*temp = (val & 0xff) * 1000;
 > -
 >  	return 0;
 >  }
