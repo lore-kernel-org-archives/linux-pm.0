@@ -1,60 +1,25 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [RESEND PATCH v3 1/2] power: supply: add input voltage limit
- property
-Date: Tue, 16 Apr 2019 10:42:30 +0200
-Message-ID: <8d1f70a7-46d6-f278-f58c-6a7e7a644d46@collabora.com>
-References: <20190415220049.14924-1-enric.balletbo@collabora.com>
- <20190416071941.GB14538@amd>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 25/57] docs: power: convert docs to ReST
+Date: Tue, 16 Apr 2019 10:59:23 +0200
+Message-ID: <1616669.eeiCRjss8h@kreacher>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org> <cfab8842b681a84518b327980b08aee95d159605.1555382110.git.mchehab+samsung@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190416071941.GB14538@amd>
-Content-Language: en-GB
+In-Reply-To: <cfab8842b681a84518b327980b08aee95d159605.1555382110.git.mchehab+samsung@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, rjw@rjwysocki.net, gwendal@chromium.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pavel,
+On Tuesday, April 16, 2019 4:55:50 AM CEST Mauro Carvalho Chehab wrote:
+> Convert the PM documents to ReST, in order to allow them to
+> build with Sphinx.
 
-On 16/4/19 9:19, Pavel Machek wrote:
-> Hi!
-> 
->> This patch exposes a new property, similar to input current limit, to
->> re-configure the maximum voltage from the external supply at runtime
->> based on system-level knowledge or user input.
-> 
-> Well, and I suspect it should expose input power limit, not input
-> voltage limit.
-> 
+And what exactly is the motivation for doing that?
 
-Oh, ok, I thought we were agree that input voltage had sense after had some
-discussion in v3. Seems that no, let me try to give you another example...
-
-> DC-DC convertor efficiency normally does not much depend on input
-> voltage....
-> 
-> 								Pavel
-> 
-
-As we said we have a heat "problem" due the internal voltage conversions.
-
-Lets assume you have a linear regulator instead with a Vin range from 5V to 9V
-and we want an output of 3.3V/1A
-
-For 9V:
- Input power : P(in) = 9V x 1A = 9W
- Output power: P(out) = 3.3V x 1A = 3.3W
- Regulator power dissipated: P(reg) = P(in) - P(out) = 9W - 3.3W = 5.7W
-
-For 5V:
- Input power : P(in) = 5V x 1A = 5W
- Output power: P(out) = 3.3V x 1A = 3.3W
- Regulator power dissipated: P(reg) = P(in) - P(out) = 5W - 3.3W = 1,7W
-
-In the first case the regulator needs to dissipate more power, hence the
-temperature is greater than the second case.
+There are plans for some of these files to be converted already, some of them need to be merged or split and it just is not worth it to convert some others.
 
 Thanks,
- Enric
+Rafael
