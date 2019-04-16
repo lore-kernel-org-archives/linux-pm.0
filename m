@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 503E4C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:46:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 416ADC10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:59:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2150D21924
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:46:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F32522396
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:59:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WVTs4FNz"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gh5qQhCd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727004AbfDPNqg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 09:46:36 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:41418 "EHLO
-        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725861AbfDPNqf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 09:46:35 -0400
-Received: by mail-lf1-f67.google.com with SMTP id t30so16057038lfd.8;
-        Tue, 16 Apr 2019 06:46:34 -0700 (PDT)
+        id S1727030AbfDPN7O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 09:59:14 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:39956 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726576AbfDPN7O (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 09:59:14 -0400
+Received: by mail-lj1-f194.google.com with SMTP id q66so4102795ljq.7;
+        Tue, 16 Apr 2019 06:59:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=1anlsw5jTjhl2brbVUtfoVxAV9CSpLlVcdeyYBX0gUE=;
-        b=WVTs4FNzZMjxo73GKoPFd6DAV7xRS7TlFhtQw3jc/2NzYMxAXr/JsV3c+MOKehd5lD
-         0aOg3QddzGH4ELLZq2Vjjq7AEbpqg1CIEcn1dKyO6BhACnWBQbtINjPXSfHC3XiGNfwW
-         7f7TSih8IeO598soWL18Bfv768j2TZAOFXv66H0XcN/QvLHyCYG24YguC145UOAMk+ML
-         aFKklHK/e/t35h6fiIQwmpN2R+SqbiSy+OFG6Ux1IyeuiyokaJJAyE7sVPQMoTPeYpMx
-         GiYz87JPhec6g3tqBAAQ0b5uZxzPpqW27v05I7LbftHv24l6S18I0L+Z1HTUql3A2Grn
-         0v4g==
+        bh=XY54RCXW8EoxaCQWLe7doB13qrmZ0H1D6e5cjG1IQ1g=;
+        b=gh5qQhCdLkCqTleEyHtaqL5LwERLf43XYZb0kvOc+u1ZfvJamVFcFNU1iun1ZcM4Gj
+         OKZpVjfpmIzQlZGqB+GxvpiJl40azxyQUwsnuGJtlH/wRA4Cn6tSBgxMbXRcbEu3J9+8
+         HuGy5VVUaS6v/kXY+T9xbMMIo3xJ9LaFTun4zH8u/HdOWxjF818xjRmhCavXmXLHR5co
+         aAP/0KDCiOi2uS9YxD3uKUmcJFEfLeOIKp6r9bJhxH/lhk3u3QiMlEnKpTe6V0+1dsfp
+         GOzPxB47jyO2fCPt+Q7yZjlqnBCcG82xv4MzIhFkTLJJO8306axfnAHRa8PO4rqsiIzM
+         D62g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=1anlsw5jTjhl2brbVUtfoVxAV9CSpLlVcdeyYBX0gUE=;
-        b=CyPbXw5tqpLa/UedRWRCm8OM1duH4Sh7HaHfatiLHt7fkCUeYwqRpTOBFjv3p6AdIW
-         9J2kAyy96KvAP5irQ6jA/P1HiJbMF9iT5kH8e8Mj+HYJNeAmmUEcSJAyY2lGUXjepGqE
-         QjzuW6wbfi88eDl7o6sz1V9Qr3LyhpduMr94Wwe0TqFUz4iiw4Ty84Tb3w/IMyaThwJL
-         cWxWDhDKoabJOMBovrBFNkb7MEW8Mqbwg5I8+816TeAMb5295aPtT7TvCOTICwhjjjVm
-         XA7AWq2ixzowx0s4FLsoyHWieifZhPwI3gMI/Q8p+Z720k8a+nM72DB+s3+KPt3wZRm/
-         7FYA==
-X-Gm-Message-State: APjAAAVwpdb1E/tnTqVymPHlXJAM6/TJaJBGeBNBJ/MWwGTyjNlj22U7
-        gRINDUlvBp+MsNEDWZ7g+9C4/tRY
-X-Google-Smtp-Source: APXvYqyO7iJ7QrAiIHHy0b3zVCfXe8lF83NkazPfn2G8pXneiYv5Yx+mmmzolQTBiSZ3J84w6soUJw==
-X-Received: by 2002:ac2:51da:: with SMTP id u26mr9358269lfm.32.1555422393334;
-        Tue, 16 Apr 2019 06:46:33 -0700 (PDT)
+        bh=XY54RCXW8EoxaCQWLe7doB13qrmZ0H1D6e5cjG1IQ1g=;
+        b=TnP38PI4iji3JZR/dLESNDNCsJn5kVEmtiCJYSGAVGd6NWRnU0pFRvR+EPyDQKWEep
+         yK/ndO29x1LsjrUaOQ9oZBjUrgpCzM33A+m9Z73xx9X4gxxUu+DKo5i5XJDh7XXf5mg/
+         uz0uFv/wkrirEZT7jBHi+j4fS/XR70PKs792Aba1KIBAs92NTDmqQl72Llc+spSoGShZ
+         umh1vB/8Wz9HzWq4vHsYg6gZIAzd/G4Pa2ZxGqxC2YFue7LcfxfrQkse87dTm94gszJT
+         RIKN/gYemF54jdiT9Amr/wcb44oyMTmcqgNYh1I6slGU1+3wdWbrK2JnW4AHUMrCnmpC
+         DaaA==
+X-Gm-Message-State: APjAAAV15/v8kTVZynof2WH1ktRXBN3Aw5LOBNTv8jmdq3c/emgHP2iu
+        zDLmdoxdu9GZNqDeQIcI7UBo1nCZ
+X-Google-Smtp-Source: APXvYqww2fmCI7gM4fWilo6MNvmILW2J5OkO9evJD2ujA37dv5LQQeU9w7tZ0bjXBTYdyVlb3yQe8Q==
+X-Received: by 2002:a2e:380c:: with SMTP id f12mr46340062lja.116.1555423151078;
+        Tue, 16 Apr 2019 06:59:11 -0700 (PDT)
 Received: from [192.168.2.145] (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.googlemail.com with ESMTPSA id f21sm9402281ljk.94.2019.04.16.06.46.32
+        by smtp.googlemail.com with ESMTPSA id n9sm10303083lfl.35.2019.04.16.06.59.09
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Apr 2019 06:46:32 -0700 (PDT)
-Subject: Re: [PATCH v2 04/19] PM / devfreq: tegra: Don't set EMC clock rate to
- maximum on probe
+        Tue, 16 Apr 2019 06:59:10 -0700 (PDT)
+Subject: Re: [PATCH v2 05/19] PM / devfreq: tegra: Replace write memory
+ barrier with the read barrier
 To:     Chanwoo Choi <cw00.choi@samsung.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -66,16 +66,16 @@ To:     Chanwoo Choi <cw00.choi@samsung.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 References: <20190415145505.18397-1-digetx@gmail.com>
- <CGME20190415145546epcas3p2dd7b6049da59458b165eb54e4cc8162d@epcas3p2.samsung.com>
- <20190415145505.18397-5-digetx@gmail.com>
- <9fa3c0c3-0ef4-2d86-b6a8-7bd0fbc131e6@samsung.com>
+ <CGME20190415145805epcas1p209d0e2a8ba052ad11e91155c4585b1bd@epcas1p2.samsung.com>
+ <20190415145505.18397-6-digetx@gmail.com>
+ <e0a9def6-e3ed-f134-e612-aa257aa3fa12@samsung.com>
 From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <4ae5b863-a6db-39bb-7654-6dd9b63c0d34@gmail.com>
-Date:   Tue, 16 Apr 2019 16:44:53 +0300
+Message-ID: <1ef32d1f-895a-5006-5760-bf2c070bc6e2@gmail.com>
+Date:   Tue, 16 Apr 2019 16:57:31 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <9fa3c0c3-0ef4-2d86-b6a8-7bd0fbc131e6@samsung.com>
+In-Reply-To: <e0a9def6-e3ed-f134-e612-aa257aa3fa12@samsung.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -83,36 +83,49 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416134453.oRGpmPCntAZojYFBKtaZGy7sDtaqxRv2TZ0LK-Je27s@z>
+Message-ID: <20190416135731.xfySRy7qC8bT9oGlFTJe9DK-BFEjSep1XpRF1UClUr0@z>
 
-16.04.2019 4:59, Chanwoo Choi пишет:
+16.04.2019 11:00, Chanwoo Choi пишет:
 > Hi,
 > 
 > On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
->> There is no real benefit from doing so, hence let's drop that rate setting
->> for consistency.
+>> The write memory barrier isn't needed because the BUS buffer is flushed
+>> by read after write that happens after the removed wmb(), we will also
+>> use readl() instead of the relaxed version to ensure that read is indeed
+>> completed.
 >>
 >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 >> ---
->>  drivers/devfreq/tegra-devfreq.c | 2 --
->>  1 file changed, 2 deletions(-)
+>>  drivers/devfreq/tegra-devfreq.c | 3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
 >>
 >> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->> index 69581c9082d4..d62fb1b0d9bb 100644
+>> index d62fb1b0d9bb..f0f0d78f6cbf 100644
 >> --- a/drivers/devfreq/tegra-devfreq.c
 >> +++ b/drivers/devfreq/tegra-devfreq.c
->> @@ -648,8 +648,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->>  		return PTR_ERR(tegra->emc_clock);
->>  	}
->>  
->> -	clk_set_rate(tegra->emc_clock, ULONG_MAX);
->> -
+>> @@ -243,8 +243,7 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+>>  static void actmon_write_barrier(struct tegra_devfreq *tegra)
+>>  {
+>>  	/* ensure the update has reached the ACTMON */
+>> -	wmb();
+>> -	actmon_readl(tegra, ACTMON_GLB_STATUS);
+>> +	readl(tegra->regs + ACTMON_GLB_STATUS);
 > 
-> It seems like that initialize the emc_clock as the supported maximum clock.
-> But, if the rate for emc_clock initialized by either bootloader or clock driver
-> and it's well working until this code, actually, it is not necessary.
-> 
-> Looks good to me.
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> I think that this meaning of actmon_write_barrier() keeps
+> the order of 'store' assembly command without the execution change
+> from compiler optimization by using the wmb().
 
-EMC clock rate is set properly at a boot time on all Tegra's, thanks.
+The IO mapped memory is strongly-ordered on ARM, hence all readl/writel accesses are guaranteed to be ordered by default. I think wmb() here is just a cut-n-pasted relic from old downstream driver.
+
+> But, this patch edits it as following:
+> The result of the following two cases are same?
+> 
+> [original code]
+> 	wmb()
+> 	read_relaxed()
+> 
+> [new code by this patch]
+> 	readl_relaxed()
+> 	rmb()
+
+Yes, the result is the same. The wmb() is not just about IO accesses, but about all kind of memory accesses and at least on Tegra30 it is quite expensive operation because it translates into L2XO cache syncing (arm_heavy_mb) + dsb(). It should be more efficient to flush out writes with a read-back and then wait for that read operation to be completed.
