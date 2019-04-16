@@ -1,119 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND] drivers/cpufreq/acpi-cpufreq.c: This fixes the
- following  checkpatch warning
-Date: Tue, 16 Apr 2019 18:28:25 +0530
-Message-ID: <20190416125825.vkjjujxdls7rwnem@vireshk-mac-ubuntu>
-References: <1555326238-3612-1-git-send-email-mohankumar718@gmail.com>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v2 01/19] PM / devfreq: tegra: Fix kHz to Hz conversion
+Date: Tue, 16 Apr 2019 16:24:16 +0300
+Message-ID: <cd022104-6b31-9b0d-b5d5-32374bdc0e6a@gmail.com>
+References: <20190415145505.18397-1-digetx@gmail.com>
+ <CGME20190415145820epcas2p27ba84badad9cf5cf5b7853af7e908e43@epcas2p2.samsung.com>
+ <20190415145505.18397-2-digetx@gmail.com>
+ <a7cacb6c-1097-6d16-f6dc-7470f487c5b8@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1555326238-3612-1-git-send-email-mohankumar718@gmail.com>
+In-Reply-To: <a7cacb6c-1097-6d16-f6dc-7470f487c5b8@samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mohan Kumar <mohankumar718@gmail.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15-04-19, 14:03, Mohan Kumar wrote:
-> WARNING: Prefer using '"%s...", __func__' to using function's name, in a
-> string
+16.04.2019 4:45, Chanwoo Choi пишет:
+> Hi,
 > 
-> Switch hardcoded function name with a reference to __func__ making the
-> code more maintainable
-> 
-> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 19 +++++++++----------
->  1 file changed, 9 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index c72258a..73bb2aa 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -366,7 +366,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
->  
->  	val = drv_read(data, mask);
->  
-> -	pr_debug("get_cur_val = %u\n", val);
-> +	pr_debug("%s = %u\n", __func__, val);
->  
->  	return val;
->  }
-> @@ -378,7 +378,7 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->  	unsigned int freq;
->  	unsigned int cached_freq;
->  
-> -	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
-> +	pr_debug("%s (%d)\n", __func__, cpu);
->  
->  	policy = cpufreq_cpu_get_raw(cpu);
->  	if (unlikely(!policy))
-> @@ -458,8 +458,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
->  	if (acpi_pstate_strict) {
->  		if (!check_freqs(policy, mask,
->  				 policy->freq_table[index].frequency)) {
-> -			pr_debug("acpi_cpufreq_target failed (%d)\n",
-> -				policy->cpu);
-> +			pr_debug("%s (%d)\n", __func__, policy->cpu);
->  			result = -EAGAIN;
->  		}
->  	}
-> @@ -573,7 +572,7 @@ static int cpufreq_boost_down_prep(unsigned int cpu)
->  static int __init acpi_cpufreq_early_init(void)
->  {
->  	unsigned int i;
-> -	pr_debug("acpi_cpufreq_early_init\n");
-> +	pr_debug("%s\n", __func__);
->  
->  	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
->  	if (!acpi_perf_data) {
-> @@ -657,7 +656,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	static int blacklisted;
->  #endif
->  
-> -	pr_debug("acpi_cpufreq_cpu_init\n");
-> +	pr_debug("%s\n", __func__);
->  
->  #ifdef CONFIG_SMP
->  	if (blacklisted)
-> @@ -856,7 +855,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  {
->  	struct acpi_cpufreq_data *data = policy->driver_data;
->  
-> -	pr_debug("acpi_cpufreq_cpu_exit\n");
-> +	pr_debug("%s\n", __func__);
->  
->  	policy->fast_switch_possible = false;
->  	policy->driver_data = NULL;
-> @@ -881,7 +880,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
->  {
->  	struct acpi_cpufreq_data *data = policy->driver_data;
->  
-> -	pr_debug("acpi_cpufreq_resume\n");
-> +	pr_debug("%s\n", __func__);
->  
->  	data->resume = 1;
->  
-> @@ -954,7 +953,7 @@ static int __init acpi_cpufreq_init(void)
->  	if (cpufreq_get_current_driver())
->  		return -EEXIST;
->  
-> -	pr_debug("acpi_cpufreq_init\n");
-> +	pr_debug("%s\n", __func__);
->  
->  	ret = acpi_cpufreq_early_init();
->  	if (ret)
-> @@ -991,7 +990,7 @@ static int __init acpi_cpufreq_init(void)
->  
->  static void __exit acpi_cpufreq_exit(void)
->  {
-> -	pr_debug("acpi_cpufreq_exit\n");
-> +	pr_debug("%s\n", __func__);
->  
->  	acpi_cpufreq_boost_exit();
->  
+> I add one minor comment (KHZ -> hz).
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hello Chanwoo,
 
--- 
-viresh
+Thank you very much for the review!
+
+> On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
+>> The kHz to Hz is incorrectly converted in a few places in the code,
+>> this results in a wrong frequency being calculated because devfreq core
+>> uses OPP frequencies that are given in Hz to clamp the rate, while
+>> tegra-devfreq gives to the core value in kHz and then it also expects to
+>> receive value in kHz from the core. In a result memory freq is always set
+>> to a value which is close to ULONG_MAX because of the bug. Hence the EMC
+>> frequency is always capped to the maximum and the driver doesn't do
+>> anything useful. This patch was tested on Tegra30 and Tegra124 SoC's, EMC
+>> frequency scaling works properly now.
+>>
+>> Cc: <stable@vger.kernel.org> # 4.14+
+>> Tested-by: Steev Klimaszewski <steev@kali.org>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/devfreq/tegra-devfreq.c | 10 ++++------
+>>  1 file changed, 4 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+>> index c89ba7b834ff..02905978abe1 100644
+>> --- a/drivers/devfreq/tegra-devfreq.c
+>> +++ b/drivers/devfreq/tegra-devfreq.c
+>> @@ -486,9 +486,9 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>>  {
+>>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>>  	struct dev_pm_opp *opp;
+>> -	unsigned long rate = *freq * KHZ;
+>> +	unsigned long rate;
+>>  
+>> -	opp = devfreq_recommended_opp(dev, &rate, flags);
+>> +	opp = devfreq_recommended_opp(dev, freq, flags);
+>>  	if (IS_ERR(opp)) {
+>>  		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
+> 
+> Need to change it as following:
+> - KHz -> Hz
+
+Indeed, good catch.
+
+> 
+>>  		return PTR_ERR(opp);
+>> @@ -499,8 +499,6 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>>  	clk_set_min_rate(tegra->emc_clock, rate);
+>>  	clk_set_rate(tegra->emc_clock, 0);
+>>  
+>> -	*freq = rate;
+>> -
+>>  	return 0;
+>>  }
+>>  
+>> @@ -510,7 +508,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+>>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>>  	struct tegra_devfreq_device *actmon_dev;
+>>  
+>> -	stat->current_frequency = tegra->cur_freq;
+>> +	stat->current_frequency = tegra->cur_freq * KHZ;
+>>  
+>>  	/* To be used by the tegra governor */
+>>  	stat->private_data = tegra;
+>> @@ -565,7 +563,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
+>>  		target_freq = max(target_freq, dev->target_freq);
+>>  	}
+>>  
+>> -	*freq = target_freq;
+>> +	*freq = target_freq * KHZ;
+>>  
+>>  	return 0;
+>>  }
+>>
+> 
+> It looks good to me if modify it in accordance with my comment.
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Okay, thanks.
