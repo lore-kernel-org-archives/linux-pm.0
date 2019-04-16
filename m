@@ -3,168 +3,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1DF1C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D5E3C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 19:23:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C5061206B6
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:58:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3FBE20868
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 19:23:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UmbWMsOe"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="giEVzNR0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730000AbfDPR6i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 13:58:38 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:41756 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729251AbfDPR6i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:58:38 -0400
-Received: by mail-ot1-f67.google.com with SMTP id 64so18351382otb.8;
-        Tue, 16 Apr 2019 10:58:37 -0700 (PDT)
+        id S1727490AbfDPTXE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 15:23:04 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:33558 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727136AbfDPTXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 15:23:03 -0400
+Received: by mail-wr1-f65.google.com with SMTP id q1so28681911wrp.0
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 12:23:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=EidWfYVGkkRXMbcoVzWniJ1YzRfymLouJTDXgtCXrm8=;
-        b=UmbWMsOeXT3ov6nrPgpTS+elXWa8vGaqeCrPb575FJUmDzeDXBEm+38/bKJS2b+sEa
-         wJrHE94pplyZEAVhe3QpROyNLsKr/WpPOoNFTsispkuWpAXHPCivWKHKJHc5TWqiEAnh
-         9cfQzehf0UqB73v6fWmRZjmbhaksH5I0ZZIwXLClqenyzL+AaTCw1i23O0UtmBWQg4Ys
-         GaC7/+7TXBuxJbJMJLVdTBqc4e/bPYRyZPgLzsQZaYHLB7Gt3I/ngG7yPucyMuJrFBED
-         3hMEoqhmsd5+XsT0WeJ6av0h0FePMWLjPGXsLVo7zafigLRTrH2bsaOS8Zy71Ca+IeY3
-         uj9Q==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=EDYx7epngbmP/CMeNw7L8ab8CPJ0bEuFj8yGq0twy/U=;
+        b=giEVzNR0s6KH9lYbUhfbWWrwojgHNm2klF7m38ladJx3vj7Iap2KT98L5xRyD5lW15
+         e1NOB8w7zJ51+kyM1bDjBf4CSYz0a7r+2j5VNaRcJtZfP/v/MrHgzlFVSuSKjrE7Suu2
+         XyekDuEAREiG8+CFuSEfWnSbNck31nWKtm0LyWbKfcTx2lJu5C4fNu9eub+EdGkrnMap
+         ayMNTl0yKLeiyLh1HZZ/YnSTXYZFRnE11Wsha3Iw/oXkRyh3xfeSc0aVdgiQcRfZ+t7a
+         IVi6dzXTsADBr1Cui3yejy0YC8gJYkp1iHG9TCkTQLiUAdfU+pEn8k09yQaYBbKu86EU
+         huVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=EidWfYVGkkRXMbcoVzWniJ1YzRfymLouJTDXgtCXrm8=;
-        b=pNbS1NbAcp7A1ZEvrnIt3PqrVUnEljfHMQmPblVyiBifZEQrkDezUOCevtTpsSMsBE
-         xX4HhjfNdWP4iTlSy+iJueVDSqLWDGtvhu8EkUizVXuw8bayWXJ/4lhtiW8/NWUd0c6V
-         LdROi3zO8zVhrb7zsTVL80+rz+WLXPJoyV8H7meVy9lA4oecmq288LJUlR+P4s5mfC2M
-         WuRhZUtqHNjfjgXlp49egYYxzhbq6Kyx7vUOGVXb1JrZBmfy+fzh/w4B7i67shAzGV3L
-         hHFYxoApm9vUtfvJCtywjsu9ge//x6vwjdkNUNAXg0xDh4i2m5AJ2DoH9+nZwF8L61ow
-         kHzw==
-X-Gm-Message-State: APjAAAVtxsfBHtdBcRJsYYI/57xR1jy3WpCbOHTgWifBJAEYQbfFMQwQ
-        3HJeLtClXL0boTwNiXuXbjoofHI8KMrxfWSr3TM=
-X-Google-Smtp-Source: APXvYqyjyQpVkpt8UdZO6dJtGGHDvfdhgpCg1S4ZgKpSwCZV2AtTrr055NHEzz91Yf/vbUjpX7LT3j9OrNSnC6cunv4=
-X-Received: by 2002:a9d:7359:: with SMTP id l25mr51832885otk.189.1555437517076;
- Tue, 16 Apr 2019 10:58:37 -0700 (PDT)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=EDYx7epngbmP/CMeNw7L8ab8CPJ0bEuFj8yGq0twy/U=;
+        b=rs7DHvt4bh7xe9rak6lLvHv0K8a5tNwZEZQcUG6ZdwwBSxftQ9B3Kszm/VQEdSLKH6
+         sLP0peuoP8tddeo3ARi60SwySkhlyaHPKtG6KX40RXnkzB65LWp1uvMtsJ2ADcgj14GE
+         mhPwMhb4GRuu1Il1xkuSE0QKh/qPih5q5el13rmgA4jMo80vDaqKxqvzhVg6fBYcxBwi
+         bl+qesV0JAZuLnIl6TSUa9x86gIGAITTuSUDLs+MDI/OVQY8tgEEM19Q3v0r/g2Jg+5/
+         khknGHm8Api75tdIe3PebQkqfioAeg5EkX4tmQ26azmlS+aBKF4JPBSwkjbHrD29reJY
+         hypg==
+X-Gm-Message-State: APjAAAXPh1rVrJ2a6KwQi3sG29U3xN6DjhiVMDcMuK8XrRg+TrIa0zkd
+        AINNC5Yllw8SkHX9JDGYPCaybQ==
+X-Google-Smtp-Source: APXvYqwvSLzXRPVwl9wYnW4Skw66lF5zMamiO/JBxgEw1HuFsoc9L+JTNJjmf6oYmZtpX543MoVudg==
+X-Received: by 2002:adf:e94d:: with SMTP id m13mr31626911wrn.141.1555442581433;
+        Tue, 16 Apr 2019 12:23:01 -0700 (PDT)
+Received: from [192.168.0.41] (50.251.95.92.rev.sfr.net. [92.95.251.50])
+        by smtp.googlemail.com with ESMTPSA id s18sm202287wmc.41.2019.04.16.12.22.59
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 16 Apr 2019 12:23:00 -0700 (PDT)
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
+        edubezval@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+Date:   Tue, 16 Apr 2019 21:22:59 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <1553201273-16757-1-git-send-email-ykaneko0929@gmail.com>
- <20190401133753.5luent76gyzygtcb@verge.net.au> <20190411165034.GF30887@bigcity.dyn.berto.se>
-In-Reply-To: <20190411165034.GF30887@bigcity.dyn.berto.se>
-From:   Yoshihiro Kaneko <ykaneko0929@gmail.com>
-Date:   Wed, 17 Apr 2019 02:58:25 +0900
-Message-ID: <CAH1o70+BHrDgjBKuE=mtk6VWdZ0qvedBnYw4aN23v=455a+wyA@mail.gmail.com>
-Subject: Re: [PATCH/RFT] thermal: rcar_gen3_thermal: Update calculation
- formula due to HW evaluation
-To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc:     Simon Horman <horms@verge.net.au>,
-        Yoshihiro Kaneko <ykaneko0929@gmail.com>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+In-Reply-To: <20190411100352.15977-1-jiada_wang@mentor.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190416192259.gdh6_qUHFxQH0vFPlusLnf2c-Epx_WtIXFqKOzdiUt8@z>
 
-Hi Niklas-san,
+On 11/04/2019 12:03, Jiada Wang wrote:
+> Currently IRQ is remain enabled after .remove, later if device is probed,
+> IRQ is requested before .thermal_init, this may cause IRQ function be
+> triggered but not able to clear IRQ status, thus cause system to hang.
+> 
+> this patch by moving request of IRQ after device initialization to
+> avoid this issue.
 
-Thanks for your review.
+Why not disable the interrupt and clear the irq status in the .remove
+callback, so the place is clean when probing again?
 
-2019=E5=B9=B44=E6=9C=8812=E6=97=A5(=E9=87=91) 1:50 Niklas S=C3=B6derlund <n=
-iklas.soderlund@ragnatech.se>:
->
-> Hi Kaneko-san,
->
-> Thanks for your work.
->
-> On 2019-04-01 15:37:57 +0200, Simon Horman wrote:
-> > On Fri, Mar 22, 2019 at 05:47:53AM +0900, Yoshihiro Kaneko wrote:
-> > > From: Dien Pham <dien.pham.ry@renesas.com>
-> > >
-> > > 1/ As evaluation of hardware team, temperature calculation formula
-> > >  of M3-W is difference from all other SoCs as below:
-> > >  - M3-W: Tj_1: 116 (so Tj_1 - Tj_3 =3D 157)
-> > >  - Others: Tj_1: 126 (so Tj_1 - Tj_3 =3D 167)
-> > >
-> > > 2/ Update the formula to calculate CTEMP:
-> > >   Currently, the CTEMP is average of val1 (is calculated by
-> > >   formula 1) and val2 (is calculated by formula 2). But,
-> > >   as description in HWM (chapter 10A.3.1.1 Setting of Normal Mode)
-> > >
-> > >   If (STEMP < Tj_T) CTEMP value should be val1.
-> > >   If (STEMP > Tj_T) CTEMP value should be val2.
-> > >
-> > > 3/ Update the formula to calculate temperature:
-> > >   Currently, current TEMP is calculated as
-> > >   average of val1 (is calculated by formula 1)
-> > >   and val2 (is calculated by formula 2). But,
-> > >   as description in HWM (chapter 10A.3.1.2 Normal Mode.)
-> > >
-> > >   If (TEMP_CODE < THCODE2[11:0]) CTEMP value should be val1.
-> > >   If (TEMP_CODE > THCODE2[11:0]) CTEMP value should be val2.
-> > >
-> > > Signed-off-by: Dien Pham <dien.pham.ry@renesas.com>
-> > > [ykaneko0929@gmail.com: use the data field of the of_device_id for Tj=
-_1]
-> > > [ykaneko0929@gmail.com: revise a description of case 1 of the commit =
-log]
-> > > Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
-> >
-> > I'm wondering if we could split this up into three patches,
-> > one for each problem it solves? Partly because I think it is good to fi=
-x
-> > one problem per patch. And partly because am having trouble
-> > verifying this patch - the new if statement in rcar_gen3_thermal_get_te=
-mp()
-> > seems to result in 0 temperature readings when the else case is used.
->
-> I think the changes in this patch are good and correct but I agree with
-> Simon here, this patch should be split.
 
-I have split this patch and made fixes in v2.
+        struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
 
-Thanks,
-Kaneko
+        rcar_thermal_irq_set(priv, false);
 
->
-> >
-> > > ---
-> > >  drivers/thermal/rcar_gen3_thermal.c | 86 +++++++++++++++++++++++++--=
-----------
-> > >  1 file changed, 58 insertions(+), 28 deletions(-)
-> > >
-> > > This patch is based on the master branch of Linus Torvalds's linux tr=
-ee.
-> > >
-> > > diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rc=
-ar_gen3_thermal.c
-> > > index 88fa41c..de6f244 100644
-> > > --- a/drivers/thermal/rcar_gen3_thermal.c
-> > > +++ b/drivers/thermal/rcar_gen3_thermal.c
-> > > @@ -63,6 +63,15 @@
-> > >
-> > >  #define TSC_MAX_NUM        3
-> > >
-> > > +static int tj_2;
-> >
-> > We need to avoid global variables. There can be multiple
-> > instances of this driver. (Although they will all get the same
-> > value for tj_2.
-> >
-> > Perhaps it can be added to struct rcar_gen3_thermal_tsc?
-> >
-> > ...
->
-> --
-> Regards,
-> Niklas S=C3=B6derlund
+should do the trick no ?
+
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+> ---
+>  drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>  1 file changed, 26 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..4d095d7f9763 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, priv);
+>  
+> -	/*
+> -	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+> -	 * to trigger on the low and high trip points of the current
+> -	 * temp window at this point.
+> -	 */
+> -	for (i = 0; i < 2; i++) {
+> -		irq = platform_get_irq(pdev, i);
+> -		if (irq < 0)
+> -			return irq;
+> -
+> -		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+> -					 dev_name(dev), i);
+> -		if (!irqname)
+> -			return -ENOMEM;
+> -
+> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> -						rcar_gen3_thermal_irq_thread,
+> -						IRQF_SHARED, irqname, priv);
+> -		if (ret)
+> -			return ret;
+> -	}
+> -
+>  	pm_runtime_enable(dev);
+>  	pm_runtime_get_sync(dev);
+>  
+> @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		goto error_unregister;
+>  	}
+>  
+> +	/*
+> +	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+> +	 * to trigger on the low and high trip points of the current
+> +	 * temp window at this point.
+> +	 */
+> +	for (i = 0; i < 2; i++) {
+> +		irq = platform_get_irq(pdev, i);
+> +		if (irq < 0) {
+> +			ret = irq;
+> +			goto error_unregister;
+> +		}
+> +
+> +		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+> +					 dev_name(dev), i);
+> +		if (!irqname) {
+> +			ret = -ENOMEM;
+> +			goto error_unregister;
+> +		}
+> +
+> +		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> +						rcar_gen3_thermal_irq_thread,
+> +						IRQF_SHARED, irqname, priv);
+> +		if (ret)
+> +			goto error_unregister;
+> +	}
+> +
+>  	rcar_thermal_irq_set(priv, true);
+>  
+>  	return 0;
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
