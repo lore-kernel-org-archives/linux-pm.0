@@ -1,60 +1,102 @@
-From: Janakarajan Natarajan <jnataraj@amd.com>
-Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-Date: Mon, 15 Apr 2019 22:35:48 +0000
-Message-ID: <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com>
-References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 01/19] PM / devfreq: tegra: Fix kHz to Hz conversion
+Date: Tue, 16 Apr 2019 10:45:55 +0900
+Message-ID: <a7cacb6c-1097-6d16-f6dc-7470f487c5b8@samsung.com>
+References: <20190415145505.18397-1-digetx@gmail.com>
+        <CGME20190415145820epcas2p27ba84badad9cf5cf5b7853af7e908e43@epcas2p2.samsung.com>
+        <20190415145505.18397-2-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
+In-Reply-To: <20190415145505.18397-2-digetx@gmail.com>
 Content-Language: en-US
-Content-ID: <B4C29D8A2FA3B345ADAA26B77C37F46D@namprd12.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>, "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gNC80LzE5IDQ6MjUgUE0sIE5hdGFyYWphbiwgSmFuYWthcmFqYW4gd3JvdGU6DQo+IENQUEMg
-KENvbGxhYm9yYXRpdmUgUHJvY2Vzc29yIFBlcmZvcm1hbmNlIENvbnRyb2wpIG9mZmVycyBvcHRp
-b25hbA0KPiByZWdpc3RlcnMgd2hpY2ggY2FuIGJlIHVzZWQgdG8gdHVuZSB0aGUgc3lzdGVtIGJh
-c2VkIG9uIGVuZXJneSBhbmQvb3INCj4gcGVyZm9ybWFuY2UgcmVxdWlyZW1lbnRzLg0KPg0KPiBO
-ZXdlciBBTUQgcHJvY2Vzc29ycyBhZGQgc3VwcG9ydCBmb3IgYSBzdWJzZXQgb2YgdGhlc2Ugb3B0
-aW9uYWwgQ1BQQw0KPiByZWdpc3RlcnMsIGJhc2VkIG9uIEFDUEkgdjYuMS4NCj4NCj4gVGhlIGZv
-bGxvd2luZyBhcmUgdGhlIHN1cHBvcnRlZCBDUFBDIHJlZ2lzdGVycyBmb3Igd2hpY2ggc3lzZnMg
-ZW50cmllcw0KPiBhcmUgY3JlYXRlZDoNCj4gKiBlbmFibGUgICAgICAgICAgICAgICAgKE5FVykN
-Cj4gKiBtYXhfcGVyZiAgICAgICAgICAgICAgKE5FVykNCj4gKiBtaW5fcGVyZiAgICAgICAgICAg
-ICAgKE5FVykNCj4gKiBlbmVyZ3lfcGVyZg0KPiAqIGxvd2VzdF9wZXJmDQo+ICogbm9taW5hbF9w
-ZXJmDQo+ICogZGVzaXJlZF9wZXJmICAgICAgICAgIChORVcpDQo+ICogZmVlZGJhY2tfY3Rycw0K
-PiAqIGF1dG9fc2VsX2VuYWJsZSAgICAgICAoTkVXKQ0KPiAqIGxvd2VzdF9ub25saW5lYXJfcGVy
-Zg0KPg0KPiBUaGUgQ1BQQyBkcml2ZXIgaXMgdXBkYXRlZCB0byBlbmFibGUgdGhlIE9TUE0gYW5k
-IHRoZSB1c2Vyc3BhY2UgdG8NCj4gYWNjZXNzDQo+IHRoZSBuZXdseSBzdXBwb3J0ZWQgcmVnaXN0
-ZXJzLg0KPg0KPiBUaGUgcHVycG9zZSBvZiBleHBvc2luZyB0aGUgcmVnaXN0ZXJzIHZpYSB0aGUg
-c3lzZnMgZW50cmllcyBpcyB0byBhbGxvdw0KPiB0aGUgdXNlcnNwYWNlIHRvOg0KPiAqIFR3ZWFr
-IHRoZSB2YWx1ZXMgdG8gZml0IGl0cyB3b3JrbG9hZC4NCj4gKiBBcHBseSBhIHByb2ZpbGUgZnJv
-bSBBTUQncyBvcHRpbWl6YXRpb24gZ3VpZGVzLg0KPg0KPiBQcm9maWxlcyB3aWxsIGJlIGRvY3Vt
-ZW50ZWQgaW4gdGhlIHBlcmZvcm1hbmNlL29wdGltaXphdGlvbiBndWlkZXMuDQo+DQo+IE5vdGU6
-DQo+ICogQU1EIHN5c3RlbXMgd2lsbCBub3QgaGF2ZSBhIHBvbGljeSBhcHBsaWVkIGluIHRoZSBr
-ZXJuZWwgYXQgdGhpcyB0aW1lLg0KPiAqIEJ5IGRlZmF1bHQsIGFjcGlfY3B1ZnJlcSB3aWxsIHN0
-aWxsIGJlIHVzZWQuDQo+DQo+IFRPRE86DQo+ICogQ3JlYXRlIGEgbGludXggdXNlcnNwYWNlIHRv
-b2wgdGhhdCB3aWxsIGhlbHAgdXNlcnMgZ2VuZXJhdGUgYSBDUFBDDQo+ICogcHJvZmlsZQ0KPiAg
-ICBmb3IgdGhlaXIgdGFyZ2V0IHdvcmtsb2FkLg0KPiAqIENyZWF0ZSBvciB1cGRhdGUgYSBkcml2
-ZXIgdG8gYXBwbHkgYSBnZW5lcmFsIENQUEMgcG9saWN5IGluIHRoZQ0KPiAqIGtlcm5lbC4NCj4N
-Cj4gdjEtPnYyOg0KPiAqIEFkZCBtYWNybyB0byBlbnN1cmUgQlVGRkVSIG9ubHkgcmVnaXN0ZXJz
-IGhhdmUgQlVGRkVSIHR5cGUuDQo+ICogQWRkIHN1cHBvcnQgbWFjcm8gdG8gbWFrZSB0aGUgcmln
-aHQgY2hlY2sgYmFzZWQgb24gcmVnaXN0ZXIgdHlwZS4NCj4gKiBSZW1vdmUgc3VwcG9ydCBjaGVj
-a3MgZm9yIHJlZ2lzdGVycyB3aGljaCBhcmUgbWFuZGF0b3J5Lg0KDQoNCkFyZSB0aGVyZSBhbnkg
-Y29uY2VybnMgcmVnYXJkaW5nIHRoaXMgcGF0Y2hzZXQ/DQoNCg0KVGhhbmtzLg0KDQoNCj4NCj4g
-SmFuYWthcmFqYW4gTmF0YXJhamFuICgyKToNCj4gICAgYWNwaS9jcHBjOiBBZGQgbWFjcm8gZm9y
-IENQUEMgcmVnaXN0ZXIgQlVGRkVSIG9ubHkgY2hlY2sNCj4gICAgYWNwaS9jcHBjOiBFbnN1cmUg
-b25seSBzdXBwb3J0ZWQgQ1BQQyBzeXNmcyBlbnRyaWVzIGFyZSBjcmVhdGVkDQo+DQo+IFlhemVu
-IEdoYW5uYW0gKDUpOg0KPiAgICBhY3BpL2NwcGM6IE1vZGlmeSBzaG93X2NwcGNfZGF0YSBtYWNy
-bw0KPiAgICBhY3BpL2NwcGM6IFJld29yayBjcHBjX3NldF9wZXJmKCkgdG8gdXNlIGNwcGNfcmVn
-cyBpbmRleA0KPiAgICBhY3BpL2NwcGM6IEFkZCBtYWNyb3MgdG8gZGVmaW5lIGEgUi9XIHN5c2Zz
-IGVudHJ5IGZvciBDUFBDIHJlZ2lzdGVycw0KPiAgICBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZv
-ciBvcHRpb25hbCBDUFBDIHJlZ2lzdGVycw0KPiAgICBhY3BpL2NwcGM6IEFkZCBzdXBwb3J0IGZv
-ciBDUFBDIEVuYWJsZSByZWdpc3Rlcg0KPg0KPiAgIGRyaXZlcnMvYWNwaS9jcHBjX2FjcGkuYyAg
-ICAgICB8IDQwMiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0NCj4gICBkcml2ZXJz
-L2NwdWZyZXEvY3BwY19jcHVmcmVxLmMgfCAgIDYgKy0NCj4gICBpbmNsdWRlL2FjcGkvY3BwY19h
-Y3BpLmggICAgICAgfCAgIDYgKy0NCj4gICAzIGZpbGVzIGNoYW5nZWQsIDM3MiBpbnNlcnRpb25z
-KCspLCA0MiBkZWxldGlvbnMoLSkNCj4NCg==
+Hi,
+
+I add one minor comment (KHZ -> hz).
+
+On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
+> The kHz to Hz is incorrectly converted in a few places in the code,
+> this results in a wrong frequency being calculated because devfreq core
+> uses OPP frequencies that are given in Hz to clamp the rate, while
+> tegra-devfreq gives to the core value in kHz and then it also expects to
+> receive value in kHz from the core. In a result memory freq is always set
+> to a value which is close to ULONG_MAX because of the bug. Hence the EMC
+> frequency is always capped to the maximum and the driver doesn't do
+> anything useful. This patch was tested on Tegra30 and Tegra124 SoC's, EMC
+> frequency scaling works properly now.
+> 
+> Cc: <stable@vger.kernel.org> # 4.14+
+> Tested-by: Steev Klimaszewski <steev@kali.org>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/devfreq/tegra-devfreq.c | 10 ++++------
+>  1 file changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+> index c89ba7b834ff..02905978abe1 100644
+> --- a/drivers/devfreq/tegra-devfreq.c
+> +++ b/drivers/devfreq/tegra-devfreq.c
+> @@ -486,9 +486,9 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>  {
+>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>  	struct dev_pm_opp *opp;
+> -	unsigned long rate = *freq * KHZ;
+> +	unsigned long rate;
+>  
+> -	opp = devfreq_recommended_opp(dev, &rate, flags);
+> +	opp = devfreq_recommended_opp(dev, freq, flags);
+>  	if (IS_ERR(opp)) {
+>  		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
+
+Need to change it as following:
+- KHz -> Hz
+
+
+>  		return PTR_ERR(opp);
+> @@ -499,8 +499,6 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>  	clk_set_min_rate(tegra->emc_clock, rate);
+>  	clk_set_rate(tegra->emc_clock, 0);
+>  
+> -	*freq = rate;
+> -
+>  	return 0;
+>  }
+>  
+> @@ -510,7 +508,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>  	struct tegra_devfreq_device *actmon_dev;
+>  
+> -	stat->current_frequency = tegra->cur_freq;
+> +	stat->current_frequency = tegra->cur_freq * KHZ;
+>  
+>  	/* To be used by the tegra governor */
+>  	stat->private_data = tegra;
+> @@ -565,7 +563,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
+>  		target_freq = max(target_freq, dev->target_freq);
+>  	}
+>  
+> -	*freq = target_freq;
+> +	*freq = target_freq * KHZ;
+>  
+>  	return 0;
+>  }
+> 
+
+It looks good to me if modify it in accordance with my comment.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Regards,
+Chanwoo Choi
+
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
