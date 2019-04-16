@@ -4,59 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3CADC10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:43:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B0A2C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:48:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6FDF12073F
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:43:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 301F820868
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:48:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="WBigNEzJ"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="QZvmpqR5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727828AbfDPHnB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 03:43:01 -0400
-Received: from mailout4.samsung.com ([203.254.224.34]:54002 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726775AbfDPHnB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 03:43:01 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20190416074259epoutp040e5362b783ac6b8b81aa321e1e53abb2~V5JYWedw32891928919epoutp04M
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 07:42:59 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20190416074259epoutp040e5362b783ac6b8b81aa321e1e53abb2~V5JYWedw32891928919epoutp04M
+        id S1728341AbfDPHsE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 03:48:04 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:23087 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728486AbfDPHsD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 03:48:03 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20190416074759epoutp025251978d3febff859cff1619263ab3ca~V5Nveaayd0616806168epoutp02C
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 07:47:59 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20190416074759epoutp025251978d3febff859cff1619263ab3ca~V5Nveaayd0616806168epoutp02C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555400579;
-        bh=kPHTnWTD1IjGbJFuaA1eHJsTziiU0q/Ml4+LbSF9wBU=;
+        s=mail20170921; t=1555400879;
+        bh=mUCOfsw/4l1KxtNlMA1E4n05wbdzIV5hAVn7fm9KwJU=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=WBigNEzJ0RiRyqURZe2aZICmqPuXocq16NX/4o9BxIY1hsxsVMqEas5AUQw7lYBSh
-         3YRcGkFVAGfzszKOjJGMrUDUTwiWc1RTgiyD6Me8vjjZ92bbpu/DhYXv+dchYj8spt
-         OMtdNdz5414FYeOnE9NSBfs5dfF+vXtzUuTlrjjo=
-Received: from epsmges1p2.samsung.com (unknown [182.195.40.157]) by
+        b=QZvmpqR5iGFDuc9lLLejO78/aji3Y0ZU9M+eJ78y6Ggy7G92qF9VAiG9e0km1ObDe
+         qxlvNhsEPeZYNPXtpyWaWX0jYh71YCahaw4QRtIEykst2Mre1hWmouxSonK2oLqjMy
+         zL95ClpoOzcNvSDM3+X1I2RSHkVpt//Jj03dVnGY=
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.157]) by
         epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20190416074254epcas1p4c5b727c06c79ae1a73e1ec642a84451f~V5JTy9eQV1754017540epcas1p4M;
-        Tue, 16 Apr 2019 07:42:54 +0000 (GMT)
+        20190416074757epcas1p42ed9745e8075fe1fe091d3b03015627b~V5NtcgOSS3117031170epcas1p4o;
+        Tue, 16 Apr 2019 07:47:57 +0000 (GMT)
 Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        57.7F.04142.E7785BC5; Tue, 16 Apr 2019 16:42:54 +0900 (KST)
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        99.1A.04257.AA885BC5; Tue, 16 Apr 2019 16:47:54 +0900 (KST)
 Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
         epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
-        20190416074254epcas1p36c8f4d1f1cb435a9cc07340373744f91~V5JTZBGM41321713217epcas1p3E;
-        Tue, 16 Apr 2019 07:42:54 +0000 (GMT)
+        20190416074754epcas1p3086ede498759271efc1b083d9eee77ea~V5NqmF4ow0476504765epcas1p3n;
+        Tue, 16 Apr 2019 07:47:54 +0000 (GMT)
 Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
         epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190416074254epsmtrp235d89f280fde2cc7f590213020dc7bac~V5JTYS-0j1822018220epsmtrp2D;
-        Tue, 16 Apr 2019 07:42:54 +0000 (GMT)
-X-AuditID: b6c32a36-ce1ff7000000102e-ef-5cb5877ec5a3
+        20190416074754epsmtrp2648174caff0e3650d0b136ac803fc1a3~V5NqlRoCw1984319843epsmtrp2H;
+        Tue, 16 Apr 2019 07:47:54 +0000 (GMT)
+X-AuditID: b6c32a38-5e3ff700000010a1-f2-5cb588aaad0b
 Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
         epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        0E.20.03662.E7785BC5; Tue, 16 Apr 2019 16:42:54 +0900 (KST)
+        75.60.03662.9A885BC5; Tue, 16 Apr 2019 16:47:53 +0900 (KST)
 Received: from [10.113.221.102] (unknown [10.113.221.102]) by
         epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190416074254epsmtip2844d0408abe702c017e865fefcaee7c3~V5JTNQvJB3033930339epsmtip2M;
-        Tue, 16 Apr 2019 07:42:54 +0000 (GMT)
-Subject: Re: [PATCH v2 18/19] PM / devfreq: tegra: Enable COMPILE_TEST for
- the driver
+        20190416074753epsmtip2a1b768d20ed69cde9f140923d8af797e~V5NqZUuOj2766227662epsmtip2B;
+        Tue, 16 Apr 2019 07:47:53 +0000 (GMT)
+Subject: Re: [PATCH v2 17/19] PM / devfreq: tegra: Support Tegra30
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -67,84 +66,110 @@ Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 Organization: Samsung Electronics
-Message-ID: <8d8c55b8-b4aa-e072-7c5f-0b1e5e883031@samsung.com>
-Date:   Tue, 16 Apr 2019 16:43:48 +0900
+Message-ID: <203f3cbf-d825-0597-b64a-dc876743ae86@samsung.com>
+Date:   Tue, 16 Apr 2019 16:48:48 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190415145505.18397-19-digetx@gmail.com>
+In-Reply-To: <20190415145505.18397-18-digetx@gmail.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrPJsWRmVeSWpSXmKPExsWy7bCmvm5d+9YYg94PaharPz5mtGiZtYjF
-        4mzTG3aLy7vmsFl87j3CaNH5ZRabxe3GFWwWP3fNY7HoW3uJzYHTY8fdJYweO2fdZffobX7H
-        5tG3ZRWjx+dNcgGsUdk2GamJKalFCql5yfkpmXnptkrewfHO8aZmBoa6hpYW5koKeYm5qbZK
-        Lj4Bum6ZOUAHKSmUJeaUAoUCEouLlfTtbIryS0tSFTLyi0tslVILUnIKLAv0ihNzi0vz0vWS
-        83OtDA0MjEyBChOyM2bO+8xY8IC94uzyiSwNjHPZuhg5OSQETCTOdbYwdjFycQgJ7GCUaJw1
-        lwnC+cQo8fjoNmYI5xujxNGLn5hgWtY/Xc0OkdjLKPH3zTUo5z2jxMOjd4CqODiEBcIl+q5G
-        gMRFBP4xSnzaNYMVpJtZIFLi68GlzCA2m4CWxP4XN8AO4RdQlLj64zEjSC+vgJ3Em+Z4kDCL
-        gKrEgXkdjCC2qECExP1jG8DG8AoISpyc+YQFxOYUMJf4f/ccI8R4cYlbT+YzQdjyEs1bZ4N9
-        ICHQzC7RfuI9M8QHLhJ3DzVBA0BY4tXxLewQtpTE53d7oeLVEitPHmGDaO5glNiy/wIrRMJY
-        Yv/SyWBPMgtoSqzfpQ+xjE/i3dceVpCwhACvREebEES1ssTlB3ehAScpsbi9E2q8h8TLQ33M
-        ExgVZyF5ZxaSF2YheWEWwrIFjCyrGMVSC4pz01OLDQuMkGN7EyM4sWqZ7WBcdM7nEKMAB6MS
-        Dy9Hz5YYIdbEsuLK3EOMEhzMSiK8jilAId6UxMqq1KL8+KLSnNTiQ4ymwNCeyCwlmpwPTPp5
-        JfGGpkbGxsYWJoZmpoaGSuK86x2cY4QE0hNLUrNTUwtSi2D6mDg4pRoYYx2CT/yR7VfY0laX
-        vVD8mPljvV88tmkTzE9stkzskrq2uPWFvGeq/BH2nhQ1Xu9+fdUHS641Ca4J//x+s+gJg+Wd
-        vck6iwReJxcUR24N6bVJV7a6czVuibje9Pl39I9FX/8pfELGdf+ZB8nJPmcXX9O5mXPk2TL2
-        wG4xnbPzTKfm62l0+uYpsRRnJBpqMRcVJwIA3EDEVMIDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSvG5d+9YYg+3feSxWf3zMaNEyaxGL
-        xdmmN+wWl3fNYbP43HuE0aLzyyw2i9uNK9gsfu6ax2LRt/YSmwOnx467Sxg9ds66y+7R2/yO
-        zaNvyypGj8+b5AJYo7hsUlJzMstSi/TtErgyZs77zFjwgL3i7PKJLA2Mc9m6GDk5JARMJNY/
-        Xc3excjFISSwm1Hi/P15TBAJSYlpF48ydzFyANnCEocPF4OEhQTeMkpceKoBYgsLhEvcu/CX
-        FaRXRKCJSeLzwxawXmaBSIn+R92sEEO3MUr8e7eSHSTBJqAlsf/FDbDN/AKKEld/PGYEWcAr
-        YCfxpjkeJMwioCpxYF4HI4gtKhAhceb9ChYQm1dAUOLkzCdgNqeAucT/u+cYIXapS/yZd4kZ
-        whaXuPVkPtQN8hLNW2czT2AUnoWkfRaSlllIWmYhaVnAyLKKUTK1oDg3PbfYsMAoL7Vcrzgx
-        t7g0L10vOT93EyM4wrS0djCeOBF/iFGAg1GJhzehb0uMEGtiWXFl7iFGCQ5mJRFexxSgEG9K
-        YmVValF+fFFpTmrxIUZpDhYlcV75/GORQgLpiSWp2ampBalFMFkmDk6pBkbW2LUTyope7Vi8
-        qlpjYvTHs33XC+dGOHjMUbkvFZDj2pIY+mDigwDFvT3MJ258ODlDty86v23qrNC6nZ9dT/wK
-        muv862TRscsWt/VF8mznTS7V+a5cwf+f9dKxqg956fxTAl4r7Pg/y3nzk+TUBt+/3IzXzZjk
-        bxrWsfhNuz31pV57hPyut4uVWIozEg21mIuKEwHxx/fqrAIAAA==
-X-CMS-MailID: 20190416074254epcas1p36c8f4d1f1cb435a9cc07340373744f91
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrAJsWRmVeSWpSXmKPExsWy7bCmvu6qjq0xBq83y1is/viY0aJl1iIW
+        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
+        m0ffllWMHp83yQWwRmXbZKQmpqQWKaTmJeenZOal2yp5B8c7x5uaGRjqGlpamCsp5CXmptoq
+        ufgE6Lpl5gAdpKRQlphTChQKSCwuVtK3synKLy1JVcjILy6xVUotSMkpsCzQK07MLS7NS9dL
+        zs+1MjQwMDIFKkzIztj67ChzwSq+iuPfz7I1MJ7i7mLk5JAQMJFYcKadqYuRi0NIYAejxJO2
+        DhYI5xOjxLzLv9hAqoQEvjFKbNpWDNPxqH8rK0TRXkaJCTu+skM47xklrl1axQhSJSzgJDF3
+        4iFmkISIwD9GiU+7ZrCCJJgFIiW+HlzKDGKzCWhJ7H9xA2wFv4CixNUfj8GaeQXsJA43XwWL
+        swioSixqOwZWLyoQIXH/2AZWiBpBiZMzn7CA2JwC5hI37l+Bmi8ucevJfCYIW16ieetssCMk
+        BP6zSTzcuY4Z4gcXickHf0LZwhKvjm9hh7ClJD6/28sGYVdLrDx5hA2iuYNRYsv+C6wQCWOJ
+        /UsnA23gANqgKbF+lz7EMj6Jd197WEHCEgK8Eh1tQhDVyhKXH9xlgrAlJRa3d0KN95B4fXoP
+        8wRGxVlI3pmF5IVZSF6YhbBsASPLKkax1ILi3PTUYsMCE+To3sQITq1aFjsY95zzOcQowMGo
+        xMOb0LclRog1say4MvcQowQHs5IIr2MKUIg3JbGyKrUoP76oNCe1+BCjKTC0JzJLiSbnA9N+
+        Xkm8oamRsbGxhYmhmamhoZI473oH5xghgfTEktTs1NSC1CKYPiYOTqkGxnbWOUGf01+yzl77
+        1vrBnK4PTyMnzH/8XCH/+zSlSL89rTNMW1e4xL47nK4krx3Qw7wxx7lm50c2WV2p7xrez5cU
+        /jHTZfff1dE2T0fjTf8i34mHTFtbwto9jO24Qpy+/MoTmrrahLNjX5vCj3/q/72nnPkhaCay
+        6eSRNu1DHAul1t5MC1wkqcRSnJFoqMVcVJwIAHD2W7HDAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprNIsWRmVeSWpSXmKPExsWy7bCSvO7Kjq0xBjtPWlus/viY0aJl1iIW
+        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
+        m0ffllWMHp83yQWwRnHZpKTmZJalFunbJXBlbH12lLlgFV/F8e9n2RoYT3F3MXJySAiYSDzq
+        38raxcjFISSwm1Hi7qlGJoiEpMS0i0eZuxg5gGxhicOHiyFq3jJKXH1znxGkRljASWLuxEPM
+        IAkRgSYmic8PW8CamQUiJfofdUNN3cYocWXOTbAONgEtif0vbrCB2PwCihJXfzwGi/MK2Ekc
+        br4KFmcRUJVY1HaMGcQWFYiQOPN+BQtEjaDEyZlPwGxOAXOJG/evsEIsU5f4M+8SM4QtLnHr
+        yXyoI+QlmrfOZp7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBUV5quV5xYm5xaV66
+        XnJ+7iZGcJRpae1gPHEi/hCjAAejEg9vQt+WGCHWxLLiytxDjBIczEoivI4pQCHelMTKqtSi
+        /Pii0pzU4kOM0hwsSuK88vnHIoUE0hNLUrNTUwtSi2CyTBycUg2MrIuDpvvbf9i4Mib+4rxD
+        dw933bj1xPVahK39jnvr39/8bGbyqXZqPJO1v7DN1+tmQsf+x09eIPah8R37noudt7akrzp2
+        79iV5ydt733+tbeYI33tu/f2/17sLq49tcp0Uu+/WPbs4xo3rqnob+6RVH57ftXV29uS1ou/
+        ZBMOdez6XOcgIL2hTlaJpTgj0VCLuag4EQCcMkKZrgIAAA==
+X-CMS-MailID: 20190416074754epcas1p3086ede498759271efc1b083d9eee77ea
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190415145614epcas4p494a515b20cd351e220ac4eb37c05b7fb
+X-CMS-RootMailID: 20190415145707epcas3p27b7b927b14ef3c54274626c9df7cc14f
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145614epcas4p494a515b20cd351e220ac4eb37c05b7fb@epcas4p4.samsung.com>
-        <20190415145505.18397-19-digetx@gmail.com>
+        <CGME20190415145707epcas3p27b7b927b14ef3c54274626c9df7cc14f@epcas3p2.samsung.com>
+        <20190415145505.18397-18-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416074348.sr5KURFJK4_9tPTjzlbEWKsMDpRPjaOYieBi8kG0A_Q@z>
+Message-ID: <20190416074848.dVggvs7yMg80GVoBQLgIls1ocHfXyMaxOLh4XdEpBPQ@z>
+
+Hi,
 
 On 19. 4. 15. 오후 11:55, Dmitry Osipenko wrote:
-> The driver's compilation doesn't have any specific dependencies, hence
-> the COMPILE_TEST option can be supported in Kconfig.
+> The devfreq driver can be used on Tegra30 without any code change and
+> it works perfectly fine, the default Tegra124 parameters are good enough
+> for Tegra30.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/devfreq/Kconfig         | 4 ++--
+>  drivers/devfreq/tegra-devfreq.c | 1 +
+>  2 files changed, 3 insertions(+), 2 deletions(-)
 > 
 > diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 78c33ddd4eea..bd6652863e7d 100644
+> index a78dffe603c1..78c33ddd4eea 100644
 > --- a/drivers/devfreq/Kconfig
 > +++ b/drivers/devfreq/Kconfig
-> @@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+> @@ -92,8 +92,8 @@ config ARM_EXYNOS_BUS_DEVFREQ
+>  	  This does not yet operate with optimal voltages.
 >  
 >  config ARM_TEGRA_DEVFREQ
->  	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
-> -	depends on ARCH_TEGRA
-> +	depends on ARCH_TEGRA || COMPILE_TEST
+> -	tristate "Tegra DEVFREQ Driver"
+> -	depends on ARCH_TEGRA_124_SOC
+> +	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
+
+Looks good to me. But, I have a question.
+
+'Tegra30+' expression is enough in order to indicate
+the support for both tegra30 and tegra124?
+
+In my case, it is difficult to catch the meaning
+of which tegra30+ support the kind of tegra124.
+
+> +	depends on ARCH_TEGRA
 >  	select PM_OPP
 >  	help
 >  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+> index f0711d5ad27d..0a2465a58cf5 100644
+> --- a/drivers/devfreq/tegra-devfreq.c
+> +++ b/drivers/devfreq/tegra-devfreq.c
+> @@ -719,6 +719,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+>  }
+>  
+>  static const struct of_device_id tegra_devfreq_of_match[] = {
+> +	{ .compatible = "nvidia,tegra30-actmon" },
+>  	{ .compatible = "nvidia,tegra124-actmon" },
+>  	{ },
+>  };
 > 
 
-I think that it doesn't need to make it a separate patch.
-You can merge this patch to patch17 and then drop this patch.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
