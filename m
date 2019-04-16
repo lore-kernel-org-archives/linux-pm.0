@@ -4,58 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B0A2C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:48:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C998C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:59:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 301F820868
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:48:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 55FF12086A
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 07:59:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="QZvmpqR5"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="DHiuhSXk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728341AbfDPHsE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 03:48:04 -0400
-Received: from mailout2.samsung.com ([203.254.224.25]:23087 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728486AbfDPHsD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 03:48:03 -0400
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20190416074759epoutp025251978d3febff859cff1619263ab3ca~V5Nveaayd0616806168epoutp02C
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 07:47:59 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20190416074759epoutp025251978d3febff859cff1619263ab3ca~V5Nveaayd0616806168epoutp02C
+        id S1726890AbfDPH7R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 03:59:17 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:35652 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726917AbfDPH7Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 03:59:16 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20190416075913epoutp033f36c1d007b48845ff855886dd3a4acd~V5XjSzFZH1061510615epoutp03F
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 07:59:13 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20190416075913epoutp033f36c1d007b48845ff855886dd3a4acd~V5XjSzFZH1061510615epoutp03F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555400879;
-        bh=mUCOfsw/4l1KxtNlMA1E4n05wbdzIV5hAVn7fm9KwJU=;
+        s=mail20170921; t=1555401553;
+        bh=SSQnk7O4d4hR5RaDGoPwGnmwcDCBb6CGRjXGVC5Nq2o=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=QZvmpqR5iGFDuc9lLLejO78/aji3Y0ZU9M+eJ78y6Ggy7G92qF9VAiG9e0km1ObDe
-         qxlvNhsEPeZYNPXtpyWaWX0jYh71YCahaw4QRtIEykst2Mre1hWmouxSonK2oLqjMy
-         zL95ClpoOzcNvSDM3+X1I2RSHkVpt//Jj03dVnGY=
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.157]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20190416074757epcas1p42ed9745e8075fe1fe091d3b03015627b~V5NtcgOSS3117031170epcas1p4o;
-        Tue, 16 Apr 2019 07:47:57 +0000 (GMT)
-Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        99.1A.04257.AA885BC5; Tue, 16 Apr 2019 16:47:54 +0900 (KST)
+        b=DHiuhSXkNyVIEYqQ+C2ZZgB9cb6DkVFAvxdbkTtC9O908ad/VvIAc7n96XworD840
+         GkhEG7AQ60CFjSJSslhv0oGW1SBDVm2RBOgDsJUsOeHcAjCBT0kGynhIVFuCuBDT0t
+         QjzOkZAePI726Yb7thpWMI/SHQ5a6wzSbv74zdRg=
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.156]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190416075907epcas1p2e7e95c331617a9a362213590d94f47c1~V5Xd5uz2Z0985809858epcas1p2Y;
+        Tue, 16 Apr 2019 07:59:07 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        2A.7B.04139.B4B85BC5; Tue, 16 Apr 2019 16:59:07 +0900 (KST)
 Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
-        20190416074754epcas1p3086ede498759271efc1b083d9eee77ea~V5NqmF4ow0476504765epcas1p3n;
-        Tue, 16 Apr 2019 07:47:54 +0000 (GMT)
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20190416075907epcas1p42dc7016b49e3301f595f008fbafe43d6~V5XdjxEG_0271602716epcas1p4_;
+        Tue, 16 Apr 2019 07:59:07 +0000 (GMT)
 Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
         epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190416074754epsmtrp2648174caff0e3650d0b136ac803fc1a3~V5NqlRoCw1984319843epsmtrp2H;
-        Tue, 16 Apr 2019 07:47:54 +0000 (GMT)
-X-AuditID: b6c32a38-5e3ff700000010a1-f2-5cb588aaad0b
+        20190416075907epsmtrp220e0b81939fbbac585e524ee9c3bf8e7~V5XdjDbCj2309323093epsmtrp2b;
+        Tue, 16 Apr 2019 07:59:07 +0000 (GMT)
+X-AuditID: b6c32a35-98bff7000000102b-d0-5cb58b4b0ee0
 Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
         epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        75.60.03662.9A885BC5; Tue, 16 Apr 2019 16:47:53 +0900 (KST)
+        35.51.03662.B4B85BC5; Tue, 16 Apr 2019 16:59:07 +0900 (KST)
 Received: from [10.113.221.102] (unknown [10.113.221.102]) by
         epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190416074753epsmtip2a1b768d20ed69cde9f140923d8af797e~V5NqZUuOj2766227662epsmtip2B;
-        Tue, 16 Apr 2019 07:47:53 +0000 (GMT)
-Subject: Re: [PATCH v2 17/19] PM / devfreq: tegra: Support Tegra30
+        20190416075907epsmtip2777303bc256b707804fc4ea6bf6f69a0~V5XdVdIH52964229642epsmtip2a;
+        Tue, 16 Apr 2019 07:59:07 +0000 (GMT)
+Subject: Re: [PATCH v2 05/19] PM / devfreq: tegra: Replace write memory
+ barrier with the read barrier
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -66,110 +67,104 @@ Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 Organization: Samsung Electronics
-Message-ID: <203f3cbf-d825-0597-b64a-dc876743ae86@samsung.com>
-Date:   Tue, 16 Apr 2019 16:48:48 +0900
+Message-ID: <e0a9def6-e3ed-f134-e612-aa257aa3fa12@samsung.com>
+Date:   Tue, 16 Apr 2019 17:00:01 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190415145505.18397-18-digetx@gmail.com>
+In-Reply-To: <20190415145505.18397-6-digetx@gmail.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrAJsWRmVeSWpSXmKPExsWy7bCmvu6qjq0xBq83y1is/viY0aJl1iIW
-        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
-        m0ffllWMHp83yQWwRmXbZKQmpqQWKaTmJeenZOal2yp5B8c7x5uaGRjqGlpamCsp5CXmptoq
-        ufgE6Lpl5gAdpKRQlphTChQKSCwuVtK3synKLy1JVcjILy6xVUotSMkpsCzQK07MLS7NS9dL
-        zs+1MjQwMDIFKkzIztj67ChzwSq+iuPfz7I1MJ7i7mLk5JAQMJFYcKadqYuRi0NIYAejxJO2
-        DhYI5xOjxLzLv9hAqoQEvjFKbNpWDNPxqH8rK0TRXkaJCTu+skM47xklrl1axQhSJSzgJDF3
-        4iFmkISIwD9GiU+7ZrCCJJgFIiW+HlzKDGKzCWhJ7H9xA2wFv4CixNUfj8GaeQXsJA43XwWL
-        swioSixqOwZWLyoQIXH/2AZWiBpBiZMzn7CA2JwC5hI37l+Bmi8ucevJfCYIW16ieetssCMk
-        BP6zSTzcuY4Z4gcXickHf0LZwhKvjm9hh7ClJD6/28sGYVdLrDx5hA2iuYNRYsv+C6wQCWOJ
-        /UsnA23gANqgKbF+lz7EMj6Jd197WEHCEgK8Eh1tQhDVyhKXH9xlgrAlJRa3d0KN95B4fXoP
-        8wRGxVlI3pmF5IVZSF6YhbBsASPLKkax1ILi3PTUYsMCE+To3sQITq1aFjsY95zzOcQowMGo
-        xMOb0LclRog1say4MvcQowQHs5IIr2MKUIg3JbGyKrUoP76oNCe1+BCjKTC0JzJLiSbnA9N+
-        Xkm8oamRsbGxhYmhmamhoZI473oH5xghgfTEktTs1NSC1CKYPiYOTqkGxnbWOUGf01+yzl77
-        1vrBnK4PTyMnzH/8XCH/+zSlSL89rTNMW1e4xL47nK4krx3Qw7wxx7lm50c2WV2p7xrez5cU
-        /jHTZfff1dE2T0fjTf8i34mHTFtbwto9jO24Qpy+/MoTmrrahLNjX5vCj3/q/72nnPkhaCay
-        6eSRNu1DHAul1t5MC1wkqcRSnJFoqMVcVJwIAHD2W7HDAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprNIsWRmVeSWpSXmKPExsWy7bCSvO7Kjq0xBjtPWlus/viY0aJl1iIW
-        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
-        m0ffllWMHp83yQWwRnHZpKTmZJalFunbJXBlbH12lLlgFV/F8e9n2RoYT3F3MXJySAiYSDzq
-        38raxcjFISSwm1Hi7qlGJoiEpMS0i0eZuxg5gGxhicOHiyFq3jJKXH1znxGkRljASWLuxEPM
-        IAkRgSYmic8PW8CamQUiJfofdUNN3cYocWXOTbAONgEtif0vbrCB2PwCihJXfzwGi/MK2Ekc
-        br4KFmcRUJVY1HaMGcQWFYiQOPN+BQtEjaDEyZlPwGxOAXOJG/evsEIsU5f4M+8SM4QtLnHr
-        yXyoI+QlmrfOZp7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBUV5quV5xYm5xaV66
+X-Brightmail-Tracker: H4sIAAAAAAAAA01SWUwTURT1dZlO0epYBK+NURiXCLGUoRYGA4pCtAYTif6okOBIx0LoZqcl
+        rgkqKlRxj0vdRRJFTUktiBXSgLgLIaCCEsQENK4QQI3GhNh2auTvvHvOfeee9y4ulFdjCrzA
+        ZGOtJsZAYmGi2vsxccrMAzU58cXVs+gbQ32ILnFeEdEtu79K6A7vOYweKW9GdNl3J0Z377qG
+        0b+9F0T0oVvtWJpUW9dzFWnvOnsk2vI9A5j2kKcKaUfcM7LE6wtT8llGx1qjWFOeWVdg0qeS
+        mWty03M1ifGUkkqmk8goE2NkU8mMlVnKZQUG/0BkVBFjsPtLWQzHkapFKVaz3cZG5Zs5WyrJ
+        WnQGS7IljmOMnN2kj8szGxdS8fEJGr9wQ2F+1ZAPs7wYv6XrfIewGPmkDiTFgVgAnXc6BQ4U
+        hsuJOgQPPL1YgJATwwhuetN44ieCly9GRP86XvdcCXU0IGhzVoYOgwh+ffKJA6pwQg+OU/fE
+        AWIKMYpg2Hs6SAiJdfCjsVIYwBgRC76PXUG/SUQ0vPzVhwJYRiyCw6OngnoRMQcuux1BHEGs
+        hd6H1WJeMxmenOkPjiQlEqHl1TcBf/9UeNN/MYRnwp6as8LAEED8weDk+2IJnyED2ve+RTwO
+        h8+PPKG6AkYGGjAeb4frT5oxvrkUgcfXJuYJNfgqj/sdcL9DDLi8Kt5sIgz8OCgOlIGQQek+
+        Oa+eBR3vegQ8ngYV+8tC12uh3jUqOYKinWPiOMdEcI6J4PxvdgmJqlAka+GMepajLNTY73aj
+        4LbGaurQidaVTYjAETlBhh/05MjFTBG31diEABeSU2RLdP6STMds3cZazblWu4HlmpDG/9pH
+        hYqIPLN/9022XEqToFar6QVUooaiyKkyV1p6jpzQMza2kGUtrPVfnwCXKopRxQWH6t7qxaXQ
+        r36caWqtH+wTzI/uRHPnlVhWZJ5PUrpKl/2ZWDXnw61sxdIaV1H5o3O1dsk4jfvYqqEdFQmc
+        AreW3f8im/4+KXs4fTMeGfY0RVkhmxRBVUZu7B0tYSardg7GNBbVL29w3/65vHlzxrPuDbM/
+        70LJyaLnNdfKVJtIEZfPULFCK8f8BU8Lx4HDAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprNIsWRmVeSWpSXmKPExsWy7bCSvK5399YYg+75nBarPz5mtGiZtYjF
+        4mzTG3aLy7vmsFl87j3CaNH5ZRabxe3GFWwWP3fNY7HoW3uJzYHTY8fdJYweO2fdZffobX7H
+        5tG3ZRWjx+dNcgGsUVw2Kak5mWWpRfp2CVwZqz7uZyu4wl1xY+5l5gbG/ZxdjJwcEgImEjfv
+        LmLqYuTiEBLYzShx+uZ5JoiEpMS0i0eZuxg5gGxhicOHiyFq3jJKrGrZyAxSIyyQLtE1fTcr
+        SEJEoIlJ4vPDFrBmZoFIif5H3awQHVsZJfp+n2IFSbAJaEnsf3GDDcTmF1CUuPrjMSOIzStg
+        J9H/bzpYDYuAqsTCTV1gtqhAhMSZ9ytYIGoEJU7OfAJmcwqYSZy99hZqmbrEn3mXmCFscYlb
+        T+ZDxeUlmrfOZp7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBUV5quV5xYm5xaV66
         XnJ+7iZGcJRpae1gPHEi/hCjAAejEg9vQt+WGCHWxLLiytxDjBIczEoivI4pQCHelMTKqtSi
-        /Pii0pzU4kOM0hwsSuK88vnHIoUE0hNLUrNTUwtSi2CyTBycUg2MrIuDpvvbf9i4Mib+4rxD
-        dw933bj1xPVahK39jnvr39/8bGbyqXZqPJO1v7DN1+tmQsf+x09eIPah8R37noudt7akrzp2
-        79iV5ydt733+tbeYI33tu/f2/17sLq49tcp0Uu+/WPbs4xo3rqnob+6RVH57ftXV29uS1ou/
-        ZBMOdez6XOcgIL2hTlaJpTgj0VCLuag4EQCcMkKZrgIAAA==
-X-CMS-MailID: 20190416074754epcas1p3086ede498759271efc1b083d9eee77ea
+        /Pii0pzU4kOM0hwsSuK88vnHIoUE0hNLUrNTUwtSi2CyTBycUg2MEg+TI3NtDn9mamGu1Jg+
+        0XJL7KrVqRdWPvLZujyGaTHPsR8SyUp9k1fdiljCGNfa7D1XIP7KFO7HjfIBxg9/itfcqVjB
+        3Zj+Mzeg6ZW3w/be7Ven+1mlM+U/exiT81R8wyJx5so17Hkp95n2sVX1evx8lLrq0IE7f1q1
+        E9w0dJ1dT3pP2C2lxFKckWioxVxUnAgAjfk3C64CAAA=
+X-CMS-MailID: 20190416075907epcas1p42dc7016b49e3301f595f008fbafe43d6
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190415145707epcas3p27b7b927b14ef3c54274626c9df7cc14f
+X-CMS-RootMailID: 20190415145805epcas1p209d0e2a8ba052ad11e91155c4585b1bd
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145707epcas3p27b7b927b14ef3c54274626c9df7cc14f@epcas3p2.samsung.com>
-        <20190415145505.18397-18-digetx@gmail.com>
+        <CGME20190415145805epcas1p209d0e2a8ba052ad11e91155c4585b1bd@epcas1p2.samsung.com>
+        <20190415145505.18397-6-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416074848.dVggvs7yMg80GVoBQLgIls1ocHfXyMaxOLh4XdEpBPQ@z>
+Message-ID: <20190416080001.O6rtDFK7ch-_DmLWpyR3xnwpYO6gRwYUB4dWoF8vcrA@z>
 
 Hi,
 
-On 19. 4. 15. 오후 11:55, Dmitry Osipenko wrote:
-> The devfreq driver can be used on Tegra30 without any code change and
-> it works perfectly fine, the default Tegra124 parameters are good enough
-> for Tegra30.
+On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
+> The write memory barrier isn't needed because the BUS buffer is flushed
+> by read after write that happens after the removed wmb(), we will also
+> use readl() instead of the relaxed version to ensure that read is indeed
+> completed.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/Kconfig         | 4 ++--
->  drivers/devfreq/tegra-devfreq.c | 1 +
->  2 files changed, 3 insertions(+), 2 deletions(-)
+>  drivers/devfreq/tegra-devfreq.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index a78dffe603c1..78c33ddd4eea 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -92,8 +92,8 @@ config ARM_EXYNOS_BUS_DEVFREQ
->  	  This does not yet operate with optimal voltages.
->  
->  config ARM_TEGRA_DEVFREQ
-> -	tristate "Tegra DEVFREQ Driver"
-> -	depends on ARCH_TEGRA_124_SOC
-> +	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
-
-Looks good to me. But, I have a question.
-
-'Tegra30+' expression is enough in order to indicate
-the support for both tegra30 and tegra124?
-
-In my case, it is difficult to catch the meaning
-of which tegra30+ support the kind of tegra124.
-
-> +	depends on ARCH_TEGRA
->  	select PM_OPP
->  	help
->  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
 > diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index f0711d5ad27d..0a2465a58cf5 100644
+> index d62fb1b0d9bb..f0f0d78f6cbf 100644
 > --- a/drivers/devfreq/tegra-devfreq.c
 > +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -719,6 +719,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+> @@ -243,8 +243,7 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+>  static void actmon_write_barrier(struct tegra_devfreq *tegra)
+>  {
+>  	/* ensure the update has reached the ACTMON */
+> -	wmb();
+> -	actmon_readl(tegra, ACTMON_GLB_STATUS);
+> +	readl(tegra->regs + ACTMON_GLB_STATUS);
+
+I think that this meaning of actmon_write_barrier() keeps
+the order of 'store' assembly command without the execution change
+from compiler optimization by using the wmb().
+
+But, this patch edits it as following:
+The result of the following two cases are same?
+
+[original code]
+	wmb()
+	read_relaxed()
+
+[new code by this patch]
+	readl_relaxed()
+	rmb()
+
+
 >  }
 >  
->  static const struct of_device_id tegra_devfreq_of_match[] = {
-> +	{ .compatible = "nvidia,tegra30-actmon" },
->  	{ .compatible = "nvidia,tegra124-actmon" },
->  	{ },
->  };
+>  static void actmon_isr_device(struct tegra_devfreq *tegra,
 > 
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
