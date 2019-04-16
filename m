@@ -2,138 +2,92 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFC60C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD9DDC282DA
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:44:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A54E9206B6
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:24:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 95DE420880
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:44:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cDZVaeNx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727180AbfDPRY7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 13:24:59 -0400
-Received: from metis.ext.pengutronix.de ([85.220.165.71]:59395 "EHLO
-        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726230AbfDPRY6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:24:58 -0400
-Received: from kresse.hi.pengutronix.de ([2001:67c:670:100:1d::2a])
-        by metis.ext.pengutronix.de with esmtp (Exim 4.89)
-        (envelope-from <l.stach@pengutronix.de>)
-        id 1hGRpJ-00017y-Np; Tue, 16 Apr 2019 19:24:57 +0200
-Message-ID: <1555435497.2317.17.camel@pengutronix.de>
-Subject: Re: [PATCH v4 00/12] QorIQ TMU multi-sensor and HWMON support
-From:   Lucas Stach <l.stach@pengutronix.de>
-To:     Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
-Cc:     Chris Healy <cphealy@gmail.com>,
+        id S1728478AbfDPRob (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 13:44:31 -0400
+Received: from mail-pf1-f182.google.com ([209.85.210.182]:38759 "EHLO
+        mail-pf1-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727180AbfDPRob (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:44:31 -0400
+Received: by mail-pf1-f182.google.com with SMTP id 10so10765030pfo.5;
+        Tue, 16 Apr 2019 10:44:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=kcerwDv9rfydLuyPfDFuOzevVHw43iM/CZvB7OrlnWg=;
+        b=cDZVaeNxL2lYGxLNLJRLXzaeJDDGUe0j5N7Rgk13qs8q61EoC3coJ02CBy18Gf4yMG
+         c9krFkPbVqGjJLpBQVliG/iSWtYvjSgjlKJmKaQz8hTNtZxrtvCrWy9IHTipTAQeZ5YO
+         XJ5W7aMxzJCCvp6kG/FogeuMzPROgP4JnLnE2zijiUDXswJbkEt1IrgCi5RCvust25+3
+         1PHxm6AGT1r1zsk2iy7YpsXjVCHZuGtKCTxD91TWgizA6XsoAarDmBW1MPLx67lwlqDY
+         jVKs1XYGmZMArzy291qC/AIU30eQPPrItc+ORXPSaNffuIaGRtdbzE/2ZisRutyzHDlG
+         CmSw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=kcerwDv9rfydLuyPfDFuOzevVHw43iM/CZvB7OrlnWg=;
+        b=fFg4ljH4wgk357XkEkJ2FdRgXcIgDqgDPfMcuW16Rsx411rGQdr+Hcp//svzY1n1gu
+         0S09KKG1I/yJAHYD23SvaGJBQqV0i+xDU31gFKaNDoAn9iHyfg97uiRRUVsBPVYbsQUA
+         jpOkYhxLQGiW7ZLPdULYpZ40EFld95DzFo0zunkDSJNqrSLXqUPF6TaoeqLvK7pDB7oC
+         gqDBEMX3DnKVaOKNmYfYTYnWXHU5jC5VjVX4HJrRmqOdPO+G3SXurSxWFQyO9Vo6Wb06
+         y4jQ1kvWRnfTWjLT5dV5Sh/cHWtc96/xO3jALbaZyFDE3q9T19DvLqkio5Mz3Nde2Pky
+         GsfQ==
+X-Gm-Message-State: APjAAAVnzxR7CfrI+7rgARw1vkl5yLf7hWcX4ZZDUlxLmSeTpy/EDKCh
+        Uk+Q6QNmc7bs5MPOnUZJoxg8ISiG
+X-Google-Smtp-Source: APXvYqw4YBmU3AXGgw91ygZBKywbojYBJ7Ac3b98j1lsYE5jHk6hmenK99uUu4Hq+Y4jcSSOxVIqXA==
+X-Received: by 2002:a62:14c3:: with SMTP id 186mr85205839pfu.21.1555436670691;
+        Tue, 16 Apr 2019 10:44:30 -0700 (PDT)
+Received: from localhost.localdomain (KD118155013174.ppp-bb.dion.ne.jp. [118.155.13.174])
+        by smtp.gmail.com with ESMTPSA id f20sm39763791pff.176.2019.04.16.10.44.27
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Tue, 16 Apr 2019 10:44:29 -0700 (PDT)
+From:   Yoshihiro Kaneko <ykaneko0929@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
-        linux-kernel@vger.kernel.org
-Date:   Tue, 16 Apr 2019 19:24:57 +0200
-In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
-References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.22.6-1+deb9u1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::2a
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+        Rob Herring <robh+dt@kernel.org>,
+        Simon Horman <horms@verge.net.au>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        linux-renesas-soc@vger.kernel.org
+Subject: [PATCH/RFT v2 0/3] thermal: rcar_gen3_thermal: Update calculation formula due to HW evaluation
+Date:   Wed, 17 Apr 2019 02:44:12 +0900
+Message-Id: <1555436655-5262-1-git-send-email-ykaneko0929@gmail.com>
+X-Mailer: git-send-email 1.9.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416172457.DJdunkKUaJGOYKlkZvde1iF9XBLreRhy9GqUu2lovvU@z>
 
-Series is:
+This series was inspired by a patch in the BSP by Dien Pham <dien.pham.ry@renesas.com>.
 
-Tested-by: Lucas Stach <l.stach@pengutronix.de>
+This series is based on the master branch of Linus Torvalds's linux tree.
 
-Regards,
-Lucas
+v2 [Yoshihiro Kaneko]
+* As suggested by Simon Horman
+- split into three patches
+- avoid global variables
+- marked thcode const
 
-Am Samstag, den 13.04.2019, 01:27 -0700 schrieb Andrey Smirnov:
-> Everyone:
-> 
-> This series contains patches adding support for HWMON integration, bug
-> fixes and general improvements (hopefully) for TMU driver I made while
-> working on it on i.MX8MQ.
-> 
-> Feedback is welcome!
-> 
-> Thanks,
-> Andrey Smirnov
-> 
-> Changes since [v3]
-> 
->     - Series reabse on top of [rfc]
->     
->     - Fixed incorrect goto label in "thermal: qoriq: Pass data to
->       qoriq_tmu_calibration()"
->       
->     - Added REGS_TRITSR() register description to "thermal: qoriq: Do
->       not report invalid temperature reading"
->       
->     - Reworded commit message of "thermal: qoriq: Remove unnecessary
->       DT node is NULL check"
-> 
-> Changes since [v2]
-> 
->     - Patches rebased on v5.1-rc1
-> 
-> Changes since [v1]
-> 
->     - Rebased on "linus" branch of
->       git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
->       that included latest chagnes adding multi-sensors support
-> 
->     - Dropped
-> 
-> 	thermal: qoriq: Add support for multiple thremal sites
-> 	thermal: qoriq: Be more strict when parsing
-> 	thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
-> 
->       since they are no longer relevant
-> 
->     - Added
-> 
-> 	thermal: qoriq: Don't store struct thermal_zone_device reference
-> 	thermal: qoriq: Add local struct qoriq_sensor pointer
-> 	thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
-> 	thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
-> 
->       to simplify latest codebase
-> 
->     - Changed "thermal: qoriq: Do not report invalid temperature
->       reading" to use regmap_read_poll_timeout() to make sure that
->       tmu_get_temp() waits for fist sample to be ready before
->       reporting it. This case is triggered on my setup if
->       qoriq_thermal is compiled as a module
-> 
-> [v1] lore.kernel.org/lkml/20190218191141.3729-1-andrew.smirnov@gmail.com
-> [v2] lore.kernel.org/lkml/20190222200508.26325-1-andrew.smirnov@gmail.com
-> [v3] lore.kernel.org/lkml/20190401041418.5999-1-andrew.smirnov@gmail.com
-> [rfc] lore.kernel.org/lkml/20190404080647.8173-1-daniel.lezcano@linaro.org
-> 
-> Andrey Smirnov (12):
->   thermal: qoriq: Remove unnecessary DT node is NULL check
->   thermal: qoriq: Add local struct device pointer
->   thermal: qoriq: Don't store struct thermal_zone_device reference
->   thermal: qoriq: Drop per-sensor data
->   thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
->   thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
->   thermal: qoriq: Convert driver to use devm_ioremap()
->   thermal: qoriq: Convert driver to use regmap API
->   thermal: qoriq: Enable all sensors before registering them
->   thermal: qoriq: Do not report invalid temperature reading
->   thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
->   thermal: qoriq: Add hwmon support
-> 
->  drivers/thermal/qoriq_thermal.c | 287 +++++++++++++++-----------------
->  drivers/thermal/thermal_hwmon.c |  28 ++++
->  drivers/thermal/thermal_hwmon.h |   7 +
->  3 files changed, 171 insertions(+), 151 deletions(-)
-> 
+Yoshihiro Kaneko (3):
+  thermal: rcar_gen3_thermal: Update value of Tj_1
+  thermal: rcar_gen3_thermal: Update calculation formula of IRQTEMP
+  thermal: rcar_gen3_thermal: Update temperature conversion method
+
+ drivers/thermal/rcar_gen3_thermal.c | 93 ++++++++++++++++++++++++-------------
+ 1 file changed, 61 insertions(+), 32 deletions(-)
+
+-- 
+1.9.1
+
