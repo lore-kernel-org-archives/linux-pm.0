@@ -1,65 +1,55 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 13/19] PM / devfreq: tegra: Mark ACTMON's governor as
- immutable
-Date: Tue, 16 Apr 2019 16:17:20 +0900
-Message-ID: <6df81b00-8d6a-8aca-d191-8a214a50232c@samsung.com>
-References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145721epcas1p2f14027ba26bed3e3361d6a261d851c68@epcas1p2.samsung.com>
-        <20190415145505.18397-14-digetx@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RESEND PATCH v3 1/2] power: supply: add input voltage limit
+ property
+Date: Tue, 16 Apr 2019 09:19:41 +0200
+Message-ID: <20190416071941.GB14538@amd>
+References: <20190415220049.14924-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="JYK4vJDZwFMowpUq"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190415145505.18397-14-digetx@gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190415220049.14924-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, rjw@rjwysocki.net, gwendal@chromium.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
-> The ACTMON's governor supports only the Tegra's devfreq device and there
-> is no need to use any other governor, hence let's mark Tegra governor as
-> immutable to permanently stick it with Tegra's devfreq device.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  drivers/devfreq/Kconfig         | 1 -
->  drivers/devfreq/tegra-devfreq.c | 1 +
->  2 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 6a172d338f6d..a78dffe603c1 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -94,7 +94,6 @@ config ARM_EXYNOS_BUS_DEVFREQ
->  config ARM_TEGRA_DEVFREQ
->  	tristate "Tegra DEVFREQ Driver"
->  	depends on ARCH_TEGRA_124_SOC
-> -	select DEVFREQ_GOV_SIMPLE_ONDEMAND
->  	select PM_OPP
->  	help
->  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index f1a6f951813a..832e4f5aa11b 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -593,6 +593,7 @@ static struct devfreq_governor tegra_devfreq_governor = {
->  	.name = "tegra_actmon",
->  	.get_target_freq = tegra_governor_get_target,
->  	.event_handler = tegra_governor_event_handler,
-> +	.immutable = true,
->  };
->  
->  static int tegra_devfreq_probe(struct platform_device *pdev)
-> 
+--JYK4vJDZwFMowpUq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Hi!
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+> This patch exposes a new property, similar to input current limit, to
+> re-configure the maximum voltage from the external supply at runtime
+> based on system-level knowledge or user input.
+
+Well, and I suspect it should expose input power limit, not input
+voltage limit.
+
+DC-DC convertor efficiency normally does not much depend on input
+voltage....
+
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--JYK4vJDZwFMowpUq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAly1gg0ACgkQMOfwapXb+vIwfACfdFHwprUPu+40TOX0mT/D2Q1Z
+y/gAoKzB8tOLf82MCBIKKEQTadtoz1Q5
+=Z/JO
+-----END PGP SIGNATURE-----
+
+--JYK4vJDZwFMowpUq--
