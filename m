@@ -2,140 +2,111 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD921C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 09:34:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F88AC10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 09:58:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ABC5D20872
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 09:34:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6BC8E20675
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 09:58:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555407267;
-	bh=BwsK6tHQlEHxToZB/b5bYAwxSeOf9ZOOaQcBBnlfSFQ=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=eugeE4/32Lq/xDh+8BfADcTbDv99fBmWSrvhj5vn27IvVtw/dkhz1opCdrhNID02d
-	 PmqtCEwwiOn6fi1kGwQx/OY1Ov8uzs5Xv8MJKNqDVwV9RX5C6eGjdwSB9hKrE2VLdP
-	 kmQQexXEK3y7Nrw2kh6LmR8FzGgl+1UMPQG2XFKw=
+	s=default; t=1555408703;
+	bh=tSPETeyV0rgaJSl/1AiqwLTG04/Fcj4bVudYsRLZQ1U=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=BSOwxRii6eecTv/PZNnWLWA4aHSwfNsSIYSL0o4Z7E9p6kaVzdF9vAzK2snIrrqEX
+	 wCZa0Y8/uAsMPBtzvZdyTascMrbiUJcLZ3aXDGgjn0pPzCB2t656Nmg+aGRe7JkGvg
+	 pSq+dy56vzo74kcoy/pFtK2lELRz/VBnAS7UwZ0M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728902AbfDPJeU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 05:34:20 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:44802 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728230AbfDPJeT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 05:34:19 -0400
-Received: by mail-ot1-f67.google.com with SMTP id d24so16996021otl.11;
-        Tue, 16 Apr 2019 02:34:19 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=8qw/OL5mJ45U4+FG/qyIj2foiwTJOtRvVs5qYVtrnvk=;
-        b=UzeJuUdt6dSythzI4sp+wCC75nm87K3e3BnIF7NsLXdki3iQb6OLjoLcjnRkrOX/Dp
-         ma23MtVXaiD+U0OBckFfZKEaK2tAUAVrbW9x7pKQZFYpWnQWfIHYcSrHiUEjU573EVTI
-         rsS3XF0CEp8cyqmlSnBFhl5Y09DSN+NXTSWkx2YVVPj5UZsP42/F/grra6f9xSezXEnu
-         nYeN1ldORhr3ge0WItcztVOKunuXI9wUbx8A90GLl++corTeP8mezq7UUF4ps5YW24a3
-         tE1AcVEIvrirrhf6yPoyKH79BjoMzJJxxuCXNaF6S+6hePWhT6ACuGQglbhH3Jsax354
-         1TMA==
-X-Gm-Message-State: APjAAAXfqH7FR4eyili56TDkB27R0ZcoCqC9v+Uzr+XK/cMJGMCjPAMV
-        dthpQ6OYy0tXRHUFifdO9x25SDZYTifTNRFkcGo=
-X-Google-Smtp-Source: APXvYqwYtYTUAnB1lJPdFjUKvGtpqOw1r5d2T/iAKpJXuWq+TFdNM1EompniSRRjuPPGPV9ab7LvT8OW6mNyoV6gziA=
-X-Received: by 2002:a9d:4b11:: with SMTP id q17mr14587035otf.272.1555407258468;
- Tue, 16 Apr 2019 02:34:18 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com> <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com>
-In-Reply-To: <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 16 Apr 2019 11:34:07 +0200
-Message-ID:
- <CAJZ5v0jh0Yn1fy5bO3wett5AsjBA55_Z-8L_M8eRyy5cePqwaw@mail.gmail.com>
-Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-To:     Janakarajan Natarajan <jnataraj@amd.com>
-Cc:     "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>,
-        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devel@acpica.org" <devel@acpica.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
+        id S1728625AbfDPJ6W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 05:58:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50600 "EHLO
+        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726739AbfDPJ6W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 05:58:22 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=sP/+g+YITf4kSwQg6jWKcy9Hzpj2iP/E6kmV831FVp0=; b=HAJzIt/mkFcFrqyUTqPhMz19+S
+        qUNhAAim90wx23B6Td7Tt9/eHtw864EtZnJHTrzoCGCP8wrNgHa6rnSr6BtSLffYZdI/prapQ1qpY
+        YsUETnZQrTAiWiDQRJDZqMYtvmJFUA6W9wUjlztcZ/wgS/TtHY+fxty4NceZTXlcAzhLXXMayZ88b
+        mglYrvJNY7UzQPNuYp/20u6QwQMmEn9gKLLmlcXLMdSZRDO1dXleSMLJBkkk8kXV2feXL1ybLYJT9
+        Oo6XiP2RruIYFJJModOKBkMA98EFcg68Y1cfxetbw6hf2kdGpqUS3Q03/q+tJs+WyN5VS6bugIgly
+        OJuTmldw==;
+Received: from 177.205.118.176.dynamic.adsl.gvt.net.br ([177.205.118.176] helo=coco.lan)
+        by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+        id 1hGKr5-0004L4-TH; Tue, 16 Apr 2019 09:58:20 +0000
+Date:   Tue, 16 Apr 2019 06:58:15 -0300
+From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Erik Schmauss <erik.schmauss@intel.com>,
-        "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH 09/57] docs: cpu-freq: convert files to ReST
+Message-ID: <20190416065815.57fbdf2c@coco.lan>
+In-Reply-To: <CAJZ5v0he8GHZ+EFJ911vgrO53NnEWDwm=_vZD4K9SVL0MahMTQ@mail.gmail.com>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org>
+        <b2f9cc0d15d7e3058be01015be36f698debd8b14.1555382110.git.mchehab+samsung@kernel.org>
+        <CAJZ5v0he8GHZ+EFJ911vgrO53NnEWDwm=_vZD4K9SVL0MahMTQ@mail.gmail.com>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416093407.rzu7e4qXwlexvLZYo9rah2oqq-Tv8XbLztxezuVcvrY@z>
+Message-ID: <20190416095815.DKBpQssz4XyqyYqMKjeVGp6CVlXSk6_conejxu9gPhQ@z>
 
-On Tue, Apr 16, 2019 at 12:35 AM Janakarajan Natarajan <jnataraj@amd.com> wrote:
->
-> On 4/4/19 4:25 PM, Natarajan, Janakarajan wrote:
-> > CPPC (Collaborative Processor Performance Control) offers optional
-> > registers which can be used to tune the system based on energy and/or
-> > performance requirements.
-> >
-> > Newer AMD processors add support for a subset of these optional CPPC
-> > registers, based on ACPI v6.1.
-> >
-> > The following are the supported CPPC registers for which sysfs entries
-> > are created:
-> > * enable                (NEW)
-> > * max_perf              (NEW)
-> > * min_perf              (NEW)
-> > * energy_perf
-> > * lowest_perf
-> > * nominal_perf
-> > * desired_perf          (NEW)
-> > * feedback_ctrs
-> > * auto_sel_enable       (NEW)
-> > * lowest_nonlinear_perf
-> >
-> > The CPPC driver is updated to enable the OSPM and the userspace to
-> > access
-> > the newly supported registers.
-> >
-> > The purpose of exposing the registers via the sysfs entries is to allow
-> > the userspace to:
-> > * Tweak the values to fit its workload.
-> > * Apply a profile from AMD's optimization guides.
-> >
-> > Profiles will be documented in the performance/optimization guides.
-> >
-> > Note:
-> > * AMD systems will not have a policy applied in the kernel at this time.
-> > * By default, acpi_cpufreq will still be used.
-> >
-> > TODO:
-> > * Create a linux userspace tool that will help users generate a CPPC
-> > * profile
-> >    for their target workload.
-> > * Create or update a driver to apply a general CPPC policy in the
-> > * kernel.
-> >
-> > v1->v2:
-> > * Add macro to ensure BUFFER only registers have BUFFER type.
-> > * Add support macro to make the right check based on register type.
-> > * Remove support checks for registers which are mandatory.
->
->
-> Are there any concerns regarding this patchset?
+Em Tue, 16 Apr 2019 10:21:31 +0200
+"Rafael J. Wysocki" <rafael@kernel.org> escreveu:
 
-Yes, there are.
+> On Tue, Apr 16, 2019 at 4:56 AM Mauro Carvalho Chehab
+> <mchehab+samsung@kernel.org> wrote:
+> >
+> > In order to be able to build html and pdf files, convert the
+> > documentation to ReST format.
+> >
+> > Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>  
+> 
+> Please don't convert these files.
+> 
+> They need more work than just semi-automatic conversion
 
-Unfortunately, it is generally problematic.
+Except for one exception (at patch 32/57), the ReST conversion on this
+patch set was manually made. I basically renamed the files to
+.rst, checked the errors and fixed, trying to preserve the original
+document style as much as possible, while providing a good visual
+for the html output.
 
-First off, the behavior of existing sysfs files cannot be changed at
-will, as there may be users of them out there already depending on the
-current behavior.
+I suspect that trying to write a script for such kind of conversion
+is not an easy task, as some documents within the Kernel tree have
+their own personal style, (there was even one written in LaTeX at
+the CDROM docs), and I suspect that a script would end by adding 
+extra unwanted markups.
 
-Second, at least some CPPC control registers are used by cpufreq
-drivers (cppc_cpufreq and intel_pstate), so modifying them behind the
-drivers' backs is not a good idea in general.  For this reason, adding
-new sysfs attributes to allow user space to do that is quite
-questionable.
+> and the material in them needs to go under driver-api.
 
-Thanks,
-Rafael
+Yeah, those documents make sense to be at the driver-api set. 
+
+The rationale why I placed the patch with actually renames on a
+separate patchset (already on my devel tree, but yet to be submitted)
+is that, this way, it should be easy for maintainers to pick the 
+conversion patch, apply on their trees, and, if they're not ready
+yet, postpone the actual rename/move thing.
+
+> This is quite hight in my TODO list.
+
+OK. Feel free to use this patch as a starting point if you
+want.
+
+Regards,
+Mauro
