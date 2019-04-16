@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB66DC282DA
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 05:56:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31B48C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:21:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6938620868
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 05:56:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E7A3820868
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:21:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="HMf2Hxia"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="E25+R5M/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726214AbfDPF4L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 01:56:11 -0400
-Received: from mailout2.samsung.com ([203.254.224.25]:12535 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726986AbfDPF4K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 01:56:10 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20190416055606epoutp026db71fb79238c75db03ede37a4eb14fd~V3sDjTWEK2987429874epoutp02E
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 05:56:06 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20190416055606epoutp026db71fb79238c75db03ede37a4eb14fd~V3sDjTWEK2987429874epoutp02E
+        id S1727638AbfDPGVP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 02:21:15 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:56649 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727130AbfDPGVP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 02:21:15 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190416062110epoutp01d8313610fb1aa06d32d7903b453126f0~V4B8SCjMH0719807198epoutp014
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 06:21:10 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190416062110epoutp01d8313610fb1aa06d32d7903b453126f0~V4B8SCjMH0719807198epoutp014
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555394166;
-        bh=KsLl0ZEnr1eG05Spvk9eOasY3YZ06v7pzpNcUfVWxI8=;
+        s=mail20170921; t=1555395670;
+        bh=jsNBWYHup/330jXLGYWSEvkr2b+uu++8WjKVzNJlzqg=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=HMf2HxiaVK3MjfdYq3bW1Z+tLalH2KaBvTQARDsACPYc5lt5fR0wnaeUMbREplgFj
-         EWYas+zywhXXAUc8+e8/1yWt0NK4wp+iSvuQGdM13Hy+MVFja9jx9yvxHD56/quMpr
-         +yaxMLse5bFuXLrqzby2zyJdrL2n1K/OGJnBSgQc=
-Received: from epsmges1p2.samsung.com (unknown [182.195.40.157]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190416055603epcas1p2e06db46c7b9f165a784cc875a3a9ef61~V3sAolf6c2256722567epcas1p2f;
-        Tue, 16 Apr 2019 05:56:03 +0000 (GMT)
-Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
-        epsmges1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        84.EA.04142.07E65BC5; Tue, 16 Apr 2019 14:56:00 +0900 (KST)
+        b=E25+R5M/03gf8lBrfsCmSktG2fLW6iyMuiymcQDGdgnf9WXLpotVIfe1ism1SyOEs
+         EFNiEw1OVG5VojB0FR5zqN5qxBnHx76amqLAWH4Igdmxq95zvLZ+5BnvKuyKWHTvDK
+         +EKHx2pd8BbA7JuWfwjIdgkQVRxkdFg+pXZGW0NM=
+Received: from epsmges1p3.samsung.com (unknown [182.195.40.154]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190416062107epcas1p1adbdd6e234c85d2b1b1eed1a49c177b1~V4B5oa2Zi1286312863epcas1p1_;
+        Tue, 16 Apr 2019 06:21:07 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
+        36.58.04143.F4475BC5; Tue, 16 Apr 2019 15:21:03 +0900 (KST)
 Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
-        20190416055600epcas1p37fea929aa4977f3dd97290f06c9ed189~V3r9zgNVz0036600366epcas1p3j;
-        Tue, 16 Apr 2019 05:56:00 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190416062102epcas1p1eb56dbad6e36a8c3c1c60a950782a2d8~V4B1EZftW3158831588epcas1p1y;
+        Tue, 16 Apr 2019 06:21:02 +0000 (GMT)
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
         epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190416055600epsmtrp2631f55a6861395675bcc401479ebc372~V3r9wLSbn1282112821epsmtrp2g;
-        Tue, 16 Apr 2019 05:56:00 +0000 (GMT)
-X-AuditID: b6c32a36-cf9ff7000000102e-e8-5cb56e704f87
+        20190416062102epsmtrp247ed810780b959df0f97d3e24c105f3f~V4B1DriLt2153421534epsmtrp2V;
+        Tue, 16 Apr 2019 06:21:02 +0000 (GMT)
+X-AuditID: b6c32a37-f31ff7000000102f-6c-5cb5744f6f1d
 Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        D1.8B.03692.F6E65BC5; Tue, 16 Apr 2019 14:56:00 +0900 (KST)
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        F2.FA.03662.E4475BC5; Tue, 16 Apr 2019 15:21:02 +0900 (KST)
 Received: from [10.113.221.102] (unknown [10.113.221.102]) by
         epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190416055559epsmtip2d0fff6bffd6d10f0113ec7b42cd6bdff~V3r9gBoLM1918319183epsmtip2j;
-        Tue, 16 Apr 2019 05:55:59 +0000 (GMT)
-Subject: Re: [PATCH v2 10/19] PM / devfreq: tegra: Drop primary interrupt
- handler
+        20190416062102epsmtip2b010d660499c4759a311075aede0c380~V4B006whm3017130171epsmtip2A;
+        Tue, 16 Apr 2019 06:21:02 +0000 (GMT)
+Subject: Re: [PATCH v2 11/19] PM / devfreq: tegra: De-initialize properly on
+ driver's probe error
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -67,243 +67,175 @@ Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 Organization: Samsung Electronics
-Message-ID: <93574885-d695-2288-a4c6-2b845ad8daaf@samsung.com>
-Date:   Tue, 16 Apr 2019 14:56:54 +0900
+Message-ID: <c6699e78-cb5d-6b9f-aa36-034d65e26dc4@samsung.com>
+Date:   Tue, 16 Apr 2019 15:21:57 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190415145505.18397-11-digetx@gmail.com>
+In-Reply-To: <20190415145505.18397-12-digetx@gmail.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SaUwTQRiGM+x2KcTiUEU/0CiuRwQDdinFxYDRQLSJ/CAxniGBDV0Locem
-        2xKPHwoYRUU8g1gIEsVEMQiBIlhRIiqGIEoUj6j1RKNFUDk84rntauTfM+/3zrzfNzNKQl1H
-        RShzLXbeZuFMNBVMnr8aFRMjWJozNEc+suzZT68Qu8N5gmR7Ct8HsnfdlRQ7su8aYnePOin2
-        ccFpiv3mriLZ0ro71NIgfaunBukvOD2B+n1FQ5S+1FWL9CONM9IVG/KScnjOwNsieUu21ZBr
-        MSbTK1dlpmTqEjRMDJPILqIjLZyZT6ZT09JjlueapIboyHzO5JCkdE4U6YVLkmxWh52PzLGK
-        9mSaFwwmIVGIFTmz6LAYY7Ot5sWMRhOnk4xZeTm/B8cI4UXcpuG9zcR2VB61BwUpAcdD08dz
-        hI/VuBXB0fdrZR5G8OS3fg8KlvgzgjdlBwP+bdjfWxYoFy4heN35i5IXHxBUDI6SPtckvAo8
-        d8r9hcn4F4Jhd7nCVyDwehi7csqfR+FoaH/7kPLxRDwL7n19hXyswktgoGqH/yASz4WWi1f8
-        ehheB886GxSyJxS6jvX7PUF4EXQdukzK50+FR/3HA2SeCUXNFYTc9ncK7v8wy5wKlQU1f/VJ
-        4L3hCpQ5AkaGLlEyb4UzXdf8AwAuRuBq71XIBS20nzosBSilgCiody+Us0JgaKxE4ZMBq6B4
-        p1p2z4a7zz1/by4cTu7aTckWPTz1xh9As5zjhnGOG8A5bgDn/6xqRNaiKbwgmo28yAhx49+6
-        Efm/anRCKzpxK60DYSWiJ6iUJa4MtYLLFzebOxAoCXqyaplBklQGbvMW3mbNtDlMvNiBdNJd
-        HyQiwrKt0se32DMZXZxWq2XjmQQdw9BTVfVLUzLU2MjZ+TyeF3jbv30ByqCI7ajM7fpShJt6
-        UjXVjYPfvEc8KV/b+tpG+5qm9+tmhqxLyn2pTX8hLC4eVNXwP0s1WS27zO8axuY/yLowx9Bk
-        9OLKZ6Eb1edD1OtXhN6ccIM8U3K9uDu8Yu+y+kJDXWFnzSZF0kAVwuK9ts8LFN19q+0tt6el
-        EQVrvOHbnnQkOua10qSYwzHRhE3k/gCWEOIkwAMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSvG5B3tYYg+NOFqs/Pma0aJm1iMXi
-        bNMbdovLu+awWXzuPcJo0fllFpvF7cYVbBY/d81jsehbe4nNgdNjx90ljB47Z91l9+htfsfm
-        0bdlFaPH501yAaxRXDYpqTmZZalF+nYJXBn/335lLnhoVPGpeytzA+MMzS5GTg4JAROJ/gvT
-        2EFsIYHdjBIb5pRBxCUlpl08ytzFyAFkC0scPlzcxcgFVPKWUWLL67eMIDXCAsESdy/NYANJ
-        iAg0MUl8ftjCBJJgFoiU6H/UzQrRsY1R4nvfP7AONgEtif0vbrCB2PwCihJXfzwGi/MK2Em8
-        ntfCAmKzCKhKbN99ECwuKhAhceb9ChaIGkGJkzOfgNmcAuYSJyftY4FYpi7xZ94lZghbXOLW
-        k/lQR8hLNG+dzTyBUXgWkvZZSFpmIWmZhaRlASPLKkbJ1ILi3PTcYsMCw7zUcr3ixNzi0rx0
-        veT83E2M4AjT0tzBeHlJ/CFGAQ5GJR7ehL4tMUKsiWXFlbmHGCU4mJVEeB1TgEK8KYmVValF
-        +fFFpTmpxYcYpTlYlMR5n+YdixQSSE8sSc1OTS1ILYLJMnFwSjUwRj39ZNYcHSmQuMvjm8V7
-        y7Tvmppr+S5/YfvhVRzKGbhqnasvU/OBtQeaOXguuhm2ZWpzJf5WWGvntnOxo5n8vZebHV77
-        TVt/2PjK67WGBc3ZZ1Y9X2urwG2od+u/j8bpSo5pHcuDApzrRMzajjk8z5D5fWrZzdPeDYve
-        L3l//crN9baHHBUElFiKMxINtZiLihMBx3KtSKwCAAA=
-X-CMS-MailID: 20190416055600epcas1p37fea929aa4977f3dd97290f06c9ed189
+X-Brightmail-Tracker: H4sIAAAAAAAAA02Se0hTcRTH+2131ymurkvzJFF6o0hj5nWbXkvDHsRIIaEIC2vd3GWKe7U7
+        NbOgMkpF7R02TSNL0jLFVqlR5qNSW1aGJamVmiAlhvmg/uix2zXyv88553uev59ULL+J+0mT
+        TTbWamIMJO6B3W0JDFZssd1JCBl460XfGB9C9DH7FYx+fnTUjX7dUIzTE/mtiM6ZtON075Hr
+        OP2joQSjC6q68Gh3TV3/VaSpt/e7afKzxnBNgaMSaSZqF8dJdqZEJrGMjrX6s6ZEsy7ZpI8i
+        Y7ZqN2jVYSGUgoqgw0l/E2Nko8iNsXGKTckG10CkfxpjSHW54hiOI1etjbSaU22sf5KZs0WR
+        rEVnsERYgjnGyKWa9MGJZuNqKiQkVO0S7klJqridhyzOxftPlrS4HUYvIBdJpUCooKPZmIs8
+        pHKiDsHAuTJcML4hmLxULhGMaQS/i85I/mUMdy7KRe4u/wMElaPLBf6KoCk3g+f5RCLUPLyH
+        8bnexC8E3xoKJXxATOyAqaZrYp5xIggaR3pwnucRAdD9fQjxLCPWQrmz9a8fI5ZBd2GRiGcf
+        Ih4+PKmRCBovaL/4CePZnQiH91m3REJ9X3j3qXSGl0DWnSIxPwQQv3EYOTqKhAU2wo9fKl4D
+        xHz4/NThJrAfTIw9wAXOhIr2VlzIzUbgaHwpEQJKaLx2VsTXEROBUN2wSug1F8am8mbuI4Ps
+        43JBvRRef+wXCbwQyk7kzJTXwJdTb/BTKMA+axv7rA3sszaw/292GWGVaAFr4Yx6lqMsytlP
+        XYv+/tSg8DpU0xnbjAgpIj1lewocCXIJk8ZlGJsRSMWkt2ydzuWS6ZiMA6zVrLWmGliuGald
+        xz4t9vNJNLv+vcmmpdShSqWSVlFhaooifWXV0RsS5ISesbEpLGthrf/yRFJ3v8Oo5Nk2Rabn
+        mirHsdPlpuLovvMxezOyvca7enf3f9ENpt9dMeJxSNVSfHDlrjZK27OutN5aoFgzh90dq68o
+        U0X+fDx4/Mm+0IpHdfmVivTpV+evRNBZeeurp5yZznp8xY0OT5lhc3f8fuzFkvtd02GTP8eT
+        c2r70pzxFza1tRd5bB8+SGJcEkMFia0c8wevCQPjvwMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSvK5fydYYg4u/5SxWf3zMaNEyaxGL
+        xdmmN+wWl3fNYbP43HuE0aLzyyw2i9uNK9gsfu6ax2LRt/YSmwOnx467Sxg9ds66y+7R2/yO
+        zaNvyypGj8+b5AJYo7hsUlJzMstSi/TtErgyVm7uYSw4I1fRP+8wewPjeYkuRg4OCQETiafn
+        ZLoYuTiEBHYzSjz/uJu9i5ETKC4pMe3iUWaIGmGJw4eLQcJCAm8ZJX6fqwOxhQWSJTbs284C
+        0isi0MQk8flhCxNIglkgUqL/UTcrxNBtjBJfzq9kAUmwCWhJ7H9xgw3E5hdQlLj64zEjiM0r
+        YCex7MwRsDiLgKrE1RmzwQaJCkRInHm/ggWiRlDi5MwnYDangLnEveZ1UMvUJf7Mu8QMYYtL
+        3HoyHyouL9G8dTbzBEbhWUjaZyFpmYWkZRaSlgWMLKsYJVMLinPTc4sNC4zyUsv1ihNzi0vz
+        0vWS83M3MYIjTEtrB+OJE/GHGAU4GJV4eBP6tsQIsSaWFVfmHmKU4GBWEuF1TAEK8aYkVlal
+        FuXHF5XmpBYfYpTmYFES55XPPxYpJJCeWJKanZpakFoEk2Xi4JRqYNTk8E10XZXjn1GSPNEq
+        d2t+16+DIU959h0RUGl/pBaUwrw7SJ9ti2USX574W8dXVjP+vz4369zsksMK7iv3VngGhKds
+        1DmzpemU9VSPujWJ+7YeyJyz7VHj7kwXmcNBB2/k/5/TPsOM85OUHEtPsf4p44uxmhYHb25+
+        furO1/WnSzSat1gaVSqxFGckGmoxFxUnAgDd/kpBrAIAAA==
+X-CMS-MailID: 20190416062102epcas1p1eb56dbad6e36a8c3c1c60a950782a2d8
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190415145737epcas1p39300df7ef83ed20bd7aaa4e920d1f475
+X-CMS-RootMailID: 20190415145736epcas1p280496bf4128eda3d8efa9db2584fb213
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145737epcas1p39300df7ef83ed20bd7aaa4e920d1f475@epcas1p3.samsung.com>
-        <20190415145505.18397-11-digetx@gmail.com>
+        <CGME20190415145736epcas1p280496bf4128eda3d8efa9db2584fb213@epcas1p2.samsung.com>
+        <20190415145505.18397-12-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416055654.rHgvZkN0lwJPSsoLr63ZzNAKD7dKmpuMZnq-hMZ9oVU@z>
+Message-ID: <20190416062157.E4D5C2xsoSNMdveXKbhU3Yy2fzPlbL2nzYvFrjG8Yfg@z>
 
-Hi,
+Hi Dmitry,
 
-It looks good to me to drop the primary interrupt handler
-but I have some comments. Please check it.
+I already replied against patch6 about the exception handling
+of tegra_devfreq_probe(). This patchset split out the patch
+related to error handling for probe(). I think that you can
+squash the patches regarding of exception handling for probe()
+to one patch instead of split out the multiple patches.
 
 On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
-> There is no real need in the primary interrupt handler, hence move
-> everything to the secondary (threaded) handler. In a result locking
-> is consistent now and there are no potential races with the interrupt
-> handler because it is protected with the devfreq's mutex.
+> Reset hardware, disable ACTMON clock, release OPP's and free IRQ before
+> removing devfreq device since there is no guarantee that interrupt
+> handling won't run after masking interrupt in hardware.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 61 ++++++++++++---------------------
->  1 file changed, 22 insertions(+), 39 deletions(-)
+>  drivers/devfreq/tegra-devfreq.c | 53 ++++++++++++++++-----------------
+>  1 file changed, 26 insertions(+), 27 deletions(-)
 > 
 > diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index 2a1464098200..69b557df5084 100644
+> index 69b557df5084..a668e4fbc874 100644
 > --- a/drivers/devfreq/tegra-devfreq.c
 > +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -144,7 +144,6 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
->  struct tegra_devfreq_device {
->  	const struct tegra_devfreq_device_config *config;
->  	void __iomem *regs;
-> -	spinlock_t lock;
+> @@ -663,28 +663,28 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
 >  
->  	/* Average event count sampled in the last interrupt */
->  	u32 avg_count;
-> @@ -249,11 +248,8 @@ static void actmon_write_barrier(struct tegra_devfreq *tegra)
->  static void actmon_isr_device(struct tegra_devfreq *tegra,
->  			      struct tegra_devfreq_device *dev)
->  {
-> -	unsigned long flags;
->  	u32 intr_status, dev_ctrl;
->  
-> -	spin_lock_irqsave(&dev->lock, flags);
-> -
->  	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->  	tegra_devfreq_update_avg_wmark(tegra, dev);
->  
-> @@ -302,26 +298,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
->  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
->  
->  	actmon_write_barrier(tegra);
-> -
-> -	spin_unlock_irqrestore(&dev->lock, flags);
-> -}
-> -
-> -static irqreturn_t actmon_isr(int irq, void *data)
-> -{
-> -	struct tegra_devfreq *tegra = data;
-> -	bool handled = false;
-> -	unsigned int i;
-> -	u32 val;
-> -
-> -	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
-> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> -		if (val & tegra->devices[i].config->irq_mask) {
-> -			actmon_isr_device(tegra, tegra->devices + i);
-> -			handled = true;
-> -		}
-> -	}
-> -
-> -	return handled ? IRQ_WAKE_THREAD : IRQ_NONE;
->  }
->  
->  static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
-> @@ -348,35 +324,46 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
->  	unsigned long cpu_freq = 0;
->  	unsigned long static_cpu_emc_freq = 0;
->  	unsigned int avg_sustain_coef;
-> -	unsigned long flags;
-> +	u32 avg_count;
->  
->  	if (dev->config->avg_dependency_threshold) {
->  		cpu_freq = cpufreq_get(0);
->  		static_cpu_emc_freq = actmon_cpu_to_emc_rate(tegra, cpu_freq);
+>  	irq = platform_get_irq(pdev, 0);
+>  	if (irq < 0) {
+> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
+> -		return irq;
+> +		err = irq;
+> +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+> +		goto remove_opps;
 >  	}
 >  
-> -	spin_lock_irqsave(&dev->lock, flags);
-> -
-> -	dev->target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
-> +	avg_count = dev->avg_count;
-> +	dev->target_freq = avg_count / ACTMON_SAMPLING_PERIOD;
-
-Actually, this change is not related to this patch.
-Please keep the original code.
-
->  	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
->  	dev->target_freq = do_percent(dev->target_freq, avg_sustain_coef);
->  	dev->target_freq += dev->boost_freq;
+>  	platform_set_drvdata(pdev, tegra);
 >  
-> -	if (dev->avg_count >= dev->config->avg_dependency_threshold)
-> +	if (avg_count >= dev->config->avg_dependency_threshold)
-
-ditto.
-
->  		dev->target_freq = max(dev->target_freq, static_cpu_emc_freq);
-> -
-> -	spin_unlock_irqrestore(&dev->lock, flags);
->  }
->  
->  static irqreturn_t actmon_thread_isr(int irq, void *data)
->  {
->  	struct tegra_devfreq *tegra = data;
-> +	bool handled = false;
-> +	unsigned int i;
-> +	u32 val;
->  
->  	mutex_lock(&tegra->devfreq->lock);
-> -	update_devfreq(tegra->devfreq);
-> +
-> +	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
-> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> +		if (val & tegra->devices[i].config->irq_mask) {
-> +			actmon_isr_device(tegra, tegra->devices + i);
-> +			handled = true;
-> +		}
-> +	}
-> +
-> +	if (handled)
-> +		update_devfreq(tegra->devfreq);
-> +
->  	mutex_unlock(&tegra->devfreq->lock);
->  
-> -	return IRQ_HANDLED;
-> +	return handled ? IRQ_HANDLED : IRQ_NONE;
->  }
->  
->  static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
-> @@ -386,7 +373,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
->  	struct tegra_devfreq *tegra;
->  	struct tegra_devfreq_device *dev;
->  	unsigned int i;
-> -	unsigned long flags;
->  
->  	if (action != POST_RATE_CHANGE)
->  		return NOTIFY_OK;
-> @@ -398,9 +384,7 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
-
-When I review this patch, I have a question
-about why tegra_actmon_rate_notify_cb is needed.
-
-tegra_actmon_rate_notify_cb() do something
-when the clock rate of emc_clock is changed.
-I think that 'emc_clock' is changed by this driver.
-It means that the this driver can catch the change timing
-of emc_clock rate without notifier. 
-
-IMO, it is possible to call tegra_devfreq_update_wmark()
-directly without clock notifier before calling
-'clk_set_min_rate()/clk_set_rate()' in the tegra_devfreq_target().
-
-With clock notifier, it cannot restore something for
-tegra_devfreq_update_wmark(tegra, dev) when failed to
-set the rate of emc_clk by 'clk_set_min_rate()/clk_set_rate()'.
-
->  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->  		dev = &tegra->devices[i];
->  
-> -		spin_lock_irqsave(&dev->lock, flags);
->  		tegra_devfreq_update_wmark(tegra, dev);
-> -		spin_unlock_irqrestore(&dev->lock, flags);
+>  	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+> -	tegra->devfreq = devm_devfreq_add_device(&pdev->dev,
+> -						 &tegra_devfreq_profile,
+> -						 "tegra_actmon",
+> -						 NULL);
+> +	tegra->devfreq = devfreq_add_device(&pdev->dev,
+> +					    &tegra_devfreq_profile,
+> +					    "tegra_actmon",
+> +					    NULL);
+>  	if (IS_ERR(tegra->devfreq)) {
+>  		err = PTR_ERR(tegra->devfreq);
+> -		return err;
+> +		goto remove_opps;
 >  	}
 >  
->  	actmon_write_barrier(tegra);
-> @@ -668,7 +652,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		dev = tegra->devices + i;
->  		dev->config = actmon_device_configs + i;
->  		dev->regs = tegra->regs + dev->config->offset;
-> -		spin_lock_init(&dev->lock);
->  
->  		tegra_actmon_configure_device(tegra, dev);
->  	}
-> @@ -696,8 +679,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		return err;
->  	}
->  
-> -	err = devm_request_threaded_irq(&pdev->dev, irq, actmon_isr,
-> -					actmon_thread_isr, IRQF_SHARED,
-> +	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-> +					actmon_thread_isr, IRQF_ONESHOT,
->  					"tegra-devfreq", tegra);
+> -	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> -					actmon_thread_isr, IRQF_ONESHOT,
+> -					"tegra-devfreq", tegra);
+> +	err = request_threaded_irq(irq, NULL, actmon_thread_isr, IRQF_ONESHOT,
+> +				   "tegra-devfreq", tegra);
 >  	if (err) {
 >  		dev_err(&pdev->dev, "Interrupt request failed\n");
+> -		goto remove_opps;
+> +		goto remove_devfreq;
+>  	}
+>  
+>  	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+> @@ -692,14 +692,23 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	if (err) {
+>  		dev_err(&pdev->dev,
+>  			"Failed to register rate change notifier\n");
+> -		goto remove_opps;
+> +		goto disable_interrupt;
+>  	}
+>  
+>  	return 0;
+>  
+> +disable_interrupt:
+> +	free_irq(irq, tegra);
+> +
+> +remove_devfreq:
+> +	devfreq_remove_device(tegra->devfreq);
+> +
+>  remove_opps:
+>  	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+>  
+> +	reset_control_reset(tegra->reset);
+> +	clk_disable_unprepare(tegra->clock);
+> +
+>  	return err;
+>  }
+>  
+> @@ -707,24 +716,14 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+>  {
+>  	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+>  	int irq = platform_get_irq(pdev, 0);
+> -	u32 val;
+> -	unsigned int i;
+> -
+> -	devm_devfreq_remove_device(&pdev->dev, tegra->devfreq);
+> -	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+> -
+> -	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+> -		val = device_readl(&tegra->devices[i], ACTMON_DEV_CTRL);
+> -		val &= ~ACTMON_DEV_CTRL_ENB;
+> -		device_writel(&tegra->devices[i], val, ACTMON_DEV_CTRL);
+> -	}
+> -
+> -	actmon_write_barrier(tegra);
+> -
+> -	devm_free_irq(&pdev->dev, irq, tegra);
+>  
+>  	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
+> +	free_irq(irq, tegra);
+> +
+> +	devfreq_remove_device(tegra->devfreq);
+> +	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+>  
+> +	reset_control_reset(tegra->reset);
+>  	clk_disable_unprepare(tegra->clock);
+>  
+>  	return 0;
 > 
 
 
