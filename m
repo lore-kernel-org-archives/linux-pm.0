@@ -1,42 +1,210 @@
 From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v4 0/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-Date: Tue, 16 Apr 2019 11:52:07 -0400
-Message-ID: <20190416155209.24216-1-tiny.windzz@gmail.com>
+Subject: [PATCH v4 2/2] dt-bindings: cpufreq: Document allwinner,sun50i-h6-operating-points
+Date: Tue, 16 Apr 2019 11:52:09 -0400
+Message-ID: <20190416155209.24216-3-tiny.windzz@gmail.com>
+References: <20190416155209.24216-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190416155209.24216-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add sunxi nvmem based CPU scaling driver, refers to qcom-cpufreq-kryo.
+Allwinner Process Voltage Scaling Tables defines the voltage and
+frequency value based on the speedbin blown in the efuse combination.
+The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+provide the OPP framework with required information.
+This is used to determine the voltage and frequency value for each
+OPP of operating-points-v2 table when it is parsed by the OPP framework.
 
-Yangtao Li (2):
-  cpufreq: Add sunxi nvmem based CPU scaling driver
-  dt-bindings: cpufreq: Document allwinner,sun50i-h6-operating-points
+The "allwinner,sun50i-h6-operating-points" DT extends the
+"operating-points-v2"
+with following parameters:
+- nvmem-cells (NVMEM area containig the speedbin information)
+- opp-microvolt-<name>: voltage in micro Volts.
+  At runtime, the platform can pick a <name> and matching
+  opp-microvolt-<name> property.
+			HW:		<name>:
+			sun50iw-h6      speed0 speed1 speed2
 
- .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 +++++++++++++
- MAINTAINERS                                   |   7 +
- drivers/cpufreq/Kconfig.arm                   |  12 +
- drivers/cpufreq/Makefile                      |   1 +
- drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
- drivers/cpufreq/sun50i-cpufreq-nvmem.c        | 226 ++++++++++++++++++
- 6 files changed, 415 insertions(+)
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
+ 1 file changed, 167 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
- create mode 100644 drivers/cpufreq/sun50i-cpufreq-nvmem.c
 
----
-v4:
--I removed this sunxi_cpufreq_soc_data structure for now.
--Convert to less generic name.
--Update soc_bin xlate.
-v3:
--update changelog and title
--convert compatibles to allwinner,cpu-operating-points-v2
--document the valid names for opp-microvolt-<name>
-v2:
--update changelog
--convert to dev_pm_opp_set_prop_name instead of
- dev_pm_opp_set_supported_hw
--some change in OPP Node  
----
+diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+new file mode 100644
+index 000000000000..3cb39c6caec3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+@@ -0,0 +1,167 @@
++Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
++===================================
++
++For some SoCs, the CPU frequency subset and voltage value of each OPP
++varies based on the silicon variant in use. Allwinner Process Voltage
++Scaling Tables defines the voltage and frequency value based on the
++speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
++reads the efuse value from the SoC to provide the OPP framework with
++required information.
++
++Required properties:
++--------------------
++In 'cpus' nodes:
++- operating-points-v2: Phandle to the operating-points-v2 table to use.
++
++In 'operating-points-v2' table:
++- compatible: Should be
++	- 'allwinner,sun50i-h6-operating-points'.
++- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
++		efuse registers that has information about the speedbin
++		that is used to select the right frequency/voltage value
++		pair. Please refer the for nvmem-cells bindings
++		Documentation/devicetree/bindings/nvmem/nvmem.txt and
++		also examples below.
++
++In every OPP node:
++- opp-microvolt-<name>: Voltage in micro Volts.
++			At runtime, the platform can pick a <name> and
++			matching opp-microvolt-<name> property.
++			[See: opp.txt]
++			HW:		<name>:
++			sun50iw-h6	speed0 speed1 speed2
++
++Example 1:
++---------
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: cpu@0 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <0>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu1: cpu@1 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <1>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu2: cpu@2 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <2>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu3: cpu@3 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <3>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++        };
++
++        cpu_opp_table: opp_table {
++                compatible = "allwinner,sun50i-h6-operating-points";
++                nvmem-cells = <&speedbin_efuse>;
++                opp-shared;
++
++                opp@480000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <480000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@720000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <720000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@816000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <816000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@888000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <888000000>;
++
++                        opp-microvolt-speed0 = <940000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@1080000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1080000000>;
++
++                        opp-microvolt-speed0 = <1060000>;
++                        opp-microvolt-speed1 = <880000>;
++                        opp-microvolt-speed2 = <840000>;
++                };
++
++                opp@1320000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1320000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <940000>;
++                        opp-microvolt-speed2 = <900000>;
++                };
++
++                opp@1488000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1488000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <1000000>;
++                        opp-microvolt-speed2 = <960000>;
++                };
++        };
++....
++soc {
++....
++	sid: sid@3006000 {
++		compatible = "allwinner,sun50i-h6-sid";
++		reg = <0x03006000 0x400>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		....
++		speedbin_efuse: speed@1c {
++			reg = <0x1c 4>;
++		};
++        };
++};
+-- 
 2.17.0
