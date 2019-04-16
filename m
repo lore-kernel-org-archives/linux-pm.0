@@ -2,61 +2,61 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BB2EC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1B91C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:51:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CC5F920868
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:44:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7C075204EC
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:51:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k1SDSdgH"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vduQ+Kmk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726037AbfDPPoW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 11:44:22 -0400
-Received: from mail-lf1-f45.google.com ([209.85.167.45]:33518 "EHLO
-        mail-lf1-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726860AbfDPPoV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 11:44:21 -0400
-Received: by mail-lf1-f45.google.com with SMTP id j11so16419038lfm.0;
-        Tue, 16 Apr 2019 08:44:20 -0700 (PDT)
+        id S1726647AbfDPPvb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 11:51:31 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:41053 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726230AbfDPPvb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 11:51:31 -0400
+Received: by mail-lf1-f66.google.com with SMTP id t30so16403018lfd.8;
+        Tue, 16 Apr 2019 08:51:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=WfHo21DF+jn0okKDJZD1fn8wNZCD/IRppI1k6ApPUDc=;
-        b=k1SDSdgH6zAEa5jw7ZkaybxBiuXonWhN1Sh1RwNhTkg7VvmCeZ6q3a/KEkL2eUMscU
-         wPAycmr2bUeKZTgWR2A0ohsYwFB0pzdhXYlRfGJF3v9JqU17Ch0x8EY2zaIcMvf0QEyr
-         wouQVmJWzOpc/Dk+diACn35ADzB15IqrFVgI+LKMq1B8tGID2YByKg4MwVc2tI+ZF76y
-         3iSwLUp9EGHoy76hZ7/ax/1NKUbOa/Kg5YmpZ5hIeawHdhfSTN9UfxBLhIE+UyqyxHGv
-         caloATz94A8tLSm2J/fD7teBV8/cCug9PAWo72Rwom07jFLhwlYXvDvR3leWZskfqLJd
-         eYvw==
+        bh=/loTdEy9LgGARdyuJihAtsvawopkPFAfby50yyqa5MQ=;
+        b=vduQ+KmkLdwqMdcr5VX+HBHcCp4q8objqUYk3gelk/9WPWp0MSdDj6OYZN83zfhCzZ
+         yLq4heV3ldZ2mu31uOCorNeNpDj751U4cu/tdVf9YaBGnaij1E7ipTQlVQz+T3kauQog
+         XhVbz2tMxcEuAewRN/l4MQQ5gMPdXrpSfnN4DTl25q9pIDI+7jbDKXrC3WuuzI6Ak8N1
+         pF2mor4tcvJxoqJQJfmjyVzDMRBvuinLfE7QN8MMFATW8aEG6JYseFejw5hF5Q/+azFp
+         enwl1U9tbd2D7Gu1GmMtak2NjzT43aY0ZheSPxg877XjjWKOVNobT/w8ibFbIJ+55C77
+         X70Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=WfHo21DF+jn0okKDJZD1fn8wNZCD/IRppI1k6ApPUDc=;
-        b=swF8Ns1FhKnoW4PP11vTR70/rqHhYmolHaiEA7soYDncdwgxJyiOhCF7SS+FJAx2gO
-         e/6rBeiopOQw5Vmt5ne3df6U+4NSKzbATx+iUBD8+QCZGuC6aVZJkiUOdt9cbu0Tdz+F
-         uLRcw+C8lyvplABNEY5HHZIL3yvmcAL0I0fScmxYdUOU3HO+kdo+pI4fKI9VoZCgT1ki
-         psvip3Ae5PJLa94aD/b1+BN4EVHXfcjqVSRbjENcUja1nsqda4cSF//l+DDN1iZeJhw8
-         aFYQnqRnFfrK0xQaExV/PV8LFD6OiRm3wNXSZ57LPOM6B0GSu3TwJTj5mEyDHAQhSiPJ
-         Rz4g==
-X-Gm-Message-State: APjAAAWyx3RAJ7lfTIqV05U2hzp4kbbY8YiVlTG5Y+FpwmnAWWTo3mdE
-        kP546ApnAiNnpVSQLt2IOsACAE50
-X-Google-Smtp-Source: APXvYqwMl8KC6q1Z8Nvs1gkRv9954wWaSmHhU+wrYFXsSVTfcTU8mjRmoI6YD/CN7oT+Q1LFqpe2HA==
-X-Received: by 2002:ac2:43a9:: with SMTP id t9mr22157001lfl.6.1555429459817;
-        Tue, 16 Apr 2019 08:44:19 -0700 (PDT)
+        bh=/loTdEy9LgGARdyuJihAtsvawopkPFAfby50yyqa5MQ=;
+        b=iA1Moh+MUSguGUb7kepCz79gzEfOOIO2a81nx/fLYicgCcbHIqi0yn5w1vSPUyJNlv
+         PIrxol/FsV1CtOzjk7Q5z1eOcYqZ2sg60A8T7nA/H6diZ+W/opUapV8fZoSWGFVSyv5O
+         hkK6+hzsUl7BWhl/UduBeh0QqKBr9ELibpJjnNvhUV2t7jJ9CFFy8RWdev0AeiadioWJ
+         /bX/9owgDFsIqEbxxC/z8uCnxmXU8UpCiQIEOqnQ7QokqR/I9VFXzwtZQdeOByLUuq42
+         8MKlPGtjIDAeDhgXzoSJEoi+obuuUHURYGA/xdaXHzYKp4MyIb8s3wT3gIkcM1Kujk+N
+         MlkQ==
+X-Gm-Message-State: APjAAAUf0vMLQBv5Eflu8HOWOBNd4WU6a8Tqjf/6MZhcR81xG0hqbIWy
+        mTQAkVBOytz8qlQoRC+PspUHjgSc
+X-Google-Smtp-Source: APXvYqxqqMltDYDwWtCpIY7IqFY5WW6niiiGzO1CTIm/oCvYgJe9RiKp4uvQSaF8NYszFMGtLhkQAw==
+X-Received: by 2002:ac2:4152:: with SMTP id c18mr42619177lfi.84.1555429889173;
+        Tue, 16 Apr 2019 08:51:29 -0700 (PDT)
 Received: from [192.168.2.145] (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.googlemail.com with ESMTPSA id v141sm3099025lfa.52.2019.04.16.08.44.18
+        by smtp.googlemail.com with ESMTPSA id f18sm2349634lfh.39.2019.04.16.08.51.27
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Apr 2019 08:44:18 -0700 (PDT)
-Subject: Re: [PATCH v2 15/19] PM / devfreq: tegra: Synchronize IRQ after
- masking it in hardware
+        Tue, 16 Apr 2019 08:51:28 -0700 (PDT)
+Subject: Re: [PATCH v2 17/19] PM / devfreq: tegra: Support Tegra30
 To:     Chanwoo Choi <cw00.choi@samsung.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -66,16 +66,16 @@ To:     Chanwoo Choi <cw00.choi@samsung.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 References: <20190415145505.18397-1-digetx@gmail.com>
- <CGME20190415145717epcas4p1647551d3a4c7bb2a0d9698707fa03f43@epcas4p1.samsung.com>
- <20190415145505.18397-16-digetx@gmail.com>
- <81db3a75-2d17-5268-fea5-8b6ed650056f@samsung.com>
+ <CGME20190415145707epcas3p27b7b927b14ef3c54274626c9df7cc14f@epcas3p2.samsung.com>
+ <20190415145505.18397-18-digetx@gmail.com>
+ <203f3cbf-d825-0597-b64a-dc876743ae86@samsung.com>
 From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <a9e02e2e-ec93-53fd-5b50-b8566b7d3abb@gmail.com>
-Date:   Tue, 16 Apr 2019 18:42:39 +0300
+Message-ID: <53d0ead1-3a82-01d3-3b8a-094c1e6e34e0@gmail.com>
+Date:   Tue, 16 Apr 2019 18:49:49 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <81db3a75-2d17-5268-fea5-8b6ed650056f@samsung.com>
+In-Reply-To: <203f3cbf-d825-0597-b64a-dc876743ae86@samsung.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -83,17 +83,63 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416154239.RaGoRpnoL_f0dOqDqzYm6enpHFVm8vxIaS7Fa-jPO5w@z>
+Message-ID: <20190416154949.NOntltQ9N5NOTzCTXcLyW2EFMmk56U76bl2hbGO5gd0@z>
 
-16.04.2019 10:41, Chanwoo Choi пишет:
+16.04.2019 10:48, Chanwoo Choi пишет:
 > Hi,
 > 
-> In this patchset,
-> the patch11 adds new 'disable_interrupt' goto statement
-> and then patch15 removes 'disable_interrupt' goto statement again.
-> Actually, it is inefficient.
+> On 19. 4. 15. 오후 11:55, Dmitry Osipenko wrote:
+>> The devfreq driver can be used on Tegra30 without any code change and
+>> it works perfectly fine, the default Tegra124 parameters are good enough
+>> for Tegra30.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/devfreq/Kconfig         | 4 ++--
+>>  drivers/devfreq/tegra-devfreq.c | 1 +
+>>  2 files changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index a78dffe603c1..78c33ddd4eea 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -92,8 +92,8 @@ config ARM_EXYNOS_BUS_DEVFREQ
+>>  	  This does not yet operate with optimal voltages.
+>>  
+>>  config ARM_TEGRA_DEVFREQ
+>> -	tristate "Tegra DEVFREQ Driver"
+>> -	depends on ARCH_TEGRA_124_SOC
+>> +	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
 > 
-> If you change the order of patches,
-> you could remove this stuff.
+> Looks good to me. But, I have a question.
+> 
+> 'Tegra30+' expression is enough in order to indicate
+> the support for both tegra30 and tegra124?
+> 
+> In my case, it is difficult to catch the meaning
+> of which tegra30+ support the kind of tegra124.
 
-Okay, I'll change that in v3. Thanks.
+The ACTMON serves Tegra30, Tegra124 and Tegra210 SoC's. The later Tegra generations also have the ACTMON hardware unit, but most of actual drivers have been moved into firmware on the later gens, including the ACTMON driver. I'll change the wording to "Tegra30/124/210" for clarity. Note that Tegra210 support isn't implemented at the moment by the driver, but that may change in the future.
+
+>> +	depends on ARCH_TEGRA
+>>  	select PM_OPP
+>>  	help
+>>  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+>> index f0711d5ad27d..0a2465a58cf5 100644
+>> --- a/drivers/devfreq/tegra-devfreq.c
+>> +++ b/drivers/devfreq/tegra-devfreq.c
+>> @@ -719,6 +719,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+>>  }
+>>  
+>>  static const struct of_device_id tegra_devfreq_of_match[] = {
+>> +	{ .compatible = "nvidia,tegra30-actmon" },
+>>  	{ .compatible = "nvidia,tegra124-actmon" },
+>>  	{ },
+>>  };
+>>
+> 
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> 
+
+Thanks.
