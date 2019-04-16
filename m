@@ -1,104 +1,143 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v4 00/12] QorIQ TMU multi-sensor and HWMON support
-Date: Tue, 16 Apr 2019 19:24:57 +0200
-Message-ID: <1555435497.2317.17.camel@pengutronix.de>
-References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+From: Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Date: Tue, 16 Apr 2019 19:48:30 +0200
+Message-ID: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20190411100352.15977-1-jiada_wang@mentor.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
-Cc: Chris Healy <cphealy@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
+To: Jiada Wang <jiada_wang@mentor.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Simon Horman <horms+renesas@verge.net.au>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Dien Pham <dien.pham.ry@renesas.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Biju Das <biju.das@bp.renesas.com>, "George G. Davis" <george_davis@mentor.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu
 List-Id: linux-pm@vger.kernel.org
 
-Series is:
+Hi Jiada,
 
-Tested-by: Lucas Stach <l.stach@pengutronix.de>
+Adding below people, since they've made recent contributions to the
+driver and might be interested in your patch:
 
-Regards,
-Lucas
+git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+    | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+      7 Eduardo Valentin <edubezval@gmail.com>
+      6 Simon Horman <horms+renesas@verge.net.au>
+      5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+      2 Geert Uytterhoeven <geert+renesas@glider.be>
+      1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+      1 Marek Vasut <marek.vasut+renesas@gmail.com>
+      1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+      1 Hien Dang <hien.dang.eb@renesas.com>
+      1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+      1 Dien Pham <dien.pham.ry@renesas.com>
+      1 Daniel Lezcano <daniel.lezcano@linaro.org>
+      1 Biju Das <biju.das@bp.renesas.com>
 
-Am Samstag, den 13.04.2019, 01:27 -0700 schrieb Andrey Smirnov:
-> Everyone:
-> 
-> This series contains patches adding support for HWMON integration, bug
-> fixes and general improvements (hopefully) for TMU driver I made while
-> working on it on i.MX8MQ.
-> 
-> Feedback is welcome!
-> 
-> Thanks,
-> Andrey Smirnov
-> 
-> Changes since [v3]
-> 
->     - Series reabse on top of [rfc]
->     
->     - Fixed incorrect goto label in "thermal: qoriq: Pass data to
->       qoriq_tmu_calibration()"
->       
->     - Added REGS_TRITSR() register description to "thermal: qoriq: Do
->       not report invalid temperature reading"
->       
->     - Reworded commit message of "thermal: qoriq: Remove unnecessary
->       DT node is NULL check"
-> 
-> Changes since [v2]
-> 
->     - Patches rebased on v5.1-rc1
-> 
-> Changes since [v1]
-> 
->     - Rebased on "linus" branch of
->       git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
->       that included latest chagnes adding multi-sensors support
-> 
->     - Dropped
-> 
-> 	thermal: qoriq: Add support for multiple thremal sites
-> 	thermal: qoriq: Be more strict when parsing
-> 	thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
-> 
->       since they are no longer relevant
-> 
->     - Added
-> 
-> 	thermal: qoriq: Don't store struct thermal_zone_device reference
-> 	thermal: qoriq: Add local struct qoriq_sensor pointer
-> 	thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
-> 	thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
-> 
->       to simplify latest codebase
-> 
->     - Changed "thermal: qoriq: Do not report invalid temperature
->       reading" to use regmap_read_poll_timeout() to make sure that
->       tmu_get_temp() waits for fist sample to be ready before
->       reporting it. This case is triggered on my setup if
->       qoriq_thermal is compiled as a module
-> 
-> [v1] lore.kernel.org/lkml/20190218191141.3729-1-andrew.smirnov@gmail.com
-> [v2] lore.kernel.org/lkml/20190222200508.26325-1-andrew.smirnov@gmail.com
-> [v3] lore.kernel.org/lkml/20190401041418.5999-1-andrew.smirnov@gmail.com
-> [rfc] lore.kernel.org/lkml/20190404080647.8173-1-daniel.lezcano@linaro.org
-> 
-> Andrey Smirnov (12):
->   thermal: qoriq: Remove unnecessary DT node is NULL check
->   thermal: qoriq: Add local struct device pointer
->   thermal: qoriq: Don't store struct thermal_zone_device reference
->   thermal: qoriq: Drop per-sensor data
->   thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
->   thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
->   thermal: qoriq: Convert driver to use devm_ioremap()
->   thermal: qoriq: Convert driver to use regmap API
->   thermal: qoriq: Enable all sensors before registering them
->   thermal: qoriq: Do not report invalid temperature reading
->   thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
->   thermal: qoriq: Add hwmon support
-> 
->  drivers/thermal/qoriq_thermal.c | 287 +++++++++++++++-----------------
->  drivers/thermal/thermal_hwmon.c |  28 ++++
->  drivers/thermal/thermal_hwmon.h |   7 +
->  3 files changed, 171 insertions(+), 151 deletions(-)
-> 
+I confirm that loading and unloading the rcar3 thermal driver in a
+loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+H3-ES2.0-Salvator-X. 
+
+Full log and .config can be found here:
+https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+
+I post an excerpt from the above [1] (why not including it in the
+description?). Also, why not rephrasing the commit summary line in such
+a way that everybody understands this patch fixes a severe issue, e.g.
+"thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+
+BTW, with this patch applied I left the thermal driver being
+loaded/unloaded on the target for over one hour w/o seeing the issue
+reproduced. So, while there might be slight variations in how the final
+solution looks like, I think the patch already deserves a:
+
+Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+
+[1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+
+root@rcar-gen3:~# while true; do rmmod rcar_gen3_thermal; modprobe rcar_gen3_thermal; done
+[   43.439043] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+[   43.451670] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+[   43.463974] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+
+[..]
+
+[  553.966104] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+[  553.978759] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+[  553.991058] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+[  562.235306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD25)
+[  567.353336] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+[  572.473318] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+[  577.593328] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  579.189148] rcu: INFO: rcu_preempt self-detected stall on CPU
+[  579.195329] rcu:     0-....: (1 GPs behind) idle=b76/1/0x4000000000000004 softirq=263851/263851 fqs=6251 last_accelerate: e095/4240, Nonlazy posted: ...
+[  579.209711] rcu:      (t=25008 jiffies g=346801 q=468)
+[  579.214801] Task dump for CPU 0:
+[  579.218178] modprobe        R  running task        0  6337   1420 0x0000002a
+[  579.225514] Call trace:
+[  579.228103]  dump_backtrace+0x0/0x1dc
+[  579.231934]  show_stack+0x24/0x30
+[  579.235410]  sched_show_task+0x31c/0x36c
+[  579.239507]  dump_cpu_task+0xb0/0xc0
+[  579.243248]  rcu_dump_cpu_stacks+0x220/0x238
+[  579.247702]  rcu_sched_clock_irq+0x8a4/0x141c
+[  579.252249]  update_process_times+0x34/0x64
+[  579.256617]  tick_sched_handle+0x80/0x98
+[  579.260714]  tick_sched_timer+0x64/0xbc
+[  579.264722]  __hrtimer_run_queues+0x5c0/0xb84
+[  579.269266]  hrtimer_interrupt+0x1ec/0x454
+[  579.273547]  arch_timer_handler_phys+0x40/0x58
+[  579.278185]  handle_percpu_devid_irq+0x174/0x6e8
+[  579.282999]  generic_handle_irq+0x3c/0x54
+[  579.287185]  __handle_domain_irq+0x114/0x118
+[  579.291639]  gic_handle_irq+0x70/0xac
+[  579.295465]  el1_irq+0xbc/0x180
+[  579.298756]  __asan_load8+0x8c/0x9c
+[  579.302403]  rcu_is_watching+0x80/0x8c
+[  579.306322]  rebalance_domains+0x12c/0x584
+[  579.310599]  run_rebalance_domains+0x1f4/0x298
+[  579.315231]  __do_softirq+0x4c0/0xab8
+[  579.319061]  irq_exit+0x148/0x1d8
+[  579.322530]  __handle_domain_irq+0xc0/0x118
+[  579.326894]  gic_handle_irq+0x70/0xac
+[  579.330720]  el1_irq+0xbc/0x180
+[  579.334012]  lock_is_held_type+0xec/0x144
+[  579.338201]  rcu_read_lock_sched_held+0x90/0x98
+[  579.342927]  kmem_cache_alloc+0x328/0x3e0
+[  579.347114]  create_object+0x5c/0x39c
+[  579.350944]  kmemleak_alloc+0x54/0x88
+[  579.354774]  __kmalloc_track_caller+0x1c8/0x434
+[  579.359499]  devres_alloc_node+0x40/0x8c
+[  579.363597]  __devm_request_region+0x48/0xc8
+[  579.368055]  devm_ioremap_resource+0xcc/0x148
+[  579.372626]  rcar_gen3_thermal_probe+0x288/0x618 [rcar_gen3_thermal]
+[  579.379231]  platform_drv_probe+0x70/0xe4
+[  579.383420]  really_probe+0x2d8/0x3d8
+[  579.387249]  driver_probe_device+0x154/0x164
+[  579.391705]  device_driver_attach+0x98/0xa0
+[  579.396070]  __driver_attach+0xf0/0xf4
+[  579.399987]  bus_for_each_dev+0x114/0x13c
+[  579.404173]  driver_attach+0x38/0x44
+[  579.407912]  bus_add_driver+0x234/0x288
+[  579.411919]  driver_register+0x148/0x190
+[  579.416015]  __platform_driver_register+0x84/0x90
+[  579.420931]  rcar_gen3_thermal_driver_init+0x28/0x1000 [rcar_gen3_thermal]
+[  579.428074]  do_one_initcall+0x124/0x68c
+[  579.432173]  do_init_module+0xb4/0x300
+[  579.436090]  load_module+0x2c90/0x2f18
+[  579.440008]  __se_sys_finit_module+0x128/0x148
+[  579.444642]  __arm64_sys_finit_module+0x4c/0x5c
+[  579.449367]  el0_svc_common+0xd0/0x16c
+[  579.453283]  el0_svc_handler+0x94/0xa0
+[  579.457200]  el0_svc+0x8/0xc
+[  582.713314] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  587.833305] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  592.953323] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  598.073430] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  603.193306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  604.242120] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:6337]
+[..]
+
+Best regards,
+Eugeniu.
