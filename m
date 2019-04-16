@@ -2,32 +2,32 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C336C282DA
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55D43C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F1F2920868
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 256C920872
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 06:41:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555396864;
-	bh=asHhf97KSDRJRJFDggNFWple/eiLgg3HUxDLzyWEBQE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pCdthoKn5PS46KQdpegqCLSbCAw+E+xBYRxC+ZSl0USZ2MNRXeQPGq3Efsj+4JzvE
-	 hDwvjUTmTDhTVLZGacKbO4o6/FZtL6OCwbPexHF9ZTp7J5RtY076sDioJt7D4XNfrs
-	 /QWbg4AM5B1SIJMUgIXmpMbVb4pvN1QToM5yPnmk=
+	s=default; t=1555396870;
+	bh=21eCalijzpnbUiZFgwTmPWuqg67VdgS0gxCWjhVjFpQ=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=eQ+pWcMtiL/C3HZM2sWG+/4a0BOn7DhEujcdjaZfF/3IAPpWPW0pwiIO0qrudV+s2
+	 WytqOUPSL2oGqQzb7CTqL9R/vSLDp2IRFg9EhS8COfrSOSM3RBJ8p2bXQ4pgBRTfcN
+	 Q3vDbV+WQ7ssrcCUiXuzhzlODCSXlLA1SBWs7ATY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728491AbfDPGkb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 02:40:31 -0400
-Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:34028 "EHLO
-        wens.csie.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728416AbfDPGka (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1728457AbfDPGka (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 16 Apr 2019 02:40:30 -0400
+Received: from mirror2.csie.ntu.edu.tw ([140.112.30.76]:33970 "EHLO
+        wens.csie.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727130AbfDPGk3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 16 Apr 2019 02:40:29 -0400
 Received: by wens.csie.org (Postfix, from userid 1000)
-        id ADEFE602FC; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
+        id 84CFD5FB5E; Tue, 16 Apr 2019 14:40:25 +0800 (CST)
 From:   Chen-Yu Tsai <wens@kernel.org>
 To:     Maxime Ripard <maxime.ripard@bootlin.com>,
         Sebastian Reichel <sre@kernel.org>
@@ -35,12 +35,10 @@ Cc:     Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
         Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v4 7/7] ARM: dts: sun8i: a83t: Enable USB OTG controller on some boards
-Date:   Tue, 16 Apr 2019 14:40:24 +0800
-Message-Id: <20190416064024.20414-8-wens@kernel.org>
+Subject: [PATCH v4 0/7] ARM: sun8i: a83t: Enable USB OTG
+Date:   Tue, 16 Apr 2019 14:40:17 +0800
+Message-Id: <20190416064024.20414-1-wens@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190416064024.20414-1-wens@kernel.org>
-References: <20190416064024.20414-1-wens@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -48,71 +46,134 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416064024.caB0sMItZU6KzKvEUghJ2LNfCh6qket2n8peeqe0ptY@z>
+Message-ID: <20190416064017.PD8Qt8VMtKdbQwmfqoqBxAIJ2UX8mWXCuUuUld-yDSI@z>
 
 From: Chen-Yu Tsai <wens@csie.org>
 
-The Bananapi M3 and Cubietruck Plus both have USB OTG ports wired to the
-SoC and PMIC in the same way, with the N_VBUSEN pin on the PMIC
-controlling VBUS output, the PMIC's VBUS input for sensing VBUS, and
-PH11 on the SoC for sensing the ID pin.
+Hi everyone,
 
-Enable OTG on both boards.
+This is v4 of my A83T USB power supply / OTG series. Hopefully this is
+the last revision even though it's kind of late in the -rc cycle for
+the patches to make the next release. Fingers crossed.
 
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
----
- arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts     | 12 ++++++++++++
- arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts | 12 ++++++++++++
- 2 files changed, 24 insertions(+)
+Changes since v3:
 
-diff --git a/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts b/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
-index 838be7b3715f..9d34eabba121 100644
---- a/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
-+++ b/arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts
-@@ -389,7 +389,19 @@
- 	};
- };
- 
-+&usb_otg {
-+	dr_mode = "otg";
-+	status = "okay";
-+};
-+
-+&usb_power_supply {
-+	status = "okay";
-+};
-+
- &usbphy {
-+	usb0_id_det-gpios = <&pio 7 11 GPIO_ACTIVE_HIGH>; /* PH11 */
-+	usb0_vbus_power-supply = <&usb_power_supply>;
-+	usb0_vbus-supply = <&reg_drivevbus>;
- 	usb1_vbus-supply = <&reg_usb1_vbus>;
- 	status = "okay";
- };
-diff --git a/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts b/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
-index fcbec3d7ccd7..ea299d3d84d0 100644
---- a/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
-+++ b/arch/arm/boot/dts/sun8i-a83t-cubietruck-plus.dts
-@@ -420,7 +420,19 @@
- 	};
- };
- 
-+&usb_otg {
-+	dr_mode = "otg";
-+	status = "okay";
-+};
-+
-+&usb_power_supply {
-+	status = "okay";
-+};
-+
- &usbphy {
-+	usb0_id_det-gpios = <&pio 7 11 GPIO_ACTIVE_HIGH>; /* PH11 */
-+	usb0_vbus_power-supply = <&usb_power_supply>;
-+	usb0_vbus-supply = <&reg_drivevbus>;
- 	usb1_vbus-supply = <&reg_usb1_vbus>;
- 	usb2_vbus-supply = <&reg_usb2_vbus>;
- 	status = "okay";
+  - Dropped patch for disabling current limit
+  - Dropped mfd patch as it is already merged
+
+Changes since v2:
+
+  - Added Rob's ack for dt bindings patch
+  - Rebased onto v5.1-rc1
+
+Changes since v1:
+
+  - Added Lee's ack for mfd patch
+  - Make axp803_usb_power_supply_resources[] const
+
+This series has since been tested. Both host mode and gadget mode work
+well. However this SoC seems to have a glitch in hardware. After host
+mode is used by plugging in a host mode cable, the hardware will not
+revert back to gadget mode if a standard USB cable is plugged in. Host
+mode continues to work however. This will likely have to be addressed
+with some workaround in either the musb driver or our USB PHY driver.
+
+The patches have no cross-tree dependencies, so each part can go through
+their respective trees (power-supply / arm-soc).
+
+I also have some follow-up patches to enable the USB power supply on
+AXP803 / A64. It's the boiler-plate mfd cell and device node addition.
+
+Original cover letter follows:
+
+This series enables USB OTG on the A83T boards. The AXP813/AXP818 PMICs
+used with the A83T have the same behavior as the AXP221 and AXP223,
+where if the N_VBUSEN pin is driven high, the VBUS sensing interrupts
+stop working. In the past Hans made a polling workaround in the USB PHY
+driver. In this series polling is added to the power supply driver.
+
+The power supply driver work was started by Quentin, and shared with me
+when I expressed interest in getting USB OTG to work some time ago.
+Neither of us got around to finishing it, until now that is.
+
+Patch 1 adds a new compatible string for the AXP813 VBUS power supply
+part.
+
+Patch 2 is a bit of cleanup work for the driver.
+
+Patch 3 allows disabling VBUS input current limiting on the AXP20x /
+AXP22x PMICs. While not strictly related to this series, I found it
+easier to just send everything together. This patch depends on the
+previous one.
+
+Patch 4 adds the VBUS status polling feature. This is enabled on AXP221
+and all later PMICs.
+
+Patch 5 factors out code to read out the configured input current limit
+for the AXP20x and AXP22x PMICs. As the AXP813 uses different values,
+factoring out the code based on model will make the main function more
+readable.
+
+Patch 6 adds support for the AXP813 VBUS power supply. checkpatch.pl
+reports a few warnings for this patch:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #100: FILE: drivers/power/supply/axp20x_usb_power.c:306:
+    +       case 1500000:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #101: FILE: drivers/power/supply/axp20x_usb_power.c:307:
+    +       case 2000000:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #102: FILE: drivers/power/supply/axp20x_usb_power.c:308:
+    +       case 2500000:
+
+However they seem to be a false positive. The preceding line of the
+reported lines is a return statement, which is definitely not a
+fallthrough.
+
+Patch 7 adds an mfd cell for the newly supported VBUS power supply.
+
+Patch 8 adds a device node for the VBUS power supply to the common
+axp81x dtsi file.
+
+Patch 9 enables USB OTG on the Cubietruck Plus and Bananapi M3.
+
+Please have a look, and also test it on boards you have, and don't
+limit it to just the A83T ones. As mentioned above, the polling feature
+affects all boards that have an AXP221 or newer PMIC.
+
+I haven't removed the polling workaround from the USB PHY driver yet.
+That would be the next step after this series is merged, and preferrably
+a release has passed.
+
+
+Regards
+ChenYu
+
+Chen-Yu Tsai (4):
+  dt-bindings: power: supply: axp20x_usb_power: add axp813 compatible
+  power: supply: axp20x_usb_power: Fix typo in VBUS current limit macros
+  power: supply: axp20x_usb_power: use polling to detect vbus status
+    change
+  ARM: dts: sun8i: a83t: Enable USB OTG controller on some boards
+
+Quentin Schulz (3):
+  power: supply: axp20x_usb_power: add function to get max current
+  power: supply: axp20x_usb_power: add support for AXP813
+  ARM: dtsi: axp81x: add USB power supply node
+
+ .../power/supply/axp20x_usb_power.txt         |   1 +
+ arch/arm/boot/dts/axp81x.dtsi                 |   4 +
+ arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts  |  12 ++
+ .../boot/dts/sun8i-a83t-cubietruck-plus.dts   |  12 ++
+ drivers/power/supply/axp20x_usb_power.c       | 179 +++++++++++++++---
+ 5 files changed, 181 insertions(+), 27 deletions(-)
+
 -- 
 2.20.1
 
