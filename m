@@ -1,71 +1,119 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 25/57] docs: power: convert docs to ReST
-Date: Tue, 16 Apr 2019 12:47:21 +0200
-Message-ID: <CAJZ5v0gSP3URj4imX1wroC9bBurbWQ0GVF9F_0e+FpXuHQfODQ@mail.gmail.com>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
- <cfab8842b681a84518b327980b08aee95d159605.1555382110.git.mchehab+samsung@kernel.org>
- <1616669.eeiCRjss8h@kreacher> <20190416074137.53873332@coco.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RESEND] drivers/cpufreq/acpi-cpufreq.c: This fixes the
+ following  checkpatch warning
+Date: Tue, 16 Apr 2019 18:28:25 +0530
+Message-ID: <20190416125825.vkjjujxdls7rwnem@vireshk-mac-ubuntu>
+References: <1555326238-3612-1-git-send-email-mohankumar718@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190416074137.53873332@coco.lan>
+Content-Disposition: inline
+In-Reply-To: <1555326238-3612-1-git-send-email-mohankumar718@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Mohan Kumar <mohankumar718@gmail.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 16, 2019 at 12:41 PM Mauro Carvalho Chehab
-<mchehab+samsung@kernel.org> wrote:
->
-> Em Tue, 16 Apr 2019 10:59:23 +0200
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> escreveu:
->
-> > On Tuesday, April 16, 2019 4:55:50 AM CEST Mauro Carvalho Chehab wrote:
-> > > Convert the PM documents to ReST, in order to allow them to
-> > > build with Sphinx.
-> >
-> > And what exactly is the motivation for doing that?
->
-> Providing a little of context, I tried to submit a patchset that would
-> just place existing documents on a sort of "staging" way, without
-> actually reformatting:
->
->         https://lkml.org/lkml/2019/4/10/244
->
-> Jon had some concerns about such approach.
->
-> So, I split into one patch per subsystem. Then, I looked on each, and
-> opted to do the conversion, as, on several cases, the conversion
-> seemed to be easy enough.
->
-> My selfish motivation is that I was returning from vacations and wanted to
-> review some stuff at the Kernel docs, but, discovered that, despite we
-> started migrating the documentation on May, 2016, still the vast
-> majority of documents that weren't converted.
->
-> For me, the main motivation for the conversion are:
->
-> 1) Documents will be grouped into books and chapters,
->    with makes easier to study them;
-> 2) The Sphinx javascript is very convenient for seeking a
->    document and a keyword within the body of the document;
-> 3) Using a browser to read documentation allows to better
->    scale the document to the screen I'm using.
->
-> That's said, sometimes I just prefer to convert the document
-> to a PDF and read it on my tablet. PDF tools also provide
-> similar features.
->
-> In other words, for my own consumption, I prefer reading
-> documents using document tools, instead of reading in plain
-> text.
+On 15-04-19, 14:03, Mohan Kumar wrote:
+> WARNING: Prefer using '"%s...", __func__' to using function's name, in a
+> string
+> 
+> Switch hardcoded function name with a reference to __func__ making the
+> code more maintainable
+> 
+> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index c72258a..73bb2aa 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -366,7 +366,7 @@ static u32 get_cur_val(const struct cpumask *mask, struct acpi_cpufreq_data *dat
+>  
+>  	val = drv_read(data, mask);
+>  
+> -	pr_debug("get_cur_val = %u\n", val);
+> +	pr_debug("%s = %u\n", __func__, val);
+>  
+>  	return val;
+>  }
+> @@ -378,7 +378,7 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+>  	unsigned int freq;
+>  	unsigned int cached_freq;
+>  
+> -	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
+> +	pr_debug("%s (%d)\n", __func__, cpu);
+>  
+>  	policy = cpufreq_cpu_get_raw(cpu);
+>  	if (unlikely(!policy))
+> @@ -458,8 +458,7 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+>  	if (acpi_pstate_strict) {
+>  		if (!check_freqs(policy, mask,
+>  				 policy->freq_table[index].frequency)) {
+> -			pr_debug("acpi_cpufreq_target failed (%d)\n",
+> -				policy->cpu);
+> +			pr_debug("%s (%d)\n", __func__, policy->cpu);
+>  			result = -EAGAIN;
+>  		}
+>  	}
+> @@ -573,7 +572,7 @@ static int cpufreq_boost_down_prep(unsigned int cpu)
+>  static int __init acpi_cpufreq_early_init(void)
+>  {
+>  	unsigned int i;
+> -	pr_debug("acpi_cpufreq_early_init\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  	acpi_perf_data = alloc_percpu(struct acpi_processor_performance);
+>  	if (!acpi_perf_data) {
+> @@ -657,7 +656,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	static int blacklisted;
+>  #endif
+>  
+> -	pr_debug("acpi_cpufreq_cpu_init\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  #ifdef CONFIG_SMP
+>  	if (blacklisted)
+> @@ -856,7 +855,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+>  {
+>  	struct acpi_cpufreq_data *data = policy->driver_data;
+>  
+> -	pr_debug("acpi_cpufreq_cpu_exit\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  	policy->fast_switch_possible = false;
+>  	policy->driver_data = NULL;
+> @@ -881,7 +880,7 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+>  {
+>  	struct acpi_cpufreq_data *data = policy->driver_data;
+>  
+> -	pr_debug("acpi_cpufreq_resume\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  	data->resume = 1;
+>  
+> @@ -954,7 +953,7 @@ static int __init acpi_cpufreq_init(void)
+>  	if (cpufreq_get_current_driver())
+>  		return -EEXIST;
+>  
+> -	pr_debug("acpi_cpufreq_init\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  	ret = acpi_cpufreq_early_init();
+>  	if (ret)
+> @@ -991,7 +990,7 @@ static int __init acpi_cpufreq_init(void)
+>  
+>  static void __exit acpi_cpufreq_exit(void)
+>  {
+> -	pr_debug("acpi_cpufreq_exit\n");
+> +	pr_debug("%s\n", __func__);
+>  
+>  	acpi_cpufreq_boost_exit();
+>  
 
-I see, thanks!
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> > There are plans for some of these files to be converted already, some of them need to be merged or split and it just is not worth it to convert some others.
->
-> Feel free to use this patch as an starting point. If you prefer,
-> I can split into smaller sets, but my main goal here is just
-> to help to speedup the conversion.
-
-OK, we'll see.  Thank you!
+-- 
+viresh
