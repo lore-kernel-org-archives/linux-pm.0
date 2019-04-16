@@ -2,392 +2,116 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B1CAC10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C95D9C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:54:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DB40D2087C
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:52:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 988F221773
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 15:54:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QvWN2U9K"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D5uPVRRO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729771AbfDPPwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 11:52:18 -0400
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:41626 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726230AbfDPPwS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 11:52:18 -0400
-Received: by mail-pl1-f195.google.com with SMTP id d1so10535745plj.8;
-        Tue, 16 Apr 2019 08:52:17 -0700 (PDT)
+        id S1728960AbfDPPyk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 11:54:40 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:37101 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726751AbfDPPyk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 11:54:40 -0400
+Received: by mail-lj1-f195.google.com with SMTP id v13so19602485ljk.4;
+        Tue, 16 Apr 2019 08:54:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=2uUWJmC1QKZMeFFeHRtS108RwAS1qkTh5KChCFErO54=;
-        b=QvWN2U9K/WAKln+Tr22mcTDP1z3JDU4KF71TWZLR6WoI95U+DCZ914nWz6i7rMhYek
-         cBRKH51u5xU1AjtYtAb7OYLKErVTkVV47nXtoqMOtZL8l78/I+OaQuBwjXatZQHhP//3
-         OEVRqHG+K5hhWfTAHio4bx0NFN6xsJpDEyIB1GzK9z0CneRE+shTbg0RUZNfjQvDOobi
-         Lp+46etPzPnugi1WVmvM8oIdA4u+fQfGCB9HCOrVwFndIPuJraQJYn+NGjds6h88vn0i
-         vu1lAcVA8LUVUM+XwqvAI2V6G5WoRy9zu2H6ysFGAb3kUa0hycw3WfuVJI+ZHRhLD0Ke
-         HaiA==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=f9FY1sBshfobGtdtolgZbeCXIDcnPODfPdgmcUPML64=;
+        b=D5uPVRRO7ckpJhWyrahBStGAu/QBGOdbSISaT2q3olx2BGJJFjKRLOJFzrk0qidOQ4
+         gD4+ZwPuRfYZaTfy3FH3Bkf5j6KCuU83xnDmJcemaLFweCXnCE9mSBQis9GG+YLPk8Lk
+         Pt2brcUmdgrpSPJRnxMGrkUz2abpivYF8Tr1eni9Tp764kXEvu5YZxZS9ssK5eestGAx
+         L521soww3t67dFSOzzqqc637Edw929FeCji4X2hDZ367EEOyIzHd27qONRJAaBRk57nA
+         7R8Hzuh/h1gE0s4RVB86TBAjdUxHuhBU/ri7bzGDfpOZs1/tyfSqdd/jDwUW7fTr6Yjk
+         kuQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=2uUWJmC1QKZMeFFeHRtS108RwAS1qkTh5KChCFErO54=;
-        b=AghnPkat458WkpVXbrvpw4hnIDou/QKrKNlqktBo16PxnmopkbAFBSLB6G+yZcPO5y
-         gLRzor8CydPVYItPt1MfhviJj5KkKqnExl3h3ZuFa6KLHH/lw7OBK4w32nmL/a0BHuhd
-         O/ghzLOPcULDCnu/am/P3hnkRn/N+BUwHI3P2WH3yE2cLhb9TRvM/1yxsfmkmldls+x8
-         +qT8OsBUEBncWfS6gKw0JUwqWOX4vv/ZzREo8Fg0jFAjCPfiMLwEqF+R9Pc0VIzunDc8
-         A6Ee/pLGZkzc935trAzKeFcasoYa0afaOp62hjLBei58a3E9C8w8O5B57JuhBcudtvIf
-         HjXw==
-X-Gm-Message-State: APjAAAXMuqQ7/IKxk3yFON2/TaCeh6/5DG29j+htFFtyw9ETCS9cEvfA
-        lE+Xv71DpTVBOlZRXpWbEMc=
-X-Google-Smtp-Source: APXvYqwUNeo8qimIubsVRtz/XqHIfcxHbiidrj6MwUPz095JOnzw4PFdHgEYvMcBN7Edy1LuqXP8MQ==
-X-Received: by 2002:a17:902:7084:: with SMTP id z4mr80750495plk.305.1555429936667;
-        Tue, 16 Apr 2019 08:52:16 -0700 (PDT)
-Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
-        by smtp.gmail.com with ESMTPSA id u17sm72892536pfn.19.2019.04.16.08.52.15
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Tue, 16 Apr 2019 08:52:16 -0700 (PDT)
-From:   Yangtao Li <tiny.windzz@gmail.com>
-To:     tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com,
-        sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net,
-        davem@davemloft.net, mchehab+samsung@kernel.org,
-        gregkh@linuxfoundation.org, nicolas.ferre@microchip.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/2] cpufreq: Add sunxi nvmem based CPU scaling driver
-Date:   Tue, 16 Apr 2019 11:52:08 -0400
-Message-Id: <20190416155209.24216-2-tiny.windzz@gmail.com>
-X-Mailer: git-send-email 2.17.0
-In-Reply-To: <20190416155209.24216-1-tiny.windzz@gmail.com>
-References: <20190416155209.24216-1-tiny.windzz@gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=f9FY1sBshfobGtdtolgZbeCXIDcnPODfPdgmcUPML64=;
+        b=jfh4eBBAdBYAngv1IJFftgx0wWbbibvWDb9JqZtWNxJINOyCoyuBsNMFcoWXtnEWug
+         mInLe0/X9EVKiaLEPVtbEB40sFbnHNw797mowQDgfqUJIPpro0H1u+vJRcA7pBbQGTeE
+         ycIyqFDe5uXn3+NZWwMkCIQ6u0OI0jSfA0b+ljH29/65S9kPLZCUdITF4bJLfr1WMX5P
+         PexIh2cOUAFBoaXh8z/zsTUYXSnvRmOf79MXSouTbIzs1URFP/e4xHagsAkx3TngxDHY
+         /JtOFJGBVyS42YIDInl7pZD/Tp+VM90xuLviqmZZlBve30/qcpbfDCSyWfW4ZzC+oFkn
+         kYNA==
+X-Gm-Message-State: APjAAAVDKU7oZ2DqrtmNlKbqVlrRMaYHKTnuUbk39uxJN1hNTs7RT8T3
+        OzkAZWH3jnJszXZ+BTMR4N9gqhxJ
+X-Google-Smtp-Source: APXvYqyp78Bj6fwwhuWx0YuNL475YFrPoDxZTGWiF/aZjcWSULXb8m556YKv/DWVjEhr4kfaGrIeXg==
+X-Received: by 2002:a2e:4ca:: with SMTP id a71mr44450009ljf.39.1555430078023;
+        Tue, 16 Apr 2019 08:54:38 -0700 (PDT)
+Received: from [192.168.2.145] (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
+        by smtp.googlemail.com with ESMTPSA id j14sm11338871lfb.18.2019.04.16.08.54.36
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 16 Apr 2019 08:54:37 -0700 (PDT)
+Subject: Re: [PATCH v2 18/19] PM / devfreq: tegra: Enable COMPILE_TEST for the
+ driver
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20190415145505.18397-1-digetx@gmail.com>
+ <CGME20190415145614epcas4p494a515b20cd351e220ac4eb37c05b7fb@epcas4p4.samsung.com>
+ <20190415145505.18397-19-digetx@gmail.com>
+ <8d8c55b8-b4aa-e072-7c5f-0b1e5e883031@samsung.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <77653f79-45ef-1557-c940-0140bcb69311@gmail.com>
+Date:   Tue, 16 Apr 2019 18:52:58 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <8d8c55b8-b4aa-e072-7c5f-0b1e5e883031@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416155208.0prX8sWoyYh6erR2ffWpOkv7ZT_34OR0x2u95DV3-Es@z>
+Message-ID: <20190416155258.PQ0R9ne8ARwF3wsMLmAm6mah-z1LNMnRn9CmIwqLPF4@z>
 
-For some SoCs, the CPU frequency subset and voltage value of each OPP
-varies based on the silicon variant in use. The sun50i-cpufreq-nvmem
-driver reads the efuse value from the SoC to provide the OPP framework
-with required information.
+16.04.2019 10:43, Chanwoo Choi пишет:
+> On 19. 4. 15. 오후 11:55, Dmitry Osipenko wrote:
+>> The driver's compilation doesn't have any specific dependencies, hence
+>> the COMPILE_TEST option can be supported in Kconfig.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/devfreq/Kconfig | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index 78c33ddd4eea..bd6652863e7d 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+>>  
+>>  config ARM_TEGRA_DEVFREQ
+>>  	tristate "NVIDIA Tegra30+ DEVFREQ Driver"
+>> -	depends on ARCH_TEGRA
+>> +	depends on ARCH_TEGRA || COMPILE_TEST
+>>  	select PM_OPP
+>>  	help
+>>  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+>>
+> 
+> I think that it doesn't need to make it a separate patch.
+> You can merge this patch to patch17 and then drop this patch.
+> 
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- MAINTAINERS                            |   7 +
- drivers/cpufreq/Kconfig.arm            |  12 ++
- drivers/cpufreq/Makefile               |   1 +
- drivers/cpufreq/cpufreq-dt-platdev.c   |   2 +
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 226 +++++++++++++++++++++++++
- 5 files changed, 248 insertions(+)
- create mode 100644 drivers/cpufreq/sun50i-cpufreq-nvmem.c
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3671fdea5010..4ad6dd051149 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -667,6 +667,13 @@ S:	Maintained
- F:	Documentation/i2c/busses/i2c-ali1563
- F:	drivers/i2c/busses/i2c-ali1563.c
- 
-+ALLWINNER CPUFREQ DRIVER
-+M:	Yangtao Li <tiny.windzz@gmail.com>
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-+F:	drivers/cpufreq/sun50i-cpufreq-nvmem.c
-+
- ALLWINNER SECURITY SYSTEM
- M:	Corentin Labbe <clabbe.montjoie@gmail.com>
- L:	linux-crypto@vger.kernel.org
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 179a1d302f48..71377e01a370 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -18,6 +18,18 @@ config ACPI_CPPC_CPUFREQ
- 
- 	  If in doubt, say N.
- 
-+config ARM_ALLWINNER_SUN50I_CPUFREQ_NVMEM
-+	tristate "Allwinner nvmem based SUN50I CPUFreq driver"
-+	depends on ARCH_SUNXI
-+	depends on NVMEM_SUNXI_SID
-+	select PM_OPP
-+	help
-+	  This adds the nvmem based CPUFreq driver for Allwinner
-+	  h6 SoC.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called sun50i-cpufreq-nvmem.
-+
- config ARM_ARMADA_37XX_CPUFREQ
- 	tristate "Armada 37xx CPUFreq support"
- 	depends on ARCH_MVEBU && CPUFREQ_DT
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 689b26c6f949..a78b8da80383 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -78,6 +78,7 @@ obj-$(CONFIG_ARM_SCMI_CPUFREQ)		+= scmi-cpufreq.o
- obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
-+obj-$(CONFIG_ARM_ALLWINNER_SUN50I_CPUFREQ_NVMEM) += sun50i-cpufreq-nvmem.o
- obj-$(CONFIG_ARM_TANGO_CPUFREQ)		+= tango-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 47729a22c159..50e7810f3a28 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -105,6 +105,8 @@ static const struct of_device_id whitelist[] __initconst = {
-  * platforms using "operating-points-v2" property.
-  */
- static const struct of_device_id blacklist[] __initconst = {
-+	{ .compatible = "allwinner,sun50i-h6", },
-+
- 	{ .compatible = "calxeda,highbank", },
- 	{ .compatible = "calxeda,ecx-2000", },
- 
-diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-new file mode 100644
-index 000000000000..eca32e443716
---- /dev/null
-+++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-@@ -0,0 +1,226 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Allwinner CPUFreq nvmem based driver
-+ *
-+ * The sun50i-cpufreq-nvmem driver reads the efuse value from the SoC to
-+ * provide the OPP framework with required information.
-+ *
-+ * Copyright (C) 2019 Yangtao Li <tiny.windzz@gmail.com>
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+
-+#define MAX_NAME_LEN	7
-+
-+#define NVMEM_MASK	0x7
-+#define NVMEM_SHIFT	5
-+
-+static struct platform_device *cpufreq_dt_pdev, *sun50i_cpufreq_pdev;
-+
-+/**
-+ * sun50i_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-+ * @versions: Set to the value parsed from efuse
-+ *
-+ * Returns 0 if success.
-+ */
-+static int sun50i_cpufreq_get_efuse(u32 *versions)
-+{
-+	struct nvmem_cell *speedbin_nvmem;
-+	struct device_node *np;
-+	struct device *cpu_dev;
-+	u32 *speedbin, efuse_value;
-+	size_t len;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
-+	if (!np)
-+		return -ENOENT;
-+
-+	ret = of_device_is_compatible(np,
-+				      "allwinner,sun50i-h6-operating-points");
-+	if (!ret) {
-+		of_node_put(np);
-+		return -ENOENT;
-+	}
-+
-+	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
-+	of_node_put(np);
-+	if (IS_ERR(speedbin_nvmem)) {
-+		if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
-+			pr_err("Could not get nvmem cell: %ld\n",
-+			       PTR_ERR(speedbin_nvmem));
-+		return PTR_ERR(speedbin_nvmem);
-+	}
-+
-+	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
-+	nvmem_cell_put(speedbin_nvmem);
-+	if (IS_ERR(speedbin))
-+		return PTR_ERR(speedbin);
-+
-+	efuse_value = (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
-+	switch (efuse_value) {
-+	case 0b0001:
-+		*versions = 1;
-+		break;
-+	case 0b0011:
-+		*versions = 2;
-+		break;
-+	default:
-+		/*
-+		 * For other situations, we treat it as bin0.
-+		 * This vf table can be run for any good cpu.
-+		 */
-+		*versions = 0;
-+		break;
-+	}
-+
-+	kfree(speedbin);
-+	return 0;
-+};
-+
-+static int sun50i_cpufreq_nvmem_probe(struct platform_device *pdev)
-+{
-+	struct opp_table **opp_tables;
-+	char name[MAX_NAME_LEN];
-+	unsigned int cpu;
-+	u32 speed = 0;
-+	int ret;
-+
-+	opp_tables = kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-+			     GFP_KERNEL);
-+	if (!opp_tables)
-+		return -ENOMEM;
-+
-+	ret = sun50i_cpufreq_get_efuse(&speed);
-+	if (ret)
-+		return ret;
-+
-+	snprintf(name, MAX_NAME_LEN, "speed%d", speed);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct device *cpu_dev = get_cpu_device(cpu);
-+
-+		if (!cpu_dev) {
-+			ret = -ENODEV;
-+			goto free_opp;
-+		}
-+
-+		opp_tables[cpu] = dev_pm_opp_set_prop_name(cpu_dev, name);
-+		if (IS_ERR(opp_tables[cpu])) {
-+			ret = PTR_ERR(opp_tables[cpu]);
-+			pr_err("Failed to set prop name\n");
-+			goto free_opp;
-+		}
-+	}
-+
-+	cpufreq_dt_pdev = platform_device_register_simple("cpufreq-dt", -1,
-+							  NULL, 0);
-+	if (!IS_ERR(cpufreq_dt_pdev)) {
-+		platform_set_drvdata(pdev, opp_tables);
-+		return 0;
-+	}
-+
-+	ret = PTR_ERR(cpufreq_dt_pdev);
-+	pr_err("Failed to register platform device\n");
-+
-+free_opp:
-+	for_each_possible_cpu(cpu) {
-+		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-+			break;
-+		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+	}
-+	kfree(opp_tables);
-+
-+	return ret;
-+}
-+
-+static int sun50i_cpufreq_nvmem_remove(struct platform_device *pdev)
-+{
-+	struct opp_table **opp_tables = platform_get_drvdata(pdev);
-+	unsigned int cpu;
-+
-+	platform_device_unregister(cpufreq_dt_pdev);
-+
-+	for_each_possible_cpu(cpu)
-+		dev_pm_opp_put_prop_name(opp_tables[cpu]);
-+
-+	kfree(opp_tables);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver sun50i_cpufreq_driver = {
-+	.probe = sun50i_cpufreq_nvmem_probe,
-+	.remove = sun50i_cpufreq_nvmem_remove,
-+	.driver = {
-+		.name = "sun50i-cpufreq-nvmem",
-+	},
-+};
-+
-+static const struct of_device_id sun50i_cpufreq_match_list[] = {
-+	{ .compatible = "allwinner,sun50i-h6" },
-+	{}
-+};
-+
-+static const struct of_device_id *sun50i_cpufreq_match_node(void)
-+{
-+	const struct of_device_id *match;
-+	struct device_node *np;
-+
-+	np = of_find_node_by_path("/");
-+	match = of_match_node(sun50i_cpufreq_match_list, np);
-+	of_node_put(np);
-+
-+	return match;
-+}
-+
-+/*
-+ * Since the driver depends on nvmem drivers, which may return EPROBE_DEFER,
-+ * all the real activity is done in the probe, which may be defered as well.
-+ * The init here is only registering the driver and the platform device.
-+ */
-+static int __init sun50i_cpufreq_init(void)
-+{
-+	const struct of_device_id *match;
-+	int ret;
-+
-+	match = sun50i_cpufreq_match_node();
-+	if (!match)
-+		return -ENODEV;
-+
-+	ret = platform_driver_register(&sun50i_cpufreq_driver);
-+	if (unlikely(ret < 0))
-+		return ret;
-+
-+	sun50i_cpufreq_pdev =
-+		platform_device_register_simple("sun50i-cpufreq-nvmem",
-+						-1, NULL, 0);
-+	ret = PTR_ERR_OR_ZERO(sun50i_cpufreq_pdev);
-+	if (ret == 0)
-+		return 0;
-+
-+	platform_driver_unregister(&sun50i_cpufreq_driver);
-+	return ret;
-+}
-+module_init(sun50i_cpufreq_init);
-+
-+static void __exit sun50i_cpufreq_exit(void)
-+{
-+	platform_device_unregister(sun50i_cpufreq_pdev);
-+	platform_driver_unregister(&sun50i_cpufreq_driver);
-+}
-+module_exit(sun50i_cpufreq_exit);
-+
-+MODULE_DESCRIPTION("Sun50i-h6 cpufreq driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.17.0
-
+I'd prefer to have this change as a separate patch because this is a logically distinct change from the patch 17.
