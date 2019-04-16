@@ -2,170 +2,198 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-7.5 required=3.0 tests=FAKE_REPLY_C,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BFFCC282DA
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B0D3C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:48:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D3CB52075B
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:44:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lFyhsuGV"
+	by mail.kernel.org (Postfix) with ESMTP id EE55120880
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:48:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730087AbfDPRoj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 13:44:39 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:44112 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728468AbfDPRoj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:44:39 -0400
-Received: by mail-pf1-f193.google.com with SMTP id y13so10743179pfm.11;
-        Tue, 16 Apr 2019 10:44:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=/u94BtNlhqIi/IfQiSta23HVk4c4bD4ErFZeKAzdc0g=;
-        b=lFyhsuGV41/RhIhbwDHFY3aRRnojfdWbgskHeyfOa/qH/xmE1KmanKE/jT7oiBM3q9
-         nX2CDWWGwujipPACwv/vkm0WxPJFq2DqYZt56bKD8DUgB06kDXhymokKpGtaQXWhuPEW
-         VAj1UJt9zfmbyT818qF0ww5ukFHYw149BjU77my8IBDXTkmONBfrD67Nxn6rWbjEMKVd
-         SafIJsSZf9go/cnDJoT4Y9uvXIGElgbsf1/Vraf2dT/T1/62PdT0kTd38UVFgikyJuwE
-         Qhw+pI/j65kEiqUi1sCGFrfIE0zYg+iY7ONh1DcbGzAOSOVjFu0IdQxDBXrh3rCcdmvj
-         FQUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=/u94BtNlhqIi/IfQiSta23HVk4c4bD4ErFZeKAzdc0g=;
-        b=jPyNosaG4UyQxY69d3+Og6UVEXJZ3btxVd6jrZ1orgCCtmd6tNM1njM7LRX6vbs7gk
-         wwc/lKkWPZ4z86KN0jkaVDhZbe05ec3+6uNI1EHYRXa3fzT2qXBglZmmkdNXWXUyA66D
-         PicfEQrHgY3I1Oc9AA0wxjhFhMS+fBwPBDtF63UtWK+FVVjBp90Yyi8e1x66pHFIRvqe
-         w1avxDhiw3IAA/3l65T7HZ1C3LQFg7glRAKu6X6JKpkc8PayDzyaVC1yTQ1OQ+4fFiGa
-         wpgOeGtCFMxhcPN7BWIf4TdXs6P4riltHqlJNwdgd6fuPvqzCAMLsC3ZMBdGKqPoXMtz
-         t7zQ==
-X-Gm-Message-State: APjAAAVRWKUl+Dpcw/qh993J8mijOzbB4gCWttr7jXzOlkdXXtcpeKeR
-        ZhcPEQYeebwvzRYxFCu2YD/aV5ig
-X-Google-Smtp-Source: APXvYqye2Th6RRXevYuCBagjjx9jIetRVgGwvP0WbrD4TuLXC3tM/nRrKxqgb+lReAUpFL2w73u47Q==
-X-Received: by 2002:a63:fc5a:: with SMTP id r26mr74341625pgk.97.1555436678241;
-        Tue, 16 Apr 2019 10:44:38 -0700 (PDT)
-Received: from localhost.localdomain (KD118155013174.ppp-bb.dion.ne.jp. [118.155.13.174])
-        by smtp.gmail.com with ESMTPSA id f20sm39763791pff.176.2019.04.16.10.44.35
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 16 Apr 2019 10:44:37 -0700 (PDT)
-From:   Yoshihiro Kaneko <ykaneko0929@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Zhang Rui <rui.zhang@intel.com>,
+        id S1729251AbfDPRsq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 13:48:46 -0400
+Received: from smtp1.de.adit-jv.com ([93.241.18.167]:55297 "EHLO
+        smtp1.de.adit-jv.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726860AbfDPRsq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:48:46 -0400
+Received: from localhost (smtp1.de.adit-jv.com [127.0.0.1])
+        by smtp1.de.adit-jv.com (Postfix) with ESMTP id 8385D3C00DD;
+        Tue, 16 Apr 2019 19:48:43 +0200 (CEST)
+Received: from smtp1.de.adit-jv.com ([127.0.0.1])
+        by localhost (smtp1.de.adit-jv.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id EQl5vs48MjWF; Tue, 16 Apr 2019 19:48:33 +0200 (CEST)
+Received: from HI2EXCH01.adit-jv.com (hi2exch01.adit-jv.com [10.72.92.24])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by smtp1.de.adit-jv.com (Postfix) with ESMTPS id 78D193C00C0;
+        Tue, 16 Apr 2019 19:48:33 +0200 (CEST)
+Received: from vmlxhi-102.adit-jv.com (10.72.93.184) by HI2EXCH01.adit-jv.com
+ (10.72.92.24) with Microsoft SMTP Server (TLS) id 14.3.439.0; Tue, 16 Apr
+ 2019 19:48:33 +0200
+Date:   Tue, 16 Apr 2019 19:48:30 +0200
+From:   Eugeniu Rosca <erosca@de.adit-jv.com>
+To:     Jiada Wang <jiada_wang@mentor.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Simon Horman <horms@verge.net.au>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        linux-renesas-soc@vger.kernel.org
-Subject: [PATCH/RFT v2 3/3] thermal: rcar_gen3_thermal: Update temperature conversion method
-Date:   Wed, 17 Apr 2019 02:44:15 +0900
-Message-Id: <1555436655-5262-4-git-send-email-ykaneko0929@gmail.com>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1555436655-5262-1-git-send-email-ykaneko0929@gmail.com>
-References: <1555436655-5262-1-git-send-email-ykaneko0929@gmail.com>
+        Simon Horman <horms+renesas@verge.net.au>,
+        Niklas =?utf-8?Q?S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+        Marek Vasut <marek.vasut+renesas@gmail.com>,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        Hien Dang <hien.dang.eb@renesas.com>,
+        Fabrizio Castro <fabrizio.castro@bp.renesas.com>,
+        Dien Pham <dien.pham.ry@renesas.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Biju Das <biju.das@bp.renesas.com>,
+        "George G. Davis" <george_davis@mentor.com>,
+        Joshua Frkuska <joshua_frkuska@mentor.com>,
+        Eugeniu Rosca <erosca@de.adit-jv.com>,
+        Eugeniu Rosca <roscaeugeniu@gmail.com>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Message-ID: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190411100352.15977-1-jiada_wang@mentor.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Originating-IP: [10.72.93.184]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190416174830.WpelcAukZp_NHnJCBaUw3yWxFON-ZqqOVmNnWmCaPXU@z>
 
-Update the formula to calculate temperature:
-Currently, current TEMP is calculated as
-average of val1 (is calculated by formula 1)
-and val2 (is calculated by formula 2). But,
-as description in HWM (chapter 10A.3.1.2 Normal Mode.)
+Hi Jiada,
 
-If (TEMP_CODE < THCODE2[11:0]) CTEMP value should be val1.
-If (TEMP_CODE > THCODE2[11:0]) CTEMP value should be val2.
+Adding below people, since they've made recent contributions to the
+driver and might be interested in your patch:
 
-Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
----
- drivers/thermal/rcar_gen3_thermal.c | 28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+    | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+      7 Eduardo Valentin <edubezval@gmail.com>
+      6 Simon Horman <horms+renesas@verge.net.au>
+      5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+      2 Geert Uytterhoeven <geert+renesas@glider.be>
+      1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+      1 Marek Vasut <marek.vasut+renesas@gmail.com>
+      1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+      1 Hien Dang <hien.dang.eb@renesas.com>
+      1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+      1 Dien Pham <dien.pham.ry@renesas.com>
+      1 Daniel Lezcano <daniel.lezcano@linaro.org>
+      1 Biju Das <biju.das@bp.renesas.com>
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 97cf3cd..9b95263 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -63,6 +63,13 @@
- 
- #define TSC_MAX_NUM	3
- 
-+/* default THCODE values if FUSEs are missing */
-+static const int thcode[TSC_MAX_NUM][3] = {
-+	{ 3397, 2800, 2221 },
-+	{ 3393, 2795, 2216 },
-+	{ 3389, 2805, 2237 },
-+};
-+
- /* Structure for thermal temperature calculation */
- struct equation_coefs {
- 	int a1;
-@@ -78,6 +85,7 @@ struct rcar_gen3_thermal_tsc {
- 	int low;
- 	int high;
- 	int tj_2;
-+	int id; /* thermal channel id */
- };
- 
- struct rcar_gen3_thermal_priv {
-@@ -129,7 +137,7 @@ static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
- 
- 
- static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_tsc *tsc,
--					 int *ptat, int *thcode,
-+					 int *ptat, const int *thcode,
- 					 unsigned int ths_tj_1)
- {
- 	/* TODO: Find documentation and document constant calculation formula */
-@@ -163,15 +171,19 @@ static int rcar_gen3_thermal_round(int temp)
- static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
- {
- 	struct rcar_gen3_thermal_tsc *tsc = devdata;
--	int mcelsius, val1, val2;
-+	int mcelsius, val;
- 	u32 reg;
- 
- 	/* Read register and convert to mili Celsius */
- 	reg = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
- 
--	val1 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1, tsc->coef.a1);
--	val2 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2, tsc->coef.a2);
--	mcelsius = FIXPT_TO_MCELSIUS((val1 + val2) / 2);
-+	if (reg <= thcode[tsc->id][1])
-+		val = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1,
-+				tsc->coef.a1);
-+	else
-+		val = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2,
-+				tsc->coef.a2);
-+	mcelsius = FIXPT_TO_MCELSIUS(val);
- 
- 	/* Make sure we are inside specifications */
- 	if ((mcelsius < MCELSIUS(-40)) || (mcelsius > MCELSIUS(125)))
-@@ -377,11 +389,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	/* default values if FUSEs are missing */
- 	/* TODO: Read values from hardware on supported platforms */
- 	int ptat[3] = { 2631, 1509, 435 };
--	int thcode[TSC_MAX_NUM][3] = {
--		{ 3397, 2800, 2221 },
--		{ 3393, 2795, 2216 },
--		{ 3389, 2805, 2237 },
--	};
- 
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -438,6 +445,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 			ret = PTR_ERR(tsc->base);
- 			goto error_unregister;
- 		}
-+		tsc->id = i;
- 
- 		priv->tscs[i] = tsc;
- 
--- 
-1.9.1
+I confirm that loading and unloading the rcar3 thermal driver in a
+loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+H3-ES2.0-Salvator-X. 
 
+Full log and .config can be found here:
+https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+
+I post an excerpt from the above [1] (why not including it in the
+description?). Also, why not rephrasing the commit summary line in such
+a way that everybody understands this patch fixes a severe issue, e.g.
+"thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+
+BTW, with this patch applied I left the thermal driver being
+loaded/unloaded on the target for over one hour w/o seeing the issue
+reproduced. So, while there might be slight variations in how the final
+solution looks like, I think the patch already deserves a:
+
+Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+
+[1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+
+root@rcar-gen3:~# while true; do rmmod rcar_gen3_thermal; modprobe rcar_gen3_thermal; done
+[   43.439043] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+[   43.451670] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+[   43.463974] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+
+[..]
+
+[  553.966104] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+[  553.978759] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+[  553.991058] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+[  562.235306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD25)
+[  567.353336] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+[  572.473318] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+[  577.593328] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  579.189148] rcu: INFO: rcu_preempt self-detected stall on CPU
+[  579.195329] rcu:     0-....: (1 GPs behind) idle=b76/1/0x4000000000000004 softirq=263851/263851 fqs=6251 last_accelerate: e095/4240, Nonlazy posted: ...
+[  579.209711] rcu:      (t=25008 jiffies g=346801 q=468)
+[  579.214801] Task dump for CPU 0:
+[  579.218178] modprobe        R  running task        0  6337   1420 0x0000002a
+[  579.225514] Call trace:
+[  579.228103]  dump_backtrace+0x0/0x1dc
+[  579.231934]  show_stack+0x24/0x30
+[  579.235410]  sched_show_task+0x31c/0x36c
+[  579.239507]  dump_cpu_task+0xb0/0xc0
+[  579.243248]  rcu_dump_cpu_stacks+0x220/0x238
+[  579.247702]  rcu_sched_clock_irq+0x8a4/0x141c
+[  579.252249]  update_process_times+0x34/0x64
+[  579.256617]  tick_sched_handle+0x80/0x98
+[  579.260714]  tick_sched_timer+0x64/0xbc
+[  579.264722]  __hrtimer_run_queues+0x5c0/0xb84
+[  579.269266]  hrtimer_interrupt+0x1ec/0x454
+[  579.273547]  arch_timer_handler_phys+0x40/0x58
+[  579.278185]  handle_percpu_devid_irq+0x174/0x6e8
+[  579.282999]  generic_handle_irq+0x3c/0x54
+[  579.287185]  __handle_domain_irq+0x114/0x118
+[  579.291639]  gic_handle_irq+0x70/0xac
+[  579.295465]  el1_irq+0xbc/0x180
+[  579.298756]  __asan_load8+0x8c/0x9c
+[  579.302403]  rcu_is_watching+0x80/0x8c
+[  579.306322]  rebalance_domains+0x12c/0x584
+[  579.310599]  run_rebalance_domains+0x1f4/0x298
+[  579.315231]  __do_softirq+0x4c0/0xab8
+[  579.319061]  irq_exit+0x148/0x1d8
+[  579.322530]  __handle_domain_irq+0xc0/0x118
+[  579.326894]  gic_handle_irq+0x70/0xac
+[  579.330720]  el1_irq+0xbc/0x180
+[  579.334012]  lock_is_held_type+0xec/0x144
+[  579.338201]  rcu_read_lock_sched_held+0x90/0x98
+[  579.342927]  kmem_cache_alloc+0x328/0x3e0
+[  579.347114]  create_object+0x5c/0x39c
+[  579.350944]  kmemleak_alloc+0x54/0x88
+[  579.354774]  __kmalloc_track_caller+0x1c8/0x434
+[  579.359499]  devres_alloc_node+0x40/0x8c
+[  579.363597]  __devm_request_region+0x48/0xc8
+[  579.368055]  devm_ioremap_resource+0xcc/0x148
+[  579.372626]  rcar_gen3_thermal_probe+0x288/0x618 [rcar_gen3_thermal]
+[  579.379231]  platform_drv_probe+0x70/0xe4
+[  579.383420]  really_probe+0x2d8/0x3d8
+[  579.387249]  driver_probe_device+0x154/0x164
+[  579.391705]  device_driver_attach+0x98/0xa0
+[  579.396070]  __driver_attach+0xf0/0xf4
+[  579.399987]  bus_for_each_dev+0x114/0x13c
+[  579.404173]  driver_attach+0x38/0x44
+[  579.407912]  bus_add_driver+0x234/0x288
+[  579.411919]  driver_register+0x148/0x190
+[  579.416015]  __platform_driver_register+0x84/0x90
+[  579.420931]  rcar_gen3_thermal_driver_init+0x28/0x1000 [rcar_gen3_thermal]
+[  579.428074]  do_one_initcall+0x124/0x68c
+[  579.432173]  do_init_module+0xb4/0x300
+[  579.436090]  load_module+0x2c90/0x2f18
+[  579.440008]  __se_sys_finit_module+0x128/0x148
+[  579.444642]  __arm64_sys_finit_module+0x4c/0x5c
+[  579.449367]  el0_svc_common+0xd0/0x16c
+[  579.453283]  el0_svc_handler+0x94/0xa0
+[  579.457200]  el0_svc+0x8/0xc
+[  582.713314] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  587.833305] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  592.953323] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  598.073430] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  603.193306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+[  604.242120] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:6337]
+[..]
+
+Best regards,
+Eugeniu.
