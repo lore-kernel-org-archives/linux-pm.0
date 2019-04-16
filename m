@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 06/12] thermal: qoriq: Pass data to
- qoriq_tmu_calibration() directly
-Date: Tue, 16 Apr 2019 18:51:50 +0200
-Message-ID: <74c4f677-c586-45de-3a38-feb627757193@linaro.org>
+Subject: Re: [PATCH v4 07/12] thermal: qoriq: Convert driver to use
+ devm_ioremap()
+Date: Tue, 16 Apr 2019 18:52:38 +0200
+Message-ID: <0d8055cb-61d8-ba45-4b21-6dd4d82584d9@linaro.org>
 References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
- <20190413082748.29990-7-andrew.smirnov@gmail.com>
+ <20190413082748.29990-8-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190413082748.29990-7-andrew.smirnov@gmail.com>
+In-Reply-To: <20190413082748.29990-8-andrew.smirnov@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
@@ -17,11 +17,8 @@ Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduar
 List-Id: linux-pm@vger.kernel.org
 
 On 13/04/2019 10:27, Andrey Smirnov wrote:
-> We can simplify error cleanup code if instead of passing a "struct
-> platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
-> pointers from it, we pass those pointers directly. This way we won't
-> be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
-> and consequently would be able to drop the "err_iomap" error path.
+> Convert driver to use devm_ioremap() to simplify memory deallocation
+> and error handling code. No functional change intended.
 > 
 > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > Cc: Chris Healy <cphealy@gmail.com>
@@ -35,89 +32,71 @@ On 13/04/2019 10:27, Andrey Smirnov wrote:
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-
 > ---
->  drivers/thermal/qoriq_thermal.c | 24 ++++++++++--------------
->  1 file changed, 10 insertions(+), 14 deletions(-)
+>  drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
 > 
 > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index 3419505a2f0a..0b6937bbc7d0 100644
+> index 0b6937bbc7d0..64cad6d4c1d7 100644
 > --- a/drivers/thermal/qoriq_thermal.c
 > +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -122,16 +122,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
->  	return 0;
->  }
+> @@ -175,6 +175,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  	struct qoriq_tmu_data *data;
+>  	struct device_node *np = pdev->dev.of_node;
+>  	struct device *dev = &pdev->dev;
+> +	struct resource *io;
 >  
-> -static int qoriq_tmu_calibration(struct platform_device *pdev)
-> +static int qoriq_tmu_calibration(struct device *dev,
-> +				 struct qoriq_tmu_data *data)
->  {
->  	int i, val, len;
->  	u32 range[4];
->  	const u32 *calibration;
-> -	struct device_node *np = pdev->dev.of_node;
-> -	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-> +	struct device_node *np = dev->of_node;
+>  	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
+>  			    GFP_KERNEL);
+> @@ -183,7 +184,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
 >  
->  	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
-> -		dev_err(&pdev->dev, "missing calibration range.\n");
-> +		dev_err(dev, "missing calibration range.\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -143,7 +143,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
->  
->  	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
->  	if (calibration == NULL || len % 8) {
-> -		dev_err(&pdev->dev, "invalid calibration data.\n");
-> +		dev_err(dev, "invalid calibration data.\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -181,20 +181,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  	if (!data)
->  		return -ENOMEM;
->  
-> -	platform_set_drvdata(pdev, data);
-> -
 >  	data->little_endian = of_property_read_bool(np, "little-endian");
 >  
->  	data->regs = of_iomap(np, 0);
+> -	data->regs = of_iomap(np, 0);
+> +	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!io) {
+> +		dev_err(dev, "Failed to get memory region\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	data->regs = devm_ioremap(dev, io->start, resource_size(io));
 >  	if (!data->regs) {
 >  		dev_err(dev, "Failed to get memory region\n");
+>  		return -ENODEV;
+> @@ -193,23 +200,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>  
+>  	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+>  	if (ret < 0)
+> -		goto err_tmu;
+> +		return ret;
+>  
+>  	ret = qoriq_tmu_register_tmu_zone(dev, data);
+>  	if (ret < 0) {
+>  		dev_err(dev, "Failed to register sensors\n");
 > -		ret = -ENODEV;
-> -		goto err_iomap;
+> -		goto err_tmu;
 > +		return -ENODEV;
 >  	}
 >  
->  	qoriq_tmu_init_device(data);	/* TMU initialization */
+>  	platform_set_drvdata(pdev, data);
 >  
-> -	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-> +	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
->  	if (ret < 0)
->  		goto err_tmu;
->  
-> @@ -202,17 +199,16 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  	if (ret < 0) {
->  		dev_err(dev, "Failed to register sensors\n");
->  		ret = -ENODEV;
-> -		goto err_iomap;
-> +		goto err_tmu;
->  	}
->  
-> +	platform_set_drvdata(pdev, data);
-> +
 >  	return 0;
->  
->  err_tmu:
->  	iounmap(data->regs);
->  
-> -err_iomap:
-> -	platform_set_drvdata(pdev, NULL);
 > -
->  	return ret;
+> -err_tmu:
+> -	iounmap(data->regs);
+> -
+> -	return ret;
 >  }
 >  
+>  static int qoriq_tmu_remove(struct platform_device *pdev)
+> @@ -219,7 +220,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
+>  	/* Disable monitoring */
+>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+>  
+> -	iounmap(data->regs);
+>  	platform_set_drvdata(pdev, NULL);
+>  
+>  	return 0;
 > 
 
 
