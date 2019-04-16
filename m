@@ -1,105 +1,104 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 04/12] thermal: qoriq: Drop per-sensor data
-Date: Tue, 16 Apr 2019 19:23:39 +0200
-Message-ID: <230a8f04-0d1a-8b3e-2ddc-c1bb0d06bfb1@linaro.org>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH v4 00/12] QorIQ TMU multi-sensor and HWMON support
+Date: Tue, 16 Apr 2019 19:24:57 +0200
+Message-ID: <1555435497.2317.17.camel@pengutronix.de>
 References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
- <20190413082748.29990-5-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190413082748.29990-5-andrew.smirnov@gmail.com>
-Content-Language: en-US
+In-Reply-To: <20190413082748.29990-1-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
-Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
+Cc: Chris Healy <cphealy@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13/04/2019 10:27, Andrey Smirnov wrote:
-> Now that driver is converted to use get_temp_id() instead of
-> get_temp() we no longer need per sensor data. Drop all of the code
-> related to it.
+Series is:
 
-Rui, Eduardo,
+Tested-by: Lucas Stach <l.stach@pengutronix.de>
 
-I just want to point out this patch is depending on:
+Regards,
+Lucas
 
-"[PATCH] thermal/drivers/of: Add a get_temp_id callback function"
-
-
-> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> Cc: Chris Healy <cphealy@gmail.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-> Cc: linux-imx@nxp.com
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  drivers/thermal/qoriq_thermal.c | 25 ++-----------------------
->  1 file changed, 2 insertions(+), 23 deletions(-)
+Am Samstag, den 13.04.2019, 01:27 -0700 schrieb Andrey Smirnov:
+> Everyone:
 > 
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index c041d1ae3500..3500e238fe3e 100644
-> --- a/drivers/thermal/qoriq_thermal.c
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -59,20 +59,9 @@ struct qoriq_tmu_regs {
->  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
->  };
->  
-> -struct qoriq_tmu_data;
-> -
-> -/*
-> - * Thermal zone data
-> - */
-> -struct qoriq_sensor {
-> -	struct qoriq_tmu_data		*qdata;
-> -	int				id;
-> -};
-> -
->  struct qoriq_tmu_data {
->  	struct qoriq_tmu_regs __iomem *regs;
->  	bool little_endian;
-> -	struct qoriq_sensor	*sensor[SITES_MAX];
->  };
->  
->  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
-> @@ -93,8 +82,7 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
->  
->  static int tmu_get_temp(int id, void *p, int *temp)
->  {
-> -	struct qoriq_sensor *qsensor = p;
-> -	struct qoriq_tmu_data *qdata = qsensor->qdata;
-> +	struct qoriq_tmu_data *qdata = p;
->  	u32 val;
->  
->  	val = tmu_read(qdata, &qdata->regs->site[id].tritsr);
-> @@ -115,17 +103,8 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
->  	for (id = 0; id < SITES_MAX; id++) {
->  		struct thermal_zone_device *tzd;
->  
-> -		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
-> -				sizeof(struct qoriq_sensor), GFP_KERNEL);
-> -		if (!qdata->sensor[id])
-> -			return -ENOMEM;
-> -
-> -		qdata->sensor[id]->id = id;
-> -		qdata->sensor[id]->qdata = qdata;
-> -
->  		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
-> -							   qdata->sensor[id],
-> -							   &tmu_tz_ops);
-> +							   qdata, &tmu_tz_ops);
->  		if (IS_ERR(tzd)) {
->  			if (PTR_ERR(tzd) == -ENODEV)
->  				continue;
+> This series contains patches adding support for HWMON integration, bug
+> fixes and general improvements (hopefully) for TMU driver I made while
+> working on it on i.MX8MQ.
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> Feedback is welcome!
+> 
+> Thanks,
+> Andrey Smirnov
+> 
+> Changes since [v3]
+> 
+>     - Series reabse on top of [rfc]
+>     
+>     - Fixed incorrect goto label in "thermal: qoriq: Pass data to
+>       qoriq_tmu_calibration()"
+>       
+>     - Added REGS_TRITSR() register description to "thermal: qoriq: Do
+>       not report invalid temperature reading"
+>       
+>     - Reworded commit message of "thermal: qoriq: Remove unnecessary
+>       DT node is NULL check"
+> 
+> Changes since [v2]
+> 
+>     - Patches rebased on v5.1-rc1
+> 
+> Changes since [v1]
+> 
+>     - Rebased on "linus" branch of
+>       git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+>       that included latest chagnes adding multi-sensors support
+> 
+>     - Dropped
+> 
+> 	thermal: qoriq: Add support for multiple thremal sites
+> 	thermal: qoriq: Be more strict when parsing
+> 	thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
+> 
+>       since they are no longer relevant
+> 
+>     - Added
+> 
+> 	thermal: qoriq: Don't store struct thermal_zone_device reference
+> 	thermal: qoriq: Add local struct qoriq_sensor pointer
+> 	thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
+> 	thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+> 
+>       to simplify latest codebase
+> 
+>     - Changed "thermal: qoriq: Do not report invalid temperature
+>       reading" to use regmap_read_poll_timeout() to make sure that
+>       tmu_get_temp() waits for fist sample to be ready before
+>       reporting it. This case is triggered on my setup if
+>       qoriq_thermal is compiled as a module
+> 
+> [v1] lore.kernel.org/lkml/20190218191141.3729-1-andrew.smirnov@gmail.com
+> [v2] lore.kernel.org/lkml/20190222200508.26325-1-andrew.smirnov@gmail.com
+> [v3] lore.kernel.org/lkml/20190401041418.5999-1-andrew.smirnov@gmail.com
+> [rfc] lore.kernel.org/lkml/20190404080647.8173-1-daniel.lezcano@linaro.org
+> 
+> Andrey Smirnov (12):
+>   thermal: qoriq: Remove unnecessary DT node is NULL check
+>   thermal: qoriq: Add local struct device pointer
+>   thermal: qoriq: Don't store struct thermal_zone_device reference
+>   thermal: qoriq: Drop per-sensor data
+>   thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+>   thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
+>   thermal: qoriq: Convert driver to use devm_ioremap()
+>   thermal: qoriq: Convert driver to use regmap API
+>   thermal: qoriq: Enable all sensors before registering them
+>   thermal: qoriq: Do not report invalid temperature reading
+>   thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+>   thermal: qoriq: Add hwmon support
+> 
+>  drivers/thermal/qoriq_thermal.c | 287 +++++++++++++++-----------------
+>  drivers/thermal/thermal_hwmon.c |  28 ++++
+>  drivers/thermal/thermal_hwmon.h |   7 +
+>  3 files changed, 171 insertions(+), 151 deletions(-)
+> 
