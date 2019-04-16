@@ -1,46 +1,47 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 08/12] thermal: qoriq: Convert driver to use regmap API
-Date: Tue, 16 Apr 2019 18:58:21 +0200
-Message-ID: <ca39b750-3fc5-2efb-5cc9-613962ce1496@linaro.org>
-References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
- <20190413082748.29990-9-andrew.smirnov@gmail.com>
+From: Wei Wang <wvw@google.com>
+Subject: [PATCH] thermal: core: skip update disabled thermal zones after suspend
+Date: Tue, 16 Apr 2019 10:07:01 -0700
+Message-ID: <20190416170701.50333-1-wvw@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190413082748.29990-9-andrew.smirnov@gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
-Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
+Cc: wei.vince.wang@gmail.com, Wei Wang <wvw@google.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13/04/2019 10:27, Andrey Smirnov wrote:
-> Convert driver to use regmap API, drop custom LE/BE IO helpers and
-> simplify bit manipulation using regmap_update_bits(). This also allows
-> us to convert some register initialization to use loops and adds
-> convenient debug access to TMU registers via debugfs.
-> 
-> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> Cc: Chris Healy <cphealy@gmail.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-> Cc: linux-imx@nxp.com
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
+It is unnecessary to update disabled thermal zones post suspend and
+sometimes leads error/warning in bad behaved thermal drivers.
 
+Signed-off-by: Wei Wang <wvw@google.com>
+---
+ drivers/thermal/thermal_core.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Nice!
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 6590bb5cb688..5baf5cfab999 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct notifier_block *nb,
+ 			     unsigned long mode, void *_unused)
+ {
+ 	struct thermal_zone_device *tz;
++	enum thermal_device_mode tz_mode;
+ 
+ 	switch (mode) {
+ 	case PM_HIBERNATION_PREPARE:
+@@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct notifier_block *nb,
+ 	case PM_POST_SUSPEND:
+ 		atomic_set(&in_suspend, 0);
+ 		list_for_each_entry(tz, &thermal_tz_list, node) {
++			tz_mode = THERMAL_DEVICE_ENABLED;
++			if (tz->ops->get_mode)
++				tz->ops->get_mode(tz, &tz_mode);
++
++			if (tz_mode == THERMAL_DEVICE_DISABLED)
++				continue;
++
+ 			thermal_zone_device_init(tz);
+ 			thermal_zone_device_update(tz,
+ 						   THERMAL_EVENT_UNSPECIFIED);
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.21.0.392.gf8f6787159e-goog
