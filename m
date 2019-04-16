@@ -2,160 +2,170 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D456C10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:22:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5AD4C10F13
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:23:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D0E092087C
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:22:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 968F62183E
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 17:23:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="i6bRs4gY"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wZvlWKmx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728108AbfDPRWQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 13:22:16 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:32953 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726230AbfDPRWQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:22:16 -0400
-Received: by mail-wr1-f68.google.com with SMTP id q1so28223957wrp.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 10:22:15 -0700 (PDT)
+        id S1728468AbfDPRXn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 13:23:43 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:51917 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727647AbfDPRXn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 13:23:43 -0400
+Received: by mail-wm1-f68.google.com with SMTP id 4so17415wmf.1
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2019 10:23:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=l+DLE4OaxNb2V7PhvGWjDpmhBvdDO716f9vETkoZ5+s=;
-        b=i6bRs4gYw/rAuJvBXxk3XDxz4oFRVoi2rTyNwK0Se4vZMe49iY+tw+v9bwWN0UNIDj
-         m0kfs2SYosn13L34hsmzQLkr60D1/kf2xzhVgrevNUSKMkAnOe7GDc9aIYzAIkMxWPnJ
-         hgNLePc6+RVSik5dIR6XVCGttrZs7rBatZRDz75yXC6/Ac221n+owvp4Bfy+Cj9Pq4Kl
-         zHyJwoSYyrtdJS7GcWgetj4EFYT6wk5jxyiEVts+MiN6S1CpsudpnuDIeSslPyRi3fmA
-         u7vxAD+58czTA6Sy3dKih5YneDrPiG5xZUCxKkHukqnHKhOe/5veUZ/QGZ97B3qodQQE
-         dP5w==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=uG4weFkpAqO5ZljcdLSZQOdiEbgnP+Em6FwXZ5QFtl8=;
+        b=wZvlWKmxDSAVZh4ZOYgMXEE0GyclhXG9AR9XxEuUXdsgz6pgW1onZGiGDg4gzmzMkq
+         Jd+778y8DYV54xNsOT7nofj/zD1T8U1IfKLKLdy/O0sBv1uTQcV35JSDmCi/OPZhwxtt
+         5sKP1+bw6EmLKvfe7Y8mAwEsJ16mpTyJWY6ZDDXmRSmw2Y9edMqaqC2fRJHvpjvpZPCF
+         ekijL0etoOKiifYN4VDObCFsMxa9q4TU2i8mgQIKhv5KbMNZ0YHYTiaBm4IxPXHF6gsP
+         UsyaC/vwEPtnGSZwKUI+w7aq1G9EvoCMUyaCP2Qy4j0JRUMM2nfq9lSSoUM9WqnPIPSk
+         OvJA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=l+DLE4OaxNb2V7PhvGWjDpmhBvdDO716f9vETkoZ5+s=;
-        b=tb2xSeW3LSnOw3oKe58PV5CVI4+TDzgQFbtd53JcDb+eiv3m7dUFYC3Kfii6bqpD/d
-         OK6ebSrmL2sfVH4B8Yz6EkLjAJERS1Cmh/TEdB2Y0AjJ0fn7VNi7+M0KIVkblAsexv8q
-         sIYzJUMn3jKWyFm9lpInavMByud4aE1eQ5qhzADk5UcvDRKL1li2vY2s9TQwoYUsuzF9
-         CYqaMuqAWdb/b02NEydOd/k19Hz94gZ8KOQIKtgV3eZhrAtSHjTWBw41KKyM/w5Z1Q5k
-         z6R7UlJoec9U5j2SVsq6BvOYk45/iM7jpRayQFp9e58KctJJPZPc8Qa66nJLcqIitLqN
-         DEYA==
-X-Gm-Message-State: APjAAAWbR0PYCLG2pFlYy0NE0pASekqCVaJ/a5iVgimgdoV3KTSGSfe2
-        ZoKjDO5OuBPTYUi3NgfNaSbulg==
-X-Google-Smtp-Source: APXvYqxHKQKug2Y6hJy/Xrf74+5gMH98BPdDAevRl+IpL5gNC+voqySeT8d4WzTUJSqhXWkaFfjKlw==
-X-Received: by 2002:adf:afee:: with SMTP id y46mr52015150wrd.217.1555435334298;
-        Tue, 16 Apr 2019 10:22:14 -0700 (PDT)
-Received: from mai.imgcgcw.net (50.251.95.92.rev.sfr.net. [92.95.251.50])
-        by smtp.gmail.com with ESMTPSA id j11sm69473544wrw.85.2019.04.16.10.22.13
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=uG4weFkpAqO5ZljcdLSZQOdiEbgnP+Em6FwXZ5QFtl8=;
+        b=HmVa5vIeTbC6M8A/q19oZV+/jD3DCyDGT09WhUyt5W5FKILPmwT+7e3I/tDE6q8cDH
+         ilJhGqWoW0kUxnmlyrAIhMG0YEGtOh86DghwA73f6Fizj937cvIoTUg09LbR+F4ZTGnn
+         h1TGmJREBaabLPFIjoQ+DAr8gfEUK8QOtItbyZtLJwSokjGz1FmYCLHbYBdl8Zp+UrHa
+         lF1aLDdbaa3iIqL3cYXOjt6yrqV59qU5eHJgI0hRAvBqoGZ+RvTXGrgy6OLyBmc7ekgz
+         DOIob0j7bGpg2FYzszZ/+9PpsdxregD2bH8DrfNmKlZt+hXRjHS7BNs5CoQNT3vNFsNC
+         K46A==
+X-Gm-Message-State: APjAAAW3Fi4UJE3s2ee3jgP2dd6y4QaMJ40y+Atf36kHb0zV2Nu0yevW
+        PtDvGDxvMGuN6A/R0q7xnCGCeg==
+X-Google-Smtp-Source: APXvYqyMgF0ek7GadqBFM/O73FdiNZzfFP46WcCodaYko3A1ugKssnNmkZLnp8J8wwyfq16azoWA+A==
+X-Received: by 2002:a1c:43c2:: with SMTP id q185mr26297973wma.53.1555435421500;
+        Tue, 16 Apr 2019 10:23:41 -0700 (PDT)
+Received: from [192.168.0.41] (50.251.95.92.rev.sfr.net. [92.95.251.50])
+        by smtp.googlemail.com with ESMTPSA id z7sm54467728wrt.10.2019.04.16.10.23.39
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Apr 2019 10:22:13 -0700 (PDT)
+        Tue, 16 Apr 2019 10:23:40 -0700 (PDT)
+Subject: Re: [PATCH v4 04/12] thermal: qoriq: Drop per-sensor data
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
+Cc:     Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
+        linux-kernel@vger.kernel.org
+References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+ <20190413082748.29990-5-andrew.smirnov@gmail.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rui.zhang@intel.com, edubezval@gmail.com
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        andrew.smirnov@gmail.com
-Subject: [PATCH] thermal/drivers/of: Add a get_temp_id callback function
-Date:   Tue, 16 Apr 2019 19:22:03 +0200
-Message-Id: <20190416172203.4679-1-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
+Message-ID: <230a8f04-0d1a-8b3e-2ddc-c1bb0d06bfb1@linaro.org>
+Date:   Tue, 16 Apr 2019 19:23:39 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <20190413082748.29990-5-andrew.smirnov@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416172203.ermxHkShy7xdJdlXUPUNnQwUbM_GATXbgTl_rtSkMN4@z>
+Message-ID: <20190416172339.pKzK1s1kRt5llqohiAGVA8dqKIyue99FxiRdrL5ACuU@z>
 
-Currently when we register a sensor, we specify the sensor id and a data
-pointer to be passed when the get_temp function is called. However the
-sensor_id is not passed to the get_temp callback forcing the driver to
-do extra allocation and adding back pointer to find out from the sensor
-information the driver data and then back to the sensor id.
+On 13/04/2019 10:27, Andrey Smirnov wrote:
+> Now that driver is converted to use get_temp_id() instead of
+> get_temp() we no longer need per sensor data. Drop all of the code
+> related to it.
 
-Add a new callback get_temp_id() which will be called if set. It will
-call the get_temp_id() with the sensor id.
+Rui, Eduardo,
 
-That will be more consistent with the registering function.
+I just want to point out this patch is depending on:
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Tested-by: Andrey Smirnov <andrew.smirnov@gmail.com>
----
- drivers/thermal/of-thermal.c | 19 +++++++++++++------
- include/linux/thermal.h      |  1 +
- 2 files changed, 14 insertions(+), 6 deletions(-)
+"[PATCH] thermal/drivers/of: Add a get_temp_id callback function"
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 2df059cc07e2..787d1cbe13f3 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -78,6 +78,8 @@ struct __thermal_zone {
- 
- 	/* sensor interface */
- 	void *sensor_data;
-+	int sensor_id;
-+
- 	const struct thermal_zone_of_device_ops *ops;
- };
- 
-@@ -88,10 +90,14 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
- {
- 	struct __thermal_zone *data = tz->devdata;
- 
--	if (!data->ops->get_temp)
--		return -EINVAL;
-+	if (data->ops->get_temp)
-+		return data->ops->get_temp(data->sensor_data, temp);
- 
--	return data->ops->get_temp(data->sensor_data, temp);
-+	if (data->ops->get_temp_id)
-+		return data->ops->get_temp_id(data->sensor_id,
-+					      data->sensor_data, temp);
-+
-+	return -EINVAL;
- }
- 
- static int of_thermal_set_trips(struct thermal_zone_device *tz,
-@@ -407,8 +413,8 @@ static struct thermal_zone_device_ops of_thermal_ops = {
- /***   sensor API   ***/
- 
- static struct thermal_zone_device *
--thermal_zone_of_add_sensor(struct device_node *zone,
--			   struct device_node *sensor, void *data,
-+thermal_zone_of_add_sensor(struct device_node *zone, struct device_node *sensor,
-+			   int sensor_id, void *data,
- 			   const struct thermal_zone_of_device_ops *ops)
- {
- 	struct thermal_zone_device *tzd;
-@@ -426,6 +432,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 	mutex_lock(&tzd->lock);
- 	tz->ops = ops;
- 	tz->sensor_data = data;
-+	tz->sensor_id = sensor_id;
- 
- 	tzd->ops->get_temp = of_thermal_get_temp;
- 	tzd->ops->get_trend = of_thermal_get_trend;
-@@ -516,7 +523,7 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 		}
- 
- 		if (sensor_specs.np == sensor_np && id == sensor_id) {
--			tzd = thermal_zone_of_add_sensor(child, sensor_np,
-+			tzd = thermal_zone_of_add_sensor(child, sensor_np, sensor_id,
- 							 data, ops);
- 			if (!IS_ERR(tzd))
- 				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5f4705f46c2f..2762d7e6dd86 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -351,6 +351,7 @@ struct thermal_genl_event {
-  *		   hardware.
-  */
- struct thermal_zone_of_device_ops {
-+	int (*get_temp_id)(int, void *, int *);
- 	int (*get_temp)(void *, int *);
- 	int (*get_trend)(void *, int, enum thermal_trend *);
- 	int (*set_trips)(void *, int, int);
+
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> Cc: Chris Healy <cphealy@gmail.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+> Cc: linux-imx@nxp.com
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/thermal/qoriq_thermal.c | 25 ++-----------------------
+>  1 file changed, 2 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> index c041d1ae3500..3500e238fe3e 100644
+> --- a/drivers/thermal/qoriq_thermal.c
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -59,20 +59,9 @@ struct qoriq_tmu_regs {
+>  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+>  };
+>  
+> -struct qoriq_tmu_data;
+> -
+> -/*
+> - * Thermal zone data
+> - */
+> -struct qoriq_sensor {
+> -	struct qoriq_tmu_data		*qdata;
+> -	int				id;
+> -};
+> -
+>  struct qoriq_tmu_data {
+>  	struct qoriq_tmu_regs __iomem *regs;
+>  	bool little_endian;
+> -	struct qoriq_sensor	*sensor[SITES_MAX];
+>  };
+>  
+>  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
+> @@ -93,8 +82,7 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
+>  
+>  static int tmu_get_temp(int id, void *p, int *temp)
+>  {
+> -	struct qoriq_sensor *qsensor = p;
+> -	struct qoriq_tmu_data *qdata = qsensor->qdata;
+> +	struct qoriq_tmu_data *qdata = p;
+>  	u32 val;
+>  
+>  	val = tmu_read(qdata, &qdata->regs->site[id].tritsr);
+> @@ -115,17 +103,8 @@ static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+>  	for (id = 0; id < SITES_MAX; id++) {
+>  		struct thermal_zone_device *tzd;
+>  
+> -		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+> -				sizeof(struct qoriq_sensor), GFP_KERNEL);
+> -		if (!qdata->sensor[id])
+> -			return -ENOMEM;
+> -
+> -		qdata->sensor[id]->id = id;
+> -		qdata->sensor[id]->qdata = qdata;
+> -
+>  		tzd = devm_thermal_zone_of_sensor_register(&pdev->dev, id,
+> -							   qdata->sensor[id],
+> -							   &tmu_tz_ops);
+> +							   qdata, &tmu_tz_ops);
+>  		if (IS_ERR(tzd)) {
+>  			if (PTR_ERR(tzd) == -ENODEV)
+>  				continue;
+> 
+
+
 -- 
-2.17.1
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
