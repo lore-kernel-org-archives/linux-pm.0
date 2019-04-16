@@ -1,16 +1,16 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 04/19] PM / devfreq: tegra: Don't set EMC clock rate
- to maximum on probe
-Date: Tue, 16 Apr 2019 10:59:46 +0900
-Message-ID: <9fa3c0c3-0ef4-2d86-b6a8-7bd0fbc131e6@samsung.com>
+Subject: Re: [PATCH v2 06/19] PM / devfreq: tegra: Fix missed error checking
+ on devfreq initialization failure
+Date: Tue, 16 Apr 2019 11:32:26 +0900
+Message-ID: <b610cdf7-5ca7-0f29-f74d-fb7892796577@samsung.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145546epcas3p2dd7b6049da59458b165eb54e4cc8162d@epcas3p2.samsung.com>
-        <20190415145505.18397-5-digetx@gmail.com>
+        <CGME20190415145756epcas3p36a0597ca84dfbe079f9a453d8b28fea0@epcas3p3.samsung.com>
+        <20190415145505.18397-7-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190415145505.18397-5-digetx@gmail.com>
+In-Reply-To: <20190415145505.18397-7-digetx@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
@@ -19,37 +19,42 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
+patch6/7/8/9 are for handling of exception handling in probe() function.
+Actually, I'm not sure that there are special reason to split out
+the patches. I think that you can squash patch6/7/8/9 to only one patch.
+
+Also, even if patch6/7/8/9 handle the exception handling in probe(),
+the tegra_devfreq_probe() doesn't support the restoring sequence
+when fail happen. I think that if you want to fix the fail case of probe(),
+please add the restoring sequence about following function.
+- clk_disable_unprepare()
+- clk_notifier_unregister()
+- dev_pm_opp_remove()
+
+
 On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
-> There is no real benefit from doing so, hence let's drop that rate setting
-> for consistency.
+> The code doesn't check for devfreq initialization failure, fix it.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 2 --
->  1 file changed, 2 deletions(-)
+>  drivers/devfreq/tegra-devfreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
 > diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index 69581c9082d4..d62fb1b0d9bb 100644
+> index f0f0d78f6cbf..aa0478464b35 100644
 > --- a/drivers/devfreq/tegra-devfreq.c
 > +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -648,8 +648,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		return PTR_ERR(tegra->emc_clock);
->  	}
+> @@ -707,6 +707,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  						 &tegra_devfreq_profile,
+>  						 "tegra_actmon",
+>  						 NULL);
+> +	if (IS_ERR(tegra->devfreq)) {
+> +		err = PTR_ERR(tegra->devfreq);
+> +		return err;
+> +	}
 >  
-> -	clk_set_rate(tegra->emc_clock, ULONG_MAX);
-> -
-
-It seems like that initialize the emc_clock as the supported maximum clock.
-But, if the rate for emc_clock initialized by either bootloader or clock driver
-and it's well working until this code, actually, it is not necessary.
-
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-
->  	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
->  	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
->  	if (err) {
+>  	return 0;
+>  }
 > 
 
 
