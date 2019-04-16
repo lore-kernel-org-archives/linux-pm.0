@@ -2,63 +2,72 @@ Return-Path: <SRS0=HULK=SS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82C5CC10F12
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 02:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C50F5C10F0E
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 03:01:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F35521909
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 02:56:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 740112075B
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 03:01:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555383393;
-	bh=EhWAMtGw9hxaNm7OIw//xMRlfPvVpZU+THSgvX77D9U=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=A334BFF6TqnEGgePshwpoE1KXWHfl7goCTx5jYSbMjFIMqS+t+WEAevYnLymQtpXo
-	 uVeMZV+Kknhpdj/QY/7D+PAzsElBVB/qn5fgxOyvtaWsfZlxPdCq9h/92DhuBZAtrr
-	 w0fcQwJEIFZgnZbj68F8EMngTHFE+koUYdGgyR4Q=
+	s=default; t=1555383714;
+	bh=cXUeBMx7VkLBaQ3jTnnuvFjPEjKyyQCDKhpu+mImWBc=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=Xu/1oBGEKz+nV/E7Yx7bxogLfRK1UZ2+GFb+rh8Ia3fZrpbe0Y8/+fu4PRuukEFQx
+	 oz56vv+Ba+G/Epjw76CPhCoqpSibrrOahTsod+gnkzmk5WX4ZsTuVkiWax1yKUo6C+
+	 RMd5nrytQiYUlf98rPYWCpAcpFoZUdngYlGymmnE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726752AbfDPC4a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Apr 2019 22:56:30 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:43996 "EHLO
+        id S1728613AbfDPDBR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Apr 2019 23:01:17 -0400
+Received: from bombadil.infradead.org ([198.137.202.133]:44184 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726672AbfDPC43 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 22:56:29 -0400
+        with ESMTP id S1726774AbfDPC4c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2019 22:56:32 -0400
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=Mdi0heBbwHi5P0M7oR29EpvFm/X/U/c2hk252AYsRT4=; b=EQGZOB9M/zunkAmFZInVBRVkom
-        Cw3ntqB+602iTp4CtM33/m0SmsEwb9mTtJmZLEjhX7kg3ljFonFvgDzDrtrRxan1oArk78DJZWr3O
-        tPpEipxzHatVhGamQ2x3EkXCW0pIwvC990OVD+mauFHxQR/lE9/Oo/vZJ1Mum90S6lTTMyG0M1eQ4
-        IP2L1Yc62OwOic6lAiTHGiS8HruYU0WGURNSi2XUWlkjRPx4YL+MPkWD54Zt0KWW9SJSH+z8ZENSx
-        ovKzAxFVF+AXLe34QJmO0wGZ4XRUgqQUO6ABmvb1PpSicRFlAm3VMRy2SnY3b9SFWbhTPH66/E1bb
-        37RDKCsg==;
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-Type:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=xg8CkWWyavX/4Pfw8JCzbLQ9WhAwN8hEwCfdBSDa9HA=; b=iz7eg1CBrdhD4VYH9WQngw+aH
+        g6oZhWFJaHtiaVImrYJN70QXzYlwjQhkKtTI27O3+/JOxQb/WYIe4xXXka2z/Pu7JkuRRWFmesLxy
+        R3dFOtkHBdJOwkKaW5pzzvYc1UtfhroNN66BzncDoKX3PuLbqEv1LmbBmkO/jAMh4/1yA8QE7DSQg
+        YK4Zjv4G5ia7DaV+iKOXucERsNL4O2YAYwZlxj2zW0XrluEbugA5B2nGc/RwTf4AtEv7/6wRXuqc6
+        qXiXWRIepuMAU2HrltxMuilfhquxB5FFVDVLCnvkomtaMRBP7L5RGm/4jtpgxkeG9q5Sux1Sscbm0
+        biSCitfpQ==;
 Received: from 177.205.118.176.dynamic.adsl.gvt.net.br ([177.205.118.176] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
-        id 1hGEGp-0007aQ-RT; Tue, 16 Apr 2019 02:56:28 +0000
+        id 1hGEGp-0007aV-Sm; Tue, 16 Apr 2019 02:56:30 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hGEGn-0001lS-3g; Mon, 15 Apr 2019 23:56:25 -0300
+        id 1hGEGm-0001kr-Qn; Mon, 15 Apr 2019 23:56:24 -0300
 From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
         Mauro Carvalho Chehab <mchehab@infradead.org>,
         linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH 09/57] docs: cpu-freq: convert files to ReST
-Date:   Mon, 15 Apr 2019 23:55:34 -0300
-Message-Id:
- <b2f9cc0d15d7e3058be01015be36f698debd8b14.1555382110.git.mchehab+samsung@kernel.org>
+        linux-riscv@lists.infradead.org, linux-fbdev@vger.kernel.org,
+        linux-s390@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org,
+        netdev@vger.kernel.org, kexec@lists.infradead.org,
+        linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 00/57] Convert files to ReST
+Date:   Mon, 15 Apr 2019 23:55:25 -0300
+Message-Id: <cover.1555382110.git.mchehab+samsung@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -66,845 +75,527 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190416025534.0rQQ698OpJj8n_fQXNP8bd2EpqmamrJuykh7VBCoZUM@z>
+Message-ID: <20190416025525.qXRmMzoDy6YJD7HXM6bClPWZDiEFkmcXSLNrABy0FPQ@z>
 
-In order to be able to build html and pdf files, convert the
-documentation to ReST format.
+This series convert lots of files to be properly parsed by Sphinx
+as ReST files.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
----
- Documentation/cpu-freq/amd-powernow.txt    |  11 +-
- Documentation/cpu-freq/core.txt            |  66 +++----
- Documentation/cpu-freq/cpu-drivers.txt     | 217 +++++++++++----------
- Documentation/cpu-freq/cpufreq-nforce2.txt |  12 +-
- Documentation/cpu-freq/cpufreq-stats.txt   | 141 ++++++-------
- Documentation/cpu-freq/pcc-cpufreq.txt     | 102 +++++-----
- 6 files changed, 281 insertions(+), 268 deletions(-)
+As it touches on lot of stuff, the series is based on linux-next.
 
-diff --git a/Documentation/cpu-freq/amd-powernow.txt b/Documentation/cpu-freq/amd-powernow.txt
-index 254da155fa47..50b2c45c3a2c 100644
---- a/Documentation/cpu-freq/amd-powernow.txt
-+++ b/Documentation/cpu-freq/amd-powernow.txt
-@@ -1,3 +1,7 @@
-+=============================
-+AMD powernow driver specifics
-+=============================
-+
- 
- PowerNow! and Cool'n'Quiet are AMD names for frequency
- management capabilities in AMD processors. As the hardware
-@@ -23,16 +27,19 @@ not supply these tables.
- 7th Generation: powernow-k7: Athlon, Duron, Geode.
- 
- 8th Generation: powernow-k8: Athlon, Athlon 64, Opteron, Sempron.
-+
- Documentation on this functionality in 8th generation processors
- is available in the "BIOS and Kernel Developer's Guide", publication
--26094, in chapter 9, available for download from www.amd.com. 
-+26094, in chapter 9, available for download from www.amd.com.
- 
- BIOS supplied data, for powernow-k7 and for powernow-k8, may be
- from either the PSB table or from ACPI objects. The ACPI support
- is only available if the kernel config sets CONFIG_ACPI_PROCESSOR.
-+
- The powernow-k8 driver will attempt to use ACPI if so configured,
- and fall back to PST if that fails.
-+
- The powernow-k7 driver will try to use the PSB support first, and
- fall back to ACPI if the PSB support fails. A module parameter,
--acpi_force, is provided to force ACPI support to be used instead 
-+acpi_force, is provided to force ACPI support to be used instead
- of PSB support.
-diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.txt
-index 073f128af5a7..c719e3cb700c 100644
---- a/Documentation/cpu-freq/core.txt
-+++ b/Documentation/cpu-freq/core.txt
-@@ -1,31 +1,22 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
-+================================================================
-+General description of the CPUFreq core and of CPUFreq notifiers
-+================================================================
- 
-+Authors:
-+  - Dominik Brodowski  <linux@brodo.de>
-+  - David Kimdon <dwhedon@debian.org>
-+  - Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+  - Viresh Kumar <viresh.kumar@linaro.org>
- 
--		         L i n u x    C P U F r e q
- 
--			  C P U F r e q    C o r e
-+.. Contents:
- 
--
--		    Dominik Brodowski  <linux@brodo.de>
--		     David Kimdon <dwhedon@debian.org>
--		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--		   Viresh Kumar <viresh.kumar@linaro.org>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--Contents:
-----------
--1.  CPUFreq core and interfaces
--2.  CPUFreq notifiers
--3.  CPUFreq Table Generation with Operating Performance Point (OPP)
-+  1.  CPUFreq core and interfaces
-+  2.  CPUFreq notifiers
-+  3.  CPUFreq Table Generation with Operating Performance Point (OPP)
- 
- 1. General Information
--=======================
-+======================
- 
- The CPUFreq core code is located in drivers/cpufreq/cpufreq.c. This
- cpufreq code offers a standardized interface for the CPUFreq
-@@ -60,18 +51,18 @@ transition notifiers.
- These are notified when a new policy is intended to be set. Each
- CPUFreq policy notifier is called twice for a policy transition:
- 
--1.) During CPUFREQ_ADJUST all CPUFreq notifiers may change the limit if
--    they see a need for this - may it be thermal considerations or
--    hardware limitations.
-+1) During CPUFREQ_ADJUST all CPUFreq notifiers may change the limit if
-+   they see a need for this - may it be thermal considerations or
-+   hardware limitations.
- 
--2.) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy
--   - if two hardware drivers failed to agree on a new policy before this
-+2) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy -
-+   if two hardware drivers failed to agree on a new policy before this
-    stage, the incompatible hardware shall be shut down, and the user
-    informed of this.
- 
- The phase is specified in the second argument to the notifier.
- 
--The third argument, a void *pointer, points to a struct cpufreq_policy
-+The third argument, a `void *` pointer, points to a struct cpufreq_policy
- consisting of several values, including min, max (the lower and upper
- frequencies (in kHz) of the new policy).
- 
-@@ -88,23 +79,27 @@ CPUFREQ_POSTCHANGE.
- 
- The third argument is a struct cpufreq_freqs with the following
- values:
--cpu	- number of the affected CPU
--old	- old frequency
--new	- new frequency
--flags	- flags of the cpufreq driver
-+
-+======= ===========================
-+cpu	number of the affected CPU
-+old	old frequency
-+new	new frequency
-+flags	flags of the cpufreq driver
-+======= ===========================
- 
- 3. CPUFreq Table Generation with Operating Performance Point (OPP)
- ==================================================================
- For details about OPP, see Documentation/power/opp.txt
- 
--dev_pm_opp_init_cpufreq_table -
-+dev_pm_opp_init_cpufreq_table
- 	This function provides a ready to use conversion routine to translate
- 	the OPP layer's internal information about the available frequencies
- 	into a format readily providable to cpufreq.
- 
- 	WARNING: Do not use this function in interrupt context.
- 
--	Example:
-+	Example::
-+
- 	 soc_pm_init()
- 	 {
- 		/* Do things */
-@@ -117,4 +112,5 @@ dev_pm_opp_init_cpufreq_table -
- 	NOTE: This function is available only if CONFIG_CPU_FREQ is enabled in
- 	addition to CONFIG_PM_OPP.
- 
--dev_pm_opp_free_cpufreq_table - Free up the table allocated by dev_pm_opp_init_cpufreq_table
-+dev_pm_opp_free_cpufreq_table
-+	Free up the table allocated by dev_pm_opp_init_cpufreq_table
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index 6e353d00cdc6..9cc2559bc34b 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -1,35 +1,25 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
--
--
--		         L i n u x    C P U F r e q
--
--			   C P U   D r i v e r s 
--
--		       - information for developers -
--
--
--		    Dominik Brodowski  <linux@brodo.de>
--		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--		   Viresh Kumar <viresh.kumar@linaro.org>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--Contents:
-----------
--1.   What To Do?
--1.1  Initialization
--1.2  Per-CPU Initialization
--1.3  verify
--1.4  target/target_index or setpolicy?
--1.5  target/target_index
--1.6  setpolicy
--1.7  get_intermediate and target_intermediate
--2.   Frequency Table Helpers
-+===============================================
-+How to implement a new cpufreq processor driver
-+===============================================
-+
-+.. information for developers
-+
-+Authors:
-+  - Dominik Brodowski  <linux@brodo.de>
-+  - Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+  - Viresh Kumar <viresh.kumar@linaro.org>
-+
-+.. Contents:
-+
-+   1.   What To Do?
-+   1.1  Initialization
-+   1.2  Per-CPU Initialization
-+   1.3  verify
-+   1.4  target/target_index or setpolicy?
-+   1.5  target/target_index
-+   1.6  setpolicy
-+   1.7  get_intermediate and target_intermediate
-+   2.   Frequency Table Helpers
- 
- 
- 
-@@ -46,59 +36,73 @@ on what is necessary:
- 
- First of all, in an __initcall level 7 (module_init()) or later
- function check whether this kernel runs on the right CPU and the right
--chipset. If so, register a struct cpufreq_driver with the CPUfreq core
--using cpufreq_register_driver()
-+chipset. If so, register a `struct cpufreq_driver` with the CPUfreq core
-+using `cpufreq_register_driver()`
- 
--What shall this struct cpufreq_driver contain? 
-+What shall this `struct cpufreq_driver` contain?
- 
-- .name - The name of this driver.
-+.name
-+  The name of this driver.
- 
-- .init - A pointer to the per-policy initialization function.
-+.init
-+  A pointer to the per-policy initialization function.
- 
-- .verify - A pointer to a "verification" function.
-+.verify
-+  A pointer to a "verification" function.
- 
-- .setpolicy _or_ .fast_switch _or_ .target _or_ .target_index - See
-- below on the differences.
-+.setpolicy **or** .fast_switch **or** .target **or** .target_index
-+  See below on the differences.
- 
- And optionally
- 
-- .flags - Hints for the cpufreq core.
-+.flags
-+  Hints for the cpufreq core.
- 
-- .driver_data - cpufreq driver specific data.
-+.driver_data
-+  cpufreq driver specific data.
- 
-- .resolve_freq - Returns the most appropriate frequency for a target
-- frequency. Doesn't change the frequency though.
-+.resolve_freq
-+  Returns the most appropriate frequency for a target
-+  frequency. Doesn't change the frequency though.
- 
-- .get_intermediate and target_intermediate - Used to switch to stable
-- frequency while changing CPU frequency.
-+.get_intermediate and target_intermediate
-+  Used to switch to stable frequency while changing CPU frequency.
- 
-- .get - Returns current frequency of the CPU.
-+.get
-+  Returns current frequency of the CPU.
- 
-- .bios_limit - Returns HW/BIOS max frequency limitations for the CPU.
-+.bios_limit
-+  Returns HW/BIOS max frequency limitations for the CPU.
- 
-- .exit - A pointer to a per-policy cleanup function called during
-- CPU_POST_DEAD phase of cpu hotplug process.
-+.exit
-+  A pointer to a per-policy cleanup function called during
-+  CPU_POST_DEAD phase of cpu hotplug process.
- 
-- .stop_cpu - A pointer to a per-policy stop function called during
-- CPU_DOWN_PREPARE phase of cpu hotplug process.
-+.stop_cpu
-+  A pointer to a per-policy stop function called during
-+  CPU_DOWN_PREPARE phase of cpu hotplug process.
- 
-- .suspend - A pointer to a per-policy suspend function which is called
-- with interrupts disabled and _after_ the governor is stopped for the
-- policy.
-+.suspend
-+  A pointer to a per-policy suspend function which is called with
-+  interrupts disabled and **after** the governor is stopped for the policy.
- 
-- .resume - A pointer to a per-policy resume function which is called
-- with interrupts disabled and _before_ the governor is started again.
-+.resume
-+  A pointer to a per-policy resume function which is called
-+  with interrupts disabled and **before** the governor is started again.
- 
-- .ready - A pointer to a per-policy ready function which is called after
-- the policy is fully initialized.
-+.ready
-+  A pointer to a per-policy ready function which is called after
-+  the policy is fully initialized.
- 
-- .attr - A pointer to a NULL-terminated list of "struct freq_attr" which
-- allow to export values to sysfs.
-+.attr
-+  A pointer to a NULL-terminated list of `struct freq_attr` which
-+  allow to export values to sysfs.
- 
-- .boost_enabled - If set, boost frequencies are enabled.
-+.boost_enabled
-+  If set, boost frequencies are enabled.
- 
-- .set_boost - A pointer to a per-policy function to enable/disable boost
-- frequencies.
-+.set_boost
-+  A pointer to a per-policy function to enable/disable boost frequencies.
- 
- 
- 1.2 Per-CPU Initialization
-@@ -108,37 +112,42 @@ Whenever a new CPU is registered with the device model, or after the
- cpufreq driver registers itself, the per-policy initialization function
- cpufreq_driver.init is called if no cpufreq policy existed for the CPU.
- Note that the .init() and .exit() routines are called only once for the
--policy and not for each CPU managed by the policy. It takes a struct
--cpufreq_policy *policy as argument. What to do now?
-+policy and not for each CPU managed by the policy. It takes a `struct
-+cpufreq_policy *policy` as argument. What to do now?
- 
- If necessary, activate the CPUfreq support on your CPU.
- 
- Then, the driver must fill in the following values:
- 
--policy->cpuinfo.min_freq _and_
--policy->cpuinfo.max_freq -	the minimum and maximum frequency 
--				(in kHz) which is supported by 
--				this CPU
--policy->cpuinfo.transition_latency   the time it takes on this CPU to
--				switch between two frequencies in
--				nanoseconds (if appropriate, else
--				specify CPUFREQ_ETERNAL)
--
--policy->cur			The current operating frequency of
--				this CPU (if appropriate)
--policy->min, 
--policy->max, 
--policy->policy and, if necessary,
--policy->governor		must contain the "default policy" for
--				this CPU. A few moments later,
--				cpufreq_driver.verify and either
--				cpufreq_driver.setpolicy or
--				cpufreq_driver.target/target_index is called
--				with these values.
--policy->cpus			Update this with the masks of the
--				(online + offline) CPUs that do DVFS
--				along with this CPU (i.e.  that share
--				clock/voltage rails with it).
-++---------------------------------------+--------------------------------------+
-+| policy->cpuinfo.min_freq **and**	|				       |
-+| policy->cpuinfo.max_freq		| the minimum and maximum frequency    |
-+| 					| (in kHz) which is supported by       |
-+| 					| this CPU			       |
-++---------------------------------------+--------------------------------------+
-+| policy->cpuinfo.transition_latency	| the time it takes on this CPU to     |
-+| 					| switch between two frequencies in    |
-+| 					| nanoseconds (if appropriate, else    |
-+| 					| specify CPUFREQ_ETERNAL)	       |
-++---------------------------------------+--------------------------------------+
-+| policy->cur				| The current operating frequency of   |
-+| 					| this CPU (if appropriate)	       |
-++---------------------------------------+--------------------------------------+
-+| policy->min,				|				       |
-+| policy->max,				|				       |
-+| policy->policy and, if necessary,	|				       |
-+| policy->governor			| must contain the "default policy"    |
-+| 					| for this CPU. A few moments later,   |
-+| 					| cpufreq_driver.verify and either     |
-+| 					| cpufreq_driver.setpolicy or	       |
-+| 					| cpufreq_driver.target/target_index   |
-+| 					| is called with these values.	       |
-++---------------------------------------+--------------------------------------+
-+| policy->cpus				| Update this with the masks of the    |
-+| 					| (online + offline) CPUs that do DVFS |
-+| 					| along with this CPU (i.e. that share |
-+| 					| clock/voltage rails with it).	       |
-++---------------------------------------+--------------------------------------+
- 
- For setting some of these values (cpuinfo.min[max]_freq, policy->min[max]), the
- frequency table helpers might be helpful. See the section 2 for more information
-@@ -151,8 +160,8 @@ on them.
- When the user decides a new policy (consisting of
- "policy,governor,min,max") shall be set, this policy must be validated
- so that incompatible values can be corrected. For verifying these
--values cpufreq_verify_within_limits(struct cpufreq_policy *policy,
--unsigned int min_freq, unsigned int max_freq) function might be helpful.
-+values `cpufreq_verify_within_limits(struct cpufreq_policy *policy,
-+unsigned int min_freq, unsigned int max_freq)` function might be helpful.
- See section 2 for details on frequency table helpers.
- 
- You need to make sure that at least one valid frequency (or operating
-@@ -163,7 +172,7 @@ policy->max first, and only if this is no solution, decrease policy->min.
- 1.4 target or target_index or setpolicy or fast_switch?
- -------------------------------------------------------
- 
--Most cpufreq drivers or even most cpu frequency scaling algorithms 
-+Most cpufreq drivers or even most cpu frequency scaling algorithms
- only allow the CPU frequency to be set to predefined fixed values. For
- these, you use the ->target(), ->target_index() or ->fast_switch()
- callbacks.
-@@ -175,8 +184,8 @@ limits on their own. These shall use the ->setpolicy() callback.
- 1.5. target/target_index
- ------------------------
- 
--The target_index call has two arguments: struct cpufreq_policy *policy,
--and unsigned int index (into the exposed frequency table).
-+The target_index call has two arguments: `struct cpufreq_policy *policy`,
-+and `unsigned int index` (into the exposed frequency table).
- 
- The CPUfreq driver must set the new frequency when called here. The
- actual frequency must be determined by freq_table[index].frequency.
-@@ -184,10 +193,10 @@ actual frequency must be determined by freq_table[index].frequency.
- It should always restore to earlier frequency (i.e. policy->restore_freq) in
- case of errors, even if we switched to intermediate frequency earlier.
- 
--Deprecated:
-+Deprecated
- ----------
--The target call has three arguments: struct cpufreq_policy *policy,
--unsigned int target_frequency, unsigned int relation.
-+The target call has three arguments: `struct cpufreq_policy *policy`,
-+`unsigned int target_frequency`, `unsigned int relation`.
- 
- The CPUfreq driver must set the new frequency when called here. The
- actual frequency must be determined using the following rules:
-@@ -210,14 +219,14 @@ Not all drivers are expected to implement it, as sleeping from within
- this callback isn't allowed. This callback must be highly optimized to
- do switching as fast as possible.
- 
--This function has two arguments: struct cpufreq_policy *policy and
--unsigned int target_frequency.
-+This function has two arguments: `struct cpufreq_policy *policy` and
-+`unsigned int target_frequency`.
- 
- 
- 1.7 setpolicy
- -------------
- 
--The setpolicy call only takes a struct cpufreq_policy *policy as
-+The setpolicy call only takes a `struct cpufreq_policy *policy` as
- argument. You need to set the lower limit of the in-processor or
- in-chipset dynamic frequency switching to policy->min, the upper limit
- to policy->max, and -if supported- select a performance-oriented
-@@ -278,10 +287,10 @@ table.
- 
- cpufreq_for_each_valid_entry(pos, table) - iterates over all entries,
- excluding CPUFREQ_ENTRY_INVALID frequencies.
--Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
--"table" - the cpufreq_frequency_table * you want to iterate over.
-+Use arguments "pos" - a `cpufreq_frequency_table *` as a loop cursor and
-+"table" - the `cpufreq_frequency_table *` you want to iterate over.
- 
--For example:
-+For example::
- 
- 	struct cpufreq_frequency_table *pos, *driver_freq_table;
- 
-diff --git a/Documentation/cpu-freq/cpufreq-nforce2.txt b/Documentation/cpu-freq/cpufreq-nforce2.txt
-index babce1315026..d40700bd5083 100644
---- a/Documentation/cpu-freq/cpufreq-nforce2.txt
-+++ b/Documentation/cpu-freq/cpufreq-nforce2.txt
-@@ -1,3 +1,6 @@
-+=================================
-+nVidia nForce2 platform specifics
-+=================================
- 
- The cpufreq-nforce2 driver changes the FSB on nVidia nForce2 platforms.
- 
-@@ -6,14 +9,15 @@ can be controlled independently from the PCI/AGP clock.
- 
- The module has two options:
- 
-+        ======== ======================================
- 	fid: 	 multiplier * 10 (for example 8.5 = 85)
- 	min_fsb: minimum FSB
-+        ======== ======================================
- 
- If not set, fid is calculated from the current CPU speed and the FSB.
- min_fsb defaults to FSB at boot time - 50 MHz.
- 
--IMPORTANT: The available range is limited downwards!
--           Also the minimum available FSB can differ, for systems 
-+IMPORTANT:
-+           The available range is limited downwards!
-+           Also the minimum available FSB can differ, for systems
-            booting with 200 MHz, 150 should always work.
--
--
-diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
-index 14378cecb172..3e33712b496e 100644
---- a/Documentation/cpu-freq/cpufreq-stats.txt
-+++ b/Documentation/cpu-freq/cpufreq-stats.txt
-@@ -1,21 +1,20 @@
-+==========================================
-+General description of sysfs cpufreq stats
-+==========================================
- 
--     CPU frequency and voltage scaling statistics in the Linux(TM) kernel
-+.. information for users
- 
- 
--             L i n u x    c p u f r e q - s t a t s   d r i v e r
-+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
- 
--                       - information for users -
--
--
--             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
--
--Contents
--1. Introduction
--2. Statistics Provided (with example)
--3. Configuring cpufreq-stats
-+.. Contents
-+   1. Introduction
-+   2. Statistics Provided (with example)
-+   3. Configuring cpufreq-stats
- 
- 
- 1. Introduction
-+===============
- 
- cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
- These statistics are provided in /sysfs as a bunch of read_only interfaces. This
-@@ -28,6 +27,7 @@ that may be running on your CPU. So, it will work with any cpufreq_driver.
- 
- 
- 2. Statistics Provided (with example)
-+=====================================
- 
- cpufreq stats provides following statistics (explained in detail below).
- -  time_in_state
-@@ -39,78 +39,79 @@ All the statistics will be from the time the stats driver has been inserted
- statistic is done. Obviously, stats driver will not have any information
- about the frequency transitions before the stats driver insertion.
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
--total 0
--drwxr-xr-x  2 root root    0 May 14 16:06 .
--drwxr-xr-x  3 root root    0 May 14 15:58 ..
----w-------  1 root root 4096 May 14 16:06 reset
---r--r--r--  1 root root 4096 May 14 16:06 time_in_state
---r--r--r--  1 root root 4096 May 14 16:06 total_trans
---r--r--r--  1 root root 4096 May 14 16:06 trans_table
----------------------------------------------------------------------------------
-+::
- 
---  reset
--Write-only attribute that can be used to reset the stat counters. This can be
--useful for evaluating system behaviour under different governors without the
--need for a reboot.
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
-+    total 0
-+    drwxr-xr-x  2 root root    0 May 14 16:06 .
-+    drwxr-xr-x  3 root root    0 May 14 15:58 ..
-+    --w-------  1 root root 4096 May 14 16:06 reset
-+    -r--r--r--  1 root root 4096 May 14 16:06 time_in_state
-+    -r--r--r--  1 root root 4096 May 14 16:06 total_trans
-+    -r--r--r--  1 root root 4096 May 14 16:06 trans_table
- 
---  time_in_state
--This gives the amount of time spent in each of the frequencies supported by
--this CPU. The cat output will have "<frequency> <time>" pair in each line, which
--will mean this CPU spent <time> usertime units of time at <frequency>. Output
--will have one line for each of the supported frequencies. usertime units here 
--is 10mS (similar to other time exported in /proc).
-+reset
-+  Write-only attribute that can be used to reset the stat counters. This can be
-+  useful for evaluating system behaviour under different governors without the
-+  need for a reboot.
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
--3600000 2089
--3400000 136
--3200000 34
--3000000 67
--2800000 172488
----------------------------------------------------------------------------------
-+time_in_state
-+  This gives the amount of time spent in each of the frequencies supported by
-+  this CPU. The cat output will have "<frequency> <time>" pair in each line,
-+  which will mean this CPU spent <time> usertime units of time at <frequency>.
-+  Output will have one line for each of the supported frequencies. usertime
-+  units here is 10mS (similar to other time exported in /proc).
- 
-+::
- 
---  total_trans
--This gives the total number of frequency transitions on this CPU. The cat 
--output will have a single count which is the total number of frequency
--transitions.
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state
-+  3600000 2089
-+  3400000 136
-+  3200000 34
-+  3000000 67
-+  2800000 172488
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
--20
----------------------------------------------------------------------------------
- 
---  trans_table
--This will give a fine grained information about all the CPU frequency
--transitions. The cat output here is a two dimensional matrix, where an entry
--<i,j> (row i, column j) represents the count of number of transitions from 
--Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
--which the driver has provided the frequency table initially to the cpufreq core
--and so can be sorted (ascending or descending) or unsorted.  The output here
--also contains the actual freq values for each row and column for better
--readability.
-+total_trans
-+  This gives the total number of frequency transitions on this CPU. The cat
-+  output will have a single count which is the total number of frequency
-+  transitions.
- 
--If the transition table is bigger than PAGE_SIZE, reading this will
--return an -EFBIG error.
-+::
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
--   From  :    To
--         :   3600000   3400000   3200000   3000000   2800000 
--  3600000:         0         5         0         0         0 
--  3400000:         4         0         2         0         0 
--  3200000:         0         1         0         2         0 
--  3000000:         0         0         1         0         3 
--  2800000:         0         0         0         2         0 
----------------------------------------------------------------------------------
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
-+  20
- 
-+trans_table
-+  This will give a fine grained information about all the CPU frequency
-+  transitions. The cat output here is a two dimensional matrix, where an entry
-+  <i,j> (row i, column j) represents the count of number of transitions from
-+  Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
-+  which the driver has provided the frequency table initially to the cpufreq
-+  core and so can be sorted (ascending or descending) or unsorted.  The output
-+  here also contains the actual freq values for each row and column for better
-+  readability.
-+
-+  If the transition table is bigger than PAGE_SIZE, reading this will
-+  return an -EFBIG error.
-+
-+::
-+
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
-+     From  :    To
-+           :   3600000   3400000   3200000   3000000   2800000
-+    3600000:         0         5         0         0         0
-+    3400000:         4         0         2         0         0
-+    3200000:         0         1         0         2         0
-+    3000000:         0         0         1         0         3
-+    2800000:         0         0         0         2         0
- 
- 3. Configuring cpufreq-stats
-+============================
- 
--To configure cpufreq-stats in your kernel
--Config Main Menu
-+To configure cpufreq-stats in your kernel::
-+
-+   Config Main Menu
- 	Power management options (ACPI, APM)  --->
- 		CPU Frequency scaling  --->
- 			[*] CPU Frequency scaling
-diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.txt
-index 9e3c3b33514c..d846a36536e4 100644
---- a/Documentation/cpu-freq/pcc-cpufreq.txt
-+++ b/Documentation/cpu-freq/pcc-cpufreq.txt
-@@ -1,45 +1,38 @@
--/*
-- *  pcc-cpufreq.txt - PCC interface documentation
-- *
-- *  Copyright (C) 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
-- *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-- *      Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
-- *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- *
-- *  This program is free software; you can redistribute it and/or modify
-- *  it under the terms of the GNU General Public License as published by
-- *  the Free Software Foundation; version 2 of the License.
-- *
-- *  This program is distributed in the hope that it will be useful, but
-- *  WITHOUT ANY WARRANTY; without even the implied warranty of
-- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or NON
-- *  INFRINGEMENT. See the GNU General Public License for more details.
-- *
-- *  You should have received a copy of the GNU General Public License along
-- *  with this program; if not, write to the Free Software Foundation, Inc.,
-- *  675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- */
--
--
--			Processor Clocking Control Driver
--			---------------------------------
--
--Contents:
-----------
--1.	Introduction
--1.1	PCC interface
--1.1.1   Get Average Frequency
--1.1.2	Set Desired Frequency
--1.2	Platforms affected
--2.	Driver and /sys details
--2.1	scaling_available_frequencies
--2.2	cpuinfo_transition_latency
--2.3	cpuinfo_cur_freq
--2.4	related_cpus
--3.	Caveats
-+==========================================================
-+Processor Clocking Control Driver cpufreq driver specifics
-+==========================================================
-+
-+
-+.. pcc-cpufreq.txt - PCC interface documentation
-+
-+    Copyright (C) 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
-+    Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-+        Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
-+
-+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; version 2 of the License.
-+
-+    This program is distributed in the hope that it will be useful, but
-+    WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or NON
-+    INFRINGEMENT. See the GNU General Public License for more details.
-+
-+
-+.. Contents:
-+   1.	Introduction
-+   1.1	PCC interface
-+   1.1.1  Get Average Frequency
-+   1.1.2  Set Desired Frequency
-+   1.2	Platforms affected
-+   2.	Driver and /sys details
-+   2.1	scaling_available_frequencies
-+   2.2	cpuinfo_transition_latency
-+   2.3	cpuinfo_cur_freq
-+   2.4	related_cpus
-+   3.	Caveats
- 
- 1. Introduction:
- ----------------
-@@ -72,6 +65,7 @@ memory region. The shared memory region header contains the "command" and
- doorbell.
- 
- The following commands are supported by the PCC interface:
-+
- * Get Average Frequency
- * Set Desired Frequency
- 
-@@ -140,7 +134,9 @@ Internally, there is no need for the driver to convert the "target" frequency
- to a corresponding P-state.
- 
- The VERSION number for the driver will be of the format v.xy.ab.
--eg: 1.00.02
-+eg::
-+
-+   1.00.02
-    ----- --
-     |    |
-     |    -- this will increase with bug fixes/enhancements to the driver
-@@ -168,21 +164,21 @@ A) Often cpuinfo_cur_freq will show a value different than what is declared
- in the scaling_available_frequencies or scaling_cur_freq, or scaling_max_freq.
- This is due to "turbo boost" available on recent Intel processors. If certain
- conditions are met the BIOS can achieve a slightly higher speed than requested
--by OSPM. An example:
-+by OSPM. An example::
- 
--scaling_cur_freq	: 2933000
--cpuinfo_cur_freq	: 3196000
-+	scaling_cur_freq	: 2933000
-+	cpuinfo_cur_freq	: 3196000
- 
- B) There is a round-off error associated with the cpuinfo_cur_freq value.
- Since the driver obtains the current frequency as a "percentage" (%) of the
- nominal frequency from the BIOS, sometimes, the values displayed by
--scaling_cur_freq and cpuinfo_cur_freq may not match. An example:
-+scaling_cur_freq and cpuinfo_cur_freq may not match. An example::
- 
--scaling_cur_freq	: 1600000
--cpuinfo_cur_freq	: 1583000
-+	scaling_cur_freq	: 1600000
-+	cpuinfo_cur_freq	: 1583000
- 
- In this example, the nominal frequency is 2933 MHz. The driver obtains the
--current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency:
-+current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency::
- 
- 	54% of 2933 MHz = 1583 MHz
- 
-@@ -191,10 +187,10 @@ corresponds to the frequency of the P0 P-state.
- 
- 2.4 related_cpus:
- -----------------
--The related_cpus field is identical to affected_cpus.
-+The related_cpus field is identical to affected_cpus:
- 
--affected_cpus	: 4
--related_cpus	: 4
-+	affected_cpus	: 4
-+	related_cpus	: 4
- 
- Currently, the PCC driver does not evaluate _PSD. The platforms that support
- PCC do not implement SW_ALL. So OSPM doesn't need to perform any coordination
+I have a separate patch series with do the actual rename and
+adjustment of references. I opted to submit this first, as it
+sounds easier to merge this way, as each subsystem maintainer
+can apply the conversion directly on their trees (or at docs
+tree), avoiding merge conflects.
+
+Both this series and  the next steps are on my devel git tree,
+at:
+	https://git.linuxtv.org/mchehab/experimental.git/log/?h=all_with_indexes-v3
+
+The final output in html can be seen at:
+
+	https://www.infradead.org/~mchehab/rst_conversion/
+
+Mauro Carvalho Chehab (57):
+  docs: trace: fix some Sphinx warnings
+  docs: acpi: convert text files to ReST
+  docs: aoe: convert text files to ReST
+  docs: arm64: convert documentation to ReST format
+  docs: cdrom/cdrom-standard.tex: convert from LaTeX to ReST
+  docs: cdrom: convert remaining files to ReST
+  docs: cgroup-v1: convert to ReST file format
+  docs: cgroup-v1/blkio-controller.rst: add a note about CFQ scheduler
+  docs: cpu-freq: convert files to ReST
+  docs: device-mapper: convert it to ReST format
+  docs: extcon: move it to acpi dir and convert it to ReST
+  docs: fault-injection: convert it to ReST format
+  docs: fb: convert documentation to ReST format
+  docs: fpga: convert it to ReST
+  docs: gpio: convert it to ReST
+  docs: ide: convert it to ReST format
+  docs: infiniband: convert it to ReST format
+  docs: kbuild: convert it to ReST output
+  docs: kdump: convert it to ReST
+  docs: livepatch: convert it to ReST format
+  docs: locking: convert docs to ReST format
+  docs: mic: convert it to ReST format
+  docs: netlabel: convert it to ReST
+  docs: pcmcia: convert it to ReST format
+  docs: power: convert docs to ReST
+  docs: powerpc: convert docs to ReST
+  docs: pps/pps.txt convert it to ReST and move to API book
+  docs: ptp.txt: convert to ReST and move to driver-api
+  docs: riscv: convert it to ReST format
+  docs: s390: Debugging390.txt: convert table to ascii artwork
+  docs: s390: convert text files to ReST format
+  s390: include/asm/debug.h add kerneldoc markups
+  docs: serial: convert it to ReST format
+  docs: target: convert it to ReST format
+  docs: timers: convert documentation to ReST
+  docs: usb: convert documents to ReST
+  docs: watchdog: convert documents to ReST format
+  docs: x86: convert text files to ReST
+  docs: xilinx: convert eemi.txt to ReST
+  docs: scheduler: convert files to ReST
+  docs: EDID/HOWTO.txt: convert to ReST and move to kernel-API
+  docs: connector.txt: convert to ReST
+  docs: lcd-panel-cgram.txt convert it to ReST and move to admin-guide
+  docs: lp855x-driver.txt: convert to ReST and move to kernel-api
+  docs: m68k: convert it to ReST file format and add to arch bookset
+  docs: cma/debugfs.txt: convert to ReST and move to admin-guide/mm
+  docs: console.txt: convert to ReST format
+  docs: pti_intel_mid.txt: convert to ReST
+  docs: early-userspace: convert docs to ReST
+  docs: driver-model: convert it to ReST format
+  docs: arm: convert text files to ReST format
+  docs: memory-devices: convert ti-emif.txt to ReST format
+  docs: xen-tpmfront.txt: convert the file to ReST format
+  docs: bus-devices: ti-gpmc.txt: convert it to ReST
+  docs: nvmem: convert file to ReST format
+  docs: phy: convert samsung-usb2.txt to ReST format
+  docs: Prepare files to be renamed to *.rst
+
+ Documentation/EDID/HOWTO.txt                  |   29 +-
+ Documentation/acpi/DSD-properties-rules.txt   |    4 +-
+ Documentation/acpi/acpi-lid.txt               |   37 +-
+ Documentation/acpi/aml-debugger.txt           |   31 +-
+ Documentation/acpi/apei/einj.txt              |   59 +-
+ Documentation/acpi/apei/output_format.txt     |  247 +-
+ Documentation/acpi/cppc_sysfs.txt             |   52 +-
+ Documentation/acpi/debug.txt                  |   20 +-
+ .../drivers/extcon-intel-int3496.txt}         |   14 +-
+ .../acpi/dsd/data-node-references.txt         |   11 +-
+ Documentation/acpi/dsd/graph.txt              |   24 +-
+ Documentation/acpi/dsd/leds.txt               |   18 +-
+ Documentation/acpi/dsdt-override.txt          |    4 +-
+ Documentation/acpi/enumeration.txt            |   42 +-
+ Documentation/acpi/gpio-properties.txt        |   42 +-
+ Documentation/acpi/i2c-muxes.txt              |   21 +-
+ Documentation/acpi/initrd_table_override.txt  |   90 +-
+ Documentation/acpi/linuxized-acpica.txt       |   58 +-
+ Documentation/acpi/lpit.txt                   |    8 +-
+ Documentation/acpi/method-customizing.txt     |   48 +-
+ Documentation/acpi/method-tracing.txt         |  132 +-
+ Documentation/acpi/namespace.txt              |  323 +-
+ Documentation/acpi/osi.txt                    |    3 +-
+ Documentation/acpi/scan_handlers.txt          |    9 +-
+ Documentation/acpi/ssdt-overlays.txt          |  128 +-
+ Documentation/acpi/video_extension.txt        |   16 +-
+ Documentation/aoe/aoe.txt                     |   63 +-
+ Documentation/aoe/todo.txt                    |    3 +
+ Documentation/aoe/udev.txt                    |    2 +-
+ Documentation/arm/Booting                     |   71 +-
+ Documentation/arm/IXP4xx                      |   61 +-
+ Documentation/arm/Interrupts                  |   86 +-
+ Documentation/arm/Marvell/README              |  537 ++--
+ Documentation/arm/Microchip/README            |   63 +-
+ Documentation/arm/Netwinder                   |   59 +-
+ Documentation/arm/OMAP/DSS                    |  112 +-
+ Documentation/arm/OMAP/README                 |    7 +
+ Documentation/arm/OMAP/omap_pm                |   55 +-
+ Documentation/arm/Porting                     |   14 +-
+ Documentation/arm/README                      |   50 +-
+ Documentation/arm/SA1100/ADSBitsy             |   14 +-
+ Documentation/arm/SA1100/Assabet              |  185 +-
+ Documentation/arm/SA1100/Brutus               |   45 +-
+ Documentation/arm/SA1100/CERF                 |   10 +-
+ Documentation/arm/SA1100/FreeBird             |   26 +-
+ Documentation/arm/SA1100/GraphicsClient       |   46 +-
+ Documentation/arm/SA1100/GraphicsMaster       |   13 +-
+ Documentation/arm/SA1100/HUW_WEBPANEL         |    8 +-
+ Documentation/arm/SA1100/Itsy                 |   14 +-
+ Documentation/arm/SA1100/LART                 |    3 +-
+ Documentation/arm/SA1100/PLEB                 |    6 +-
+ Documentation/arm/SA1100/Pangolin             |   10 +-
+ Documentation/arm/SA1100/Tifon                |    4 +-
+ Documentation/arm/SA1100/Yopy                 |    5 +-
+ Documentation/arm/SA1100/empeg                |    2 -
+ Documentation/arm/SA1100/nanoEngine           |    6 +-
+ Documentation/arm/SA1100/serial_UART          |   60 +-
+ Documentation/arm/SPEAr/overview.txt          |   20 +-
+ Documentation/arm/Samsung-S3C24XX/CPUfreq.txt |    5 +-
+ .../arm/Samsung-S3C24XX/EB2410ITX.txt         |    5 +-
+ Documentation/arm/Samsung-S3C24XX/GPIO.txt    |   21 +-
+ Documentation/arm/Samsung-S3C24XX/H1940.txt   |    5 +-
+ Documentation/arm/Samsung-S3C24XX/NAND.txt    |    6 +-
+ .../arm/Samsung-S3C24XX/Overview.txt          |   15 +-
+ Documentation/arm/Samsung-S3C24XX/S3C2412.txt |    5 +-
+ Documentation/arm/Samsung-S3C24XX/S3C2413.txt |    7 +-
+ .../arm/Samsung-S3C24XX/SMDK2440.txt          |    5 +-
+ Documentation/arm/Samsung-S3C24XX/Suspend.txt |   20 +-
+ .../arm/Samsung-S3C24XX/USB-Host.txt          |   16 +-
+ .../arm/Samsung/Bootloader-interface.txt      |   27 +-
+ Documentation/arm/Samsung/GPIO.txt            |    5 +-
+ Documentation/arm/Samsung/Overview.txt        |   11 +-
+ Documentation/arm/Setup                       |   49 +-
+ Documentation/arm/VFP/release-notes.txt       |    4 +-
+ .../arm/cluster-pm-race-avoidance.txt         |  177 +-
+ Documentation/arm/firmware.txt                |   14 +-
+ Documentation/arm/kernel_mode_neon.txt        |    3 +
+ Documentation/arm/kernel_user_helpers.txt     |   79 +-
+ Documentation/arm/keystone/Overview.txt       |   47 +-
+ Documentation/arm/keystone/knav-qmss.txt      |    6 +-
+ Documentation/arm/mem_alignment               |   11 +-
+ Documentation/arm/memory.txt                  |    9 +-
+ Documentation/arm/nwfpe/NOTES                 |    3 +
+ Documentation/arm/nwfpe/README                |   10 +-
+ Documentation/arm/nwfpe/README.FPE            |   24 +-
+ Documentation/arm/nwfpe/TODO                  |   47 +-
+ Documentation/arm/pxa/mfp.txt                 |  106 +-
+ Documentation/arm/sti/overview.txt            |   21 +-
+ Documentation/arm/sti/stih407-overview.txt    |    9 +-
+ Documentation/arm/sti/stih415-overview.txt    |    8 +-
+ Documentation/arm/sti/stih416-overview.txt    |    5 +-
+ Documentation/arm/sti/stih418-overview.txt    |    9 +-
+ .../arm/stm32/stm32f429-overview.rst          |    5 +-
+ .../arm/stm32/stm32f746-overview.rst          |    5 +-
+ .../arm/stm32/stm32f769-overview.rst          |    5 +-
+ .../arm/stm32/stm32h743-overview.rst          |    5 +-
+ .../arm/stm32/stm32mp157-overview.rst         |    1 +
+ Documentation/arm/sunxi/README                |   98 +-
+ Documentation/arm/sunxi/clocks.txt            |    7 +-
+ Documentation/arm/swp_emulation               |   24 +-
+ Documentation/arm/tcm.txt                     |   54 +-
+ Documentation/arm/uefi.txt                    |   39 +-
+ Documentation/arm/vlocks.txt                  |    9 +-
+ Documentation/arm64/acpi_object_usage.txt     |  288 +-
+ Documentation/arm64/arm-acpi.txt              |  153 +-
+ Documentation/arm64/booting.txt               |   91 +-
+ Documentation/arm64/cpu-feature-registers.txt |  190 +-
+ Documentation/arm64/elf_hwcaps.txt            |   50 +-
+ Documentation/arm64/hugetlbpage.txt           |    7 +-
+ Documentation/arm64/legacy_instructions.txt   |   43 +-
+ Documentation/arm64/memory.txt                |   91 +-
+ .../arm64/pointer-authentication.txt          |    2 +
+ Documentation/arm64/silicon-errata.txt        |   63 +-
+ Documentation/arm64/sve.txt                   |   10 +-
+ Documentation/arm64/tagged-pointers.txt       |    6 +-
+ Documentation/auxdisplay/lcd-panel-cgram.txt  |    7 +-
+ Documentation/backlight/lp855x-driver.txt     |   65 +-
+ Documentation/bt8xxgpio.txt                   |    1 -
+ Documentation/bus-devices/ti-gpmc.txt         |  157 +-
+ Documentation/bus-virt-phys-mapping.txt       |   50 +-
+ Documentation/cdrom/Makefile                  |   21 -
+ Documentation/cdrom/cdrom-standard.tex        | 1026 -------
+ Documentation/cdrom/cdrom-standard.txt        | 1063 +++++++
+ Documentation/cdrom/ide-cd                    |  178 +-
+ Documentation/cdrom/packet-writing.txt        |   27 +-
+ Documentation/cgroup-v1/blkio-controller.txt  |  103 +-
+ Documentation/cgroup-v1/cgroups.txt           |  180 +-
+ Documentation/cgroup-v1/cpuacct.txt           |   15 +-
+ Documentation/cgroup-v1/cpusets.txt           |  203 +-
+ Documentation/cgroup-v1/devices.txt           |   40 +-
+ Documentation/cgroup-v1/freezer-subsystem.txt |   14 +-
+ Documentation/cgroup-v1/hugetlb.txt           |   31 +-
+ Documentation/cgroup-v1/memcg_test.txt        |  259 +-
+ Documentation/cgroup-v1/memory.txt            |  449 +--
+ Documentation/cgroup-v1/net_cls.txt           |   37 +-
+ Documentation/cgroup-v1/net_prio.txt          |   24 +-
+ Documentation/cgroup-v1/pids.txt              |   78 +-
+ Documentation/cgroup-v1/rdma.txt              |   66 +-
+ Documentation/cma/debugfs.txt                 |    6 +-
+ Documentation/connector/connector.txt         |  128 +-
+ Documentation/console/console.txt             |   61 +-
+ Documentation/cpu-freq/amd-powernow.txt       |   11 +-
+ Documentation/cpu-freq/core.txt               |   66 +-
+ Documentation/cpu-freq/cpu-drivers.txt        |  217 +-
+ Documentation/cpu-freq/cpufreq-nforce2.txt    |   12 +-
+ Documentation/cpu-freq/cpufreq-stats.txt      |  141 +-
+ Documentation/cpu-freq/pcc-cpufreq.txt        |  102 +-
+ .../device-mapper/cache-policies.txt          |   24 +-
+ Documentation/device-mapper/cache.txt         |  206 +-
+ Documentation/device-mapper/delay.txt         |   29 +-
+ Documentation/device-mapper/dm-crypt.txt      |   57 +-
+ Documentation/device-mapper/dm-flakey.txt     |   45 +-
+ Documentation/device-mapper/dm-init.txt       |   75 +-
+ Documentation/device-mapper/dm-integrity.txt  |   55 +-
+ Documentation/device-mapper/dm-io.txt         |   14 +-
+ Documentation/device-mapper/dm-log.txt        |    5 +-
+ .../device-mapper/dm-queue-length.txt         |   25 +-
+ Documentation/device-mapper/dm-raid.txt       |  225 +-
+ .../device-mapper/dm-service-time.txt         |   68 +-
+ Documentation/device-mapper/dm-uevent.txt     |  143 +-
+ Documentation/device-mapper/dm-zoned.txt      |   10 +-
+ Documentation/device-mapper/era.txt           |   36 +-
+ Documentation/device-mapper/kcopyd.txt        |   10 +-
+ Documentation/device-mapper/linear.txt        |  100 +-
+ Documentation/device-mapper/log-writes.txt    |   91 +-
+ .../device-mapper/persistent-data.txt         |    4 +
+ Documentation/device-mapper/snapshot.txt      |  116 +-
+ Documentation/device-mapper/statistics.txt    |   62 +-
+ Documentation/device-mapper/striped.txt       |   68 +-
+ Documentation/device-mapper/switch.txt        |   47 +-
+ .../device-mapper/thin-provisioning.txt       |   68 +-
+ Documentation/device-mapper/unstriped.txt     |  111 +-
+ Documentation/device-mapper/verity.txt        |   20 +-
+ Documentation/device-mapper/writecache.txt    |   13 +-
+ Documentation/device-mapper/zero.txt          |   14 +-
+ Documentation/driver-model/binding.txt        |   20 +-
+ Documentation/driver-model/bus.txt            |   69 +-
+ Documentation/driver-model/class.txt          |   74 +-
+ .../driver-model/design-patterns.txt          |  106 +-
+ Documentation/driver-model/device.txt         |   57 +-
+ Documentation/driver-model/devres.txt         |   50 +-
+ Documentation/driver-model/driver.txt         |  112 +-
+ Documentation/driver-model/overview.txt       |   37 +-
+ Documentation/driver-model/platform.txt       |   30 +-
+ Documentation/driver-model/porting.txt        |  333 +--
+ Documentation/early-userspace/README          |    3 +
+ .../early-userspace/buffer-format.txt         |   19 +-
+ .../fault-injection/fault-injection.txt       |  265 +-
+ .../fault-injection/notifier-error-inject.txt |   18 +-
+ .../fault-injection/nvme-fault-injection.txt  |  174 +-
+ .../fault-injection/provoke-crashes.txt       |   40 +-
+ Documentation/fb/api.txt                      |   29 +-
+ Documentation/fb/arkfb.txt                    |    8 +-
+ Documentation/fb/aty128fb.txt                 |   31 +-
+ Documentation/fb/cirrusfb.txt                 |   47 +-
+ Documentation/fb/cmap_xfbdev.txt              |   57 +-
+ Documentation/fb/deferred_io.txt              |   28 +-
+ Documentation/fb/efifb.txt                    |   18 +-
+ Documentation/fb/ep93xx-fb.txt                |   25 +-
+ Documentation/fb/fbcon.txt                    |  177 +-
+ Documentation/fb/framebuffer.txt              |   79 +-
+ Documentation/fb/gxfb.txt                     |   22 +-
+ Documentation/fb/intel810.txt                 |   77 +-
+ Documentation/fb/intelfb.txt                  |   62 +-
+ Documentation/fb/internals.txt                |   24 +-
+ Documentation/fb/lxfb.txt                     |   23 +-
+ Documentation/fb/matroxfb.txt                 |  526 ++--
+ Documentation/fb/metronomefb.txt              |    8 +-
+ Documentation/fb/modedb.txt                   |   44 +-
+ Documentation/fb/pvr2fb.txt                   |   55 +-
+ Documentation/fb/pxafb.txt                    |   81 +-
+ Documentation/fb/s3fb.txt                     |    8 +-
+ Documentation/fb/sa1100fb.txt                 |   23 +-
+ Documentation/fb/sh7760fb.txt                 |  153 +-
+ Documentation/fb/sisfb.txt                    |   40 +-
+ Documentation/fb/sm501.txt                    |    7 +-
+ Documentation/fb/sm712fb.txt                  |   18 +-
+ Documentation/fb/sstfb.txt                    |  231 +-
+ Documentation/fb/tgafb.txt                    |   30 +-
+ Documentation/fb/tridentfb.txt                |   34 +-
+ Documentation/fb/udlfb.txt                    |   55 +-
+ Documentation/fb/uvesafb.txt                  |  128 +-
+ Documentation/fb/vesafb.txt                   |  121 +-
+ Documentation/fb/viafb.txt                    |  393 +--
+ Documentation/fb/vt8623fb.txt                 |   10 +-
+ Documentation/fpga/dfl.txt                    |   58 +-
+ Documentation/gpio/sysfs.txt                  |   39 +-
+ Documentation/highuid.txt                     |    2 +-
+ Documentation/ide/ide-tape.txt                |   23 +-
+ Documentation/ide/ide.txt                     |  147 +-
+ Documentation/ide/warm-plug-howto.txt         |   10 +-
+ Documentation/index.rst                       |    1 +
+ Documentation/infiniband/core_locking.txt     |   64 +-
+ Documentation/infiniband/ipoib.txt            |   24 +-
+ Documentation/infiniband/opa_vnic.txt         |  108 +-
+ Documentation/infiniband/sysfs.txt            |    4 +-
+ Documentation/infiniband/tag_matching.txt     |    5 +
+ Documentation/infiniband/user_mad.txt         |   33 +-
+ Documentation/infiniband/user_verbs.txt       |   12 +-
+ Documentation/kbuild/headers_install.txt      |    5 +-
+ Documentation/kbuild/kbuild.txt               |  119 +-
+ Documentation/kbuild/kconfig-language.txt     |  232 +-
+ .../kbuild/kconfig-macro-language.txt         |   37 +-
+ Documentation/kbuild/kconfig.txt              |  136 +-
+ Documentation/kbuild/makefiles.txt            |  518 ++--
+ Documentation/kbuild/modules.txt              |  166 +-
+ Documentation/kdump/kdump.txt                 |  131 +-
+ Documentation/kdump/vmcoreinfo.txt            |   59 +-
+ Documentation/kobject.txt                     |    2 +-
+ Documentation/ldm.txt                         |    3 +-
+ Documentation/livepatch/callbacks.txt         |   12 +-
+ .../livepatch/cumulative-patches.txt          |   14 +-
+ Documentation/livepatch/livepatch.txt         |   56 +-
+ Documentation/livepatch/module-elf-format.txt |  211 +-
+ Documentation/livepatch/shadow-vars.txt       |   65 +-
+ Documentation/locking/lockdep-design.txt      |   41 +-
+ Documentation/locking/lockstat.txt            |  219 +-
+ Documentation/locking/locktorture.txt         |  105 +-
+ Documentation/locking/mutex-design.txt        |   26 +-
+ Documentation/locking/rt-mutex-design.txt     |  135 +-
+ Documentation/locking/rt-mutex.txt            |   30 +-
+ Documentation/locking/spinlocks.txt           |   32 +-
+ Documentation/locking/ww-mutex-design.txt     |   82 +-
+ Documentation/m68k/kernel-options.txt         |  319 +-
+ Documentation/memory-barriers.txt             |    2 +-
+ Documentation/memory-devices/ti-emif.txt      |   25 +-
+ Documentation/mic/mic_overview.txt            |    6 +-
+ Documentation/mic/scif_overview.txt           |   58 +-
+ Documentation/netlabel/cipso_ipv4.txt         |   19 +-
+ Documentation/netlabel/introduction.txt       |   16 +-
+ Documentation/netlabel/lsm_interface.txt      |   16 +-
+ Documentation/numastat.txt                    |    1 -
+ Documentation/nvmem/nvmem.txt                 |  110 +-
+ Documentation/pcmcia/devicetable.txt          |    4 +
+ Documentation/pcmcia/driver-changes.txt       |   35 +-
+ Documentation/pcmcia/driver.txt               |   18 +-
+ Documentation/pcmcia/locking.txt              |   39 +-
+ Documentation/phy/samsung-usb2.txt            |   60 +-
+ Documentation/pnp.txt                         |   11 +-
+ Documentation/power/apm-acpi.txt              |   10 +-
+ Documentation/power/basic-pm-debugging.txt    |   77 +-
+ Documentation/power/charger-manager.txt       |  101 +-
+ Documentation/power/drivers-testing.txt       |    5 +
+ Documentation/power/energy-model.txt          |  101 +-
+ Documentation/power/freezing-of-tasks.txt     |   91 +-
+ Documentation/power/interface.txt             |   20 +-
+ Documentation/power/opp.txt                   |  175 +-
+ Documentation/power/pci.txt                   |   77 +-
+ Documentation/power/pm_qos_interface.txt      |  127 +-
+ Documentation/power/power_supply_class.txt    |  269 +-
+ Documentation/power/powercap/powercap.txt     |  297 +-
+ Documentation/power/regulator/consumer.txt    |  141 +-
+ Documentation/power/regulator/design.txt      |    9 +-
+ Documentation/power/regulator/machine.txt     |   47 +-
+ Documentation/power/regulator/overview.txt    |   51 +-
+ Documentation/power/regulator/regulator.txt   |   18 +-
+ Documentation/power/runtime_pm.txt            |  234 +-
+ Documentation/power/s2ram.txt                 |   20 +-
+ .../power/suspend-and-cpuhotplug.txt          |   42 +-
+ .../power/suspend-and-interrupts.txt          |    2 +
+ Documentation/power/swsusp-and-swap-files.txt |   15 +-
+ Documentation/power/swsusp-dmcrypt.txt        |  118 +-
+ Documentation/power/swsusp.txt                |  639 ++--
+ Documentation/power/tricks.txt                |    6 +-
+ Documentation/power/userland-swsusp.txt       |   53 +-
+ Documentation/power/video.txt                 |  156 +-
+ Documentation/powerpc/DAWR-POWER9.txt         |   10 +-
+ Documentation/powerpc/bootwrapper.txt         |   28 +-
+ Documentation/powerpc/cpu_families.txt        |   23 +-
+ Documentation/powerpc/cpu_features.txt        |    6 +-
+ Documentation/powerpc/cxl.txt                 |   46 +-
+ Documentation/powerpc/cxlflash.txt            |    8 +-
+ Documentation/powerpc/dscr.txt                |   18 +-
+ .../powerpc/eeh-pci-error-recovery.txt        |  108 +-
+ .../powerpc/firmware-assisted-dump.txt        |  117 +-
+ Documentation/powerpc/hvcs.txt                |  108 +-
+ Documentation/powerpc/isa-versions.rst        |   13 +-
+ Documentation/powerpc/mpc52xx.txt             |   12 +-
+ .../powerpc/pci_iov_resource_on_powernv.txt   |   15 +-
+ Documentation/powerpc/pmu-ebb.txt             |    1 +
+ Documentation/powerpc/ptrace.txt              |  169 +-
+ Documentation/powerpc/qe_firmware.txt         |   37 +-
+ Documentation/powerpc/syscall64-abi.txt       |   29 +-
+ .../powerpc/transactional_memory.txt          |   45 +-
+ Documentation/pps/pps.txt                     |   67 +-
+ Documentation/preempt-locking.txt             |    2 +-
+ Documentation/pti/pti_intel_mid.txt           |  135 +-
+ Documentation/ptp/ptp.txt                     |   26 +-
+ Documentation/rbtree.txt                      |   52 +-
+ Documentation/riscv/pmu.txt                   |   98 +-
+ Documentation/rtc.txt                         |    6 +-
+ Documentation/s390/3270.txt                   |   85 +-
+ Documentation/s390/CommonIO                   |   47 +-
+ Documentation/s390/DASD                       |   33 +-
+ Documentation/s390/Debugging390.txt           | 2599 ++++++++++-------
+ Documentation/s390/cds.txt                    |  354 ++-
+ Documentation/s390/driver-model.txt           |  179 +-
+ Documentation/s390/monreader.txt              |   85 +-
+ Documentation/s390/qeth.txt                   |   36 +-
+ Documentation/s390/s390dbf.txt                |  639 ++--
+ Documentation/s390/vfio-ap.txt                |  487 +--
+ Documentation/s390/vfio-ccw.txt               |   88 +-
+ Documentation/s390/zfcpdump.txt               |    2 +
+ Documentation/scheduler/completion.txt        |   38 +-
+ Documentation/scheduler/sched-arch.txt        |   18 +-
+ Documentation/scheduler/sched-bwc.txt         |   28 +-
+ Documentation/scheduler/sched-deadline.txt    |  293 +-
+ Documentation/scheduler/sched-design-CFS.txt  |   15 +-
+ Documentation/scheduler/sched-domains.txt     |    8 +-
+ Documentation/scheduler/sched-energy.txt      |   47 +-
+ Documentation/scheduler/sched-nice-design.txt |    6 +-
+ Documentation/scheduler/sched-rt-group.txt    |   28 +-
+ Documentation/scheduler/sched-stats.txt       |   35 +-
+ Documentation/security/tpm/xen-tpmfront.txt   |  101 +-
+ Documentation/serial/README.cycladesZ         |    5 +-
+ Documentation/serial/driver                   |  113 +-
+ Documentation/serial/moxa-smartio             |  750 ++---
+ Documentation/serial/n_gsm.txt                |   81 +-
+ Documentation/serial/rocket.txt               |  144 +-
+ Documentation/serial/serial-iso7816.txt       |   21 +-
+ Documentation/serial/serial-rs485.txt         |   22 +-
+ Documentation/serial/tty.txt                  |  111 +-
+ Documentation/target/tcm_mod_builder.txt      |  200 +-
+ Documentation/target/tcmu-design.txt          |  268 +-
+ Documentation/timers/NO_HZ.txt                |   40 +-
+ Documentation/timers/highres.txt              |   11 +-
+ Documentation/timers/hpet.txt                 |    4 +-
+ Documentation/timers/hrtimers.txt             |    6 +-
+ Documentation/timers/timekeeping.txt          |    3 +-
+ Documentation/timers/timers-howto.txt         |   15 +-
+ Documentation/trace/ftrace.rst                |    1 +
+ Documentation/trace/histogram.rst             |   86 +-
+ Documentation/usb/WUSB-Design-overview.txt    |   56 +-
+ Documentation/usb/acm.txt                     |  156 +-
+ Documentation/usb/authorization.txt           |   75 +-
+ Documentation/usb/chipidea.txt                |  101 +-
+ Documentation/usb/dwc3.txt                    |   12 +-
+ Documentation/usb/ehci.txt                    |   42 +-
+ Documentation/usb/functionfs.txt              |   17 +-
+ Documentation/usb/gadget-testing.txt          |  609 ++--
+ Documentation/usb/gadget_configfs.txt         |  302 +-
+ Documentation/usb/gadget_hid.txt              |  175 +-
+ Documentation/usb/gadget_multi.txt            |   43 +-
+ Documentation/usb/gadget_printer.txt          |  155 +-
+ Documentation/usb/gadget_serial.txt           |   73 +-
+ Documentation/usb/iuu_phoenix.txt             |   34 +-
+ Documentation/usb/mass-storage.txt            |   19 +-
+ Documentation/usb/misc_usbsevseg.txt          |    9 +-
+ Documentation/usb/mtouchusb.txt               |   42 +-
+ Documentation/usb/ohci.txt                    |    5 +-
+ Documentation/usb/rio.txt                     |   83 +-
+ Documentation/usb/usb-help.txt                |   21 +-
+ Documentation/usb/usb-serial.txt              |  203 +-
+ Documentation/usb/usbip_protocol.txt          |  552 ++--
+ Documentation/usb/usbmon.txt                  |  100 +-
+ .../convert_drivers_to_kernel_api.txt         |  109 +-
+ Documentation/watchdog/hpwdt.txt              |   23 +-
+ Documentation/watchdog/mlx-wdt.txt            |   24 +-
+ Documentation/watchdog/pcwd-watchdog.txt      |   13 +-
+ Documentation/watchdog/watchdog-api.txt       |   76 +-
+ .../watchdog/watchdog-kernel-api.txt          |   89 +-
+ .../watchdog/watchdog-parameters.txt          |  672 +++--
+ Documentation/watchdog/watchdog-pm.txt        |    3 +
+ Documentation/watchdog/wdt.txt                |   31 +-
+ Documentation/x86/amd-memory-encryption.txt   |   10 +-
+ Documentation/x86/boot.txt                    |  578 ++--
+ Documentation/x86/earlyprintk.txt             |   69 +-
+ Documentation/x86/entry_64.txt                |   11 +-
+ Documentation/x86/exception-tables.txt        |  245 +-
+ Documentation/x86/i386/IO-APIC.txt            |   23 +-
+ Documentation/x86/intel_mpx.txt               |   55 +-
+ Documentation/x86/microcode.txt               |   51 +-
+ Documentation/x86/mtrr.txt                    |  442 +--
+ Documentation/x86/orc-unwinder.txt            |    1 +
+ Documentation/x86/pat.txt                     |  217 +-
+ Documentation/x86/protection-keys.txt         |   33 +-
+ Documentation/x86/pti.txt                     |    8 +-
+ Documentation/x86/resctrl_ui.txt              |  621 ++--
+ Documentation/x86/tlb.txt                     |   12 +-
+ Documentation/x86/topology.txt                |   26 +-
+ Documentation/x86/usb-legacy-support.txt      |   33 +-
+ Documentation/x86/x86_64/5level-paging.txt    |   14 +-
+ Documentation/x86/x86_64/boot-options.txt     |   98 +-
+ Documentation/x86/x86_64/mm.txt               |  212 +-
+ Documentation/x86/x86_64/uefi.txt             |   21 +-
+ Documentation/x86/zero-page.txt               |   67 +-
+ Documentation/xilinx/eemi.txt                 |    8 +-
+ Documentation/zorro.txt                       |    5 +-
+ MAINTAINERS                                   |    2 +-
+ arch/arm64/kernel/kexec_image.c               |    2 +-
+ arch/s390/include/asm/debug.h                 |  231 ++
+ drivers/cdrom/cdrom.c                         |    2 +-
+ include/linux/connector.h                     |   63 +-
+ 433 files changed, 21459 insertions(+), 16370 deletions(-)
+ rename Documentation/{extcon/intel-int3496.txt => acpi/drivers/extcon-intel-int3496.txt} (66%)
+ delete mode 100644 Documentation/arm/SA1100/empeg
+ delete mode 100644 Documentation/cdrom/Makefile
+ delete mode 100644 Documentation/cdrom/cdrom-standard.tex
+ create mode 100644 Documentation/cdrom/cdrom-standard.txt
+
 -- 
 2.20.1
+
 
