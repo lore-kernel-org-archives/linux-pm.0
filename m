@@ -1,15 +1,12 @@
 From: Chen-Yu Tsai <wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v4 3/7] power: supply: axp20x_usb_power: use
- polling to detect vbus status change
-Date: Tue, 16 Apr 2019 14:40:20 +0800
-Message-ID: <20190416064024.20414-4-wens@kernel.org>
-References: <20190416064024.20414-1-wens@kernel.org>
+Subject: [PATCH v4 0/7] ARM: sun8i: a83t: Enable USB OTG
+Date: Tue, 16 Apr 2019 14:40:17 +0800
+Message-ID: <20190416064024.20414-1-wens@kernel.org>
 Reply-To: wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-sunxi+bncBCMILY6JWQBBBX7R2XSQKGQEJYQXU2I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20190416064024.20414-1-wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <https://groups.google.com/group/linux-sunxi
@@ -22,135 +19,129 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 
-On AXP221 and later AXP PMICs that have the N_VBUSEN pin, when this pin
-is high, either due to the PMIC driving it high or as an input, the VBUS
-detection related interrupt mechanisms are disabled.
+Hi everyone,
 
-Previously this was worked around in the phy-sun4i-usb driver, which
-needed to sense VBUS changes and report them to the musb driver in a
-timely matter. However this workaround was only for the A31 and A33 type
-USB PHYs. To support newer platforms we would have to enable it for
-almost all the post-A31 SoCs.
+This is v4 of my A83T USB power supply / OTG series. Hopefully this is
+the last revision even though it's kind of late in the -rc cycle for
+the patches to make the next release. Fingers crossed.
 
-However, since this is actually the result of the PMIC's behavior, the
-workaround would be better if done in the PMIC driver, in this case the
-VBUS power supply driver.
+Changes since v3:
 
-Add the same workqueue-based polling to the VBUS power supply driver.
-The polling interval is chosen to be the debounce interval from the USB
-PHY driver, as this short interval is needed in some cases, but the
-power supply driver would not know when.
+  - Dropped patch for disabling current limit
+  - Dropped mfd patch as it is already merged
 
-Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
----
- drivers/power/supply/axp20x_usb_power.c | 53 +++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+Changes since v2:
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index cd9b90d79839..290028aed230 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -24,6 +24,7 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/iio/consumer.h>
-+#include <linux/workqueue.h>
- 
- #define DRVNAME "axp20x-usb-power-supply"
- 
-@@ -46,6 +47,12 @@
- 
- #define AXP20X_VBUS_MON_VBUS_VALID	BIT(3)
- 
-+/*
-+ * Note do not raise the debounce time, we must report Vusb high within
-+ * 100ms otherwise we get Vbus errors in musb.
-+ */
-+#define DEBOUNCE_TIME			msecs_to_jiffies(50)
-+
- struct axp20x_usb_power {
- 	struct device_node *np;
- 	struct regmap *regmap;
-@@ -53,6 +60,8 @@ struct axp20x_usb_power {
- 	enum axp20x_variants axp20x_id;
- 	struct iio_channel *vbus_v;
- 	struct iio_channel *vbus_i;
-+	struct delayed_work vbus_detect;
-+	unsigned int old_status;
- };
- 
- static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
-@@ -64,6 +73,35 @@ static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
- 	return IRQ_HANDLED;
- }
- 
-+static void axp20x_usb_power_poll_vbus(struct work_struct *work)
-+{
-+	struct axp20x_usb_power *power =
-+		container_of(work, struct axp20x_usb_power, vbus_detect.work);
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &val);
-+	if (ret)
-+		goto out;
-+
-+	val &= (AXP20X_PWR_STATUS_VBUS_PRESENT | AXP20X_PWR_STATUS_VBUS_USED);
-+	if (val != power->old_status)
-+		power_supply_changed(power->supply);
-+
-+	power->old_status = val;
-+
-+out:
-+	mod_delayed_work(system_wq, &power->vbus_detect, DEBOUNCE_TIME);
-+}
-+
-+static bool axp20x_usb_vbus_needs_polling(struct axp20x_usb_power *power)
-+{
-+	if (power->axp20x_id >= AXP221_ID)
-+		return true;
-+
-+	return false;
-+}
-+
- static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -357,6 +395,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 	if (!power)
- 		return -ENOMEM;
- 
-+	platform_set_drvdata(pdev, power);
- 	power->axp20x_id = (enum axp20x_variants)of_device_get_match_data(
- 								&pdev->dev);
- 
-@@ -415,6 +454,19 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 				 irq_names[i], ret);
- 	}
- 
-+	INIT_DELAYED_WORK(&power->vbus_detect, axp20x_usb_power_poll_vbus);
-+	if (axp20x_usb_vbus_needs_polling(power))
-+		queue_delayed_work(system_wq, &power->vbus_detect, 0);
-+
-+	return 0;
-+}
-+
-+static int axp20x_usb_power_remove(struct platform_device *pdev)
-+{
-+	struct axp20x_usb_power *power = platform_get_drvdata(pdev);
-+
-+	cancel_delayed_work_sync(&power->vbus_detect);
-+
- 	return 0;
- }
- 
-@@ -434,6 +486,7 @@ MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
- 
- static struct platform_driver axp20x_usb_power_driver = {
- 	.probe = axp20x_usb_power_probe,
-+	.remove = axp20x_usb_power_remove,
- 	.driver = {
- 		.name = DRVNAME,
- 		.of_match_table = axp20x_usb_power_match,
+  - Added Rob's ack for dt bindings patch
+  - Rebased onto v5.1-rc1
+
+Changes since v1:
+
+  - Added Lee's ack for mfd patch
+  - Make axp803_usb_power_supply_resources[] const
+
+This series has since been tested. Both host mode and gadget mode work
+well. However this SoC seems to have a glitch in hardware. After host
+mode is used by plugging in a host mode cable, the hardware will not
+revert back to gadget mode if a standard USB cable is plugged in. Host
+mode continues to work however. This will likely have to be addressed
+with some workaround in either the musb driver or our USB PHY driver.
+
+The patches have no cross-tree dependencies, so each part can go through
+their respective trees (power-supply / arm-soc).
+
+I also have some follow-up patches to enable the USB power supply on
+AXP803 / A64. It's the boiler-plate mfd cell and device node addition.
+
+Original cover letter follows:
+
+This series enables USB OTG on the A83T boards. The AXP813/AXP818 PMICs
+used with the A83T have the same behavior as the AXP221 and AXP223,
+where if the N_VBUSEN pin is driven high, the VBUS sensing interrupts
+stop working. In the past Hans made a polling workaround in the USB PHY
+driver. In this series polling is added to the power supply driver.
+
+The power supply driver work was started by Quentin, and shared with me
+when I expressed interest in getting USB OTG to work some time ago.
+Neither of us got around to finishing it, until now that is.
+
+Patch 1 adds a new compatible string for the AXP813 VBUS power supply
+part.
+
+Patch 2 is a bit of cleanup work for the driver.
+
+Patch 3 allows disabling VBUS input current limiting on the AXP20x /
+AXP22x PMICs. While not strictly related to this series, I found it
+easier to just send everything together. This patch depends on the
+previous one.
+
+Patch 4 adds the VBUS status polling feature. This is enabled on AXP221
+and all later PMICs.
+
+Patch 5 factors out code to read out the configured input current limit
+for the AXP20x and AXP22x PMICs. As the AXP813 uses different values,
+factoring out the code based on model will make the main function more
+readable.
+
+Patch 6 adds support for the AXP813 VBUS power supply. checkpatch.pl
+reports a few warnings for this patch:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #100: FILE: drivers/power/supply/axp20x_usb_power.c:306:
+    +       case 1500000:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #101: FILE: drivers/power/supply/axp20x_usb_power.c:307:
+    +       case 2000000:
+
+    WARNING: Possible switch case/default not preceded by break or
+    fallthrough comment
+    #102: FILE: drivers/power/supply/axp20x_usb_power.c:308:
+    +       case 2500000:
+
+However they seem to be a false positive. The preceding line of the
+reported lines is a return statement, which is definitely not a
+fallthrough.
+
+Patch 7 adds an mfd cell for the newly supported VBUS power supply.
+
+Patch 8 adds a device node for the VBUS power supply to the common
+axp81x dtsi file.
+
+Patch 9 enables USB OTG on the Cubietruck Plus and Bananapi M3.
+
+Please have a look, and also test it on boards you have, and don't
+limit it to just the A83T ones. As mentioned above, the polling feature
+affects all boards that have an AXP221 or newer PMIC.
+
+I haven't removed the polling workaround from the USB PHY driver yet.
+That would be the next step after this series is merged, and preferrably
+a release has passed.
+
+
+Regards
+ChenYu
+
+Chen-Yu Tsai (4):
+  dt-bindings: power: supply: axp20x_usb_power: add axp813 compatible
+  power: supply: axp20x_usb_power: Fix typo in VBUS current limit macros
+  power: supply: axp20x_usb_power: use polling to detect vbus status
+    change
+  ARM: dts: sun8i: a83t: Enable USB OTG controller on some boards
+
+Quentin Schulz (3):
+  power: supply: axp20x_usb_power: add function to get max current
+  power: supply: axp20x_usb_power: add support for AXP813
+  ARM: dtsi: axp81x: add USB power supply node
+
+ .../power/supply/axp20x_usb_power.txt         |   1 +
+ arch/arm/boot/dts/axp81x.dtsi                 |   4 +
+ arch/arm/boot/dts/sun8i-a83t-bananapi-m3.dts  |  12 ++
+ .../boot/dts/sun8i-a83t-cubietruck-plus.dts   |  12 ++
+ drivers/power/supply/axp20x_usb_power.c       | 179 +++++++++++++++---
+ 5 files changed, 181 insertions(+), 27 deletions(-)
+
 -- 
 2.20.1
