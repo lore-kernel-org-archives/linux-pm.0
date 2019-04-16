@@ -7,55 +7,56 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6B4EC10F13
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:44:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 503E4C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:46:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B42EC21925
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:44:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2150D21924
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Apr 2019 13:46:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WI2eJW2H"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WVTs4FNz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727030AbfDPNoc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 09:44:32 -0400
-Received: from mail-lf1-f66.google.com ([209.85.167.66]:40065 "EHLO
-        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726875AbfDPNob (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 09:44:31 -0400
-Received: by mail-lf1-f66.google.com with SMTP id a28so16079074lfo.7;
-        Tue, 16 Apr 2019 06:44:30 -0700 (PDT)
+        id S1727004AbfDPNqg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 09:46:36 -0400
+Received: from mail-lf1-f67.google.com ([209.85.167.67]:41418 "EHLO
+        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725861AbfDPNqf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 09:46:35 -0400
+Received: by mail-lf1-f67.google.com with SMTP id t30so16057038lfd.8;
+        Tue, 16 Apr 2019 06:46:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=EDg5pAoctPInS+yZZzsuu25yRfo6XJen0lYd+lN7LkY=;
-        b=WI2eJW2HDpZTh3m6SXZW6gi+vNnU5xM/Ui/KWlq4UpSlTz/luTJ4m63N+u0zoDqRgk
-         gAXEA6B0dz8MTpCslIatMSKQvA63LwXvQsPiFXLeRQnc6sDwVjRv9G48UPbZxX/MrZl7
-         vGDY+0fK5pvC/9LqH6QGFvpNltLlCqo/OyYJIiTqmaP/KuKxdgfDOVjeu8M+B1HyiyWm
-         vc+N2zYZNEedu1f3NTEKpiFMzsOB5HDIkT0QCRJGinfhXmYLYS/lo9tIYFQYKWelVPjF
-         +JoAvI50bO1MSs5d/NxsWGBvSabuSZ/WtI9UY0PZ4h68ZLXWngXDUGsq0W2l21kIDZIR
-         z4Qg==
+        bh=1anlsw5jTjhl2brbVUtfoVxAV9CSpLlVcdeyYBX0gUE=;
+        b=WVTs4FNzZMjxo73GKoPFd6DAV7xRS7TlFhtQw3jc/2NzYMxAXr/JsV3c+MOKehd5lD
+         0aOg3QddzGH4ELLZq2Vjjq7AEbpqg1CIEcn1dKyO6BhACnWBQbtINjPXSfHC3XiGNfwW
+         7f7TSih8IeO598soWL18Bfv768j2TZAOFXv66H0XcN/QvLHyCYG24YguC145UOAMk+ML
+         aFKklHK/e/t35h6fiIQwmpN2R+SqbiSy+OFG6Ux1IyeuiyokaJJAyE7sVPQMoTPeYpMx
+         GiYz87JPhec6g3tqBAAQ0b5uZxzPpqW27v05I7LbftHv24l6S18I0L+Z1HTUql3A2Grn
+         0v4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=EDg5pAoctPInS+yZZzsuu25yRfo6XJen0lYd+lN7LkY=;
-        b=HCn38uD5fwDmKbNSkdhW965MeWDmpF1XXoM18VLO/iZT8FYTnO7aokpsqHMs2eV9XE
-         5Q+OtfcZ0X26KSE4vlO909BBAJK1EVywVUqxF0rJ1+drqYNRWcDPdE5k3DEDi2H9biLS
-         3FsVHfhpk4zXRnVTxVbOsGzxXEKaMSBaSfKnpGihWEW2a8R55+wqD5ftCVbpb/kduDKN
-         VmB+LnX9MfC2PRhwVyxQxS4MDsU9HX6oQdBl5x7NSuFM2vpHY2mkrzBUB4KsiCuMi8pV
-         r+2JUDZ8JamcnjBTq3sqf5l1Rzp3NTFw+qOXUW0+Yxsb/gA0MrxXW2NiHwJ99+gOHDPA
-         wJAw==
-X-Gm-Message-State: APjAAAWyJXZd3xPf5H9BLju9sIKhID9wONTXZ+7EZGUQjqjtfCr1YjLi
-        LS8BEcUymi96ZqPWZ7TRgDXPac9/
-X-Google-Smtp-Source: APXvYqyWbBf94YpEsEuWpmSx3L3IfON84SWTxqqFzoSPcrnZbYcpf5EPNSBT31W98U671pNJeDFoWw==
-X-Received: by 2002:ac2:5396:: with SMTP id g22mr41968241lfh.120.1555422267730;
-        Tue, 16 Apr 2019 06:44:27 -0700 (PDT)
+        bh=1anlsw5jTjhl2brbVUtfoVxAV9CSpLlVcdeyYBX0gUE=;
+        b=CyPbXw5tqpLa/UedRWRCm8OM1duH4Sh7HaHfatiLHt7fkCUeYwqRpTOBFjv3p6AdIW
+         9J2kAyy96KvAP5irQ6jA/P1HiJbMF9iT5kH8e8Mj+HYJNeAmmUEcSJAyY2lGUXjepGqE
+         QjzuW6wbfi88eDl7o6sz1V9Qr3LyhpduMr94Wwe0TqFUz4iiw4Ty84Tb3w/IMyaThwJL
+         cWxWDhDKoabJOMBovrBFNkb7MEW8Mqbwg5I8+816TeAMb5295aPtT7TvCOTICwhjjjVm
+         XA7AWq2ixzowx0s4FLsoyHWieifZhPwI3gMI/Q8p+Z720k8a+nM72DB+s3+KPt3wZRm/
+         7FYA==
+X-Gm-Message-State: APjAAAVwpdb1E/tnTqVymPHlXJAM6/TJaJBGeBNBJ/MWwGTyjNlj22U7
+        gRINDUlvBp+MsNEDWZ7g+9C4/tRY
+X-Google-Smtp-Source: APXvYqyO7iJ7QrAiIHHy0b3zVCfXe8lF83NkazPfn2G8pXneiYv5Yx+mmmzolQTBiSZ3J84w6soUJw==
+X-Received: by 2002:ac2:51da:: with SMTP id u26mr9358269lfm.32.1555422393334;
+        Tue, 16 Apr 2019 06:46:33 -0700 (PDT)
 Received: from [192.168.2.145] (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.googlemail.com with ESMTPSA id m21sm2503591lfj.47.2019.04.16.06.44.26
+        by smtp.googlemail.com with ESMTPSA id f21sm9402281ljk.94.2019.04.16.06.46.32
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Apr 2019 06:44:26 -0700 (PDT)
-Subject: Re: [PATCH v2 03/19] PM / devfreq: tegra: Don't ignore clk errors
+        Tue, 16 Apr 2019 06:46:32 -0700 (PDT)
+Subject: Re: [PATCH v2 04/19] PM / devfreq: tegra: Don't set EMC clock rate to
+ maximum on probe
 To:     Chanwoo Choi <cw00.choi@samsung.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,16 +66,16 @@ To:     Chanwoo Choi <cw00.choi@samsung.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 References: <20190415145505.18397-1-digetx@gmail.com>
- <CGME20190415145811epcas2p45772ac8ae956928341d76b80d3fa5e91@epcas2p4.samsung.com>
- <20190415145505.18397-4-digetx@gmail.com>
- <1e4038d1-0fd3-f6d2-4e01-d34b16aeddbd@samsung.com>
+ <CGME20190415145546epcas3p2dd7b6049da59458b165eb54e4cc8162d@epcas3p2.samsung.com>
+ <20190415145505.18397-5-digetx@gmail.com>
+ <9fa3c0c3-0ef4-2d86-b6a8-7bd0fbc131e6@samsung.com>
 From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <485c7af3-453a-1c89-a677-3ef622ee2ad3@gmail.com>
-Date:   Tue, 16 Apr 2019 16:42:47 +0300
+Message-ID: <4ae5b863-a6db-39bb-7654-6dd9b63c0d34@gmail.com>
+Date:   Tue, 16 Apr 2019 16:44:53 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <1e4038d1-0fd3-f6d2-4e01-d34b16aeddbd@samsung.com>
+In-Reply-To: <9fa3c0c3-0ef4-2d86-b6a8-7bd0fbc131e6@samsung.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -82,50 +83,36 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190416134247.zZY2pHcoKtVjJ5FnqVCsuh8oq--Iu-dO52cwlvfKS2E@z>
+Message-ID: <20190416134453.oRGpmPCntAZojYFBKtaZGy7sDtaqxRv2TZ0LK-Je27s@z>
 
-16.04.2019 4:52, Chanwoo Choi пишет:
+16.04.2019 4:59, Chanwoo Choi пишет:
 > Hi,
 > 
 > On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
->> The clk_set_min_rate() could fail and in this case clk_set_rate() sets
->> rate to 0, which may drop EMC rate to minimum and make machine very
->> difficult to use.
+>> There is no real benefit from doing so, hence let's drop that rate setting
+>> for consistency.
 >>
 >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 >> ---
->>  drivers/devfreq/tegra-devfreq.c | 10 ++++++++--
->>  1 file changed, 8 insertions(+), 2 deletions(-)
+>>  drivers/devfreq/tegra-devfreq.c | 2 --
+>>  1 file changed, 2 deletions(-)
 >>
 >> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->> index 0c0909fba545..69581c9082d4 100644
+>> index 69581c9082d4..d62fb1b0d9bb 100644
 >> --- a/drivers/devfreq/tegra-devfreq.c
 >> +++ b/drivers/devfreq/tegra-devfreq.c
->> @@ -487,6 +487,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
->>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
->>  	struct dev_pm_opp *opp;
->>  	unsigned long rate;
->> +	int err;
+>> @@ -648,8 +648,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>  		return PTR_ERR(tegra->emc_clock);
+>>  	}
 >>  
->>  	opp = devfreq_recommended_opp(dev, freq, flags);
->>  	if (IS_ERR(opp)) {
->> @@ -496,8 +497,13 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
->>  	rate = dev_pm_opp_get_freq(opp);
->>  	dev_pm_opp_put(opp);
->>  
->> -	clk_set_min_rate(tegra->emc_clock, rate);
->> -	clk_set_rate(tegra->emc_clock, 0);
->> +	err = clk_set_min_rate(tegra->emc_clock, rate);
->> +	if (err)
->> +		return err;
->> +
->> +	err = clk_set_rate(tegra->emc_clock, 0);
->> +	if (err)
+>> -	clk_set_rate(tegra->emc_clock, ULONG_MAX);
+>> -
 > 
-> Why don't you restore the previous minimum clock for tegra->emc_clock
-> when failed to execute 'clk_set_rate(tegra->emc_clock, 0);'?
+> It seems like that initialize the emc_clock as the supported maximum clock.
+> But, if the rate for emc_clock initialized by either bootloader or clock driver
+> and it's well working until this code, actually, it is not necessary.
 > 
-> I think that if you control the restoring the previous minimum clock,
-> it is more nice to handle the error handling.
+> Looks good to me.
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-I now see that devfreq has the previous_freq field and indeed it is possible to restore the min_rate value using it. Thanks for the suggestion.
+EMC clock rate is set properly at a boot time on all Tegra's, thanks.
