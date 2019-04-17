@@ -1,16 +1,16 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/3] include: dt-bindings: add Performance Monitoring
- Unit for Exynos
-Date: Wed, 17 Apr 2019 17:10:38 +0900
-Message-ID: <3fcb6dde-7ccc-4da6-5f8b-c8338edaa155@samsung.com>
+Subject: Re: [PATCH 2/3] drivers: devfreq: events: extend events by type of
+ counted data
+Date: Wed, 17 Apr 2019 17:22:37 +0900
+Message-ID: <628d298a-0c44-11c9-d27b-165cdfc0d2a2@samsung.com>
 References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074832eucas1p26eca3ed8bf754787b4860206ba542e1c@eucas1p2.samsung.com>
-        <1555487288-4777-2-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda@eucas1p1.samsung.com>
+        <1555487288-4777-3-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555487288-4777-2-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <1555487288-4777-3-git-send-email-l.luba@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
@@ -20,76 +20,156 @@ List-Id: linux-pm@vger.kernel.org
 Hi Lukasz,
 
 On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
-> This patch add support of a new feature which can be used in DT:
-> Performance Monitoring Unit with defined event data type.
-> In this patch the event data types are defined for Exynos PPMU.
-> The patch also updates the MAINTAINERS file accordingly.
+> This patch adds posibility to choose what type of data should be counted
+> by the PPMU counter. Now the type comes from DT where the event has been
+> defined. When there is no 'event-data-type' the default value is used,
+> which is 'read data in bytes'.
+> It is needed when you want to know not only read+write data bytes but
+> i.e. only write data in byte, or number of read requests, etc.
 > 
 > Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->  MAINTAINERS                           |  5 +++++
->  include/dt-bindings/pmu/exynos_ppmu.h | 24 ++++++++++++++++++++++++
->  2 files changed, 29 insertions(+)
->  create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+>  drivers/devfreq/event/exynos-ppmu.c | 38 +++++++++++++++++++++++++------------
+>  include/linux/devfreq-event.h       |  6 ++++++
+>  2 files changed, 32 insertions(+), 12 deletions(-)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 3671fde..f4aac78 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12376,6 +12376,11 @@ L:	linux-scsi@vger.kernel.org
->  S:	Supported
->  F:	drivers/scsi/pm8001/
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index c61de0b..e5f81a5 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -140,6 +140,7 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+>  	int ret;
+>  	u32 pmnc, cntens;
+> +	u32 evt_sel = edev->desc->data_type;
 >  
-> +PMU EXYNOS DT BINDINGS
-> +M:	Lukasz Luba <l.luba@partner.samsung.com>
-> +S:	Maintained
-> +F:	include/dt-bindings/pmu/exynos_ppmu.h
+>  	if (id < 0)
+>  		return id;
+> @@ -154,9 +155,12 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	/* Set the event of Read/Write data count  */
+> -	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+> +	/* Check if the data type has been defined in DT, use default if not */
+> +	if (evt_sel == UINT_MAX)
+> +		evt_sel = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
 > +
-
-IMHO, I'm not sure that it is right of adding one dt-binding header file
-to MAINTAINERS file. If right, I'm OK.
-
-
->  PNP SUPPORT
->  M:	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->  S:	Maintained
-> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
-> new file mode 100644
-> index 0000000..a6971eb
-> --- /dev/null
-> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
-> @@ -0,0 +1,24 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Samsung Exynos PPMU event types for counting in regs
-> + *
-> + * Copyright (c) 2019, Samsung
-> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
-> + */
+> +	/* Set the event of Read or Write or both (RDWR) data count  */
+> +	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id), evt_sel);
+>  	if (ret < 0)
+>  		return ret;
+>  
+> @@ -357,6 +361,7 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>  	unsigned int pmnc, cntens;
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+>  	int ret;
+> +	u32 evt_sel = edev->desc->data_type;
+>  
+>  	/* Enable all counters */
+>  	ret = regmap_read(info->regmap, PPMU_V2_CNTENS, &cntens);
+> @@ -368,24 +373,28 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	/* Set the event of Read/Write data count  */
 > +
-> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
-> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+> +	/* Set the event of proper data type counting.
+> +	 * Check if the data type has been defined in DT,
+> +	 * use default if not.
+> +	 */
+>  	switch (id) {
+>  	case PPMU_PMNCNT0:
+>  	case PPMU_PMNCNT1:
+>  	case PPMU_PMNCNT2:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> +		if (evt_sel == UINT_MAX)
+> +			evt_sel = PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT;
+>  		break;
+>  	case PPMU_PMNCNT3:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_EVT3_RW_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> +		if (evt_sel == UINT_MAX)
+> +			evt_sel = PPMU_V2_EVT3_RW_DATA_CNT;
+>  		break;
+>  	}
+>  
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id), evt_sel);
+> +	if (ret < 0)
+> +		return ret;
 > +
-> +
-> +#define PPMU_RO_BUSY_CYCLE_CNT		0x0
-> +#define PPMU_WO_BUSY_CYCLE_CNT		0x1
-> +#define PPMU_RW_BUSY_CYCLE_CNT		0x2
-> +#define PPMU_RO_REQUEST_CNT		0x3
-> +#define PPMU_WO_REQUEST_CNT		0x4
-> +#define PPMU_RO_DATA_CNT		0x5
-> +#define PPMU_WO_DATA_CNT		0x6
-> +#define PPMU_RO_LATENCY			0x12
-> +#define PPMU_WO_LATENCY			0x16
-> +#define PPMU_V2_EVT3_RW_DATA_CNT	0x22
+>  	/* Reset cycle counter/performance counter and enable PPMU */
+>  	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+>  	if (ret < 0)
+> @@ -508,6 +517,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>  	struct device *dev = info->dev;
+>  	struct device_node *events_np, *node;
+>  	int i, j, count;
+> +	int ret;
+>  
+>  	events_np = of_get_child_by_name(np, "events");
+>  	if (!events_np) {
+> @@ -544,6 +554,10 @@ static int of_get_devfreq_events(struct device_node *np,
+>  		desc[j].driver_data = info;
+>  
+>  		of_property_read_string(node, "event-name", &desc[j].name);
+> +		ret = of_property_read_u32(node, "event-data-type",
+> +					   &desc[j].data_type);
+> +		if (!ret)
+> +			desc[i].data_type = UINT_MAX;
 
-If we can select the data type for monitoring, it looks good to me.
-But, when I developed the Exynos PPMU, I has not tested other data type
-except for PPMU_RO_DATA_CNT and PPMU_WO_DATA_CNT.
+I think that it is not proper to use 'UINT_MAX'.
+If you want to use the default value, you can initialize
+the 'desc[i].data_type' according to the device type or compatible name.
 
-Do you test all data types with PPMU device?
+For all exynos SoC except for exynos5433,
+	desc[i].data_type = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
 
-> +
-> +#endif
+For exynos5433,
+	desc[i].data_type = PPMU_V2_EVT3_RW_DATA_CNT;
+
+>  
+>  		j++;
+>  	}
+> diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+> index 4db00b0..cc160b1 100644
+> --- a/include/linux/devfreq-event.h
+> +++ b/include/linux/devfreq-event.h
+> @@ -81,14 +81,20 @@ struct devfreq_event_ops {
+>   * struct devfreq_event_desc - the descriptor of devfreq-event device
+>   *
+>   * @name	: the name of devfreq-event device.
+> + * @data_type	: the data type which is going to be counted in the register.
+>   * @driver_data	: the private data for devfreq-event driver.
+>   * @ops		: the operation to control devfreq-event device.
+>   *
+>   * Each devfreq-event device is described with a this structure.
+>   * This structure contains the various data for devfreq-event device.
+> + * The data_type describes what is going to be counted in the register.
+> + * It might choose to count e.g. read requests, write data in bytes, etc.
+> + * The full supported list of types is present in specyfic header in:
+> + * include/dt-bindings/pmu/.
+
+Why did you make the path name as the 'pmu' instead of 'ppmu'?
+
+It might have some confusion because 'pmu' has
+the two meaning in linux kernel.
+- PMU, Power Management Unit
+- PMU, Performance Monitoring Unit
+
+>   */
+>  struct devfreq_event_desc {
+>  	const char *name;
+> +	u32 data_type;
+>  	void *driver_data;
+>  
+>  	const struct devfreq_event_ops *ops;
 > 
 
 
