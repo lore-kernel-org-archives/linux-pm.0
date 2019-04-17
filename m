@@ -2,139 +2,224 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74F58C282DA
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 07:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7889C10F12
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 08:06:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3AD3C2176F
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 07:48:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6F44321773
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 08:06:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="HxzHhrBF"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gXXboVc7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731185AbfDQHsd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 03:48:33 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:53829 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725848AbfDQHsd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 03:48:33 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190417074831euoutp01c97d22abd51aff6fc29d35184e8271d3~WM3fsJphD3227432274euoutp01G
-        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 07:48:31 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190417074831euoutp01c97d22abd51aff6fc29d35184e8271d3~WM3fsJphD3227432274euoutp01G
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555487311;
-        bh=qcoBq5tBOKGZTWog231jA3ntWKkNru5PluYdYR46n7A=;
-        h=From:To:Cc:Subject:Date:References:From;
-        b=HxzHhrBF8iuBUzsVFllF4yjrjvCpEUxzanNqVupeSTntTlhnEdhThAn0tPK3Q/OFb
-         Hqt/GhF751EBSdIfhKFXmZZ8Aws16o9aD7MHHGpk0gK+5HDom6epCAnxxLl9Hf2KKX
-         WsIc6yBpcZkAiIMPs8sjgMVOiQTky2ejuFU21seY=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190417074830eucas1p1482672c0db81cb6a73cac342bd5f3fd8~WM3e25dQM1289812898eucas1p1D;
-        Wed, 17 Apr 2019 07:48:30 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id DB.3E.04377.E4AD6BC5; Wed, 17
-        Apr 2019 08:48:30 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c~WM3d-LbEF2287122871eucas1p2q;
-        Wed, 17 Apr 2019 07:48:29 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190417074829eusmtrp2d5795a77e97e5b21883f40917d5cf787~WM3dvb-o72697726977eusmtrp23;
-        Wed, 17 Apr 2019 07:48:29 +0000 (GMT)
-X-AuditID: cbfec7f4-113ff70000001119-81-5cb6da4e1404
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 2F.47.04140.D4AD6BC5; Wed, 17
-        Apr 2019 08:48:29 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417074828eusmtip1524b9a6a70ae3e0faf20f312728f4550~WM3dEkjVB0059200592eusmtip1q;
-        Wed, 17 Apr 2019 07:48:28 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, cw00.choi@samsung.com,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org,
-        l.luba@partner.samsung.com
-Subject: [PATCH 0/3] Exynos Performance Monitoring Counters enhancements
-Date:   Wed, 17 Apr 2019 09:48:05 +0200
-Message-Id: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.7.4
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprDKsWRmVeSWpSXmKPExsWy7djP87p+t7bFGHzbz2+xccZ6VovrX56z
-        Wsw/co7Vov/xa2aL8+c3sFucbXrDbnGrQcZi0+NrrBaXd81hs/jce4TRYsb5fUwWa4/cZbdY
-        ev0ik8XtxhVsFq17j7BbHH7Tzuog4LFm3hpGj02rOtk8Ni+p9zj4bg+TR9+WVYwenzfJBbBF
-        cdmkpOZklqUW6dslcGV8fPWdpeAYZ8W2k6tZGhjnsHcxcnJICJhIXN3+kBHEFhJYwSixri+k
-        i5ELyP7CKHH17QoWCOczo8Sk5l1sMB0zph+ESixnlNi+9xMbXMvNd9uYuxg5ONgE9CR2rCoE
-        aRARWMwo8e1wFEgNs0Ank8S7yXvAJgkLeEhcvPKECcRmEVCV6J6xFszmFfCUeDd1AiPENjmJ
-        m+c6mUGaJQQWsUvca58NdbiLxNsHN1khbGGJV8e3QMVlJP7vnM8EYRdLNPQuhBpUI/G4fy5U
-        jbXE4eMXWUEOZRbQlFi/Sx8i7AhUfo4RJCwhwCdx460gSJgZyJy0bTozRJhXoqNNCKJaQ2JL
-        zwWoRWISy9dMY4co8ZDY35cOCdBYiXVzVrJNYJSbhbBqASPjKkbx1NLi3PTUYqO81HK94sTc
-        4tK8dL3k/NxNjMA0c/rf8S87GHf9STrEKMDBqMTDu+Ln1hgh1sSy4srcQ4wSHMxKIryOKVti
-        hHhTEiurUovy44tKc1KLDzFKc7AoifNWMzyIFhJITyxJzU5NLUgtgskycXBKNTAqvV7Tem9G
-        seDZmRtlW1Iuf2KeoujNprxQUM9fpc97+w5Pn7tvUvyW3Mj5FarJcNK77qz51IOSwn+ir69o
-        eOZ2Z0b/QYUocybN2jytz6u7EidYxXpMufyBXaPUZmPU8aNv7Dq4N17+uuj1z0I9nfk+W2+J
-        ngr16v/n0FC6VmzizTUf6oVunj+txFKckWioxVxUnAgAljk7ji8DAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrGLMWRmVeSWpSXmKPExsVy+t/xu7q+t7bFGCyeK2yxccZ6VovrX56z
-        Wsw/co7Vov/xa2aL8+c3sFucbXrDbnGrQcZi0+NrrBaXd81hs/jce4TRYsb5fUwWa4/cZbdY
-        ev0ik8XtxhVsFq17j7BbHH7Tzuog4LFm3hpGj02rOtk8Ni+p9zj4bg+TR9+WVYwenzfJBbBF
-        6dkU5ZeWpCpk5BeX2CpFG1oY6RlaWugZmVjqGRqbx1oZmSrp29mkpOZklqUW6dsl6GV8fPWd
-        peAYZ8W2k6tZGhjnsHcxcnJICJhIzJh+kKWLkYtDSGApo8Tyr/PYIBJiEpP2bYcqEpb4c62L
-        DaLoE6PE71XngTo4ONgE9CR2rCoEiYsILGeUOLbqLTOIwywwnUnizrsrLCDdwgIeEhevPGEC
-        sVkEVCW6Z6wFs3kFPCXeTZ3ACLFBTuLmuU7mCYw8CxgZVjGKpJYW56bnFhvpFSfmFpfmpesl
-        5+duYgSG+bZjP7fsYOx6F3yIUYCDUYmHd8XPrTFCrIllxZW5hxglOJiVRHgdU7bECPGmJFZW
-        pRblxxeV5qQWH2I0BVo+kVlKNDkfGIN5JfGGpobmFpaG5sbmxmYWSuK85w0qo4QE0hNLUrNT
-        UwtSi2D6mDg4pRoYO/pFm+sfLIyVUf9WXcMrsOuQwtaMF3dyU1VneQh//MXYJKe67kBYkP4/
-        z9dHtm1YfSP8OfdKvufczt19Rt/lT+yblGbz4d1kS8spam13xCymZzMsyp+xwetlhkLqm2Mn
-        Yt9EXyz+un3p2YJzSz8unhjEtvynxd+uSDcP63lL1/3dyWztNG0GixJLcUaioRZzUXEiAOMC
-        tAeJAgAA
-X-CMS-MailID: 20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c
-X-Msg-Generator: CA
+        id S1728143AbfDQIGA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 04:06:00 -0400
+Received: from mail-wm1-f67.google.com ([209.85.128.67]:35872 "EHLO
+        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726237AbfDQIF7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 04:05:59 -0400
+Received: by mail-wm1-f67.google.com with SMTP id h18so2357319wml.1
+        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 01:05:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=PI+9kWespWroqsfzmFgybRIIwFO/E+pJGyIm3CKWQLk=;
+        b=gXXboVc7qabiIXe3lYXP1Wl9FxK0ashMrfEYGagnHJFD+7QvNTKwB8TW4rJpCD74KR
+         KZSfeTyx5bEtnVkmVmDYdNH8oNnfL9VfNusSd+7Nc0F3Yk3QVMh5mInI+t7ojUWAtpaR
+         CSHoGrV7wPdzdrtJ/yMWed2CNvtG0UTPJTwfbeo1+lf3qlctVlqawboMv8ZomGCY2bEp
+         WLmq17crmrQu/wkgw39ufFChcG2iBqiXt0kLhPeW3pHPPseMFSMBUDjRlkG7NoQgNLjv
+         AQX3RNGQ6wB5oiZoXtBzL7GTz6/mUmRtLq215z+lNNhkYiDw1E9DQxCLEIfiRIQgxhZW
+         Mt2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=PI+9kWespWroqsfzmFgybRIIwFO/E+pJGyIm3CKWQLk=;
+        b=IrHlFwKYBXBdzwmeeYJGWBvHBrLO1rolEW+FtESDFUL1x5LIqXbnHXfdfDDuNh0JT4
+         QmJjsbJ5P0lDXEb98lpfL0td8Ce+ne2rxvyyYd5SaPc39Mo7NH9lV3F/VibYHMaCxbVK
+         AuRh637yMrVjcq2wKgtq7iWRRtGNjGAxPWnuHnxpqMAI2Ul9iX4ZJ/lgBAWxZ9/ODFRw
+         XBA9ZnuTd8A3tbJjOrV4jdPXesZpdZEyidGmwhphT4EiF6Au7/WE1ku1LgLPeLDQ2XTs
+         pxP81oupNMyl+3wm2vSkIAUQ9QKc5Xk8B6FLW14hhZFFUYGkDr7XDZMDnJboAEIlGRan
+         vvAQ==
+X-Gm-Message-State: APjAAAXIlQYcARaN+2XVFRbbMtB4nTYKiyoL67xnyfqqka859wgs8jgu
+        wIVOSDYKa2qDCVFpKF7L9RwCqg==
+X-Google-Smtp-Source: APXvYqwMFbXOOGHbif5JJqQI4qd9Xeafj7oVZ0bCwVCGmINLYB3KNLVYoPUGho/dIl763uzppkCxSg==
+X-Received: by 2002:a1c:495:: with SMTP id 143mr28199857wme.78.1555488357246;
+        Wed, 17 Apr 2019 01:05:57 -0700 (PDT)
+Received: from [192.168.0.41] (62.29.129.77.rev.sfr.net. [77.129.29.62])
+        by smtp.googlemail.com with ESMTPSA id x192sm1728948wmf.48.2019.04.17.01.05.56
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 17 Apr 2019 01:05:56 -0700 (PDT)
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
+        edubezval@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+ <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
+Date:   Wed, 17 Apr 2019 10:05:55 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
 Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c
-References: <CGME20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c@eucas1p2.samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417074805.wp4xZYuQKrESs_NnAqB0JcvIJgcmmSU2TpcxxQCZpxo@z>
+Message-ID: <20190417080555.W2vH-6XwyHNkvFyPUHZg1Jt2lLR54SJu28sdUNdVxu8@z>
 
-Hi all,
+On 17/04/2019 05:01, Jiada Wang wrote:
+> Hi Daniel
+> 
+> On 2019/04/17 4:22, Daniel Lezcano wrote:
+>> On 11/04/2019 12:03, Jiada Wang wrote:
+>>> Currently IRQ is remain enabled after .remove, later if device is
+>>> probed,
+>>> IRQ is requested before .thermal_init, this may cause IRQ function be
+>>> triggered but not able to clear IRQ status, thus cause system to hang.
+>>>
+>>> this patch by moving request of IRQ after device initialization to
+>>> avoid this issue.
+>>
+>> Why not disable the interrupt and clear the irq status in the .remove
+>> callback, so the place is clean when probing again?
+>>
+>>
+>>          struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
+>>
+>>          rcar_thermal_irq_set(priv, false);
+>>
+>> should do the trick no ?
+>>
+> yes, this issue also can be addressed by disable the interrupt in .remove.
+> 
+> But there is race condition between .remove and irq thread function,
+> (which enables IRQ)
+> so driver need to ensure threaded irq has been disabled before call
+> rcar_thermal_irq_set(priv, false) in .remove.
+> this adds additional complexity.
+> 
+> I am fine with both solutions,
+> what is your opinion?
 
-This patch set extends PPMU on Samsung Exynos by choosing type of data
-which shell be counter in the PPMU registers.
-It is possible to count e.g. read or write requests, read or write data.
-A new field has been added in the DT 'event' node called 'event-data-type'.
-It is them used during the setup of the counter. In the prevoius
-implementation there was always one option used: count read+write data.
-Sometimes we need more precised information and this patch set tries to
-address it.
+My opinion is it is the tree hiding the forest.
 
-Regards,
-Lukasz Luba
+After a quick look at the irq setup and handling, it appears the
+implementation is cumbersome. This part should be fixed before the rest:
 
-Lukasz Luba (3):
-  include: dt-bindings: add Performance Monitoring Unit for Exynos
-  drivers: devfreq: events: extend events by type of counted data
-  Documentation: devicetree: add PPMU events description
+ - check IRQF_ONESHOT flag
+ - remove the lock in the interrupt handlers
+ - remove rcar_gen3_thermal_irq() which is pointless
+ - check the IRQF_SHARED flag is correct (I doubt)
 
- .../bindings/devfreq/event/exynos-ppmu.txt         | 18 ++++++++++
- MAINTAINERS                                        |  5 +++
- drivers/devfreq/event/exynos-ppmu.c                | 38 +++++++++++++++-------
- include/dt-bindings/pmu/exynos_ppmu.h              | 24 ++++++++++++++
- include/linux/devfreq-event.h                      |  6 ++++
- 5 files changed, 79 insertions(+), 12 deletions(-)
- create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+As the function devm_request_threaded_irq() is called 3 times, you
+should add the priv->tscs[i]->zone in the private data and the irq
+thread handler should look like:
+
+static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
+{
+	struct thermal_zone_device *tz = data;
+
+	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+
+	[ ... ]
+
+        return IRQ_HANDLED;
+}
+
+When the implementation is fixed, then we can take care of the .remove
+
+>>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+>>> ---
+>>>   drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>>>   1 file changed, 26 insertions(+), 22 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/rcar_gen3_thermal.c
+>>> b/drivers/thermal/rcar_gen3_thermal.c
+>>> index 88fa41cf16e8..4d095d7f9763 100644
+>>> --- a/drivers/thermal/rcar_gen3_thermal.c
+>>> +++ b/drivers/thermal/rcar_gen3_thermal.c
+>>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct
+>>> platform_device *pdev)
+>>>         platform_set_drvdata(pdev, priv);
+>>>   -    /*
+>>> -     * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>>> -     * to trigger on the low and high trip points of the current
+>>> -     * temp window at this point.
+>>> -     */
+>>> -    for (i = 0; i < 2; i++) {
+>>> -        irq = platform_get_irq(pdev, i);
+>>> -        if (irq < 0)
+>>> -            return irq;
+>>> -
+>>> -        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>>> -                     dev_name(dev), i);
+>>> -        if (!irqname)
+>>> -            return -ENOMEM;
+>>> -
+>>> -        ret = devm_request_threaded_irq(dev, irq,
+>>> rcar_gen3_thermal_irq,
+>>> -                        rcar_gen3_thermal_irq_thread,
+>>> -                        IRQF_SHARED, irqname, priv);
+>>> -        if (ret)
+>>> -            return ret;
+>>> -    }
+>>> -
+>>>       pm_runtime_enable(dev);
+>>>       pm_runtime_get_sync(dev);
+>>>   @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct
+>>> platform_device *pdev)
+>>>           goto error_unregister;
+>>>       }
+>>>   +    /*
+>>> +     * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>>> +     * to trigger on the low and high trip points of the current
+>>> +     * temp window at this point.
+>>> +     */
+>>> +    for (i = 0; i < 2; i++) {
+>>> +        irq = platform_get_irq(pdev, i);
+>>> +        if (irq < 0) {
+>>> +            ret = irq;
+>>> +            goto error_unregister;
+>>> +        }
+>>> +
+>>> +        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>>> +                     dev_name(dev), i);
+>>> +        if (!irqname) {
+>>> +            ret = -ENOMEM;
+>>> +            goto error_unregister;
+>>> +        }
+>>> +
+>>> +        ret = devm_request_threaded_irq(dev, irq,
+>>> rcar_gen3_thermal_irq,
+>>> +                        rcar_gen3_thermal_irq_thread,
+>>> +                        IRQF_SHARED, irqname, priv);
+>>> +        if (ret)
+>>> +            goto error_unregister;
+>>> +    }
+>>> +
+>>>       rcar_thermal_irq_set(priv, true);
+>>>         return 0;
+>>>
+>>
+>>
+
 
 -- 
-2.7.4
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
