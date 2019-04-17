@@ -1,182 +1,108 @@
-From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v8 03/16] sched/core: uclamp: Enforce last task's UCLAMP_MAX
-Date: Wed, 17 Apr 2019 13:36:10 -0700
-Message-ID: <CAJuCfpHN4kMBScdEdJodtmbHQ2qhVDnXrJKFDdaSYyjWH0JH5Q@mail.gmail.com>
-References: <20190402104153.25404-1-patrick.bellasi@arm.com> <20190402104153.25404-4-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
+Date: Thu, 18 Apr 2019 00:10:59 +0200
+Message-ID: <CAJZ5v0hJpYROLJup0mvCp2G8ekeDyBrp+hdhHdsd+vhBq5RxVQ@mail.gmail.com>
+References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
+ <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com> <CAJZ5v0jh0Yn1fy5bO3wett5AsjBA55_Z-8L_M8eRyy5cePqwaw@mail.gmail.com>
+ <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190402104153.25404-4-patrick.bellasi@arm.com>
+In-Reply-To: <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
- Hi Patrick,
+On Wed, Apr 17, 2019 at 7:28 PM Ghannam, Yazen <Yazen.Ghannam@amd.com> wrote:
+>
+> > -----Original Message-----
+> > From: Rafael J. Wysocki <rafael@kernel.org>
+> > Sent: Tuesday, April 16, 2019 4:34 AM
+> > To: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>
+> > Cc: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
+> > pm@vger.kernel.org; devel@acpica.org; Rafael J . Wysocki <rjw@rjwysocki.net>; Len Brown <lenb@kernel.org>; Viresh Kumar
+> > <viresh.kumar@linaro.org>; Robert Moore <robert.moore@intel.com>; Erik Schmauss <erik.schmauss@intel.com>; Ghannam, Yazen
+> > <Yazen.Ghannam@amd.com>
+> > Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
+> >
+> > On Tue, Apr 16, 2019 at 12:35 AM Janakarajan Natarajan <jnataraj@amd.com> wrote:
+> > >
+> > > On 4/4/19 4:25 PM, Natarajan, Janakarajan wrote:
+> > > > CPPC (Collaborative Processor Performance Control) offers optional
+> > > > registers which can be used to tune the system based on energy and/or
+> > > > performance requirements.
+> > > >
+> > > > Newer AMD processors add support for a subset of these optional CPPC
+> > > > registers, based on ACPI v6.1.
+> > > >
+> > > > The following are the supported CPPC registers for which sysfs entries
+> > > > are created:
+> > > > * enable                (NEW)
+> > > > * max_perf              (NEW)
+> > > > * min_perf              (NEW)
+> > > > * energy_perf
+> > > > * lowest_perf
+> > > > * nominal_perf
+> > > > * desired_perf          (NEW)
+> > > > * feedback_ctrs
+> > > > * auto_sel_enable       (NEW)
+> > > > * lowest_nonlinear_perf
+> > > >
+> > > > The CPPC driver is updated to enable the OSPM and the userspace to
+> > > > access
+> > > > the newly supported registers.
+> > > >
+> > > > The purpose of exposing the registers via the sysfs entries is to allow
+> > > > the userspace to:
+> > > > * Tweak the values to fit its workload.
+> > > > * Apply a profile from AMD's optimization guides.
+> > > >
+> > > > Profiles will be documented in the performance/optimization guides.
+> > > >
+> > > > Note:
+> > > > * AMD systems will not have a policy applied in the kernel at this time.
+> > > > * By default, acpi_cpufreq will still be used.
+> > > >
+> > > > TODO:
+> > > > * Create a linux userspace tool that will help users generate a CPPC
+> > > > * profile
+> > > >    for their target workload.
+> > > > * Create or update a driver to apply a general CPPC policy in the
+> > > > * kernel.
+> > > >
+> > > > v1->v2:
+> > > > * Add macro to ensure BUFFER only registers have BUFFER type.
+> > > > * Add support macro to make the right check based on register type.
+> > > > * Remove support checks for registers which are mandatory.
+> > >
+> > >
+> > > Are there any concerns regarding this patchset?
+> >
+> > Yes, there are.
+> >
+> > Unfortunately, it is generally problematic.
+> >
+> > First off, the behavior of existing sysfs files cannot be changed at
+> > will, as there may be users of them out there already depending on the
+> > current behavior.
+> >
+>
+> The intent is to add new sysfs files without changing the existing files. Is that okay?
+>
+> Or is the addition of new files also not acceptable?
+>
+> > Second, at least some CPPC control registers are used by cpufreq
+> > drivers (cppc_cpufreq and intel_pstate), so modifying them behind the
+> > drivers' backs is not a good idea in general.  For this reason, adding
+> > new sysfs attributes to allow user space to do that is quite
+> > questionable.
+> >
+>
+> Yes, good point.
+>
+> What if a check is added so that writes only succeed if the CPUFREQ governor is set to userspace?
 
-On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
->
-> When a task sleeps it removes its max utilization clamp from its CPU.
-> However, the blocked utilization on that CPU can be higher than the max
-> clamp value enforced while the task was running. This allows undesired
-> CPU frequency increases while a CPU is idle, for example, when another
-> CPU on the same frequency domain triggers a frequency update, since
-> schedutil can now see the full not clamped blocked utilization of the
-> idle CPU.
->
-> Fix this by using
->   uclamp_rq_dec_id(p, rq, UCLAMP_MAX)
->     uclamp_rq_max_value(rq, UCLAMP_MAX, clamp_value)
-> to detect when a CPU has no more RUNNABLE clamped tasks and to flag this
-> condition.
->
+That wouldn't be particularly straightforward IMO.
 
-If I understand the intent correctly, you are trying to exclude idle
-CPUs from affecting calculations of rq UCLAMP_MAX value. If that is
-true I think description can be simplified a bit :) In particular it
-took me some time to understand what "blocked utilization" means,
-however if it's a widely accepted term then feel free to ignore my
-input.
-
-> Don't track any minimum utilization clamps since an idle CPU never
-> requires a minimum frequency. The decay of the blocked utilization is
-> good enough to reduce the CPU frequency.
->
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
->
-> --
-> Changes in v8:
->  Message-ID: <20190314170619.rt6yhelj3y6dzypu@e110439-lin>
->  - moved flag reset into uclamp_rq_inc()
-> ---
->  kernel/sched/core.c  | 45 ++++++++++++++++++++++++++++++++++++++++----
->  kernel/sched/sched.h |  2 ++
->  2 files changed, 43 insertions(+), 4 deletions(-)
->
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 6e1beae5f348..046f61d33f00 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -754,8 +754,35 @@ static inline unsigned int uclamp_none(int clamp_id)
->         return SCHED_CAPACITY_SCALE;
->  }
->
-> +static inline unsigned int
-> +uclamp_idle_value(struct rq *rq, unsigned int clamp_id, unsigned int clamp_value)
-> +{
-> +       /*
-> +        * Avoid blocked utilization pushing up the frequency when we go
-> +        * idle (which drops the max-clamp) by retaining the last known
-> +        * max-clamp.
-> +        */
-> +       if (clamp_id == UCLAMP_MAX) {
-> +               rq->uclamp_flags |= UCLAMP_FLAG_IDLE;
-> +               return clamp_value;
-> +       }
-> +
-> +       return uclamp_none(UCLAMP_MIN);
-> +}
-> +
-> +static inline void uclamp_idle_reset(struct rq *rq, unsigned int clamp_id,
-> +                                    unsigned int clamp_value)
-> +{
-> +       /* Reset max-clamp retention only on idle exit */
-> +       if (!(rq->uclamp_flags & UCLAMP_FLAG_IDLE))
-> +               return;
-> +
-> +       WRITE_ONCE(rq->uclamp[clamp_id].value, clamp_value);
-> +}
-> +
->  static inline
-> -unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
-> +unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
-> +                                unsigned int clamp_value)
-
-IMHO the name of uclamp_rq_max_value() is a bit misleading because:
-1. It does not imply that it has to be called only when there are no
-more runnable tasks on a CPU. This is currently the case because it's
-called only from uclamp_rq_dec_id() and only when bucket->tasks==0 but
-nothing in the name of this function indicates that it can't be called
-from other places.
-2. It does not imply that it marks rq UCLAMP_FLAG_IDLE.
-
->  {
->         struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
->         int bucket_id = UCLAMP_BUCKETS - 1;
-> @@ -771,7 +798,7 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
->         }
->
->         /* No tasks -- default clamp values */
-> -       return uclamp_none(clamp_id);
-> +       return uclamp_idle_value(rq, clamp_id, clamp_value);
->  }
->
->  /*
-> @@ -794,6 +821,8 @@ static inline void uclamp_rq_inc_id(struct task_struct *p, struct rq *rq,
->         bucket = &uc_rq->bucket[uc_se->bucket_id];
->         bucket->tasks++;
->
-> +       uclamp_idle_reset(rq, clamp_id, uc_se->value);
-> +
->         /*
->          * Local max aggregation: rq buckets always track the max
->          * "requested" clamp value of its RUNNABLE tasks.
-> @@ -820,6 +849,7 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
->         struct uclamp_rq *uc_rq = &rq->uclamp[clamp_id];
->         struct uclamp_se *uc_se = &p->uclamp[clamp_id];
->         struct uclamp_bucket *bucket;
-> +       unsigned int bkt_clamp;
->         unsigned int rq_clamp;
->
->         bucket = &uc_rq->bucket[uc_se->bucket_id];
-> @@ -848,7 +878,8 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
->                  * there are anymore RUNNABLE tasks refcounting it.
->                  */
->                 bucket->value = uclamp_bucket_base_value(bucket->value);
-> -               WRITE_ONCE(uc_rq->value, uclamp_rq_max_value(rq, clamp_id));
-> +               bkt_clamp = uclamp_rq_max_value(rq, clamp_id, uc_se->value);
-> +               WRITE_ONCE(uc_rq->value, bkt_clamp);
->         }
->  }
->
-> @@ -861,6 +892,10 @@ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
->
->         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
->                 uclamp_rq_inc_id(p, rq, clamp_id);
-> +
-> +       /* Reset clamp idle holding when there is one RUNNABLE task */
-> +       if (rq->uclamp_flags & UCLAMP_FLAG_IDLE)
-> +               rq->uclamp_flags &= ~UCLAMP_FLAG_IDLE;
->  }
->
->  static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
-> @@ -879,8 +914,10 @@ static void __init init_uclamp(void)
->         unsigned int clamp_id;
->         int cpu;
->
-> -       for_each_possible_cpu(cpu)
-> +       for_each_possible_cpu(cpu) {
->                 memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
-> +               cpu_rq(cpu)->uclamp_flags = 0;
-> +       }
->
->         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
->                 struct uclamp_se *uc_se = &init_task.uclamp[clamp_id];
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index c3d1ae1e7eec..d8b182f1782c 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -880,6 +880,8 @@ struct rq {
->  #ifdef CONFIG_UCLAMP_TASK
->         /* Utilization clamp values based on CPU's RUNNABLE tasks */
->         struct uclamp_rq        uclamp[UCLAMP_CNT] ____cacheline_aligned;
-> +       unsigned int            uclamp_flags;
-> +#define UCLAMP_FLAG_IDLE 0x01
->  #endif
->
->         struct cfs_rq           cfs;
-> --
-> 2.20.1
->
+What about handling this like the others do, through a proper cpufreq driver?
