@@ -2,251 +2,165 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E00B0C282DC
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 20:36:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38FDBC282DA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:11:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A2B8A217F4
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 20:36:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="kBOpFwat"
+	by mail.kernel.org (Postfix) with ESMTP id 0701120693
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:11:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555539074;
+	bh=q1XR7/+I/uhh7vydXyIxyZjUhp3iukwS4YtTMXBwIl0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=dKzcmQSgN/OA4zDxdTN4CYVJ9BvS4QvDIwqW5uXY783qA0tGhyyI8Xkwm4TBcMant
+	 LGvFcztP5YZw2PahZKn6DlthmlZqG/rg/NLkptqdpD6XMVSgh76tO3s0ewQKx9O29Y
+	 +V3DMcOT7tbK6DUo+BsOEfxHoVC4VzG+EE+aUdzA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732861AbfDQUgY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 16:36:24 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:34426 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731848AbfDQUgX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 16:36:23 -0400
-Received: by mail-wr1-f66.google.com with SMTP id w16so94756wrl.1
-        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 13:36:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=b3DQvc3AZ2atftlei5LGBuLnz2lFpDVhQ7pQU8Nuxbs=;
-        b=kBOpFwatfLpNmonFrnKqIchflCqCZRx2O8/50/RQ9JXD8VJV9A5K6a4GFmYTHOEDO5
-         AK128Hw5DIHnGQOBwke4asS0K0LXpOuM4TR+LeAhwE+mRy4Jt64fg41mxqDBNL8PU8Un
-         eErwUQmzsxSdHVBlCHLSdVjcG9IqWypDQcX1Y3rOJkaYBNObxeBfvtUFkok770H6f61Z
-         IfPqczxXjTl0mrhCuKcCdtGZqBJZqTafgyX2v8LLE43A8FCTp7O+AOIoaymzcpQxST78
-         zhwHeGdoo6HokInhb5G99fBVBfiG1TBZYFBox+ae1OJtfehk0bpZLkYXM7lJ4WDFTO+l
-         /1Fg==
+        id S1729785AbfDQWLN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 18:11:13 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:43015 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728237AbfDQWLN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:11:13 -0400
+Received: by mail-ot1-f66.google.com with SMTP id u15so2076otq.10;
+        Wed, 17 Apr 2019 15:11:12 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=b3DQvc3AZ2atftlei5LGBuLnz2lFpDVhQ7pQU8Nuxbs=;
-        b=PV4TlTqkW/79rOevM5uRXgKqGhPq4Z4YTFhK2zxt3V6Cc0532CV19ec0Z3imMFUnas
-         ZwqTgdpSCKXdo5UTLYv6GupB5DpAqxLwY14J7gYEHff0XWNMYYXbkt6kuLnAqjz+1UDW
-         aBWADbIDZqVca/cYVLRDnckQh+aYeL+wMY8C/1DKJkA0fKRVXXn0w2P51Sz84d4eokRr
-         ij2gq9661UMXw5E6cWWNY8wpWnIUZz9kskWYBOK6On8uSPT6f1IYq9p21h3UN6qKpC9I
-         KIyEc2jKe8k9VY4VbBsDJbqvNja55NPu7zX4nhIXfsjhmG4Val6FWtwfUaaZonxjULZe
-         asyA==
-X-Gm-Message-State: APjAAAWkx1Gz2JukPecUFiJ1GQnNl2MA/jWSmYj5bjFDs/hStUpTfuKt
-        ClLy74yVP3MrRp3tdjr1DFdFFKDGq9giSCrUALfQHg==
-X-Google-Smtp-Source: APXvYqw3jWyP4fQuOdDO5uptQn2XmuiRzw+DlCMsrSdDDdHqx0YhLs049o6IVd2JPyIwNj6/8DDXzVU8omjbO/BrwLA=
-X-Received: by 2002:adf:9144:: with SMTP id j62mr1357869wrj.320.1555533381179;
- Wed, 17 Apr 2019 13:36:21 -0700 (PDT)
+        bh=i/SMcLR60pTb8GHWCFJb8vDfzN0yXO1auw51WJ143aM=;
+        b=MzLs64D21/i6dz4Wcp9rEEjaDTWXhDGx3GD3okENLrwdQzsmjRNz1BXr2K2j/mx1IE
+         OqjZF/xjclhhALOp5XPeTZbuyO3zAy22O/dQgadXr1Ydg9Xtdc5lDGt/qiGvEgcX1E5Y
+         INO1XLOWrskDaCyV3lncejoOlb3SBEgimITk6NUTZ4Jn7YmCht3k9bdBPNGjSDg4u3Nm
+         kdOLKw1I3KY+T9UsWEadK0n8E82qbluq8IWz/bs9V5dCGrDiWPr8byRFO/QgAznK29FP
+         RWV59BiO50rLO9SEJYFSGjDypmcRSixeX8729ZI8vJ4StELudID5m/MTCLBmjTpys01b
+         kK3A==
+X-Gm-Message-State: APjAAAXSSzxTUg9aiHDpvGu6tPIMlR/uUyGblFFVq/RiC67Eq0gStkZz
+        DpL6kyy/Ed/98G6uxgG6aGpvG+JOC7L/X5s/uYs=
+X-Google-Smtp-Source: APXvYqwpEt+M3lTny3H4KeeWmAXm8F5FWDSQQCr2VkvfpK+L+/tEWCct/7FaPolUgo95oM6Jr1OrfNQBaeewW+GrK48=
+X-Received: by 2002:a05:6830:20cd:: with SMTP id z13mr57759947otq.168.1555539071987;
+ Wed, 17 Apr 2019 15:11:11 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190402104153.25404-1-patrick.bellasi@arm.com> <20190402104153.25404-4-patrick.bellasi@arm.com>
-In-Reply-To: <20190402104153.25404-4-patrick.bellasi@arm.com>
-From:   Suren Baghdasaryan <surenb@google.com>
-Date:   Wed, 17 Apr 2019 13:36:10 -0700
+References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
+ <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com> <CAJZ5v0jh0Yn1fy5bO3wett5AsjBA55_Z-8L_M8eRyy5cePqwaw@mail.gmail.com>
+ <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
+In-Reply-To: <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 18 Apr 2019 00:10:59 +0200
 Message-ID:
- <CAJuCfpHN4kMBScdEdJodtmbHQ2qhVDnXrJKFDdaSYyjWH0JH5Q@mail.gmail.com>
-Subject: Re: [PATCH v8 03/16] sched/core: uclamp: Enforce last task's UCLAMP_MAX
-To:     Patrick Bellasi <patrick.bellasi@arm.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org,
-        linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Tejun Heo <tj@kernel.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
+ <CAJZ5v0hJpYROLJup0mvCp2G8ekeDyBrp+hdhHdsd+vhBq5RxVQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
+To:     "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>,
+        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devel@acpica.org" <devel@acpica.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Turner <pjt@google.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Todd Kjos <tkjos@google.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Steve Muckle <smuckle@google.com>,
-        Suren Baghdasaryan <surenb@google.com>
+        Robert Moore <robert.moore@intel.com>,
+        Erik Schmauss <erik.schmauss@intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417203610.yyE0JDxoORyHcZXQPNf2G2PQt-ZqmQnltxzZ7zXbptM@z>
+Message-ID: <20190417221059.bRK1p9nfUPzrlSMIZxtiN5rwZuuQr7hibGE3qm6rhZk@z>
 
- Hi Patrick,
+On Wed, Apr 17, 2019 at 7:28 PM Ghannam, Yazen <Yazen.Ghannam@amd.com> wrote:
+>
+> > -----Original Message-----
+> > From: Rafael J. Wysocki <rafael@kernel.org>
+> > Sent: Tuesday, April 16, 2019 4:34 AM
+> > To: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>
+> > Cc: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
+> > pm@vger.kernel.org; devel@acpica.org; Rafael J . Wysocki <rjw@rjwysocki.net>; Len Brown <lenb@kernel.org>; Viresh Kumar
+> > <viresh.kumar@linaro.org>; Robert Moore <robert.moore@intel.com>; Erik Schmauss <erik.schmauss@intel.com>; Ghannam, Yazen
+> > <Yazen.Ghannam@amd.com>
+> > Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
+> >
+> > On Tue, Apr 16, 2019 at 12:35 AM Janakarajan Natarajan <jnataraj@amd.com> wrote:
+> > >
+> > > On 4/4/19 4:25 PM, Natarajan, Janakarajan wrote:
+> > > > CPPC (Collaborative Processor Performance Control) offers optional
+> > > > registers which can be used to tune the system based on energy and/or
+> > > > performance requirements.
+> > > >
+> > > > Newer AMD processors add support for a subset of these optional CPPC
+> > > > registers, based on ACPI v6.1.
+> > > >
+> > > > The following are the supported CPPC registers for which sysfs entries
+> > > > are created:
+> > > > * enable                (NEW)
+> > > > * max_perf              (NEW)
+> > > > * min_perf              (NEW)
+> > > > * energy_perf
+> > > > * lowest_perf
+> > > > * nominal_perf
+> > > > * desired_perf          (NEW)
+> > > > * feedback_ctrs
+> > > > * auto_sel_enable       (NEW)
+> > > > * lowest_nonlinear_perf
+> > > >
+> > > > The CPPC driver is updated to enable the OSPM and the userspace to
+> > > > access
+> > > > the newly supported registers.
+> > > >
+> > > > The purpose of exposing the registers via the sysfs entries is to allow
+> > > > the userspace to:
+> > > > * Tweak the values to fit its workload.
+> > > > * Apply a profile from AMD's optimization guides.
+> > > >
+> > > > Profiles will be documented in the performance/optimization guides.
+> > > >
+> > > > Note:
+> > > > * AMD systems will not have a policy applied in the kernel at this time.
+> > > > * By default, acpi_cpufreq will still be used.
+> > > >
+> > > > TODO:
+> > > > * Create a linux userspace tool that will help users generate a CPPC
+> > > > * profile
+> > > >    for their target workload.
+> > > > * Create or update a driver to apply a general CPPC policy in the
+> > > > * kernel.
+> > > >
+> > > > v1->v2:
+> > > > * Add macro to ensure BUFFER only registers have BUFFER type.
+> > > > * Add support macro to make the right check based on register type.
+> > > > * Remove support checks for registers which are mandatory.
+> > >
+> > >
+> > > Are there any concerns regarding this patchset?
+> >
+> > Yes, there are.
+> >
+> > Unfortunately, it is generally problematic.
+> >
+> > First off, the behavior of existing sysfs files cannot be changed at
+> > will, as there may be users of them out there already depending on the
+> > current behavior.
+> >
+>
+> The intent is to add new sysfs files without changing the existing files. Is that okay?
+>
+> Or is the addition of new files also not acceptable?
+>
+> > Second, at least some CPPC control registers are used by cpufreq
+> > drivers (cppc_cpufreq and intel_pstate), so modifying them behind the
+> > drivers' backs is not a good idea in general.  For this reason, adding
+> > new sysfs attributes to allow user space to do that is quite
+> > questionable.
+> >
+>
+> Yes, good point.
+>
+> What if a check is added so that writes only succeed if the CPUFREQ governor is set to userspace?
 
-On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
->
-> When a task sleeps it removes its max utilization clamp from its CPU.
-> However, the blocked utilization on that CPU can be higher than the max
-> clamp value enforced while the task was running. This allows undesired
-> CPU frequency increases while a CPU is idle, for example, when another
-> CPU on the same frequency domain triggers a frequency update, since
-> schedutil can now see the full not clamped blocked utilization of the
-> idle CPU.
->
-> Fix this by using
->   uclamp_rq_dec_id(p, rq, UCLAMP_MAX)
->     uclamp_rq_max_value(rq, UCLAMP_MAX, clamp_value)
-> to detect when a CPU has no more RUNNABLE clamped tasks and to flag this
-> condition.
->
+That wouldn't be particularly straightforward IMO.
 
-If I understand the intent correctly, you are trying to exclude idle
-CPUs from affecting calculations of rq UCLAMP_MAX value. If that is
-true I think description can be simplified a bit :) In particular it
-took me some time to understand what "blocked utilization" means,
-however if it's a widely accepted term then feel free to ignore my
-input.
-
-> Don't track any minimum utilization clamps since an idle CPU never
-> requires a minimum frequency. The decay of the blocked utilization is
-> good enough to reduce the CPU frequency.
->
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
->
-> --
-> Changes in v8:
->  Message-ID: <20190314170619.rt6yhelj3y6dzypu@e110439-lin>
->  - moved flag reset into uclamp_rq_inc()
-> ---
->  kernel/sched/core.c  | 45 ++++++++++++++++++++++++++++++++++++++++----
->  kernel/sched/sched.h |  2 ++
->  2 files changed, 43 insertions(+), 4 deletions(-)
->
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 6e1beae5f348..046f61d33f00 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -754,8 +754,35 @@ static inline unsigned int uclamp_none(int clamp_id)
->         return SCHED_CAPACITY_SCALE;
->  }
->
-> +static inline unsigned int
-> +uclamp_idle_value(struct rq *rq, unsigned int clamp_id, unsigned int clamp_value)
-> +{
-> +       /*
-> +        * Avoid blocked utilization pushing up the frequency when we go
-> +        * idle (which drops the max-clamp) by retaining the last known
-> +        * max-clamp.
-> +        */
-> +       if (clamp_id == UCLAMP_MAX) {
-> +               rq->uclamp_flags |= UCLAMP_FLAG_IDLE;
-> +               return clamp_value;
-> +       }
-> +
-> +       return uclamp_none(UCLAMP_MIN);
-> +}
-> +
-> +static inline void uclamp_idle_reset(struct rq *rq, unsigned int clamp_id,
-> +                                    unsigned int clamp_value)
-> +{
-> +       /* Reset max-clamp retention only on idle exit */
-> +       if (!(rq->uclamp_flags & UCLAMP_FLAG_IDLE))
-> +               return;
-> +
-> +       WRITE_ONCE(rq->uclamp[clamp_id].value, clamp_value);
-> +}
-> +
->  static inline
-> -unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
-> +unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
-> +                                unsigned int clamp_value)
-
-IMHO the name of uclamp_rq_max_value() is a bit misleading because:
-1. It does not imply that it has to be called only when there are no
-more runnable tasks on a CPU. This is currently the case because it's
-called only from uclamp_rq_dec_id() and only when bucket->tasks==0 but
-nothing in the name of this function indicates that it can't be called
-from other places.
-2. It does not imply that it marks rq UCLAMP_FLAG_IDLE.
-
->  {
->         struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
->         int bucket_id = UCLAMP_BUCKETS - 1;
-> @@ -771,7 +798,7 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
->         }
->
->         /* No tasks -- default clamp values */
-> -       return uclamp_none(clamp_id);
-> +       return uclamp_idle_value(rq, clamp_id, clamp_value);
->  }
->
->  /*
-> @@ -794,6 +821,8 @@ static inline void uclamp_rq_inc_id(struct task_struct *p, struct rq *rq,
->         bucket = &uc_rq->bucket[uc_se->bucket_id];
->         bucket->tasks++;
->
-> +       uclamp_idle_reset(rq, clamp_id, uc_se->value);
-> +
->         /*
->          * Local max aggregation: rq buckets always track the max
->          * "requested" clamp value of its RUNNABLE tasks.
-> @@ -820,6 +849,7 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
->         struct uclamp_rq *uc_rq = &rq->uclamp[clamp_id];
->         struct uclamp_se *uc_se = &p->uclamp[clamp_id];
->         struct uclamp_bucket *bucket;
-> +       unsigned int bkt_clamp;
->         unsigned int rq_clamp;
->
->         bucket = &uc_rq->bucket[uc_se->bucket_id];
-> @@ -848,7 +878,8 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
->                  * there are anymore RUNNABLE tasks refcounting it.
->                  */
->                 bucket->value = uclamp_bucket_base_value(bucket->value);
-> -               WRITE_ONCE(uc_rq->value, uclamp_rq_max_value(rq, clamp_id));
-> +               bkt_clamp = uclamp_rq_max_value(rq, clamp_id, uc_se->value);
-> +               WRITE_ONCE(uc_rq->value, bkt_clamp);
->         }
->  }
->
-> @@ -861,6 +892,10 @@ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
->
->         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
->                 uclamp_rq_inc_id(p, rq, clamp_id);
-> +
-> +       /* Reset clamp idle holding when there is one RUNNABLE task */
-> +       if (rq->uclamp_flags & UCLAMP_FLAG_IDLE)
-> +               rq->uclamp_flags &= ~UCLAMP_FLAG_IDLE;
->  }
->
->  static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
-> @@ -879,8 +914,10 @@ static void __init init_uclamp(void)
->         unsigned int clamp_id;
->         int cpu;
->
-> -       for_each_possible_cpu(cpu)
-> +       for_each_possible_cpu(cpu) {
->                 memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
-> +               cpu_rq(cpu)->uclamp_flags = 0;
-> +       }
->
->         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
->                 struct uclamp_se *uc_se = &init_task.uclamp[clamp_id];
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index c3d1ae1e7eec..d8b182f1782c 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -880,6 +880,8 @@ struct rq {
->  #ifdef CONFIG_UCLAMP_TASK
->         /* Utilization clamp values based on CPU's RUNNABLE tasks */
->         struct uclamp_rq        uclamp[UCLAMP_CNT] ____cacheline_aligned;
-> +       unsigned int            uclamp_flags;
-> +#define UCLAMP_FLAG_IDLE 0x01
->  #endif
->
->         struct cfs_rq           cfs;
-> --
-> 2.20.1
->
+What about handling this like the others do, through a proper cpufreq driver?
