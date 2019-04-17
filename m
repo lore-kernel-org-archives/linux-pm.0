@@ -2,165 +2,105 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38FDBC282DA
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27865C282DA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:39:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0701120693
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:11:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555539074;
-	bh=q1XR7/+I/uhh7vydXyIxyZjUhp3iukwS4YtTMXBwIl0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=dKzcmQSgN/OA4zDxdTN4CYVJ9BvS4QvDIwqW5uXY783qA0tGhyyI8Xkwm4TBcMant
-	 LGvFcztP5YZw2PahZKn6DlthmlZqG/rg/NLkptqdpD6XMVSgh76tO3s0ewQKx9O29Y
-	 +V3DMcOT7tbK6DUo+BsOEfxHoVC4VzG+EE+aUdzA=
+	by mail.kernel.org (Postfix) with ESMTP id EA6582186A
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:39:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nMWkuCWP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729785AbfDQWLN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 18:11:13 -0400
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:43015 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728237AbfDQWLN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:11:13 -0400
-Received: by mail-ot1-f66.google.com with SMTP id u15so2076otq.10;
-        Wed, 17 Apr 2019 15:11:12 -0700 (PDT)
+        id S1730361AbfDQWjx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 18:39:53 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:32844 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725848AbfDQWjw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:39:52 -0400
+Received: by mail-pg1-f194.google.com with SMTP id k19so220234pgh.0;
+        Wed, 17 Apr 2019 15:39:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=hT2F8IjKIQoszn6Buk6j3BScSUALq9H2lCvIgZ7MA44=;
+        b=nMWkuCWPEy6xYKGNLnQQZ2wVDGHklhg6yR+3Z9AOiIxqZwzSE/SJ7ugOYVcpODMCo1
+         CoffGqPHSX6M40W37VklMFwsmrDvnSr11u8i3JJncfIAq02G3hkrW1MIDNCBEeymzdSO
+         rc8cpqLIDDN6wqu01N0JGG6p6VpVx5TFVmxPolw+51jTVMzXGXtVfLddGjGUHOoJogRI
+         1dvNd+Izp9Q8tgNYAZwIlXrzj5K7qo3TRKNr8HoSR1S2H074rWzOEZ391KkeoFEp2BHe
+         94oeOAHb+tt0/wsPNej06r99G7qw7yoMn3OMrlm8uxCdoy1eCExoicq4Pz67oDDnfnCB
+         ZOzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=i/SMcLR60pTb8GHWCFJb8vDfzN0yXO1auw51WJ143aM=;
-        b=MzLs64D21/i6dz4Wcp9rEEjaDTWXhDGx3GD3okENLrwdQzsmjRNz1BXr2K2j/mx1IE
-         OqjZF/xjclhhALOp5XPeTZbuyO3zAy22O/dQgadXr1Ydg9Xtdc5lDGt/qiGvEgcX1E5Y
-         INO1XLOWrskDaCyV3lncejoOlb3SBEgimITk6NUTZ4Jn7YmCht3k9bdBPNGjSDg4u3Nm
-         kdOLKw1I3KY+T9UsWEadK0n8E82qbluq8IWz/bs9V5dCGrDiWPr8byRFO/QgAznK29FP
-         RWV59BiO50rLO9SEJYFSGjDypmcRSixeX8729ZI8vJ4StELudID5m/MTCLBmjTpys01b
-         kK3A==
-X-Gm-Message-State: APjAAAXSSzxTUg9aiHDpvGu6tPIMlR/uUyGblFFVq/RiC67Eq0gStkZz
-        DpL6kyy/Ed/98G6uxgG6aGpvG+JOC7L/X5s/uYs=
-X-Google-Smtp-Source: APXvYqwpEt+M3lTny3H4KeeWmAXm8F5FWDSQQCr2VkvfpK+L+/tEWCct/7FaPolUgo95oM6Jr1OrfNQBaeewW+GrK48=
-X-Received: by 2002:a05:6830:20cd:: with SMTP id z13mr57759947otq.168.1555539071987;
- Wed, 17 Apr 2019 15:11:11 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=hT2F8IjKIQoszn6Buk6j3BScSUALq9H2lCvIgZ7MA44=;
+        b=XkkX/oKQXibHCCYecAgZD8gybHaDM8Rbj3Asb3V0gt/1lp2M49E4bGzFUXeULNV0Hz
+         +4K40iLH9kzpEqhSjsZCm+lRj/yylps3tlfseq0jUdi4dm763wBbBpSqp0LBM9s5HA4o
+         BRGVyFss6AYE7FIx31mKs9F78ydCMVDSg9osOx2tMmhnQTXhrHWlIusMErzLpPs5U/eg
+         5h/1Yf21H5hJ6rM37mcRe9AcrFSC8sV9c9nTLbzSF4lUMrADQbc4GjOOS/oH/qjN7IvI
+         NttZQ78v92pAjy9qzXlzsh0gIYP/HODLK2q4tDTnjq+ZB6Fgx4700PisS+AFi5Rx4cPX
+         GSYA==
+X-Gm-Message-State: APjAAAUIZp7I3G5wG6VcesEBhKg4/ddINkT+JbdsJsAKubnhi0NQeXXh
+        2ou3/K160qHABFcXUaZjtfQ=
+X-Google-Smtp-Source: APXvYqw/qkTcwNganclPa7L+waXlLyeek6AotB65mpl+0/MFZQZpqItmhFqEAnYG8x6gJc8zWzDb5A==
+X-Received: by 2002:a65:6655:: with SMTP id z21mr49205781pgv.33.1555540470935;
+        Wed, 17 Apr 2019 15:34:30 -0700 (PDT)
+Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
+        by smtp.gmail.com with ESMTPSA id l26sm281030pfb.20.2019.04.17.15.34.24
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 17 Apr 2019 15:34:30 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v3 05/16] PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
+Date:   Thu, 18 Apr 2019 01:29:14 +0300
+Message-Id: <20190417222925.5815-6-digetx@gmail.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190417222925.5815-1-digetx@gmail.com>
+References: <20190417222925.5815-1-digetx@gmail.com>
 MIME-Version: 1.0
-References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
- <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com> <CAJZ5v0jh0Yn1fy5bO3wett5AsjBA55_Z-8L_M8eRyy5cePqwaw@mail.gmail.com>
- <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
-In-Reply-To: <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 18 Apr 2019 00:10:59 +0200
-Message-ID:
- <CAJZ5v0hJpYROLJup0mvCp2G8ekeDyBrp+hdhHdsd+vhBq5RxVQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-To:     "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>,
-        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devel@acpica.org" <devel@acpica.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Erik Schmauss <erik.schmauss@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417221059.bRK1p9nfUPzrlSMIZxtiN5rwZuuQr7hibGE3qm6rhZk@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190417222914.Vn8Xz70sBqGrj85-4TRS68w1H1SpeDb3PrLaVcytw-8@z>
 
-On Wed, Apr 17, 2019 at 7:28 PM Ghannam, Yazen <Yazen.Ghannam@amd.com> wrote:
->
-> > -----Original Message-----
-> > From: Rafael J. Wysocki <rafael@kernel.org>
-> > Sent: Tuesday, April 16, 2019 4:34 AM
-> > To: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>
-> > Cc: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
-> > pm@vger.kernel.org; devel@acpica.org; Rafael J . Wysocki <rjw@rjwysocki.net>; Len Brown <lenb@kernel.org>; Viresh Kumar
-> > <viresh.kumar@linaro.org>; Robert Moore <robert.moore@intel.com>; Erik Schmauss <erik.schmauss@intel.com>; Ghannam, Yazen
-> > <Yazen.Ghannam@amd.com>
-> > Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-> >
-> > On Tue, Apr 16, 2019 at 12:35 AM Janakarajan Natarajan <jnataraj@amd.com> wrote:
-> > >
-> > > On 4/4/19 4:25 PM, Natarajan, Janakarajan wrote:
-> > > > CPPC (Collaborative Processor Performance Control) offers optional
-> > > > registers which can be used to tune the system based on energy and/or
-> > > > performance requirements.
-> > > >
-> > > > Newer AMD processors add support for a subset of these optional CPPC
-> > > > registers, based on ACPI v6.1.
-> > > >
-> > > > The following are the supported CPPC registers for which sysfs entries
-> > > > are created:
-> > > > * enable                (NEW)
-> > > > * max_perf              (NEW)
-> > > > * min_perf              (NEW)
-> > > > * energy_perf
-> > > > * lowest_perf
-> > > > * nominal_perf
-> > > > * desired_perf          (NEW)
-> > > > * feedback_ctrs
-> > > > * auto_sel_enable       (NEW)
-> > > > * lowest_nonlinear_perf
-> > > >
-> > > > The CPPC driver is updated to enable the OSPM and the userspace to
-> > > > access
-> > > > the newly supported registers.
-> > > >
-> > > > The purpose of exposing the registers via the sysfs entries is to allow
-> > > > the userspace to:
-> > > > * Tweak the values to fit its workload.
-> > > > * Apply a profile from AMD's optimization guides.
-> > > >
-> > > > Profiles will be documented in the performance/optimization guides.
-> > > >
-> > > > Note:
-> > > > * AMD systems will not have a policy applied in the kernel at this time.
-> > > > * By default, acpi_cpufreq will still be used.
-> > > >
-> > > > TODO:
-> > > > * Create a linux userspace tool that will help users generate a CPPC
-> > > > * profile
-> > > >    for their target workload.
-> > > > * Create or update a driver to apply a general CPPC policy in the
-> > > > * kernel.
-> > > >
-> > > > v1->v2:
-> > > > * Add macro to ensure BUFFER only registers have BUFFER type.
-> > > > * Add support macro to make the right check based on register type.
-> > > > * Remove support checks for registers which are mandatory.
-> > >
-> > >
-> > > Are there any concerns regarding this patchset?
-> >
-> > Yes, there are.
-> >
-> > Unfortunately, it is generally problematic.
-> >
-> > First off, the behavior of existing sysfs files cannot be changed at
-> > will, as there may be users of them out there already depending on the
-> > current behavior.
-> >
->
-> The intent is to add new sysfs files without changing the existing files. Is that okay?
->
-> Or is the addition of new files also not acceptable?
->
-> > Second, at least some CPPC control registers are used by cpufreq
-> > drivers (cppc_cpufreq and intel_pstate), so modifying them behind the
-> > drivers' backs is not a good idea in general.  For this reason, adding
-> > new sysfs attributes to allow user space to do that is quite
-> > questionable.
-> >
->
-> Yes, good point.
->
-> What if a check is added so that writes only succeed if the CPUFREQ governor is set to userspace?
+There is no real benefit from doing so, hence let's drop that rate setting
+for consistency.
 
-That wouldn't be particularly straightforward IMO.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra-devfreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-What about handling this like the others do, through a proper cpufreq driver?
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index c7428c5eee23..24ec65556c39 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -653,8 +653,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tegra->emc_clock);
+ 	}
+ 
+-	clk_set_rate(tegra->emc_clock, ULONG_MAX);
+-
+ 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+ 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+ 	if (err) {
+-- 
+2.21.0
+
