@@ -1,44 +1,57 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH 0/3] Driver for UCS1002
-Date: Wed, 17 Apr 2019 01:44:54 -0700
-Message-ID: <20190417084457.28747-1-andrew.smirnov@gmail.com>
+Subject: [PATCH 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+Date: Wed, 17 Apr 2019 01:44:55 -0700
+Message-ID: <20190417084457.28747-2-andrew.smirnov@gmail.com>
+References: <20190417084457.28747-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190417084457.28747-1-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Health <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Everyone:
+Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
+singalling overcurrent condition via power supply health information.
 
-This small series adds a driver for UCS1002 Programmable USB Port
-Power Controller with Charger Emulation. See [page] for product page
-and [datasheet] for device dataseet. Hopefully each individual patch
-is self explanatory.
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Health <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/power/supply/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h              | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Feedback is welcome!
-
-Thanks,
-Andrey Smirnov
-
-[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
-[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
-
-Andrey Smirnov (3):
-  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-  power: supply: Add driver for Microchip UCS1002
-  dt-bindings: power: supply: Add bindings for Microchip UCS1002
-
- .../power/supply/microchip,ucs1002.txt        |  26 +
- drivers/power/supply/Kconfig                  |   9 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/power_supply_sysfs.c     |   2 +-
- drivers/power/supply/ucs1002_power.c          | 639 ++++++++++++++++++
- include/linux/power_supply.h                  |   1 +
- 6 files changed, 677 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
- create mode 100644 drivers/power/supply/ucs1002_power.c
-
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5e91946731fd..464f4e837601 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
+ static const char * const power_supply_health_text[] = {
+ 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+ 	"Unspecified failure", "Cold", "Watchdog timer expire",
+-	"Safety timer expire"
++	"Safety timer expire", "Over current"
+ };
+ 
+ static const char * const power_supply_technology_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..bdab14c7ca4d 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -57,6 +57,7 @@ enum {
+ 	POWER_SUPPLY_HEALTH_COLD,
+ 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
++	POWER_SUPPLY_HEALTH_OVERCURRENT,
+ };
+ 
+ enum {
 -- 
 2.20.1
