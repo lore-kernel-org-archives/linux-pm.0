@@ -1,279 +1,93 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v2 19/19] PM / devfreq: Introduce driver for NVIDIA
- Tegra20
-Date: Wed, 17 Apr 2019 12:36:35 +0300
-Message-ID: <8a1fdb48-32cd-98a2-65f2-02330b554701@gmail.com>
-References: <20190415145505.18397-1-digetx@gmail.com>
- <CGME20190415145604epcas3p4cc17d51a92889d6d9e33f7d94bd1ec2e@epcas3p4.samsung.com>
- <20190415145505.18397-20-digetx@gmail.com>
- <e97eb3f7-fdd2-5de1-d3ff-bb5246143002@samsung.com>
- <197f47e5-3698-185f-ab1d-3e46d001ddba@gmail.com>
- <64324c9c-b5db-86ac-f97e-6c76049dcdc8@samsung.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v2 0/3] Make IPA use PM_EM
+Date: Wed, 17 Apr 2019 10:42:58 +0100
+Message-ID: <20190417094301.17622-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <64324c9c-b5db-86ac-f97e-6c76049dcdc8@samsung.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
+Cc: daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, quentin.perret@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-17.04.2019 3:26, Chanwoo Choi пишет:
-> Hi,
-> 
-> On 19. 4. 17. 오전 1:11, Dmitry Osipenko wrote:
->> 16.04.2019 11:31, Chanwoo Choi пишет:
->>> Hi,
->>>
->>> On 19. 4. 15. 오후 11:55, Dmitry Osipenko wrote:
->>>> Add devfreq driver for NVIDIA Tegra20 SoC's. The driver periodically
->>>> reads out Memory Controller counters and adjusts memory frequency based
->>>> on the memory clients activity.
->>>>
->>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->>>> ---
->>>>  MAINTAINERS                       |   8 ++
->>>>  drivers/devfreq/Kconfig           |  10 ++
->>>>  drivers/devfreq/Makefile          |   1 +
->>>>  drivers/devfreq/tegra20-devfreq.c | 177 ++++++++++++++++++++++++++++++
->>>>  4 files changed, 196 insertions(+)
->>>>  create mode 100644 drivers/devfreq/tegra20-devfreq.c
->>>>
->>>> diff --git a/MAINTAINERS b/MAINTAINERS
->>>> index 80b59db1b6e4..91f475ec4545 100644
->>>> --- a/MAINTAINERS
->>>> +++ b/MAINTAINERS
->>>> @@ -10056,6 +10056,14 @@ F:	include/linux/memblock.h
->>>>  F:	mm/memblock.c
->>>>  F:	Documentation/core-api/boot-time-mm.rst
->>>>  
->>>> +MEMORY FREQUENCY SCALING DRIVER FOR NVIDIA TEGRA20
->>>> +M:	Dmitry Osipenko <digetx@gmail.com>
->>>> +L:	linux-pm@vger.kernel.org
->>>> +L:	linux-tegra@vger.kernel.org
->>>> +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
->>>> +S:	Maintained
->>>> +F:	drivers/devfreq/tegra20-devfreq.c
->>>> +
->>>>  MEMORY MANAGEMENT
->>>>  L:	linux-mm@kvack.org
->>>>  W:	http://www.linux-mm.org
->>>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
->>>> index bd6652863e7d..af4c86c4e0f6 100644
->>>> --- a/drivers/devfreq/Kconfig
->>>> +++ b/drivers/devfreq/Kconfig
->>>> @@ -100,6 +100,16 @@ config ARM_TEGRA_DEVFREQ
->>>>  	  It reads ACTMON counters of memory controllers and adjusts the
->>>>  	  operating frequencies and voltages with OPP support.
->>>>  
->>>> +config ARM_TEGRA20_DEVFREQ
->>>> +	tristate "NVIDIA Tegra20 DEVFREQ Driver"
->>>> +	depends on (TEGRA_MC && TEGRA20_EMC) || COMPILE_TEST
->>>> +	select DEVFREQ_GOV_SIMPLE_ONDEMAND
->>>> +	select PM_OPP
->>>> +	help
->>>> +	  This adds the DEVFREQ driver for the Tegra20 family of SoCs.
->>>> +	  It reads Memory Controller counters and adjusts the operating
->>>> +	  frequencies and voltages with OPP support.
->>>> +
->>>>  config ARM_RK3399_DMC_DEVFREQ
->>>>  	tristate "ARM RK3399 DMC DEVFREQ Driver"
->>>>  	depends on ARCH_ROCKCHIP
->>>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
->>>> index 32b8d4d3f12c..6fcc5596b8b7 100644
->>>> --- a/drivers/devfreq/Makefile
->>>> +++ b/drivers/devfreq/Makefile
->>>> @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
->>>>  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
->>>>  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
->>>>  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
->>>> +obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
->>>>  
->>>>  # DEVFREQ Event Drivers
->>>>  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
->>>> diff --git a/drivers/devfreq/tegra20-devfreq.c b/drivers/devfreq/tegra20-devfreq.c
->>>> new file mode 100644
->>>> index 000000000000..18c9aad7a9d7
->>>> --- /dev/null
->>>> +++ b/drivers/devfreq/tegra20-devfreq.c
->>>> @@ -0,0 +1,177 @@
->>>> +// SPDX-License-Identifier: GPL-2.0
->>>> +/*
->>>> + * NVIDIA Tegra20 devfreq driver
->>>> + *
->>>> + * Author: Dmitry Osipenko <digetx@gmail.com>
->>>> + */
->>>
->>> It doesn't any "Copyright (c) 2019 ..." sentence.
->>
->> I'll add one in v3.
->>
->>>> +
->>>> +#include <linux/clk.h>
->>>> +#include <linux/devfreq.h>
->>>> +#include <linux/io.h>
->>>> +#include <linux/kernel.h>
->>>> +#include <linux/module.h>
->>>> +#include <linux/of_device.h>
->>>> +#include <linux/platform_device.h>
->>>> +#include <linux/pm_opp.h>
->>>> +#include <linux/slab.h>
->>>> +
->>>> +#include <soc/tegra/mc.h>
->>>
->>> I can find the '<soc/tegra/mc.h>' header file
->>> on mainline branch. But mc.h is included in linux-next.git. 
->>>
->>> If you don't share the patch related to mc.h,
->>> the kernel build will be failed when apply it the devfreq.git
->>> on final step. Actually, it should make the immutable branch
->>> between two related maintainers in order to remove the build fail.
->>
->> The '<soc/tegra/mc.h>' header file exists since v3.18 [0], seems you just missed something.
->>
->> [0] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/include/soc/tegra/mc.h?h=v3.18&id=8918465163171322c77a19d5258a95f56d89d2e4
-> 
-> Sorry. It is my missing point. When I tried to find it,
-> it is included in the mainline kernel.
-> 
->>
->>>> +
->>>> +#include "governor.h"
->>>> +
->>>> +#define MC_STAT_CONTROL				0x90
->>>> +#define MC_STAT_EMC_CLOCK_LIMIT			0xa0
->>>> +#define MC_STAT_EMC_CLOCKS			0xa4
->>>> +#define MC_STAT_EMC_CONTROL			0xa8
->>>> +#define MC_STAT_EMC_COUNT			0xb8
->>>> +
->>>> +#define EMC_GATHER_CLEAR			(1 << 8)
->>>> +#define EMC_GATHER_ENABLE			(3 << 8)
->>>> +
->>>> +struct tegra_devfreq {
->>>> +	struct devfreq *devfreq;
->>>> +	struct clk *clk;
->>>> +	void __iomem *regs;
->>>> +};
->>>> +
->>>> +static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
->>>> +				u32 flags)
->>>> +{
->>>> +	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
->>>> +	struct dev_pm_opp *opp;
->>>> +	unsigned long rate;
->>>> +	int err;
->>>> +
->>>> +	opp = devfreq_recommended_opp(dev, freq, flags);
->>>> +	if (IS_ERR(opp))
->>>> +		return PTR_ERR(opp);
->>>> +
->>>> +	rate = dev_pm_opp_get_freq(opp);
->>>> +	dev_pm_opp_put(opp);
->>>> +
->>>> +	err = clk_set_min_rate(tegra->clk, rate);
->>>> +	if (err)
->>>> +		return err;
->>>> +
->>>> +	err = clk_set_rate(tegra->clk, 0);
->>>> +	if (err)
->>>
->>> When fail happen, I think that you have to control
->>> the restoring sequence for previous operation like clk_set_min_rate().
->>
->> Okay, thanks.
->>
->>>> +		return err;
->>>> +
->>>> +	return 0;
->>>> +}
->>>> +
->>>> +static int tegra_devfreq_get_dev_status(struct device *dev,
->>>> +					struct devfreq_dev_status *stat)
->>>> +{
->>>> +	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
->>>> +
->>>> +	stat->busy_time = readl_relaxed(tegra->regs + MC_STAT_EMC_COUNT);
->>>> +	stat->total_time = readl_relaxed(tegra->regs + MC_STAT_EMC_CLOCKS) / 8;
->>>> +	stat->current_frequency = clk_get_rate(tegra->clk);
->>>> +
->>>> +	writel_relaxed(EMC_GATHER_CLEAR, tegra->regs + MC_STAT_CONTROL);
->>>> +	writel_relaxed(EMC_GATHER_ENABLE, tegra->regs + MC_STAT_CONTROL);
->>>> +
->>>> +	return 0;
->>>> +}
->>>> +
->>>> +static struct devfreq_dev_profile tegra_devfreq_profile = {
->>>> +	.polling_ms	= 500,
->>>> +	.target		= tegra_devfreq_target,
->>>> +	.get_dev_status	= tegra_devfreq_get_dev_status,
->>>> +};
->>>> +
->>>> +static struct tegra_mc *tegra_get_memory_controller(void)
->>>> +{
->>>> +	struct platform_device *pdev;
->>>> +	struct device_node *np;
->>>> +	struct tegra_mc *mc;
->>>> +
->>>> +	np = of_find_compatible_node(NULL, NULL, "nvidia,tegra20-mc-gart");
->>>> +	if (!np)
->>>> +		return ERR_PTR(-ENOENT);
->>>> +
->>>> +	pdev = of_find_device_by_node(np);
->>>> +	of_node_put(np);
->>>> +	if (!pdev)
->>>> +		return ERR_PTR(-ENODEV);
->>>> +
->>>> +	mc = platform_get_drvdata(pdev);
->>>> +	if (!mc)
->>>> +		return ERR_PTR(-EPROBE_DEFER);
->>>> +
->>>> +	return mc;
->>>> +}
->>>> +
->>>> +static int tegra_devfeq_probe(struct platform_device *pdev)
->>>> +{
->>>> +	struct tegra_devfreq *tegra;
->>>> +	struct tegra_mc *mc;
->>>> +	unsigned long max_rate;
->>>> +	unsigned long rate;
->>>> +	int err;
->>>> +
->>>> +	mc = tegra_get_memory_controller();
->>>> +	if (IS_ERR(mc)) {
->>>> +		err = PTR_ERR(mc);
->>>> +		dev_err(&pdev->dev, "failed to get mc: %d\n", err);
->>>
->>> How about using 'memory controller' instead of 'mc'?
->>> Because 'mc' is not standard expression.
->>
->> Sounds good, thanks.
->>
->>>> +		return err;
->>>> +	}
->>>> +
->>>> +	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
->>>> +	if (!tegra)
->>>> +		return -ENOMEM;
->>>> +
->>>> +	tegra->clk = devm_clk_get(&pdev->dev, "emc");
->>>> +	if (IS_ERR(tegra->clk)) {
->>>> +		err = PTR_ERR(tegra->clk);
->>>> +		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
->>>> +		return err;
->>>> +	}
->>>
->>> Don't you need to enable the 'emc' clock'?
->>> Because this patch doesn't enable this clock.
->>
->> EMC is a system critical clock (marked as critical by the clock driver), it is guaranteed to be always enabled. I think it is fine to omit clock-enabling in this case.
-> 
-> If you think don't need to enable it due to the critical clock,
-> instead, please add the comment about that emc clock is critical.
-> In my case, it looks like the strange use-case because this driver
-> doesn't contain the any enable code for clock.
+Changes in v2:
+**************
+ - Fixed patch 01/03 to actually enable CONFIG_ENERGY_MODEL
+ - Added "depends on ENERGY_MODEL" to IPA (Daniel)
+ - Added check to bail out if the freq table is unsorted (Viresh)
 
-Okay, thank you for the review again.
+Cover letter:
+*************
 
-[snip]
+The Intelligent Power Allocator (IPA) thermal governor uses an Energy
+Model (or EM) of the CPUs to re-distribute the power budget. To do so,
+it builds a table of <frequency, power> tuples where the power values
+are computed using the 'dynamic-power-coefficient' DT property. All of
+this is done in and only for the thermal subsystem, and more
+specifically for CPUs -- the power of other types of devices is obtained
+differently.
+
+Recently, the CPU scheduler has seen the introduction of Energy Aware
+Scheduling (EAS) patches, which also rely on an EM of the CPUs. This EM,
+however, is managed by an independent framework, called PM_EM, aimed to
+be used by all kernel subsystems interested in the power consumed by
+CPUs, and not only the scheduler.
+
+This patch series follows this logic and removes the (now redundant)
+thermal-specific EM computation code to migrate IPA to use PM_EM
+instead.
+
+Doing so should have no visible functional impact for existing users of
+IPA since:
+
+ - during the 5.1 development cycle, a series of patches [1] introduced
+   in PM_OPP some infrastructure (dev_pm_opp_of_register_em()) enabling
+   the registration of EMs in PM_EM using the DT property used by IPA;
+
+ - the existing upstream cpufreq drivers marked with the
+   'CPUFREQ_IS_COOLING_DEV' flag all call dev_pm_opp_of_register_em(),
+   which means they all support PM_EM (the only two exceptions are
+   qoriq-cpufreq which doesn't in fact use an EM and scmi-cpufreq which
+   already supports PM_EM without using the PM_OPP infrastructurei
+   because it read power costs directly from firmware);
+
+So, migrating IPA to using PM_EM should effectively be just plumbing
+since for the existing IPA users the PM_EM tables will contain the
+exact same power values that IPA used to compute on its own until now.
+The only new dependency is to compile in CONFIG_ENERGY_MODEL.
+
+Why is this migration still a good thing ? For three main reasons.
+
+ 1. it removes redundant code;
+
+ 2. it introduces an abstraction layer between IPA and the EM
+    computation. PM_EM offers to EAS and IPA (and potentially other
+    clients) standardized EM tables and hides 'how' these tables have
+    been obtained. PM_EM as of now supports power values either coming
+    from the 'dynamic-power-coefficient' DT property or obtained
+    directly from firmware using SCMI. The latter is a new feature for
+    IPA and that comes 'for free' with the migration. This will also be
+    true in the future every time PM_EM gets support for other ways of
+    loading the EM. Moreover, PM_EM is documented and has a debugfs
+    interface which should help adding support for new platforms.
+
+ 3. it builds a consistent view of the EM of CPUs across kernel
+    subsystems, which is a pre-requisite for any kind of future work
+    aiming at a smarter power allocation using scheduler knowledge about
+    the system for example.
+
+[1] https://lore.kernel.org/lkml/20190204110952.16025-1-quentin.perret@arm.com/
+
+Quentin Perret (3):
+  arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+  PM / EM: Expose perf domain struct
+  thermal: cpu_cooling: Migrate to using the EM framework
+
+ arch/arm64/configs/defconfig  |   1 +
+ drivers/thermal/Kconfig       |   1 +
+ drivers/thermal/cpu_cooling.c | 237 ++++++++++++----------------------
+ include/linux/energy_model.h  |   3 +-
+ 4 files changed, 83 insertions(+), 159 deletions(-)
+
+-- 
+2.21.0
