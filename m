@@ -2,75 +2,159 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F25F7C282DA
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 02:42:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62D3AC10F14
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 03:01:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CC0492075B
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 02:42:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 24D1521773
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 03:01:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730363AbfDQCmZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 22:42:25 -0400
-Received: from mxhk.zte.com.cn ([63.217.80.70]:38342 "EHLO mxhk.zte.com.cn"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728032AbfDQCmY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Apr 2019 22:42:24 -0400
-Received: from mse01.zte.com.cn (unknown [10.30.3.20])
-        by Forcepoint Email with ESMTPS id B36916A5332A219D5B14;
-        Wed, 17 Apr 2019 10:42:22 +0800 (CST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
-        by mse01.zte.com.cn with ESMTP id x3H2gKsD060598;
-        Wed, 17 Apr 2019 10:42:20 +0800 (GMT-8)
-        (envelope-from wen.yang99@zte.com.cn)
-Received: from fox-host8.localdomain ([10.74.120.8])
-          by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
-          with ESMTP id 2019041710424026-8909749 ;
-          Wed, 17 Apr 2019 10:42:40 +0800 
-From:   Wen Yang <wen.yang99@zte.com.cn>
-To:     linux-kernel@vger.kernel.org
-Cc:     wang.yi59@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH 0/2] fix leaked of_node references in drivers/power
-Date:   Wed, 17 Apr 2019 10:43:01 +0800
-Message-Id: <1555468983-34952-1-git-send-email-wen.yang99@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release 8.5.3FP6|November
- 21, 2013) at 2019-04-17 10:42:40,
-        Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2019-04-17 10:42:12,
-        Serialize complete at 2019-04-17 10:42:12
-X-MAIL: mse01.zte.com.cn x3H2gKsD060598
+        id S1728268AbfDQDBZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 23:01:25 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:59878 "EHLO
+        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728032AbfDQDBZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 23:01:25 -0400
+Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
+        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
+        id 1hGap7-0004ih-VG from Jiada_Wang@mentor.com ; Tue, 16 Apr 2019 20:01:21 -0700
+Received: from [134.86.193.85] (147.34.91.1) by svr-orw-mbx-03.mgc.mentorg.com
+ (147.34.90.203) with Microsoft SMTP Server (TLS) id 15.0.1320.4; Tue, 16 Apr
+ 2019 20:01:18 -0700
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
+        <edubezval@gmail.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+From:   Jiada Wang <jiada_wang@mentor.com>
+Message-ID: <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+Date:   Wed, 17 Apr 2019 12:01:17 +0900
+User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: svr-orw-mbx-08.mgc.mentorg.com (147.34.90.208) To
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190417024301.mfk6J4Lkl_Re1pF23Nx_Xiy7EHJdZylmciVbXp9hj6Q@z>
+Message-ID: <20190417030117.TznaXpMe6GL50Gq3cAy6TrQ7aOnDrjDOopnJ7p63Iso@z>
 
-The call to of_get_cpu_node/of_find_compatible_node/of_parse_phandle...
-returns a node pointer with refcount incremented thus it must be
-explicitly decremented after the last usage.
+Hi Daniel
 
-We developed a coccinelle SmPL to detect drivers/power code and
-found some issues.
-This patch series fixes those issues.
+On 2019/04/17 4:22, Daniel Lezcano wrote:
+> On 11/04/2019 12:03, Jiada Wang wrote:
+>> Currently IRQ is remain enabled after .remove, later if device is probed,
+>> IRQ is requested before .thermal_init, this may cause IRQ function be
+>> triggered but not able to clear IRQ status, thus cause system to hang.
+>>
+>> this patch by moving request of IRQ after device initialization to
+>> avoid this issue.
+> 
+> Why not disable the interrupt and clear the irq status in the .remove
+> callback, so the place is clean when probing again?
+> 
+> 
+>          struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
+> 
+>          rcar_thermal_irq_set(priv, false);
+> 
+> should do the trick no ?
+> 
+yes, this issue also can be addressed by disable the interrupt in .remove.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+But there is race condition between .remove and irq thread function,
+(which enables IRQ)
+so driver need to ensure threaded irq has been disabled before call 
+rcar_thermal_irq_set(priv, false) in .remove.
+this adds additional complexity.
 
-Wen Yang (2):
-  power: supply: fix leaked of_node refs in ab8500_bm_of_probe
-  power: supply: fix leaked of_node refs in
-    power_supply_get_battery_info
+I am fine with both solutions,
+what is your opinion?
 
- drivers/power/supply/ab8500_bmdata.c     |  1 +
- drivers/power/supply/power_supply_core.c | 24 ++++++++++++++++--------
- 2 files changed, 17 insertions(+), 8 deletions(-)
+Thanks,
+Jiada
 
--- 
-2.9.5
-
+>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+>> ---
+>>   drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>>   1 file changed, 26 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+>> index 88fa41cf16e8..4d095d7f9763 100644
+>> --- a/drivers/thermal/rcar_gen3_thermal.c
+>> +++ b/drivers/thermal/rcar_gen3_thermal.c
+>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>>   
+>>   	platform_set_drvdata(pdev, priv);
+>>   
+>> -	/*
+>> -	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>> -	 * to trigger on the low and high trip points of the current
+>> -	 * temp window at this point.
+>> -	 */
+>> -	for (i = 0; i < 2; i++) {
+>> -		irq = platform_get_irq(pdev, i);
+>> -		if (irq < 0)
+>> -			return irq;
+>> -
+>> -		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>> -					 dev_name(dev), i);
+>> -		if (!irqname)
+>> -			return -ENOMEM;
+>> -
+>> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+>> -						rcar_gen3_thermal_irq_thread,
+>> -						IRQF_SHARED, irqname, priv);
+>> -		if (ret)
+>> -			return ret;
+>> -	}
+>> -
+>>   	pm_runtime_enable(dev);
+>>   	pm_runtime_get_sync(dev);
+>>   
+>> @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>>   		goto error_unregister;
+>>   	}
+>>   
+>> +	/*
+>> +	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>> +	 * to trigger on the low and high trip points of the current
+>> +	 * temp window at this point.
+>> +	 */
+>> +	for (i = 0; i < 2; i++) {
+>> +		irq = platform_get_irq(pdev, i);
+>> +		if (irq < 0) {
+>> +			ret = irq;
+>> +			goto error_unregister;
+>> +		}
+>> +
+>> +		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>> +					 dev_name(dev), i);
+>> +		if (!irqname) {
+>> +			ret = -ENOMEM;
+>> +			goto error_unregister;
+>> +		}
+>> +
+>> +		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+>> +						rcar_gen3_thermal_irq_thread,
+>> +						IRQF_SHARED, irqname, priv);
+>> +		if (ret)
+>> +			goto error_unregister;
+>> +	}
+>> +
+>>   	rcar_thermal_irq_set(priv, true);
+>>   
+>>   	return 0;
+>>
+> 
+> 
