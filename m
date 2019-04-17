@@ -1,18 +1,18 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 10/19] PM / devfreq: tegra: Drop primary interrupt
- handler
-Date: Wed, 17 Apr 2019 09:31:58 +0900
-Message-ID: <c10de3f3-b1ce-7f9b-5991-075581fbff24@samsung.com>
+Subject: Re: [PATCH v2 12/19] PM / devfreq: tegra: Avoid inconsistency of
+ current frequency value
+Date: Wed, 17 Apr 2019 09:35:15 +0900
+Message-ID: <f83171df-3d48-e15e-42ea-7a0903e6c015@samsung.com>
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145737epcas1p39300df7ef83ed20bd7aaa4e920d1f475@epcas1p3.samsung.com>
-        <20190415145505.18397-11-digetx@gmail.com>
-        <93574885-d695-2288-a4c6-2b845ad8daaf@samsung.com>
-        <286d8d4a-f761-93d3-8b77-cf71a7d0dab3@gmail.com>
+        <CGME20190415145721epcas1p4936edf8cf61a7d373a6e3f6aba76a029@epcas1p4.samsung.com>
+        <20190415145505.18397-13-digetx@gmail.com>
+        <375ebaba-1762-2675-3ae3-2ea9ec4cbcb2@samsung.com>
+        <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <286d8d4a-f761-93d3-8b77-cf71a7d0dab3@gmail.com>
+In-Reply-To: <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
@@ -21,140 +21,90 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi,
 
-On 19. 4. 17. 오전 12:23, Dmitry Osipenko wrote:
-> 16.04.2019 8:56, Chanwoo Choi пишет:
+On 19. 4. 17. 오전 12:40, Dmitry Osipenko wrote:
+> 16.04.2019 10:15, Chanwoo Choi пишет:
 >> Hi,
 >>
->> It looks good to me to drop the primary interrupt handler
->> but I have some comments. Please check it.
->>
 >> On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
->>> There is no real need in the primary interrupt handler, hence move
->>> everything to the secondary (threaded) handler. In a result locking
->>> is consistent now and there are no potential races with the interrupt
->>> handler because it is protected with the devfreq's mutex.
+>>> The frequency value potentially could change in-between. It doesn't
+>>> cause any real problem at all right now, but that could change in the
+>>> future. Hence let's avoid the inconsistency.
 >>>
 >>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 >>> ---
->>>  drivers/devfreq/tegra-devfreq.c | 61 ++++++++++++---------------------
->>>  1 file changed, 22 insertions(+), 39 deletions(-)
+>>>  drivers/devfreq/tegra-devfreq.c | 6 ++++--
+>>>  1 file changed, 4 insertions(+), 2 deletions(-)
 >>>
 >>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->>> index 2a1464098200..69b557df5084 100644
+>>> index a668e4fbc874..f1a6f951813a 100644
 >>> --- a/drivers/devfreq/tegra-devfreq.c
 >>> +++ b/drivers/devfreq/tegra-devfreq.c
->>> @@ -144,7 +144,6 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
->>>  struct tegra_devfreq_device {
->>>  	const struct tegra_devfreq_device_config *config;
->>>  	void __iomem *regs;
->>> -	spinlock_t lock;
->>>  
->>>  	/* Average event count sampled in the last interrupt */
->>>  	u32 avg_count;
->>> @@ -249,11 +248,8 @@ static void actmon_write_barrier(struct tegra_devfreq *tegra)
->>>  static void actmon_isr_device(struct tegra_devfreq *tegra,
->>>  			      struct tegra_devfreq_device *dev)
+>>> @@ -496,13 +496,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
 >>>  {
->>> -	unsigned long flags;
->>>  	u32 intr_status, dev_ctrl;
+>>>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>>>  	struct tegra_devfreq_device *actmon_dev;
+>>> +	unsigned long cur_freq;
 >>>  
->>> -	spin_lock_irqsave(&dev->lock, flags);
->>> -
->>>  	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->>>  	tegra_devfreq_update_avg_wmark(tegra, dev);
+>>> -	stat->current_frequency = tegra->cur_freq * KHZ;
+>>> +	cur_freq = READ_ONCE(tegra->cur_freq);
 >>>  
->>> @@ -302,26 +298,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
->>>  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
+>>>  	/* To be used by the tegra governor */
+>>>  	stat->private_data = tegra;
 >>>  
->>>  	actmon_write_barrier(tegra);
->>> -
->>> -	spin_unlock_irqrestore(&dev->lock, flags);
->>> -}
->>> -
->>> -static irqreturn_t actmon_isr(int irq, void *data)
->>> -{
->>> -	struct tegra_devfreq *tegra = data;
->>> -	bool handled = false;
->>> -	unsigned int i;
->>> -	u32 val;
->>> -
->>> -	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
->>> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->>> -		if (val & tegra->devices[i].config->irq_mask) {
->>> -			actmon_isr_device(tegra, tegra->devices + i);
->>> -			handled = true;
->>> -		}
->>> -	}
->>> -
->>> -	return handled ? IRQ_WAKE_THREAD : IRQ_NONE;
->>>  }
+>>>  	/* The below are to be used by the other governors */
+>>> +	stat->current_frequency = cur_freq * KHZ;
 >>>  
->>>  static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
->>> @@ -348,35 +324,46 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
->>>  	unsigned long cpu_freq = 0;
->>>  	unsigned long static_cpu_emc_freq = 0;
->>>  	unsigned int avg_sustain_coef;
->>> -	unsigned long flags;
->>> +	u32 avg_count;
+>>>  	actmon_dev = &tegra->devices[MCALL];
 >>>  
->>>  	if (dev->config->avg_dependency_threshold) {
->>>  		cpu_freq = cpufreq_get(0);
->>>  		static_cpu_emc_freq = actmon_cpu_to_emc_rate(tegra, cpu_freq);
->>>  	}
+>>> @@ -513,7 +515,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+>>>  	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
 >>>  
->>> -	spin_lock_irqsave(&dev->lock, flags);
->>> -
->>> -	dev->target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
->>> +	avg_count = dev->avg_count;
->>> +	dev->target_freq = avg_count / ACTMON_SAMPLING_PERIOD;
+>>>  	/* Number of cycles in a sampling period */
+>>> -	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
+>>> +	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
+>>>  
+>>>  	stat->busy_time = min(stat->busy_time, stat->total_time);
+>>>  
+>>>
 >>
->> Actually, this change is not related to this patch.
->> Please keep the original code.
+>> The read/write access of tegra->cur_freq is in the single routine
+>> of update_devfreq() as following. I think that there are no any
+>> potential problem about the inconsistency of tegra->cur_freq.
+> 
+> No, that's wrong assumption. The tegra->cur_freq is changed by the clock notifier that runs asynchronously with the devfreq driver when EMC clock rate is changed by something else in the kernel. 
+> 
+>> IMHO, if there are no any problem now, I'm not sure that we need
+>> to apply this patch.
 >>
->>>  	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
->>>  	dev->target_freq = do_percent(dev->target_freq, avg_sustain_coef);
->>>  	dev->target_freq += dev->boost_freq;
->>>  
->>> -	if (dev->avg_count >= dev->config->avg_dependency_threshold)
->>> +	if (avg_count >= dev->config->avg_dependency_threshold)
+>> update_devfreq()
+>> {
+>> 	devfreq->governor->get_target_freq()
+>> 		devfreq_update_stats(devfreq)
+>> 			tegra_devfreq_get_dev_status()
+>> 				stat->current_frequency = tegra->cur_freq * KHZ;
 >>
->> ditto.
-> 
-> Good catch, it's a leftover from v1 that I forgot to revert. Thank you.
-> 
-> [snip]
-> 
+>> 	devfreq_set_target()
+>> 		tegra_devfreq_target()
+>> 			clk_set_min_rate(emc_rate, )
+>> 				tegra_actmon_rate_notify_cb()
+>> 					tegra->cur_freq = data->new_rate / KHZ;
+>> 		
+>> 			clk_set_rate(emc_rate, )
+>> 				tegra_actmon_rate_notify_cb()
+>> 					tegra->cur_freq = data->new_rate / KHZ;
+>> }
 >>
->> When I review this patch, I have a question
->> about why tegra_actmon_rate_notify_cb is needed.
 >>
->> tegra_actmon_rate_notify_cb() do something
->> when the clock rate of emc_clock is changed.
->> I think that 'emc_clock' is changed by this driver.
->> It means that the this driver can catch the change timing
->> of emc_clock rate without notifier. 
 > 
-> The devfreq driver isn't the only driver of the EMC clock rate. The devfreq driver changes EMC freq dynamically based of on average memory usage activity, but for some hardware units (like display controller for example) there is a requirement for a minimum memory bandwidth (isochronous transactions) and hence when display is waking up from suspend it immediately requires an amount of memory bandwidth that could be higher than ACTMON hardware unit suggests and besides the ACTMON's reaction is delayed by the sampling period (12ms).
-
-Thanks for explaining it. If EMC clock is used on multiple point,
-I understand why the clock notifier is necessary.
-
-> 
->> IMO, it is possible to call tegra_devfreq_update_wmark()
->> directly without clock notifier before calling
->> 'clk_set_min_rate()/clk_set_rate()' in the tegra_devfreq_target().
->>
->> With clock notifier, it cannot restore something for
->> tegra_devfreq_update_wmark(tegra, dev) when failed to
->> set the rate of emc_clk by 'clk_set_min_rate()/clk_set_rate()'.
-> 
-> The watermarks should be changed in accordance to the actual EMC clock rate. Given that EMC rate could be changed by something else than the devfreq driver, we need to re-adjust the watermarks to the actual values after the EMC rate-change completion. Please note that the clock notifier uses the POST_RATE_CHANGE event that happens only after successful completion of EMC clock rate change.
-
-I understand the needs of clock notifier. Thanks.
-
+> The cur_freq value is changed by the clock notifier that runs asynchronously with the rest of the devfreq driver. Hence potentially compiler may generate two separate fetches of the cur_freq value, then the clock rate could be changed by other CPU core simultaneously with tegra_devfreq_get_dev_status() or kernel may re-schedule preemptively, changing the clock rate in-between of the two fetches.
 > 
 > 
 
+Thanks. I understand why have to consider the inconsistency of clock
+which is used on the multiple points.
+
+Looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
