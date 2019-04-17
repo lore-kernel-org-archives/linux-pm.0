@@ -1,44 +1,41 @@
-From: Mohan Kumar <mohankumar718@gmail.com>
-Subject: [PATCH] drivers: cpuidle: This patch fix the following checkpatch warning.
-Date: Wed, 17 Apr 2019 10:06:14 +0300
-Message-ID: <1555484774-5866-1-git-send-email-mohankumar718@gmail.com>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH 0/3] Exynos Performance Monitoring Counters enhancements
+Date: Wed, 17 Apr 2019 09:48:05 +0200
+Message-ID: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190417074829eucas1p234e664f9bf295eca8d2fad6ba953f37c@eucas1p2.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, l.luba@partner.samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Use pr_debug instead of printk
+Hi all,
 
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ...
-then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+This patch set extends PPMU on Samsung Exynos by choosing type of data
+which shell be counter in the PPMU registers.
+It is possible to count e.g. read or write requests, read or write data.
+A new field has been added in the DT 'event' node called 'event-data-type'.
+It is them used during the setup of the counter. In the prevoius
+implementation there was always one option used: count read+write data.
+Sometimes we need more precised information and this patch set tries to
+address it.
 
-Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Regards,
+Lukasz Luba
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 74c2479..a9c1db8 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -282,7 +282,7 @@ static int __init pseries_processor_idle_init(void)
- 	pseries_cpuidle_driver_init();
- 	retval = cpuidle_register(&pseries_idle_driver, NULL);
- 	if (retval) {
--		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
-+		pr_debug("Registration of pseries driver failed.\n");
- 		return retval;
- 	}
- 
-@@ -294,7 +294,7 @@ static int __init pseries_processor_idle_init(void)
- 					   "cpuidle/pseries:DEAD", NULL,
- 					   pseries_cpuidle_cpu_dead);
- 	WARN_ON(retval < 0);
--	printk(KERN_DEBUG "pseries_idle_driver registered\n");
-+	pr_debug("pseries_idle_driver registered\n");
- 	return 0;
- }
- 
+Lukasz Luba (3):
+  include: dt-bindings: add Performance Monitoring Unit for Exynos
+  drivers: devfreq: events: extend events by type of counted data
+  Documentation: devicetree: add PPMU events description
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 18 ++++++++++
+ MAINTAINERS                                        |  5 +++
+ drivers/devfreq/event/exynos-ppmu.c                | 38 +++++++++++++++-------
+ include/dt-bindings/pmu/exynos_ppmu.h              | 24 ++++++++++++++
+ include/linux/devfreq-event.h                      |  6 ++++
+ 5 files changed, 79 insertions(+), 12 deletions(-)
+ create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+
 -- 
 2.7.4
