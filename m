@@ -1,148 +1,162 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH 2/3] drivers: devfreq: events: extend events by type of
- counted data
-Date: Wed, 17 Apr 2019 09:48:07 +0200
-Message-ID: <1555487288-4777-3-git-send-email-l.luba@partner.samsung.com>
-References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Date: Wed, 17 Apr 2019 10:05:55 +0200
+Message-ID: <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+ <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, l.luba@partner.samsung.com
+To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds posibility to choose what type of data should be counted
-by the PPMU counter. Now the type comes from DT where the event has been
-defined. When there is no 'event-data-type' the default value is used,
-which is 'read data in bytes'.
-It is needed when you want to know not only read+write data bytes but
-i.e. only write data in byte, or number of read requests, etc.
+On 17/04/2019 05:01, Jiada Wang wrote:
+> Hi Daniel
+> 
+> On 2019/04/17 4:22, Daniel Lezcano wrote:
+>> On 11/04/2019 12:03, Jiada Wang wrote:
+>>> Currently IRQ is remain enabled after .remove, later if device is
+>>> probed,
+>>> IRQ is requested before .thermal_init, this may cause IRQ function be
+>>> triggered but not able to clear IRQ status, thus cause system to hang.
+>>>
+>>> this patch by moving request of IRQ after device initialization to
+>>> avoid this issue.
+>>
+>> Why not disable the interrupt and clear the irq status in the .remove
+>> callback, so the place is clean when probing again?
+>>
+>>
+>>          struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
+>>
+>>          rcar_thermal_irq_set(priv, false);
+>>
+>> should do the trick no ?
+>>
+> yes, this issue also can be addressed by disable the interrupt in .remove.
+> 
+> But there is race condition between .remove and irq thread function,
+> (which enables IRQ)
+> so driver need to ensure threaded irq has been disabled before call
+> rcar_thermal_irq_set(priv, false) in .remove.
+> this adds additional complexity.
+> 
+> I am fine with both solutions,
+> what is your opinion?
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/devfreq/event/exynos-ppmu.c | 38 +++++++++++++++++++++++++------------
- include/linux/devfreq-event.h       |  6 ++++++
- 2 files changed, 32 insertions(+), 12 deletions(-)
+My opinion is it is the tree hiding the forest.
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index c61de0b..e5f81a5 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -140,6 +140,7 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
- 	int id = exynos_ppmu_find_ppmu_id(edev);
- 	int ret;
- 	u32 pmnc, cntens;
-+	u32 evt_sel = edev->desc->data_type;
- 
- 	if (id < 0)
- 		return id;
-@@ -154,9 +155,12 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
- 	if (ret < 0)
- 		return ret;
- 
--	/* Set the event of Read/Write data count  */
--	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
--				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
-+	/* Check if the data type has been defined in DT, use default if not */
-+	if (evt_sel == UINT_MAX)
-+		evt_sel = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
-+
-+	/* Set the event of Read or Write or both (RDWR) data count  */
-+	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id), evt_sel);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -357,6 +361,7 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
- 	unsigned int pmnc, cntens;
- 	int id = exynos_ppmu_find_ppmu_id(edev);
- 	int ret;
-+	u32 evt_sel = edev->desc->data_type;
- 
- 	/* Enable all counters */
- 	ret = regmap_read(info->regmap, PPMU_V2_CNTENS, &cntens);
-@@ -368,24 +373,28 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
- 	if (ret < 0)
- 		return ret;
- 
--	/* Set the event of Read/Write data count  */
-+
-+	/* Set the event of proper data type counting.
-+	 * Check if the data type has been defined in DT,
-+	 * use default if not.
-+	 */
- 	switch (id) {
- 	case PPMU_PMNCNT0:
- 	case PPMU_PMNCNT1:
- 	case PPMU_PMNCNT2:
--		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
--				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
--		if (ret < 0)
--			return ret;
-+		if (evt_sel == UINT_MAX)
-+			evt_sel = PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT;
- 		break;
- 	case PPMU_PMNCNT3:
--		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
--				PPMU_V2_EVT3_RW_DATA_CNT);
--		if (ret < 0)
--			return ret;
-+		if (evt_sel == UINT_MAX)
-+			evt_sel = PPMU_V2_EVT3_RW_DATA_CNT;
- 		break;
- 	}
- 
-+	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id), evt_sel);
-+	if (ret < 0)
-+		return ret;
-+
- 	/* Reset cycle counter/performance counter and enable PPMU */
- 	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
- 	if (ret < 0)
-@@ -508,6 +517,7 @@ static int of_get_devfreq_events(struct device_node *np,
- 	struct device *dev = info->dev;
- 	struct device_node *events_np, *node;
- 	int i, j, count;
-+	int ret;
- 
- 	events_np = of_get_child_by_name(np, "events");
- 	if (!events_np) {
-@@ -544,6 +554,10 @@ static int of_get_devfreq_events(struct device_node *np,
- 		desc[j].driver_data = info;
- 
- 		of_property_read_string(node, "event-name", &desc[j].name);
-+		ret = of_property_read_u32(node, "event-data-type",
-+					   &desc[j].data_type);
-+		if (!ret)
-+			desc[i].data_type = UINT_MAX;
- 
- 		j++;
- 	}
-diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
-index 4db00b0..cc160b1 100644
---- a/include/linux/devfreq-event.h
-+++ b/include/linux/devfreq-event.h
-@@ -81,14 +81,20 @@ struct devfreq_event_ops {
-  * struct devfreq_event_desc - the descriptor of devfreq-event device
-  *
-  * @name	: the name of devfreq-event device.
-+ * @data_type	: the data type which is going to be counted in the register.
-  * @driver_data	: the private data for devfreq-event driver.
-  * @ops		: the operation to control devfreq-event device.
-  *
-  * Each devfreq-event device is described with a this structure.
-  * This structure contains the various data for devfreq-event device.
-+ * The data_type describes what is going to be counted in the register.
-+ * It might choose to count e.g. read requests, write data in bytes, etc.
-+ * The full supported list of types is present in specyfic header in:
-+ * include/dt-bindings/pmu/.
-  */
- struct devfreq_event_desc {
- 	const char *name;
-+	u32 data_type;
- 	void *driver_data;
- 
- 	const struct devfreq_event_ops *ops;
+After a quick look at the irq setup and handling, it appears the
+implementation is cumbersome. This part should be fixed before the rest:
+
+ - check IRQF_ONESHOT flag
+ - remove the lock in the interrupt handlers
+ - remove rcar_gen3_thermal_irq() which is pointless
+ - check the IRQF_SHARED flag is correct (I doubt)
+
+As the function devm_request_threaded_irq() is called 3 times, you
+should add the priv->tscs[i]->zone in the private data and the irq
+thread handler should look like:
+
+static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
+{
+	struct thermal_zone_device *tz = data;
+
+	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+
+	[ ... ]
+
+        return IRQ_HANDLED;
+}
+
+When the implementation is fixed, then we can take care of the .remove
+
+>>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+>>> ---
+>>>   drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>>>   1 file changed, 26 insertions(+), 22 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/rcar_gen3_thermal.c
+>>> b/drivers/thermal/rcar_gen3_thermal.c
+>>> index 88fa41cf16e8..4d095d7f9763 100644
+>>> --- a/drivers/thermal/rcar_gen3_thermal.c
+>>> +++ b/drivers/thermal/rcar_gen3_thermal.c
+>>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct
+>>> platform_device *pdev)
+>>>         platform_set_drvdata(pdev, priv);
+>>>   -    /*
+>>> -     * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>>> -     * to trigger on the low and high trip points of the current
+>>> -     * temp window at this point.
+>>> -     */
+>>> -    for (i = 0; i < 2; i++) {
+>>> -        irq = platform_get_irq(pdev, i);
+>>> -        if (irq < 0)
+>>> -            return irq;
+>>> -
+>>> -        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>>> -                     dev_name(dev), i);
+>>> -        if (!irqname)
+>>> -            return -ENOMEM;
+>>> -
+>>> -        ret = devm_request_threaded_irq(dev, irq,
+>>> rcar_gen3_thermal_irq,
+>>> -                        rcar_gen3_thermal_irq_thread,
+>>> -                        IRQF_SHARED, irqname, priv);
+>>> -        if (ret)
+>>> -            return ret;
+>>> -    }
+>>> -
+>>>       pm_runtime_enable(dev);
+>>>       pm_runtime_get_sync(dev);
+>>>   @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct
+>>> platform_device *pdev)
+>>>           goto error_unregister;
+>>>       }
+>>>   +    /*
+>>> +     * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>>> +     * to trigger on the low and high trip points of the current
+>>> +     * temp window at this point.
+>>> +     */
+>>> +    for (i = 0; i < 2; i++) {
+>>> +        irq = platform_get_irq(pdev, i);
+>>> +        if (irq < 0) {
+>>> +            ret = irq;
+>>> +            goto error_unregister;
+>>> +        }
+>>> +
+>>> +        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>>> +                     dev_name(dev), i);
+>>> +        if (!irqname) {
+>>> +            ret = -ENOMEM;
+>>> +            goto error_unregister;
+>>> +        }
+>>> +
+>>> +        ret = devm_request_threaded_irq(dev, irq,
+>>> rcar_gen3_thermal_irq,
+>>> +                        rcar_gen3_thermal_irq_thread,
+>>> +                        IRQF_SHARED, irqname, priv);
+>>> +        if (ret)
+>>> +            goto error_unregister;
+>>> +    }
+>>> +
+>>>       rcar_thermal_irq_set(priv, true);
+>>>         return 0;
+>>>
+>>
+>>
+
+
 -- 
-2.7.4
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
