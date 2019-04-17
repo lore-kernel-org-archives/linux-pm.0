@@ -1,212 +1,155 @@
-From: "elaine.zhang" <zhangqing@rock-chips.com>
-Subject: Re: [PATCH v1 1/3] thermal: rockchip: add pinctrl control
-Date: Wed, 17 Apr 2019 11:22:54 +0800
-Message-ID: <659a1c49-71e6-ab76-1ec1-b4f6c2843650@rock-chips.com>
-References: <1554100985-11385-1-git-send-email-zhangqing@rock-chips.com>
- <1554100985-11385-2-git-send-email-zhangqing@rock-chips.com>
- <30325add-d75a-6775-50c0-d2d2274ff81e@linaro.org>
- <db977a75-195f-4c98-ef84-aa186b484e0d@rock-chips.com>
- <6267ffc8-6ca4-86ad-7f87-c669bc9f3454@linaro.org>
+From: Jiada Wang <jiada_wang@mentor.com>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Date: Wed, 17 Apr 2019 13:40:57 +0900
+Message-ID: <07a6287c-5f0c-5350-7120-6d5bf4e5b964@mentor.com>
+References: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <6267ffc8-6ca4-86ad-7f87-c669bc9f3454@linaro.org>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, heiko@sntech.de
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, huangtao@rock-chips.com, linux-pm@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, linux-kernel@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, robh+dt@kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eugeniu Rosca <erosca@de.adit-jv.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Simon Horman <horms+renesas@verge.net.au>, =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Dien Pham <dien.pham.ry@renesas.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Biju Das <biju.das@bp.renesas.com>, "George G. Davis" <george_davis@mentor.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu
 List-Id: linux-pm@vger.kernel.org
 
-aGksCgrlnKggMjAxOS80LzE2IOS4i+WNiDY6MTIsIERhbmllbCBMZXpjYW5vIOWGmemBkzoKPiBI
-aSBFbGFpbmUsCj4KPiBPbiAxMS8wNC8yMDE5IDA5OjQ2LCBlbGFpbmUuemhhbmcgd3JvdGU6Cj4+
-IGhpLAo+Pgo+PiDlnKggMjAxOS80LzQg5LiK5Y2IMTE6MDMsIERhbmllbCBMZXpjYW5vIOWGmemB
-kzoKPj4+IE9uIDAxLzA0LzIwMTkgMDg6NDMsIEVsYWluZSBaaGFuZyB3cm90ZToKPj4+PiBCYXNl
-ZCBvbiB0aGUgVFNBREMgVHNodXQgbW9kZSB0byBzZWxlY3QgcGluY3RybCwKPj4+PiBpbnN0ZWFk
-IG9mIHNldHRpbmcgcGluY3RybCBiYXNlZCBvbiBhcmNoaXRlY3R1cmUKPj4+PiAoTm90IGRlcGVu
-ZHMgb24gcGluY3RybCBzZXR0aW5nIGJ5ICJpbml0IiBvciAiZGVmYXVsdCIpLgo+Pj4+IEFuZCBp
-dCByZXF1aXJlcyBzZXR0aW5nIHRoZSB0c2h1dCBwb2xhcml0eSBiZWZvcmUgc2VsZWN0IHBpbmN0
-cmwuCj4+PiBJJ20gbm90IHN1cmUgdG8gZnVsbHkgcmVhZCB0aGUgZGVzY3JpcHRpb24uIENhbiB5
-b3UgcmVwaHJhc2UvZWxhYm9yYXRlCj4+PiB0aGUgY2hhbmdlbG9nPwo+PiBFeGFtcGxlOgo+PiAg
-wqDCoMKgwqDCoMKgwqAgdHNhZGM6IHRzYWRjQGZmMjUwMDAwIHsKPj4gIMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGNvbXBhdGlibGUgPSAicm9ja2NoaXAscmszMzI4LXRz
-YWRjIjsKPj4gIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIC4uLi4uCj4+
-ICDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcGluY3RybC1uYW1lcyA9ICJpbml0Iiwg
-ImRlZmF1bHQiLCAic2xlZXAiOwo+PiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqAgcGluY3RybC0wID0gPCZvdHBfZ3Bpbz47Cj4+ICDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoCBwaW5jdHJsLTEgPSA8Jm90cF9vdXQ+Owo+PiAgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcGluY3RybC0yID0gPCZvdHBfZ3Bpbz47Cj4+ICDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBzdGF0dXMgPSAiZGlzYWJsZWQi
-Owo+PiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIC4uLi4uCj4+ICDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgIH07Cj4+ICDCoMKgwqDCoMKgwqDCoCAmdHNhZGMgewo+PiAgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJvY2tjaGlwLGh3LXRzaHV0LW1vZGUgPSA8MD47IC8qIHRz
-aHV0IG1vZGUgMDpDUlUgMTpHUElPICovCj4+ICDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqAgc3RhdHVzID0gIm9rYXkiOwo+PiAgwqDCoMKgwqDCoMKgwqAgfTsKPj4gIMKgwqDCoCBBcHBs
-aWNhdGlvbiBvbiB0aGUgcHJvZHVjdCwgaG9wZSB0c2FkYyBvdmVydGVtcGVyYXR1cmUgcmVzZXQg
-Y3J1IHRvCj4+IHJlc3RhcnQuCj4+ICDCoMKgwqAgQnV0IHdoZW4gcGluY3RybCBpcyBpbml0aWFs
-aXplZCwgaXQgd2lsbCBzZXR0aW5nIHBpbmN0cmwgYnkgImluaXQiCj4+IGFuZCAiZGVmYXVsdCIu
-Cj4+ICDCoMKgwqAgU28gdGhlIHBpbmN0cmwgd2lsbCBzZXQgaW9tdXggdG8gIm90cF9vdXQiLCB3
-aGljaCBtYXkgYmUgbWFrZSBzeXN0ZW0KPj4gY3Jhc2guCj4gd2h5PwpUaGlzICJvdHBfb3V0IiBJ
-TyBtYXkgYmUgY29ubmVjdGVkIHRvIHRoZSBSRVNFVCBjaXJjdWl0IG9uIHRoZSBoYXJkd2FyZS4g
-CklmIHRoZSBJTyBpcyBpbiB0aGUgd3Jvbmcgc3RhdGUsIGl0IHdpbGwgdHJpZ2dlciBSRVNFVCAo
-c2ltaWxhciB0byB0aGUgCmVmZmVjdCBvZiBwcmVzc2luZyB0aGUgUkVTRVQgYnV0dG9uKSwgd2hp
-Y2ggd2lsbCBjYXVzZSB0aGUgc3lzdGVtIHRvIApyZXN0YXJ0IGFsbCB0aGUgdGltZS4KPgo+PiAg
-wqDCoMKgIHRzYWRjIGdwaW8gaW9tdXg6Cj4+ICDCoMKgwqAgIm90cF9ncGlvIiA6IGp1c3Qgbm9y
-bWFsIGdwaW8sIGtlZXAgZGVmYXVsdCBsZXZlbC4KPj4gIMKgwqDCoCAib3RwX291dCIgOiB0c2Fk
-YyBzaHV0IGRvd24gaW8sIHdoZW4gb3ZlcnRlbXBlcmF0dXJlLHRoaXMgaW8gbWF5IGJlCj4+IHRy
-aWdnZXIgaGlnaAo+PiAgwqDCoMKgIGxldmVsIG9yIGxvdyBsZXZlbChkZXBlbmQgb24gdGhlIHRz
-YWRjIHBvbGFyaXR5KS4KPj4KPj4gIMKgwqDCoCBBZnRlciBjb3JyZWN0aW9uOgo+PiAgwqDCoMKg
-IGlmIHJvY2tjaGlwLGh3LXRzaHV0LW1vZGUgPSA8MD47ICh0c2FkYyBvdmVydGVtcGVyYXR1cmUg
-cmVzZXQgY3J1IHRvCj4+IHJlc3RhcnQpCj4+ICDCoMKgwqAgc2VsZWN0IHBpbmN0cmwgdG8gb3Rw
-X2dwaW8KPj4gIMKgwqDCoCBpZiByb2NrY2hpcCxody10c2h1dC1tb2RlID0gPDE+Oyh0c2FkYyBv
-dmVydGVtcGVyYXR1cmUgSU8gdHJpZ2dlcnMKPj4gb3V0cHV0IGF0IGhpZ2ggb3IgbG93IGxldmVs
-cykKPj4gIMKgwqDCoCBzZWxlY3QgcGluY3RybCB0byBvdHBfb3V0Lgo+PiAgwqDCoMKgIEFjdGl2
-ZWx5IHNlbGVjdCBpb211eCBiYXNlZCBvbiByb2NrY2hpcCxody10c2h1dC1tb2RlLAo+PiAgwqDC
-oMKgIHJhdGhlciB0aGFuIHJlbHlpbmcgb24gdGhlIHBpbmN0cmwgZnJhbWV3b3JrIHRvIHNlbGVj
-dCBpb211eC4KPiBMZXQgbWUgcmVwaHJhc2UgaXQgYW5kIHRlbGwgbWUgaWYgSSB1bmRlcnN0b29k
-IGNvcnJlY3RseToKPgo+ICJXaGVuIHRoZSB0ZW1wZXJhdHVyZSBzZW5zb3IgbW9kZSBpcyBzZXQg
-dG8gMCwgaXQgd2lsbCBhdXRvbWF0aWNhbGx5Cj4gcmVzZXQgdGhlIGJvYXJkIHZpYSB0aGUgQ2xv
-Y2stUmVzZXQtVW5pdCAoQ1JVKSBpZiB0aGUgb3ZlciB0ZW1wZXJhdHVyZQo+IHRocmVzaG9sZCBp
-cyByZWFjaGVkLiBIb3dldmVyLCB3aGVuIHRoZSBwaW5jdHJsIGluaXRpYWxpemVzLCBpdCBkb2Vz
-IGEKPiB0cmFuc2l0aW9uIHRvICJvdHBfb3V0IiB3aGljaCBtYXkgbGVhZCB0aGUgU29DIHRvIGNy
-YXNoICh3aHk/KQo+Cj4gRXhwbGljaXRseSB1c2UgdGhlIHBpbmN0cmwgdG8gc2V0L3Vuc2V0IHRo
-ZSByaWdodCBtb2RlIGluc3RlYWQgb2YKPiByZWx5aW5nIG9uIHRoZSBwaW5jdHJsIGluaXQgbW9k
-ZSIKVGhpcyBleHBsYW5hdGlvbiBpcyBjb3JyZWN0Lgo+Cj4gU28gdGhpcyBwYXRjaCBpcyBhIGZp
-eCBhbmQgaXQgbXVzdCBjb250YWluIHRoZSBGaXhlczogLi4uIHRhZy4KT0ssIEknbGwgZml4IHRo
-YXQgaW4gdGhlIHYyLgo+Cj4KPj4+PiBTaWduZWQtb2ZmLWJ5OiBFbGFpbmUgWmhhbmcgPHpoYW5n
-cWluZ0Byb2NrLWNoaXBzLmNvbT4KPj4+PiAtLS0KPj4+PiAgwqAgZHJpdmVycy90aGVybWFsL3Jv
-Y2tjaGlwX3RoZXJtYWwuYyB8IDYxCj4+Pj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-Ky0tLS0tLS0KPj4+PiAgwqAgMSBmaWxlIGNoYW5nZWQsIDUwIGluc2VydGlvbnMoKyksIDExIGRl
-bGV0aW9ucygtKQo+Pj4+Cj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hp
-cF90aGVybWFsLmMKPj4+PiBiL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPj4+
-PiBpbmRleCA5Yzc2NDNkNjJlZDcuLmZhYTZjNzc5MjE1NSAxMDA2NDQKPj4+PiAtLS0gYS9kcml2
-ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jCj4+Pj4gKysrIGIvZHJpdmVycy90aGVybWFs
-L3JvY2tjaGlwX3RoZXJtYWwuYwo+Pj4+IEBAIC0zNCw3ICszNCw3IEBACj4+Pj4gIMKgwqAgKi8K
-Pj4+PiAgwqAgZW51bSB0c2h1dF9tb2RlIHsKPj4+PiAgwqDCoMKgwqDCoCBUU0hVVF9NT0RFX0NS
-VSA9IDAsCj4+Pj4gLcKgwqDCoCBUU0hVVF9NT0RFX0dQSU8sCj4+Pj4gK8KgwqDCoCBUU0hVVF9N
-T0RFX09UUCwKPj4+IFdoeSBkbyB5b3UgY2hhbmdlIHRoZSBlbnVtIG5hbWU/IFRoZSBpbXBhY3Qg
-b24gdGhlIHBhdGNoIGlzIG11Y2ggaGlnaGVyLAo+Pj4gbm8gPwo+PiBJIGp1c3Qgd2FudCB0byBt
-YWtlIGl0IGEgbGl0dGxlIGJpdCBtb3JlIGludHVpdGl2ZSB0byB1bmRlcnN0YW5kIHRoZQo+PiBk
-ZWZpbml0aW9uIG9mIG1vZGUuCj4+Cj4+IFRTSFVUX01PREVfQ1JVOiBwaW5jdHJsIHNlbGVjdCBp
-b211eCB0byBvdHBfZ3Bpbyx0aGUgaW8gaXMgbm9ybWFsIGlvLgo+PiBUU0hVVF9NT0RFX09UUDog
-cGluY3RybCBzZWxlY3QgaW9tdXggdG8gb3RwX291dCwgdGhlIGlvIGlzIHRzYWRjIHNodXQgaW8u
-Cj4gSSB1bmRlcnN0YW5kLCBidXQgYXQgdGhlIGVuZCB0aGUgY2hhbmdlcyBmb3IgdGhpcyBwYXRj
-aCBhcmUgY291bnRlcgo+IGludHVpdGl2ZSwgc28gaXQgaXMgcHJlZmVyYWJsZSB0byBrZWVwIGl0
-IGFzIGlzIHNvIHdlIGNhbiByZXZpZXcgdGhlCj4gaW1wb3J0YW50IHBhcnQuCj4KPiBbIC4uLiBd
-Ck9LLCBrZWVwIHRoZSBlbnVtIG5hbWUuIEknbGwgZml4IGl0IGluIHRoZSBWMi4KPgo+Pj4+ICDC
-oCArc3RhdGljIHZvaWQgdGhlcm1hbF9waW5jdHJsX3NlbGVjdF9vdHAoc3RydWN0Cj4+Pj4gcm9j
-a2NoaXBfdGhlcm1hbF9kYXRhICp0aGVybWFsKQo+Pj4+ICt7Cj4+Pj4gK8KgwqDCoCBpZiAoIUlT
-X0VSUih0aGVybWFsLT5waW5jdHJsKSAmJgo+Pj4+ICFJU19FUlJfT1JfTlVMTCh0aGVybWFsLT5v
-dHBfc3RhdGUpKQo+Pj4+ICvCoMKgwqDCoMKgwqDCoCBwaW5jdHJsX3NlbGVjdF9zdGF0ZSh0aGVy
-bWFsLT5waW5jdHJsLAo+Pj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIHRoZXJtYWwtPm90cF9zdGF0ZSk7Cj4+Pj4gK30KPj4+PiArCj4+Pj4gK3N0YXRpYyB2b2lk
-IHRoZXJtYWxfcGluY3RybF9zZWxlY3RfZ3BpbyhzdHJ1Y3Qgcm9ja2NoaXBfdGhlcm1hbF9kYXRh
-Cj4+Pj4gKnRoZXJtYWwpCj4+Pj4gK3sKPj4+PiArwqDCoMKgIGlmICghSVNfRVJSKHRoZXJtYWwt
-PnBpbmN0cmwpICYmCj4+Pj4gIUlTX0VSUl9PUl9OVUxMKHRoZXJtYWwtPmdwaW9fc3RhdGUpKQo+
-Pj4+ICvCoMKgwqDCoMKgwqDCoCBwaW5jdHJsX3NlbGVjdF9zdGF0ZSh0aGVybWFsLT5waW5jdHJs
-LAo+Pj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHRoZXJtYWwt
-PmdwaW9fc3RhdGUpOwo+Pj4+ICt9Cj4+PiBZb3Ugc2hvdWxkIG5vdCBoYXZlIHRvIGNyZWF0ZSBh
-IGNvdXBsZSBvZiBzcGVjaWZpYyBmdW5jdGlvbnMganVzdCB0bwo+Pj4gY2hlY2sgdGhlIHBpbmN0
-cmwgcG9pbnRlcnMgYXJlIHNldC4gVGhlIGNhbGxlciBzaG91bGQgZG8gdGhhdC4KPj4gQmVjYXVz
-ZSB0aGVyZSBhcmUgc2V2ZXJhbCBwbGFjZXMgd2hlcmUgdGhlIGNhbGwgaXMgbWFkZSxjcmVhdGUg
-YSBjb3VwbGUKPj4gb2Ygc3BlY2lmaWMgZnVuY3Rpb25zIHJlZHVjZSBhIGxvdCBvZiBkdXBsaWNh
-dGVkIGNvZGUuCj4gTm8sIHRoYXQgZG9lcyBub3QgcmVkdWNlIGEgbG90IG9mIGR1cGxpY2F0ZWQg
-Y29kZSwgaXQgaGlkZXMgdGhlIGZhY3QKPiB0aGVyZSBpcyBubyBjb250cm9sIGZyb20gdGhlIGNh
-bGxlci4gU2VlIHRoZSBjb21tZW50cyBiZWxvdy4KPgo+IFsgLi4uIF0KT0ssIEknbGwgZml4IGl0
-IGluIHRoZSBWMi4KPgo+Pj4+ICDCoCBzdGF0aWMgaW50IHJvY2tjaGlwX2NvbmZpZ3VyZV9mcm9t
-X2R0KHN0cnVjdCBkZXZpY2UgKmRldiwKPj4+PiAgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoCBzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLAo+Pj4+ICDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHN0cnVjdCByb2NrY2hpcF90
-aGVybWFsX2RhdGEgKnRoZXJtYWwpCj4+Pj4gQEAgLTExMDMsNyArMTEyMCw3IEBAIHN0YXRpYyBp
-bnQgcm9ja2NoaXBfY29uZmlndXJlX2Zyb21fZHQoc3RydWN0Cj4+Pj4gZGV2aWNlICpkZXYsCj4+
-Pj4gIMKgwqDCoMKgwqAgaWYgKG9mX3Byb3BlcnR5X3JlYWRfdTMyKG5wLCAicm9ja2NoaXAsaHct
-dHNodXQtbW9kZSIsCj4+Pj4gJnRzaHV0X21vZGUpKSB7Cj4+Pj4gIMKgwqDCoMKgwqDCoMKgwqDC
-oCBkZXZfd2FybihkZXYsCj4+Pj4gIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgIk1pc3Np
-bmcgdHNodXQgbW9kZSBwcm9wZXJ0eSwgdXNpbmcgZGVmYXVsdCAoJXMpXG4iLAo+Pj4+IC3CoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAgdGhlcm1hbC0+Y2hpcC0+dHNodXRfbW9kZSA9PSBUU0hVVF9N
-T0RFX0dQSU8gPwo+Pj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgdGhlcm1hbC0+Y2hpcC0+
-dHNodXRfbW9kZSA9PSBUU0hVVF9NT0RFX09UUCA/Cj4+Pj4gIMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqAgImdwaW8iIDogImNydSIpOwo+Pj4+ICDCoMKgwqDCoMKgwqDCoMKgwqAg
-dGhlcm1hbC0+dHNodXRfbW9kZSA9IHRoZXJtYWwtPmNoaXAtPnRzaHV0X21vZGU7Cj4+Pj4gIMKg
-wqDCoMKgwqAgfSBlbHNlIHsKPj4+PiBAQCAtMTI0Miw2ICsxMjU5LDggQEAgc3RhdGljIGludCBy
-b2NrY2hpcF90aGVybWFsX3Byb2JlKHN0cnVjdAo+Pj4+IHBsYXRmb3JtX2RldmljZSAqcGRldikK
-Pj4+PiAgwqDCoMKgwqDCoMKgwqDCoMKgIHJldHVybiBlcnJvcjsKPj4+PiAgwqDCoMKgwqDCoCB9
-Cj4+Pj4gIMKgICvCoMKgwqAgdGhlcm1hbC0+Y2hpcC0+Y29udHJvbCh0aGVybWFsLT5yZWdzLCBm
-YWxzZSk7Cj4+Pj4gKwo+Pj4+ICDCoMKgwqDCoMKgIGVycm9yID0gY2xrX3ByZXBhcmVfZW5hYmxl
-KHRoZXJtYWwtPmNsayk7Cj4+Pj4gIMKgwqDCoMKgwqAgaWYgKGVycm9yKSB7Cj4+Pj4gIMKgwqDC
-oMKgwqDCoMKgwqDCoCBkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGNvbnZl
-cnRlciBjbG9jazogJWRcbiIsCj4+Pj4gQEAgLTEyNjcsNiArMTI4NiwyNCBAQCBzdGF0aWMgaW50
-IHJvY2tjaGlwX3RoZXJtYWxfcHJvYmUoc3RydWN0Cj4+Pj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2
-KQo+Pj4+ICDCoMKgwqDCoMKgIHRoZXJtYWwtPmNoaXAtPmluaXRpYWxpemUodGhlcm1hbC0+Z3Jm
-LCB0aGVybWFsLT5yZWdzLAo+Pj4+ICDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoCB0aGVybWFsLT50c2h1dF9wb2xhcml0eSk7Cj4+Pj4gIMKgICvCoMKgwqAgaWYgKHRoZXJt
-YWwtPnRzaHV0X21vZGUgPT0gVFNIVVRfTU9ERV9PVFApIHsKPj4+PiArwqDCoMKgwqDCoMKgwqAg
-dGhlcm1hbC0+cGluY3RybCA9IGRldm1fcGluY3RybF9nZXQoJnBkZXYtPmRldik7Cj4+Pj4gK8Kg
-wqDCoMKgwqDCoMKgIGlmIChJU19FUlIodGhlcm1hbC0+cGluY3RybCkpCj4+Pj4gK8KgwqDCoMKg
-wqDCoMKgwqDCoMKgwqAgZGV2X2VycigmcGRldi0+ZGV2LCAiZmFpbGVkIHRvIGZpbmQgdGhlcm1h
-bCBwaW5jdHJsXG4iKTsKPj4+PiArCj4+Pj4gK8KgwqDCoMKgwqDCoMKgIHRoZXJtYWwtPmdwaW9f
-c3RhdGUgPSBwaW5jdHJsX2xvb2t1cF9zdGF0ZSh0aGVybWFsLT5waW5jdHJsLAo+Pj4+ICvCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
-ImdwaW8iKTsKPiBwYW5pYyBpZiBkZXZtX3BpbmN0cmxfZ2V0IGZhaWxzLgpPSywgSXQncyBnb29k
-IGFkdmljZS4gSSdsbCBmaXggaXQgaW4gdGhlIFYyLgo+Cj4+Pj4gK8KgwqDCoMKgwqDCoMKgIGlm
-IChJU19FUlJfT1JfTlVMTCh0aGVybWFsLT5ncGlvX3N0YXRlKSkKPj4+PiArwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoCBkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZmluZCB0aGVybWFsIGdw
-aW8gc3RhdGVcbiIpOwo+Pj4+ICsKPj4+PiArwqDCoMKgwqDCoMKgwqAgdGhlcm1hbC0+b3RwX3N0
-YXRlID0gcGluY3RybF9sb29rdXBfc3RhdGUodGhlcm1hbC0+cGluY3RybCwKPj4+PiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAib3Rw
-b3V0Iik7Cj4+Pj4gK8KgwqDCoMKgwqDCoMKgIGlmIChJU19FUlJfT1JfTlVMTCh0aGVybWFsLT5v
-dHBfc3RhdGUpKQo+Pj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGRldl9lcnIoJnBkZXYtPmRl
-diwgImZhaWxlZCB0byBmaW5kIHRoZXJtYWwgb3Rwb3V0Cj4+Pj4gc3RhdGVcbiIpOwo+Pj4gV2hh
-dCBpcyB0aGUgbWVhbmluZyBmb3IgdGhlIHJlc3Qgb2YgdGhlIGNvZGUgaWYgdGhlIGxvb2t1cCBm
-YWlscyBmb3IgYW55Cj4+PiBvZiB0aG9zZSA/Cj4+IElmIHRoZSBsb29rdXAgZmFpbHMgZm9yIGFu
-eSBvZiB0aG9zZe+8jCBUaGUgcGluY3RybCBpcyBubyBsb25nZXIgc2V0IGFuZAo+PiByZW1haW5z
-IGluIGl0cyBkZWZhdWx0IHN0YXRlKG90cF9ncGlvIG5vcm1hbCBpbykuCj4+Pj4gK8KgwqDCoMKg
-wqDCoMKgIHRoZXJtYWxfcGluY3RybF9zZWxlY3Rfb3RwKHRoZXJtYWwpOwo+Pj4+ICvCoMKgwqAg
-fQo+Pj4+ICsKPiBJdCBpcyBwb2ludGxlc3MgdG8gaGF2ZSBhIG90cF9zdGF0ZSBhbmQgYSBncGlv
-X3N0YXRlIGZpZWxkLiBKdXN0IHVzZSBvbmUKPiBhcyB0aGUgY29uZmlndXJhdGlvbiB0ZWxscyB5
-b3Ugd2hpY2ggbG9va3VwIHRvIGRvLgo+Cj4gSW4gY2FzZSBvZiBlcnJvciwganVzdCBiYWlsIG91
-dC4gSXQgaXMgcG9pbnRsZXNzIHRvIGNvbnRpbnVlIHdpdGggYQo+IGJyb2tlbiBjb25maWd1cmF0
-aW9uLgpJZiB0aGUgRFNUIG5vZGUgaXMgbm90IG1vZGlmaWVkIHN5bmNocm9ub3VzbHksIHdoaWNo
-IG1heSBjYXVzZSB0aGUgCnJvY2tjaGlwX3RoZXJtYWwgZHJpdmVyIHByb2JlIGZhaWxlZC4KU2hv
-dWxkIEkgaWdub3JlIHRoaXM/Cj4KPiAJdGhlcm1hbC0+cGluY3RybCA9IGRldm1fcGluY3RybF9n
-ZXQoJnBkZXYtPmRldik7Cj4gCWlmIChJU19FUlIodGhlcm1hbC0+cGluY3RybCkpIHsKPiAJCWRl
-dl9lcnIoJnBkZXYtPmRldiwgIi4uLi4iKTsKPiAJCXJldHVybiBQVFJfRVJSKHRoZXJtYWwtPnBp
-bmN0cmwpOwo+IAl9Cj4KPiAJdGhlcm1hbC0+cGluY3RybF9zdGF0ZSA9Cj4gCQlwaW5jdHJsX2xv
-b2t1cF9zdGF0ZSh0aGVybWFsLT5waW5jdHJsLAo+IAkJCXRoZXJtYWwtPnRzaHV0X21vZGUgPT0g
-VFNIVVRfTU9ERV9PVFAgPwo+IAkJCSJvdHAiIDogImdwaW8iKTsKPgo+IAlpZiAoSVNfRVJSX09S
-X05VTEwodGhlcm1hbC0+cGluY3RybF9zdGF0ZSkpIHsKPiAJCWRldl9lcnIoJnBkZXYtPmRldiwg
-Ii4uLi4iKTsKPiAJCXJldHVybiAtRUlOVkFMOwo+IAl9Cj4KPgo+IE5vIG5lZWQgdG8gdXNlIHRo
-ZSB0aGVybWFsX3BpbmN0cmxfc2VsZWN0X290cC9ncGlvIHdyYXBwZXJzLCBqdXN0Cj4gcmVwbGFj
-ZSB0aGVtIHdpdGg6Cj4KPiBwaW5jdHJsX3NlbGVjdF9zdGF0ZSh0aGVybWFsLT5waW5jdHJsLCB0
-aGVybWFsLT5waW5jdHJsX3N0YXRlKTsKPgo+IGFuZCB1c2UgaXQgdW5jb25kaXRpb25hbGx5LgpP
-Sy4gSSdsbCBmaXggaXQgaW4gdGhlIFYyLgo+Cj4KPj4+PiAgwqDCoMKgwqDCoCBmb3IgKGkgPSAw
-OyBpIDwgdGhlcm1hbC0+Y2hpcC0+Y2huX251bTsgaSsrKSB7Cj4+Pj4gIMKgwqDCoMKgwqDCoMKg
-wqDCoCBlcnJvciA9IHJvY2tjaGlwX3RoZXJtYWxfcmVnaXN0ZXJfc2Vuc29yKHBkZXYsIHRoZXJt
-YWwsCj4+Pj4gIMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgICZ0aGVybWFsLT5zZW5zb3JzW2ldLAo+Pj4+IEBAIC0xMzM4LDcgKzEzNzUsOCBAQCBzdGF0
-aWMgaW50IF9fbWF5YmVfdW51c2VkCj4+Pj4gcm9ja2NoaXBfdGhlcm1hbF9zdXNwZW5kKHN0cnVj
-dCBkZXZpY2UgKmRldikKPj4+PiAgwqDCoMKgwqDCoCBjbGtfZGlzYWJsZSh0aGVybWFsLT5wY2xr
-KTsKPj4+PiAgwqDCoMKgwqDCoCBjbGtfZGlzYWJsZSh0aGVybWFsLT5jbGspOwo+Pj4+ICDCoCAt
-wqDCoMKgIHBpbmN0cmxfcG1fc2VsZWN0X3NsZWVwX3N0YXRlKGRldik7Cj4+Pj4gK8KgwqDCoCBp
-ZiAodGhlcm1hbC0+dHNodXRfbW9kZSA9PSBUU0hVVF9NT0RFX09UUCkKPj4+PiArwqDCoMKgwqDC
-oMKgwqAgdGhlcm1hbF9waW5jdHJsX3NlbGVjdF9ncGlvKHRoZXJtYWwpOwo+Pj4+ICDCoCDCoMKg
-wqDCoMKgIHJldHVybiAwOwo+Pj4+ICDCoCB9Cj4+Pj4gQEAgLTEzODMsNyArMTQyMSw4IEBAIHN0
-YXRpYyBpbnQgX19tYXliZV91bnVzZWQKPj4+PiByb2NrY2hpcF90aGVybWFsX3Jlc3VtZShzdHJ1
-Y3QgZGV2aWNlICpkZXYpCj4+Pj4gIMKgwqDCoMKgwqAgZm9yIChpID0gMDsgaSA8IHRoZXJtYWwt
-PmNoaXAtPmNobl9udW07IGkrKykKPj4+PiAgwqDCoMKgwqDCoMKgwqDCoMKgIHJvY2tjaGlwX3Ro
-ZXJtYWxfdG9nZ2xlX3NlbnNvcigmdGhlcm1hbC0+c2Vuc29yc1tpXSwgdHJ1ZSk7Cj4+Pj4gIMKg
-IC3CoMKgwqAgcGluY3RybF9wbV9zZWxlY3RfZGVmYXVsdF9zdGF0ZShkZXYpOwo+Pj4+ICvCoMKg
-wqAgaWYgKHRoZXJtYWwtPnRzaHV0X21vZGUgPT0gVFNIVVRfTU9ERV9PVFApCj4+Pj4gK8KgwqDC
-oMKgwqDCoMKgIHRoZXJtYWxfcGluY3RybF9zZWxlY3Rfb3RwKHRoZXJtYWwpOwo+Pj4+ICDCoCDC
-oMKgwqDCoMKgIHJldHVybiAwOwo+Pj4+ICDCoCB9Cj4+Pj4KPj4KPgoKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Hi Eugeniu
+
+thanks for your test & comments and adding more people for review
+
+I will add necessary backtrace information to description and
+rephrase commit summary in V2 patch
+
+Thanks,
+Jiada
+
+On 2019/04/17 2:48, Eugeniu Rosca wrote:
+> Hi Jiada,
+> 
+> Adding below people, since they've made recent contributions to the
+> driver and might be interested in your patch:
+> 
+> git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+>      | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+>        7 Eduardo Valentin <edubezval@gmail.com>
+>        6 Simon Horman <horms+renesas@verge.net.au>
+>        5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+>        2 Geert Uytterhoeven <geert+renesas@glider.be>
+>        1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+>        1 Marek Vasut <marek.vasut+renesas@gmail.com>
+>        1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>        1 Hien Dang <hien.dang.eb@renesas.com>
+>        1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+>        1 Dien Pham <dien.pham.ry@renesas.com>
+>        1 Daniel Lezcano <daniel.lezcano@linaro.org>
+>        1 Biju Das <biju.das@bp.renesas.com>
+> 
+> I confirm that loading and unloading the rcar3 thermal driver in a
+> loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+> H3-ES2.0-Salvator-X.
+> 
+> Full log and .config can be found here:
+> https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+> 
+> I post an excerpt from the above [1] (why not including it in the
+> description?). Also, why not rephrasing the commit summary line in such
+> a way that everybody understands this patch fixes a severe issue, e.g.
+> "thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+> 
+> BTW, with this patch applied I left the thermal driver being
+> loaded/unloaded on the target for over one hour w/o seeing the issue
+> reproduced. So, while there might be slight variations in how the final
+> solution looks like, I think the patch already deserves a:
+> 
+> Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+> 
+> [1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+> 
+> root@rcar-gen3:~# while true; do rmmod rcar_gen3_thermal; modprobe rcar_gen3_thermal; done
+> [   43.439043] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+> [   43.451670] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+> [   43.463974] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+> 
+> [..]
+> 
+> [  553.966104] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+> [  553.978759] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+> [  553.991058] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+> [  562.235306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD25)
+> [  567.353336] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+> [  572.473318] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+> [  577.593328] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  579.189148] rcu: INFO: rcu_preempt self-detected stall on CPU
+> [  579.195329] rcu:     0-....: (1 GPs behind) idle=b76/1/0x4000000000000004 softirq=263851/263851 fqs=6251 last_accelerate: e095/4240, Nonlazy posted: ...
+> [  579.209711] rcu:      (t=25008 jiffies g=346801 q=468)
+> [  579.214801] Task dump for CPU 0:
+> [  579.218178] modprobe        R  running task        0  6337   1420 0x0000002a
+> [  579.225514] Call trace:
+> [  579.228103]  dump_backtrace+0x0/0x1dc
+> [  579.231934]  show_stack+0x24/0x30
+> [  579.235410]  sched_show_task+0x31c/0x36c
+> [  579.239507]  dump_cpu_task+0xb0/0xc0
+> [  579.243248]  rcu_dump_cpu_stacks+0x220/0x238
+> [  579.247702]  rcu_sched_clock_irq+0x8a4/0x141c
+> [  579.252249]  update_process_times+0x34/0x64
+> [  579.256617]  tick_sched_handle+0x80/0x98
+> [  579.260714]  tick_sched_timer+0x64/0xbc
+> [  579.264722]  __hrtimer_run_queues+0x5c0/0xb84
+> [  579.269266]  hrtimer_interrupt+0x1ec/0x454
+> [  579.273547]  arch_timer_handler_phys+0x40/0x58
+> [  579.278185]  handle_percpu_devid_irq+0x174/0x6e8
+> [  579.282999]  generic_handle_irq+0x3c/0x54
+> [  579.287185]  __handle_domain_irq+0x114/0x118
+> [  579.291639]  gic_handle_irq+0x70/0xac
+> [  579.295465]  el1_irq+0xbc/0x180
+> [  579.298756]  __asan_load8+0x8c/0x9c
+> [  579.302403]  rcu_is_watching+0x80/0x8c
+> [  579.306322]  rebalance_domains+0x12c/0x584
+> [  579.310599]  run_rebalance_domains+0x1f4/0x298
+> [  579.315231]  __do_softirq+0x4c0/0xab8
+> [  579.319061]  irq_exit+0x148/0x1d8
+> [  579.322530]  __handle_domain_irq+0xc0/0x118
+> [  579.326894]  gic_handle_irq+0x70/0xac
+> [  579.330720]  el1_irq+0xbc/0x180
+> [  579.334012]  lock_is_held_type+0xec/0x144
+> [  579.338201]  rcu_read_lock_sched_held+0x90/0x98
+> [  579.342927]  kmem_cache_alloc+0x328/0x3e0
+> [  579.347114]  create_object+0x5c/0x39c
+> [  579.350944]  kmemleak_alloc+0x54/0x88
+> [  579.354774]  __kmalloc_track_caller+0x1c8/0x434
+> [  579.359499]  devres_alloc_node+0x40/0x8c
+> [  579.363597]  __devm_request_region+0x48/0xc8
+> [  579.368055]  devm_ioremap_resource+0xcc/0x148
+> [  579.372626]  rcar_gen3_thermal_probe+0x288/0x618 [rcar_gen3_thermal]
+> [  579.379231]  platform_drv_probe+0x70/0xe4
+> [  579.383420]  really_probe+0x2d8/0x3d8
+> [  579.387249]  driver_probe_device+0x154/0x164
+> [  579.391705]  device_driver_attach+0x98/0xa0
+> [  579.396070]  __driver_attach+0xf0/0xf4
+> [  579.399987]  bus_for_each_dev+0x114/0x13c
+> [  579.404173]  driver_attach+0x38/0x44
+> [  579.407912]  bus_add_driver+0x234/0x288
+> [  579.411919]  driver_register+0x148/0x190
+> [  579.416015]  __platform_driver_register+0x84/0x90
+> [  579.420931]  rcar_gen3_thermal_driver_init+0x28/0x1000 [rcar_gen3_thermal]
+> [  579.428074]  do_one_initcall+0x124/0x68c
+> [  579.432173]  do_init_module+0xb4/0x300
+> [  579.436090]  load_module+0x2c90/0x2f18
+> [  579.440008]  __se_sys_finit_module+0x128/0x148
+> [  579.444642]  __arm64_sys_finit_module+0x4c/0x5c
+> [  579.449367]  el0_svc_common+0xd0/0x16c
+> [  579.453283]  el0_svc_handler+0x94/0xa0
+> [  579.457200]  el0_svc+0x8/0xc
+> [  582.713314] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  587.833305] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  592.953323] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  598.073430] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  603.193306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  604.242120] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:6337]
+> [..]
+> 
+> Best regards,
+> Eugeniu.
+> 
