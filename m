@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v3 04/16] PM / devfreq: tegra: Don't ignore clk errors
-Date: Thu, 18 Apr 2019 01:29:13 +0300
-Message-ID: <20190417222925.5815-5-digetx@gmail.com>
+Subject: [PATCH v3 14/16] PM / devfreq: tegra: Enable COMPILE_TEST for the driver
+Date: Thu, 18 Apr 2019 01:29:23 +0300
+Message-ID: <20190417222925.5815-15-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,52 +12,27 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The clk_set_min_rate() could fail and in this case clk_set_rate() sets
-rate to 0, which may drop EMC rate to minimum and make machine very
-difficult to use.
+The driver's compilation doesn't have any specific dependencies, hence
+the COMPILE_TEST option can be supported in Kconfig.
 
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ drivers/devfreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 7d7b9a5895b2..c7428c5eee23 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -484,8 +484,10 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 				u32 flags)
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
-+	struct devfreq *devfreq = tegra->devfreq;
- 	struct dev_pm_opp *opp;
- 	unsigned long rate;
-+	int err;
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 56db9dc05edb..a6bba6e1e7d9 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
  
- 	opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(opp)) {
-@@ -495,10 +497,20 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	rate = dev_pm_opp_get_freq(opp);
- 	dev_pm_opp_put(opp);
- 
--	clk_set_min_rate(tegra->emc_clock, rate);
--	clk_set_rate(tegra->emc_clock, 0);
-+	err = clk_set_min_rate(tegra->emc_clock, rate);
-+	if (err)
-+		return err;
-+
-+	err = clk_set_rate(tegra->emc_clock, 0);
-+	if (err)
-+		goto restore_min_rate;
- 
- 	return 0;
-+
-+restore_min_rate:
-+	clk_set_min_rate(tegra->emc_clock, devfreq->previous_freq);
-+
-+	return err;
- }
- 
- static int tegra_devfreq_get_dev_status(struct device *dev,
+ config ARM_TEGRA_DEVFREQ
+ 	tristate "NVIDIA Tegra30/114/124/210 DEVFREQ Driver"
+-	depends on ARCH_TEGRA
++	depends on ARCH_TEGRA || COMPILE_TEST
+ 	select PM_OPP
+ 	help
+ 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
 -- 
 2.21.0
