@@ -2,175 +2,469 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAC3CC282DA
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:43:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BA78C282DA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:56:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9855A20693
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:43:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 26D1F2183F
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:56:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oTrb038y"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Mn1YtFP6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387748AbfDQWnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 18:43:24 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:34721 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725848AbfDQWnX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:43:23 -0400
-Received: by mail-pg1-f193.google.com with SMTP id v12so222491pgq.1;
-        Wed, 17 Apr 2019 15:43:23 -0700 (PDT)
+        id S1731108AbfDQW4R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 18:56:17 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:45714 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725848AbfDQW4R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:56:17 -0400
+Received: by mail-wr1-f68.google.com with SMTP id s15so380560wra.12
+        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 15:56:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+fNoakO5VGR+YqCvREKu6Ww81w6B+n7Tmbl7xvjsl6s=;
-        b=oTrb038yLMNUyy4lKfkvUg9bMSq6XXqmjJsEG1M/3N9CBhee9YJR/6IaKp24VwIGqZ
-         /p/525WPOZ1/vof0g2a41pEywrCBkWpiELaY48KOXuhRWaQe1Mmt2MIb/+c5tPe+b3Aj
-         8r5yuVkN+MCu3fjk+ZluropNZrcqSxGRtSFi++HBV73nEz6FCbtEDw+idROnFQN+A4np
-         +rKL1NcjX9IdufXVzXweI/ltbVXV6djgspnddu1ThOxYk/w9rmnZNVMDCRTuM1VPHlEP
-         TyF/k4AzFFvw2Bgm3KdicaP9+strpx8aRzgiOI7d+RQ8vbOZ7sze6N8L3LC8SjbonNnS
-         EEig==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=fI+B+7jxWBkf9fiGCTit20nyv5c7lLxLKEtMTOtcPLo=;
+        b=Mn1YtFP6oFnUsXjGXohN6+7UZFeEQD8fGIsrBKTg3l5tvgRCR3uk8n02ExBojsCgrD
+         oC4T7iDWCoi37gcZQ5ocQbMIi/azuMIKjG6wXW5E3AmK8CWmInUvQKoLIplc21GkCcgh
+         bbvihbMAYmhI9wEBOnCbKHua1DedatTq3nJyurtvRwdH95OSnDPlMQ0qkvmF1bbJXZ94
+         X88XtIm+bG4YwNzAGnkhR6nXB/TlI7J5kVX63Z+F5SiZmLx+BE2fVwh5jQHUx5AzmKsD
+         M+OEoGyFrXnKsXMb9xcfK1lK8ak6bn6UsoqQRE2J1nTT/nZMJC4eSQ+BET7aTRirsRvV
+         5pdA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+fNoakO5VGR+YqCvREKu6Ww81w6B+n7Tmbl7xvjsl6s=;
-        b=aibdyzp97ny5AbGfU78Xw5WNWYyJuqgiI8n/AiEMHBvbMSWedLzYIbqTHSXVYPy3KU
-         /ibAOKUa3YWCCUuXTeL66d77i4/Qp0y39efprj6coBLh3H/yAh4nAHg9zjYxQDHFT6UP
-         r1GpPIdjzOvjKSCoE8K1SP+FCm/pF3E1fPdTdcnZcF+h64pPQaqxYitO/NGkeRBarRv0
-         00JlrrhnWM8UoKvc9YEl446Z9BAR0p7dqqjw1xI2Wkkl4SwX8dwMP3didzz/vphiNPzS
-         Nzf3Ad4qGHN0PHRTzsoprK8yK/58DkzG83h3ziFKXYU8++kDjbmmRHS687+yqOcZRZLm
-         iUsA==
-X-Gm-Message-State: APjAAAVrmLzjRzcuqM5MH+TIdFkl0T6WasrpbFSzXnTIovICkXK70Tyu
-        QAK4+/7PiwQOm5CUjAtVfws=
-X-Google-Smtp-Source: APXvYqzuBKXpLz5w5/+N6A3xfVdyZtGa9JO1YBV5vFrogX5oLpEZPXG5F4sBKW2VAT3ILssx4ZS78w==
-X-Received: by 2002:a63:cc0a:: with SMTP id x10mr82524102pgf.179.1555540511286;
-        Wed, 17 Apr 2019 15:35:11 -0700 (PDT)
-Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l26sm281030pfb.20.2019.04.17.15.35.05
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 17 Apr 2019 15:35:10 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v3 11/16] PM / devfreq: tegra: Move governor registration to driver's probe
-Date:   Thu, 18 Apr 2019 01:29:20 +0300
-Message-Id: <20190417222925.5815-12-digetx@gmail.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190417222925.5815-1-digetx@gmail.com>
-References: <20190417222925.5815-1-digetx@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=fI+B+7jxWBkf9fiGCTit20nyv5c7lLxLKEtMTOtcPLo=;
+        b=V/mthlX+V+p9kFaMdhPNKd2mzUp0NkhALh4DdwRUvbp/dV8ChvJo675SdnIFsO23FG
+         lWQ64AOnGCSC7jP51zDt3CX0xulI1/BDYzeJLEZkTd8ZagygESuMmxp33Sh8freixntD
+         erBZYHbuU90efGuhlFWPY1PpTlfevc9MOv86YUrzec55FszKjrKH/GrdPrZbFVL5/y3j
+         f58AeyC4m+LE1v6T6mkqIVVh5N9eLOAlSEOuV7WKPkW/pF3FKFJtWZqf52IRurb+ECNy
+         wspu3ec7qsaFy6IMXCdwT0pLZSpB+fOondEHC+a1iLnieUTpC2IgQAuFtmx8wEYgG0sY
+         ryYQ==
+X-Gm-Message-State: APjAAAV8yxcu4W4CGHPK1gjVTGLf2vYDiiaPyFwTmofIfQJqqOe1li47
+        yetQBDn9bp6gsvvGr5F63+tsNfP9lCMfc3k0OZO0cA==
+X-Google-Smtp-Source: APXvYqw4zxAQTR5pmCJXvUSDpPlpZu3L0p+qo3YqaJQs4UPJYITTf8AJex9SfvjW0QjMpmVz+0FU2M8SiXZglFoY0ko=
+X-Received: by 2002:a05:6000:14a:: with SMTP id r10mr38300487wrx.107.1555540005137;
+ Wed, 17 Apr 2019 15:26:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190402104153.25404-1-patrick.bellasi@arm.com> <20190402104153.25404-7-patrick.bellasi@arm.com>
+In-Reply-To: <20190402104153.25404-7-patrick.bellasi@arm.com>
+From:   Suren Baghdasaryan <surenb@google.com>
+Date:   Wed, 17 Apr 2019 15:26:33 -0700
+Message-ID:
+ <CAJuCfpH3htcr3xB_Y4nr7HXCdQd1hOdOAXbtZJB1SOt7Of_qbw@mail.gmail.com>
+Subject: Re: [PATCH v8 06/16] sched/core: uclamp: Extend sched_setattr() to
+ support utilization clamping
+To:     Patrick Bellasi <patrick.bellasi@arm.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org,
+        linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Tejun Heo <tj@kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190417222920.nvxJtk096OvKyX9F8Lmw9G9F0dC78Tpq_E6t2GkUgGc@z>
+Message-ID: <20190417222633.obQHEvKVF6GdSME8h3h1GBljDrMk_qqMFTinroN1Fw0@z>
 
-There is no need to register the ACTMON's governor separately from
-the driver, hence let's move the registration into the driver's probe
-function for consistency and to make code cleaner a tad.
+On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>
+> The SCHED_DEADLINE scheduling class provides an advanced and formal
+> model to define tasks requirements that can translate into proper
+> decisions for both task placements and frequencies selections. Other
+> classes have a more simplified model based on the POSIX concept of
+> priorities.
+>
+> Such a simple priority based model however does not allow to exploit
+> most advanced features of the Linux scheduler like, for example, driving
+> frequencies selection via the schedutil cpufreq governor. However, also
+> for non SCHED_DEADLINE tasks, it's still interesting to define tasks
+> properties to support scheduler decisions.
+>
+> Utilization clamping exposes to user-space a new set of per-task
+> attributes the scheduler can use as hints about the expected/required
+> utilization for a task. This allows to implement a "proactive" per-task
+> frequency control policy, a more advanced policy than the current one
+> based just on "passive" measured task utilization. For example, it's
+> possible to boost interactive tasks (e.g. to get better performance) or
+> cap background tasks (e.g. to be more energy/thermal efficient).
+>
+> Introduce a new API to set utilization clamping values for a specified
+> task by extending sched_setattr(), a syscall which already allows to
+> define task specific properties for different scheduling classes. A new
+> pair of attributes allows to specify a minimum and maximum utilization
+> the scheduler can consider for a task.
+>
+> Do that by validating the required clamp values before and then applying
+> the required changes using _the_ same pattern already in use for
+> __setscheduler(). This ensures that the task is re-enqueued with the new
+> clamp values.
+>
+> Do not allow to change sched class specific params and non class
+> specific params (i.e. clamp values) at the same time.  This keeps things
+> simple and still works for the most common cases since we are usually
+> interested in just one of the two actions.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra-devfreq.c | 43 +++++++++------------------------
- 1 file changed, 12 insertions(+), 31 deletions(-)
+Sorry, I can't find where you are checking to eliminate the
+possibility of simultaneous changes to both sched class specific
+params and non class specific params... Am I too tired or they are
+indeed missing?
 
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 272232ce2960..62f35e818122 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -695,6 +695,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		goto remove_opps;
- 	}
- 
-+	err = devfreq_add_governor(&tegra_devfreq_governor);
-+	if (err) {
-+		dev_err(&pdev->dev, "Failed to add governor: %d\n", err);
-+		goto unreg_notifier;
-+	}
-+
- 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
- 	tegra->devfreq = devfreq_add_device(&pdev->dev,
- 					    &tegra_devfreq_profile,
-@@ -702,7 +708,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 					    NULL);
- 	if (IS_ERR(tegra->devfreq)) {
- 		err = PTR_ERR(tegra->devfreq);
--		goto unreg_notifier;
-+		goto remove_governor;
- 	}
- 
- 	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
-@@ -718,6 +724,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- remove_devfreq:
- 	devfreq_remove_device(tegra->devfreq);
- 
-+remove_governor:
-+	devfreq_remove_governor(&tegra_devfreq_governor);
-+
- unreg_notifier:
- 	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
- 
-@@ -735,6 +744,7 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
- 
- 	devfreq_remove_device(tegra->devfreq);
-+	devfreq_remove_governor(&tegra_devfreq_governor);
- 	dev_pm_opp_remove_all_dynamic(&pdev->dev);
- 
- 	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
-@@ -760,36 +770,7 @@ static struct platform_driver tegra_devfreq_driver = {
- 		.of_match_table = tegra_devfreq_of_match,
- 	},
- };
--
--static int __init tegra_devfreq_init(void)
--{
--	int ret = 0;
--
--	ret = devfreq_add_governor(&tegra_devfreq_governor);
--	if (ret) {
--		pr_err("%s: failed to add governor: %d\n", __func__, ret);
--		return ret;
--	}
--
--	ret = platform_driver_register(&tegra_devfreq_driver);
--	if (ret)
--		devfreq_remove_governor(&tegra_devfreq_governor);
--
--	return ret;
--}
--module_init(tegra_devfreq_init)
--
--static void __exit tegra_devfreq_exit(void)
--{
--	int ret = 0;
--
--	platform_driver_unregister(&tegra_devfreq_driver);
--
--	ret = devfreq_remove_governor(&tegra_devfreq_governor);
--	if (ret)
--		pr_err("%s: failed to remove governor: %d\n", __func__, ret);
--}
--module_exit(tegra_devfreq_exit)
-+module_platform_driver(tegra_devfreq_driver);
- 
- MODULE_LICENSE("GPL v2");
- MODULE_DESCRIPTION("Tegra devfreq driver");
--- 
-2.21.0
+>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+>
+> ---
+> Changes in v8:
+>  Others:
+>  - using p->uclamp_req to track clamp values "requested" from userspace
+> ---
+>  include/linux/sched.h            |  9 ++++
+>  include/uapi/linux/sched.h       | 12 ++++-
+>  include/uapi/linux/sched/types.h | 66 ++++++++++++++++++++----
+>  kernel/sched/core.c              | 87 +++++++++++++++++++++++++++++++-
+>  4 files changed, 162 insertions(+), 12 deletions(-)
+>
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index d8491954e2e1..c2b81a84985b 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -585,6 +585,7 @@ struct sched_dl_entity {
+>   * @value:             clamp value "assigned" to a se
+>   * @bucket_id:         bucket index corresponding to the "assigned" value
+>   * @active:            the se is currently refcounted in a rq's bucket
+> + * @user_defined:      the requested clamp value comes from user-space
+>   *
+>   * The bucket_id is the index of the clamp bucket matching the clamp value
+>   * which is pre-computed and stored to avoid expensive integer divisions from
+> @@ -594,11 +595,19 @@ struct sched_dl_entity {
+>   * which can be different from the clamp value "requested" from user-space.
+>   * This allows to know a task is refcounted in the rq's bucket corresponding
+>   * to the "effective" bucket_id.
+> + *
+> + * The user_defined bit is set whenever a task has got a task-specific clamp
+> + * value requested from userspace, i.e. the system defaults apply to this task
+> + * just as a restriction. This allows to relax default clamps when a less
+> + * restrictive task-specific value has been requested, thus allowing to
+> + * implement a "nice" semantic. For example, a task running with a 20%
+> + * default boost can still drop its own boosting to 0%.
+>   */
+>  struct uclamp_se {
+>         unsigned int value              : bits_per(SCHED_CAPACITY_SCALE);
+>         unsigned int bucket_id          : bits_per(UCLAMP_BUCKETS);
+>         unsigned int active             : 1;
+> +       unsigned int user_defined       : 1;
+>  };
+>  #endif /* CONFIG_UCLAMP_TASK */
+>
+> diff --git a/include/uapi/linux/sched.h b/include/uapi/linux/sched.h
+> index 075c610adf45..d2c65617a4a4 100644
+> --- a/include/uapi/linux/sched.h
+> +++ b/include/uapi/linux/sched.h
+> @@ -53,10 +53,20 @@
+>  #define SCHED_FLAG_RECLAIM             0x02
+>  #define SCHED_FLAG_DL_OVERRUN          0x04
+>  #define SCHED_FLAG_KEEP_POLICY         0x08
+> +#define SCHED_FLAG_KEEP_PARAMS         0x10
+> +#define SCHED_FLAG_UTIL_CLAMP_MIN      0x20
+> +#define SCHED_FLAG_UTIL_CLAMP_MAX      0x40
+> +
+> +#define SCHED_FLAG_KEEP_ALL    (SCHED_FLAG_KEEP_POLICY | \
+> +                                SCHED_FLAG_KEEP_PARAMS)
+> +
+> +#define SCHED_FLAG_UTIL_CLAMP  (SCHED_FLAG_UTIL_CLAMP_MIN | \
+> +                                SCHED_FLAG_UTIL_CLAMP_MAX)
+>
+>  #define SCHED_FLAG_ALL (SCHED_FLAG_RESET_ON_FORK       | \
+>                          SCHED_FLAG_RECLAIM             | \
+>                          SCHED_FLAG_DL_OVERRUN          | \
+> -                        SCHED_FLAG_KEEP_POLICY)
+> +                        SCHED_FLAG_KEEP_ALL            | \
+> +                        SCHED_FLAG_UTIL_CLAMP)
+>
+>  #endif /* _UAPI_LINUX_SCHED_H */
+> diff --git a/include/uapi/linux/sched/types.h b/include/uapi/linux/sched/types.h
+> index 10fbb8031930..c852153ddb0d 100644
+> --- a/include/uapi/linux/sched/types.h
+> +++ b/include/uapi/linux/sched/types.h
+> @@ -9,6 +9,7 @@ struct sched_param {
+>  };
+>
+>  #define SCHED_ATTR_SIZE_VER0   48      /* sizeof first published struct */
+> +#define SCHED_ATTR_SIZE_VER1   56      /* add: util_{min,max} */
+>
+>  /*
+>   * Extended scheduling parameters data structure.
+> @@ -21,8 +22,33 @@ struct sched_param {
+>   * the tasks may be useful for a wide variety of application fields, e.g.,
+>   * multimedia, streaming, automation and control, and many others.
+>   *
+> - * This variant (sched_attr) is meant at describing a so-called
+> - * sporadic time-constrained task. In such model a task is specified by:
+> + * This variant (sched_attr) allows to define additional attributes to
+> + * improve the scheduler knowledge about task requirements.
+> + *
+> + * Scheduling Class Attributes
+> + * ===========================
+> + *
+> + * A subset of sched_attr attributes specifies the
+> + * scheduling policy and relative POSIX attributes:
+> + *
+> + *  @size              size of the structure, for fwd/bwd compat.
+> + *
+> + *  @sched_policy      task's scheduling policy
+> + *  @sched_nice                task's nice value      (SCHED_NORMAL/BATCH)
+> + *  @sched_priority    task's static priority (SCHED_FIFO/RR)
+> + *
+> + * Certain more advanced scheduling features can be controlled by a
+> + * predefined set of flags via the attribute:
+> + *
+> + *  @sched_flags       for customizing the scheduler behaviour
+> + *
+> + * Sporadic Time-Constrained Task Attributes
+> + * =========================================
+> + *
+> + * A subset of sched_attr attributes allows to describe a so-called
+> + * sporadic time-constrained task.
+> + *
+> + * In such a model a task is specified by:
+>   *  - the activation period or minimum instance inter-arrival time;
+>   *  - the maximum (or average, depending on the actual scheduling
+>   *    discipline) computation time of all instances, a.k.a. runtime;
+> @@ -34,14 +60,8 @@ struct sched_param {
+>   * than the runtime and must be completed by time instant t equal to
+>   * the instance activation time + the deadline.
+>   *
+> - * This is reflected by the actual fields of the sched_attr structure:
+> + * This is reflected by the following fields of the sched_attr structure:
+>   *
+> - *  @size              size of the structure, for fwd/bwd compat.
+> - *
+> - *  @sched_policy      task's scheduling policy
+> - *  @sched_flags       for customizing the scheduler behaviour
+> - *  @sched_nice                task's nice value      (SCHED_NORMAL/BATCH)
+> - *  @sched_priority    task's static priority (SCHED_FIFO/RR)
+>   *  @sched_deadline    representative of the task's deadline
+>   *  @sched_runtime     representative of the task's runtime
+>   *  @sched_period      representative of the task's period
+> @@ -53,6 +73,29 @@ struct sched_param {
+>   * As of now, the SCHED_DEADLINE policy (sched_dl scheduling class) is the
+>   * only user of this new interface. More information about the algorithm
+>   * available in the scheduling class file or in Documentation/.
+> + *
+> + * Task Utilization Attributes
+> + * ===========================
+> + *
+> + * A subset of sched_attr attributes allows to specify the utilization
+> + * expected for a task. These attributes allow to inform the scheduler about
+> + * the utilization boundaries within which it should schedule the task. These
+> + * boundaries are valuable hints to support scheduler decisions on both task
+> + * placement and frequency selection.
+> + *
+> + *  @sched_util_min    represents the minimum utilization
+> + *  @sched_util_max    represents the maximum utilization
+> + *
+> + * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE]. It
+> + * represents the percentage of CPU time used by a task when running at the
+> + * maximum frequency on the highest capacity CPU of the system. For example, a
+> + * 20% utilization task is a task running for 2ms every 10ms at maximum
+> + * frequency.
+> + *
+> + * A task with a min utilization value bigger than 0 is more likely scheduled
+> + * on a CPU with a capacity big enough to fit the specified value.
+> + * A task with a max utilization value smaller than 1024 is more likely
+> + * scheduled on a CPU with no more capacity than the specified value.
+>   */
+>  struct sched_attr {
+>         __u32 size;
+> @@ -70,6 +113,11 @@ struct sched_attr {
+>         __u64 sched_runtime;
+>         __u64 sched_deadline;
+>         __u64 sched_period;
+> +
+> +       /* Utilization hints */
+> +       __u32 sched_util_min;
+> +       __u32 sched_util_max;
+> +
+>  };
+>
+>  #endif /* _UAPI_LINUX_SCHED_TYPES_H */
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 20efb32e1a7e..68aed32e8ec7 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -1020,6 +1020,50 @@ int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
+>         return result;
+>  }
+>
+> +static int uclamp_validate(struct task_struct *p,
+> +                          const struct sched_attr *attr)
+> +{
+> +       unsigned int lower_bound = p->uclamp_req[UCLAMP_MIN].value;
+> +       unsigned int upper_bound = p->uclamp_req[UCLAMP_MAX].value;
+> +
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
+> +               lower_bound = attr->sched_util_min;
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> +               upper_bound = attr->sched_util_max;
+> +
+> +       if (lower_bound > upper_bound)
+> +               return -EINVAL;
+> +       if (upper_bound > SCHED_CAPACITY_SCALE)
+> +               return -EINVAL;
+> +
+> +       return 0;
+> +}
+> +
+> +static void __setscheduler_uclamp(struct task_struct *p,
+> +                                 const struct sched_attr *attr)
+> +{
+> +       if (likely(!(attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)))
+> +               return;
+> +
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> +               unsigned int lower_bound = attr->sched_util_min;
+> +
+> +               p->uclamp_req[UCLAMP_MIN].user_defined = true;
+> +               p->uclamp_req[UCLAMP_MIN].value = lower_bound;
+> +               p->uclamp_req[UCLAMP_MIN].bucket_id =
+> +                       uclamp_bucket_id(lower_bound);
+> +       }
+> +
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> +               unsigned int upper_bound =  attr->sched_util_max;
+> +
+> +               p->uclamp_req[UCLAMP_MAX].user_defined = true;
+> +               p->uclamp_req[UCLAMP_MAX].value = upper_bound;
+> +               p->uclamp_req[UCLAMP_MAX].bucket_id =
+> +                       uclamp_bucket_id(upper_bound);
+> +       }
+> +}
+> +
+>  static void uclamp_fork(struct task_struct *p)
+>  {
+>         unsigned int clamp_id;
+> @@ -1056,6 +1100,13 @@ static void __init init_uclamp(void)
+>  #else /* CONFIG_UCLAMP_TASK */
+>  static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
+>  static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
+> +static inline int uclamp_validate(struct task_struct *p,
+> +                                 const struct sched_attr *attr)
+> +{
+> +       return -ENODEV;
 
+ENOSYS might be more appropriate?
+
+> +}
+> +static void __setscheduler_uclamp(struct task_struct *p,
+> +                                 const struct sched_attr *attr) { }
+>  static inline void uclamp_fork(struct task_struct *p) { }
+>  static inline void init_uclamp(void) { }
+>  #endif /* CONFIG_UCLAMP_TASK */
+> @@ -4424,6 +4475,13 @@ static void __setscheduler_params(struct task_struct *p,
+>  static void __setscheduler(struct rq *rq, struct task_struct *p,
+>                            const struct sched_attr *attr, bool keep_boost)
+>  {
+> +       /*
+> +        * If params can't change scheduling class changes aren't allowed
+> +        * either.
+> +        */
+> +       if (attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)
+> +               return;
+> +
+>         __setscheduler_params(p, attr);
+>
+>         /*
+> @@ -4561,6 +4619,13 @@ static int __sched_setscheduler(struct task_struct *p,
+>                         return retval;
+>         }
+>
+> +       /* Update task specific "requested" clamps */
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) {
+> +               retval = uclamp_validate(p, attr);
+> +               if (retval)
+> +                       return retval;
+> +       }
+> +
+>         /*
+>          * Make sure no PI-waiters arrive (or leave) while we are
+>          * changing the priority of the task:
+> @@ -4590,6 +4655,8 @@ static int __sched_setscheduler(struct task_struct *p,
+>                         goto change;
+>                 if (dl_policy(policy) && dl_param_changed(p, attr))
+>                         goto change;
+> +               if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
+> +                       goto change;
+>
+>                 p->sched_reset_on_fork = reset_on_fork;
+>                 task_rq_unlock(rq, p, &rf);
+> @@ -4670,7 +4737,9 @@ static int __sched_setscheduler(struct task_struct *p,
+>                 put_prev_task(rq, p);
+>
+>         prev_class = p->sched_class;
+> +
+>         __setscheduler(rq, p, attr, pi);
+> +       __setscheduler_uclamp(p, attr);
+>
+>         if (queued) {
+>                 /*
+> @@ -4846,6 +4915,10 @@ static int sched_copy_attr(struct sched_attr __user *uattr, struct sched_attr *a
+>         if (ret)
+>                 return -EFAULT;
+>
+> +       if ((attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) &&
+> +           size < SCHED_ATTR_SIZE_VER1)
+> +               return -EINVAL;
+> +
+>         /*
+>          * XXX: Do we want to be lenient like existing syscalls; or do we want
+>          * to be strict and return an error on out-of-bounds values?
+> @@ -4922,10 +4995,15 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
+>         rcu_read_lock();
+>         retval = -ESRCH;
+>         p = find_process_by_pid(pid);
+> -       if (p != NULL)
+> -               retval = sched_setattr(p, &attr);
+> +       if (likely(p))
+> +               get_task_struct(p);
+>         rcu_read_unlock();
+>
+> +       if (likely(p)) {
+> +               retval = sched_setattr(p, &attr);
+> +               put_task_struct(p);
+> +       }
+> +
+>         return retval;
+>  }
+>
+> @@ -5076,6 +5154,11 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
+>         else
+>                 attr.sched_nice = task_nice(p);
+>
+> +#ifdef CONFIG_UCLAMP_TASK
+> +       attr.sched_util_min = p->uclamp_req[UCLAMP_MIN].value;
+> +       attr.sched_util_max = p->uclamp_req[UCLAMP_MAX].value;
+> +#endif
+> +
+>         rcu_read_unlock();
+>
+>         retval = sched_read_attr(uattr, &attr, size);
+> --
+> 2.20.1
+>
