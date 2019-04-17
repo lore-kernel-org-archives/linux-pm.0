@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v3 09/16] PM / devfreq: tegra: Avoid inconsistency of current frequency value
-Date: Thu, 18 Apr 2019 01:29:18 +0300
-Message-ID: <20190417222925.5815-10-digetx@gmail.com>
+Subject: [PATCH v3 04/16] PM / devfreq: tegra: Don't ignore clk errors
+Date: Thu, 18 Apr 2019 01:29:13 +0300
+Message-ID: <20190417222925.5815-5-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,45 +12,52 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The frequency value potentially could change in-between. It doesn't
-cause any real problem at all right now, but that could change in the
-future. Hence let's avoid the inconsistency.
+The clk_set_min_rate() could fail and in this case clk_set_rate() sets
+rate to 0, which may drop EMC rate to minimum and make machine very
+difficult to use.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 70946e432d3c..d72c16752012 100644
+index 7d7b9a5895b2..c7428c5eee23 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -509,13 +509,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+@@ -484,8 +484,10 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 				u32 flags)
  {
  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
-+	unsigned long cur_freq;
++	struct devfreq *devfreq = tegra->devfreq;
+ 	struct dev_pm_opp *opp;
+ 	unsigned long rate;
++	int err;
  
--	stat->current_frequency = tegra->cur_freq * KHZ;
-+	cur_freq = READ_ONCE(tegra->cur_freq);
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp)) {
+@@ -495,10 +497,20 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	rate = dev_pm_opp_get_freq(opp);
+ 	dev_pm_opp_put(opp);
  
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
+-	clk_set_min_rate(tegra->emc_clock, rate);
+-	clk_set_rate(tegra->emc_clock, 0);
++	err = clk_set_min_rate(tegra->emc_clock, rate);
++	if (err)
++		return err;
++
++	err = clk_set_rate(tegra->emc_clock, 0);
++	if (err)
++		goto restore_min_rate;
  
- 	/* The below are to be used by the other governors */
-+	stat->current_frequency = cur_freq * KHZ;
+ 	return 0;
++
++restore_min_rate:
++	clk_set_min_rate(tegra->emc_clock, devfreq->previous_freq);
++
++	return err;
+ }
  
- 	actmon_dev = &tegra->devices[MCALL];
- 
-@@ -526,7 +528,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
- 
- 	/* Number of cycles in a sampling period */
--	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
-+	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
- 
- 	stat->busy_time = min(stat->busy_time, stat->total_time);
- 
+ static int tegra_devfreq_get_dev_status(struct device *dev,
 -- 
 2.21.0
