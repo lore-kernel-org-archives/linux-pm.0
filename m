@@ -1,51 +1,44 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: remove unnecessary unlikely()
-Date: Wed, 17 Apr 2019 10:38:14 +0200
-Message-ID: <CAPDyKFpR6bwjUG_WtgvXJznBHcZBMOfTkj_Lb7aHPryvxC5mxQ@mail.gmail.com>
-References: <20190416162305.24375-1-tiny.windzz@gmail.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH 0/3] Driver for UCS1002
+Date: Wed, 17 Apr 2019 01:44:54 -0700
+Message-ID: <20190417084457.28747-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190416162305.24375-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Health <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 16 Apr 2019 at 18:23, Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> WARN_ON() already contains an unlikely(), so it's not necessary to use
-> unlikely.
->
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Everyone:
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+This small series adds a driver for UCS1002 Programmable USB Port
+Power Controller with Charger Emulation. See [page] for product page
+and [datasheet] for device dataseet. Hopefully each individual patch
+is self explanatory.
 
-Kind regards
-Uffe
+Feedback is welcome!
 
-> ---
->  drivers/base/power/domain.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 96a6dc9d305c..598a4e02aee1 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -391,11 +391,9 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
->         if (unlikely(!genpd->set_performance_state))
->                 return -EINVAL;
->
-> -       if (unlikely(!dev->power.subsys_data ||
-> -                    !dev->power.subsys_data->domain_data)) {
-> -               WARN_ON(1);
-> +       if (WARN_ON(!dev->power.subsys_data ||
-> +                    !dev->power.subsys_data->domain_data))
->                 return -EINVAL;
-> -       }
->
->         genpd_lock(genpd);
->
-> --
-> 2.17.0
->
+Thanks,
+Andrey Smirnov
+
+[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
+[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
+
+Andrey Smirnov (3):
+  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+  power: supply: Add driver for Microchip UCS1002
+  dt-bindings: power: supply: Add bindings for Microchip UCS1002
+
+ .../power/supply/microchip,ucs1002.txt        |  26 +
+ drivers/power/supply/Kconfig                  |   9 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/power_supply_sysfs.c     |   2 +-
+ drivers/power/supply/ucs1002_power.c          | 639 ++++++++++++++++++
+ include/linux/power_supply.h                  |   1 +
+ 6 files changed, 677 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+ create mode 100644 drivers/power/supply/ucs1002_power.c
+
+-- 
+2.20.1
