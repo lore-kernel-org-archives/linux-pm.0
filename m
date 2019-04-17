@@ -1,162 +1,99 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
- device initialization
-Date: Wed, 17 Apr 2019 10:05:55 +0200
-Message-ID: <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
-References: <20190411100352.15977-1-jiada_wang@mentor.com>
- <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
- <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 1/3] include: dt-bindings: add Performance Monitoring
+ Unit for Exynos
+Date: Wed, 17 Apr 2019 17:10:38 +0900
+Message-ID: <3fcb6dde-7ccc-4da6-5f8b-c8338edaa155@samsung.com>
+References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190417074832eucas1p26eca3ed8bf754787b4860206ba542e1c@eucas1p2.samsung.com>
+        <1555487288-4777-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+In-Reply-To: <1555487288-4777-2-git-send-email-l.luba@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 17/04/2019 05:01, Jiada Wang wrote:
-> Hi Daniel
+Hi Lukasz,
+
+On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
+> This patch add support of a new feature which can be used in DT:
+> Performance Monitoring Unit with defined event data type.
+> In this patch the event data types are defined for Exynos PPMU.
+> The patch also updates the MAINTAINERS file accordingly.
 > 
-> On 2019/04/17 4:22, Daniel Lezcano wrote:
->> On 11/04/2019 12:03, Jiada Wang wrote:
->>> Currently IRQ is remain enabled after .remove, later if device is
->>> probed,
->>> IRQ is requested before .thermal_init, this may cause IRQ function be
->>> triggered but not able to clear IRQ status, thus cause system to hang.
->>>
->>> this patch by moving request of IRQ after device initialization to
->>> avoid this issue.
->>
->> Why not disable the interrupt and clear the irq status in the .remove
->> callback, so the place is clean when probing again?
->>
->>
->>          struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
->>
->>          rcar_thermal_irq_set(priv, false);
->>
->> should do the trick no ?
->>
-> yes, this issue also can be addressed by disable the interrupt in .remove.
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  MAINTAINERS                           |  5 +++++
+>  include/dt-bindings/pmu/exynos_ppmu.h | 24 ++++++++++++++++++++++++
+>  2 files changed, 29 insertions(+)
+>  create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
 > 
-> But there is race condition between .remove and irq thread function,
-> (which enables IRQ)
-> so driver need to ensure threaded irq has been disabled before call
-> rcar_thermal_irq_set(priv, false) in .remove.
-> this adds additional complexity.
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 3671fde..f4aac78 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -12376,6 +12376,11 @@ L:	linux-scsi@vger.kernel.org
+>  S:	Supported
+>  F:	drivers/scsi/pm8001/
+>  
+> +PMU EXYNOS DT BINDINGS
+> +M:	Lukasz Luba <l.luba@partner.samsung.com>
+> +S:	Maintained
+> +F:	include/dt-bindings/pmu/exynos_ppmu.h
+> +
+
+IMHO, I'm not sure that it is right of adding one dt-binding header file
+to MAINTAINERS file. If right, I'm OK.
+
+
+>  PNP SUPPORT
+>  M:	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+>  S:	Maintained
+> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
+> new file mode 100644
+> index 0000000..a6971eb
+> --- /dev/null
+> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
+> @@ -0,0 +1,24 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Samsung Exynos PPMU event types for counting in regs
+> + *
+> + * Copyright (c) 2019, Samsung
+> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
+> + */
+> +
+> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+> +
+> +
+> +#define PPMU_RO_BUSY_CYCLE_CNT		0x0
+> +#define PPMU_WO_BUSY_CYCLE_CNT		0x1
+> +#define PPMU_RW_BUSY_CYCLE_CNT		0x2
+> +#define PPMU_RO_REQUEST_CNT		0x3
+> +#define PPMU_WO_REQUEST_CNT		0x4
+> +#define PPMU_RO_DATA_CNT		0x5
+> +#define PPMU_WO_DATA_CNT		0x6
+> +#define PPMU_RO_LATENCY			0x12
+> +#define PPMU_WO_LATENCY			0x16
+> +#define PPMU_V2_EVT3_RW_DATA_CNT	0x22
+
+If we can select the data type for monitoring, it looks good to me.
+But, when I developed the Exynos PPMU, I has not tested other data type
+except for PPMU_RO_DATA_CNT and PPMU_WO_DATA_CNT.
+
+Do you test all data types with PPMU device?
+
+> +
+> +#endif
 > 
-> I am fine with both solutions,
-> what is your opinion?
-
-My opinion is it is the tree hiding the forest.
-
-After a quick look at the irq setup and handling, it appears the
-implementation is cumbersome. This part should be fixed before the rest:
-
- - check IRQF_ONESHOT flag
- - remove the lock in the interrupt handlers
- - remove rcar_gen3_thermal_irq() which is pointless
- - check the IRQF_SHARED flag is correct (I doubt)
-
-As the function devm_request_threaded_irq() is called 3 times, you
-should add the priv->tscs[i]->zone in the private data and the irq
-thread handler should look like:
-
-static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
-{
-	struct thermal_zone_device *tz = data;
-
-	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-
-	[ ... ]
-
-        return IRQ_HANDLED;
-}
-
-When the implementation is fixed, then we can take care of the .remove
-
->>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
->>> ---
->>>   drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
->>>   1 file changed, 26 insertions(+), 22 deletions(-)
->>>
->>> diff --git a/drivers/thermal/rcar_gen3_thermal.c
->>> b/drivers/thermal/rcar_gen3_thermal.c
->>> index 88fa41cf16e8..4d095d7f9763 100644
->>> --- a/drivers/thermal/rcar_gen3_thermal.c
->>> +++ b/drivers/thermal/rcar_gen3_thermal.c
->>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct
->>> platform_device *pdev)
->>>         platform_set_drvdata(pdev, priv);
->>>   -    /*
->>> -     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>> -     * to trigger on the low and high trip points of the current
->>> -     * temp window at this point.
->>> -     */
->>> -    for (i = 0; i < 2; i++) {
->>> -        irq = platform_get_irq(pdev, i);
->>> -        if (irq < 0)
->>> -            return irq;
->>> -
->>> -        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>> -                     dev_name(dev), i);
->>> -        if (!irqname)
->>> -            return -ENOMEM;
->>> -
->>> -        ret = devm_request_threaded_irq(dev, irq,
->>> rcar_gen3_thermal_irq,
->>> -                        rcar_gen3_thermal_irq_thread,
->>> -                        IRQF_SHARED, irqname, priv);
->>> -        if (ret)
->>> -            return ret;
->>> -    }
->>> -
->>>       pm_runtime_enable(dev);
->>>       pm_runtime_get_sync(dev);
->>>   @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct
->>> platform_device *pdev)
->>>           goto error_unregister;
->>>       }
->>>   +    /*
->>> +     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>> +     * to trigger on the low and high trip points of the current
->>> +     * temp window at this point.
->>> +     */
->>> +    for (i = 0; i < 2; i++) {
->>> +        irq = platform_get_irq(pdev, i);
->>> +        if (irq < 0) {
->>> +            ret = irq;
->>> +            goto error_unregister;
->>> +        }
->>> +
->>> +        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>> +                     dev_name(dev), i);
->>> +        if (!irqname) {
->>> +            ret = -ENOMEM;
->>> +            goto error_unregister;
->>> +        }
->>> +
->>> +        ret = devm_request_threaded_irq(dev, irq,
->>> rcar_gen3_thermal_irq,
->>> +                        rcar_gen3_thermal_irq_thread,
->>> +                        IRQF_SHARED, irqname, priv);
->>> +        if (ret)
->>> +            goto error_unregister;
->>> +    }
->>> +
->>>       rcar_thermal_irq_set(priv, true);
->>>         return 0;
->>>
->>
->>
 
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
