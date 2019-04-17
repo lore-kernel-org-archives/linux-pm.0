@@ -1,112 +1,166 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 12/19] PM / devfreq: tegra: Avoid inconsistency of
- current frequency value
-Date: Wed, 17 Apr 2019 09:35:15 +0900
-Message-ID: <f83171df-3d48-e15e-42ea-7a0903e6c015@samsung.com>
-References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145721epcas1p4936edf8cf61a7d373a6e3f6aba76a029@epcas1p4.samsung.com>
-        <20190415145505.18397-13-digetx@gmail.com>
-        <375ebaba-1762-2675-3ae3-2ea9ec4cbcb2@samsung.com>
-        <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
+From: Nick Crews <ncrews@chromium.org>
+Subject: [PATCH v4 1/2] power_supply: Add more charge types and CHARGE_CONTROL_* properties
+Date: Tue, 16 Apr 2019 18:43:19 -0600
+Message-ID: <20190417004320.232200-1-ncrews@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org, Nick Crews <ncrews@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add "Standard", "Adaptive", and "Custom" modes to the charge_type
+property, to expand the existing "Trickle" and "Fast" modes.
+In addition, add POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD
+and POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD properties, to expand
+the existing CHARGE_CONTROL_* properties. I am adding them in order
+to support a new Chrome OS device, but these properties should be
+general enough that they can be used on other devices.
 
-On 19. 4. 17. 오전 12:40, Dmitry Osipenko wrote:
-> 16.04.2019 10:15, Chanwoo Choi пишет:
->> Hi,
->>
->> On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
->>> The frequency value potentially could change in-between. It doesn't
->>> cause any real problem at all right now, but that could change in the
->>> future. Hence let's avoid the inconsistency.
->>>
->>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->>> ---
->>>  drivers/devfreq/tegra-devfreq.c | 6 ++++--
->>>  1 file changed, 4 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->>> index a668e4fbc874..f1a6f951813a 100644
->>> --- a/drivers/devfreq/tegra-devfreq.c
->>> +++ b/drivers/devfreq/tegra-devfreq.c
->>> @@ -496,13 +496,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
->>>  {
->>>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
->>>  	struct tegra_devfreq_device *actmon_dev;
->>> +	unsigned long cur_freq;
->>>  
->>> -	stat->current_frequency = tegra->cur_freq * KHZ;
->>> +	cur_freq = READ_ONCE(tegra->cur_freq);
->>>  
->>>  	/* To be used by the tegra governor */
->>>  	stat->private_data = tegra;
->>>  
->>>  	/* The below are to be used by the other governors */
->>> +	stat->current_frequency = cur_freq * KHZ;
->>>  
->>>  	actmon_dev = &tegra->devices[MCALL];
->>>  
->>> @@ -513,7 +515,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
->>>  	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
->>>  
->>>  	/* Number of cycles in a sampling period */
->>> -	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
->>> +	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
->>>  
->>>  	stat->busy_time = min(stat->busy_time, stat->total_time);
->>>  
->>>
->>
->> The read/write access of tegra->cur_freq is in the single routine
->> of update_devfreq() as following. I think that there are no any
->> potential problem about the inconsistency of tegra->cur_freq.
-> 
-> No, that's wrong assumption. The tegra->cur_freq is changed by the clock notifier that runs asynchronously with the devfreq driver when EMC clock rate is changed by something else in the kernel. 
-> 
->> IMHO, if there are no any problem now, I'm not sure that we need
->> to apply this patch.
->>
->> update_devfreq()
->> {
->> 	devfreq->governor->get_target_freq()
->> 		devfreq_update_stats(devfreq)
->> 			tegra_devfreq_get_dev_status()
->> 				stat->current_frequency = tegra->cur_freq * KHZ;
->>
->> 	devfreq_set_target()
->> 		tegra_devfreq_target()
->> 			clk_set_min_rate(emc_rate, )
->> 				tegra_actmon_rate_notify_cb()
->> 					tegra->cur_freq = data->new_rate / KHZ;
->> 		
->> 			clk_set_rate(emc_rate, )
->> 				tegra_actmon_rate_notify_cb()
->> 					tegra->cur_freq = data->new_rate / KHZ;
->> }
->>
->>
-> 
-> The cur_freq value is changed by the clock notifier that runs asynchronously with the rest of the devfreq driver. Hence potentially compiler may generate two separate fetches of the cur_freq value, then the clock rate could be changed by other CPU core simultaneously with tegra_devfreq_get_dev_status() or kernel may re-schedule preemptively, changing the clock rate in-between of the two fetches.
-> 
-> 
+The meaning of "Standard" is obvious, but "Adaptive" and "Custom" are
+more tricky: "Adaptive" means that the charge controller uses some
+custom algorithm to change the charge type automatically, with no
+configuration needed. "Custom" means that the charge controller uses the
+POWER_SUPPLY_PROP_CHARGE_CONTROL_* properties as configuration for some
+other algorithm. For example, in the use case that I am supporting,
+this means the battery begins charging when the percentage
+level drops below POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD and
+charging ceases when the percentage level goes above
+POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD.
 
-Thanks. I understand why have to consider the inconsistency of clock
-which is used on the multiple points.
+v4 changes:
+- Add documentation for the new properties, and add documentation for
+  the the previously missing charge_control_limit and
+  charge_control_limit_max properties.
 
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Nick Crews <ncrews@chromium.org>
+---
+ Documentation/ABI/testing/sysfs-class-power | 51 +++++++++++++++++++--
+ drivers/power/supply/power_supply_sysfs.c   |  4 +-
+ include/linux/power_supply.h                | 10 +++-
+ 3 files changed, 59 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 5e23e22dce1b..b77e30b9014e 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -114,15 +114,60 @@ Description:
+ 		Access: Read
+ 		Valid values: Represented in microamps
+ 
++What:		/sys/class/power_supply/<supply_name>/charge_control_limit
++Date:		Oct 2012
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Maximum allowable charging current. Used for charge rate
++		throttling for thermal cooling or improving battery health.
++
++		Access: Read, Write
++		Valid values: Represented in microamps
++
++What:		/sys/class/power_supply/<supply_name>/charge_control_limit_max
++Date:		Oct 2012
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Maximum legal value for the charge_control_limit property.
++
++		Access: Read
++		Valid values: Represented in microamps
++
++What:		/sys/class/power_supply/<supply_name>/charge_control_start_threshold
++Date:		April 2019
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Represents a battery percentage level, below which charging will
++		begin.
++
++		Access: Read, Write
++		Valid values: 0 - 100 (percent)
++
++What:		/sys/class/power_supply/<supply_name>/charge_control_end_threshold
++Date:		April 2019
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Represents a battery percentage level, above which charging will
++		stop.
++
++		Access: Read, Write
++		Valid values: 0 - 100 (percent)
++
+ What:		/sys/class/power_supply/<supply_name>/charge_type
+ Date:		July 2009
+ Contact:	linux-pm@vger.kernel.org
+ Description:
+ 		Represents the type of charging currently being applied to the
+-		battery.
++		battery. "Trickle", "Fast", and "Standard" all mean different
++		charging speeds. "Adaptive" means that the charger uses some
++		algorithm to adjust the charge rate dynamically, without
++		any user configuration required. "Custom" means that the charger
++		uses the charge_control_* properties as configuration for some
++		different algorithm.
+ 
+-		Access: Read
+-		Valid values: "Unknown", "N/A", "Trickle", "Fast"
++		Access: Read, Write
++		Valid values: "Unknown", "N/A", "Trickle", "Fast", "Standard",
++			      "Adaptive", "Custom"
+ 
+ What:		/sys/class/power_supply/<supply_name>/charge_term_current
+ Date:		July 2014
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f596160..6104a3f03d46 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -56,7 +56,7 @@ static const char * const power_supply_status_text[] = {
+ };
+ 
+ static const char * const power_supply_charge_type_text[] = {
+-	"Unknown", "N/A", "Trickle", "Fast"
++	"Unknown", "N/A", "Trickle", "Fast", "Standard", "Adaptive", "Custom"
+ };
+ 
+ static const char * const power_supply_health_text[] = {
+@@ -274,6 +274,8 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(constant_charge_voltage_max),
+ 	POWER_SUPPLY_ATTR(charge_control_limit),
+ 	POWER_SUPPLY_ATTR(charge_control_limit_max),
++	POWER_SUPPLY_ATTR(charge_control_start_threshold),
++	POWER_SUPPLY_ATTR(charge_control_end_threshold),
+ 	POWER_SUPPLY_ATTR(input_current_limit),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..d59205170232 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -40,11 +40,15 @@ enum {
+ 	POWER_SUPPLY_STATUS_FULL,
+ };
+ 
++/* What algorithm is the charger using? */
+ enum {
+ 	POWER_SUPPLY_CHARGE_TYPE_UNKNOWN = 0,
+ 	POWER_SUPPLY_CHARGE_TYPE_NONE,
+-	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,
+-	POWER_SUPPLY_CHARGE_TYPE_FAST,
++	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,	/* slow speed */
++	POWER_SUPPLY_CHARGE_TYPE_FAST,		/* fast speed */
++	POWER_SUPPLY_CHARGE_TYPE_STANDARD,	/* normal speed */
++	POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,	/* dynamically adjusted speed */
++	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
+ };
+ 
+ enum {
+@@ -121,6 +125,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.20.1
