@@ -1,74 +1,112 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 3/3] Documentation: devicetree: add PPMU events
- description
-Date: Wed, 17 Apr 2019 17:26:52 +0900
-Message-ID: <0d867843-ec56-f30b-8a3f-b3172f325bef@samsung.com>
-References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074835eucas1p19319bedd176d55e10b272881b7c68919@eucas1p1.samsung.com>
-        <1555487288-4777-4-git-send-email-l.luba@partner.samsung.com>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH v4 2/2] dt-bindings: cpufreq: Document
+ allwinner,sun50i-h6-operating-points
+Date: Wed, 17 Apr 2019 10:30:00 +0200
+Message-ID: <20190417083000.cwzvhlpbxqoifosw@flea>
+References: <20190416155209.24216-1-tiny.windzz@gmail.com>
+ <20190416155209.24216-3-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="f3k7wehh6o47a3dc"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555487288-4777-4-git-send-email-l.luba@partner.samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190416155209.24216-3-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
 
-On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
-> Extend the documenation by events description with new 'event-data-type'
-> field. Add example how the event might be defined in DT.
-> 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+--f3k7wehh6o47a3dc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Tue, Apr 16, 2019 at 11:52:09AM -0400, Yangtao Li wrote:
+> Allwinner Process Voltage Scaling Tables defines the voltage and
+> frequency value based on the speedbin blown in the efuse combination.
+> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each
+> OPP of operating-points-v2 table when it is parsed by the OPP framework.
+>
+> The "allwinner,sun50i-h6-operating-points" DT extends the
+> "operating-points-v2"
+> with following parameters:
+> - nvmem-cells (NVMEM area containig the speedbin information)
+> - opp-microvolt-<name>: voltage in micro Volts.
+>   At runtime, the platform can pick a <name> and matching
+>   opp-microvolt-<name> property.
+> 			HW:		<name>:
+> 			sun50iw-h6      speed0 speed1 speed2
+>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 > ---
->  .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-> index 3e36c1d..47feb5f 100644
-> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-> @@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
->  			reg = <0x104d0000 0x2000>;
->  			status = "disabled";
->  		};
+>  .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
+>  1 file changed, 167 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+>
+> diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+> new file mode 100644
+> index 000000000000..3cb39c6caec3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+> @@ -0,0 +1,167 @@
+> +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
+> +===================================
 > +
-> +The 'event' type specified in the PPMU node defines 'event-name'
-> +which also contains 'id' number and optionally 'event-data-type'.
+> +For some SoCs, the CPU frequency subset and voltage value of each OPP
+> +varies based on the silicon variant in use. Allwinner Process Voltage
+> +Scaling Tables defines the voltage and frequency value based on the
+> +speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
+> +reads the efuse value from the SoC to provide the OPP framework with
+> +required information.
 > +
-> +Example:
+> +Required properties:
+> +--------------------
+> +In 'cpus' nodes:
+> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
 > +
-> +		events {
-> +			ppmu_leftbus_0: ppmu-event0-leftbus {
-> +				event-name = "ppmu-event0-leftbus";
-> +				event-data-type = <PPMU_RO_DATA_CNT>;
-> +			};
-> +		};
+> +In 'operating-points-v2' table:
+> +- compatible: Should be
+> +	- 'allwinner,sun50i-h6-operating-points'.
+> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+> +		efuse registers that has information about the speedbin
+> +		that is used to select the right frequency/voltage value
+> +		pair. Please refer the for nvmem-cells bindings
+> +		Documentation/devicetree/bindings/nvmem/nvmem.txt and
+> +		also examples below.
 > +
-> +The 'event-data-type' defines the type of data which shell be counted
-> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
+> +In every OPP node:
+> +- opp-microvolt-<name>: Voltage in micro Volts.
+> +			At runtime, the platform can pick a <name> and
+> +			matching opp-microvolt-<name> property.
+> +			[See: opp.txt]
+> +			HW:		<name>:
+> +			sun50iw-h6	speed0 speed1 speed2
 
-I replied about 'pmu' name on patch2. Please check it.
+There's a typo here (and in your commit log), it should be sun50i-h6
+instead of sun50iw-h6
 
-> +all possible type, i.e. count read requests, count write data in bytes,
-> +etc. This field is optional and when it is missing, the driver code will
-> +use default data type.
-> 
-Looks good to me.
-But, If you want to add the new 'event-data-type' property,
-you better to add 'event-data-type' to Exynos dts file including
-PPMU device.
+Once fixed:
+Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
 
-If the dts file contain the data type information,
-I think it is easy to understand for the user
-what is monitoring on PPMU device.
+Thanks!
+Maxime
 
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+--f3k7wehh6o47a3dc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXLbkCAAKCRDj7w1vZxhR
+xciRAP4kXlaqxDV3PBOh9mkYIguav5gdYtZ6PN/1DjyEGj/owgD9ExAFQA/XPHlD
+bmo+VqCwf/jtInmFUJPSA71UhPVNgAU=
+=MTgp
+-----END PGP SIGNATURE-----
+
+--f3k7wehh6o47a3dc--
