@@ -1,108 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-Date: Thu, 18 Apr 2019 00:10:59 +0200
-Message-ID: <CAJZ5v0hJpYROLJup0mvCp2G8ekeDyBrp+hdhHdsd+vhBq5RxVQ@mail.gmail.com>
-References: <cover.1554410643.git.Janakarajan.Natarajan@amd.com>
- <d44f4893-0b67-4993-2942-6e03d29dffa1@amd.com> <CAJZ5v0jh0Yn1fy5bO3wett5AsjBA55_Z-8L_M8eRyy5cePqwaw@mail.gmail.com>
- <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH v3 05/16] PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
+Date: Thu, 18 Apr 2019 01:29:14 +0300
+Message-ID: <20190417222925.5815-6-digetx@gmail.com>
+References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <SN6PR12MB26396618BAC0F6600D786E08F8250@SN6PR12MB2639.namprd12.prod.outlook.com>
+In-Reply-To: <20190417222925.5815-1-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, Erik Schmauss <erik.schmauss@intel.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 17, 2019 at 7:28 PM Ghannam, Yazen <Yazen.Ghannam@amd.com> wrote:
->
-> > -----Original Message-----
-> > From: Rafael J. Wysocki <rafael@kernel.org>
-> > Sent: Tuesday, April 16, 2019 4:34 AM
-> > To: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>
-> > Cc: Natarajan, Janakarajan <Janakarajan.Natarajan@amd.com>; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
-> > pm@vger.kernel.org; devel@acpica.org; Rafael J . Wysocki <rjw@rjwysocki.net>; Len Brown <lenb@kernel.org>; Viresh Kumar
-> > <viresh.kumar@linaro.org>; Robert Moore <robert.moore@intel.com>; Erik Schmauss <erik.schmauss@intel.com>; Ghannam, Yazen
-> > <Yazen.Ghannam@amd.com>
-> > Subject: Re: [PATCH v2 0/7] CPPC optional registers AMD support
-> >
-> > On Tue, Apr 16, 2019 at 12:35 AM Janakarajan Natarajan <jnataraj@amd.com> wrote:
-> > >
-> > > On 4/4/19 4:25 PM, Natarajan, Janakarajan wrote:
-> > > > CPPC (Collaborative Processor Performance Control) offers optional
-> > > > registers which can be used to tune the system based on energy and/or
-> > > > performance requirements.
-> > > >
-> > > > Newer AMD processors add support for a subset of these optional CPPC
-> > > > registers, based on ACPI v6.1.
-> > > >
-> > > > The following are the supported CPPC registers for which sysfs entries
-> > > > are created:
-> > > > * enable                (NEW)
-> > > > * max_perf              (NEW)
-> > > > * min_perf              (NEW)
-> > > > * energy_perf
-> > > > * lowest_perf
-> > > > * nominal_perf
-> > > > * desired_perf          (NEW)
-> > > > * feedback_ctrs
-> > > > * auto_sel_enable       (NEW)
-> > > > * lowest_nonlinear_perf
-> > > >
-> > > > The CPPC driver is updated to enable the OSPM and the userspace to
-> > > > access
-> > > > the newly supported registers.
-> > > >
-> > > > The purpose of exposing the registers via the sysfs entries is to allow
-> > > > the userspace to:
-> > > > * Tweak the values to fit its workload.
-> > > > * Apply a profile from AMD's optimization guides.
-> > > >
-> > > > Profiles will be documented in the performance/optimization guides.
-> > > >
-> > > > Note:
-> > > > * AMD systems will not have a policy applied in the kernel at this time.
-> > > > * By default, acpi_cpufreq will still be used.
-> > > >
-> > > > TODO:
-> > > > * Create a linux userspace tool that will help users generate a CPPC
-> > > > * profile
-> > > >    for their target workload.
-> > > > * Create or update a driver to apply a general CPPC policy in the
-> > > > * kernel.
-> > > >
-> > > > v1->v2:
-> > > > * Add macro to ensure BUFFER only registers have BUFFER type.
-> > > > * Add support macro to make the right check based on register type.
-> > > > * Remove support checks for registers which are mandatory.
-> > >
-> > >
-> > > Are there any concerns regarding this patchset?
-> >
-> > Yes, there are.
-> >
-> > Unfortunately, it is generally problematic.
-> >
-> > First off, the behavior of existing sysfs files cannot be changed at
-> > will, as there may be users of them out there already depending on the
-> > current behavior.
-> >
->
-> The intent is to add new sysfs files without changing the existing files. Is that okay?
->
-> Or is the addition of new files also not acceptable?
->
-> > Second, at least some CPPC control registers are used by cpufreq
-> > drivers (cppc_cpufreq and intel_pstate), so modifying them behind the
-> > drivers' backs is not a good idea in general.  For this reason, adding
-> > new sysfs attributes to allow user space to do that is quite
-> > questionable.
-> >
->
-> Yes, good point.
->
-> What if a check is added so that writes only succeed if the CPUFREQ governor is set to userspace?
+There is no real benefit from doing so, hence let's drop that rate setting
+for consistency.
 
-That wouldn't be particularly straightforward IMO.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra-devfreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-What about handling this like the others do, through a proper cpufreq driver?
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index c7428c5eee23..24ec65556c39 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -653,8 +653,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tegra->emc_clock);
+ 	}
+ 
+-	clk_set_rate(tegra->emc_clock, ULONG_MAX);
+-
+ 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+ 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+ 	if (err) {
+-- 
+2.21.0
