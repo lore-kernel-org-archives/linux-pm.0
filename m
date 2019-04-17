@@ -2,290 +2,157 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BCA4C10F12
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 11:00:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C00A6C282DA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 12:46:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D3C6F2064A
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 11:00:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 85828206BA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 12:46:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="r6efqeTs"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="nmXjpJns"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726695AbfDQLAM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 07:00:12 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:40621 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731566AbfDQLAM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 07:00:12 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190417110009euoutp0184526d66cc71af763b6c6c3f47bd232d~WPe0XDhUq0800108001euoutp01l
-        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 11:00:09 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190417110009euoutp0184526d66cc71af763b6c6c3f47bd232d~WPe0XDhUq0800108001euoutp01l
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555498809;
-        bh=243QMwl36KSv1UsGav4K7QEe5bGDWq5G/HbRmXZMlms=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=r6efqeTsFQSLYd0RjBfPuz810/lpP0YvdKMW0llV2rLjjLNf6DZclsRNvKVy958hH
-         f8vxZFuOkRLbGNCjlfBMyJB/jGH6sWyJqrA+LuYksPToY3qZAgRM3DVqmvpPZ+L1lN
-         nQfQ7x3UsEFyaTMlaNDXejnYEbHpHfqH+MXR1YGg=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190417110008eucas1p12da16023862338ea57066e44b4945f37~WPezdRGbg0739307393eucas1p1o;
-        Wed, 17 Apr 2019 11:00:08 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 13.36.04298.83707BC5; Wed, 17
-        Apr 2019 12:00:08 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417110007eucas1p15b203f1b86ecf4cafde51f5b3adba813~WPeynL1142654526545eucas1p1B;
-        Wed, 17 Apr 2019 11:00:07 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190417110007eusmtrp1cb4751813e5a3f5630bdc3d1b4fbdf8c~WPeyW7dZY0128401284eusmtrp1F;
-        Wed, 17 Apr 2019 11:00:07 +0000 (GMT)
-X-AuditID: cbfec7f2-f13ff700000010ca-ae-5cb70738f4c8
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id DE.B5.04146.73707BC5; Wed, 17
-        Apr 2019 12:00:07 +0100 (BST)
-Received: from [106.120.51.20] (unknown [106.120.51.20]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417110006eusmtip10ab353143f6f4891ee886dc3da83d970~WPexqV0tj1174911749eusmtip1L;
-        Wed, 17 Apr 2019 11:00:06 +0000 (GMT)
-Subject: Re: [PATCH 2/3] drivers: devfreq: events: extend events by type of
- counted data
-To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, kgene@kernel.org
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-Message-ID: <15ec9cce-8cce-0bfb-44d2-1f8e5acaebc0@partner.samsung.com>
-Date:   Wed, 17 Apr 2019 13:00:05 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <628d298a-0c44-11c9-d27b-165cdfc0d2a2@samsung.com>
+        id S1731454AbfDQMqg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 08:46:36 -0400
+Received: from mail-eopbgr150071.outbound.protection.outlook.com ([40.107.15.71]:42638
+        "EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1729898AbfDQMqf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 Apr 2019 08:46:35 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7Unxz3qhy6j02VZm8kU/DMHeV8z8xKhfQiWUHRYPmGk=;
+ b=nmXjpJns2lsCfEkgmXdJ2fNHkHymxqorkP7I9STsw/uFrEAPkcYzjBIlCnarn+QmNhxK363A1SGLsAXt/4vkY+AYxOS3bZygLrdH8zOrKQEi2uugPwDpbosJUvdAaovU6B/Cvp61d8lHNv/4QXlLHByjx02MFjP2jyYpN3ZAbvQ=
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com (52.134.72.18) by
+ DB3PR0402MB3737.eurprd04.prod.outlook.com (52.134.66.144) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.12; Wed, 17 Apr 2019 12:46:29 +0000
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::e8ca:4f6b:e43:c170]) by DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::e8ca:4f6b:e43:c170%3]) with mapi id 15.20.1813.011; Wed, 17 Apr 2019
+ 12:46:29 +0000
+From:   Anson Huang <anson.huang@nxp.com>
+To:     Aisheng Dong <aisheng.dong@nxp.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>,
+        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        "festevam@gmail.com" <festevam@gmail.com>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "will.deacon@arm.com" <will.deacon@arm.com>,
+        "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "edubezval@gmail.com" <edubezval@gmail.com>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Peng Fan <peng.fan@nxp.com>,
+        "heiko@sntech.de" <heiko@sntech.de>,
+        "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>,
+        "agross@kernel.org" <agross@kernel.org>,
+        "olof@lixom.net" <olof@lixom.net>,
+        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
+        "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>,
+        "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>,
+        "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+CC:     dl-linux-imx <linux-imx@nxp.com>
+Subject: RE: [PATCH V12 1/5] dt-bindings: fsl: scu: add thermal binding
+Thread-Topic: [PATCH V12 1/5] dt-bindings: fsl: scu: add thermal binding
+Thread-Index: AQHU9AOTUGgOS08iR0aOB0ANqNq0mqY/s5cwgACbbSA=
+Date:   Wed, 17 Apr 2019 12:46:29 +0000
+Message-ID: <DB3PR0402MB3916541587F0F7E4FF099CB0F5250@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1555384609-7030-1-git-send-email-Anson.Huang@nxp.com>
+ <AM0PR04MB42118E59E441BE043A3BE54F80250@AM0PR04MB4211.eurprd04.prod.outlook.com>
+In-Reply-To: <AM0PR04MB42118E59E441BE043A3BE54F80250@AM0PR04MB4211.eurprd04.prod.outlook.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrPKsWRmVeSWpSXmKPExsWy7djP87oW7NtjDM6/lbXYOGM9q8X1L89Z
-        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
-        cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDWKyyYlNSezLLVI
-        3y6BK+P30/UsBV8NKzYsv8XewDhDvYuRk0NCwERizf4+pi5GLg4hgRWMEpeutkA5Xxgl/q3/
-        wwjhfGaU2H3+KCtMy/bXvcwgtpDAckaJb+/YIIreMkpcfTKVDSQhLBAl8aDpO1i3iMBJRone
-        xrusIA6zwBVGiadfFgG1c3CwCehJ7FhVCGLyCrhJ/DgjAtLLIqAqcf7mA3YQW1QgQuL+sQ1g
-        i3kFBCVOznzCAmJzCthL9C/+AHYEs4C4xK0n85kgbHmJ5q2zmUFWSQh8ZJdY+H8jE8h8CQEX
-        iZafRRAPCEu8Or6FHcKWkTg9uYcFwi6WaOhdyAhh10g87p8LVWMtcfj4RVaQMcwCmhLrd+lD
-        hB0lvn/czgwxnU/ixltBiAv4JCZtmw4V5pXoaBOCqNaQ2NJzgQnCFpNYvmYa+wRGpVlI/pqF
-        5JdZSH6ZhbB3ASPLKkbx1NLi3PTUYsO81HK94sTc4tK8dL3k/NxNjMBkdvrf8U87GL9eSjrE
-        KMDBqMTDu+Ln1hgh1sSy4srcQ4wSHMxKIryOKVtihHhTEiurUovy44tKc1KLDzFKc7AoifNW
-        MzyIFhJITyxJzU5NLUgtgskycXBKNTDqzt3UKpjGsE7unqTG6w33ahJXWyme8mUuKpzHKeq5
-        dafVfokQ4718wty/VoTGa/xhUp9T4dT+8tPmgqnuQneec1tdXM/Rw1X+rbWR+05YjIz3C33F
-        qN7vOy2dn8xbb1a45mADb91NwQOuLbsf+PF6rJTIEin24EzQ7Nj37aSWqtVn7jd1eUosxRmJ
-        hlrMRcWJAJkBQpZiAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrKIsWRmVeSWpSXmKPExsVy+t/xu7rm7NtjDOafVrDYOGM9q8X1L89Z
-        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
-        cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDVKz6Yov7QkVSEj
-        v7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL+P30/UsBV8NKzYsv8Xe
-        wDhDvYuRk0NCwERi++te5i5GLg4hgaWMEv9udrJCJMQkJu3bzg5hC0v8udbFBlH0Gqho90IW
-        kISwQJTEg6bvjCAJEYGTjBKzJ/xlAnGYBa4wSiy/NpkVomUSk8SumyCzODjYBPQkdqwqBDF5
-        BdwkfpwRARnEIqAqcf7mA7BtogIREmferwBbwCsgKHFy5hMwm1PAXqJ/8QdmEJtZwExi3uaH
-        ULa4xK0n85kgbHmJ5q2zmScwCs1C0j4LScssJC2zkLQsYGRZxSiSWlqcm55bbKhXnJhbXJqX
-        rpecn7uJERjF24793LyD8dLG4EOMAhyMSjy8K35ujRFiTSwrrsw9xCjBwawkwuuYsiVGiDcl
-        sbIqtSg/vqg0J7X4EKMp0HMTmaVEk/OBCSavJN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBAemJJ
-        anZqakFqEUwfEwenVAMja+lExqfXY49NcdUsSMl4eLLZrPjEDOHm4JttngrXTS9tckvVYj3d
-        l3j+xurSE/v5pjgESXKb7Wu9//ueWd3bz4oZT5u2r5OsuDr9qsyupUdmNRZtVliQ9He/2WHh
-        T4t/K0qnfP3grCh6ds30TWK8S2I19eZ2z153w2lecdoDowrHHcEn8+/XKrEUZyQaajEXFScC
-        AEcGnxD4AgAA
-X-CMS-MailID: 20190417110007eucas1p15b203f1b86ecf4cafde51f5b3adba813
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda
-References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda@eucas1p1.samsung.com>
-        <1555487288-4777-3-git-send-email-l.luba@partner.samsung.com>
-        <628d298a-0c44-11c9-d27b-165cdfc0d2a2@samsung.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=anson.huang@nxp.com; 
+x-originating-ip: [119.31.174.69]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 8d3de21f-2c7a-4c04-595c-08d6c332b668
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600140)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:DB3PR0402MB3737;
+x-ms-traffictypediagnostic: DB3PR0402MB3737:
+x-microsoft-antispam-prvs: <DB3PR0402MB373757428D694747AC8B708DF5250@DB3PR0402MB3737.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0010D93EFE
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(136003)(396003)(39860400002)(346002)(366004)(376002)(199004)(189003)(13464003)(478600001)(9686003)(55016002)(76176011)(53936002)(14454004)(6246003)(2201001)(4326008)(229853002)(6436002)(25786009)(68736007)(66066001)(256004)(71200400001)(446003)(71190400001)(486006)(7696005)(86362001)(11346002)(476003)(44832011)(99286004)(186003)(26005)(2906002)(8936002)(74316002)(7416002)(52536014)(6506007)(6116002)(3846002)(53546011)(316002)(102836004)(110136005)(81166006)(305945005)(7736002)(81156014)(8676002)(33656002)(5660300002)(2501003)(97736004)(105586002)(106356001)(21314003)(921003)(1121003)(15866825006);DIR:OUT;SFP:1101;SCL:1;SRVR:DB3PR0402MB3737;H:DB3PR0402MB3916.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: j0g0A0JiX0SNLkCxWLEOJDMz52UrRMNm5+r0X6CpW2IytNyGohO2q0taj/c+ySSaqJjyPvJnQpGkZSg0q4rWLxMtobANshDjulSqRfB6NWZYiCsI3k13efla97psRXeM3Sb3LPk2JUL82yaJqiGiTtHqCU40YcJ8UIpXbjgLx4wbjQxRTma1k4f+Z+o/P3VKW2Tm6q155cQM/toXComEesKisQZmQgZfgybt0E5kIUsgn6hJt8ZyFMhfxtbPuYQmfauCjY2x5gyzzjHInr/gB+Msv8pMBW9L69leXnamH5FAcTdasEtKv9rs1s1umQ9iJrw2tmJEqrEEXs8dR12ijYeMghJUA3AGE23UFn+SAttvUow8VxmbY4sFHaeoB0Q+W865KWwfAbV4Kvt/dwEA+nSyjbb56lX+/VeCpBZZiGA=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8d3de21f-2c7a-4c04-595c-08d6c332b668
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Apr 2019 12:46:29.4015
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0402MB3737
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417110005.t_UABR6iQJV4hi8vuQNSiD-taxtAxQZGafqMfn8vmIE@z>
 
-Hi Chanwoo,
-
-On 4/17/19 10:22 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
->> This patch adds posibility to choose what type of data should be counted
->> by the PPMU counter. Now the type comes from DT where the event has been
->> defined. When there is no 'event-data-type' the default value is used,
->> which is 'read data in bytes'.
->> It is needed when you want to know not only read+write data bytes but
->> i.e. only write data in byte, or number of read requests, etc.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   drivers/devfreq/event/exynos-ppmu.c | 38 +++++++++++++++++++++++++------------
->>   include/linux/devfreq-event.h       |  6 ++++++
->>   2 files changed, 32 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
->> index c61de0b..e5f81a5 100644
->> --- a/drivers/devfreq/event/exynos-ppmu.c
->> +++ b/drivers/devfreq/event/exynos-ppmu.c
->> @@ -140,6 +140,7 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
->>   	int id = exynos_ppmu_find_ppmu_id(edev);
->>   	int ret;
->>   	u32 pmnc, cntens;
->> +	u32 evt_sel = edev->desc->data_type;
->>   
->>   	if (id < 0)
->>   		return id;
->> @@ -154,9 +155,12 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
->>   	if (ret < 0)
->>   		return ret;
->>   
->> -	/* Set the event of Read/Write data count  */
->> -	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
->> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
->> +	/* Check if the data type has been defined in DT, use default if not */
->> +	if (evt_sel == UINT_MAX)
->> +		evt_sel = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
->> +
->> +	/* Set the event of Read or Write or both (RDWR) data count  */
->> +	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id), evt_sel);
->>   	if (ret < 0)
->>   		return ret;
->>   
->> @@ -357,6 +361,7 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
->>   	unsigned int pmnc, cntens;
->>   	int id = exynos_ppmu_find_ppmu_id(edev);
->>   	int ret;
->> +	u32 evt_sel = edev->desc->data_type;
->>   
->>   	/* Enable all counters */
->>   	ret = regmap_read(info->regmap, PPMU_V2_CNTENS, &cntens);
->> @@ -368,24 +373,28 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
->>   	if (ret < 0)
->>   		return ret;
->>   
->> -	/* Set the event of Read/Write data count  */
->> +
->> +	/* Set the event of proper data type counting.
->> +	 * Check if the data type has been defined in DT,
->> +	 * use default if not.
->> +	 */
->>   	switch (id) {
->>   	case PPMU_PMNCNT0:
->>   	case PPMU_PMNCNT1:
->>   	case PPMU_PMNCNT2:
->> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
->> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
->> -		if (ret < 0)
->> -			return ret;
->> +		if (evt_sel == UINT_MAX)
->> +			evt_sel = PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT;
->>   		break;
->>   	case PPMU_PMNCNT3:
->> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
->> -				PPMU_V2_EVT3_RW_DATA_CNT);
->> -		if (ret < 0)
->> -			return ret;
->> +		if (evt_sel == UINT_MAX)
->> +			evt_sel = PPMU_V2_EVT3_RW_DATA_CNT;
->>   		break;
->>   	}
->>   
->> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id), evt_sel);
->> +	if (ret < 0)
->> +		return ret;
->> +
->>   	/* Reset cycle counter/performance counter and enable PPMU */
->>   	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
->>   	if (ret < 0)
->> @@ -508,6 +517,7 @@ static int of_get_devfreq_events(struct device_node *np,
->>   	struct device *dev = info->dev;
->>   	struct device_node *events_np, *node;
->>   	int i, j, count;
->> +	int ret;
->>   
->>   	events_np = of_get_child_by_name(np, "events");
->>   	if (!events_np) {
->> @@ -544,6 +554,10 @@ static int of_get_devfreq_events(struct device_node *np,
->>   		desc[j].driver_data = info;
->>   
->>   		of_property_read_string(node, "event-name", &desc[j].name);
->> +		ret = of_property_read_u32(node, "event-data-type",
->> +					   &desc[j].data_type);
->> +		if (!ret)
->> +			desc[i].data_type = UINT_MAX;
-> 
-> I think that it is not proper to use 'UINT_MAX'.
-> If you want to use the default value, you can initialize
-> the 'desc[i].data_type' according to the device type or compatible name.
-> 
-> For all exynos SoC except for exynos5433,
-> 	desc[i].data_type = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
-> 
-> For exynos5433,
-> 	desc[i].data_type = PPMU_V2_EVT3_RW_DATA_CNT;
-> 
-OK, I will set these default values here.
-
->>   
->>   		j++;
->>   	}
->> diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
->> index 4db00b0..cc160b1 100644
->> --- a/include/linux/devfreq-event.h
->> +++ b/include/linux/devfreq-event.h
->> @@ -81,14 +81,20 @@ struct devfreq_event_ops {
->>    * struct devfreq_event_desc - the descriptor of devfreq-event device
->>    *
->>    * @name	: the name of devfreq-event device.
->> + * @data_type	: the data type which is going to be counted in the register.
->>    * @driver_data	: the private data for devfreq-event driver.
->>    * @ops		: the operation to control devfreq-event device.
->>    *
->>    * Each devfreq-event device is described with a this structure.
->>    * This structure contains the various data for devfreq-event device.
->> + * The data_type describes what is going to be counted in the register.
->> + * It might choose to count e.g. read requests, write data in bytes, etc.
->> + * The full supported list of types is present in specyfic header in:
->> + * include/dt-bindings/pmu/.
-> 
-> Why did you make the path name as the 'pmu' instead of 'ppmu'?
-The directory may contain in future other Performance Monitoring Unit
-subsystems. In Exynos case we have: Platform Performance Monitoring Unit
-but different SoCs might have other names, like: System PMU.
-Since there is no 'pmu' in this directory, I am allocating it for
-Performance Monitoring Unit and not Power Management Unit.
-
-> 
-> It might have some confusion because 'pmu' has
-> the two meaning in linux kernel.
-> - PMU, Power Management Unit
-> - PMU, Performance Monitoring Unit
-Regards,
-Lukasz
-> 
->>    */
->>   struct devfreq_event_desc {
->>   	const char *name;
->> +	u32 data_type;
->>   	void *driver_data;
->>   
->>   	const struct devfreq_event_ops *ops;
->>
-> 
-> 
+DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
+LS0tLS0NCj4gRnJvbTogQWlzaGVuZyBEb25nDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMTcs
+IDIwMTkgMTE6MzIgQU0NCj4gVG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsg
+cm9iaCtkdEBrZXJuZWwub3JnOw0KPiBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsgc2hhd25ndW9Aa2Vy
+bmVsLm9yZzsgcy5oYXVlckBwZW5ndXRyb25peC5kZTsNCj4ga2VybmVsQHBlbmd1dHJvbml4LmRl
+OyBmZXN0ZXZhbUBnbWFpbC5jb207IGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tOw0KPiB3aWxsLmRl
+YWNvbkBhcm0uY29tOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tOw0K
+PiBkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyB1bGYuaGFuc3NvbkBsaW5hcm8ub3JnOyBEYW5p
+ZWwgQmFsdXRhDQo+IDxkYW5pZWwuYmFsdXRhQG54cC5jb20+OyBQZW5nIEZhbiA8cGVuZy5mYW5A
+bnhwLmNvbT47DQo+IGhlaWtvQHNudGVjaC5kZTsgaG9ybXMrcmVuZXNhc0B2ZXJnZS5uZXQuYXU7
+IGFncm9zc0BrZXJuZWwub3JnOw0KPiBvbG9mQGxpeG9tLm5ldDsgYmpvcm4uYW5kZXJzc29uQGxp
+bmFyby5vcmc7IGphZ2FuQGFtYXJ1bGFzb2x1dGlvbnMuY29tOw0KPiBlbnJpYy5iYWxsZXRib0Bj
+b2xsYWJvcmEuY29tOyBtYXJjLncuZ29uemFsZXpAZnJlZS5mcjsNCj4gZGV2aWNldHJlZUB2Z2Vy
+Lmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFybS0NCj4g
+a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBD
+YzogZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT4NCj4gU3ViamVjdDogUkU6IFtQQVRD
+SCBWMTIgMS81XSBkdC1iaW5kaW5nczogZnNsOiBzY3U6IGFkZCB0aGVybWFsIGJpbmRpbmcNCj4g
+DQo+ID4gRnJvbTogQW5zb24gSHVhbmcNCj4gPiBTZW50OiBUdWVzZGF5LCBBcHJpbCAxNiwgMjAx
+OSAxMToyMiBBTQ0KPiA+DQo+ID4gTlhQIGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3aXRoIGEg
+Q29ydGV4LU00IGNvcmUgaW5zaWRlIGFzIHN5c3RlbQ0KPiA+IGNvbnRyb2xsZXIsIHRoZSBzeXN0
+ZW0gY29udHJvbGxlciBpcyBpbiBjaGFyZ2Ugb2Ygc3lzdGVtIHBvd2VyLCBjbG9jaw0KPiA+IGFu
+ZCB0aGVybWFsIHNlbnNvcnMgZXRjLiBtYW5hZ2VtZW50LCBMaW51eCBrZXJuZWwgaGFzIHRvIGNv
+bW11bmljYXRlDQo+ID4gd2l0aCBzeXN0ZW0gY29udHJvbGxlciB2aWEgTVUgKG1lc3NhZ2UgdW5p
+dCkgSVBDIHRvIGdldCB0ZW1wZXJhdHVyZQ0KPiA+IGZyb20gdGhlcm1hbCBzZW5zb3JzLCB0aGlz
+IHBhdGNoIGFkZHMgYmluZGluZyBkb2MgZm9yIGkuTVggc3lzdGVtDQo+IGNvbnRyb2xsZXIgdGhl
+cm1hbCBkcml2ZXIuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBBbnNvbiBIdWFuZyA8QW5zb24u
+SHVhbmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiBObyBjaGFuZ2VzLg0KPiA+IC0tLQ0KPiA+ICAu
+Li4vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0ICAgICAgICB8
+IDE2DQo+ID4gKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMTYgaW5zZXJ0
+aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdA0KPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL2FybS9mcmVlc2NhbGUvZnNsLHNjdS50eHQNCj4gPiBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0DQo+ID4gaW5k
+ZXggNWQ3ZGJhYi4uZjRmYjZkNSAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4dA0KPiA+ICsrKyBiL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0DQo+
+ID4gQEAgLTEzMyw2ICsxMzMsMTcgQEAgUlRDIGJpbmRpbmdzIGJhc2VkIG9uIFNDVSBNZXNzYWdl
+IFByb3RvY29sDQo+ID4gUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiAgLSBjb21wYXRpYmxlOiBz
+aG91bGQgYmUgImZzbCxpbXg4cXhwLXNjLXJ0YyI7DQo+ID4NCj4gPiArVGhlcm1hbCBiaW5kaW5n
+cyBiYXNlZCBvbiBTQ1UgTWVzc2FnZSBQcm90b2NvbA0KPiA+ICstLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiArDQo+ID4gK1Jl
+cXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKy0gY29tcGF0aWJsZToJCQlTaG91bGQgYmUgOg0KPiA+
+ICsJCQkJICAiZnNsLGlteDhxeHAtc2MtdGhlcm1hbCINCj4gPiArCQkJCWZvbGxvd2VkIGJ5ICJm
+c2wsaW14LXNjLXRoZXJtYWwiOw0KPiA+ICsNCj4gPiArLSAjdGhlcm1hbC1zZW5zb3ItY2VsbHM6
+CVNlZQ0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3RoZXJt
+YWwudHh0DQo+ID4gKwkJCQlmb3IgYSBkZXNjcmlwdGlvbi4NCj4gDQo+IEJldHRlciB0byBoYXZl
+IGFuIGV4cGxpY2l0IHZhbHVlIGhlcmUuDQo+IGUuZy4NCj4gTXVzdCBiZSAxLiBTZWUgeHh4IGZv
+ciBhIGRlc2NyaXB0aW9uLg0KDQpPSywgd2lsbCBhZGQgaXQgaW4gbmV4dCB2ZXJzaW9uLg0KDQpB
+bnNvbi4NCg0KPiANCj4gT3RoZXJ3aXNlOg0KPiBSZXZpZXdlZC1ieTogRG9uZyBBaXNoZW5nIDxh
+aXNoZW5nLmRvbmdAbnhwLmNvbT4NCj4gDQo+IFJlZ2FyZHMNCj4gRG9uZyBBaXNoZW5nDQo=
