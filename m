@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41039C10F12
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 10:51:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BCA4C10F12
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 11:00:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 02773217F4
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 10:51:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3C6F2064A
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 11:00:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="KxtE877R"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="r6efqeTs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731566AbfDQKvD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 06:51:03 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:52427 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731508AbfDQKvD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 06:51:03 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190417105101euoutp029f452a281859878eaa114b2d0bcbebe5~WPW1qR9ia0771607716euoutp02C
-        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 10:51:01 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190417105101euoutp029f452a281859878eaa114b2d0bcbebe5~WPW1qR9ia0771607716euoutp02C
+        id S1726695AbfDQLAM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 07:00:12 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:40621 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731566AbfDQLAM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 07:00:12 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190417110009euoutp0184526d66cc71af763b6c6c3f47bd232d~WPe0XDhUq0800108001euoutp01l
+        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 11:00:09 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190417110009euoutp0184526d66cc71af763b6c6c3f47bd232d~WPe0XDhUq0800108001euoutp01l
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555498261;
-        bh=cUbJyeLGnZTKoG+3WUWGXKc8QHHKyKlBXZAp/zqOPx8=;
+        s=mail20170921; t=1555498809;
+        bh=243QMwl36KSv1UsGav4K7QEe5bGDWq5G/HbRmXZMlms=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=KxtE877Rf1DW5jj6YuEYsAYnz371V8Nj8GmdeOd3d5yWBSXG3ME4jxXm2vE1hrnno
-         IQhEbjhGIdEyK2DkbK7jkJn6BgQvuARhAtRPP1VdFZOWzebEsXGIiKspHrccRn9xRA
-         7hPOwPEsA0nrmRaqqYJdc8cWx1SMHR+7wUOnhuao=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        b=r6efqeTsFQSLYd0RjBfPuz810/lpP0YvdKMW0llV2rLjjLNf6DZclsRNvKVy958hH
+         f8vxZFuOkRLbGNCjlfBMyJB/jGH6sWyJqrA+LuYksPToY3qZAgRM3DVqmvpPZ+L1lN
+         nQfQ7x3UsEFyaTMlaNDXejnYEbHpHfqH+MXR1YGg=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
         eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190417105100eucas1p1674c2ba5fb088b00628d1c651f1fde88~WPW0y0HiC1190411904eucas1p1A;
-        Wed, 17 Apr 2019 10:51:00 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 53.1B.04377.41507BC5; Wed, 17
-        Apr 2019 11:51:00 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        20190417110008eucas1p12da16023862338ea57066e44b4945f37~WPezdRGbg0739307393eucas1p1o;
+        Wed, 17 Apr 2019 11:00:08 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id 13.36.04298.83707BC5; Wed, 17
+        Apr 2019 12:00:08 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
         eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417105059eucas1p10209319ab0c5d1f72ff804124767f9a6~WPWz7zhAR1418614186eucas1p1f;
-        Wed, 17 Apr 2019 10:50:59 +0000 (GMT)
+        20190417110007eucas1p15b203f1b86ecf4cafde51f5b3adba813~WPeynL1142654526545eucas1p1B;
+        Wed, 17 Apr 2019 11:00:07 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190417105059eusmtrp2f942025a37060b56e4619595b62f640c~WPWzsFq0g0265702657eusmtrp2I;
-        Wed, 17 Apr 2019 10:50:59 +0000 (GMT)
-X-AuditID: cbfec7f4-12dff70000001119-98-5cb705141f09
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190417110007eusmtrp1cb4751813e5a3f5630bdc3d1b4fbdf8c~WPeyW7dZY0128401284eusmtrp1F;
+        Wed, 17 Apr 2019 11:00:07 +0000 (GMT)
+X-AuditID: cbfec7f2-f13ff700000010ca-ae-5cb70738f4c8
 Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 88.84.04146.31507BC5; Wed, 17
-        Apr 2019 11:50:59 +0100 (BST)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id DE.B5.04146.73707BC5; Wed, 17
+        Apr 2019 12:00:07 +0100 (BST)
 Received: from [106.120.51.20] (unknown [106.120.51.20]) by
         eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417105058eusmtip153fec08da9e3c3bd29b0955051f7e30f~WPWzGd-Dk0939509395eusmtip1N;
-        Wed, 17 Apr 2019 10:50:58 +0000 (GMT)
-Subject: Re: [PATCH 1/3] include: dt-bindings: add Performance Monitoring
- Unit for Exynos
+        20190417110006eusmtip10ab353143f6f4891ee886dc3da83d970~WPexqV0tj1174911749eusmtip1L;
+        Wed, 17 Apr 2019 11:00:06 +0000 (GMT)
+Subject: Re: [PATCH 2/3] drivers: devfreq: events: extend events by type of
+ counted data
 To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-samsung-soc@vger.kernel.org,
@@ -66,142 +66,226 @@ Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
         m.szyprowski@samsung.com, s.nawrocki@samsung.com,
         myungjoo.ham@samsung.com, kgene@kernel.org
 From:   Lukasz Luba <l.luba@partner.samsung.com>
-Message-ID: <ed9df324-33ef-2e58-8b77-9a2561a4d6a4@partner.samsung.com>
-Date:   Wed, 17 Apr 2019 12:50:57 +0200
+Message-ID: <15ec9cce-8cce-0bfb-44d2-1f8e5acaebc0@partner.samsung.com>
+Date:   Wed, 17 Apr 2019 13:00:05 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <3fcb6dde-7ccc-4da6-5f8b-c8338edaa155@samsung.com>
+In-Reply-To: <628d298a-0c44-11c9-d27b-165cdfc0d2a2@samsung.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SfSzUcRzH+97vfnc/5vR15+FDpnbriS30tH5bppTZ/dmalUUPh9+ccof7
-        eUjZolZKeUiSJE8jdhGdI51i4+aS8pSlkmioVmxxWmlKzu8s/73en8/7/f18PtuXIsT9pAsV
-        qYpj1Cp5lFRgzW/smOveYk8+CvEuMtjQD/NrSXpw9jNJFxu6STpr7BtB9/TUCemX5yeFtHbs
-        NUm/0hcKaFOGAdH5PS08usYwLKQrBvt49FBqlYC++NQgpNsn08i9q2XVRdVIptVcEcjqy8/J
-        MnUaJDNp3Q6QR6x9wpmoyARG7eV7wlrRWpPNi+lyOP3sSzMvBVXYpSMrCvAOqLk6QaYja0qM
-        qxCUlOdbxCyC1gfvLcKEoKWliFiOfP+ZZWlULkbmRy1iCkHa/d/I7JLgYMgb6V1q2ONOBBmp
-        w0uCwAMIJmbLFt+iKAH2hCZNrDkgwgHQOHSdb2Y+3gCDTzpJMzvgIBjpqCM5jx103h5f8ljh
-        PVCfm8szM4Gd4N14sYXXwoWGO4R5FuAfQpjJ5wKA/aFial7IsQS+GnUWdoWFx1wYMAspGaWI
-        42QYy7pr8eyGdmMfad6ZwO5Qq/fiyn4wU5orMJcB28KbKTtuBVvIabxFcGURXL4k5tybQXet
-        1zLIESqr84TZSFqw4rCCFccUrDim4P/cEsTXICcmnlVGMOw2FZPoycqVbLwqwjMsWqlFiz+t
-        669xtgnp50PbEKaQ1EZUNdcQIiblCWySsg0BRUjtRX7huhCxKFyedIZRRx9Xx0cxbBtaQ/Gl
-        TqKzq0aDxThCHsecYpgYRr3c5VFWLinoaFyjZpNzxLHtet8yhyFNMtw0Dnt7LBT+CuA9T7zR
-        vHOydqCJZ0PqBxNlJklM2ElmfSCbs//jveK39TMv4iR1AwuhsVWf8kI3+qDxoD/uRfJSparY
-        dGg6UMEeTiA+aPe5GaYbDvaX3R7wrkuyMqY67ip3ds30qfQIXRfm36FQSPmsQr7Vg1Cz8n9y
-        rRwvZQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrGIsWRmVeSWpSXmKPExsVy+t/xu7rCrNtjDKZfFbLYOGM9q8X1L89Z
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrPKsWRmVeSWpSXmKPExsWy7djP87oW7NtjDM6/lbXYOGM9q8X1L89Z
+        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
+        cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDWKyyYlNSezLLVI
+        3y6BK+P30/UsBV8NKzYsv8XewDhDvYuRk0NCwERizf4+pi5GLg4hgRWMEpeutkA5Xxgl/q3/
+        wwjhfGaU2H3+KCtMy/bXvcwgtpDAckaJb+/YIIreMkpcfTKVDSQhLBAl8aDpO1i3iMBJRone
+        xrusIA6zwBVGiadfFgG1c3CwCehJ7FhVCGLyCrhJ/DgjAtLLIqAqcf7mA3YQW1QgQuL+sQ1g
+        i3kFBCVOznzCAmJzCthL9C/+AHYEs4C4xK0n85kgbHmJ5q2zmUFWSQh8ZJdY+H8jE8h8CQEX
+        iZafRRAPCEu8Or6FHcKWkTg9uYcFwi6WaOhdyAhh10g87p8LVWMtcfj4RVaQMcwCmhLrd+lD
+        hB0lvn/czgwxnU/ixltBiAv4JCZtmw4V5pXoaBOCqNaQ2NJzgQnCFpNYvmYa+wRGpVlI/pqF
+        5JdZSH6ZhbB3ASPLKkbx1NLi3PTUYsO81HK94sTc4tK8dL3k/NxNjMBkdvrf8U87GL9eSjrE
+        KMDBqMTDu+Ln1hgh1sSy4srcQ4wSHMxKIryOKVtihHhTEiurUovy44tKc1KLDzFKc7AoifNW
+        MzyIFhJITyxJzU5NLUgtgskycXBKNTDqzt3UKpjGsE7unqTG6w33ahJXWyme8mUuKpzHKeq5
+        dafVfokQ4718wty/VoTGa/xhUp9T4dT+8tPmgqnuQneec1tdXM/Rw1X+rbWR+05YjIz3C33F
+        qN7vOy2dn8xbb1a45mADb91NwQOuLbsf+PF6rJTIEin24EzQ7Nj37aSWqtVn7jd1eUosxRmJ
+        hlrMRcWJAJkBQpZiAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrKIsWRmVeSWpSXmKPExsVy+t/xu7rm7NtjDOafVrDYOGM9q8X1L89Z
         LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
         cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDVKz6Yov7QkVSEj
-        v7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL2P/2glMBadFK0682M3U
-        wLhUsIuRk0NCwETiw/d+1i5GLg4hgaWMEktPHmaESIhJTNq3nR3CFpb4c62LDaLoNaPEopW3
-        2UASwgLREm0H17OAJEQETjJKzJ7wlwnEYRa4wiix/NpkqLmTmCQWfFgANIuDg01AT2LHqkKQ
-        bl4BN4lttyeygNgsAqoS1/ecZAWxRQUiJM68X8ECUSMocXLmEzCbU8BeYvOUKUwgNrOAmcS8
-        zQ+ZIWxxiVtP5kPF5SWat85mnsAoNAtJ+ywkLbOQtMxC0rKAkWUVo0hqaXFuem6xoV5xYm5x
-        aV66XnJ+7iZGYBxvO/Zz8w7GSxuDDzEKcDAq8fCu+Lk1Rog1say4MvcQowQHs5IIr2PKlhgh
-        3pTEyqrUovz4otKc1OJDjKZAz01klhJNzgemmLySeENTQ3MLS0NzY3NjMwslcd7zBpVRQgLp
-        iSWp2ampBalFMH1MHJxSDYwT2PK7hVr0wx1K2Z6khlX11yVvy2nRDuB8tLJJ6r7AW0EmvSWb
-        nnzTU4rexXR/kZfl2wIuT9Np0lNWPbUy0dnd6fMkTenXmepN5zsn8+YzMIvI2Tx13TR9suMD
-        3R/zjl6b/fzIq3A1jjX93xPrnm+oucvQWu6+fuZB3ZO8b9J23OBc1OygM1+JpTgj0VCLuag4
-        EQCpIeTc+QIAAA==
-X-CMS-MailID: 20190417105059eucas1p10209319ab0c5d1f72ff804124767f9a6
+        v7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL+P30/UsBV8NKzYsv8Xe
+        wDhDvYuRk0NCwERi++te5i5GLg4hgaWMEv9udrJCJMQkJu3bzg5hC0v8udbFBlH0Gqho90IW
+        kISwQJTEg6bvjCAJEYGTjBKzJ/xlAnGYBa4wSiy/NpkVomUSk8SumyCzODjYBPQkdqwqBDF5
+        BdwkfpwRARnEIqAqcf7mA7BtogIREmferwBbwCsgKHFy5hMwm1PAXqJ/8QdmEJtZwExi3uaH
+        ULa4xK0n85kgbHmJ5q2zmScwCs1C0j4LScssJC2zkLQsYGRZxSiSWlqcm55bbKhXnJhbXJqX
+        rpecn7uJERjF24793LyD8dLG4EOMAhyMSjy8K35ujRFiTSwrrsw9xCjBwawkwuuYsiVGiDcl
+        sbIqtSg/vqg0J7X4EKMp0HMTmaVEk/OBCSavJN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBAemJJ
+        anZqakFqEUwfEwenVAMja+lExqfXY49NcdUsSMl4eLLZrPjEDOHm4JttngrXTS9tckvVYj3d
+        l3j+xurSE/v5pjgESXKb7Wu9//ueWd3bz4oZT5u2r5OsuDr9qsyupUdmNRZtVliQ9He/2WHh
+        T4t/K0qnfP3grCh6ds30TWK8S2I19eZ2z153w2lecdoDowrHHcEn8+/XKrEUZyQaajEXFScC
+        AEcGnxD4AgAA
+X-CMS-MailID: 20190417110007eucas1p15b203f1b86ecf4cafde51f5b3adba813
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190417074832eucas1p26eca3ed8bf754787b4860206ba542e1c
+X-RootMTR: 20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20190417074832eucas1p26eca3ed8bf754787b4860206ba542e1c
+X-CMS-RootMailID: 20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda
 References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074832eucas1p26eca3ed8bf754787b4860206ba542e1c@eucas1p2.samsung.com>
-        <1555487288-4777-2-git-send-email-l.luba@partner.samsung.com>
-        <3fcb6dde-7ccc-4da6-5f8b-c8338edaa155@samsung.com>
+        <CGME20190417074834eucas1p1faa327cb6394d899a8e107ba61f28fda@eucas1p1.samsung.com>
+        <1555487288-4777-3-git-send-email-l.luba@partner.samsung.com>
+        <628d298a-0c44-11c9-d27b-165cdfc0d2a2@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417105057.8Y1dnGnMnA6na5iRKQrBWzLheFXEdUPXSP1jal5JYiY@z>
+Message-ID: <20190417110005.t_UABR6iQJV4hi8vuQNSiD-taxtAxQZGafqMfn8vmIE@z>
 
 Hi Chanwoo,
 
-On 4/17/19 10:10 AM, Chanwoo Choi wrote:
+On 4/17/19 10:22 AM, Chanwoo Choi wrote:
 > Hi Lukasz,
 > 
 > On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
->> This patch add support of a new feature which can be used in DT:
->> Performance Monitoring Unit with defined event data type.
->> In this patch the event data types are defined for Exynos PPMU.
->> The patch also updates the MAINTAINERS file accordingly.
+>> This patch adds posibility to choose what type of data should be counted
+>> by the PPMU counter. Now the type comes from DT where the event has been
+>> defined. When there is no 'event-data-type' the default value is used,
+>> which is 'read data in bytes'.
+>> It is needed when you want to know not only read+write data bytes but
+>> i.e. only write data in byte, or number of read requests, etc.
 >>
 >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 >> ---
->>   MAINTAINERS                           |  5 +++++
->>   include/dt-bindings/pmu/exynos_ppmu.h | 24 ++++++++++++++++++++++++
->>   2 files changed, 29 insertions(+)
->>   create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+>>   drivers/devfreq/event/exynos-ppmu.c | 38 +++++++++++++++++++++++++------------
+>>   include/linux/devfreq-event.h       |  6 ++++++
+>>   2 files changed, 32 insertions(+), 12 deletions(-)
 >>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 3671fde..f4aac78 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -12376,6 +12376,11 @@ L:	linux-scsi@vger.kernel.org
->>   S:	Supported
->>   F:	drivers/scsi/pm8001/
+>> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+>> index c61de0b..e5f81a5 100644
+>> --- a/drivers/devfreq/event/exynos-ppmu.c
+>> +++ b/drivers/devfreq/event/exynos-ppmu.c
+>> @@ -140,6 +140,7 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>>   	int id = exynos_ppmu_find_ppmu_id(edev);
+>>   	int ret;
+>>   	u32 pmnc, cntens;
+>> +	u32 evt_sel = edev->desc->data_type;
 >>   
->> +PMU EXYNOS DT BINDINGS
->> +M:	Lukasz Luba <l.luba@partner.samsung.com>
->> +S:	Maintained
->> +F:	include/dt-bindings/pmu/exynos_ppmu.h
+>>   	if (id < 0)
+>>   		return id;
+>> @@ -154,9 +155,12 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> -	/* Set the event of Read/Write data count  */
+>> -	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+>> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+>> +	/* Check if the data type has been defined in DT, use default if not */
+>> +	if (evt_sel == UINT_MAX)
+>> +		evt_sel = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
 >> +
-> 
-> IMHO, I'm not sure that it is right of adding one dt-binding header file
-> to MAINTAINERS file. If right, I'm OK.
-> 
-> 
->>   PNP SUPPORT
->>   M:	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->>   S:	Maintained
->> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
->> new file mode 100644
->> index 0000000..a6971eb
->> --- /dev/null
->> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
->> @@ -0,0 +1,24 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/*
->> + * Samsung Exynos PPMU event types for counting in regs
->> + *
->> + * Copyright (c) 2019, Samsung
->> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
->> + */
+>> +	/* Set the event of Read or Write or both (RDWR) data count  */
+>> +	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id), evt_sel);
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> @@ -357,6 +361,7 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>>   	unsigned int pmnc, cntens;
+>>   	int id = exynos_ppmu_find_ppmu_id(edev);
+>>   	int ret;
+>> +	u32 evt_sel = edev->desc->data_type;
+>>   
+>>   	/* Enable all counters */
+>>   	ret = regmap_read(info->regmap, PPMU_V2_CNTENS, &cntens);
+>> @@ -368,24 +373,28 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> -	/* Set the event of Read/Write data count  */
 >> +
->> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
->> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+>> +	/* Set the event of proper data type counting.
+>> +	 * Check if the data type has been defined in DT,
+>> +	 * use default if not.
+>> +	 */
+>>   	switch (id) {
+>>   	case PPMU_PMNCNT0:
+>>   	case PPMU_PMNCNT1:
+>>   	case PPMU_PMNCNT2:
+>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+>> -		if (ret < 0)
+>> -			return ret;
+>> +		if (evt_sel == UINT_MAX)
+>> +			evt_sel = PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT;
+>>   		break;
+>>   	case PPMU_PMNCNT3:
+>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>> -				PPMU_V2_EVT3_RW_DATA_CNT);
+>> -		if (ret < 0)
+>> -			return ret;
+>> +		if (evt_sel == UINT_MAX)
+>> +			evt_sel = PPMU_V2_EVT3_RW_DATA_CNT;
+>>   		break;
+>>   	}
+>>   
+>> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id), evt_sel);
+>> +	if (ret < 0)
+>> +		return ret;
 >> +
->> +
->> +#define PPMU_RO_BUSY_CYCLE_CNT		0x0
->> +#define PPMU_WO_BUSY_CYCLE_CNT		0x1
->> +#define PPMU_RW_BUSY_CYCLE_CNT		0x2
->> +#define PPMU_RO_REQUEST_CNT		0x3
->> +#define PPMU_WO_REQUEST_CNT		0x4
->> +#define PPMU_RO_DATA_CNT		0x5
->> +#define PPMU_WO_DATA_CNT		0x6
->> +#define PPMU_RO_LATENCY			0x12
->> +#define PPMU_WO_LATENCY			0x16
->> +#define PPMU_V2_EVT3_RW_DATA_CNT	0x22
+>>   	/* Reset cycle counter/performance counter and enable PPMU */
+>>   	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+>>   	if (ret < 0)
+>> @@ -508,6 +517,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>>   	struct device *dev = info->dev;
+>>   	struct device_node *events_np, *node;
+>>   	int i, j, count;
+>> +	int ret;
+>>   
+>>   	events_np = of_get_child_by_name(np, "events");
+>>   	if (!events_np) {
+>> @@ -544,6 +554,10 @@ static int of_get_devfreq_events(struct device_node *np,
+>>   		desc[j].driver_data = info;
+>>   
+>>   		of_property_read_string(node, "event-name", &desc[j].name);
+>> +		ret = of_property_read_u32(node, "event-data-type",
+>> +					   &desc[j].data_type);
+>> +		if (!ret)
+>> +			desc[i].data_type = UINT_MAX;
 > 
-> If we can select the data type for monitoring, it looks good to me.
-> But, when I developed the Exynos PPMU, I has not tested other data type
-> except for PPMU_RO_DATA_CNT and PPMU_WO_DATA_CNT.
+> I think that it is not proper to use 'UINT_MAX'.
+> If you want to use the default value, you can initialize
+> the 'desc[i].data_type' according to the device type or compatible name.
 > 
-> Do you test all data types with PPMU device?
-Yes, I have tested all - 1 of them on Odroid XU4 with memory controller
-and they work. I haven't checked the last option for Exynos5433,
-but it should work since it was default option in your driver.
+> For all exynos SoC except for exynos5433,
+> 	desc[i].data_type = PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT;
+> 
+> For exynos5433,
+> 	desc[i].data_type = PPMU_V2_EVT3_RW_DATA_CNT;
+> 
+OK, I will set these default values here.
 
+>>   
+>>   		j++;
+>>   	}
+>> diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+>> index 4db00b0..cc160b1 100644
+>> --- a/include/linux/devfreq-event.h
+>> +++ b/include/linux/devfreq-event.h
+>> @@ -81,14 +81,20 @@ struct devfreq_event_ops {
+>>    * struct devfreq_event_desc - the descriptor of devfreq-event device
+>>    *
+>>    * @name	: the name of devfreq-event device.
+>> + * @data_type	: the data type which is going to be counted in the register.
+>>    * @driver_data	: the private data for devfreq-event driver.
+>>    * @ops		: the operation to control devfreq-event device.
+>>    *
+>>    * Each devfreq-event device is described with a this structure.
+>>    * This structure contains the various data for devfreq-event device.
+>> + * The data_type describes what is going to be counted in the register.
+>> + * It might choose to count e.g. read requests, write data in bytes, etc.
+>> + * The full supported list of types is present in specyfic header in:
+>> + * include/dt-bindings/pmu/.
+> 
+> Why did you make the path name as the 'pmu' instead of 'ppmu'?
+The directory may contain in future other Performance Monitoring Unit
+subsystems. In Exynos case we have: Platform Performance Monitoring Unit
+but different SoCs might have other names, like: System PMU.
+Since there is no 'pmu' in this directory, I am allocating it for
+Performance Monitoring Unit and not Power Management Unit.
+
+> 
+> It might have some confusion because 'pmu' has
+> the two meaning in linux kernel.
+> - PMU, Power Management Unit
+> - PMU, Performance Monitoring Unit
 Regards,
 Lukasz
 > 
->> +
->> +#endif
+>>    */
+>>   struct devfreq_event_desc {
+>>   	const char *name;
+>> +	u32 data_type;
+>>   	void *driver_data;
+>>   
+>>   	const struct devfreq_event_ops *ops;
 >>
 > 
 > 
