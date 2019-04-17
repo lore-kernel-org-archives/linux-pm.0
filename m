@@ -1,101 +1,127 @@
-From: Wen Yang <wen.yang99@zte.com.cn>
-Subject: [PATCH 2/2] power: supply: fix leaked of_node refs in power_supply_get_battery_info
-Date: Wed, 17 Apr 2019 10:43:03 +0800
-Message-ID: <1555468983-34952-3-git-send-email-wen.yang99@zte.com.cn>
-References: <1555468983-34952-1-git-send-email-wen.yang99@zte.com.cn>
+From: Jiada Wang <jiada_wang@mentor.com>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Date: Wed, 17 Apr 2019 12:01:17 +0900
+Message-ID: <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555468983-34952-1-git-send-email-wen.yang99@zte.com.cn>
+In-Reply-To: <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: wang.yi59@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The call to of_parse_phandle returns a node pointer with refcount
-incremented thus it must be explicitly decremented after the last
-usage.
+Hi Daniel
 
-Detected by coccinelle with the following warnings:
-./drivers/power/supply/power_supply_core.c:601:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:604:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:632:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:635:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:653:3-9: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:664:3-9: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
-./drivers/power/supply/power_supply_core.c:673:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 595, but without a corresponding object release within this function.
+On 2019/04/17 4:22, Daniel Lezcano wrote:
+> On 11/04/2019 12:03, Jiada Wang wrote:
+>> Currently IRQ is remain enabled after .remove, later if device is probed,
+>> IRQ is requested before .thermal_init, this may cause IRQ function be
+>> triggered but not able to clear IRQ status, thus cause system to hang.
+>>
+>> this patch by moving request of IRQ after device initialization to
+>> avoid this issue.
+> 
+> Why not disable the interrupt and clear the irq status in the .remove
+> callback, so the place is clean when probing again?
+> 
+> 
+>          struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
+> 
+>          rcar_thermal_irq_set(priv, false);
+> 
+> should do the trick no ?
+> 
+yes, this issue also can be addressed by disable the interrupt in .remove.
 
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/power/supply/power_supply_core.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+But there is race condition between .remove and irq thread function,
+(which enables IRQ)
+so driver need to ensure threaded irq has been disabled before call 
+rcar_thermal_irq_set(priv, false) in .remove.
+this adds additional complexity.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 65c619c..874495c 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -598,10 +598,12 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 
- 	err = of_property_read_string(battery_np, "compatible", &value);
- 	if (err)
--		return err;
-+		goto out_put_node;
- 
--	if (strcmp("simple-battery", value))
--		return -ENODEV;
-+	if (strcmp("simple-battery", value)) {
-+		err = -ENODEV;
-+		goto out_put_node;
-+	}
- 
- 	/* The property and field names below must correspond to elements
- 	 * in enum power_supply_property. For reasoning, see
-@@ -629,10 +631,12 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 
- 	len = of_property_count_u32_elems(battery_np, "ocv-capacity-celsius");
- 	if (len < 0 && len != -EINVAL) {
--		return len;
-+		err = len;
-+		goto out_put_node;
- 	} else if (len > POWER_SUPPLY_OCV_TEMP_MAX) {
- 		dev_err(&psy->dev, "Too many temperature values\n");
--		return -EINVAL;
-+		err = -EINVAL;
-+		goto out_put_node;
- 	} else if (len > 0) {
- 		of_property_read_u32_array(battery_np, "ocv-capacity-celsius",
- 					   info->ocv_temp, len);
-@@ -650,7 +654,8 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 			dev_err(&psy->dev, "failed to get %s\n", propname);
- 			kfree(propname);
- 			power_supply_put_battery_info(psy, info);
--			return -EINVAL;
-+			err = -EINVAL;
-+			goto out_put_node;
- 		}
- 
- 		kfree(propname);
-@@ -661,7 +666,8 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 			devm_kcalloc(&psy->dev, tab_len, sizeof(*table), GFP_KERNEL);
- 		if (!info->ocv_table[index]) {
- 			power_supply_put_battery_info(psy, info);
--			return -ENOMEM;
-+			err = -ENOMEM;
-+			goto out_put_node;
- 		}
- 
- 		for (i = 0; i < tab_len; i++) {
-@@ -670,7 +676,9 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 		}
- 	}
- 
--	return 0;
-+out_put_node:
-+	of_node_put(battery_np);
-+	return err;
- }
- EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
- 
--- 
-2.9.5
+I am fine with both solutions,
+what is your opinion?
+
+Thanks,
+Jiada
+
+>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+>> ---
+>>   drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
+>>   1 file changed, 26 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+>> index 88fa41cf16e8..4d095d7f9763 100644
+>> --- a/drivers/thermal/rcar_gen3_thermal.c
+>> +++ b/drivers/thermal/rcar_gen3_thermal.c
+>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>>   
+>>   	platform_set_drvdata(pdev, priv);
+>>   
+>> -	/*
+>> -	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>> -	 * to trigger on the low and high trip points of the current
+>> -	 * temp window at this point.
+>> -	 */
+>> -	for (i = 0; i < 2; i++) {
+>> -		irq = platform_get_irq(pdev, i);
+>> -		if (irq < 0)
+>> -			return irq;
+>> -
+>> -		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>> -					 dev_name(dev), i);
+>> -		if (!irqname)
+>> -			return -ENOMEM;
+>> -
+>> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+>> -						rcar_gen3_thermal_irq_thread,
+>> -						IRQF_SHARED, irqname, priv);
+>> -		if (ret)
+>> -			return ret;
+>> -	}
+>> -
+>>   	pm_runtime_enable(dev);
+>>   	pm_runtime_get_sync(dev);
+>>   
+>> @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>>   		goto error_unregister;
+>>   	}
+>>   
+>> +	/*
+>> +	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+>> +	 * to trigger on the low and high trip points of the current
+>> +	 * temp window at this point.
+>> +	 */
+>> +	for (i = 0; i < 2; i++) {
+>> +		irq = platform_get_irq(pdev, i);
+>> +		if (irq < 0) {
+>> +			ret = irq;
+>> +			goto error_unregister;
+>> +		}
+>> +
+>> +		irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+>> +					 dev_name(dev), i);
+>> +		if (!irqname) {
+>> +			ret = -ENOMEM;
+>> +			goto error_unregister;
+>> +		}
+>> +
+>> +		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+>> +						rcar_gen3_thermal_irq_thread,
+>> +						IRQF_SHARED, irqname, priv);
+>> +		if (ret)
+>> +			goto error_unregister;
+>> +	}
+>> +
+>>   	rcar_thermal_irq_set(priv, true);
+>>   
+>>   	return 0;
+>>
+> 
+> 
