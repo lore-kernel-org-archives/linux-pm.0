@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D68D9C10F13
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 00:31:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C233C10F13
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 00:34:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 60EC321773
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 00:31:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D63C821773
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 00:34:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="SpSbBTRp"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="sLQwxhfg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729378AbfDQAbO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 20:31:14 -0400
-Received: from mailout2.samsung.com ([203.254.224.25]:62524 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729314AbfDQAbN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 20:31:13 -0400
+        id S1730875AbfDQAec (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Apr 2019 20:34:32 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:37818 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730144AbfDQAec (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2019 20:34:32 -0400
 Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20190417003111epoutp02eb1d7f41b5adde0834446b355788f943~WG5pokkKL2659126591epoutp02K
-        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 00:31:11 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20190417003111epoutp02eb1d7f41b5adde0834446b355788f943~WG5pokkKL2659126591epoutp02K
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190417003429epoutp01f54b106821f016936219f37af18ddb0a~WG8iP_A5l1255012550epoutp01i
+        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 00:34:29 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190417003429epoutp01f54b106821f016936219f37af18ddb0a~WG8iP_A5l1255012550epoutp01i
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555461071;
-        bh=/fwUGWBYXm3xLapEYxQzr3nmjHWGj0LDUGEc5xzfj6o=;
+        s=mail20170921; t=1555461269;
+        bh=tbWmozOrRkmGMW+0O9oihzfZoSl6iHoooARQ4HSqkck=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=SpSbBTRpHla3qsJr91ifVxjoandV3Oc9gG6yRNmZqRa8j3dsfIoppOL9C9iZyP+M6
-         xZTx56Aw9C0Qy2b2A0Ay3Qd3eCr8yy0J7iXgKLf+WYu0YPsnmw5tZodwE8b39gYGJP
-         /C+4CVpTN9CgsqvuvX1skkeWe127BUED49rTr3mg=
-Received: from epsmges1p2.samsung.com (unknown [182.195.40.157]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190417003108epcas1p1146c702cee410865976728c2fe3ca809~WG5nEHw2v3134331343epcas1p1a;
-        Wed, 17 Apr 2019 00:31:08 +0000 (GMT)
+        b=sLQwxhfgBj5B8gFUD5HSpgkC0GLmELYtFxNlA4N5O4rv6RfaZP5Z+vL1TPiIhbspi
+         K1etKWliSmlvFUtkdiTLLj7xIDrRlWXfSj7uAaw6zTq5gDWTSUQNwYJGLWd4UCcke9
+         EcCZDpsgkxWlSDxn1HXpG+H8WLQwlJvu2e/rjkOQ=
+Received: from epsmges1p5.samsung.com (unknown [182.195.40.158]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190417003427epcas1p2644ced819498a4794d31bf893e97ea10~WG8f5uyOo3111531115epcas1p2D;
+        Wed, 17 Apr 2019 00:34:27 +0000 (GMT)
 Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        5D.5A.04142.6C376BC5; Wed, 17 Apr 2019 09:31:02 +0900 (KST)
+        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
+        FF.9D.04108.B8476BC5; Wed, 17 Apr 2019 09:34:19 +0900 (KST)
 Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
-        20190417003102epcas1p4a37ed453bce822c67ce9492e1295b0a1~WG5haSf4H0063600636epcas1p4r;
-        Wed, 17 Apr 2019 00:31:02 +0000 (GMT)
-Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20190417003418epcas1p2e06364d1e3d26a8378631c0d8b7d33ac~WG8YXfm_N3110031100epcas1p2y;
+        Wed, 17 Apr 2019 00:34:18 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
         epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190417003102epsmtrp145caec57f071cddc6cdab88c96f5612e~WG5hZi6nR1476014760epsmtrp1G;
-        Wed, 17 Apr 2019 00:31:02 +0000 (GMT)
-X-AuditID: b6c32a36-ce1ff7000000102e-8e-5cb673c6cd51
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        7D.37.03662.6C376BC5; Wed, 17 Apr 2019 09:31:02 +0900 (KST)
+        20190417003418epsmtrp1035eb7ed2deb65df9520c8c600d7dade~WG8YUE55J1476014760epsmtrp1D;
+        Wed, 17 Apr 2019 00:34:18 +0000 (GMT)
+X-AuditID: b6c32a39-89fff7000000100c-72-5cb6748bee0d
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        DB.79.03692.A8476BC5; Wed, 17 Apr 2019 09:34:18 +0900 (KST)
 Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190417003102epsmtip1cdef4e93f400c49aa1eca1fa10af95c3~WG5hRkr5N2434524345epsmtip1K;
-        Wed, 17 Apr 2019 00:31:02 +0000 (GMT)
-Subject: Re: [PATCH v2 10/19] PM / devfreq: tegra: Drop primary interrupt
- handler
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20190417003418epsmtip2f559475b3138126d29dcc08b00868d74~WG8YFXOWH2315823158epsmtip2r;
+        Wed, 17 Apr 2019 00:34:18 +0000 (GMT)
+Subject: Re: [PATCH v2 12/19] PM / devfreq: tegra: Avoid inconsistency of
+ current frequency value
 To:     Dmitry Osipenko <digetx@gmail.com>,
         Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -67,196 +67,146 @@ Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 Organization: Samsung Electronics
-Message-ID: <c10de3f3-b1ce-7f9b-5991-075581fbff24@samsung.com>
-Date:   Wed, 17 Apr 2019 09:31:58 +0900
+Message-ID: <f83171df-3d48-e15e-42ea-7a0903e6c015@samsung.com>
+Date:   Wed, 17 Apr 2019 09:35:15 +0900
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <286d8d4a-f761-93d3-8b77-cf71a7d0dab3@gmail.com>
+In-Reply-To: <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrHJsWRmVeSWpSXmKPExsWy7bCmnu6x4m0xBrPWWVus/viY0aJl1iIW
-        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
-        m0ffllWMHp83yQWwRmXbZKQmpqQWKaTmJeenZOal2yp5B8c7x5uaGRjqGlpamCsp5CXmptoq
-        ufgE6Lpl5gAdpKRQlphTChQKSCwuVtK3synKLy1JVcjILy6xVUotSMkpsCzQK07MLS7NS9dL
-        zs+1MjQwMDIFKkzIzvh6cjNrQbduxd9r9xgbGLtVuxg5OSQETCRam6czdzFycQgJ7GCU+HV8
-        CZTziVHi59KLUM43Rok7Czaww7ScmXuTCcQWEtjLKHF2agVE0XtGid6jj1lBEsICwRJ3L81g
-        A0mICPxjlPi0awZYglkgUuLrwaXMIDabgJbE/hc32EBsfgFFias/HjOC2LwCdhJLpzwA2sDB
-        wSKgKnH5aDhIWFQgQuL+sQ2sECWCEidnPmEBsTkFbCXWv93EDDFeXOLWk/lMELa8RPPW2WAf
-        SAg0s0tMfn2VDeIDF4mlk2exQNjCEq+Ob4H6TEriZX8blF0tsfLkETaI5g5GiS37L7BCJIwl
-        9i+dDHYcs4CmxPpd+hDL+CTefe1hBQlLCPBKdLQJQVQrS1x+cJcJwpaUWNzeyQZR4iFx75XJ
-        BEbFWUi+mYXkg1lIPpiFsGsBI8sqRrHUguLc9NRiwwIj5MjexAhOq1pmOxgXnfM5xCjAwajE
-        w7vi59YYIdbEsuLK3EOMEhzMSiK8jilbYoR4UxIrq1KL8uOLSnNSiw8xmgLDeiKzlGhyPjDl
-        55XEG5oaGRsbW5gYmpkaGiqJ8653cI4REkhPLEnNTk0tSC2C6WPi4JRqYFyfy3oxsW215qKO
-        6iNun068tr9x4bzBqg+CjQdvnDoblNles7+mTWnTqTL5debT5HtOZJr5Sh3/cSj7+RvXVX9S
-        JbPm36yXXFkX0Kuh/0bUsYIrNmfqDel3MrGdWcZFdbVZ3DbcSmcSpK0iLS1FnNtjYxiY2qtX
-        3XaYbfH5+FGGMh9P9rNhSizFGYmGWsxFxYkAiMYrocEDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprFIsWRmVeSWpSXmKPExsWy7bCSnO6x4m0xBqefSlqs/viY0aJl1iIW
-        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
-        m0ffllWMHp83yQWwRnHZpKTmZJalFunbJXBlfD25mbWgW7fi77V7jA2M3apdjJwcEgImEmfm
-        3mTqYuTiEBLYzShxfdozdoiEpMS0i0eZuxg5gGxhicOHiyFq3jJKHJ88kRWkRlggWOLupRls
-        IAkRgSYmic8PW5hAEswCkRL9j7pZITrmMUkc3zeHGSTBJqAlsf/FDTYQm19AUeLqj8eMIDav
-        gJ3E0ikPmEC2sQioSlw+Gg4SFhWIkDjzfgULRImgxMmZT8BsTgFbifVvNzFD7FKX+DPvEpQt
-        LnHryXyoG+QlmrfOZp7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBUV5quV5xYm5x
-        aV66XnJ+7iZGcIxpae1gPHEi/hCjAAejEg/vip9bY4RYE8uKK3MPMUpwMCuJ8DqmbIkR4k1J
-        rKxKLcqPLyrNSS0+xCjNwaIkziuffyxSSCA9sSQ1OzW1ILUIJsvEwSnVwFgaWbX5DUvk0cn1
-        3y8/+mB4s7LW3aKv9OKfpgQ7jhVyX9befvVrQ7iTSv0JHn+3Eys2vGoPvqH35FBg1PNbmS5M
-        f0/u3bdOOnZSUPwpv+IcN5vNFvJXSv9vv7hw1uGd56fZbppudam1qfak2Id19lrK638zdnet
-        qeyqs5yWFamW/ZbTf9ZcxmIlluKMREMt5qLiRAAB7KXSrQIAAA==
-X-CMS-MailID: 20190417003102epcas1p4a37ed453bce822c67ce9492e1295b0a1
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrIJsWRmVeSWpSXmKPExsWy7bCmnm53ybYYg47XAharPz5mtGiZtYjF
+        4mzTG3aLy7vmsFl87j3CaNH5ZRabxe3GFWwWP3fNY7HoW3uJzYHTY8fdJYweO2fdZffobX7H
+        5tG3ZRWjx+dNcgGsUdk2GamJKalFCql5yfkpmXnptkrewfHO8aZmBoa6hpYW5koKeYm5qbZK
+        Lj4Bum6ZOUAHKSmUJeaUAoUCEouLlfTtbIryS0tSFTLyi0tslVILUnIKLAv0ihNzi0vz0vWS
+        83OtDA0MjEyBChOyMxa0f2Mq6JKu2LHvEWMDY7dYFyMnh4SAicTe1ysZuxi5OIQEdjBK3Lt2
+        jwXC+cQo8WnpMWYI5xujROP/NiaYls+td6Ba9jJKTNx0gB3Cec8ocXvFRlaQKmGBZIm5jcfY
+        QBIiAv+AZu2aAZZgFoiU+HpwKTOIzSagJbH/xQ02EJtfQFHi6o/HjCA2r4CdxJobs8DWsQio
+        Suye+AOsV1QgQuL+sQ2sEDWCEidnPmEBsTkFbCWuNf5kg5gvLnHryXwmCFteonnrbLAfJASa
+        2SVm/P/ACvGDi0TnqXfMELawxKvjW9ghbCmJl/1tUHa1xMqTR9ggmjsYJbbsvwDVbCyxf+lk
+        oA0cQBs0Jdbv0odYxifx7msPK0hYQoBXoqNNCKJaWeLyg7vQoJOUWNzeyQZhe0jMvTiFdQKj
+        4iwk78xC8sIsJC/MQli2gJFlFaNYakFxbnpqsWGBKXJ8b2IEJ1ctyx2Mx875HGIU4GBU4uFl
+        +LM1Rog1say4MvcQowQHs5IIr2PKlhgh3pTEyqrUovz4otKc1OJDjKbA0J7ILCWanA9M/Hkl
+        8YamRsbGxhYmhmamhoZK4rzrHZxjhATSE0tSs1NTC1KLYPqYODilGhg3/J7vK/120q6U+Wue
+        xCQ+PPTb+KjFwoi8ANu53r3V98q6EtQ1Djc9mHKeQTIlwDyjsXSS8J/3Km4RT+wWB84NNTtt
+        vv//2Y0XeMXO2c6I1Hl45kVgs4BT8tM33zZOTBM6zX2e8TS3oWEA/yp777RymxX7a5X7PkSn
+        30nS3sMsrrdebmkx4wMlluKMREMt5qLiRAA06p6ixAMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprNIsWRmVeSWpSXmKPExsWy7bCSvG5XybYYg8f/dS1Wf3zMaNEyaxGL
+        xdmmN+wWl3fNYbP43HuE0aLzyyw2i9uNK9gsfu6ax2LRt/YSmwOnx467Sxg9ds66y+7R2/yO
+        zaNvyypGj8+b5AJYo7hsUlJzMstSi/TtErgyFrR/Yyrokq7Yse8RYwNjt1gXIyeHhICJxOfW
+        O4xdjFwcQgK7GSVWb57IBpGQlJh28ShzFyMHkC0scfhwMUTNW0aJdzs/sIPUCAskS8xtPMYG
+        khARaGKS+PywhQkkwSwQKdH/qJsVomMek8SRyZeZQRJsAloS+1/cANvAL6AocfXHY0YQm1fA
+        TmLNjVlgzSwCqhK7J/5gBbFFBSIkzrxfwQJRIyhxcuYTMJtTwFbiWuNPNohl6hJ/5l1ihrDF
+        JW49mQ91hLxE89bZzBMYhWchaZ+FpGUWkpZZSFoWMLKsYpRMLSjOTc8tNiwwzEst1ytOzC0u
+        zUvXS87P3cQIjjItzR2Ml5fEH2IU4GBU4uFd8XNrjBBrYllxZe4hRgkOZiURXseULTFCvCmJ
+        lVWpRfnxRaU5qcWHGKU5WJTEeZ/mHYsUEkhPLEnNTk0tSC2CyTJxcEo1MLZ4fhHTs2xROfx6
+        8fmjzbt/Kgq4+T3wPvBt7Zvfp/f/cWzavGSt3/YWIanfrz0vZYfPfrLzXlz22Vf5C4okhOZK
+        b3NsvvFA9gjzDwPt1D93+m9KOCbyscxnfchw/Pjd8FMKTaFr/buOfjnsm1fK23Q7buXcO0K/
+        GG53C+7lSKiJleWIPt4YzqTEUpyRaKjFXFScCACQGNFJrgIAAA==
+X-CMS-MailID: 20190417003418epcas1p2e06364d1e3d26a8378631c0d8b7d33ac
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190415145737epcas1p39300df7ef83ed20bd7aaa4e920d1f475
+X-CMS-RootMailID: 20190415145721epcas1p4936edf8cf61a7d373a6e3f6aba76a029
 References: <20190415145505.18397-1-digetx@gmail.com>
-        <CGME20190415145737epcas1p39300df7ef83ed20bd7aaa4e920d1f475@epcas1p3.samsung.com>
-        <20190415145505.18397-11-digetx@gmail.com>
-        <93574885-d695-2288-a4c6-2b845ad8daaf@samsung.com>
-        <286d8d4a-f761-93d3-8b77-cf71a7d0dab3@gmail.com>
+        <CGME20190415145721epcas1p4936edf8cf61a7d373a6e3f6aba76a029@epcas1p4.samsung.com>
+        <20190415145505.18397-13-digetx@gmail.com>
+        <375ebaba-1762-2675-3ae3-2ea9ec4cbcb2@samsung.com>
+        <2d2f7c42-2cad-3b49-eaf3-810f94b3dc77@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417003158.hQv5-dYSb4CZlK-xsjnJNpxI_oviI1DfReINi1VUHV0@z>
+Message-ID: <20190417003515.9b6X-g7Fs_tNv63oNlUBQkL4x258Yxe6QTSLftD4G2o@z>
 
 Hi,
 
-On 19. 4. 17. 오전 12:23, Dmitry Osipenko wrote:
-> 16.04.2019 8:56, Chanwoo Choi пишет:
+On 19. 4. 17. 오전 12:40, Dmitry Osipenko wrote:
+> 16.04.2019 10:15, Chanwoo Choi пишет:
 >> Hi,
 >>
->> It looks good to me to drop the primary interrupt handler
->> but I have some comments. Please check it.
->>
 >> On 19. 4. 15. 오후 11:54, Dmitry Osipenko wrote:
->>> There is no real need in the primary interrupt handler, hence move
->>> everything to the secondary (threaded) handler. In a result locking
->>> is consistent now and there are no potential races with the interrupt
->>> handler because it is protected with the devfreq's mutex.
+>>> The frequency value potentially could change in-between. It doesn't
+>>> cause any real problem at all right now, but that could change in the
+>>> future. Hence let's avoid the inconsistency.
 >>>
 >>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 >>> ---
->>>  drivers/devfreq/tegra-devfreq.c | 61 ++++++++++++---------------------
->>>  1 file changed, 22 insertions(+), 39 deletions(-)
+>>>  drivers/devfreq/tegra-devfreq.c | 6 ++++--
+>>>  1 file changed, 4 insertions(+), 2 deletions(-)
 >>>
 >>> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
->>> index 2a1464098200..69b557df5084 100644
+>>> index a668e4fbc874..f1a6f951813a 100644
 >>> --- a/drivers/devfreq/tegra-devfreq.c
 >>> +++ b/drivers/devfreq/tegra-devfreq.c
->>> @@ -144,7 +144,6 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
->>>  struct tegra_devfreq_device {
->>>  	const struct tegra_devfreq_device_config *config;
->>>  	void __iomem *regs;
->>> -	spinlock_t lock;
->>>  
->>>  	/* Average event count sampled in the last interrupt */
->>>  	u32 avg_count;
->>> @@ -249,11 +248,8 @@ static void actmon_write_barrier(struct tegra_devfreq *tegra)
->>>  static void actmon_isr_device(struct tegra_devfreq *tegra,
->>>  			      struct tegra_devfreq_device *dev)
+>>> @@ -496,13 +496,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
 >>>  {
->>> -	unsigned long flags;
->>>  	u32 intr_status, dev_ctrl;
+>>>  	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+>>>  	struct tegra_devfreq_device *actmon_dev;
+>>> +	unsigned long cur_freq;
 >>>  
->>> -	spin_lock_irqsave(&dev->lock, flags);
->>> -
->>>  	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->>>  	tegra_devfreq_update_avg_wmark(tegra, dev);
+>>> -	stat->current_frequency = tegra->cur_freq * KHZ;
+>>> +	cur_freq = READ_ONCE(tegra->cur_freq);
 >>>  
->>> @@ -302,26 +298,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
->>>  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
+>>>  	/* To be used by the tegra governor */
+>>>  	stat->private_data = tegra;
 >>>  
->>>  	actmon_write_barrier(tegra);
->>> -
->>> -	spin_unlock_irqrestore(&dev->lock, flags);
->>> -}
->>> -
->>> -static irqreturn_t actmon_isr(int irq, void *data)
->>> -{
->>> -	struct tegra_devfreq *tegra = data;
->>> -	bool handled = false;
->>> -	unsigned int i;
->>> -	u32 val;
->>> -
->>> -	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
->>> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->>> -		if (val & tegra->devices[i].config->irq_mask) {
->>> -			actmon_isr_device(tegra, tegra->devices + i);
->>> -			handled = true;
->>> -		}
->>> -	}
->>> -
->>> -	return handled ? IRQ_WAKE_THREAD : IRQ_NONE;
->>>  }
+>>>  	/* The below are to be used by the other governors */
+>>> +	stat->current_frequency = cur_freq * KHZ;
 >>>  
->>>  static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
->>> @@ -348,35 +324,46 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
->>>  	unsigned long cpu_freq = 0;
->>>  	unsigned long static_cpu_emc_freq = 0;
->>>  	unsigned int avg_sustain_coef;
->>> -	unsigned long flags;
->>> +	u32 avg_count;
+>>>  	actmon_dev = &tegra->devices[MCALL];
 >>>  
->>>  	if (dev->config->avg_dependency_threshold) {
->>>  		cpu_freq = cpufreq_get(0);
->>>  		static_cpu_emc_freq = actmon_cpu_to_emc_rate(tegra, cpu_freq);
->>>  	}
+>>> @@ -513,7 +515,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+>>>  	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
 >>>  
->>> -	spin_lock_irqsave(&dev->lock, flags);
->>> -
->>> -	dev->target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
->>> +	avg_count = dev->avg_count;
->>> +	dev->target_freq = avg_count / ACTMON_SAMPLING_PERIOD;
+>>>  	/* Number of cycles in a sampling period */
+>>> -	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
+>>> +	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
+>>>  
+>>>  	stat->busy_time = min(stat->busy_time, stat->total_time);
+>>>  
+>>>
 >>
->> Actually, this change is not related to this patch.
->> Please keep the original code.
+>> The read/write access of tegra->cur_freq is in the single routine
+>> of update_devfreq() as following. I think that there are no any
+>> potential problem about the inconsistency of tegra->cur_freq.
+> 
+> No, that's wrong assumption. The tegra->cur_freq is changed by the clock notifier that runs asynchronously with the devfreq driver when EMC clock rate is changed by something else in the kernel. 
+> 
+>> IMHO, if there are no any problem now, I'm not sure that we need
+>> to apply this patch.
 >>
->>>  	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
->>>  	dev->target_freq = do_percent(dev->target_freq, avg_sustain_coef);
->>>  	dev->target_freq += dev->boost_freq;
->>>  
->>> -	if (dev->avg_count >= dev->config->avg_dependency_threshold)
->>> +	if (avg_count >= dev->config->avg_dependency_threshold)
+>> update_devfreq()
+>> {
+>> 	devfreq->governor->get_target_freq()
+>> 		devfreq_update_stats(devfreq)
+>> 			tegra_devfreq_get_dev_status()
+>> 				stat->current_frequency = tegra->cur_freq * KHZ;
 >>
->> ditto.
-> 
-> Good catch, it's a leftover from v1 that I forgot to revert. Thank you.
-> 
-> [snip]
-> 
+>> 	devfreq_set_target()
+>> 		tegra_devfreq_target()
+>> 			clk_set_min_rate(emc_rate, )
+>> 				tegra_actmon_rate_notify_cb()
+>> 					tegra->cur_freq = data->new_rate / KHZ;
+>> 		
+>> 			clk_set_rate(emc_rate, )
+>> 				tegra_actmon_rate_notify_cb()
+>> 					tegra->cur_freq = data->new_rate / KHZ;
+>> }
 >>
->> When I review this patch, I have a question
->> about why tegra_actmon_rate_notify_cb is needed.
 >>
->> tegra_actmon_rate_notify_cb() do something
->> when the clock rate of emc_clock is changed.
->> I think that 'emc_clock' is changed by this driver.
->> It means that the this driver can catch the change timing
->> of emc_clock rate without notifier. 
 > 
-> The devfreq driver isn't the only driver of the EMC clock rate. The devfreq driver changes EMC freq dynamically based of on average memory usage activity, but for some hardware units (like display controller for example) there is a requirement for a minimum memory bandwidth (isochronous transactions) and hence when display is waking up from suspend it immediately requires an amount of memory bandwidth that could be higher than ACTMON hardware unit suggests and besides the ACTMON's reaction is delayed by the sampling period (12ms).
-
-Thanks for explaining it. If EMC clock is used on multiple point,
-I understand why the clock notifier is necessary.
-
-> 
->> IMO, it is possible to call tegra_devfreq_update_wmark()
->> directly without clock notifier before calling
->> 'clk_set_min_rate()/clk_set_rate()' in the tegra_devfreq_target().
->>
->> With clock notifier, it cannot restore something for
->> tegra_devfreq_update_wmark(tegra, dev) when failed to
->> set the rate of emc_clk by 'clk_set_min_rate()/clk_set_rate()'.
-> 
-> The watermarks should be changed in accordance to the actual EMC clock rate. Given that EMC rate could be changed by something else than the devfreq driver, we need to re-adjust the watermarks to the actual values after the EMC rate-change completion. Please note that the clock notifier uses the POST_RATE_CHANGE event that happens only after successful completion of EMC clock rate change.
-
-I understand the needs of clock notifier. Thanks.
-
+> The cur_freq value is changed by the clock notifier that runs asynchronously with the rest of the devfreq driver. Hence potentially compiler may generate two separate fetches of the cur_freq value, then the clock rate could be changed by other CPU core simultaneously with tegra_devfreq_get_dev_status() or kernel may re-schedule preemptively, changing the clock rate in-between of the two fetches.
 > 
 > 
 
+Thanks. I understand why have to consider the inconsistency of clock
+which is used on the multiple points.
+
+Looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
