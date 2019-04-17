@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v3 05/16] PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-Date: Thu, 18 Apr 2019 01:29:14 +0300
-Message-ID: <20190417222925.5815-6-digetx@gmail.com>
+Subject: [PATCH v3 09/16] PM / devfreq: tegra: Avoid inconsistency of current frequency value
+Date: Thu, 18 Apr 2019 01:29:18 +0300
+Message-ID: <20190417222925.5815-10-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,27 +12,45 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no real benefit from doing so, hence let's drop that rate setting
-for consistency.
+The frequency value potentially could change in-between. It doesn't
+cause any real problem at all right now, but that could change in the
+future. Hence let's avoid the inconsistency.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index c7428c5eee23..24ec65556c39 100644
+index 70946e432d3c..d72c16752012 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -653,8 +653,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
+@@ -509,13 +509,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ {
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct tegra_devfreq_device *actmon_dev;
++	unsigned long cur_freq;
  
--	clk_set_rate(tegra->emc_clock, ULONG_MAX);
--
- 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
- 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
- 	if (err) {
+-	stat->current_frequency = tegra->cur_freq * KHZ;
++	cur_freq = READ_ONCE(tegra->cur_freq);
+ 
+ 	/* To be used by the tegra governor */
+ 	stat->private_data = tegra;
+ 
+ 	/* The below are to be used by the other governors */
++	stat->current_frequency = cur_freq * KHZ;
+ 
+ 	actmon_dev = &tegra->devices[MCALL];
+ 
+@@ -526,7 +528,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
+ 
+ 	/* Number of cycles in a sampling period */
+-	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
++	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
+ 
+ 	stat->busy_time = min(stat->busy_time, stat->total_time);
+ 
 -- 
 2.21.0
