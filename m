@@ -2,166 +2,101 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DATE_IN_PAST_03_06,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DATE_IN_PAST_03_06,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91AC9C282DA
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 02:35:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97C10C282DA
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 02:36:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E599217F9
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 02:35:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C72A217F9
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 02:36:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555554954;
-	bh=9tvhrTqKB3szgb6yq7OydqhhWOzHUAaudyWsUudeAtg=;
+	s=default; t=1555554960;
+	bh=l1oVrBI3MYalFYrCgdOqcs+vkGCjNTZ+i+vzrI+mfyI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=PlsfgLvttCcKtUeKRC3uANV8RxK/O6J/8WJokSq75qAVfjVvKADKHcc2HNuRZYz+T
-	 dyaO0qpTfTzN3fySNso+3pIk8D+K37OEfKyNKtpSfDEH2tpSk9kkN6vKBJkzujZUXb
-	 NBW30/llmWoRaJSjQSBGpP9G3KOZcS5StpRZh09k=
+	b=VAXM4k4R3nJ9STJMI0IIuxfSnpkhV1biyz/DXk5Ex6z6LE+1EI+8NxG1791NXjKnP
+	 O/pH/vonSJok2tnJaYKd8bFaGgQCWxTMrzFA24+W5v0FrKTGQ+41uJjRZu5nOISmo/
+	 Tjus/NgoL1ocCH+GFwSb6btoVLhOaedqFTjOUFRs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387442AbfDRCfn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 22:35:43 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54084 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387839AbfDRCfQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S2387922AbfDRCfQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 17 Apr 2019 22:35:16 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54070 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2387442AbfDRCfP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 17 Apr 2019 22:35:15 -0400
 Received: from earth.universe (dyndsl-037-138-087-229.ewe-ip-backbone.de [37.138.87.229])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id D0DF321871;
+        by mail.kernel.org (Postfix) with ESMTPSA id CDC3B2186A;
         Thu, 18 Apr 2019 02:35:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=default; t=1555554915;
-        bh=9tvhrTqKB3szgb6yq7OydqhhWOzHUAaudyWsUudeAtg=;
+        bh=l1oVrBI3MYalFYrCgdOqcs+vkGCjNTZ+i+vzrI+mfyI=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=VYLaWUEynyzqCHh/YZO28y19TbP7ZQOhvaMnKftwp1dquKbGYaCKKj6XIxIJK2fR0
-         RMT5NbqbWjeLtGKW2DhDuW9L6Joo5eRDAJAeG4iYVW9/xs/EibB8DqGaoEAM8gD7V2
-         Z4FLs5tvuSTf6YqBcCW/XAnmGY7mOCPWBIEbr0R0=
+        b=1vHaW/6hGW8TMbG2L9X235NB7PopilNsLC0BTXO16ZMyxY36Z5jLjELbPTPhmClCG
+         fK2m2/j3LXg3yDY7oE/p7XJGOkKfdd1i1vilG3ZCcRmNbj1c8zmxlNr6WGFj9xDAFE
+         zVLv59GVapamA+KtI3jAq61hV2EfoIfnd9ioShgo=
 Received: by earth.universe (Postfix, from userid 1000)
-        id A48F33C0986; Thu, 18 Apr 2019 00:37:08 +0200 (CEST)
-Date:   Thu, 18 Apr 2019 00:37:08 +0200
+        id E0EF43C08D8; Wed, 17 Apr 2019 23:27:03 +0200 (CEST)
+Date:   Wed, 17 Apr 2019 23:27:03 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc:     Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: supply: sysfs: prevent endless uevent loop with
- CONFIG_POWER_SUPPLY_DEBUG
-Message-ID: <20190417223708.4irrwrm4q7vig3vh@earth.universe>
-References: <20190405073020.10361-1-andrew.smirnov@gmail.com>
+To:     Chen-Yu Tsai <wens@kernel.org>
+Cc:     Maxime Ripard <maxime.ripard@bootlin.com>,
+        Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
+        Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v4 0/7] ARM: sun8i: a83t: Enable USB OTG
+Message-ID: <20190417212703.7qq3nzjdvnceaim2@earth.universe>
+References: <20190416064024.20414-1-wens@kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="xjgjrdmhm5424q6v"
+        protocol="application/pgp-signature"; boundary="igqa3fbpnirkgubc"
 Content-Disposition: inline
-In-Reply-To: <20190405073020.10361-1-andrew.smirnov@gmail.com>
+In-Reply-To: <20190416064024.20414-1-wens@kernel.org>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190417223708.wEDSLA3ywyxMZbH4txkz4bsE6mvwX6WPT3rDTzfJHw8@z>
+Message-ID: <20190417212703.LwyH7ec63drSHT90EkRLlGDNxWuN-xFQZHAWKxyG43I@z>
 
 
---xjgjrdmhm5424q6v
+--igqa3fbpnirkgubc
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Apr 05, 2019 at 12:30:20AM -0700, Andrey Smirnov wrote:
-> Fix a similar endless event loop as was done in commit 8dcf32175b4e
-> ("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
->=20
->   The culprit is the dev_dbg printk in the i2c uevent handler. If
->   this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
->   in an endless loop with systemd-journald.
->=20
->   This happens if user-space scans the system log and reads the uevent
->   file to get information about a newly created device, which seems
->   fair use to me. Unfortunately reading the "uevent" file uses the
->   same function that runs for creating the uevent for a new device,
->   generating the next syslog entry
->=20
-> Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
-> in https://bugs.freedesktop.org/show_bug.cgi?id=3D76886 but only former
-> seems to have been fixed. Change debug prints to use pr_debug insted
-> to resolve the issue.
->=20
-> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> Cc: Chris Healy <cphealy@gmail.com>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
+On Tue, Apr 16, 2019 at 02:40:17PM +0800, Chen-Yu Tsai wrote:
+> This is v4 of my A83T USB power supply / OTG series. Hopefully this is
+> the last revision even though it's kind of late in the -rc cycle for
+> the patches to make the next release. Fingers crossed.
 
-I think we should just drop these debug messages, just like I2C did.
-They don't offer any useful information considering the info is already
-exposed to userspace via the uevent.
+Patches 1-5 (i.e. all except DTS) queued to power-supply subsystem.
 
 -- Sebastian
 
->  drivers/power/supply/power_supply_sysfs.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
-pply/power_supply_sysfs.c
-> index dce24f596160..5e91946731fd 100644
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -383,14 +383,14 @@ int power_supply_uevent(struct device *dev, struct =
-kobj_uevent_env *env)
->  	char *prop_buf;
->  	char *attrname;
-> =20
-> -	dev_dbg(dev, "uevent\n");
-> +	pr_debug("%s: uevent\n", dev_name(dev));
-> =20
->  	if (!psy || !psy->desc) {
->  		dev_dbg(dev, "No power supply yet\n");
->  		return ret;
->  	}
-> =20
-> -	dev_dbg(dev, "POWER_SUPPLY_NAME=3D%s\n", psy->desc->name);
-> +	pr_debug("%s: POWER_SUPPLY_NAME=3D%s\n", dev_name(dev), psy->desc->name=
-);
-> =20
->  	ret =3D add_uevent_var(env, "POWER_SUPPLY_NAME=3D%s", psy->desc->name);
->  	if (ret)
-> @@ -427,7 +427,8 @@ int power_supply_uevent(struct device *dev, struct ko=
-bj_uevent_env *env)
->  			goto out;
->  		}
-> =20
-> -		dev_dbg(dev, "prop %s=3D%s\n", attrname, prop_buf);
-> +		pr_debug("%s: prop %s=3D%s\n", dev_name(dev), attrname,
-> +			 prop_buf);
-> =20
->  		ret =3D add_uevent_var(env, "POWER_SUPPLY_%s=3D%s", attrname, prop_buf=
-);
->  		kfree(attrname);
-> --=20
-> 2.20.1
->=20
-
---xjgjrdmhm5424q6v
+--igqa3fbpnirkgubc
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly3qpEACgkQ2O7X88g7
-+pqOSQ//QuszE8iHqFMu2cJSEUKk0bWMOrbSpl/rEsxCFW0+hQPXNxLy/Yscs11l
-cTTSMX11dDp8JYHtZFBEsccX052mg/+W0DGzdIRNQ2X9cPjTgF+mWAcBR7wzcD2O
-LkON9QAroF6K6Lsc/oiu3BNg8us6dJu0YdBIKa+L4OBE6MBhq/wvtAHOsmK1n7m2
-lP3rLTzeojKODAuhyLt568DhJ57V3Bq5ioPumf9b1+FEJlGCrwpnyFM5LvM0Jg2u
-f3TdCVdVHiDLGGyj1jMZ91vQ8Zb4mSYC3h3UZaTYTdus6vgbYda8c2vI/FiP8UIG
-CxVHrOVFQEOGkAyBMGro7BR6107TF6SH4nizIQSgKGS7GhdnJaM96wqoiZFKutuT
-asR5NB3W/CBX5iHZ1jBUqld1fVZJezht2GVonbWJrVWARqGjVioKNPdCQQino/du
-ULSMJnhftce97Ku1GHMNmgFGRAj6OEmsiArLhiE9r9Jgn67n8yt0VEJJleCTqmTa
-50y1CjjiGEtSuyar1DcElLtz3slqsM/oSbmkje1X1PGoIjLa+Hm9kvsDCKyeTxXl
-J7i9O9zLPsUKSrnefrysTzizy216DOfS0ssJjxAvmlNlnVmN5jGWg9HbtXtv+rkj
-JC3OU7ElMgHzcB92FOYdUAxcgkbWSMG3/t+p0vPas0ZVL0ln5P4=
-=7bQo
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly3miQACgkQ2O7X88g7
++prqWw/+J4SyipXVg9AfuDS5gIqA+BsALd4XP08mMK21RNXCtwsFBvdE7tVt14c9
+8wP8QK0MJwET85erwMutvCQzhGs86xrSJQvRMliu0urFZquMhfOCNCwT4h8Riboa
+1ZjFBJdbM930Y6uQCbnKbbI3+0+kjALT3eVAqWrEVjDZ0AZEKRKssBTRKxzGfKpJ
+YHuh986celDxfRGv8diGBH41cVFJfkkZl53Pla0Bl0ZMfsQ4No88k6W1Zzukma7z
+uTY22Ds8PZt/vVxiGpCUsOHdZdzhBBc26TXNRS//whNAW33amSC/XqUL4zBULwIe
+jZg7iZW1HA250CWHIfzVc+E1tMbHLDHti7wvHvhmOmDPysvqKeBQKfJC+DrlaVHf
+rUC1xFGDfSmi4dkYCaTGgLv8eT0UsgQrFPv/g20MQt7Xv/iH2eyDQgnPcyBkOamx
+hRbqCo4LhANxHcinDy5W60OByKsdNAhpAJLBj2PLvFQb44yJBoJsLvvKaf3T28sO
+YYBjg2+Ukwbph8tpFS75BSy4oT6ovi3WuIDj3edehCJA/4Z6k9FiZyJ+mKEQ0GXE
+0BnckOAbypMUZXXJLUA8oa+IehClPC4ENGf3sE+TaSbmU+RB8qs20fJrrU7TvsFj
+t65pmglJPm0Yz3UzCr4LZ3hEXBSCjwJ4n70rEB21Xsfvi5gpXs8=
+=QGzf
 -----END PGP SIGNATURE-----
 
---xjgjrdmhm5424q6v--
+--igqa3fbpnirkgubc--
