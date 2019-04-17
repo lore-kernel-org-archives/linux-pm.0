@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v3 01/16] PM / devfreq: tegra: Fix kHz to Hz conversion
-Date: Thu, 18 Apr 2019 01:29:10 +0300
-Message-ID: <20190417222925.5815-2-digetx@gmail.com>
+Subject: [PATCH v3 15/16] PM / devfreq: tegra: Rename tegra-devfreq.c to tegra30-devfreq.c
+Date: Thu, 18 Apr 2019 01:29:24 +0300
+Message-ID: <20190417222925.5815-16-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,69 +12,34 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The kHz to Hz is incorrectly converted in a few places in the code,
-this results in a wrong frequency being calculated because devfreq core
-uses OPP frequencies that are given in Hz to clamp the rate, while
-tegra-devfreq gives to the core value in kHz and then it also expects to
-receive value in kHz from the core. In a result memory freq is always set
-to a value which is close to ULONG_MAX because of the bug. Hence the EMC
-frequency is always capped to the maximum and the driver doesn't do
-anything useful. This patch was tested on Tegra30 and Tegra124 SoC's, EMC
-frequency scaling works properly now.
+In order to reflect that driver serves NVIDIA Tegra30 and later SoC
+generations, let's rename the driver's source file to "tegra30-devfreq.c".
+This will make driver files to look more consistent after addition of a
+driver for Tegra20.
 
-Cc: <stable@vger.kernel.org> # 4.14+
-Tested-by: Steev Klimaszewski <steev@kali.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ drivers/devfreq/Makefile                               | 2 +-
+ drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (100%)
 
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index c89ba7b834ff..43cd1233f87b 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -486,11 +486,11 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct dev_pm_opp *opp;
--	unsigned long rate = *freq * KHZ;
-+	unsigned long rate;
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 32b8d4d3f12c..47e5aeeebfd1 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -10,7 +10,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ # DEVFREQ Drivers
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+ obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+-obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
++obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
  
--	opp = devfreq_recommended_opp(dev, &rate, flags);
-+	opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(opp)) {
--		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
-+		dev_err(dev, "Failed to find opp for %lu Hz\n", *freq);
- 		return PTR_ERR(opp);
- 	}
- 	rate = dev_pm_opp_get_freq(opp);
-@@ -499,8 +499,6 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	clk_set_min_rate(tegra->emc_clock, rate);
- 	clk_set_rate(tegra->emc_clock, 0);
- 
--	*freq = rate;
--
- 	return 0;
- }
- 
-@@ -510,7 +508,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
- 
--	stat->current_frequency = tegra->cur_freq;
-+	stat->current_frequency = tegra->cur_freq * KHZ;
- 
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
-@@ -565,7 +563,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
- 		target_freq = max(target_freq, dev->target_freq);
- 	}
- 
--	*freq = target_freq;
-+	*freq = target_freq * KHZ;
- 
- 	return 0;
- }
+ # DEVFREQ Event Drivers
+ obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+similarity index 100%
+rename from drivers/devfreq/tegra-devfreq.c
+rename to drivers/devfreq/tegra30-devfreq.c
 -- 
 2.21.0
