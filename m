@@ -2,137 +2,204 @@ Return-Path: <SRS0=TlO+=ST=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=BITCOIN_SPAM_02,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B42C10F14
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 03:32:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFE0AC282DA
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 04:41:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D4824217F4
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 03:32:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="SJPDQbM1"
+	by mail.kernel.org (Postfix) with ESMTP id AF89B2073F
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 04:41:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728440AbfDQDcB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Apr 2019 23:32:01 -0400
-Received: from mail-eopbgr40040.outbound.protection.outlook.com ([40.107.4.40]:9668
-        "EHLO EUR03-DB5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1727618AbfDQDcA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Apr 2019 23:32:00 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GZVyEs3kKclVL75X4mVA8Jbw6qvnT381/7Q8bTp9QiA=;
- b=SJPDQbM1+2qsFtm5mt15weNfuPSg6xzIOE/Dgk0JgLrlqzDL3ync46daBPKZfKVWTmPC6/kCNvpsYhCJ7iGIqDmeXaFp6jBZaxUlLDNPx+SJpxO2Q+9n5CKdxEATKNOROTRoXjcren5a77mXVWLFKpBDJB0QZVUNPMKz/GZd1LI=
-Received: from AM0PR04MB4211.eurprd04.prod.outlook.com (52.134.92.158) by
- AM0PR04MB6465.eurprd04.prod.outlook.com (20.179.253.78) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1813.12; Wed, 17 Apr 2019 03:31:56 +0000
-Received: from AM0PR04MB4211.eurprd04.prod.outlook.com
- ([fe80::8cda:4e52:8e87:8f0e]) by AM0PR04MB4211.eurprd04.prod.outlook.com
- ([fe80::8cda:4e52:8e87:8f0e%2]) with mapi id 15.20.1792.021; Wed, 17 Apr 2019
- 03:31:56 +0000
-From:   Aisheng Dong <aisheng.dong@nxp.com>
-To:     Anson Huang <anson.huang@nxp.com>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "shawnguo@kernel.org" <shawnguo@kernel.org>,
-        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        "festevam@gmail.com" <festevam@gmail.com>,
-        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
-        "will.deacon@arm.com" <will.deacon@arm.com>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>,
-        "edubezval@gmail.com" <edubezval@gmail.com>,
-        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
-        "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
-        Daniel Baluta <daniel.baluta@nxp.com>,
-        Peng Fan <peng.fan@nxp.com>,
-        "heiko@sntech.de" <heiko@sntech.de>,
-        "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>,
-        "agross@kernel.org" <agross@kernel.org>,
-        "olof@lixom.net" <olof@lixom.net>,
-        "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>,
-        "jagan@amarulasolutions.com" <jagan@amarulasolutions.com>,
-        "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>,
-        "marc.w.gonzalez@free.fr" <marc.w.gonzalez@free.fr>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-CC:     dl-linux-imx <linux-imx@nxp.com>
-Subject: RE: [PATCH V12 1/5] dt-bindings: fsl: scu: add thermal binding
-Thread-Topic: [PATCH V12 1/5] dt-bindings: fsl: scu: add thermal binding
-Thread-Index: AQHU9AOTUGgOS08iR0aOB0ANqNq0mqY/s5cw
-Date:   Wed, 17 Apr 2019 03:31:55 +0000
-Message-ID: <AM0PR04MB42118E59E441BE043A3BE54F80250@AM0PR04MB4211.eurprd04.prod.outlook.com>
-References: <1555384609-7030-1-git-send-email-Anson.Huang@nxp.com>
-In-Reply-To: <1555384609-7030-1-git-send-email-Anson.Huang@nxp.com>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=aisheng.dong@nxp.com; 
-x-originating-ip: [119.31.174.66]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 9a41f927-9e57-412f-7ce3-08d6c2e53deb
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600140)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM0PR04MB6465;
-x-ms-traffictypediagnostic: AM0PR04MB6465:
-x-microsoft-antispam-prvs: <AM0PR04MB646526034F033ECD8FECCB3F80250@AM0PR04MB6465.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0010D93EFE
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(376002)(346002)(396003)(136003)(366004)(39860400002)(189003)(199004)(66066001)(74316002)(86362001)(186003)(99286004)(2501003)(6506007)(76176011)(6246003)(44832011)(6116002)(3846002)(2201001)(97736004)(4326008)(26005)(55016002)(9686003)(102836004)(53936002)(316002)(110136005)(2906002)(25786009)(476003)(478600001)(105586002)(81156014)(6436002)(486006)(106356001)(229853002)(33656002)(256004)(81166006)(7416002)(8936002)(446003)(305945005)(11346002)(52536014)(7736002)(7696005)(5660300002)(68736007)(71190400001)(71200400001)(14454004)(8676002)(21314003)(921003)(1121003);DIR:OUT;SFP:1101;SCL:1;SRVR:AM0PR04MB6465;H:AM0PR04MB4211.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: XUxqdTzg6azgAN6tnFkeTsVLLTQKiFk3mNLKIn/G3lWOkYiynoNcreDNBj5nBACh+FJQlSGPhrWKzoXcggKfprJe6v8C5O0lUSpRMW4qql7I5XIEnCQvsOFcYOn6YQVzldX6ln5ZFRH+NM3ha2kILraasjc3BONF+TEtP9FuZ7+/+9Hlal3lhwRl8l7pPiJz8CHeVZnEvuh1wVqQ/ypXavnTBaX9OmE2oBKaTreEwdv7QRWu9iec/4UrCagHuoCCMt0AA2NRtbTEZ0UBT0dEuypsK7Lw/X7CCZu0/pjyagep7gOF7vc8WhBxfNmmyVTSmhPrNUYcE9LO0+XDm86VGpgHnBp1LpnWCvxbhxNrgtzuZmUUEjNkXLzgs5iUzRKOeK5/p8r7sxmCEq+E3ykS+7HdfCChuyYBNaZEuKeBNO4=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        id S1725811AbfDQEli (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 00:41:38 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:61497 "EHLO
+        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725767AbfDQEli (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 00:41:38 -0400
+Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
+        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
+        id 1hGcNb-0004Xr-U5 from Jiada_Wang@mentor.com ; Tue, 16 Apr 2019 21:41:03 -0700
+Received: from [134.86.193.85] (147.34.91.1) by svr-orw-mbx-03.mgc.mentorg.com
+ (147.34.90.203) with Microsoft SMTP Server (TLS) id 15.0.1320.4; Tue, 16 Apr
+ 2019 21:40:58 -0700
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+To:     Eugeniu Rosca <erosca@de.adit-jv.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Simon Horman <horms+renesas@verge.net.au>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+        Marek Vasut <marek.vasut+renesas@gmail.com>,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        Hien Dang <hien.dang.eb@renesas.com>,
+        Fabrizio Castro <fabrizio.castro@bp.renesas.com>,
+        Dien Pham <dien.pham.ry@renesas.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Biju Das <biju.das@bp.renesas.com>,
+        "George G. Davis" <george_davis@mentor.com>,
+        Joshua Frkuska <joshua_frkuska@mentor.com>,
+        Eugeniu Rosca <roscaeugeniu@gmail.com>
+References: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+From:   Jiada Wang <jiada_wang@mentor.com>
+Message-ID: <07a6287c-5f0c-5350-7120-6d5bf4e5b964@mentor.com>
+Date:   Wed, 17 Apr 2019 13:40:57 +0900
+User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9a41f927-9e57-412f-7ce3-08d6c2e53deb
-X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Apr 2019 03:31:55.9404
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB6465
+In-Reply-To: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: svr-orw-mbx-02.mgc.mentorg.com (147.34.90.202) To
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190417044057.JKn7oDEhv8ttChUgUMgUEGaghlM4UW4RrIkQ_EOVNAU@z>
 
-PiBGcm9tOiBBbnNvbiBIdWFuZw0KPiBTZW50OiBUdWVzZGF5LCBBcHJpbCAxNiwgMjAxOSAxMToy
-MiBBTQ0KPiANCj4gTlhQIGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3aXRoIGEgQ29ydGV4LU00
-IGNvcmUgaW5zaWRlIGFzIHN5c3RlbQ0KPiBjb250cm9sbGVyLCB0aGUgc3lzdGVtIGNvbnRyb2xs
-ZXIgaXMgaW4gY2hhcmdlIG9mIHN5c3RlbSBwb3dlciwgY2xvY2sgYW5kDQo+IHRoZXJtYWwgc2Vu
-c29ycyBldGMuIG1hbmFnZW1lbnQsIExpbnV4IGtlcm5lbCBoYXMgdG8gY29tbXVuaWNhdGUgd2l0
-aA0KPiBzeXN0ZW0gY29udHJvbGxlciB2aWEgTVUgKG1lc3NhZ2UgdW5pdCkgSVBDIHRvIGdldCB0
-ZW1wZXJhdHVyZSBmcm9tIHRoZXJtYWwNCj4gc2Vuc29ycywgdGhpcyBwYXRjaCBhZGRzIGJpbmRp
-bmcgZG9jIGZvciBpLk1YIHN5c3RlbSBjb250cm9sbGVyIHRoZXJtYWwgZHJpdmVyLg0KPiANCj4g
-U2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+IC0tLQ0K
-PiBObyBjaGFuZ2VzLg0KPiAtLS0NCj4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9mcmVl
-c2NhbGUvZnNsLHNjdS50eHQgICAgICAgIHwgMTYNCj4gKysrKysrKysrKysrKysrKw0KPiAgMSBm
-aWxlIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKykNCj4gDQo+IGRpZmYgLS1naXQgYS9Eb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2ZyZWVzY2FsZS9mc2wsc2N1LnR4dA0KPiBi
-L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3Uu
-dHh0DQo+IGluZGV4IDVkN2RiYWIuLmY0ZmI2ZDUgMTAwNjQ0DQo+IC0tLSBhL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3UudHh0DQo+ICsrKyBi
-L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnJlZXNjYWxlL2ZzbCxzY3Uu
-dHh0DQo+IEBAIC0xMzMsNiArMTMzLDE3IEBAIFJUQyBiaW5kaW5ncyBiYXNlZCBvbiBTQ1UgTWVz
-c2FnZSBQcm90b2NvbA0KPiBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiAgLSBjb21wYXRpYmxlOiBz
-aG91bGQgYmUgImZzbCxpbXg4cXhwLXNjLXJ0YyI7DQo+IA0KPiArVGhlcm1hbCBiaW5kaW5ncyBi
-YXNlZCBvbiBTQ1UgTWVzc2FnZSBQcm90b2NvbA0KPiArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICsNCj4gK1JlcXVpcmVkIHBy
-b3BlcnRpZXM6DQo+ICstIGNvbXBhdGlibGU6CQkJU2hvdWxkIGJlIDoNCj4gKwkJCQkgICJmc2ws
-aW14OHF4cC1zYy10aGVybWFsIg0KPiArCQkJCWZvbGxvd2VkIGJ5ICJmc2wsaW14LXNjLXRoZXJt
-YWwiOw0KPiArDQo+ICstICN0aGVybWFsLXNlbnNvci1jZWxsczoJU2VlDQo+IERvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3RoZXJtYWwudHh0DQo+ICsJCQkJZm9yIGEg
-ZGVzY3JpcHRpb24uDQoNCkJldHRlciB0byBoYXZlIGFuIGV4cGxpY2l0IHZhbHVlIGhlcmUuDQpl
-LmcuDQpNdXN0IGJlIDEuIFNlZSB4eHggZm9yIGEgZGVzY3JpcHRpb24uDQoNCk90aGVyd2lzZToN
-ClJldmlld2VkLWJ5OiBEb25nIEFpc2hlbmcgPGFpc2hlbmcuZG9uZ0BueHAuY29tPg0KDQpSZWdh
-cmRzDQpEb25nIEFpc2hlbmcNCg==
+Hi Eugeniu
+
+thanks for your test & comments and adding more people for review
+
+I will add necessary backtrace information to description and
+rephrase commit summary in V2 patch
+
+Thanks,
+Jiada
+
+On 2019/04/17 2:48, Eugeniu Rosca wrote:
+> Hi Jiada,
+> 
+> Adding below people, since they've made recent contributions to the
+> driver and might be interested in your patch:
+> 
+> git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+>      | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+>        7 Eduardo Valentin <edubezval@gmail.com>
+>        6 Simon Horman <horms+renesas@verge.net.au>
+>        5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+>        2 Geert Uytterhoeven <geert+renesas@glider.be>
+>        1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+>        1 Marek Vasut <marek.vasut+renesas@gmail.com>
+>        1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>        1 Hien Dang <hien.dang.eb@renesas.com>
+>        1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+>        1 Dien Pham <dien.pham.ry@renesas.com>
+>        1 Daniel Lezcano <daniel.lezcano@linaro.org>
+>        1 Biju Das <biju.das@bp.renesas.com>
+> 
+> I confirm that loading and unloading the rcar3 thermal driver in a
+> loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+> H3-ES2.0-Salvator-X.
+> 
+> Full log and .config can be found here:
+> https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+> 
+> I post an excerpt from the above [1] (why not including it in the
+> description?). Also, why not rephrasing the commit summary line in such
+> a way that everybody understands this patch fixes a severe issue, e.g.
+> "thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+> 
+> BTW, with this patch applied I left the thermal driver being
+> loaded/unloaded on the target for over one hour w/o seeing the issue
+> reproduced. So, while there might be slight variations in how the final
+> solution looks like, I think the patch already deserves a:
+> 
+> Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+> 
+> [1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+> 
+> root@rcar-gen3:~# while true; do rmmod rcar_gen3_thermal; modprobe rcar_gen3_thermal; done
+> [   43.439043] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+> [   43.451670] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+> [   43.463974] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+> 
+> [..]
+> 
+> [  553.966104] rcar_gen3_thermal e6198000.thermal: TSC0: Loaded 0 trip points
+> [  553.978759] rcar_gen3_thermal e6198000.thermal: TSC1: Loaded 0 trip points
+> [  553.991058] rcar_gen3_thermal e6198000.thermal: TSC2: Loaded 0 trip points
+> [  562.235306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD25)
+> [  567.353336] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+> [  572.473318] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD13)
+> [  577.593328] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  579.189148] rcu: INFO: rcu_preempt self-detected stall on CPU
+> [  579.195329] rcu:     0-....: (1 GPs behind) idle=b76/1/0x4000000000000004 softirq=263851/263851 fqs=6251 last_accelerate: e095/4240, Nonlazy posted: ...
+> [  579.209711] rcu:      (t=25008 jiffies g=346801 q=468)
+> [  579.214801] Task dump for CPU 0:
+> [  579.218178] modprobe        R  running task        0  6337   1420 0x0000002a
+> [  579.225514] Call trace:
+> [  579.228103]  dump_backtrace+0x0/0x1dc
+> [  579.231934]  show_stack+0x24/0x30
+> [  579.235410]  sched_show_task+0x31c/0x36c
+> [  579.239507]  dump_cpu_task+0xb0/0xc0
+> [  579.243248]  rcu_dump_cpu_stacks+0x220/0x238
+> [  579.247702]  rcu_sched_clock_irq+0x8a4/0x141c
+> [  579.252249]  update_process_times+0x34/0x64
+> [  579.256617]  tick_sched_handle+0x80/0x98
+> [  579.260714]  tick_sched_timer+0x64/0xbc
+> [  579.264722]  __hrtimer_run_queues+0x5c0/0xb84
+> [  579.269266]  hrtimer_interrupt+0x1ec/0x454
+> [  579.273547]  arch_timer_handler_phys+0x40/0x58
+> [  579.278185]  handle_percpu_devid_irq+0x174/0x6e8
+> [  579.282999]  generic_handle_irq+0x3c/0x54
+> [  579.287185]  __handle_domain_irq+0x114/0x118
+> [  579.291639]  gic_handle_irq+0x70/0xac
+> [  579.295465]  el1_irq+0xbc/0x180
+> [  579.298756]  __asan_load8+0x8c/0x9c
+> [  579.302403]  rcu_is_watching+0x80/0x8c
+> [  579.306322]  rebalance_domains+0x12c/0x584
+> [  579.310599]  run_rebalance_domains+0x1f4/0x298
+> [  579.315231]  __do_softirq+0x4c0/0xab8
+> [  579.319061]  irq_exit+0x148/0x1d8
+> [  579.322530]  __handle_domain_irq+0xc0/0x118
+> [  579.326894]  gic_handle_irq+0x70/0xac
+> [  579.330720]  el1_irq+0xbc/0x180
+> [  579.334012]  lock_is_held_type+0xec/0x144
+> [  579.338201]  rcu_read_lock_sched_held+0x90/0x98
+> [  579.342927]  kmem_cache_alloc+0x328/0x3e0
+> [  579.347114]  create_object+0x5c/0x39c
+> [  579.350944]  kmemleak_alloc+0x54/0x88
+> [  579.354774]  __kmalloc_track_caller+0x1c8/0x434
+> [  579.359499]  devres_alloc_node+0x40/0x8c
+> [  579.363597]  __devm_request_region+0x48/0xc8
+> [  579.368055]  devm_ioremap_resource+0xcc/0x148
+> [  579.372626]  rcar_gen3_thermal_probe+0x288/0x618 [rcar_gen3_thermal]
+> [  579.379231]  platform_drv_probe+0x70/0xe4
+> [  579.383420]  really_probe+0x2d8/0x3d8
+> [  579.387249]  driver_probe_device+0x154/0x164
+> [  579.391705]  device_driver_attach+0x98/0xa0
+> [  579.396070]  __driver_attach+0xf0/0xf4
+> [  579.399987]  bus_for_each_dev+0x114/0x13c
+> [  579.404173]  driver_attach+0x38/0x44
+> [  579.407912]  bus_add_driver+0x234/0x288
+> [  579.411919]  driver_register+0x148/0x190
+> [  579.416015]  __platform_driver_register+0x84/0x90
+> [  579.420931]  rcar_gen3_thermal_driver_init+0x28/0x1000 [rcar_gen3_thermal]
+> [  579.428074]  do_one_initcall+0x124/0x68c
+> [  579.432173]  do_init_module+0xb4/0x300
+> [  579.436090]  load_module+0x2c90/0x2f18
+> [  579.440008]  __se_sys_finit_module+0x128/0x148
+> [  579.444642]  __arm64_sys_finit_module+0x4c/0x5c
+> [  579.449367]  el0_svc_common+0xd0/0x16c
+> [  579.453283]  el0_svc_handler+0x94/0xa0
+> [  579.457200]  el0_svc+0x8/0xc
+> [  582.713314] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  587.833305] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  592.953323] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  598.073430] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  603.193306] renesas_sdhi_internal_dmac ee100000.sd: timeout waiting for hardware interrupt (CMD12)
+> [  604.242120] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:6337]
+> [..]
+> 
+> Best regards,
+> Eugeniu.
+> 
