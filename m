@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v3 14/16] PM / devfreq: tegra: Enable COMPILE_TEST for the driver
-Date: Thu, 18 Apr 2019 01:29:23 +0300
-Message-ID: <20190417222925.5815-15-digetx@gmail.com>
+Subject: [PATCH v3 02/16] PM / devfreq: tegra: Replace readl-writel with relaxed versions
+Date: Thu, 18 Apr 2019 01:29:11 +0300
+Message-ID: <20190417222925.5815-3-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,27 +12,46 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The driver's compilation doesn't have any specific dependencies, hence
-the COMPILE_TEST option can be supported in Kconfig.
+There is no need to insert memory barrier on each readl/writel
+invocation, hence use the relaxed versions.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/tegra-devfreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 56db9dc05edb..a6bba6e1e7d9 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index 43cd1233f87b..f7378a42d184 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -191,23 +191,23 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
  
- config ARM_TEGRA_DEVFREQ
- 	tristate "NVIDIA Tegra30/114/124/210 DEVFREQ Driver"
--	depends on ARCH_TEGRA
-+	depends on ARCH_TEGRA || COMPILE_TEST
- 	select PM_OPP
- 	help
- 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+ static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+ {
+-	return readl(tegra->regs + offset);
++	return readl_relaxed(tegra->regs + offset);
+ }
+ 
+ static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
+ {
+-	writel(val, tegra->regs + offset);
++	writel_relaxed(val, tegra->regs + offset);
+ }
+ 
+ static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
+ {
+-	return readl(dev->regs + offset);
++	return readl_relaxed(dev->regs + offset);
+ }
+ 
+ static void device_writel(struct tegra_devfreq_device *dev, u32 val,
+ 			  u32 offset)
+ {
+-	writel(val, dev->regs + offset);
++	writel_relaxed(val, dev->regs + offset);
+ }
+ 
+ static unsigned long do_percent(unsigned long val, unsigned int pct)
 -- 
 2.21.0
