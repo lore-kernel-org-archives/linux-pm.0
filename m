@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C495C282DA
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:42:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85FC2C282DC
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:42:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C5E972184B
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:42:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48EA02184B
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Apr 2019 22:42:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ud8t+g48"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uxzCQdrK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731116AbfDQWmd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 18:42:33 -0400
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:41671 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725848AbfDQWmd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:42:33 -0400
-Received: by mail-pl1-f193.google.com with SMTP id d1so168239plj.8;
-        Wed, 17 Apr 2019 15:42:32 -0700 (PDT)
+        id S2387793AbfDQWmi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 18:42:38 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:42943 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387569AbfDQWmi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 18:42:38 -0400
+Received: by mail-pf1-f194.google.com with SMTP id w25so132205pfi.9;
+        Wed, 17 Apr 2019 15:42:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=UGhwmqxYys+b5h8DSBtXrBhmaqFi5uiahazIWk9yJ4o=;
-        b=Ud8t+g48EJkehj64M7LPHWSvRVF+mFT8SaCxQaKt49aXSrFWR0qq1RAvP7XRyDq19U
-         96K0RiP3pwMpSwcfisKWOkPb+ByVzX4ltq8/F5wccUThuHwSUrB5XSu+eDfiHBTF61fz
-         W7CWwbz+L0N6UnNY0tflWnNcbOBVhWLBcz+imMMt3KwAGlekaWmLiHdiYQf0dIvmserQ
-         z3QqDTiRvPBEI36yc8CXm0NDv/fgo6pw965DeQd7Y9v39ocZE3s7Vv7iZM71TNd+6wGF
-         UbFVNoZA5fkITG+cocQiC6fvaRchOLXa9+h+Hl4z8ueHNayyG3NW4IK0/JnhI79KChU0
-         4KfA==
+        bh=IH0pLwwRbv47T9XNR0cT/BCMrgmfF5LArY0xNHrsMrc=;
+        b=uxzCQdrK32LVR/6ByHW6SGfzwOQ2gAHoFwnuQ7n/yVCD6qfUB4AopLgzerWHvH9z77
+         +yYX5bSn5lk7n1gooHQs0PVVShyaevjS2KyTKMUwnwb3jAPUsCvRIqZdWPWbscpytTzB
+         xDSxFGWd9iY4U1b5+8XNJLVEZx9A3AQEeKhwprr/buDchXio/Ne3hC2/hzppDWxLHSh1
+         WARFxVPfphsYsJJqije6l8jtknfiT3SyoT9QfZWpYIh1IO1PdB5ECN0w7aF3i38hGvYq
+         CVON4biIS8m8qH/9ke2Qm9oXIlKCs2B92Q/tAv3fP2jXKxqD7j217AOyTD9zNLoxU8iO
+         873Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UGhwmqxYys+b5h8DSBtXrBhmaqFi5uiahazIWk9yJ4o=;
-        b=X6vpZSfNyWYTqbWpuzDd76M/F1FhWS97bq/k+iNP4f1WSbb8CCGTWokFo+4HCEV4h+
-         tCLgiZLkeSJbUBQ6FtvX80HhvduRhAWmOrj7sXP9XovUyzARy+aUKVZbMpG6V8F+5xk7
-         Qhc7YeM578Vm7h7dYvNrVc/XjfzZyZRKnRRFB0/HDhhS3KeiD2D3F3Tp0cJN3EBjjx8h
-         C1UmXvGiT7+HLDHZLljN50iYwF0cw4f6VSvoOUd5TsiI9JmqeMD58SkETIdnZSJqp8wd
-         /9JSRxX2+hnd2tf589IhWR1zLXrGmJ3pFeabdItau2XOAtLZBIWBc+L3dLuX39ul8klZ
-         HeNg==
-X-Gm-Message-State: APjAAAWGVEYbsdRjQkDE5+s+B3TgJl8Teyrak+8wO3GxyCFf1WItR0cp
-        YNxgx8Eq+xZIw/FWFFXE4d4=
-X-Google-Smtp-Source: APXvYqyZvSgsANYMTvaaumL4t7Ffe8MKILHQoXvLsg0WySxH92STATA/nh+Q+XUx2qMjTFFLxOQsog==
-X-Received: by 2002:a17:902:9a4c:: with SMTP id x12mr44488019plv.90.1555540518043;
-        Wed, 17 Apr 2019 15:35:18 -0700 (PDT)
+        bh=IH0pLwwRbv47T9XNR0cT/BCMrgmfF5LArY0xNHrsMrc=;
+        b=BTp+s1WLdqYDMsDZo7g5x2zDzWMA79g907mCMJqIB5UK8lDFTnD4eZBOVXJFnbkwpB
+         dFH8wh+sDG1buUycaak8GAZO1pXzAEV9gSUs9neY5C1o1sg+jCVafUWzai9wo1Nd1UQy
+         lhzEZtCY2KWZjCRv+i+wzf20qQMwup2zXuGVuQWENvTW0cFe005oDmZ6UAQ3l4ChPjwn
+         oZrd3rLZiQKqyLbwfxCEbKOzRcQ7sADJrxF04HZvoz/oHt0+WdmDupLmrflC2tvDEJZf
+         uRIUjMkt+jC4Xt43ca6UEgnKuFyUOtEd88qJTunoO9p/T/k8kxLrlBs33OXQLWeu0ioe
+         cPww==
+X-Gm-Message-State: APjAAAWittL9OqFYI41+zE2JGkm8dkzuAYKk1zyzBk6+BJAUE3ZvrfAj
+        EexbiJWjEwycqbv2lNz/u38=
+X-Google-Smtp-Source: APXvYqx9xBvUto5kHMobG06D9k07efckxEfhWjdZJEEbsgN4lDp4fVhNLnDp4uPdeLvyhswxDCtBWA==
+X-Received: by 2002:a63:e70c:: with SMTP id b12mr82284143pgi.399.1555540477636;
+        Wed, 17 Apr 2019 15:34:37 -0700 (PDT)
 Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id l26sm281030pfb.20.2019.04.17.15.35.11
+        by smtp.gmail.com with ESMTPSA id l26sm281030pfb.20.2019.04.17.15.34.31
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 17 Apr 2019 15:35:17 -0700 (PDT)
+        Wed, 17 Apr 2019 15:34:37 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 12/16] PM / devfreq: tegra: Reconfigure hardware on governor's restart
-Date:   Thu, 18 Apr 2019 01:29:21 +0300
-Message-Id: <20190417222925.5815-13-digetx@gmail.com>
+Subject: [PATCH v3 06/16] PM / devfreq: tegra: Drop primary interrupt handler
+Date:   Thu, 18 Apr 2019 01:29:15 +0300
+Message-Id: <20190417222925.5815-7-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190417222925.5815-1-digetx@gmail.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
@@ -77,176 +77,158 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190417222921.WN8vM4x22VLN4_ui7YxWERZ8v1ptPR2nj9kCmWQgMRU@z>
+Message-ID: <20190417222915.pZZvvRtJn0iobHR7xIrysfBrbrjUHTvMYiauIVx8_UY@z>
 
-Move hardware configuration to governor's start/resume methods.
-This allows to re-initialize hardware counters and reconfigure
-cleanly if governor was stopped/paused. That is needed because we
-are not aware of all hardware changes that happened while governor
-was stopped and the paused state may get out of sync with reality,
-hence it's better to start with a clean slate after the pause. In
-a result there is no memory bandwidth starvation after resume from
-suspend-to-ram that results in display controller underflowing that
-happens on resume because of improper decision made by devfreq about
-the required memory frequency. This change also cleans up code a tad
-by moving hardware-configuration code into a single location.
+There is no real need in the primary interrupt handler, hence move
+everything to the secondary (threaded) handler. In a result locking
+is consistent now and there are no potential races with the interrupt
+handler because it is protected with the devfreq's mutex.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 98 ++++++++++++++-------------------
- 1 file changed, 40 insertions(+), 58 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 55 +++++++++++----------------------
+ 1 file changed, 18 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 62f35e818122..e9ab49394d35 100644
+index 24ec65556c39..b65313fe3c2e 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -392,55 +392,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
- 	return NOTIFY_OK;
- }
+@@ -144,7 +144,6 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
+ struct tegra_devfreq_device {
+ 	const struct tegra_devfreq_device_config *config;
+ 	void __iomem *regs;
+-	spinlock_t lock;
  
--static void tegra_actmon_enable_interrupts(struct tegra_devfreq *tegra)
--{
--	struct tegra_devfreq_device *dev;
--	u32 val;
--	unsigned int i;
--
--	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
--		dev = &tegra->devices[i];
--
--		val = device_readl(dev, ACTMON_DEV_CTRL);
--		val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
--		val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
--		val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
--		val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
--
--		device_writel(dev, val, ACTMON_DEV_CTRL);
--	}
--
--	actmon_write_barrier(tegra);
--}
--
--static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
--{
--	struct tegra_devfreq_device *dev;
--	u32 val;
--	unsigned int i;
--
--	disable_irq(tegra->irq);
--
--	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
--		dev = &tegra->devices[i];
--
--		val = device_readl(dev, ACTMON_DEV_CTRL);
--		val &= ~ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
--		val &= ~ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
--		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
--		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
--
--		device_writel(dev, val, ACTMON_DEV_CTRL);
--
--		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
--			      ACTMON_DEV_INTR_STATUS);
--	}
--
--	actmon_write_barrier(tegra);
--
--	enable_irq(tegra->irq);
--}
--
- static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
- 					  struct tegra_devfreq_device *dev)
+ 	/* Average event count sampled in the last interrupt */
+ 	u32 avg_count;
+@@ -249,11 +248,8 @@ static void actmon_write_barrier(struct tegra_devfreq *tegra)
+ static void actmon_isr_device(struct tegra_devfreq *tegra,
+ 			      struct tegra_devfreq_device *dev)
  {
-@@ -464,11 +415,47 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
- 		<< ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_NUM_SHIFT;
- 	val |= (ACTMON_ABOVE_WMARK_WINDOW - 1)
- 		<< ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_NUM_SHIFT;
-+	val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
-+	val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
-+	val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
-+	val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
- 	val |= ACTMON_DEV_CTRL_ENB;
+-	unsigned long flags;
+ 	u32 intr_status, dev_ctrl;
  
- 	device_writel(dev, val, ACTMON_DEV_CTRL);
-+}
-+
-+static void tegra_actmon_start(struct tegra_devfreq *tegra)
-+{
-+	unsigned int i;
-+
-+	disable_irq(tegra->irq);
-+
-+	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
-+		      ACTMON_GLB_PERIOD_CTRL);
-+
-+	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
-+		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
-+
-+	actmon_write_barrier(tegra);
-+
-+	enable_irq(tegra->irq);
-+}
-+
-+static void tegra_actmon_stop(struct tegra_devfreq *tegra)
-+{
-+	unsigned int i;
-+
-+	disable_irq(tegra->irq);
-+
-+	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-+		device_writel(&tegra->devices[i], 0x00000000, ACTMON_DEV_CTRL);
-+		device_writel(&tegra->devices[i], ACTMON_INTR_STATUS_CLEAR,
-+			      ACTMON_DEV_INTR_STATUS);
-+	}
+-	spin_lock_irqsave(&dev->lock, flags);
+-
+ 	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
+ 	tegra_devfreq_update_avg_wmark(tegra, dev);
+ 
+@@ -302,26 +298,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
+ 	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
  
  	actmon_write_barrier(tegra);
-+
-+	enable_irq(tegra->irq);
+-
+-	spin_unlock_irqrestore(&dev->lock, flags);
+-}
+-
+-static irqreturn_t actmon_isr(int irq, void *data)
+-{
+-	struct tegra_devfreq *tegra = data;
+-	bool handled = false;
+-	unsigned int i;
+-	u32 val;
+-
+-	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
+-	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+-		if (val & tegra->devices[i].config->irq_mask) {
+-			actmon_isr_device(tegra, tegra->devices + i);
+-			handled = true;
+-		}
+-	}
+-
+-	return handled ? IRQ_WAKE_THREAD : IRQ_NONE;
  }
  
- static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
-@@ -580,22 +567,22 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
- 	switch (event) {
- 	case DEVFREQ_GOV_START:
- 		devfreq_monitor_start(devfreq);
--		tegra_actmon_enable_interrupts(tegra);
-+		tegra_actmon_start(tegra);
- 		break;
+ static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
+@@ -348,15 +324,12 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
+ 	unsigned long cpu_freq = 0;
+ 	unsigned long static_cpu_emc_freq = 0;
+ 	unsigned int avg_sustain_coef;
+-	unsigned long flags;
  
- 	case DEVFREQ_GOV_STOP:
--		tegra_actmon_disable_interrupts(tegra);
-+		tegra_actmon_stop(tegra);
- 		devfreq_monitor_stop(devfreq);
- 		break;
- 
- 	case DEVFREQ_GOV_SUSPEND:
--		tegra_actmon_disable_interrupts(tegra);
-+		tegra_actmon_stop(tegra);
- 		devfreq_monitor_suspend(devfreq);
- 		break;
- 
- 	case DEVFREQ_GOV_RESUME:
- 		devfreq_monitor_resume(devfreq);
--		tegra_actmon_enable_interrupts(tegra);
-+		tegra_actmon_start(tegra);
- 		break;
+ 	if (dev->config->avg_dependency_threshold) {
+ 		cpu_freq = cpufreq_get(0);
+ 		static_cpu_emc_freq = actmon_cpu_to_emc_rate(tegra, cpu_freq);
  	}
  
-@@ -664,15 +651,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
- 	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
- 
--	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
--		      ACTMON_GLB_PERIOD_CTRL);
+-	spin_lock_irqsave(&dev->lock, flags);
 -
- 	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+ 	dev->target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
+ 	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
+ 	dev->target_freq = do_percent(dev->target_freq, avg_sustain_coef);
+@@ -364,19 +337,31 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
+ 
+ 	if (dev->avg_count >= dev->config->avg_dependency_threshold)
+ 		dev->target_freq = max(dev->target_freq, static_cpu_emc_freq);
+-
+-	spin_unlock_irqrestore(&dev->lock, flags);
+ }
+ 
+ static irqreturn_t actmon_thread_isr(int irq, void *data)
+ {
+ 	struct tegra_devfreq *tegra = data;
++	bool handled = false;
++	unsigned int i;
++	u32 val;
+ 
+ 	mutex_lock(&tegra->devfreq->lock);
+-	update_devfreq(tegra->devfreq);
++
++	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
++	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
++		if (val & tegra->devices[i].config->irq_mask) {
++			actmon_isr_device(tegra, tegra->devices + i);
++			handled = true;
++		}
++	}
++
++	if (handled)
++		update_devfreq(tegra->devfreq);
++
+ 	mutex_unlock(&tegra->devfreq->lock);
+ 
+-	return IRQ_HANDLED;
++	return handled ? IRQ_HANDLED : IRQ_NONE;
+ }
+ 
+ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+@@ -386,7 +371,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+ 	struct tegra_devfreq *tegra;
+ 	struct tegra_devfreq_device *dev;
+ 	unsigned int i;
+-	unsigned long flags;
+ 
+ 	if (action != POST_RATE_CHANGE)
+ 		return NOTIFY_OK;
+@@ -398,9 +382,7 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+ 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+ 		dev = &tegra->devices[i];
+ 
+-		spin_lock_irqsave(&dev->lock, flags);
+ 		tegra_devfreq_update_wmark(tegra, dev);
+-		spin_unlock_irqrestore(&dev->lock, flags);
+ 	}
+ 
+ 	actmon_write_barrier(tegra);
+@@ -682,7 +664,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
  		dev = tegra->devices + i;
  		dev->config = actmon_device_configs + i;
  		dev->regs = tegra->regs + dev->config->offset;
--
--		tegra_actmon_configure_device(tegra, dev);
- 	}
+-		spin_lock_init(&dev->lock);
  
- 	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+ 		tegra_actmon_configure_device(tegra, dev);
+ 	}
+@@ -700,8 +681,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, tegra);
+ 
+-	err = devm_request_threaded_irq(&pdev->dev, irq, actmon_isr,
+-					actmon_thread_isr, IRQF_SHARED,
++	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++					actmon_thread_isr, IRQF_ONESHOT,
+ 					"tegra-devfreq", tegra);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Interrupt request failed\n");
 -- 
 2.21.0
 
