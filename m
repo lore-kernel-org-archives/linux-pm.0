@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9640BC10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F65CC282DD
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:43:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 64EC8217FA
+	by mail.kernel.org (Postfix) with ESMTP id D2B712183F
 	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:43:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="HV3rCpJr"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="bXYc5ce1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389718AbfDRQnj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 12:43:39 -0400
-Received: from mail-it1-f195.google.com ([209.85.166.195]:52644 "EHLO
+        id S2389662AbfDRQn3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 12:43:29 -0400
+Received: from mail-it1-f195.google.com ([209.85.166.195]:51197 "EHLO
         mail-it1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725888AbfDRQna (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 12:43:30 -0400
-Received: by mail-it1-f195.google.com with SMTP id x132so4317197itf.2
+        with ESMTP id S2389642AbfDRQn3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 12:43:29 -0400
+Received: by mail-it1-f195.google.com with SMTP id q14so4344372itk.0
         for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 09:43:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=V0DvXyW83Tyl1dIg7RoL/VcefLCuqNc5VVNBZR8eRII=;
-        b=HV3rCpJrTVT6hdRU6RJdvCRZGQ2Fk1g+Sk8SnKM7WHdHry2vz5kqi4QJNGFPKxU+CB
-         Q/K41eFnKV0Ow+F5J88tIXRoOkOFbsrELT3PulI7qabcNk5a92LNX+dUM+9XqilYWI3F
-         KQeSkgob6eUEGsub+njapvLJyRBnZnH3s1YC0=
+        bh=0NrObpvgxh9HoWkErNdO7e4+P6ONVeeec8iZlE35gnE=;
+        b=bXYc5ce1JdQlnbmLJizbhyuRvafMStc9e2qKHmtsegl2f182yaF95yexB4w3tZ3bFa
+         7+nC826NPwd8CIK4nOrV+mbdDFTdnKLgCZsy9HnTkDMXLiXgJ5ePRLKp8KwIWDn7vc2R
+         tMN2PCS65tpKfxARSwecKMBZT12MJ8J4yzkOI=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=V0DvXyW83Tyl1dIg7RoL/VcefLCuqNc5VVNBZR8eRII=;
-        b=BGIT+ZWsAMAa0D4kBo2NLITqFSrx/AShG34W6uIgHTLV6C2cvwtTRTcsC/fVIOtu1k
-         /HYqV62kXiHq2gBHhjQquBo3Djje3QY4GqwmcKmXG0Us8KrkO2ZFU+w5681Hy799O0+W
-         YLsNAPd7TwlF+k0r4peL2hGJFUbubgIbZOjgODYUa/f/PBSz/qZ4pr2KVFK+LDaQgtCj
-         Gg00EcLU3ge6WRyfUoGRx/5TA914V/tBoOwXS+pFJVpcV3I3eVGI0LLk3yIEeHkgX6jv
-         2xpr/KoWv79M4YJ4+lI0gNOVt0c7b0rNqS+8yiUPYSazJtq+fTv5xJD04T0UKDz94R78
-         uEmA==
-X-Gm-Message-State: APjAAAX7N+7gWqe3DeJiDOwsZlX7N6n2iKwjM0J8eiieWQinYyTqhSxx
-        FDcrpfOpE3x+nyvMTw6LRQwXZw==
-X-Google-Smtp-Source: APXvYqzQpRUPm+raVvlIN8EON3EH87VVwkxn1YgDwTHhcOjWIg2kelfED367Q6EXh5o+Xwcd7qSV0g==
-X-Received: by 2002:a02:6a28:: with SMTP id l40mr41437731jac.25.1555605809480;
-        Thu, 18 Apr 2019 09:43:29 -0700 (PDT)
+        bh=0NrObpvgxh9HoWkErNdO7e4+P6ONVeeec8iZlE35gnE=;
+        b=jhzuL2GVWLeHPry2DN9Eedc5JzUu8/YJ7MHhLqsLefBg2EOxajmSJ91HXjKUw5hGcn
+         tB8Y9DRYxukuJAeEoSNTzwa9wXCBowiIMl4dUhXxJjmnev6Hxtz6jmOrnRy/1eO6jpUz
+         sbeGpf80s+4rtqlYJ2ybT2ISEtFLcr/bGisZCeecs25csKmqssV0xI3Nd0OhFI75KW7w
+         DiRraZnNjqfPpVqYFxsPN4EIqXZmOE7FW6Ipo9xMXIMlykRgS7ZofZWRSZKiaLnXrxwJ
+         E+v9tiS7/OgS/RwONirdv7SIs7Sq3gToS74b2pEki3ngwVBc1kHPIVspgN+es5j681Uf
+         T5mg==
+X-Gm-Message-State: APjAAAVQb5vYdk1iW4+ZNvwIzdLlZtdP1E2K+gE0SaMEIYoBRvaKco9A
+        7Cwu5/93WzEKo3rhEjVhtQUZtg==
+X-Google-Smtp-Source: APXvYqyaWO6E+v7fioCLOySjvITFH3v/BvNAKy1ud4984Zoun4oVEUELCTCe9ztSA3giFO0q7oINPg==
+X-Received: by 2002:a24:2509:: with SMTP id g9mr4040001itg.149.1555605808615;
+        Thu, 18 Apr 2019 09:43:28 -0700 (PDT)
 Received: from ncrews2.bld.corp.google.com ([2620:15c:183:200:cb43:2cd4:65f5:5c84])
-        by smtp.gmail.com with ESMTPSA id g70sm1180905itg.40.2019.04.18.09.43.28
+        by smtp.gmail.com with ESMTPSA id g70sm1180905itg.40.2019.04.18.09.43.27
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 18 Apr 2019 09:43:29 -0700 (PDT)
+        Thu, 18 Apr 2019 09:43:28 -0700 (PDT)
 From:   Nick Crews <ncrews@chromium.org>
 To:     enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org,
         linux-pm@vger.kernel.org
@@ -58,9 +58,9 @@ Cc:     linux-kernel@vger.kernel.org, dlaurie@chromium.org,
         lamzin@google.com, bartfab@google.com, derat@google.com,
         dtor@google.com, sjg@chromium.org, jchwong@chromium.org,
         Nick Crews <ncrews@chromium.org>
-Subject: [PATCH v5 3/3] power_supply: Add missing documentation for CHARGE_CONTROL_* properties
-Date:   Thu, 18 Apr 2019 10:43:14 -0600
-Message-Id: <20190418164314.161065-3-ncrews@chromium.org>
+Subject: [PATCH v5 2/3] power_supply: Add CHARGE_CONTROL_{START_THRESHOLD,END_THRESHOLD} properties
+Date:   Thu, 18 Apr 2019 10:43:13 -0600
+Message-Id: <20190418164314.161065-2-ncrews@chromium.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190418164314.161065-1-ncrews@chromium.org>
 References: <20190417214022.7jk3usygcpnls3pr@earth.universe>
@@ -72,50 +72,98 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190418164314.Hrt1IU5ulUYO-elwXSW4YzXvte5Gbfrmv6EBcRgZu9w@z>
+Message-ID: <20190418164313.irC4pHqxjP_aTnY-WN-TLyWpdwueWvZSwduK5AauNqc@z>
 
-The existing POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT and
-POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX properties
-don't have documentation. I add that documentation here.
+Add POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD
+and POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD properties, to expand
+the existing CHARGE_CONTROL_* properties. I am adding them in order
+to support a new Chrome OS device, but these properties should be
+general enough that they can be used on other devices.
+
+When the charge_type is "Custom", the charge controller uses the
+POWER_SUPPLY_PROP_CHARGE_CONTROL_* properties as configuration for some
+other algorithm. For example, in the use case that I am supporting,
+this means the battery begins charging when the percentage
+level drops below POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD and
+charging ceases when the percentage level goes above
+POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD.
 
 v5 changes:
-- Split this commit out from the previous two commits.
+- Add the other missing CHARGE_CONTROL_* properties documentation in
+  a separate commit
+- Split up adding the charge types and adding the
+  POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD and
+  POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD properties into
+  two different commits.
+v4 changes:
+- Add documentation for the new properties, and add documentation for
+  the the previously missing charge_control_limit and
+  charge_control_limit_max properties.
 
 Signed-off-by: Nick Crews <ncrews@chromium.org>
 ---
- Documentation/ABI/testing/sysfs-class-power | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ Documentation/ABI/testing/sysfs-class-power | 20 ++++++++++++++++++++
+ drivers/power/supply/power_supply_sysfs.c   |  2 ++
+ include/linux/power_supply.h                |  2 ++
+ 3 files changed, 24 insertions(+)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index a5b144f61de8..b77e30b9014e 100644
+index 544c4e0ef8b6..a5b144f61de8 100644
 --- a/Documentation/ABI/testing/sysfs-class-power
 +++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -114,6 +114,25 @@ Description:
+@@ -114,6 +114,26 @@ Description:
  		Access: Read
  		Valid values: Represented in microamps
  
-+What:		/sys/class/power_supply/<supply_name>/charge_control_limit
-+Date:		Oct 2012
++What:		/sys/class/power_supply/<supply_name>/charge_control_start_threshold
++Date:		April 2019
 +Contact:	linux-pm@vger.kernel.org
 +Description:
-+		Maximum allowable charging current. Used for charge rate
-+		throttling for thermal cooling or improving battery health.
++		Represents a battery percentage level, below which charging will
++		begin.
 +
 +		Access: Read, Write
-+		Valid values: Represented in microamps
++		Valid values: 0 - 100 (percent)
 +
-+What:		/sys/class/power_supply/<supply_name>/charge_control_limit_max
-+Date:		Oct 2012
++What:		/sys/class/power_supply/<supply_name>/charge_control_end_threshold
++Date:		April 2019
 +Contact:	linux-pm@vger.kernel.org
 +Description:
-+		Maximum legal value for the charge_control_limit property.
++		Represents a battery percentage level, above which charging will
++		stop.
 +
-+		Access: Read
-+		Valid values: Represented in microamps
++		Access: Read, Write
++		Valid values: 0 - 100 (percent)
 +
- What:		/sys/class/power_supply/<supply_name>/charge_control_start_threshold
- Date:		April 2019
+ What:		/sys/class/power_supply/<supply_name>/charge_type
+ Date:		July 2009
  Contact:	linux-pm@vger.kernel.org
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 64dff5cfecc3..6104a3f03d46 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -274,6 +274,8 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(constant_charge_voltage_max),
+ 	POWER_SUPPLY_ATTR(charge_control_limit),
+ 	POWER_SUPPLY_ATTR(charge_control_limit_max),
++	POWER_SUPPLY_ATTR(charge_control_start_threshold),
++	POWER_SUPPLY_ATTR(charge_control_end_threshold),
+ 	POWER_SUPPLY_ATTR(input_current_limit),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index e86e05d8134d..d59205170232 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -125,6 +125,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
++	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
 -- 
 2.20.1
 
