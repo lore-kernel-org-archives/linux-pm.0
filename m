@@ -1,57 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] drivers: cpuidle: This patch fix the following checkpatch warning.
-Date: Thu, 18 Apr 2019 15:57:00 +0200
-Message-ID: <4392665.MNVv1Oa0lS@kreacher>
-References: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
+Subject: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
+Date: Thu, 18 Apr 2019 16:11:37 +0200
+Message-ID: <38900622.ao2n2t5aPS@kreacher>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555512754-6450-1-git-send-email-mohankumar718@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mohan Kumar <mohankumar718@gmail.com>
-Cc: daniel.lezcano@linaro.org, benh@kernel.crashing.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: x86 Maintainers <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 17, 2019 4:52:34 PM CEST Mohan Kumar wrote:
-> Use pr_debug instead of printk
-> 
-> WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then
-> dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
-> 
-> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 84b1ebe..7cf9835 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -401,7 +401,7 @@ static int __init powernv_processor_idle_init(void)
->  	powernv_cpuidle_driver_init();
->  	retval = cpuidle_register(&powernv_idle_driver, NULL);
->  	if (retval) {
-> -		printk(KERN_DEBUG "Registration of powernv driver failed.\n");
-> +		pr_debug("Registration of powernv driver failed.\n");
->  		return retval;
->  	}
->  
-> @@ -413,7 +413,7 @@ static int __init powernv_processor_idle_init(void)
->  					   "cpuidle/powernv:dead", NULL,
->  					   powernv_cpuidle_cpu_dead);
->  	WARN_ON(retval < 0);
-> -	printk(KERN_DEBUG "powernv_idle_driver registered\n");
-> +	pr_debug("powernv_idle_driver registered\n");
->  	return 0;
->  }
->  
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Recently, you've sent two different patches against two different drivers with the same subject.
+There are problems with running time_cpufreq_notifier() on SMP
+systems.
 
-IMO it is fair enough to call that "confusing".
+First off, the rdtsc() called from there runs on the CPU executing
+that code and not necessarily on the CPU whose sched_clock() rate is
+updated which is questionable at best.
 
-Moreover, pr_debug() is not a direct replacement for printk(KERN_DEBUG ) as the latter does
-not require dynamic debug to be enabled and I'm not really sure if you are aware of that
-difference.
+Second, in the cases when the frequencies of all CPUs in an SMP
+system are always in sync, it is not sufficient to update just
+one of them or the set associated with a given cpufreq policy on
+frequency changes - all CPUs in the system should be updated and
+that would require more than a simple transition notifier.
+
+Note, however, that the underlying issue (the TSC rate depending on
+the CPU frequency) has not been present in hardware shipping for the
+last few years and in quite a few relevant cases (acpi-cpufreq in
+particular) running time_cpufreq_notifier() will cause the TSC to
+be marked as unstable anyway.
+
+For this reason, make time_cpufreq_notifier() simply mark the TSC
+as unstable and give up when run on SMP and only try to carry out
+any adjustments otherwise.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/kernel/tsc.c |   29 ++++++++++++++---------------
+ 1 file changed, 14 insertions(+), 15 deletions(-)
+
+Index: linux-pm/arch/x86/kernel/tsc.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/tsc.c
++++ linux-pm/arch/x86/kernel/tsc.c
+@@ -185,8 +185,7 @@ static void __init cyc2ns_init_boot_cpu(
+ /*
+  * Secondary CPUs do not run through tsc_init(), so set up
+  * all the scale factors for all CPUs, assuming the same
+- * speed as the bootup CPU. (cpufreq notifiers will fix this
+- * up if their speed diverges)
++ * speed as the bootup CPU.
+  */
+ static void __init cyc2ns_init_secondary_cpus(void)
+ {
+@@ -937,12 +936,12 @@ void tsc_restore_sched_clock_state(void)
+ }
+ 
+ #ifdef CONFIG_CPU_FREQ
+-/* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
++/*
++ * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
+  * changes.
+  *
+- * RED-PEN: On SMP we assume all CPUs run with the same frequency.  It's
+- * not that important because current Opteron setups do not support
+- * scaling on SMP anyroads.
++ * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
++ * as unstable and give up in those cases.
+  *
+  * Should fix up last_tsc too. Currently gettimeofday in the
+  * first tick after the change will be slightly wrong.
+@@ -956,22 +955,22 @@ static int time_cpufreq_notifier(struct
+ 				void *data)
+ {
+ 	struct cpufreq_freqs *freq = data;
+-	unsigned long *lpj;
+ 
+-	lpj = &boot_cpu_data.loops_per_jiffy;
+-#ifdef CONFIG_SMP
+-	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+-		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+-#endif
++	if (num_online_cpus() > 1) {
++		mark_tsc_unstable("cpufreq changes on SMP");
++		return 0;
++	}
+ 
+ 	if (!ref_freq) {
+ 		ref_freq = freq->old;
+-		loops_per_jiffy_ref = *lpj;
++		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+ 		tsc_khz_ref = tsc_khz;
+ 	}
++
+ 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+-			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+-		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
++	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
++		boot_cpu_data.loops_per_jiffy =
++			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+ 
+ 		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+ 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
