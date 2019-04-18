@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v7 04/10] x86/platform/olpc: Use a correct version when making up a battery node
-Date: Thu, 18 Apr 2019 16:46:49 +0200
-Message-ID: <20190418144655.18758-5-lkundrak@v3.sk>
+Subject: [PATCH v7 05/10] power: supply: olpc_battery: Use DT to get battery version
+Date: Thu, 18 Apr 2019 16:46:50 +0200
+Message-ID: <20190418144655.18758-6-lkundrak@v3.sk>
 References: <20190418144655.18758-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -9,137 +9,73 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Andy Shevchenko <andy.shevchenko@gmail.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-ambient temperature. We need to use a different compatible string for the
-XO-1.5 battery.
+Avoid using the x86 OLPC platform specific call to get the board
+version. That wouldn't work on FDT-based ARM MMP2 platform.
 
-Previously olpc_dt_fixup() used the presence of the battery node's
-compatible property to decide whether the DT is up to date. Now we need
-to look for a particular value in the compatible string, to decide
+Add the XO 1.5 compatible string too. This is actually not completely
+necessary as the battery nodes on XO 1.5 claim to be compatible with
+"olpc,xo1-battery", but there are, in fact, differencies.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
-Changes since v6:
-- s/od/of/ in the commit message
-- Coalesce variables of the same type
-- Fix block comment style
-- Ack from Thomas Gleixner
-- Fix the subject prefix to "x86/platform/olpc:"
-
 Changes since v5:
-- Split the "x86, olpc: Don't split string literals when fixing up the DT=
-"
-  and "x86, olpc: trivial code move in DT fixup" parts off from this
-- Clarify some comments
+- Use of_device_is_compatible() instead of
+  of_property_match_string("compatible")
+
+Changes since v2:
+- Clarify the XO 1 compatibility in the commit message.
 
 Changes since v1:
-- Avoid splitting string literals
+- Sort the new include a bit higher
 
- arch/x86/platform/olpc/olpc_dt.c | 64 +++++++++++++++++++++++++-------
- 1 file changed, 50 insertions(+), 14 deletions(-)
+ drivers/power/supply/olpc_battery.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/ol=
-pc_dt.c
-index 820236b511b3..0296c5b55e6f 100644
---- a/arch/x86/platform/olpc/olpc_dt.c
-+++ b/arch/x86/platform/olpc/olpc_dt.c
-@@ -220,10 +220,26 @@ static u32 __init olpc_dt_get_board_revision(void)
- 	return be32_to_cpu(rev);
- }
-=20
-+int olpc_dt_compatible_match(phandle node, const char *compat)
-+{
-+	char buf[64], *p;
-+	int plen, len;
-+
-+	plen =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
-+	if (plen <=3D 0)
-+		return 0;
-+
-+	len =3D strlen(compat);
-+	for (p =3D buf; p < buf + plen; p +=3D strlen(p) + 1) {
-+		if (strcmp(p, compat) =3D=3D 0)
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- void __init olpc_dt_fixup(void)
- {
--	int r;
--	char buf[64];
- 	phandle node;
- 	u32 board_rev;
-=20
-@@ -231,22 +247,31 @@ void __init olpc_dt_fixup(void)
- 	if (!node)
- 		return;
-=20
--	/*
--	 * If the battery node has a compatible property, we are running a new
--	 * enough firmware and don't have fixups to make.
--	 */
--	r =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
--	if (r > 0)
--		return;
+diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+index 5a97e42a3547..3dcf5e19f329 100644
+--- a/drivers/power/supply/olpc_battery.c
++++ b/drivers/power/supply/olpc_battery.c
+@@ -14,6 +14,7 @@
+ #include <linux/types.h>
+ #include <linux/err.h>
+ #include <linux/device.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/jiffies.h>
+@@ -622,11 +623,12 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
+ 	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
+ 	if (IS_ERR(olpc_ac))
+ 		return PTR_ERR(olpc_ac);
 -
--	pr_info("PROM DT: Old firmware detected, applying fixes\n");
--
- 	board_rev =3D olpc_dt_get_board_revision();
- 	if (!board_rev)
- 		return;
-=20
- 	if (board_rev >=3D olpc_board_pre(0xd0)) {
--		/* XO-1.5: add dcon device */
+-	if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5 */
++	if (of_device_is_compatible(pdev->dev.of_node, "olpc,xo1.5-battery")) {
 +		/* XO-1.5 */
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1.5-battery"))
-+			return;
-+
-+		/* Add olpc,xo1.5-battery compatible marker to battery node */
-+		olpc_dt_interpret("\" /battery@0\" find-device");
-+		olpc_dt_interpret("  \" olpc,xo1.5-battery\" +compatible");
-+		olpc_dt_interpret("device-end");
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-+			/*
-+			 * If we have a olpc,xo1-battery compatible, then we're
-+			 * running a new enough firmware that already has
-+			 * the dcon node.
-+			 */
-+			return;
-+		}
-+
-+		/* Add dcon device */
- 		olpc_dt_interpret("\" /pci/display@1\" find-device");
- 		olpc_dt_interpret("  new-device");
- 		olpc_dt_interpret("    \" dcon\" device-name");
-@@ -254,7 +279,18 @@ void __init olpc_dt_fixup(void)
- 		olpc_dt_interpret("  finish-device");
- 		olpc_dt_interpret("device-end");
- 	} else {
--		/* XO-1: add dcon device, mark RTC as olpc,xo1-rtc */
+ 		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
+ 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo15_bat_props);
+-	} else { /* XO-1 */
++	} else {
 +		/* XO-1 */
-+
-+		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
-+			/*
-+			 * If we have a olpc,xo1-battery compatible, then we're
-+			 * running a new enough firmware that already has
-+			 * the dcon and RTC nodes.
-+			 */
-+			return;
-+		}
-+
-+		/* Add dcon device, mark RTC as olpc,xo1-rtc */
- 		olpc_dt_interpret("\" /pci/display@1,1\" find-device");
- 		olpc_dt_interpret("  new-device");
- 		olpc_dt_interpret("    \" dcon\" device-name");
+ 		olpc_bat_desc.properties =3D olpc_xo1_bat_props;
+ 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
+ 	}
+@@ -672,6 +674,7 @@ static int olpc_battery_remove(struct platform_device=
+ *pdev)
+=20
+ static const struct of_device_id olpc_battery_ids[] =3D {
+ 	{ .compatible =3D "olpc,xo1-battery" },
++	{ .compatible =3D "olpc,xo1.5-battery" },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, olpc_battery_ids);
 --=20
 2.21.0
