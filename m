@@ -2,280 +2,437 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C82CBC282DA
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 00:24:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB0CCC282DC
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 00:51:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 86D382183E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 00:24:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A587B2183E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 00:51:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="cZKc8OEM"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="NmP91XC6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387534AbfDRAYH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Apr 2019 20:24:07 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:15735 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387584AbfDRAYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 20:24:04 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190418002400epoutp0105b693ade4f287eca8ae59b67a78dafb~WacqjaaaW0258502585epoutp01j
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 00:24:00 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190418002400epoutp0105b693ade4f287eca8ae59b67a78dafb~WacqjaaaW0258502585epoutp01j
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555547040;
-        bh=N8Jw5pK8Y5xQF6TuLeGGtAcTIF7IYkV4BnblRP8hm7A=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=cZKc8OEM4NvRDZ7aKQrygrtAL9huB6SMypxjnQOWnH38fUSem5v/dij6GzWbrzc8K
-         XjKTTFqzjrMBgXrOjtNbaVdLr2d/iYaohnSl9NndhHGvSWxaQo3hqk0JyxJ/lHebtt
-         d+KNq2OWTrJYKmntbYVF1/O8fUvK8lhqp6mo/wxw=
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.157]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190418002355epcas1p1ac8540d5c0a372edbd2082b844d3e16e~WaclyXKdU2673226732epcas1p1H;
-        Thu, 18 Apr 2019 00:23:55 +0000 (GMT)
-Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        1D.79.04257.B93C7BC5; Thu, 18 Apr 2019 09:23:55 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190418002354epcas1p17e67d197bf869c4633f87e5c634dd24f~WaclhRMCP2260322603epcas1p1L;
-        Thu, 18 Apr 2019 00:23:54 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190418002354epsmtrp1ef1fac9974bc4df2fe7b85de8d167bf5~WaclgXBK12241922419epsmtrp1E;
-        Thu, 18 Apr 2019 00:23:54 +0000 (GMT)
-X-AuditID: b6c32a38-5e3ff700000010a1-4f-5cb7c39b377d
-Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        4A.52.03692.A93C7BC5; Thu, 18 Apr 2019 09:23:54 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190418002354epsmtip2114be836b838a0e1bc2ca351278ee0ca~WaclSsClK0762307623epsmtip2h;
-        Thu, 18 Apr 2019 00:23:54 +0000 (GMT)
-Subject: Re: [PATCH v3 06/16] PM / devfreq: tegra: Drop primary interrupt
- handler
-To:     Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <22ae12dc-9a6c-4f37-722b-adc7289a32c3@samsung.com>
-Date:   Thu, 18 Apr 2019 09:24:52 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.6.1
+        id S2387619AbfDRAvQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Apr 2019 20:51:16 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:41043 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387442AbfDRAvQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2019 20:51:16 -0400
+Received: by mail-wr1-f68.google.com with SMTP id r4so642462wrq.8
+        for <linux-pm@vger.kernel.org>; Wed, 17 Apr 2019 17:51:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=AIUE3CyTnyuGhRtlj3pPZCDwE53afxTuajiCQG8eDOQ=;
+        b=NmP91XC6pr0jMUyp7C/ToNhmTPbQQmuIZ5KVeUfzj/HQR2G3b1vnqgl+06iUSU3wWK
+         ycDkEiU3Y4AzIUw1PSd6uXW037xE3A5iILl23SqYp8LsxuJyX+2aHvQsoV+rdsHIGyAT
+         bafYmAbvG2AbukJGWfv5InYrFBmMl4kQBr1lb9M6wpqMBWRU2gQOipcuITz8qaTr9hBJ
+         YZBb3Uq0xjxd2mw3hK/9QUd2X8fYDG4EI00Wa1vUUoX96hJq/hRy0zHmXe0nUJpUGhNQ
+         Wro5mMCaV3fNjeQbxfOCvaYiKbvoVxcb+llIjxeM81gQj1+c7lcSx44BH1+NUmbcLDnH
+         05xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=AIUE3CyTnyuGhRtlj3pPZCDwE53afxTuajiCQG8eDOQ=;
+        b=flUwGwIE46YLhoAIvDaDmtdpNN4t0MlW75hLtayp83L06oLHnMy+TgMMZeir5oHgSW
+         OnIL0D6mJ4U+27yJ+R2RyU1Rw/2kcPnwAWQJLQ0I7mL4q4/DGnNcVW4ko+p1SObKhemj
+         TGtGq1J3hrv5rcnZ3qfjFvPrentKXeR1MP/TRBPv5+hTTX4JI96s0PggYCmIa210QxGE
+         eOqk00aoVQtTnOiHzujUUicM89G7bhRn2krfMMn524SwkDZjkcV5njOzqf5JGFdo89PG
+         ZMzXBdD+pwNnrDgt3Wc4XLqMsvHcUvvs557PsVudzWd8kTeuHmcFtDDust3T6zQ6f8LP
+         iXbQ==
+X-Gm-Message-State: APjAAAX9Oam/bbaqJkua3nPxDJUGjcYKntk45ywkxQc1B6Qqxy7wtMPO
+        d15vcpU9IXlPDuz8DF3JNE/VzfjgvxHY/JNrS/g6yyzTG/ercA==
+X-Google-Smtp-Source: APXvYqzWkWbiii8DzrWAU8oZHf8mLplWiacc0i9JH58TPzP+VXcVV1RZIBiJhlvWPYANLJetn5vTODhW6zQiUNQtX8w=
+X-Received: by 2002:a5d:4f8b:: with SMTP id d11mr28350444wru.150.1555548673477;
+ Wed, 17 Apr 2019 17:51:13 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190417222925.5815-7-digetx@gmail.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRju2zk7TnH1tcrehGweqdDQPM7VMdIuSo0SEqToYtjJHTZxN3am
-        3Yi0hbWRZgWRsxulZYZoNUvNFC8YRlclLEuSJt3pYlctsm3HyH/P937P8z7f836vjFBUU6Gy
-        bJONt5o4A00FkdfaI2Oiy9qvZ8Te7wxmL332IHaf6yzJ3t37PoDtaTxBsV+KOhDr+Oqi2KcF
-        lRQ73HiKZIuru6mlgZr6/nKkaXD1B2iK7B8oTbG7Cmm+XAlLk27MWaznOS1vVfKmLLM226RL
-        pFenZyZnqhfEMtFMAruQVpo4I59Ip6SmRa/INngfRCvzOEOut5TGCQI9P2mx1Zxr45V6s2BL
-        pHmL1mBJsMQInFHINelisszGRUxsbJzaS9ySo+8qsJOWmnnbB041EPnoWIQTBcoAx0NV64jE
-        hxW4HsGFS2FOFOTFQwiKHvYR4uE7ghPFe6l/itPPmklRcRPBkx9KkfQRQYNnVOpEMtkUnA61
-        J7f66lPxHwRDjcelPgGBN8C31grChykcBS2vH/ubTsLh8OinB/mwHCfBi3yn34DEs+HFoSE/
-        ZxpeD887a6UiZzJ0lQ6SPq9ArIaSu9vE9tOhb/C0RMSzwF5X5g8AeJSCI82/A8QAKVBeOoJE
-        PAXe3nKP1UPhzaHCMbwLLnZ1UKL4AAJ3ywOpeKGCloqjEp8xgSOhpnG+aDYRPnw76M8OWA4H
-        ChUiOwJ6BvolIp4B5/Y7xmaoAcf9O1QJCneNS+MaF8E1LoLrv9kZRFahEN4iGHW8wFjix//1
-        FeRf1Si2HjXdS21DWIboYHnl7OsZCimXJ+wwtiGQEfRU+TKtO0Mh13I7dvJWc6Y118ALbUjt
-        HfZhInRaltm7+CZbJqOOU6lUbDyzQM0w9HR5zdLkDAXWcTY+h+ctvPWfTiILDM1HjoLe23M/
-        rXr1S5lsn5A3ojO7rXkdkc608Bh2RZY2rOllr2JY2f1uU9KF1qZ1dZf1eGbEnJsV9CrbjOrS
-        NSWHRzcvT7gdohncHb2yLmT1ucTKoGHNmtoHawdrC2/obJ4z5Y+C09c1vevuLOtRSTe2nU+9
-        2rspxePo7uP67ce/Fu1ZQpOCnmOiCKvA/QXHwX7cwAMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSvO6sw9tjDA6dNrRY/fExo0XLrEUs
-        Fmeb3rBbXN41h83ic+8RRovOL7PYLG43rmCz+LlrHotF39pLbA6cHjvuLmH02DnrLrtHb/M7
-        No++LasYPT5vkgtgjeKySUnNySxLLdK3S+DKONnYzFKwXrviwbydzA2M05S7GDk5JARMJObf
-        2cfSxcjFISSwm1Hi26ZtzBAJSYlpF48C2RxAtrDE4cPFEDVvGSVWz9jECBIXFgiW2DA3CSQu
-        ItDEJPH5YQsTSC+zQKRE/6NuVoiGzYwSP058YQVJsAloSex/cYMNxOYXUJS4+uMxI4jNK2An
-        8aihiwXEZhFQlXjU/wmsRlQgQuLM+xUsEDWCEidnPmEBWcwpYCox4Ww5xC51iT/zLjFD2OIS
-        t57Mh7pBXqJ562zmCYzCs5B0z0LSMgtJyywkLQsYWVYxSqYWFOem5xYbFhjmpZbrFSfmFpfm
-        pesl5+duYgRHmJbmDsbLS+IPMQpwMCrx8K5Q3R4jxJpYVlyZe4hRgoNZSYTXMWVLjBBvSmJl
-        VWpRfnxRaU5q8SFGaQ4WJXHep3nHIoUE0hNLUrNTUwtSi2CyTBycUg2MEiyzJtWyirBaPWG8
-        +cnm4f+Y4CiPHb9tGXbJrd7Icua18Ks5bivCH89ZWdf62+IQ07l/J16aqNxfNDd9252fkbyi
-        enzJKqv/if1YKGTrmRbap8FYci7y7zObZxdn8m3JDv54+fvJdNmUDROSo2uFXmld/BjmdtW5
-        aU7Xxbs/M6/9Vy/+5P5ymRJLcUaioRZzUXEiADwxo2CsAgAA
-X-CMS-MailID: 20190418002354epcas1p17e67d197bf869c4633f87e5c634dd24f
-X-Msg-Generator: CA
+References: <20190402104153.25404-1-patrick.bellasi@arm.com> <20190402104153.25404-5-patrick.bellasi@arm.com>
+In-Reply-To: <20190402104153.25404-5-patrick.bellasi@arm.com>
+From:   Suren Baghdasaryan <surenb@google.com>
+Date:   Wed, 17 Apr 2019 17:51:02 -0700
+Message-ID:
+ <CAJuCfpGcN-CWCoo16_xKzohUbBTCY3W5D1E8izhA8wtEjCtF+Q@mail.gmail.com>
+Subject: Re: [PATCH v8 04/16] sched/core: uclamp: Add system default clamps
+To:     Patrick Bellasi <patrick.bellasi@arm.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org,
+        linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Tejun Heo <tj@kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>
 Content-Type: text/plain; charset="UTF-8"
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190417224246epcas3p2fe81ce63069496ea13c3aeeb54189afd
-References: <20190417222925.5815-1-digetx@gmail.com>
-        <CGME20190417224246epcas3p2fe81ce63069496ea13c3aeeb54189afd@epcas3p2.samsung.com>
-        <20190417222925.5815-7-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418002452.h3ONKW7xoV6j1uy3mKSlTnZ2D3I6x73_efK5Rhut37s@z>
+Message-ID: <20190418005102.Q_gpFWqYBz-zjKA9E8vQxToFAHtLGU8Pw7KQahKk4D4@z>
 
-On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
-> There is no real need in the primary interrupt handler, hence move
-> everything to the secondary (threaded) handler. In a result locking
-> is consistent now and there are no potential races with the interrupt
-> handler because it is protected with the devfreq's mutex.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>
+> Tasks without a user-defined clamp value are considered not clamped
+> and by default their utilization can have any value in the
+> [0..SCHED_CAPACITY_SCALE] range.
+>
+> Tasks with a user-defined clamp value are allowed to request any value
+> in that range, and the required clamp is unconditionally enforced.
+> However, a "System Management Software" could be interested in limiting
+> the range of clamp values allowed for all tasks.
+>
+> Add a privileged interface to define a system default configuration via:
+>
+>   /proc/sys/kernel/sched_uclamp_util_{min,max}
+>
+> which works as an unconditional clamp range restriction for all tasks.
+>
+> With the default configuration, the full SCHED_CAPACITY_SCALE range of
+> values is allowed for each clamp index. Otherwise, the task-specific
+> clamp is capped by the corresponding system default value.
+>
+> Do that by tracking, for each task, the "effective" clamp value and
+> bucket the task has been refcounted in at enqueue time. This
+> allows to lazy aggregate "requested" and "system default" values at
+> enqueue time and simplifies refcounting updates at dequeue time.
+>
+> The cached bucket ids are used to avoid (relatively) more expensive
+> integer divisions every time a task is enqueued.
+>
+> An active flag is used to report when the "effective" value is valid and
+> thus the task is actually refcounted in the corresponding rq's bucket.
+>
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 55 +++++++++++----------------------
->  1 file changed, 18 insertions(+), 37 deletions(-)
-> 
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index 24ec65556c39..b65313fe3c2e 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -144,7 +144,6 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
->  struct tegra_devfreq_device {
->  	const struct tegra_devfreq_device_config *config;
->  	void __iomem *regs;
-> -	spinlock_t lock;
->  
->  	/* Average event count sampled in the last interrupt */
->  	u32 avg_count;
-> @@ -249,11 +248,8 @@ static void actmon_write_barrier(struct tegra_devfreq *tegra)
->  static void actmon_isr_device(struct tegra_devfreq *tegra,
->  			      struct tegra_devfreq_device *dev)
->  {
-> -	unsigned long flags;
->  	u32 intr_status, dev_ctrl;
->  
-> -	spin_lock_irqsave(&dev->lock, flags);
-> -
->  	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->  	tegra_devfreq_update_avg_wmark(tegra, dev);
->  
-> @@ -302,26 +298,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
->  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
->  
->  	actmon_write_barrier(tegra);
-> -
-> -	spin_unlock_irqrestore(&dev->lock, flags);
-> -}
-> -
-> -static irqreturn_t actmon_isr(int irq, void *data)
-> -{
-> -	struct tegra_devfreq *tegra = data;
-> -	bool handled = false;
-> -	unsigned int i;
-> -	u32 val;
-> -
-> -	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
-> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> -		if (val & tegra->devices[i].config->irq_mask) {
-> -			actmon_isr_device(tegra, tegra->devices + i);
-> -			handled = true;
-> -		}
-> -	}
-> -
-> -	return handled ? IRQ_WAKE_THREAD : IRQ_NONE;
->  }
->  
->  static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
-> @@ -348,15 +324,12 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
->  	unsigned long cpu_freq = 0;
->  	unsigned long static_cpu_emc_freq = 0;
->  	unsigned int avg_sustain_coef;
-> -	unsigned long flags;
->  
->  	if (dev->config->avg_dependency_threshold) {
->  		cpu_freq = cpufreq_get(0);
->  		static_cpu_emc_freq = actmon_cpu_to_emc_rate(tegra, cpu_freq);
->  	}
->  
-> -	spin_lock_irqsave(&dev->lock, flags);
-> -
->  	dev->target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
->  	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
->  	dev->target_freq = do_percent(dev->target_freq, avg_sustain_coef);
-> @@ -364,19 +337,31 @@ static void actmon_update_target(struct tegra_devfreq *tegra,
->  
->  	if (dev->avg_count >= dev->config->avg_dependency_threshold)
->  		dev->target_freq = max(dev->target_freq, static_cpu_emc_freq);
-> -
-> -	spin_unlock_irqrestore(&dev->lock, flags);
->  }
->  
->  static irqreturn_t actmon_thread_isr(int irq, void *data)
->  {
->  	struct tegra_devfreq *tegra = data;
-> +	bool handled = false;
-> +	unsigned int i;
-> +	u32 val;
->  
->  	mutex_lock(&tegra->devfreq->lock);
-> -	update_devfreq(tegra->devfreq);
+> Changes in v8:
+>  Message-ID: <20190313201010.GU2482@worktop.programming.kicks-ass.net>
+>  - add "requested" values uclamp_se instance beside the existing
+>    "effective" values instance
+>  - rename uclamp_effective_{get,assign}() into uclamp_eff_{get,set}()
+>  - make uclamp_eff_get() return the new "effective" values by copy
+> Message-ID: <20190318125844.ajhjpaqlcgxn7qkq@e110439-lin>
+>  - run uclamp_fork() code independently from the class being supported.
+>    Resetting active flag is not harmful and following patches will add
+>    other code which still needs to be executed independently from class
+>    support.
+> Message-ID: <20190313201342.GV2482@worktop.programming.kicks-ass.net>
+>  - add sysctl_sched_uclamp_handler()'s internal mutex to serialize
+>    concurrent usages
+> ---
+>  include/linux/sched.h        |  10 +++
+>  include/linux/sched/sysctl.h |  11 +++
+>  kernel/sched/core.c          | 131 ++++++++++++++++++++++++++++++++++-
+>  kernel/sysctl.c              |  16 +++++
+>  4 files changed, 167 insertions(+), 1 deletion(-)
+>
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 0c0dd7aac8e9..d8491954e2e1 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -584,14 +584,21 @@ struct sched_dl_entity {
+>   * Utilization clamp for a scheduling entity
+>   * @value:             clamp value "assigned" to a se
+>   * @bucket_id:         bucket index corresponding to the "assigned" value
+> + * @active:            the se is currently refcounted in a rq's bucket
+>   *
+>   * The bucket_id is the index of the clamp bucket matching the clamp value
+>   * which is pre-computed and stored to avoid expensive integer divisions from
+>   * the fast path.
+> + *
+> + * The active bit is set whenever a task has got an "effective" value assigned,
+> + * which can be different from the clamp value "requested" from user-space.
+> + * This allows to know a task is refcounted in the rq's bucket corresponding
+> + * to the "effective" bucket_id.
+>   */
+>  struct uclamp_se {
+>         unsigned int value              : bits_per(SCHED_CAPACITY_SCALE);
+>         unsigned int bucket_id          : bits_per(UCLAMP_BUCKETS);
+> +       unsigned int active             : 1;
+>  };
+>  #endif /* CONFIG_UCLAMP_TASK */
+>
+> @@ -676,6 +683,9 @@ struct task_struct {
+>         struct sched_dl_entity          dl;
+>
+>  #ifdef CONFIG_UCLAMP_TASK
+> +       /* Clamp values requested for a scheduling entity */
+> +       struct uclamp_se                uclamp_req[UCLAMP_CNT];
+> +       /* Effective clamp values used for a scheduling entity */
+>         struct uclamp_se                uclamp[UCLAMP_CNT];
+>  #endif
+>
+> diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
+> index 99ce6d728df7..d4f6215ee03f 100644
+> --- a/include/linux/sched/sysctl.h
+> +++ b/include/linux/sched/sysctl.h
+> @@ -56,6 +56,11 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
+>  extern unsigned int sysctl_sched_rt_period;
+>  extern int sysctl_sched_rt_runtime;
+>
+> +#ifdef CONFIG_UCLAMP_TASK
+> +extern unsigned int sysctl_sched_uclamp_util_min;
+> +extern unsigned int sysctl_sched_uclamp_util_max;
+> +#endif
 > +
-> +	val = actmon_readl(tegra, ACTMON_GLB_STATUS);
-> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> +		if (val & tegra->devices[i].config->irq_mask) {
-> +			actmon_isr_device(tegra, tegra->devices + i);
-> +			handled = true;
-> +		}
-> +	}
+>  #ifdef CONFIG_CFS_BANDWIDTH
+>  extern unsigned int sysctl_sched_cfs_bandwidth_slice;
+>  #endif
+> @@ -75,6 +80,12 @@ extern int sched_rt_handler(struct ctl_table *table, int write,
+>                 void __user *buffer, size_t *lenp,
+>                 loff_t *ppos);
+>
+> +#ifdef CONFIG_UCLAMP_TASK
+> +extern int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
+> +                                      void __user *buffer, size_t *lenp,
+> +                                      loff_t *ppos);
+> +#endif
 > +
-> +	if (handled)
-> +		update_devfreq(tegra->devfreq);
-> +
->  	mutex_unlock(&tegra->devfreq->lock);
->  
-> -	return IRQ_HANDLED;
-> +	return handled ? IRQ_HANDLED : IRQ_NONE;
+>  extern int sysctl_numa_balancing(struct ctl_table *table, int write,
+>                                  void __user *buffer, size_t *lenp,
+>                                  loff_t *ppos);
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 046f61d33f00..d368ac26b8aa 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -733,6 +733,14 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 >  }
->  
->  static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
-> @@ -386,7 +371,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
->  	struct tegra_devfreq *tegra;
->  	struct tegra_devfreq_device *dev;
->  	unsigned int i;
-> -	unsigned long flags;
->  
->  	if (action != POST_RATE_CHANGE)
->  		return NOTIFY_OK;
-> @@ -398,9 +382,7 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
->  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->  		dev = &tegra->devices[i];
->  
-> -		spin_lock_irqsave(&dev->lock, flags);
->  		tegra_devfreq_update_wmark(tegra, dev);
-> -		spin_unlock_irqrestore(&dev->lock, flags);
->  	}
->  
->  	actmon_write_barrier(tegra);
-> @@ -682,7 +664,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		dev = tegra->devices + i;
->  		dev->config = actmon_device_configs + i;
->  		dev->regs = tegra->regs + dev->config->offset;
-> -		spin_lock_init(&dev->lock);
->  
->  		tegra_actmon_configure_device(tegra, dev);
->  	}
-> @@ -700,8 +681,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, tegra);
->  
-> -	err = devm_request_threaded_irq(&pdev->dev, irq, actmon_isr,
-> -					actmon_thread_isr, IRQF_SHARED,
-> +	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-> +					actmon_thread_isr, IRQF_ONESHOT,
->  					"tegra-devfreq", tegra);
->  	if (err) {
->  		dev_err(&pdev->dev, "Interrupt request failed\n");
-> 
+>
+>  #ifdef CONFIG_UCLAMP_TASK
+> +/* Max allowed minimum utilization */
+> +unsigned int sysctl_sched_uclamp_util_min = SCHED_CAPACITY_SCALE;
+> +
+> +/* Max allowed maximum utilization */
+> +unsigned int sysctl_sched_uclamp_util_max = SCHED_CAPACITY_SCALE;
+> +
+> +/* All clamps are required to be less or equal than these values */
+> +static struct uclamp_se uclamp_default[UCLAMP_CNT];
+>
+>  /* Integer rounded range for each bucket */
+>  #define UCLAMP_BUCKET_DELTA DIV_ROUND_CLOSEST(SCHED_CAPACITY_SCALE, UCLAMP_BUCKETS)
+> @@ -801,6 +809,52 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
+>         return uclamp_idle_value(rq, clamp_id, clamp_value);
+>  }
+>
+> +/*
+> + * The effective clamp bucket index of a task depends on, by increasing
+> + * priority:
+> + * - the task specific clamp value, when explicitly requested from userspace
+> + * - the system default clamp value, defined by the sysadmin
+> + */
+> +static inline struct uclamp_se
+> +uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
+> +{
+> +       struct uclamp_se uc_req = p->uclamp_req[clamp_id];
+> +       struct uclamp_se uc_max = uclamp_default[clamp_id];
+> +
+> +       /* System default restrictions always apply */
+> +       if (unlikely(uc_req.value > uc_max.value))
+> +               return uc_max;
+> +
+> +       return uc_req;
+> +}
+> +
+> +static inline unsigned int
+> +uclamp_eff_bucket_id(struct task_struct *p, unsigned int clamp_id)
 
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+This function is not used anywhere AFAIKT. uclamp_eff_bucket_id() and
+uclamp_eff_value() look very similar, maybe they can be combined into
+one function returning struct uclamp_se?
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+> +{
+> +       struct uclamp_se uc_eff;
+> +
+> +       /* Task currently refcounted: use back-annotated (effective) bucket */
+> +       if (p->uclamp[clamp_id].active)
+> +               return p->uclamp[clamp_id].bucket_id;
+> +
+> +       uc_eff = uclamp_eff_get(p, clamp_id);
+> +
+> +       return uc_eff.bucket_id;
+> +}
+> +
+> +unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
+> +{
+> +       struct uclamp_se uc_eff;
+> +
+> +       /* Task currently refcounted: use back-annotated (effective) value */
+> +       if (p->uclamp[clamp_id].active)
+> +               return p->uclamp[clamp_id].value;
+> +
+> +       uc_eff = uclamp_eff_get(p, clamp_id);
+> +
+> +       return uc_eff.value;
+> +}
+> +
+>  /*
+>   * When a task is enqueued on a rq, the clamp bucket currently defined by the
+>   * task's uclamp::bucket_id is refcounted on that rq. This also immediately
+> @@ -818,8 +872,12 @@ static inline void uclamp_rq_inc_id(struct task_struct *p, struct rq *rq,
+>         struct uclamp_se *uc_se = &p->uclamp[clamp_id];
+>         struct uclamp_bucket *bucket;
+>
+> +       /* Update task effective clamp */
+> +       p->uclamp[clamp_id] = uclamp_eff_get(p, clamp_id);
+> +
+>         bucket = &uc_rq->bucket[uc_se->bucket_id];
+>         bucket->tasks++;
+> +       uc_se->active = true;
+>
+>         uclamp_idle_reset(rq, clamp_id, uc_se->value);
+>
+> @@ -856,6 +914,7 @@ static inline void uclamp_rq_dec_id(struct task_struct *p, struct rq *rq,
+>         SCHED_WARN_ON(!bucket->tasks);
+>         if (likely(bucket->tasks))
+>                 bucket->tasks--;
+> +       uc_se->active = false;
+>
+>         /*
+>          * Keep "local max aggregation" simple and accept to (possibly)
+> @@ -909,8 +968,69 @@ static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
+>                 uclamp_rq_dec_id(p, rq, clamp_id);
+>  }
+>
+> +int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
+> +                               void __user *buffer, size_t *lenp,
+> +                               loff_t *ppos)
+> +{
+> +       int old_min, old_max;
+> +       static DEFINE_MUTEX(mutex);
+> +       int result;
+> +
+> +       mutex_lock(&mutex);
+> +       old_min = sysctl_sched_uclamp_util_min;
+> +       old_max = sysctl_sched_uclamp_util_max;
+> +
+> +       result = proc_dointvec(table, write, buffer, lenp, ppos);
+> +       if (result)
+> +               goto undo;
+> +       if (!write)
+> +               goto done;
+> +
+> +       if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max ||
+> +           sysctl_sched_uclamp_util_max > SCHED_CAPACITY_SCALE) {
+> +               result = -EINVAL;
+> +               goto undo;
+> +       }
+> +
+> +       if (old_min != sysctl_sched_uclamp_util_min) {
+> +               uclamp_default[UCLAMP_MIN].value =
+> +                       sysctl_sched_uclamp_util_min;
+> +               uclamp_default[UCLAMP_MIN].bucket_id =
+> +                       uclamp_bucket_id(sysctl_sched_uclamp_util_min);
+> +       }
+> +       if (old_max != sysctl_sched_uclamp_util_max) {
+> +               uclamp_default[UCLAMP_MAX].value =
+> +                       sysctl_sched_uclamp_util_max;
+> +               uclamp_default[UCLAMP_MAX].bucket_id =
+> +                       uclamp_bucket_id(sysctl_sched_uclamp_util_max);
+> +       }
+> +
+> +       /*
+> +        * Updating all the RUNNABLE task is expensive, keep it simple and do
+> +        * just a lazy update at each next enqueue time.
+> +        */
+> +       goto done;
+> +
+> +undo:
+> +       sysctl_sched_uclamp_util_min = old_min;
+> +       sysctl_sched_uclamp_util_max = old_max;
+> +done:
+> +       mutex_unlock(&mutex);
+> +
+> +       return result;
+> +}
+> +
+> +static void uclamp_fork(struct task_struct *p)
+> +{
+> +       unsigned int clamp_id;
+> +
+> +       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
+> +               p->uclamp[clamp_id].active = false;
+> +}
+> +
+>  static void __init init_uclamp(void)
+>  {
+> +       struct uclamp_se uc_max = {};
+>         unsigned int clamp_id;
+>         int cpu;
+>
+> @@ -920,16 +1040,23 @@ static void __init init_uclamp(void)
+>         }
+>
+>         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> -               struct uclamp_se *uc_se = &init_task.uclamp[clamp_id];
+> +               struct uclamp_se *uc_se = &init_task.uclamp_req[clamp_id];
+>
+>                 uc_se->value = uclamp_none(clamp_id);
+>                 uc_se->bucket_id = uclamp_bucket_id(uc_se->value);
+>         }
+> +
+> +       /* System defaults allow max clamp values for both indexes */
+> +       uc_max.value = uclamp_none(UCLAMP_MAX);
+> +       uc_max.bucket_id = uclamp_bucket_id(uc_max.value);
+> +       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
+> +               uclamp_default[clamp_id] = uc_max;
+>  }
+>
+>  #else /* CONFIG_UCLAMP_TASK */
+>  static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
+>  static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
+> +static inline void uclamp_fork(struct task_struct *p) { }
+>  static inline void init_uclamp(void) { }
+>  #endif /* CONFIG_UCLAMP_TASK */
+>
+> @@ -2530,6 +2657,8 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
+>          */
+>         p->prio = current->normal_prio;
+>
+> +       uclamp_fork(p);
+> +
+>         /*
+>          * Revert to default priority/policy on fork if requested.
+>          */
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 987ae08147bf..72277f09887d 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -446,6 +446,22 @@ static struct ctl_table kern_table[] = {
+>                 .mode           = 0644,
+>                 .proc_handler   = sched_rr_handler,
+>         },
+> +#ifdef CONFIG_UCLAMP_TASK
+> +       {
+> +               .procname       = "sched_uclamp_util_min",
+> +               .data           = &sysctl_sched_uclamp_util_min,
+> +               .maxlen         = sizeof(unsigned int),
+> +               .mode           = 0644,
+> +               .proc_handler   = sysctl_sched_uclamp_handler,
+> +       },
+> +       {
+> +               .procname       = "sched_uclamp_util_max",
+> +               .data           = &sysctl_sched_uclamp_util_max,
+> +               .maxlen         = sizeof(unsigned int),
+> +               .mode           = 0644,
+> +               .proc_handler   = sysctl_sched_uclamp_handler,
+> +       },
+> +#endif
+>  #ifdef CONFIG_SCHED_AUTOGROUP
+>         {
+>                 .procname       = "sched_autogroup_enabled",
+> --
+> 2.20.1
+>
