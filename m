@@ -6,33 +6,33 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ABF5C10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:47:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D412EC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E5DE1206B6
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:47:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A06ED206B6
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389509AbfDROrl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 10:47:41 -0400
-Received: from shell.v3.sk ([90.176.6.54]:48061 "EHLO shell.v3.sk"
+        id S2389539AbfDROrz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 10:47:55 -0400
+Received: from shell.v3.sk ([90.176.6.54]:48053 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389480AbfDROri (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Apr 2019 10:47:38 -0400
+        id S2389464AbfDROrh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Apr 2019 10:47:37 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 4AFE41027A8;
-        Thu, 18 Apr 2019 16:47:35 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id EFA561027BC;
+        Thu, 18 Apr 2019 16:47:33 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id d77oAr1bV4rf; Thu, 18 Apr 2019 16:47:19 +0200 (CEST)
+        with ESMTP id K--TdcROK2jY; Thu, 18 Apr 2019 16:47:19 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id C01611027AD;
-        Thu, 18 Apr 2019 16:47:08 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 416781027A8;
+        Thu, 18 Apr 2019 16:47:09 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id lK6YreQyY5ju; Thu, 18 Apr 2019 16:47:04 +0200 (CEST)
+        with ESMTP id NHJD_dvIXovh; Thu, 18 Apr 2019 16:47:05 +0200 (CEST)
 Received: from belphegor.brq.redhat.com (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 5213C1027BA;
+        by zimbra.v3.sk (Postfix) with ESMTPSA id D116C1027BF;
         Thu, 18 Apr 2019 16:47:01 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     Sebastian Reichel <sre@kernel.org>
@@ -41,11 +41,10 @@ Cc:     Darren Hart <dvhart@infradead.org>,
         Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>,
-        Pavel Machek <pavel@ucw.cz>,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH v7 09/10] power: supply: olpc_battery: Add OLPC XO 1.75 support
-Date:   Thu, 18 Apr 2019 16:46:54 +0200
-Message-Id: <20190418144655.18758-10-lkundrak@v3.sk>
+Subject: [PATCH v7 10/10] power: supply: olpc_battery: Have the framework register sysfs files for us
+Date:   Thu, 18 Apr 2019 16:46:55 +0200
+Message-Id: <20190418144655.18758-11-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
 References: <20190418144655.18758-1-lkundrak@v3.sk>
@@ -56,13 +55,14 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190418144654.lxNUvNx4f87jsaKuA9cLcqXmnnabkcbMbUZsK-CVO6E@z>
+Message-ID: <20190418144655.6aDGuYy8dpQm9IrqWuMSW1NHzKqFV-07qETFcePUu6E@z>
 
-The battery and the protocol are essentially the same as OLPC XO 1.5,
-but the responses from the EC are LSB first.
+The power framework gained ability to register groups of sysfs
+attributes in commit cef8fe6a382c ("power: supply: core: add support for
+custom sysfs attributes").
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Suggested-by: Sebastian Reichel <sre@kernel.org>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
@@ -70,107 +70,149 @@ Changes since v6:
 - Collect review tag from Sebastian Reichel
 
 Changes since v5:
-- s/int little_endian/bool little_endian/
+- Added this patch
 
-Changes since v2:
-- Fix the version conditional
-
-Changes since v1:
-- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
-- s/u16 ec_byte/u16 ec_word/
-
- drivers/power/supply/olpc_battery.c | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
+ drivers/power/supply/olpc_battery.c | 64 ++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index 8be44c717d85..0d67158c13d6 100644
+index 0d67158c13d6..c628d3a47e14 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -58,6 +58,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_bat;
- 	char bat_serial[17];
- 	bool new_proto;
-+	bool little_endian;
- };
-=20
- /*********************************************************************
-@@ -323,6 +324,14 @@ static int olpc_bat_get_voltage_max_design(union pow=
-er_supply_propval *val)
- 	return ret;
+@@ -551,7 +551,7 @@ static ssize_t olpc_bat_eeprom_read(struct file *filp=
+, struct kobject *kobj,
+ 	return count;
  }
 =20
-+static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
-+{
-+	if (data->little_endian)
-+		return le16_to_cpu(ec_word);
-+	else
-+		return be16_to_cpu(ec_word);
-+}
+-static const struct bin_attribute olpc_bat_eeprom =3D {
++static struct bin_attribute olpc_bat_eeprom =3D {
+ 	.attr =3D {
+ 		.name =3D "eeprom",
+ 		.mode =3D S_IRUGO,
+@@ -575,7 +575,7 @@ static ssize_t olpc_bat_error_read(struct device *dev=
+,
+ 	return sprintf(buf, "%d\n", ec_byte);
+ }
+=20
+-static const struct device_attribute olpc_bat_error =3D {
++static struct device_attribute olpc_bat_error =3D {
+ 	.attr =3D {
+ 		.name =3D "error",
+ 		.mode =3D S_IRUGO,
+@@ -583,6 +583,27 @@ static const struct device_attribute olpc_bat_error =
+=3D {
+ 	.show =3D olpc_bat_error_read,
+ };
+=20
++static struct attribute *olpc_bat_sysfs_attrs[] =3D {
++	&olpc_bat_error.attr,
++	NULL
++};
++
++static struct bin_attribute *olpc_bat_sysfs_bin_attrs[] =3D {
++	&olpc_bat_eeprom,
++	NULL
++};
++
++static const struct attribute_group olpc_bat_sysfs_group =3D {
++	.attrs =3D olpc_bat_sysfs_attrs,
++	.bin_attrs =3D olpc_bat_sysfs_bin_attrs,
++
++};
++
++static const struct attribute_group *olpc_bat_sysfs_groups[] =3D {
++	&olpc_bat_sysfs_group,
++	NULL
++};
 +
  /*********************************************************************
-  *		Battery properties
+  *		Initialisation
   *********************************************************************/
-@@ -395,7 +404,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
- 		if (ret)
- 			return ret;
+@@ -615,7 +636,8 @@ static int olpc_battery_suspend(struct platform_devic=
+e *pdev,
 =20
--		val->intval =3D (s16)be16_to_cpu(ec_word) * 9760L / 32;
-+		val->intval =3D ecword_to_cpu(data, ec_word) * 9760L / 32;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
-@@ -403,7 +412,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
- 		if (ret)
- 			return ret;
+ static int olpc_battery_probe(struct platform_device *pdev)
+ {
+-	struct power_supply_config psy_cfg =3D {};
++	struct power_supply_config bat_psy_cfg =3D {};
++	struct power_supply_config ac_psy_cfg =3D {};
+ 	struct olpc_battery_data *data;
+ 	uint8_t status;
+ 	uint8_t ecver;
+@@ -654,10 +676,11 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
 =20
--		val->intval =3D (s16)be16_to_cpu(ec_word) * 15625L / 120;
-+		val->intval =3D ecword_to_cpu(data, ec_word) * 15625L / 120;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		ret =3D olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
-@@ -434,21 +443,21 @@ static int olpc_bat_get_property(struct power_suppl=
-y *psy,
- 		if (ret)
- 			return ret;
+ 	/* Ignore the status. It doesn't actually matter */
 =20
--		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
-+		val->intval =3D ecword_to_cpu(data, ec_word) * 10 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
- 		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
+-	psy_cfg.of_node =3D pdev->dev.of_node;
+-	psy_cfg.drv_data =3D data;
++	ac_psy_cfg.of_node =3D pdev->dev.of_node;
++	ac_psy_cfg.drv_data =3D data;
 =20
--		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
-+		val->intval =3D (int)ecword_to_cpu(data, ec_word) * 10 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
- 		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
+-	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,=
+ &psy_cfg);
++	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,
++								&ac_psy_cfg);
+ 	if (IS_ERR(data->olpc_ac))
+ 		return PTR_ERR(data->olpc_ac);
 =20
--		val->intval =3D (s16)be16_to_cpu(ec_word) * 6250 / 15;
-+		val->intval =3D ecword_to_cpu(data, ec_word) * 6250 / 15;
- 		break;
- 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret =3D olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
-@@ -622,7 +631,11 @@ static int olpc_battery_probe(struct platform_device=
- *pdev)
- 	if (ret)
- 		return ret;
+@@ -671,37 +694,21 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
+ 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
+ 	}
 =20
--	if (ecver > 0x44) {
-+	if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
-+		/* XO 1.75 */
-+		data->new_proto =3D true;
-+		data->little_endian =3D true;
-+	} else if (ecver > 0x44) {
- 		/* XO 1 or 1.5 with a new EC firmware. */
- 		data->new_proto =3D true;
- 	} else if (ecver < 0x44) {
+-	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
+c, &psy_cfg);
++	bat_psy_cfg.of_node =3D pdev->dev.of_node;
++	bat_psy_cfg.drv_data =3D data;
++	bat_psy_cfg.attr_grp =3D olpc_bat_sysfs_groups;
++
++	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
+c,
++								&bat_psy_cfg);
+ 	if (IS_ERR(data->olpc_bat))
+ 		return PTR_ERR(data->olpc_bat);
+=20
+-	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+-	if (ret)
+-		return ret;
+-
+-	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
+-	if (ret)
+-		goto error_failed;
+-
+ 	if (olpc_ec_wakeup_available()) {
+ 		device_set_wakeup_capable(&data->olpc_ac->dev, true);
+ 		device_set_wakeup_capable(&data->olpc_bat->dev, true);
+ 	}
+=20
+ 	return 0;
+-
+-error_failed:
+-	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+-	return ret;
+-}
+-
+-static int olpc_battery_remove(struct platform_device *pdev)
+-{
+-	struct olpc_battery_data *data =3D platform_get_drvdata(pdev);
+-
+-	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
+-	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+-	return 0;
+ }
+=20
+ static const struct of_device_id olpc_battery_ids[] =3D {
+@@ -717,7 +724,6 @@ static struct platform_driver olpc_battery_driver =3D=
+ {
+ 		.of_match_table =3D olpc_battery_ids,
+ 	},
+ 	.probe =3D olpc_battery_probe,
+-	.remove =3D olpc_battery_remove,
+ 	.suspend =3D olpc_battery_suspend,
+ };
+=20
 --=20
 2.21.0
 
