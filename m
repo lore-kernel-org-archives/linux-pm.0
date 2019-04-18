@@ -2,152 +2,174 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CB6DC10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 13:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43E2CC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 13:39:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A75020674
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 13:10:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0ECED218DA
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 13:39:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UOuRcBar"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="ZP95B7Kq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388850AbfDRNKy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 09:10:54 -0400
-Received: from mail-it1-f193.google.com ([209.85.166.193]:38840 "EHLO
-        mail-it1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731317AbfDRNKy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 09:10:54 -0400
-Received: by mail-it1-f193.google.com with SMTP id f22so3191861ita.3;
-        Thu, 18 Apr 2019 06:10:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=vpMXmxZ2vidC1+tTzRGYY69K2E9XDn3rrfvzVtfRwSI=;
-        b=UOuRcBaryWGqKy1Amo79/HRja2K8upQS6GpxUQXj95ktImC3xngw8ghozDWG9KHAF0
-         xaxk720mQNtT6I13X+GPGij0LHH2zBNYug+mcW65vKfP7iw8S2etJQdc1HdYw0ykXrUB
-         hB59LKb0puark+pTn30TD22HKwGROaklNHHgwgHuysaPwlKlehEHSYWTiWXyihIIaf45
-         9VLJChbPbrK2iBbBua9RZA7xEDR5PUHGJuy/JarYzZtAH2m/t9BOjnYpHbT+mUJ4gERw
-         tXG93MQ1bywPzsmzZWzxWTBnO++dAwE7FKqlL4jXF/QAmfEWNWbBXxXs2KgoJh6kKyvT
-         0E2Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=vpMXmxZ2vidC1+tTzRGYY69K2E9XDn3rrfvzVtfRwSI=;
-        b=kD0AG5YjKULb/SMNPWLO+LFpZgBbgEN2F4OtdBEsY3Jg5LiL6wSR9Jiydn6BmmJgYY
-         iMSVVe8axSAb+8/BtFkMJuwuZPFOgYyQG9jsickaeaMDl5S3cMDCnmOk/hoeY49dWaDQ
-         dckPLBZSQ1NdSGPbIBW/awYDxBif8doN3Nh6Yg2k5KqNXPB3/HXr7pZnIw9St8DI13J2
-         wkcErRDYSyEkaiBJKXLoUDltRKlpkQVRaTbUXiTFg2LMF8/t/Tph9Eeq+V1d0Ag26Poj
-         yx7AKxECqk6Lug+k25hN2433mZrsAlGUhy0Nxul1Lk1rn/Ip8lgoKSWuZSwTW/YSIk4Q
-         HhUw==
-X-Gm-Message-State: APjAAAXERavuoB9RdW8cVbhZ++OBSaNM9HrRe9z7/UU0SNEMNCwuT9NW
-        ipo/ATxWAtlaQFyhjhLYra4g6Oq9mvcoIdvmc3Q=
-X-Google-Smtp-Source: APXvYqwWn8/uJUXYr2KdgDuuMPXwiwyS7yMD+LyNLKyxWb5eInfrTH9+C2C0PNC6hiWopix9GUDftsg9ZPSR/z5fzcI=
-X-Received: by 2002:a24:6c54:: with SMTP id w81mr3193193itb.78.1555593053302;
- Thu, 18 Apr 2019 06:10:53 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190416155209.24216-1-tiny.windzz@gmail.com> <20190416155209.24216-3-tiny.windzz@gmail.com>
- <20190417083000.cwzvhlpbxqoifosw@flea>
-In-Reply-To: <20190417083000.cwzvhlpbxqoifosw@flea>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Thu, 18 Apr 2019 21:10:25 +0800
-Message-ID:
- <CAEExFWvmpnJ8EyvAejVtvBQHdVVGFhpSn7zCMmx1BSre-gt+Ug@mail.gmail.com>
-Subject: Re: [PATCH v4 2/2] dt-bindings: cpufreq: Document allwinner,sun50i-h6-operating-points
-To:     Maxime Ripard <maxime.ripard@bootlin.com>
-Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        robh+dt@kernel.org, mark.rutland@arm.com,
-        Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net,
-        davem@davemloft.net, mchehab+samsung@kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S2388920AbfDRNi7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 09:38:59 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:49742 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389125AbfDRNi7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 09:38:59 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190418133857euoutp0253f963ecc03e0ca5201de0b924eff8dd~WlSwNZWxo0683106831euoutp02a
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 13:38:57 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190418133857euoutp0253f963ecc03e0ca5201de0b924eff8dd~WlSwNZWxo0683106831euoutp02a
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1555594737;
+        bh=HLV8RfTTYMJHCpoVzMgMpnDdAuBIjRTs2a5rElTq130=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=ZP95B7Kq2OhdrD+IOB1OVcIXt4sgsgRwrXs5Ekccd+5PyEFoScMNLlB2Qaucp5J5s
+         ue9sBs0VZZXjmBSkHfKbCOw87Ksjq9sE1IJvJUug6XumXrbCP4PQ28TNqKxO0oc3KM
+         fkwJzbCgzG7OFVya9jNeF7rwHaQWVMEI9eKyGx5I=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190418133856eucas1p2eeda585b068536cdbbc766367c0b1780~WlSvf-CXB0537305373eucas1p2m;
+        Thu, 18 Apr 2019 13:38:56 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id 12.D2.04298.0FD78BC5; Thu, 18
+        Apr 2019 14:38:56 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190418133855eucas1p1db74567290fce23da354ab09d69741e6~WlSuesWtG2247222472eucas1p1_;
+        Thu, 18 Apr 2019 13:38:55 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190418133855eusmtrp2447dce42e5066c5bd8d1a5fa7c7cdc13~WlSuQrpWF2812628126eusmtrp2C;
+        Thu, 18 Apr 2019 13:38:55 +0000 (GMT)
+X-AuditID: cbfec7f2-f2dff700000010ca-94-5cb87df0a06d
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 9B.55.04140.FED78BC5; Thu, 18
+        Apr 2019 14:38:55 +0100 (BST)
+Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20190418133854eusmtip2e617380c23a9387f6e6b8d92b32c051b~WlSthc5--2312923129eusmtip2E;
+        Thu, 18 Apr 2019 13:38:54 +0000 (GMT)
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
+        mark.rutland@arm.com, cw00.choi@samsung.com,
+        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
+        s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org,
+        l.luba@partner.samsung.com, willy.mh.wolff.ml@gmail.com
+Subject: [PATCH v2 4/4] DT: arm: exynos4412: add event data type which is
+ monitored
+Date:   Thu, 18 Apr 2019 15:38:32 +0200
+Message-Id: <1555594712-18341-5-git-send-email-l.luba@partner.samsung.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrCKsWRmVeSWpSXmKPExsWy7djP87ofanfEGMy6oG6xccZ6VovrX56z
+        Wsw/co7Vov/xa2aL8+c3sFucbXrDbnGrQcZi0+NrrBaXd81hs/jce4TRYsb5fUwWa4/cZbdY
+        ev0ik8XtxhVsFq17j7BbHH7Tzmrx7cQjRgdBjzXz1jB67Jx1l91j06pONo/NS+o9Dr7bw+TR
+        t2UVo8fnTXIB7FFcNimpOZllqUX6dglcGYtXnmMtWMdbsfvRctYGxlOcXYycHBICJhKdZ7sZ
+        uxi5OIQEVjBKfD/QzArhfGGU+Lf2CjOE85lRYv7hDqAyDrCWF5cFIeLLGSWetU5nh+s4f3IR
+        K0gRm4CexI5VhSArRAQWM0p8OxwFUsMssIxJYl/zJyaQhLBAqET37zesIDaLgKrEljlnmEFs
+        XgEvievTZrND3CcncfNcJ1icU8Bb4suufWDnSQicYpeY1z+FEaLIRaJnxWFWCFtY4tXxLVDN
+        MhL/d85ngrCLJRp6F0LV10g87p8LVWMtcfj4RbCjmQU0Jdbv0ocIO0rce/aHDeJhPokbbwVB
+        wsxA5qRt05khwrwSHW1CENUaElt6LkAtEpNYvmYa1HAPiZ0HFkLDcB6jxK1fn9knMMrPQli2
+        gJFxFaN4amlxbnpqsWFearlecWJucWleul5yfu4mRmBaOv3v+KcdjF8vJR1iFOBgVOLhlcjc
+        ESPEmlhWXJl7iFGCg1lJhNcxZUuMEG9KYmVValF+fFFpTmrxIUZpDhYlcd5qhgfRQgLpiSWp
+        2ampBalFMFkmDk6pBkaJw+qf9SYWthcwdX7bOVOwVzlIdAcPpxOfd1Zb+vllnYw9RYE/7u75
+        H9udctRkOmdhacVN2fpMVb56vz96FrEt1rOKUv1NV7gmsZUy+N/Qll+zUi309eeun48SODVt
+        IhZs9hA+Me9nDHe3jofYx4OVCmXKmz6dlueR3pd5zdhSOFK32PSXEktxRqKhFnNRcSIAK+yv
+        oEcDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprOIsWRmVeSWpSXmKPExsVy+t/xe7rva3fEGCybrWSxccZ6VovrX56z
+        Wsw/co7Vov/xa2aL8+c3sFucbXrDbnGrQcZi0+NrrBaXd81hs/jce4TRYsb5fUwWa4/cZbdY
+        ev0ik8XtxhVsFq17j7BbHH7Tzmrx7cQjRgdBjzXz1jB67Jx1l91j06pONo/NS+o9Dr7bw+TR
+        t2UVo8fnTXIB7FF6NkX5pSWpChn5xSW2StGGFkZ6hpYWekYmlnqGxuaxVkamSvp2NimpOZll
+        qUX6dgl6GYtXnmMtWMdbsfvRctYGxlOcXYwcHBICJhIvLgt2MXJxCAksZZT4vv89cxcjJ1Bc
+        TGLSvu3sELawxJ9rXWwQRZ8YJe7vncYG0swmoCexY1UhSFxEYDmjxLFVb5lBHGaBbUwSe67s
+        ZgTpFhYIllgzbS0biM0ioCqxZc4ZsA28Al4S16fNhtogJ3HzXCdYnFPAW+LLrn2sILYQUM2+
+        HT9YJjDyLWBkWMUoklpanJueW2ykV5yYW1yal66XnJ+7iREYKduO/dyyg7HrXfAhRgEORiUe
+        XonMHTFCrIllxZW5hxglOJiVRHgdU7bECPGmJFZWpRblxxeV5qQWH2I0BTpqIrOUaHI+MIrz
+        SuINTQ3NLSwNzY3Njc0slMR5zxtURgkJpCeWpGanphakFsH0MXFwSjUw6ipWHyz9u8NVUHP3
+        NxcL464re9iq3Bj7BY5fYlaf8E/1xpdL92NXvJPNdTp/XXb6TKWKW4c/fHjBllby6clZBcsk
+        TnP2wkqZvB0X0jau4XEq1t9zbqV7tWxlz8YOrZlRbddCm2+fnbGVMf61fEVQ/xXjx6G+Haf7
+        kvwtFuV/dbQ6a/bE/Ms/JZbijERDLeai4kQAMTMN4qoCAAA=
+X-CMS-MailID: 20190418133855eucas1p1db74567290fce23da354ab09d69741e6
+X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190418133855eucas1p1db74567290fce23da354ab09d69741e6
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190418133855eucas1p1db74567290fce23da354ab09d69741e6
+References: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190418133855eucas1p1db74567290fce23da354ab09d69741e6@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418131025.GQeNN6d-HZkphvoyOpxSzydHVJxMJTJU_3D1UdEdx1A@z>
+Message-ID: <20190418133832.N26OJYihhL-iRSBvMIkGMPm4NfIA0YOEplIk9SOlS0c@z>
 
-On Wed, Apr 17, 2019 at 4:30 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->
-> On Tue, Apr 16, 2019 at 11:52:09AM -0400, Yangtao Li wrote:
-> > Allwinner Process Voltage Scaling Tables defines the voltage and
-> > frequency value based on the speedbin blown in the efuse combination.
-> > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> > provide the OPP framework with required information.
-> > This is used to determine the voltage and frequency value for each
-> > OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> >
-> > The "allwinner,sun50i-h6-operating-points" DT extends the
-> > "operating-points-v2"
-> > with following parameters:
-> > - nvmem-cells (NVMEM area containig the speedbin information)
-> > - opp-microvolt-<name>: voltage in micro Volts.
-> >   At runtime, the platform can pick a <name> and matching
-> >   opp-microvolt-<name> property.
-> >                       HW:             <name>:
-> >                       sun50iw-h6      speed0 speed1 speed2
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
-> >  1 file changed, 167 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> > new file mode 100644
-> > index 000000000000..3cb39c6caec3
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> > @@ -0,0 +1,167 @@
-> > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
-> > +===================================
-> > +
-> > +For some SoCs, the CPU frequency subset and voltage value of each OPP
-> > +varies based on the silicon variant in use. Allwinner Process Voltage
-> > +Scaling Tables defines the voltage and frequency value based on the
-> > +speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
-> > +reads the efuse value from the SoC to provide the OPP framework with
-> > +required information.
-> > +
-> > +Required properties:
-> > +--------------------
-> > +In 'cpus' nodes:
-> > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> > +
-> > +In 'operating-points-v2' table:
-> > +- compatible: Should be
-> > +     - 'allwinner,sun50i-h6-operating-points'.
-> > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> > +             efuse registers that has information about the speedbin
-> > +             that is used to select the right frequency/voltage value
-> > +             pair. Please refer the for nvmem-cells bindings
-> > +             Documentation/devicetree/bindings/nvmem/nvmem.txt and
-> > +             also examples below.
-> > +
-> > +In every OPP node:
-> > +- opp-microvolt-<name>: Voltage in micro Volts.
-> > +                     At runtime, the platform can pick a <name> and
-> > +                     matching opp-microvolt-<name> property.
-> > +                     [See: opp.txt]
-> > +                     HW:             <name>:
-> > +                     sun50iw-h6      speed0 speed1 speed2
->
-> There's a typo here (and in your commit log), it should be sun50i-h6
-> instead of sun50iw-h6
->
-> Once fixed:
-> Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
-Another has been sent.
+The patch adds new field in the PPMU event which shows explicitly
+what kind of data the event is monitoring. It is possible to change it
+using defined values in exynos_ppmu.h file.
 
-Regards,
-Yangtao
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+index 3a3b2fa..549faba 100644
+--- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+@@ -6,12 +6,16 @@
+  * Author: Chanwoo Choi <cw00.choi@samsung.com>
+  */
+ 
++#include <dt-bindings/pmu/exynos_ppmu.h>
++
+ &ppmu_dmc0 {
+        status = "okay";
+ 
+        events {
+ 	       ppmu_dmc0_3: ppmu-event3-dmc0 {
+ 		       event-name = "ppmu-event3-dmc0";
++		       event-data-type = <(PPMU_RO_DATA_CNT |
++					   PPMU_WO_DATA_CNT)>;
+ 	       };
+        };
+ };
+@@ -22,6 +26,8 @@
+        events {
+ 	       ppmu_dmc1_3: ppmu-event3-dmc1 {
+ 		       event-name = "ppmu-event3-dmc1";
++		       event-data-type = <(PPMU_RO_DATA_CNT |
++					   PPMU_WO_DATA_CNT)>;
+ 	       };
+        };
+ };
+@@ -32,6 +38,8 @@
+        events {
+ 	       ppmu_leftbus_3: ppmu-event3-leftbus {
+ 		       event-name = "ppmu-event3-leftbus";
++		       event-data-type = <(PPMU_RO_DATA_CNT |
++					   PPMU_WO_DATA_CNT)>;
+ 	       };
+        };
+ };
+@@ -42,6 +50,8 @@
+        events {
+ 	       ppmu_rightbus_3: ppmu-event3-rightbus {
+ 		       event-name = "ppmu-event3-rightbus";
++		       event-data-type = <(PPMU_RO_DATA_CNT |
++					   PPMU_WO_DATA_CNT)>;
+ 	       };
+        };
+ };
+-- 
+2.7.4
+
