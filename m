@@ -1,52 +1,51 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
-Date: Thu, 18 Apr 2019 13:03:05 -0700
-Message-ID: <CAHQ1cqGNKr0M4KZmX3gG+Wk4N39VezGO15VxEC6rzbLdzHQ-7w@mail.gmail.com>
-References: <20190405073020.10361-1-andrew.smirnov@gmail.com> <20190417223708.4irrwrm4q7vig3vh@earth.universe>
+From: Patrick Venture <venture@google.com>
+Subject: Re: [PATCH 2/6] hwmon: (aspeed-pwm-tacho) Use devm_thermal_of_cooling_device_register
+Date: Thu, 18 Apr 2019 13:35:31 -0700
+Message-ID: <CAO=notxzQUyRJ4L7w6o4Cdbwp-Sg4FXyMDgJUN-7YPm9JgiQuw@mail.gmail.com>
+References: <1555617500-10862-1-git-send-email-linux@roeck-us.net> <1555617500-10862-3-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417223708.4irrwrm4q7vig3vh@earth.universe>
+In-Reply-To: <1555617500-10862-3-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-hwmon@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-aspeed@lists.ozlabs.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, OpenBMC Maillist <openbmc@lists.ozlabs.org>, linux-pm@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Kamil Debski <kamil@wypas.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.l>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 17, 2019 at 7:35 PM Sebastian Reichel <sre@kernel.org> wrote:
+On Thu, Apr 18, 2019 at 12:58 PM Guenter Roeck <linux@roeck-us.net> wrote:
 >
-> Hi,
+> Use devm_thermal_of_cooling_device_register() to register the cooling
+> device. As a side effect, this fixes a driver bug:
+> thermal_cooling_device_unregister() was not called on removal.
 >
-> On Fri, Apr 05, 2019 at 12:30:20AM -0700, Andrey Smirnov wrote:
-> > Fix a similar endless event loop as was done in commit 8dcf32175b4e
-> > ("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
-> >
-> >   The culprit is the dev_dbg printk in the i2c uevent handler. If
-> >   this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
-> >   in an endless loop with systemd-journald.
-> >
-> >   This happens if user-space scans the system log and reads the uevent
-> >   file to get information about a newly created device, which seems
-> >   fair use to me. Unfortunately reading the "uevent" file uses the
-> >   same function that runs for creating the uevent for a new device,
-> >   generating the next syslog entry
-> >
-> > Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
-> > in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
-> > seems to have been fixed. Change debug prints to use pr_debug insted
-> > to resolve the issue.
-> >
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > ---
->
-> I think we should just drop these debug messages, just like I2C did.
-> They don't offer any useful information considering the info is already
-> exposed to userspace via the uevent.
+> Fixes: f198907d2ff6d ("hwmon: (aspeed-pwm-tacho) cooling device support.")
+> Cc: Mykola Kostenok <c_mykolak@mellanox.com>
+> Cc: Joel Stanley <joel@jms.id.au>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-OK, sounds good, will do in v2.
+Reviewed-by: Patrick Venture <venture@google.com>
 
-Thanks,
-Andrey Smirnov
+> ---
+>  drivers/hwmon/aspeed-pwm-tacho.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+> index c4dd6301e7c8..0daf0b32aa4a 100644
+> --- a/drivers/hwmon/aspeed-pwm-tacho.c
+> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
+> @@ -830,10 +830,8 @@ static int aspeed_create_pwm_cooling(struct device *dev,
+>         }
+>         snprintf(cdev->name, MAX_CDEV_NAME_LEN, "%pOFn%d", child, pwm_port);
+>
+> -       cdev->tcdev = thermal_of_cooling_device_register(child,
+> -                                                        cdev->name,
+> -                                                        cdev,
+> -                                                        &aspeed_pwm_cool_ops);
+> +       cdev->tcdev = devm_thermal_of_cooling_device_register(dev, child,
+> +                                       cdev->name, cdev, &aspeed_pwm_cool_ops);
+>         if (IS_ERR(cdev->tcdev))
+>                 return PTR_ERR(cdev->tcdev);
+>
+> --
+> 2.7.4
+>
