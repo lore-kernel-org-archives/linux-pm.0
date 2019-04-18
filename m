@@ -1,213 +1,179 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 1/2] power_supply: Add more charge types and
- CHARGE_CONTROL_* properties
-Date: Wed, 17 Apr 2019 23:40:22 +0200
-Message-ID: <20190417214022.7jk3usygcpnls3pr@earth.universe>
-References: <20190417004320.232200-1-ncrews@chromium.org>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v5] arm64: dts: ls1088a: add one more thermal
+ zone node
+Date: Thu, 18 Apr 2019 03:28:56 +0000
+Message-ID: <VI1PR04MB4333D0D121B60E2CDCE820BEF3260@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190411083236.9377-1-andy.tang@nxp.com>
+ <915c86d8-d00e-f1e1-e7f5-24bc225c8e42@linaro.org>
+ <AM6PR04MB4326561F037194D84CEB011AF3280@AM6PR04MB4326.eurprd04.prod.outlook.com>
+ <6be740a0-aaa7-6b49-ba82-8d04d47b2339@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ioz2ovoo2ntuswrd"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190417004320.232200-1-ncrews@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Crews <ncrews@chromium.org>
-Cc: enric.balletbo@collabora.com, bleung@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <6be740a0-aaa7-6b49-ba82-8d04d47b2339@linaro.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---ioz2ovoo2ntuswrd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-The changes itself look all good to me, but this does multiple
-things in a single patch, so please split it into multiple commits.
-
--- Sebastian
-
-On Tue, Apr 16, 2019 at 06:43:19PM -0600, Nick Crews wrote:
-> Add "Standard", "Adaptive", and "Custom" modes to the charge_type
-> property, to expand the existing "Trickle" and "Fast" modes.
-> In addition, add POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD
-> and POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD properties, to expand
-> the existing CHARGE_CONTROL_* properties. I am adding them in order
-> to support a new Chrome OS device, but these properties should be
-> general enough that they can be used on other devices.
->=20
-> The meaning of "Standard" is obvious, but "Adaptive" and "Custom" are
-> more tricky: "Adaptive" means that the charge controller uses some
-> custom algorithm to change the charge type automatically, with no
-> configuration needed. "Custom" means that the charge controller uses the
-> POWER_SUPPLY_PROP_CHARGE_CONTROL_* properties as configuration for some
-> other algorithm. For example, in the use case that I am supporting,
-> this means the battery begins charging when the percentage
-> level drops below POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD and
-> charging ceases when the percentage level goes above
-> POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD.
->=20
-> v4 changes:
-> - Add documentation for the new properties, and add documentation for
->   the the previously missing charge_control_limit and
->   charge_control_limit_max properties.
->=20
-> Signed-off-by: Nick Crews <ncrews@chromium.org>
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 51 +++++++++++++++++++--
->  drivers/power/supply/power_supply_sysfs.c   |  4 +-
->  include/linux/power_supply.h                | 10 +++-
->  3 files changed, 59 insertions(+), 6 deletions(-)
->=20
-> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/=
-ABI/testing/sysfs-class-power
-> index 5e23e22dce1b..b77e30b9014e 100644
-> --- a/Documentation/ABI/testing/sysfs-class-power
-> +++ b/Documentation/ABI/testing/sysfs-class-power
-> @@ -114,15 +114,60 @@ Description:
->  		Access: Read
->  		Valid values: Represented in microamps
-> =20
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_limit
-> +Date:		Oct 2012
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Maximum allowable charging current. Used for charge rate
-> +		throttling for thermal cooling or improving battery health.
-> +
-> +		Access: Read, Write
-> +		Valid values: Represented in microamps
-> +
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_limit_max
-> +Date:		Oct 2012
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Maximum legal value for the charge_control_limit property.
-> +
-> +		Access: Read
-> +		Valid values: Represented in microamps
-> +
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_start_thresh=
-old
-> +Date:		April 2019
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Represents a battery percentage level, below which charging will
-> +		begin.
-> +
-> +		Access: Read, Write
-> +		Valid values: 0 - 100 (percent)
-> +
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_end_threshold
-> +Date:		April 2019
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Represents a battery percentage level, above which charging will
-> +		stop.
-> +
-> +		Access: Read, Write
-> +		Valid values: 0 - 100 (percent)
-> +
->  What:		/sys/class/power_supply/<supply_name>/charge_type
->  Date:		July 2009
->  Contact:	linux-pm@vger.kernel.org
->  Description:
->  		Represents the type of charging currently being applied to the
-> -		battery.
-> +		battery. "Trickle", "Fast", and "Standard" all mean different
-> +		charging speeds. "Adaptive" means that the charger uses some
-> +		algorithm to adjust the charge rate dynamically, without
-> +		any user configuration required. "Custom" means that the charger
-> +		uses the charge_control_* properties as configuration for some
-> +		different algorithm.
-> =20
-> -		Access: Read
-> -		Valid values: "Unknown", "N/A", "Trickle", "Fast"
-> +		Access: Read, Write
-> +		Valid values: "Unknown", "N/A", "Trickle", "Fast", "Standard",
-> +			      "Adaptive", "Custom"
-> =20
->  What:		/sys/class/power_supply/<supply_name>/charge_term_current
->  Date:		July 2014
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
-pply/power_supply_sysfs.c
-> index dce24f596160..6104a3f03d46 100644
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -56,7 +56,7 @@ static const char * const power_supply_status_text[] =
-=3D {
->  };
-> =20
->  static const char * const power_supply_charge_type_text[] =3D {
-> -	"Unknown", "N/A", "Trickle", "Fast"
-> +	"Unknown", "N/A", "Trickle", "Fast", "Standard", "Adaptive", "Custom"
->  };
-> =20
->  static const char * const power_supply_health_text[] =3D {
-> @@ -274,6 +274,8 @@ static struct device_attribute power_supply_attrs[] =
-=3D {
->  	POWER_SUPPLY_ATTR(constant_charge_voltage_max),
->  	POWER_SUPPLY_ATTR(charge_control_limit),
->  	POWER_SUPPLY_ATTR(charge_control_limit_max),
-> +	POWER_SUPPLY_ATTR(charge_control_start_threshold),
-> +	POWER_SUPPLY_ATTR(charge_control_end_threshold),
->  	POWER_SUPPLY_ATTR(input_current_limit),
->  	POWER_SUPPLY_ATTR(energy_full_design),
->  	POWER_SUPPLY_ATTR(energy_empty_design),
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 2f9c201a54d1..d59205170232 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -40,11 +40,15 @@ enum {
->  	POWER_SUPPLY_STATUS_FULL,
->  };
-> =20
-> +/* What algorithm is the charger using? */
->  enum {
->  	POWER_SUPPLY_CHARGE_TYPE_UNKNOWN =3D 0,
->  	POWER_SUPPLY_CHARGE_TYPE_NONE,
-> -	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,
-> -	POWER_SUPPLY_CHARGE_TYPE_FAST,
-> +	POWER_SUPPLY_CHARGE_TYPE_TRICKLE,	/* slow speed */
-> +	POWER_SUPPLY_CHARGE_TYPE_FAST,		/* fast speed */
-> +	POWER_SUPPLY_CHARGE_TYPE_STANDARD,	/* normal speed */
-> +	POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,	/* dynamically adjusted speed */
-> +	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
->  };
-> =20
->  enum {
-> @@ -121,6 +125,8 @@ enum power_supply_property {
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
->  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
->  	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
-> +	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
-> +	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
->  	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
->  	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
->  	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
-> --=20
-> 2.20.1
->=20
-
---ioz2ovoo2ntuswrd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly3nUYACgkQ2O7X88g7
-+ppslg//a/eyNS7uC8rs0eFylYaA2eKa2i6MZAaEyUhFOraXzRqz7Pi6kC2hoytr
-pExxFBUSTrtYzRSAL6OMALMiummqPdiAwLEnfWkT9wVomzO+5RhGnhVzxWWuiPtI
-QryvIYA53xwwa2nKvzfZ/oOk88AouUh8e6DerQ+KtmI5E1v24zyBlrDe7H6Lh+d/
-sUq+StIpCutoPB/xYKJY7NwEjHs82ChnsPfTyjo55vLi11+V8iebZdS8wVSNGGnU
-W6jMcPdFaX9ab+Jl3F8taReHFoqhEccbDj6AUiP0Nm3P4HCi3dnx/g6JA9cNGoZG
-+uNIsWQzBSaZVMDv9f/gEHrp0eLEkKzdYig0QWm/xO70rRIOUlRk6UTMsy+oa5KY
-8hm9GKaMoj/5ELwAq8opZ0TWfJEoc16iDwkzPulCS/VajcblRStLVV8b/217GJKp
-9BT24P3/eZJR/a0KzyoH3VJRo9TvSO9tQQZs+nNW2bDkX18u0eGj2lkqvsBPdQDY
-wAb3zpzZxVUAnxjz0Cbw3/kx5paV+YTPKWsx2Zi6TwC6QKuif5zVGhDPTISgkHRC
-GGWhGM0SBdjyfl6YsnEoOwr4VT2lnpc1pLeohFwz17lycsOoRCtleejoSttYW1y5
-g2cL7wiDB9QldPWVW49DtMeK/juD/A0y+cV3CQakioMfqD+GSM8=
-=OL+G
------END PGP SIGNATURE-----
-
---ioz2ovoo2ntuswrd--
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmllbCBMZXpjYW5vIDxk
+YW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPg0KPiBTZW50OiAyMDE55bm0NOaciDEy5pelIDIwOjE5
+DQo+IFRvOiBBbmR5IFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPjsgc2hhd25ndW9Aa2VybmVsLm9y
+Zw0KPiBDYzogTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyByb2JoK2R0QGtlcm5lbC5vcmc7
+IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5r
+ZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb207
+DQo+IGVkdWJlenZhbEBnbWFpbC5jb20NCj4gU3ViamVjdDogUmU6IFtFWFRdIFJlOiBbUEFUQ0gg
+djVdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZSB0aGVybWFsDQo+IHpvbmUgbm9k
+ZQ0KPiANCj4gV0FSTklORzogVGhpcyBlbWFpbCB3YXMgY3JlYXRlZCBvdXRzaWRlIG9mIE5YUC4g
+RE8gTk9UIENMSUNLIGxpbmtzIG9yDQo+IGF0dGFjaG1lbnRzIHVubGVzcyB5b3UgcmVjb2duaXpl
+IHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2FmZS4NCj4gDQo+IA0KPiANCj4g
+T24gMTIvMDQvMjAxOSAwOTo0NywgQW5keSBUYW5nIHdyb3RlOg0KPiA+DQo+ID4+IC0tLS0tT3Jp
+Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6
+Y2Fub0BsaW5hcm8ub3JnPg0KPiA+PiBTZW50OiAyMDE55bm0NOaciDEy5pelIDM6MTUNCj4gPj4g
+VG86IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+OyBzaGF3bmd1b0BrZXJuZWwub3JnDQo+
+ID4+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47IHJvYmgrZHRAa2VybmVsLm9yZzsN
+Cj4gPj4gbWFyay5ydXRsYW5kQGFybS5jb207IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
+ZWFkLm9yZzsNCj4gPj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmc7DQo+ID4+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgcnVpLnpoYW5n
+QGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWlsLmNvbQ0KPiA+PiBTdWJqZWN0OiBbRVhUXSBSZTog
+W1BBVENIIHY1XSBhcm02NDogZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUNCj4gPj4gdGhlcm1h
+bCB6b25lIG5vZGUNCj4gPj4NCj4gPj4gV0FSTklORzogVGhpcyBlbWFpbCB3YXMgY3JlYXRlZCBv
+dXRzaWRlIG9mIE5YUC4gRE8gTk9UIENMSUNLIGxpbmtzIG9yDQo+ID4+IGF0dGFjaG1lbnRzIHVu
+bGVzcyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQgaXMgc2Fm
+ZS4NCj4gPj4NCj4gPj4NCj4gPj4NCj4gPj4gT24gMTEvMDQvMjAxOSAxMDozMiwgWXVhbnRpYW4g
+VGFuZyB3cm90ZToNCj4gPj4+IExzMTA4OGEgaGFzIDIgdGhlcm1hbCBzZW5zb3JzLCBjb3JlIGNs
+dXN0ZXIgYW5kIFNvQyBwbGF0Zm9ybS4gQ29yZQ0KPiA+Pj4gY2x1c3RlciBzZW5zb3IgaXMgdXNl
+ZCB0byBtb25pdG9yIHRoZSB0ZW1wZXJhdHVyZSBvZiBjb3JlIGFuZCBTb0MNCj4gPj4+IHBsYXRm
+b3JtIGlzIGZvciBwbGF0Zm9ybS4gVGhlIGN1cnJlbnQgZHRzIG9ubHkgc3VwcG9ydCB0aGUgZmly
+c3Qgc2Vuc29yLg0KPiA+Pj4gVGhpcyBwYXRjaCBhZGRzIHRoZSBzZWNvbmQgc2Vuc29yIG5vZGUg
+dG8gZHRzIHRvIGVuYWJsZSBpdC4NCj4gPj4+DQo+ID4+PiBTaWduZWQtb2ZmLWJ5OiBZdWFudGlh
+biBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gPj4+IC0tLQ0KPiA+Pj4gdjU6DQo+ID4+PiAg
+ICAgICAtIHVwZGF0ZSB0aGUgdGhlcm1hbCB6b25lIG5hbWUgZHVlIHRvIHRoZSBsZW5ndGggbGlt
+aXRhdGlvbg0KPiA+Pj4gICAgICAgLSByZW1vdmUgY29vbGluZyBtYXAgaW4gcGxhdGZvcm0gem9u
+ZQ0KPiA+Pj4gdjQ6DQo+ID4+PiAgICAgICAtIHVzZSBoeXBoZW4gaW5zdGVhZCBvZiB1bmRlcnNj
+b3JlIGluIG5vZGUgbmFtZQ0KPiA+Pj4gdjM6DQo+ID4+PiAgICAgICAtIHVzZSBtb3JlIGRlc2Ny
+aXB0aXZlIG5hbWUgZm9yIGVhY2ggem9uZQ0KPiA+Pj4gdjI6DQo+ID4+PiAgICAgICAtIEFkZCBt
+b3JlIGluZm9ybWF0aW9uIGFib3V0IHNlbnNvcnMgdG8gZGVzY3JpcHRpb24NCj4gPj4+ICBhcmNo
+L2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMxMDg4YS5kdHNpIHwgICAyOA0KPiA+PiAr
+KysrKysrKysrKysrKysrKysrKy0tLQ0KPiA+Pj4gIDEgZmlsZXMgY2hhbmdlZCwgMjQgaW5zZXJ0
+aW9ucygrKSwgNCBkZWxldGlvbnMoLSkNCj4gPj4+DQo+ID4+PiBkaWZmIC0tZ2l0IGEvYXJjaC9h
+cm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+Pj4gYi9hcmNoL2Fy
+bTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMxMDg4YS5kdHNpDQo+ID4+PiBpbmRleCBkZTkz
+YjQyLi5kZTM5NjcyIDEwMDY0NA0KPiA+Pj4gLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9mcmVl
+c2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+Pj4gKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9m
+cmVlc2NhbGUvZnNsLWxzMTA4OGEuZHRzaQ0KPiA+Pj4gQEAgLTEyOSwxOSArMTI5LDE5IEBADQo+
+ID4+PiAgICAgICB9Ow0KPiA+Pj4NCj4gPj4+ICAgICAgIHRoZXJtYWwtem9uZXMgew0KPiA+Pj4g
+LSAgICAgICAgICAgICBjcHVfdGhlcm1hbDogY3B1LXRoZXJtYWwgew0KPiA+Pj4gKyAgICAgICAg
+ICAgICBjb3JlLWNsdXN0ZXIgew0KPiA+Pj4gICAgICAgICAgICAgICAgICAgICAgIHBvbGxpbmct
+ZGVsYXktcGFzc2l2ZSA9IDwxMDAwPjsNCj4gPj4+ICAgICAgICAgICAgICAgICAgICAgICBwb2xs
+aW5nLWRlbGF5ID0gPDUwMDA+Ow0KPiA+Pj4gICAgICAgICAgICAgICAgICAgICAgIHRoZXJtYWwt
+c2Vuc29ycyA9IDwmdG11IDA+Ow0KPiA+Pj4NCj4gPj4+ICAgICAgICAgICAgICAgICAgICAgICB0
+cmlwcyB7DQo+ID4+PiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjcHVfYWxlcnQ6IGNw
+dS1hbGVydCB7DQo+ID4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb3JlX2NsdXN0
+ZXJfYWxlcnQ6IGNvcmUtY2x1c3Rlci1hbGVydA0KPiA+Pj4gKyB7DQo+ID4+PiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRlbXBlcmF0dXJlID0gPDg1MDAwPjsNCj4gPj4+
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaHlzdGVyZXNpcyA9IDwyMDAw
+PjsNCj4gPj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZSA9ICJw
+YXNzaXZlIjsNCj4gPj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4+Pg0K
+PiA+Pj4gLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY3B1X2NyaXQ6IGNwdS1jcml0IHsN
+Cj4gPj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvcmVfY2x1c3Rlcl9jcml0OiBj
+b3JlLWNsdXN0ZXItY3JpdCB7DQo+ID4+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHRlbXBlcmF0dXJlID0gPDk1MDAwPjsNCj4gPj4+ICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgaHlzdGVyZXNpcyA9IDwyMDAwPjsNCj4gPj4+ICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZSA9ICJjcml0aWNhbCI7IEBAIC0xNTAsNw0K
+PiA+Pj4gKzE1MCw3IEBADQo+ID4+Pg0KPiA+Pj4gICAgICAgICAgICAgICAgICAgICAgIGNvb2xp
+bmctbWFwcyB7DQo+ID4+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBtYXAwIHsNCj4g
+Pj4+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHJpcCA9IDwmY3B1X2Fs
+ZXJ0PjsNCj4gPj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHJpcCA9
+IDwmY29yZV9jbHVzdGVyX2FsZXJ0PjsNCj4gPj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgY29vbGluZy1kZXZpY2UgPQ0KPiA+Pj4gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIDwmY3B1MA0KPiA+PiBUSEVSTUFMX05PX0xJTUlUIFRI
+RVJNQUxfTk9fTElNSVQ+LA0KPiA+Pj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIDwmY3B1MQ0KPiA+PiBUSEVSTUFMX05PX0xJTUlUDQo+ID4+PiBUSEVSTUFM
+X05PX0xJTUlUPiwgQEAgLTE2Myw2ICsxNjMsMjYgQEANCj4gPj4+ICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIH07DQo+ID4+PiAgICAgICAgICAgICAgICAgICAgICAgfTsNCj4gPj4+ICAg
+ICAgICAgICAgICAgfTsNCj4gPj4+ICsNCj4gPj4+ICsgICAgICAgICAgICAgcGxhdGZvcm0gew0K
+PiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgIHBvbGxpbmctZGVsYXktcGFzc2l2ZSA9IDwxMDAw
+PjsNCj4gPj4+ICsgICAgICAgICAgICAgICAgICAgICBwb2xsaW5nLWRlbGF5ID0gPDUwMDA+Ow0K
+PiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgIHRoZXJtYWwtc2Vuc29ycyA9IDwmdG11IDE+Ow0K
+PiA+Pj4gKw0KPiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgIHRyaXBzIHsNCj4gPj4+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHBsYXRmb3JtLWFsZXJ0IHsNCj4gPj4+ICsgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGVtcGVyYXR1cmUgPSA8ODUwMDA+Ow0KPiA+
+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBoeXN0ZXJlc2lzID0gPDIw
+MDA+Ow0KPiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlID0g
+InBhc3NpdmUiOw0KPiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfTsNCj4gPj4+
+ICsNCj4gPj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBsYXRmb3JtLWNyaXQgew0K
+PiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0ZW1wZXJhdHVyZSA9
+IDw5NTAwMD47DQo+ID4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGh5
+c3RlcmVzaXMgPSA8MjAwMD47DQo+ID4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHR5cGUgPSAiY3JpdGljYWwiOw0KPiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgfTsNCj4gPj4+ICsgICAgICAgICAgICAgICAgICAgICB9Ow0KPiA+Pj4gKyAgICAgICAg
+ICAgICB9Ow0KPiA+Pg0KPiA+Pg0KPiA+PiBVbmZvcnR1bmF0ZWx5LCB0aGUgZG9jdW1lbnRhdGlv
+biBzYXlzIHRoZSB0aGVybWFsIHpvbmUgbm9kZSBtdXN0DQo+ID4+IGNvbnRhaW4gYSAiY29vbGlu
+Zy1tYXBzIiBlbnRyeS4NCj4gPiBUaGF0J3MgYSBxdWVzdGlvbi4NCj4gPiBJZiBJIGFkZCAiY29v
+bGluZy1tYXBzIiwgdGhlbiBtdWx0aXBsZSB6b25lcyB3aWxsIHVzZSBzYW1lIGNvb2xpbmcgZGV2
+aWNlLg0KPiA+IElmIEkgZG9uJ3QsIGRvY3VtZW50YXRpb24gc2F5cyBpdCBpcyBhICIgUmVxdWly
+ZWQgcHJvcGVydGllcyIuDQo+ID4gSSBhbSB3b25kZXJpbmcgaG93IGl0IHdhcyBkZWFsdCB3aXRo
+IG9uIG90aGVyIHBsYXRmb3JtIHN1cHBvcnRpbmcgbXVsdGlwbGUNCj4gem9uZXMuDQo+IA0KPiBJ
+IHRoaW5rIHRoZSBwcm9ibGVtIGNvbWVzIGZyb20gdGhlIGZhY3QgdGhlcmUgYXJlIG5vIGdvdmVy
+bm9ycyBjYXBhYmxlIG9mDQo+IGhhbmRsaW5nIG11bHRpcGxlIHRoZXJtYWwgem9uZXMuDQo+IA0K
+PiBUaGUgYWRkaXRpb25hbCBjb29saW5nIGRldmljZSBpcyB0aGUgZGV2ZnJlcSBidXQgYXMgdGhl
+IG1hbGkgZHJpdmVyIGlzIG5vdA0KPiB1cHN0cmVhbSwgdGhlIGNvb2xpbmcgbWFwIGZvciB0aGlz
+IGRldmljZSBkb2VzIG5vdCBhcHBlYXIuIFdlIGNhbiBmaW5kIHRoZQ0KPiBkZWZpbml0aW9ucyBh
+bmQgdGhlIGRyaXZlciBpbiB0aGUgQU9TUCBbMV0uDQo+IA0KPiBNb3Jlb3ZlciwgdGhlIHBvd2Vy
+IGlzIHVzdWFsbHkgbWFuYWdlZCBieSB0aGUgSVBBIGdvdmVybm9yLCBidXQgdGhpcyBvbmUgY2Fu
+DQo+IG5vdCBoYW5kbGUgbXVsdGlwbGUgdGhlcm1hbCB6b25lcywgc28gdGhlIGNvb2xpbmcgZGV2
+aWNlcyBhcmUgam9pbmVkIHRvZ2V0aGVyDQo+IGludG8gYSBzaW5nbGUgdGhlcm1hbCB6b25lIHdp
+dGggdGhlaXIgY29udHJpYnV0aW9uIHRvIHRoZSBjb29saW5nIGVmZmVjdC4NCj4gDQo+IE90aGVy
+IGRlZmluaXRpb25zIEkgaGF2ZSBzZWVuIHVwc3RyZWFtIGFyZSBpbmNvbXBsZXRlIG9yIGJyb2tl
+bi4NCj4gDQo+IFsxXQ0KPiBodHRwczovL2V1cjAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxv
+b2suY29tLz91cmw9aHR0cHMlM0ElMkYlMkZhbmRyb2lkLmcNCj4gb29nbGVzb3VyY2UuY29tJTJG
+a2VybmVsJTJGaGlrZXktbGluYXJvJTJGJTJCJTJGcmVmcyUyRmhlYWRzJTJGYW5kcg0KPiBvaWQt
+aGlrZXktbGluYXJvLTQuMTQlMkZhcmNoJTJGYXJtNjQlMkZib290JTJGZHRzJTJGaGlzaWxpY29u
+JTJGaGkzNjYwLg0KPiBkdHNpJTIzMTM0MCZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50YW5nJTQw
+bnhwLmNvbSU3QzU1OTIxOGIxNjIyZQ0KPiA0NjAzMjUxOTA4ZDZiZjQxMGU0YiU3QzY4NmVhMWQz
+YmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzAlNw0KPiBDNjM2OTA2NjgzNDY2ODM2OTg1
+JmFtcDtzZGF0YT05NTJ4SWNycjExZyUyQjBubDJsZ0tyRzE4U2xSVmdHVjZMJTINCj4gQk1CTDNV
+NlVhaVElM0QmYW1wO3Jlc2VydmVkPTANCkludGVyZXN0aW5nLiBJIHRoaW5rIHdlIGhhdmUgdG8g
+YWNjZXB0IHRoZSBpbXBlcmZlY3QgZm9yIG5vdy4NCg0KSGkgU2hhd24sDQpBbnkgY29tbWVudHM/
+DQoNCkJSLA0KQW5keQ0KPiANCj4gPiBIaSBTaGF3biwNCj4gPiBXaGF0J3MgeW91ciBvcGluaW9u
+cyBhYm91dCB0aGlzPw0KPiANCj4gDQo+IA0KPiAtLQ0KPiANCj4gPGh0dHBzOi8vZXVyMDEuc2Fm
+ZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3Lmxpbg0K
+PiBhcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbmclNDBueHAuY29tJTdDNTU5
+MjE4YjE2MjJlNA0KPiA2MDMyNTE5MDhkNmJmNDEwZTRiJTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNk
+OTljNWMzMDE2MzUlN0MwJTdDMCU3Qw0KPiA2MzY5MDY2ODM0NjY4MzY5ODUmYW1wO3NkYXRhPUFK
+dklYOFhKN2oxSmtwV2dEMUd1RWNQMmtlTzBSMW11QXp0OQ0KPiBuMnFnVTNBJTNEJmFtcDtyZXNl
+cnZlZD0wPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNDQo+IFNv
+Q3MNCj4gDQo+IEZvbGxvdyBMaW5hcm86DQo+IDxodHRwczovL2V1cjAxLnNhZmVsaW5rcy5wcm90
+ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy5mYWMNCj4gZWJvb2suY29t
+JTJGcGFnZXMlMkZMaW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54cC5jb20N
+Cj4gJTdDNTU5MjE4YjE2MjJlNDYwMzI1MTkwOGQ2YmY0MTBlNGIlN0M2ODZlYTFkM2JjMmI0YzZm
+YTkyY2Q5OWM1YzMwDQo+IDE2MzUlN0MwJTdDMCU3QzYzNjkwNjY4MzQ2NjgzNjk4NSZhbXA7c2Rh
+dGE9Y1NVQjVIN3NxcFVQJTJCMEVQDQo+IEhnWEVnYVJaeFlpdCUyRkdOOVZ0NlhyUXV5MERBJTNE
+JmFtcDtyZXNlcnZlZD0wPiBGYWNlYm9vayB8DQo+IDxodHRwczovL2V1cjAxLnNhZmVsaW5rcy5w
+cm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aXR0ZXIuYw0KPiBvbSUy
+RiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54cC5jb20l
+N0M1DQo+IDU5MjE4YjE2MjJlNDYwMzI1MTkwOGQ2YmY0MTBlNGIlN0M2ODZlYTFkM2JjMmI0YzZm
+YTkyY2Q5OWM1YzMwMTYzNQ0KPiAlN0MwJTdDMCU3QzYzNjkwNjY4MzQ2NjgzNjk4NSZhbXA7c2Rh
+dGE9T0g3dzMlMkZVd01FQXVCUzUlMg0KPiBCd1BmSmw5VVN6OWdUNkxwVEl3MU9SbU1lYVhBJTNE
+JmFtcDtyZXNlcnZlZD0wPiBUd2l0dGVyIHwNCj4gPGh0dHBzOi8vZXVyMDEuc2FmZWxpbmtzLnBy
+b3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3Lmxpbg0KPiBhcm8ub3Jn
+JTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54cC5jb20l
+N0MNCj4gNTU5MjE4YjE2MjJlNDYwMzI1MTkwOGQ2YmY0MTBlNGIlN0M2ODZlYTFkM2JjMmI0YzZm
+YTkyY2Q5OWM1YzMwMTYzDQo+IDUlN0MwJTdDMCU3QzYzNjkwNjY4MzQ2NjgzNjk4NSZhbXA7c2Rh
+dGE9THR5UW4lMkJWbGlhd3IydHVSaENCODQNCj4gV0gxUk1FaW8zYUZRMkV4Q2ZLbjdvayUzRCZh
+bXA7cmVzZXJ2ZWQ9MD4gQmxvZw0KDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2Vy
+bmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
