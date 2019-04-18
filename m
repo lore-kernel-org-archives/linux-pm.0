@@ -1,49 +1,49 @@
-From: Nandor Han <nandor.han@vaisala.com>
-Subject: Re: [PATCH v2 1/2] power: reset: nvmem-reboot-mode: use NVMEM as
- reboot mode write interface
-Date: Thu, 18 Apr 2019 09:29:08 +0300
-Message-ID: <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
-References: <20190411055341.9263-1-nandor.han@vaisala.com>
- <20190411055341.9263-2-nandor.han@vaisala.com>
- <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v2 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Thu, 18 Apr 2019 09:04:32 +0100
+Message-ID: <20190418080429.pn4r6lnftlfsf4c4@queper01-lin>
+References: <20190417094301.17622-1-quentin.perret@arm.com>
+ <20190417094301.17622-4-quentin.perret@arm.com>
+ <20190418035323.onyfxo4kprwqz2wl@vireshk-mac-ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190418035323.onyfxo4kprwqz2wl@vireshk-mac-ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On 4/18/19 12:56 AM, Sebastian Reichel wrote:
-> On Thu, Apr 11, 2019 at 05:54:09AM +0000, Han Nandor wrote:
->> Add a new reboot mode write interface that is using an NVMEM cell
->> to store the reboot mode magic.
->>
->> Signed-off-by: Nandor Han <nandor.han@vaisala.com>
->> ---
-
-<snip>
-
->> +module_platform_driver(nvmem_reboot_mode_driver);
->> +
->> +MODULE_AUTHOR("Nandor Han <nandor.han@vaisala.com>");
->> +MODULE_DESCRIPTION("NVMEM reboot mode driver");
->> +MODULE_LICENSE("GPL v2");
+On Thursday 18 Apr 2019 at 09:23:23 (+0530), Viresh Kumar wrote:
+> On 17-04-19, 10:43, Quentin Perret wrote:
+> >  static struct thermal_cooling_device *
+> >  __cpufreq_cooling_register(struct device_node *np,
+> > -			struct cpufreq_policy *policy, u32 capacitance)
+> > +			struct cpufreq_policy *policy,
+> > +			struct em_perf_domain *em)
+> >  {
 > 
-> I suppose as of bf7fbeeae6db "GPL v2" is deprecated, before it was
-> often read as GPL v2 only. In both cases it makes sense to just
-> use "GPL". Otherwise the driver looks fine to me, but I'm waiting
-> for Rob's review of the DT bindings before merging this.
+> > +	if (em_is_sane(cpufreq_cdev, em)) {
+> > +		cpufreq_cdev->em = em;
+> >  		cooling_ops = &cpufreq_power_cooling_ops;
+> > -	} else {
+> > +	} else if (policy->freq_table_sorted != CPUFREQ_TABLE_UNSORTED) {
+> >  		cooling_ops = &cpufreq_cooling_ops;
+> > +	} else {
+> > +		WARN(1, "cpu_cooling: no valid frequency table found\n");
 > 
-> -- Sebastian
-> 
+> Well the frequency table is valid, isn't it ?
 
-Thanks Sebastian.
+True ...
 
-Do you want me to send a new revision with license changed to "GPL"?..or 
-will you change it when it's merged?
+> Maybe something like: "cpu_cooling doesn't support unsorted frequency tables" ?
 
-Nandor
+Right, otherwise I guess that could be confused with the check on
+cpu_table_count_valid_entries() above. And while I'm thinking about it
+perhaps WARN is a bit too much here ? We can handle the error safely so
+pr_err() should be enough ?
+
+Thanks,
+Quentin
