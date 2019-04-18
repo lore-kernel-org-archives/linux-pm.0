@@ -2,184 +2,156 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03DE1C10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 19:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37BB0C10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 20:02:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C57062183F
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 19:58:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E726C214DA
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 20:02:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DWr34zd2"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ckqGcq/1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390069AbfDRT60 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 15:58:26 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:39470 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731317AbfDRT60 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 15:58:26 -0400
-Received: by mail-pg1-f195.google.com with SMTP id l18so1530549pgj.6;
-        Thu, 18 Apr 2019 12:58:25 -0700 (PDT)
+        id S2388710AbfDRUCh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 16:02:37 -0400
+Received: from mail-it1-f194.google.com ([209.85.166.194]:36293 "EHLO
+        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731317AbfDRUCh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 16:02:37 -0400
+Received: by mail-it1-f194.google.com with SMTP id y10so5238334itc.1;
+        Thu, 18 Apr 2019 13:02:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=6m+z7g3EFd1rannjYRxmeahgviDOKxTIyUAGSrZVUCA=;
-        b=DWr34zd2tlqExXIm3WBesOBARj1noCVmsnJd9sB4CDKcOPTFqM+mKUpAYwtPhEeyUK
-         eQUwJfUy6GuchtcHO/xBbVV+QtX03Cdg9bDdoNcpb0HnpEYol8CZhZ1D3wEGET1PfCFg
-         xlYKBLXb9+v09AVZDTsYtz+AXXhBLyqmrgpNhnRSHP6FLuFtd5p0gW20z0Vy3V1BAxP9
-         k00xbnz9WEh1o4/bfg4R9jy5rrF4jFdQ8AdTVd12tXqWcnmATpI4JpftmM4VQOW1wE3s
-         ffyZUxqJ+bvzxQNW3bCO0AKsusxKbzJVtMelj0BxD7Lk8GzHQLnjkl2ERGCWeS5clFGF
-         Ct/w==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=md+2yuBcexkdcmroYWb/DHRRpVH85yQGDbGWlj/lPa8=;
+        b=ckqGcq/1XjPiXpaSKzOlV/yqbaByjSirKCR3S5YfNi/+IDHj7/mJy/OQ2gsxd+X9zI
+         ajyOIo0jrc20MbBZfMJ3vwgDj9eM47iX7zAHtp7lLyq69AkbkWWOPWWyqgFNeDxqVF7H
+         34a1bvoETZMVZKBxNIADqGvKlfKY7F+1Y5sbxYl1oIU7K42I0pBCD0kbgq1s5KstqP1t
+         rDHTZSdp+qhzH+wIA/EnZHEcllOqDvV5ncdIqVgpv9suOK+t+br4kAFFGcMvpdW6/cTs
+         4r6JwI7/MGzm3a8W8rlZGTGlV330bTwJxXZtlJ+FoYwOWk2nYg0yuRAxqtqJ1zZjpCKx
+         uhlw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references;
-        bh=6m+z7g3EFd1rannjYRxmeahgviDOKxTIyUAGSrZVUCA=;
-        b=cSN1N9st3vxW2qnkiO75P9Zc4BwmY5lUIeMsp+Cd4coUN1PtX0JmzGcQdA4AYA6+Yg
-         nD4wZPUd7MjUbBm1Pr+TDd9Vn7XYy7+DoNCaLrl0ijYdKcJi9raBfeBzIe3VrZAw2eqv
-         l3MmZRuMDUC4oG8Gcgh1Dzzs3x2vz62KcwCpK9opkXBqzfrmIMZsPHYsg01QrP8bOpTV
-         y+QaItCYL/w+eekQEIoJssqsp1wCdgxfUNYqQCYvUaAuW9X9A0yxQcCBJMlJhQmi4yLC
-         +oDqou0B680mTZwuZapsHZ8qC2lK+c2PjndYf4X7BpHv4Vy5ZVJ2+M//KHYkoqQRU/Jt
-         xj+g==
-X-Gm-Message-State: APjAAAXYVP1yfHg/c/jj8Re2mvZ8Ic2GjVQ/Te9YTJ4b9DOwp9zqUIVP
-        kxdOXmjgVBMUVACoBMUqBmyCX9NSpxA=
-X-Google-Smtp-Source: APXvYqwRbJbOKlDFm46pI/cvEGKc9r+XfEiAOCA821wqhwOJr0hWPsAe8hjISyMmbuCrtzlsKv2aGg==
-X-Received: by 2002:a63:f444:: with SMTP id p4mr92599928pgk.32.1555617505235;
-        Thu, 18 Apr 2019 12:58:25 -0700 (PDT)
-Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id c17sm3830791pfd.76.2019.04.18.12.58.24
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 18 Apr 2019 12:58:24 -0700 (PDT)
-From:   Guenter Roeck <linux@roeck-us.net>
-To:     linux-hwmon@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        openbmc@lists.ozlabs.org, linux-pm@vger.kernel.org
-Cc:     Jean Delvare <jdelvare@suse.com>, Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Avi Fishman <avifishman70@gmail.com>,
-        Tomer Maimon <tmaimon77@gmail.com>,
-        Tali Perry <tali.perry1@gmail.com>,
-        Patrick Venture <venture@google.com>,
-        Nancy Yuen <yuenn@google.com>,
-        Benjamin Fair <benjaminfair@google.com>,
-        Kamil Debski <kamil@wypas.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Zhang Rui <rui.zhang@intel.com>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=md+2yuBcexkdcmroYWb/DHRRpVH85yQGDbGWlj/lPa8=;
+        b=DaHN7iYXPoFwFZ71o36zQIZZSf6G+KaIuylaTzO7+yMu4VegPsNwbom+BkY7mRPpxE
+         CJxv5N5VT8ClfajI8PlvrfiodxfAh+mKdCpFjs4BR/r0OEKNL80vW+Yrb2hCmGFzilkd
+         HGXeMIDVWMu0LOuN3cXkvKrBa5eQocy3/E4t7u3IHwDsGOYM9jzh1n3LlWKOS82HXFtP
+         YxamQ2wpvs7zD7/NNCsfAScD5T3bGjM4pJSvms05fhaODAwWGywJJII7RzhUp6BCiZcM
+         i7O6gx7I46dFf2oeryyOmR8D2/XgsUYV0+n3dxOhZfVyXurPkC44mKaLeJmtI03+0kui
+         nBcQ==
+X-Gm-Message-State: APjAAAV9dYdIolw3Vg/8LHiwLYuvc4qyLGpixXVTHbFCkLwfxS0FI4gp
+        kBLIZqEmaAcUPMEm8RTYs7W9CJMVdRxR9qyJ0wDTOQjjKGY=
+X-Google-Smtp-Source: APXvYqzu21GsYKKMcpfm9o+XkLf9kLx/wa5ht0dEBcqDNprmH/KAMvsZZwig+k8G4jhGFfcIvC2pj0tbBKMU8gLzYZA=
+X-Received: by 2002:a24:45e4:: with SMTP id c97mr4886303itd.114.1555617755916;
+ Thu, 18 Apr 2019 13:02:35 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
+ <20190413082748.29990-10-andrew.smirnov@gmail.com> <8233019b-988b-05d5-6b7c-55652da8b3cd@linaro.org>
+In-Reply-To: <8233019b-988b-05d5-6b7c-55652da8b3cd@linaro.org>
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+Date:   Thu, 18 Apr 2019 13:02:24 -0700
+Message-ID:
+ <CAHQ1cqFW0XVe4e695pgs6mDvOvJ28VXwkzAwsFtZbc3E+PUVzQ@mail.gmail.com>
+Subject: Re: [PATCH v4 09/12] thermal: qoriq: Enable all sensors before
+ registering them
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
         Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 1/6] thermal: Introduce devm_thermal_of_cooling_device_register
-Date:   Thu, 18 Apr 2019 12:58:15 -0700
-Message-Id: <1555617500-10862-2-git-send-email-linux@roeck-us.net>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
+        Angus Ainslie <angus@akkea.ca>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190418195815.2dYn4J5C0nZBrZMTIOAao3cQ-7Nwl58MOQ8OG5zIV7U@z>
+Message-ID: <20190418200224.aLqwyD9wUIWfAQhMDTp5A9hB9onfvAQ26OA6qxdkxYk@z>
 
-thermal_of_cooling_device_register() and thermal_cooling_device_register()
-are typically called from driver probe functions, and
-thermal_cooling_device_unregister() is called from remove functions. This
-makes both a perfect candidate for device managed functions.
+On Tue, Apr 16, 2019 at 10:09 AM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 13/04/2019 10:27, Andrey Smirnov wrote:
+> > Tmu_get_temp will get called as a part of sensor registration via
+> > devm_thermal_zone_of_sensor_register(). To prevent it from retruning
+> > bogus data we need to enable sensor monitoring before that. Looking at
+> > the datasheet (i.MX8MQ RM) there doesn't seem to be any harm in
+> > enabling them all, so, for the sake of simplicity, change the code to
+> > do just that.
+> >
+> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > Cc: Chris Healy <cphealy@gmail.com>
+> > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: Angus Ainslie (Purism) <angus@akkea.ca>
+> > Cc: linux-imx@nxp.com
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > ---
+> >  drivers/thermal/qoriq_thermal.c | 27 ++++++++++++++-------------
+> >  1 file changed, 14 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> > index 9774323a17bf..abbbfe88422e 100644
+> > --- a/drivers/thermal/qoriq_thermal.c
+> > +++ b/drivers/thermal/qoriq_thermal.c
+> > @@ -23,6 +23,7 @@
+> >  #define TMR_DISABLE  0x0
+> >  #define TMR_ME               0x80000000
+> >  #define TMR_ALPF     0x0c000000
+> > +#define TMR_MSITE_ALL        GENMASK(15, 0)
+> >
+> >  #define REGS_TMTMIR  0x008   /* Temperature measurement interval Register */
+> >  #define TMTMIR_DEFAULT       0x0000000f
+> > @@ -61,28 +62,28 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+> >  static int qoriq_tmu_register_tmu_zone(struct device *dev,
+> >                                      struct qoriq_tmu_data *qdata)
+> >  {
+> > -     int id, sites = 0;
+> > +     int id, ret;
+> > +
+> > +     regmap_write(qdata->regmap, REGS_TMR,
+> > +                  TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
+> >
+> >       for (id = 0; id < SITES_MAX; id++) {
+> >               struct thermal_zone_device *tzd;
+> >
+> >               tzd = devm_thermal_zone_of_sensor_register(dev, id,
+> >                                                          qdata, &tmu_tz_ops);
+> > -             if (IS_ERR(tzd)) {
+> > -                     if (PTR_ERR(tzd) == -ENODEV)
+> > -                             continue;
+> > -                     else
+> > -                             return PTR_ERR(tzd);
+> > +             ret = PTR_ERR_OR_ZERO(tzd);
+> > +             switch (ret) {
+> > +             case -ENODEV:
+> > +                     continue;
+> > +             case 0:
+>
+> Why not simply:
+>
+>         if (!IS_ERR(tzd) || PTR_ERR(tzd) == -ENODEV)
+>                 continue;
+>
+>         regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
+>
+>         return PTR_ERR(tzd);
+>
+> ?
 
-Introduce devm_thermal_of_cooling_device_register(). This function can
-also be used to replace thermal_cooling_device_register() by passing a NULL
-pointer as device node. The new function requires both struct device *
-and struct device_node * as parameters since the struct device_node *
-parameter is not always identical to dev->of_node.
+Seemed like less typing and smaller diff for following patch that adds
+hwmon sensor registration. I can probable make "if" work kind of the
+same, so I'll change that. I do dislike that you had to use *_ERR
+macro three times though, so I'll stick with PTR_ERR_OR_ZERO.
 
-Don't introduce a device managed remove function since it is not needed
-at this point.
-
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/thermal/thermal_core.c | 49 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h        |  5 +++++
- 2 files changed, 54 insertions(+)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6590bb5cb688..e0b530603db6 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1046,6 +1046,55 @@ thermal_of_cooling_device_register(struct device_node *np,
- }
- EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
- 
-+static void thermal_cooling_device_release(struct device *dev, void *res)
-+{
-+	thermal_cooling_device_unregister(
-+				*(struct thermal_cooling_device **)res);
-+}
-+
-+/**
-+ * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
-+ *					       device
-+ * @dev:	a valid struct device pointer of a sensor device.
-+ * @np:		a pointer to a device tree node.
-+ * @type:	the thermal cooling device type.
-+ * @devdata:	device private data.
-+ * @ops:	standard thermal cooling devices callbacks.
-+ *
-+ * This function will register a cooling device with device tree node reference.
-+ * This interface function adds a new thermal cooling device (fan/processor/...)
-+ * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-+ * to all the thermal zone devices registered at the same time.
-+ *
-+ * Return: a pointer to the created struct thermal_cooling_device or an
-+ * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-+ */
-+struct thermal_cooling_device *
-+devm_thermal_of_cooling_device_register(struct device *dev,
-+				struct device_node *np,
-+				char *type, void *devdata,
-+				const struct thermal_cooling_device_ops *ops)
-+{
-+	struct thermal_cooling_device **ptr, *tcd;
-+
-+	ptr = devres_alloc(thermal_cooling_device_release, sizeof(*ptr),
-+			   GFP_KERNEL);
-+	if (!ptr)
-+		return ERR_PTR(-ENOMEM);
-+
-+	tcd = __thermal_cooling_device_register(np, type, devdata, ops);
-+	if (IS_ERR(tcd)) {
-+		devres_free(ptr);
-+		return tcd;
-+	}
-+
-+	*ptr = tcd;
-+	devres_add(dev, ptr);
-+
-+	return tcd;
-+}
-+EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
-+
- static void __unbind(struct thermal_zone_device *tz, int mask,
- 		     struct thermal_cooling_device *cdev)
- {
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5f4705f46c2f..43cf4fdd71d4 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -447,6 +447,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
- struct thermal_cooling_device *
- thermal_of_cooling_device_register(struct device_node *np, char *, void *,
- 				   const struct thermal_cooling_device_ops *);
-+struct thermal_cooling_device *
-+devm_thermal_of_cooling_device_register(struct device *dev,
-+				struct device_node *np,
-+				char *type, void *devdata,
-+				const struct thermal_cooling_device_ops *ops);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
- int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
--- 
-2.7.4
-
+Thanks,
+Andrey Smirnov
