@@ -8,103 +8,102 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC79C10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B1C2C10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:38:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1BDCF20643
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:37:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB0E320643
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 16:38:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gn2XTdb0"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IYqAfk1W"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388299AbfDRQhj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 12:37:39 -0400
-Received: from mail-qt1-f196.google.com ([209.85.160.196]:36477 "EHLO
-        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733067AbfDRQhj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 12:37:39 -0400
-Received: by mail-qt1-f196.google.com with SMTP id s15so2863098qtn.3
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 09:37:38 -0700 (PDT)
+        id S2388375AbfDRQiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 12:38:05 -0400
+Received: from mail-qt1-f195.google.com ([209.85.160.195]:46839 "EHLO
+        mail-qt1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733067AbfDRQiF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 12:38:05 -0400
+Received: by mail-qt1-f195.google.com with SMTP id z17so2805325qts.13
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 09:38:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=tHbYk6MxaillgOP+/nGA7bQ7Ha1/NadZMer7j1cGAHQ=;
-        b=gn2XTdb0f3fWM/1VnLYnesohfx1oOByRDmewVdfyylWpdChOEH+AJvkP2tXTXB28Ic
-         bUoWPpDEdi+lEETPvp1bVdKel7/4bXSN5s95mQEfTt7pZqY6iUHbmoKAnGyIKgew/vj6
-         zdmdoBhUTFT0Hrvfjj0Yo1B6nmN0vTFA0V/k9c32GshwZQJaLBTlMcKSIjjvZo9uUqd4
-         CxbIk4zTEkVJtYS931QYMjhFwfzKPuTcnoXGKxQk3mKHx9N8qoEvvqZSqaOC1rKC5wHP
-         29cF0liH7v+nW0y4EqI73AtRw7WJlZTkVkEoB323iFzvE5j0V0a1iI3O9JFkDdzlvxz4
-         UX6g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=M61+RmXJJHktVV8JGOo6yLtH6EhDmTU8B1yVSi7EmEU=;
+        b=IYqAfk1Wq1DbzvrNZ21Xc2OMu3jQY+2B4/qimIWEOGsEoO9hZmXv2BI9XxP5GpqvT5
+         kRyFPuJzjixI2bJVY2Q8OlI5CyzHD8PYGca6FTn5J/QuW8sNvZIzi+QQxvn1k4bYFfj9
+         POl3+4yKwP/iBVD1zKuaIYDawTeN5IcejcFf/AMlUVty6ao4D+GBlJHoWc99qQNaJdvO
+         niofC/ILSbtP0x1/2JVwMD7SlCX+Nxin7CqHGhIPW18Up10CiTqupU55VNaJhIU5EH8T
+         MnyPsuM3esL6jjflyPTIbW3foxaehbcwxkabBsouQXhVIHvIrpGqXCKzR+IB6awFEwM0
+         gZ/w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=tHbYk6MxaillgOP+/nGA7bQ7Ha1/NadZMer7j1cGAHQ=;
-        b=szPJE0K1rclV7kT04geqlbg26BekJ3/JXjbC/TqnhywgN/UWvPJrMf5sdNnLuvp8He
-         TBzCSkHMt3XZqsYCC2u3HvVA/NwUn0n9yrAIAINR4F4YwFaZs3WSZd2+T+YC7qNH6ONb
-         npzjpN3YtLfUwShnR6hNBRdJ7kz/q7mElBy+vBMHInepAp/knsrRbmsv5u6Suw4ta55Q
-         j5ic2wMyTpU/II88fzku0Xp9GrCWXL7JlNWu2OpT2rib42jBQtK7XgmuN9CeHLGMBtFz
-         0y0Z5MpiR7ZlgWgPnJAp3DWFAcCsCnACKhjSZGkQagIZkqvhT2j8GC3xBcF3UQcPnK3N
-         uChw==
-X-Gm-Message-State: APjAAAVlxWRlgMt+IgwOZAxOHlvrlrDbiNBMPu6z7BK5Mcz0YK7UnVom
-        v3jPccgSIUjmmyI64SKbUK8SkyNxmaSvLw==
-X-Google-Smtp-Source: APXvYqwIG+s8ky3gEYJPBDf3Mzac2XsInoWYNrtvBmQ2lu+x1WSa7zMK9kcjgEc9+2Qk4j9Uw2ZMpw==
-X-Received: by 2002:ac8:1119:: with SMTP id c25mr75139491qtj.165.1555605458295;
-        Thu, 18 Apr 2019 09:37:38 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=M61+RmXJJHktVV8JGOo6yLtH6EhDmTU8B1yVSi7EmEU=;
+        b=uNQ/Tz6ZtXzDsSxUd1vOsgFmZHdb50kLRfoShr/u65AOLiArcLHhRBuCgYZ1aqqJjy
+         SHDAbM3hZfw/B/mCOYYoPKZoyXCyCV08LHnWt/6ZUNedncKVDbHzmxcO4wQLcouAvbla
+         TWCSodGny9jiQ5OqQ1ccHfMHhVexGG77+xtk2U678Tp3qvtOnfjVmv36MyC4P5vsnjYN
+         gJHcYTKJejcLdn9A+CIAluL2wiq4GzX74tonZR9ZCEL480s7uACNmgor/F91qE+NCvDK
+         emNT0ebW3fU5+FTsQtofqsk9Ehww9feFNHyThPlRDvsW/LEhzFYaBANwLJLRxo5u+t1d
+         iLGg==
+X-Gm-Message-State: APjAAAV1+3Mq2hcDA39obw8jZkXDtLZOANxbF6TY28TbhvES28cKjG1T
+        kF8V/R11/JBuDkstl0ieeXwG50X2TDhUTg==
+X-Google-Smtp-Source: APXvYqwLzstR33WRPIO9Tsmsaa4MSn2ahISvc8ou0lMsRTGM6ykWHqagTeManRLeGWYKXDaUyWsp4g==
+X-Received: by 2002:ac8:3653:: with SMTP id n19mr75038472qtb.95.1555605483960;
+        Thu, 18 Apr 2019 09:38:03 -0700 (PDT)
 Received: from jfddesk.Sonatest.net (ipagstaticip-d73c7528-4de5-0861-800b-03d8b15e3869.sdsl.bell.ca. [174.94.156.236])
-        by smtp.gmail.com with ESMTPSA id k41sm1622394qtc.89.2019.04.18.09.37.37
+        by smtp.gmail.com with ESMTPSA id k41sm1622394qtc.89.2019.04.18.09.38.03
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 18 Apr 2019 09:37:37 -0700 (PDT)
+        Thu, 18 Apr 2019 09:38:03 -0700 (PDT)
 From:   Jean-Francois Dagenais <jeff.dagenais@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     daniel.lezcano@linaro.org, edubezval@gmail.com,
         rui.zhang@intel.com,
         Jean-Francois Dagenais <jeff.dagenais@gmail.com>
-Subject: [PATCH 1/2] thermal: generic-adc: make lookup table optional
-Date:   Thu, 18 Apr 2019 12:37:32 -0400
-Message-Id: <20190418163733.17414-1-jeff.dagenais@gmail.com>
+Subject: [PATCH 2/2] dt-bindings: thermal: generic-adc: make lookup-table optional
+Date:   Thu, 18 Apr 2019 12:37:33 -0400
+Message-Id: <20190418163733.17414-2-jeff.dagenais@gmail.com>
 X-Mailer: git-send-email 2.11.0
+In-Reply-To: <20190418163733.17414-1-jeff.dagenais@gmail.com>
+References: <20190418163733.17414-1-jeff.dagenais@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Certain ADC channels, such as the xilinx-ams temperature channels, give
-milliCelcius already when read with iio_read_channel_processed.
-
-Rather than having to provide a 1:1 dummy lookup table, simply allow to
-bypass the mechanism.
-
 Signed-off-by: Jean-Francois Dagenais <jeff.dagenais@gmail.com>
 ---
- drivers/thermal/thermal-generic-adc.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/thermal/thermal-generic-adc.txt        | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index e22fc60ad36d..deb244f12de4 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -29,6 +29,9 @@ static int gadc_thermal_adc_to_temp(struct gadc_thermal_info *gti, int val)
- 	int temp, temp_hi, temp_lo, adc_hi, adc_lo;
- 	int i;
- 
-+	if (!gti->lookup_table)
-+		return val;
+diff --git a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
+index d72355502b78..691a09db2fef 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal-generic-adc.txt
+@@ -8,16 +8,22 @@ temperature using voltage-temperature lookup table.
+ Required properties:
+ ===================
+ - compatible:		     Must be "generic-adc-thermal".
++- #thermal-sensor-cells:     Should be 1. See ./thermal.txt for a description
++		             of this property.
++Optional properties:
++===================
+ - temperature-lookup-table:  Two dimensional array of Integer; lookup table
+ 			     to map the relation between ADC value and
+ 			     temperature. When ADC is read, the value is
+ 			     looked up on the table to get the equivalent
+ 			     temperature.
 +
- 	for (i = 0; i < gti->nlookup_table; i++) {
- 		if (val >= gti->lookup_table[2 * i + 1])
- 			break;
-@@ -81,9 +84,9 @@ static int gadc_thermal_read_linear_lookup_table(struct device *dev,
+ 			     The first value of the each row of array is the
+ 			     temperature in milliCelsius and second value of
+ 			     the each row of array is the ADC read value.
+-- #thermal-sensor-cells:     Should be 1. See ./thermal.txt for a description
+-			     of this property.
++
++			     If not specified, driver assumes the ADC channel
++			     gives milliCelsius directly.
  
- 	ntable = of_property_count_elems_of_size(np, "temperature-lookup-table",
- 						 sizeof(u32));
--	if (ntable < 0) {
--		dev_err(dev, "Lookup table is not provided\n");
--		return ntable;
-+	if (ntable <= 0) {
-+		dev_notice(dev, "no lookup table, assuming DAC channel returns milliCelcius\n");
-+		return 0;
- 	}
- 
- 	if (ntable % 2) {
+ Example :
+ #include <dt-bindings/thermal/thermal.h>
 -- 
 2.11.0
 
