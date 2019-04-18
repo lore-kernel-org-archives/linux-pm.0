@@ -2,184 +2,191 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5309C10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 22:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E82EFC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 23:02:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88BEE20674
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 22:58:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B6C8220675
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 23:02:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cbU0NoM5"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="G/1gTLai"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725894AbfDRW6q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 18:58:46 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:45198 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725855AbfDRW6p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 18:58:45 -0400
-Received: by mail-pf1-f196.google.com with SMTP id e24so1734910pfi.12
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 15:58:45 -0700 (PDT)
+        id S1725890AbfDRXC6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 19:02:58 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:46764 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725855AbfDRXC5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 19:02:57 -0400
+Received: by mail-pg1-f196.google.com with SMTP id 10so1452487pgv.13
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 16:02:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=ag6Pa49hu/ALuIx1FZfQOLAfd+1VTNjEXJqzChfJsJs=;
-        b=cbU0NoM5yAs1pvFY9bJA4c1LDD1huKPpXp7W97Jb/8eNMh7QNUAGuqW4C/XbPndUlp
-         cGMarV2dWKyvevGoFj7nls8yijAvPMCIMpIctjH8VVZeS1zumjHO0WQNBc0dLjKs9i+a
-         jc/XIEsi9LxnWpbrRyJ1386ccHO/0qfizrDG4F0L3S0VvQvNMenrnEJvbk57+X55HrXU
-         LKjNXoNuFSqIyGtfA7xWQwu1GvhkSfQ++q3UBdq8NhblTkTxpmVbfqA02SKRHjIFxvQW
-         +336RCNVtfLOIHsB7zzpWF4vuvpF3GjksTVIcN7MRS1KVYXjqUsDRxdo4CNUEMfFH/jj
-         TPSQ==
+        bh=bIwZNepkZcafS+Ng1sIJ4koMH/C8FpxZ1rR7ZlajLIo=;
+        b=G/1gTLaiw/xumtLmXzgDeQ80a2DT3YeDeCy1LeDRzgS1vothcQgfRHKAnG6pLb79MQ
+         pgLmklO1IMt0r+YPJvXQVTavBbggtBAwAGC1EECInlX9Vm7bBBSFaay9KHwNup7o6hew
+         xhhn/pDZnIZMr/236Rb7GmKaNzize3p7X2gpFOnv9aGhaemsAwd7J5ei0+2pw/0TZ6w0
+         PBk6V4/rT4NSnl762uLLpuXoDlt5z2AxKr090HYrbUxA2TS0LeMANvY/I2us9Oio8teE
+         ozhZ4RdqKulFc+ETItJGAkQ1+k61CNmTqz6j3eMO/T+cI7oiaBoKWWX7lZA+ero1p+YO
+         U+NA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ag6Pa49hu/ALuIx1FZfQOLAfd+1VTNjEXJqzChfJsJs=;
-        b=COqEvQYNVViEZChPhyEMY6b3JSnMtUIhIocszMuR2L6Cp35VUnPh3a0rdea8UHgIUJ
-         gdgZvM0oae88EcJ4nqDkSuN78Py1FxP9Gnitsojwv38z9tY50giJusc8QFJfg64lgH6V
-         CmMED8gSFxAVy4RqpvXfBlYaP4+GzWNy03m6rU+4PFdITP1WfPEs9k/eiWoor9TwEeAh
-         Jk6TbVbOJ7eGChr3tPmvtzy82dbdgJ90R1Zk9ZPjYQkXKymTWKPDfguii8DaKssFqKAl
-         uj3qLy2ZWBuB1Fz4JjpKvz4AACs8JX3TuXkbL0yPFmmUtzGLOuPC+iYKFTpf5+9BesgL
-         i8zg==
-X-Gm-Message-State: APjAAAUnlLJcl+MaVWAjAJFCgSc52CNs6YN7zhc9V4qEUZ1pgaDLvLSS
-        cClAsrnx8iDm/4iTCoPMmg8k9A==
-X-Google-Smtp-Source: APXvYqwxsa++WpJ1MVXmafLTcTZvjnkZ0q8rvY70oxgqlkhQed7tcU8Z8H/TgbyBesyzVfDtsdHZXQ==
-X-Received: by 2002:a63:4616:: with SMTP id t22mr495257pga.217.1555627913896;
-        Thu, 18 Apr 2019 15:51:53 -0700 (PDT)
+        bh=bIwZNepkZcafS+Ng1sIJ4koMH/C8FpxZ1rR7ZlajLIo=;
+        b=BiVujFdH2xzPnyHnbXWReQYlcyBqrMpnZqxnIfHda3lktIlUWbXyvUut85iTJ7ryRh
+         sYV1cvlO1jN0x55T4L9eNM1gGDeofcu1CTwGJuKezw+VBt5WjREgQJ4r3aNlcBeFzMlg
+         pk6SvT3mMEyXCEnlHd49YpePQINzRCu7Hu4oMs1wdHLdxzgun8eY2CzwP7N0qhyq9ody
+         pb6V8oy4wUSp+oOhfPq1I/fv39RdQE9mYmIhmHrCbpP0feLQSGTiWctlwn3zaTHW9noz
+         XtTUVXTDBBwPgjyOiXtN4zDnkpongic3HZuh45wtnyDLmEEl0XwwkDp35oubxjMvYBQW
+         8sNw==
+X-Gm-Message-State: APjAAAU+qdkuLCAjN+z5h3zDYI810b+TemYfG/UT9vz0LLx03mOSikr9
+        SI3K63TwPhnLddyrLLyyFvDbNQ==
+X-Google-Smtp-Source: APXvYqy3Vu6VEEuKSPs2A32zkYU3bb+Szv6RngDNlkweLJE4fxGGcBdGfxQzUu71UGSaD8nDlvVqcg==
+X-Received: by 2002:aa7:8284:: with SMTP id s4mr246400pfm.235.1555628576166;
+        Thu, 18 Apr 2019 16:02:56 -0700 (PDT)
 Received: from builder (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
-        by smtp.gmail.com with ESMTPSA id v20sm4001699pfn.116.2019.04.18.15.51.52
+        by smtp.gmail.com with ESMTPSA id d20sm4156327pfo.77.2019.04.18.16.02.54
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 18 Apr 2019 15:51:52 -0700 (PDT)
-Date:   Thu, 18 Apr 2019 15:51:50 -0700
+        Thu, 18 Apr 2019 16:02:55 -0700 (PDT)
+Date:   Thu, 18 Apr 2019 16:02:53 -0700
 From:   Bjorn Andersson <bjorn.andersson@linaro.org>
 To:     Georgi Djakov <georgi.djakov@linaro.org>
 Cc:     robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org,
         daidavid1@codeaurora.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH v2 4/4] dt-bindings: interconnect: qcs404: Introduce
- qcom,qos DT property
-Message-ID: <20190418225150.GN27005@builder>
+Subject: Re: [PATCH v2 2/4] interconnect: qcom: Add QCS404 interconnect
+ provider driver
+Message-ID: <20190418230253.GO27005@builder>
 References: <20190415104357.5305-1-georgi.djakov@linaro.org>
- <20190415104357.5305-5-georgi.djakov@linaro.org>
+ <20190415104357.5305-3-georgi.djakov@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190415104357.5305-5-georgi.djakov@linaro.org>
+In-Reply-To: <20190415104357.5305-3-georgi.djakov@linaro.org>
 User-Agent: Mutt/1.10.0 (2018-05-17)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418225150.AO-RFxz7h0KKbOD7GoCBTILJLxtYwju8Dd7Ma70ZGss@z>
+Message-ID: <20190418230253.LCf0dvgXuZEtReO9zU2UvmrSQKGgKERkfCMxOvuMJ-0@z>
 
 On Mon 15 Apr 03:43 PDT 2019, Georgi Djakov wrote:
+> diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+[..]
+> +#define QCS404_MASTER_AMPSS_M0			0
+> +#define QCS404_MASTER_GRAPHICS_3D		1
+> +#define QCS404_MASTER_MDP_PORT0			2
+> +#define QCS404_SNOC_BIMC_1_MAS			3
+> +#define QCS404_MASTER_TCU_0			4
+> +#define QCS404_MASTER_SPDM			5
+> +#define QCS404_MASTER_BLSP_1			6
+> +#define QCS404_MASTER_BLSP_2			7
+> +#define QCS404_MASTER_XM_USB_HS1		8
+> +#define QCS404_MASTER_CRYPTO_CORE0		9
+> +#define QCS404_MASTER_SDCC_1			10
+> +#define QCS404_MASTER_SDCC_2			11
+> +#define QCS404_SNOC_PNOC_MAS			12
+> +#define QCS404_MASTER_QPIC			13
+> +#define QCS404_MASTER_QDSS_BAM			14
+> +#define QCS404_BIMC_SNOC_MAS			15
+> +#define QCS404_PNOC_SNOC_MAS			16
+> +#define QCS404_MASTER_QDSS_ETR			17
+> +#define QCS404_MASTER_EMAC			18
+> +#define QCS404_MASTER_PCIE			19
+> +#define QCS404_MASTER_USB3			20
+> +#define QCS404_PNOC_INT_0			21
+> +#define QCS404_PNOC_INT_2			22
+> +#define QCS404_PNOC_INT_3			23
+> +#define QCS404_PNOC_SLV_0			24
+> +#define QCS404_PNOC_SLV_1			25
+> +#define QCS404_PNOC_SLV_2			26
+> +#define QCS404_PNOC_SLV_3			27
+> +#define QCS404_PNOC_SLV_4			28
+> +#define QCS404_PNOC_SLV_6			29
+> +#define QCS404_PNOC_SLV_7			30
+> +#define QCS404_PNOC_SLV_8			31
+> +#define QCS404_PNOC_SLV_9			32
+> +#define QCS404_PNOC_SLV_10			33
+> +#define QCS404_PNOC_SLV_11			34
+> +#define QCS404_SNOC_QDSS_INT			35
+> +#define QCS404_SNOC_INT_0			36
+> +#define QCS404_SNOC_INT_1			37
+> +#define QCS404_SNOC_INT_2			38
+> +#define QCS404_SLAVE_EBI_CH0			39
+> +#define QCS404_BIMC_SNOC_SLV			40
+> +#define QCS404_SLAVE_SPDM_WRAPPER		41
+> +#define QCS404_SLAVE_PDM			42
+> +#define QCS404_SLAVE_PRNG			43
+> +#define QCS404_SLAVE_TCSR			44
+> +#define QCS404_SLAVE_SNOC_CFG			45
+> +#define QCS404_SLAVE_MESSAGE_RAM		46
+> +#define QCS404_SLAVE_DISPLAY_CFG		47
+> +#define QCS404_SLAVE_GRAPHICS_3D_CFG		48
+> +#define QCS404_SLAVE_BLSP_1			49
+> +#define QCS404_SLAVE_TLMM_NORTH			50
+> +#define QCS404_SLAVE_PCIE_1			51
+> +#define QCS404_SLAVE_EMAC_CFG			52
+> +#define QCS404_SLAVE_BLSP_2			53
+> +#define QCS404_SLAVE_TLMM_EAST			54
+> +#define QCS404_SLAVE_TCU			55
+> +#define QCS404_SLAVE_PMIC_ARB			56
+> +#define QCS404_SLAVE_SDCC_1			57
+> +#define QCS404_SLAVE_SDCC_2			58
+> +#define QCS404_SLAVE_TLMM_SOUTH			59
+> +#define QCS404_SLAVE_USB_HS			60
+> +#define QCS404_SLAVE_USB3			61
+> +#define QCS404_SLAVE_CRYPTO_0_CFG		62
+> +#define QCS404_PNOC_SNOC_SLV			63
+> +#define QCS404_SLAVE_APPSS			64
+> +#define QCS404_SLAVE_WCSS			65
+> +#define QCS404_SNOC_BIMC_1_SLV			66
+> +#define QCS404_SLAVE_OCIMEM			67
+> +#define QCS404_SNOC_PNOC_SLV			68
+> +#define QCS404_SLAVE_QDSS_STM			69
+> +#define QCS404_SLAVE_CATS_128			70
+> +#define QCS404_SLAVE_OCMEM_64			71
+> +#define QCS404_SLAVE_LPASS			72
 
-> There are separate hardware blocks per each interconnect that allow QoS
-> configuration to be applied to each port (node). There are different kinds of
-> priorities that could be set on these ports. Each port supports also various
-> QoS modes such as "fixed", "limiter", "bypass" and "regulator". Depending on
-> the mode, there are a few additional knobs that could be configured.
-> 
-> Introduce the qcom,qos property, so that we describe this relation in DT and
-> allow the interconnect provider drivers can make use of it.
-> 
+An enum would probably be cleaner, given that the actual values are not
+significant.
 
-As the example shows we will end up with two nodes describing the same
-hardware with pretty much identical set of properties.
+[..]
+> +static int qnoc_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	const struct qcom_icc_desc *desc;
+> +	struct icc_onecell_data *data;
+> +	struct icc_provider *provider;
+> +	struct qcom_icc_node **qnodes;
+> +	struct qcom_icc_provider *qp;
+> +	struct icc_node *node;
+> +	size_t num_nodes, i;
+> +	int ret;
+> +
+> +	rpm = dev_get_drvdata(dev->parent);
+> +	if (!rpm) {
+> +		dev_err(dev, "unable to retrieve handle to RPM\n");
+> +		return -ENODEV;
+> +	}
 
-I really do think it's better to represent and implement the NoC
-controllers on the mmio/platform bus and have a small "proxy" as a child
-of the RPM.
+In line with my feedback on the DT binding I would prefer if this driver
+deals with the devices on the mmio/soc bus and you move the SMD/RPM part
+to a separate driver - then perform the SMD/RPM operation by calling
+into the other driver.
+
+Given how much of this driver is platforms specific then I think it's a
+pretty clean split for adding further (SMD/RPM based) platforms.
 
 
-By doing this you avoid the duplication of the clock properties and you
-don't need the qcom,qos reference to pair up each "bus performance
-driver" to the "bus qos driver".
-
-And you still maintain the idea that the entity you request bandwidth
-votes with are the NoC controller (which also will be the QoS
-controller).
+Except for the decision on where in the device tree this sits I think
+the implementation looks good now!
 
 Regards,
 Bjorn
-
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
-> 
-> v2:
-> - New patch.
-> 
->  .../bindings/interconnect/qcom,qcs404.txt     | 31 +++++++++++++++++++
->  1 file changed, 31 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> index 9befcd14a5b5..b971e0ee2963 100644
-> --- a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> @@ -11,9 +11,37 @@ Required properties :
->  Optional properties :
->  clocks : list of phandles and specifiers to all interconnect bus clocks
->  clock-names : clock names should include both "bus_clk" and "bus_a_clk"
-> +qcom,qos : phandle to the QoS device-tree node
->  
->  Example:
->  
-> +soc {
-> +	...
-> +	bimc_qos: interconnect@400000 {
-> +		compatible = "qcom,qcs404-bimc-qos";
-> +		reg = <0x400000 0x80000>;
-> +		clock-names = "bus_clk", "bus_a_clk";
-> +		clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-> +			<&rpmcc RPM_SMD_BIMC_A_CLK>;
-> +	};
-> +
-> +	pcnoc_qos: interconnect@500000 {
-> +		compatible = "qcom,qcs404-pcnoc-qos";
-> +		reg = <0x500000 0x15080>;
-> +		clock-names = "bus_clk", "bus_a_clk";
-> +		clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-> +			<&rpmcc RPM_SMD_PNOC_A_CLK>;
-> +	};
-> +
-> +	snoc_qos: interconnect@580000 {
-> +		compatible = "qcom,qcs404-snoc-qos";
-> +		reg = <0x580000 0x14000>;
-> +		clock-names = "bus_clk", "bus_a_clk";
-> +		clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-> +			<&rpmcc RPM_SMD_SNOC_A_CLK>;
-> +	};
-> +};
-> +
->  rpm-glink {
->  	...
->  	rpm_requests: glink-channel {
-> @@ -24,6 +52,7 @@ rpm-glink {
->  			clock-names = "bus_clk", "bus_a_clk";
->  			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
->  				<&rpmcc RPM_SMD_BIMC_A_CLK>;
-> +			qcom,qos = <&bimc_qos>;
->  		};
->  
->  		pnoc: interconnect@1 {
-> @@ -32,6 +61,7 @@ rpm-glink {
->  			clock-names = "bus_clk", "bus_a_clk";
->  			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
->  				<&rpmcc RPM_SMD_PNOC_A_CLK>;
-> +			qcom,qos = <&pcnoc_qos>;
->  		};
->  
->  		snoc: interconnect@2 {
-> @@ -40,6 +70,7 @@ rpm-glink {
->  			clock-names = "bus_clk", "bus_a_clk";
->  			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
->  				<&rpmcc RPM_SMD_SNOC_A_CLK>;
-> +			qcom,qos = <&snoc_qos>;
->  		};
->  	};
->  };
