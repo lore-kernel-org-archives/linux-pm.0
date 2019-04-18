@@ -1,51 +1,123 @@
-From: Patrick Venture <venture@google.com>
-Subject: Re: [PATCH 2/6] hwmon: (aspeed-pwm-tacho) Use devm_thermal_of_cooling_device_register
-Date: Thu, 18 Apr 2019 13:35:31 -0700
-Message-ID: <CAO=notxzQUyRJ4L7w6o4Cdbwp-Sg4FXyMDgJUN-7YPm9JgiQuw@mail.gmail.com>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net> <1555617500-10862-3-git-send-email-linux@roeck-us.net>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v2 4/4] dt-bindings: interconnect: qcs404: Introduce
+ qcom,qos DT property
+Date: Thu, 18 Apr 2019 15:51:50 -0700
+Message-ID: <20190418225150.GN27005@builder>
+References: <20190415104357.5305-1-georgi.djakov@linaro.org>
+ <20190415104357.5305-5-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555617500-10862-3-git-send-email-linux@roeck-us.net>
+Content-Disposition: inline
+In-Reply-To: <20190415104357.5305-5-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-hwmon@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, linux-aspeed@lists.ozlabs.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, OpenBMC Maillist <openbmc@lists.ozlabs.org>, linux-pm@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Kamil Debski <kamil@wypas.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.l>
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: robh+dt@kernel.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 18, 2019 at 12:58 PM Guenter Roeck <linux@roeck-us.net> wrote:
->
-> Use devm_thermal_of_cooling_device_register() to register the cooling
-> device. As a side effect, this fixes a driver bug:
-> thermal_cooling_device_unregister() was not called on removal.
->
-> Fixes: f198907d2ff6d ("hwmon: (aspeed-pwm-tacho) cooling device support.")
-> Cc: Mykola Kostenok <c_mykolak@mellanox.com>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+On Mon 15 Apr 03:43 PDT 2019, Georgi Djakov wrote:
 
-Reviewed-by: Patrick Venture <venture@google.com>
+> There are separate hardware blocks per each interconnect that allow QoS
+> configuration to be applied to each port (node). There are different kinds of
+> priorities that could be set on these ports. Each port supports also various
+> QoS modes such as "fixed", "limiter", "bypass" and "regulator". Depending on
+> the mode, there are a few additional knobs that could be configured.
+> 
+> Introduce the qcom,qos property, so that we describe this relation in DT and
+> allow the interconnect provider drivers can make use of it.
+> 
 
+As the example shows we will end up with two nodes describing the same
+hardware with pretty much identical set of properties.
+
+I really do think it's better to represent and implement the NoC
+controllers on the mmio/platform bus and have a small "proxy" as a child
+of the RPM.
+
+
+By doing this you avoid the duplication of the clock properties and you
+don't need the qcom,qos reference to pair up each "bus performance
+driver" to the "bus qos driver".
+
+And you still maintain the idea that the entity you request bandwidth
+votes with are the NoC controller (which also will be the QoS
+controller).
+
+Regards,
+Bjorn
+
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 > ---
->  drivers/hwmon/aspeed-pwm-tacho.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-> index c4dd6301e7c8..0daf0b32aa4a 100644
-> --- a/drivers/hwmon/aspeed-pwm-tacho.c
-> +++ b/drivers/hwmon/aspeed-pwm-tacho.c
-> @@ -830,10 +830,8 @@ static int aspeed_create_pwm_cooling(struct device *dev,
->         }
->         snprintf(cdev->name, MAX_CDEV_NAME_LEN, "%pOFn%d", child, pwm_port);
->
-> -       cdev->tcdev = thermal_of_cooling_device_register(child,
-> -                                                        cdev->name,
-> -                                                        cdev,
-> -                                                        &aspeed_pwm_cool_ops);
-> +       cdev->tcdev = devm_thermal_of_cooling_device_register(dev, child,
-> +                                       cdev->name, cdev, &aspeed_pwm_cool_ops);
->         if (IS_ERR(cdev->tcdev))
->                 return PTR_ERR(cdev->tcdev);
->
-> --
-> 2.7.4
->
+> 
+> v2:
+> - New patch.
+> 
+>  .../bindings/interconnect/qcom,qcs404.txt     | 31 +++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> index 9befcd14a5b5..b971e0ee2963 100644
+> --- a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
+> @@ -11,9 +11,37 @@ Required properties :
+>  Optional properties :
+>  clocks : list of phandles and specifiers to all interconnect bus clocks
+>  clock-names : clock names should include both "bus_clk" and "bus_a_clk"
+> +qcom,qos : phandle to the QoS device-tree node
+>  
+>  Example:
+>  
+> +soc {
+> +	...
+> +	bimc_qos: interconnect@400000 {
+> +		compatible = "qcom,qcs404-bimc-qos";
+> +		reg = <0x400000 0x80000>;
+> +		clock-names = "bus_clk", "bus_a_clk";
+> +		clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
+> +			<&rpmcc RPM_SMD_BIMC_A_CLK>;
+> +	};
+> +
+> +	pcnoc_qos: interconnect@500000 {
+> +		compatible = "qcom,qcs404-pcnoc-qos";
+> +		reg = <0x500000 0x15080>;
+> +		clock-names = "bus_clk", "bus_a_clk";
+> +		clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
+> +			<&rpmcc RPM_SMD_PNOC_A_CLK>;
+> +	};
+> +
+> +	snoc_qos: interconnect@580000 {
+> +		compatible = "qcom,qcs404-snoc-qos";
+> +		reg = <0x580000 0x14000>;
+> +		clock-names = "bus_clk", "bus_a_clk";
+> +		clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+> +			<&rpmcc RPM_SMD_SNOC_A_CLK>;
+> +	};
+> +};
+> +
+>  rpm-glink {
+>  	...
+>  	rpm_requests: glink-channel {
+> @@ -24,6 +52,7 @@ rpm-glink {
+>  			clock-names = "bus_clk", "bus_a_clk";
+>  			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
+>  				<&rpmcc RPM_SMD_BIMC_A_CLK>;
+> +			qcom,qos = <&bimc_qos>;
+>  		};
+>  
+>  		pnoc: interconnect@1 {
+> @@ -32,6 +61,7 @@ rpm-glink {
+>  			clock-names = "bus_clk", "bus_a_clk";
+>  			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
+>  				<&rpmcc RPM_SMD_PNOC_A_CLK>;
+> +			qcom,qos = <&pcnoc_qos>;
+>  		};
+>  
+>  		snoc: interconnect@2 {
+> @@ -40,6 +70,7 @@ rpm-glink {
+>  			clock-names = "bus_clk", "bus_a_clk";
+>  			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+>  				<&rpmcc RPM_SMD_SNOC_A_CLK>;
+> +			qcom,qos = <&snoc_qos>;
+>  		};
+>  	};
+>  };
