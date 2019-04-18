@@ -1,89 +1,55 @@
-From: Frank Lee <tiny.windzz@gmail.com>
-Subject: Re: [PATCH v4 2/2] dt-bindings: cpufreq: Document allwinner,sun50i-h6-operating-points
-Date: Thu, 18 Apr 2019 21:10:25 +0800
-Message-ID: <CAEExFWvmpnJ8EyvAejVtvBQHdVVGFhpSn7zCMmx1BSre-gt+Ug@mail.gmail.com>
-References: <20190416155209.24216-1-tiny.windzz@gmail.com> <20190416155209.24216-3-tiny.windzz@gmail.com>
- <20190417083000.cwzvhlpbxqoifosw@flea>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v2 0/4] Exynos Performance Monitoring Counters enhancements
+Date: Thu, 18 Apr 2019 15:38:28 +0200
+Message-ID: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20190418133849eucas1p11666819084daed6e9585a4f6faa124ed@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417083000.cwzvhlpbxqoifosw@flea>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, l.luba@partner.samsung.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 17, 2019 at 4:30 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->
-> On Tue, Apr 16, 2019 at 11:52:09AM -0400, Yangtao Li wrote:
-> > Allwinner Process Voltage Scaling Tables defines the voltage and
-> > frequency value based on the speedbin blown in the efuse combination.
-> > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> > provide the OPP framework with required information.
-> > This is used to determine the voltage and frequency value for each
-> > OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> >
-> > The "allwinner,sun50i-h6-operating-points" DT extends the
-> > "operating-points-v2"
-> > with following parameters:
-> > - nvmem-cells (NVMEM area containig the speedbin information)
-> > - opp-microvolt-<name>: voltage in micro Volts.
-> >   At runtime, the platform can pick a <name> and matching
-> >   opp-microvolt-<name> property.
-> >                       HW:             <name>:
-> >                       sun50iw-h6      speed0 speed1 speed2
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
-> >  1 file changed, 167 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> > new file mode 100644
-> > index 000000000000..3cb39c6caec3
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> > @@ -0,0 +1,167 @@
-> > +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
-> > +===================================
-> > +
-> > +For some SoCs, the CPU frequency subset and voltage value of each OPP
-> > +varies based on the silicon variant in use. Allwinner Process Voltage
-> > +Scaling Tables defines the voltage and frequency value based on the
-> > +speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
-> > +reads the efuse value from the SoC to provide the OPP framework with
-> > +required information.
-> > +
-> > +Required properties:
-> > +--------------------
-> > +In 'cpus' nodes:
-> > +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> > +
-> > +In 'operating-points-v2' table:
-> > +- compatible: Should be
-> > +     - 'allwinner,sun50i-h6-operating-points'.
-> > +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> > +             efuse registers that has information about the speedbin
-> > +             that is used to select the right frequency/voltage value
-> > +             pair. Please refer the for nvmem-cells bindings
-> > +             Documentation/devicetree/bindings/nvmem/nvmem.txt and
-> > +             also examples below.
-> > +
-> > +In every OPP node:
-> > +- opp-microvolt-<name>: Voltage in micro Volts.
-> > +                     At runtime, the platform can pick a <name> and
-> > +                     matching opp-microvolt-<name> property.
-> > +                     [See: opp.txt]
-> > +                     HW:             <name>:
-> > +                     sun50iw-h6      speed0 speed1 speed2
->
-> There's a typo here (and in your commit log), it should be sun50i-h6
-> instead of sun50iw-h6
->
-> Once fixed:
-> Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
-Another has been sent.
+Hi all,
+
+This patch set extends PPMU on Samsung Exynos by choosing type of data
+which shell be counter in the PPMU registers.
+It is possible to count e.g. read or write requests, read or write data
+or latency.
+A new field has been added in the DT 'event' node called 'event-data-type'.
+It is them used during the setup of the counter. In the prevoius
+implementation there was always one option used: count read+write data.
+Sometimes we need more precised information and this patch set tries to
+address it.
+
+Changes:
+v2:
+ - removed new entry in MAINTAINERS file as suggested by Bartek Zolnierkiewicz
+   and added new file to existing list for devfreq events
+ - added in the dt-bindings/pmu/exynos_ppmu.h 2 new entries for RO and WO for
+   counters in Exynos5433
+ - changed initialization with default values when data_type is not provided
+   in DT (as sugessted by Chanwoo)
+ - added 4th patch which adds 'event-data-type' to 'event' node for Exynos4412
+   PPMU events (asked by Chanwoo)
 
 Regards,
-Yangtao
+Lukasz Luba
+
+Lukasz Luba (4):
+  include: dt-bindings: add Performance Monitoring Unit for Exynos
+  drivers: devfreq: events: extend events by type of counted data
+  Documentation: devicetree: add PPMU events description
+  DT: arm: exynos4412: add event data type which is monitored
+
+ .../bindings/devfreq/event/exynos-ppmu.txt         | 18 +++++++
+ MAINTAINERS                                        |  1 +
+ arch/arm/boot/dts/exynos4412-ppmu-common.dtsi      | 10 ++++
+ drivers/devfreq/event/exynos-ppmu.c                | 61 +++++++++++++++-------
+ include/dt-bindings/pmu/exynos_ppmu.h              | 26 +++++++++
+ include/linux/devfreq-event.h                      |  6 +++
+ 6 files changed, 103 insertions(+), 19 deletions(-)
+ create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+
+-- 
+2.7.4
