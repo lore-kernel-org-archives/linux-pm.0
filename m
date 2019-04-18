@@ -2,175 +2,278 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A02B9C10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:42:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E32AC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:55:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 636912183E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:42:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555591379;
-	bh=h9qyoCxbFTiFLg18zOHH1LOvqUQw+0hkZKUNirVyBWA=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=SHvyIcER9vOXfeq8SXg2UXSfXwaUoo3ZJxxuiBquXiy3hKUGyA294PHkv7QdXnfzO
-	 V/rcO3yrJoo3DtyLDQu5tcMFd2NpJajc3sO5be5a4+ghpTHnZmppnabaRPaC3aDztt
-	 uXutItzKcw9BziwkKmQJ0fZmZuUuJWxKb200oGkw=
+	by mail.kernel.org (Postfix) with ESMTP id 0FB262183E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:55:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XAu+Yxdr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388344AbfDRMmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 08:42:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49308 "EHLO
-        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726162AbfDRMmm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 08:42:42 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-        MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=FVaqqPnygq1+XAL2fV0XyKGzQwLVOq4vtfOZzXdI+DY=; b=mhYX69b7VKfQqcoKdU0MCUDY48
-        wz7J5q7ip7jfFijvK+A2ZbRvvIroxJe506D3ZMQrb3CoLvm9xyPHHWa/5V6VVBpMznpOnG3TfkBul
-        kz42uT6vbsEoSWFDuxWpELrhXI3brxwrB2rUkFxbS3l/dQ1clL/hYTVu4waRAQlFVAZ3+DkBqFnzm
-        gqZN/EwyZolsR5K1343i6maSxSww63KZgfyNN3MAFzgqy9B9T+AHfzMgzbhHjdvpwUt4XzdVhma0k
-        h/lt7McRzt4geBfeCA+wuguIFyeSB89NrhZTxPp/AqEhMrzdLLhaX7EmpBQ/MpRtZ2kCWwpclFQTQ
-        +L6+vL3A==;
-Received: from 177.132.233.55.dynamic.adsl.gvt.net.br ([177.132.233.55] helo=coco.lan)
-        by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
-        id 1hH6N8-0000gI-FO; Thu, 18 Apr 2019 12:42:35 +0000
-Date:   Thu, 18 Apr 2019 09:42:23 -0300
-From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To:     Jonathan Corbet <corbet@lwn.net>
-Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        Mauro Carvalho Chehab <mchehab@infradead.org>,
-        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org,
-        linux-ide@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org,
-        netdev@vger.kernel.org, kexec@lists.infradead.org,
-        linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Avoiding merge conflicts while adding new docs - Was: Re: [PATCH
- 00/57] Convert files to ReST
-Message-ID: <20190418091526.00e074d1@coco.lan>
-In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+        id S2388257AbfDRMzp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 08:55:45 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:34818 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733192AbfDRMzp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 08:55:45 -0400
+Received: by mail-pf1-f195.google.com with SMTP id t21so1092524pfh.2;
+        Thu, 18 Apr 2019 05:55:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=SjTu5plE2NlAxWIp+e3fl4rcYf59I53Cno7zN1Eowns=;
+        b=XAu+YxdrSA9A0EUeWtVv9bEsbdS8IXUiE0WEMjHma3jmT0UlLVV9+8WHqbD5cNqVgu
+         XUdnJJ45klYqTILpWjcaxpf49iH9BL2fN4SNiRT12EyVZOKpEs8JDMg58PqkJlYXauEK
+         G+1lTAMiVdpOWfUpggOnjiiIALqyABHqgZGU0a37gK8av+sVXu8+MsTkfyRgIWYNVNVO
+         JnKalS4Wc3L8cCbsSgAloB01tAwgBQSuPH/QJSD80gN6hwRn1k7iCEuzuMEAn1fmQtBN
+         XNyLv316DfF+IZWjbCCBGb+Hpv0kJ7Pb4EUNy95oUDEQGq2rCJanLwNWUopTCoXl9t8Q
+         0PhA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=SjTu5plE2NlAxWIp+e3fl4rcYf59I53Cno7zN1Eowns=;
+        b=EC8kkditaqyX56iPAb1nQORnkURhABHDBDpFWhDhSTxNoxpUC+O82lA++H8kFUewud
+         5v7lut6ulQIDHXGEypw5ih0RIwm1RkWDlRoRZ+EIJQRyNaItYHHqZBAldWY6+dF4zmQS
+         mz8iGQVx3eTz5ML1NgqgG6y1x3Ol19bUxmbqOQicg4h30UwIKQqMHJTxa+ALCSZxDbZU
+         HCiGF912c6W76RZEqaJ/s3HjH/nAoStBNIxEGssxCdfONdPdD5udBJfKP8yxzuyhr5yI
+         d/j1GVZ1jf2KcJ9dZ7ADR9Yz3HkfKSPf0RzTZmduxCMwKMcSnktc/bymD74x3Sygywyl
+         THNg==
+X-Gm-Message-State: APjAAAWliwqMFgbQ1EvtM9aaW/QAlWZQoMj1rGQx5iTe9HGCb4uSaoFb
+        Yaq7TKYN8CFjZrX9EQIVB64=
+X-Google-Smtp-Source: APXvYqyRMg/vL58E1BswMJ4LVwNg05QdIiS71tTIWpmbw5Q3sO+UmidJj+dIsfRYhPvL2jnlUYIqFA==
+X-Received: by 2002:a63:750c:: with SMTP id q12mr89903740pgc.133.1555592143840;
+        Thu, 18 Apr 2019 05:55:43 -0700 (PDT)
+Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
+        by smtp.gmail.com with ESMTPSA id w3sm3040210pfn.179.2019.04.18.05.55.42
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 18 Apr 2019 05:55:42 -0700 (PDT)
+From:   Yangtao Li <tiny.windzz@gmail.com>
+To:     tiny.windzz@gmail.com, vireshk@kernel.org, nm@ti.com,
+        sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [RESEND] dt-bindings: cpufreq: Document allwinner,sun50i-h6-operating-points
+Date:   Thu, 18 Apr 2019 08:55:38 -0400
+Message-Id: <20190418125538.25722-1-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418124223.XFTihTKSc2KCh_vtIx07UbKFSds1BzWjBWEvjhYHbss@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190418125538.jjCkcruP0sEpzWC8gvbk6myADHdRN-CXDmNhXiUyzpg@z>
 
-Jon,
+Allwinner Process Voltage Scaling Tables defines the voltage and
+frequency value based on the speedbin blown in the efuse combination.
+The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+provide the OPP framework with required information.
+This is used to determine the voltage and frequency value for each
+OPP of operating-points-v2 table when it is parsed by the OPP framework.
 
-Em Mon, 15 Apr 2019 23:55:25 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
+The "allwinner,sun50i-h6-operating-points" DT extends the
+"operating-points-v2"
+with following parameters:
+- nvmem-cells (NVMEM area containig the speedbin information)
+- opp-microvolt-<name>: voltage in micro Volts.
+  At runtime, the platform can pick a <name> and matching
+  opp-microvolt-<name> property.
+			HW:		<name>:
+			sun50i-h6      speed0 speed1 speed2
 
-> I have a separate patch series with do the actual rename and
-> adjustment of references. I opted to submit this first, as it
-> sounds easier to merge this way, as each subsystem maintainer
-> can apply the conversion directly on their trees (or at docs
-> tree), avoiding merge conflects.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
+---
+just fix a typo:
+sun50iw-h6 -> sun50i-h6
 
-Based on the number of feedbacks we have about this, I'm
-considering to submit a second version of my conversion patch
-series that would be doing the rename together with each patch,
-adding the rst files to an index file.
+This patch is [2/2].
+for [1/2]:
+https://patchwork.kernel.org/patch/10903381/
+---
+ .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
+ 1 file changed, 167 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
 
-However, doing that would produce lots of warnings. We have
-already lots of those at linux-next:
+diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+new file mode 100644
+index 000000000000..7deae57a587b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
+@@ -0,0 +1,167 @@
++Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
++===================================
++
++For some SoCs, the CPU frequency subset and voltage value of each OPP
++varies based on the silicon variant in use. Allwinner Process Voltage
++Scaling Tables defines the voltage and frequency value based on the
++speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
++reads the efuse value from the SoC to provide the OPP framework with
++required information.
++
++Required properties:
++--------------------
++In 'cpus' nodes:
++- operating-points-v2: Phandle to the operating-points-v2 table to use.
++
++In 'operating-points-v2' table:
++- compatible: Should be
++	- 'allwinner,sun50i-h6-operating-points'.
++- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
++		efuse registers that has information about the speedbin
++		that is used to select the right frequency/voltage value
++		pair. Please refer the for nvmem-cells bindings
++		Documentation/devicetree/bindings/nvmem/nvmem.txt and
++		also examples below.
++
++In every OPP node:
++- opp-microvolt-<name>: Voltage in micro Volts.
++			At runtime, the platform can pick a <name> and
++			matching opp-microvolt-<name> property.
++			[See: opp.txt]
++			HW:		<name>:
++			sun50i-h6	speed0 speed1 speed2
++
++Example 1:
++---------
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: cpu@0 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <0>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu1: cpu@1 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <1>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu2: cpu@2 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <2>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++
++		cpu3: cpu@3 {
++			compatible = "arm,cortex-a53";
++			device_type = "cpu";
++			reg = <3>;
++			enable-method = "psci";
++			clocks = <&ccu CLK_CPUX>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++			operating-points-v2 = <&cpu_opp_table>;
++			#cooling-cells = <2>;
++		};
++        };
++
++        cpu_opp_table: opp_table {
++                compatible = "allwinner,sun50i-h6-operating-points";
++                nvmem-cells = <&speedbin_efuse>;
++                opp-shared;
++
++                opp@480000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <480000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@720000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <720000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@816000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <816000000>;
++
++                        opp-microvolt-speed0 = <880000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@888000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <888000000>;
++
++                        opp-microvolt-speed0 = <940000>;
++                        opp-microvolt-speed1 = <820000>;
++                        opp-microvolt-speed2 = <800000>;
++                };
++
++                opp@1080000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1080000000>;
++
++                        opp-microvolt-speed0 = <1060000>;
++                        opp-microvolt-speed1 = <880000>;
++                        opp-microvolt-speed2 = <840000>;
++                };
++
++                opp@1320000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1320000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <940000>;
++                        opp-microvolt-speed2 = <900000>;
++                };
++
++                opp@1488000000 {
++                        clock-latency-ns = <244144>; /* 8 32k periods */
++                        opp-hz = /bits/ 64 <1488000000>;
++
++                        opp-microvolt-speed0 = <1160000>;
++                        opp-microvolt-speed1 = <1000000>;
++                        opp-microvolt-speed2 = <960000>;
++                };
++        };
++....
++soc {
++....
++	sid: sid@3006000 {
++		compatible = "allwinner,sun50i-h6-sid";
++		reg = <0x03006000 0x400>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		....
++		speedbin_efuse: speed@1c {
++			reg = <0x1c 4>;
++		};
++        };
++};
+-- 
+2.17.0
 
-	checking consistency... 
-
-	docs/Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/admin-guide/mm/numaperf.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/allocators.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/attributes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/bigalloc.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/bitmaps.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/blockgroup.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/blocks.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/checksums.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/directory.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/eainode.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/group_descr.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/ifork.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/inlinedata.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/inodes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/journal.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/mmp.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/special_inodes.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/filesystems/ext4/super.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/fmc/index.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
-	docs/Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
-
-After thinking a little bit and doing some tests, I think a good solution
-would be to add ":orphan:" markup to the new .rst files that were not
-added yet into the main body (e. g. something like the enclosed example).
-
-That will make Sphinx suppress the:
-	"WARNING: document isn't included in any toctree"
-warning for the new files, while they're not included at the main indexes.
-
-This way, maintainers can do all the hard work of doing/applying the ReST
-file conversion/addition patch series on their own trees, and, once
-everything gets merged, submit a patch against the latest docs-next
-tree, removing the :orphan: tag and add them to the common index.rst
-files.
-
-That should largely avoid merging conflicts.
-
-For example, assuming that someone converts the stuff at
-Documentation/accounting and rename the text files there to
-RST (I'm actually doing that), he could add the enclosed change on
-the top of its index file:
-
-	diff --git a/Documentation/accounting/index.rst b/Documentation/accounting/index.rst
-	index e7dda5afa73f..e1f6284b5ff3 100644
-	--- a/Documentation/accounting/index.rst
-	+++ b/Documentation/accounting/index.rst
-	@@ -1,3 +1,5 @@
-	+:orphan:
-	+
-	 ==========
-	 Accounting
-	 ==========
-
-With would make Sphinx to ignore the subdir index file while
-reporting errors. It will still build the documentation, allowing
-the developer to test the changes.
-
-One of the advantages is that checking the orphaned docs is as
-easy as running:
-
-	$ git grep -l ":orphan:" Documentation/
-	...
-	Documentation/accounting/index.rst
-	...
-
-Making easy for people to check the orphaned files and send a fixup
-patch if something got orphaned after the merge window and send a
-fixes patches to be applied upstream.
-
-What do you think?
-
-Regards,
-Mauro
