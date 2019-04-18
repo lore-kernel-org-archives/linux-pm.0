@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v7 08/10] power: supply: olpc_battery: Avoid using platform_info
-Date: Thu, 18 Apr 2019 16:46:53 +0200
-Message-ID: <20190418144655.18758-9-lkundrak@v3.sk>
+Subject: [PATCH v7 09/10] power: supply: olpc_battery: Add OLPC XO 1.75 support
+Date: Thu, 18 Apr 2019 16:46:54 +0200
+Message-ID: <20190418144655.18758-10-lkundrak@v3.sk>
 References: <20190418144655.18758-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,90 +12,118 @@ To: Sebastian Reichel <sre@kernel.org>
 Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
-n
-directly from the EC driver instead.
-
-This removes x86 specific bits that would prevent this driver from being
-used with the EC of ARM-based OLPC XO 1.75.
+The battery and the protocol are essentially the same as OLPC XO 1.5,
+but the responses from the EC are LSB first.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
+Changes since v6:
+- Collect review tag from Sebastian Reichel
+
 Changes since v5:
-- Turn new_proto into a bool
+- s/int little_endian/bool little_endian/
 
 Changes since v2:
-- Move the priv data allocation hunk from this patch to a proper place
+- Fix the version conditional
 
 Changes since v1:
-- Use uint8_t instead of unsigned char [1] for ecver
+- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
+- s/u16 ec_byte/u16 ec_word/
 
- drivers/power/supply/olpc_battery.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ drivers/power/supply/olpc_battery.c | 25 +++++++++++++++++++------
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index d83c77c2a0ec..8be44c717d85 100644
+index 8be44c717d85..0d67158c13d6 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -57,6 +57,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_ac;
+@@ -58,6 +58,7 @@ struct olpc_battery_data {
  	struct power_supply *olpc_bat;
  	char bat_serial[17];
-+	bool new_proto;
+ 	bool new_proto;
++	bool little_endian;
  };
 =20
  /*********************************************************************
-@@ -100,7 +101,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
- {
- static int olpc_bat_get_status(struct olpc_battery_data *data,
- 		union power_supply_propval *val, uint8_t ec_byte)
- {
--	if (olpc_platform_info.ecver > 0x44) {
-+	if (data->new_proto) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
- 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
- 		else if (ec_byte & BAT_STAT_DISCHARGING)
-@@ -608,6 +609,7 @@ static int olpc_battery_probe(struct platform_device =
-*pdev)
- 	struct power_supply_config psy_cfg =3D {};
- 	struct olpc_battery_data *data;
- 	uint8_t status;
-+	uint8_t ecver;
- 	int ret;
+@@ -323,6 +324,14 @@ static int olpc_bat_get_voltage_max_design(union pow=
+er_supply_propval *val)
+ 	return ret;
+ }
 =20
- 	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-@@ -615,13 +617,21 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, data);
-=20
--	/*
--	 * We've seen a number of EC protocol changes; this driver requires
--	 * the latest EC protocol, supported by 0x44 and above.
--	 */
--	if (olpc_platform_info.ecver < 0x44) {
-+	/* See if the EC is already there and get the EC revision */
-+	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
-+	if (ret)
-+		return ret;
++static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
++{
++	if (data->little_endian)
++		return le16_to_cpu(ec_word);
++	else
++		return be16_to_cpu(ec_word);
++}
 +
-+	if (ecver > 0x44) {
-+		/* XO 1 or 1.5 with a new EC firmware. */
-+		data->new_proto =3D true;
-+	} else if (ecver < 0x44) {
-+		/*
-+		 * We've seen a number of EC protocol changes; this driver
-+		 * requires the latest EC protocol, supported by 0x44 and above.
-+		 */
- 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
--			"battery driver.\n", olpc_platform_info.ecver);
-+			"battery driver.\n", ecver);
- 		return -ENXIO;
- 	}
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -395,7 +404,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
 =20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 9760L / 32;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 9760L / 32;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+@@ -403,7 +412,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 15625L / 120;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 15625L / 120;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
+@@ -434,21 +443,21 @@ static int olpc_bat_get_property(struct power_suppl=
+y *psy,
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+ 		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval =3D (int)ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+=20
+-		val->intval =3D (s16)be16_to_cpu(ec_word) * 6250 / 15;
++		val->intval =3D ecword_to_cpu(data, ec_word) * 6250 / 15;
+ 		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret =3D olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+@@ -622,7 +631,11 @@ static int olpc_battery_probe(struct platform_device=
+ *pdev)
+ 	if (ret)
+ 		return ret;
+=20
+-	if (ecver > 0x44) {
++	if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
++		/* XO 1.75 */
++		data->new_proto =3D true;
++		data->little_endian =3D true;
++	} else if (ecver > 0x44) {
+ 		/* XO 1 or 1.5 with a new EC firmware. */
+ 		data->new_proto =3D true;
+ 	} else if (ecver < 0x44) {
 --=20
 2.21.0
