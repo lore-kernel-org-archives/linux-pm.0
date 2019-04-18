@@ -1,55 +1,84 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v1] ARM: dts: tegra30: Add ACTMON node
-Date: Thu, 18 Apr 2019 11:43:54 +0200
-Message-ID: <20190418094354.GC26909@ulmo>
-References: <20190411223042.25809-1-digetx@gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v2 1/2] power: reset: nvmem-reboot-mode: use NVMEM as
+ reboot mode write interface
+Date: Thu, 18 Apr 2019 11:46:27 +0200
+Message-ID: <20190418094627.fadq3i4tptqq42gm@earth.universe>
+References: <20190411055341.9263-1-nandor.han@vaisala.com>
+ <20190411055341.9263-2-nandor.han@vaisala.com>
+ <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
+ <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="wxDdMuZNg1r63Hyj"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bp45vzivwhqghxsu"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190411223042.25809-1-digetx@gmail.com>
+In-Reply-To: <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>
-Cc: Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Nandor Han <nandor.han@vaisala.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---wxDdMuZNg1r63Hyj
+--bp45vzivwhqghxsu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 12, 2019 at 01:30:42AM +0300, Dmitry Osipenko wrote:
-> Add ACTMON node to the Tegra30's device-tree.
+Hi,
+
+On Thu, Apr 18, 2019 at 09:29:08AM +0300, Nandor Han wrote:
+> On 4/18/19 12:56 AM, Sebastian Reichel wrote:
+> > On Thu, Apr 11, 2019 at 05:54:09AM +0000, Han Nandor wrote:
+> > > Add a new reboot mode write interface that is using an NVMEM cell
+> > > to store the reboot mode magic.
+> > >=20
+> > > Signed-off-by: Nandor Han <nandor.han@vaisala.com>
+> > > ---
 >=20
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  arch/arm/boot/dts/tegra30.dtsi | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> <snip>
+>=20
+> > > +module_platform_driver(nvmem_reboot_mode_driver);
+> > > +
+> > > +MODULE_AUTHOR("Nandor Han <nandor.han@vaisala.com>");
+> > > +MODULE_DESCRIPTION("NVMEM reboot mode driver");
+> > > +MODULE_LICENSE("GPL v2");
+> >=20
+> > I suppose as of bf7fbeeae6db "GPL v2" is deprecated, before it was
+> > often read as GPL v2 only. In both cases it makes sense to just
+> > use "GPL". Otherwise the driver looks fine to me, but I'm waiting
+> > for Rob's review of the DT bindings before merging this.
+> >=20
+> > -- Sebastian
+> >=20
+>=20
+> Thanks Sebastian.
+>=20
+> Do you want me to send a new revision with license changed to "GPL"?..or
+> will you change it when it's merged?
 
-Applied to for-5.2/arm/dt, thanks.
+I prefer to get a follow-up patch for things dealing with copyright/license
+details.
 
-Thierry
+-- Sebastian
 
---wxDdMuZNg1r63Hyj
+--bp45vzivwhqghxsu
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAly4RtkACgkQ3SOs138+
-s6HXnw//cy1isrQsfetZ391dyHewlkERIHxtGrQde2E5DdQyyqezUpwnQ440u1A/
-z69vskHEOfsL4xqxRcRkaWg6jVA6yQa6WrTd3B1ZuIVm766B/OpDXDPPmInGLJXh
-cvXjNquWZCbt/QF3y9M4tne/T7Ix48w9m4mYAzCIvzg0myvzi/ijZEx6HlPcUqfI
-OzgAKQeVcFl6Rc38VebMR0AZo4H4pwpdW2FCjPwUWojOMqP3R9jxcgF2TrxYk0S9
-NNL7v8YPcb1SKI57zeC6hwmbrlPU/YRlc+K7LrMxk7aMSmQ0j9A5cCjEQr0KHnpK
-gNjgLrnv1pk3+1fSuDsph0t/1d5n9qNt4fKe5tkjoSSVv7wSxyA+Zar5exOT13/s
-db2MKFGLZC2QfLSF/1uRLQo8wnlhMPcatiTDZoptPeJXOjFPpaO1ACl7Joc78COH
-SgDqCFBy2razhvIHtZ9M4MpIDPKOByyu+U1EW3R90dOjDBms6LHF3R4WXHiDjV4b
-mF2n8Xy0xkW82yUKJb2/BprV2j59isszkd9kg296f86mmRcTnVAPsZrm119zIo6w
-oFV3KRN8Ur0P1XOwQ3J7of1629yV7k+tY5xYrjtJ+q9R+/1WtJusszfq30h8syuT
-fTwARTFlHCpybtPANPaE8ma2hZ2zXAIYIpTGm3tzAErwi4Mk1jI=
-=9pCI
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly4R28ACgkQ2O7X88g7
++prNZA//XDDqbQSmWJFOQvIRbF4LK9kgFNI94HURh1VJJP0TW101JAnm2uzGa/b/
+2znaMCKDNQYBxemhpezoJMDQcDeZYolZQjqjK5H9Jb5I7KtwpHla0yvF7lG0ftWa
+uGeDjKXoI3v+rhQOFNFVZ65HzoTmIgeTUSmHqbKISNGP875/hjNADXHcn6zkjG22
+eAl0YIbugztjdlyQ0+Xcbm/QM01b+b7F2ni8KnDI7HLxtxScsl6DTAyYlmRX4lGm
+5yxkGtg+U7TvtVMErHnXL86Q6EoQMKZ2la9yBiYejOFP6vTaCcidjsh1BS54VP8I
+Fr4E9mGdmVYiaXKXj1/JVXmBIsMP2l6mSoVvnlFnLHZV5qnz/xvGiSKdMTtRQXZ1
+NnWIxHlNAfnFQ0b3p4qbJBULdpIITHJFkneR46r3Bgsh1n41X9nFNLeyTvXD4ur2
+9LU8o6lgmHp5SyDZpBGV9mICQs+NEoYK9jvNTYDXeJlDM1OQLAI3cVltkgqesAtv
+3dF/GG0gYH74xhDedVgsAYG2r8bKbv9a+d22mUVr/ApuXDiZ5k6BeWmCOaArPF8Q
+63SBCnhhysKfYuOHdWNeENjeXuaZFJuyBsPbZ0mNMaArmCiRtY9CwZKPh/fa10pD
+9c6Ons+hOgnINLhT5h7Smd3O1JWt+rdXlceu4wMn3FWFnLSGJC4=
+=vUsW
 -----END PGP SIGNATURE-----
 
---wxDdMuZNg1r63Hyj--
+--bp45vzivwhqghxsu--
