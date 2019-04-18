@@ -1,74 +1,109 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/4] iio: inkern: API for reading available iio
- channel attribute values
-Date: Thu, 18 Apr 2019 21:47:47 +0200
-Message-ID: <20190418194747.dptsqebjsf3rr6cy@earth.universe>
-References: <20190323172809.14407-1-contact@artur-rojek.eu>
- <20190324152725.35fed317@archlinux>
- <20190414113454.53087ca6@archlinux>
+Subject: Re: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
+Date: Thu, 18 Apr 2019 22:20:00 +0200
+Message-ID: <20190418202000.hcojhcf2f47te44u@earth.universe>
+References: <20190418144655.18758-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wgsxqldkf5o6zf2t"
+        protocol="application/pgp-signature"; boundary="jx6vzhc64gitrwmn"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190414113454.53087ca6@archlinux>
+In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Cc: Artur Rojek <contact@artur-rojek.eu>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---wgsxqldkf5o6zf2t
+--jx6vzhc64gitrwmn
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sun, Apr 14, 2019 at 11:34:54AM +0100, Jonathan Cameron wrote:
-> On Sun, 24 Mar 2019 15:27:25 +0000
-> Jonathan Cameron <jic23@kernel.org> wrote:
+On Thu, Apr 18, 2019 at 04:46:45PM +0200, Lubomir Rintel wrote:
+> This patch set modifies the OLPC battery driver so that it could eventual=
+ly
+> be used on an Arm-based OLPC XO 1.75 machine.
 >=20
-> > On Sat, 23 Mar 2019 18:28:06 +0100
-> > Artur Rojek <contact@artur-rojek.eu> wrote:
-> >=20
-> > > Extend the inkern API with a function for reading available
-> > > attribute values of iio channels.
-> > >=20
-> > > Signed-off-by: Artur Rojek <contact@artur-rojek.eu> =20
-> > If this goes through a route other than IIO (otherwise
-> > I'll just add a signed-off-by...)
-> >=20
-> > Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> Compared to the previous version, it addresses review comments for the
+> x86 platform parts from Thomas Gleixner. Details in individual patches'
+> change logs.
 >=20
-> Applied to the ib-jz47xx-prereq branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git
+> I've failed to version the previous iteration of the set that should've
+> been "v6" for the change logs to make sense. Sorry for that.
 >=20
-> I'll merge that into the togreg branch as well shortly.
+> Thank you,
+> Lubo
 
-Thanks, I pulled that branch into power-supply next for the
-other two patches.
+I queued up the complete patchset via an immutable branch based on
+v5.1-rc1. X86 maintainers can pull this signed immutable branch as
+required. Thanks for the patches,
 
 -- Sebastian
 
---wgsxqldkf5o6zf2t
+The following changes since commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
+
+  Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git =
+tags/psy-olpc-1.75-battery-signed
+
+for you to fetch changes up to 31e220877981d0005d0c4a76f68027a73131212b:
+
+  power: supply: olpc_battery: Have the framework register sysfs files for =
+us (2019-04-18 21:55:04 +0200)
+
+----------------------------------------------------------------
+Immutable branch between x86 and power-supply for OLPC
+
+This immutable branch contains the changes required for OLPC
+1.75 battery, which touches x86 and power-supply and is based
+on v5.1-rc1.
+
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+----------------------------------------------------------------
+Lubomir Rintel (10):
+      dt-bindings: olpc_battery: Add XO-1.5 battery
+      x86/platform/olpc: Don't split string literals when fixing up the DT
+      x86/platform/olpc: Trivial code move in DT fixup
+      x86/platform/olpc: Use a correct version when making up a battery node
+      power: supply: olpc_battery: Use DT to get battery version
+      power: supply: olpc_battery: Move priv data to a struct
+      power: supply: olpc_battery: Use devm_power_supply_register()
+      power: supply: olpc_battery: Avoid using platform_info
+      power: supply: olpc_battery: Add OLPC XO 1.75 support
+      power: supply: olpc_battery: Have the framework register sysfs files =
+for us
+
+ .../bindings/power/supply/olpc_battery.txt         |   2 +-
+ arch/x86/platform/olpc/olpc_dt.c                   | 101 ++++++++----
+ drivers/power/supply/olpc_battery.c                | 169 +++++++++++++----=
+----
+ 3 files changed, 177 insertions(+), 95 deletions(-)
+
+--jx6vzhc64gitrwmn
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly41GMACgkQ2O7X88g7
-+pq0Dg/+P5WbhV6uttsmFVoHwB+hHc7HmE2h4orwZWWWjceetahyW73XHoORaNvd
-AAqGYq2CorKegt3pEYN1FjGLFl5Z1/ifbvr/2XL4145NEe9i2qyf56qlhY0Lou+S
-al59XZ+PfiDSLWL1JX643zocJMIIFFxIptU6BYGPdIlANg9sFxVjejci2j+xJXo7
-im6oiLmaJ9pY8ug9TFflQoS3YiNBEaVNoBks4tWZuJYGLZ2FH5LohEAk/V85g7hR
-m4DTmBDD9bJWC0JQRkjyIal+xYB98f0FJV4dBkD/2G5OUZsCFDM+57MNQTKNF2dG
-YSAcGg5sr5U7WDNvZrlPQpeqi5FmSiSAKp6QO0d1Wo1rfLsUfhrhH6G/KNYYMIpK
-6TZAIB4qfPRSCOWy3zNILPDa4mdSd4tCyfJKj6iGLN0eioZnlvJU7yspm+0wxhnK
-2I+Mj4oWyO4lCbX8CeM3+a+GCCQwxOFM4VQ8muer+tXla2eayznKPkPc0l3K5Jid
-3DZK6ob/VqJV8uC7xPCDW9/7VWiRU7qG3h+z21dt2h7UXVvPu5keeTpifbnhUL6F
-h0eOXOOLmjItgyXUiDcY2fdzUUypEJt0f6vKRozbBOy/ME0bba9ZYyxpi1aolaNU
-dXtj0fd7c+XiZ+fZ0VpIbCF38/OrDoQBl82EzQJg6SdmhiAnfmA=
-=wLB6
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly42+wACgkQ2O7X88g7
++pqEIw/+IH19WGdKSJX8Ybr2LDUp56np4dT3S5GM0EFoxiC8hmpFtMKIBw5kdI2l
+KoBQhsDJTwDnrycuDsFs4eNYZXw+qoNktW4bHNJe6Hdr0C3k77ITT86Y1QwZGH60
+HD/E9brMn5HBBRi1/0YUCkRJa3Iy2nzr+hk8RE/gynHOXywqqmbRA+QCtG4P52Xf
+0azBVaPT163+ioWB4K0P1JeVoGVz583+C9ZfWP683CfuZhLZ2zoLPWCl4hwTpgcJ
+mWoX4jrALIvu8DJZslpg2vKFVqomWg1IMD/OXkDBKo7y/9/LKdb+qCRfFmwNPJQ/
+D0xrhaCeCZeO/t5yMoI/pWRQMPU0TBreXYhydlL59L0mKgH8f1n99lqzDDn9+Vgv
+vEVSIy9RrSmQ4tPcN3JnWw+MlzCqn8lB1xGWbXH2qlRP+hOZWAX5RQNh5t8KeBEk
+vH1FzOSiMxBDgnHG4vHhjcwOf3UmD5ZlUuaIadN5KUIpC1ie126vqsutuQ7IzkmG
+47oxKGsZxtK3ilJe1Pu/MKwQAQD1uTXkEMPeZ6D2ONJebgGbmSnvdZ05puusLwFH
+PYhHFwf2cY+gydMZ5ONM1Rs3FNDsYOt/tOyHXYq/aZqh+d/DXMv5USm6XrLYKyKp
+np8bpoUNdiyeoKQ0RQ1dyAw3qC2Z9s8Sz25IPpls7iNtayjJQB4=
+=sV9a
 -----END PGP SIGNATURE-----
 
---wgsxqldkf5o6zf2t--
+--jx6vzhc64gitrwmn--
