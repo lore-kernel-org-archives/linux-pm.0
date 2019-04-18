@@ -2,115 +2,182 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8AC7C10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA0CAC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:50:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9EA5120821
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:46:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B07792184B
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:50:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="J6/Ev2dw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387519AbfDRJqc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 05:46:32 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:59336 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388244AbfDRJqc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 05:46:32 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id E496F281D4C
-Received: by earth.universe (Postfix, from userid 1000)
-        id 7C4CB3C08D5; Thu, 18 Apr 2019 11:46:27 +0200 (CEST)
-Date:   Thu, 18 Apr 2019 11:46:27 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Nandor Han <nandor.han@vaisala.com>
-Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] power: reset: nvmem-reboot-mode: use NVMEM as
- reboot mode write interface
-Message-ID: <20190418094627.fadq3i4tptqq42gm@earth.universe>
-References: <20190411055341.9263-1-nandor.han@vaisala.com>
- <20190411055341.9263-2-nandor.han@vaisala.com>
- <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
- <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
+        id S2388451AbfDRJur (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 05:50:47 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:33854 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733049AbfDRJur (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 05:50:47 -0400
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190418095045euoutp01d02187bfc765a8fd72b7b2930f5000f7~WiLf3FRZ-0597305973euoutp01O
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 09:50:45 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190418095045euoutp01d02187bfc765a8fd72b7b2930f5000f7~WiLf3FRZ-0597305973euoutp01O
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1555581045;
+        bh=XlqFo64OpA4M2BnDSdVN7DWkiQzakanWPd1XvuFCBlk=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=J6/Ev2dw+oo8ma+fMGq14Rd/DgWGrFnStRDcUMfxLP/yajwM6iHkD3p4wkX+EMm4p
+         FztUmuZtw57vJ471sriJglu2PJSDVXV7hjh6Wbockg+FZmrgo3fUmjvbrqJCO5vMDq
+         wjk8+5lZLyqRnd7/qSi4eqN+RWyhGEKB5IvAL+pk=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190418095044eucas1p27932d434c588c36df892d573a09524eb~WiLfLL1Rz2827628276eucas1p22;
+        Thu, 18 Apr 2019 09:50:44 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id DF.F1.04325.37848BC5; Thu, 18
+        Apr 2019 10:50:43 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20190418095043eucas1p25a9c84f12fd8edfe1748f70257e604ff~WiLeapQ6w2825328253eucas1p2u;
+        Thu, 18 Apr 2019 09:50:43 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190418095043eusmtrp13e1c4a44f49ebb6a722bbb637b8834bc~WiLeMWs5T2722127221eusmtrp1A;
+        Thu, 18 Apr 2019 09:50:43 +0000 (GMT)
+X-AuditID: cbfec7f5-b75ff700000010e5-83-5cb84873ac21
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id C6.C8.04146.37848BC5; Thu, 18
+        Apr 2019 10:50:43 +0100 (BST)
+Received: from [106.120.51.20] (unknown [106.120.51.20]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20190418095042eusmtip2f5294e9e1fee167a3306b1b372d77a1b~WiLdhyoH83051630516eusmtip23;
+        Thu, 18 Apr 2019 09:50:42 +0000 (GMT)
+Subject: Re: [PATCH 3/3] Documentation: devicetree: add PPMU events
+ description
+To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
+        mark.rutland@arm.com, kyungmin.park@samsung.com,
+        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+        myungjoo.ham@samsung.com, kgene@kernel.org
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+Message-ID: <ec6c7ce1-ee13-6921-2656-8a027c3c0686@partner.samsung.com>
+Date:   Thu, 18 Apr 2019 11:50:46 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bp45vzivwhqghxsu"
-Content-Disposition: inline
-In-Reply-To: <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <0d867843-ec56-f30b-8a3f-b3172f325bef@samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02Se0hTYRjG+3bO2Y7D2XFqvpglLcSM1C5SB7JSsFoUXSm8QU49qOR1R811
+        IU3KNC9dzHRqVijaMDSdOgUldDrMbIp5y2yWlpFJhVsUhNXpKPnf73m+5/2+94GPxKRGwomM
+        jktilHGKGJlQjDd1/3zhwcp1IZt/fvOhnxTVEvSIeYagy/UvCDp/ahajjcY6Ed13+bOIrp8a
+        JujB1lIhPZ+rR3SRsV1AP9ZPiOjKkQEBPZ5eLaSvtOlFdOfnTMJ3pbzmXg2S12uyhPKGikvy
+        PK0Gyefr1x4lgsQ+EUxMdAqj9NodKo6afNQsTKi0Ta3qVQvSULpNNrIigfKGFss7PBuJSSlV
+        jaBy8sOiMCPIK9ULuJSUmkcw89tlacJs6l8MVSHoGc7CeDGHoFSv/TtBknbUMWgzXuJ8e6oH
+        QW76BMEJjHqJ4L35IcaFhJQn6DSJ3K0Sah809T3FOMYpV6g0jeIcO1ABYOquI/iMLfQUT//z
+        rag90DdRgDjGKEd4NV0u4NkFMhpLMH5Tiwh+lATy7A8ZN7sInu3gk0Er4tkZem/n4DyzkJb7
+        APF8AabyyxYzO6HTMEBwK2OUO9S2evG2H3wZy8Q5GygbGJ2z5TewgVtNdzHelsC1q1I+vQG0
+        Of0CnldBVU2h6AaSqZf1Ui/rol7WRf3/3fsI1yBHJpmNjWTYbXHMWU9WEcsmx0V6hsfH1qO/
+        36x3wWDRofZfYR2IIpHMWlLt2hwiJRQprCq2AwGJyewlfhHaEKkkQqE6xyjjTyuTYxi2A60m
+        cZmj5PyKyWApFalIYs4wTAKjXDoVkFZOaWj41BvZxO/rVi0H6vAVidlubsyakzE3bSzPV5Yp
+        3gZ7DzfuvxPW9uOaa2nQx71g7XB2vWpXVH5qokveCdOQee54RVkJLZcbBq//ci7+PqSyrOnc
+        Md7oMasr3P4sYYzc5B9w6PXFBlV+uNh0cK/wiGZriso9MK1g92GXr+u6fL1CFxxlOBul2LIR
+        U7KKP9vgkNdiAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrKIsWRmVeSWpSXmKPExsVy+t/xe7rFHjtiDH78Z7PYOGM9q8X1L89Z
+        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
+        cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDVKz6Yov7QkVSEj
+        v7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL+PByu1sBUsFK5afnsXU
+        wNjI18XIySEhYCLx5f4Fli5GLg4hgaWMElOPvWKGSIhJTNq3nR3CFpb4c62LDaLoNaPEvElL
+        gRwODmGBQIm95+tB4iICJxklZk/4ywTiMAtcYZRYfm0yK0THJCaJdXMXMIF0sAnoSexYVQgy
+        lVfATWLb2QNg21gEVCWW3r/BAmKLCkRInHm/ggWiRlDi5MwnYDangL3E2btTGEFsZgEziXmb
+        HzJD2OISt57MZ4Kw5SWat85mnsAoNAtJ+ywkLbOQtMxC0rKAkWUVo0hqaXFuem6xoV5xYm5x
+        aV66XnJ+7iZGYBRvO/Zz8w7GSxuDDzEKcDAq8fCuUN0eI8SaWFZcmXuIUYKDWUmE1zFlS4wQ
+        b0piZVVqUX58UWlOavEhRlOg5yYyS4km5wMTTF5JvKGpobmFpaG5sbmxmYWSOO95g8ooIYH0
+        xJLU7NTUgtQimD4mDk6pBsa5DoG2EnwXS9XCCpZ6zlfqynUwZDx9U+/vt+QHMx0iq+x4Vb58
+        UVSbd+VqQqjjip9nNAKnBT5I7HiX+fC8WeeT3Y+uCTxeJn6sMykiN4g988m+Y2LFW+q/vJ0a
+        PD9h+p2fwf1+R50YVOVsf8SzVb9e/PLAweJVb29Hz05atSa6YVpi8mq1qUeUWIozEg21mIuK
+        EwGgt0o3+AIAAA==
+X-CMS-MailID: 20190418095043eucas1p25a9c84f12fd8edfe1748f70257e604ff
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190417074835eucas1p19319bedd176d55e10b272881b7c68919
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190417074835eucas1p19319bedd176d55e10b272881b7c68919
+References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190417074835eucas1p19319bedd176d55e10b272881b7c68919@eucas1p1.samsung.com>
+        <1555487288-4777-4-git-send-email-l.luba@partner.samsung.com>
+        <0d867843-ec56-f30b-8a3f-b3172f325bef@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418094627.uiL7TLXu9BpU6fqbig6O7gbCWuNJ6kGs0kYI3AH8ur0@z>
+Message-ID: <20190418095046.lrpiepGzIK2wUKzpGy7pHAFHn33CQRea8dBVVAxEhBQ@z>
 
+Hi Chanwoo,
 
---bp45vzivwhqghxsu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 4/17/19 10:26 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
+> 
+> On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
+>> Extend the documenation by events description with new 'event-data-type'
+>> field. Add example how the event might be defined in DT.
+>>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>> ---
+>>   .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
+>>   1 file changed, 18 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+>> index 3e36c1d..47feb5f 100644
+>> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+>> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+>> @@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
+>>   			reg = <0x104d0000 0x2000>;
+>>   			status = "disabled";
+>>   		};
+>> +
+>> +The 'event' type specified in the PPMU node defines 'event-name'
+>> +which also contains 'id' number and optionally 'event-data-type'.
+>> +
+>> +Example:
+>> +
+>> +		events {
+>> +			ppmu_leftbus_0: ppmu-event0-leftbus {
+>> +				event-name = "ppmu-event0-leftbus";
+>> +				event-data-type = <PPMU_RO_DATA_CNT>;
+>> +			};
+>> +		};
+>> +
+>> +The 'event-data-type' defines the type of data which shell be counted
+>> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
+> 
+> I replied about 'pmu' name on patch2. Please check it.
+Yes, I've seen it and responded.
+> 
+>> +all possible type, i.e. count read requests, count write data in bytes,
+>> +etc. This field is optional and when it is missing, the driver code will
+>> +use default data type.
+>>
+> Looks good to me.
+> But, If you want to add the new 'event-data-type' property,
+> you better to add 'event-data-type' to Exynos dts file including
+> PPMU device.
+> 
+> If the dts file contain the data type information,
+> I think it is easy to understand for the user
+> what is monitoring on PPMU device.
 
-Hi,
+Make sense, I will do that. It will be explicitly telling the user what
+is currently monitored in the PPMU device event.
 
-On Thu, Apr 18, 2019 at 09:29:08AM +0300, Nandor Han wrote:
-> On 4/18/19 12:56 AM, Sebastian Reichel wrote:
-> > On Thu, Apr 11, 2019 at 05:54:09AM +0000, Han Nandor wrote:
-> > > Add a new reboot mode write interface that is using an NVMEM cell
-> > > to store the reboot mode magic.
-> > >=20
-> > > Signed-off-by: Nandor Han <nandor.han@vaisala.com>
-> > > ---
->=20
-> <snip>
->=20
-> > > +module_platform_driver(nvmem_reboot_mode_driver);
-> > > +
-> > > +MODULE_AUTHOR("Nandor Han <nandor.han@vaisala.com>");
-> > > +MODULE_DESCRIPTION("NVMEM reboot mode driver");
-> > > +MODULE_LICENSE("GPL v2");
-> >=20
-> > I suppose as of bf7fbeeae6db "GPL v2" is deprecated, before it was
-> > often read as GPL v2 only. In both cases it makes sense to just
-> > use "GPL". Otherwise the driver looks fine to me, but I'm waiting
-> > for Rob's review of the DT bindings before merging this.
-> >=20
-> > -- Sebastian
-> >=20
->=20
-> Thanks Sebastian.
->=20
-> Do you want me to send a new revision with license changed to "GPL"?..or
-> will you change it when it's merged?
-
-I prefer to get a follow-up patch for things dealing with copyright/license
-details.
-
--- Sebastian
-
---bp45vzivwhqghxsu
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly4R28ACgkQ2O7X88g7
-+prNZA//XDDqbQSmWJFOQvIRbF4LK9kgFNI94HURh1VJJP0TW101JAnm2uzGa/b/
-2znaMCKDNQYBxemhpezoJMDQcDeZYolZQjqjK5H9Jb5I7KtwpHla0yvF7lG0ftWa
-uGeDjKXoI3v+rhQOFNFVZ65HzoTmIgeTUSmHqbKISNGP875/hjNADXHcn6zkjG22
-eAl0YIbugztjdlyQ0+Xcbm/QM01b+b7F2ni8KnDI7HLxtxScsl6DTAyYlmRX4lGm
-5yxkGtg+U7TvtVMErHnXL86Q6EoQMKZ2la9yBiYejOFP6vTaCcidjsh1BS54VP8I
-Fr4E9mGdmVYiaXKXj1/JVXmBIsMP2l6mSoVvnlFnLHZV5qnz/xvGiSKdMTtRQXZ1
-NnWIxHlNAfnFQ0b3p4qbJBULdpIITHJFkneR46r3Bgsh1n41X9nFNLeyTvXD4ur2
-9LU8o6lgmHp5SyDZpBGV9mICQs+NEoYK9jvNTYDXeJlDM1OQLAI3cVltkgqesAtv
-3dF/GG0gYH74xhDedVgsAYG2r8bKbv9a+d22mUVr/ApuXDiZ5k6BeWmCOaArPF8Q
-63SBCnhhysKfYuOHdWNeENjeXuaZFJuyBsPbZ0mNMaArmCiRtY9CwZKPh/fa10pD
-9c6Ons+hOgnINLhT5h7Smd3O1JWt+rdXlceu4wMn3FWFnLSGJC4=
-=vUsW
------END PGP SIGNATURE-----
-
---bp45vzivwhqghxsu--
+Regards,
+Lukasz
+> 
+> 
