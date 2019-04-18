@@ -2,80 +2,112 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26AFAC10F0B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 06:38:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDA9DC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 07:15:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E89BD2184B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 06:38:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B97B21850
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 07:15:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733151AbfDRGir (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 02:38:47 -0400
-Received: from hel-mailgw-01.vaisala.com ([193.143.230.17]:35080 "EHLO
-        hel-mailgw-01.vaisala.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725836AbfDRGir (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 02:38:47 -0400
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Apr 2019 02:38:46 EDT
-X-IronPort-AV: E=Sophos;i="5.60,364,1549922400"; 
-   d="scan'208";a="217000148"
-Subject: Re: [PATCH v2 1/2] power: reset: nvmem-reboot-mode: use NVMEM as
- reboot mode write interface
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-References: <20190411055341.9263-1-nandor.han@vaisala.com>
- <20190411055341.9263-2-nandor.han@vaisala.com>
- <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
-From:   Nandor Han <nandor.han@vaisala.com>
-Message-ID: <b046dc29-002c-39a9-5a54-562c49adb691@vaisala.com>
-Date:   Thu, 18 Apr 2019 09:29:08 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <20190417215649.ejrvd6zekfmvjtn5@earth.universe>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Apr 2019 06:29:08.0317 (UTC) FILETIME=[071FF0D0:01D4F5B0]
+        id S1730258AbfDRHPV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 03:15:21 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:32856 "EHLO
+        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729497AbfDRHPU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 03:15:20 -0400
+Received: from penelope.horms.nl (astrasbourg-652-1-77-110.w109-217.abo.wanadoo.fr [109.217.202.110])
+        by kirsty.vergenet.net (Postfix) with ESMTPA id D9C0E25AEB1;
+        Thu, 18 Apr 2019 17:15:18 +1000 (AEST)
+Received: by penelope.horms.nl (Postfix, from userid 7100)
+        id 60AC8E22049; Thu, 18 Apr 2019 09:15:15 +0200 (CEST)
+From:   Simon Horman <horms+renesas@verge.net.au>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>
+Cc:     Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org,
+        Yoshihiro Kaneko <ykaneko0929@gmail.com>,
+        Simon Horman <horms+renesas@verge.net.au>
+Subject: [PATCH repost] thermal: rcar_thermal: update calculation formula for E3
+Date:   Thu, 18 Apr 2019 09:15:14 +0200
+Message-Id: <20190418071514.13027-1-horms+renesas@verge.net.au>
+X-Mailer: git-send-email 2.11.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418062908.v-5uAFg-9ygsWU_ErBvVc0Klpe_ePelZI55PPHzBbKM@z>
 
-On 4/18/19 12:56 AM, Sebastian Reichel wrote:
-> On Thu, Apr 11, 2019 at 05:54:09AM +0000, Han Nandor wrote:
->> Add a new reboot mode write interface that is using an NVMEM cell
->> to store the reboot mode magic.
->>
->> Signed-off-by: Nandor Han <nandor.han@vaisala.com>
->> ---
+From: Yoshihiro Kaneko <ykaneko0929@gmail.com>
 
-<snip>
+HW manual changes temperature calculation formula for E3:
+- When CTEMP is less than 24
+   T = CTEMP[5:0] * 5.5 - 72
+- When CTEMP is equal to/greater than 24
+   T = CTEMP[5:0] * 5 - 60
 
->> +module_platform_driver(nvmem_reboot_mode_driver);
->> +
->> +MODULE_AUTHOR("Nandor Han <nandor.han@vaisala.com>");
->> +MODULE_DESCRIPTION("NVMEM reboot mode driver");
->> +MODULE_LICENSE("GPL v2");
-> 
-> I suppose as of bf7fbeeae6db "GPL v2" is deprecated, before it was
-> often read as GPL v2 only. In both cases it makes sense to just
-> use "GPL". Otherwise the driver looks fine to me, but I'm waiting
-> for Rob's review of the DT bindings before merging this.
-> 
-> -- Sebastian
-> 
+This was inspired by a patch in the BSP by Van Do <van.do.xw@renesas.com>
 
-Thanks Sebastian.
+Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
+Tested-by: Simon Horman <horms+renesas@verge.net.au>
+Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+---
+ drivers/thermal/rcar_thermal.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Do you want me to send a new revision with license changed to "GPL"?..or 
-will you change it when it's merged?
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 97462e9b40d8..11df0cc63bed 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -52,6 +52,7 @@ struct rcar_thermal_chip {
+ 	unsigned int irq_per_ch : 1;
+ 	unsigned int needs_suspend_resume : 1;
+ 	unsigned int nirqs;
++	unsigned int ctemp_bands;
+ };
+ 
+ static const struct rcar_thermal_chip rcar_thermal = {
+@@ -60,6 +61,7 @@ static const struct rcar_thermal_chip rcar_thermal = {
+ 	.irq_per_ch = 0,
+ 	.needs_suspend_resume = 0,
+ 	.nirqs = 1,
++	.ctemp_bands = 1,
+ };
+ 
+ static const struct rcar_thermal_chip rcar_gen2_thermal = {
+@@ -68,6 +70,7 @@ static const struct rcar_thermal_chip rcar_gen2_thermal = {
+ 	.irq_per_ch = 0,
+ 	.needs_suspend_resume = 0,
+ 	.nirqs = 1,
++	.ctemp_bands = 1,
+ };
+ 
+ static const struct rcar_thermal_chip rcar_gen3_thermal = {
+@@ -80,6 +83,7 @@ static const struct rcar_thermal_chip rcar_gen3_thermal = {
+ 	 * interrupts to detect a temperature change, rise or fall.
+ 	 */
+ 	.nirqs = 2,
++	.ctemp_bands = 2,
+ };
+ 
+ struct rcar_thermal_priv {
+@@ -263,7 +267,12 @@ static int rcar_thermal_get_current_temp(struct rcar_thermal_priv *priv,
+ 		return ret;
+ 
+ 	mutex_lock(&priv->lock);
+-	tmp =  MCELSIUS((priv->ctemp * 5) - 65);
++	if (priv->chip->ctemp_bands == 1)
++		tmp =  MCELSIUS((priv->ctemp * 5) - 65);
++	else if (priv->ctemp < 24)
++		tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
++	else
++		tmp = MCELSIUS((priv->ctemp * 5) - 60);
+ 	mutex_unlock(&priv->lock);
+ 
+ 	if ((tmp < MCELSIUS(-45)) || (tmp > MCELSIUS(125))) {
+-- 
+2.11.0
 
-Nandor
