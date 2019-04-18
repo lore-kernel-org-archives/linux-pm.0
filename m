@@ -2,197 +2,119 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 086A6C282DD
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 08:53:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F202BC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:43:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CD1452183E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 08:53:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BFDAD2183F
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:43:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ragnatech-se.20150623.gappssmtp.com header.i=@ragnatech-se.20150623.gappssmtp.com header.b="UVpcmRab"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PWRFX++Q"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388097AbfDRIxu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 04:53:50 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:37380 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726873AbfDRIxu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 04:53:50 -0400
-Received: by mail-lf1-f68.google.com with SMTP id o19so1024444lfl.4
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 01:53:48 -0700 (PDT)
+        id S2388426AbfDRJn6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 05:43:58 -0400
+Received: from mail-wm1-f67.google.com ([209.85.128.67]:55175 "EHLO
+        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387519AbfDRJn6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 05:43:58 -0400
+Received: by mail-wm1-f67.google.com with SMTP id c1so2002592wml.4;
+        Thu, 18 Apr 2019 02:43:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
+        d=gmail.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=uynYQrHQ9VKE+Hszzp/XNIE6bwIb6ne5eqCgUQiYX7c=;
-        b=UVpcmRabaEbAOO3CLDUCJFjAKex9CZboPx7botwHTRx3P+WbAZ5PaQmM1JxyolLIP3
-         p9cY4zzbX3cSeY3UNV0Oq54VW6TMxTXrg3BjPZv3XwLHI8APYhX4urJctu4ROLKd2SpX
-         8T9zD0IAZt7M6CobE8PPpNHMrpMN3ZpaCR7BvodwG83tscCPSb2cpQP+SyaKPQUomvqJ
-         BM2XrwkCWfnvC1w1ZwlJvZaM3HaKsst4B6AFBUxsAiBpnDgluR6mXMGxz0H98Yeah8pZ
-         G1ctS8T4ZUlBvmHZn5T06Ukq4FXzF99OCnvrHH0lr5cgg1eRLdZh2RVKVUOUtISLyfr8
-         Nksw==
+         :content-disposition:in-reply-to:user-agent;
+        bh=K0FLtOfXpWaZbif33VOkSsJZBPCbQPbqlBeJZqp/xKk=;
+        b=PWRFX++Q9zE64Jqj/C/tGA5OgR5YHdJqlJ+NE3o2D2u21wGazt9ZKzg+4kLKvJEZU6
+         LtHJWwq8ZZpHxL8k4/woLCThaz9j6/cWvxC9JRfl48+pVTxYbIlaQVgERf8CwvXN70VF
+         sttKtVZF9YnLrTr1vuQJ4AGG1uPseZdFATuZvFhNk8S5MOgEqgeqyjlt/HHBHrM8eHHF
+         eJ+m1gb5DVw2ZpeMAEAlqwtNLjv/OskSF0WSWiXhJVqFtij6eknCY5DVQmxdjhDM/NkX
+         iHX2SUa2sn3d8eoIl5CvWKiOu59hZuxZL8dpykDiJ57QXdFAHMwe19H7+CZlqnOAzSMK
+         n9wg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=uynYQrHQ9VKE+Hszzp/XNIE6bwIb6ne5eqCgUQiYX7c=;
-        b=fHoyIIOeGSOLK9Ajm/V4wc47sx551DmQeWE2+3Dl6LGWcf/nePBEzUc1D0pSTRNhNF
-         suvRIXrJ04102qmxFUCNqphZg4vldVT2rz16LbbHigOqVtzxVuDONLUI9JZffPB+7Kgw
-         60unHH9iC+RfXF2A+NMEDrOc+qJ6ntj54t6Kr2znle0ud9Izk4u0J9Z0PB78fnHxB6Zo
-         zWVOaQGrGvJj1Zxl04FqfKuzgu8O1X3CmhaoBMp8k0AE1lwR8SF/1fy+51jcEYWmhjrG
-         WAhMWgIbvH/NzdQCM09VB3sHRHBDJyGsTedLxdq2VImcNNyBRVDgEjE0CxX3hTIsk+NP
-         quRA==
-X-Gm-Message-State: APjAAAUZfkPlAt7KckUQVvlLkc9D5DKVh7sDnsYJaQcynQG5zNuhXl3O
-        aeA/7uRu0ffPIUTHZva2bCecug==
-X-Google-Smtp-Source: APXvYqz1El7LPujk7cUx3dXvzNVGnVsz5Us5CEferqfhNP5At7Vr6dxO/3/aSswRZFScXUlzS4726w==
-X-Received: by 2002:ac2:44b2:: with SMTP id c18mr7843961lfm.86.1555577627214;
-        Thu, 18 Apr 2019 01:53:47 -0700 (PDT)
-Received: from localhost (89-233-230-99.cust.bredband2.com. [89.233.230.99])
-        by smtp.gmail.com with ESMTPSA id d1sm311909lfa.49.2019.04.18.01.53.46
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=K0FLtOfXpWaZbif33VOkSsJZBPCbQPbqlBeJZqp/xKk=;
+        b=QRXj55U/mEFJ3d+hhq+/IgxdMKUIKo82y9I5d9RtLLQfI04mtZdCZxpyve8WizZZhs
+         u31IKci2xwsoxvkDIheRIVdgdGfUEVu4w3Jz3X9lAac3SmR5S37tHizpYgSmHNmITMAE
+         lxh5CsdZYroyDolCQVLF/G92q/KQJrQMhoqgmqoacFsSsZsYZAaS7D7mq/Jtt7IXIKfi
+         aoU4KLvx7qUVK+v24yvANX6rftv+7RP531ibXsFi8aOcGCPatGl4qzlM1bJnmLfMmEdb
+         5UdYUU4N78zUzpfMxCnrgqu3Nq2sd5dUgGZvwZRYNOHn3diA4pT64MkcFMRSPcO16D+f
+         lctw==
+X-Gm-Message-State: APjAAAVoG0wwVw2ssqhypor576a9ZatomuKPUHhIk6BmvvW+p/9So1uu
+        7rRn1Hk1lmzP4vS7ckEkHIU=
+X-Google-Smtp-Source: APXvYqxykLV5XNFfmKoVR1ImnqYTe4ZWpzgVdQno2HnBJnn4EjMneGx37F2/2Tq1ChpwTuvBKW535g==
+X-Received: by 2002:a1c:4056:: with SMTP id n83mr2333683wma.146.1555580635784;
+        Thu, 18 Apr 2019 02:43:55 -0700 (PDT)
+Received: from localhost (p2E5BE61D.dip0.t-ipconnect.de. [46.91.230.29])
+        by smtp.gmail.com with ESMTPSA id r18sm2654755wme.18.2019.04.18.02.43.54
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 18 Apr 2019 01:53:46 -0700 (PDT)
-Date:   Thu, 18 Apr 2019 10:53:46 +0200
-From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
-        <niklas.soderlund@ragnatech.se>
-To:     Yoshihiro Kaneko <ykaneko0929@gmail.com>
-Cc:     linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Simon Horman <horms@verge.net.au>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        linux-renesas-soc@vger.kernel.org
-Subject: Re: [PATCH/RFT v2 2/3] thermal: rcar_gen3_thermal: Update
- calculation formula of IRQTEMP
-Message-ID: <20190418085346.GX28515@bigcity.dyn.berto.se>
-References: <1555436655-5262-1-git-send-email-ykaneko0929@gmail.com>
- <1555436655-5262-3-git-send-email-ykaneko0929@gmail.com>
+        Thu, 18 Apr 2019 02:43:55 -0700 (PDT)
+Date:   Thu, 18 Apr 2019 11:43:54 +0200
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v1] ARM: dts: tegra30: Add ACTMON node
+Message-ID: <20190418094354.GC26909@ulmo>
+References: <20190411223042.25809-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="wxDdMuZNg1r63Hyj"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1555436655-5262-3-git-send-email-ykaneko0929@gmail.com>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+In-Reply-To: <20190411223042.25809-1-digetx@gmail.com>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190418094354.-R23zfDu3YypimZ0PEFKyYDARzzBfsDd9Sc7Dmc9cLA@z>
 
-Hi Kaneko-san,
 
-Thanks for your work.
+--wxDdMuZNg1r63Hyj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 2019-04-17 02:44:14 +0900, Yoshihiro Kaneko wrote:
-> Update the formula to calculate CTEMP:
-> Currently, the CTEMP is average of val1 (is calculated by
-> formula 1) and val2 (is calculated by formula 2). But,
-> as description in HWM (chapter 10A.3.1.1 Setting of Normal Mode)
-> 
-> If (STEMP < Tj_T) CTEMP value should be val1.
-> If (STEMP > Tj_T) CTEMP value should be val2.
-> 
-> Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
+On Fri, Apr 12, 2019 at 01:30:42AM +0300, Dmitry Osipenko wrote:
+> Add ACTMON node to the Tegra30's device-tree.
+>=20
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/thermal/rcar_gen3_thermal.c | 34 ++++++++++++++++++----------------
->  1 file changed, 18 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index a2fd0fd..97cf3cd 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -77,6 +77,7 @@ struct rcar_gen3_thermal_tsc {
->  	struct equation_coefs coef;
->  	int low;
->  	int high;
-> +	int tj_2;
->  };
->  
->  struct rcar_gen3_thermal_priv {
-> @@ -126,28 +127,27 @@ static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
->  /* no idea where these constants come from */
->  #define TJ_3 -41
->  
-> -static void rcar_gen3_thermal_calc_coefs(struct equation_coefs *coef,
-> +
-> +static void rcar_gen3_thermal_calc_coefs(struct rcar_gen3_thermal_tsc *tsc,
->  					 int *ptat, int *thcode,
->  					 unsigned int ths_tj_1)
->  {
-> -	int tj_2;
-> -
->  	/* TODO: Find documentation and document constant calculation formula */
+>  arch/arm/boot/dts/tegra30.dtsi | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 
-Maybe you cold also fix this todo now that the datasheet have been 
-updated with 10A.3.1.1 ? This might also impact the equation_coefs 
-structure.
+Applied to for-5.2/arm/dt, thanks.
 
->  
->  	/*
->  	 * Division is not scaled in BSP and if scaled it might overflow
->  	 * the dividend (4095 * 4095 << 14 > INT_MAX) so keep it unscaled
->  	 */
-> -	tj_2 = (FIXPT_INT((ptat[1] - ptat[2]) * 157)
-> -		/ (ptat[0] - ptat[2])) + FIXPT_INT(TJ_3);
-> +	tsc->tj_2 = (FIXPT_INT((ptat[1] - ptat[2]) * 157)
-> +		     / (ptat[0] - ptat[2])) + FIXPT_INT(TJ_3);
+Thierry
 
-I think tj_2 should be renamed to match the names in the datasheet, it's 
-Tj_T from 10A.3.1.1 right?
+--wxDdMuZNg1r63Hyj
+Content-Type: application/pgp-signature; name="signature.asc"
 
->  
-> -	coef->a1 = FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[2]),
-> -			     tj_2 - FIXPT_INT(TJ_3));
-> -	coef->b1 = FIXPT_INT(thcode[2]) - coef->a1 * TJ_3;
-> +	tsc->coef.a1 = FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[2]),
-> +				 tsc->tj_2 - FIXPT_INT(TJ_3));
-> +	tsc->coef.b1 = FIXPT_INT(thcode[2]) - tsc->coef.a1 * TJ_3;
->  
-> -	coef->a2 = FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[0]),
-> -			     tj_2 - FIXPT_INT(ths_tj_1));
-> -	coef->b2 = FIXPT_INT(thcode[0]) - coef->a2 * ths_tj_1;
-> +	tsc->coef.a2 = FIXPT_DIV(FIXPT_INT(thcode[1] - thcode[0]),
-> +				 tsc->tj_2 - FIXPT_INT(ths_tj_1));
-> +	tsc->coef.b2 = FIXPT_INT(thcode[0]) - tsc->coef.a2 * ths_tj_1;
->  }
->  
->  static int rcar_gen3_thermal_round(int temp)
-> @@ -186,13 +186,15 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
->  static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar_gen3_thermal_tsc *tsc,
->  					      int mcelsius)
->  {
-> -	int celsius, val1, val2;
-> +	int celsius, val;
->  
->  	celsius = DIV_ROUND_CLOSEST(mcelsius, 1000);
-> -	val1 = celsius * tsc->coef.a1 + tsc->coef.b1;
-> -	val2 = celsius * tsc->coef.a2 + tsc->coef.b2;
-> +	if (celsius <= INT_FIXPT(tsc->tj_2))
-> +		val = celsius * tsc->coef.a1 + tsc->coef.b1;
-> +	else
-> +		val = celsius * tsc->coef.a2 + tsc->coef.b2;
->  
-> -	return INT_FIXPT((val1 + val2) / 2);
-> +	return INT_FIXPT(val);
->  }
->  
->  static int rcar_gen3_thermal_set_trips(void *devdata, int low, int high)
-> @@ -440,7 +442,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		priv->tscs[i] = tsc;
->  
->  		priv->thermal_init(tsc);
-> -		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i],
-> +		rcar_gen3_thermal_calc_coefs(tsc, ptat, thcode[i],
->  					     *rcar_gen3_ths_tj_1);
->  
->  		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
-> -- 
-> 1.9.1
-> 
+-----BEGIN PGP SIGNATURE-----
 
--- 
-Regards,
-Niklas Söderlund
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAly4RtkACgkQ3SOs138+
+s6HXnw//cy1isrQsfetZ391dyHewlkERIHxtGrQde2E5DdQyyqezUpwnQ440u1A/
+z69vskHEOfsL4xqxRcRkaWg6jVA6yQa6WrTd3B1ZuIVm766B/OpDXDPPmInGLJXh
+cvXjNquWZCbt/QF3y9M4tne/T7Ix48w9m4mYAzCIvzg0myvzi/ijZEx6HlPcUqfI
+OzgAKQeVcFl6Rc38VebMR0AZo4H4pwpdW2FCjPwUWojOMqP3R9jxcgF2TrxYk0S9
+NNL7v8YPcb1SKI57zeC6hwmbrlPU/YRlc+K7LrMxk7aMSmQ0j9A5cCjEQr0KHnpK
+gNjgLrnv1pk3+1fSuDsph0t/1d5n9qNt4fKe5tkjoSSVv7wSxyA+Zar5exOT13/s
+db2MKFGLZC2QfLSF/1uRLQo8wnlhMPcatiTDZoptPeJXOjFPpaO1ACl7Joc78COH
+SgDqCFBy2razhvIHtZ9M4MpIDPKOByyu+U1EW3R90dOjDBms6LHF3R4WXHiDjV4b
+mF2n8Xy0xkW82yUKJb2/BprV2j59isszkd9kg296f86mmRcTnVAPsZrm119zIo6w
+oFV3KRN8Ur0P1XOwQ3J7of1629yV7k+tY5xYrjtJ+q9R+/1WtJusszfq30h8syuT
+fTwARTFlHCpybtPANPaE8ma2hZ2zXAIYIpTGm3tzAErwi4Mk1jI=
+=9pCI
+-----END PGP SIGNATURE-----
+
+--wxDdMuZNg1r63Hyj--
