@@ -1,92 +1,47 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v7 07/10] power: supply: olpc_battery: Use devm_power_supply_register()
-Date: Thu, 18 Apr 2019 16:46:52 +0200
-Message-ID: <20190418144655.18758-8-lkundrak@v3.sk>
-References: <20190418144655.18758-1-lkundrak@v3.sk>
+From: Maxime Ripard <maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v4 0/7] ARM: sun8i: a83t: Enable USB OTG
+Date: Thu, 18 Apr 2019 17:49:22 +0200
+Message-ID: <20190418154922.rvvxpiznjiv7kpee@flea>
+References: <20190416064024.20414-1-wens@kernel.org>
+ <20190417212703.7qq3nzjdvnceaim2@earth.universe>
+Reply-To: maxime.ripard-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Sebastian Reichel <sebastian.reichel@collabora.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="4s2awzwutf52hbae"
+Return-path: <linux-sunxi+bncBDSJBYGBRIMBBBFZ4LSQKGQEDEATTIY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20190417212703.7qq3nzjdvnceaim2-SfvFxonMDyemK9LvCR3Hrw@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Chen-Yu Tsai <wens-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This simplifies the error handling.
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+--4s2awzwutf52hbae
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
 
----
-Changes since v1:
-- This was split off the "power: supply: olpc_battery: Move priv data to
-  a struct" patch.
+On Wed, Apr 17, 2019 at 11:27:03PM +0200, Sebastian Reichel wrote:
+> Hi,
+>
+> On Tue, Apr 16, 2019 at 02:40:17PM +0800, Chen-Yu Tsai wrote:
+> > This is v4 of my A83T USB power supply / OTG series. Hopefully this is
+> > the last revision even though it's kind of late in the -rc cycle for
+> > the patches to make the next release. Fingers crossed.
+>
+> Patches 1-5 (i.e. all except DTS) queued to power-supply subsystem.
 
- drivers/power/supply/olpc_battery.c | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+Applied 6 and 7, thanks!
+Maxime
 
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-index f7bb9bedd893..d83c77c2a0ec 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -634,7 +634,7 @@ static int olpc_battery_probe(struct platform_device =
-*pdev)
- 	psy_cfg.of_node =3D pdev->dev.of_node;
- 	psy_cfg.drv_data =3D data;
-=20
--	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
-_cfg);
-+	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,=
- &psy_cfg);
- 	if (IS_ERR(data->olpc_ac))
- 		return PTR_ERR(data->olpc_ac);
-=20
-@@ -648,15 +648,13 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
- 	}
-=20
--	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
-sy_cfg);
--	if (IS_ERR(data->olpc_bat)) {
--		ret =3D PTR_ERR(data->olpc_bat);
--		goto battery_failed;
--	}
-+	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
-c, &psy_cfg);
-+	if (IS_ERR(data->olpc_bat))
-+		return PTR_ERR(data->olpc_bat);
-=20
- 	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
- 	if (ret)
--		goto eeprom_failed;
-+		return ret;
-=20
- 	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	if (ret)
-@@ -671,10 +669,6 @@ static int olpc_battery_probe(struct platform_device=
- *pdev)
-=20
- error_failed:
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--eeprom_failed:
--	power_supply_unregister(data->olpc_bat);
--battery_failed:
--	power_supply_unregister(data->olpc_ac);
- 	return ret;
- }
-=20
-@@ -684,9 +678,6 @@ static int olpc_battery_remove(struct platform_device=
- *pdev)
-=20
- 	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
--	power_supply_unregister(data->olpc_bat);
--	power_supply_unregister(data->olpc_ac);
--
- 	return 0;
- }
-=20
---=20
-2.21.0
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+--4s2awzwutf52hbae--
