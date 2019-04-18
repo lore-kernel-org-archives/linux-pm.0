@@ -2,182 +2,90 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA0CAC10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C73D1C10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 10:28:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B07792184B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 09:50:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 955DA20821
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 10:28:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="J6/Ev2dw"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bDzFggAE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388451AbfDRJur (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 05:50:47 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:33854 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733049AbfDRJur (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 05:50:47 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190418095045euoutp01d02187bfc765a8fd72b7b2930f5000f7~WiLf3FRZ-0597305973euoutp01O
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 09:50:45 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190418095045euoutp01d02187bfc765a8fd72b7b2930f5000f7~WiLf3FRZ-0597305973euoutp01O
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555581045;
-        bh=XlqFo64OpA4M2BnDSdVN7DWkiQzakanWPd1XvuFCBlk=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=J6/Ev2dw+oo8ma+fMGq14Rd/DgWGrFnStRDcUMfxLP/yajwM6iHkD3p4wkX+EMm4p
-         FztUmuZtw57vJ471sriJglu2PJSDVXV7hjh6Wbockg+FZmrgo3fUmjvbrqJCO5vMDq
-         wjk8+5lZLyqRnd7/qSi4eqN+RWyhGEKB5IvAL+pk=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190418095044eucas1p27932d434c588c36df892d573a09524eb~WiLfLL1Rz2827628276eucas1p22;
-        Thu, 18 Apr 2019 09:50:44 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id DF.F1.04325.37848BC5; Thu, 18
-        Apr 2019 10:50:43 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190418095043eucas1p25a9c84f12fd8edfe1748f70257e604ff~WiLeapQ6w2825328253eucas1p2u;
-        Thu, 18 Apr 2019 09:50:43 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190418095043eusmtrp13e1c4a44f49ebb6a722bbb637b8834bc~WiLeMWs5T2722127221eusmtrp1A;
-        Thu, 18 Apr 2019 09:50:43 +0000 (GMT)
-X-AuditID: cbfec7f5-b75ff700000010e5-83-5cb84873ac21
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id C6.C8.04146.37848BC5; Thu, 18
-        Apr 2019 10:50:43 +0100 (BST)
-Received: from [106.120.51.20] (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190418095042eusmtip2f5294e9e1fee167a3306b1b372d77a1b~WiLdhyoH83051630516eusmtip23;
-        Thu, 18 Apr 2019 09:50:42 +0000 (GMT)
-Subject: Re: [PATCH 3/3] Documentation: devicetree: add PPMU events
- description
-To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, kgene@kernel.org
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-Message-ID: <ec6c7ce1-ee13-6921-2656-8a027c3c0686@partner.samsung.com>
-Date:   Thu, 18 Apr 2019 11:50:46 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <0d867843-ec56-f30b-8a3f-b3172f325bef@samsung.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02Se0hTYRjG+3bO2Y7D2XFqvpglLcSM1C5SB7JSsFoUXSm8QU49qOR1R811
-        IU3KNC9dzHRqVijaMDSdOgUldDrMbIp5y2yWlpFJhVsUhNXpKPnf73m+5/2+94GPxKRGwomM
-        jktilHGKGJlQjDd1/3zhwcp1IZt/fvOhnxTVEvSIeYagy/UvCDp/ahajjcY6Ed13+bOIrp8a
-        JujB1lIhPZ+rR3SRsV1AP9ZPiOjKkQEBPZ5eLaSvtOlFdOfnTMJ3pbzmXg2S12uyhPKGikvy
-        PK0Gyefr1x4lgsQ+EUxMdAqj9NodKo6afNQsTKi0Ta3qVQvSULpNNrIigfKGFss7PBuJSSlV
-        jaBy8sOiMCPIK9ULuJSUmkcw89tlacJs6l8MVSHoGc7CeDGHoFSv/TtBknbUMWgzXuJ8e6oH
-        QW76BMEJjHqJ4L35IcaFhJQn6DSJ3K0Sah809T3FOMYpV6g0jeIcO1ABYOquI/iMLfQUT//z
-        rag90DdRgDjGKEd4NV0u4NkFMhpLMH5Tiwh+lATy7A8ZN7sInu3gk0Er4tkZem/n4DyzkJb7
-        APF8AabyyxYzO6HTMEBwK2OUO9S2evG2H3wZy8Q5GygbGJ2z5TewgVtNdzHelsC1q1I+vQG0
-        Of0CnldBVU2h6AaSqZf1Ui/rol7WRf3/3fsI1yBHJpmNjWTYbXHMWU9WEcsmx0V6hsfH1qO/
-        36x3wWDRofZfYR2IIpHMWlLt2hwiJRQprCq2AwGJyewlfhHaEKkkQqE6xyjjTyuTYxi2A60m
-        cZmj5PyKyWApFalIYs4wTAKjXDoVkFZOaWj41BvZxO/rVi0H6vAVidlubsyakzE3bSzPV5Yp
-        3gZ7DzfuvxPW9uOaa2nQx71g7XB2vWpXVH5qokveCdOQee54RVkJLZcbBq//ci7+PqSyrOnc
-        Md7oMasr3P4sYYzc5B9w6PXFBlV+uNh0cK/wiGZriso9MK1g92GXr+u6fL1CFxxlOBul2LIR
-        U7KKP9vgkNdiAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrKIsWRmVeSWpSXmKPExsVy+t/xe7rFHjtiDH78Z7PYOGM9q8X1L89Z
-        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
-        cbtxBZtF694j7BaH37SzOvB7rJm3htFj06pONo/NS+o9+rasYvT4vEkugDVKz6Yov7QkVSEj
-        v7jEVina0MJIz9DSQs/IxFLP0Ng81srIVEnfziYlNSezLLVI3y5BL+PByu1sBUsFK5afnsXU
-        wNjI18XIySEhYCLx5f4Fli5GLg4hgaWMElOPvWKGSIhJTNq3nR3CFpb4c62LDaLoNaPEvElL
-        gRwODmGBQIm95+tB4iICJxklZk/4ywTiMAtcYZRYfm0yK0THJCaJdXMXMIF0sAnoSexYVQgy
-        lVfATWLb2QNg21gEVCWW3r/BAmKLCkRInHm/ggWiRlDi5MwnYDangL3E2btTGEFsZgEziXmb
-        HzJD2OISt57MZ4Kw5SWat85mnsAoNAtJ+ywkLbOQtMxC0rKAkWUVo0hqaXFuem6xoV5xYm5x
-        aV66XnJ+7iZGYBRvO/Zz8w7GSxuDDzEKcDAq8fCuUN0eI8SaWFZcmXuIUYKDWUmE1zFlS4wQ
-        b0piZVVqUX58UWlOavEhRlOg5yYyS4km5wMTTF5JvKGpobmFpaG5sbmxmYWSOO95g8ooIYH0
-        xJLU7NTUgtQimD4mDk6pBsa5DoG2EnwXS9XCCpZ6zlfqynUwZDx9U+/vt+QHMx0iq+x4Vb58
-        UVSbd+VqQqjjip9nNAKnBT5I7HiX+fC8WeeT3Y+uCTxeJn6sMykiN4g988m+Y2LFW+q/vJ0a
-        PD9h+p2fwf1+R50YVOVsf8SzVb9e/PLAweJVb29Hz05atSa6YVpi8mq1qUeUWIozEg21mIuK
-        EwGgt0o3+AIAAA==
-X-CMS-MailID: 20190418095043eucas1p25a9c84f12fd8edfe1748f70257e604ff
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190417074835eucas1p19319bedd176d55e10b272881b7c68919
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190417074835eucas1p19319bedd176d55e10b272881b7c68919
-References: <1555487288-4777-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190417074835eucas1p19319bedd176d55e10b272881b7c68919@eucas1p1.samsung.com>
-        <1555487288-4777-4-git-send-email-l.luba@partner.samsung.com>
-        <0d867843-ec56-f30b-8a3f-b3172f325bef@samsung.com>
+        id S2388382AbfDRK2E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 06:28:04 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:35846 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388301AbfDRK2E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 06:28:04 -0400
+Received: by mail-lf1-f68.google.com with SMTP id u17so1233449lfi.3
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2019 03:28:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=3gfH/JykxYqyNODMHJRTCz28W0rt6sVKpWMKmlcLa0g=;
+        b=bDzFggAEGO3gW/BNfAQqBub+y1/YofP2uesJU2aripwzJm1ek+6H6nnJxPZR+AwNd6
+         BFgY0z7Vq6lUhExyez4m4CZX7/LQM0nbJwh7O3DnwOVwUaw/hic9EWaswSs8/qE7uSQ7
+         /HGC0QtMkbWJa8aBkaDSIEO9YHeSdlv+wUdz7Wlwh5NmuHPMtqnjPwGuFaDUjqdnrA0l
+         RG36RA0DE3bdQfU1cCWDhz6gtB3uRBhJyoXgCK7KntcWU75b6JsXhKjz1sdZQBSURtgW
+         CTpateCWhDuLFaP8PMel7LCUDtBq49B9qjPUJzKlaDTkJqIv7WajvM8wBpKca2lAz43b
+         oJJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=3gfH/JykxYqyNODMHJRTCz28W0rt6sVKpWMKmlcLa0g=;
+        b=eU8ZabONIOt7OOhclMou4UtidPT2CCaNjzEKtpkCoQM5Kd4jjle6XvLhusrtF0v69O
+         JrfkBI9ER/gJhtSZxXn6Z3ou4tudQkPndARRxkME/FQNsgn8lYKxVv5U/4McKew+BTi4
+         mHyU66FG9ZncFQQc7IzV7ZJOLJg8KrdOHFYxQgEFVVeIeDEt8p4j/3CaFZnCSCjThscC
+         pfsYkczg9YbxudGTL/i+Q1w/q6+/ehlw/o4KHzi+7g+B7ZRYMAZFY6ljSlPUS89Mumsg
+         ngp+COnniY0VosxRczJvfEPVHshZmi9k1hr0AhRXIiuTxPQm7hFXkjFhwaucg9TpFsod
+         qNQQ==
+X-Gm-Message-State: APjAAAUOjVXhTHNbfCBGX4qe+zdl2vS2wrOu47DWnMMMyJ7BBrS8AAXY
+        ykEND+sivl/LyG+x8ZQJ59LrHaDnn4k=
+X-Google-Smtp-Source: APXvYqy0HmQvgHWnRoeyNXiHx4H5QwoDLvnZDnOXgt1KG6894LmpVJ0o9lEPamOUcXKwvLMSUQxYog==
+X-Received: by 2002:a19:7005:: with SMTP id h5mr26334193lfc.143.1555583282594;
+        Thu, 18 Apr 2019 03:28:02 -0700 (PDT)
+Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
+        by smtp.gmail.com with ESMTPSA id l13sm320409ljj.96.2019.04.18.03.28.01
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 18 Apr 2019 03:28:01 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jon Hunter <jonathanh@nvidia.com>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Niklas Cassel <niklas.cassel@linaro.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 0/3] PM / Domains: Improve support for multi PM domains
+Date:   Thu, 18 Apr 2019 12:27:54 +0200
+Message-Id: <20190418102757.1246-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418095046.lrpiepGzIK2wUKzpGy7pHAFHn33CQRea8dBVVAxEhBQ@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190418102754.pb40QgNZdgfEDApCperfq9eAWS27DfxwDkD7QgcJde8@z>
 
-Hi Chanwoo,
+It's been a while since the introduction for the support for multi PM domains
+per device in genpd. In this small series, a couple of different improvement
+are being made to this code in genpd.
 
-On 4/17/19 10:26 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> On 19. 4. 17. 오후 4:48, Lukasz Luba wrote:
->> Extend the documenation by events description with new 'event-data-type'
->> field. Add example how the event might be defined in DT.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
->>   1 file changed, 18 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> index 3e36c1d..47feb5f 100644
->> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> @@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
->>   			reg = <0x104d0000 0x2000>;
->>   			status = "disabled";
->>   		};
->> +
->> +The 'event' type specified in the PPMU node defines 'event-name'
->> +which also contains 'id' number and optionally 'event-data-type'.
->> +
->> +Example:
->> +
->> +		events {
->> +			ppmu_leftbus_0: ppmu-event0-leftbus {
->> +				event-name = "ppmu-event0-leftbus";
->> +				event-data-type = <PPMU_RO_DATA_CNT>;
->> +			};
->> +		};
->> +
->> +The 'event-data-type' defines the type of data which shell be counted
->> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
-> 
-> I replied about 'pmu' name on patch2. Please check it.
-Yes, I've seen it and responded.
-> 
->> +all possible type, i.e. count read requests, count write data in bytes,
->> +etc. This field is optional and when it is missing, the driver code will
->> +use default data type.
->>
-> Looks good to me.
-> But, If you want to add the new 'event-data-type' property,
-> you better to add 'event-data-type' to Exynos dts file including
-> PPMU device.
-> 
-> If the dts file contain the data type information,
-> I think it is easy to understand for the user
-> what is monitoring on PPMU device.
+Ulf Hansson (3):
+  PM / Domains: Don't kfree() the virtual device in the error path
+  PM / Domains: Allow OF lookup for multi PM domain case from
+    ->attach_dev()
+  PM / Domains: Enable genpd_dev_pm_attach_by_id|name() for single PM
+    domain
 
-Make sense, I will do that. It will be explicitly telling the user what
-is currently monitored in the PPMU device event.
+ drivers/base/power/domain.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-Regards,
-Lukasz
-> 
-> 
+-- 
+2.17.1
+
